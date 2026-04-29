@@ -1,0 +1,12 @@
+{
+  "policy_id": "standard_review_policy",
+  "rules": {
+    "open_questions_block_by_default": false,
+    "human_validation_requires_missing_core_evidence": true,
+    "normalize_non_blocking_human_validation_to_approve": true,
+    "max_writer_attempts": 2,
+    "run_deterministic_validation_before_reviewer": true,
+    "run_global_review_after_assembly": true,
+    "run_global_refiner_after_global_review": true
+  }
+}

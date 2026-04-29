@@ -1,0 +1,458 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T6",
+  "tower_name": "Infrastructure Security & Identity",
+  "purpose": "La torre Infrastructure Security & Identity cubre las capacidades necesarias para asegurar y gobernar el acceso a la infraestructura, reduciendo la superficie de ataque y la probabilidad de compromiso, y limitando el impacto si ocurre un incidente.",
+  "scope_summary": [
+    "Identidad y control de acceso (IAM)",
+    "Privileged Access Management (PAM)",
+    "Hardening y configuración segura",
+    "Gestión de vulnerabilidades y parches",
+    "Segmentación y controles de red orientados a seguridad (a nivel infra)",
+    "Logging, auditoría y trazabilidad (en clave infra)",
+    "Exclusiones (para evitar solapes con otras torres)",
+    "Resilience & Continuity (Torre 5)",
+    "Network & Connectivity (Torre 3)",
+    "Operaciones/SOC/Threat Detection si se tratara como torre específica",
+    "En resumen"
+  ],
+  "related_towers": [
+    "T3",
+    "T5"
+  ],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T6.P1",
+      "pillar_name": "Identidad y Control de Acceso (IAM)",
+      "weight_pct": 21,
+      "kpis": [
+        {
+          "kpi_id": "T6.P1.K1",
+          "kpi_name": "Cobertura de MFA en accesos críticos (incluye administración)",
+          "questions": [
+            {
+              "question_id": "T6.P1.K1.PR1",
+              "question_text": "La autenticación multifactor reduce el riesgo de acceso no autorizado a sistemas críticos. ¿Cuál es el nivel de cobertura de MFA en los accesos críticos de infraestructura?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P1.K2",
+          "kpi_name": "Gestión del ciclo de vida JML (Joiner-Mover-Leaver) y desprovisionado",
+          "questions": [
+            {
+              "question_id": "T6.P1.K2.PR1",
+              "question_text": "La gestión del ciclo de vida de accesos permite dar altas, cambios y bajas de forma segura y oportuna. ¿Cómo se gestiona el ciclo de vida de accesos de usuarios y administradores (JML)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P1.K3",
+          "kpi_name": "Mínimo privilegio, recertificación y control de privilegios excesivos",
+          "questions": [
+            {
+              "question_id": "T6.P1.K3.PR1",
+              "question_text": "Para entender el control real sobre privilegios y accesos innecesarios:¿Cómo detectáis, revisáis y corregís hoy permisos excesivos o accesos que ya no deberían mantenerse?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P1.K4",
+          "kpi_name": "Gestión de accesos de terceros (temporalidad, trazabilidad y control)",
+          "questions": [
+            {
+              "question_id": "T6.P1.K4.PR1",
+              "question_text": "Los accesos de terceros deben estar controlados para evitar riesgos en entornos críticos. ¿Cómo se gestionan los accesos de proveedores y terceros a la infraestructura?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P1.K5",
+          "kpi_name": "Gobierno de identidades no humanas (service accounts, tokens y certificados)",
+          "questions": [
+            {
+              "question_id": "T6.P1.K5.PR1",
+              "question_text": "Para entender el control real sobre identidades no humanas y su riesgo asociado:¿Cómo se inventarían, asignan, revisan y retiran hoy las identidades no humanas que acceden a infraestructura, plataformas o automatizaciones?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T6.P2",
+      "pillar_name": "Privileged Access Management (PAM) y Secret Management",
+      "weight_pct": 24,
+      "kpis": [
+        {
+          "kpi_id": "T6.P2.K1",
+          "kpi_name": "Cobertura de PAM sobre cuentas privilegiadas (por criticidad)",
+          "questions": [
+            {
+              "question_id": "T6.P2.K1.PR1",
+              "question_text": "Las cuentas privilegiadas deben estar protegidas y controladas de forma centralizada. ¿Qué nivel de cobertura tiene la gestión de accesos privilegiados (PAM) sobre las cuentas críticas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P2.K2",
+          "kpi_name": "Vaulting y rotación de credenciales/secretos privilegiados",
+          "questions": [
+            {
+              "question_id": "T6.P2.K2.PR1",
+              "question_text": "La rotación y custodia segura de secretos reduce el riesgo de compromiso de credenciales privilegiadas. ¿Cómo se gestionan el almacenamiento y la rotación de secretos privilegiados?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P2.K3",
+          "kpi_name": "Trazabilidad de sesiones privilegiadas (session recording / audit)",
+          "questions": [
+            {
+              "question_id": "T6.P2.K3.PR1",
+              "question_text": "Registrar las sesiones privilegiadas permite investigar acciones críticas y detectar usos indebidos. ¿Se registran y auditan las sesiones privilegiadas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P2.K4",
+          "kpi_name": "JIT/JEA y control de cuentas break-glass",
+          "questions": [
+            {
+              "question_id": "T6.P2.K4.PR1",
+              "question_text": "Los privilegios temporales reducen la exposición frente a accesos elevados permanentes. ¿Cómo se gestionan los privilegios temporales y las cuentas de emergencia (JIT/JEA y break-glass)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T6.P3",
+      "pillar_name": "Hardening & Secure Configuration (baseline y control de drift)",
+      "weight_pct": 19,
+      "kpis": [
+        {
+          "kpi_id": "T6.P3.K1",
+          "kpi_name": "Existencia y aplicación de baselines de hardening (por tipo de activo)",
+          "questions": [
+            {
+              "question_id": "T6.P3.K1.PR1",
+              "question_text": "Definir configuraciones seguras por defecto es clave para reducir la superficie de ataque. ¿Existen baselines de hardening definidos y aplicados en la infraestructura?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P3.K2",
+          "kpi_name": "Cumplimiento de hardening en activos críticos (índice de compliance)",
+          "questions": [
+            {
+              "question_id": "T6.P3.K2.PR1",
+              "question_text": "Medir el cumplimiento permite saber si los activos mantienen un nivel adecuado de seguridad. ¿Cómo se mide el cumplimiento de hardening en los activos críticos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P3.K3",
+          "kpi_name": "Control de drift y cambios no autorizados de configuración",
+          "questions": [
+            {
+              "question_id": "T6.P3.K3.PR1",
+              "question_text": "Las configuraciones cambian con el tiempo y pueden alejarse del estado seguro definido. ¿Cómo se controla la desviación de configuración respecto al estándar de seguridad?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P3.K4",
+          "kpi_name": "Gestión de excepciones de hardening (justificación, caducidad y compensación)",
+          "questions": [
+            {
+              "question_id": "T6.P3.K4.PR1",
+              "question_text": "Las excepciones de seguridad deben justificarse, controlarse y revisarse. ¿Cómo se gestionan las excepciones al hardening definido?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T6.P4",
+      "pillar_name": "Vulnerability & Patch Management (exposición y remediación)",
+      "weight_pct": 23,
+      "kpis": [
+        {
+          "kpi_id": "T6.P4.K1",
+          "kpi_name": "Cobertura de inventario y escaneo de vulnerabilidades (activos infra)",
+          "questions": [
+            {
+              "question_id": "T6.P4.K1.PR1",
+              "question_text": "El escaneo de vulnerabilidades permite identificar riesgos antes de que sean explotados. ¿Cuál es la cobertura del escaneo de vulnerabilidades en la infraestructura?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P4.K2",
+          "kpi_name": "Cumplimiento de SLA de parcheo (críticas/altas) basado en riesgo",
+          "questions": [
+            {
+              "question_id": "T6.P4.K2.PR1",
+              "question_text": "Parchear según criticidad es clave para reducir la ventana de exposición. ¿Se cumplen los tiempos objetivo de parcheo según la criticidad de las vulnerabilidades?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P4.K3",
+          "kpi_name": "Backlog de vulnerabilidades críticas (tendencia y control)",
+          "questions": [
+            {
+              "question_id": "T6.P4.K3.PR1",
+              "question_text": "El backlog de vulnerabilidades muestra si la organización está reduciendo o acumulando riesgo. ¿Cómo se gestiona el backlog de vulnerabilidades críticas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P4.K4",
+          "kpi_name": "Gestión de excepciones/compensación cuando no se puede parchear",
+          "questions": [
+            {
+              "question_id": "T6.P4.K4.PR1",
+              "question_text": "Cuando no se puede parchear, deben existir medidas alternativas para reducir el riesgo. ¿Cómo se gestionan las excepciones cuando un sistema no puede parchearse?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T6.P5",
+      "pillar_name": "Seguridad de red para infraestructura + Logging y Auditoría (segregación y trazabilidad)",
+      "weight_pct": 13,
+      "kpis": [
+        {
+          "kpi_id": "T6.P5.K1",
+          "kpi_name": "Segmentación por zonas/entornos y criticidad (incluye east-west)",
+          "questions": [
+            {
+              "question_id": "T6.P5.K1.PR1",
+              "question_text": "La segmentación limita la propagación de ataques y reduce el impacto de incidentes. ¿Cuál es el nivel de segmentación de la infraestructura?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P5.K2",
+          "kpi_name": "Aislamiento y control del plano de administración (bastión/jump, acceso restringido)",
+          "questions": [
+            {
+              "question_id": "T6.P5.K2.PR1",
+              "question_text": "El acceso al plano de administración debe estar especialmente protegido para evitar compromisos críticos. ¿Cómo se protege el acceso a las consolas y redes de administración?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P5.K3",
+          "kpi_name": "Centralización de logs críticos de identidad e infraestructura",
+          "questions": [
+            {
+              "question_id": "T6.P5.K3.PR1",
+              "question_text": "Centralizar los logs facilita la investigación, la auditoría y la detección de incidentes. ¿Se centralizan y explotan los logs críticos de infraestructura e identidad?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T6.P5.K4",
+          "kpi_name": "Retención, integridad y revisión/auditoría de logs",
+          "questions": []
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T6.P1.K1.PR1",
+      "pillar_id": "T6.P1",
+      "kpi_id": "T6.P1.K1",
+      "question_text": "La autenticación multifactor reduce el riesgo de acceso no autorizado a sistemas críticos. ¿Cuál es el nivel de cobertura de MFA en los accesos críticos de infraestructura?"
+    },
+    {
+      "question_id": "T6.P1.K2.PR1",
+      "pillar_id": "T6.P1",
+      "kpi_id": "T6.P1.K2",
+      "question_text": "La gestión del ciclo de vida de accesos permite dar altas, cambios y bajas de forma segura y oportuna. ¿Cómo se gestiona el ciclo de vida de accesos de usuarios y administradores (JML)?"
+    },
+    {
+      "question_id": "T6.P1.K3.PR1",
+      "pillar_id": "T6.P1",
+      "kpi_id": "T6.P1.K3",
+      "question_text": "Para entender el control real sobre privilegios y accesos innecesarios:¿Cómo detectáis, revisáis y corregís hoy permisos excesivos o accesos que ya no deberían mantenerse?"
+    },
+    {
+      "question_id": "T6.P1.K4.PR1",
+      "pillar_id": "T6.P1",
+      "kpi_id": "T6.P1.K4",
+      "question_text": "Los accesos de terceros deben estar controlados para evitar riesgos en entornos críticos. ¿Cómo se gestionan los accesos de proveedores y terceros a la infraestructura?"
+    },
+    {
+      "question_id": "T6.P1.K5.PR1",
+      "pillar_id": "T6.P1",
+      "kpi_id": "T6.P1.K5",
+      "question_text": "Para entender el control real sobre identidades no humanas y su riesgo asociado:¿Cómo se inventarían, asignan, revisan y retiran hoy las identidades no humanas que acceden a infraestructura, plataformas o automatizaciones?"
+    },
+    {
+      "question_id": "T6.P2.K1.PR1",
+      "pillar_id": "T6.P2",
+      "kpi_id": "T6.P2.K1",
+      "question_text": "Las cuentas privilegiadas deben estar protegidas y controladas de forma centralizada. ¿Qué nivel de cobertura tiene la gestión de accesos privilegiados (PAM) sobre las cuentas críticas?"
+    },
+    {
+      "question_id": "T6.P2.K2.PR1",
+      "pillar_id": "T6.P2",
+      "kpi_id": "T6.P2.K2",
+      "question_text": "La rotación y custodia segura de secretos reduce el riesgo de compromiso de credenciales privilegiadas. ¿Cómo se gestionan el almacenamiento y la rotación de secretos privilegiados?"
+    },
+    {
+      "question_id": "T6.P2.K3.PR1",
+      "pillar_id": "T6.P2",
+      "kpi_id": "T6.P2.K3",
+      "question_text": "Registrar las sesiones privilegiadas permite investigar acciones críticas y detectar usos indebidos. ¿Se registran y auditan las sesiones privilegiadas?"
+    },
+    {
+      "question_id": "T6.P2.K4.PR1",
+      "pillar_id": "T6.P2",
+      "kpi_id": "T6.P2.K4",
+      "question_text": "Los privilegios temporales reducen la exposición frente a accesos elevados permanentes. ¿Cómo se gestionan los privilegios temporales y las cuentas de emergencia (JIT/JEA y break-glass)?"
+    },
+    {
+      "question_id": "T6.P3.K1.PR1",
+      "pillar_id": "T6.P3",
+      "kpi_id": "T6.P3.K1",
+      "question_text": "Definir configuraciones seguras por defecto es clave para reducir la superficie de ataque. ¿Existen baselines de hardening definidos y aplicados en la infraestructura?"
+    },
+    {
+      "question_id": "T6.P3.K2.PR1",
+      "pillar_id": "T6.P3",
+      "kpi_id": "T6.P3.K2",
+      "question_text": "Medir el cumplimiento permite saber si los activos mantienen un nivel adecuado de seguridad. ¿Cómo se mide el cumplimiento de hardening en los activos críticos?"
+    },
+    {
+      "question_id": "T6.P3.K3.PR1",
+      "pillar_id": "T6.P3",
+      "kpi_id": "T6.P3.K3",
+      "question_text": "Las configuraciones cambian con el tiempo y pueden alejarse del estado seguro definido. ¿Cómo se controla la desviación de configuración respecto al estándar de seguridad?"
+    },
+    {
+      "question_id": "T6.P3.K4.PR1",
+      "pillar_id": "T6.P3",
+      "kpi_id": "T6.P3.K4",
+      "question_text": "Las excepciones de seguridad deben justificarse, controlarse y revisarse. ¿Cómo se gestionan las excepciones al hardening definido?"
+    },
+    {
+      "question_id": "T6.P4.K1.PR1",
+      "pillar_id": "T6.P4",
+      "kpi_id": "T6.P4.K1",
+      "question_text": "El escaneo de vulnerabilidades permite identificar riesgos antes de que sean explotados. ¿Cuál es la cobertura del escaneo de vulnerabilidades en la infraestructura?"
+    },
+    {
+      "question_id": "T6.P4.K2.PR1",
+      "pillar_id": "T6.P4",
+      "kpi_id": "T6.P4.K2",
+      "question_text": "Parchear según criticidad es clave para reducir la ventana de exposición. ¿Se cumplen los tiempos objetivo de parcheo según la criticidad de las vulnerabilidades?"
+    },
+    {
+      "question_id": "T6.P4.K3.PR1",
+      "pillar_id": "T6.P4",
+      "kpi_id": "T6.P4.K3",
+      "question_text": "El backlog de vulnerabilidades muestra si la organización está reduciendo o acumulando riesgo. ¿Cómo se gestiona el backlog de vulnerabilidades críticas?"
+    },
+    {
+      "question_id": "T6.P4.K4.PR1",
+      "pillar_id": "T6.P4",
+      "kpi_id": "T6.P4.K4",
+      "question_text": "Cuando no se puede parchear, deben existir medidas alternativas para reducir el riesgo. ¿Cómo se gestionan las excepciones cuando un sistema no puede parchearse?"
+    },
+    {
+      "question_id": "T6.P5.K1.PR1",
+      "pillar_id": "T6.P5",
+      "kpi_id": "T6.P5.K1",
+      "question_text": "La segmentación limita la propagación de ataques y reduce el impacto de incidentes. ¿Cuál es el nivel de segmentación de la infraestructura?"
+    },
+    {
+      "question_id": "T6.P5.K2.PR1",
+      "pillar_id": "T6.P5",
+      "kpi_id": "T6.P5.K2",
+      "question_text": "El acceso al plano de administración debe estar especialmente protegido para evitar compromisos críticos. ¿Cómo se protege el acceso a las consolas y redes de administración?"
+    },
+    {
+      "question_id": "T6.P5.K3.PR1",
+      "pillar_id": "T6.P5",
+      "kpi_id": "T6.P5.K3",
+      "question_text": "Centralizar los logs facilita la investigación, la auditoría y la detección de incidentes. ¿Se centralizan y explotan los logs críticos de infraestructura e identidad?"
+    }
+  ]
+}

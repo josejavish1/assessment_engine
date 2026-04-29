@@ -1,0 +1,440 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T10",
+  "tower_name": "Legacy & Mainframe",
+  "purpose": "La torre Legacy & Mainframe cubre la madurez de la plataforma legacy (incluyendo mainframe cuando exista) desde la perspectiva de infraestructura y operación tecnológica, abarcando:",
+  "scope_summary": [],
+  "related_towers": [
+    "T7"
+  ],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T10.P1",
+      "pillar_name": "Plataforma Legacy/Mainframe & Operación Core",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T10.P1.K1",
+          "kpi_name": "Cobertura y calidad de procedimientos operativos (runbooks) con evidencia",
+          "questions": [
+            {
+              "question_id": "T10.P1.K1.PR1",
+              "question_text": "Los procedimientos operativos permiten ejecutar tareas críticas de forma consistente. ¿Cuál es el nivel de formalización y uso de los procedimientos operativos (runbooks)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P1.K2",
+          "kpi_name": "Tiempo medio de recuperación ante incidencias críticas (MTTR) y disciplina de escalado",
+          "questions": [
+            {
+              "question_id": "T10.P1.K2.PR1",
+              "question_text": "Reducir el tiempo de recuperación ante incidencias es clave para garantizar la continuidad del servicio. ¿Cómo se gestiona el tiempo de recuperación ante incidencias críticas (MTTR)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P1.K3",
+          "kpi_name": "Reincidencia de incidencias (problemas recurrentes) y gestión estructurada de problemas",
+          "questions": [
+            {
+              "question_id": "T10.P1.K3.PR1",
+              "question_text": "Identificar las causas raíz ayuda a evitar la repetición de incidencias. ¿Cómo se gestionan los problemas recurrentes en la plataforma legacy?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P1.K4",
+          "kpi_name": "Gestión del riesgo de dependencia de personas (key-person risk)",
+          "questions": [
+            {
+              "question_id": "T10.P1.K4.PR1",
+              "question_text": "La dependencia de personas clave puede generar riesgos operativos en plataformas legacy. ¿Cómo se gestiona el riesgo de dependencia de personas clave?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T10.P2",
+      "pillar_name": "Change, Release & Configuration Control",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T10.P2.K1",
+          "kpi_name": "Trazabilidad y control del cambio (impacto, aprobación, evidencias)",
+          "questions": [
+            {
+              "question_id": "T10.P2.K1.PR1",
+              "question_text": "Gestionar correctamente los cambios reduce el riesgo de incidentes en entornos críticos. ¿Cómo se controla y documenta el proceso de cambio en el entorno legacy?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P2.K2",
+          "kpi_name": "Tasa de éxito de cambios (Change Success Rate) y severidad de fallos",
+          "questions": [
+            {
+              "question_id": "T10.P2.K2.PR1",
+              "question_text": "Conocer la tasa de éxito de los cambios permite mejorar la estabilidad de la plataforma. ¿Cuál es la tasa de éxito de los cambios realizados?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P2.K3",
+          "kpi_name": "Capacidad de rollback / reversión y planes de contingencia de release",
+          "questions": [
+            {
+              "question_id": "T10.P2.K3.PR1",
+              "question_text": "Disponer de mecanismos de rollback reduce el impacto de cambios fallidos. ¿Cómo se gestiona la capacidad de rollback ante cambios fallidos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P2.K4",
+          "kpi_name": "Control de configuración (CMDB/baselines) y consistencia del entorno",
+          "questions": [
+            {
+              "question_id": "T10.P2.K4.PR1",
+              "question_text": "Controlar la configuración permite evitar desviaciones que generen incidentes. ¿Cómo se controla la configuración del entorno legacy?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T10.P3",
+      "pillar_name": "Capacity, Performance & Batch Management",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T10.P3.K1",
+          "kpi_name": "Cumplimiento de la ventana batch (Batch Window SLA)",
+          "questions": [
+            {
+              "question_id": "T10.P3.K1.PR1",
+              "question_text": "El cumplimiento de la ventana batch es crítico en muchos entornos legacy. ¿Cómo se gestiona el cumplimiento de la ventana batch?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P3.K2",
+          "kpi_name": "Gestión de capacidad (forecasting y márgenes)",
+          "questions": [
+            {
+              "question_id": "T10.P3.K2.PR1",
+              "question_text": "Anticipar el crecimiento de la plataforma permite evitar problemas de capacidad. ¿Cómo se gestiona la capacidad y el forecasting de la plataforma?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P3.K3",
+          "kpi_name": "Observabilidad de rendimiento (cuellos de botella y degradaciones)",
+          "questions": [
+            {
+              "question_id": "T10.P3.K3.PR1",
+              "question_text": "La observabilidad del rendimiento permite detectar problemas antes de que impacten al negocio. ¿Cuál es el nivel de observabilidad del rendimiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P3.K4",
+          "kpi_name": "Optimización de coste/capacidad (eficiencia y control económico)",
+          "questions": [
+            {
+              "question_id": "T10.P3.K4.PR1",
+              "question_text": "Optimizar el uso de capacidad permite controlar costes y mejorar eficiencia. ¿Cómo se gestiona la optimización de coste y capacidad?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T10.P4",
+      "pillar_name": "Integración, Interoperabilidad & Modern Enablement",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T10.P4.K1",
+          "kpi_name": "Gobierno de interfaces (catálogo, contratos, versionado)",
+          "questions": [
+            {
+              "question_id": "T10.P4.K1.PR1",
+              "question_text": "Las plataformas legacy suelen integrarse con múltiples sistemas modernos. ¿Cómo se gobiernan las interfaces e integraciones del entorno legacy?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P4.K2",
+          "kpi_name": "Resiliencia de integraciones (reintentos, colas, tolerancia a fallos)",
+          "questions": [
+            {
+              "question_id": "T10.P4.K2.PR1",
+              "question_text": "Las integraciones poco resilientes pueden provocar fallos en cascada entre sistemas. ¿Cómo se gestiona la resiliencia de las integraciones?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P4.K3",
+          "kpi_name": "Observabilidad end-to-end de transacciones híbridas",
+          "questions": [
+            {
+              "question_id": "T10.P4.K3.PR1",
+              "question_text": "La trazabilidad de transacciones facilita la resolución de incidencias en entornos híbridos. ¿Qué nivel de trazabilidad existe en transacciones híbridas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P4.K4",
+          "kpi_name": "Calidad de integración con IAM/seguridad corporativa (aplicada a legacy)",
+          "questions": [
+            {
+              "question_id": "T10.P4.K4.PR1",
+              "question_text": "Integrar el legacy con controles corporativos mejora la seguridad del entorno. ¿Cómo se integra el legacy con IAM y controles corporativos?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T10.P5",
+      "pillar_name": "Modernización, Riesgo Tecnológico & Sostenibilidad",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T10.P5.K1",
+          "kpi_name": "Estado de soporte y obsolescencia (EoS/EoL) con plan de remediación",
+          "questions": [
+            {
+              "question_id": "T10.P5.K1.PR1",
+              "question_text": "Conocer el estado de obsolescencia permite planificar la evolución del entorno legacy. ¿Cuál es el estado de obsolescencia de la plataforma legacy?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P5.K2",
+          "kpi_name": "Roadmap de modernización y estrategia por dominio (decisión de evolución)",
+          "questions": [
+            {
+              "question_id": "T10.P5.K2.PR1",
+              "question_text": "Para entender si la evolución tecnológica se decide de forma estructurada y con criterio:¿Cómo decidís para cada dominio o aplicación core si debe mantenerse, modernizarse, sustituirse, retirarse o externalizarse, y qué driver principal justifica esa decisión?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P5.K3",
+          "kpi_name": "Gestión del riesgo de skills y continuidad de conocimiento",
+          "questions": [
+            {
+              "question_id": "T10.P5.K3.PR1",
+              "question_text": "La escasez de especialistas legacy puede representar un riesgo para la organización. ¿Cómo se gestiona el riesgo de habilidades en la plataforma legacy?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T10.P5.K4",
+          "kpi_name": "Gobierno de proveedores/licencias y optimización contractual",
+          "questions": [
+            {
+              "question_id": "T10.P5.K4.PR1",
+              "question_text": "Los contratos y licencias del entorno legacy pueden tener impacto financiero y operativo. ¿Cómo se gobiernan los contratos y licencias del entorno legacy?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T10.P1.K1.PR1",
+      "pillar_id": "T10.P1",
+      "kpi_id": "T10.P1.K1",
+      "question_text": "Los procedimientos operativos permiten ejecutar tareas críticas de forma consistente. ¿Cuál es el nivel de formalización y uso de los procedimientos operativos (runbooks)?"
+    },
+    {
+      "question_id": "T10.P1.K2.PR1",
+      "pillar_id": "T10.P1",
+      "kpi_id": "T10.P1.K2",
+      "question_text": "Reducir el tiempo de recuperación ante incidencias es clave para garantizar la continuidad del servicio. ¿Cómo se gestiona el tiempo de recuperación ante incidencias críticas (MTTR)?"
+    },
+    {
+      "question_id": "T10.P1.K3.PR1",
+      "pillar_id": "T10.P1",
+      "kpi_id": "T10.P1.K3",
+      "question_text": "Identificar las causas raíz ayuda a evitar la repetición de incidencias. ¿Cómo se gestionan los problemas recurrentes en la plataforma legacy?"
+    },
+    {
+      "question_id": "T10.P1.K4.PR1",
+      "pillar_id": "T10.P1",
+      "kpi_id": "T10.P1.K4",
+      "question_text": "La dependencia de personas clave puede generar riesgos operativos en plataformas legacy. ¿Cómo se gestiona el riesgo de dependencia de personas clave?"
+    },
+    {
+      "question_id": "T10.P2.K1.PR1",
+      "pillar_id": "T10.P2",
+      "kpi_id": "T10.P2.K1",
+      "question_text": "Gestionar correctamente los cambios reduce el riesgo de incidentes en entornos críticos. ¿Cómo se controla y documenta el proceso de cambio en el entorno legacy?"
+    },
+    {
+      "question_id": "T10.P2.K2.PR1",
+      "pillar_id": "T10.P2",
+      "kpi_id": "T10.P2.K2",
+      "question_text": "Conocer la tasa de éxito de los cambios permite mejorar la estabilidad de la plataforma. ¿Cuál es la tasa de éxito de los cambios realizados?"
+    },
+    {
+      "question_id": "T10.P2.K3.PR1",
+      "pillar_id": "T10.P2",
+      "kpi_id": "T10.P2.K3",
+      "question_text": "Disponer de mecanismos de rollback reduce el impacto de cambios fallidos. ¿Cómo se gestiona la capacidad de rollback ante cambios fallidos?"
+    },
+    {
+      "question_id": "T10.P2.K4.PR1",
+      "pillar_id": "T10.P2",
+      "kpi_id": "T10.P2.K4",
+      "question_text": "Controlar la configuración permite evitar desviaciones que generen incidentes. ¿Cómo se controla la configuración del entorno legacy?"
+    },
+    {
+      "question_id": "T10.P3.K1.PR1",
+      "pillar_id": "T10.P3",
+      "kpi_id": "T10.P3.K1",
+      "question_text": "El cumplimiento de la ventana batch es crítico en muchos entornos legacy. ¿Cómo se gestiona el cumplimiento de la ventana batch?"
+    },
+    {
+      "question_id": "T10.P3.K2.PR1",
+      "pillar_id": "T10.P3",
+      "kpi_id": "T10.P3.K2",
+      "question_text": "Anticipar el crecimiento de la plataforma permite evitar problemas de capacidad. ¿Cómo se gestiona la capacidad y el forecasting de la plataforma?"
+    },
+    {
+      "question_id": "T10.P3.K3.PR1",
+      "pillar_id": "T10.P3",
+      "kpi_id": "T10.P3.K3",
+      "question_text": "La observabilidad del rendimiento permite detectar problemas antes de que impacten al negocio. ¿Cuál es el nivel de observabilidad del rendimiento?"
+    },
+    {
+      "question_id": "T10.P3.K4.PR1",
+      "pillar_id": "T10.P3",
+      "kpi_id": "T10.P3.K4",
+      "question_text": "Optimizar el uso de capacidad permite controlar costes y mejorar eficiencia. ¿Cómo se gestiona la optimización de coste y capacidad?"
+    },
+    {
+      "question_id": "T10.P4.K1.PR1",
+      "pillar_id": "T10.P4",
+      "kpi_id": "T10.P4.K1",
+      "question_text": "Las plataformas legacy suelen integrarse con múltiples sistemas modernos. ¿Cómo se gobiernan las interfaces e integraciones del entorno legacy?"
+    },
+    {
+      "question_id": "T10.P4.K2.PR1",
+      "pillar_id": "T10.P4",
+      "kpi_id": "T10.P4.K2",
+      "question_text": "Las integraciones poco resilientes pueden provocar fallos en cascada entre sistemas. ¿Cómo se gestiona la resiliencia de las integraciones?"
+    },
+    {
+      "question_id": "T10.P4.K3.PR1",
+      "pillar_id": "T10.P4",
+      "kpi_id": "T10.P4.K3",
+      "question_text": "La trazabilidad de transacciones facilita la resolución de incidencias en entornos híbridos. ¿Qué nivel de trazabilidad existe en transacciones híbridas?"
+    },
+    {
+      "question_id": "T10.P4.K4.PR1",
+      "pillar_id": "T10.P4",
+      "kpi_id": "T10.P4.K4",
+      "question_text": "Integrar el legacy con controles corporativos mejora la seguridad del entorno. ¿Cómo se integra el legacy con IAM y controles corporativos?"
+    },
+    {
+      "question_id": "T10.P5.K1.PR1",
+      "pillar_id": "T10.P5",
+      "kpi_id": "T10.P5.K1",
+      "question_text": "Conocer el estado de obsolescencia permite planificar la evolución del entorno legacy. ¿Cuál es el estado de obsolescencia de la plataforma legacy?"
+    },
+    {
+      "question_id": "T10.P5.K2.PR1",
+      "pillar_id": "T10.P5",
+      "kpi_id": "T10.P5.K2",
+      "question_text": "Para entender si la evolución tecnológica se decide de forma estructurada y con criterio:¿Cómo decidís para cada dominio o aplicación core si debe mantenerse, modernizarse, sustituirse, retirarse o externalizarse, y qué driver principal justifica esa decisión?"
+    },
+    {
+      "question_id": "T10.P5.K3.PR1",
+      "pillar_id": "T10.P5",
+      "kpi_id": "T10.P5.K3",
+      "question_text": "La escasez de especialistas legacy puede representar un riesgo para la organización. ¿Cómo se gestiona el riesgo de habilidades en la plataforma legacy?"
+    },
+    {
+      "question_id": "T10.P5.K4.PR1",
+      "pillar_id": "T10.P5",
+      "kpi_id": "T10.P5.K4",
+      "question_text": "Los contratos y licencias del entorno legacy pueden tener impacto financiero y operativo. ¿Cómo se gobiernan los contratos y licencias del entorno legacy?"
+    }
+  ]
+}

@@ -1,0 +1,463 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T8",
+  "tower_name": "Strategy, Governance & FinOps",
+  "purpose": "La torre Strategy, Governance & FinOps cubre el conjunto de capacidades necesarias para definir dirección, establecer control y optimizar el rendimiento (valor, coste, riesgo y cumplimiento) de la plataforma tecnológica del cliente.",
+  "scope_summary": [
+    "Estrategia y hoja de ruta (Roadmap)",
+    "Gobernanza y toma de decisiones",
+    "Gestión de riesgos y cumplimiento (gobierno)",
+    "FinOps / Gestión financiera del cloud e híbrido",
+    "Medición de valor y performance",
+    "Exclusiones (para evitar solapes)",
+    "Ejecución técnica de plataformas (T2), redes (T3), almacenamiento (T4), continuidad (T5), seguridad (T6), operación ITSM (T7)",
+    "En resumen"
+  ],
+  "related_towers": [],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T8.P1",
+      "pillar_name": "Estrategia Tecnológica y Roadmap",
+      "weight_pct": 21,
+      "kpis": [
+        {
+          "kpi_id": "T8.P1.K1",
+          "kpi_name": "Roadmap tecnológico (To-Be) definido, financiado y gobernado",
+          "questions": [
+            {
+              "question_id": "T8.P1.K1.PR1",
+              "question_text": "Una estrategia tecnológica clara permite orientar las inversiones y priorizar las iniciativas de transformación. ¿Cómo describiría el nivel de definición y gobierno del roadmap tecnológico?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P1.K2",
+          "kpi_name": "Alineación estrategia TI-Negocio (objetivos y prioridades compartidas)",
+          "questions": [
+            {
+              "question_id": "T8.P1.K2.PR1",
+              "question_text": "La estrategia tecnológica debe estar alineada con los objetivos del negocio para generar valor real. ¿Cómo se asegura la alineación entre la estrategia TI y las prioridades del negocio?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P1.K3",
+          "kpi_name": "Gestión de obsolescencia y ciclo de vida tecnológico (Lifecycle Management)",
+          "questions": [
+            {
+              "question_id": "T8.P1.K3.PR1",
+              "question_text": "Gestionar la obsolescencia tecnológica permite evitar riesgos operativos y deuda técnica. ¿Cómo se gestiona el ciclo de vida y la obsolescencia de los activos tecnológicos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P1.K4",
+          "kpi_name": "Gobierno de arquitectura y estándares (guardrails aplicados)",
+          "questions": [
+            {
+              "question_id": "T8.P1.K4.PR1",
+              "question_text": "Los estándares y principios de arquitectura ayudan a mantener coherencia tecnológica en la organización. ¿Cómo se gobiernan los estándares y principios de arquitectura?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T8.P2",
+      "pillar_name": "Gobernanza, Portfolio y Toma de Decisiones",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T8.P2.K1",
+          "kpi_name": "Gobernanza adaptativa del portfolio (priorización, repriorización y valor)",
+          "questions": [
+            {
+              "question_id": "T8.P2.K1.PR1",
+              "question_text": "Para entender la capacidad real de adaptación del portfolio a cambios del entorno:¿Cómo se revisan y reordenan las prioridades de inversión o ejecución cuando cambian las condiciones de negocio, riesgo o capacidad, sin esperar al siguiente ciclo formal?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P2.K2",
+          "kpi_name": "Framework de decisión, trazabilidad y accountability",
+          "questions": [
+            {
+              "question_id": "T8.P2.K2.PR1",
+              "question_text": "Para entender si la organización tiene una capacidad real y consistente de tomar decisiones:¿Cómo se deciden, documentan y revisan las prioridades de inversión o cambio en infraestructura, y con qué criterios explícitos se resuelven los conflictos entre iniciativas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P2.K3",
+          "kpi_name": "Gobierno de proveedores y contratos (SLAs, riesgos y performance)",
+          "questions": [
+            {
+              "question_id": "T8.P2.K3.PR1",
+              "question_text": "La gestión adecuada de proveedores es clave para garantizar calidad de servicio y control del riesgo. ¿Cómo se gobiernan los proveedores tecnológicos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P2.K4",
+          "kpi_name": "Gestión de demanda y capacidad (planificación vs saturación)",
+          "questions": [
+            {
+              "question_id": "T8.P2.K4.PR1",
+              "question_text": "La planificación de demanda y capacidad evita saturaciones y permite anticipar necesidades futuras. ¿Cómo se planifica la demanda y capacidad tecnológica?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T8.P3",
+      "pillar_name": "Gestión de Riesgo, Cumplimiento y Control",
+      "weight_pct": 21,
+      "kpis": [
+        {
+          "kpi_id": "T8.P3.K1",
+          "kpi_name": "Inventario y clasificación de riesgos tecnológicos (por servicio y criticidad)",
+          "questions": [
+            {
+              "question_id": "T8.P3.K1.PR1",
+              "question_text": "Identificar los riesgos tecnológicos permite priorizar acciones de mitigación. ¿Cómo se identifican y clasifican los riesgos tecnológicos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P3.K2",
+          "kpi_name": "Ejecución y eficacia de planes de mitigación (seguimiento y cierre)",
+          "questions": [
+            {
+              "question_id": "T8.P3.K2.PR1",
+              "question_text": "Los planes de mitigación permiten reducir el impacto de riesgos identificados. ¿Cómo se gestionan y ejecutan los planes de mitigación de riesgos tecnológicos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P3.K3",
+          "kpi_name": "Cumplimiento y evidencias (políticas, auditorías, controles)",
+          "questions": [
+            {
+              "question_id": "T8.P3.K3.PR1",
+              "question_text": "El cumplimiento normativo requiere evidencias y procesos estructurados. ¿Cómo se gestiona el cumplimiento normativo y las evidencias asociadas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P3.K4",
+          "kpi_name": "Gestión de dependencias críticas (terceros, single points of dependency)",
+          "questions": [
+            {
+              "question_id": "T8.P3.K4.PR1",
+              "question_text": "Las dependencias con terceros pueden generar riesgos si no se gestionan correctamente. ¿Cómo se gestionan las dependencias críticas y los proveedores externos?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T8.P4",
+      "pillar_name": "FinOps y Gestión Económica de Infraestructura",
+      "weight_pct": 19,
+      "kpis": [
+        {
+          "kpi_id": "T8.P4.K1",
+          "kpi_name": "Visibilidad del coste por servicio y TCO híbrido (lectura económica real)",
+          "questions": [
+            {
+              "question_id": "T8.P4.K1.PR1",
+              "question_text": "Para entender si el coste se conoce realmente o sigue siendo parcialmente opaco:¿Qué parte del coste real del servicio tenéis atribuida y qué parte sigue siendo opaca entre cloud, data center, red, operación externa, herramientas compartidas o cumplimiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P4.K2",
+          "kpi_name": "Eficiencia de consumo (rightsizing y eliminación de desperdicio)",
+          "questions": [
+            {
+              "question_id": "T8.P4.K2.PR1",
+              "question_text": "Optimizar el consumo de recursos evita sobredimensionamientos y reduce costes. ¿Cómo se optimiza el consumo y dimensionamiento de la infraestructura?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P4.K3",
+          "kpi_name": "Gestión de compromisos y descuentos (reservas/savings/contratos)",
+          "questions": [
+            {
+              "question_id": "T8.P4.K3.PR1",
+              "question_text": "Gestionar compromisos y descuentos permite reducir el coste total de la infraestructura. ¿Cómo se gestionan los compromisos financieros y acuerdos con proveedores?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P4.K4",
+          "kpi_name": "Planificación económica predespliegue (estimación, budgeting y forecasting)",
+          "questions": [
+            {
+              "question_id": "T8.P4.K4.PR1",
+              "question_text": "Para entender si el control económico se realiza antes y después del despliegue:¿Cómo se traducen los nuevos despliegues, cambios relevantes o cargas de AI en estimaciones económicas previas, presupuestos y control posterior de desviaciones?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P4.K5",
+          "kpi_name": "Operationalización de FinOps y accountability del consumo (acción sobre el coste)",
+          "questions": [
+            {
+              "question_id": "T8.P4.K5.PR1",
+              "question_text": "Para entender si el coste se gestiona activamente y con responsabilidad distribuida:¿Cómo se consigue que los responsables de servicios y plataformas actúen sobre el coste y no solo reciban reporting?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T8.P5",
+      "pillar_name": "Medición de Valor, KPIs Ejecutivos y Mejora Continua",
+      "weight_pct": 17,
+      "kpis": [
+        {
+          "kpi_id": "T8.P5.K1",
+          "kpi_name": "Cuadro de mando ejecutivo (KPIs de valor, coste, riesgo y rendimiento)",
+          "questions": [
+            {
+              "question_id": "T8.P5.K1.PR1",
+              "question_text": "Los cuadros de mando permiten a la dirección entender el estado real de la tecnología. ¿Cómo se gestionan los cuadros de mando ejecutivos de TI?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P5.K2",
+          "kpi_name": "Definición y seguimiento de OKRs/objetivos medibles",
+          "questions": [
+            {
+              "question_id": "T8.P5.K2.PR1",
+              "question_text": "Definir objetivos medibles permite evaluar el progreso de las iniciativas tecnológicas. ¿Cómo se definen y siguen los objetivos estratégicos de TI (OKRs o equivalentes)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P5.K3",
+          "kpi_name": "Medición de beneficios post-implementación (benefits realization)",
+          "questions": [
+            {
+              "question_id": "T8.P5.K3.PR1",
+              "question_text": "Medir el impacto real de las iniciativas permite evaluar si generan valor para la organización. ¿Cómo se mide el beneficio real de las iniciativas tecnológicas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T8.P5.K4",
+          "kpi_name": "Mejora continua estructurada (ciclo, backlog y ejecución)",
+          "questions": [
+            {
+              "question_id": "T8.P5.K4.PR1",
+              "question_text": "La mejora continua permite evolucionar la organización tecnológica de forma sostenida. ¿Cómo se estructura el proceso de mejora continua?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T8.P1.K1.PR1",
+      "pillar_id": "T8.P1",
+      "kpi_id": "T8.P1.K1",
+      "question_text": "Una estrategia tecnológica clara permite orientar las inversiones y priorizar las iniciativas de transformación. ¿Cómo describiría el nivel de definición y gobierno del roadmap tecnológico?"
+    },
+    {
+      "question_id": "T8.P1.K2.PR1",
+      "pillar_id": "T8.P1",
+      "kpi_id": "T8.P1.K2",
+      "question_text": "La estrategia tecnológica debe estar alineada con los objetivos del negocio para generar valor real. ¿Cómo se asegura la alineación entre la estrategia TI y las prioridades del negocio?"
+    },
+    {
+      "question_id": "T8.P1.K3.PR1",
+      "pillar_id": "T8.P1",
+      "kpi_id": "T8.P1.K3",
+      "question_text": "Gestionar la obsolescencia tecnológica permite evitar riesgos operativos y deuda técnica. ¿Cómo se gestiona el ciclo de vida y la obsolescencia de los activos tecnológicos?"
+    },
+    {
+      "question_id": "T8.P1.K4.PR1",
+      "pillar_id": "T8.P1",
+      "kpi_id": "T8.P1.K4",
+      "question_text": "Los estándares y principios de arquitectura ayudan a mantener coherencia tecnológica en la organización. ¿Cómo se gobiernan los estándares y principios de arquitectura?"
+    },
+    {
+      "question_id": "T8.P2.K1.PR1",
+      "pillar_id": "T8.P2",
+      "kpi_id": "T8.P2.K1",
+      "question_text": "Para entender la capacidad real de adaptación del portfolio a cambios del entorno:¿Cómo se revisan y reordenan las prioridades de inversión o ejecución cuando cambian las condiciones de negocio, riesgo o capacidad, sin esperar al siguiente ciclo formal?"
+    },
+    {
+      "question_id": "T8.P2.K2.PR1",
+      "pillar_id": "T8.P2",
+      "kpi_id": "T8.P2.K2",
+      "question_text": "Para entender si la organización tiene una capacidad real y consistente de tomar decisiones:¿Cómo se deciden, documentan y revisan las prioridades de inversión o cambio en infraestructura, y con qué criterios explícitos se resuelven los conflictos entre iniciativas?"
+    },
+    {
+      "question_id": "T8.P2.K3.PR1",
+      "pillar_id": "T8.P2",
+      "kpi_id": "T8.P2.K3",
+      "question_text": "La gestión adecuada de proveedores es clave para garantizar calidad de servicio y control del riesgo. ¿Cómo se gobiernan los proveedores tecnológicos?"
+    },
+    {
+      "question_id": "T8.P2.K4.PR1",
+      "pillar_id": "T8.P2",
+      "kpi_id": "T8.P2.K4",
+      "question_text": "La planificación de demanda y capacidad evita saturaciones y permite anticipar necesidades futuras. ¿Cómo se planifica la demanda y capacidad tecnológica?"
+    },
+    {
+      "question_id": "T8.P3.K1.PR1",
+      "pillar_id": "T8.P3",
+      "kpi_id": "T8.P3.K1",
+      "question_text": "Identificar los riesgos tecnológicos permite priorizar acciones de mitigación. ¿Cómo se identifican y clasifican los riesgos tecnológicos?"
+    },
+    {
+      "question_id": "T8.P3.K2.PR1",
+      "pillar_id": "T8.P3",
+      "kpi_id": "T8.P3.K2",
+      "question_text": "Los planes de mitigación permiten reducir el impacto de riesgos identificados. ¿Cómo se gestionan y ejecutan los planes de mitigación de riesgos tecnológicos?"
+    },
+    {
+      "question_id": "T8.P3.K3.PR1",
+      "pillar_id": "T8.P3",
+      "kpi_id": "T8.P3.K3",
+      "question_text": "El cumplimiento normativo requiere evidencias y procesos estructurados. ¿Cómo se gestiona el cumplimiento normativo y las evidencias asociadas?"
+    },
+    {
+      "question_id": "T8.P3.K4.PR1",
+      "pillar_id": "T8.P3",
+      "kpi_id": "T8.P3.K4",
+      "question_text": "Las dependencias con terceros pueden generar riesgos si no se gestionan correctamente. ¿Cómo se gestionan las dependencias críticas y los proveedores externos?"
+    },
+    {
+      "question_id": "T8.P4.K1.PR1",
+      "pillar_id": "T8.P4",
+      "kpi_id": "T8.P4.K1",
+      "question_text": "Para entender si el coste se conoce realmente o sigue siendo parcialmente opaco:¿Qué parte del coste real del servicio tenéis atribuida y qué parte sigue siendo opaca entre cloud, data center, red, operación externa, herramientas compartidas o cumplimiento?"
+    },
+    {
+      "question_id": "T8.P4.K2.PR1",
+      "pillar_id": "T8.P4",
+      "kpi_id": "T8.P4.K2",
+      "question_text": "Optimizar el consumo de recursos evita sobredimensionamientos y reduce costes. ¿Cómo se optimiza el consumo y dimensionamiento de la infraestructura?"
+    },
+    {
+      "question_id": "T8.P4.K3.PR1",
+      "pillar_id": "T8.P4",
+      "kpi_id": "T8.P4.K3",
+      "question_text": "Gestionar compromisos y descuentos permite reducir el coste total de la infraestructura. ¿Cómo se gestionan los compromisos financieros y acuerdos con proveedores?"
+    },
+    {
+      "question_id": "T8.P4.K4.PR1",
+      "pillar_id": "T8.P4",
+      "kpi_id": "T8.P4.K4",
+      "question_text": "Para entender si el control económico se realiza antes y después del despliegue:¿Cómo se traducen los nuevos despliegues, cambios relevantes o cargas de AI en estimaciones económicas previas, presupuestos y control posterior de desviaciones?"
+    },
+    {
+      "question_id": "T8.P4.K5.PR1",
+      "pillar_id": "T8.P4",
+      "kpi_id": "T8.P4.K5",
+      "question_text": "Para entender si el coste se gestiona activamente y con responsabilidad distribuida:¿Cómo se consigue que los responsables de servicios y plataformas actúen sobre el coste y no solo reciban reporting?"
+    },
+    {
+      "question_id": "T8.P5.K1.PR1",
+      "pillar_id": "T8.P5",
+      "kpi_id": "T8.P5.K1",
+      "question_text": "Los cuadros de mando permiten a la dirección entender el estado real de la tecnología. ¿Cómo se gestionan los cuadros de mando ejecutivos de TI?"
+    },
+    {
+      "question_id": "T8.P5.K2.PR1",
+      "pillar_id": "T8.P5",
+      "kpi_id": "T8.P5.K2",
+      "question_text": "Definir objetivos medibles permite evaluar el progreso de las iniciativas tecnológicas. ¿Cómo se definen y siguen los objetivos estratégicos de TI (OKRs o equivalentes)?"
+    },
+    {
+      "question_id": "T8.P5.K3.PR1",
+      "pillar_id": "T8.P5",
+      "kpi_id": "T8.P5.K3",
+      "question_text": "Medir el impacto real de las iniciativas permite evaluar si generan valor para la organización. ¿Cómo se mide el beneficio real de las iniciativas tecnológicas?"
+    },
+    {
+      "question_id": "T8.P5.K4.PR1",
+      "pillar_id": "T8.P5",
+      "kpi_id": "T8.P5.K4",
+      "question_text": "La mejora continua permite evolucionar la organización tecnológica de forma sostenida. ¿Cómo se estructura el proceso de mejora continua?"
+    }
+  ]
+}

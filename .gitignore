@@ -1,0 +1,67 @@
+# Entornos Virtuales y Dependencias
+.venv/
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Archivos de la IDE y Herramientas
+.vscode/
+.idea/
+.codex/
+.cursorrules
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Entorno y Secretos
+.env
+.env.local
+*.pem
+credentials.json
+google_accounts.json
+service_account.json
+
+# Salidas de Ejecución y Logs
+*.log
+execution_*.log
+run_t*.log
+help.log
+
+# Carpeta de Trabajo y Artefactos Temporales de la IA
+working/
+ficheros/
+source_docs/
+examplefiles/
+
+# Backups y Archivos Antiguos
+_archive_*/
+*backup*/
+*.tar.gz
+*.zip
+*.bak
+*.swp
+
+# Archivos Específicos del Proyecto que no van al repo
+commercial_report_payload.json
+global_report_payload.json

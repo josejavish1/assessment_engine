@@ -1,0 +1,15 @@
+{
+  "policy_id": "standard_target_maturity_policy",
+  "defaults": {
+    "tower_annex_profile": {
+      "default_recommended_level": "Nivel 4 - Optimizado",
+      "default_score_reference": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
+    }
+  },
+  "rules": {
+    "allow_manual_override": true,
+    "override_requires_justification": true,
+    "target_state_must_be_credible": true,
+    "target_state_must_not_be_utopian": true
+  }
+}

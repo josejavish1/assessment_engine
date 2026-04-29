@@ -1,0 +1,416 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T3",
+  "tower_name": "Network & Connectivity",
+  "purpose": "La torre Network & Connectivity cubre todos los componentes, prácticas y capacidades necesarias para ofrecer conectividad end-to-end, desde el usuario hasta las cargas y servicios, incluyendo el backbone de CPD, la conectividad entre sedes y la conexión con cloud y servicios externos.",
+  "scope_summary": [
+    "LAN de CPD y campus",
+    "WAN / SD-WAN y conectividad de sedes",
+    "DCI (Data Center Interconnect)",
+    "Conectividad híbrida con cloud",
+    "Servicios de red de capa 4/7",
+    "Servicios de red transversales",
+    "Operación y gobierno de red",
+    "Exclusiones habituales (para evitar solapes con otras torres)",
+    "En definitiva, esta torre mide si el cliente tiene una conectividad"
+  ],
+  "related_towers": [],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T3.P1",
+      "pillar_name": "Data Center & Campus Network Foundation (LAN / Core Routing & Switching)",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T3.P1.K1",
+          "kpi_name": "Resiliencia del Core y eliminación de SPOF (diseño y mantenibilidad)",
+          "questions": [
+            {
+              "question_id": "T3.P1.K1.PR1",
+              "question_text": "La disponibilidad de la red interna depende de la redundancia del core y de la eliminación de puntos únicos de fallo. ¿Cuál es el nivel real de resiliencia del core de red en el CPD o campus?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P1.K2",
+          "kpi_name": "Madurez de segmentación interna (VLAN/VRF/zonas) y control de propagación",
+          "questions": [
+            {
+              "question_id": "T3.P1.K2.PR1",
+              "question_text": "La segmentación de red reduce la propagación de incidentes y mejora la seguridad. ¿Cómo está definida y gobernada la segmentación interna de la red?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P1.K3",
+          "kpi_name": "Estandarización de arquitectura y configuración (plantillas, coherencia, control de drift)",
+          "questions": [
+            {
+              "question_id": "T3.P1.K3.PR1",
+              "question_text": "La estandarización de configuraciones facilita la operación y reduce errores. ¿Qué nivel de estandarización y control de configuración tiene la red LAN o core?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P1.K4",
+          "kpi_name": "Gestión de capacidad y performance LAN (utilización, oversubscription y latencia interna)",
+          "questions": [
+            {
+              "question_id": "T3.P1.K4.PR1",
+              "question_text": "La planificación de capacidad permite evitar saturaciones en la red interna. ¿Cómo se gestiona la capacidad y el rendimiento de la red interna?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T3.P2",
+      "pillar_name": "WAN / SD-WAN & Branch Connectivity",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T3.P2.K1",
+          "kpi_name": "Resiliencia de conectividad en sedes (redundancia, diversidad y failover)",
+          "questions": [
+            {
+              "question_id": "T3.P2.K1.PR1",
+              "question_text": "La continuidad del negocio depende de la resiliencia de la conectividad de las sedes. ¿Qué nivel de resiliencia tienen las sedes en su conectividad WAN?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P2.K2",
+          "kpi_name": "Gestión de rendimiento WAN (latencia/pérdida/jitter) con visibilidad por aplicación",
+          "questions": [
+            {
+              "question_id": "T3.P2.K2.PR1",
+              "question_text": "El rendimiento WAN afecta directamente a aplicaciones críticas y experiencia de usuario. ¿Cómo se monitoriza y gestiona el rendimiento WAN (latencia, pérdida o jitter)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P2.K3",
+          "kpi_name": "Políticas de tráfico y QoS (priorización de servicios críticos)",
+          "questions": [
+            {
+              "question_id": "T3.P2.K3.PR1",
+              "question_text": "Las políticas de tráfico permiten priorizar aplicaciones críticas en la red. ¿Qué nivel de madurez tienen las políticas de QoS y gestión de tráfico?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P2.K4",
+          "kpi_name": "Gobierno de proveedor y cumplimiento de SLAs (disponibilidad y tiempos de resolución)",
+          "questions": [
+            {
+              "question_id": "T3.P2.K4.PR1",
+              "question_text": "La gestión de proveedores WAN es clave para asegurar el cumplimiento de niveles de servicio. ¿Cómo se gobiernan los proveedores WAN y el cumplimiento de los SLAs?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T3.P3",
+      "pillar_name": "DCI (Data Center Interconnect) & Resilient Transport",
+      "weight_pct": 21,
+      "kpis": [
+        {
+          "kpi_id": "T3.P3.K1",
+          "kpi_name": "Diversidad y redundancia real del DCI (rutas, proveedores, canalización)",
+          "questions": [
+            {
+              "question_id": "T3.P3.K1.PR1",
+              "question_text": "La interconexión entre CPDs es crítica para continuidad y replicación de datos. ¿Cuál es el nivel de diversidad y redundancia de la conectividad entre centros de datos (DCI)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P3.K2",
+          "kpi_name": "Gestión de latencia y rendimiento del DCI (requisitos y monitorización)",
+          "questions": [
+            {
+              "question_id": "T3.P3.K2.PR1",
+              "question_text": "El rendimiento del transporte entre CPDs impacta en replicación y aplicaciones distribuidas. ¿Cómo se monitoriza la latencia y el rendimiento del DCI?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P3.K3",
+          "kpi_name": "Pruebas de conmutación y resiliencia del transporte (evidencia operativa)",
+          "questions": [
+            {
+              "question_id": "T3.P3.K3.PR1",
+              "question_text": "Las pruebas de resiliencia permiten validar que la red se recuperará correctamente ante fallos. ¿Cómo se prueban los escenarios de conmutación entre CPDs?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T3.P4",
+      "pillar_name": "Hybrid Cloud Connectivity & Edge Services",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T3.P4.K1",
+          "kpi_name": "Patrones de conectividad híbrida (rutas, segmentación, separación de entornos)",
+          "questions": [
+            {
+              "question_id": "T3.P4.K1.PR1",
+              "question_text": "La conectividad híbrida debe diseñarse de forma consistente para evitar configuraciones ad-hoc. ¿Cómo están definidos los patrones de conectividad entre los CPDs y la nube?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P4.K2",
+          "kpi_name": "Resiliencia de conectividad cloud (redundancia, fallback y pruebas)",
+          "questions": [
+            {
+              "question_id": "T3.P4.K2.PR1",
+              "question_text": "La disponibilidad de servicios cloud depende de la resiliencia de la conectividad hacia la nube. ¿Qué nivel de resiliencia tiene la conectividad hacia cloud?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P4.K3",
+          "kpi_name": "Publicación de servicios (edge L4/L7) operable y estandarizada",
+          "questions": [
+            {
+              "question_id": "T3.P4.K3.PR1",
+              "question_text": "La publicación de servicios debe ser consistente para evitar errores y problemas de seguridad. ¿Cómo se gestionan los servicios de edge y publicación de aplicaciones (L4/L7)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T3.P5",
+      "pillar_name": "Network Operations, Observability & Automation (NetOps/NetDevOps)",
+      "weight_pct": 19,
+      "kpis": [
+        {
+          "kpi_id": "T3.P5.K1",
+          "kpi_name": "Cobertura de observabilidad de red (telemetría + flows + alertas)",
+          "questions": [
+            {
+              "question_id": "T3.P5.K1.PR1",
+              "question_text": "La visibilidad de la red es clave para detectar problemas antes de que afecten al servicio. ¿Qué nivel de observabilidad existe sobre la red?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P5.K2",
+          "kpi_name": "Gestión de cambios y configuración (trazabilidad + rollback)",
+          "questions": [
+            {
+              "question_id": "T3.P5.K2.PR1",
+              "question_text": "La gestión controlada de cambios reduce el riesgo de interrupciones en la red. ¿Cómo se gestionan los cambios de configuración en la red?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P5.K3",
+          "kpi_name": "Automatización de red basada en source of truth y modelos reproducibles (fiabilidad operativa)",
+          "questions": [
+            {
+              "question_id": "T3.P5.K3.PR1",
+              "question_text": "Para entender si la automatización es fiable y no depende de conocimiento tácito:¿La automatización de red se apoya realmente en inventario, topología y observabilidad suficientes, o sigue descansando sobre scripts puntuales y conocimiento experto?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T3.P5.K4",
+          "kpi_name": "Gestión de incidentes y mejora continua (runbooks, postmortems, MTTR)",
+          "questions": [
+            {
+              "question_id": "T3.P5.K4.PR1",
+              "question_text": "La gestión de incidentes permite mejorar la estabilidad de la red a largo plazo. ¿Cómo se gestionan los incidentes de red y la mejora continua?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T3.P1.K1.PR1",
+      "pillar_id": "T3.P1",
+      "kpi_id": "T3.P1.K1",
+      "question_text": "La disponibilidad de la red interna depende de la redundancia del core y de la eliminación de puntos únicos de fallo. ¿Cuál es el nivel real de resiliencia del core de red en el CPD o campus?"
+    },
+    {
+      "question_id": "T3.P1.K2.PR1",
+      "pillar_id": "T3.P1",
+      "kpi_id": "T3.P1.K2",
+      "question_text": "La segmentación de red reduce la propagación de incidentes y mejora la seguridad. ¿Cómo está definida y gobernada la segmentación interna de la red?"
+    },
+    {
+      "question_id": "T3.P1.K3.PR1",
+      "pillar_id": "T3.P1",
+      "kpi_id": "T3.P1.K3",
+      "question_text": "La estandarización de configuraciones facilita la operación y reduce errores. ¿Qué nivel de estandarización y control de configuración tiene la red LAN o core?"
+    },
+    {
+      "question_id": "T3.P1.K4.PR1",
+      "pillar_id": "T3.P1",
+      "kpi_id": "T3.P1.K4",
+      "question_text": "La planificación de capacidad permite evitar saturaciones en la red interna. ¿Cómo se gestiona la capacidad y el rendimiento de la red interna?"
+    },
+    {
+      "question_id": "T3.P2.K1.PR1",
+      "pillar_id": "T3.P2",
+      "kpi_id": "T3.P2.K1",
+      "question_text": "La continuidad del negocio depende de la resiliencia de la conectividad de las sedes. ¿Qué nivel de resiliencia tienen las sedes en su conectividad WAN?"
+    },
+    {
+      "question_id": "T3.P2.K2.PR1",
+      "pillar_id": "T3.P2",
+      "kpi_id": "T3.P2.K2",
+      "question_text": "El rendimiento WAN afecta directamente a aplicaciones críticas y experiencia de usuario. ¿Cómo se monitoriza y gestiona el rendimiento WAN (latencia, pérdida o jitter)?"
+    },
+    {
+      "question_id": "T3.P2.K3.PR1",
+      "pillar_id": "T3.P2",
+      "kpi_id": "T3.P2.K3",
+      "question_text": "Las políticas de tráfico permiten priorizar aplicaciones críticas en la red. ¿Qué nivel de madurez tienen las políticas de QoS y gestión de tráfico?"
+    },
+    {
+      "question_id": "T3.P2.K4.PR1",
+      "pillar_id": "T3.P2",
+      "kpi_id": "T3.P2.K4",
+      "question_text": "La gestión de proveedores WAN es clave para asegurar el cumplimiento de niveles de servicio. ¿Cómo se gobiernan los proveedores WAN y el cumplimiento de los SLAs?"
+    },
+    {
+      "question_id": "T3.P3.K1.PR1",
+      "pillar_id": "T3.P3",
+      "kpi_id": "T3.P3.K1",
+      "question_text": "La interconexión entre CPDs es crítica para continuidad y replicación de datos. ¿Cuál es el nivel de diversidad y redundancia de la conectividad entre centros de datos (DCI)?"
+    },
+    {
+      "question_id": "T3.P3.K2.PR1",
+      "pillar_id": "T3.P3",
+      "kpi_id": "T3.P3.K2",
+      "question_text": "El rendimiento del transporte entre CPDs impacta en replicación y aplicaciones distribuidas. ¿Cómo se monitoriza la latencia y el rendimiento del DCI?"
+    },
+    {
+      "question_id": "T3.P3.K3.PR1",
+      "pillar_id": "T3.P3",
+      "kpi_id": "T3.P3.K3",
+      "question_text": "Las pruebas de resiliencia permiten validar que la red se recuperará correctamente ante fallos. ¿Cómo se prueban los escenarios de conmutación entre CPDs?"
+    },
+    {
+      "question_id": "T3.P4.K1.PR1",
+      "pillar_id": "T3.P4",
+      "kpi_id": "T3.P4.K1",
+      "question_text": "La conectividad híbrida debe diseñarse de forma consistente para evitar configuraciones ad-hoc. ¿Cómo están definidos los patrones de conectividad entre los CPDs y la nube?"
+    },
+    {
+      "question_id": "T3.P4.K2.PR1",
+      "pillar_id": "T3.P4",
+      "kpi_id": "T3.P4.K2",
+      "question_text": "La disponibilidad de servicios cloud depende de la resiliencia de la conectividad hacia la nube. ¿Qué nivel de resiliencia tiene la conectividad hacia cloud?"
+    },
+    {
+      "question_id": "T3.P4.K3.PR1",
+      "pillar_id": "T3.P4",
+      "kpi_id": "T3.P4.K3",
+      "question_text": "La publicación de servicios debe ser consistente para evitar errores y problemas de seguridad. ¿Cómo se gestionan los servicios de edge y publicación de aplicaciones (L4/L7)?"
+    },
+    {
+      "question_id": "T3.P5.K1.PR1",
+      "pillar_id": "T3.P5",
+      "kpi_id": "T3.P5.K1",
+      "question_text": "La visibilidad de la red es clave para detectar problemas antes de que afecten al servicio. ¿Qué nivel de observabilidad existe sobre la red?"
+    },
+    {
+      "question_id": "T3.P5.K2.PR1",
+      "pillar_id": "T3.P5",
+      "kpi_id": "T3.P5.K2",
+      "question_text": "La gestión controlada de cambios reduce el riesgo de interrupciones en la red. ¿Cómo se gestionan los cambios de configuración en la red?"
+    },
+    {
+      "question_id": "T3.P5.K3.PR1",
+      "pillar_id": "T3.P5",
+      "kpi_id": "T3.P5.K3",
+      "question_text": "Para entender si la automatización es fiable y no depende de conocimiento tácito:¿La automatización de red se apoya realmente en inventario, topología y observabilidad suficientes, o sigue descansando sobre scripts puntuales y conocimiento experto?"
+    },
+    {
+      "question_id": "T3.P5.K4.PR1",
+      "pillar_id": "T3.P5",
+      "kpi_id": "T3.P5.K4",
+      "question_text": "La gestión de incidentes permite mejorar la estabilidad de la red a largo plazo. ¿Cómo se gestionan los incidentes de red y la mejora continua?"
+    }
+  ]
+}

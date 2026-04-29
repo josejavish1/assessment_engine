@@ -1,0 +1,392 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T1",
+  "tower_name": "Physical Data Center & Facilities",
+  "purpose": "La torre Physical Data Center & Facilities cubre todos los elementos físicos que hacen posible que los servicios de TI existan y se mantengan operativos: edificio/sala técnica, alimentación eléctrica, climatización, condiciones ambientales, Seguridad Física y Control de Accesos, protección contra incendios, accesos, monitorización y procedimientos operativos del CPD (o salas técnicas equivalentes).",
+  "scope_summary": [
+    "Sitio y sala",
+    "Energía",
+    "Clima y ambiente",
+    "Seguridad Física y Control de Accesos",
+    "Protección",
+    "Operación de Facilities"
+  ],
+  "related_towers": [
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8"
+  ],
+  "boundary_notes": [
+    "La continuidad lógica del servicio y los mecanismos de DR o cyber recovery (Torre 5).",
+    "La seguridad lógica e identidad de infraestructura (Torre 6), las plataformas de compute, red y almacenamiento (Torres 2, 3 y 4), ni la operación ITSM y el gobierno del servicio (Torres 7 y 8)."
+  ],
+  "pillars": [
+    {
+      "pillar_id": "T1.P1",
+      "pillar_name": "Energía y Continuidad Eléctrica",
+      "weight_pct": 24,
+      "kpis": [
+        {
+          "kpi_id": "T1.P1.K1",
+          "kpi_name": "Autonomía eléctrica garantizada (UPS + Generador)",
+          "questions": [
+            {
+              "question_id": "T1.P1.K1.PR1",
+              "question_text": "La autonomía eléctrica determina cuánto tiempo puede seguir funcionando el CPD si se pierde el suministro externo. ¿Cuál es el nivel de autonomía eléctrica real del CPD ante un corte de energía?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P1.K2",
+          "kpi_name": "Éxito de pruebas de conmutación y fallos controlados (UPS/ATS/Gen)",
+          "questions": [
+            {
+              "question_id": "T1.P1.K2.PR1",
+              "question_text": "Los sistemas eléctricos críticos deben probarse periódicamente para garantizar que funcionan correctamente durante una contingencia. ¿Cómo se realizan las pruebas de conmutación eléctrica (UPS, ATS, generadores)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P1.K3",
+          "kpi_name": "Redundancia y eliminación de SPOF en la cadena eléctrica",
+          "questions": [
+            {
+              "question_id": "T1.P1.K3.PR1",
+              "question_text": "La resiliencia eléctrica depende de eliminar puntos únicos de fallo que puedan provocar la caída del CPD. ¿Cómo se identifican y gestionan los puntos únicos de fallo eléctricos (SPOF)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P1.K4",
+          "kpi_name": "Utilización de capacidad eléctrica (potencia instalada vs potencia usada)",
+          "questions": [
+            {
+              "question_id": "T1.P1.K4.PR1",
+              "question_text": "Conocer el consumo eléctrico y la capacidad disponible es clave para evitar saturaciones y planificar crecimiento. ¿Cómo se controla la utilización de la capacidad eléctrica instalada en el CPD?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T1.P2",
+      "pillar_name": "Climatización, Refrigeración y Control Ambiental",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T1.P2.K1",
+          "kpi_name": "Cumplimiento de rangos ambientales (temperatura/humedad) con evidencia",
+          "questions": [
+            {
+              "question_id": "T1.P2.K1.PR1",
+              "question_text": "La estabilidad térmica es fundamental para garantizar la fiabilidad del equipamiento IT. ¿Cómo se controla el cumplimiento de los rangos de temperatura y humedad en el CPD?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P2.K2",
+          "kpi_name": "Resiliencia del sistema de climatización (redundancia y tolerancia a fallos)",
+          "questions": [
+            {
+              "question_id": "T1.P2.K2.PR1",
+              "question_text": "La redundancia en climatización evita que un fallo térmico provoque la parada de los sistemas IT. ¿Qué nivel de redundancia existe en los sistemas de climatización del CPD?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P2.K3",
+          "kpi_name": "Gestión de hotspots y densidad (capacidad por rack / zona)",
+          "questions": [
+            {
+              "question_id": "T1.P2.K3.PR1",
+              "question_text": "Las altas densidades de computación pueden generar puntos calientes que afectan al rendimiento y la estabilidad. ¿Cómo se gestionan la densidad térmica y los hotspots en los racks?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T1.P3",
+      "pillar_name": "Seguridad Física y Control de Accesos",
+      "weight_pct": 16,
+      "kpis": [
+        {
+          "kpi_id": "T1.P3.K1",
+          "kpi_name": "Control de accesos por zonas y principio de mínimo privilegio físico",
+          "questions": [
+            {
+              "question_id": "T1.P3.K1.PR1",
+              "question_text": "La protección física del CPD requiere limitar el acceso únicamente al personal autorizado. ¿Cómo está estructurado el control de accesos físicos por zonas dentro del CPD?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P3.K2",
+          "kpi_name": "Trazabilidad y auditoría de accesos (logs, retención, revisiones)",
+          "questions": [
+            {
+              "question_id": "T1.P3.K2.PR1",
+              "question_text": "La trazabilidad de accesos permite identificar quién ha accedido al CPD y cuándo. ¿Cómo se registran y revisan los accesos físicos a las instalaciones?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P3.K3",
+          "kpi_name": "Gestión de visitantes/proveedores y trabajos en sala (permits to work)",
+          "questions": [
+            {
+              "question_id": "T1.P3.K3.PR1",
+              "question_text": "Las intervenciones de terceros en el CPD deben controlarse para evitar riesgos operativos o de seguridad. ¿Cómo se gestionan los trabajos de proveedores o terceros en la sala técnica?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T1.P4",
+      "pillar_name": "Protección Contra Incendios y Seguridad Ambiental",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T1.P4.K1",
+          "kpi_name": "Detección temprana y cobertura (humo/temperatura) por zonas críticas",
+          "questions": [
+            {
+              "question_id": "T1.P4.K1.PR1",
+              "question_text": "La detección temprana de incendios es clave para minimizar daños en los sistemas IT. ¿Cómo se gestiona la detección de incendios en el CPD?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P4.K2",
+          "kpi_name": "Sistema de supresión/extinción adecuado y mantenido (incluye seguridad de personas)",
+          "questions": [
+            {
+              "question_id": "T1.P4.K2.PR1",
+              "question_text": "Los sistemas de extinción deben ser adecuados para entornos IT y mantenerse correctamente. ¿Qué nivel de adecuación y mantenimiento tiene el sistema de supresión de incendios?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P4.K3",
+          "kpi_name": "Gestión de riesgos ambientales asociados (fugas de agua, condensación, alarmas críticas)",
+          "questions": [
+            {
+              "question_id": "T1.P4.K3.PR1",
+              "question_text": "Factores como fugas de agua o condensación pueden afectar gravemente a la infraestructura. ¿Cómo se monitorizan y gestionan los riesgos ambientales en el CPD?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T1.P5",
+      "pillar_name": "Operación de Facilities, Monitorización y Mantenimiento",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T1.P5.K1",
+          "kpi_name": "Cobertura de monitorización y gestión de alarmas (BMS/DCIM o equivalente)",
+          "questions": [
+            {
+              "question_id": "T1.P5.K1.PR1",
+              "question_text": "La visibilidad operativa permite detectar incidencias antes de que afecten al servicio. ¿Qué nivel de monitorización existe sobre las infraestructuras de facilities?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P5.K2",
+          "kpi_name": "Cumplimiento del plan de mantenimiento preventivo (incluye evidencias)",
+          "questions": [
+            {
+              "question_id": "T1.P5.K2.PR1",
+              "question_text": "El mantenimiento preventivo es esencial para evitar fallos en infraestructuras críticas. ¿Cómo se gestiona el cumplimiento del plan de mantenimiento preventivo?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T1.P5.K3",
+          "kpi_name": "Pruebas operativas periódicas (incluye “game days” de facilities)",
+          "questions": [
+            {
+              "question_id": "T1.P5.K3.PR1",
+              "question_text": "Las pruebas operativas permiten verificar que las infraestructuras funcionarán correctamente en situaciones reales. ¿Cómo se realizan las pruebas operativas periódicas de las infraestructuras de facilities?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T1.P1.K1.PR1",
+      "pillar_id": "T1.P1",
+      "kpi_id": "T1.P1.K1",
+      "question_text": "La autonomía eléctrica determina cuánto tiempo puede seguir funcionando el CPD si se pierde el suministro externo. ¿Cuál es el nivel de autonomía eléctrica real del CPD ante un corte de energía?"
+    },
+    {
+      "question_id": "T1.P1.K2.PR1",
+      "pillar_id": "T1.P1",
+      "kpi_id": "T1.P1.K2",
+      "question_text": "Los sistemas eléctricos críticos deben probarse periódicamente para garantizar que funcionan correctamente durante una contingencia. ¿Cómo se realizan las pruebas de conmutación eléctrica (UPS, ATS, generadores)?"
+    },
+    {
+      "question_id": "T1.P1.K3.PR1",
+      "pillar_id": "T1.P1",
+      "kpi_id": "T1.P1.K3",
+      "question_text": "La resiliencia eléctrica depende de eliminar puntos únicos de fallo que puedan provocar la caída del CPD. ¿Cómo se identifican y gestionan los puntos únicos de fallo eléctricos (SPOF)?"
+    },
+    {
+      "question_id": "T1.P1.K4.PR1",
+      "pillar_id": "T1.P1",
+      "kpi_id": "T1.P1.K4",
+      "question_text": "Conocer el consumo eléctrico y la capacidad disponible es clave para evitar saturaciones y planificar crecimiento. ¿Cómo se controla la utilización de la capacidad eléctrica instalada en el CPD?"
+    },
+    {
+      "question_id": "T1.P2.K1.PR1",
+      "pillar_id": "T1.P2",
+      "kpi_id": "T1.P2.K1",
+      "question_text": "La estabilidad térmica es fundamental para garantizar la fiabilidad del equipamiento IT. ¿Cómo se controla el cumplimiento de los rangos de temperatura y humedad en el CPD?"
+    },
+    {
+      "question_id": "T1.P2.K2.PR1",
+      "pillar_id": "T1.P2",
+      "kpi_id": "T1.P2.K2",
+      "question_text": "La redundancia en climatización evita que un fallo térmico provoque la parada de los sistemas IT. ¿Qué nivel de redundancia existe en los sistemas de climatización del CPD?"
+    },
+    {
+      "question_id": "T1.P2.K3.PR1",
+      "pillar_id": "T1.P2",
+      "kpi_id": "T1.P2.K3",
+      "question_text": "Las altas densidades de computación pueden generar puntos calientes que afectan al rendimiento y la estabilidad. ¿Cómo se gestionan la densidad térmica y los hotspots en los racks?"
+    },
+    {
+      "question_id": "T1.P3.K1.PR1",
+      "pillar_id": "T1.P3",
+      "kpi_id": "T1.P3.K1",
+      "question_text": "La protección física del CPD requiere limitar el acceso únicamente al personal autorizado. ¿Cómo está estructurado el control de accesos físicos por zonas dentro del CPD?"
+    },
+    {
+      "question_id": "T1.P3.K2.PR1",
+      "pillar_id": "T1.P3",
+      "kpi_id": "T1.P3.K2",
+      "question_text": "La trazabilidad de accesos permite identificar quién ha accedido al CPD y cuándo. ¿Cómo se registran y revisan los accesos físicos a las instalaciones?"
+    },
+    {
+      "question_id": "T1.P3.K3.PR1",
+      "pillar_id": "T1.P3",
+      "kpi_id": "T1.P3.K3",
+      "question_text": "Las intervenciones de terceros en el CPD deben controlarse para evitar riesgos operativos o de seguridad. ¿Cómo se gestionan los trabajos de proveedores o terceros en la sala técnica?"
+    },
+    {
+      "question_id": "T1.P4.K1.PR1",
+      "pillar_id": "T1.P4",
+      "kpi_id": "T1.P4.K1",
+      "question_text": "La detección temprana de incendios es clave para minimizar daños en los sistemas IT. ¿Cómo se gestiona la detección de incendios en el CPD?"
+    },
+    {
+      "question_id": "T1.P4.K2.PR1",
+      "pillar_id": "T1.P4",
+      "kpi_id": "T1.P4.K2",
+      "question_text": "Los sistemas de extinción deben ser adecuados para entornos IT y mantenerse correctamente. ¿Qué nivel de adecuación y mantenimiento tiene el sistema de supresión de incendios?"
+    },
+    {
+      "question_id": "T1.P4.K3.PR1",
+      "pillar_id": "T1.P4",
+      "kpi_id": "T1.P4.K3",
+      "question_text": "Factores como fugas de agua o condensación pueden afectar gravemente a la infraestructura. ¿Cómo se monitorizan y gestionan los riesgos ambientales en el CPD?"
+    },
+    {
+      "question_id": "T1.P5.K1.PR1",
+      "pillar_id": "T1.P5",
+      "kpi_id": "T1.P5.K1",
+      "question_text": "La visibilidad operativa permite detectar incidencias antes de que afecten al servicio. ¿Qué nivel de monitorización existe sobre las infraestructuras de facilities?"
+    },
+    {
+      "question_id": "T1.P5.K2.PR1",
+      "pillar_id": "T1.P5",
+      "kpi_id": "T1.P5.K2",
+      "question_text": "El mantenimiento preventivo es esencial para evitar fallos en infraestructuras críticas. ¿Cómo se gestiona el cumplimiento del plan de mantenimiento preventivo?"
+    },
+    {
+      "question_id": "T1.P5.K3.PR1",
+      "pillar_id": "T1.P5",
+      "kpi_id": "T1.P5.K3",
+      "question_text": "Las pruebas operativas permiten verificar que las infraestructuras funcionarán correctamente en situaciones reales. ¿Cómo se realizan las pruebas operativas periódicas de las infraestructuras de facilities?"
+    }
+  ]
+}

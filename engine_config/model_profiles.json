@@ -1,0 +1,39 @@
+{
+  "profiles": {
+    "writer_fast": {
+      "model": "gemini-2.5-pro",
+      "temperature": 0.2,
+      "top_p": 0.9,
+      "seed": 17,
+      "max_output_tokens": 8192
+    },
+    "review_strict": {
+      "model": "gemini-2.5-pro",
+      "temperature": 0.1,
+      "top_p": 0.85,
+      "seed": 17,
+      "max_output_tokens": 8192
+    },
+    "global_reviewer_strict": {
+      "model": "gemini-2.5-pro",
+      "temperature": 0.1,
+      "top_p": 0.85,
+      "seed": 17,
+      "max_output_tokens": 8192
+    },
+    "global_refiner_strict": {
+      "model": "gemini-2.5-pro",
+      "temperature": 0.2,
+      "top_p": 0.9,
+      "seed": 17,
+      "max_output_tokens": 8192
+    },
+    "experimental_writer": {
+      "model": "gemini-2.5-pro",
+      "temperature": 0.25,
+      "top_p": 0.9,
+      "seed": 17,
+      "max_output_tokens": 8192
+    }
+  }
+}

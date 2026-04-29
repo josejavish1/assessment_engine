@@ -1,0 +1,71 @@
+{
+  "document_profile_id": "tower_annex_profile",
+  "artifact_type": "tower_annex",
+  "required_sections": [
+    "asis",
+    "risks",
+    "tobe",
+    "gap",
+    "todo",
+    "conclusion"
+  ],
+  "summary_fields": [
+    "score_display",
+    "maturity_band",
+    "target_maturity"
+  ],
+  "forbidden_phrases_by_section": {
+    "asis": [
+      "TO-BE",
+      "estado objetivo",
+      "capacidades objetivo",
+      "roadmap",
+      "plan de evolución",
+      "quick wins"
+    ],
+    "risks": [
+      "roadmap",
+      "quick wins",
+      "estado objetivo",
+      "capacidades objetivo por pilar"
+    ],
+    "tobe": [
+      "quick wins",
+      "roadmap",
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "plan de evolución"
+    ],
+    "gap": [
+      "quick wins",
+      "roadmap",
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "plan de evolución"
+    ],
+    "todo": [
+      "2027",
+      "2028",
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "roadmap detallado"
+    ],
+    "conclusion": [
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "roadmap detallado",
+      "quick wins"
+    ]
+  },
+  "canonical_pillar_labels": {
+    "T5.P1": "Estrategia BC/DR",
+    "T5.P2": "Backup & Restore",
+    "T5.P3": "Disaster Recovery",
+    "T5.P4": "Cyber Recovery",
+    "T5.P5": "Alta Disponibilidad"
+  }
+}

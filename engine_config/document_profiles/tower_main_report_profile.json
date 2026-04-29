@@ -1,0 +1,148 @@
+{
+  "document_profile_id": "tower_main_report_profile",
+  "artifact_type": "tower_main_report",
+  "artifact_version": "1.0",
+  "visual_base_template": "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx",
+  "visual_style_policy": {
+    "preserve_short_style": true,
+    "same_heading_hierarchy": true,
+    "same_table_language": true,
+    "same_note_box_language": true,
+    "same_radar_chart_treatment": true
+  },
+  "required_top_level_blocks": [
+    "document_meta",
+    "executive_summary",
+    "pillar_score_profile",
+    "dimension_analysis",
+    "sections",
+    "annexes"
+  ],
+  "required_sections": [
+    "document_purpose",
+    "scope",
+    "tower_context",
+    "methodology",
+    "current_state_overview",
+    "consolidated_diagnosis",
+    "target_state",
+    "gap_analysis",
+    "risk_analysis",
+    "action_lines",
+    "project_portfolio",
+    "prioritization",
+    "roadmap",
+    "final_recommendations",
+    "conclusion"
+  ],
+  "render_blueprint": [
+    {
+      "block_id": "executive_summary",
+      "title": "Resumen tecnico ejecutivo",
+      "source": "executive_summary"
+    },
+    {
+      "block_id": "document_purpose",
+      "title": "Objeto del documento",
+      "source": "sections.document_purpose"
+    },
+    {
+      "block_id": "scope",
+      "title": "Alcance y limites del analisis",
+      "source": "sections.scope"
+    },
+    {
+      "block_id": "tower_context",
+      "title": "Contexto de la torre",
+      "source": "sections.tower_context"
+    },
+    {
+      "block_id": "methodology",
+      "title": "Metodologia de evaluacion",
+      "source": "sections.methodology"
+    },
+    {
+      "block_id": "current_state_overview",
+      "title": "Vision global del estado de la torre",
+      "source": "sections.current_state_overview"
+    },
+    {
+      "block_id": "pillar_score_profile",
+      "title": "Grafico radial de evaluacion",
+      "source": "pillar_score_profile"
+    },
+    {
+      "block_id": "dimension_analysis",
+      "title": "Analisis detallado por dimension",
+      "source": "dimension_analysis"
+    },
+    {
+      "block_id": "consolidated_diagnosis",
+      "title": "Diagnostico consolidado",
+      "source": "sections.consolidated_diagnosis"
+    },
+    {
+      "block_id": "target_state",
+      "title": "Estado objetivo de referencia",
+      "source": "sections.target_state"
+    },
+    {
+      "block_id": "gap_analysis",
+      "title": "Brechas respecto al estado objetivo",
+      "source": "sections.gap_analysis"
+    },
+    {
+      "block_id": "risk_analysis",
+      "title": "Riesgos tecnicos y de continuidad",
+      "source": "sections.risk_analysis"
+    },
+    {
+      "block_id": "action_lines",
+      "title": "Lineas de actuacion",
+      "source": "sections.action_lines"
+    },
+    {
+      "block_id": "project_portfolio",
+      "title": "Cartera de proyectos recomendados",
+      "source": "sections.project_portfolio"
+    },
+    {
+      "block_id": "prioritization",
+      "title": "Priorizacion de iniciativas",
+      "source": "sections.prioritization"
+    },
+    {
+      "block_id": "roadmap",
+      "title": "Hoja de ruta de evolucion",
+      "source": "sections.roadmap"
+    },
+    {
+      "block_id": "final_recommendations",
+      "title": "Recomendaciones finales para el responsable tecnico",
+      "source": "sections.final_recommendations"
+    },
+    {
+      "block_id": "conclusion",
+      "title": "Conclusiones",
+      "source": "sections.conclusion"
+    },
+    {
+      "block_id": "annexes",
+      "title": "Anexos",
+      "source": "annexes"
+    }
+  ],
+  "editorial_intent": {
+    "audience": "technical_owner",
+    "tone": "formal_technical",
+    "document_role": "primary_report",
+    "short_report_relation": "derived_summary"
+  },
+  "generation_rules": {
+    "must_include_radar_chart": true,
+    "must_include_project_portfolio": true,
+    "must_not_be_short_plus_one_section": true,
+    "mark_partial_sections_when_evidence_is_insufficient": true,
+    "avoid_unfounded_inference": true
+  }
+}

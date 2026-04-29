@@ -1,0 +1,430 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T4",
+  "tower_name": "Data Services & Storage",
+  "purpose": "La torre Data Services & Storage cubre la infraestructura y los servicios necesarios para almacenar, servir, proteger a nivel de plataforma y optimizar los datos del cliente, garantizando que el almacenamiento es operable y responde a las necesidades del negocio con criterios de rendimiento, disponibilidad, escalabilidad y control.",
+  "scope_summary": [
+    "Almacenamiento primario para cargas de producción (y no producción)",
+    "Servicios de datos y eficiencia",
+    "Capacidad y rendimiento",
+    "Operación del storage",
+    "Integración con plataformas",
+    "Gobierno y catálogo de servicios",
+    "Exclusiones habituales (para evitar redundancias entre torres)"
+  ],
+  "related_towers": [],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T4.P1",
+      "pillar_name": "Storage Architecture & Service Levels (Block/File/Object)",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T4.P1.K1",
+          "kpi_name": "Catálogo de servicios y clases de almacenamiento (SLAs por clase)",
+          "questions": [
+            {
+              "question_id": "T4.P1.K1.PR1",
+              "question_text": "Para ofrecer servicios de almacenamiento de forma consistente es necesario definir clases de servicio con niveles de rendimiento y disponibilidad. ¿Cómo está definido el catálogo de servicios y clases de almacenamiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P1.K2",
+          "kpi_name": "Cobertura y gobernanza de tipologías (Block/File/Object) según necesidades",
+          "questions": [
+            {
+              "question_id": "T4.P1.K2.PR1",
+              "question_text": "Las distintas tipologías de almacenamiento (block, file y object) deben usarse según las necesidades de las aplicaciones. ¿Cómo se gobierna el uso de estas tipologías en la organización?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P1.K3",
+          "kpi_name": "Resiliencia del servicio de almacenamiento (diseño y eliminación de SPOF a nivel de storage)",
+          "questions": [
+            {
+              "question_id": "T4.P1.K3.PR1",
+              "question_text": "La resiliencia del almacenamiento es clave para evitar pérdida de servicio o de datos. ¿Cuál es el nivel de resiliencia real del servicio de almacenamiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P1.K4",
+          "kpi_name": "Estandarización del aprovisionamiento (naming, plantillas, cuotas y consistencia)",
+          "questions": [
+            {
+              "question_id": "T4.P1.K4.PR1",
+              "question_text": "El aprovisionamiento de almacenamiento debe seguir estándares para evitar inconsistencias. ¿Cómo se gestiona el aprovisionamiento de almacenamiento (naming, plantillas y cuotas)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T4.P2",
+      "pillar_name": "Performance, Capacity & Lifecycle Management",
+      "weight_pct": 24,
+      "kpis": [
+        {
+          "kpi_id": "T4.P2.K1",
+          "kpi_name": "Cumplimiento de SLAs de rendimiento (latencia/IOPS/throughput) con evidencia",
+          "questions": [
+            {
+              "question_id": "T4.P2.K1.PR1",
+              "question_text": "El rendimiento del almacenamiento impacta directamente en el rendimiento de las aplicaciones. ¿Cómo se garantiza el cumplimiento de SLAs de rendimiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P2.K2",
+          "kpi_name": "Control de capacidad (uso real vs provisionado, umbrales y prevención de saturación)",
+          "questions": [
+            {
+              "question_id": "T4.P2.K2.PR1",
+              "question_text": "Controlar la capacidad disponible evita saturaciones y degradaciones del servicio. ¿Cómo se controla la capacidad del almacenamiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P2.K3",
+          "kpi_name": "Forecasting y planificación de crecimiento (capacidad y rendimiento)",
+          "questions": [
+            {
+              "question_id": "T4.P2.K3.PR1",
+              "question_text": "El crecimiento del almacenamiento debe planificarse para evitar ampliaciones urgentes. ¿Cómo se planifica el crecimiento futuro del almacenamiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P2.K4",
+          "kpi_name": "Gestión del ciclo de vida (firmware, compatibilidades, obsolescencia y upgrades controlados)",
+          "questions": [
+            {
+              "question_id": "T4.P2.K4.PR1",
+              "question_text": "Mantener actualizado el firmware y las versiones es clave para estabilidad y soporte del fabricante. ¿Cómo se gestiona el ciclo de vida del almacenamiento (firmware, upgrades y compatibilidad)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T4.P3",
+      "pillar_name": "Data Services: Snapshots, Replication & Efficiency",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T4.P3.K1",
+          "kpi_name": "Política de snapshots y consistencia (frecuencia, retención y cobertura)",
+          "questions": [
+            {
+              "question_id": "T4.P3.K1.PR1",
+              "question_text": "Los snapshots permiten recuperar rápidamente datos ante errores o incidentes. ¿Cómo está definida la política de snapshots y consistencia?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P3.K2",
+          "kpi_name": "Replicación de storage gestionada (objetivos, cobertura y pruebas básicas)",
+          "questions": [
+            {
+              "question_id": "T4.P3.K2.PR1",
+              "question_text": "La replicación de almacenamiento permite proteger los datos ante fallos de infraestructura. ¿Cómo se gestiona la replicación de datos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P3.K3",
+          "kpi_name": "Eficiencia de almacenamiento (dedupe/compresión/tiering) y TB útil optimizado",
+          "questions": [
+            {
+              "question_id": "T4.P3.K3.PR1",
+              "question_text": "Las tecnologías de eficiencia permiten optimizar el uso real del almacenamiento disponible. ¿Qué nivel de eficiencia tiene la plataforma de almacenamiento (deduplicación, compresión o tiering)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P3.K4",
+          "kpi_name": "QoS / Control de “noisy neighbor” (garantía de niveles de servicio)",
+          "questions": [
+            {
+              "question_id": "T4.P3.K4.PR1",
+              "question_text": "Las políticas de QoS permiten evitar que una carga afecte negativamente al rendimiento de otras. ¿Cómo se controla el efecto de cargas intensivas mediante QoS de almacenamiento?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T4.P4",
+      "pillar_name": "Security & Access Controls for Data Platforms",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T4.P4.K1",
+          "kpi_name": "Control de acceso y segregación (roles, mínimo privilegio, multitenencia/entornos)",
+          "questions": [
+            {
+              "question_id": "T4.P4.K1.PR1",
+              "question_text": "La gestión de accesos al almacenamiento es clave para proteger los datos. ¿Cómo se gestionan los accesos y la segregación en las plataformas de almacenamiento?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P4.K2",
+          "kpi_name": "Cifrado en reposo y gestión de claves (cobertura y operabilidad)",
+          "questions": [
+            {
+              "question_id": "T4.P4.K2.PR1",
+              "question_text": "El cifrado de datos protege la información frente a accesos no autorizados. ¿Cuál es el nivel de cobertura de cifrado en reposo y gestión de claves?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P4.K3",
+          "kpi_name": "Auditoría y trazabilidad (logs de acceso, cambios y retención)",
+          "questions": [
+            {
+              "question_id": "T4.P4.K3.PR1",
+              "question_text": "La trazabilidad de accesos permite detectar usos indebidos o cambios no autorizados. ¿Cómo se gestionan la auditoría y los registros de acceso y cambios?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T4.P5",
+      "pillar_name": "Platform Integration & Storage Operations (VM/Kubernetes/DB)",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T4.P5.K1",
+          "kpi_name": "Integración con virtualización (datastores, multipathing, buenas prácticas)",
+          "questions": [
+            {
+              "question_id": "T4.P5.K1.PR1",
+              "question_text": "La integración con la plataforma de virtualización es clave para el rendimiento y la operación de las cargas. ¿Cómo se integra el almacenamiento con las plataformas de virtualización?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P5.K2",
+          "kpi_name": "Integración con Kubernetes (CSI, storage classes, persistencia y snapshots CSI cuando aplique)",
+          "questions": [
+            {
+              "question_id": "T4.P5.K2.PR1",
+              "question_text": "Las plataformas de contenedores requieren mecanismos consistentes de persistencia de datos. ¿Cómo está integrada la persistencia de almacenamiento en Kubernetes?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P5.K3",
+          "kpi_name": "Provisioning y time-to-provision (autoservicio controlado / plantillas)",
+          "questions": [
+            {
+              "question_id": "T4.P5.K3.PR1",
+              "question_text": "El tiempo de provisión de almacenamiento impacta directamente en la agilidad de los equipos de IT. ¿Cómo se gestiona el proceso de provisioning y el tiempo de entrega?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T4.P5.K4",
+          "kpi_name": "Operación cross-domain (runbooks, escalado, reducción de “ping-pong”)",
+          "questions": [
+            {
+              "question_id": "T4.P5.K4.PR1",
+              "question_text": "La resolución de incidencias en plataformas complejas requiere coordinación entre varios equipos. ¿Cómo se gestionan las incidencias de almacenamiento entre equipos y dominios tecnológicos?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T4.P1.K1.PR1",
+      "pillar_id": "T4.P1",
+      "kpi_id": "T4.P1.K1",
+      "question_text": "Para ofrecer servicios de almacenamiento de forma consistente es necesario definir clases de servicio con niveles de rendimiento y disponibilidad. ¿Cómo está definido el catálogo de servicios y clases de almacenamiento?"
+    },
+    {
+      "question_id": "T4.P1.K2.PR1",
+      "pillar_id": "T4.P1",
+      "kpi_id": "T4.P1.K2",
+      "question_text": "Las distintas tipologías de almacenamiento (block, file y object) deben usarse según las necesidades de las aplicaciones. ¿Cómo se gobierna el uso de estas tipologías en la organización?"
+    },
+    {
+      "question_id": "T4.P1.K3.PR1",
+      "pillar_id": "T4.P1",
+      "kpi_id": "T4.P1.K3",
+      "question_text": "La resiliencia del almacenamiento es clave para evitar pérdida de servicio o de datos. ¿Cuál es el nivel de resiliencia real del servicio de almacenamiento?"
+    },
+    {
+      "question_id": "T4.P1.K4.PR1",
+      "pillar_id": "T4.P1",
+      "kpi_id": "T4.P1.K4",
+      "question_text": "El aprovisionamiento de almacenamiento debe seguir estándares para evitar inconsistencias. ¿Cómo se gestiona el aprovisionamiento de almacenamiento (naming, plantillas y cuotas)?"
+    },
+    {
+      "question_id": "T4.P2.K1.PR1",
+      "pillar_id": "T4.P2",
+      "kpi_id": "T4.P2.K1",
+      "question_text": "El rendimiento del almacenamiento impacta directamente en el rendimiento de las aplicaciones. ¿Cómo se garantiza el cumplimiento de SLAs de rendimiento?"
+    },
+    {
+      "question_id": "T4.P2.K2.PR1",
+      "pillar_id": "T4.P2",
+      "kpi_id": "T4.P2.K2",
+      "question_text": "Controlar la capacidad disponible evita saturaciones y degradaciones del servicio. ¿Cómo se controla la capacidad del almacenamiento?"
+    },
+    {
+      "question_id": "T4.P2.K3.PR1",
+      "pillar_id": "T4.P2",
+      "kpi_id": "T4.P2.K3",
+      "question_text": "El crecimiento del almacenamiento debe planificarse para evitar ampliaciones urgentes. ¿Cómo se planifica el crecimiento futuro del almacenamiento?"
+    },
+    {
+      "question_id": "T4.P2.K4.PR1",
+      "pillar_id": "T4.P2",
+      "kpi_id": "T4.P2.K4",
+      "question_text": "Mantener actualizado el firmware y las versiones es clave para estabilidad y soporte del fabricante. ¿Cómo se gestiona el ciclo de vida del almacenamiento (firmware, upgrades y compatibilidad)?"
+    },
+    {
+      "question_id": "T4.P3.K1.PR1",
+      "pillar_id": "T4.P3",
+      "kpi_id": "T4.P3.K1",
+      "question_text": "Los snapshots permiten recuperar rápidamente datos ante errores o incidentes. ¿Cómo está definida la política de snapshots y consistencia?"
+    },
+    {
+      "question_id": "T4.P3.K2.PR1",
+      "pillar_id": "T4.P3",
+      "kpi_id": "T4.P3.K2",
+      "question_text": "La replicación de almacenamiento permite proteger los datos ante fallos de infraestructura. ¿Cómo se gestiona la replicación de datos?"
+    },
+    {
+      "question_id": "T4.P3.K3.PR1",
+      "pillar_id": "T4.P3",
+      "kpi_id": "T4.P3.K3",
+      "question_text": "Las tecnologías de eficiencia permiten optimizar el uso real del almacenamiento disponible. ¿Qué nivel de eficiencia tiene la plataforma de almacenamiento (deduplicación, compresión o tiering)?"
+    },
+    {
+      "question_id": "T4.P3.K4.PR1",
+      "pillar_id": "T4.P3",
+      "kpi_id": "T4.P3.K4",
+      "question_text": "Las políticas de QoS permiten evitar que una carga afecte negativamente al rendimiento de otras. ¿Cómo se controla el efecto de cargas intensivas mediante QoS de almacenamiento?"
+    },
+    {
+      "question_id": "T4.P4.K1.PR1",
+      "pillar_id": "T4.P4",
+      "kpi_id": "T4.P4.K1",
+      "question_text": "La gestión de accesos al almacenamiento es clave para proteger los datos. ¿Cómo se gestionan los accesos y la segregación en las plataformas de almacenamiento?"
+    },
+    {
+      "question_id": "T4.P4.K2.PR1",
+      "pillar_id": "T4.P4",
+      "kpi_id": "T4.P4.K2",
+      "question_text": "El cifrado de datos protege la información frente a accesos no autorizados. ¿Cuál es el nivel de cobertura de cifrado en reposo y gestión de claves?"
+    },
+    {
+      "question_id": "T4.P4.K3.PR1",
+      "pillar_id": "T4.P4",
+      "kpi_id": "T4.P4.K3",
+      "question_text": "La trazabilidad de accesos permite detectar usos indebidos o cambios no autorizados. ¿Cómo se gestionan la auditoría y los registros de acceso y cambios?"
+    },
+    {
+      "question_id": "T4.P5.K1.PR1",
+      "pillar_id": "T4.P5",
+      "kpi_id": "T4.P5.K1",
+      "question_text": "La integración con la plataforma de virtualización es clave para el rendimiento y la operación de las cargas. ¿Cómo se integra el almacenamiento con las plataformas de virtualización?"
+    },
+    {
+      "question_id": "T4.P5.K2.PR1",
+      "pillar_id": "T4.P5",
+      "kpi_id": "T4.P5.K2",
+      "question_text": "Las plataformas de contenedores requieren mecanismos consistentes de persistencia de datos. ¿Cómo está integrada la persistencia de almacenamiento en Kubernetes?"
+    },
+    {
+      "question_id": "T4.P5.K3.PR1",
+      "pillar_id": "T4.P5",
+      "kpi_id": "T4.P5.K3",
+      "question_text": "El tiempo de provisión de almacenamiento impacta directamente en la agilidad de los equipos de IT. ¿Cómo se gestiona el proceso de provisioning y el tiempo de entrega?"
+    },
+    {
+      "question_id": "T4.P5.K4.PR1",
+      "pillar_id": "T4.P5",
+      "kpi_id": "T4.P5.K4",
+      "question_text": "La resolución de incidencias en plataformas complejas requiere coordinación entre varios equipos. ¿Cómo se gestionan las incidencias de almacenamiento entre equipos y dominios tecnológicos?"
+    }
+  ]
+}

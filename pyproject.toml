@@ -1,0 +1,27 @@
+[project]
+name = "assessment-engine"
+version = "0.1.0"
+description = "AI Assessment Engine for Technology Architecture"
+requires-python = ">=3.10"
+dependencies = [
+    "google-cloud-aiplatform",
+    "google-adk",
+    "google-genai",
+    "pydantic",
+    "pydantic-settings",
+    "python-docx",
+    "matplotlib",
+    "python-dotenv"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"] # PEP8 errors, pyflakes, isort
+ignore = ["E501"] # Avoid line too long since formatter handles it

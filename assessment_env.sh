@@ -1,0 +1,2 @@
+export GOOGLE_CLOUD_PROJECT="sub403o4u0q5"
+export GOOGLE_CLOUD_LOCATION="europe-west1"

@@ -1,0 +1,50 @@
+{
+  "artifact_type": "tower_bootstrap_manifest",
+  "schema_version": "1.0",
+  "tower_id": "T7",
+  "tower_name": "ITSM & Digital Operations",
+  "generated_at_utc": "2026-04-12T18:20:14.794320+00:00",
+  "source_matrix_file": "/home/jsanchhi/assessment_engine/source_docs/towers/T7/Matriz de madurez Torre 7 — ITSM & Digital Operations v1.3.docx",
+  "output_directory": "/home/jsanchhi/assessment_engine/engine_config/towers/T7",
+  "extraction_method": {
+    "mode": "offline_docx_xml_regex",
+    "inputs": {
+      "paragraph_count": 815
+    },
+    "patterns": {
+      "tower_name": "\\bTorre\\s+N\\s*[-:]\\s*(.+)",
+      "pillar_header": "\\bPilar\\s+(\\d+)\\s*-\\s*(Tn\\.P\\d+)\\s*-\\s*(.+)$",
+      "kpi_header": "\\b(Tn\\.P\\d+\\.K\\d+)\\s*-\\s*(.+)$",
+      "weight_line": "^<pillar_name>\\s*-\\s*(\\d+)%$"
+    }
+  },
+  "summary": {
+    "purpose_length": 315,
+    "pillar_count": 5,
+    "kpi_count": 21,
+    "question_count": 21,
+    "weight_sum_pct": 100
+  },
+  "warnings": [
+    "KPI duplicado en documento: T7.P1.K1. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P1.K2. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P1.K3. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P1.K4. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P2.K1. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P2.K2. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P2.K3. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P2.K4. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P3.K1. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P3.K2. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P3.K3. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P4.K1. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P4.K2. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P4.K3. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P4.K4. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P5.K1. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P5.K2. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P5.K3. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P5.K4. Se ignora la aparición repetida.",
+    "KPI duplicado en documento: T7.P5.K5. Se ignora la aparición repetida."
+  ]
+}

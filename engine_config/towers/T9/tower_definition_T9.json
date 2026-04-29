@@ -1,0 +1,450 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T9",
+  "tower_name": "Digital Workplace",
+  "purpose": "La torre Digital Workplace cubre el conjunto de capacidades para proporcionar y operar un entorno de trabajo digital consistente, gestionado y seguro, orientado a productividad y experiencia de usuario.",
+  "scope_summary": [
+    "Workplace Endpoint",
+    "UEM/MDM/MAM (Unified Endpoint Management)",
+    "Productividad y colaboración",
+    "Gestión de identidades orientada al puesto",
+    "Soporte, autoservicio y automatización",
+    "DEX y rendimiento",
+    "Exclusiones (para evitar solapes)",
+    "En resumen"
+  ],
+  "related_towers": [
+    "T6",
+    "T7"
+  ],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T9.P1",
+      "pillar_name": "Endpoint & Device Lifecycle Management",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T9.P1.K1",
+          "kpi_name": "Estandarización del endpoint (modelos, imagen base y configuración)",
+          "questions": [
+            {
+              "question_id": "T9.P1.K1.PR1",
+              "question_text": "Mantener configuraciones estándar en los dispositivos ayuda a reducir incidencias y simplificar la operación. ¿Cómo describiría el nivel de estandarización de los endpoints?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P1.K2",
+          "kpi_name": "Tiempo de provisión / alta de puesto (end-to-end)",
+          "questions": [
+            {
+              "question_id": "T9.P1.K2.PR1",
+              "question_text": "La provisión eficiente de dispositivos impacta directamente en la productividad del usuario. ¿Cómo es el proceso de provisión de nuevos puestos de trabajo?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P1.K3",
+          "kpi_name": "Cumplimiento de posture del dispositivo (cifrado, parches, agentes, políticas)",
+          "questions": [
+            {
+              "question_id": "T9.P1.K3.PR1",
+              "question_text": "El estado de seguridad y configuración del dispositivo (posture) es clave para proteger el entorno digital. ¿Cómo se controla el cumplimiento del posture del dispositivo?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P1.K4",
+          "kpi_name": "Gestión del ciclo de vida (renovación y obsolescencia)",
+          "questions": [
+            {
+              "question_id": "T9.P1.K4.PR1",
+              "question_text": "La renovación planificada de dispositivos evita obsolescencia y degradación del servicio. ¿Cómo se gestiona la renovación y obsolescencia de dispositivos?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T9.P2",
+      "pillar_name": "Workplace Identity & Access Experience",
+      "weight_pct": 23,
+      "kpis": [
+        {
+          "kpi_id": "T9.P2.K1",
+          "kpi_name": "Cobertura real de SSO (aplicaciones críticas bajo SSO)",
+          "questions": [
+            {
+              "question_id": "T9.P2.K1.PR1",
+              "question_text": "El uso de Single Sign-On simplifica el acceso a aplicaciones y reduce la fricción para el usuario. ¿Cuál es el nivel de cobertura de SSO en aplicaciones críticas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P2.K2",
+          "kpi_name": "Acceso Condicional + MFA adaptativa (por contexto y riesgo)",
+          "questions": [
+            {
+              "question_id": "T9.P2.K2.PR1",
+              "question_text": "El acceso seguro debe equilibrar seguridad y facilidad de uso para el usuario final. ¿Cómo se aplican el acceso condicional y MFA en el entorno workplace?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P2.K3",
+          "kpi_name": "Autoservicio de credenciales (reset/recuperación) y reducción de tickets",
+          "questions": [
+            {
+              "question_id": "T9.P2.K3.PR1",
+              "question_text": "Permitir autoservicio para recuperación de credenciales reduce la carga sobre el soporte técnico. ¿Qué nivel de autoservicio existe para recuperación de credenciales?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P2.K4",
+          "kpi_name": "Ticket rate por problemas de acceso (por 100 usuarios/mes)",
+          "questions": [
+            {
+              "question_id": "T9.P2.K4.PR1",
+              "question_text": "Los problemas de acceso suelen ser una causa importante de tickets al soporte. ¿Cómo es la tasa de tickets relacionados con problemas de acceso?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T9.P3",
+      "pillar_name": "Productividad, Colaboración y Gestión del Conocimiento",
+      "weight_pct": 19,
+      "kpis": [
+        {
+          "kpi_id": "T9.P3.K1",
+          "kpi_name": "Gobernanza de espacios colaborativos (lifecycle, ownership, sprawl)",
+          "questions": [
+            {
+              "question_id": "T9.P3.K1.PR1",
+              "question_text": "Los espacios colaborativos requieren gobierno para evitar proliferación y desorden de la información. ¿Cómo se gobiernan los espacios colaborativos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P3.K2",
+          "kpi_name": "Gestión documental y control de permisos (repositorios y clasificación)",
+          "questions": [
+            {
+              "question_id": "T9.P3.K2.PR1",
+              "question_text": "La gestión adecuada de documentos y permisos es clave para proteger la información. ¿Cómo se gestionan los documentos y permisos de acceso?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P3.K3",
+          "kpi_name": "Calidad de servicio de comunicaciones (reuniones/voz/video)",
+          "questions": [
+            {
+              "question_id": "T9.P3.K3.PR1",
+              "question_text": "La calidad de las comunicaciones digitales impacta directamente en la experiencia del usuario. ¿Cómo es la calidad del servicio de reuniones y comunicaciones?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P3.K4",
+          "kpi_name": "Adopción efectiva de herramientas clave (uso real vs habilitado)",
+          "questions": [
+            {
+              "question_id": "T9.P3.K4.PR1",
+              "question_text": "Disponer de herramientas colaborativas no garantiza su adopción efectiva por parte de los usuarios. ¿Cuál es el nivel de adopción real de herramientas colaborativas?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T9.P4",
+      "pillar_name": "Operación, Soporte y Autoservicio del Workplace",
+      "weight_pct": 21,
+      "kpis": [
+        {
+          "kpi_id": "T9.P4.K1",
+          "kpi_name": "Cumplimiento de SLAs de soporte del workplace (incidencias y solicitudes)",
+          "questions": [
+            {
+              "question_id": "T9.P4.K1.PR1",
+              "question_text": "El soporte del workplace debe cumplir tiempos de resolución adecuados para garantizar la productividad. ¿Cómo es el cumplimiento de los SLAs de soporte del workplace?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P4.K2",
+          "kpi_name": "Autoservicio y knowledge base (ratio de resolución sin intervención humana)",
+          "questions": [
+            {
+              "question_id": "T9.P4.K2.PR1",
+              "question_text": "Facilitar autoservicio y documentación reduce la carga operativa del soporte. ¿Qué nivel de autoservicio y knowledge base existe?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P4.K3",
+          "kpi_name": "Automatización y self-healing (remediación automática de incidencias recurrentes)",
+          "questions": [
+            {
+              "question_id": "T9.P4.K3.PR1",
+              "question_text": "Automatizar tareas repetitivas permite mejorar la eficiencia del soporte. ¿Cómo se aplica la automatización y el self-healing en el workplace?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P4.K4",
+          "kpi_name": "Gestión de problemas (reducción de recurrentes por RCA)",
+          "questions": [
+            {
+              "question_id": "T9.P4.K4.PR1",
+              "question_text": "Identificar las causas raíz permite evitar que los problemas se repitan. ¿Cómo se gestionan las causas raíz de problemas recurrentes?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T9.P5",
+      "pillar_name": "Digital Employee Experience (DEX), Rendimiento y Adopción",
+      "weight_pct": 15,
+      "kpis": [
+        {
+          "kpi_id": "T9.P5.K1",
+          "kpi_name": "Cobertura de telemetría DEX (visibilidad real del endpoint y experiencia)",
+          "questions": [
+            {
+              "question_id": "T9.P5.K1.PR1",
+              "question_text": "Medir la experiencia digital del empleado permite identificar problemas antes de que impacten al usuario. ¿Qué nivel de telemetría DEX existe en el workplace?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P5.K2",
+          "kpi_name": "Rendimiento del endpoint (arranque, crashes, performance de apps)",
+          "questions": [
+            {
+              "question_id": "T9.P5.K2.PR1",
+              "question_text": "El rendimiento del endpoint influye directamente en la experiencia del usuario. ¿Cómo se gestiona el rendimiento del endpoint?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P5.K3",
+          "kpi_name": "Satisfacción del usuario (CSAT/NPS por servicios del workplace)",
+          "questions": [
+            {
+              "question_id": "T9.P5.K3.PR1",
+              "question_text": "La satisfacción del usuario es un indicador clave del éxito del workplace digital. ¿Cómo se mide y gestiona la satisfacción del usuario?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T9.P5.K4",
+          "kpi_name": "Mejora continua basada en DEX (ciclo de detectar-priorizar-remediar)",
+          "questions": [
+            {
+              "question_id": "T9.P5.K4.PR1",
+              "question_text": "Analizar los datos de experiencia permite mejorar continuamente el entorno de trabajo digital. ¿Cómo se aplica la mejora continua basada en datos de experiencia?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T9.P1.K1.PR1",
+      "pillar_id": "T9.P1",
+      "kpi_id": "T9.P1.K1",
+      "question_text": "Mantener configuraciones estándar en los dispositivos ayuda a reducir incidencias y simplificar la operación. ¿Cómo describiría el nivel de estandarización de los endpoints?"
+    },
+    {
+      "question_id": "T9.P1.K2.PR1",
+      "pillar_id": "T9.P1",
+      "kpi_id": "T9.P1.K2",
+      "question_text": "La provisión eficiente de dispositivos impacta directamente en la productividad del usuario. ¿Cómo es el proceso de provisión de nuevos puestos de trabajo?"
+    },
+    {
+      "question_id": "T9.P1.K3.PR1",
+      "pillar_id": "T9.P1",
+      "kpi_id": "T9.P1.K3",
+      "question_text": "El estado de seguridad y configuración del dispositivo (posture) es clave para proteger el entorno digital. ¿Cómo se controla el cumplimiento del posture del dispositivo?"
+    },
+    {
+      "question_id": "T9.P1.K4.PR1",
+      "pillar_id": "T9.P1",
+      "kpi_id": "T9.P1.K4",
+      "question_text": "La renovación planificada de dispositivos evita obsolescencia y degradación del servicio. ¿Cómo se gestiona la renovación y obsolescencia de dispositivos?"
+    },
+    {
+      "question_id": "T9.P2.K1.PR1",
+      "pillar_id": "T9.P2",
+      "kpi_id": "T9.P2.K1",
+      "question_text": "El uso de Single Sign-On simplifica el acceso a aplicaciones y reduce la fricción para el usuario. ¿Cuál es el nivel de cobertura de SSO en aplicaciones críticas?"
+    },
+    {
+      "question_id": "T9.P2.K2.PR1",
+      "pillar_id": "T9.P2",
+      "kpi_id": "T9.P2.K2",
+      "question_text": "El acceso seguro debe equilibrar seguridad y facilidad de uso para el usuario final. ¿Cómo se aplican el acceso condicional y MFA en el entorno workplace?"
+    },
+    {
+      "question_id": "T9.P2.K3.PR1",
+      "pillar_id": "T9.P2",
+      "kpi_id": "T9.P2.K3",
+      "question_text": "Permitir autoservicio para recuperación de credenciales reduce la carga sobre el soporte técnico. ¿Qué nivel de autoservicio existe para recuperación de credenciales?"
+    },
+    {
+      "question_id": "T9.P2.K4.PR1",
+      "pillar_id": "T9.P2",
+      "kpi_id": "T9.P2.K4",
+      "question_text": "Los problemas de acceso suelen ser una causa importante de tickets al soporte. ¿Cómo es la tasa de tickets relacionados con problemas de acceso?"
+    },
+    {
+      "question_id": "T9.P3.K1.PR1",
+      "pillar_id": "T9.P3",
+      "kpi_id": "T9.P3.K1",
+      "question_text": "Los espacios colaborativos requieren gobierno para evitar proliferación y desorden de la información. ¿Cómo se gobiernan los espacios colaborativos?"
+    },
+    {
+      "question_id": "T9.P3.K2.PR1",
+      "pillar_id": "T9.P3",
+      "kpi_id": "T9.P3.K2",
+      "question_text": "La gestión adecuada de documentos y permisos es clave para proteger la información. ¿Cómo se gestionan los documentos y permisos de acceso?"
+    },
+    {
+      "question_id": "T9.P3.K3.PR1",
+      "pillar_id": "T9.P3",
+      "kpi_id": "T9.P3.K3",
+      "question_text": "La calidad de las comunicaciones digitales impacta directamente en la experiencia del usuario. ¿Cómo es la calidad del servicio de reuniones y comunicaciones?"
+    },
+    {
+      "question_id": "T9.P3.K4.PR1",
+      "pillar_id": "T9.P3",
+      "kpi_id": "T9.P3.K4",
+      "question_text": "Disponer de herramientas colaborativas no garantiza su adopción efectiva por parte de los usuarios. ¿Cuál es el nivel de adopción real de herramientas colaborativas?"
+    },
+    {
+      "question_id": "T9.P4.K1.PR1",
+      "pillar_id": "T9.P4",
+      "kpi_id": "T9.P4.K1",
+      "question_text": "El soporte del workplace debe cumplir tiempos de resolución adecuados para garantizar la productividad. ¿Cómo es el cumplimiento de los SLAs de soporte del workplace?"
+    },
+    {
+      "question_id": "T9.P4.K2.PR1",
+      "pillar_id": "T9.P4",
+      "kpi_id": "T9.P4.K2",
+      "question_text": "Facilitar autoservicio y documentación reduce la carga operativa del soporte. ¿Qué nivel de autoservicio y knowledge base existe?"
+    },
+    {
+      "question_id": "T9.P4.K3.PR1",
+      "pillar_id": "T9.P4",
+      "kpi_id": "T9.P4.K3",
+      "question_text": "Automatizar tareas repetitivas permite mejorar la eficiencia del soporte. ¿Cómo se aplica la automatización y el self-healing en el workplace?"
+    },
+    {
+      "question_id": "T9.P4.K4.PR1",
+      "pillar_id": "T9.P4",
+      "kpi_id": "T9.P4.K4",
+      "question_text": "Identificar las causas raíz permite evitar que los problemas se repitan. ¿Cómo se gestionan las causas raíz de problemas recurrentes?"
+    },
+    {
+      "question_id": "T9.P5.K1.PR1",
+      "pillar_id": "T9.P5",
+      "kpi_id": "T9.P5.K1",
+      "question_text": "Medir la experiencia digital del empleado permite identificar problemas antes de que impacten al usuario. ¿Qué nivel de telemetría DEX existe en el workplace?"
+    },
+    {
+      "question_id": "T9.P5.K2.PR1",
+      "pillar_id": "T9.P5",
+      "kpi_id": "T9.P5.K2",
+      "question_text": "El rendimiento del endpoint influye directamente en la experiencia del usuario. ¿Cómo se gestiona el rendimiento del endpoint?"
+    },
+    {
+      "question_id": "T9.P5.K3.PR1",
+      "pillar_id": "T9.P5",
+      "kpi_id": "T9.P5.K3",
+      "question_text": "La satisfacción del usuario es un indicador clave del éxito del workplace digital. ¿Cómo se mide y gestiona la satisfacción del usuario?"
+    },
+    {
+      "question_id": "T9.P5.K4.PR1",
+      "pillar_id": "T9.P5",
+      "kpi_id": "T9.P5.K4",
+      "question_text": "Analizar los datos de experiencia permite mejorar continuamente el entorno de trabajo digital. ¿Cómo se aplica la mejora continua basada en datos de experiencia?"
+    }
+  ]
+}

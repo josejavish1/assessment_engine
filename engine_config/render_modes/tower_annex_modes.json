@@ -1,0 +1,81 @@
+{
+  "default_mode": "standard_high_value",
+  "modes": {
+    "standard_high_value": {
+      "executive_summary": {
+        "max_key_messages": 3,
+        "max_words_headline": 55,
+        "max_words_why_it_matters": 90
+      },
+      "pillar_score_profile": {
+        "max_short_interpretation_words": 26
+      },
+      "asis": {
+        "max_words_executive_narrative": 260,
+        "max_strengths": 6,
+        "max_gaps": 10,
+        "max_operational_implications": 5
+      },
+      "risks": {
+        "max_risks": 5,
+        "max_words_introduction": 140,
+        "max_words_closing_summary": 120
+      },
+      "tobe": {
+        "max_words_introduction": 150,
+        "max_principles": 6
+      },
+      "gap": {
+        "max_gap_items": 5
+      },
+      "todo": {
+        "max_words_introduction": 130,
+        "max_initiatives": 10
+      },
+      "conclusion": {
+        "max_words_final_assessment": 180,
+        "max_words_executive_message": 150,
+        "max_priority_focus_areas": 5,
+        "max_words_closing_statement": 90
+      }
+    },
+    "executive_light": {
+      "executive_summary": {
+        "max_key_messages": 3,
+        "max_words_headline": 40,
+        "max_words_why_it_matters": 60
+      },
+      "pillar_score_profile": {
+        "max_short_interpretation_words": 18
+      },
+      "asis": {
+        "max_words_executive_narrative": 160,
+        "max_strengths": 4,
+        "max_gaps": 6,
+        "max_operational_implications": 4
+      },
+      "risks": {
+        "max_risks": 4,
+        "max_words_introduction": 100,
+        "max_words_closing_summary": 80
+      },
+      "tobe": {
+        "max_words_introduction": 100,
+        "max_principles": 4
+      },
+      "gap": {
+        "max_gap_items": 4
+      },
+      "todo": {
+        "max_words_introduction": 90,
+        "max_initiatives": 6
+      },
+      "conclusion": {
+        "max_words_final_assessment": 120,
+        "max_words_executive_message": 100,
+        "max_priority_focus_areas": 4,
+        "max_words_closing_statement": 60
+      }
+    }
+  }
+}

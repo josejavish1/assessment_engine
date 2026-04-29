@@ -1,0 +1,468 @@
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T7",
+  "tower_name": "ITSM & Digital Operations",
+  "purpose": "La torre ITSM & Digital Operations cubre las capacidades necesarias para gestionar servicios TI extremo a extremo, desde la solicitud del usuario hasta la resolución, el control del cambio, la gestión del conocimiento, la medición de niveles de servicio, la operación basada en observabilidad, y la mejora continua.",
+  "scope_summary": [
+    "Gobierno del servicio y catálogo",
+    "Procesos ITSM core",
+    "Gestión de activos y configuración (ITAM/CMDB)",
+    "Digital Operations / Observability",
+    "Automatización operativa y continuidad de operación",
+    "Modelo operativo",
+    "Exclusiones (para evitar solapes)",
+    "Arquitectura de plataformas (T2), redes (T3), almacenamiento (T4)",
+    "Seguridad (T6)",
+    "Continuidad/DR (T5)",
+    "En resumen"
+  ],
+  "related_towers": [
+    "T1"
+  ],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T7.P1",
+      "pillar_name": "Gobierno del Servicio, Catálogo y SLAs/SLOs",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T7.P1.K1",
+          "kpi_name": "Cobertura y calidad del Catálogo de Servicios (definición + ownership)",
+          "questions": [
+            {
+              "question_id": "T7.P1.K1.PR1",
+              "question_text": "Disponer de un catálogo de servicios claro permite entender qué se ofrece y quién es responsable. ¿Cómo describirías la cobertura y calidad del catálogo de servicios?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P1.K2",
+          "kpi_name": "Cumplimiento de SLAs (Disponibilidad y tiempos de respuesta/resolución)",
+          "questions": [
+            {
+              "question_id": "T7.P1.K2.PR1",
+              "question_text": "Medir y gestionar los SLAs permite garantizar la calidad del servicio. ¿Cómo se gestionan los SLAs?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P1.K3",
+          "kpi_name": "Cadencia y eficacia de revisiones de servicio (Service Reviews)",
+          "questions": [
+            {
+              "question_id": "T7.P1.K3.PR1",
+              "question_text": "Las revisiones de servicio permiten mejorar continuamente la calidad. ¿Cómo se realizan las revisiones de servicio?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P1.K4",
+          "kpi_name": "Modelo de responsabilidades (RACI/Service Ownership) y accountability",
+          "questions": [
+            {
+              "question_id": "T7.P1.K4.PR1",
+              "question_text": "Definir claramente responsabilidades evita dependencias y mejora la operación. ¿Cómo está definido el modelo de responsabilidades (RACI/ownership)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T7.P2",
+      "pillar_name": "Service Desk, Gestión de Incidentes y Solicitudes",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T7.P2.K1",
+          "kpi_name": "MTTR (Mean Time To Restore) por criticidad de servicio",
+          "questions": [
+            {
+              "question_id": "T7.P2.K1.PR1",
+              "question_text": "Reducir el tiempo de recuperación es clave para la continuidad del servicio. ¿Cómo se gestiona el MTTR por criticidad?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P2.K2",
+          "kpi_name": "Eficacia del primer nivel (FCR / resolución en primer contacto)",
+          "questions": [
+            {
+              "question_id": "T7.P2.K2.PR1",
+              "question_text": "Resolver incidencias en el primer nivel mejora la eficiencia operativa. ¿Cuál es la eficacia del primer nivel (FCR)?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P2.K3",
+          "kpi_name": "Gestión de Major Incidents (coordinación, comunicación y post-incident)",
+          "questions": [
+            {
+              "question_id": "T7.P2.K3.PR1",
+              "question_text": "Gestionar correctamente incidencias críticas reduce el impacto en el negocio. ¿Cómo se gestionan los Major Incidents?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P2.K4",
+          "kpi_name": "Backlog y aging de tickets (control y tendencia)",
+          "questions": [
+            {
+              "question_id": "T7.P2.K4.PR1",
+              "question_text": "Controlar el volumen de tickets evita saturación operativa. ¿Cómo se gestiona el backlog y el aging de tickets?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T7.P3",
+      "pillar_name": "Gestión de Cambios, Releases y Configuración (CMDB/ITAM)",
+      "weight_pct": 24,
+      "kpis": [
+        {
+          "kpi_id": "T7.P3.K1",
+          "kpi_name": "Tasa de éxito de cambios (Change Success Rate) y cambios que causan incidentes",
+          "questions": [
+            {
+              "question_id": "T7.P3.K1.PR1",
+              "question_text": "Gestionar correctamente los cambios reduce incidencias en producción. ¿Cuál es la tasa de éxito de los cambios?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P3.K2",
+          "kpi_name": "Clasificación y evaluación de riesgo del cambio (standard/normal/emergency)",
+          "questions": [
+            {
+              "question_id": "T7.P3.K2.PR1",
+              "question_text": "Evaluar correctamente el riesgo de los cambios evita impactos en el servicio. ¿Cómo se clasifican y evalúan los cambios?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P3.K3",
+          "kpi_name": "Calidad y actualización de CMDB (cobertura y relaciones)",
+          "questions": [
+            {
+              "question_id": "T7.P3.K3.PR1",
+              "question_text": "Disponer de una CMDB fiable es clave para la operación. ¿Cuál es la calidad y actualización de la CMDB?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P3.K4",
+          "kpi_name": "Control del cambio emergente",
+          "questions": [
+            {
+              "question_id": "T7.P3.K4.PR1",
+              "question_text": "Reducir cambios urgentes mejora la estabilidad del servicio. ¿Cómo se gestionan los cambios emergentes?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T7.P4",
+      "pillar_name": "Problem Management, Mejora Continua y Fiabilidad (SRE)",
+      "weight_pct": 21,
+      "kpis": [
+        {
+          "kpi_id": "T7.P4.K1",
+          "kpi_name": "% de incidentes recurrentes y tendencia (repeat incidents)",
+          "questions": [
+            {
+              "question_id": "T7.P4.K1.PR1",
+              "question_text": "Reducir incidencias repetitivas mejora la estabilidad operativa. ¿Cuál es el nivel de incidencias recurrentes?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P4.K2",
+          "kpi_name": "Calidad y trazabilidad del RCA (Root Cause Analysis)",
+          "questions": [
+            {
+              "question_id": "T7.P4.K2.PR1",
+              "question_text": "Analizar correctamente las causas raíz evita repetir errores. ¿Cómo es la calidad del RCA?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P4.K3",
+          "kpi_name": "Backlog de problemas (Problem Backlog) y ejecución de acciones",
+          "questions": [
+            {
+              "question_id": "T7.P4.K3.PR1",
+              "question_text": "Gestionar el backlog de problemas permite mejorar la estabilidad del servicio. ¿Cómo se gestiona el backlog de problemas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P4.K4",
+          "kpi_name": "Madurez SRE: SLOs/SLIs y reducción de toil (cuando aplica)",
+          "questions": [
+            {
+              "question_id": "T7.P4.K4.PR1",
+              "question_text": "Gestionar la fiabilidad como producto permite mejorar la calidad del servicio. ¿Cuál es la madurez SRE (SLO/SLI y reducción de toil)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T7.P5",
+      "pillar_name": "Observabilidad, Event Management y Automatización Operativa (AIOps/Runbooks)",
+      "weight_pct": 13,
+      "kpis": [
+        {
+          "kpi_id": "T7.P5.K1",
+          "kpi_name": "Cobertura de observabilidad por servicio (métricas/logs/trazas)",
+          "questions": [
+            {
+              "question_id": "T7.P5.K1.PR1",
+              "question_text": "Tener visibilidad completa del servicio permite detectar problemas antes de que impacten. ¿Cuál es la cobertura de observabilidad por servicio?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P5.K2",
+          "kpi_name": "Reducción de ruido de alertas (alert fatigue) y calidad de eventos",
+          "questions": [
+            {
+              "question_id": "T7.P5.K2.PR1",
+              "question_text": "Reducir el ruido de alertas mejora la eficiencia operativa. ¿Cómo se gestiona el ruido de alertas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P5.K3",
+          "kpi_name": "Runbooks, automatización operativa y remediación basada en contexto fiable",
+          "questions": [
+            {
+              "question_id": "T7.P5.K3.PR1",
+              "question_text": "Automatizar tareas operativas reduce errores y tiempos de resolución. ¿Cuál es el nivel de automatización operativa y runbooks?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P5.K4",
+          "kpi_name": "Detección proactiva (antes de que el usuario reporte)",
+          "questions": [
+            {
+              "question_id": "T7.P5.K4.PR1",
+              "question_text": "Detectar incidentes antes del usuario mejora la experiencia del servicio. ¿Cómo se realiza la detección proactiva de incidentes?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T7.P5.K5",
+          "kpi_name": "Correlación end-to-end entre eventos, dependencias e impacto de servicio",
+          "questions": [
+            {
+              "question_id": "T7.P5.K5.PR1",
+              "question_text": "Entender el impacto real de los eventos permite priorizar correctamente. ¿Cómo se correlacionan eventos, dependencias e impacto de servicio?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T7.P1.K1.PR1",
+      "pillar_id": "T7.P1",
+      "kpi_id": "T7.P1.K1",
+      "question_text": "Disponer de un catálogo de servicios claro permite entender qué se ofrece y quién es responsable. ¿Cómo describirías la cobertura y calidad del catálogo de servicios?"
+    },
+    {
+      "question_id": "T7.P1.K2.PR1",
+      "pillar_id": "T7.P1",
+      "kpi_id": "T7.P1.K2",
+      "question_text": "Medir y gestionar los SLAs permite garantizar la calidad del servicio. ¿Cómo se gestionan los SLAs?"
+    },
+    {
+      "question_id": "T7.P1.K3.PR1",
+      "pillar_id": "T7.P1",
+      "kpi_id": "T7.P1.K3",
+      "question_text": "Las revisiones de servicio permiten mejorar continuamente la calidad. ¿Cómo se realizan las revisiones de servicio?"
+    },
+    {
+      "question_id": "T7.P1.K4.PR1",
+      "pillar_id": "T7.P1",
+      "kpi_id": "T7.P1.K4",
+      "question_text": "Definir claramente responsabilidades evita dependencias y mejora la operación. ¿Cómo está definido el modelo de responsabilidades (RACI/ownership)?"
+    },
+    {
+      "question_id": "T7.P2.K1.PR1",
+      "pillar_id": "T7.P2",
+      "kpi_id": "T7.P2.K1",
+      "question_text": "Reducir el tiempo de recuperación es clave para la continuidad del servicio. ¿Cómo se gestiona el MTTR por criticidad?"
+    },
+    {
+      "question_id": "T7.P2.K2.PR1",
+      "pillar_id": "T7.P2",
+      "kpi_id": "T7.P2.K2",
+      "question_text": "Resolver incidencias en el primer nivel mejora la eficiencia operativa. ¿Cuál es la eficacia del primer nivel (FCR)?"
+    },
+    {
+      "question_id": "T7.P2.K3.PR1",
+      "pillar_id": "T7.P2",
+      "kpi_id": "T7.P2.K3",
+      "question_text": "Gestionar correctamente incidencias críticas reduce el impacto en el negocio. ¿Cómo se gestionan los Major Incidents?"
+    },
+    {
+      "question_id": "T7.P2.K4.PR1",
+      "pillar_id": "T7.P2",
+      "kpi_id": "T7.P2.K4",
+      "question_text": "Controlar el volumen de tickets evita saturación operativa. ¿Cómo se gestiona el backlog y el aging de tickets?"
+    },
+    {
+      "question_id": "T7.P3.K1.PR1",
+      "pillar_id": "T7.P3",
+      "kpi_id": "T7.P3.K1",
+      "question_text": "Gestionar correctamente los cambios reduce incidencias en producción. ¿Cuál es la tasa de éxito de los cambios?"
+    },
+    {
+      "question_id": "T7.P3.K2.PR1",
+      "pillar_id": "T7.P3",
+      "kpi_id": "T7.P3.K2",
+      "question_text": "Evaluar correctamente el riesgo de los cambios evita impactos en el servicio. ¿Cómo se clasifican y evalúan los cambios?"
+    },
+    {
+      "question_id": "T7.P3.K3.PR1",
+      "pillar_id": "T7.P3",
+      "kpi_id": "T7.P3.K3",
+      "question_text": "Disponer de una CMDB fiable es clave para la operación. ¿Cuál es la calidad y actualización de la CMDB?"
+    },
+    {
+      "question_id": "T7.P3.K4.PR1",
+      "pillar_id": "T7.P3",
+      "kpi_id": "T7.P3.K4",
+      "question_text": "Reducir cambios urgentes mejora la estabilidad del servicio. ¿Cómo se gestionan los cambios emergentes?"
+    },
+    {
+      "question_id": "T7.P4.K1.PR1",
+      "pillar_id": "T7.P4",
+      "kpi_id": "T7.P4.K1",
+      "question_text": "Reducir incidencias repetitivas mejora la estabilidad operativa. ¿Cuál es el nivel de incidencias recurrentes?"
+    },
+    {
+      "question_id": "T7.P4.K2.PR1",
+      "pillar_id": "T7.P4",
+      "kpi_id": "T7.P4.K2",
+      "question_text": "Analizar correctamente las causas raíz evita repetir errores. ¿Cómo es la calidad del RCA?"
+    },
+    {
+      "question_id": "T7.P4.K3.PR1",
+      "pillar_id": "T7.P4",
+      "kpi_id": "T7.P4.K3",
+      "question_text": "Gestionar el backlog de problemas permite mejorar la estabilidad del servicio. ¿Cómo se gestiona el backlog de problemas?"
+    },
+    {
+      "question_id": "T7.P4.K4.PR1",
+      "pillar_id": "T7.P4",
+      "kpi_id": "T7.P4.K4",
+      "question_text": "Gestionar la fiabilidad como producto permite mejorar la calidad del servicio. ¿Cuál es la madurez SRE (SLO/SLI y reducción de toil)?"
+    },
+    {
+      "question_id": "T7.P5.K1.PR1",
+      "pillar_id": "T7.P5",
+      "kpi_id": "T7.P5.K1",
+      "question_text": "Tener visibilidad completa del servicio permite detectar problemas antes de que impacten. ¿Cuál es la cobertura de observabilidad por servicio?"
+    },
+    {
+      "question_id": "T7.P5.K2.PR1",
+      "pillar_id": "T7.P5",
+      "kpi_id": "T7.P5.K2",
+      "question_text": "Reducir el ruido de alertas mejora la eficiencia operativa. ¿Cómo se gestiona el ruido de alertas?"
+    },
+    {
+      "question_id": "T7.P5.K3.PR1",
+      "pillar_id": "T7.P5",
+      "kpi_id": "T7.P5.K3",
+      "question_text": "Automatizar tareas operativas reduce errores y tiempos de resolución. ¿Cuál es el nivel de automatización operativa y runbooks?"
+    },
+    {
+      "question_id": "T7.P5.K4.PR1",
+      "pillar_id": "T7.P5",
+      "kpi_id": "T7.P5.K4",
+      "question_text": "Detectar incidentes antes del usuario mejora la experiencia del servicio. ¿Cómo se realiza la detección proactiva de incidentes?"
+    },
+    {
+      "question_id": "T7.P5.K5.PR1",
+      "pillar_id": "T7.P5",
+      "kpi_id": "T7.P5.K5",
+      "question_text": "Entender el impacto real de los eventos permite priorizar correctamente. ¿Cómo se correlacionan eventos, dependencias e impacto de servicio?"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "document_profile_id": "tower_annex_v2_profile",
+  "artifact_type": "tower_annex",
+  "artifact_version": "2.0",
+  "required_top_level_blocks": [
+    "executive_summary",
+    "pillar_score_profile",
+    "sections",
+    "summary"
+  ],
+  "required_sections": [
+    "asis",
+    "risks",
+    "tobe",
+    "gap",
+    "todo",
+    "conclusion"
+  ],
+  "summary_fields": [
+    "score_display",
+    "maturity_band",
+    "target_maturity"
+  ],
+  "render_blueprint": [
+    {
+      "block_id": "executive_summary",
+      "title": "Resumen ejecutivo de la torre",
+      "source": "executive_summary"
+    },
+    {
+      "block_id": "pillar_score_profile",
+      "title": "Perfil de madurez por pilar",
+      "source": "pillar_score_profile"
+    },
+    {
+      "block_id": "asis",
+      "title": "AS-IS",
+      "source": "sections.asis"
+    },
+    {
+      "block_id": "risks",
+      "title": "Riesgos principales",
+      "source": "sections.risks"
+    },
+    {
+      "block_id": "tobe_gap",
+      "title": "Estado objetivo y brechas",
+      "source": [
+        "sections.tobe",
+        "sections.gap"
+      ]
+    },
+    {
+      "block_id": "todo",
+      "title": "Iniciativas prioritarias",
+      "source": "sections.todo"
+    },
+    {
+      "block_id": "conclusion",
+      "title": "Conclusión",
+      "source": "sections.conclusion"
+    },
+    {
+      "block_id": "open_questions",
+      "title": "Observaciones pendientes de validación",
+      "source": "consolidated_open_questions"
+    }
+  ],
+  "editorial_limits": {
+    "executive_summary": {
+      "max_key_messages": 3,
+      "max_words_headline": 45,
+      "max_words_why_it_matters": 60
+    },
+    "pillar_score_profile": {
+      "max_short_interpretation_words": 22,
+      "max_key_messages": 3
+    },
+    "asis": {
+      "max_words_executive_narrative": 180,
+      "max_strengths": 4,
+      "max_gaps": 6,
+      "max_operational_implications": 4,
+      "max_risks_in_summary_table": 5
+    },
+    "risks": {
+      "max_risks": 5,
+      "max_words_introduction": 120,
+      "max_words_closing_summary": 100
+    },
+    "tobe": {
+      "max_words_introduction": 120,
+      "max_principles": 4,
+      "max_operating_model_implications": 4
+    },
+    "gap": {
+      "max_gap_items": 5,
+      "max_cross_cutting_messages": 3
+    },
+    "todo": {
+      "max_initiatives": 8,
+      "max_words_introduction": 100,
+      "max_words_closing_summary": 100
+    },
+    "conclusion": {
+      "max_words_final_assessment": 140,
+      "max_words_executive_message": 120,
+      "max_priority_focus_areas": 4,
+      "max_words_closing_statement": 70
+    },
+    "open_questions": {
+      "max_questions": 5
+    }
+  },
+  "forbidden_phrases_by_section": {
+    "asis": [
+      "TO-BE",
+      "estado objetivo",
+      "capacidades objetivo",
+      "roadmap",
+      "plan de evolución",
+      "quick wins"
+    ],
+    "risks": [
+      "roadmap",
+      "quick wins",
+      "estado objetivo",
+      "capacidades objetivo por pilar"
+    ],
+    "tobe": [
+      "quick wins",
+      "roadmap",
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "plan de evolución"
+    ],
+    "gap": [
+      "quick wins",
+      "roadmap",
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "plan de evolución"
+    ],
+    "todo": [
+      "2027",
+      "2028",
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "roadmap detallado"
+    ],
+    "conclusion": [
+      "0-3 meses",
+      "3-6 meses",
+      "6-12 meses",
+      "roadmap detallado",
+      "quick wins"
+    ]
+  },
+  "canonical_pillar_labels": {
+    "T5.P1": "Estrategia BC/DR",
+    "T5.P2": "Backup & Restore",
+    "T5.P3": "Disaster Recovery",
+    "T5.P4": "Cyber Recovery",
+    "T5.P5": "Alta Disponibilidad"
+  },
+  "charting": {
+    "pillar_radar_chart": {
+      "enabled": true,
+      "scale_min": 0,
+      "scale_max": 5
+    }
+  }
+}
