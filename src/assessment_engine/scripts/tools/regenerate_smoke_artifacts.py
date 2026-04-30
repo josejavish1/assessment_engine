@@ -76,6 +76,8 @@ def main(argv: list[str] | None = None) -> None:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT / "src")
     ensure_google_cloud_env_defaults(env)
+    if args.skip_vertex_preflight:
+        env["ASSESSMENT_SKIP_VERTEX_PREFLIGHT"] = "1"
     if args.writer_model:
         env["ASSESSMENT_MODEL_OVERRIDE_WRITER_FAST"] = args.writer_model
     if args.vertex_query_timeout_seconds is not None:
