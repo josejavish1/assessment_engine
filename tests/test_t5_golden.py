@@ -1,33 +1,20 @@
 import hashlib
-import json
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-import pytest
 from docx import Document
 
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
 from assessment_engine.schemas.blueprint import BlueprintPayload
+from tests.artifact_helpers import ROOT, load_json, require_artifact
 
-
-ROOT = Path(__file__).resolve().parents[1]
 T5_DIR = ROOT / "working" / "smoke_ivirma" / "T5"
 BLUEPRINT_PAYLOAD = T5_DIR / "blueprint_t5_payload.json"
 ANNEX_PAYLOAD = T5_DIR / "approved_annex_t5.template_payload.json"
 BLUEPRINT_DOCX = T5_DIR / "Blueprint_Transformacion_T5_smoke_ivirma.docx"
 ANNEX_DOCX = T5_DIR / "annex_t5_smoke_ivirma_final.docx"
 RADAR_PNG = T5_DIR / "pillar_radar_chart.generated.png"
-
-
-def _require(path: Path) -> Path:
-    if not path.exists():
-        pytest.skip(f"Missing artifact: {path}")
-    return path
-
-
-def _load_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def _docx_xml_and_rels(path: Path):
@@ -58,7 +45,7 @@ def _sha256_file(path: Path) -> str:
 
 
 def test_t5_blueprint_payload_schema_and_shape():
-    data = _load_json(_require(BLUEPRINT_PAYLOAD))
+    data = load_json(require_artifact(BLUEPRINT_PAYLOAD))
     payload = BlueprintPayload.model_validate(data)
     assert payload.document_meta.tower_code == "T5"
     assert payload.document_meta.tower_name == "Resilience & Continuity"
@@ -71,7 +58,7 @@ def test_t5_blueprint_payload_schema_and_shape():
 
 
 def test_t5_annex_payload_schema_and_executive_limits():
-    data = _load_json(_require(ANNEX_PAYLOAD))
+    data = load_json(require_artifact(ANNEX_PAYLOAD))
     payload = AnnexPayload.model_validate(data)
     assert payload.document_meta["tower_code"] == "T5"
     assert payload.document_meta["tower_name"] == "Resilience & Continuity"
@@ -94,7 +81,7 @@ def test_t5_annex_payload_schema_and_executive_limits():
 
 
 def test_t5_annex_docx_has_no_functional_placeholders():
-    xml, _ = _docx_xml_and_rels(_require(ANNEX_DOCX))
+    xml, _ = _docx_xml_and_rels(require_artifact(ANNEX_DOCX))
     forbidden = [
         "{{RISKS_TABLE}}",
         "{{GAP_TABLE}}",
@@ -110,8 +97,8 @@ def test_t5_annex_docx_has_no_functional_placeholders():
 
 
 def test_t5_annex_docx_embeds_real_radar_chart():
-    annex_path = _require(ANNEX_DOCX)
-    radar_path = _require(RADAR_PNG)
+    annex_path = require_artifact(ANNEX_DOCX)
+    radar_path = require_artifact(RADAR_PNG)
     with zipfile.ZipFile(annex_path) as zf:
         document = ET.fromstring(zf.read("word/document.xml"))
         rels = ET.fromstring(zf.read("word/_rels/document.xml.rels"))
@@ -145,15 +132,15 @@ def test_t5_annex_docx_embeds_real_radar_chart():
 
 
 def test_t5_blueprint_and_annex_roles_are_distinct():
-    blueprint_words = _docx_words(_require(BLUEPRINT_DOCX))
-    annex_words = _docx_words(_require(ANNEX_DOCX))
+    blueprint_words = _docx_words(require_artifact(BLUEPRINT_DOCX))
+    annex_words = _docx_words(require_artifact(ANNEX_DOCX))
     assert blueprint_words > annex_words
     assert annex_words < 5000
     assert blueprint_words > 7000
 
 
 def test_t5_blueprint_opening_contains_business_layer():
-    doc = Document(_require(BLUEPRINT_DOCX))
+    doc = Document(require_artifact(BLUEPRINT_DOCX))
     text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
     assert "Por qué importa al negocio" in text
     assert "Riesgos de negocio más materiales" in text

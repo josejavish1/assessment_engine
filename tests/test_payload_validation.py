@@ -1,21 +1,16 @@
 import pytest
-import json
-from pathlib import Path
 from pydantic import ValidationError
 
-from assessment_engine.schemas.global_report import GlobalReportPayload
 from assessment_engine.schemas.commercial import CommercialPayload
+from assessment_engine.schemas.global_report import GlobalReportPayload
+from tests.artifact_helpers import ROOT, load_json, require_artifact
 
-ROOT = Path(__file__).resolve().parents[1]
 SMOKE_DIR = ROOT / "working" / "smoke_ivirma"
 
 def test_global_report_payload_schema():
     """Valida el esquema del Informe Global contra el payload real generado."""
-    payload_file = SMOKE_DIR / "global_report_payload.json"
-    if not payload_file.exists():
-        pytest.skip("No global_report_payload.json found. Run smoke test first.")
-        
-    data = json.loads(payload_file.read_text(encoding="utf-8"))
+    payload_file = require_artifact(SMOKE_DIR / "global_report_payload.json")
+    data = load_json(payload_file)
     
     try:
         payload = GlobalReportPayload.model_validate(data)
@@ -26,11 +21,8 @@ def test_global_report_payload_schema():
 
 def test_commercial_report_payload_schema():
     """Valida el esquema del Account Action Plan contra el payload real generado."""
-    payload_file = SMOKE_DIR / "commercial_report_payload.json"
-    if not payload_file.exists():
-        pytest.skip("No commercial_report_payload.json found. Run smoke test first.")
-        
-    data = json.loads(payload_file.read_text(encoding="utf-8"))
+    payload_file = require_artifact(SMOKE_DIR / "commercial_report_payload.json")
+    data = load_json(payload_file)
     
     try:
         payload = CommercialPayload.model_validate(data)

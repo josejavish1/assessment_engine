@@ -1,12 +1,10 @@
+import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
-import zipfile
 
 from docx import Document
-import pytest
 
-
-ROOT = Path(__file__).resolve().parents[1]
+from tests.artifact_helpers import ROOT, require_existing_group
 
 
 def _resolve_t5_docx_pair() -> tuple[Path, Path]:
@@ -30,12 +28,9 @@ def _resolve_t5_docx_pair() -> tuple[Path, Path]:
             / "annex_t5_ivirma_final.docx",
         ),
     ]
-    for blueprint, annex in preferred_pairs:
-        if blueprint.exists() and annex.exists():
-            return blueprint, annex
-    pytest.skip(
-        "No hay artefactos DOCX T5 disponibles en working/ para validar integridad.",
-        allow_module_level=True,
+    return require_existing_group(
+        preferred_pairs,
+        skip_message="No hay artefactos DOCX T5 disponibles en working/ para validar integridad.",
     )
 
 

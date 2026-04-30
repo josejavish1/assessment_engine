@@ -1,13 +1,10 @@
-from pathlib import Path
 import zipfile
 
 from docx import Document
-import pytest
 
 from assessment_engine.scripts.render_tower_annex_from_template import main
+from tests.artifact_helpers import ROOT, require_artifact_es
 
-
-ROOT = Path(__file__).resolve().parents[1]
 PAYLOAD_PATH = (
     ROOT / "working" / "ivirma" / "T5" / "approved_annex_t5.template_payload.json"
 )
@@ -17,15 +14,12 @@ TEMPLATE_PATH = (
 
 
 def test_render_tower_annex_from_real_payload(tmp_path):
-    if not PAYLOAD_PATH.exists():
-        pytest.skip(f"No se encontró el artefacto: {PAYLOAD_PATH}")
-
     output_path = tmp_path / "annex_t5_test.docx"
 
     main(
         [
             "render_tower_annex_from_template",
-            str(PAYLOAD_PATH),
+            str(require_artifact_es(PAYLOAD_PATH)),
             str(TEMPLATE_PATH),
             str(output_path),
         ]
@@ -41,15 +35,12 @@ def test_render_tower_annex_from_real_payload(tmp_path):
 
 
 def test_render_tower_annex_semantic_mode_uses_word_styles(tmp_path):
-    if not PAYLOAD_PATH.exists():
-        pytest.skip(f"No se encontró el artefacto: {PAYLOAD_PATH}")
-
     output_path = tmp_path / "annex_t5_semantic.docx"
 
     main(
         [
             "render_tower_annex_from_template",
-            str(PAYLOAD_PATH),
+            str(require_artifact_es(PAYLOAD_PATH)),
             str(TEMPLATE_PATH),
             str(output_path),
             "--semantic-styles",
