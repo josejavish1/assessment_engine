@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from docx import Document
+import pytest
 
 from assessment_engine.scripts.render_commercial_report import (
     load_payload,
@@ -16,6 +17,9 @@ TEMPLATE_PATH = (
 
 
 def test_render_commercial_report_from_real_payload(tmp_path):
+    if not PAYLOAD_PATH.exists():
+        pytest.skip(f"No se encontró el artefacto: {PAYLOAD_PATH}")
+
     output_path = tmp_path / "commercial_report_test.docx"
     payload = load_payload(PAYLOAD_PATH)
 

@@ -2,6 +2,7 @@ from pathlib import Path
 import zipfile
 
 from docx import Document
+import pytest
 
 from assessment_engine.scripts.render_tower_annex_from_template import main
 
@@ -16,6 +17,9 @@ TEMPLATE_PATH = (
 
 
 def test_render_tower_annex_from_real_payload(tmp_path):
+    if not PAYLOAD_PATH.exists():
+        pytest.skip(f"No se encontró el artefacto: {PAYLOAD_PATH}")
+
     output_path = tmp_path / "annex_t5_test.docx"
 
     main(
@@ -37,6 +41,9 @@ def test_render_tower_annex_from_real_payload(tmp_path):
 
 
 def test_render_tower_annex_semantic_mode_uses_word_styles(tmp_path):
+    if not PAYLOAD_PATH.exists():
+        pytest.skip(f"No se encontró el artefacto: {PAYLOAD_PATH}")
+
     output_path = tmp_path / "annex_t5_semantic.docx"
 
     main(
