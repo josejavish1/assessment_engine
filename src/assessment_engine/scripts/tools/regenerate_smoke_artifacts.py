@@ -9,10 +9,12 @@ import argparse
 import os
 import shlex
 import subprocess
-import sys
 
+from assessment_engine.scripts.lib.pipeline_runtime import (
+    build_runtime_env,
+    resolve_python_bin,
+)
 from assessment_engine.scripts.lib.runtime_env import (
-    ensure_google_cloud_env_defaults,
     run_vertex_ai_preflight,
 )
 from assessment_engine.scripts.lib.runtime_paths import ROOT
@@ -20,13 +22,6 @@ from assessment_engine.scripts.tools.generate_smoke_data import generate_smoke_i
 
 
 BLUEPRINT_RESUME_STEP = "Engine: Tower Strategic Blueprint"
-
-
-def resolve_python_bin() -> str:
-    venv_python = ROOT / ".venv" / "bin" / "python"
-    if venv_python.exists():
-        return str(venv_python)
-    return sys.executable
 
 
 def run_step(
@@ -73,9 +68,7 @@ def main(argv: list[str] | None = None) -> None:
     tower_id = args.tower.upper().strip()
     python_bin = resolve_python_bin()
 
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT / "src")
-    ensure_google_cloud_env_defaults(env)
+    env = build_runtime_env()
     if args.skip_vertex_preflight:
         env["ASSESSMENT_SKIP_VERTEX_PREFLIGHT"] = "1"
     if args.writer_model:

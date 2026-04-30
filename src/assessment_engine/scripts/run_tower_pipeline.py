@@ -11,9 +11,12 @@ import unicodedata
 import asyncio
 from pathlib import Path
 
+from assessment_engine.scripts.lib.pipeline_runtime import (
+    build_runtime_env,
+    resolve_python_bin,
+)
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.runtime_env import (
-    ensure_google_cloud_env_defaults,
     run_vertex_ai_preflight,
 )
 
@@ -85,13 +88,6 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
         raise RuntimeError(f"Error crítico lanzando {step_name}: {e}")
 
 
-def resolve_python_bin() -> str:
-    venv_python = ROOT / ".venv" / "bin" / "python"
-    if venv_python.exists():
-        return str(venv_python)
-    return sys.executable
-
-
 def validate_runtime_environment(env: dict[str, str]) -> None:
     missing_vars = [
         name
@@ -148,9 +144,7 @@ async def run_pipeline():
     case_dir.mkdir(parents=True, exist_ok=True)
     python_bin = resolve_python_bin()
 
-    env = os.environ.copy()
-    ensure_google_cloud_env_defaults(env)
-    env["PYTHONPATH"] = str(ROOT / "src")
+    env = build_runtime_env()
     env["ASSESSMENT_CLIENT_ID"] = client_slug
     env["ASSESSMENT_TOWER_ID"] = tower_id
     env["ASSESSMENT_CASE_DIR"] = str(case_dir)
