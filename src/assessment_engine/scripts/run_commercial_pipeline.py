@@ -8,16 +8,21 @@ import importlib
 import asyncio
 from unittest.mock import patch
 from pathlib import Path
+from assessment_engine.scripts.lib.runtime_env import (
+    ensure_google_cloud_env_defaults,
+    run_vertex_ai_preflight,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def run_step(cmd_args: list[str], step_name: str) -> None:
+def run_step(cmd_args: list[str], step_name: str, env: dict[str, str]) -> None:
     print(f"\n=== {step_name} ===")
-    
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT / "src")
-    for k, v in env.items():
+
+    process_env = os.environ.copy()
+    process_env.update(env)
+    process_env["PYTHONPATH"] = str(ROOT / "src")
+    for k, v in process_env.items():
         os.environ[k] = v
 
     if len(cmd_args) >= 3 and cmd_args[1] == "-m":
@@ -55,6 +60,15 @@ def main(argv: list[str] | None = None) -> None:
 
     client_name = (argv if argv is not None else sys.argv)[1]
     client_dir = ROOT / "working" / client_name
+    env = os.environ.copy()
+    ensure_google_cloud_env_defaults(env)
+    env["PYTHONPATH"] = str(ROOT / "src")
+    if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
+        preflight = run_vertex_ai_preflight(env=env)
+        print(
+            "✅ Vertex AI listo "
+            f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
+        )
 
     global_payload_path = client_dir / "global_report_payload.json"
     commercial_payload_path = client_dir / "commercial_report_payload.json"
@@ -78,6 +92,7 @@ def main(argv: list[str] | None = None) -> None:
             str(global_payload_path),
         ],
         "Multi-Agent Commercial Refinement",
+        env,
     )
 
     # 2. Renderizar Documento Word Confidencial
@@ -90,6 +105,7 @@ def main(argv: list[str] | None = None) -> None:
             str(output_path),
         ],
         "Render Account Action Plan",
+        env,
     )
 
     print(

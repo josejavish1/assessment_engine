@@ -1,0 +1,37 @@
+name: Documentation Governance
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+
+jobs:
+  docs-governance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validator dependency
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyYAML
+
+      - name: Validate documentation governance
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA"

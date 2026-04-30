@@ -1,9 +1,38 @@
+---
+status: Draft
+owner: docs-governance
+source_of_truth:
+  - ../../docs/contracts/tower_main_report_coverage_matrix.md
+  - ../../src/assessment_engine/schemas/blueprint.py
+  - ../../src/assessment_engine/schemas/annex_synthesis.py
+  - ../../src/assessment_engine/scripts/render_tower_blueprint.py
+  - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
+last_verified_against: 2026-04-30
+applies_to:
+  - humans
+  - ai-agents
+doc_type: canonical
+---
+
 # Plantilla Base - Informe Tecnico Extendido de Torre
 
 ## Objetivo
 Definir la plantilla operativa del documento largo para responsables tecnicos del cliente.
 
 Este documento no es una ampliacion del anexo corto. Es el documento principal de analisis de la torre.
+
+## Estado contractual actual
+
+- hoy **no existe** un payload `tower_main_report` implementado ni un renderizador canónico para este documento largo;
+- esta plantilla define el destino editorial deseado para una futura implementación;
+- si se implementa, debe derivarse del flujo vigente `blueprint-first`, no del modelo legacy por secciones.
+
+## Jerarquia de fuentes recomendada
+
+1. `blueprint_<tower>_payload.json` como contrato principal.
+2. `approved_annex_<tower>.template_payload.json` como sintesis ejecutiva derivada.
+3. `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json` como soporte, trazabilidad y detalle.
+4. Los ficheros `approved_asis/gap/tobe/todo/...generated.json` no deben volver a introducirse como dependencia canónica.
 
 ## Directriz visual
 - Reutilizar la identidad visual de la version short.
@@ -57,9 +86,9 @@ Introducir formalmente la naturaleza del informe, su alcance general y el valor 
 El presente documento constituye el informe tecnico extendido de resultados del Fast Infrastructure Assessment realizado sobre la torre `{{TOWER_CODE}} - {{TOWER_NAME}}` del cliente `{{CLIENT_NAME}}`.
 
 Este informe recoge de forma estructurada los resultados obtenidos a partir del modelo de evaluacion de madurez aplicado a la torre, proporcionando una vision clara y accionable de:
-- el estado actual de la torre (`AS-IS`)
-- el estado objetivo recomendado (`TO-BE`)
-- y las iniciativas de evolucion necesarias para avanzar hacia dicho estado (`TO-DO` / cartera de proyectos)
+- el estado actual de la torre derivado del blueprint y de la sintesis ejecutiva
+- el estado objetivo recomendado por capacidad y por pilar
+- y las iniciativas de evolucion necesarias para avanzar hacia dicho estado
 
 El documento se ha disenado para ofrecer una vision simultaneamente tecnica y ejecutiva, permitiendo a responsables de infraestructura, operaciones, continuidad, seguridad, arquitectura y gobierno tecnologico comprender con claridad:
 - el nivel actual de madurez de la torre
@@ -366,3 +395,5 @@ Incorporar soporte tecnico sin romper la narrativa principal.
 - La plantilla larga debe renderizarse con el mismo template visual base de la version short.
 - La diferencia no debe estar en la identidad grafica, sino en la arquitectura del contenido.
 - Si una seccion no tiene informacion suficiente, el sistema debe marcarla como `pendiente de completar` o generar una version parcial basada en evidencia, sin inventar.
+- La futura implementación debe construir el documento desde `blueprint_<tower>_payload.json` como fuente principal, usando `approved_annex_<tower>.template_payload.json` solo como capa de sintesis ejecutiva.
+- No debe depender de `approved_asis.generated.json`, `approved_gap.generated.json`, `approved_tobe.generated.json`, `approved_todo.generated.json` ni otros artefactos legacy como fuente primaria.

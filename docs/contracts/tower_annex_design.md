@@ -1,3 +1,18 @@
+---
+status: Draft
+owner: docs-governance
+source_of_truth:
+  - ../../src/assessment_engine/schemas/annex_synthesis.py
+  - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+  - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
+  - ../../docs/contracts/payload-render-boundaries.md
+last_verified_against: 2026-04-30
+applies_to:
+  - humans
+  - ai-agents
+doc_type: canonical
+---
+
 # Tower Annex v2 - Diseño objetivo
 
 ## Objetivo
@@ -7,6 +22,20 @@ Rediseñar el anexo de torre para que sea:
 - más corto
 - más explicable
 - menos repetitivo
+
+## Estado contractual actual
+
+- el contrato implementado hoy sigue siendo `artifact_type = annex_payload`;
+- el smoke validado actual emite `artifact_version = 1.1.0`;
+- este documento describe una **dirección de evolución editorial**, no un cambio ya implantado extremo a extremo.
+
+## Dependencia canónica
+
+El anexo vigente debe seguir tratándose como una derivación del flujo top-down:
+
+1. `blueprint_<tower>_payload.json` define la verdad estructural principal;
+2. `run_executive_annex_synthesizer.py` sintetiza `approved_annex_<tower>.template_payload.json`;
+3. `render_tower_annex_from_template.py` solo presenta ese payload.
 
 ## Principios de diseño
 1. El lector debe entender en pocos minutos:
@@ -115,4 +144,4 @@ Contenido:
 - conclusión
 
 ## Decisión de diseño
-Se mantiene el contrato base del artifact_type `tower_annex`, pero se evoluciona a `artifact_version = 2.0`.
+La evolución visual o editorial del anexo no debe anunciar una nueva `artifact_version` hasta que exista un contrato implementado, emitido por el sintetizador y validado por tests y artefactos reales.

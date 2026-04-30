@@ -1,9 +1,11 @@
 """Render the tower annex DOCX from a validated payload and template."""
 
+import os
 import sys
 from pathlib import Path
 
 from docx import Document
+from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
@@ -13,10 +15,19 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     add_heading_paragraph,
     add_label_value_paragraph,
     add_long_detail_table,
+    apply_bullet_list_format,
+    apply_paragraph_style,
+    apply_table_style,
     clean_list,
     clean_paragraph_list,
     clean_text,
+    clear_cell_shading,
+    clear_paragraph,
+    clear_paragraph_properties,
+    enable_update_fields_on_open,
     finalize_table,
+    insert_field_paragraph_after_block,
+    insert_paragraph_after_block,
     remove_page_break_only_paragraphs,
     remove_paragraph,
     render_gap_table,
@@ -32,6 +43,9 @@ from assessment_engine.scripts.lib.docx_render_utils import (
 
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
 from pydantic import ValidationError
+
+
+WORD_RENDER_MODE_ENV = "AE_WORD_RENDER_MODE"
 
 
 def normalize_annex_payload(payload_dict: dict) -> dict:
@@ -80,6 +94,207 @@ def normalize_annex_payload(payload_dict: dict) -> dict:
     return normalized
 
 
+def _replace_client_placeholders(value, client_name: str):
+    if isinstance(value, dict):
+        return {
+            key: _replace_client_placeholders(item, client_name)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_replace_client_placeholders(item, client_name) for item in value]
+    if isinstance(value, str):
+        return value.replace("[Cliente]", client_name).replace("[cliente]", client_name)
+    return value
+
+
+def insert_toc_after(paragraph) -> None:
+    heading = insert_paragraph_after_block(paragraph)
+    heading.add_run("Contents")
+    apply_paragraph_style(heading, "TOC Heading", "TtuloTDC")
+    heading.paragraph_format.space_before = Pt(12)
+    heading.paragraph_format.space_after = Pt(6)
+    toc_paragraph = insert_field_paragraph_after_block(
+        heading,
+        'TOC \\o "1-2" \\h \\z \\u',
+        placeholder_text="Update field to build contents.",
+    )
+    style_existing_field_paragraph(toc_paragraph, "toc 1", "TDC1")
+
+
+def rewrite_paragraph_with_style(paragraph, text: str, *styles: str) -> None:
+    clean_value = clean_text(text)
+    clear_paragraph(paragraph)
+    clear_paragraph_properties(paragraph)
+    apply_paragraph_style(paragraph, *styles)
+    if clean_value:
+        paragraph.add_run(clean_value)
+
+
+def rewrite_body_paragraph(paragraph, text: str) -> None:
+    clean_value = clean_text(text)
+    if not clean_value:
+        return
+    clear_paragraph(paragraph)
+    clear_paragraph_properties(paragraph)
+    if not apply_paragraph_style(
+        paragraph,
+        "NTT Body Text",
+        "NTTBodyText",
+        "Body Text",
+        "Textoindependiente",
+    ):
+        apply_paragraph_style(paragraph, "Normal")
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(8)
+    paragraph.paragraph_format.line_spacing = 1.05
+    run = paragraph.add_run(clean_value)
+    run.font.size = Pt(10)
+
+
+def style_existing_field_paragraph(paragraph, *styles: str) -> None:
+    clear_paragraph_properties(paragraph)
+    apply_paragraph_style(paragraph, *styles)
+    paragraph.paragraph_format.space_before = Pt(0)
+    paragraph.paragraph_format.space_after = Pt(3)
+    paragraph.paragraph_format.line_spacing = 1.0
+
+
+def polish_semantic_tables(doc) -> None:
+    for table in doc.tables:
+        apply_table_style(
+            table,
+            "Tabla con cuadrícula 1 clara - Énfasis 11",
+            "Tablaconcuadrcula1clara-nfasis11",
+            "Smart Navy table",
+            "SmartNavytable",
+            "NTT Future Blue table",
+            "NTTFutureBluetable",
+            "Table Grid",
+        )
+        for row_idx, row in enumerate(table.rows):
+            for cell in row.cells:
+                clear_cell_shading(cell)
+                cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
+                for paragraph in cell.paragraphs:
+                    paragraph.paragraph_format.space_before = Pt(0)
+                    paragraph.paragraph_format.space_after = Pt(2)
+                    paragraph.paragraph_format.line_spacing = 1.0
+                    if row_idx == 0:
+                        if paragraph.alignment == WD_ALIGN_PARAGRAPH.JUSTIFY:
+                            paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                    elif paragraph.alignment == WD_ALIGN_PARAGRAPH.JUSTIFY:
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                    for run in paragraph.runs:
+                        run.font.size = Pt(10)
+                        if row_idx == 0:
+                            run.font.color.rgb = RGBColor(255, 255, 255)
+
+
+def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
+    enable_update_fields_on_open(doc)
+
+    heading_level_1 = {
+        "Resumen ejecutivo de la torre",
+        "Perfil de madurez por pilar",
+        "AS-IS resumido",
+        "Riesgos principales",
+        "Estado objetivo y brechas",
+        "Iniciativas prioritarias",
+        "Conclusión",
+        "Desarrollo ampliado",
+        "1. AS-IS detallado",
+        "2. Riesgos detallados",
+        "3. Estado objetivo detallado",
+        "4. Brechas detalladas",
+        "5. Iniciativas priorizadas detalladas",
+        "6. Cierre ampliado",
+    }
+    heading_level_2 = {
+        "Fortaleza principal",
+        "Brecha principal",
+        "Cuello de botella",
+        "Gráfico radial",
+        "Detalle compacto por pilar",
+        "Fortalezas clave",
+        "Brechas clave",
+        "Implicaciones operativas clave",
+        "Principios / capacidades objetivo",
+        "Tabla de brechas por pilar",
+        "Fichas de iniciativas priorizadas",
+        "Mensaje ejecutivo final",
+        "Áreas prioritarias de actuación",
+        "Fortalezas observadas",
+        "Brechas observadas",
+        "Implicaciones operativas",
+        "Lectura transversal de gaps",
+        "Principios de arquitectura y operación",
+        "Implicaciones para el modelo operativo",
+    }
+
+    title_text = (
+        f"ANEXO {payload_dict['document_meta']['tower_code']} – "
+        f"{payload_dict['document_meta']['tower_name']}"
+    )
+    subtitle_prefix = payload_dict["document_meta"]["client_name"]
+    subtitle_anchor = None
+
+    for paragraph in doc.paragraphs:
+        text = clean_text(paragraph.text)
+        if not text:
+            continue
+
+        if text == title_text:
+            rewrite_paragraph_with_style(paragraph, text, "Title", "Ttulo")
+            subtitle_anchor = paragraph
+            continue
+
+        if text.startswith(subtitle_prefix) and "Fast Infrastructure Assessment" in text:
+            rewrite_paragraph_with_style(paragraph, text, "Subtitle", "Subttulo")
+            subtitle_anchor = paragraph
+            continue
+
+        if text in heading_level_1:
+            rewrite_paragraph_with_style(paragraph, text, "Heading 1", "Ttulo1")
+            continue
+
+        if text in heading_level_2:
+            rewrite_paragraph_with_style(paragraph, text, "Heading 2", "Ttulo2")
+            continue
+
+        if text == "Update field to build contents.":
+            style_existing_field_paragraph(paragraph, "toc 1", "TDC1")
+            continue
+
+        if text.startswith("• "):
+            clear_paragraph(paragraph)
+            clear_paragraph_properties(paragraph)
+            apply_bullet_list_format(paragraph)
+            run = paragraph.add_run(text[2:].strip())
+            run.font.size = Pt(10)
+            continue
+
+        rewrite_body_paragraph(paragraph, text)
+
+    if subtitle_anchor is not None and "Update field to build contents." not in "\n".join(
+        paragraph.text for paragraph in doc.paragraphs
+    ):
+        insert_toc_after(subtitle_anchor)
+
+    polish_semantic_tables(doc)
+
+
+def _resolve_render_mode(args: list[str]) -> tuple[str, list[str]]:
+    render_mode = os.environ.get(WORD_RENDER_MODE_ENV, "legacy").strip().lower() or "legacy"
+    filtered_args: list[str] = []
+    for arg in args:
+        if arg == "--semantic-styles":
+            render_mode = "semantic"
+            continue
+        filtered_args.append(arg)
+    return render_mode, filtered_args
+
+
 def clean_brackets_and_consultant_notes(doc, payload: dict):
     meta = payload.get("document_meta", {})
     intro = payload.get("domain_introduction", {})
@@ -90,6 +305,8 @@ def clean_brackets_and_consultant_notes(doc, payload: dict):
 
     # 1. Definir los reemplazos en línea
     replacements = {
+        "[Cliente]": client_name,
+        "[cliente]": client_name,
         "[Nombre del Cliente]": client_name,
         "[número]": "los",
         "[número de pilares]": "varios",
@@ -295,18 +512,24 @@ def render_extended_variant(doc, payload):
     add_body_paragraph(doc, conclusion.get("closing_statement", ""))
 
 def main(argv: list[str] | None = None) -> None:
-    if len(argv if argv is not None else sys.argv) != 4:
+    raw_args = list(argv if argv is not None else sys.argv)
+    render_mode, parsed_args = _resolve_render_mode(raw_args[1:])
+    if len(parsed_args) != 3:
         raise SystemExit(
-            "Uso: python -m scripts.render_tower_annex_from_template <payload_json> <template_docx> <output_docx>"
+            "Uso: python -m scripts.render_tower_annex_from_template <payload_json> <template_docx> <output_docx> [--semantic-styles]"
         )
 
-    payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
-    template_path = Path((argv if argv is not None else sys.argv)[2]).resolve()
-    output_path = Path((argv if argv is not None else sys.argv)[3]).resolve()
+    payload_path = Path(parsed_args[0]).resolve()
+    template_path = Path(parsed_args[1]).resolve()
+    output_path = Path(parsed_args[2]).resolve()
 
     # Cargar y validar contrato de forma robusta
     payload = robust_load_payload(payload_path, AnnexPayload, "Annex")
     payload_dict = normalize_annex_payload(payload.model_dump(by_alias=True))
+    payload_dict = _replace_client_placeholders(
+        payload_dict,
+        str(payload_dict.get("document_meta", {}).get("client_name", "CLIENTE")),
+    )
         
     doc = Document(str(template_path))
     remove_page_break_only_paragraphs(doc)
@@ -452,6 +675,9 @@ def main(argv: list[str] | None = None) -> None:
 
     if variant == "long":
         render_extended_variant(doc, payload_dict)
+
+    if render_mode == "semantic":
+        apply_semantic_annex_styles(doc, payload_dict)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))

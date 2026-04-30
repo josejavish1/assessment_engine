@@ -1,4 +1,23 @@
+---
+status: Verified
+owner: docs-governance
+source_of_truth:
+  - src/assessment_engine/
+  - src/assessment_engine/scripts/
+  - src/assessment_engine/mcp_server.py
+  - src/assessment_engine/schemas/
+last_verified_against: 2026-04-30
+applies_to:
+  - humans
+  - ai-agents
+doc_type: canonical
+---
+
 # System Architecture: Assessment Engine
+
+> **Status:** verified high-level canonical overview.
+>
+> This file gives the global picture of the current architecture. The more focused canonical breakdown now lives under [`docs/architecture/`](architecture/README.md), especially for tower flow, global/commercial flow, MCP mode, and `working/` artifacts.
 
 ## 1. Vision & Core Principles
 
@@ -16,11 +35,15 @@ The system is governed by several key architectural principles:
 
 ## 2. High-Level Architecture & Data Flow
 
-The system is composed of three main sequential pipelines that process data from the most detailed level to the most strategic.
+The dominant production flow is **top-down**: tower blueprints act as the main source of truth, and client-level artifacts are derived from them. Around that flow, the repo exposes one optional enrichment step and one secondary service surface:
+
+- **Optional client intelligence harvesting** creates `client_intelligence.json` before tower analysis.
+- **Primary pipeline mode** runs tower, global, commercial, and web generation from the command line.
+- **Secondary MCP mode** exposes selected operations as tools, but still reflects part of the legacy section-based model.
 
 ```
 ========================================================================================================================
-| INPUTS                                                                                                               |
+| INPUTS + OPTIONAL ENRICHMENT                                                                                        |
 ========================================================================================================================
 |                                                                                                                      |
 |   [ Customer Files: .docx, .txt ]                                                                                    |
@@ -28,6 +51,9 @@ The system is composed of three main sequential pipelines that process data from
 |                                                                                                                      |
 |   [ Methodological Config: .json ]                                                                                   |
 |   (Located in /engine_config)                                                                                        |
+|                                                                                                                      |
+|   Optional upstream enrichment:                                                                                      |
+|   - run_intelligence_harvesting.py --> [ client_intelligence.json ]                                                  |
 |                                                                                                                      |
 `----------------------------------------------------------------------------------------------------------------------'
                                                      |
@@ -47,10 +73,9 @@ The system is composed of three main sequential pipelines that process data from
 |      - run_tower_blueprint_engine.py --> [ blueprint_Txx_payload.json ]  <--- (THE SINGLE SOURCE OF TRUTH)            |
 |                                                                                                                      |
 |   3. Synthesis & Rendering (Derivation from the Source of Truth):                                                    |
-|      - run_executive_annex_synthesizer.py --> [ annex_Txx_payload.json ]                                             |
+|      - run_executive_annex_synthesizer.py --> [ approved_annex_txx.template_payload.json ]                          |
 |      - render_tower_blueprint.py          --> [ Blueprint_Txx.docx ]                                                 |
-|      - render_tower_annex.py              --> [ Annex_Txx.docx ]                                                     |
-|      - generate_tower_radar_chart.py      --> [ radar_chart.png ] (path injected into annex_payload)                 |
+|      - render_tower_annex_from_template.py --> [ Annex_Txx.docx ]                                                    |
 |                                                                                                                      |
 `----------------------------------------------------------------------------------------------------------------------'
                                                      |
@@ -64,14 +89,13 @@ The system is composed of three main sequential pipelines that process data from
 |      - build_global_report_payload.py --> [ global_report_payload.json ]                                             |
 |                                                                                                                      |
 |   2. Global & Commercial AI Refinement:                                                                              |
-|      - run_executive_refiner.py    --> [ refined_global_report.json ]                                                |
-|      - run_commercial_refiner.py   --> [ commercial_payload.json ] (Uses *all* blueprints + global report)           |
+|      - run_executive_refiner.py    --> [ global_report_payload.json ] (refined in place)                            |
+|      - run_commercial_refiner.py   --> [ commercial_report_payload.json ] (Uses *all* blueprints + global report)    |
 |                                                                                                                      |
 |   3. Final Deliverable Rendering:                                                                                    |
-|      - render_global_report.py     --> [ CIO_Ready_Report.docx ]                                                     |
-
-|      - render_commercial_report.py --> [ Internal_Commercial_Plan.docx ]                                           |
-|      - render_web_presentation.py  --> [ Interactive_Dashboard.html ] (The most advanced deliverable)                |
+|      - render_global_report_from_template.py --> [ Informe_Ejecutivo_Consolidado_<client>.docx ]                    |
+|      - render_commercial_report.py --> [ Account_Action_Plan_<client>.docx ]                                         |
+|      - render_web_presentation.py  --> [ working/<client>/presentation/index.html ]                                 |
 |                                                                                                                      |
 `----------------------------------------------------------------------------------------------------------------------'
 
@@ -81,9 +105,22 @@ The system is composed of three main sequential pipelines that process data from
 
 ## 3. Pipeline Phases in Detail
 
--   **Phase 1: Tower Analysis:** This is the core engine. For each technology tower (e.g., "T5 - Resilience"), it takes the client's raw answers and context. It first runs a series of deterministic scripts to prepare the data (calculating scores, structuring evidences). Then, the main AI engine (`run_tower_blueprint_engine.py`) creates the `blueprint_payload.json`, which is the most detailed technical analysis and the single source of truth. All other tower-level documents, like the shorter Executive Annex, are **synthesized** from this master blueprint, ensuring consistency.
+For the current canonical breakdown, also see:
 
--   **Phase 2: Global & Commercial Consolidation:** Once multiple towers have been analyzed, this phase begins. It aggregates the key findings from all `blueprint_payload.json` files into a single `global_report_payload.json`. This consolidated report is then refined by high-level AI agents to create a strategic narrative for the CIO. In parallel, the commercial refiner uses *both* the global strategy and the deep technical details from *all* blueprints to generate a concrete, internal-use "Account Action Plan".
+- [`architecture/tower-pipeline.md`](architecture/tower-pipeline.md)
+- [`architecture/global-commercial-pipelines.md`](architecture/global-commercial-pipelines.md)
+- [`architecture/mcp-mode.md`](architecture/mcp-mode.md)
+- [`architecture/working-artifacts.md`](architecture/working-artifacts.md)
+
+-   **Optional upstream enrichment: Client Intelligence.** `run_intelligence_harvesting.py` can create `working/<client>/client_intelligence.json`, a reusable strategic dossier that later steps may consume. The tower blueprint engine and some renderers can use it if present, but the main pipelines do not require it to exist for every run.
+
+-   **Phase 1: Tower Analysis.** This is the core engine. For each technology tower (for example, `T5`), the system first runs deterministic preparation (`case_input.json`, `evidence_ledger.json`, `scoring_output.json`, `findings.json`). Then `run_tower_blueprint_engine.py` creates `blueprint_<tower>_payload.json`, which is the tower's canonical source of truth. `run_executive_annex_synthesizer.py` derives `approved_annex_<tower>.template_payload.json` from that blueprint, and the renderers produce the final DOCX outputs.
+
+-   **Phase 2: Global Consolidation.** Once one or more towers have produced blueprints, `build_global_report_payload.py` aggregates them into `global_report_payload.json`. While the main path prefers modern blueprints, the builder still contains a legacy fallback to `approved_annex_*.refined.json` so mixed workspaces remain consumable. `run_executive_refiner.py` then refines the same `global_report_payload.json` in place.
+
+-   **Phase 3: Commercial Consolidation.** `run_commercial_refiner.py` uses both the refined global payload and all available tower blueprints to create `commercial_report_payload.json`, which is then rendered to `Account_Action_Plan_<client>.docx`.
+
+-   **Phase 4: Web Presentation.** `render_web_presentation.py` derives a client-facing HTML dashboard from `global_report_payload.json` plus tower blueprints, writing `working/<client>/presentation/index.html`.
 
 ---
 
@@ -93,13 +130,13 @@ The system is designed to be used in two distinct modes:
 
 -   **1. Pipeline Mode:** This is the primary mode of operation, executed via the command line. The orchestrators (`run_tower_pipeline.py`, `run_global_pipeline.py`) are called to run the entire, pre-defined sequence of steps in a batch process. This is ideal for standard, end-to-end report generation.
 
--   **2. Tool Server Mode:** The `mcp_server.py` script exposes the engine's core capabilities (e.g., "render a document", "generate a chart") as a set of tools. This allows an external, higher-level AI supervisor agent (e.g., built with LangGraph) to call these functions on demand. This mode enables more flexible, dynamic, and interactive workflows where an AI agent, rather than a fixed script, is in control of the process. The `get_tower_state` tool is crucial here, as it allows the supervisor to check the progress and decide which tool to call next.
+-   **2. Tool Server Mode:** The `mcp_server.py` script exposes selected capabilities as tools via FastMCP. This mode is useful for integrations and external supervisors, but it is not the main canonical path. Part of its surface still reflects the older section-based architecture, especially `get_tower_state`, which inspects legacy `approved_asis/generated` style artifacts rather than the current blueprint-first flow.
 
 ---
 
 ## 5. Component Map
 
-The project is organized into several key component types. The detailed documentation for each file can be found in this directory.
+The project is organized into several key component types. The legacy per-file reference is now archived under `docs/reference/generated/legacy-gemini/`, but canonical narrative documentation should now live under `docs/architecture/`, `docs/operations/`, `docs/contracts/`, and related top-level docs.
 
 -   **Orchestrators:** Python scripts that define and execute the sequence of a pipeline. (e.g., `run_tower_pipeline.py`).
 -   **Logic & Preparation Scripts:** Deterministic Python scripts that prepare data, calculate metrics, or generate visual assets. (e.g., `run_scoring.py`, `generate_tower_radar_chart.py`).
@@ -108,7 +145,7 @@ The project is organized into several key component types. The detailed document
 -   **Prompts:** The "source code" for the AI agents, defining their personality, rules, and tasks.
 -   **Schemas:** Pydantic models that define the "data contracts" for all the `payloads` exchanged between scripts.
 -   **Libraries (`lib/`):** Reusable Python utilities for common tasks like interacting with the AI, loading configuration, or cleaning text.
--   **Support & Testing (`tools/`, `bootstrap/`, `tests/`):** Scripts for initializing new towers, generating test data, and ensuring the quality and integrity of the system.
+-   **Support & Testing (`tools/`, `bootstrap/`, `tests/`):** Scripts for preflight checks, smoke regeneration, initialization, validation, and quality control.
 
 ---
 

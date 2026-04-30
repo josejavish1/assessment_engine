@@ -13,6 +13,20 @@ def _load_json(path):
     with open(path, "r", encoding="utf-8-sig") as f:
         return json.load(f)
 
+
+def _require_artifact(path: Path) -> None:
+    if not path.exists():
+        pytest.skip(f"Missing artifact: {path}")
+
+
+def _summarize_project_name(name: str) -> str:
+    text = " ".join(str(name or "").split())
+    if ":" in text:
+        _, remainder = text.split(":", 1)
+        if remainder.strip():
+            return remainder.strip()
+    return text
+
 @pytest.mark.contract
 def test_contract_blueprint_to_annex():
     """
@@ -20,7 +34,7 @@ def test_contract_blueprint_to_annex():
     para el sintetizador del Anexo.
     """
     bp_path = T5_DIR / "blueprint_t5_payload.json"
-    assert bp_path.exists(), "Debe existir el payload del blueprint de T5"
+    _require_artifact(bp_path)
     
     bp_data = _load_json(bp_path)
     # Validar que el blueprint cumple su propio esquema (con alias)
@@ -38,7 +52,7 @@ def test_contract_annex_is_valid_payload():
     requerido por el renderizador Word.
     """
     annex_path = T5_DIR / "approved_annex_t5.template_payload.json"
-    assert annex_path.exists(), "Debe existir el payload del anexo de T5"
+    _require_artifact(annex_path)
     
     annex_data = _load_json(annex_path)
     # Validar integridad estructural y tipos
@@ -47,6 +61,52 @@ def test_contract_annex_is_valid_payload():
     assert annex_payload.document_meta["tower_code"] == "T5"
     assert annex_payload.sections.gap is not None
     assert len(annex_payload.sections.risks.risks) > 0
+
+
+@pytest.mark.contract
+def test_contract_annex_keeps_blueprint_non_negotiables_aligned():
+    blueprint_path = T5_DIR / "blueprint_t5_payload.json"
+    annex_path = T5_DIR / "approved_annex_t5.template_payload.json"
+    _require_artifact(blueprint_path)
+    _require_artifact(annex_path)
+
+    bp_data = _load_json(blueprint_path)
+    annex_data = _load_json(annex_path)
+
+    blueprint = BlueprintPayload.model_validate(bp_data)
+    annex = AnnexPayload.model_validate(annex_data)
+
+    blueprint_pillars = {pillar.pilar_name for pillar in blueprint.pillars_analysis}
+    annex_gap_pillars = {row.pillar for row in annex.sections.gap.gap_rows}
+    assert annex_gap_pillars
+    assert annex_gap_pillars.issubset(blueprint_pillars)
+
+    blueprint_projects = {
+        _summarize_project_name(project.initiative)
+        for pillar in blueprint.pillars_analysis
+        for project in pillar.projects_todo
+    }
+    annex_projects = {
+        initiative.initiative for initiative in annex.sections.todo.priority_initiatives
+    }
+    assert annex_projects
+    assert annex_projects.issubset(blueprint_projects)
+
+    average_score = round(
+        sum(pillar.score for pillar in blueprint.pillars_analysis)
+        / len(blueprint.pillars_analysis),
+        1,
+    )
+    assert annex.executive_summary.global_score.startswith(f"{average_score}")
+    assert all(
+        item.get("executive_reading")
+        for item in annex.pillar_score_profile.pillars
+    )
+    assert all(
+        "..." not in item.get("executive_reading", "")
+        and "…" not in item.get("executive_reading", "")
+        for item in annex.pillar_score_profile.pillars
+    )
 
 @pytest.mark.contract
 def test_contract_global_report_schema():

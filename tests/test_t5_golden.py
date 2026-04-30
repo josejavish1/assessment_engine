@@ -100,6 +100,7 @@ def test_t5_annex_docx_has_no_functional_placeholders():
         "{{GAP_TABLE}}",
         "{{PRIORITY_INITIATIVES_CARDS}}",
         "{{RADAR_CHART_BLOCK}}",
+        "[Cliente]",
         "[Fecha]",
         "T[X]",
         "[Nombre de la Torre]",
@@ -157,4 +158,3 @@ def test_t5_blueprint_opening_contains_business_layer():
     assert "Por qué importa al negocio" in text
     assert "Riesgos de negocio más materiales" in text
     assert "Decisiones prioritarias" in text
-

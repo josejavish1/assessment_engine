@@ -1,0 +1,744 @@
+schema_version: 1
+last_reviewed: 2026-04-30
+owners:
+  docs-governance:
+    scope:
+      - README.md
+      - docs/
+      - GEMINI.md
+
+entries:
+  - path: README.md
+    kind: document
+    title: Project entry point
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/README.md
+      - docs/ai/documentation-governance.md
+      - pyproject.toml
+      - src/assessment_engine/
+      - .github/workflows/ci.yml
+    last_verified_against: 2026-04-30
+    notes: Nueva entrada humana del proyecto; pendiente ampliar onboarding y operación.
+
+  - path: docs/README.md
+    kind: document
+    title: Documentation master map
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/documentation-map.yaml
+      - src/assessment_engine/
+      - pyproject.toml
+      - .github/workflows/ci.yml
+    last_verified_against: 2026-04-30
+    notes: Punto de entrada para localizar la verdad documental.
+
+  - path: docs/ai/documentation-governance.md
+    kind: document
+    title: Documentation governance policy
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/
+      - tests/
+      - pyproject.toml
+      - .github/workflows/ci.yml
+      - docs/documentation-map.yaml
+    review_when_source_changes:
+      - .github/pull_request_template.md
+      - .github/CODEOWNERS
+      - .github/workflows/docs-governance.yml
+      - src/assessment_engine/scripts/tools/validate_documentation_governance.py
+      - docs/documentation-map.yaml
+    review_paths_on_source_change:
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+      - .github/pull_request_template.md
+    last_verified_against: 2026-04-30
+    notes: Política central neutral; los adaptadores por agente remiten aquí.
+
+  - path: AGENTS.md
+    kind: document
+    title: General AI agent adapter
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - ai-agents
+    source_of_truth:
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+      - docs/documentation-map.yaml
+    last_verified_against: 2026-04-30
+    notes: Puerta de entrada breve para agentes; no contiene verdad canónica nueva.
+
+  - path: CHATGPT.md
+    kind: document
+    title: ChatGPT adapter
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - chatgpt
+    source_of_truth:
+      - AGENTS.md
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+    last_verified_against: 2026-04-30
+    notes: Adaptador específico para ChatGPT; debe permanecer breve.
+
+  - path: .github/copilot-instructions.md
+    kind: document
+    title: Copilot adapter
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - copilot
+    source_of_truth:
+      - AGENTS.md
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+    last_verified_against: 2026-04-30
+    notes: Adaptador específico para Copilot; no sustituye la documentación canónica.
+
+  - path: .github/pull_request_template.md
+    kind: document
+    title: Pull request template
+    doc_type: operational
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+      - docs/documentation-map.yaml
+    last_verified_against: 2026-04-30
+    notes: Checklist para forzar revisión del impacto documental en cada PR.
+
+  - path: .github/CODEOWNERS
+    kind: document
+    title: Documentation ownership rules
+    doc_type: operational
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+      - docs/documentation-map.yaml
+    last_verified_against: 2026-04-30
+    notes: Ownership mínimo de la documentación canónica y la gobernanza.
+
+  - path: .github/workflows/docs-governance.yml
+    kind: document
+    title: Documentation governance workflow
+    doc_type: operational
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/documentation-map.yaml
+      - docs/ai/documentation-governance.md
+      - src/assessment_engine/scripts/tools/validate_documentation_governance.py
+    last_verified_against: 2026-04-30
+    notes: Workflow que valida metadata documental y reglas de trazabilidad.
+
+  - path: docs/SYSTEM_ARCHITECTURE.md
+    kind: document
+    title: System architecture
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/
+      - src/assessment_engine/scripts/
+      - src/assessment_engine/mcp_server.py
+      - src/assessment_engine/schemas/
+    last_verified_against: 2026-04-30
+    notes: Vista canónica de alto nivel contrastada contra pipelines, MCP, schemas y artefactos reales; deja explícita la tensión entre flujo top-down y superficies legacy.
+
+  - path: docs/architecture
+    kind: collection
+    title: Canonical architecture layer
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/SYSTEM_ARCHITECTURE.md
+      - src/assessment_engine/
+      - src/assessment_engine/scripts/
+      - src/assessment_engine/schemas/
+      - tests/
+    last_verified_against: 2026-04-30
+    notes: Nuevo destino para repartir arquitectura en piezas más mantenibles.
+
+  - path: docs/architecture/tower-pipeline.md
+    kind: document
+    title: Tower pipeline architecture
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/schemas/blueprint.py
+      - src/assessment_engine/schemas/annex_synthesis.py
+    enforce_on_source_changes: true
+    review_paths_on_source_change:
+      - docs/architecture/tower-pipeline.md
+      - docs/architecture/critical-modules.md
+      - docs/contracts/payload-render-boundaries.md
+      - docs/contracts/artifact-contracts.md
+      - docs/operations/pipeline-execution.md
+      - docs/operations/pipeline-controls-runbook.md
+    last_verified_against: 2026-04-30
+    notes: Describe la columna vertebral top-down por torre, su lectura empresarial, controles y el handover explícito entre blueprint técnico y annex ejecutivo.
+
+  - path: docs/architecture/global-commercial-pipelines.md
+    kind: document
+    title: Global and commercial pipelines architecture
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/run_executive_refiner.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_refiner.py
+      - src/assessment_engine/schemas/global_report.py
+      - src/assessment_engine/schemas/commercial.py
+    enforce_on_source_changes: true
+    review_paths_on_source_change:
+      - docs/architecture/global-commercial-pipelines.md
+      - docs/architecture/critical-modules.md
+      - docs/contracts/payload-render-boundaries.md
+      - docs/contracts/artifact-contracts.md
+      - docs/operations/pipeline-execution.md
+      - docs/operations/pipeline-controls-runbook.md
+    last_verified_against: 2026-04-30
+    notes: Explica la elevación desde artefactos por torre hacia visión ejecutiva y explotación comercial, incluyendo lectura empresarial y puntos de control.
+
+  - path: docs/architecture/executive-project-guide.md
+    kind: document
+    title: Executive project guide
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/SYSTEM_ARCHITECTURE.md
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - src/assessment_engine/schemas/
+      - docs/architecture/tower-pipeline.md
+      - docs/architecture/global-commercial-pipelines.md
+      - docs/architecture/critical-modules.md
+    last_verified_against: 2026-04-30
+    notes: Puerta de entrada ejecutiva para entender el valor del proyecto, la jerarquía de verdad y los riesgos empresariales del sistema.
+
+  - path: docs/architecture/critical-modules.md
+    kind: document
+    title: Critical modules map
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/render_tower_blueprint.py
+      - src/assessment_engine/scripts/render_tower_annex_from_template.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/run_executive_refiner.py
+      - src/assessment_engine/scripts/render_global_report_from_template.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_refiner.py
+      - src/assessment_engine/scripts/render_commercial_report.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+    last_verified_against: 2026-04-30
+    notes: Mapa de responsabilidades, inputs/outputs y riesgos de los módulos críticos que sostienen el flujo principal.
+
+  - path: docs/contracts/artifact-contracts.md
+    kind: document
+    title: Artifact contracts
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/schemas/blueprint.py
+      - src/assessment_engine/schemas/annex_synthesis.py
+      - src/assessment_engine/schemas/global_report.py
+      - src/assessment_engine/schemas/commercial.py
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/run_executive_refiner.py
+      - src/assessment_engine/scripts/run_commercial_refiner.py
+      - src/assessment_engine/scripts/render_tower_blueprint.py
+      - src/assessment_engine/scripts/render_tower_annex_from_template.py
+      - src/assessment_engine/scripts/render_global_report_from_template.py
+      - src/assessment_engine/scripts/render_commercial_report.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - docs/contracts/payload-render-boundaries.md
+    last_verified_against: 2026-04-30
+    notes: Define los artefactos principales del sistema como contratos operativos y explica productores, consumidores, señales de salud y riesgos si derivan.
+
+  - path: docs/operations/pipeline-controls-runbook.md
+    kind: document
+    title: Pipeline controls runbook
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
+      - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
+      - docs/operations/pipeline-execution.md
+      - docs/operations/smoke-regeneration.md
+      - docs/operations/troubleshooting-working.md
+    review_when_source_changes:
+      - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
+      - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+    review_paths_on_source_change:
+      - docs/operations/pipeline-controls-runbook.md
+      - docs/operations/pipeline-execution.md
+      - docs/operations/smoke-regeneration.md
+      - docs/operations/troubleshooting-working.md
+    last_verified_against: 2026-04-30
+    notes: Runbook corto de controles, señales de salud, diagnóstico inicial y recuperación para la operación de pipelines y baseline smoke.
+
+  - path: docs/architecture/mcp-mode.md
+    kind: document
+    title: MCP mode architecture
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/mcp_server.py
+      - src/assessment_engine/scripts/
+    last_verified_against: 2026-04-30
+    notes: Documenta el modo servidor y la tensión entre herramientas vigentes y superficies legacy.
+
+  - path: docs/architecture/working-artifacts.md
+    kind: document
+    title: Working artifacts map
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/build_case_input.py
+      - src/assessment_engine/scripts/build_evidence_ledger.py
+      - src/assessment_engine/scripts/run_scoring.py
+      - src/assessment_engine/scripts/run_evidence_analyst.py
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_refiner.py
+      - src/assessment_engine/scripts/run_intelligence_harvesting.py
+      - src/assessment_engine/scripts/generate_tower_radar_chart.py
+    last_verified_against: 2026-04-30
+    notes: Mapa de artefactos en working/, su linaje y su papel canónico, derivado o legacy.
+
+  - path: docs/operations
+    kind: collection
+    title: Canonical operations layer
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - pyproject.toml
+      - requirements.txt
+      - pytest.ini
+      - .github/workflows/ci.yml
+      - tests/
+    last_verified_against: 2026-04-30
+    notes: Base operativa inicial para instalación, validación, CI y troubleshooting.
+
+  - path: docs/operations/installation.md
+    kind: document
+    title: Installation and environment setup
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - pyproject.toml
+      - requirements.txt
+      - tests/test_environment.py
+      - .github/workflows/ci.yml
+      - src/assessment_engine/scripts/lib/runtime_env.py
+    last_verified_against: 2026-04-30
+    notes: Onboarding técnico del entorno local y sus dependencias.
+
+  - path: docs/operations/pipeline-execution.md
+    kind: document
+    title: Pipeline execution guide
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/run_intelligence_harvesting.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+    enforce_on_source_changes: true
+    review_paths_on_source_change:
+      - docs/operations/pipeline-execution.md
+      - docs/operations/pipeline-controls-runbook.md
+    last_verified_against: 2026-04-30
+    notes: Guía operativa contrastada contra los entrypoints reales; el baseline smoke T5/global/commercial/web quedó validado en smoke_ivirma.
+
+  - path: docs/operations/troubleshooting-working.md
+    kind: document
+    title: Working artifacts troubleshooting
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - pytest.ini
+      - tests/test_contract_handover.py
+      - tests/test_t5_golden.py
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - docs/architecture/working-artifacts.md
+    last_verified_against: 2026-04-30
+    notes: Explica cómo diagnosticar ausencias en working/ y diferencia entre falta de baseline y fallo funcional real.
+
+  - path: docs/operations/smoke-regeneration.md
+    kind: document
+    title: Smoke artifact regeneration
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/tools/generate_smoke_data.py
+      - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
+      - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
+      - src/assessment_engine/scripts/lib/runtime_env.py
+      - src/assessment_engine/scripts/lib/ai_client.py
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_global_pipeline.py
+      - src/assessment_engine/scripts/run_commercial_pipeline.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - tests/test_contract_handover.py
+      - tests/test_t5_golden.py
+      - tests/test_payload_validation.py
+    review_when_source_changes:
+      - src/assessment_engine/scripts/tools/generate_smoke_data.py
+      - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
+      - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
+      - src/assessment_engine/scripts/lib/runtime_env.py
+      - src/assessment_engine/scripts/lib/ai_client.py
+    review_paths_on_source_change:
+      - docs/operations/smoke-regeneration.md
+      - docs/operations/pipeline-controls-runbook.md
+    last_verified_against: 2026-04-30
+    notes: Playbook reproducible para regenerar el baseline smoke usado por contratos y golden files; validado para T5, global, comercial y web en smoke_ivirma.
+
+  - path: docs/contracts
+    kind: collection
+    title: Contracts documentation
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/schemas/
+      - tests/test_contract_handover.py
+      - docs/architecture/working-artifacts.md
+    last_verified_against: 2026-04-30
+    notes: "Colección mixta: incluye un documento de fronteras ya verificado y varias piezas de diseño/plantilla todavía en Draft o Needs Review para el informe largo y la evolución del anexo."
+
+  - path: docs/contracts/payload-render-boundaries.md
+    kind: document
+    title: Payload and renderer boundaries
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/schemas/annex_synthesis.py
+      - src/assessment_engine/schemas/blueprint.py
+      - src/assessment_engine/schemas/global_report.py
+      - src/assessment_engine/schemas/commercial.py
+      - src/assessment_engine/scripts/lib/contract_utils.py
+      - src/assessment_engine/scripts/render_tower_annex_from_template.py
+      - src/assessment_engine/scripts/render_tower_blueprint.py
+      - src/assessment_engine/scripts/render_global_report_from_template.py
+      - src/assessment_engine/scripts/render_commercial_report.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+    enforce_on_source_changes: true
+    review_paths_on_source_change:
+      - docs/contracts/payload-render-boundaries.md
+      - docs/contracts/artifact-contracts.md
+      - docs/architecture/tower-pipeline.md
+      - docs/architecture/global-commercial-pipelines.md
+    last_verified_against: 2026-04-30
+    notes: Auditado contra schemas y renderizadores; documenta también el handover determinista blueprint->annex y qué consumidores son estrictos, tolerantes o implícitos.
+
+  - path: docs/contracts/tower_annex_design.md
+    kind: document
+    title: Tower annex target design
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/schemas/annex_synthesis.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/render_tower_annex_from_template.py
+      - docs/contracts/payload-render-boundaries.md
+    last_verified_against: 2026-04-30
+    notes: Diseño objetivo de evolución del anexo de torre; útil como dirección editorial, pero no describe todavía un contrato implementado extremo a extremo.
+
+  - path: docs/contracts/tower_main_report_coverage_matrix.md
+    kind: document
+    title: Tower main report coverage matrix
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/schemas/blueprint.py
+      - src/assessment_engine/schemas/annex_synthesis.py
+      - src/assessment_engine/scripts/run_tower_pipeline.py
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - docs/architecture/working-artifacts.md
+    last_verified_against: 2026-04-30
+    notes: Matriz de cobertura ya realineada con el flujo blueprint-first; sigue siendo una pieza de diseño porque el payload tower_main_report todavía no existe en producción.
+
+  - path: docs/contracts/tower_main_report_long_template.md
+    kind: document
+    title: Tower main report long template
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/contracts/tower_main_report_coverage_matrix.md
+      - src/assessment_engine/schemas/blueprint.py
+      - src/assessment_engine/schemas/annex_synthesis.py
+      - src/assessment_engine/scripts/render_tower_blueprint.py
+      - src/assessment_engine/scripts/render_tower_annex_from_template.py
+    last_verified_against: 2026-04-30
+    notes: Plantilla aspiracional del informe técnico largo; todavía no corresponde a un payload implementado ni a un renderizador canónico en producción.
+
+  - path: docs/reference/generated
+    kind: collection
+    title: Neutral generated reference layer
+    doc_type: reference_generated
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/
+      - docs/reference/generated/legacy-gemini/
+    last_verified_against: 2026-04-30
+    notes: Destino neutral para absorber referencia heredada o derivada sin mezclarla con la capa canónica.
+
+  - path: docs/reference/generated/legacy-gemini-index.md
+    kind: document
+    title: Legacy Gemini inventory index
+    doc_type: reference_generated
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/reference/generated/legacy-gemini/
+      - src/assessment_engine/
+    last_verified_against: 2026-04-30
+    notes: Inventario neutral de la colección heredada ya archivada en la capa de referencia.
+
+  - path: src/assessment_engine/scripts/tools/validate_documentation_governance.py
+    kind: document
+    title: Documentation governance validator
+    doc_type: operational
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/documentation-map.yaml
+      - docs/ai/documentation-governance.md
+    last_verified_against: 2026-04-30
+    notes: Script de validación para metadata documental, rutas y reglas de automatización.
+
+  - path: GEMINI.md
+    kind: document
+    title: Gemini adapter and operating memory
+    doc_type: operational
+    status: Needs Review
+    owner: docs-governance
+    applies_to:
+      - gemini
+    source_of_truth:
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+      - docs/SYSTEM_ARCHITECTURE.md
+      - src/assessment_engine/
+    last_verified_against: 2026-04-30
+    notes: Contiene conocimiento útil, pero ya no debe presentarse como fuente única de verdad.
+
+  - path: docs/reference/generated/legacy-gemini
+    kind: collection
+    title: Archived legacy Gemini documentation collection
+    doc_type: reference_generated
+    status: Deprecated
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/
+    last_verified_against: 2026-04-30
+    notes: Colección archivada en la capa neutral de referencia; puede consultarse, pero ya no debe competir con la documentación canónica.
+
+automation_rules:
+  - name: architecture-changes
+    when_changed:
+      - src/assessment_engine/scripts/**
+      - src/assessment_engine/mcp_server.py
+    require_review_of:
+      - docs/SYSTEM_ARCHITECTURE.md
+      - docs/architecture
+      - docs/README.md
+      - GEMINI.md
+      - AGENTS.md
+
+  - name: schema-contract-changes
+    when_changed:
+      - src/assessment_engine/schemas/**
+      - tests/test_contract_handover.py
+    require_review_of:
+      - docs/contracts
+      - docs/README.md
+      - docs/architecture
+
+  - name: runtime-validation-changes
+    when_changed:
+      - pyproject.toml
+      - requirements.txt
+      - pytest.ini
+      - .github/workflows/**
+    require_review_of:
+      - README.md
+      - docs/README.md
+      - docs/ai/documentation-governance.md
+      - docs/operations
+
+  - name: docs-governance-changes
+    when_changed:
+      - .github/pull_request_template.md
+      - .github/CODEOWNERS
+      - .github/workflows/docs-governance.yml
+      - src/assessment_engine/scripts/tools/validate_documentation_governance.py
+    require_review_of:
+      - docs/ai/documentation-governance.md
+      - docs/README.md
+      - docs/documentation-map.yaml
+
+  - name: governance-adapter-changes
+    when_changed:
+      - AGENTS.md
+      - CHATGPT.md
+      - .github/copilot-instructions.md
+      - GEMINI.md
+    require_review_of:
+      - docs/ai/documentation-governance.md
+      - docs/README.md

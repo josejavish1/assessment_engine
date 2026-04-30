@@ -1,1 +1,432 @@
-{"pillars": [{"pillar_id": "T5.1", "pillar_name": "Test Pillar"}]}
+{
+  "schema_name": "tower_definition",
+  "schema_version": "1.0",
+  "reusable": true,
+  "maturity_scale": [
+    {
+      "level": 1,
+      "label": "Inicial",
+      "operational_reading": "La capacidad es inexistente, insuficiente o depende de personas concretas."
+    },
+    {
+      "level": 2,
+      "label": "Basico",
+      "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
+    },
+    {
+      "level": 3,
+      "label": "Estandarizado",
+      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+    },
+    {
+      "level": 4,
+      "label": "Optimizado",
+      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+    },
+    {
+      "level": 5,
+      "label": "Avanzado",
+      "operational_reading": "La capacidad alcanza un nivel avanzado de integracion, anticipacion y mejora basada en datos."
+    }
+  ],
+  "score_bands": [
+    {
+      "min": 1.0,
+      "max": 1.79,
+      "label": "Nivel 1 - Inicial"
+    },
+    {
+      "min": 1.8,
+      "max": 2.59,
+      "label": "Nivel 2 - Basico"
+    },
+    {
+      "min": 2.6,
+      "max": 3.39,
+      "label": "Nivel 3 - Estandarizado"
+    },
+    {
+      "min": 3.4,
+      "max": 4.19,
+      "label": "Nivel 4 - Optimizado"
+    },
+    {
+      "min": 4.2,
+      "max": 5.0,
+      "label": "Nivel 5 - Avanzado"
+    }
+  ],
+  "validation_states": [
+    "Exploratoria",
+    "Contrastada",
+    "Evidenciada"
+  ],
+  "working_rules": {
+    "score_question": "Escala 1-5",
+    "score_indicator": "Media simple de preguntas del indicador",
+    "score_pillar": "Media simple de indicadores aplicables del pilar",
+    "score_tower": "Suma ponderada por pesos normalizados de pilar",
+    "display_rounding": "Mostrar 1 decimal en salida; conservar precision interna para calculo y banda",
+    "reporting_rule": "Mostrar score continuo + banda cualitativa + estado de validacion",
+    "tobe_default_rule": "El TO-BE por defecto se fija en nivel 4 salvo excepcion justificada"
+  },
+  "tower_id": "T5",
+  "tower_name": "Resilience & Continuity",
+  "purpose": "La torre Resilience & Continuity cubre todas las capacidades, procesos y evidencias necesarias para asegurar que los servicios TI del cliente pueden:",
+  "scope_summary": [
+    "Backup & Restore",
+    "Disaster Recovery (DR)",
+    "Continuidad de negocio tecnológica",
+    "Cyber Recovery / Inmutabilidad",
+    "Alta disponibilidad (arquitectura)",
+    "Exclusiones (para evitar solapes con otras torres)",
+    "En resumen"
+  ],
+  "related_towers": [
+    "T4"
+  ],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T5.P1",
+      "pillar_name": "Estrategia de Continuidad y Gobierno BC/DR (RTO/RPO)",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T5.P1.K1",
+          "kpi_name": "Definición y trazabilidad de RTO/RPO por servicio crítico",
+          "questions": [
+            {
+              "question_id": "T5.P1.K1.PR1",
+              "question_text": "Para garantizar la continuidad del negocio es necesario definir objetivos claros de recuperación de servicio y de pérdida de datos. ¿Cómo están definidos los RTO y RPO para los servicios críticos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P1.K2",
+          "kpi_name": "Alcance de continuidad y mapa de dependencias (incluyendo terceros)",
+          "questions": [
+            {
+              "question_id": "T5.P1.K2.PR1",
+              "question_text": "La continuidad depende de conocer las dependencias entre aplicaciones, infraestructuras y servicios. ¿Cómo se gestionan las dependencias y el alcance de continuidad entre sistemas?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P1.K3",
+          "kpi_name": "Modelo de gobierno (roles, RACI, ownership y escalado de crisis)",
+          "questions": [
+            {
+              "question_id": "T5.P1.K3.PR1",
+              "question_text": "La ejecución de un plan de continuidad requiere que los roles y responsabilidades estén claramente definidos. ¿Cómo están definidos los roles y responsabilidades en los procesos de continuidad?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P1.K4",
+          "kpi_name": "Programa de pruebas y mejora continua (BC/DR/Cyber)",
+          "questions": [
+            {
+              "question_id": "T5.P1.K4.PR1",
+              "question_text": "Las pruebas permiten validar que los planes de continuidad realmente funcionan. ¿Cómo se gestionan las pruebas de continuidad del negocio y recuperación?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T5.P2",
+      "pillar_name": "Backup & Restore (Operabilidad real)",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T5.P2.K1",
+          "kpi_name": "Cobertura de backup en sistemas críticos (por criticidad)",
+          "questions": [
+            {
+              "question_id": "T5.P2.K1.PR1",
+              "question_text": "Las copias de seguridad son la base de la recuperación ante fallos o pérdida de datos. ¿Cuál es la cobertura real de backup en los sistemas críticos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P2.K2",
+          "kpi_name": "Tasa de éxito de jobs de backup y gestión de fallos",
+          "questions": [
+            {
+              "question_id": "T5.P2.K2.PR1",
+              "question_text": "La fiabilidad del sistema de backup depende de su tasa de éxito y de la gestión de errores. ¿Cómo se controlan los fallos y la tasa de éxito de los backups?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P2.K3",
+          "kpi_name": "Pruebas de restore (frecuencia, cobertura y evidencias)",
+          "questions": [
+            {
+              "question_id": "T5.P2.K3.PR1",
+              "question_text": "Las restauraciones deben probarse para asegurar que los datos se pueden recuperar correctamente. ¿Cómo se gestionan las pruebas de restauración de datos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P2.K4",
+          "kpi_name": "Cumplimiento de RPO real (punto de recuperación alcanzable)",
+          "questions": [
+            {
+              "question_id": "T5.P2.K4.PR1",
+              "question_text": "El RPO define la cantidad máxima de datos que se pueden perder tras un incidente. ¿Se cumple el RPO real definido para los servicios críticos?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T5.P3",
+      "pillar_name": "Disaster Recovery (DR)",
+      "weight_pct": 22,
+      "kpis": [
+        {
+          "kpi_id": "T5.P3.K1",
+          "kpi_name": "Cobertura de DR en servicios críticos (alcance y priorización)",
+          "questions": [
+            {
+              "question_id": "T5.P3.K1.PR1",
+              "question_text": "Un plan de Disaster Recovery debe cubrir los servicios críticos del negocio. ¿Cuál es el alcance real del DR en los servicios críticos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P3.K2",
+          "kpi_name": "Cumplimiento de RTO/RPO en pruebas de DR (medido)",
+          "questions": [
+            {
+              "question_id": "T5.P3.K2.PR1",
+              "question_text": "Las pruebas de DR permiten comprobar si se cumplen los objetivos de recuperación definidos. ¿Se miden y cumplen los RTO y RPO durante las pruebas de DR?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P3.K3",
+          "kpi_name": "Runbooks y orquestación de recuperación (automatización y repetibilidad)",
+          "questions": [
+            {
+              "question_id": "T5.P3.K3.PR1",
+              "question_text": "La recuperación debe seguir procedimientos claros para evitar improvisaciones durante una crisis. ¿Cómo están definidos los runbooks y la orquestación del proceso de recuperación?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P3.K4",
+          "kpi_name": "Preparación del entorno de DR (capacidad, licencias y control de drift)",
+          "questions": [
+            {
+              "question_id": "T5.P3.K4.PR1",
+              "question_text": "El entorno de recuperación debe estar preparado y alineado con el entorno productivo. ¿Cómo se gestiona la preparación y validación del entorno de DR?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T5.P4",
+      "pillar_name": "Cyber Recovery & Inmutabilidad (Ransomware readiness)",
+      "weight_pct": 20,
+      "kpis": [
+        {
+          "kpi_id": "T5.P4.K1",
+          "kpi_name": "Existencia y cobertura de copias inmutables (WORM/Object Lock u equivalente)",
+          "questions": [
+            {
+              "question_id": "T5.P4.K1.PR1",
+              "question_text": "Las copias inmutables protegen los datos frente a ataques de ransomware o borrado malicioso. ¿Existen copias inmutables para los servicios críticos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P4.K2",
+          "kpi_name": "Segregación/Air-Gap y control de acceso (vault operativo)",
+          "questions": [
+            {
+              "question_id": "T5.P4.K2.PR1",
+              "question_text": "La segregación del repositorio de backup evita que un ataque comprometa también las copias de seguridad. ¿Cómo se gestiona el aislamiento o air-gap del repositorio de backup?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P4.K3",
+          "kpi_name": "Validación de integridad y capacidad de “clean restore”",
+          "questions": [
+            {
+              "question_id": "T5.P4.K3.PR1",
+              "question_text": "Antes de restaurar tras un ciberataque es necesario asegurar que los datos están libres de compromiso. ¿Cómo se valida la integridad de los datos antes de una restauración?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P4.K4",
+          "kpi_name": "Pruebas específicas de ransomware (escenarios y tiempos medidos)",
+          "questions": [
+            {
+              "question_id": "T5.P4.K4.PR1",
+              "question_text": "Los ataques de ransomware deben probarse mediante simulaciones para validar la capacidad de recuperación. ¿Se realizan pruebas específicas frente a escenarios de ransomware?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T5.P5",
+      "pillar_name": "Alta Disponibilidad y Resiliencia Arquitectónica",
+      "weight_pct": 18,
+      "kpis": [
+        {
+          "kpi_id": "T5.P5.K1",
+          "kpi_name": "Eliminación de SPOF en componentes críticos",
+          "questions": [
+            {
+              "question_id": "T5.P5.K1.PR1",
+              "question_text": "La eliminación de puntos únicos de fallo es clave para garantizar la continuidad de servicio. ¿Se han identificado y eliminado los SPOF en servicios críticos?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P5.K2",
+          "kpi_name": "Failover controlado y probado (HA real, no teórica)",
+          "questions": [
+            {
+              "question_id": "T5.P5.K2.PR1",
+              "question_text": "Los mecanismos de failover deben probarse para asegurar que funcionan correctamente. ¿Se prueban regularmente los procesos de failover?"
+            }
+          ]
+        },
+        {
+          "kpi_id": "T5.P5.K3",
+          "kpi_name": "Automatización de recuperación y reducción de MTTR",
+          "questions": [
+            {
+              "question_id": "T5.P5.K3.PR1",
+              "question_text": "La automatización permite reducir el tiempo de recuperación tras incidentes. ¿Cuál es el nivel de automatización de la recuperación y reducción del MTTR? (MTTR = Mean Time To Repair (o Mean Time To Recover) Tiempo Medio de Recuperación)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T5.P1.K1.PR1",
+      "pillar_id": "T5.P1",
+      "kpi_id": "T5.P1.K1",
+      "question_text": "Para garantizar la continuidad del negocio es necesario definir objetivos claros de recuperación de servicio y de pérdida de datos. ¿Cómo están definidos los RTO y RPO para los servicios críticos?"
+    },
+    {
+      "question_id": "T5.P1.K2.PR1",
+      "pillar_id": "T5.P1",
+      "kpi_id": "T5.P1.K2",
+      "question_text": "La continuidad depende de conocer las dependencias entre aplicaciones, infraestructuras y servicios. ¿Cómo se gestionan las dependencias y el alcance de continuidad entre sistemas?"
+    },
+    {
+      "question_id": "T5.P1.K3.PR1",
+      "pillar_id": "T5.P1",
+      "kpi_id": "T5.P1.K3",
+      "question_text": "La ejecución de un plan de continuidad requiere que los roles y responsabilidades estén claramente definidos. ¿Cómo están definidos los roles y responsabilidades en los procesos de continuidad?"
+    },
+    {
+      "question_id": "T5.P1.K4.PR1",
+      "pillar_id": "T5.P1",
+      "kpi_id": "T5.P1.K4",
+      "question_text": "Las pruebas permiten validar que los planes de continuidad realmente funcionan. ¿Cómo se gestionan las pruebas de continuidad del negocio y recuperación?"
+    },
+    {
+      "question_id": "T5.P2.K1.PR1",
+      "pillar_id": "T5.P2",
+      "kpi_id": "T5.P2.K1",
+      "question_text": "Las copias de seguridad son la base de la recuperación ante fallos o pérdida de datos. ¿Cuál es la cobertura real de backup en los sistemas críticos?"
+    },
+    {
+      "question_id": "T5.P2.K2.PR1",
+      "pillar_id": "T5.P2",
+      "kpi_id": "T5.P2.K2",
+      "question_text": "La fiabilidad del sistema de backup depende de su tasa de éxito y de la gestión de errores. ¿Cómo se controlan los fallos y la tasa de éxito de los backups?"
+    },
+    {
+      "question_id": "T5.P2.K3.PR1",
+      "pillar_id": "T5.P2",
+      "kpi_id": "T5.P2.K3",
+      "question_text": "Las restauraciones deben probarse para asegurar que los datos se pueden recuperar correctamente. ¿Cómo se gestionan las pruebas de restauración de datos?"
+    },
+    {
+      "question_id": "T5.P2.K4.PR1",
+      "pillar_id": "T5.P2",
+      "kpi_id": "T5.P2.K4",
+      "question_text": "El RPO define la cantidad máxima de datos que se pueden perder tras un incidente. ¿Se cumple el RPO real definido para los servicios críticos?"
+    },
+    {
+      "question_id": "T5.P3.K1.PR1",
+      "pillar_id": "T5.P3",
+      "kpi_id": "T5.P3.K1",
+      "question_text": "Un plan de Disaster Recovery debe cubrir los servicios críticos del negocio. ¿Cuál es el alcance real del DR en los servicios críticos?"
+    },
+    {
+      "question_id": "T5.P3.K2.PR1",
+      "pillar_id": "T5.P3",
+      "kpi_id": "T5.P3.K2",
+      "question_text": "Las pruebas de DR permiten comprobar si se cumplen los objetivos de recuperación definidos. ¿Se miden y cumplen los RTO y RPO durante las pruebas de DR?"
+    },
+    {
+      "question_id": "T5.P3.K3.PR1",
+      "pillar_id": "T5.P3",
+      "kpi_id": "T5.P3.K3",
+      "question_text": "La recuperación debe seguir procedimientos claros para evitar improvisaciones durante una crisis. ¿Cómo están definidos los runbooks y la orquestación del proceso de recuperación?"
+    },
+    {
+      "question_id": "T5.P3.K4.PR1",
+      "pillar_id": "T5.P3",
+      "kpi_id": "T5.P3.K4",
+      "question_text": "El entorno de recuperación debe estar preparado y alineado con el entorno productivo. ¿Cómo se gestiona la preparación y validación del entorno de DR?"
+    },
+    {
+      "question_id": "T5.P4.K1.PR1",
+      "pillar_id": "T5.P4",
+      "kpi_id": "T5.P4.K1",
+      "question_text": "Las copias inmutables protegen los datos frente a ataques de ransomware o borrado malicioso. ¿Existen copias inmutables para los servicios críticos?"
+    },
+    {
+      "question_id": "T5.P4.K2.PR1",
+      "pillar_id": "T5.P4",
+      "kpi_id": "T5.P4.K2",
+      "question_text": "La segregación del repositorio de backup evita que un ataque comprometa también las copias de seguridad. ¿Cómo se gestiona el aislamiento o air-gap del repositorio de backup?"
+    },
+    {
+      "question_id": "T5.P4.K3.PR1",
+      "pillar_id": "T5.P4",
+      "kpi_id": "T5.P4.K3",
+      "question_text": "Antes de restaurar tras un ciberataque es necesario asegurar que los datos están libres de compromiso. ¿Cómo se valida la integridad de los datos antes de una restauración?"
+    },
+    {
+      "question_id": "T5.P4.K4.PR1",
+      "pillar_id": "T5.P4",
+      "kpi_id": "T5.P4.K4",
+      "question_text": "Los ataques de ransomware deben probarse mediante simulaciones para validar la capacidad de recuperación. ¿Se realizan pruebas específicas frente a escenarios de ransomware?"
+    },
+    {
+      "question_id": "T5.P5.K1.PR1",
+      "pillar_id": "T5.P5",
+      "kpi_id": "T5.P5.K1",
+      "question_text": "La eliminación de puntos únicos de fallo es clave para garantizar la continuidad de servicio. ¿Se han identificado y eliminado los SPOF en servicios críticos?"
+    },
+    {
+      "question_id": "T5.P5.K2.PR1",
+      "pillar_id": "T5.P5",
+      "kpi_id": "T5.P5.K2",
+      "question_text": "Los mecanismos de failover deben probarse para asegurar que funcionan correctamente. ¿Se prueban regularmente los procesos de failover?"
+    },
+    {
+      "question_id": "T5.P5.K3.PR1",
+      "pillar_id": "T5.P5",
+      "kpi_id": "T5.P5.K3",
+      "question_text": "La automatización permite reducir el tiempo de recuperación tras incidentes. ¿Cuál es el nivel de automatización de la recuperación y reducción del MTTR? (MTTR = Mean Time To Repair (o Mean Time To Recover) Tiempo Medio de Recuperación)"
+    }
+  ]
+}

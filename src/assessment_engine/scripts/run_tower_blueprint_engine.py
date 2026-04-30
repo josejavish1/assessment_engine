@@ -143,7 +143,7 @@ async def run_tower_blueprint(client_name, tower_id):
 
     try:
         from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
-        model_name = resolve_model_profile_for_role("writer_fast")["model"]
+        model_name = resolve_model_profile_for_role("section_writer")["model"]
     except Exception:
         model_name = "gemini-2.5-pro"
 
@@ -183,6 +183,7 @@ async def run_tower_blueprint(client_name, tower_id):
 
     # Inicialización Normalizada (Contrato Estricto)
     blueprint_payload = get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data)
+    failed_pillars = []
 
     # PROCESAR PILARES EN SERIE PARA MÁXIMA CALIDAD
     for p_id in sorted(pillars_map.keys()):
@@ -196,6 +197,19 @@ async def run_tower_blueprint(client_name, tower_id):
             )
             blueprint_analysis = p_result.get("pillar_analysis", p_result)
             blueprint_payload["pillars_analysis"].append(blueprint_analysis)
+        else:
+            failed_pillars.append(pillars_map[p_id]["label"])
+
+    if failed_pillars:
+        print(
+            "⚠️ Pilares sin respuesta válida: "
+            + ", ".join(failed_pillars)
+        )
+
+    if not blueprint_payload["pillars_analysis"]:
+        raise RuntimeError(
+            "No se pudo generar ningún análisis de pilar para el blueprint."
+        )
 
     # AGENTE DE CIERRE: SNAPSHOT Y ROADMAP
     print("    -> Generando Snapshot Ejecutivo y Roadmap Estratégico...")
@@ -223,7 +237,7 @@ async def run_tower_blueprint(client_name, tower_id):
             # Actualizamos solo si recibimos datos válidos del agente
             blueprint_payload.update(closing_data)
     except Exception as e:
-        print(f"Error en agente de cierre blueprint: {e}")
+        raise RuntimeError(f"Error en agente de cierre blueprint: {e}") from e
 
     # Validación Final del Contrato con Pydantic
     try:
@@ -235,10 +249,9 @@ async def run_tower_blueprint(client_name, tower_id):
         validated_model = BlueprintPayload.model_validate(blueprint_payload)
         final_payload_dict = validated_model.model_dump(by_alias=True)
     except Exception as val_err:
-        print(f"⚠️ Error de validación en payload final: {val_err}")
-        # En caso de error catastrófico de validación, mantenemos el dict original 
-        # (que al menos tiene las keys de default) para no romper el pipeline por completo
-        final_payload_dict = blueprint_payload
+        raise RuntimeError(
+            f"Error de validación en payload final del blueprint: {val_err}"
+        ) from val_err
 
     # GUARDAR PAYLOAD
     output_path = tower_dir / f"blueprint_{tower_id.lower()}_payload.json"

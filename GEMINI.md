@@ -1,6 +1,26 @@
+---
+status: Needs Review
+owner: docs-governance
+source_of_truth:
+  - docs/ai/documentation-governance.md
+  - docs/README.md
+  - docs/SYSTEM_ARCHITECTURE.md
+  - src/assessment_engine/
+last_verified_against: 2026-04-30
+applies_to:
+  - gemini
+doc_type: operational
+---
+
 # Directiva de Agente: Memoria Operativa del Proyecto
 
-Este documento es la memoria viva y la hoja de ruta estratégica del `assessment-engine`. Cualquier agente (IA o humano) que trabaje en este repositorio DEBE leer, entender y actualizar este fichero. Es la única fuente de verdad sobre el estado, la arquitectura y los próximos pasos del proyecto.
+> **Estado documental:** `Needs Review`
+>
+> **Rol actual:** este fichero pasa a ser un **adaptador operativo para Gemini** y una memoria útil en transición. La política documental central vive en [`docs/ai/documentation-governance.md`](docs/ai/documentation-governance.md) y el mapa maestro en [`docs/README.md`](docs/README.md).
+>
+> Este archivo **ya no debe tratarse como fuente única de verdad**. Si hay conflicto entre esta narrativa y el código, tests, workflows, schemas o documentación canónica, manda el repo ejecutable y la documentación central.
+
+Este documento recoge contexto operativo y arquitectónico útil para Gemini, pero debe mantenerse alineado con la base documental común del proyecto.
 
 ---
 
@@ -13,6 +33,8 @@ El `assessment-engine` es una **fábrica de generación de documentos** diseñad
 ## 2. Arquitectura y Flujo de Datos (Modelo "Top-Down")
 
 La arquitectura actual se basa en el principio "Top-Down" para garantizar la consistencia. El sistema se compone de dos fases principales que procesan los datos desde el nivel más detallado hasta el más estratégico.
+
+> **Lectura canónica recomendada:** usa esta sección como resumen rápido, pero apóyate en `docs/architecture/` para la versión más mantenible y precisa del flujo actual.
 
 ### 2.1. Diagrama de Flujo de Datos
 
@@ -43,9 +65,9 @@ La arquitectura actual se basa en el principio "Top-Down" para garantizar la con
 |      - run_tower_blueprint_engine.py --> [ blueprint_Txx_payload.json ]  <--- (LA ÚNICA FUENTE DE VERDAD)             |
 |                                                                                                                      |
 |   3. Síntesis y Renderizado (Derivación desde la Fuente de Verdad):                                                  |
-|      - run_executive_annex_synthesizer.py --> [ annex_Txx_payload.json ]                                             |
+|      - run_executive_annex_synthesizer.py --> [ approved_annex_txx.template_payload.json ]                           |
 |      - render_tower_blueprint.py          --> [ Blueprint_Txx.docx ]                                                 |
-|      - render_tower_annex.py              --> [ Annex_Txx.docx ]                                                     |
+|      - render_tower_annex_from_template.py --> [ Annex_Txx.docx ]                                                    |
 |      - generate_tower_radar_chart.py      --> [ radar_chart.png ]                                                    |
 |                                                                                                                      |
 `----------------------------------------------------------------------------------------------------------------------'
@@ -59,11 +81,11 @@ La arquitectura actual se basa en el principio "Top-Down" para garantizar la con
 |      - build_global_report_payload.py --> [ global_report_payload.json ]                                             |
 |                                                                                                                      |
 |   2. Refinamiento Estratégico y Comercial por IA:                                                                    |
-|      - run_executive_refiner.py    --> [ refined_global_report.json ]                                                |
-|      - run_commercial_refiner.py   --> [ commercial_payload.json ]                                                   |
+|      - run_executive_refiner.py    --> [ global_report_payload.json refinado ]                                       |
+|      - run_commercial_refiner.py   --> [ commercial_report_payload.json ]                                            |
 |                                                                                                                      |
 |   3. Renderizado de Entregables Finales:                                                                             |
-|      - render_global_report.py     --> [ CIO_Ready_Report.docx ]                                                     |
+|      - render_global_report_from_template.py --> [ CIO_Ready_Report.docx ]                                           |
 |      - render_commercial_report.py --> [ Internal_Commercial_Plan.docx ]                                           |
 |      - render_web_presentation.py  --> [ Interactive_Dashboard.html ]                                                |
 |                                                                                                                      |
@@ -80,7 +102,7 @@ En `src/assessment_engine/scripts/_legacy` se encuentra la arquitectura anterior
 
 ---
 
-## 3. Análisis de Calidad de Código (Evaluación Senior)
+## 3. Análisis de Calidad de Código (Memoria de evaluación)
 
 ### 3.1. Resumen Ejecutivo
 El `assessment-engine` es un prototipo avanzado con una base arquitectónica muy sólida y sofisticada. Sin embargo, su rápida evolución ha generado una deuda técnica notable. El concepto es de nivel "enterprise", pero el código necesita una fase de consolidación para ser verdaderamente robusto y mantenible.
@@ -101,7 +123,7 @@ El `assessment-engine` es un prototipo avanzado con una base arquitectónica muy
 
 ---
 
-## 4. Roadmap Estratégico de Endurecimiento (Priorizado por ROI)
+## 4. Roadmap Estratégico de Endurecimiento (Memoria histórica de trabajo)
 
 Este es el plan de acción para elevar la calidad del proyecto. La priorización busca maximizar el retorno de la inversión en cada fase, donde el "retorno" es una combinación de **reducción de riesgo** y **aumento de la velocidad de desarrollo futura**.
 
@@ -151,7 +173,14 @@ Estas acciones tienen un retorno tangible en la calidad y la experiencia de uso 
 
 ## 5. Base de Conocimiento y Documentación
 
-La documentación detallada de cada componente se encuentra en la carpeta `docs/gemini_documentation/`. El `README.md` de esa carpeta contiene un índice completo de todos los ficheros documentados. Este mismo `GEMINI.md` sirve como la guía arquitectónica principal.
+La base documental canónica del proyecto ya no vive aquí. La ruta recomendada es:
+
+1. `README.md`
+2. `docs/README.md`
+3. `docs/ai/documentation-governance.md`
+4. `docs/architecture/`, `docs/operations/` y `docs/contracts/`
+
+`docs/reference/generated/legacy-gemini/` conserva la referencia heredada útil, pero no como contenedor estratégico principal. Este `GEMINI.md` debe mantenerse breve, operativo y alineado con la documentación canónica.
 
 ---
 

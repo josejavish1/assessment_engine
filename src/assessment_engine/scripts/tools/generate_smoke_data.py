@@ -1,45 +1,32 @@
 """
 Módulo generate_smoke_data.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+Genera inputs sintéticos y deterministas para el caso smoke_ivirma.
 """
+
+from __future__ import annotations
+
+import argparse
 import json
 import random
 from pathlib import Path
 
-root = Path(".")
-client = "smoke_ivirma"
-client_dir = root / "working" / client
-client_dir.mkdir(parents=True, exist_ok=True)
+from assessment_engine.scripts.lib.runtime_paths import ROOT
 
-towers = ["T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]
-responses_lines = []
 
-# Asignamos rangos de madurez diferentes por torre para darle realismo
-tower_targets = {
-    "T2": (2.0, 3.0),  # Cómputo (Medio)
-    "T3": (1.5, 2.5),  # Redes (Bajo)
-    "T4": (2.5, 3.5),  # Datos (Medio-Alto)
-    "T5": (1.0, 2.0),  # Resiliencia (Muy bajo - Riesgo crítico)
-    "T6": (1.5, 2.5),  # Seguridad (Bajo - Riesgo normativo)
-    "T7": (2.0, 3.0),  # ITSM (Medio)
-    "T8": (3.0, 4.0),  # Cloud (Alto - Están en Azure)
-    "T9": (2.5, 3.5),  # Workplace (Medio-Alto)
+DEFAULT_CLIENT = "smoke_ivirma"
+DEFAULT_SEED = 42
+DEFAULT_TOWERS = ["T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]
+DEFAULT_TOWER_TARGETS: dict[str, tuple[float, float]] = {
+    "T2": (2.0, 3.0),
+    "T3": (1.5, 2.5),
+    "T4": (2.5, 3.5),
+    "T5": (1.0, 2.0),
+    "T6": (1.5, 2.5),
+    "T7": (2.0, 3.0),
+    "T8": (3.0, 4.0),
+    "T9": (2.5, 3.5),
 }
-
-for t in towers:
-    def_file = root / "engine_config" / "towers" / t / f"tower_definition_{t}.json"
-    if def_file.exists():
-        data = json.loads(def_file.read_text(encoding="utf-8"))
-        min_s, max_s = tower_targets[t]
-        for p in data.get("pillars", []):
-            for k in p.get("kpis", []):
-                score = round(random.uniform(min_s, max_s), 1)
-                responses_lines.append(f"{k['kpi_id']}.PR1: {score}")
-
-responses_path = client_dir / "responses.txt"
-responses_path.write_text("\n".join(responses_lines), encoding="utf-8")
-
-context_text = """
+DEFAULT_CONTEXT_TEXT = """
 Notas de la reunión de Assessment Tecnológico de IVIRMA (Smoke Test).
 
 Contexto de Negocio:
@@ -56,8 +43,91 @@ El CISO está alarmado por el aumento de incidentes de ransomware en el sector s
 Operaciones:
 El soporte a usuarios (médicos y embriólogos) es muy manual, con un ITSM básico. Faltan procesos industrializados y visibilidad de los activos (CMDB inexistente), lo que choca con la agilidad necesaria para la expansión.
 """
-context_path = client_dir / "context.txt"
-context_path.write_text(context_text.strip(), encoding="utf-8")
-print(
-    f"✅ Archivos de entrada (contexto y {len(responses_lines)} respuestas) generados."
-)
+
+
+def normalize_towers(towers: list[str] | None) -> list[str]:
+    normalized: list[str] = []
+    for tower in towers or DEFAULT_TOWERS:
+        tower_id = tower.upper().strip()
+        if tower_id and tower_id not in normalized:
+            normalized.append(tower_id)
+    return normalized
+
+
+def build_responses(
+    root: Path,
+    towers: list[str],
+    seed: int,
+    tower_targets: dict[str, tuple[float, float]] | None = None,
+) -> list[str]:
+    rng = random.Random(seed)
+    responses_lines: list[str] = []
+    targets = tower_targets or DEFAULT_TOWER_TARGETS
+
+    for tower_id in towers:
+        def_file = (
+            root / "engine_config" / "towers" / tower_id / f"tower_definition_{tower_id}.json"
+        )
+        if not def_file.exists():
+            continue
+
+        data = json.loads(def_file.read_text(encoding="utf-8"))
+        min_score, max_score = targets.get(tower_id, (2.0, 3.0))
+        for pillar in data.get("pillars", []):
+            for kpi in pillar.get("kpis", []):
+                score = round(rng.uniform(min_score, max_score), 1)
+                responses_lines.append(f"{kpi['kpi_id']}.PR1: {score}")
+
+    return responses_lines
+
+
+def generate_smoke_inputs(
+    client: str = DEFAULT_CLIENT,
+    towers: list[str] | None = None,
+    seed: int = DEFAULT_SEED,
+    root: Path = ROOT,
+    write_files: bool = True,
+) -> tuple[Path, Path]:
+    client_id = client.strip() or DEFAULT_CLIENT
+    client_dir = root / "working" / client_id
+    if write_files:
+        client_dir.mkdir(parents=True, exist_ok=True)
+
+    normalized_towers = normalize_towers(towers)
+    responses_lines = build_responses(root, normalized_towers, seed)
+
+    responses_path = client_dir / "responses.txt"
+    context_path = client_dir / "context.txt"
+    if write_files:
+        responses_path.write_text("\n".join(responses_lines) + "\n", encoding="utf-8")
+        context_path.write_text(DEFAULT_CONTEXT_TEXT.strip() + "\n", encoding="utf-8")
+
+    return context_path, responses_path
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--client", default=DEFAULT_CLIENT)
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    parser.add_argument("--towers", nargs="*", default=DEFAULT_TOWERS)
+    args = parser.parse_args(argv)
+
+    context_path, responses_path = generate_smoke_inputs(
+        client=args.client,
+        towers=args.towers,
+        seed=args.seed,
+    )
+
+    responses_count = len(
+        responses_path.read_text(encoding="utf-8").splitlines()
+    )
+    print(
+        f"✅ Inputs smoke generados en {context_path.parent} "
+        f"(contexto + {responses_count} respuestas)."
+    )
+    print(f"   - {context_path}")
+    print(f"   - {responses_path}")
+
+
+if __name__ == "__main__":
+    main()
