@@ -34,7 +34,8 @@ def _resolve_t5_docx_pair() -> tuple[Path, Path]:
         if blueprint.exists() and annex.exists():
             return blueprint, annex
     pytest.skip(
-        "No hay artefactos DOCX T5 disponibles en working/ para validar integridad."
+        "No hay artefactos DOCX T5 disponibles en working/ para validar integridad.",
+        allow_module_level=True,
     )
 
 

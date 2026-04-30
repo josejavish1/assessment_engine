@@ -62,8 +62,9 @@ El workflow actual reside en `.github/workflows/ci.yml` y:
 
 1. prepara Python 3.11;
 2. instala dependencias con `pip install -r requirements.txt`;
-3. instala utilidades de test;
-4. ejecuta `pytest tests/`.
+3. instala el paquete en editable con `pip install -e .`;
+4. instala utilidades de test;
+5. ejecuta `pytest tests/`.
 
 ## Observación relevante del baseline
 
