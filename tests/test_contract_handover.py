@@ -13,6 +13,15 @@ def _load_json(path):
     with open(path, "r", encoding="utf-8-sig") as f:
         return json.load(f)
 
+
+def _summarize_project_name(name: str) -> str:
+    text = " ".join(str(name or "").split())
+    if ":" in text:
+        _, remainder = text.split(":", 1)
+        if remainder.strip():
+            return remainder.strip()
+    return text
+
 @pytest.mark.contract
 def test_contract_blueprint_to_annex():
     """
@@ -47,6 +56,47 @@ def test_contract_annex_is_valid_payload():
     assert annex_payload.document_meta["tower_code"] == "T5"
     assert annex_payload.sections.gap is not None
     assert len(annex_payload.sections.risks.risks) > 0
+
+
+@pytest.mark.contract
+def test_contract_annex_keeps_blueprint_non_negotiables_aligned():
+    bp_data = _load_json(T5_DIR / "blueprint_t5_payload.json")
+    annex_data = _load_json(T5_DIR / "approved_annex_t5.template_payload.json")
+
+    blueprint = BlueprintPayload.model_validate(bp_data)
+    annex = AnnexPayload.model_validate(annex_data)
+
+    blueprint_pillars = {pillar.pilar_name for pillar in blueprint.pillars_analysis}
+    annex_gap_pillars = {row.pillar for row in annex.sections.gap.gap_rows}
+    assert annex_gap_pillars
+    assert annex_gap_pillars.issubset(blueprint_pillars)
+
+    blueprint_projects = {
+        _summarize_project_name(project.initiative)
+        for pillar in blueprint.pillars_analysis
+        for project in pillar.projects_todo
+    }
+    annex_projects = {
+        initiative.initiative for initiative in annex.sections.todo.priority_initiatives
+    }
+    assert annex_projects
+    assert annex_projects.issubset(blueprint_projects)
+
+    average_score = round(
+        sum(pillar.score for pillar in blueprint.pillars_analysis)
+        / len(blueprint.pillars_analysis),
+        1,
+    )
+    assert annex.executive_summary.global_score.startswith(f"{average_score}")
+    assert all(
+        item.get("executive_reading")
+        for item in annex.pillar_score_profile.pillars
+    )
+    assert all(
+        "..." not in item.get("executive_reading", "")
+        and "…" not in item.get("executive_reading", "")
+        for item in annex.pillar_score_profile.pillars
+    )
 
 @pytest.mark.contract
 def test_contract_global_report_schema():

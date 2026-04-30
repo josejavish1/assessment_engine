@@ -363,7 +363,7 @@ def render_snapshot_page(
     global_band_val = exec_sum.get("global_band", "N/A")
     target_score_val = exec_sum.get("target_maturity", "N/A")
 
-    add_heading_paragraph(doc, "1. Resumen ejecutivo", level=1)
+    add_heading_paragraph(doc, "1. Executive Snapshot (Resumen ejecutivo)", level=1)
 
     table = doc.add_table(rows=2, cols=3)
     finalize_table(table)
@@ -419,10 +419,21 @@ def render_snapshot_page(
         ):
             business_angles.append(clean_text_for_render(text))
 
-    if business_angles:
-        add_heading_paragraph(doc, "Por qué importa al negocio", level=2)
-        for item in business_angles[:4]:
-            add_bullet_p(doc, item)
+    if not business_angles:
+        for candidate in [
+            snap.business_impact,
+            snap.cost_of_inaction,
+            snap.bottom_line,
+        ]:
+            cleaned = clean_text_for_render(candidate)
+            if cleaned and cleaned not in business_angles:
+                business_angles.append(cleaned)
+            if len(business_angles) >= 3:
+                break
+
+    add_heading_paragraph(doc, "Por qué importa al negocio", level=2)
+    for item in business_angles[:4]:
+        add_bullet_p(doc, item)
 
     if snap.structural_risks:
         add_heading_paragraph(doc, "Riesgos de negocio más materiales", level=2)

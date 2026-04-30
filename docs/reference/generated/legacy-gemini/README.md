@@ -1,7 +1,12 @@
 # Documentación del Proyecto: Assessment Engine
-\n> **Nota:** Para una visión completa de la arquitectura del sistema, el flujo de datos y los principios de diseño, por favor, comience leyendo el documento principal de arquitectura:
+
+> **Estado documental:** colección heredada en transición.
 >
-> ### **[&#128221; Ver el Documento de Arquitectura del Sistema](./SYSTEM_ARCHITECTURE.md)**
+> Esta carpeta sigue siendo útil como referencia, pero **ya no debe tratarse como el contenedor estratégico principal**. La entrada canónica actual para la documentación del proyecto está en [`../../README.md`](../../README.md) y la política central en [`../../ai/documentation-governance.md`](../../ai/documentation-governance.md).
+>
+> **Nota:** Para una visión completa de la arquitectura del sistema, el flujo de datos y los principios de diseño, comience por la capa canónica en [`../../architecture/README.md`](../../architecture/README.md) y use esta carpeta solo como referencia heredada o índice técnico complementario.
+>
+> ### **[&#128221; Ver la capa canónica de arquitectura](../../architecture/README.md)**
 
 
 ## 1. Visión General del Proyecto

@@ -1,3 +1,19 @@
+---
+status: Draft
+owner: docs-governance
+source_of_truth:
+  - ../../working/
+  - ../../src/assessment_engine/schemas/blueprint.py
+  - ../../src/assessment_engine/schemas/annex_synthesis.py
+  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
+  - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
+last_verified_against: 2026-04-30
+applies_to:
+  - humans
+  - ai-agents
+doc_type: canonical
+---
+
 # Matriz de Cobertura - Plantilla Larga de Torre
 
 ## Objetivo
@@ -8,17 +24,21 @@ Mapear la nueva plantilla `tower_main_report` contra los artefactos actuales del
 
 ## Base analizada
 La matriz se ha construido sobre los artefactos actuales disponibles en un caso real del motor:
+- `blueprint_<tower>_payload.json`
+- `approved_annex_<tower>.template_payload.json`
 - `case_input.json`
 - `scoring_output.json`
 - `findings.json`
 - `evidence_ledger.json`
-- `approved_asis.generated.json`
-- `approved_risks.generated.json`
-- `approved_tobe.generated.json`
-- `approved_gap.generated.json`
-- `approved_todo.generated.json`
-- `approved_conclusion.generated.json`
-- `approved_annex_*.template_payload_extended.json`
+
+## Jerarquia de fuentes observada
+
+Para el flujo vigente del repo, la lectura correcta no parte de los JSON legacy por seccion, sino de esta jerarquia:
+
+1. `blueprint_<tower>_payload.json` como fuente principal de verdad por torre.
+2. `approved_annex_<tower>.template_payload.json` como sintesis ejecutiva derivada del blueprint.
+3. `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json` como artefactos de soporte y trazabilidad.
+4. Los JSON `approved_asis/gap/tobe/todo/...generated.json` deben tratarse como legado y no como base canónica para nuevos contratos.
 
 ## Leyenda
 - `Alta`: la seccion puede generarse de forma bastante fiable con el material actual.
@@ -30,33 +50,33 @@ La matriz se ha construido sobre los artefactos actuales disponibles en un caso 
 
 | Seccion nueva | Cobertura | Estado | Fuentes actuales | Observacion |
 |---|---|---|---|---|
-| Portada | Alta | Cubierta | `document_meta`, `case_input.json`, template actual | Ya existe toda la metadata basica para torre, cliente y variante. Faltarian solo campos formales como clasificacion o autor si se quieren poblar automaticamente. |
+| Portada | Alta | Cubierta | `blueprint.document_meta`, `annex.document_meta`, template actual | Ya existe la metadata base de torre, cliente y variante. Faltan solo campos formales como clasificacion o autor si se quieren poblar automaticamente. |
 | Control documental | Baja | Parcial | Ninguna fuente funcional actual | Se puede crear una tabla minima con version y fecha de generacion, pero no hay workflow real de aprobaciones o distribucion. |
-| Resumen tecnico ejecutivo | Alta | Cubierta | `executive_summary`, `approved_conclusion.generated.json`, `findings.json`, `scoring_output.json` | Esta muy bien cubierto por el payload actual. |
+| Resumen tecnico ejecutivo | Alta | Cubierta | `annex.executive_summary`, `blueprint.executive_snapshot`, `findings.json`, `scoring_output.json` | Esta bien cubierto en el flujo actual: el anexo ya resume la torre y el blueprint aporta el cierre estrategico. |
 | Objeto del documento | Media | Parcial | `case_input.json`, `tower_definition_*.json` | El proposito de la torre existe, pero no el proposito formal del documento ni las decisiones que habilita. |
 | Alcance y limites del analisis | Media | Parcial | `case_input.json`, `source_documents`, `validation_state`, `evidence_ledger.json` | Se puede construir alcance basico y restricciones de evidencia. Faltan exclusiones explicitas y limites metodologicos mas formales. |
 | Contexto de la torre | Media | Parcial | `case_input.json`, `tower_definition_*.json` | Existe el `tower_purpose`, pero faltan dependencias, stakeholders y encaje en arquitectura cliente. |
 | Metodologia de evaluacion | Alta | Parcial alta | `case_input.json`, `scoring_output.json`, `source_docs/methodology`, `tower_definition_*.json` | La metodologia del modelo y del scoring esta disponible. Faltaria explicitar en payload el resumen metodologico final para render directo. |
-| Vision global del estado de la torre | Alta | Cubierta | `approved_asis.generated.json`, `findings.json`, `executive_summary` | Muy bien cubierta. |
-| Grafico radial de evaluacion | Alta | Cubierta | `pillar_score_profile`, `scoring_output.json`, grafico generado | Totalmente soportado hoy. |
-| Analisis detallado por dimension | Media | Parcial | `findings.json`, `approved_asis`, `approved_gap`, `approved_tobe`, `evidence_ledger.json` | Hay mucha materia prima por pilar, pero no existe un bloque narrativo unificado por dimension con objetivo, evidencia, riesgos, impacto y recomendaciones en un solo contrato. |
-| Diagnostico consolidado | Media | Parcial alta | `approved_asis`, `approved_gap`, `approved_conclusion`, `findings.json` | Se puede generar bien con sintesis transversal. No existe como artefacto dedicado. |
-| Estado objetivo de referencia | Alta | Cubierta | `approved_tobe.generated.json` | Muy bien cubierta, con capacidades objetivo por pilar y principios. |
-| Brechas respecto al estado objetivo | Alta | Cubierta | `approved_gap.generated.json`, `approved_tobe.generated.json` | Muy bien cubierta. |
-| Riesgos tecnicos y de continuidad | Alta | Cubierta | `approved_risks.generated.json`, `findings.json` | Muy bien cubierta. |
-| Lineas de actuacion | Media | Parcial | Derivable desde `approved_todo.generated.json`, `approved_gap.generated.json` | Se puede derivar agrupando iniciativas, pero hoy no existe una capa intermedia entre gaps y proyectos. |
-| Cartera de proyectos recomendados | Media | Parcial | `approved_todo.generated.json`, `findings.json` | Ya existen iniciativas con objetivo, prioridad, dependencias y resultado esperado. Faltan campos de alcance, complejidad, horizonte, riesgos de ejecucion e indicadores de exito. |
-| Priorizacion de iniciativas | Media | Parcial | `approved_todo.generated.json`, `scoring_output.json`, `approved_gap.generated.json` | Hay prioridad declarada y dependencias, pero no criterios formales de priorizacion ni clasificacion quick wins / habilitadoras / estructurales. |
-| Hoja de ruta de evolucion | Baja | Parcial baja | Derivable de `todo_items` si se enriquecen | No hay hoy horizonte temporal ni secuencia por tramos. Requiere logica nueva. |
-| Recomendaciones finales para el responsable tecnico | Media | Parcial alta | `approved_conclusion.generated.json`, `approved_todo.generated.json`, `approved_gap.generated.json` | Se puede componer una buena version, pero no hay bloque especifico de decisiones recomendadas o validaciones pendientes. |
-| Conclusiones | Alta | Cubierta | `approved_conclusion.generated.json` | Totalmente soportada. |
+| Vision global del estado de la torre | Alta | Cubierta | `blueprint.executive_snapshot`, `blueprint.cross_capabilities_analysis`, `annex.sections.asis` | Hoy ya existe una lectura transversal de la torre sin depender del antiguo `approved_asis.generated.json`. |
+| Grafico radial de evaluacion | Alta | Cubierta | `annex.pillar_score_profile`, `scoring_output.json`, grafico generado | Totalmente soportado hoy. |
+| Analisis detallado por dimension | Alta | Parcial alta | `blueprint.pillars_analysis`, `findings.json`, `evidence_ledger.json` | El blueprint ya concentra objetivo, riesgo observado, impacto, target y proyectos por pilar. Sigue faltando un contrato dedicado para presentarlo como bloque largo unificado. |
+| Diagnostico consolidado | Alta | Cubierta | `blueprint.executive_snapshot`, `blueprint.cross_capabilities_analysis`, `findings.json` | El blueprint ya ofrece una sintesis transversal suficiente para esta seccion. |
+| Estado objetivo de referencia | Alta | Cubierta | `blueprint.pillars_analysis[].target_architecture_tobe`, `annex.sections.tobe` | Muy bien cubierta con capacidades objetivo por pilar y principios de diseno. |
+| Brechas respecto al estado objetivo | Alta | Cubierta | `annex.sections.gap`, `blueprint.pillars_analysis` | Muy bien cubierta por la sintesis del anexo y el detalle del blueprint. |
+| Riesgos tecnicos y de continuidad | Alta | Cubierta | `annex.sections.risks`, `blueprint.executive_snapshot.structural_risks`, `findings.json` | Muy bien cubierta. |
+| Lineas de actuacion | Alta | Cubierta | `annex.sections.todo`, `blueprint.pillars_analysis[].projects_todo` | Ya se pueden agrupar iniciativas sin recurrir al `approved_todo.generated.json` legacy. |
+| Cartera de proyectos recomendados | Media | Parcial alta | `blueprint.pillars_analysis[].projects_todo`, `annex.sections.todo` | Ya existen iniciativa, objetivo, deliverables, sizing y duracion. Faltan campos como indicadores de exito, riesgos de ejecucion y ownership formal. |
+| Priorizacion de iniciativas | Media | Parcial | `annex.sections.todo.priority_initiatives`, `blueprint.roadmap`, `blueprint.external_dependencies` | Hay prioridad visible y secuencia por olas, pero no criterios formales de priorizacion ni taxonomia quick wins/habilitadoras/estructurales. |
+| Hoja de ruta de evolucion | Media | Parcial alta | `blueprint.roadmap`, `blueprint.external_dependencies` | Ya existe secuencia por waves y dependencias externas. Sigue faltando una traduccion a roadmap visual/ejecutivo largo con horizontes y hitos homogéneos. |
+| Recomendaciones finales para el responsable tecnico | Alta | Cubierta | `blueprint.executive_snapshot.decisions`, `annex.sections.conclusion` | Se puede construir una version solida combinando decisiones del blueprint y cierre ejecutivo del anexo. |
+| Conclusiones | Alta | Cubierta | `annex.sections.conclusion`, `blueprint.executive_snapshot` | Totalmente soportada. |
 | Anexo A. Modelo de evaluacion y scoring | Alta | Cubierta | `scoring_output.json`, `source_docs/methodology`, `tower_definition_*.json` | Existe base suficiente. |
 | Anexo B. Evidencias revisadas | Alta | Cubierta | `evidence_ledger.json` | Directamente soportado. |
-| Anexo C. Hallazgos ampliados por dimension | Alta | Cubierta | `findings.json`, `approved_*` | Existe material suficiente por pilar. |
-| Anexo D. Matriz de brechas | Alta | Cubierta | `approved_gap.generated.json` | Directamente soportado. |
-| Anexo E. Matriz de riesgos | Alta | Cubierta | `approved_risks.generated.json` | Directamente soportado. |
-| Anexo F. Fichas detalladas de proyectos | Media | Parcial | `approved_todo.generated.json` | Hay base clara, pero faltan varios campos para ficha completa. |
-| Anexo G. Roadmap visual | Baja | No cubierta funcionalmente | No existe artefacto de roadmap | Requiere nueva logica de generacion. |
+| Anexo C. Hallazgos ampliados por dimension | Alta | Cubierta | `blueprint.pillars_analysis`, `findings.json`, `evidence_ledger.json` | Existe material suficiente por pilar. |
+| Anexo D. Matriz de brechas | Alta | Cubierta | `annex.sections.gap`, `blueprint.pillars_analysis` | Directamente soportado. |
+| Anexo E. Matriz de riesgos | Alta | Cubierta | `annex.sections.risks`, `blueprint.executive_snapshot.structural_risks` | Directamente soportado. |
+| Anexo F. Fichas detalladas de proyectos | Media | Parcial alta | `blueprint.pillars_analysis[].projects_todo`, `blueprint.roadmap` | Hay base clara, pero faltan varios campos para ficha completa. |
+| Anexo G. Roadmap visual | Media | Parcial | `blueprint.roadmap`, `blueprint.external_dependencies` | Ya existe materia prima para generar una vista visual, pero no un artefacto canónico renderizado hoy para este informe largo. |
 | Anexo H. Glosario y acronimos | Baja | Parcial baja | Derivable de metodologia y textos | No hay glosario estructurado. |
 | Anexo I. Relacion de sesiones, entrevistas y fuentes | Baja | Parcial | `source_documents`, trazas de input | Hay fuentes, pero no sesiones ni entrevistas estructuradas. |
 
@@ -69,6 +89,7 @@ La matriz se ha construido sobre los artefactos actuales disponibles en un caso 
 - Estado objetivo
 - Brechas
 - Riesgos
+- Lineas de actuacion
 - Conclusiones
 - Evidencias y anexos tecnicos basicos
 
@@ -78,21 +99,20 @@ La matriz se ha construido sobre los artefactos actuales disponibles en un caso 
 - Contexto de la torre
 - Metodologia
 - Analisis detallado por dimension
-- Diagnostico consolidado
-- Lineas de actuacion
+- Cartera de proyectos
+- Priorizacion
+- Hoja de ruta visual
 - Recomendaciones finales
 
 ### Lo que hoy requiere logica nueva o enriquecimiento
 - Control documental formal
-- Cartera de proyectos verdaderamente completa
-- Priorizacion con criterios explicitos
-- Hoja de ruta temporal
-- Roadmap visual
+- Criterios formales de priorizacion
+- Fichas de proyecto con gobierno, ownership e indicadores
 - Glosario
 - Registro formal de sesiones y entrevistas
 
 ## Conclusiones practicas
 - La informacion actual es suficiente para generar una `v1` muy solida del documento largo.
 - El nucleo tecnico del informe esta cubierto.
-- Las mayores carencias no estan en el analisis de la torre, sino en la capa de transformacion: proyectos, priorizacion y roadmap.
-- El siguiente paso razonable es construir un payload `tower_main_report` en version inicial, marcando como `parcial` las secciones de proyectos, priorizacion y roadmap.
+- Las mayores carencias ya no estan en AS-IS/TO-BE/GAP por separado, sino en la capa de empaquetado editorial y gobierno del documento largo.
+- El siguiente paso razonable es construir un payload `tower_main_report` inicial derivado de `blueprint + annex + artifacts deterministas`, sin reintroducir dependencias sobre JSON legacy por secciones.

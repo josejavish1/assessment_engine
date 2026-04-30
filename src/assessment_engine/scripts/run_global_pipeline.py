@@ -8,6 +8,10 @@ import importlib
 import asyncio
 from unittest.mock import patch
 from pathlib import Path
+from assessment_engine.scripts.lib.runtime_env import (
+    ensure_google_cloud_env_defaults,
+    run_vertex_ai_preflight,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -55,6 +59,14 @@ def main(argv: list[str] | None = None) -> None:
 
     client_name = (argv if argv is not None else sys.argv)[1]
     client_dir = ROOT / "working" / client_name
+    env = os.environ.copy()
+    ensure_google_cloud_env_defaults(env)
+    if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
+        preflight = run_vertex_ai_preflight(env=env)
+        print(
+            "✅ Vertex AI listo "
+            f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
+        )
 
     payload_path = client_dir / "global_report_payload.json"
     template_path = (

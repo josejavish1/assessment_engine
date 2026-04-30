@@ -14,6 +14,7 @@ from pathlib import Path
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.runtime_env import (
     ensure_google_cloud_env_defaults,
+    run_vertex_ai_preflight,
 )
 
 SKIP_MODE = False
@@ -45,6 +46,7 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
     # Preparamos el entorno inyectando nuestras variables personalizadas
     process_env = os.environ.copy()
     process_env.update(env)
+    timeout_seconds = resolve_ai_step_timeout_seconds(process_env, step_name)
 
     try:
         process = await asyncio.create_subprocess_exec(
@@ -53,8 +55,21 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        
-        stdout, stderr = await process.communicate()
+
+        if timeout_seconds is not None:
+            try:
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(),
+                    timeout=timeout_seconds,
+                )
+            except asyncio.TimeoutError as exc:
+                process.kill()
+                stdout, stderr = await process.communicate()
+                raise RuntimeError(
+                    f"Timeout en {step_name} tras {timeout_seconds:.0f}s."
+                ) from exc
+        else:
+            stdout, stderr = await process.communicate()
         
         # Volcamos la salida para mantener visibilidad de logs
         if stdout:
@@ -85,6 +100,32 @@ def validate_runtime_environment(env: dict[str, str]) -> None:
     ]
     if missing_vars:
         raise RuntimeError("Falta configuración de entorno para Vertex AI.")
+
+
+def resolve_ai_step_timeout_seconds(
+    env: dict[str, str],
+    step_name: str,
+) -> float | None:
+    if "Engine:" not in step_name and "Refinement" not in step_name:
+        return None
+
+    raw_value = str(env.get("ASSESSMENT_AI_STEP_TIMEOUT_SECONDS", "")).strip()
+    if not raw_value:
+        return None
+
+    try:
+        timeout_seconds = float(raw_value)
+    except ValueError as exc:
+        raise RuntimeError(
+            "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS debe ser un número positivo."
+        ) from exc
+
+    if timeout_seconds <= 0:
+        raise RuntimeError(
+            "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS debe ser mayor que 0."
+        )
+
+    return timeout_seconds
 
 
 async def run_pipeline():
@@ -152,6 +193,13 @@ async def run_pipeline():
 
     # --- NUEVA FASE TOP-DOWN (ESTRANGULADOR: BLUEPRINT -> ANEXO) ---
     print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico (Single Source of Truth)...")
+    if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
+        print("🔎 Ejecutando preflight de Vertex AI...")
+        preflight = run_vertex_ai_preflight(env=env)
+        print(
+            "✅ Vertex AI listo "
+            f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
+        )
     blueprint_payload_path = case_dir / f"blueprint_{tower_id.lower()}_payload.json"
     output_blueprint_docx = case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
     
