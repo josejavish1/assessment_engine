@@ -12,7 +12,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
 
-from assessment_engine.scripts.render_tower_annex_from_template import (
+from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph,
     add_heading_paragraph,
     autofit_table_to_contents,
@@ -41,17 +41,35 @@ def clean_commercial_text(text):
 
 
 from assessment_engine.schemas.commercial import (
-    CommercialPayload, 
-    CommercialSummaryDraft, 
-    GtmStrategy, 
-    OpportunityPipelineItem, 
-    ProposalDraft
+    CommercialPayload,
+    CommercialSummaryDraft,
+    GtmStrategy,
+    OpportunityPipelineItem,
+    ProposalDraft,
 )
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
-from pydantic import ValidationError
+
 
 def load_json(path):
     return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def clear_document_body(doc):
+    body = doc._body._element
+    for child in list(body):
+        if (
+            child.tag
+            != "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sectPr"
+        ):
+            body.remove(child)
+
+
+def load_payload(payload_path: Path) -> CommercialPayload:
+    return robust_load_payload(
+        payload_path,
+        CommercialPayload,
+        "Commercial Account Plan",
+    )
 
 
 def render_commercial_cover(doc, payload: CommercialPayload):
@@ -599,9 +617,6 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]):
         add_spacer(doc, 15)
 
 
-from docx.shared import RGBColor
-
-
 def process_footnotes(doc, dossier):
     # Strip any remaining [[REF:...]] tags directly from all paragraphs and tables
     ref_pattern = re.compile(r"\[\[REF:[^\]]*\]\]")
@@ -622,38 +637,46 @@ def process_footnotes(doc, dossier):
                     strip_refs_from_paragraph(p)
 
 
-def main(argv: list[str] | None = None) -> None:
-    if len(argv if argv is not None else sys.argv) != 4:
-        sys.exit(1)
-    payload_path = Path((argv if argv is not None else sys.argv)[1])
-    # 1. CARGA Y VALIDACIÓN ROBUSTA (Handover B4)
-    payload = robust_load_payload(payload_path, CommercialPayload, "Commercial Account Plan")
-    payload_dict = payload.model_dump(by_alias=True)
-
-    template_path = Path((argv if argv is not None else sys.argv)[2])
-    output_path = Path((argv if argv is not None else sys.argv)[3])
+def render_commercial_report(
+    payload: CommercialPayload,
+    template_path: Path,
+    output_path: Path,
+) -> Path:
     doc = Document(str(template_path))
-    body = doc._body._element
-    for child in list(body):
-        if (
-            child.tag
-            != "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}sectPr"
-        ):
-            body.remove(child)
+    clear_document_body(doc)
+
     if doc.sections:
         create_page_number_footer(doc.sections[0])
+
     render_commercial_cover(doc, payload)
+
     if payload.commercial_summary:
-        # Stakeholder matrix belongs to AccountDirectorOutput but we placed it at the root of CommercialPayload in our schema
-        render_commercial_summary(doc, payload.commercial_summary, getattr(payload, 'stakeholder_matrix', []))
+        render_commercial_summary(doc, payload.commercial_summary, payload.stakeholder_matrix)
     if payload.gtm_strategy:
         render_gtm_strategy(doc, payload.gtm_strategy)
     if payload.opportunities_pipeline:
         render_opportunities_pipeline(doc, payload.opportunities_pipeline)
     if payload.proactive_proposals:
         render_proactive_proposals(doc, payload.proactive_proposals)
+
     process_footnotes(doc, payload.intelligence_dossier)
     doc.save(str(output_path))
+    return output_path
+
+
+def main(argv: list[str] | None = None) -> None:
+    if len(argv if argv is not None else sys.argv) != 4:
+        sys.exit(1)
+    payload_path = Path((argv if argv is not None else sys.argv)[1])
+    template_path = Path((argv if argv is not None else sys.argv)[2])
+    output_path = Path((argv if argv is not None else sys.argv)[3])
+    payload = load_payload(payload_path)
+
+    render_commercial_report(
+        payload=payload,
+        template_path=template_path,
+        output_path=output_path,
+    )
     print(f"Account Action Plan renderizado: {output_path}")
 
 

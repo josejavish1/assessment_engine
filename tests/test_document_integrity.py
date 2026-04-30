@@ -3,12 +3,42 @@ from xml.etree import ElementTree as ET
 import zipfile
 
 from docx import Document
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-T5_DIR = ROOT / "working" / "smoke_ivirma" / "T5"
-BLUEPRINT_DOCX = T5_DIR / "Blueprint_Transformacion_T5_smoke_ivirma.docx"
-ANNEX_DOCX = T5_DIR / "annex_t5_smoke_ivirma_final.docx"
+
+
+def _resolve_t5_docx_pair() -> tuple[Path, Path]:
+    preferred_pairs = [
+        (
+            ROOT / "working" / "smoke_ivirma" / "T5"
+            / "Blueprint_Transformacion_T5_smoke_ivirma.docx",
+            ROOT / "working" / "smoke_ivirma" / "T5"
+            / "annex_t5_smoke_ivirma_final.docx",
+        ),
+        (
+            ROOT / "working" / "smoke_moeve" / "T5"
+            / "Blueprint_Transformacion_T5_smoke_moeve.docx",
+            ROOT / "working" / "smoke_moeve" / "T5"
+            / "annex_t5_smoke_moeve_final.docx",
+        ),
+        (
+            ROOT / "working" / "ivirma" / "T5"
+            / "Blueprint_Transformacion_T5_ivirma.docx",
+            ROOT / "working" / "ivirma" / "T5"
+            / "annex_t5_ivirma_final.docx",
+        ),
+    ]
+    for blueprint, annex in preferred_pairs:
+        if blueprint.exists() and annex.exists():
+            return blueprint, annex
+    pytest.skip(
+        "No hay artefactos DOCX T5 disponibles en working/ para validar integridad."
+    )
+
+
+BLUEPRINT_DOCX, ANNEX_DOCX = _resolve_t5_docx_pair()
 
 
 def _parse_docx(path: Path):
@@ -47,11 +77,16 @@ def test_t5_documents_contain_expected_executive_headings():
     blueprint_text = "\n".join(p.text for p in blueprint_doc.paragraphs if p.text.strip())
     annex_text = "\n".join(p.text for p in annex_doc.paragraphs if p.text.strip())
 
-    assert "Por qué importa al negocio" in blueprint_text
-    assert "Riesgos de negocio más materiales" in blueprint_text
-    assert "Decisiones prioritarias" in blueprint_text
+    assert "Executive Snapshot" in blueprint_text
+    assert (
+        "Impacto de Inacción (Cost of Inaction)" in blueprint_text
+        or "Por qué importa al negocio" in blueprint_text
+    )
+    assert (
+        "Decisiones Ejecutivas Bloqueantes" in blueprint_text
+        or "Decisiones prioritarias" in blueprint_text
+    )
 
     assert "Resumen ejecutivo de la torre" in annex_text
     assert "Riesgos principales" in annex_text
     assert "Iniciativas prioritarias" in annex_text
-

@@ -371,7 +371,7 @@ def build_executive_summary(annex, pillars, findings_map, profile_name="short"):
         max_chars=cfg["conclusion_chars"],
     )
 
-    summary_body = [x for x in [p1, p2, p3] if clean_text(x)]
+    summary_body_parts = [x for x in [p1, p2, p3] if clean_text(x)]
 
     strength_hint = ""
     if strongest:
@@ -437,17 +437,59 @@ def build_executive_summary(annex, pillars, findings_map, profile_name="short"):
             else ""
         )
 
+    headline = (
+        f"Resumen ejecutivo de la torre {clean_text(annex.get('tower_name', ''))}"
+        or "Resumen ejecutivo de la torre"
+    )
+
     return {
         "global_score": global_score,
         "global_band": global_band,
         "target_maturity": target,
-        "summary_body": summary_body,
+        "headline": headline,
+        "summary_body": "\n\n".join(summary_body_parts),
         "message_strength": message_strength,
         "message_gap": message_gap,
         "message_bottleneck": message_bottleneck,
         "_strongest": strongest["pillar_label"] if strongest else "",
         "_weakest_labels": weakest_labels,
     }
+
+
+def build_key_business_impacts(annex, profile_name="short"):
+    profile = PROFILE_SETTINGS.get(profile_name, PROFILE_SETTINGS["short"])
+    max_items = 3 if profile_name == "short" else 5
+
+    candidates = []
+    asis = (annex.get("sections") or {}).get("asis", {})
+    risks = (annex.get("sections") or {}).get("risks", {})
+    conclusion = (annex.get("sections") or {}).get("conclusion", {})
+
+    candidates.extend(asis.get("operational_implications", []) or [])
+
+    raw_risks = risks.get("risks") or risks.get("risk_items") or []
+    for item in raw_risks:
+        impact = clean_text(item.get("impact") or item.get("business_impact", ""))
+        risk = clean_text(item.get("risk") or item.get("risk_name", ""))
+        if impact and risk:
+            candidates.append(f"{impact}: {risk}")
+        elif risk:
+            candidates.append(risk)
+
+    candidates.extend(conclusion.get("priority_focus_areas", []) or [])
+
+    impacts = []
+    for item in dedupe_preserve_order(candidates):
+        condensed = take_sentences(
+            item,
+            max_sentences=1,
+            max_chars=profile["summary"]["gap_chars"],
+        )
+        if condensed:
+            impacts.append(condensed)
+        if len(impacts) >= max_items:
+            break
+    return impacts
 
 
 def build_pillar_score_profile(scoring, findings, pillars, exec_summary):
@@ -860,6 +902,9 @@ def main(argv: list[str] | None = None) -> None:
     exec_summary = build_executive_summary(
         annex, pillars, findings_map, profile_name=profile_name
     )
+    key_business_impacts = build_key_business_impacts(
+        annex, profile_name=profile_name
+    )
     profile = build_pillar_score_profile(scoring, findings, pillars, exec_summary)
     sections = build_sections(annex, pillars, profile_name=profile_name)
 
@@ -878,11 +923,12 @@ def main(argv: list[str] | None = None) -> None:
             "global_score": exec_summary["global_score"],
             "global_band": exec_summary["global_band"],
             "target_maturity": exec_summary["target_maturity"],
+            "headline": exec_summary["headline"],
             "summary_body": exec_summary["summary_body"],
             "message_strength": exec_summary["message_strength"],
             "message_gap": exec_summary["message_gap"],
             "message_bottleneck": exec_summary["message_bottleneck"],
-            "key_business_impacts": [],
+            "key_business_impacts": key_business_impacts,
         },
         "domain_introduction": {
             "introduction_paragraph": f"Este anexo presenta los resultados del assessment para la torre {normalize_tower_name(annex.get('tower_name', ''))}.",

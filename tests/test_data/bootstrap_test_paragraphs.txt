@@ -1,0 +1,12 @@
+Torre 99: Test de Bootstrap
+Definición de la torre
+la torre de prueba cubre la correcta extracción de datos.
+Factores de Importancia (pesos %)
+Pilar 1 - T99.P1 - Test Pillar One - 60%
+Pilar 2 - T99.P2 - Test Pillar Two - 40%
+T99.P1.K1 - Primer KPI
+T99.P1.K1.PR1
+Pregunta 1.1
+T99.P2.K1 - Segundo KPI
+T99.P2.K1.PR1
+Pregunta 2.1

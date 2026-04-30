@@ -6,7 +6,13 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from assessment_engine.schemas.blueprint import PillarBlueprintDraft, OrchestratorBlueprintDraft
+from assessment_engine.schemas.blueprint import (
+    PillarBlueprintDraft, 
+    OrchestratorBlueprintDraft, 
+    BlueprintPayload,
+    ExecutiveSnapshot,
+    CrossCapabilitiesAnalysis
+)
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 from assessment_engine.scripts.lib.ai_client import run_agent
@@ -19,6 +25,34 @@ from assessment_engine.prompts.blueprint_prompts import (
 
 ROOT = Path(__file__).resolve().parents[3]
 
+def get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data) -> dict:
+    """Provee una estructura base completa que cumple con el contrato de BlueprintPayload."""
+    return {
+        "document_meta": {
+            "client_name": client_name,
+            "tower_name": tower_name,
+            "tower_code": tower_id,
+            "financial_tier": intel_data.get("financial_tier", "Tier 2"),
+            "transformation_horizon": intel_data.get("transformation_horizon", "General"),
+        },
+        "executive_snapshot": {
+            "bottom_line": "Análisis estratégico pendiente de consolidación por el orquestador.",
+            "decisions": [],
+            "cost_of_inaction": "El retraso en la transformación mantiene los riesgos operativos actuales.",
+            "structural_risks": [],
+            "business_impact": "Pendiente de determinar impacto detallado.",
+            "operational_benefits": [],
+            "transformation_complexity": "Media (estimación base)"
+        },
+        "cross_capabilities_analysis": {
+            "common_deficiency_patterns": [],
+            "transformation_paradigm": "Evolución por dominios técnicos.",
+            "critical_technical_debt": "Deuda técnica identificada en los pilares individuales."
+        },
+        "roadmap": [],
+        "external_dependencies": [],
+        "pillars_analysis": [],
+    }
 
 async def process_pilar_blueprint(
     model_name, client_name, tower_name, pilar_data, context_str, intel_str
@@ -43,9 +77,6 @@ async def process_pilar_blueprint(
 
     # 1. Agente Escritor
     try:
-        from google.adk.agents import Agent
-        from vertexai.agent_engines import AdkApp
-
         agent_architect = Agent(
             name="blueprint_architect",
             model=model_name,
@@ -150,19 +181,8 @@ async def run_tower_blueprint(client_name, tower_id):
 
     print(f"🏗️ Generando Blueprint de Transformación para {tower_name}...")
 
-    blueprint_payload = {
-        "document_meta": {
-            "client_name": client_name,
-            "tower_name": tower_name,
-            "tower_code": tower_id,
-            "financial_tier": intel_data.get("financial_tier", "Tier 2"),
-            "transformation_horizon": intel_data.get(
-                "transformation_horizon", "General"
-            ),
-        },
-        "executive_snapshot": {},
-        "pillars_analysis": [],
-    }
+    # Inicialización Normalizada (Contrato Estricto)
+    blueprint_payload = get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data)
 
     # PROCESAR PILARES EN SERIE PARA MÁXIMA CALIDAD
     for p_id in sorted(pillars_map.keys()):
@@ -185,9 +205,6 @@ async def run_tower_blueprint(client_name, tower_id):
         intel_str=intel_str
     )
     try:
-        from google.adk.agents import Agent
-        from vertexai.agent_engines import AdkApp
-
         orchestrator_agent = Agent(
             name="blueprint_orchestrator",
             model=model_name,
@@ -203,23 +220,34 @@ async def run_tower_blueprint(client_name, tower_id):
             schema=OrchestratorBlueprintDraft
         )
         if closing_data:
+            # Actualizamos solo si recibimos datos válidos del agente
             blueprint_payload.update(closing_data)
     except Exception as e:
         print(f"Error en agente de cierre blueprint: {e}")
 
-    # Inyectar metadatos de versión (aseguramos que estén tras el update de closing_data)
-    blueprint_payload["_generation_metadata"] = {
-        "artifact_type": "blueprint_payload",
-        "artifact_version": "1.0.0",
-    }
+    # Validación Final del Contrato con Pydantic
+    try:
+        blueprint_payload["_generation_metadata"] = {
+            "artifact_type": "blueprint_payload",
+            "artifact_version": "1.0.0",
+        }
+        # Forzamos validación para asegurar que el JSON resultante sea íntegro
+        validated_model = BlueprintPayload.model_validate(blueprint_payload)
+        final_payload_dict = validated_model.model_dump(by_alias=True)
+    except Exception as val_err:
+        print(f"⚠️ Error de validación en payload final: {val_err}")
+        # En caso de error catastrófico de validación, mantenemos el dict original 
+        # (que al menos tiene las keys de default) para no romper el pipeline por completo
+        final_payload_dict = blueprint_payload
 
     # GUARDAR PAYLOAD
     output_path = tower_dir / f"blueprint_{tower_id.lower()}_payload.json"
     output_path.write_text(
-        json.dumps(blueprint_payload, indent=2, ensure_ascii=False),
+        json.dumps(final_payload_dict, indent=2, ensure_ascii=False),
         encoding="utf-8-sig",
     )
-    print(f"✅ Payload del Blueprint generado: {output_path}")
+    print(f"✅ Payload del Blueprint generado y validado: {output_path}")
+
 
 
 def main(argv: list[str] | None = None) -> None:

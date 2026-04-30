@@ -22,7 +22,7 @@ Todo agente de IA (o desarrollador) que intervenga en el pipeline del Assessment
 ## 5. Validaciones Generales (Pipeline Completo)
 Antes de confirmar que una refactorización está acabada, debes ejecutar obligatoriamente (con el venv correcto de Python):
 ```bash
-PYTHONPATH=src ./.venv/bin/pytest tests/test_t5_golden.py tests/test_prompt_registry.py tests/test_document_integrity.py -q
+./.venv/bin/python -m pytest tests/test_t5_golden.py tests/test_prompt_registry.py tests/test_document_integrity.py -q
 ```
 - [ ] Todos los tests regresan en OK.
 

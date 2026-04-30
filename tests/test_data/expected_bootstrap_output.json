@@ -1,0 +1,58 @@
+{
+  "tower_id": "T99",
+  "tower_name": "Test de Bootstrap",
+  "purpose": "la torre de prueba cubre la correcta extracción de datos.",
+  "scope_summary": [],
+  "related_towers": [],
+  "boundary_notes": [],
+  "pillars": [
+    {
+      "pillar_id": "T99.P1",
+      "pillar_name": "Test Pillar One - 60%",
+      "weight_pct": 60,
+      "kpis": [
+        {
+          "kpi_id": "T99.P1.K1",
+          "kpi_name": "Primer KPI",
+          "questions": [
+            {
+              "question_id": "T99.P1.K1.PR1",
+              "question_text": "Pregunta 1.1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_id": "T99.P2",
+      "pillar_name": "Test Pillar Two - 40%",
+      "weight_pct": 40,
+      "kpis": [
+        {
+          "kpi_id": "T99.P2.K1",
+          "kpi_name": "Segundo KPI",
+          "questions": [
+            {
+              "question_id": "T99.P2.K1.PR1",
+              "question_text": "Pregunta 2.1"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "question_id": "T99.P1.K1.PR1",
+      "pillar_id": "T99.P1",
+      "kpi_id": "T99.P1.K1",
+      "question_text": "Pregunta 1.1"
+    },
+    {
+      "question_id": "T99.P2.K1.PR1",
+      "pillar_id": "T99.P2",
+      "kpi_id": "T99.P2.K1",
+      "question_text": "Pregunta 2.1"
+    }
+  ]
+}

@@ -113,6 +113,7 @@ class CommercialPayload(VersionedPayload):
     meta: CommercialDocumentMeta
     commercial_summary: CommercialSummaryDraft
     gtm_strategy: GtmStrategy
+    stakeholder_matrix: list[StakeholderMatrixItem] = Field(default_factory=list)
     opportunities_pipeline: list[OpportunityPipelineItem]
     proactive_proposals: list[ProposalDraft]
     intelligence_dossier: dict = Field(default_factory=dict)

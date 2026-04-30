@@ -12,7 +12,7 @@ from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
 
-from assessment_engine.scripts.render_tower_annex_from_template import (
+from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph,
     add_heading_paragraph,
     autofit_table_to_contents,
@@ -807,27 +807,24 @@ def create_page_number_footer(section):
     add_field(paragraph, "NUMPAGES")
 
 
-def main(argv: list[str] | None = None) -> None:
-    if len(argv if argv is not None else sys.argv) != 4:
-        sys.exit(1)
-    payload_path = Path((argv if argv is not None else sys.argv)[1])
+def load_payload(payload_path: Path) -> GlobalReportPayload:
     payload_dict = load_json(payload_path)
-    
-    # 1. VALIDACIÓN ESTRICTA PYDANTIC (Type-Safety End-to-End)
     try:
-        payload = GlobalReportPayload.model_validate(payload_dict)
+        return GlobalReportPayload.model_validate(payload_dict)
     except ValidationError as e:
         print(f"❌ Error de validación Type-Safety en {payload_path}:")
         print(e)
         sys.exit(1)
 
-    template_path = Path((argv if argv is not None else sys.argv)[2])
-    output_path = Path((argv if argv is not None else sys.argv)[3])
-    client_dir = payload_path.parent
+def render_global_report(
+    payload: GlobalReportPayload,
+    template_path: Path,
+    output_path: Path,
+    client_dir: Path,
+) -> Path:
     doc = Document(str(template_path))
     clear_document_body(doc)
 
-    # Configurar pie de página en la primera sección
     if doc.sections:
         create_page_number_footer(doc.sections[0])
 
@@ -864,8 +861,21 @@ def main(argv: list[str] | None = None) -> None:
         render_executive_decisions(
             doc, payload.executive_decisions, client_name=client_name
         )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))
     print(f"Informe Global CIO-READY renderizado: {output_path}")
+    return output_path
+
+
+def main(argv: list[str] | None = None) -> None:
+    if len(argv if argv is not None else sys.argv) != 4:
+        sys.exit(1)
+    payload_path = Path((argv if argv is not None else sys.argv)[1])
+    template_path = Path((argv if argv is not None else sys.argv)[2])
+    output_path = Path((argv if argv is not None else sys.argv)[3])
+    client_dir = payload_path.parent
+    payload = load_payload(payload_path)
+    render_global_report(payload, template_path, output_path, client_dir)
 
 
 if __name__ == "__main__":

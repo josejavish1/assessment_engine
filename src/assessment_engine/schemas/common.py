@@ -1,4 +1,5 @@
 from typing import List, Optional, Any
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field, model_validator, ConfigDict
 
 def collect_all_strings(data: Any) -> List[str]:
@@ -26,14 +27,12 @@ class BaseDraftModel(BaseModel):
         if not forbidden:
             return self
             
-        # Clean notes
         cleaned_notes = []
         for note in self.notes_for_reviewer:
             if not any(phrase.lower() in note.lower() for phrase in forbidden):
                 cleaned_notes.append(note)
         self.notes_for_reviewer = cleaned_notes
         
-        # Check string content in other fields
         data = self.model_dump(exclude={"notes_for_reviewer"})
         all_strings = collect_all_strings(data)
         
@@ -63,7 +62,9 @@ class VersionMetadata(BaseModel):
     artifact_type: str
     artifact_version: str = "1.0.0"
     source_version: Optional[str] = None
-    prompt_version: Optional[str] = None
+    timestamp_utc: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    run_id: Optional[str] = None
+    model_config = ConfigDict(populate_by_name=True)
 
 class VersionedPayload(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
