@@ -528,7 +528,7 @@ entries:
     source_of_truth:
       - src/assessment_engine/schemas/
       - tests/test_contract_handover.py
-      - working/
+      - docs/architecture/working-artifacts.md
     last_verified_against: 2026-04-30
     notes: "Colección mixta: incluye un documento de fronteras ya verificado y varias piezas de diseño/plantilla todavía en Draft o Needs Review para el informe largo y la evolución del anexo."
 
@@ -588,11 +588,11 @@ entries:
       - humans
       - ai-agents
     source_of_truth:
-      - working/
       - src/assessment_engine/schemas/blueprint.py
       - src/assessment_engine/schemas/annex_synthesis.py
       - src/assessment_engine/scripts/run_tower_pipeline.py
       - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - docs/architecture/working-artifacts.md
     last_verified_against: 2026-04-30
     notes: Matriz de cobertura ya realineada con el flujo blueprint-first; sigue siendo una pieza de diseño porque el payload tower_main_report todavía no existe en producción.
 
