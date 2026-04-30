@@ -5,20 +5,22 @@ Implementa un orquestador asíncrono basado en un DAG (Directed Acyclic Graph)
 utilizando Subprocesos Asíncronos aislados para evitar Race Conditions de memoria global.
 """
 import argparse
-import os
-import sys
-import unicodedata
 import asyncio
+import os
+import unicodedata
 from pathlib import Path
 
 from assessment_engine.scripts.lib.pipeline_runtime import (
     build_runtime_env,
+    prepare_case_runtime,
+    resolve_ai_step_timeout_seconds,
     resolve_python_bin,
+    validate_runtime_environment,
 )
-from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.runtime_env import (
     run_vertex_ai_preflight,
 )
+from assessment_engine.scripts.lib.runtime_paths import ROOT
 
 SKIP_MODE = False
 START_FROM = None
@@ -87,43 +89,6 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
     except Exception as e:
         raise RuntimeError(f"Error crítico lanzando {step_name}: {e}")
 
-
-def validate_runtime_environment(env: dict[str, str]) -> None:
-    missing_vars = [
-        name
-        for name in ("GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION")
-        if not env.get(name, "").strip()
-    ]
-    if missing_vars:
-        raise RuntimeError("Falta configuración de entorno para Vertex AI.")
-
-
-def resolve_ai_step_timeout_seconds(
-    env: dict[str, str],
-    step_name: str,
-) -> float | None:
-    if "Engine:" not in step_name and "Refinement" not in step_name:
-        return None
-
-    raw_value = str(env.get("ASSESSMENT_AI_STEP_TIMEOUT_SECONDS", "")).strip()
-    if not raw_value:
-        return None
-
-    try:
-        timeout_seconds = float(raw_value)
-    except ValueError as exc:
-        raise RuntimeError(
-            "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS debe ser un número positivo."
-        ) from exc
-
-    if timeout_seconds <= 0:
-        raise RuntimeError(
-            "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS debe ser mayor que 0."
-        )
-
-    return timeout_seconds
-
-
 async def run_pipeline():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tower", required=True)
@@ -140,14 +105,14 @@ async def run_pipeline():
 
     tower_id = args.tower.upper().strip()
     client_slug = slugify(args.client)
-    case_dir = ROOT / "working" / client_slug / tower_id
-    case_dir.mkdir(parents=True, exist_ok=True)
     python_bin = resolve_python_bin()
 
     env = build_runtime_env()
-    env["ASSESSMENT_CLIENT_ID"] = client_slug
-    env["ASSESSMENT_TOWER_ID"] = tower_id
-    env["ASSESSMENT_CASE_DIR"] = str(case_dir)
+    case_dir = prepare_case_runtime(
+        env,
+        client_id=client_slug,
+        tower_id=tower_id,
+    )
 
     validate_runtime_environment(env)
 
@@ -155,16 +120,12 @@ async def run_pipeline():
     responses_path = str(Path(args.responses_file).resolve())
 
     annex_stem = f"approved_annex_{tower_id.lower()}"
-    assembled_path = case_dir / f"{annex_stem}.generated.json"
-    review_path = case_dir / "global_review.generated.json"
-    refined_path = case_dir / f"{annex_stem}.refined.json"
     payload_path = case_dir / f"{annex_stem}.template_payload.json"
 
     template_annex_path = (
         ROOT / "templates" / "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx"
     )
     output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
-    radar_path = case_dir / "pillar_radar_chart.generated.png"
 
     # --- FASE 1: PREPARACIÓN DETERMINISTA (SECUENCIAL) ---
     await run_step_async(

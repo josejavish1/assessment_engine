@@ -10,7 +10,7 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
     run_module_step,
 )
 from assessment_engine.scripts.lib.runtime_env import run_vertex_ai_preflight
-from assessment_engine.scripts.lib.runtime_paths import ROOT
+from assessment_engine.scripts.lib.runtime_paths import ROOT, resolve_client_dir
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
 
     client_name = (argv if argv is not None else sys.argv)[1]
-    client_dir = ROOT / "working" / client_name
+    client_dir = resolve_client_dir(client_name)
     env = build_runtime_env()
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
         preflight = run_vertex_ai_preflight(env=env)

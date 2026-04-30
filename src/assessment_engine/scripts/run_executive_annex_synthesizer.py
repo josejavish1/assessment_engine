@@ -22,6 +22,7 @@ from assessment_engine.schemas.annex_synthesis import (
 )
 from assessment_engine.schemas.common import VersionMetadata
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
+from assessment_engine.scripts.lib.runtime_paths import resolve_client_dir
 from vertexai.agent_engines import AdkApp
 from google.adk.agents import Agent
 
@@ -495,7 +496,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
     run_id = f"run_{uuid.uuid4()}"
     print(f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})...")
     
-    client_dir = ROOT / "working" / client_name
+    client_dir = resolve_client_dir(client_name)
     tower_dir = client_dir / tower_id
     blueprint_path = tower_dir / f"blueprint_{tower_id.lower()}_payload.json"
     output_path = tower_dir / f"approved_annex_{tower_id.lower()}.template_payload.json"

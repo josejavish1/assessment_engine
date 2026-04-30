@@ -5,7 +5,6 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 import asyncio
 import json
 import sys
-from pathlib import Path
 from assessment_engine.schemas.blueprint import (
     PillarBlueprintDraft, 
     OrchestratorBlueprintDraft, 
@@ -22,8 +21,10 @@ from assessment_engine.prompts.blueprint_prompts import (
     get_critic_prompt,
     get_closing_orchestrator_prompt
 )
-
-ROOT = Path(__file__).resolve().parents[3]
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_client_dir,
+    resolve_tower_definition_file,
+)
 
 def get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data) -> dict:
     """Provee una estructura base completa que cumple con el contrato de BlueprintPayload."""
@@ -121,7 +122,7 @@ async def process_pilar_blueprint(
 
 
 async def run_tower_blueprint(client_name, tower_id):
-    client_dir = ROOT / "working" / client_name
+    client_dir = resolve_client_dir(client_name)
     tower_dir = client_dir / tower_id
     case_input_path = tower_dir / "case_input.json"
     intel_path = client_dir / "client_intelligence.json"
@@ -149,13 +150,7 @@ async def run_tower_blueprint(client_name, tower_id):
 
     # Agrupar respuestas por pilar
     pillars_map = {}
-    tower_def_path = (
-        ROOT
-        / "engine_config"
-        / "towers"
-        / tower_id
-        / f"tower_definition_{tower_id}.json"
-    )
+    tower_def_path = resolve_tower_definition_file(tower_id)
     tower_def = json.loads(tower_def_path.read_text(encoding="utf-8"))
 
     for p in tower_def.get("pillars", []):

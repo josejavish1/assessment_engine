@@ -22,9 +22,7 @@ from assessment_engine.prompts.intelligence_prompts import (
     get_tech_harvester_prompt,
     get_auditor_harvester_prompt
 )
-
-ROOT = Path(__file__).resolve().parents[1]
-
+from assessment_engine.scripts.lib.runtime_paths import resolve_client_dir
 
 async def run_market_intelligence(client_name: str, output_path: Path):
     print(f"\n🔍 Iniciando Inteligencia de Mercado para: {client_name}")
@@ -113,7 +111,7 @@ def main():
         sys.exit(1)
 
     client_name = sys.argv[1]
-    client_dir = ROOT / "working" / client_name
+    client_dir = resolve_client_dir(client_name)
     output_path = client_dir / "client_intelligence.json"
 
     asyncio.run(run_market_intelligence(client_name, output_path))

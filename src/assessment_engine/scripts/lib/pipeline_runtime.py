@@ -2,8 +2,6 @@
 Helpers comunes para entrypoints de pipeline basados en módulos Python.
 """
 
-from __future__ import annotations
-
 import asyncio
 import importlib
 import os
@@ -12,7 +10,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from assessment_engine.scripts.lib.runtime_env import ensure_google_cloud_env_defaults
-from assessment_engine.scripts.lib.runtime_paths import ROOT
+from assessment_engine.scripts.lib.runtime_paths import ROOT, resolve_client_dir
+
+AI_STEP_TIMEOUT_ENV = "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS"
 
 
 def resolve_python_bin() -> str:
@@ -32,6 +32,54 @@ def build_runtime_env(
     if include_pythonpath:
         env["PYTHONPATH"] = str(ROOT / "src")
     return env
+
+
+def prepare_case_runtime(
+    env: dict[str, str],
+    *,
+    client_id: str,
+    tower_id: str,
+) -> Path:
+    case_dir = resolve_client_dir(client_id) / tower_id
+    case_dir.mkdir(parents=True, exist_ok=True)
+    env["ASSESSMENT_CLIENT_ID"] = client_id
+    env["ASSESSMENT_TOWER_ID"] = tower_id
+    env["ASSESSMENT_CASE_DIR"] = str(case_dir)
+    return case_dir
+
+
+def validate_runtime_environment(env: dict[str, str]) -> None:
+    missing_vars = [
+        name
+        for name in ("GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION")
+        if not env.get(name, "").strip()
+    ]
+    if missing_vars:
+        raise RuntimeError("Falta configuración de entorno para Vertex AI.")
+
+
+def resolve_ai_step_timeout_seconds(
+    env: dict[str, str],
+    step_name: str,
+) -> float | None:
+    if "Engine:" not in step_name and "Refinement" not in step_name:
+        return None
+
+    raw_value = str(env.get(AI_STEP_TIMEOUT_ENV, "")).strip()
+    if not raw_value:
+        return None
+
+    try:
+        timeout_seconds = float(raw_value)
+    except ValueError as exc:
+        raise RuntimeError(
+            f"{AI_STEP_TIMEOUT_ENV} debe ser un número positivo."
+        ) from exc
+
+    if timeout_seconds <= 0:
+        raise RuntimeError(f"{AI_STEP_TIMEOUT_ENV} debe ser mayor que 0.")
+
+    return timeout_seconds
 
 
 def run_module_step(cmd_args: list[str], step_name: str, env: dict[str, str]) -> None:
