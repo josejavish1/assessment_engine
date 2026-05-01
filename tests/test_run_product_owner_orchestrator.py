@@ -151,6 +151,22 @@ def test_ignore_current_reconciliation_check_filters_active_workflow(
     monkeypatch.setenv("GITHUB_WORKFLOW", "Orchestrator PR Reconciliation")
     monkeypatch.setenv("GITHUB_JOB", "reconcile")
 
+    checks = [
+        {
+            "name": "reconcile",
+            "workflow_name": "Orchestrator PR Reconciliation",
+            "status": "IN_PROGRESS",
+            "conclusion": "",
+            "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
+        },
+        {
+            "name": "typing",
+            "workflow_name": "Incremental Type Check",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "details_url": "https://example.test/check",
+        },
+    ]
     pr_state = {
         "number": 7,
         "url": "https://example.test/pr/7",
@@ -158,22 +174,7 @@ def test_ignore_current_reconciliation_check_filters_active_workflow(
         "mergeable": "MERGEABLE",
         "merge_state_status": "BLOCKED",
         "review_decision": "",
-        "checks": [
-            {
-                "name": "reconcile",
-                "workflow_name": "Orchestrator PR Reconciliation",
-                "status": "IN_PROGRESS",
-                "conclusion": "",
-                "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
-            },
-            {
-                "name": "typing",
-                "workflow_name": "Incremental Type Check",
-                "status": "COMPLETED",
-                "conclusion": "SUCCESS",
-                "details_url": "https://example.test/check",
-            },
-        ],
+        "checks": checks,
         "failed_checks": [],
         "pending_checks": [
             {
@@ -189,7 +190,7 @@ def test_ignore_current_reconciliation_check_filters_active_workflow(
 
     filtered = orchestrator.ignore_current_reconciliation_check(pr_state)
 
-    assert filtered["checks"] == [pr_state["checks"][1]]
+    assert filtered["checks"] == [checks[1]]
     assert filtered["pending_checks"] == []
 
 
