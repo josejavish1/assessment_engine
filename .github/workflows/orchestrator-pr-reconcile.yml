@@ -144,12 +144,19 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
           pip install pytest pytest-asyncio pytest-mock
+          npm install -g @github/copilot
 
       - name: Resume orchestrator reconciliation
         env:
@@ -157,6 +164,7 @@ jobs:
           PR_NUMBER: ${{ needs.resolve-context.outputs.pr_number }}
           EXECUTOR_CMD_SECRET: ${{ secrets.ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD }}
           EXECUTOR_CMD_VAR: ${{ vars.ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD }}
+          COPILOT_REQUESTS_TOKEN: ${{ secrets.COPILOT_REQUESTS_TOKEN }}
           PYTHONDONTWRITEBYTECODE: "1"
           PYTHONPATH: src
         run: |
@@ -168,8 +176,7 @@ jobs:
           fi
 
           if [ -z "$executor_command" ]; then
-            echo "::warning::Skipping automatic reconciliation because ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD is not configured."
-            exit 0
+            executor_command="./.github/scripts/orchestrator-github-executor.sh {repo_root} {task_prompt_file} {attempt}"
           fi
 
           export ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD="$executor_command"

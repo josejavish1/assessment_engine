@@ -220,9 +220,25 @@ entries:
     source_of_truth:
       - docs/operations/product-owner-orchestrator.md
       - docs/operations/engineering-quality-gates.md
+      - .github/scripts/orchestrator-github-executor.sh
       - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
     last_verified_against: 2026-05-01
     notes: Workflow que reanuda automáticamente PRs gestionadas por el orquestador cuando llegan checks, comentarios o ejecuciones manuales.
+
+  - path: .github/scripts/orchestrator-github-executor.sh
+    kind: document
+    title: GitHub Actions executor wrapper for the product owner orchestrator
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/product-owner-orchestrator.md
+      - .github/workflows/orchestrator-pr-reconcile.yml
+    last_verified_against: 2026-05-01
+    notes: Wrapper del repo que autentica Copilot CLI en GitHub Actions y ejecuta el prompt de reconciliación contra la rama activa.
 
   - path: docs/SYSTEM_ARCHITECTURE.md
     kind: document

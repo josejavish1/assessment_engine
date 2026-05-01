@@ -142,7 +142,9 @@ Reglas de seguridad del watcher:
 - exige que la PR tenga el marcador oculto del orquestador o la label `orchestrator-managed`;
 - serializa la ejecución por número de PR para no correr dos reconciliaciones en paralelo;
 - reutiliza `resume-pr`, así que sigue pasando por tests, quality, typing, docs-governance, sync con `main` y reglas de review;
-- si falta `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` como secret o variable del repo, el watcher se salta sin forzar cambios.
+- usa por defecto `./.github/scripts/orchestrator-github-executor.sh {repo_root} {task_prompt_file} {attempt}` como executor compatible con GitHub Actions;
+- la regla operativa recomendada es mantener `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` configurado en GitHub Actions apuntando a ese wrapper del repo, para no depender de rutas locales o wrappers efímeros;
+- para que el executor pueda autenticarse de forma estable en GitHub Actions, el repo debe tener `COPILOT_REQUESTS_TOKEN` como secret con permiso `Copilot Requests`; si no existe, el wrapper intentará usar `GITHUB_TOKEN`, pero la configuración soportada para operación estable es el secret dedicado.
 
 ## Política configurable
 
