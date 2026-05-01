@@ -4,7 +4,10 @@
     "planning": {"max_tasks": 5},
     "execution": {
         "max_attempts_per_task": 3,
-        "commit_mode": "single_commit_after_success"
+        "commit_mode": "single_commit_after_success",
+        "executor_timeout_seconds": 900,
+        "executor_preflight_timeout_seconds": 60,
+        "validation_timeout_seconds": 1800
     },
     "pull_request": {
         "base_branch": "main",

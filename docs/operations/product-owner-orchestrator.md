@@ -100,9 +100,11 @@ Para cada tarea:
 
 1. genera un prompt estructurado con el plan global y el task actual;
 2. valida la configuración mínima del executor y hace un preflight cuando el backend lo soporta;
-3. invoca un ejecutor externo configurable;
+3. invoca un ejecutor externo configurable con timeout explícito para que un backend colgado no bloquee la sesión indefinidamente;
 4. ejecuta validaciones estándar del repo;
 5. si falla, reintenta pasando feedback de validación a la siguiente iteración.
+
+El wrapper `./bin/po-run` exporta además `PYTHONDONTWRITEBYTECODE=1` por defecto para no ensuciar el worktree con `__pycache__/` durante la propia ejecución del orquestador.
 
 ### 3. Validación estándar
 
@@ -182,6 +184,7 @@ Reglas de seguridad del watcher:
 - modo de auto-merge;
 - reconciliación post-PR (polling, rondas máximas, sync con base y resolución automática de threads de bot);
 - watcher automático de reanudación para PRs gestionadas;
+- timeouts del executor, del preflight y de las validaciones;
 - validaciones estándar.
 
 ## Clasificación de fallos operativos
@@ -191,6 +194,7 @@ El orquestador separa explícitamente varias familias de fallo para evitar diagn
 - `executor_auth`: credenciales inválidas o sin permiso para que el backend de agente procese requests;
 - `executor_config`: executor declarado pero mal configurado para el entorno actual;
 - `executor_missing`: binario o wrapper ausente;
+- `timeout`: el executor o una validación superó el tiempo máximo configurado y la sesión abortó o pasó a reintento;
 - `validation`: tests, quality, typing o docs-governance rojos;
 - `command_failure`: otros errores no clasificados todavía.
 

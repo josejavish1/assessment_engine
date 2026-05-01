@@ -137,6 +137,7 @@ if [[ ! -f "$orchestrator_script" ]]; then
 fi
 
 python_bin=$(resolve_python_bin)
+export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 
 if [[ "$mode" == "run" && -z "$executor_command" ]]; then
   executor_command=$(default_executor_command)
