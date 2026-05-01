@@ -20,7 +20,10 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
 from assessment_engine.scripts.lib.runtime_env import (
     run_vertex_ai_preflight,
 )
-from assessment_engine.scripts.lib.runtime_paths import ROOT
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_blueprint_payload_path,
+    resolve_tower_annex_template_path,
+)
 
 SKIP_MODE = False
 START_FROM = None
@@ -121,10 +124,7 @@ async def run_pipeline():
 
     annex_stem = f"approved_annex_{tower_id.lower()}"
     payload_path = case_dir / f"{annex_stem}.template_payload.json"
-
-    template_annex_path = (
-        ROOT / "templates" / "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx"
-    )
+    template_annex_path = resolve_tower_annex_template_path()
     output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
 
     # --- FASE 1: PREPARACIÓN DETERMINISTA (SECUENCIAL) ---
@@ -155,7 +155,7 @@ async def run_pipeline():
             "✅ Vertex AI listo "
             f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
-    blueprint_payload_path = case_dir / f"blueprint_{tower_id.lower()}_payload.json"
+    blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
     output_blueprint_docx = case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
     
     try:

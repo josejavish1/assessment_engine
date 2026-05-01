@@ -22,6 +22,9 @@ from assessment_engine.prompts.blueprint_prompts import (
     get_closing_orchestrator_prompt
 )
 from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_blueprint_payload_path,
+    resolve_case_input_path,
+    resolve_client_intelligence_path,
     resolve_client_dir,
     resolve_tower_definition_file,
 )
@@ -124,8 +127,8 @@ async def process_pilar_blueprint(
 async def run_tower_blueprint(client_name, tower_id):
     client_dir = resolve_client_dir(client_name)
     tower_dir = client_dir / tower_id
-    case_input_path = tower_dir / "case_input.json"
-    intel_path = client_dir / "client_intelligence.json"
+    case_input_path = resolve_case_input_path(client_name, tower_id)
+    intel_path = resolve_client_intelligence_path(client_name)
 
     if not case_input_path.exists():
         print(f"Error: No se encuentra input para {tower_id}")
@@ -249,7 +252,7 @@ async def run_tower_blueprint(client_name, tower_id):
         ) from val_err
 
     # GUARDAR PAYLOAD
-    output_path = tower_dir / f"blueprint_{tower_id.lower()}_payload.json"
+    output_path = resolve_blueprint_payload_path(client_name, tower_id)
     output_path.write_text(
         json.dumps(final_payload_dict, indent=2, ensure_ascii=False),
         encoding="utf-8-sig",

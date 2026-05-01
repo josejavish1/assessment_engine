@@ -22,13 +22,16 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_annex_template_payload_path,
+    resolve_client_intelligence_path,
+    resolve_tower_annex_template_path,
+)
 from assessment_engine.scripts.lib.text_utils import clean_text_for_word
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
 ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_TEMPLATE_PATH = (
-    ROOT / "templates" / "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx"
-)
+DEFAULT_TEMPLATE_PATH = resolve_tower_annex_template_path()
 
 
 def load_json(path: Path) -> dict:
@@ -155,15 +158,14 @@ def resolve_client_dir(payload_path: Path, payload_data: dict) -> Path:
 
 
 def load_client_intelligence(client_dir: Path) -> dict:
-    path = client_dir / "client_intelligence.json"
+    path = resolve_client_intelligence_path(client_dir.name)
     if path.exists():
         return load_json(path)
     return {}
 
 
 def load_annex_data(client_dir: Path, tower_code: str) -> dict:
-    tower_dir = client_dir / tower_code.upper()
-    path = tower_dir / f"approved_annex_{tower_code.lower()}.template_payload.json"
+    path = resolve_annex_template_payload_path(client_dir.name, tower_code.upper())
     if path.exists():
         return load_json(path)
     return {}

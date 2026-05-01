@@ -12,8 +12,8 @@ def test_main_uses_runtime_client_dir(monkeypatch) -> None:
     monkeypatch.setattr(sys, "argv", ["run_intelligence_harvesting.py", "smoke_ivirma"])
     monkeypatch.setattr(
         run_intelligence_harvesting,
-        "resolve_client_dir",
-        lambda client_name: Path("/tmp/runtime-working") / client_name,
+        "resolve_client_intelligence_path",
+        lambda client_name: Path("/tmp/runtime-working") / client_name / "client_intelligence.json",
     )
     monkeypatch.setattr(
         run_intelligence_harvesting,

@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
+
 import pytest
-from unittest.mock import patch
 
 from assessment_engine.scripts.render_web_presentation import generate_web_dashboard
 

@@ -10,7 +10,12 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
     run_module_step,
 )
 from assessment_engine.scripts.lib.runtime_env import run_vertex_ai_preflight
-from assessment_engine.scripts.lib.runtime_paths import ROOT, resolve_client_dir
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_client_dir,
+    resolve_commercial_report_payload_path,
+    resolve_global_report_payload_path,
+    resolve_global_report_template_path,
+)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -28,14 +33,9 @@ def main(argv: list[str] | None = None) -> None:
             f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
 
-    global_payload_path = client_dir / "global_report_payload.json"
-    commercial_payload_path = client_dir / "commercial_report_payload.json"
-    template_path = (
-        ROOT
-        / "source_docs"
-        / "templates"
-        / "11. Template Documento General Alpha v.05.docx"
-    )
+    global_payload_path = resolve_global_report_payload_path(client_name)
+    commercial_payload_path = resolve_commercial_report_payload_path(client_name)
+    template_path = resolve_global_report_template_path()
     output_path = client_dir / f"Account_Action_Plan_{client_name}.docx"
 
     python_bin = resolve_python_bin()
