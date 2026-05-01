@@ -399,7 +399,14 @@ def test_auto_resolve_bot_threads_replies_before_resolving(monkeypatch) -> None:
                             "database_id": 987,
                             "author": "chatgpt-codex-connector",
                             "author_type": "Bot",
-                            "body": "old comment",
+                            "body": "top-level comment",
+                            "state": "SUBMITTED",
+                        },
+                        {
+                            "database_id": 654,
+                            "author": "chatgpt-codex-connector",
+                            "author_type": "Bot",
+                            "body": "reply comment",
                             "state": "SUBMITTED",
                         }
                     ],
