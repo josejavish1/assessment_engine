@@ -144,7 +144,9 @@ def test_inspect_pull_request_combines_checks_and_threads(monkeypatch) -> None:
     assert pr_state["unresolved_threads"][0]["comments"][0]["database_id"] == 321
 
 
-def test_ignore_current_reconciliation_check_filters_active_workflow(monkeypatch) -> None:
+def test_ignore_current_reconciliation_check_filters_active_workflow(
+    monkeypatch,
+) -> None:
     monkeypatch.setenv("GITHUB_RUN_ID", "12345")
     monkeypatch.setenv("GITHUB_WORKFLOW", "Orchestrator PR Reconciliation")
     monkeypatch.setenv("GITHUB_JOB", "reconcile")
@@ -180,7 +182,7 @@ def test_ignore_current_reconciliation_check_filters_active_workflow(monkeypatch
                 "status": "IN_PROGRESS",
                 "conclusion": "",
                 "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
-            }
+            },
         ],
         "unresolved_threads": [],
     }
@@ -617,7 +619,7 @@ def test_reconcile_pull_request_ignores_its_own_pending_check(
                     "status": "IN_PROGRESS",
                     "conclusion": "",
                     "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
-                }
+                },
             ],
             "failed_checks": [],
             "pending_checks": [
@@ -627,7 +629,7 @@ def test_reconcile_pull_request_ignores_its_own_pending_check(
                     "status": "IN_PROGRESS",
                     "conclusion": "",
                     "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
-                }
+                },
             ],
             "unresolved_threads": [],
         },
@@ -635,14 +637,14 @@ def test_reconcile_pull_request_ignores_its_own_pending_check(
     monkeypatch.setattr(
         orchestrator,
         "merge_pull_request",
-        lambda pr_number, merge_mode: calls.append(
-            f"merge:{pr_number}:{merge_mode}"
-        ),
+        lambda pr_number, merge_mode: calls.append(f"merge:{pr_number}:{merge_mode}"),
     )
     monkeypatch.setattr(
         orchestrator.time,
         "sleep",
-        lambda seconds: pytest.fail("should not wait on the current reconciliation check"),
+        lambda seconds: pytest.fail(
+            "should not wait on the current reconciliation check"
+        ),
     )
 
     orchestrator.reconcile_pull_request(
