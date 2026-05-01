@@ -46,7 +46,7 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `reference/generated/` | Referencia derivada o heredada no canónica |
 | `../GEMINI.md` | Adaptador para Gemini y memoria operativa en transición |
 | `documentation-map.yaml` | Inventario máquina-legible, estado y trazabilidad |
-| `../.github/pull_request_template.md` | Checklist de PR para disciplina documental |
+| `../.github/pull_request_template.md` | Checklist de PR para disciplina documental y revisión de coherencia del assessment |
 | `../.github/CODEOWNERS` | Ownership mínimo de la documentación y gobernanza |
 | `../.github/workflows/docs-governance.yml` | Validación automática de gobernanza documental |
 | `../.github/workflows/quality.yml` | Gate incremental de calidad de implementación |
@@ -104,6 +104,7 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - la puerta incremental de calidad ya puede bloquear deuda nueva en la superficie viva;
 - la puerta incremental de tipado ya puede bloquear deuda nueva en la superficie viva;
 - ya existe una guía canónica para exigir spec mínima y alcance explícito en cambios asistidos por agentes;
+- la plantilla de PR ya obliga también a explicitar checks de coherencia cuando un cambio toca semántica de assessment o salidas cliente-facing;
 - ya existe un MVP de orquestador local PO-to-PR apoyado en backend de agente configurable;
 - ya existe un watcher de GitHub que puede reanudar PRs gestionadas del orquestador cuando fallan checks o aparece feedback nuevo;
 - ya existe un executor del repo compatible con GitHub Actions para que el watcher no dependa de rutas locales;
