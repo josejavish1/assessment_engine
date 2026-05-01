@@ -10,6 +10,10 @@ from typing import Any
 from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.global_report import GlobalReportPayload
 from assessment_engine.scripts.lib.global_maturity_policy import average_pillar_target
+from assessment_engine.scripts.lib.maturity_band import (
+    GLOBAL_MATURITY_BANDS,
+    resolve_maturity_band,
+)
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_blueprint_payload_candidates,
     resolve_client_dir,
@@ -51,6 +55,28 @@ def _safe_float(value: Any, default: float) -> float:
         return float(value)
     except (TypeError, ValueError):
         return default
+
+
+def _try_float(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(str(value).split()[0].replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_tower_meta(tower_meta: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(tower_meta)
+    if normalized.get("band") not in (None, ""):
+        return normalized
+
+    score = _try_float(normalized.get("score"))
+    if score is None:
+        return normalized
+
+    normalized["band"] = resolve_maturity_band(score, GLOBAL_MATURITY_BANDS)["label"]
+    return normalized
 
 
 def _compute_global_score(global_payload: dict[str, Any]) -> str:
@@ -125,6 +151,10 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
     executive_summary = global_payload.get("executive_summary", {})
     target_vision = global_payload.get("target_vision", {})
     execution_roadmap = global_payload.get("execution_roadmap", {})
+    heatmap = [
+        _normalize_tower_meta(tower_meta)
+        for tower_meta in global_payload.get("heatmap", [])
+    ]
 
     return {
         "meta": {"client": client_id.upper(), "version": "v5.1 Strategic Ops"},
@@ -147,7 +177,7 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
             "proactive_proposals": execution_roadmap.get("proactive_proposals", [])
             or _default_proposals(),
         },
-        "heatmap": global_payload.get("heatmap", []),
+        "heatmap": heatmap,
         "towers": {},
     }
 
@@ -235,19 +265,20 @@ def _build_tower_nexus(
     tower_meta: dict[str, Any],
     blueprint_payload: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    score = _safe_float(tower_meta.get("score"), 2.5)
+    normalized_tower_meta = _normalize_tower_meta(tower_meta)
+    score = _safe_float(normalized_tower_meta.get("score"), 2.5)
     default_complexity = _derive_complexity(score)
 
     tower_nexus: dict[str, Any] = {
         "meta": {
-            **tower_meta,
-            "status_color": tower_meta.get("status_color", "38BDF8"),
+            **normalized_tower_meta,
+            "status_color": normalized_tower_meta.get("status_color", "38BDF8"),
         },
-        "executive_summary": tower_meta.get("executive_message", ""),
+        "executive_summary": normalized_tower_meta.get("executive_message", ""),
         "pillars": [],
         "decisions": [],
         "cost_of_inaction": "",
-        "target_maturity": str(tower_meta.get("target_maturity", "4.0")),
+        "target_maturity": str(normalized_tower_meta.get("target_maturity", "4.0")),
         "complexity": default_complexity,
         "structural_risks": [],
         "business_impact": "",

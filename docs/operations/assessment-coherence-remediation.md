@@ -70,12 +70,14 @@ Con un score medio-alto y un target cercano, esa narrativa no resulta proporcion
 
 ### 1. Doble sistema de bandas de madurez
 
-Hay al menos dos fuentes distintas para traducir score a banda cualitativa:
+Originalmente había al menos dos fuentes distintas para traducir score a banda cualitativa:
 
 1. `run_scoring.py` usa `score_bands` definidos por torre en `engine_config/towers/*/tower_definition_*.json`.
 2. `run_executive_annex_synthesizer.py` usa `derive_maturity_band()` con umbrales hardcodeados y etiquetas diferentes.
 
-Consecuencia: un mismo score puede tener dos lecturas cualitativas distintas según el artefacto.
+Consecuencia: un mismo score podía tener dos lecturas cualitativas distintas según el artefacto.
+
+**Estado 2026-05-01:** la resolución `score -> banda` quedó centralizada en `src/assessment_engine/scripts/lib/maturity_band.py` y ya es consumida por scoring, annex, blueprint, global y web. Esta pieza mantiene el diagnóstico histórico y el resto de remediaciones abiertas.
 
 ### 2. T3 ya demuestra la inconsistencia
 
@@ -479,6 +481,8 @@ Incluye:
 
 **Retorno de valor:** muy alto.  
 **Por qué va primero:** una sola corrección aquí limpia annex, blueprint, global y dashboard a la vez.
+
+**Estado 2026-05-01:** completado para la traducción de `score -> banda`; siguen abiertas las remediaciones sobre color, target, severidad y tono.
 
 #### P0.2 Corregir la política de target maturity
 
