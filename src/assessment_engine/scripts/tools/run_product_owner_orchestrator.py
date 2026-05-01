@@ -91,6 +91,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     run_parser.add_argument("--skip-pr", action="store_true")
     run_parser.add_argument("--skip-auto-merge", action="store_true")
 
+    resume_parser = subparsers.add_parser("resume-pr")
+    resume_selector = resume_parser.add_mutually_exclusive_group(required=True)
+    resume_selector.add_argument("--pr-number", type=int)
+    resume_selector.add_argument("--branch")
+    resume_parser.add_argument("--executor-command")
+    resume_parser.add_argument("--allow-dirty", action="store_true")
+    resume_parser.add_argument("--skip-auto-merge", action="store_true")
+
     return parser.parse_args(argv)
 
 
@@ -191,6 +199,21 @@ def ensure_branch(branch_name: str) -> None:
     run_git_command(["git", "checkout", "-b", branch_name])
 
 
+def ensure_existing_branch(branch_name: str) -> None:
+    run_git_command(["git", "fetch", "origin", branch_name])
+    result = subprocess.run(
+        ["git", "rev-parse", "--verify", branch_name],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode == 0:
+        run_git_command(["git", "checkout", branch_name])
+        return
+    run_git_command(["git", "checkout", "-b", branch_name, f"origin/{branch_name}"])
+
+
 def resolve_executor_command(raw_command: str | None) -> str:
     command = (
         raw_command
@@ -240,6 +263,10 @@ def has_worktree_changes() -> bool:
             result.stderr.strip() or "No se pudo inspeccionar el estado del worktree."
         )
     return bool(result.stdout.strip())
+
+
+def load_json_file(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def run_command(command: list[str], *, output_path: Path) -> None:
@@ -320,7 +347,7 @@ def get_pull_request(branch_name: str) -> dict[str, Any]:
             "view",
             branch_name,
             "--json",
-            "number,url,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup",
+            "number,title,url,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup",
         ]
     )
 
@@ -428,6 +455,7 @@ def inspect_pull_request(branch_name: str) -> dict[str, Any]:
     check_summary = summarize_status_checks(pr_data.get("statusCheckRollup", []))
     return {
         "number": int(pr_data["number"]),
+        "title": pr_data.get("title", ""),
         "url": pr_data.get("url", ""),
         "head_ref": pr_data.get("headRefName", branch_name),
         "base_ref": pr_data.get("baseRefName", ""),
@@ -449,7 +477,8 @@ def is_pull_request_ready_for_merge(pr_state: dict[str, Any]) -> bool:
         and not pr_state["pending_checks"]
         and not pr_state["unresolved_threads"]
         and pr_state["mergeable"] == "MERGEABLE"
-        and pr_state["merge_state_status"] not in {"BLOCKED", "DIRTY", "UNKNOWN"}
+        and pr_state["merge_state_status"]
+        not in {"BEHIND", "BLOCKED", "DIRTY", "UNKNOWN"}
     )
 
 
@@ -488,6 +517,99 @@ def build_pr_feedback(pr_state: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def default_validation_plan(policy: dict[str, Any]) -> list[str]:
+    names = [
+        entry.get("name", "validation")
+        for entry in policy.get("validation_commands", [])
+    ]
+    names.extend(["incremental quality gate", "incremental typecheck"])
+    return names
+
+
+def find_latest_plan_for_branch(
+    policy: dict[str, Any], branch_name: str
+) -> dict[str, Any] | None:
+    requests_root = resolve_requests_root(policy)
+    if not requests_root.exists():
+        return None
+    for request_dir in sorted(
+        (path for path in requests_root.iterdir() if path.is_dir()),
+        reverse=True,
+    ):
+        plan_path = request_dir / "plan.json"
+        if not plan_path.exists():
+            continue
+        plan = load_json_file(plan_path)
+        if plan.get("branch_name") == branch_name:
+            return plan
+    return None
+
+
+def synthesize_resume_plan(
+    policy: dict[str, Any],
+    pr_state: dict[str, Any],
+) -> dict[str, Any]:
+    branch_name = pr_state["head_ref"]
+    pr_title = pr_state.get("title") or f"Resume PR #{pr_state['number']}"
+    return {
+        "request_title": f"Resume PR #{pr_state['number']}: {pr_title}",
+        "branch_name": branch_name,
+        "pr_title": pr_title,
+        "commit_title": f"fix: address PR #{pr_state['number']} feedback",
+        "risk_level": "medium",
+        "problem": (
+            f"Bring PR #{pr_state['number']} back to a mergeable state against "
+            f"{pr_state['base_ref']} without bypassing repository controls."
+        ),
+        "value_expected": (
+            f"PR #{pr_state['number']} is synchronized, validated, and ready to merge."
+        ),
+        "in_scope": [
+            "synchronize the PR branch with the base branch when required",
+            "address open failing checks",
+            "resolve merge-blocking review feedback",
+        ],
+        "out_of_scope": [
+            "unrelated refactors",
+            "bypassing branch protection or review policies",
+        ],
+        "source_of_truth": [
+            "src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py",
+            "docs/operations/product-owner-orchestrator.md",
+            "docs/operations/agentic-development-workflow.md",
+            ".github/workflows/ci.yml",
+            ".github/workflows/quality.yml",
+            ".github/workflows/typing.yml",
+        ],
+        "invariants": [
+            "do not bypass tests, typing, quality, docs-governance, or review controls",
+            "keep the scope bounded to the active pull request feedback",
+        ],
+        "validation_plan": default_validation_plan(policy),
+        "tasks": [],
+    }
+
+
+def prepare_resume_plan(
+    policy: dict[str, Any], pr_state: dict[str, Any]
+) -> dict[str, Any]:
+    existing_plan = find_latest_plan_for_branch(policy, pr_state["head_ref"])
+    if existing_plan:
+        plan = dict(existing_plan)
+        plan["branch_name"] = pr_state["head_ref"]
+        plan["pr_title"] = pr_state.get("title", plan.get("pr_title", ""))
+        plan.setdefault(
+            "commit_title", f"fix: address PR #{pr_state['number']} feedback"
+        )
+        plan.setdefault("validation_plan", default_validation_plan(policy))
+        return plan
+    return synthesize_resume_plan(policy, pr_state)
+
+
+def build_resume_request_text(pr_state: dict[str, Any]) -> str:
+    return f"Resume PR #{pr_state['number']} on {pr_state['head_ref']}"
+
+
 def create_followup_commit_title(plan: dict[str, Any], round_number: int) -> str:
     return f"{plan['commit_title']} (PR feedback round {round_number})"
 
@@ -499,8 +621,11 @@ def repair_pull_request(
     executor_command: str,
     pr_state: dict[str, Any],
     round_number: int,
+    additional_feedback: str | None = None,
 ) -> None:
     feedback_payload = build_pr_feedback(pr_state)
+    if additional_feedback:
+        feedback_payload["additional_feedback"] = additional_feedback
     prompt = render_pr_reconciliation_prompt(
         plan,
         feedback_payload,
@@ -526,6 +651,25 @@ def repair_pull_request(
     push_branch(plan["branch_name"])
 
 
+def sync_branch_with_base(
+    request_dir: Path,
+    plan: dict[str, Any],
+    *,
+    base_branch: str,
+) -> str | None:
+    ensure_existing_branch(plan["branch_name"])
+    run_git_command(["git", "fetch", "origin", base_branch])
+    result = run_git_command(["git", "merge", "--no-edit", f"origin/{base_branch}"])
+    output = (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
+    (request_dir / f"sync_{base_branch}.log").write_text(output, encoding="utf-8")
+    try:
+        run_standard_validations(request_dir)
+    except Exception as exc:
+        return str(exc)
+    push_branch(plan["branch_name"])
+    return None
+
+
 def merge_pull_request(pr_number: int, merge_mode: str) -> None:
     run_git_command(
         [
@@ -545,6 +689,7 @@ def reconcile_pull_request(
     *,
     executor_command: str,
     merge_mode: str,
+    allow_merge: bool = True,
 ) -> None:
     policy = load_orchestrator_policy()
     reconciliation = (
@@ -557,6 +702,7 @@ def reconcile_pull_request(
     poll_interval_seconds = int(reconciliation.get("poll_interval_seconds", 20))
     max_polls = int(reconciliation.get("max_polls", 30))
     auto_resolve_bot = bool(reconciliation.get("auto_resolve_bot_threads", True))
+    sync_with_base_branch = bool(reconciliation.get("sync_with_base_branch", True))
     repair_rounds = 0
 
     for poll_index in range(1, max_polls + 1):
@@ -566,8 +712,34 @@ def reconcile_pull_request(
             encoding="utf-8",
         )
 
+        if sync_with_base_branch and pr_state["merge_state_status"] == "BEHIND":
+            sync_feedback = sync_branch_with_base(
+                request_dir,
+                plan,
+                base_branch=pr_state["base_ref"],
+            )
+            if sync_feedback:
+                repair_rounds += 1
+                if repair_rounds > max_rounds:
+                    raise RuntimeError(
+                        "La PR sigue bloqueada tras agotar la reconciliación automática."
+                    )
+                repair_pull_request(
+                    request_dir,
+                    plan,
+                    executor_command=executor_command,
+                    pr_state=pr_state,
+                    round_number=repair_rounds,
+                    additional_feedback=(
+                        f"La sincronización con {pr_state['base_ref']} dejó validaciones "
+                        f"locales fallando: {sync_feedback}"
+                    ),
+                )
+            continue
+
         if is_pull_request_ready_for_merge(pr_state):
-            merge_pull_request(pr_state["number"], merge_mode)
+            if allow_merge:
+                merge_pull_request(pr_state["number"], merge_mode)
             return
 
         if (
@@ -730,19 +902,54 @@ def execute_plan(
                 merge_mode=policy.get("pull_request", {}).get(
                     "auto_merge_mode", "squash"
                 ),
+                allow_merge=True,
             )
+
+
+def resolve_resume_selector(args: argparse.Namespace) -> str:
+    if args.branch:
+        return args.branch
+    if args.pr_number:
+        return str(args.pr_number)
+    raise ValueError("Debes indicar --pr-number o --branch.")
+
+
+def resume_pull_request(
+    args: argparse.Namespace,
+    *,
+    policy: dict[str, Any],
+) -> Path:
+    ensure_clean_worktree(allow_dirty=args.allow_dirty)
+    pr_state = inspect_pull_request(resolve_resume_selector(args))
+    ensure_existing_branch(pr_state["head_ref"])
+    request_text = build_resume_request_text(pr_state)
+    request_dir = create_request_dir(policy, request_text)
+    plan = prepare_resume_plan(policy, pr_state)
+    save_plan_bundle(request_dir, request_text, plan)
+    executor_command = resolve_executor_command(args.executor_command)
+    reconcile_pull_request(
+        request_dir,
+        plan,
+        executor_command=executor_command,
+        merge_mode=policy.get("pull_request", {}).get("auto_merge_mode", "squash"),
+        allow_merge=not args.skip_auto_merge,
+    )
+    return request_dir
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     policy = load_orchestrator_policy()
-    request_text = load_request_text(args)
+    if args.command == "resume-pr":
+        request_dir = resume_pull_request(args, policy=policy)
+        print(f"Reconciliación completada en {request_dir}")
+        return 0
 
+    request_text = load_request_text(args)
     if args.command == "run":
         ensure_clean_worktree(allow_dirty=args.allow_dirty)
 
     request_dir = create_request_dir(policy, request_text)
-
     plan = asyncio.run(generate_plan(request_text, policy))
     save_plan_bundle(request_dir, request_text, plan)
 

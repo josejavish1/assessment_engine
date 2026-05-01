@@ -123,6 +123,7 @@ El workflow correcto es:
 Si un agente automatiza el post-PR reconciliation, su mandato no es “forzar el merge”, sino exactamente esto:
 
 - leer checks y review threads;
+- sincronizar la rama con la base cuando GitHub la marque como desactualizada;
 - corregir en la rama;
 - rerun de validaciones locales del repo;
 - push del follow-up;

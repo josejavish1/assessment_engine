@@ -45,6 +45,12 @@ def test_build_executor_args_supports_placeholders() -> None:
     assert "2" in args
 
 
+def test_resolve_resume_selector_prefers_branch() -> None:
+    args = orchestrator.parse_args(["resume-pr", "--branch", "feat/test"])
+
+    assert orchestrator.resolve_resume_selector(args) == "feat/test"
+
+
 def test_create_pr_body_includes_spec_and_tasks() -> None:
     plan = {
         "problem": "Need stronger review",
@@ -269,10 +275,15 @@ def test_reconcile_pull_request_auto_resolves_bot_threads(
     monkeypatch.setattr(
         orchestrator, "inspect_pull_request", lambda branch_name: next(pr_states)
     )
+
+    def fake_auto_resolve_bot_threads(pr_state: dict[str, object]) -> int:
+        call_order.append("resolve")
+        return 1
+
     monkeypatch.setattr(
         orchestrator,
         "auto_resolve_bot_threads",
-        lambda pr_state: call_order.append("resolve") or 1,
+        fake_auto_resolve_bot_threads,
     )
     monkeypatch.setattr(
         orchestrator,
@@ -291,6 +302,164 @@ def test_reconcile_pull_request_auto_resolves_bot_threads(
     )
 
     assert call_order == ["resolve", "merge:11:squash"]
+
+
+def test_reconcile_pull_request_syncs_when_branch_is_behind(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    plan = {"branch_name": "feat/test-branch", "commit_title": "feat: improve flow"}
+    call_order: list[str] = []
+    pr_states = iter(
+        [
+            {
+                "number": 12,
+                "title": "Improve flow",
+                "url": "https://example.test/pr/12",
+                "head_ref": "feat/test-branch",
+                "base_ref": "main",
+                "is_draft": False,
+                "mergeable": "MERGEABLE",
+                "merge_state_status": "BEHIND",
+                "review_decision": "",
+                "failed_checks": [],
+                "pending_checks": [],
+                "unresolved_threads": [],
+            },
+            {
+                "number": 12,
+                "title": "Improve flow",
+                "url": "https://example.test/pr/12",
+                "head_ref": "feat/test-branch",
+                "base_ref": "main",
+                "is_draft": False,
+                "mergeable": "MERGEABLE",
+                "merge_state_status": "CLEAN",
+                "review_decision": "",
+                "failed_checks": [],
+                "pending_checks": [],
+                "unresolved_threads": [],
+            },
+        ]
+    )
+
+    monkeypatch.setattr(
+        orchestrator,
+        "load_orchestrator_policy",
+        lambda: {
+            "pull_request": {
+                "post_pr_reconciliation": {
+                    "enabled": True,
+                    "max_rounds": 1,
+                    "poll_interval_seconds": 0,
+                    "max_polls": 3,
+                    "auto_resolve_bot_threads": True,
+                }
+            }
+        },
+    )
+    monkeypatch.setattr(
+        orchestrator, "inspect_pull_request", lambda branch_name: next(pr_states)
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "sync_branch_with_base",
+        lambda request_dir, plan, *, base_branch: call_order.append(
+            f"sync:{base_branch}"
+        ),
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "merge_pull_request",
+        lambda pr_number, merge_mode: call_order.append(
+            f"merge:{pr_number}:{merge_mode}"
+        ),
+    )
+
+    orchestrator.reconcile_pull_request(
+        request_dir,
+        plan,
+        executor_command="executor",
+        merge_mode="squash",
+    )
+
+    assert call_order == ["sync:main", "merge:12:squash"]
+
+
+def test_resume_pull_request_reuses_branch_and_runs_reconciliation(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    plan = {
+        "request_title": "Resume PR #6",
+        "branch_name": "po-pr-sandbox",
+        "pr_title": "Promote sandbox baseline",
+        "commit_title": "fix: address PR feedback",
+        "validation_plan": ["pytest"],
+        "tasks": [],
+    }
+    args = orchestrator.parse_args(
+        [
+            "resume-pr",
+            "--pr-number",
+            "6",
+            "--executor-command",
+            "executor",
+        ]
+    )
+    calls: list[str] = []
+
+    monkeypatch.setattr(orchestrator, "ensure_clean_worktree", lambda **kwargs: None)
+    monkeypatch.setattr(
+        orchestrator,
+        "inspect_pull_request",
+        lambda selector: {
+            "number": 6,
+            "title": "Promote sandbox baseline",
+            "url": "https://example.test/pr/6",
+            "head_ref": "po-pr-sandbox",
+            "base_ref": "main",
+            "is_draft": False,
+            "mergeable": "MERGEABLE",
+            "merge_state_status": "BLOCKED",
+            "review_decision": "",
+            "failed_checks": [],
+            "pending_checks": [],
+            "unresolved_threads": [],
+        },
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "ensure_existing_branch",
+        lambda branch_name: calls.append(f"checkout:{branch_name}"),
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "create_request_dir",
+        lambda policy, request_text: request_dir,
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "prepare_resume_plan",
+        lambda policy, pr_state: plan,
+    )
+    monkeypatch.setattr(orchestrator, "save_plan_bundle", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        orchestrator, "resolve_executor_command", lambda raw: "executor"
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "reconcile_pull_request",
+        lambda request_dir, plan, *, executor_command, merge_mode, allow_merge: (
+            calls.append(f"reconcile:{merge_mode}:{allow_merge}")
+        ),
+    )
+
+    result = orchestrator.resume_pull_request(args, policy={"pull_request": {}})
+
+    assert result == request_dir
+    assert calls == ["checkout:po-pr-sandbox", "reconcile:squash:True"]
 
 
 def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> None:
@@ -334,6 +503,22 @@ def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> 
     assert call_order[:2] == ["ensure_clean_worktree", "create_request_dir"]
 
 
+def test_main_resume_pr_skips_plan_generation(monkeypatch, tmp_path: Path) -> None:
+    request_dir = tmp_path / "request"
+    args = orchestrator.parse_args(
+        ["resume-pr", "--branch", "po-pr-sandbox", "--executor-command", "executor"]
+    )
+    monkeypatch.setattr(orchestrator, "parse_args", lambda argv=None: args)
+    monkeypatch.setattr(orchestrator, "load_orchestrator_policy", lambda: {})
+    monkeypatch.setattr(
+        orchestrator,
+        "resume_pull_request",
+        lambda parsed_args, *, policy: request_dir,
+    )
+
+    assert orchestrator.main(["resume-pr", "--branch", "po-pr-sandbox"]) == 0
+
+
 def test_execute_plan_runs_reconciliation_before_auto_merge(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -371,8 +556,8 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
     monkeypatch.setattr(
         orchestrator,
         "reconcile_pull_request",
-        lambda request_dir, plan, *, executor_command, merge_mode: calls.append(
-            f"reconcile:{merge_mode}"
+        lambda request_dir, plan, *, executor_command, merge_mode, allow_merge: (
+            calls.append(f"reconcile:{merge_mode}:{allow_merge}")
         ),
     )
 
@@ -384,4 +569,4 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
         skip_auto_merge=False,
     )
 
-    assert calls == ["branch", "commit", "pr", "reconcile:squash"]
+    assert calls == ["branch", "commit", "pr", "reconcile:squash:True"]

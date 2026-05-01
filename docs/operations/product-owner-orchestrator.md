@@ -56,6 +56,14 @@ python src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py run
   --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
 ```
 
+También puede **reanudar una PR existente** para seguir la reconciliación:
+
+```bash
+python src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py resume-pr \
+  --pr-number 6 \
+  --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
+```
+
 ## Fases del MVP
 
 ### 1. Planificación
@@ -110,10 +118,13 @@ La fase post-PR **no sustituye** los controles del repo ni los rebaja. Su papel 
 3. pasar ese feedback al executor para que haga una corrección acotada en la misma rama;
 4. volver a ejecutar la validación estándar local del repo;
 5. subir el follow-up commit;
-6. reconsultar la PR;
-7. mergear solo cuando GitHub deja de reportar checks pendientes/fallidos y no quedan conversaciones abiertas.
+6. si la rama está por detrás de `main`, sincronizarla primero y volver a validar;
+7. reconsultar la PR;
+8. mergear solo cuando GitHub deja de reportar checks pendientes/fallidos y no quedan conversaciones abiertas.
 
 Por defecto puede resolver automáticamente **threads abiertos creados por bots** una vez que la rama ya no tiene checks rojos ni pendientes. No auto-resuelve feedback humano implícitamente fuera de las reglas normales de GitHub: si la PR sigue bloqueada por requisitos externos de review o protección de rama, el merge no se fuerza.
+
+La sincronización con la base ocurre dentro del mismo circuito controlado: el orquestador trae `origin/<base_branch>` a la rama activa, vuelve a ejecutar las validaciones locales y solo hace push si la rama sigue pasando los gates. Si esa sincronización introduce un fallo, ese fallo entra como feedback de la siguiente ronda de reparación; no se salta.
 
 ## Política configurable
 
@@ -124,7 +135,7 @@ Por defecto puede resolver automáticamente **threads abiertos creados por bots*
 - reintentos por tarea;
 - rama base;
 - modo de auto-merge;
-- reconciliación post-PR (polling, rondas máximas y resolución automática de threads de bot);
+- reconciliación post-PR (polling, rondas máximas, sync con base y resolución automática de threads de bot);
 - validaciones estándar.
 
 ## Limitaciones deliberadas del MVP
@@ -133,6 +144,7 @@ Por defecto puede resolver automáticamente **threads abiertos creados por bots*
 - no intenta editar código por sí mismo sin backend configurado;
 - no salta la PR ni la validación;
 - no bypassa tests, typing, quality, docs-governance ni conversaciones abiertas para forzar merge;
+- no hace push de una sincronización con `main` sin revalidar primero la rama resultante;
 - no mezcla el rol de planner con el de editor de código.
 
 ## Qué viene después
