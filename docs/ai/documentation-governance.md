@@ -110,6 +110,8 @@ la revisión documental deja de ser genérica y pasa a ser **dirigida**:
 
 Esta capa está pensada para las piezas donde la deriva documental es más peligrosa: arquitectura principal, contratos, operación y gobernanza.
 
+En la práctica, esto también aplica a refactors internos que no cambian la funcionalidad visible pero sí la forma en que el sistema resuelve entorno, rutas o artefactos operativos. Si un cambio mueve esa lógica a helpers compartidos como `pipeline_runtime.py` o `runtime_paths.py`, la revisión documental sigue siendo obligatoria porque cambia la superficie real que sostienen los playbooks, la arquitectura operativa y las reglas de trazabilidad.
+
 ## Tratamiento del material heredado
 
 - `GEMINI.md` se mantiene como adaptador operativo en transición.

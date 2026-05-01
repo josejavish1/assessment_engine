@@ -5,15 +5,16 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 import argparse
 import json
 import re
-import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
-
-from assessment_engine.scripts.lib.text_utils import normalize_tower_name, slugify
 from zipfile import ZipFile
 
-from assessment_engine.scripts.lib.runtime_paths import ROOT
-
+from assessment_engine.scripts.lib.runtime_paths import (
+    ROOT,
+    resolve_case_dir,
+    resolve_client_intelligence_path,
+)
+from assessment_engine.scripts.lib.text_utils import normalize_tower_name, slugify
 
 RESPONSE_RE = re.compile(r"(T\d+\.P\d+\.K\d+\.PR\d+)\s*:\s*([1-5](?:[.,]\d+)?)")
 
@@ -138,7 +139,7 @@ def build_case_input(args: argparse.Namespace) -> dict:
         source_documents.insert(2, matrix_file_name)
 
     client_slug = slugify(args.client)
-    intel_path = ROOT / "working" / client_slug / "client_intelligence.json"
+    intel_path = resolve_client_intelligence_path(client_slug)
     target_maturity = 4.0
     if intel_path.exists():
         try:
@@ -200,7 +201,7 @@ def main() -> None:
     args = parser.parse_args()
 
     client_slug = slugify(args.client)
-    case_dir = ROOT / "working" / client_slug / args.tower
+    case_dir = resolve_case_dir(client_slug, args.tower)
     case_dir.mkdir(parents=True, exist_ok=True)
 
     case_input = build_case_input(args)

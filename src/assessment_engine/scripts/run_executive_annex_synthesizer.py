@@ -22,6 +22,13 @@ from assessment_engine.schemas.annex_synthesis import (
 )
 from assessment_engine.schemas.common import VersionMetadata
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_annex_template_payload_path,
+    resolve_blueprint_payload_path,
+    resolve_case_input_path,
+    resolve_client_dir,
+    resolve_client_intelligence_path,
+)
 from vertexai.agent_engines import AdkApp
 from google.adk.agents import Agent
 
@@ -495,12 +502,12 @@ async def synthesize_annex(client_name: str, tower_id: str):
     run_id = f"run_{uuid.uuid4()}"
     print(f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})...")
     
-    client_dir = ROOT / "working" / client_name
+    client_dir = resolve_client_dir(client_name)
     tower_dir = client_dir / tower_id
-    blueprint_path = tower_dir / f"blueprint_{tower_id.lower()}_payload.json"
-    output_path = tower_dir / f"approved_annex_{tower_id.lower()}.template_payload.json"
-    client_intelligence_path = client_dir / "client_intelligence.json"
-    case_input_path = tower_dir / "case_input.json"
+    blueprint_path = resolve_blueprint_payload_path(client_name, tower_id)
+    output_path = resolve_annex_template_payload_path(client_name, tower_id)
+    client_intelligence_path = resolve_client_intelligence_path(client_name)
+    case_input_path = resolve_case_input_path(client_name, tower_id)
     radar_chart_path = tower_dir / "pillar_radar_chart.generated.png"
     
     if not blueprint_path.exists():

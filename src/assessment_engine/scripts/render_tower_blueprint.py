@@ -15,6 +15,8 @@ from docx.shared import Inches, Pt, RGBColor
 from assessment_engine.schemas.blueprint import BlueprintPayload, PillarBlueprintDraft
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph as _orig_add_body_paragraph,
+)
+from assessment_engine.scripts.lib.docx_render_utils import (
     add_heading_paragraph,
     autofit_table_to_contents,
     clear_paragraph,
@@ -22,13 +24,14 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_tower_annex_template_path,
+)
 from assessment_engine.scripts.lib.text_utils import clean_text_for_word
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
 ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_TEMPLATE_PATH = (
-    ROOT / "templates" / "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx"
-)
+DEFAULT_TEMPLATE_PATH = resolve_tower_annex_template_path()
 
 
 def load_json(path: Path) -> dict:

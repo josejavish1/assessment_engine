@@ -48,7 +48,7 @@ def test_run_global_pipeline_passes_validated_env_to_steps(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         run_global_pipeline,
-        "run_step",
+        "run_module_step",
         lambda _cmd_args, _step_name, env: captured.append(dict(env)),
     )
 
@@ -75,7 +75,7 @@ def test_run_commercial_pipeline_passes_validated_env_to_steps(monkeypatch) -> N
     )
     monkeypatch.setattr(
         run_commercial_pipeline,
-        "run_step",
+        "run_module_step",
         lambda _cmd_args, _step_name, env: captured.append(dict(env)),
     )
 

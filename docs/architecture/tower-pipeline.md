@@ -5,6 +5,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_tower_pipeline.py
   - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
   - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+  - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../../src/assessment_engine/schemas/blueprint.py
   - ../../src/assessment_engine/schemas/annex_synthesis.py
 last_verified_against: 2026-04-30
@@ -55,6 +56,12 @@ El orquestador fija variables de entorno como:
 - `ASSESSMENT_TOWER_ID`
 - `ASSESSMENT_CASE_DIR`
 - `PYTHONPATH`
+
+Además, la torre comparte ya con las capas global y comercial una base común de runtime para:
+
+- resolver el intérprete Python;
+- bootstrap de entorno;
+- defaults de ejecución.
 
 Además exige configuración de Vertex AI mediante:
 

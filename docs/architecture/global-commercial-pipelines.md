@@ -7,6 +7,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_executive_refiner.py
   - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
   - ../../src/assessment_engine/scripts/run_commercial_refiner.py
+  - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../../src/assessment_engine/schemas/global_report.py
   - ../../src/assessment_engine/schemas/commercial.py
 last_verified_against: 2026-04-30
@@ -65,6 +66,14 @@ Trabaja sobre:
 5. **Render Global DOCX**
    - script: `render_global_report_from_template`
    - salida final: `Informe_Ejecutivo_Consolidado_<client>.docx`
+
+### Nota operativa actual
+
+El orquestador global ya comparte con la capa comercial una base común de:
+
+- resolución de intérprete Python;
+- bootstrap de entorno;
+- propagación explícita del entorno validado a cada paso del pipeline.
 
 ## Cómo se construye el payload global
 
@@ -142,6 +151,8 @@ Y genera:
 
 2. **Render Account Action Plan**
    - script: `render_commercial_report`
+
+Igual que en la capa global, la ejecución actual reutiliza un runner común para evitar deriva entre preflight, variables de entorno y pasos hijos.
 
 ## Contexto híbrido comercial
 

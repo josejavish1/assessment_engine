@@ -212,6 +212,7 @@ entries:
       - src/assessment_engine/scripts/run_tower_pipeline.py
       - src/assessment_engine/scripts/run_tower_blueprint_engine.py
       - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/lib/pipeline_runtime.py
       - src/assessment_engine/schemas/blueprint.py
       - src/assessment_engine/schemas/annex_synthesis.py
     enforce_on_source_changes: true
@@ -240,6 +241,7 @@ entries:
       - src/assessment_engine/scripts/run_executive_refiner.py
       - src/assessment_engine/scripts/run_commercial_pipeline.py
       - src/assessment_engine/scripts/run_commercial_refiner.py
+      - src/assessment_engine/scripts/lib/pipeline_runtime.py
       - src/assessment_engine/schemas/global_report.py
       - src/assessment_engine/schemas/commercial.py
     enforce_on_source_changes: true
@@ -455,6 +457,7 @@ entries:
       - src/assessment_engine/scripts/run_commercial_pipeline.py
       - src/assessment_engine/scripts/run_intelligence_harvesting.py
       - src/assessment_engine/scripts/render_web_presentation.py
+      - src/assessment_engine/scripts/lib/pipeline_runtime.py
     enforce_on_source_changes: true
     review_paths_on_source_change:
       - docs/operations/pipeline-execution.md

@@ -7,6 +7,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
   - ../../src/assessment_engine/scripts/run_intelligence_harvesting.py
   - ../../src/assessment_engine/scripts/render_web_presentation.py
+  - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../architecture/tower-pipeline.md
   - ../architecture/global-commercial-pipelines.md
 last_verified_against: 2026-04-30
@@ -56,6 +57,8 @@ Comando:
   --responses-file /ruta/a/respuestas.txt
 ```
 
+El entrypoint por torre comparte ya el mismo bootstrap base de runtime que usan los pipelines global y comercial.
+
 Reanudación opcional:
 
 ```bash
@@ -81,6 +84,8 @@ Comando:
 ```bash
 ./.venv/bin/python -m assessment_engine.scripts.run_global_pipeline <client_name>
 ```
+
+El entrypoint global ya comparte con el comercial el mismo bootstrap de entorno y de resolución del intérprete Python, para que el preflight y los pasos internos trabajen con el mismo contexto efectivo.
 
 ## 4. Pipeline comercial
 

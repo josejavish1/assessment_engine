@@ -1,22 +1,12 @@
-import json
-from pathlib import Path
 import pytest
-from assessment_engine.schemas.blueprint import BlueprintPayload
+
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
-from assessment_engine.schemas.global_report import GlobalReportPayload
+from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.commercial import CommercialPayload
+from assessment_engine.schemas.global_report import GlobalReportPayload
+from tests.artifact_helpers import ROOT, load_json, require_artifact
 
-ROOT = Path(__file__).resolve().parents[1]
 T5_DIR = ROOT / "working" / "smoke_ivirma" / "T5"
-
-def _load_json(path):
-    with open(path, "r", encoding="utf-8-sig") as f:
-        return json.load(f)
-
-
-def _require_artifact(path: Path) -> None:
-    if not path.exists():
-        pytest.skip(f"Missing artifact: {path}")
 
 
 def _summarize_project_name(name: str) -> str:
@@ -34,9 +24,9 @@ def test_contract_blueprint_to_annex():
     para el sintetizador del Anexo.
     """
     bp_path = T5_DIR / "blueprint_t5_payload.json"
-    _require_artifact(bp_path)
+    bp_path = require_artifact(bp_path)
     
-    bp_data = _load_json(bp_path)
+    bp_data = load_json(bp_path)
     # Validar que el blueprint cumple su propio esquema (con alias)
     bp_payload = BlueprintPayload.model_validate(bp_data)
     
@@ -52,9 +42,9 @@ def test_contract_annex_is_valid_payload():
     requerido por el renderizador Word.
     """
     annex_path = T5_DIR / "approved_annex_t5.template_payload.json"
-    _require_artifact(annex_path)
+    annex_path = require_artifact(annex_path)
     
-    annex_data = _load_json(annex_path)
+    annex_data = load_json(annex_path)
     # Validar integridad estructural y tipos
     annex_payload = AnnexPayload.model_validate(annex_data)
     
@@ -67,11 +57,11 @@ def test_contract_annex_is_valid_payload():
 def test_contract_annex_keeps_blueprint_non_negotiables_aligned():
     blueprint_path = T5_DIR / "blueprint_t5_payload.json"
     annex_path = T5_DIR / "approved_annex_t5.template_payload.json"
-    _require_artifact(blueprint_path)
-    _require_artifact(annex_path)
+    blueprint_path = require_artifact(blueprint_path)
+    annex_path = require_artifact(annex_path)
 
-    bp_data = _load_json(blueprint_path)
-    annex_data = _load_json(annex_path)
+    bp_data = load_json(blueprint_path)
+    annex_data = load_json(annex_path)
 
     blueprint = BlueprintPayload.model_validate(bp_data)
     annex = AnnexPayload.model_validate(annex_data)

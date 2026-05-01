@@ -7,16 +7,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from assessment_engine.scripts.lib.runtime_paths import ROOT
-
-
-TEMPLATE_PATH = (
-    Path(__file__).resolve().parents[1] / "templates" / "web_dashboard.html"
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_blueprint_payload_candidates,
+    resolve_client_dir,
+    resolve_global_report_payload_path,
+    resolve_web_dashboard_template_path,
 )
-BLUEPRINT_NAME_CANDIDATES = (
-    "blueprint_{tower_lower}_payload.json",
-    "blueprint_{tower_upper}_payload.json",
-)
+
+TEMPLATE_PATH = resolve_web_dashboard_template_path()
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -24,23 +22,8 @@ def _load_json(path: Path) -> dict[str, Any]:
         return json.load(handle)
 
 
-def _resolve_client_dir(client_id: str) -> Path:
-    candidates = (
-        ROOT / "working" / client_id,
-        ROOT / "src" / "assessment_engine" / "working" / client_id,
-    )
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    return candidates[0]
-
-
 def _find_blueprint_payload(tower_dir: Path, tower_id: str) -> Path | None:
-    for pattern in BLUEPRINT_NAME_CANDIDATES:
-        candidate = tower_dir / pattern.format(
-            tower_lower=tower_id.lower(),
-            tower_upper=tower_id.upper(),
-        )
+    for candidate in resolve_blueprint_payload_candidates(tower_dir.parent.name, tower_id):
         if candidate.exists():
             return candidate
     return None
@@ -306,8 +289,8 @@ def _build_tower_nexus(
 
 
 def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
-    client_dir = _resolve_client_dir(client_id)
-    global_payload_path = client_dir / "global_report_payload.json"
+    client_dir = resolve_client_dir(client_id)
+    global_payload_path = resolve_global_report_payload_path(client_id)
     if not global_payload_path.exists():
         raise FileNotFoundError(
             f"No se encuentra el payload global: {global_payload_path}"

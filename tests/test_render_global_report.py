@@ -1,15 +1,11 @@
-from pathlib import Path
-
 from docx import Document
-import pytest
 
 from assessment_engine.scripts.render_global_report_from_template import (
     load_payload,
     render_global_report,
 )
+from tests.artifact_helpers import ROOT, require_artifact_es
 
-
-ROOT = Path(__file__).resolve().parents[1]
 PAYLOAD_PATH = ROOT / "working" / "ivirma" / "global_report_payload.json"
 TEMPLATE_PATH = (
     ROOT / "source_docs" / "templates" / "11. Template Documento General Alpha v.05.docx"
@@ -17,11 +13,8 @@ TEMPLATE_PATH = (
 
 
 def test_render_global_report_from_real_payload(tmp_path):
-    if not PAYLOAD_PATH.exists():
-        pytest.skip(f"No se encontró el artefacto: {PAYLOAD_PATH}")
-
     output_path = tmp_path / "global_report_test.docx"
-    payload = load_payload(PAYLOAD_PATH)
+    payload = load_payload(require_artifact_es(PAYLOAD_PATH))
 
     render_global_report(
         payload=payload,

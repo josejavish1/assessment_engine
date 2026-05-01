@@ -6,24 +6,24 @@ import asyncio
 import json
 import sys
 from pathlib import Path
+
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
-from assessment_engine.scripts.lib.ai_client import run_agent
-from assessment_engine.schemas.intelligence import (
-    RegulatoryHarvest,
-    BusinessHarvest,
-    TechHarvest,
-    ClientDossier
-)
 from assessment_engine.prompts.intelligence_prompts import (
-    get_regulatory_harvester_prompt,
+    get_auditor_harvester_prompt,
     get_business_harvester_prompt,
+    get_regulatory_harvester_prompt,
     get_tech_harvester_prompt,
-    get_auditor_harvester_prompt
 )
-
-ROOT = Path(__file__).resolve().parents[1]
+from assessment_engine.schemas.intelligence import (
+    BusinessHarvest,
+    ClientDossier,
+    RegulatoryHarvest,
+    TechHarvest,
+)
+from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.runtime_paths import resolve_client_intelligence_path
 
 
 async def run_market_intelligence(client_name: str, output_path: Path):
@@ -113,8 +113,7 @@ def main():
         sys.exit(1)
 
     client_name = sys.argv[1]
-    client_dir = ROOT / "working" / client_name
-    output_path = client_dir / "client_intelligence.json"
+    output_path = resolve_client_intelligence_path(client_name)
 
     asyncio.run(run_market_intelligence(client_name, output_path))
 
