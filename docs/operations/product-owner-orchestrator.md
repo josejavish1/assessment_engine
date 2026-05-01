@@ -140,7 +140,7 @@ La sincronización con la base ocurre dentro del mismo circuito controlado: el o
 El repo puede ejecutar `.github/workflows/orchestrator-pr-reconcile.yml` para relanzar `resume-pr` cuando una PR gestionada:
 
 1. recibe feedback de review o comentarios;
-2. termina un workflow relevante de CI;
+2. sale de draft con `ready_for_review`;
 3. o se relanza manualmente con `workflow_dispatch`.
 
 Reglas de seguridad del watcher:
@@ -148,6 +148,7 @@ Reglas de seguridad del watcher:
 - solo actúa sobre PRs **abiertas**, **no draft**, del **mismo repositorio**;
 - exige que la PR tenga el marcador oculto del orquestador o la label `orchestrator-managed`;
 - serializa la ejecución por número de PR para no correr dos reconciliaciones en paralelo;
+- no se relanza por cada workflow verde intermedio: el run abierto por `pull_request` mantiene el polling de checks hasta que la PR queda lista para merge o necesita reparación;
 - reutiliza `resume-pr`, así que sigue pasando por tests, quality, typing, docs-governance, sync con `main` y reglas de review;
 - usa por defecto `./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}` como executor compatible con GitHub Actions;
 - la regla operativa recomendada es mantener `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` configurado en GitHub Actions apuntando a ese wrapper del repo, para no depender de rutas locales o wrappers efímeros;

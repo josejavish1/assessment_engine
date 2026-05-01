@@ -106,6 +106,8 @@ En PR review, el foco principal no debe ser estilo superficial, sino estas pregu
 6. ¿La documentación canónica y la trazabilidad siguen alineadas?
 7. ¿El agente pudo haber generado código correcto en apariencia pero semánticamente equivocado?
 
+Cuando la PR toque semántica cliente-facing o coherencia transversal, esa revisión debe quedar también materializada en la sección **Assessment coherence checks** de `.github/pull_request_template.md`, no solo en comentarios ad hoc.
+
 ## Relación con los gates automáticos
 
 Los gates automáticos actuales (`pytest`, `quality`, `typing`, gobernanza documental) son necesarios, pero no suficientes por sí solos.

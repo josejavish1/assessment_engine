@@ -39,3 +39,15 @@
 - [ ] I kept payload/schema changes aligned with their consuming renderers or updated the related contract docs
 - [ ] If I changed engineering quality rules or tooling, I updated `docs/operations/engineering-quality-gates.md`
 - [ ] If a source-linked documentation rule applied, I updated one of the required canonical docs
+
+## Assessment coherence checks
+
+<!-- Complete this section when the PR touches scoring, blueprint, annex, global, dashboard, prompts, or client intelligence. -->
+
+- [ ] I checked whether the change introduces another source of truth for score, band, target, color, severity, or priority
+- [ ] I checked whether the change duplicates an existing calculation or reinterprets shared semantics locally
+- [ ] I checked whether the change adds silent defaults, broad exception handling, or fallback paths without traceability
+- [ ] I checked whether any rounding now happens earlier than the authoritative calculation layer
+- [ ] I checked whether the change can alter client-facing tone or exaggerate risk relative to score, target gap, and evidence
+- [ ] I covered the semantic change with coherence tests or explained why that was not necessary
+- [ ] If client-facing semantics changed, I reviewed regenerated artifacts or explained why artifact review was not needed
