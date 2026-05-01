@@ -22,6 +22,7 @@ on:
     types:
       - opened
       - reopened
+      - ready_for_review
       - synchronize
       - edited
       - labeled
@@ -111,6 +112,29 @@ jobs:
             && { [ "$label_match" = "true" ] || [ "$marker_match" = "true" ]; }
           then
             should_run=true
+            if [ "$EVENT_NAME" = "workflow_run" ]; then
+              pr_status_json="$(gh pr view "$pr_number" --repo "$REPOSITORY" --json statusCheckRollup)"
+              active_reconcile="$(jq -r '
+                [
+                  .statusCheckRollup[]?
+                  | select((.workflowName // "") == "Orchestrator PR Reconciliation")
+                  | select((.status // "") != "COMPLETED")
+                ] | any
+              ' <<<"$pr_status_json")"
+              pending_non_reconcile="$(jq -r '
+                [
+                  .statusCheckRollup[]?
+                  | select((.workflowName // "") != "Orchestrator PR Reconciliation")
+                  | select(
+                      (.status // "") != "COMPLETED"
+                      or (((.conclusion // .state // "") | ascii_upcase) | IN("", "PENDING", "EXPECTED", "ACTION_REQUIRED"))
+                    )
+                ] | any
+              ' <<<"$pr_status_json")"
+              if [ "$active_reconcile" = "true" ] || [ "$pending_non_reconcile" = "true" ]; then
+                should_run=false
+              fi
+            fi
           fi
 
           {
