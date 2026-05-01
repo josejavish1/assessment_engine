@@ -6,6 +6,7 @@ import json
 import os
 import shlex
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,7 @@ from assessment_engine.prompts.product_owner_prompts import (
     build_product_owner_planner_prompt,
     get_product_owner_planner_instruction,
     render_plan_markdown,
+    render_pr_reconciliation_prompt,
     render_task_prompt,
 )
 from assessment_engine.scripts.lib.ai_client import call_agent
@@ -28,6 +30,45 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
 from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
+
+REVIEW_THREADS_QUERY = """
+query($owner:String!, $repo:String!, $number:Int!) {
+  repository(owner:$owner, name:$repo) {
+    pullRequest(number:$number) {
+      reviewThreads(first:100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          comments(first:20) {
+            nodes {
+              author {
+                __typename
+                login
+              }
+              body
+              state
+            }
+          }
+        }
+      }
+    }
+  }
+}
+""".strip()
+
+RESOLVE_REVIEW_THREAD_MUTATION = """
+mutation($threadId:ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+      isResolved
+    }
+  }
+}
+""".strip()
 
 
 def load_orchestrator_policy() -> dict[str, Any]:
@@ -136,6 +177,16 @@ def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
     return result
 
 
+def run_json_command(args: list[str]) -> Any:
+    result = run_git_command(args)
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"Respuesta JSON inválida para {' '.join(args)}: {result.stdout.strip()}"
+        ) from exc
+
+
 def ensure_branch(branch_name: str) -> None:
     run_git_command(["git", "checkout", "-b", branch_name])
 
@@ -174,6 +225,21 @@ def collect_changed_python_files() -> list[str]:
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or "No se pudo inspeccionar git diff.")
     return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def has_worktree_changes() -> bool:
+    result = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            result.stderr.strip() or "No se pudo inspeccionar el estado del worktree."
+        )
+    return bool(result.stdout.strip())
 
 
 def run_command(command: list[str], *, output_path: Path) -> None:
@@ -237,6 +303,311 @@ def push_branch(branch_name: str) -> None:
     run_git_command(["git", "push", "-u", "origin", branch_name])
 
 
+def repository_coordinates() -> tuple[str, str]:
+    payload = run_json_command(["gh", "repo", "view", "--json", "owner,name"])
+    owner = payload.get("owner", {}).get("login")
+    repo = payload.get("name")
+    if not owner or not repo:
+        raise RuntimeError("No se pudo resolver el repositorio actual en GitHub.")
+    return owner, repo
+
+
+def get_pull_request(branch_name: str) -> dict[str, Any]:
+    return run_json_command(
+        [
+            "gh",
+            "pr",
+            "view",
+            branch_name,
+            "--json",
+            "number,url,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,reviewDecision,statusCheckRollup",
+        ]
+    )
+
+
+def get_pull_request_review_threads(pr_number: int) -> list[dict[str, Any]]:
+    owner, repo = repository_coordinates()
+    payload = run_json_command(
+        [
+            "gh",
+            "api",
+            "graphql",
+            "-f",
+            f"query={REVIEW_THREADS_QUERY}",
+            "-F",
+            f"owner={owner}",
+            "-F",
+            f"repo={repo}",
+            "-F",
+            f"number={pr_number}",
+        ]
+    )
+    return (
+        payload.get("data", {})
+        .get("repository", {})
+        .get("pullRequest", {})
+        .get("reviewThreads", {})
+        .get("nodes", [])
+    )
+
+
+def normalize_review_threads(threads: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+    for thread in threads:
+        if thread.get("isResolved"):
+            continue
+        comments = thread.get("comments", {}).get("nodes", [])
+        authors = [
+            {
+                "login": comment.get("author", {}).get("login", "unknown"),
+                "type": comment.get("author", {}).get("__typename", "Unknown"),
+            }
+            for comment in comments
+        ]
+        normalized.append(
+            {
+                "id": thread.get("id", ""),
+                "path": thread.get("path"),
+                "line": thread.get("line"),
+                "is_outdated": bool(thread.get("isOutdated")),
+                "comments": [
+                    {
+                        "author": author["login"],
+                        "author_type": author["type"],
+                        "body": comment.get("body", ""),
+                        "state": comment.get("state", ""),
+                    }
+                    for author, comment in zip(authors, comments)
+                ],
+                "all_comments_bot": bool(authors)
+                and all(author["type"] == "Bot" for author in authors),
+            }
+        )
+    return normalized
+
+
+def summarize_status_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
+    normalized_checks: list[dict[str, Any]] = []
+    for check in checks:
+        status = str(check.get("status", "")).upper()
+        conclusion = str(check.get("conclusion", check.get("state", "")) or "").upper()
+        normalized_checks.append(
+            {
+                "name": check.get("name") or check.get("context") or "unknown",
+                "workflow_name": check.get("workflowName"),
+                "status": status,
+                "conclusion": conclusion,
+                "details_url": check.get("detailsUrl") or check.get("targetUrl"),
+            }
+        )
+
+    failed = [
+        check
+        for check in normalized_checks
+        if check["status"] == "COMPLETED"
+        and check["conclusion"] not in {"", "SUCCESS", "SKIPPED", "NEUTRAL"}
+    ]
+    pending = [
+        check
+        for check in normalized_checks
+        if check["status"] != "COMPLETED"
+        or check["conclusion"] in {"", "PENDING", "EXPECTED", "ACTION_REQUIRED"}
+    ]
+    return {
+        "checks": normalized_checks,
+        "failed_checks": failed,
+        "pending_checks": pending,
+    }
+
+
+def inspect_pull_request(branch_name: str) -> dict[str, Any]:
+    pr_data = get_pull_request(branch_name)
+    thread_data = normalize_review_threads(
+        get_pull_request_review_threads(int(pr_data["number"]))
+    )
+    check_summary = summarize_status_checks(pr_data.get("statusCheckRollup", []))
+    return {
+        "number": int(pr_data["number"]),
+        "url": pr_data.get("url", ""),
+        "head_ref": pr_data.get("headRefName", branch_name),
+        "base_ref": pr_data.get("baseRefName", ""),
+        "is_draft": bool(pr_data.get("isDraft")),
+        "mergeable": pr_data.get("mergeable", ""),
+        "merge_state_status": pr_data.get("mergeStateStatus", ""),
+        "review_decision": pr_data.get("reviewDecision") or "",
+        "checks": check_summary["checks"],
+        "failed_checks": check_summary["failed_checks"],
+        "pending_checks": check_summary["pending_checks"],
+        "unresolved_threads": thread_data,
+    }
+
+
+def is_pull_request_ready_for_merge(pr_state: dict[str, Any]) -> bool:
+    return (
+        not pr_state["is_draft"]
+        and not pr_state["failed_checks"]
+        and not pr_state["pending_checks"]
+        and not pr_state["unresolved_threads"]
+        and pr_state["mergeable"] == "MERGEABLE"
+        and pr_state["merge_state_status"] not in {"BLOCKED", "DIRTY", "UNKNOWN"}
+    )
+
+
+def auto_resolve_bot_threads(pr_state: dict[str, Any]) -> int:
+    resolved = 0
+    for thread in pr_state["unresolved_threads"]:
+        if not thread["all_comments_bot"]:
+            continue
+        run_git_command(
+            [
+                "gh",
+                "api",
+                "graphql",
+                "-f",
+                f"query={RESOLVE_REVIEW_THREAD_MUTATION}",
+                "-F",
+                f"threadId={thread['id']}",
+            ]
+        )
+        resolved += 1
+    return resolved
+
+
+def build_pr_feedback(pr_state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "pull_request": {
+            "number": pr_state["number"],
+            "url": pr_state["url"],
+            "merge_state_status": pr_state["merge_state_status"],
+            "mergeable": pr_state["mergeable"],
+            "review_decision": pr_state["review_decision"] or "none",
+        },
+        "failed_checks": pr_state["failed_checks"],
+        "pending_checks": pr_state["pending_checks"],
+        "unresolved_review_threads": pr_state["unresolved_threads"],
+    }
+
+
+def create_followup_commit_title(plan: dict[str, Any], round_number: int) -> str:
+    return f"{plan['commit_title']} (PR feedback round {round_number})"
+
+
+def repair_pull_request(
+    request_dir: Path,
+    plan: dict[str, Any],
+    *,
+    executor_command: str,
+    pr_state: dict[str, Any],
+    round_number: int,
+) -> None:
+    feedback_payload = build_pr_feedback(pr_state)
+    prompt = render_pr_reconciliation_prompt(
+        plan,
+        feedback_payload,
+        attempt=round_number,
+    )
+    prompt_path = request_dir / f"pr_reconciliation_{round_number}.md"
+    prompt_path.write_text(prompt, encoding="utf-8")
+    executor_args = build_executor_args(
+        executor_command,
+        task_prompt_file=prompt_path,
+        attempt=round_number,
+    )
+    run_command(
+        executor_args,
+        output_path=request_dir / f"pr_reconciliation_{round_number}.log",
+    )
+    if not has_worktree_changes():
+        raise RuntimeError(
+            "La reconciliación de PR no produjo cambios pese a existir feedback abierto."
+        )
+    run_standard_validations(request_dir)
+    create_commit(create_followup_commit_title(plan, round_number))
+    push_branch(plan["branch_name"])
+
+
+def merge_pull_request(pr_number: int, merge_mode: str) -> None:
+    run_git_command(
+        [
+            "gh",
+            "pr",
+            "merge",
+            str(pr_number),
+            f"--{merge_mode}",
+            "--delete-branch",
+        ]
+    )
+
+
+def reconcile_pull_request(
+    request_dir: Path,
+    plan: dict[str, Any],
+    *,
+    executor_command: str,
+    merge_mode: str,
+) -> None:
+    policy = load_orchestrator_policy()
+    reconciliation = (
+        policy.get("pull_request", {}).get("post_pr_reconciliation", {}) or {}
+    )
+    if not reconciliation.get("enabled", True):
+        return
+
+    max_rounds = int(reconciliation.get("max_rounds", 3))
+    poll_interval_seconds = int(reconciliation.get("poll_interval_seconds", 20))
+    max_polls = int(reconciliation.get("max_polls", 30))
+    auto_resolve_bot = bool(reconciliation.get("auto_resolve_bot_threads", True))
+    repair_rounds = 0
+
+    for poll_index in range(1, max_polls + 1):
+        pr_state = inspect_pull_request(plan["branch_name"])
+        (request_dir / f"pr_state_{poll_index}.json").write_text(
+            json.dumps(pr_state, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        if is_pull_request_ready_for_merge(pr_state):
+            merge_pull_request(pr_state["number"], merge_mode)
+            return
+
+        if (
+            auto_resolve_bot
+            and not pr_state["failed_checks"]
+            and not pr_state["pending_checks"]
+        ):
+            bot_only = [
+                thread
+                for thread in pr_state["unresolved_threads"]
+                if thread["all_comments_bot"]
+            ]
+            if bot_only:
+                auto_resolve_bot_threads(pr_state)
+                continue
+
+        if pr_state["failed_checks"] or pr_state["unresolved_threads"]:
+            repair_rounds += 1
+            if repair_rounds > max_rounds:
+                raise RuntimeError(
+                    "La PR sigue bloqueada tras agotar la reconciliación automática."
+                )
+            repair_pull_request(
+                request_dir,
+                plan,
+                executor_command=executor_command,
+                pr_state=pr_state,
+                round_number=repair_rounds,
+            )
+            continue
+
+        if poll_index == max_polls:
+            break
+        time.sleep(poll_interval_seconds)
+
+    raise RuntimeError(
+        "La PR no llegó a un estado mergeable dentro del tiempo de reconciliación."
+    )
+
+
 def create_pr_body(plan: dict[str, Any]) -> str:
     sections = [
         "## Summary",
@@ -266,7 +637,7 @@ def create_pr_body(plan: dict[str, Any]) -> str:
 
 def create_pr(
     plan: dict[str, Any], request_dir: Path, *, skip_auto_merge: bool
-) -> None:
+) -> dict[str, Any]:
     policy = load_orchestrator_policy()
     pr_body_path = request_dir / "pr_body.md"
     pr_body_path.write_text(create_pr_body(plan), encoding="utf-8")
@@ -289,16 +660,18 @@ def create_pr(
             str(pr_body_path),
         ]
     )
+    pr_data = get_pull_request(plan["branch_name"])
+    (request_dir / "pr_created.json").write_text(
+        json.dumps(pr_data, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
     if skip_auto_merge or not policy.get("pull_request", {}).get(
         "auto_merge_enabled", True
     ):
-        return
+        return pr_data
 
-    merge_mode = policy.get("pull_request", {}).get("auto_merge_mode", "squash")
-    run_git_command(
-        ["gh", "pr", "merge", "--auto", f"--{merge_mode}", "--delete-branch"]
-    )
+    return pr_data
 
 
 def execute_plan(
@@ -347,6 +720,17 @@ def execute_plan(
     create_commit(plan["commit_title"])
     if not skip_pr:
         create_pr(plan, request_dir, skip_auto_merge=skip_auto_merge)
+        if not skip_auto_merge and policy.get("pull_request", {}).get(
+            "auto_merge_enabled", True
+        ):
+            reconcile_pull_request(
+                request_dir,
+                plan,
+                executor_command=executor_command,
+                merge_mode=policy.get("pull_request", {}).get(
+                    "auto_merge_mode", "squash"
+                ),
+            )
 
 
 def main(argv: list[str] | None = None) -> int:

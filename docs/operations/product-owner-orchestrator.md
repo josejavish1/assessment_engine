@@ -25,7 +25,7 @@ Esta pieza describe el MVP del **orquestador local PO-to-PR** del repo. Su objet
 - desglosar el cambio en tareas pequeñas;
 - ejecutar cada tarea con un backend de agente configurable;
 - validar el resultado con los gates del repo;
-- crear commit, PR y auto-merge si la política lo permite.
+- crear commit, PR y merge automático solo cuando la PR queda realmente limpia.
 
 ## Principio de arquitectura
 
@@ -97,7 +97,23 @@ Si todas las tareas pasan:
 
 1. hace commit;
 2. crea PR con spec y checklist resumidos;
-3. activa auto-merge si la policy lo permite y el usuario no lo desactiva.
+3. inspecciona checks y conversaciones de review en GitHub;
+4. si detecta fallos o feedback abierto, entra en un ciclo de reconciliación;
+5. solo mergea cuando la PR queda verde y sin conversaciones bloqueantes.
+
+### 5. Reconciliación post-PR
+
+La fase post-PR **no sustituye** los controles del repo ni los rebaja. Su papel es:
+
+1. leer el estado de la PR en GitHub;
+2. distinguir entre checks pendientes, checks fallidos y review threads abiertos;
+3. pasar ese feedback al executor para que haga una corrección acotada en la misma rama;
+4. volver a ejecutar la validación estándar local del repo;
+5. subir el follow-up commit;
+6. reconsultar la PR;
+7. mergear solo cuando GitHub deja de reportar checks pendientes/fallidos y no quedan conversaciones abiertas.
+
+Por defecto puede resolver automáticamente **threads abiertos creados por bots** una vez que la rama ya no tiene checks rojos ni pendientes. No auto-resuelve feedback humano implícitamente fuera de las reglas normales de GitHub: si la PR sigue bloqueada por requisitos externos de review o protección de rama, el merge no se fuerza.
 
 ## Política configurable
 
@@ -108,6 +124,7 @@ Si todas las tareas pasan:
 - reintentos por tarea;
 - rama base;
 - modo de auto-merge;
+- reconciliación post-PR (polling, rondas máximas y resolución automática de threads de bot);
 - validaciones estándar.
 
 ## Limitaciones deliberadas del MVP
@@ -115,6 +132,7 @@ Si todas las tareas pasan:
 - no trabaja sobre worktree sucio salvo que se fuerce con `--allow-dirty`;
 - no intenta editar código por sí mismo sin backend configurado;
 - no salta la PR ni la validación;
+- no bypassa tests, typing, quality, docs-governance ni conversaciones abiertas para forzar merge;
 - no mezcla el rol de planner con el de editor de código.
 
 ## Qué viene después

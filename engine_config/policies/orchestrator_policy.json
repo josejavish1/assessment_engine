@@ -13,7 +13,14 @@
   "pull_request": {
     "base_branch": "main",
     "auto_merge_mode": "squash",
-    "auto_merge_enabled": true
+    "auto_merge_enabled": true,
+    "post_pr_reconciliation": {
+      "enabled": true,
+      "max_rounds": 3,
+      "poll_interval_seconds": 20,
+      "max_polls": 30,
+      "auto_resolve_bot_threads": true
+    }
   },
   "validation_commands": [
     {

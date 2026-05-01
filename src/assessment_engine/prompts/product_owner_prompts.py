@@ -104,3 +104,28 @@ def render_task_prompt(
         f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n"
         f"{feedback_block}"
     )
+
+
+def render_pr_reconciliation_prompt(
+    plan: dict,
+    pr_feedback: dict,
+    *,
+    attempt: int,
+) -> str:
+    payload = {
+        "request_title": plan["request_title"],
+        "problem": plan["problem"],
+        "value_expected": plan["value_expected"],
+        "global_invariants": plan.get("invariants", []),
+        "validation_plan": plan.get("validation_plan", []),
+        "attempt": attempt,
+        "pull_request_feedback": pr_feedback,
+    }
+    return (
+        "Address the open pull request feedback in the current git branch.\n"
+        "Fix the reported review comments and failing checks without broadening scope.\n"
+        "Do not bypass tests, typing, quality gates, documentation governance, or review controls.\n"
+        "Prefer the existing source of truth and keep the branch ready for the repository validations.\n\n"
+        "Structured context:\n"
+        f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n"
+    )

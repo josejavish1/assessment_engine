@@ -116,7 +116,18 @@ El workflow correcto es:
 2. cambio acotado;
 3. implementación con helpers/policies/contratos;
 4. tests y checks;
-5. review humano orientado a arquitectura y semántica.
+5. review humano orientado a arquitectura y semántica;
+6. si la PR recibe feedback automático o de review, nueva iteración de corrección sin saltarse los mismos gates;
+7. merge solo cuando GitHub deja la PR verde y sin conversaciones bloqueantes.
+
+Si un agente automatiza el post-PR reconciliation, su mandato no es “forzar el merge”, sino exactamente esto:
+
+- leer checks y review threads;
+- corregir en la rama;
+- rerun de validaciones locales del repo;
+- push del follow-up;
+- esperar de nuevo los checks oficiales;
+- detenerse si la PR sigue bloqueada por reglas humanas o de protección que no puede satisfacer legítimamente.
 
 ## Regla operativa para agentes
 
