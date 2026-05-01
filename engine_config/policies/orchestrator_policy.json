@@ -4,7 +4,7 @@
     "planning": {"max_tasks": 5},
     "execution": {
         "max_attempts_per_task": 3,
-        "commit_mode": "single_commit_after_success",
+        "commit_mode": "single_commit_after_success"
     },
     "pull_request": {
         "base_branch": "main",
@@ -16,8 +16,8 @@
             "poll_interval_seconds": 20,
             "max_polls": 30,
             "auto_resolve_bot_threads": true,
-            "sync_with_base_branch": true,
-        },
+            "sync_with_base_branch": true
+        }
     },
     "validation_commands": [
         {"name": "pytest", "command": ["python", "-m", "pytest", "tests/", "-q"]},
@@ -29,8 +29,8 @@
                 "--repo-root",
                 ".",
                 "--documentation-map",
-                "docs/documentation-map.yaml",
-            ],
-        },
-    ],
+                "docs/documentation-map.yaml"
+            ]
+        }
+    ]
 }
