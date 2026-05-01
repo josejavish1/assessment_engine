@@ -6,7 +6,7 @@ source_of_truth:
   - docs/README.md
   - docs/SYSTEM_ARCHITECTURE.md
   - src/assessment_engine/
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - gemini
 doc_type: operational
