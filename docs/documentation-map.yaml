@@ -934,6 +934,27 @@ entries:
     last_verified_against: 2026-05-01
     notes: Helper compartido para score, banda, color y target del dominio global, usado para evitar duplicaciones semánticas entre builder y renderizadores.
 
+  - path: src/assessment_engine/scripts/lib/maturity_band.py
+    kind: document
+    title: Shared maturity band policy helper
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/engineering-quality-gates.md
+      - src/assessment_engine/scripts/run_scoring.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/render_tower_blueprint.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - tests/test_maturity_band.py
+      - tests/test_maturity_band_characterization.py
+    last_verified_against: 2026-05-01
+    notes: Fuente única de verdad para traducir score numérico a banda cualitativa en scoring, annex, blueprint, global y web.
+
   - path: GEMINI.md
     kind: document
     title: Gemini adapter and operating memory

@@ -74,7 +74,7 @@ El objetivo de esta capa no es exigir ahora un repo 100% tipado, sino impedir qu
 
 Las reglas transversales de score, banda, color y target no deben quedar duplicadas entre builder, renderizadores y dashboard.
 
-La política compartida vive ahora en `src/assessment_engine/scripts/lib/global_maturity_policy.py`, y la suite incluye tests de coherencia (`tests/test_global_coherence.py`) para bloquear derivas entre:
+La resolución compartida de bandas vive ahora en `src/assessment_engine/scripts/lib/maturity_band.py`. `run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y `render_web_presentation.py` consumen esa utilidad sin redefinir umbrales locales, mientras que `src/assessment_engine/scripts/lib/global_maturity_policy.py` la reutiliza para la política global. La suite incluye tests de coherencia (`tests/test_global_coherence.py`) para bloquear derivas entre:
 
 - blueprints;
 - payload global;

@@ -13,6 +13,9 @@ from docx.oxml import OxmlElement, ns
 from docx.shared import Inches, Pt, RGBColor
 
 from assessment_engine.schemas.blueprint import BlueprintPayload, PillarBlueprintDraft
+from assessment_engine.scripts.lib.client_intelligence import (
+    load_client_intelligence_legacy_view,
+)
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph as _orig_add_body_paragraph,
 )
@@ -24,11 +27,12 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
+from assessment_engine.scripts.lib.maturity_band import (
+    ANNEX_MATURITY_BANDS,
+    resolve_maturity_band,
+)
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_tower_annex_template_path,
-)
-from assessment_engine.scripts.lib.client_intelligence import (
-    load_client_intelligence_legacy_view,
 )
 from assessment_engine.scripts.lib.text_utils import clean_text_for_word
 
@@ -52,6 +56,22 @@ def clean_text_for_render(text):
             return f"{text['name']}: {text['description']}"
         return " - ".join(str(v) for v in text.values())
     return clean_text_for_word(text)
+
+
+def _safe_float(value: object) -> float | None:
+    if value in (None, ""):
+        return None
+    try:
+        return float(str(value).split()[0].replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def _resolve_annex_band(value: object) -> str:
+    score = _safe_float(value)
+    if score is None:
+        return ""
+    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
 
 
 def add_body_paragraph(doc, text, color_rgb=BASE_TEXT_COLOR):
@@ -142,7 +162,7 @@ def create_page_number_footer(section):
     add_field(paragraph, "NUMPAGES")
 
 
-def clear_document_body(doc: Document) -> None:
+def clear_document_body(doc) -> None:
     body = doc._body._element
     for child in list(body):
         if (
@@ -221,11 +241,10 @@ def _derive_executive_snapshot(data: dict, annex_data: dict) -> dict:
         "business_impact": _string_or_default(snapshot.get("business_impact"))
         or "La modernización de la torre reduce exposición al riesgo y mejora la capacidad de ejecución del negocio.",
         "operational_benefits": _list_or_default(snapshot.get("operational_benefits"))
-        or [
-            clean_text_for_render(item)
-            for item in target_capabilities[:4]
-        ],
-        "transformation_complexity": _string_or_default(snapshot.get("transformation_complexity"))
+        or [clean_text_for_render(item) for item in target_capabilities[:4]],
+        "transformation_complexity": _string_or_default(
+            snapshot.get("transformation_complexity")
+        )
         or "La transformación exige coordinación de arquitectura, operación y gobierno, pero es abordable por fases.",
     }
 
@@ -234,9 +253,7 @@ def _derive_cross_capabilities_analysis(data: dict) -> dict:
     cca = data.get("cross_capabilities_analysis") or {}
     pillars = _list_or_default(data.get("pillars_analysis"))
     low_score_pillars = [
-        p.get("pilar_name", "")
-        for p in pillars
-        if float(p.get("score", 0) or 0) < 3.0
+        p.get("pilar_name", "") for p in pillars if float(p.get("score", 0) or 0) < 3.0
     ]
 
     if cca:
@@ -257,12 +274,16 @@ def _derive_cross_capabilities_analysis(data: dict) -> dict:
     deficiency_patterns = []
     if low_score_pillars:
         deficiency_patterns.append(
-            "Las mayores brechas se concentran en: " + ", ".join(low_score_pillars) + "."
+            "Las mayores brechas se concentran en: "
+            + ", ".join(low_score_pillars)
+            + "."
         )
 
     return {
         "common_deficiency_patterns": deficiency_patterns
-        or ["Persisten carencias repetidas en estandarización, automatización y gobierno técnico."],
+        or [
+            "Persisten carencias repetidas en estandarización, automatización y gobierno técnico."
+        ],
         "transformation_paradigm": "La transformación debe ejecutarse de forma incremental, combinando quick wins con capacidades fundacionales de largo recorrido.",
         "critical_technical_debt": "La deuda técnica acumulada incrementa el riesgo operativo y reduce la velocidad de adopción de nuevos servicios.",
     }
@@ -297,7 +318,9 @@ def _derive_roadmap(data: dict) -> list[dict]:
 def normalize_blueprint_payload_dict(data: dict, annex_data: dict) -> dict:
     normalized = dict(data)
     normalized["executive_snapshot"] = _derive_executive_snapshot(data, annex_data)
-    normalized["cross_capabilities_analysis"] = _derive_cross_capabilities_analysis(data)
+    normalized["cross_capabilities_analysis"] = _derive_cross_capabilities_analysis(
+        data
+    )
     normalized["roadmap"] = _derive_roadmap(data)
     normalized["external_dependencies"] = _list_or_default(
         data.get("external_dependencies")
@@ -306,7 +329,9 @@ def normalize_blueprint_payload_dict(data: dict, annex_data: dict) -> dict:
     return normalized
 
 
-def load_payload(payload_path: Path, annex_data: dict | None = None) -> BlueprintPayload:
+def load_payload(
+    payload_path: Path, annex_data: dict | None = None
+) -> BlueprintPayload:
     raw_data = load_json(payload_path)
     normalized_data = normalize_blueprint_payload_dict(raw_data, annex_data or {})
     return BlueprintPayload.model_validate(normalized_data)
@@ -331,8 +356,7 @@ def render_cover(doc, payload: BlueprintPayload):
     doc.add_paragraph().paragraph_format.space_after = Pt(100)
     version_p = doc.add_paragraph()
     version_text = (
-        f"Torre Técnica: {meta.tower_code}\n"
-        f"Horizonte: {meta.transformation_horizon}"
+        f"Torre Técnica: {meta.tower_code}\nHorizonte: {meta.transformation_horizon}"
     )
     version_run = version_p.add_run(version_text)
     version_run.font.size = Pt(14)
@@ -364,7 +388,9 @@ def render_snapshot_page(
     snap = payload.executive_snapshot
     exec_sum = annex_data.get("executive_summary", {})
     global_score_val = exec_sum.get("global_score", "N/A")
-    global_band_val = exec_sum.get("global_band", "N/A")
+    global_band_val = exec_sum.get("global_band") or _resolve_annex_band(
+        global_score_val
+    )
     target_score_val = exec_sum.get("target_maturity", "N/A")
 
     add_heading_paragraph(doc, "1. Executive Snapshot (Resumen ejecutivo)", level=1)
@@ -372,7 +398,7 @@ def render_snapshot_page(
     table = doc.add_table(rows=2, cols=3)
     finalize_table(table)
     headers = ["SCORE ACTUAL", "NIVEL DE MADUREZ", "MADUREZ OBJETIVO"]
-    values = [global_score_val, global_band_val, target_score_val]
+    values = [global_score_val, global_band_val or "N/A", target_score_val]
 
     for i, header in enumerate(headers):
         set_cell_text(
@@ -510,7 +536,9 @@ def render_pilar_detail(doc, pilar: PillarBlueprintDraft):
     add_spacer(doc, 10)
 
     add_heading_paragraph(doc, "B. Arquitectura Objetivo (TO-BE)", level=2)
-    add_body_paragraph(doc, pilar.target_architecture_tobe.vision, color_rgb=BASE_TEXT_COLOR)
+    add_body_paragraph(
+        doc, pilar.target_architecture_tobe.vision, color_rgb=BASE_TEXT_COLOR
+    )
     principles = doc.add_paragraph()
     principles_run = principles.add_run("Principios de Diseño:")
     principles_run.bold = True
@@ -532,14 +560,19 @@ def render_pilar_detail(doc, pilar: PillarBlueprintDraft):
         rows = [
             ("Business Rationale", project.expected_outcome),
             ("Objetivo Técnico", project.objective),
-            ("Entregables (DoD)", "\n".join([f"• {item}" for item in project.deliverables])),
+            (
+                "Entregables (DoD)",
+                "\n".join([f"• {item}" for item in project.deliverables]),
+            ),
             (
                 "Sizing & Duración",
                 f"Complejidad: {project.sizing} | Estimación: {project.duration}",
             ),
         ]
         for idx, (label, value) in enumerate(rows, 1):
-            set_cell_text(project_table.rows[idx].cells[0], label, bold=True, font_size=9)
+            set_cell_text(
+                project_table.rows[idx].cells[0], label, bold=True, font_size=9
+            )
             shade_cell(project_table.rows[idx].cells[0], "F2F2F2")
             set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
             for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
@@ -621,15 +654,22 @@ def render_maturity_profile(doc, annex_data: dict):
 
         for pillar in pillars:
             row = table.add_row()
-            set_cell_text(row.cells[0], pillar.get("pillar_label", ""), bold=True, font_size=9.5)
+            maturity_band = pillar.get("maturity_band") or _resolve_annex_band(
+                pillar.get("score_display")
+            )
+            set_cell_text(
+                row.cells[0], pillar.get("pillar_label", ""), bold=True, font_size=9.5
+            )
             set_cell_text(
                 row.cells[1],
                 pillar.get("score_display", ""),
                 font_size=9.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER,
             )
-            set_cell_text(row.cells[2], pillar.get("maturity_band", ""), font_size=9.5)
-            set_cell_text(row.cells[3], pillar.get("executive_reading", ""), font_size=9.5)
+            set_cell_text(row.cells[2], maturity_band, font_size=9.5)
+            set_cell_text(
+                row.cells[3], pillar.get("executive_reading", ""), font_size=9.5
+            )
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
@@ -645,9 +685,13 @@ def render_maturity_profile(doc, annex_data: dict):
     if strengths or gaps:
         sg_table = doc.add_table(rows=2, cols=2)
         finalize_table(sg_table)
-        set_cell_text(sg_table.rows[0].cells[0], "Fortalezas clave", bold=True, font_size=10)
+        set_cell_text(
+            sg_table.rows[0].cells[0], "Fortalezas clave", bold=True, font_size=10
+        )
         shade_cell(sg_table.rows[0].cells[0], "D9EAF7")
-        set_cell_text(sg_table.rows[0].cells[1], "Brechas clave", bold=True, font_size=10)
+        set_cell_text(
+            sg_table.rows[0].cells[1], "Brechas clave", bold=True, font_size=10
+        )
         shade_cell(sg_table.rows[0].cells[1], "D9EAF7")
 
         strengths_cell = sg_table.rows[1].cells[0]
@@ -701,11 +745,15 @@ def render_conclusion(doc, annex_data: dict):
 
     if conclusion.get("final_assessment"):
         add_heading_paragraph(doc, "Evaluación final", level=2)
-        add_body_paragraph(doc, conclusion.get("final_assessment"), color_rgb=BASE_TEXT_COLOR)
+        add_body_paragraph(
+            doc, conclusion.get("final_assessment"), color_rgb=BASE_TEXT_COLOR
+        )
 
     if conclusion.get("executive_message"):
         add_heading_paragraph(doc, "Mensaje para el responsable técnico", level=2)
-        add_body_paragraph(doc, conclusion.get("executive_message"), color_rgb=BASE_TEXT_COLOR)
+        add_body_paragraph(
+            doc, conclusion.get("executive_message"), color_rgb=BASE_TEXT_COLOR
+        )
 
     priority_areas = conclusion.get("priority_focus_areas", [])
     if priority_areas:
@@ -719,7 +767,9 @@ def render_conclusion(doc, annex_data: dict):
 
     if conclusion.get("closing_statement"):
         add_heading_paragraph(doc, "Próximos pasos", level=2)
-        add_body_paragraph(doc, conclusion.get("closing_statement"), color_rgb=BASE_TEXT_COLOR)
+        add_body_paragraph(
+            doc, conclusion.get("closing_statement"), color_rgb=BASE_TEXT_COLOR
+        )
 
 
 def render_blueprint(

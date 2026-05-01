@@ -17,8 +17,11 @@ from assessment_engine.scripts.lib.client_intelligence import (
 from assessment_engine.scripts.lib.global_maturity_policy import (
     average_pillar_score,
     average_pillar_target,
-    band_for_score,
     status_color_for_score,
+)
+from assessment_engine.scripts.lib.maturity_band import (
+    GLOBAL_MATURITY_BANDS,
+    resolve_maturity_band,
 )
 
 TOWER_NAMES_MAP = {
@@ -99,7 +102,10 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 "id": tid,
                 "name": tname,
                 "score": f"{avg_score:.1f}",
-                "band": band_for_score(avg_score),
+                "band": resolve_maturity_band(
+                    avg_score,
+                    GLOBAL_MATURITY_BANDS,
+                )["label"],
                 "status_color": status_color_for_score(avg_score),
                 "executive_message": data.get("executive_snapshot", {}).get(
                     "bottom_line", ""

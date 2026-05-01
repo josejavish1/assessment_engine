@@ -3,6 +3,11 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from assessment_engine.scripts.lib.maturity_band import (
+    GLOBAL_MATURITY_BANDS,
+    resolve_maturity_band,
+)
+
 LOW_MATURITY_COLOR = "E06666"
 MEDIUM_MATURITY_COLOR = "FFD966"
 HIGH_MATURITY_COLOR = "93C47D"
@@ -49,7 +54,7 @@ def average_pillar_target(
 
 
 def band_for_score(score: float) -> str:
-    return "Optimizada" if score >= 3.5 else "Básica"
+    return resolve_maturity_band(score, GLOBAL_MATURITY_BANDS)["label"]
 
 
 def status_color_for_score(score: float) -> str:
