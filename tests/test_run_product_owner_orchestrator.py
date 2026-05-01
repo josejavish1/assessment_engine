@@ -103,13 +103,16 @@ def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> 
         orchestrator, "ensure_clean_worktree", fake_ensure_clean_worktree
     )
     monkeypatch.setattr(orchestrator, "create_request_dir", fake_create_request_dir)
+
     def fake_asyncio_run(coro):
         coro.close()
         return {"tasks": []}
 
     monkeypatch.setattr(orchestrator.asyncio, "run", fake_asyncio_run)
     monkeypatch.setattr(orchestrator, "save_plan_bundle", lambda *args, **kwargs: None)
-    monkeypatch.setattr(orchestrator, "resolve_executor_command", lambda raw: "executor")
+    monkeypatch.setattr(
+        orchestrator, "resolve_executor_command", lambda raw: "executor"
+    )
     monkeypatch.setattr(orchestrator, "execute_plan", lambda *args, **kwargs: None)
 
     assert orchestrator.main(["run", "--request", "Need stronger governance"]) == 0

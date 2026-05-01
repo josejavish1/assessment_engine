@@ -67,6 +67,8 @@ Además del contexto y las respuestas, la preparación por torre ya incorpora:
 - `client_context` derivado de `client_intelligence.json` cuando existe;
 - target maturity por torre desde el dossier estratégico.
 
+La lectura cualitativa de madurez asociada al score de torre debe mantenerse alineada entre scoring, findings, blueprint, annex y capas derivadas mediante una policy compartida, no mediante traducciones locales en cada paso.
+
 Reanudación opcional:
 
 ```bash
@@ -98,6 +100,8 @@ El entrypoint global ya ejecuta la consolidación canónica desde blueprints dis
 El entrypoint global ya comparte con el comercial el mismo bootstrap de entorno y de resolución del intérprete Python, para que el preflight y los pasos internos trabajen con el mismo contexto efectivo.
 
 El payload global ya embebe un `intelligence_dossier` resumido si existe `client_intelligence.json`, para que el refinado ejecutivo no pierda señales de negocio, regulación y restricciones.
+
+Cuando el global o el dashboard necesitan exponer banda de madurez, la semántica esperada también debe venir de la misma policy compartida de madurez y no de reglas ad hoc en el builder o el render.
 
 ## 4. Pipeline comercial
 

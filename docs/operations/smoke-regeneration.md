@@ -157,6 +157,8 @@ Así evita repetir las fases deterministas y deja explícita la frontera entre p
 
 Además, el smoke conserva compatibilidad con la resolución legacy de `working/` cuando algún consumidor aún arranca desde rutas antiguas, pero la ruta preferida y documentada pasa a ser la capa común de helpers de runtime/path.
 
+Este smoke también actúa como red de seguridad para la semántica compartida de madurez: cuando se regeneran torre, global, comercial y web sobre el mismo caso, cualquier deriva entre `score` y `band` debería aparecer como inconsistencia transversal y no quedar escondida en un único artefacto.
+
 ### 4. Extender el smoke a outputs globales, comerciales y web
 
 ```bash

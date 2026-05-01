@@ -206,27 +206,29 @@ def summarize_transformation_horizon(data: dict[str, Any]) -> str:
 
 
 def extract_target_maturity_map(data: dict[str, Any]) -> dict[str, float]:
+    target_map: dict[str, float] = {}
     if not is_client_dossier_v2(data) and not is_client_dossier_v3(data):
         raw_map = data.get("target_maturity_matrix", {})
         if not isinstance(raw_map, dict):
             return {}
-        result: dict[str, float] = {}
         for tower_id, score in raw_map.items():
             try:
-                result[str(tower_id).upper()] = float(score)
+                target_map[str(tower_id).upper()] = float(score)
             except (TypeError, ValueError):
                 continue
-        return result
+        return target_map
 
-    result: dict[str, float] = {}
     for tower_id, tower_data in data.get("tower_overrides", {}).items():
         if not isinstance(tower_data, dict):
             continue
+        target_maturity = tower_data.get("target_maturity")
+        if target_maturity is None:
+            continue
         try:
-            result[str(tower_id).upper()] = float(tower_data.get("target_maturity"))
+            target_map[str(tower_id).upper()] = float(target_maturity)
         except (TypeError, ValueError):
             continue
-    return result
+    return target_map
 
 
 def get_target_maturity(
@@ -248,15 +250,15 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
     regulatory_context = data.get("regulatory_context", [])
     claims = data.get("claims", [])
 
-    dossier = ClientDossierV2(
-        client_name=data.get("client_name", ""),
-        profile={
+    payload = {
+        "client_name": data.get("client_name", ""),
+        "profile": {
             "industry": profile.get("industry", ""),
             "financial_tier": profile.get("financial_tier", "Tier 2"),
             "operating_model": profile.get("operating_model"),
             "regions": _as_list_of_strings(profile.get("regions", [])),
         },
-        regulatory_frameworks=[
+        "regulatory_frameworks": [
             {
                 "name": item.get("name", ""),
                 "applicability": item.get("applicability", "medium"),
@@ -265,7 +267,7 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
             for item in regulatory_context
             if isinstance(item, dict)
         ],
-        business_context={
+        "business_context": {
             "ceo_agenda": {
                 "summary": business_context.get("ceo_agenda", {}).get("summary", ""),
                 "confidence": _confidence_label(
@@ -313,7 +315,7 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
             "constraints": _as_list_of_strings(business_context.get("constraints", []))
             + _as_list_of_strings(technology_context.get("operating_constraints", [])),
         },
-        tower_overrides={
+        "tower_overrides": {
             tower_id.upper(): {
                 "target_maturity": tower_data.get("target_maturity", 4.0),
                 "business_criticality": _confidence_label(
@@ -328,7 +330,7 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
             for tower_id, tower_data in data.get("tower_overrides", {}).items()
             if isinstance(tower_data, dict)
         },
-        evidence_register=[
+        "evidence_register": [
             {
                 "claim_id": claim.get("claim_id", ""),
                 "claim": claim.get("claim", ""),
@@ -339,8 +341,8 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
             for claim in claims
             if isinstance(claim, dict)
         ],
-    )
-    return dossier.model_dump(mode="json")
+    }
+    return ClientDossierV2.model_validate(payload).model_dump(mode="json")
 
 
 def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
@@ -503,15 +505,15 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
     evidence_values = _as_list_of_strings(data.get("evidences", []))
     sources = [{"source": value} for value in evidence_values]
 
-    dossier = ClientDossierV2(
-        client_name=client_name,
-        profile={
+    payload = {
+        "client_name": client_name,
+        "profile": {
             "industry": str(data.get("industry", "")),
             "financial_tier": str(data.get("financial_tier", "Tier 2")),
             "operating_model": data.get("operating_model"),
             "regions": _as_list_of_strings(data.get("regions", [])),
         },
-        regulatory_frameworks=[
+        "regulatory_frameworks": [
             {
                 "name": framework,
                 "applicability": "medium",
@@ -519,7 +521,7 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             }
             for framework in _as_list_of_strings(data.get("regulatory_frameworks", []))
         ],
-        business_context={
+        "business_context": {
             "ceo_agenda": {
                 "summary": str(data.get("ceo_agenda", "")),
                 "confidence": "medium",
@@ -548,7 +550,7 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             },
             "constraints": _as_list_of_strings(data.get("constraints", [])),
         },
-        tower_overrides={
+        "tower_overrides": {
             tower_id.upper(): {
                 "target_maturity": score,
                 "business_criticality": "medium",
@@ -558,7 +560,7 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             }
             for tower_id, score in extract_target_maturity_map(data).items()
         },
-        evidence_register=[
+        "evidence_register": [
             {
                 "claim_id": f"claim_{index + 1}",
                 "claim": value,
@@ -568,8 +570,8 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             }
             for index, value in enumerate(evidence_values)
         ],
-    )
-    return dossier.model_dump(mode="json")
+    }
+    return ClientDossierV2.model_validate(payload).model_dump(mode="json")
 
 
 def coerce_client_dossier_v2(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
@@ -722,9 +724,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             ),
         )
 
-    dossier = ClientDossierV3(
-        client_name=client_name,
-        metadata={
+    payload = {
+        "client_name": client_name,
+        "metadata": {
             "dossier_id": f"{client_name}-{uuid.uuid4().hex[:12]}",
             "schema_version": "3.0",
             "created_at": now,
@@ -739,7 +741,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                 "stale_after_days": 30,
             },
         },
-        profile={
+        "profile": {
             "industry": profile.get("industry", ""),
             "financial_tier": profile.get("financial_tier", "Tier 2"),
             "operating_model": profile.get("operating_model"),
@@ -747,7 +749,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             "priority_markets": priority_markets,
             "business_lines": business_lines,
         },
-        regulatory_context=[
+        "regulatory_context": [
             {
                 "name": framework.get("name", ""),
                 "applicability": framework.get("applicability", "medium"),
@@ -767,7 +769,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             for framework in regulatory_frameworks
             if isinstance(framework, dict)
         ],
-        business_context={
+        "business_context": {
             "ceo_agenda": {
                 "summary": business_context.get("ceo_agenda", {}).get("summary", ""),
                 "confidence": _confidence_block(
@@ -822,7 +824,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             "constraints": _as_list_of_strings(business_context.get("constraints", []))
             or business_constraints,
         },
-        technology_context={
+        "technology_context": {
             "footprint_summary": {
                 "summary": business_context.get("osint_footprint", {}).get(
                     "summary", ""
@@ -852,7 +854,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             or _as_list_of_strings(business_context.get("constraints", [])),
             "recent_incident_signals": recent_incident_signals,
         },
-        tower_overrides={
+        "tower_overrides": {
             tower_id.upper(): {
                 "target_maturity": tower_data.get("target_maturity", 4.0),
                 "business_criticality": _confidence_block(
@@ -874,26 +876,27 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             for tower_id, tower_data in base_v2.get("tower_overrides", {}).items()
             if isinstance(tower_data, dict)
         },
-        claims=generated_claims,
-        review={
+        "claims": generated_claims,
+        "review": {
             "human_review_status": "pending",
             "review_notes": [],
         },
-        extensions={},
-    )
-    payload = dossier.model_dump(mode="json")
-    known_towers = list(payload.get("tower_overrides", {}).keys())
+        "extensions": {},
+    }
+    validated_dossier = ClientDossierV3.model_validate(payload)
+    serialized = validated_dossier.model_dump(mode="json")
+    known_towers = list(serialized.get("tower_overrides", {}).keys())
     if known_towers:
-        for claim in payload.get("claims", []):
+        for claim in serialized.get("claims", []):
             if not claim.get("related_towers"):
                 claim["related_towers"] = (
                     known_towers[:1] if len(known_towers) == 1 else known_towers[:3]
                 )
-    for tower_id, tower_data in payload.get("tower_overrides", {}).items():
+    for tower_id, tower_data in serialized.get("tower_overrides", {}).items():
         related_claim_ids = [
             claim["claim_id"]
-            for claim in payload.get("claims", [])
+            for claim in serialized.get("claims", [])
             if tower_id in claim.get("related_towers", [])
         ]
         tower_data["related_claim_ids"] = related_claim_ids
-    return payload
+    return serialized

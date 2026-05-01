@@ -8,7 +8,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../../src/assessment_engine/schemas/blueprint.py
   - ../../src/assessment_engine/schemas/annex_synthesis.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -98,6 +98,8 @@ Artefactos principales:
 | `run_scoring` | `scoring_output.json` |
 | `run_evidence_analyst` | hallazgos derivados de evidencias |
 
+La semántica cualitativa de banda que acompaña al score ya no debe vivir de forma divergente en cada consumidor. La ruta activa de torre comparte un helper explícito para resolver `score -> maturity band`, de modo que scoring, findings, annex, blueprint y vistas derivadas partan de la misma lectura base.
+
 ### 2. Flujo top-down con blueprint
 
 La fase top-down reemplaza el enfoque legacy por secciones paralelas.
@@ -150,6 +152,8 @@ Este paso:
 - deriva de forma determinista score global, bandas, gaps, riesgos e iniciativas prioritarias;
 - reserva al LLM la capa de framing, headline y redacción ejecutiva;
 - enriquece además el anexo con perfil de scores y referencias al radar si existe.
+
+En esta fase, la traducción de score a banda debe reutilizar la política compartida del dominio de torre y no reintroducir umbrales locales en el sintetizador.
 
 ### Qué control empresarial introduce esta síntesis
 

@@ -89,6 +89,8 @@ El builder:
 - extrae principios de arquitectura e implicaciones operativas si existen;
 - genera la consolidación global exclusivamente desde blueprints de torre disponibles.
 
+Además, la ruta activa ya debe reutilizar helpers compartidos para la semántica de madurez cuando necesita traducir score numérico a banda cualitativa. El builder global no debería volver a introducir una policy paralela escondida en la propia capa de consolidación.
+
 ### Decisión arquitectónica relevante
 
 El builder global ya trabaja directamente sobre blueprints modernos sin fallback legacy en la ruta activa. Empresarialmente esto significa:
@@ -126,6 +128,8 @@ La refinación ejecutiva convierte señales técnicas agregadas en:
 - visión objetivo y roadmap ejecutivo.
 
 Su aporte empresarial es hacer que el output deje de ser un simple agregado técnico y pase a ser un **vehículo de priorización**.
+
+En paralelo, la consolidación global y las vistas derivadas siguen dependiendo del dossier de `client_intelligence` como contexto estratégico compartido. Si ese contrato cambia, la lectura correcta es revisar global/commercial/web como consumidores acoplados del mismo contexto, no tratarlos como capas aisladas.
 
 ## Pipeline comercial
 
