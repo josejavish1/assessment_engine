@@ -982,7 +982,7 @@ entries:
       - src/assessment_engine/scripts/render_web_presentation.py
       - tests/test_global_coherence.py
     last_verified_against: 2026-05-01
-    notes: Helper compartido para score, banda, color y target del dominio global, usado para evitar duplicaciones semánticas entre builder y renderizadores.
+    notes: Helper compartido para score, banda, color y target del dominio global, usado para evitar duplicaciones semánticas entre builder y renderizadores; el builder global ya lo consume directamente para evitar reinterpretaciones locales de la banda.
 
   - path: src/assessment_engine/scripts/lib/maturity_band.py
     kind: document
@@ -998,12 +998,11 @@ entries:
       - src/assessment_engine/scripts/run_scoring.py
       - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
       - src/assessment_engine/scripts/render_tower_blueprint.py
-      - src/assessment_engine/scripts/build_global_report_payload.py
       - src/assessment_engine/scripts/render_web_presentation.py
       - tests/test_maturity_band.py
       - tests/test_maturity_band_characterization.py
     last_verified_against: 2026-05-01
-    notes: Fuente única de verdad para traducir score numérico a banda cualitativa en scoring, annex, blueprint, global y web.
+    notes: Fuente única de verdad para traducir score numérico a banda cualitativa en scoring, annex, blueprint y web; la capa global la consume a través de `global_maturity_policy.py` para no duplicar dependencias semánticas.
 
   - path: GEMINI.md
     kind: document

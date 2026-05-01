@@ -105,6 +105,7 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - la puerta incremental de calidad ya puede bloquear deuda nueva en la superficie viva;
 - la puerta incremental de tipado ya puede bloquear deuda nueva en la superficie viva;
 - ya existe una guía canónica para exigir spec mínima y alcance explícito en cambios asistidos por agentes;
+- la semántica global de score, banda, color y target ya documenta que el builder consume `global_maturity_policy.py` y no una reinterpretación local propia;
 - la plantilla de PR ya obliga también a explicitar checks de coherencia cuando un cambio toca semántica de assessment o salidas cliente-facing;
 - ya existe un MVP de orquestador local PO-to-PR apoyado en backend de agente configurable;
 - ya existe `./bin/po-run` como entrada corta e interactiva para lanzar ese flujo desde terminal;

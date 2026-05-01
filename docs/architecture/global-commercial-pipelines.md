@@ -89,7 +89,7 @@ El builder:
 - extrae principios de arquitectura e implicaciones operativas si existen;
 - genera la consolidación global exclusivamente desde blueprints de torre disponibles.
 
-Además, la ruta activa ya debe reutilizar helpers compartidos para la semántica de madurez cuando necesita traducir score numérico a banda cualitativa. El builder global no debería volver a introducir una policy paralela escondida en la propia capa de consolidación.
+Además, la ruta activa ya debe reutilizar helpers compartidos para la semántica de madurez cuando necesita traducir score numérico a banda cualitativa. En la consolidación global, `build_global_report_payload.py` consume `src/assessment_engine/scripts/lib/global_maturity_policy.py` para score, target, color y banda, y esa política global sigue delegando los umbrales cualitativos en `src/assessment_engine/scripts/lib/maturity_band.py`. El builder global no debería volver a introducir una policy paralela escondida en la propia capa de consolidación ni depender directamente de dos capas de traducción distintas para la misma banda.
 
 ### Decisión arquitectónica relevante
 
