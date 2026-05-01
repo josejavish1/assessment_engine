@@ -6,21 +6,27 @@ import asyncio
 import json
 import re
 import sys
-import yaml
 import uuid
 from pathlib import Path
 from typing import Any, Optional
 
-from assessment_engine.scripts.lib.ai_client import run_agent
-from assessment_engine.scripts.build_case_input import read_text
-from assessment_engine.schemas.blueprint import BlueprintPayload
+import yaml
+from google.adk.agents import Agent
+from vertexai.agent_engines import AdkApp
+
 from assessment_engine.schemas.annex_synthesis import (
     AnnexPayload,
     GapRowAnnex,
     InitiativeAnnex,
     RiskItemAnnex,
 )
+from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.common import VersionMetadata
+from assessment_engine.scripts.build_case_input import read_text
+from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.config_loader import (
+    resolve_model_profile_for_role,
+)
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_annex_template_payload_path,
@@ -29,25 +35,30 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_client_dir,
     resolve_client_intelligence_path,
 )
-from vertexai.agent_engines import AdkApp
-from google.adk.agents import Agent
 
 ROOT = Path(__file__).resolve().parents[3]
 PRIORITY_RANK = {"Alta": 0, "Media": 1, "Baja": 2}
 
 # Helper functions (side-effect free)
 def derive_maturity_band(score: float) -> str:
-    if score >= 4.5: return "Optimizado"
-    if score >= 3.5: return "Gestionado"
-    if score >= 2.5: return "Definido"
-    if score >= 1.5: return "Repetible"
+    if score >= 4.5:
+        return "Optimizado"
+    if score >= 3.5:
+        return "Gestionado"
+    if score >= 2.5:
+        return "Definido"
+    if score >= 1.5:
+        return "Repetible"
     return "Inicial"
 
 def infer_priority_from_size(sizing: str) -> str:
     text = str(sizing or "").strip().lower()
-    if text in {"xs", "s"}: return "Alta"
-    if text in {"m", "media", "medium"}: return "Media"
-    if text in {"l", "xl", "large"}: return "Baja"
+    if text in {"xs", "s"}:
+        return "Alta"
+    if text in {"m", "media", "medium"}:
+        return "Media"
+    if text in {"l", "xl", "large"}:
+        return "Baja"
     return "Media"
 
 def truncate_list(items, limit):
@@ -468,7 +479,6 @@ async def generate_synthesis(
     )
     
     try:
-        from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
         model_name = resolve_model_profile_for_role("section_writer")["model"]
     except Exception:
         model_name = "gemini-1.5-pro"
@@ -514,7 +524,12 @@ async def synthesize_annex(client_name: str, tower_id: str):
         print(f"❌ Error: No se encontró el Blueprint en {blueprint_path}")
         return
 
-    blueprint = robust_load_payload(blueprint_path, BlueprintPayload, "Blueprint")
+    blueprint = robust_load_payload(
+        blueprint_path,
+        BlueprintPayload,
+        "Blueprint",
+        mode="strict",
+    )
     client_intelligence = json.loads(client_intelligence_path.read_text(encoding="utf-8-sig")) if client_intelligence_path.exists() else {}
     config = load_yaml_config("annex_executive_synthesizer.yaml")
     context_summary = ""
@@ -540,7 +555,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
         output_path.write_text(final_payload.model_dump_json(indent=2, by_alias=True), encoding="utf-8")
         print(f"✅ Anexo Ejecutivo sintetizado con éxito: {output_path}")
     else:
-        print(f"❌ Error al generar el anexo.")
+        print("❌ Error al generar el anexo.")
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:

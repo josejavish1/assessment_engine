@@ -14,7 +14,7 @@ source_of_truth:
   - ../../tests/test_contract_handover.py
   - ../../tests/test_t5_golden.py
   - ../../tests/test_payload_validation.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -164,6 +164,16 @@ Además, el smoke conserva compatibilidad con la resolución legacy de `working/
   --with-commercial \
   --with-web
 ```
+
+Si quieres forzar que el tramo global use solo blueprints modernos:
+
+```bash
+./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts \
+  --with-global \
+  --global-blueprint-only
+```
+
+Ese flag se propaga a `run_global_pipeline.py` como `--blueprint-only`, de modo que el builder global no consume `approved_annex_*.refined.json` aunque existan en el workspace.
 
 ## Artefactos esperados
 

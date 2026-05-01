@@ -8,6 +8,8 @@ from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
+
+from assessment_engine.schemas.annex_synthesis import AnnexPayload
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph,
@@ -18,18 +20,14 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     apply_bullet_list_format,
     apply_paragraph_style,
     apply_table_style,
-    clean_list,
-    clean_paragraph_list,
     clean_text,
     clear_cell_shading,
     clear_paragraph,
     clear_paragraph_properties,
     enable_update_fields_on_open,
-    finalize_table,
     insert_field_paragraph_after_block,
     insert_paragraph_after_block,
     remove_page_break_only_paragraphs,
-    remove_paragraph,
     render_gap_table,
     render_initiative_cards,
     render_list_at_placeholder,
@@ -40,10 +38,6 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     render_risks_table,
     replace_simple_placeholder,
 )
-
-from assessment_engine.schemas.annex_synthesis import AnnexPayload
-from pydantic import ValidationError
-
 
 WORD_RENDER_MODE_ENV = "AE_WORD_RENDER_MODE"
 
@@ -524,7 +518,12 @@ def main(argv: list[str] | None = None) -> None:
     output_path = Path(parsed_args[2]).resolve()
 
     # Cargar y validar contrato de forma robusta
-    payload = robust_load_payload(payload_path, AnnexPayload, "Annex")
+    payload = robust_load_payload(
+        payload_path,
+        AnnexPayload,
+        "Annex",
+        mode="strict",
+    )
     payload_dict = normalize_annex_payload(payload.model_dump(by_alias=True))
     payload_dict = _replace_client_placeholders(
         payload_dict,

@@ -2,6 +2,7 @@
 Módulo run_global_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+import argparse
 import sys
 
 from assessment_engine.scripts.lib.pipeline_runtime import (
@@ -18,11 +19,16 @@ from assessment_engine.scripts.lib.runtime_paths import (
 
 
 def main(argv: list[str] | None = None) -> None:
-    if len(argv if argv is not None else sys.argv) < 2:
-        print("Uso: python -m scripts.run_global_pipeline <client_name>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("client_name")
+    parser.add_argument(
+        "--blueprint-only",
+        action="store_true",
+        help="Construye el payload global solo desde blueprints y desactiva el fallback legacy.",
+    )
+    args = parser.parse_args((argv if argv is not None else sys.argv)[1:])
 
-    client_name = (argv if argv is not None else sys.argv)[1]
+    client_name = args.client_name
     client_dir = resolve_client_dir(client_name)
     env = build_runtime_env()
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
@@ -46,6 +52,7 @@ def main(argv: list[str] | None = None) -> None:
             str(client_dir),
             client_name,
             str(payload_path),
+            *(["--blueprint-only"] if args.blueprint_only else []),
         ],
         "Build Global Payload",
         env,

@@ -6,14 +6,23 @@ Permite detectar desviaciones de esquema sin necesariamente abortar la ejecució
 import json
 import logging
 from pathlib import Path
-from typing import Any, Type, TypeVar, Optional
+from typing import Literal, Type, TypeVar
+
 from pydantic import BaseModel, ValidationError
 
 T = TypeVar("T", bound=BaseModel)
+ContractLoadMode = Literal["strict", "tolerant"]
 
 logger = logging.getLogger("assessment_engine.contracts")
 
-def robust_load_payload(path: Path, schema: Type[T], artifact_name: str = "Artifact") -> T:
+
+def robust_load_payload(
+    path: Path,
+    schema: Type[T],
+    artifact_name: str = "Artifact",
+    *,
+    mode: ContractLoadMode = "tolerant",
+) -> T:
     """
     Carga un JSON y lo valida contra un esquema Pydantic de forma resiliente.
     Si hay errores de validación, los registra detalladamente pero intenta
@@ -38,7 +47,10 @@ def robust_load_payload(path: Path, schema: Type[T], artifact_name: str = "Artif
             loc = " -> ".join(str(x) for x in error['loc'])
             msg = error['msg']
             logger.warning(f"   - Campo [{loc}]: {msg}")
-        
+
+        if mode == "strict":
+            raise
+
         # Modo de recuperación: Intentar construir el modelo ignorando errores (best effort)
         # o devolviendo el modelo validado parcialmente si es posible.
         # En esta fase B4, devolvemos el objeto validado con 'model_construct'
@@ -46,6 +58,8 @@ def robust_load_payload(path: Path, schema: Type[T], artifact_name: str = "Artif
         return schema.model_construct(**data)
     except Exception as e:
         logger.error(f"❌ Error inesperado validando {artifact_name}: {e}")
+        if mode == "strict":
+            raise
         return schema.model_construct(**data)
 
 def save_versioned_payload(path: Path, payload: BaseModel, artifact_type: str):

@@ -1,6 +1,9 @@
+import json
 import zipfile
 
+import pytest
 from docx import Document
+from pydantic import ValidationError
 
 from assessment_engine.scripts.render_tower_annex_from_template import main
 from tests.artifact_helpers import ROOT, require_artifact_es
@@ -68,3 +71,29 @@ def test_render_tower_annex_semantic_mode_uses_word_styles(tmp_path):
     assert 'TOC \\o "1-2" \\h \\z \\u' in document_xml
     assert "<w:numPr>" in document_xml
     assert "updateFields" in settings_xml
+
+
+def test_render_tower_annex_fails_on_invalid_payload(tmp_path):
+    payload_path = tmp_path / "invalid_annex.json"
+    payload_path.write_text(
+        json.dumps(
+            {
+                "document_meta": {"tower_code": "T5", "tower_name": "Resilience"},
+                "executive_summary": {
+                    "global_score": "3.5",
+                    "global_band": "Managed",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationError):
+        main(
+            [
+                "render_tower_annex_from_template",
+                str(payload_path),
+                str(TEMPLATE_PATH),
+                str(tmp_path / "unused.docx"),
+            ]
+        )

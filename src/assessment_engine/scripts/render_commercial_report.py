@@ -12,6 +12,14 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
 
+from assessment_engine.schemas.commercial import (
+    CommercialPayload,
+    CommercialSummaryDraft,
+    GtmStrategy,
+    OpportunityPipelineItem,
+    ProposalDraft,
+)
+from assessment_engine.scripts.lib.contract_utils import robust_load_payload
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph,
     add_heading_paragraph,
@@ -22,10 +30,10 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     shade_cell,
 )
 from assessment_engine.scripts.render_global_report_from_template import (
-    add_spacer,
     add_smart_bullet_list,
-    create_page_number_footer,
+    add_spacer,
     clean_t_codes,
+    create_page_number_footer,
 )
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
@@ -38,16 +46,6 @@ def clean_commercial_text(text):
     # Remove any stray [[REF:...]] tags
     cleaned = re.sub(r"\[\[REF:[^\]]*\]\]", "", cleaned)
     return cleaned.replace("─", "").replace("—", "").replace(";", ",").strip()
-
-
-from assessment_engine.schemas.commercial import (
-    CommercialPayload,
-    CommercialSummaryDraft,
-    GtmStrategy,
-    OpportunityPipelineItem,
-    ProposalDraft,
-)
-from assessment_engine.scripts.lib.contract_utils import robust_load_payload
 
 
 def load_json(path):
@@ -69,6 +67,7 @@ def load_payload(payload_path: Path) -> CommercialPayload:
         payload_path,
         CommercialPayload,
         "Commercial Account Plan",
+        mode="strict",
     )
 
 
