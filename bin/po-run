@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+repo_root=$(cd -- "$script_dir/.." && pwd)
+orchestrator_script="$repo_root/src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./bin/po-run [--plan|--run] [--request-file PATH] [--executor-command CMD]
+               [--allow-dirty] [--skip-auto-merge] [--yes] [request...]
+
+Examples:
+  ./bin/po-run "Quiero que el informe global priorice mejor los riesgos criticos"
+  ./bin/po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
+  ./bin/po-run --request-file ./request.txt
+  ./bin/po-run --executor-command "./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}" "Quiero..."
+EOF
+}
+
+die() {
+  printf 'po-run: %s\n' "$1" >&2
+  exit 2
+}
+
+resolve_python_bin() {
+  if [[ -n "${ASSESSMENT_ENGINE_PYTHON_BIN:-}" ]]; then
+    printf '%s\n' "$ASSESSMENT_ENGINE_PYTHON_BIN"
+    return
+  fi
+  if [[ -x "$repo_root/.venv/bin/python" ]]; then
+    printf '%s\n' "$repo_root/.venv/bin/python"
+    return
+  fi
+  if command -v python >/dev/null 2>&1; then
+    command -v python
+    return
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    command -v python3
+    return
+  fi
+  die "No encuentro un interprete Python. Usa ASSESSMENT_ENGINE_PYTHON_BIN o crea ./.venv."
+}
+
+default_executor_command() {
+  if [[ -n "${ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD:-}" ]]; then
+    printf '%s\n' "$ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD"
+    return
+  fi
+
+  local repo_wrapper="$repo_root/.github/scripts/orchestrator-gemini-executor.sh"
+  if [[ -x "$repo_wrapper" ]]; then
+    printf '%s\n' "$repo_wrapper {repo_root} {task_prompt_file} {attempt}"
+  fi
+}
+
+mode="run"
+request=""
+request_file=""
+executor_command=""
+allow_dirty=0
+skip_auto_merge=0
+skip_confirmation=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --plan)
+      mode="plan"
+      shift
+      ;;
+    --run)
+      mode="run"
+      shift
+      ;;
+    --request-file)
+      [[ $# -ge 2 ]] || die "--request-file necesita una ruta."
+      request_file="$2"
+      shift 2
+      ;;
+    --executor-command)
+      [[ $# -ge 2 ]] || die "--executor-command necesita un valor."
+      executor_command="$2"
+      shift 2
+      ;;
+    --allow-dirty)
+      allow_dirty=1
+      shift
+      ;;
+    --skip-auto-merge)
+      skip_auto_merge=1
+      shift
+      ;;
+    --yes)
+      skip_confirmation=1
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      die "Flag no reconocida: $1"
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [[ -z "$request_file" ]]; then
+  request="$*"
+fi
+
+if [[ -z "${request//[[:space:]]/}" && -z "$request_file" ]]; then
+  if [[ -t 0 && -t 1 ]]; then
+    printf 'Peticion para el orquestador: ' >&2
+    IFS= read -r request
+  fi
+fi
+
+if [[ -z "${request//[[:space:]]/}" && -z "$request_file" ]]; then
+  die "Debes indicar una peticion como argumento o con --request-file."
+fi
+
+if [[ -n "$request_file" && ! -f "$request_file" ]]; then
+  die "No existe el fichero de peticion: $request_file"
+fi
+
+if [[ ! -f "$orchestrator_script" ]]; then
+  die "No encuentro $orchestrator_script"
+fi
+
+python_bin=$(resolve_python_bin)
+
+if [[ "$mode" == "run" && -z "$executor_command" ]]; then
+  executor_command=$(default_executor_command)
+fi
+
+if [[ "$mode" == "run" && -z "$executor_command" ]]; then
+  die "No hay executor configurado. Usa --executor-command o exporta ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD."
+fi
+
+if [[ "$mode" == "run" && "$skip_confirmation" -eq 0 && -t 0 && -t 1 ]]; then
+  printf 'Modo: %s\n' "$mode" >&2
+  if [[ -n "$request_file" ]]; then
+    printf 'Peticion desde fichero: %s\n' "$request_file" >&2
+  else
+    printf 'Peticion: %s\n' "$request" >&2
+  fi
+  printf 'Python: %s\n' "$python_bin" >&2
+  printf 'Executor: %s\n' "$executor_command" >&2
+  read -r -p "Lanzar ahora el orquestador? [Y/n] " answer
+  if [[ -n "${answer:-}" && ! "$answer" =~ ^[Yy]([Ee][Ss])?$ ]]; then
+    printf 'Cancelado.\n' >&2
+    exit 0
+  fi
+fi
+
+cmd=("$python_bin" "$orchestrator_script" "$mode")
+if [[ -n "$request_file" ]]; then
+  cmd+=("--request-file" "$request_file")
+else
+  cmd+=("--request" "$request")
+fi
+if [[ "$mode" == "run" ]]; then
+  cmd+=("--executor-command" "$executor_command")
+fi
+if [[ "$allow_dirty" -eq 1 ]]; then
+  cmd+=("--allow-dirty")
+fi
+if [[ "$mode" == "run" && "$skip_auto_merge" -eq 1 ]]; then
+  cmd+=("--skip-auto-merge")
+fi
+
+printf '==> Ejecutando product owner orchestrator (%s)\n' "$mode" >&2
+exec "${cmd[@]}"
