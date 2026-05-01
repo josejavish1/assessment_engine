@@ -8,10 +8,10 @@ import json
 import re
 import sys
 import uuid
+from importlib import import_module
 from pathlib import Path
-from typing import Any, Optional
+from typing import IO, Any, Optional, Protocol, cast
 
-import yaml  # type: ignore[import-untyped]
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
@@ -46,6 +46,13 @@ from assessment_engine.scripts.lib.runtime_paths import (
 
 ROOT = Path(__file__).resolve().parents[3]
 PRIORITY_RANK = {"Alta": 0, "Media": 1, "Baja": 2}
+
+
+class _YamlModule(Protocol):
+    def safe_load(self, stream: IO[str]) -> Any: ...
+
+
+yaml = cast(_YamlModule, import_module("yaml"))
 
 
 # Helper functions (side-effect free)
