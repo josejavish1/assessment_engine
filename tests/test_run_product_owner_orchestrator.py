@@ -408,7 +408,7 @@ def test_auto_resolve_bot_threads_replies_before_resolving(monkeypatch) -> None:
                             "author_type": "Bot",
                             "body": "reply comment",
                             "state": "SUBMITTED",
-                        }
+                        },
                     ],
                 }
             ],

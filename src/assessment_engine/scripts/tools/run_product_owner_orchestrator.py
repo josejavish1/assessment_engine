@@ -493,9 +493,7 @@ def auto_resolve_bot_threads(pr_state: dict[str, Any]) -> int:
         if not thread["all_comments_bot"]:
             continue
         top_level_comment = thread["comments"][0] if thread["comments"] else None
-        comment_id = (
-            top_level_comment.get("database_id") if top_level_comment else None
-        )
+        comment_id = top_level_comment.get("database_id") if top_level_comment else None
         if comment_id is not None:
             resolution_note = build_bot_thread_resolution_note(thread)
             run_git_command(
