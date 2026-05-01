@@ -37,6 +37,25 @@ def _blueprint_payload(tower_code: str, tower_name: str) -> dict:
     }
 
 
+def _multi_pillar_blueprint_payload(tower_code: str, tower_name: str) -> dict:
+    payload = _blueprint_payload(tower_code, tower_name)
+    payload["pillars_analysis"] = [
+        {
+            "score": 2.8,
+            "target_score": 3.8,
+            "health_check_asis": [],
+            "projects_todo": [],
+        },
+        {
+            "score": 3.2,
+            "target_score": 4.2,
+            "health_check_asis": [],
+            "projects_todo": [],
+        },
+    ]
+    return payload
+
+
 def _legacy_refined_payload() -> dict:
     return {
         "tower_name": "Legacy Tower",
@@ -96,7 +115,9 @@ def test_build_global_payload_marks_mixed_lineage(tmp_path):
     payload = build_global_payload(tmp_path, "client")
 
     assert payload is not None
-    assert payload["_generation_metadata"]["source_version"].startswith("blueprint-only;")
+    assert payload["_generation_metadata"]["source_version"].startswith(
+        "blueprint-only;"
+    )
     assert payload["meta"]["version"] == "v2.3 - Blueprint-first Engine"
     assert [tower["id"] for tower in payload["heatmap"]] == ["T5"]
 
@@ -132,7 +153,9 @@ def test_build_global_payload_ignores_legacy_even_when_present(tmp_path):
     payload = build_global_payload(tmp_path, "client")
 
     assert payload is not None
-    assert payload["_generation_metadata"]["source_version"].startswith("blueprint-only;")
+    assert payload["_generation_metadata"]["source_version"].startswith(
+        "blueprint-only;"
+    )
     assert payload["meta"]["version"] == "v2.3 - Blueprint-first Engine"
     assert [tower["id"] for tower in payload["heatmap"]] == ["T5"]
 
@@ -215,3 +238,22 @@ def test_build_global_payload_embeds_client_intelligence_summary(tmp_path):
     assert payload is not None
     assert payload["intelligence_dossier"]["profile"]["priority_markets"] == ["España"]
     assert payload["intelligence_dossier"]["regulatory_context"] == ["NIS2"]
+
+
+def test_build_global_payload_averages_target_scores_and_shared_maturity_policy(
+    tmp_path,
+):
+    blueprint_dir = tmp_path / "T5"
+    blueprint_dir.mkdir()
+    _write_json(
+        blueprint_dir / "blueprint_t5_payload.json",
+        _multi_pillar_blueprint_payload("T5", "Resilience"),
+    )
+
+    payload = build_global_payload(tmp_path, "client")
+
+    assert payload is not None
+    assert payload["heatmap"][0]["score"] == "3.0"
+    assert payload["heatmap"][0]["band"] == "Básica"
+    assert payload["heatmap"][0]["status_color"] == "FFD966"
+    assert payload["heatmap"][0]["target_maturity"] == "4.0"

@@ -11,8 +11,8 @@ import random
 from pathlib import Path
 from typing import Any
 
-from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.client_intelligence import coerce_client_dossier_v3
+from assessment_engine.scripts.lib.runtime_paths import ROOT
 
 DEFAULT_CLIENT = "smoke_ivirma"
 DEFAULT_SEED = 42
@@ -84,7 +84,12 @@ SCENARIOS: dict[str, dict[str, Any]] = {
             "industry": "Telecomunicaciones",
             "financial_tier": "Tier 1",
             "priority_markets": ["Alemania", "Reino Unido", "España", "Italia"],
-            "business_lines": ["B2C convergente", "B2B digital", "IoT", "Cloud y ciberseguridad"],
+            "business_lines": [
+                "B2C convergente",
+                "B2B digital",
+                "IoT",
+                "Cloud y ciberseguridad",
+            ],
             "active_transformations": [
                 "Consolidación de plataformas comunes entre países",
                 "Automatización de operaciones y observabilidad extremo a extremo",
@@ -170,7 +175,9 @@ def resolve_scenario_config(name: str) -> dict[str, Any]:
     scenario_name = name.strip() or DEFAULT_SCENARIO
     if scenario_name not in SCENARIOS:
         available = ", ".join(sorted(SCENARIOS))
-        raise ValueError(f"Escenario desconocido: {scenario_name}. Disponibles: {available}")
+        raise ValueError(
+            f"Escenario desconocido: {scenario_name}. Disponibles: {available}"
+        )
     return SCENARIOS[scenario_name]
 
 
@@ -186,7 +193,11 @@ def build_responses(
 
     for tower_id in towers:
         def_file = (
-            root / "engine_config" / "towers" / tower_id / f"tower_definition_{tower_id}.json"
+            root
+            / "engine_config"
+            / "towers"
+            / tower_id
+            / f"tower_definition_{tower_id}.json"
         )
         if not def_file.exists():
             continue
@@ -225,6 +236,7 @@ def generate_smoke_inputs(
 
     responses_path = client_dir / "responses.txt"
     context_path = client_dir / "context.txt"
+    dossier_path = client_dir / "client_intelligence.json"
     if write_files:
         responses_path.write_text("\n".join(responses_lines) + "\n", encoding="utf-8")
         context_path.write_text(
@@ -237,10 +249,12 @@ def generate_smoke_inputs(
                 client_name=client_id,
                 data=dossier_template,
             )
-            (client_dir / "client_intelligence.json").write_text(
+            dossier_path.write_text(
                 json.dumps(dossier, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+        elif dossier_path.exists():
+            dossier_path.unlink()
 
     return context_path, responses_path
 
@@ -250,7 +264,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--client", default=DEFAULT_CLIENT)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
     parser.add_argument("--towers", nargs="*", default=DEFAULT_TOWERS)
-    parser.add_argument("--scenario", choices=sorted(SCENARIOS), default=DEFAULT_SCENARIO)
+    parser.add_argument(
+        "--scenario", choices=sorted(SCENARIOS), default=DEFAULT_SCENARIO
+    )
     args = parser.parse_args(argv)
 
     context_path, responses_path = generate_smoke_inputs(
@@ -260,9 +276,7 @@ def main(argv: list[str] | None = None) -> None:
         scenario=args.scenario,
     )
 
-    responses_count = len(
-        responses_path.read_text(encoding="utf-8").splitlines()
-    )
+    responses_count = len(responses_path.read_text(encoding="utf-8").splitlines())
     print(
         f"✅ Inputs smoke generados en {context_path.parent} "
         f"(contexto + {responses_count} respuestas)."

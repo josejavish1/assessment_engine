@@ -2,17 +2,40 @@
 Módulo build_global_report_payload.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
+from __future__ import annotations
+
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from assessment_engine.scripts.lib.client_intelligence import (
     build_client_context_packet,
     load_client_intelligence,
 )
+from assessment_engine.scripts.lib.global_maturity_policy import (
+    average_pillar_score,
+    average_pillar_target,
+    band_for_score,
+    status_color_for_score,
+)
+
+TOWER_NAMES_MAP = {
+    "T1": "Infraestructura Física y CPD",
+    "T2": "Cómputo Híbrido y Plataformas",
+    "T3": "Redes y Conectividad",
+    "T4": "Servicios de Datos y Almacenamiento",
+    "T5": "Resiliencia y Continuidad (DR)",
+    "T6": "Seguridad de Infraestructura",
+    "T7": "Operaciones Digitales (ITSM)",
+    "T8": "Estrategia, Gobierno y FinOps",
+    "T9": "Puesto de Trabajo Digital (DEX)",
+    "T10": "Sistemas Legacy y Mainframe",
+}
 
 
-def load_json(path):
+def load_json(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
     try:
@@ -26,7 +49,7 @@ def _build_source_version(blueprint_towers: list[str]) -> str:
     return f"blueprint-only;blueprints={blueprint_part}"
 
 
-def build_global_payload(client_dir, client_name):
+def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] | None:
     # Intentamos cargar los nuevos Blueprints primero
     blueprint_files = list(client_dir.glob("T*/blueprint_*_payload.json"))
 
@@ -51,21 +74,6 @@ def build_global_payload(client_dir, client_name):
         except Exception:
             intelligence_dossier = {}
 
-    tower_names_map = {
-        "T1": "Infraestructura Física y CPD",
-        "T2": "Cómputo Híbrido y Plataformas",
-        "T3": "Redes y Conectividad",
-        "T4": "Servicios de Datos y Almacenamiento",
-        "T5": "Resiliencia y Continuidad (DR)",
-        "T6": "Seguridad de Infraestructura",
-        "T7": "Operaciones Digitales (ITSM)",
-        "T8": "Estrategia, Gobierno y FinOps",
-        "T9": "Puesto de Trabajo Digital (DEX)",
-        "T10": "Sistemas Legacy y Mainframe",
-    }
-
-    processed_towers = set()
-
     # 1. Prioridad: Procesar Blueprints
     for bp in sorted(
         blueprint_files,
@@ -76,30 +84,23 @@ def build_global_payload(client_dir, client_name):
             continue
 
         tid = data.get("document_meta", {}).get("tower_code", bp.parent.name).upper()
-        processed_towers.add(tid)
         blueprint_towers.append(tid)
-        tname = tower_names_map.get(
+        tname = TOWER_NAMES_MAP.get(
             tid, data.get("document_meta", {}).get("tower_name", tid)
         )
 
         # Extraer datos del Blueprint
-        avg_score = 0.0
-        target_score = 4.0
-        if data.get("pillars_analysis"):
-            avg_score = sum(p.get("score", 0) for p in data["pillars_analysis"]) / len(
-                data["pillars_analysis"]
-            )
-            target_score = data["pillars_analysis"][0].get("target_score", 4.0)
+        pillars_analysis = data.get("pillars_analysis", [])
+        avg_score = average_pillar_score(pillars_analysis, default=0.0)
+        target_score = average_pillar_target(pillars_analysis, default=4.0)
 
         towers_data.append(
             {
                 "id": tid,
                 "name": tname,
                 "score": f"{avg_score:.1f}",
-                "band": "Optimizada" if avg_score >= 3.5 else "Básica",
-                "status_color": "E06666"
-                if avg_score < 2.6
-                else ("FFD966" if avg_score < 3.4 else "93C47D"),
+                "band": band_for_score(avg_score),
+                "status_color": status_color_for_score(avg_score),
                 "executive_message": data.get("executive_snapshot", {}).get(
                     "bottom_line", ""
                 ),
@@ -196,6 +197,7 @@ def main(argv: list[str] | None = None) -> None:
     if payload:
         Path(raw_args[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2))
         print("Payload dinámico generado con éxito.")
+
 
 if __name__ == "__main__":
     main()

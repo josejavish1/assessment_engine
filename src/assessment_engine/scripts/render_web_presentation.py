@@ -9,6 +9,7 @@ from typing import Any
 
 from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.global_report import GlobalReportPayload
+from assessment_engine.scripts.lib.global_maturity_policy import average_pillar_target
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_blueprint_payload_candidates,
     resolve_client_dir,
@@ -37,7 +38,9 @@ def _load_blueprint_payload(path: Path) -> dict[str, Any]:
 
 
 def _find_blueprint_payload(tower_dir: Path, tower_id: str) -> Path | None:
-    for candidate in resolve_blueprint_payload_candidates(tower_dir.parent.name, tower_id):
+    for candidate in resolve_blueprint_payload_candidates(
+        tower_dir.parent.name, tower_id
+    ):
         if candidate.exists():
             return candidate
     return None
@@ -111,13 +114,9 @@ def _extract_target_maturity(
         return str(target_maturity)
 
     pillars = blueprint_payload.get("pillars_analysis", [])
-    pillar_targets = [
-        _safe_float(pillar.get("target_score"), 0.0)
-        for pillar in pillars
-        if pillar.get("target_score") not in (None, "")
-    ]
-    if pillar_targets:
-        return f"{sum(pillar_targets) / len(pillar_targets):.1f}"
+    pillar_target = average_pillar_target(pillars, default=0.0)
+    if pillar_target > 0:
+        return f"{pillar_target:.1f}"
 
     return str(tower_meta.get("target_maturity", "4.0"))
 
@@ -135,9 +134,7 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
             "global_score": _compute_global_score(global_payload),
             "burning_platform": global_payload.get("burning_platform", []),
             "principles": target_vision.get("evolution_principles", []),
-            "architecture_principles": target_vision.get(
-                "architecture_principles", []
-            ),
+            "architecture_principles": target_vision.get("architecture_principles", []),
             "operating_model": target_vision.get("operating_model_implications", []),
             "gtm_strategy": global_payload.get("gtm_strategy", {}),
             "stakeholders": global_payload.get("stakeholder_matrix", []),
@@ -280,9 +277,7 @@ def _build_tower_nexus(
             or blueprint_payload.get("executive_decisions", []),
             "structural_risks": executive_snapshot.get("structural_risks", []),
             "business_impact": executive_snapshot.get("business_impact", ""),
-            "operational_benefits": executive_snapshot.get(
-                "operational_benefits", []
-            ),
+            "operational_benefits": executive_snapshot.get("operational_benefits", []),
         }
     )
 

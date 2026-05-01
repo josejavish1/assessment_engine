@@ -6,8 +6,12 @@ source_of_truth:
   - ../../requirements.txt
   - ../../pytest.ini
   - ../../.github/workflows/ci.yml
+  - ../../.github/workflows/quality.yml
+  - ../../.github/workflows/typing.yml
+  - ../../src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+  - ../../src/assessment_engine/scripts/tools/run_incremental_typecheck.py
   - ../../tests/
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -21,6 +25,9 @@ Esta carpeta reúne la documentación operativa mínima de `assessment-engine`: 
 ## Documentos operativos actuales
 
 - [`installation.md`](installation.md)
+- [`agentic-development-workflow.md`](agentic-development-workflow.md)
+- [`engineering-quality-gates.md`](engineering-quality-gates.md)
+- [`product-owner-orchestrator.md`](product-owner-orchestrator.md)
 - [`pipeline-execution.md`](pipeline-execution.md)
 - [`pipeline-controls-runbook.md`](pipeline-controls-runbook.md)
 - [`smoke-regeneration.md`](smoke-regeneration.md)
@@ -44,6 +51,11 @@ Esta carpeta reúne la documentación operativa mínima de `assessment-engine`: 
 
 - `pytest.ini` define `tests/` como raíz de tests;
 - el workflow `Assessment Engine CI` ejecuta `pytest tests/`;
+- el workflow `Incremental Quality Gate` ejecuta `ruff` solo sobre los ficheros Python cambiados en `src/assessment_engine/` y `tests/`;
+- el workflow `Incremental Type Check` ejecuta `mypy` solo sobre los ficheros Python cambiados en `src/assessment_engine/` y `tests/`;
+- la suite incluye ahora tests de coherencia transversal para score, banda, color y target del payload global;
+- el flujo de trabajo con agentes ya tiene una guía canónica de spec mínima, alcance e invariantes antes de programar;
+- ya existe un MVP de orquestador local PO-to-PR con planning, ejecución iterativa y PR automática sobre backend de agente configurable;
 - la suite actual incluye tests de entorno, contratos, schemas, render y utilidades.
 
 ## Flujo de validación actual
@@ -54,17 +66,24 @@ El entorno observado en este repo usa la virtualenv del proyecto:
 
 ```bash
 ./.venv/bin/python -m pytest tests/ -q
+./.venv/bin/python src/assessment_engine/scripts/tools/run_incremental_quality_gate.py \
+  --repo-root . \
+  --path src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+./.venv/bin/python src/assessment_engine/scripts/tools/run_incremental_typecheck.py \
+  --repo-root . \
+  --path src/assessment_engine/scripts/build_global_report_payload.py
 ```
 
 ### GitHub Actions
 
-El workflow actual reside en `.github/workflows/ci.yml` y:
+Los workflows operativos actuales residen en `.github/workflows/ci.yml`, `.github/workflows/quality.yml` y `.github/workflows/typing.yml`:
 
 1. prepara Python 3.11;
 2. instala dependencias con `pip install -r requirements.txt`;
 3. instala el paquete en editable con `pip install -e .`;
-4. instala utilidades de test;
-5. ejecuta `pytest tests/`.
+4. ejecuta `pytest tests/` en CI;
+5. ejecuta `ruff check` y `ruff format --check` sobre la superficie viva cambiada mediante el runner incremental.
+6. ejecuta `mypy` sobre la superficie viva cambiada mediante el runner incremental.
 
 ## Observación relevante del baseline
 
@@ -86,6 +105,9 @@ La siguiente pieza con más retorno al retomar es verificar o regenerar también
 ## Próximos documentos operativos recomendados
 
 - promoción de `smoke-regeneration.md` y `pipeline-execution.md` cuando el baseline final quede contrastado;
+- ampliación del tipado incremental y de los tests de coherencia transversales;
+- endurecimiento del workflow spec-first y del review semántico para cambios asistidos por agentes;
+- evolución del orquestador local hacia más métricas, clasificación de riesgo y backends de agente corporativos;
 - endurecimiento de CI para smoke/golden artifacts;
 - operación del modo servidor MCP;
 - guía de troubleshooting de Vertex AI y credenciales.

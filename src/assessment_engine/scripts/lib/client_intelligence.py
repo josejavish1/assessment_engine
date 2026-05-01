@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -73,7 +74,10 @@ def infer_related_towers(*texts: str) -> list[str]:
     joined = " ".join(texts).lower()
     matches: list[str] = []
     for tower_id, keywords in _TOWER_KEYWORDS.items():
-        if any(keyword in joined for keyword in keywords):
+        if any(
+            re.search(rf"(?<!\w){re.escape(keyword)}(?!\w)", joined)
+            for keyword in keywords
+        ):
             matches.append(tower_id)
     return matches
 
@@ -94,7 +98,9 @@ def estimate_confidence_score(
     return max(15, min(95, base))
 
 
-def _source_refs(values: list[str], source_type: str = "public") -> list[dict[str, Any]]:
+def _source_refs(
+    values: list[str], source_type: str = "public"
+) -> list[dict[str, Any]]:
     return [
         {
             "source": value,
@@ -223,7 +229,9 @@ def extract_target_maturity_map(data: dict[str, Any]) -> dict[str, float]:
     return result
 
 
-def get_target_maturity(data: dict[str, Any], tower_id: str, default: float = 4.0) -> float:
+def get_target_maturity(
+    data: dict[str, Any], tower_id: str, default: float = 4.0
+) -> float:
     return extract_target_maturity_map(data).get(tower_id.upper(), default)
 
 
@@ -296,17 +304,13 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
                     "rationale", ""
                 ),
                 "confidence": _confidence_label(
-                    business_context.get("transformation_horizon", {}).get(
-                        "confidence"
-                    )
+                    business_context.get("transformation_horizon", {}).get("confidence")
                 ),
                 "sources": business_context.get("transformation_horizon", {}).get(
                     "sources", []
                 ),
             },
-            "constraints": _as_list_of_strings(
-                business_context.get("constraints", [])
-            )
+            "constraints": _as_list_of_strings(business_context.get("constraints", []))
             + _as_list_of_strings(technology_context.get("operating_constraints", [])),
         },
         tower_overrides={
@@ -383,7 +387,9 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_client_context_packet(data: dict[str, Any], tower_id: str | None = None) -> dict[str, Any]:
+def build_client_context_packet(
+    data: dict[str, Any], tower_id: str | None = None
+) -> dict[str, Any]:
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})
         business_context = data.get("business_context", {})
@@ -400,7 +406,8 @@ def build_client_context_packet(data: dict[str, Any], tower_id: str | None = Non
             and (
                 not tower_id
                 or not claim.get("related_towers")
-                or str(tower_id).upper() in [str(item).upper() for item in claim.get("related_towers", [])]
+                or str(tower_id).upper()
+                in [str(item).upper() for item in claim.get("related_towers", [])]
             )
         ][:6]
 
@@ -411,8 +418,12 @@ def build_client_context_packet(data: dict[str, Any], tower_id: str | None = Non
                 "financial_tier": profile.get("financial_tier", "Tier 2"),
                 "operating_model": profile.get("operating_model"),
                 "regions": _as_list_of_strings(profile.get("regions", [])),
-                "priority_markets": _as_list_of_strings(profile.get("priority_markets", [])),
-                "business_lines": _as_list_of_strings(profile.get("business_lines", [])),
+                "priority_markets": _as_list_of_strings(
+                    profile.get("priority_markets", [])
+                ),
+                "business_lines": _as_list_of_strings(
+                    profile.get("business_lines", [])
+                ),
             },
             "business_context": {
                 "ceo_agenda": business_context.get("ceo_agenda", {}).get("summary", ""),
@@ -428,10 +439,14 @@ def build_client_context_packet(data: dict[str, Any], tower_id: str | None = Non
                     business_context.get("business_model_signals", [])
                 ),
                 "transformation_horizon": summarize_transformation_horizon(data),
-                "constraints": _as_list_of_strings(business_context.get("constraints", [])),
+                "constraints": _as_list_of_strings(
+                    business_context.get("constraints", [])
+                ),
             },
             "technology_context": {
-                "footprint_summary": technology_context.get("footprint_summary", {}).get("summary", ""),
+                "footprint_summary": technology_context.get(
+                    "footprint_summary", {}
+                ).get("summary", ""),
                 "technology_drivers": [
                     item.get("name", "")
                     for item in technology_context.get("technology_drivers", [])
@@ -461,7 +476,9 @@ def build_client_context_packet(data: dict[str, Any], tower_id: str | None = Non
                 }
                 for claim in relevant_claims
             ],
-            "review_status": data.get("review", {}).get("human_review_status", "pending"),
+            "review_status": data.get("review", {}).get(
+                "human_review_status", "pending"
+            ),
         }
 
     return client_intelligence_to_legacy(data)
@@ -523,7 +540,8 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             },
             "transformation_horizon": {
                 "stage": "H1",
-                "label": str(data.get("transformation_horizon", "General"))[:120] or "General",
+                "label": str(data.get("transformation_horizon", "General"))[:120]
+                or "General",
                 "rationale": str(data.get("transformation_horizon", "General")),
                 "confidence": "medium",
                 "sources": sources,
@@ -580,7 +598,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
         dossier["metadata"] = metadata
         return ClientDossierV3.model_validate(dossier).model_dump(mode="json")
 
-    base_v2 = data if is_client_dossier_v2(data) else _coerce_legacy_to_v2(client_name, data)
+    base_v2 = (
+        data if is_client_dossier_v2(data) else _coerce_legacy_to_v2(client_name, data)
+    )
     profile = base_v2.get("profile", {})
     business_context = base_v2.get("business_context", {})
     regulatory_frameworks = base_v2.get("regulatory_frameworks", [])
@@ -593,7 +613,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
     priority_markets = _as_list_of_strings(data.get("priority_markets", []))
     business_lines = _as_list_of_strings(data.get("business_lines", []))
     vendor_dependencies = _as_list_of_strings(data.get("vendor_dependencies", []))
-    recent_incident_signals = _as_list_of_strings(data.get("recent_incident_signals", []))
+    recent_incident_signals = _as_list_of_strings(
+        data.get("recent_incident_signals", [])
+    )
     active_transformations = _as_list_of_strings(data.get("active_transformations", []))
     business_constraints = _as_list_of_strings(data.get("business_constraints", []))
     operating_constraints = _as_list_of_strings(data.get("operating_constraints", []))
@@ -633,7 +655,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             sources=legacy_sources,
             source_reliability_score=65 if legacy_source_type == "public" else 55,
             specificity_signals=1 + len(regulatory_pressures),
-            related_towers=infer_related_towers(framework, " ".join(regulatory_pressures)),
+            related_towers=infer_related_towers(
+                framework, " ".join(regulatory_pressures)
+            ),
         )
 
     if priority_markets or business_lines:
@@ -652,7 +676,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             specificity_signals=len(priority_markets) + len(business_lines),
         )
 
-    for index, transformation in enumerate(_unique_strings(active_transformations), start=1):
+    for index, transformation in enumerate(
+        _unique_strings(active_transformations), start=1
+    ):
         _append_claim(
             generated_claims,
             claim_id=f"transformation_{index}",
@@ -662,7 +688,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             source_reliability_score=60 if legacy_source_type == "public" else 50,
             valid_for_domains=["tower", "global", "commercial"],
             specificity_signals=1 + len(priority_markets),
-            related_towers=infer_related_towers(transformation, " ".join(operating_constraints)),
+            related_towers=infer_related_towers(
+                transformation, " ".join(operating_constraints)
+            ),
         )
 
     for index, vendor in enumerate(_unique_strings(vendor_dependencies), start=1):
@@ -674,7 +702,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             sources=legacy_sources,
             source_reliability_score=60 if legacy_source_type == "public" else 50,
             specificity_signals=1 + len(operating_constraints),
-            related_towers=infer_related_towers(vendor, " ".join(operating_constraints)),
+            related_towers=infer_related_towers(
+                vendor, " ".join(operating_constraints)
+            ),
         )
 
     for index, incident in enumerate(_unique_strings(recent_incident_signals), start=1):
@@ -687,7 +717,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             source_reliability_score=55 if legacy_source_type == "public" else 45,
             specificity_signals=2,
             uncertainty_penalty=5,
-            related_towers=infer_related_towers(incident, " ".join(operating_constraints)),
+            related_towers=infer_related_towers(
+                incident, " ".join(operating_constraints)
+            ),
         )
 
     dossier = ClientDossierV3(
@@ -722,7 +754,8 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                 "confidence": _confidence_block(
                     estimate_confidence_score(
                         source_count=len(framework.get("sources", [])),
-                        specificity_signals=1 + len(infer_related_towers(framework.get("name", ""))),
+                        specificity_signals=1
+                        + len(infer_related_towers(framework.get("name", ""))),
                     )
                 ),
                 "sources": framework.get("sources", []),
@@ -756,29 +789,49 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                 for item in drivers
                 if isinstance(item, dict)
             ],
-            "business_model_signals": _as_list_of_strings(data.get("business_model_signals", [])) or business_lines,
+            "business_model_signals": _as_list_of_strings(
+                data.get("business_model_signals", [])
+            )
+            or business_lines,
             "active_transformations": active_transformations,
             "transformation_horizon": {
-                "stage": business_context.get("transformation_horizon", {}).get("stage", "H1"),
-                "label": business_context.get("transformation_horizon", {}).get("label", "General"),
-                "rationale": business_context.get("transformation_horizon", {}).get("rationale", "General"),
+                "stage": business_context.get("transformation_horizon", {}).get(
+                    "stage", "H1"
+                ),
+                "label": business_context.get("transformation_horizon", {}).get(
+                    "label", "General"
+                ),
+                "rationale": business_context.get("transformation_horizon", {}).get(
+                    "rationale", "General"
+                ),
                 "confidence": _confidence_block(
                     estimate_confidence_score(
-                        source_count=len(business_context.get("transformation_horizon", {}).get("sources", [])),
-                        specificity_signals=len(active_transformations) + len(business_constraints),
+                        source_count=len(
+                            business_context.get("transformation_horizon", {}).get(
+                                "sources", []
+                            )
+                        ),
+                        specificity_signals=len(active_transformations)
+                        + len(business_constraints),
                     )
                 ),
-                "sources": business_context.get("transformation_horizon", {}).get("sources", []),
+                "sources": business_context.get("transformation_horizon", {}).get(
+                    "sources", []
+                ),
             },
-            "constraints": _as_list_of_strings(business_context.get("constraints", [])) or business_constraints,
+            "constraints": _as_list_of_strings(business_context.get("constraints", []))
+            or business_constraints,
         },
         technology_context={
             "footprint_summary": {
-                "summary": business_context.get("osint_footprint", {}).get("summary", ""),
+                "summary": business_context.get("osint_footprint", {}).get(
+                    "summary", ""
+                ),
                 "confidence": _confidence_block(
                     estimate_confidence_score(
                         source_count=len(osint_sources),
-                        specificity_signals=len(vendor_dependencies) + len(operating_constraints),
+                        specificity_signals=len(vendor_dependencies)
+                        + len(operating_constraints),
                     )
                 ),
                 "sources": osint_sources,
@@ -795,17 +848,22 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                 if isinstance(item, dict)
             ],
             "vendor_dependencies": vendor_dependencies,
-            "operating_constraints": operating_constraints or _as_list_of_strings(
-                business_context.get("constraints", [])
-            ),
+            "operating_constraints": operating_constraints
+            or _as_list_of_strings(business_context.get("constraints", [])),
             "recent_incident_signals": recent_incident_signals,
         },
         tower_overrides={
             tower_id.upper(): {
                 "target_maturity": tower_data.get("target_maturity", 4.0),
-                "business_criticality": _confidence_block(70 if tower_data.get("business_criticality") == "high" else 50),
-                "regulatory_pressure": _confidence_block(70 if tower_data.get("regulatory_pressure") == "high" else 50),
-                "change_urgency": _confidence_block(70 if tower_data.get("change_urgency") == "high" else 50),
+                "business_criticality": _confidence_block(
+                    70 if tower_data.get("business_criticality") == "high" else 50
+                ),
+                "regulatory_pressure": _confidence_block(
+                    70 if tower_data.get("regulatory_pressure") == "high" else 50
+                ),
+                "change_urgency": _confidence_block(
+                    70 if tower_data.get("change_urgency") == "high" else 50
+                ),
                 "rationale": (
                     f"Target derivado del contexto del cliente para {tower_id.upper()} "
                     f"teniendo en cuenta prioridades, restricciones y señales operativas."
@@ -828,7 +886,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
     if known_towers:
         for claim in payload.get("claims", []):
             if not claim.get("related_towers"):
-                claim["related_towers"] = known_towers[:1] if len(known_towers) == 1 else known_towers[:3]
+                claim["related_towers"] = (
+                    known_towers[:1] if len(known_towers) == 1 else known_towers[:3]
+                )
     for tower_id, tower_data in payload.get("tower_overrides", {}).items():
         related_claim_ids = [
             claim["claim_id"]

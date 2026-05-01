@@ -6,10 +6,12 @@
     "section_writer": "writer_fast",
     "section_reviewer": "review_strict",
     "global_reviewer": "global_reviewer_strict",
-    "global_refiner": "global_refiner_strict"
+    "global_refiner": "global_refiner_strict",
+    "product_owner_planner": "review_strict"
   },
   "policies": {
     "target_maturity": "standard_target_maturity_policy",
-    "review": "standard_review_policy"
+    "review": "standard_review_policy",
+    "orchestrator": "local_product_owner_orchestrator"
   }
 }
