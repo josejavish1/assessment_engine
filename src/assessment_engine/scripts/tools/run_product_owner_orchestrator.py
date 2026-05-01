@@ -233,6 +233,10 @@ def create_commit(commit_title: str) -> None:
     run_git_command(["git", "commit", "-m", message])
 
 
+def push_branch(branch_name: str) -> None:
+    run_git_command(["git", "push", "-u", "origin", branch_name])
+
+
 def create_pr_body(plan: dict[str, Any]) -> str:
     sections = [
         "## Summary",
@@ -267,6 +271,8 @@ def create_pr(
     pr_body_path = request_dir / "pr_body.md"
     pr_body_path.write_text(create_pr_body(plan), encoding="utf-8")
     base_branch = policy.get("pull_request", {}).get("base_branch", "main")
+
+    push_branch(plan["branch_name"])
 
     run_git_command(
         [

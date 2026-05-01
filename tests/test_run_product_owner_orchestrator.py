@@ -62,3 +62,17 @@ def test_create_pr_body_includes_spec_and_tasks() -> None:
     assert "## Change spec" in body
     assert "Update PR template" in body
     assert "keep main protected" in body
+
+
+def test_push_branch_uses_origin_and_sets_upstream(monkeypatch) -> None:
+    calls: list[list[str]] = []
+
+    def fake_run_git_command(args: list[str]):
+        calls.append(args)
+        return None
+
+    monkeypatch.setattr(orchestrator, "run_git_command", fake_run_git_command)
+
+    orchestrator.push_branch("feat/test-branch")
+
+    assert calls == [["git", "push", "-u", "origin", "feat/test-branch"]]
