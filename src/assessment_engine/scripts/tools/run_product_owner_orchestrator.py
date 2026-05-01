@@ -622,7 +622,7 @@ def repair_pull_request(
     pr_state: dict[str, Any],
     round_number: int,
     additional_feedback: str | None = None,
-) -> None:
+) -> bool:
     feedback_payload = build_pr_feedback(pr_state)
     if additional_feedback:
         feedback_payload["additional_feedback"] = additional_feedback
@@ -643,12 +643,12 @@ def repair_pull_request(
         output_path=request_dir / f"pr_reconciliation_{round_number}.log",
     )
     if not has_worktree_changes():
-        raise RuntimeError(
-            "La reconciliación de PR no produjo cambios pese a existir feedback abierto."
-        )
+        run_standard_validations(request_dir)
+        return False
     run_standard_validations(request_dir)
     create_commit(create_followup_commit_title(plan, round_number))
     push_branch(plan["branch_name"])
+    return True
 
 
 def sync_branch_with_base(

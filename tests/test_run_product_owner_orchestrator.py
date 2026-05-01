@@ -217,6 +217,71 @@ def test_reconcile_pull_request_repairs_then_merges(
     assert call_order == ["repair", "merge:9:squash"]
 
 
+def test_repair_pull_request_allows_noop_when_validations_pass(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    prompt_path = request_dir / "pr_reconciliation_1.md"
+    outputs: list[str] = []
+
+    monkeypatch.setattr(
+        orchestrator,
+        "render_pr_reconciliation_prompt",
+        lambda *args, **kwargs: "prompt",
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "build_executor_args",
+        lambda template, *, task_prompt_file, attempt: [
+            "executor",
+            str(task_prompt_file),
+        ],
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "run_command",
+        lambda command, *, output_path: outputs.append(str(output_path)),
+    )
+    monkeypatch.setattr(orchestrator, "has_worktree_changes", lambda: False)
+    monkeypatch.setattr(
+        orchestrator,
+        "run_standard_validations",
+        lambda request_dir: outputs.append("validated"),
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "create_commit",
+        lambda title: pytest.fail("should not commit on noop repair"),
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "push_branch",
+        lambda branch_name: pytest.fail("should not push on noop repair"),
+    )
+
+    changed = orchestrator.repair_pull_request(
+        request_dir,
+        {"branch_name": "feat/test-branch", "commit_title": "feat: improve flow"},
+        executor_command="executor",
+        pr_state={
+            "number": 1,
+            "url": "https://example.test/pr/1",
+            "merge_state_status": "BLOCKED",
+            "mergeable": "MERGEABLE",
+            "review_decision": "",
+            "failed_checks": [],
+            "pending_checks": [],
+            "unresolved_threads": [],
+        },
+        round_number=1,
+    )
+
+    assert changed is False
+    assert prompt_path.read_text(encoding="utf-8") == "prompt"
+    assert "validated" in outputs
+
+
 def test_reconcile_pull_request_auto_resolves_bot_threads(
     monkeypatch, tmp_path: Path
 ) -> None:
