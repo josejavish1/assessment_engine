@@ -97,6 +97,7 @@ La automatización no sustituye la revisión de PR:
 - el checklist de `.github/pull_request_template.md` obliga a revisar impacto documental y de calidad;
 - `AGENTS.md` y `.github/copilot-instructions.md` remiten a esta política antes de programar con agentes;
 - la gobernanza documental sigue exigiendo actualizar la documentación canónica cuando cambian reglas, workflows o validadores.
+- el watcher `.github/workflows/orchestrator-pr-reconcile.yml`, cuando está habilitado para una PR gestionada, no sustituye estos gates: simplemente vuelve a invocar `resume-pr` para reejecutarlos y reaccionar al feedback de GitHub.
 
 ## Ejecución local recomendada
 

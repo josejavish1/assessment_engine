@@ -31,6 +31,8 @@ from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
 
+ORCHESTRATOR_MANAGED_MARKER = "<!-- orchestrator-managed -->"
+
 REVIEW_THREADS_QUERY = """
 query($owner:String!, $repo:String!, $number:Int!) {
   repository(owner:$owner, name:$repo) {
@@ -810,6 +812,8 @@ def reconcile_pull_request(
 
 def create_pr_body(plan: dict[str, Any]) -> str:
     sections = [
+        ORCHESTRATOR_MANAGED_MARKER,
+        "",
         "## Summary",
         f"- {plan['problem']}",
         f"- {plan['value_expected']}",

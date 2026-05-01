@@ -65,6 +65,7 @@ def test_create_pr_body_includes_spec_and_tasks() -> None:
 
     body = orchestrator.create_pr_body(plan)
 
+    assert orchestrator.ORCHESTRATOR_MANAGED_MARKER in body
     assert "## Change spec" in body
     assert "Update PR template" in body
     assert "keep main protected" in body
