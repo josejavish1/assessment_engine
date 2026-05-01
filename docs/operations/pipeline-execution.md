@@ -35,6 +35,8 @@ Comando:
 
 Úsalo cuando quieras enriquecer el contexto estratégico antes del análisis por torre.
 
+El dossier generado hoy puede existir en formato legacy, `2.0` o `3.0`. La ruta activa ya consume la versión `3.0` como contrato rico y mantiene compatibilidad hacia atrás mediante adaptadores.
+
 ## 2. Pipeline por torre
 
 Genera la cadena principal por torre:
@@ -58,6 +60,12 @@ Comando:
 ```
 
 El entrypoint por torre comparte ya el mismo bootstrap base de runtime que usan los pipelines global y comercial.
+
+Además del contexto y las respuestas, la preparación por torre ya incorpora:
+
+- `context_summary` desde el contexto real;
+- `client_context` derivado de `client_intelligence.json` cuando existe;
+- target maturity por torre desde el dossier estratégico.
 
 Reanudación opcional:
 
@@ -85,19 +93,17 @@ Comando:
 ./.venv/bin/python -m assessment_engine.scripts.run_global_pipeline <client_name>
 ```
 
-Modo canónico puro:
-
-```bash
-./.venv/bin/python -m assessment_engine.scripts.run_global_pipeline <client_name> --blueprint-only
-```
-
-Con `--blueprint-only`, el paso `build_global_report_payload.py` desactiva el fallback legacy a `approved_annex_*.refined.json` y obliga a consolidar solo desde blueprints disponibles.
+El entrypoint global ya ejecuta la consolidación canónica desde blueprints disponibles. No necesita un flag adicional para desactivar fallback legacy porque esa compatibilidad ya no forma parte de la ruta activa.
 
 El entrypoint global ya comparte con el comercial el mismo bootstrap de entorno y de resolución del intérprete Python, para que el preflight y los pasos internos trabajen con el mismo contexto efectivo.
+
+El payload global ya embebe un `intelligence_dossier` resumido si existe `client_intelligence.json`, para que el refinado ejecutivo no pierda señales de negocio, regulación y restricciones.
 
 ## 4. Pipeline comercial
 
 Parte de `global_report_payload.json` y usa además blueprints por torre para construir contexto híbrido.
+
+La fase comercial ya mezcla contexto global, catálogos tácticos de blueprint y `client_intelligence` resumido.
 
 Genera:
 
@@ -141,8 +147,10 @@ Variantes útiles:
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --dry-run
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --local-only
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --global-blueprint-only
+./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --client vodafone_demo --scenario vodafone-public --towers T2 T3 T5 --with-global --with-commercial --with-web
 ```
+
+Ahora `--with-global` ya ejercita directamente la consolidación canónica desde blueprints.
 
 La guía detallada está en [`smoke-regeneration.md`](smoke-regeneration.md).
 

@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../src/assessment_engine/scripts/build_case_input.py
@@ -15,7 +15,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_commercial_refiner.py
   - ../../src/assessment_engine/scripts/run_intelligence_harvesting.py
   - ../../src/assessment_engine/scripts/generate_tower_radar_chart.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -59,6 +59,10 @@ working/
 - origen: `run_intelligence_harvesting.py`
 - rol: dossier estratégico reutilizable para enriquecer pipelines por torre y renderizadores
 - estado arquitectónico: **input enriquecido compartido**
+- contrato operativo actual:
+  - compatibilidad legacy y `2.0`;
+  - contrato pragmático `3.0` para profile, contexto de negocio, contexto tecnológico, tower overrides, claims y review;
+  - adaptadores de compatibilidad en `scripts/lib/client_intelligence.py`
 
 ### `global_report_payload.json`
 
@@ -138,6 +142,8 @@ client_intelligence.json + blueprints de torres
   -> Account_Action_Plan_<client>.docx
 ```
 
+En la ruta actual, `client_intelligence.json` ya no solo condiciona target maturity por torre: también entra como contexto resumido en `case_input`, blueprint, payload global y payload comercial.
+
 ## Qué artefactos mandan hoy
 
 ### Fuente principal de verdad
@@ -164,14 +170,11 @@ client_intelligence.json + blueprints de torres
 
 Persisten referencias legacy en:
 
-- tests que buscan artefactos concretos en `working/smoke_ivirma/T5/`;
-- scripts `_legacy/`;
-- partes del modo MCP que inspeccionan secciones antiguas (`asis`, `risks`, `gap`, `tobe`, `todo`, `conclusion`).
+- scripts `_legacy/` conservados por contexto histórico;
+- algún tooling/adaptador que todavía puede exponer detalle legacy como diagnóstico secundario o transformar annex refined heredados;
+- tests o fixtures históricos que siguen comprobando artefactos concretos de `working/smoke_ivirma/T5/`.
 
-Esto significa que `working/` convive todavía con:
-
-1. un flujo actual top-down basado en blueprint;
-2. rastros de un modelo anterior por secciones.
+Esto significa que `working/` ya no se gobierna por un modelo híbrido en la ruta principal: convive con rastros históricos, pero el flujo activo y canónico es el top-down basado en blueprint.
 
 ## Regla documental recomendada
 

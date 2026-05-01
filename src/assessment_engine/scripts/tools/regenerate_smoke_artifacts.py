@@ -17,7 +17,12 @@ from assessment_engine.scripts.lib.runtime_env import (
     run_vertex_ai_preflight,
 )
 from assessment_engine.scripts.lib.runtime_paths import ROOT
-from assessment_engine.scripts.tools.generate_smoke_data import generate_smoke_inputs
+from assessment_engine.scripts.tools.generate_smoke_data import (
+    DEFAULT_SCENARIO,
+    SCENARIOS,
+    generate_smoke_inputs,
+    normalize_towers,
+)
 
 BLUEPRINT_RESUME_STEP = "Engine: Tower Strategic Blueprint"
 
@@ -44,20 +49,88 @@ def run_step(
         raise SystemExit(completed.returncode)
 
 
+def build_local_steps(
+    python_bin: str,
+    client_id: str,
+    tower_id: str,
+    context_path: str,
+    responses_path: str,
+) -> list[tuple[list[str], str]]:
+    tower_dir = ROOT / "working" / client_id / tower_id
+    case_input_path = tower_dir / "case_input.json"
+    evidence_ledger_path = tower_dir / "evidence_ledger.json"
+    scoring_output_path = tower_dir / "scoring_output.json"
+    label_suffix = f" ({tower_id})"
+
+    return [
+        (
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.build_case_input",
+                "--client",
+                client_id,
+                "--tower",
+                tower_id,
+                "--context-file",
+                context_path,
+                "--responses-file",
+                responses_path,
+            ],
+            f"Build case_input{label_suffix}",
+        ),
+        (
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.build_evidence_ledger",
+                "--case-input",
+                str(case_input_path),
+                "--context-file",
+                context_path,
+                "--responses-file",
+                responses_path,
+            ],
+            f"Build evidence_ledger{label_suffix}",
+        ),
+        (
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.run_scoring",
+                "--case-input",
+                str(case_input_path),
+            ],
+            f"Run scoring{label_suffix}",
+        ),
+        (
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.run_evidence_analyst",
+                "--case-input",
+                str(case_input_path),
+                "--evidence-ledger",
+                str(evidence_ledger_path),
+                "--scoring-output",
+                str(scoring_output_path),
+            ],
+            f"Run evidence analyst{label_suffix}",
+        ),
+    ]
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--client", default="smoke_ivirma")
     parser.add_argument("--tower", default="T5")
+    parser.add_argument("--towers", nargs="+", default=None)
+    parser.add_argument("--scenario", choices=sorted(SCENARIOS), default=DEFAULT_SCENARIO)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--local-only", action="store_true")
     parser.add_argument("--with-global", action="store_true")
     parser.add_argument("--with-commercial", action="store_true")
     parser.add_argument("--with-web", action="store_true")
-    parser.add_argument(
-        "--global-blueprint-only",
-        action="store_true",
-        help="Ejecuta el pipeline global en modo canónico puro, sin fallback legacy.",
-    )
     parser.add_argument("--skip-vertex-preflight", action="store_true")
     parser.add_argument("--vertex-model", default=None)
     parser.add_argument("--writer-model", default=None)
@@ -68,7 +141,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     client_id = args.client.strip() or "smoke_ivirma"
-    tower_id = args.tower.upper().strip()
+    tower_ids = normalize_towers(args.towers or [args.tower])
     python_bin = resolve_python_bin()
 
     env = build_runtime_env()
@@ -87,79 +160,25 @@ def main(argv: list[str] | None = None) -> None:
 
     context_path, responses_path = generate_smoke_inputs(
         client=client_id,
-        towers=[tower_id],
+        towers=tower_ids,
         seed=args.seed,
+        scenario=args.scenario,
         write_files=not args.dry_run,
     )
     print("\n=== Smoke inputs ===")
     print(str(context_path))
     print(str(responses_path))
+    print(f"Towers: {', '.join(tower_ids)}")
 
-    client_dir = ROOT / "working" / client_id
-    tower_dir = client_dir / tower_id
-    case_input_path = tower_dir / "case_input.json"
-    evidence_ledger_path = tower_dir / "evidence_ledger.json"
-    scoring_output_path = tower_dir / "scoring_output.json"
-
-    local_steps = [
-        (
-            [
-                python_bin,
-                "-m",
-                "assessment_engine.scripts.build_case_input",
-                "--client",
-                client_id,
-                "--tower",
-                tower_id,
-                "--context-file",
-                str(context_path),
-                "--responses-file",
-                str(responses_path),
-            ],
-            "Build case_input",
-        ),
-        (
-            [
-                python_bin,
-                "-m",
-                "assessment_engine.scripts.build_evidence_ledger",
-                "--case-input",
-                str(case_input_path),
-                "--context-file",
-                str(context_path),
-                "--responses-file",
-                str(responses_path),
-            ],
-            "Build evidence_ledger",
-        ),
-        (
-            [
-                python_bin,
-                "-m",
-                "assessment_engine.scripts.run_scoring",
-                "--case-input",
-                str(case_input_path),
-            ],
-            "Run scoring",
-        ),
-        (
-            [
-                python_bin,
-                "-m",
-                "assessment_engine.scripts.run_evidence_analyst",
-                "--case-input",
-                str(case_input_path),
-                "--evidence-ledger",
-                str(evidence_ledger_path),
-                "--scoring-output",
-                str(scoring_output_path),
-            ],
-            "Run evidence analyst",
-        ),
-    ]
-
-    for cmd_args, step_name in local_steps:
-        run_step(cmd_args, step_name, env, args.dry_run)
+    for tower_id in tower_ids:
+        for cmd_args, step_name in build_local_steps(
+            python_bin,
+            client_id,
+            tower_id,
+            str(context_path),
+            str(responses_path),
+        ):
+            run_step(cmd_args, step_name, env, args.dry_run)
 
     if args.local_only:
         print("\n✅ Regeneración local completada hasta findings.json.")
@@ -185,27 +204,28 @@ def main(argv: list[str] | None = None) -> None:
         if args.writer_model:
             print(f"   - writer_model_override: {args.writer_model}")
 
-    tower_pipeline_cmd = [
-        python_bin,
-        "-m",
-        "assessment_engine.scripts.run_tower_pipeline",
-        "--tower",
-        tower_id,
-        "--client",
-        client_id,
-        "--context-file",
-        str(context_path),
-        "--responses-file",
-        str(responses_path),
-        "--start-from",
-        BLUEPRINT_RESUME_STEP,
-    ]
-    run_step(
-        tower_pipeline_cmd,
-        "Resume tower pipeline from strategic blueprint",
-        env,
-        args.dry_run,
-    )
+    for tower_id in tower_ids:
+        tower_pipeline_cmd = [
+            python_bin,
+            "-m",
+            "assessment_engine.scripts.run_tower_pipeline",
+            "--tower",
+            tower_id,
+            "--client",
+            client_id,
+            "--context-file",
+            str(context_path),
+            "--responses-file",
+            str(responses_path),
+            "--start-from",
+            BLUEPRINT_RESUME_STEP,
+        ]
+        run_step(
+            tower_pipeline_cmd,
+            f"Resume tower pipeline from strategic blueprint ({tower_id})",
+            env,
+            args.dry_run,
+        )
 
     if args.with_global:
         run_step(
@@ -214,7 +234,6 @@ def main(argv: list[str] | None = None) -> None:
                 "-m",
                 "assessment_engine.scripts.run_global_pipeline",
                 client_id,
-                *(["--blueprint-only"] if args.global_blueprint_only else []),
             ],
             "Run global pipeline",
             env,

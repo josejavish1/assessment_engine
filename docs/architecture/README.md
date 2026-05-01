@@ -40,6 +40,7 @@ La referencia arquitectónica más completa sigue siendo [`../SYSTEM_ARCHITECTUR
 | el recorrido empresarial extremo a extremo | `../SYSTEM_ARCHITECTURE.md` | vista global del sistema y sus capas |
 | la generación de verdad por torre | `tower-pipeline.md` | cómo nace el activo canónico y qué controles lo sostienen |
 | la elevación a nivel dirección y ventas | `global-commercial-pipelines.md` | cómo se consolida la lectura ejecutiva y comercial |
+| la inteligencia estratégica reutilizable del cliente | `client-intelligence.md` | cómo se estructura, migra y consume el dossier compartido |
 | la superficie real de artefactos | `working-artifacts.md` | qué archivos mandan y cuáles son solo derivados |
 | la exposición como servicio/integración | `mcp-mode.md` | qué parte del sistema es automatizable desde fuera |
 
@@ -107,6 +108,7 @@ Subdocumentos ya iniciados:
 
 - [`tower-pipeline.md`](tower-pipeline.md)
 - [`global-commercial-pipelines.md`](global-commercial-pipelines.md)
+- [`client-intelligence.md`](client-intelligence.md)
 - [`executive-project-guide.md`](executive-project-guide.md)
 - [`critical-modules.md`](critical-modules.md)
 - [`mcp-mode.md`](mcp-mode.md)

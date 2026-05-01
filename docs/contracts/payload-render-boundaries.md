@@ -72,6 +72,7 @@ Características de la frontera:
 - el sintetizador del anexo parte de un `executive handover` derivado del blueprint con score, riesgos estructurales, decisiones e iniciativas;
 - score global, bandas, gaps, riesgos e iniciativas prioritarias se fijan de forma determinista desde el blueprint antes del render;
 - el render carga el JSON con `robust_load_payload(..., AnnexPayload, "Annex", mode="strict")`;
+- el render DOCX del anexo usa por defecto la variante visual nueva (`semantic`) y deja el modo legacy solo como compatibilidad opt-in;
 - después aplica `normalize_annex_payload(...)` para completar formas compatibles;
 - el contrato objetivo y efectivo en render ya es `AnnexPayload` estricto.
 

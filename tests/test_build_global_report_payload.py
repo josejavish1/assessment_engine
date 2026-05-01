@@ -96,14 +96,25 @@ def test_build_global_payload_marks_mixed_lineage(tmp_path):
     payload = build_global_payload(tmp_path, "client")
 
     assert payload is not None
-    assert payload["_generation_metadata"]["source_version"].startswith(
-        "mixed-blueprint-legacy;"
+    assert payload["_generation_metadata"]["source_version"].startswith("blueprint-only;")
+    assert payload["meta"]["version"] == "v2.3 - Blueprint-first Engine"
+    assert [tower["id"] for tower in payload["heatmap"]] == ["T5"]
+
+
+def test_build_global_payload_requires_blueprints(tmp_path):
+    legacy_dir = tmp_path / "T6"
+    legacy_dir.mkdir()
+    _write_json(
+        legacy_dir / "approved_annex_t6.refined.json",
+        _legacy_refined_payload(),
     )
-    assert payload["meta"]["version"] == "v2.2 - Blueprint-first Engine (legacy fallback)"
-    assert [tower["id"] for tower in payload["heatmap"]] == ["T5", "T6"]
+
+    payload = build_global_payload(tmp_path, "client")
+
+    assert payload is None
 
 
-def test_build_global_payload_can_disable_legacy_fallback(tmp_path):
+def test_build_global_payload_ignores_legacy_even_when_present(tmp_path):
     blueprint_dir = tmp_path / "T5"
     blueprint_dir.mkdir()
     _write_json(
@@ -118,15 +129,89 @@ def test_build_global_payload_can_disable_legacy_fallback(tmp_path):
         _legacy_refined_payload(),
     )
 
-    payload = build_global_payload(
-        tmp_path,
-        "client",
-        allow_legacy_fallback=False,
-    )
+    payload = build_global_payload(tmp_path, "client")
 
     assert payload is not None
-    assert payload["_generation_metadata"]["source_version"].startswith(
-        "blueprint-only;"
-    )
-    assert payload["meta"]["version"] == "v2.2 - Blueprint-first Engine"
+    assert payload["_generation_metadata"]["source_version"].startswith("blueprint-only;")
+    assert payload["meta"]["version"] == "v2.3 - Blueprint-first Engine"
     assert [tower["id"] for tower in payload["heatmap"]] == ["T5"]
+
+
+def test_build_global_payload_embeds_client_intelligence_summary(tmp_path):
+    blueprint_dir = tmp_path / "T5"
+    blueprint_dir.mkdir()
+    _write_json(
+        blueprint_dir / "blueprint_t5_payload.json",
+        _blueprint_payload("T5", "Resilience"),
+    )
+    _write_json(
+        tmp_path / "client_intelligence.json",
+        {
+            "version": "3.0",
+            "client_name": "client",
+            "metadata": {
+                "dossier_id": "client-1",
+                "schema_version": "3.0",
+                "created_at": "2026-05-01T00:00:00+00:00",
+                "modified_at": "2026-05-01T00:00:00+00:00",
+                "lang": "es",
+                "generated_by": "assessment_engine",
+            },
+            "profile": {
+                "industry": "Telecomunicaciones",
+                "financial_tier": "Tier 1",
+                "operating_model": "Multipaís",
+                "regions": ["EU"],
+                "priority_markets": ["España"],
+                "business_lines": ["B2B"],
+            },
+            "regulatory_context": [
+                {
+                    "name": "NIS2",
+                    "applicability": "high",
+                    "confidence": {"score": 80, "label": "high", "method": "custom"},
+                    "sources": [],
+                    "impacted_domains": ["T5"],
+                }
+            ],
+            "business_context": {
+                "ceo_agenda": {
+                    "summary": "Proteger margen y resiliencia.",
+                    "confidence": {"score": 80, "label": "high", "method": "custom"},
+                    "sources": [],
+                },
+                "strategic_priorities": [],
+                "business_model_signals": [],
+                "active_transformations": [],
+                "transformation_horizon": {
+                    "stage": "H1",
+                    "label": "Brilliant Basics",
+                    "rationale": "Reducir complejidad.",
+                    "confidence": {"score": 70, "label": "high", "method": "custom"},
+                    "sources": [],
+                },
+                "constraints": [],
+            },
+            "technology_context": {
+                "footprint_summary": {
+                    "summary": "Azure dominante.",
+                    "confidence": {"score": 60, "label": "medium", "method": "custom"},
+                    "sources": [],
+                },
+                "technology_drivers": [],
+                "vendor_dependencies": ["Azure"],
+                "operating_constraints": ["Cambios limitados"],
+                "recent_incident_signals": [],
+            },
+            "tower_overrides": {},
+            "claims": [],
+            "review": {"human_review_status": "pending", "review_notes": []},
+            "extensions": {},
+        },
+    )
+
+    payload = build_global_payload(tmp_path, "client")
+
+    assert payload is not None
+    assert payload["intelligence_dossier"]["profile"]["priority_markets"] == ["España"]
+    assert payload["intelligence_dossier"]["regulatory_context"] == ["NIS2"]

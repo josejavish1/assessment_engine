@@ -14,6 +14,11 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_case_dir,
     resolve_client_intelligence_path,
 )
+from assessment_engine.scripts.lib.client_intelligence import (
+    build_client_context_packet,
+    get_target_maturity,
+    load_client_intelligence,
+)
 from assessment_engine.scripts.lib.text_utils import normalize_tower_name, slugify
 
 RESPONSE_RE = re.compile(r"(T\d+\.P\d+\.K\d+\.PR\d+)\s*:\s*([1-5](?:[.,]\d+)?)")
@@ -140,15 +145,18 @@ def build_case_input(args: argparse.Namespace) -> dict:
 
     client_slug = slugify(args.client)
     intel_path = resolve_client_intelligence_path(client_slug)
+    intel: dict = {}
     target_maturity = 4.0
     if intel_path.exists():
         try:
-            intel = load_json(intel_path)
-            target_maturity = intel.get("target_maturity_matrix", {}).get(
-                args.tower, 4.0
-            )
+            intel = load_client_intelligence(intel_path)
+            target_maturity = get_target_maturity(intel, args.tower, 4.0)
         except Exception:
             pass
+
+    context_text = read_text(context_path)
+    context_summary = context_text[:4000]
+    client_context = build_client_context_packet(intel, tower_id=args.tower) if intel else {}
 
     return {
         "case_id": f"{client_slug}_{args.tower.lower()}_{datetime.now(timezone.utc).strftime('%Y_%m_%d')}",
@@ -160,6 +168,8 @@ def build_case_input(args: argparse.Namespace) -> dict:
         "tower_name": normalize_tower_name(tower_definition["tower_name"]),
         "tower_purpose": tower_definition["purpose"],
         "target_maturity_default": target_maturity,
+        "context_summary": context_summary,
+        "client_context": client_context,
         "source_documents": source_documents,
         "answers": answers,
         "template_sections": [
@@ -186,7 +196,7 @@ def build_case_input(args: argparse.Namespace) -> dict:
             "context_file": str(context_path),
             "responses_file": str(responses_path),
             "answers_detected": len(answers),
-            "context_chars": len(read_text(context_path)),
+            "context_chars": len(context_text),
             "responses_chars": len(responses_text),
         },
     }

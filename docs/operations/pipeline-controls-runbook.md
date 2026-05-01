@@ -11,7 +11,7 @@ source_of_truth:
   - ./pipeline-execution.md
   - ./smoke-regeneration.md
   - ./troubleshooting-working.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -59,6 +59,8 @@ Este runbook resume la **operación real** del sistema: qué controles conviene 
 | Comercial | existe `commercial_report_payload.json` |
 | Web | existe `working/<client>/presentation/index.html` |
 | Baseline smoke | los artefactos `smoke_ivirma` existen y la validación pasa |
+
+En el estado actual, cuando el smoke extiende a global debe ejercitar la consolidación canónica desde blueprints. Si el baseline global deja de poder regenerarse así, la lectura correcta ya no es “variante operativa”: es una regresión o una dependencia residual fuera del flujo principal.
 
 ## Primer diagnóstico según síntoma
 

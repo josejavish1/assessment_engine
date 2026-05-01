@@ -24,6 +24,7 @@ mcp = FastMCP("Assessment Engine Core")
 # Rutas base
 ROOT = Path(__file__).resolve().parents[2]
 PYTHON_BIN = sys.executable
+LOAD_ERRORS = (JSONDecodeError, OSError, UnicodeDecodeError)
 
 
 def _read_json_file(path: Path) -> dict:
@@ -49,7 +50,7 @@ def _inspect_payload_artifact(path: Path, schema, artifact_name: str) -> dict:
     artifact_state["status"] = "present"
     try:
         data = _read_json_file(path)
-    except (JSONDecodeError, OSError) as error:
+    except LOAD_ERRORS as error:
         artifact_state["status"] = "error"
         artifact_state["message"] = f"{artifact_name} could not be loaded: {error}"
         return artifact_state
@@ -89,7 +90,7 @@ def _canonical_overall_status(canonical_state: dict) -> str:
     )
     if all(status == "valid" for status in payload_statuses):
         return "complete"
-    if any(status == "invalid" for status in payload_statuses):
+    if any(status in {"invalid", "error"} for status in payload_statuses):
         return "invalid"
     if any(status in {"valid", "present"} for status in payload_statuses):
         return "partial"
@@ -134,7 +135,7 @@ def _inspect_legacy_state(case_dir: Path) -> dict:
 
         try:
             data = _read_json_file(file)
-        except (JSONDecodeError, OSError) as error:
+        except LOAD_ERRORS as error:
             legacy_state[section] = {
                 "status": "error",
                 "message": str(error),
@@ -162,11 +163,11 @@ def _run_script(module_name: str, args: list[str]) -> str:
 @mcp.tool()
 def build_tower_payload(approved_annex_json: str, output_json: str, client_name: str, profile: str = "short") -> str:
     """
-    Construye el payload intermedio para renderizar el Anexo de Torre.
-    Convierte el JSON crudo aprobado en un payload estructurado para docx.
+    Construye un payload intermedio legacy para renderizar el Anexo de Torre.
+    Convierte un annex refined heredado en un payload estructurado para DOCX.
     """
     out = _run_script(
-        "assessment_engine.scripts.build_tower_annex_template_payload", 
+        "assessment_engine.scripts._legacy.build_tower_annex_template_payload",
         [approved_annex_json, output_json, client_name, profile]
     )
     return f"✅ Payload construido con éxito.\n{out}"

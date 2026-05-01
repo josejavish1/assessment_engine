@@ -107,10 +107,10 @@ class GlobalReportPayload(VersionedPayload):
     meta: GlobalReportDocumentMeta
     executive_summary: ExecutiveSummaryDraft
     burning_platform: list[BurningPlatformItem]
+    intelligence_dossier: dict = Field(default_factory=dict)
     heatmap: list[Any] = Field(default_factory=list) # Raw heatmap data passthrough
     tower_bottom_lines: list[TowerBottomLineItem]
     target_vision: TargetVisionDraft
     execution_roadmap: ExecutionRoadmapDraft
     executive_decisions: ExecutiveDecisionsDraft
     visuals: Dict[str, str] = Field(default_factory=dict)
-

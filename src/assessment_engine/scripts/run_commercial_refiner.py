@@ -18,6 +18,10 @@ from assessment_engine.schemas.commercial import (
     SalesPartnerOutput,
 )
 from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.client_intelligence import (
+    build_client_context_packet,
+    load_client_intelligence,
+)
 from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
 from assessment_engine.prompts.commercial_prompts import (
     get_commercial_orchestrator_instruction,
@@ -160,7 +164,11 @@ def aggregate_blueprint_catalogs(blueprint_paths: list[Path]) -> dict:
     return catalog
 
 
-async def refine_commercial_payload(payload, blueprints_catalog: dict = None):
+async def refine_commercial_payload(
+    payload,
+    blueprints_catalog: dict = None,
+    intelligence_dossier: dict | None = None,
+):
     try:
         model_name = resolve_model_profile_for_role("global_refiner")["model"]
     except Exception:
@@ -169,7 +177,8 @@ async def refine_commercial_payload(payload, blueprints_catalog: dict = None):
     # Construir contexto híbrido
     hybrid_context = {
         "strategic_global_context": payload,
-        "tactical_tower_blueprints": blueprints_catalog or {}
+        "tactical_tower_blueprints": blueprints_catalog or {},
+        "client_intelligence": intelligence_dossier or payload.get("intelligence_dossier", {}),
     }
     payload_str = json.dumps(hybrid_context, ensure_ascii=False)
     client_name = payload.get("meta", {}).get("client", "el cliente")
@@ -181,7 +190,8 @@ async def refine_commercial_payload(payload, blueprints_catalog: dict = None):
         },
         "meta": payload.get("meta", {}),
         "intelligence_dossier": {
-            "source_blueprints": list((blueprints_catalog or {}).keys())
+            "source_blueprints": list((blueprints_catalog or {}).keys()),
+            "client_context": intelligence_dossier or payload.get("intelligence_dossier", {}),
         }
     }
 
@@ -245,8 +255,18 @@ def main(argv: list[str] | None = None) -> None:
     blueprint_paths = list(client_dir.glob("T*/blueprint_*_payload.json"))
     print(f"🔍 Encontrados {len(blueprint_paths)} blueprints técnicos para el contexto híbrido.")
     catalog = aggregate_blueprint_catalogs(blueprint_paths)
+    intelligence_path = client_dir / "client_intelligence.json"
+    intelligence_dossier = {}
+    if intelligence_path.exists():
+        intelligence_dossier = build_client_context_packet(load_client_intelligence(intelligence_path))
 
-    final_payload = asyncio.run(refine_commercial_payload(payload, blueprints_catalog=catalog))
+    final_payload = asyncio.run(
+        refine_commercial_payload(
+            payload,
+            blueprints_catalog=catalog,
+            intelligence_dossier=intelligence_dossier,
+        )
+    )
 
     output_path = payload_path.parent / "commercial_report_payload.json"
     with output_path.open("w", encoding="utf-8") as f:

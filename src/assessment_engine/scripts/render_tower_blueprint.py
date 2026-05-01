@@ -27,6 +27,9 @@ from assessment_engine.scripts.lib.docx_render_utils import (
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_tower_annex_template_path,
 )
+from assessment_engine.scripts.lib.client_intelligence import (
+    load_client_intelligence_legacy_view,
+)
 from assessment_engine.scripts.lib.text_utils import clean_text_for_word
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
@@ -159,9 +162,7 @@ def resolve_client_dir(payload_path: Path, payload_data: dict) -> Path:
 
 def load_client_intelligence(client_dir: Path) -> dict:
     path = client_dir / "client_intelligence.json"
-    if path.exists():
-        return load_json(path)
-    return {}
+    return load_client_intelligence_legacy_view(path)
 
 
 def load_annex_data(client_dir: Path, tower_code: str) -> dict:

@@ -202,7 +202,7 @@ async def run_pipeline():
         # Ya no ensamblamos ni refinamos. El Synthesizer escupe el payload_path directamente listo para render.
         # await run_step_async([python_bin, "-m", "assessment_engine.scripts.build_tower_annex_template_payload", str(refined_path if refined_path.exists() else assembled_path), str(payload_path), args.client, "short"], env, "Build short template payload")
         # await run_step_async([python_bin, "-m", "assessment_engine.scripts.generate_tower_radar_chart", str(payload_path), str(radar_path)], env, "Generate short radar")
-        await run_step_async([python_bin, "-m", "assessment_engine.scripts.render_tower_annex_from_template", str(payload_path), str(template_annex_path), str(output_docx)], env, "Render short DOCX")
+        await run_step_async([python_bin, "-m", "assessment_engine.scripts.render_tower_annex_from_template", str(payload_path), str(template_annex_path), str(output_docx), "--semantic-styles"], env, "Render short DOCX")
 
     async def run_blueprint_flow():
         try:

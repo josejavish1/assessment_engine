@@ -86,6 +86,7 @@ async def refine_executive_payload(payload):
         "meta": payload.get("meta", {}),
         "visuals": payload.get("visuals", {}),
         "heatmap": payload.get("heatmap", []),
+        "intelligence_dossier": payload.get("intelligence_dossier", {}),
     }
 
     print("Iteración 1: Generando Executive Summary...")

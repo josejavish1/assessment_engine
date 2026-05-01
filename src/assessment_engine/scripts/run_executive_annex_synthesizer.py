@@ -35,6 +35,9 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_client_dir,
     resolve_client_intelligence_path,
 )
+from assessment_engine.scripts.lib.client_intelligence import (
+    load_client_intelligence_legacy_view,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 PRIORITY_RANK = {"Alta": 0, "Media": 1, "Baja": 2}
@@ -530,7 +533,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
         "Blueprint",
         mode="strict",
     )
-    client_intelligence = json.loads(client_intelligence_path.read_text(encoding="utf-8-sig")) if client_intelligence_path.exists() else {}
+    client_intelligence = load_client_intelligence_legacy_view(client_intelligence_path)
     config = load_yaml_config("annex_executive_synthesizer.yaml")
     context_summary = ""
     if case_input_path.exists():
