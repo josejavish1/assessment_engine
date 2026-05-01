@@ -89,6 +89,8 @@ El repo incorpora el entrypoint:
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts
 ```
 
+El runner ya no resuelve de forma dispersa el bootstrap del runtime ni las rutas principales del caso smoke. La preparación del entorno compartido, la resolución de `working/`, `client_dir`, `case_dir` y varias rutas de artefactos/payloads viven ahora en helpers comunes (`pipeline_runtime.py` y `runtime_paths.py`), lo que reduce divergencias entre el flujo de torre, los pipelines global/commercial y el dashboard web.
+
 Por defecto trabaja sobre:
 
 - cliente: `smoke_ivirma`
@@ -151,6 +153,8 @@ El runner genera primero la parte local y después reanuda `run_tower_pipeline.p
 - `Engine: Tower Strategic Blueprint`
 
 Así evita repetir las fases deterministas y deja explícita la frontera entre preparación local y síntesis asistida por IA.
+
+Además, el smoke conserva compatibilidad con la resolución legacy de `working/` cuando algún consumidor aún arranca desde rutas antiguas, pero la ruta preferida y documentada pasa a ser la capa común de helpers de runtime/path.
 
 ### 4. Extender el smoke a outputs globales, comerciales y web
 
