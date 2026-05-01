@@ -474,6 +474,50 @@ def inspect_pull_request(branch_name: str) -> dict[str, Any]:
     }
 
 
+def is_current_reconciliation_check(check: dict[str, Any]) -> bool:
+    run_id = os.environ.get("GITHUB_RUN_ID", "").strip()
+    details_url = str(check.get("details_url") or "")
+    if run_id and f"/actions/runs/{run_id}" in details_url:
+        return True
+
+    workflow_name = os.environ.get("GITHUB_WORKFLOW", "").strip()
+    if not workflow_name or check.get("workflow_name") != workflow_name:
+        return False
+
+    if check.get("status") == "COMPLETED":
+        return False
+
+    job_name = os.environ.get("GITHUB_JOB", "").strip()
+    return not job_name or check.get("name") == job_name
+
+
+def ignore_current_reconciliation_check(pr_state: dict[str, Any]) -> dict[str, Any]:
+    checks = pr_state.get("checks", [])
+    if not checks:
+        return pr_state
+
+    if not any(is_current_reconciliation_check(check) for check in checks):
+        return pr_state
+
+    filtered_checks = [
+        check for check in checks if not is_current_reconciliation_check(check)
+    ]
+    return {
+        **pr_state,
+        "checks": filtered_checks,
+        "failed_checks": [
+            check
+            for check in pr_state["failed_checks"]
+            if not is_current_reconciliation_check(check)
+        ],
+        "pending_checks": [
+            check
+            for check in pr_state["pending_checks"]
+            if not is_current_reconciliation_check(check)
+        ],
+    }
+
+
 def is_pull_request_ready_for_merge(pr_state: dict[str, Any]) -> bool:
     return (
         not pr_state["is_draft"]
@@ -734,7 +778,9 @@ def reconcile_pull_request(
     repair_rounds = 0
 
     for poll_index in range(1, max_polls + 1):
-        pr_state = inspect_pull_request(plan["branch_name"])
+        pr_state = ignore_current_reconciliation_check(
+            inspect_pull_request(plan["branch_name"])
+        )
         (request_dir / f"pr_state_{poll_index}.json").write_text(
             json.dumps(pr_state, ensure_ascii=False, indent=2),
             encoding="utf-8",
