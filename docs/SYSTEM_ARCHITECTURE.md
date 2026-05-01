@@ -116,7 +116,7 @@ For the current canonical breakdown, also see:
 
 -   **Phase 1: Tower Analysis.** This is the core engine. For each technology tower (for example, `T5`), the system first runs deterministic preparation (`case_input.json`, `evidence_ledger.json`, `scoring_output.json`, `findings.json`). Then `run_tower_blueprint_engine.py` creates `blueprint_<tower>_payload.json`, which is the tower's canonical source of truth. `run_executive_annex_synthesizer.py` derives `approved_annex_<tower>.template_payload.json` from that blueprint, and the renderers produce the final DOCX outputs.
 
--   **Phase 2: Global Consolidation.** Once one or more towers have produced blueprints, `build_global_report_payload.py` aggregates them into `global_report_payload.json`. While the main path prefers modern blueprints, the builder still contains a legacy fallback to `approved_annex_*.refined.json` so mixed workspaces remain consumable. `run_executive_refiner.py` then refines the same `global_report_payload.json` in place.
+-   **Phase 2: Global Consolidation.** Once one or more towers have produced blueprints, `build_global_report_payload.py` aggregates them into `global_report_payload.json` from those blueprints. The active path is now blueprint-first without legacy fallback in the global builder. `run_executive_refiner.py` then refines the same `global_report_payload.json` in place.
 
 -   **Phase 3: Commercial Consolidation.** `run_commercial_refiner.py` uses both the refined global payload and all available tower blueprints to create `commercial_report_payload.json`, which is then rendered to `Account_Action_Plan_<client>.docx`.
 

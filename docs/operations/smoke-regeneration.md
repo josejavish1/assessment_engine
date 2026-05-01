@@ -95,6 +95,7 @@ Por defecto trabaja sobre:
 
 - cliente: `smoke_ivirma`
 - torre: `T5`
+- escenario sintético: `baseline`
 - seed: `42`
 
 Si quieres probar un modelo más rápido para el rol `writer_fast`, puedes usar:
@@ -165,15 +166,25 @@ Además, el smoke conserva compatibilidad con la resolución legacy de `working/
   --with-web
 ```
 
-Si quieres forzar que el tramo global use solo blueprints modernos:
+El runner ya usa el tramo global directamente sobre el camino canónico. Cuando ejecutas `--with-global`, el builder global consolida solo desde blueprints disponibles y deja fuera el fallback legacy del flujo operativo actual.
+
+### 5. Simular un cliente tipo Vodafone con varias torres
 
 ```bash
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts \
+  --client vodafone_demo \
+  --scenario vodafone-public \
+  --towers T2 T3 T5 \
   --with-global \
-  --global-blueprint-only
+  --with-commercial \
+  --with-web
 ```
 
-Ese flag se propaga a `run_global_pipeline.py` como `--blueprint-only`, de modo que el builder global no consume `approved_annex_*.refined.json` aunque existan en el workspace.
+Este escenario genera:
+
+- `context.txt` con narrativa sintética inspirada en un gran operador telco paneuropeo;
+- `responses.txt` con madurez media/alta para `T2`, `T3` y `T5`;
+- `client_intelligence.json` sintético para que blueprint, anexos y renders finales trabajen con señales más cercanas a un cliente real.
 
 ## Artefactos esperados
 

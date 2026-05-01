@@ -38,6 +38,7 @@ REGLAS DE ORO COMERCIALES:
 {NTTDATA_WIN_THEMES}
 4. TONO: Lenguaje B2B Enterprise. Directo, financiero, consultivo y sin "paja".
 5. REDACCIÓN ESTRICTA: ESTÁ TERMINANTEMENTE PROHIBIDO el uso de guiones largos (— o ─) y puntos y comas (;). Usa siempre frases directas separadas por punto y seguido o comas. No incluyas citas ni referencias bibliográficas.
+6. CONTEXTO OBLIGATORIO: Si existe `client_intelligence`, úsalo de forma explícita. Debes conectar iniciativas con agenda del CEO, líneas de negocio, mercados prioritarios, restricciones operativas, vendors dominantes, incidentes recientes y claims de alta confianza. No trates ese bloque como decorativo.
 
 INSTRUCCIÓN ESPECÍFICA PARA ESTA FASE:
 {instruction}

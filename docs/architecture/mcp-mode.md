@@ -1,10 +1,10 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../src/assessment_engine/mcp_server.py
   - ../../src/assessment_engine/scripts/
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -41,7 +41,7 @@ El modo MCP no sustituye al pipeline completo. Su papel es:
 
 | Tool | Propósito |
 |---|---|
-| `build_tower_payload` | Construye payload intermedio para anexo de torre |
+| `build_tower_payload` | Construye un payload intermedio **legacy** para anexo de torre a partir de un annex refined heredado |
 | `render_tower_docx` | Renderiza el DOCX final del anexo |
 | `generate_radar_chart` | Genera el radar global desde payload global |
 | `render_commercial_docx` | Renderiza el documento comercial final |
@@ -58,26 +58,23 @@ Cada tool:
 
 ## Estado e inspección
 
-La tool `get_tower_state` inspecciona un directorio de caso y busca artefactos legacy de secciones:
+La tool `get_tower_state` prioriza ya el flujo canónico y devuelve un bloque `canonical` con:
 
-- `approved_asis.generated.json`
-- `approved_risks.generated.json`
-- `approved_gap.generated.json`
-- `approved_tobe.generated.json`
-- `approved_todo.generated.json`
-- `approved_conclusion.generated.json`
+- `blueprint_*_payload.json`
+- `approved_annex_*.template_payload.json`
+- DOCX derivados cuando existen
 
-Esto sugiere que el modo MCP actual mantiene compatibilidad con una visión más antigua del proceso, aunque la arquitectura principal haya migrado al flujo top-down basado en blueprint.
+Además, valida esos payloads contra `BlueprintPayload` y `AnnexPayload`, y degrada de forma estructurada a `invalid` o `error` si encuentra contratos rotos, JSON corrupto o artefactos no decodificables.
+
+El detalle legacy por secciones (`asis`, `risks`, `gap`, `tobe`, `todo`, `conclusion`) sigue expuesto como superficie diagnóstica secundaria, no como lectura principal del estado operativo.
 
 ## Relación con la arquitectura vigente
 
 Hay una tensión útil que conviene mantener visible:
 
 1. el modo pipeline actual está claramente orientado a `blueprint -> annex`;
-2. parte del servidor MCP y de su inspección de estado todavía refleja secciones legacy;
-3. la evolución futura debería decidir si MCP:
-   - se adapta plenamente al modelo top-down actual, o
-   - conserva herramientas legacy como compatibilidad explícita.
+2. la inspección MCP ya refleja primero ese flujo canónico;
+3. `build_tower_payload` y el detalle legacy restante en `get_tower_state` deben entenderse como compatibilidad explícita para superficies heredadas, no como modelo principal.
 
 ## Uso recomendado en documentación
 
@@ -85,4 +82,4 @@ Trata el modo MCP como:
 
 - **capacidad de servicio y automatización**, no como la narrativa principal del flujo canónico;
 - una capa útil para supervisores externos, integraciones y tooling;
-- una superficie que necesita documentación adicional cuando se definan mejor sus herramientas, contratos y flujos top-down equivalentes.
+- una superficie ya alineada en su inspección principal con el flujo top-down vigente, aunque conserve adaptadores legacy puntuales.

@@ -192,3 +192,13 @@ def test_get_tower_state_surfaces_invalid_canonical_payloads(tmp_path):
     assert state["canonical"]["blueprint_payload"]["status"] == "invalid"
     assert state["canonical"]["annex_payload"]["status"] == "missing"
     assert state["canonical"]["blueprint_payload"]["validation_errors"]
+
+
+def test_get_tower_state_surfaces_corrupted_canonical_payloads(tmp_path):
+    (tmp_path / "blueprint_t5_payload.json").write_bytes(b"\xff\xfe\x00\x00")
+
+    state = json.loads(get_tower_state(str(tmp_path)))
+
+    assert state["canonical"]["overall_status"] == "invalid"
+    assert state["canonical"]["blueprint_payload"]["status"] == "error"
+    assert "could not be loaded" in state["canonical"]["blueprint_payload"]["message"]

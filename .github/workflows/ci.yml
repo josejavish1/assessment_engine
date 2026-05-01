@@ -29,3 +29,7 @@ jobs:
     - name: Run pytest
       run: |
         pytest tests/
+
+    - name: Run canonical smoke dry-run
+      run: |
+        python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --dry-run

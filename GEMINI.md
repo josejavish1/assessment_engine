@@ -6,7 +6,7 @@ source_of_truth:
   - docs/README.md
   - docs/SYSTEM_ARCHITECTURE.md
   - src/assessment_engine/
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - gemini
 doc_type: operational
@@ -193,3 +193,15 @@ La base documental canónica del proyecto ya no vive aquí. La ruta recomendada 
     -   Se corrigió `pytest.ini` para eliminar configuración inválida y se actualizó la checklist operativa (`A5_CHECKLIST.md`) para reflejar el nuevo flujo de validación.
     -   Se robustecieron tests de integridad documental para que no fallen por ausencia de artefactos concretos del workspace o por variaciones razonables en headings de plantillas DOCX.
     -   Validación ejecutada: `pip install -e . --no-build-isolation`, tests clave de entorno/lógica/render y generación real del dashboard web para `ivirma`.
+
+---
+
+## 7. Integración y DevOps (GitHub)
+
+Para garantizar una integración nativa, estable y segura con el repositorio de GitHub, este proyecto utiliza **GitHub CLI (`gh`)** como herramienta central de autenticación y "credential helper" para Git.
+
+**Políticas operativas:**
+-   **Nunca se deben usar tokens en texto plano** en comandos de git ni embebidos en las URLs de los remotos (ej. evitar `https://<token>@github.com/...`).
+-   Las operaciones de control de versiones (`push`, `pull`, `fetch`) se ejecutan a través de HTTPS utilizando la sesión viva gestionada por `gh`.
+-   El sistema está configurado mediante `gh auth setup-git`.
+-   Para verificar el estado de la conexión en cualquier momento, usar: `gh auth status`.

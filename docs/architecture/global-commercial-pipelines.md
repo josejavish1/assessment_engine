@@ -80,7 +80,6 @@ El orquestador global ya comparte con la capa comercial una base común de:
 `build_global_report_payload.py` prioriza:
 
 1. blueprints modernos: `T*/blueprint_*_payload.json`
-2. fallback legacy: `T*/approved_annex_*.refined.json`
 
 El builder:
 
@@ -88,26 +87,20 @@ El builder:
 - deriva riesgos estratégicos;
 - agrega iniciativas;
 - extrae principios de arquitectura e implicaciones operativas si existen;
-- genera una vista híbrida mientras coexisten artefactos nuevos y antiguos.
+- genera la consolidación global exclusivamente desde blueprints de torre disponibles.
 
 ### Decisión arquitectónica relevante
 
-El builder prefiere los blueprints modernos y solo conserva fallback legacy para no bloquear workspaces mixtos. Empresarialmente esto significa:
+El builder global ya trabaja directamente sobre blueprints modernos sin fallback legacy en la ruta activa. Empresarialmente esto significa:
 
 - la consolidación global ya está pensada para descansar sobre la **verdad top-down por torre**;
-- el legado sigue presente como red de seguridad, no como modelo objetivo a largo plazo.
+- el legado deja de condicionar la lectura global del cliente y queda relegado a superficies históricas o adaptadores explícitos.
 
 ### Señalización operativa actual
 
-La consolidación global ya deja visible qué mezcla de fuentes está usando:
+La consolidación global deja visible su lineage canónico en `_generation_metadata.source_version` del `global_report_payload.json`. En la ruta activa ese lineage ya debe expresar un modo `blueprint-only`.
 
-- `blueprint-only`
-- `mixed-blueprint-legacy`
-- `legacy-only`
-
-Ese lineage queda reflejado en `_generation_metadata.source_version` y en `meta.version` del `global_report_payload.json`.
-
-Además, `run_global_pipeline.py` ya expone `--blueprint-only` para forzar el camino canónico puro cuando quieras detectar dependencias legacy reales en un workspace o en smoke/CI.
+El runner smoke y el pipeline global ejercitan ya ese camino como comportamiento normal, de modo que cualquier dependencia residual de legado debe entenderse como deuda fuera del flujo principal, no como una variante soportada del día a día.
 
 ## Refinado ejecutivo global
 

@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../pyproject.toml
@@ -7,7 +7,7 @@ source_of_truth:
   - ../../tests/test_environment.py
   - ../../.github/workflows/ci.yml
   - ../../src/assessment_engine/scripts/lib/runtime_env.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -67,6 +67,14 @@ Si tu entorno ya tiene esos valores, los scripts los reutilizan. Si no, el runti
 ```bash
 ./.venv/bin/python -m pytest tests/ -q
 ```
+
+### Smoke canónico en seco
+
+```bash
+./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --dry-run
+```
+
+Ese dry-run ya forma parte de la validación operativa del repo y comprueba que el entorno puede recorrer el tramo global canónico sin depender de fallback legacy.
 
 ## Diferencia entre `pyproject.toml` y `requirements.txt`
 

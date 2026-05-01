@@ -41,7 +41,34 @@ def test_render_tower_blueprint_uses_payload_adjacent_artifacts(tmp_path):
     tower_dir.mkdir(parents=True)
 
     (client_dir / "client_intelligence.json").write_text(
-        json.dumps({"financial_tier": "Tier X"}),
+        json.dumps(
+            {
+                "version": "2.0",
+                "client_name": "exported-client",
+                "profile": {
+                    "industry": "Telecomunicaciones",
+                    "financial_tier": "Tier X",
+                    "operating_model": None,
+                    "regions": [],
+                },
+                "regulatory_frameworks": [],
+                "business_context": {
+                    "ceo_agenda": {"summary": "", "confidence": "medium", "sources": []},
+                    "technological_drivers": [],
+                    "osint_footprint": {"summary": "", "confidence": "medium", "sources": []},
+                    "transformation_horizon": {
+                        "stage": "H1",
+                        "label": "General",
+                        "rationale": "General",
+                        "confidence": "medium",
+                        "sources": [],
+                    },
+                    "constraints": [],
+                },
+                "tower_overrides": {},
+                "evidence_register": [],
+            }
+        ),
         encoding="utf-8",
     )
     (tower_dir / "approved_annex_t5.template_payload.json").write_text(

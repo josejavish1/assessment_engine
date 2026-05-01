@@ -1,5 +1,5 @@
 schema_version: 1
-last_reviewed: 2026-04-30
+last_reviewed: 2026-05-01
 owners:
   docs-governance:
     scope:
@@ -252,8 +252,8 @@ entries:
       - docs/contracts/artifact-contracts.md
       - docs/operations/pipeline-execution.md
       - docs/operations/pipeline-controls-runbook.md
-    last_verified_against: 2026-04-30
-    notes: Explica la elevación desde artefactos por torre hacia visión ejecutiva y explotación comercial, incluyendo lectura empresarial y puntos de control.
+    last_verified_against: 2026-05-01
+    notes: Explica la elevación desde artefactos por torre hacia visión ejecutiva y explotación comercial, incluyendo lineage canónico y consolidación global ya sin fallback legacy en la ruta activa.
 
   - path: docs/architecture/executive-project-guide.md
     kind: document
@@ -276,6 +276,30 @@ entries:
       - docs/architecture/critical-modules.md
     last_verified_against: 2026-04-30
     notes: Puerta de entrada ejecutiva para entender el valor del proyecto, la jerarquía de verdad y los riesgos empresariales del sistema.
+
+  - path: docs/architecture/client-intelligence.md
+    kind: document
+    title: Client intelligence architecture
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/schemas/intelligence.py
+      - src/assessment_engine/scripts/lib/client_intelligence.py
+      - src/assessment_engine/scripts/run_intelligence_harvesting.py
+      - src/assessment_engine/scripts/build_case_input.py
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/run_executive_refiner.py
+      - src/assessment_engine/scripts/run_commercial_refiner.py
+      - src/assessment_engine/prompts/intelligence_prompts.py
+      - src/assessment_engine/prompts/global_prompts.py
+      - src/assessment_engine/prompts/commercial_prompts.py
+    last_verified_against: 2026-05-01
+    notes: Define el dossier compartido `client_intelligence.json`, su contrato pragmático v3, compatibilidad hacia atrás y puntos reales de consumo en tower/global/commercial.
 
   - path: docs/architecture/critical-modules.md
     kind: document
@@ -362,14 +386,14 @@ entries:
       - docs/operations/pipeline-execution.md
       - docs/operations/smoke-regeneration.md
       - docs/operations/troubleshooting-working.md
-    last_verified_against: 2026-04-30
-    notes: Runbook corto de controles, señales de salud, diagnóstico inicial y recuperación para la operación de pipelines y baseline smoke.
+    last_verified_against: 2026-05-01
+    notes: Runbook corto de controles, señales de salud, diagnóstico inicial y recuperación para la operación de pipelines y baseline smoke, incluyendo la lectura del smoke canónico por defecto.
 
   - path: docs/architecture/mcp-mode.md
     kind: document
     title: MCP mode architecture
     doc_type: canonical
-    status: Draft
+    status: Verified
     owner: docs-governance
     applies_to:
       - humans
@@ -377,14 +401,14 @@ entries:
     source_of_truth:
       - src/assessment_engine/mcp_server.py
       - src/assessment_engine/scripts/
-    last_verified_against: 2026-04-30
-    notes: Documenta el modo servidor y la tensión entre herramientas vigentes y superficies legacy.
+    last_verified_against: 2026-05-01
+    notes: Documenta el modo servidor, su inspección canónica basada en blueprint/annex y la compatibilidad legacy residual solo como diagnóstico secundario.
 
   - path: docs/architecture/working-artifacts.md
     kind: document
     title: Working artifacts map
     doc_type: canonical
-    status: Draft
+    status: Verified
     owner: docs-governance
     applies_to:
       - humans
@@ -403,8 +427,8 @@ entries:
       - src/assessment_engine/scripts/run_commercial_refiner.py
       - src/assessment_engine/scripts/run_intelligence_harvesting.py
       - src/assessment_engine/scripts/generate_tower_radar_chart.py
-    last_verified_against: 2026-04-30
-    notes: Mapa de artefactos en working/, su linaje y su papel canónico, derivado o legacy.
+    last_verified_against: 2026-05-01
+    notes: Mapa de artefactos en working/, su linaje y su papel canónico, derivado o legacy; la ruta principal ya queda claramente blueprint-first.
 
   - path: docs/operations
     kind: collection
@@ -422,13 +446,13 @@ entries:
       - .github/workflows/ci.yml
       - tests/
     last_verified_against: 2026-04-30
-    notes: Base operativa inicial para instalación, validación, CI y troubleshooting.
+    notes: Base operativa ya consolidada para ejecución, smoke y troubleshooting; la instalación y la operación principal están contrastadas contra CI y validación local.
 
   - path: docs/operations/installation.md
     kind: document
     title: Installation and environment setup
     doc_type: canonical
-    status: Draft
+    status: Verified
     owner: docs-governance
     applies_to:
       - humans
@@ -439,8 +463,8 @@ entries:
       - tests/test_environment.py
       - .github/workflows/ci.yml
       - src/assessment_engine/scripts/lib/runtime_env.py
-    last_verified_against: 2026-04-30
-    notes: Onboarding técnico del entorno local y sus dependencias.
+    last_verified_against: 2026-05-01
+    notes: Onboarding técnico del entorno local y sus dependencias, incluyendo la validación mínima del smoke canónico en seco.
 
   - path: docs/operations/pipeline-execution.md
     kind: document
@@ -462,8 +486,8 @@ entries:
     review_paths_on_source_change:
       - docs/operations/pipeline-execution.md
       - docs/operations/pipeline-controls-runbook.md
-    last_verified_against: 2026-04-30
-    notes: Guía operativa contrastada contra los entrypoints reales; el baseline smoke T5/global/commercial/web quedó validado en smoke_ivirma.
+    last_verified_against: 2026-05-01
+    notes: Guía operativa contrastada contra los entrypoints reales; el flujo global activo ya consolida exclusivamente desde blueprints y el smoke ejerce esa ruta por defecto.
 
   - path: docs/operations/troubleshooting-working.md
     kind: document
@@ -482,8 +506,8 @@ entries:
       - src/assessment_engine/scripts/run_global_pipeline.py
       - src/assessment_engine/scripts/run_commercial_pipeline.py
       - docs/architecture/working-artifacts.md
-    last_verified_against: 2026-04-30
-    notes: Explica cómo diagnosticar ausencias en working/ y diferencia entre falta de baseline y fallo funcional real.
+    last_verified_against: 2026-05-01
+    notes: Explica cómo diagnosticar ausencias en working/, diferencia entre falta de baseline y fallo funcional real, y cómo interpretar fallos del smoke global dentro del flujo canónico ya estabilizado.
 
   - path: docs/operations/smoke-regeneration.md
     kind: document
@@ -516,8 +540,8 @@ entries:
     review_paths_on_source_change:
       - docs/operations/smoke-regeneration.md
       - docs/operations/pipeline-controls-runbook.md
-    last_verified_against: 2026-04-30
-    notes: Playbook reproducible para regenerar el baseline smoke usado por contratos y golden files; validado para T5, global, comercial y web en smoke_ivirma.
+    last_verified_against: 2026-05-01
+    notes: Playbook reproducible para regenerar el baseline smoke usado por contratos y golden files; el tramo global smoke ya usa la consolidación canónica y no depende del fallback legacy en la ruta activa.
 
   - path: docs/contracts
     kind: collection
@@ -561,8 +585,8 @@ entries:
       - docs/contracts/artifact-contracts.md
       - docs/architecture/tower-pipeline.md
       - docs/architecture/global-commercial-pipelines.md
-    last_verified_against: 2026-04-30
-    notes: Auditado contra schemas y renderizadores; documenta también el handover determinista blueprint->annex y qué consumidores son estrictos, tolerantes o implícitos.
+    last_verified_against: 2026-05-01
+    notes: Auditado contra schemas y renderizadores; documenta el handover determinista blueprint->annex y el endurecimiento actual de annex, commercial y synthesizer frente a contratos inválidos.
 
   - path: docs/contracts/tower_annex_design.md
     kind: document

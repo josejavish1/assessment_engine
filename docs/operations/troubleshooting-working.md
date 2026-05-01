@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../pytest.ini
@@ -9,7 +9,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_global_pipeline.py
   - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
   - ../architecture/working-artifacts.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -77,6 +77,12 @@ Si lo que falta es específicamente el baseline de `smoke_ivirma/T5`, usa mejor 
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts
 ```
 
+Si el problema está en la parte global y quieres respetar el comportamiento canónico actual del repo, usa el smoke con global tal como está:
+
+```bash
+./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global
+```
+
 Y si antes quieres separar si el bloqueo es local o de Vertex AI:
 
 ```bash
@@ -117,6 +123,8 @@ Si falla una validación por ausencia de artefactos:
 2. confirma si el JSON o DOCX esperado existe en `working/`;
 3. si no existe, regenera la fase anterior del pipeline;
 4. solo después interpreta el fallo como problema funcional.
+
+Si el smoke global canónico (`--with-global`) falla, la lectura correcta ya no es “quizá faltó activar compatibilidad”: significa que hay una regresión o una dependencia real de artefactos legacy fuera del flujo principal.
 
 ## Relación con `pytest.ini`
 

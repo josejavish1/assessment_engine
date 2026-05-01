@@ -26,27 +26,12 @@ def safe_float(value):
         return None
 
 
-def main(argv: list[str] | None = None) -> None:
-    if len(argv if argv is not None else sys.argv) not in (2, 3):
-        raise SystemExit(
-            "Uso: python -m scripts.generate_tower_radar_chart <template_payload_json> [output_png]"
-        )
-
-    payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
-    payload = load_json(payload_path)
-
-    out_path = (
-        Path((argv if argv is not None else sys.argv)[2]).resolve()
-        if len(argv if argv is not None else sys.argv) == 3
-        else payload_path.with_name("pillar_radar_chart.generated.png")
-    )
-
-    pillars = payload.get("pillar_score_profile", {}).get("pillars", [])
+def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Path:
     labels = [p.get("pillar_label", "") for p in pillars]
     values = [safe_float(p.get("score_display")) for p in pillars]
 
     if not labels or not any(v is not None for v in values):
-        raise SystemExit("No hay datos suficientes para generar el radar chart.")
+        raise ValueError("No hay datos suficientes para generar el radar chart.")
 
     values = [v if v is not None else 0.0 for v in values]
 
@@ -76,6 +61,29 @@ def main(argv: list[str] | None = None) -> None:
     plt.tight_layout()
     plt.savefig(out_path, dpi=180, bbox_inches="tight")
     plt.close(fig)
+    return out_path
+
+
+def main(argv: list[str] | None = None) -> None:
+    if len(argv if argv is not None else sys.argv) not in (2, 3):
+        raise SystemExit(
+            "Uso: python -m scripts.generate_tower_radar_chart <template_payload_json> [output_png]"
+        )
+
+    payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
+    payload = load_json(payload_path)
+
+    out_path = (
+        Path((argv if argv is not None else sys.argv)[2]).resolve()
+        if len(argv if argv is not None else sys.argv) == 3
+        else payload_path.with_name("pillar_radar_chart.generated.png")
+    )
+
+    pillars = payload.get("pillar_score_profile", {}).get("pillars", [])
+    try:
+        generate_radar_chart_from_pillars(pillars, out_path)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
 
     payload["pillar_score_profile"]["radar_chart"] = str(out_path)
     payload_path.write_text(

@@ -1,7 +1,7 @@
 import json
 
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
-from assessment_engine.scripts.build_tower_annex_template_payload import main
+from assessment_engine.scripts._legacy.build_tower_annex_template_payload import main
 from tests.artifact_helpers import ROOT, require_artifact_es
 
 INPUT_PATH = ROOT / "working" / "ivirma" / "T5" / "approved_annex_t5.refined.json"

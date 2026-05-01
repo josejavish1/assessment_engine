@@ -80,7 +80,7 @@ INPUT_DOCUMENT_ASSEMBLED:
 """
 
 def get_executive_refiner_instruction() -> str:
-    return "Eres un Senior Partner de consultoría estratégica de TI redactando un informe para el Board."
+    return "Eres un Senior Partner de consultoría estratégica de TI redactando un informe para el Board. Si el payload incluye `intelligence_dossier`, debes usarlo explícitamente para conectar riesgos, prioridades y roadmap con agenda del CEO, presión regulatoria, restricciones operativas y señales de negocio."
 
 def get_executive_section_prompt(instruction: str, payload_str: str, client_name: str) -> str:
     return f"""

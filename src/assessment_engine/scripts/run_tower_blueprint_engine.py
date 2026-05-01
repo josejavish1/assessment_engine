@@ -28,6 +28,13 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_client_dir,
     resolve_tower_definition_file,
 )
+from assessment_engine.scripts.lib.client_intelligence import (
+    build_client_context_packet,
+    build_client_context_text,
+    client_intelligence_to_legacy,
+    get_target_maturity,
+    load_client_intelligence,
+)
 
 def get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data) -> dict:
     """Provee una estructura base completa que cumple con el contrato de BlueprintPayload."""
@@ -135,15 +142,25 @@ async def run_tower_blueprint(client_name, tower_id):
         return
 
     case_data = json.loads(case_input_path.read_text(encoding="utf-8"))
+    raw_intel_data = {}
     intel_data = {}
+    intel_packet = {}
     if intel_path.exists():
-        intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
+        raw_intel_data = load_client_intelligence(intel_path)
+        intel_data = client_intelligence_to_legacy(raw_intel_data)
+        intel_packet = build_client_context_packet(raw_intel_data, tower_id=tower_id)
 
     tower_name = case_data.get("tower_name")
 
     # Preparar contexto masivo
-    intel_str = json.dumps(intel_data, indent=2, ensure_ascii=False)
+    intel_str = (
+        build_client_context_text(raw_intel_data, tower_id=tower_id)
+        if intel_packet
+        else json.dumps(intel_data, indent=2, ensure_ascii=False)
+    )
     context_str = case_data.get("context_summary", "")
+    if case_data.get("client_context") and not intel_packet:
+        intel_str = json.dumps(case_data.get("client_context", {}), indent=2, ensure_ascii=False)
 
     try:
         from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
@@ -181,6 +198,8 @@ async def run_tower_blueprint(client_name, tower_id):
 
     # Inicialización Normalizada (Contrato Estricto)
     blueprint_payload = get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data)
+    if intel_packet:
+        blueprint_payload["client_context"] = intel_packet
     failed_pillars = []
 
     # PROCESAR PILARES EN SERIE PARA MÁXIMA CALIDAD
@@ -190,9 +209,7 @@ async def run_tower_blueprint(client_name, tower_id):
         )
         if p_result:
             p_result["score"] = pillars_map[p_id]["score"]
-            p_result["target_score"] = intel_data.get("target_maturity_matrix", {}).get(
-                tower_id, 4.0
-            )
+            p_result["target_score"] = get_target_maturity(intel_data, tower_id, 4.0)
             blueprint_analysis = p_result.get("pillar_analysis", p_result)
             blueprint_payload["pillars_analysis"].append(blueprint_analysis)
         else:

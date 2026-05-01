@@ -1,15 +1,18 @@
 """
-Módulo build_tower_annex_template_payload.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+Módulo legacy build_tower_annex_template_payload.py.
+Contiene la lógica histórica para transformar un annex refined legacy en template payload.
 """
 import json
 import re
 import sys
 from pathlib import Path
 
-from assessment_engine.scripts.lib.text_utils import normalize_tower_name, clean_text_for_word
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
 from assessment_engine.scripts.lib.contract_utils import save_versioned_payload
+from assessment_engine.scripts.lib.text_utils import (
+    clean_text_for_word,
+    normalize_tower_name,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -415,13 +418,6 @@ def build_executive_summary(annex, pillars, findings_map, profile_name="short"):
     )
 
     weakest_labels = [p["pillar_label"] for p in weakest_list]
-    if len(weakest_labels) == 1:
-        weakest_str = weakest_labels[0]
-    elif len(weakest_labels) == 2:
-        weakest_str = f"{weakest_labels[0]} y {weakest_labels[1]}"
-    else:
-        weakest_str = ", ".join(weakest_labels)
-
     if any("Disaster Recovery" in x for x in weakest_labels) or any(
         "Cyber Recovery" in x for x in weakest_labels
     ):

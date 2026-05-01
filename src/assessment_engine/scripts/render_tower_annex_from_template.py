@@ -10,6 +10,9 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
 
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
+from assessment_engine.scripts.generate_tower_radar_chart import (
+    generate_radar_chart_from_pillars,
+)
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph,
@@ -37,6 +40,7 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     render_radar_chart,
     render_risks_table,
     replace_simple_placeholder,
+    resolve_radar_chart_image,
 )
 
 WORD_RENDER_MODE_ENV = "AE_WORD_RENDER_MODE"
@@ -279,14 +283,34 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
 
 
 def _resolve_render_mode(args: list[str]) -> tuple[str, list[str]]:
-    render_mode = os.environ.get(WORD_RENDER_MODE_ENV, "legacy").strip().lower() or "legacy"
+    render_mode = os.environ.get(WORD_RENDER_MODE_ENV, "semantic").strip().lower() or "semantic"
     filtered_args: list[str] = []
     for arg in args:
         if arg == "--semantic-styles":
             render_mode = "semantic"
             continue
+        if arg == "--legacy-styles":
+            render_mode = "legacy"
+            continue
         filtered_args.append(arg)
     return render_mode, filtered_args
+
+
+def _ensure_radar_chart_path(payload_path: Path, profile: dict) -> str:
+    radar_chart = clean_text(profile.get("radar_chart", ""))
+    if resolve_radar_chart_image(radar_chart) is not None:
+        return radar_chart
+
+    pillars = profile.get("pillars", [])
+    if not isinstance(pillars, list) or not pillars:
+        return radar_chart
+
+    generated_path = payload_path.with_name("pillar_radar_chart.generated.png")
+    try:
+        generate_radar_chart_from_pillars(pillars, generated_path)
+    except ValueError:
+        return radar_chart
+    return str(generated_path)
 
 
 def clean_brackets_and_consultant_notes(doc, payload: dict):
@@ -510,7 +534,7 @@ def main(argv: list[str] | None = None) -> None:
     render_mode, parsed_args = _resolve_render_mode(raw_args[1:])
     if len(parsed_args) != 3:
         raise SystemExit(
-            "Uso: python -m scripts.render_tower_annex_from_template <payload_json> <template_docx> <output_docx> [--semantic-styles]"
+            "Uso: python -m scripts.render_tower_annex_from_template <payload_json> <template_docx> <output_docx> [--semantic-styles|--legacy-styles]"
         )
 
     payload_path = Path(parsed_args[0]).resolve()
@@ -537,6 +561,7 @@ def main(argv: list[str] | None = None) -> None:
     meta = payload_dict["document_meta"]
     exec_summary = payload_dict["executive_summary"]
     profile = payload_dict["pillar_score_profile"]
+    profile["radar_chart"] = _ensure_radar_chart_path(payload_path, profile)
     sections = payload_dict["sections"]
     variant = clean_text(meta.get("report_variant", "short")).lower()
     subtitle_suffix = " · Versión Extendida" if variant == "long" else ""
