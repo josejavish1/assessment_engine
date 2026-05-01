@@ -155,7 +155,7 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
           pip install pytest pytest-asyncio pytest-mock
-          npm install -g @github/copilot
+          npm install -g @google/gemini-cli
 
       - name: Resume orchestrator reconciliation
         env:
@@ -163,7 +163,12 @@ jobs:
           PR_NUMBER: ${{ needs.resolve-context.outputs.pr_number }}
           EXECUTOR_CMD_SECRET: ${{ secrets.ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD }}
           EXECUTOR_CMD_VAR: ${{ vars.ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD }}
-          COPILOT_REQUESTS_TOKEN: ${{ secrets.COPILOT_REQUESTS_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CLOUD_PROJECT: ${{ vars.GOOGLE_CLOUD_PROJECT }}
+          GOOGLE_CLOUD_LOCATION: ${{ vars.GOOGLE_CLOUD_LOCATION }}
+          GOOGLE_GENAI_USE_VERTEXAI: ${{ vars.GOOGLE_GENAI_USE_VERTEXAI }}
+          ASSESSMENT_ORCHESTRATOR_EXECUTOR_MODEL: ${{ vars.ASSESSMENT_ORCHESTRATOR_EXECUTOR_MODEL }}
           PYTHONDONTWRITEBYTECODE: "1"
           PYTHONPATH: src
         run: |
@@ -175,7 +180,7 @@ jobs:
           fi
 
           if [ -z "$executor_command" ]; then
-            executor_command="./.github/scripts/orchestrator-github-executor.sh {repo_root} {task_prompt_file} {attempt}"
+            executor_command="./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}"
           fi
 
           export ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD="$executor_command"

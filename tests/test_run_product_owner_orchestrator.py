@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import os
 from pathlib import Path
 
 import pytest
@@ -43,6 +45,15 @@ def test_build_executor_args_supports_placeholders() -> None:
     assert "--workspace" in args
     assert "/tmp/task.md" in args
     assert "2" in args
+
+
+def test_classify_command_failure_detects_executor_auth() -> None:
+    category = orchestrator.classify_command_failure(
+        ["gemini", "-p", "prompt"],
+        "Please set an Auth method in your settings or specify GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA.",
+    )
+
+    assert category == "executor_auth"
 
 
 def test_resolve_resume_selector_prefers_branch() -> None:
@@ -268,6 +279,12 @@ def test_reconcile_pull_request_repairs_then_merges(
     )
 
     assert call_order == ["repair", "merge:9:squash"]
+    summary = json.loads(
+        (request_dir / orchestrator.RECONCILIATION_SUMMARY_FILE).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert summary["status"] == "merged"
 
 
 def test_repair_pull_request_allows_noop_when_validations_pass(
@@ -333,6 +350,55 @@ def test_repair_pull_request_allows_noop_when_validations_pass(
     assert changed is False
     assert prompt_path.read_text(encoding="utf-8") == "prompt"
     assert "validated" in outputs
+
+
+def test_validate_executor_configuration_rejects_disabled_google_auth_without_keys(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_GENAI_USE_GCA", raising=False)
+    monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "0")
+
+    with pytest.raises(RuntimeError, match="El executor de Gemini requiere"):
+        orchestrator.preflight_executor(
+            request_dir,
+            "./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}",
+        )
+
+
+def test_preflight_executor_runs_wrapper_probe(monkeypatch, tmp_path: Path) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "1")
+    calls: list[tuple[list[str], Path, str | None]] = []
+
+    def fake_run_command(command: list[str], *, output_path: Path) -> None:
+        calls.append(
+            (
+                command,
+                output_path,
+                os.environ.get("ORCHESTRATOR_EXECUTOR_PREFLIGHT"),
+            )
+        )
+
+    monkeypatch.setattr(orchestrator, "run_command", fake_run_command)
+
+    orchestrator.preflight_executor(
+        request_dir,
+        "./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}",
+    )
+
+    assert calls
+    assert calls[0][2] == "1"
+    assert calls[0][1].name == "executor_preflight.log"
+    assert (
+        (request_dir / "executor_preflight_prompt.md")
+        .read_text(encoding="utf-8")
+        .startswith("Executor preflight.")
+    )
 
 
 def test_reconcile_pull_request_auto_resolves_bot_threads(
