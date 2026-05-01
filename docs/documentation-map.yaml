@@ -240,6 +240,22 @@ entries:
     last_verified_against: 2026-05-01
     notes: Wrapper del repo que autentica Copilot CLI en GitHub Actions y ejecuta el prompt de reconciliación contra la rama activa.
 
+  - path: bin/po-run
+    kind: document
+    title: Friendly product owner orchestrator wrapper
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/product-owner-orchestrator.md
+      - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+      - .github/scripts/orchestrator-gemini-executor.sh
+    last_verified_against: 2026-05-01
+    notes: Wrapper corto e interactivo para lanzar plan/run del orquestador local con defaults razonables de Python y executor.
+
   - path: docs/SYSTEM_ARCHITECTURE.md
     kind: document
     title: System architecture
@@ -636,6 +652,7 @@ entries:
       - humans
       - ai-agents
     source_of_truth:
+      - bin/po-run
       - engine_config/policies/orchestrator_policy.json
       - engine_config/runtime_manifest.json
       - src/assessment_engine/scripts/lib/product_owner_models.py
@@ -645,6 +662,7 @@ entries:
       - .github/workflows/quality.yml
       - .github/workflows/typing.yml
     review_when_source_changes:
+      - bin/po-run
       - engine_config/policies/orchestrator_policy.json
       - engine_config/runtime_manifest.json
       - src/assessment_engine/scripts/lib/product_owner_models.py

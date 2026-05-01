@@ -2,6 +2,7 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
+  - ../../bin/po-run
   - ../../engine_config/policies/orchestrator_policy.json
   - ../../engine_config/runtime_manifest.json
   - ../../src/assessment_engine/scripts/lib/product_owner_models.py
@@ -55,6 +56,20 @@ python src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py run
   --request-file ./request.txt \
   --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
 ```
+
+Para uso diario local existe además un wrapper más friendly:
+
+```bash
+./bin/po-run "Quiero que el informe global priorice los riesgos criticos de continuidad"
+./bin/po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
+```
+
+Ese wrapper:
+
+- usa `./.venv/bin/python` cuando existe y, si no, cae a `python`/`python3`;
+- permite pasar la petición inline o con `--request-file`;
+- pide confirmación interactiva antes de un `run` cuando se ejecuta en TTY;
+- y, si no se le pasa `--executor-command`, intenta reutilizar `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` o el wrapper local `./.github/scripts/orchestrator-gemini-executor.sh`.
 
 También puede **reanudar una PR existente** para seguir la reconciliación:
 

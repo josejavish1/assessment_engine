@@ -56,6 +56,7 @@ Esta carpeta reúne la documentación operativa mínima de `assessment-engine`: 
 - la suite incluye ahora tests de coherencia transversal para score, banda, color y target del payload global;
 - el flujo de trabajo con agentes ya tiene una guía canónica de spec mínima, alcance e invariantes antes de programar;
 - ya existe un MVP de orquestador local PO-to-PR con planning, ejecución iterativa y PR automática sobre backend de agente configurable;
+- existe `./bin/po-run` como entrypoint friendly para lanzar ese orquestador desde terminal sin recordar el path largo del runner;
 - la suite actual incluye tests de entorno, contratos, schemas, render y utilidades.
 
 ## Flujo de validación actual
