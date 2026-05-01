@@ -15,6 +15,8 @@ from docx.shared import Inches, Pt, RGBColor
 from assessment_engine.schemas.blueprint import BlueprintPayload, PillarBlueprintDraft
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph as _orig_add_body_paragraph,
+)
+from assessment_engine.scripts.lib.docx_render_utils import (
     add_heading_paragraph,
     autofit_table_to_contents,
     clear_paragraph,
@@ -23,8 +25,6 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     shade_cell,
 )
 from assessment_engine.scripts.lib.runtime_paths import (
-    resolve_annex_template_payload_path,
-    resolve_client_intelligence_path,
     resolve_tower_annex_template_path,
 )
 from assessment_engine.scripts.lib.text_utils import clean_text_for_word
@@ -158,14 +158,15 @@ def resolve_client_dir(payload_path: Path, payload_data: dict) -> Path:
 
 
 def load_client_intelligence(client_dir: Path) -> dict:
-    path = resolve_client_intelligence_path(client_dir.name)
+    path = client_dir / "client_intelligence.json"
     if path.exists():
         return load_json(path)
     return {}
 
 
 def load_annex_data(client_dir: Path, tower_code: str) -> dict:
-    path = resolve_annex_template_payload_path(client_dir.name, tower_code.upper())
+    tower_dir = client_dir / tower_code.upper()
+    path = tower_dir / f"approved_annex_{tower_code.lower()}.template_payload.json"
     if path.exists():
         return load_json(path)
     return {}
