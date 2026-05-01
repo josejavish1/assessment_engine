@@ -56,7 +56,7 @@ El workflow `.github/workflows/quality.yml` ejecuta `src/assessment_engine/scrip
 Ese runner:
 
 1. calcula los ficheros Python cambiados entre `base_sha` y `head_sha`;
-2. filtra solo la superficie viva del proyecto (`src/assessment_engine/**` y `tests/**`);
+2. filtra solo la superficie viva del proyecto (`src/assessment_engine/**` y `tests/**`) y descarta rutas ya borradas en el árbol de trabajo;
 3. ejecuta `ruff check` sobre esos ficheros;
 4. ejecuta `ruff format --check` sobre esos mismos ficheros.
 
@@ -66,7 +66,7 @@ La adopción es **incremental**: el gate bloquea deuda nueva o modificada sin ex
 
 El workflow `.github/workflows/typing.yml` ejecuta `src/assessment_engine/scripts/tools/run_incremental_typecheck.py`.
 
-Ese runner reutiliza la misma selección incremental de ficheros vivos y ejecuta `mypy` solo sobre los `.py` cambiados en `src/assessment_engine/**` y `tests/**`.
+Ese runner reutiliza la misma selección incremental de ficheros vivos existentes y ejecuta `mypy` solo sobre los `.py` cambiados en `src/assessment_engine/**` y `tests/**`.
 
 El objetivo de esta capa no es exigir ahora un repo 100% tipado, sino impedir que la superficie viva siga creciendo sin verificación estática básica.
 

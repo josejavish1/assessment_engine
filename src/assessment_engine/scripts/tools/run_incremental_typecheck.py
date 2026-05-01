@@ -49,7 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     changed_files = args.path or git_changed_files(
         repo_root, args.base_sha, args.head_sha
     )
-    target_files = normalize_live_python_paths(changed_files)
+    target_files = normalize_live_python_paths(repo_root, changed_files)
 
     if not target_files:
         print("Incremental type check skipped: no live Python files changed.")

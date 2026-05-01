@@ -5,7 +5,14 @@ from pathlib import Path
 from assessment_engine.scripts.tools import run_incremental_quality_gate as gate
 
 
+def _write_repo_file(repo_root: Path, relative_path: str) -> None:
+    file_path = repo_root / relative_path
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    file_path.write_text("def test_example() -> None:\n    pass\n", encoding="utf-8")
+
+
 def test_normalize_live_python_paths_filters_to_live_surface() -> None:
+    repo_root = Path.cwd()
     paths = [
         "README.md",
         "_PROJECT_ARCHIVE_/tool.py",
@@ -15,10 +22,22 @@ def test_normalize_live_python_paths_filters_to_live_surface() -> None:
         "docs/example.py",
     ]
 
-    assert gate.normalize_live_python_paths(paths) == [
+    assert gate.normalize_live_python_paths(repo_root, paths) == [
         "src/assessment_engine/scripts/run_global_pipeline.py",
         "tests/test_pipeline_runtime.py",
     ]
+
+
+def test_normalize_live_python_paths_ignores_deleted_files(tmp_path: Path) -> None:
+    _write_repo_file(tmp_path, "tests/test_pipeline_runtime.py")
+
+    assert gate.normalize_live_python_paths(
+        tmp_path,
+        [
+            "src/assessment_engine/scripts/deleted.py",
+            "tests/test_pipeline_runtime.py",
+        ],
+    ) == ["tests/test_pipeline_runtime.py"]
 
 
 def test_main_skips_when_no_live_python_files_changed(
@@ -40,6 +59,7 @@ def test_main_skips_when_no_live_python_files_changed(
 def test_main_runs_quality_commands_for_changed_live_files(
     tmp_path: Path, monkeypatch
 ) -> None:
+    _write_repo_file(tmp_path, "tests/test_pipeline_runtime.py")
     monkeypatch.setattr(
         gate,
         "git_changed_files",
@@ -69,6 +89,7 @@ def test_main_runs_quality_commands_for_changed_live_files(
 def test_main_returns_failure_from_quality_commands(
     tmp_path: Path, monkeypatch
 ) -> None:
+    _write_repo_file(tmp_path, "src/assessment_engine/scripts/run_global_pipeline.py")
     monkeypatch.setattr(
         gate,
         "git_changed_files",
