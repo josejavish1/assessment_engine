@@ -109,6 +109,7 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - la plantilla de PR ya obliga también a explicitar checks de coherencia cuando un cambio toca semántica de assessment o salidas cliente-facing;
 - ya existe un MVP de orquestador local PO-to-PR apoyado en backend de agente configurable;
 - ya existe `./bin/po-run` como entrada corta e interactiva para lanzar ese flujo desde terminal;
+- el orquestador local ya acota los `run` del executor con timeout explícito y evita que la propia ejecución ensucie el worktree con `__pycache__/`;
 - ya existe un watcher de GitHub que puede reanudar PRs gestionadas del orquestador cuando fallan checks o aparece feedback nuevo;
 - ya existe un executor del repo compatible con GitHub Actions para que el watcher no dependa de rutas locales;
 - el baseline smoke de `smoke_ivirma` ya está cerrado para T5, global, comercial y web;

@@ -5,6 +5,7 @@ import asyncio
 import json
 import os
 import shlex
+import signal
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -135,18 +136,7 @@ def create_request_dir(policy: dict[str, Any], request_text: str) -> Path:
 def ensure_clean_worktree(*, allow_dirty: bool) -> None:
     if allow_dirty:
         return
-    result = subprocess.run(
-        ["git", "status", "--short"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(
-            result.stderr.strip() or "No se pudo inspeccionar git status."
-        )
-    if result.stdout.strip():
+    if git_status_has_relevant_changes():
         raise RuntimeError(
             "El worktree no está limpio. Usa --allow-dirty solo si entiendes el riesgo."
         )
@@ -256,6 +246,10 @@ def collect_changed_python_files() -> list[str]:
 
 
 def has_worktree_changes() -> bool:
+    return git_status_has_relevant_changes()
+
+
+def read_git_status_lines() -> list[str]:
     result = subprocess.run(
         ["git", "status", "--short"],
         cwd=ROOT,
@@ -267,7 +261,23 @@ def has_worktree_changes() -> bool:
         raise RuntimeError(
             result.stderr.strip() or "No se pudo inspeccionar el estado del worktree."
         )
-    return bool(result.stdout.strip())
+    return [line for line in result.stdout.splitlines() if line.strip()]
+
+
+def is_ignorable_git_status_path(path: str) -> bool:
+    normalized = path.strip()
+    return "__pycache__/" in normalized or normalized.endswith((".pyc", ".pyo", ".pyd"))
+
+
+def git_status_has_relevant_changes() -> bool:
+    for line in read_git_status_lines():
+        path = line[3:]
+        if "->" in path:
+            path = path.split("->", maxsplit=1)[1].strip()
+        if is_ignorable_git_status_path(path):
+            continue
+        return True
+    return False
 
 
 def load_json_file(path: Path) -> dict[str, Any]:
@@ -319,36 +329,82 @@ def classify_command_failure(command: list[str], output: str) -> str:
 
 
 def build_command_failure_message(
-    category: str, command: list[str], output_path: Path
+    category: str,
+    command: list[str],
+    output_path: Path,
+    *,
+    timeout_seconds: int | None = None,
 ) -> str:
     prefix = {
         "executor_auth": "Fallo de autenticación del executor.",
         "executor_config": "Configuración inválida del executor.",
         "executor_missing": "El comando del executor no está disponible en este entorno.",
+        "timeout": "El comando del orquestador superó el tiempo máximo permitido.",
         "validation": "Falló una validación estándar del repo.",
         "command_failure": "Falló un comando del orquestador.",
     }.get(category, "Falló un comando del orquestador.")
+    timeout_suffix = (
+        f" Timeout: {timeout_seconds}s."
+        if category == "timeout" and timeout_seconds
+        else ""
+    )
     return (
         f"{prefix} Categoría: {category}. "
         f"Comando: {' '.join(command)}. "
-        f"Log: {output_path}"
+        f"Log: {output_path}."
+        f"{timeout_suffix}"
     )
 
 
-def run_command(command: list[str], *, output_path: Path) -> None:
+def run_command(
+    command: list[str],
+    *,
+    output_path: Path,
+    timeout_seconds: int | None = None,
+) -> None:
     env = build_runtime_env()
     env["PYTHONPATH"] = str(ROOT / "src")
-    result = subprocess.run(
+    env.setdefault("PYTHONDONTWRITEBYTECODE", "1")
+    process = subprocess.Popen(
         command,
         cwd=ROOT,
         env=env,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
-        check=False,
+        start_new_session=True,
     )
-    output = (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            process.kill()
+        stdout, stderr = process.communicate()
+        timeout_note = (
+            f"Command timed out after {timeout_seconds} seconds."
+            if timeout_seconds
+            else "Command timed out."
+        )
+        output = (stdout or "") + ("\n" + stderr if stderr else "")
+        output = f"{output}\n{timeout_note}".strip() + "\n"
+        output_path.write_text(output, encoding="utf-8")
+        raise OrchestratorCommandError(
+            build_command_failure_message(
+                "timeout",
+                command,
+                output_path,
+                timeout_seconds=timeout_seconds,
+            ),
+            category="timeout",
+            command=command,
+            output_path=output_path,
+            raw_output=output.strip(),
+        )
+    output = (stdout or "") + ("\n" + stderr if stderr else "")
     output_path.write_text(output, encoding="utf-8")
-    if result.returncode != 0:
+    if process.returncode != 0:
         category = classify_command_failure(command, output)
         raise OrchestratorCommandError(
             build_command_failure_message(category, command, output_path),
@@ -400,6 +456,8 @@ def validate_executor_configuration(command_template: str) -> None:
 
 
 def preflight_executor(request_dir: Path, command_template: str) -> None:
+    policy = load_orchestrator_policy()
+    timeouts = resolve_execution_timeouts(policy)
     validate_executor_configuration(command_template)
     if not executor_uses_github_wrapper(command_template):
         return
@@ -420,6 +478,7 @@ def preflight_executor(request_dir: Path, command_template: str) -> None:
                 attempt=0,
             ),
             output_path=output_path,
+            timeout_seconds=timeouts["executor_preflight_timeout_seconds"],
         )
     finally:
         if env_var:
@@ -430,6 +489,7 @@ def preflight_executor(request_dir: Path, command_template: str) -> None:
 
 def run_standard_validations(request_dir: Path) -> None:
     policy = load_orchestrator_policy()
+    timeouts = resolve_execution_timeouts(policy)
     python_bin = resolve_python_bin()
     validation_commands = [
         [python_bin if token == "python" else token for token in entry["command"]]
@@ -456,7 +516,24 @@ def run_standard_validations(request_dir: Path) -> None:
     validation_commands.extend([quality_command, typing_command])
 
     for index, command in enumerate(validation_commands, start=1):
-        run_command(command, output_path=request_dir / f"validation_{index}.log")
+        run_command(
+            command,
+            output_path=request_dir / f"validation_{index}.log",
+            timeout_seconds=timeouts["validation_timeout_seconds"],
+        )
+
+
+def resolve_execution_timeouts(policy: dict[str, Any]) -> dict[str, int]:
+    execution = policy.get("execution", {}) or {}
+    return {
+        "executor_timeout_seconds": int(execution.get("executor_timeout_seconds", 900)),
+        "executor_preflight_timeout_seconds": int(
+            execution.get("executor_preflight_timeout_seconds", 60)
+        ),
+        "validation_timeout_seconds": int(
+            execution.get("validation_timeout_seconds", 1800)
+        ),
+    }
 
 
 def create_commit(commit_title: str) -> None:
@@ -834,6 +911,7 @@ def repair_pull_request(
     round_number: int,
     additional_feedback: str | None = None,
 ) -> bool:
+    timeouts = resolve_execution_timeouts(load_orchestrator_policy())
     append_reconciliation_event(
         request_dir,
         {
@@ -864,6 +942,7 @@ def repair_pull_request(
         run_command(
             executor_args,
             output_path=request_dir / f"pr_reconciliation_{round_number}.log",
+            timeout_seconds=timeouts["executor_timeout_seconds"],
         )
     except OrchestratorCommandError as exc:
         append_reconciliation_event(
@@ -1181,6 +1260,7 @@ def execute_plan(
     skip_auto_merge: bool,
 ) -> None:
     policy = load_orchestrator_policy()
+    timeouts = resolve_execution_timeouts(policy)
     max_attempts = int(policy.get("execution", {}).get("max_attempts_per_task", 3))
     preflight_executor(request_dir, executor_command)
 
@@ -1204,6 +1284,7 @@ def execute_plan(
                 run_command(
                     executor_args,
                     output_path=request_dir / f"{task['id']}_executor_{attempt}.log",
+                    timeout_seconds=timeouts["executor_timeout_seconds"],
                 )
                 run_standard_validations(request_dir)
                 break
