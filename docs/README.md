@@ -41,7 +41,7 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `operations/engineering-quality-gates.md` | Política canónica de calidad de implementación |
 | `operations/product-owner-orchestrator.md` | Orquestador local desde petición de negocio hasta PR |
 | `../.github/workflows/orchestrator-pr-reconcile.yml` | Watcher automático que reanuda PRs gestionadas del orquestador |
-| `../.github/scripts/orchestrator-github-executor.sh` | Wrapper de executor para usar Copilot CLI dentro de GitHub Actions |
+| `../.github/scripts/orchestrator-gemini-executor.sh` | Wrapper de executor para usar Gemini CLI dentro de GitHub Actions |
 | `contracts/` | Contratos, matrices y plantillas de diseño |
 | `reference/generated/` | Referencia derivada o heredada no canónica |
 | `../GEMINI.md` | Adaptador para Gemini y memoria operativa en transición |

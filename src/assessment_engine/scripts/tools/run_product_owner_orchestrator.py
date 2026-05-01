@@ -32,6 +32,8 @@ from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
 
 ORCHESTRATOR_MANAGED_MARKER = "<!-- orchestrator-managed -->"
+RECONCILIATION_SUMMARY_FILE = "reconciliation_summary.json"
+RECONCILIATION_TIMELINE_FILE = "reconciliation_events.jsonl"
 
 REVIEW_THREADS_QUERY = """
 query($owner:String!, $repo:String!, $number:Int!) {
@@ -272,6 +274,67 @@ def load_json_file(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+class OrchestratorCommandError(RuntimeError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str,
+        command: list[str],
+        output_path: Path,
+        raw_output: str,
+    ) -> None:
+        super().__init__(message)
+        self.category = category
+        self.command = command
+        self.output_path = output_path
+        self.raw_output = raw_output
+
+
+def classify_command_failure(command: list[str], output: str) -> str:
+    lowered = output.lower()
+    command_text = " ".join(command).lower()
+    if (
+        "authentication failed" in lowered
+        or "please set an auth method" in lowered
+        or "gemini_api_key" in lowered
+        or "google_api_key" in lowered
+        or "google_genai_use_vertexai" in lowered
+        or "google_genai_use_gca" in lowered
+        or "vertex ai" in lowered
+        and "must specify either" in lowered
+    ):
+        return "executor_auth"
+    if "required for the github actions executor" in lowered:
+        return "executor_config"
+    if "no such file or directory" in lowered or "command not found" in lowered:
+        return "executor_missing"
+    if (
+        "pytest" in command_text
+        or "quality_gate" in command_text
+        or "typecheck" in command_text
+    ):
+        return "validation"
+    return "command_failure"
+
+
+def build_command_failure_message(
+    category: str, command: list[str], output_path: Path
+) -> str:
+    prefix = {
+        "executor_auth": "Fallo de autenticación del executor.",
+        "executor_config": "Configuración inválida del executor.",
+        "executor_missing": "El comando del executor no está disponible en este entorno.",
+        "validation": "Falló una validación estándar del repo.",
+        "command_failure": "Falló un comando del orquestador.",
+    }.get(category, "Falló un comando del orquestador.")
+    return (
+        f"{prefix} Categoría: {category}. "
+        f"Comando: {' '.join(command)}. "
+        f"Log: {output_path}"
+    )
+
+
 def run_command(command: list[str], *, output_path: Path) -> None:
     env = build_runtime_env()
     env["PYTHONPATH"] = str(ROOT / "src")
@@ -286,7 +349,83 @@ def run_command(command: list[str], *, output_path: Path) -> None:
     output = (result.stdout or "") + ("\n" + result.stderr if result.stderr else "")
     output_path.write_text(output, encoding="utf-8")
     if result.returncode != 0:
-        raise RuntimeError(output.strip() or f"Fallo ejecutando {' '.join(command)}")
+        category = classify_command_failure(command, output)
+        raise OrchestratorCommandError(
+            build_command_failure_message(category, command, output_path),
+            category=category,
+            command=command,
+            output_path=output_path,
+            raw_output=output.strip() or f"Fallo ejecutando {' '.join(command)}",
+        )
+
+
+def write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def append_reconciliation_event(request_dir: Path, payload: dict[str, Any]) -> None:
+    event = {"timestamp_utc": datetime.now(timezone.utc).isoformat(), **payload}
+    timeline_path = request_dir / RECONCILIATION_TIMELINE_FILE
+    with timeline_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event, ensure_ascii=False) + "\n")
+
+
+def write_reconciliation_summary(request_dir: Path, payload: dict[str, Any]) -> None:
+    summary = {"updated_at_utc": datetime.now(timezone.utc).isoformat(), **payload}
+    write_json(request_dir / RECONCILIATION_SUMMARY_FILE, summary)
+
+
+def executor_uses_github_wrapper(command_template: str) -> bool:
+    return (
+        "orchestrator-gemini-executor.sh" in command_template
+        or "orchestrator-github-executor.sh" in command_template
+    )
+
+
+def validate_executor_configuration(command_template: str) -> None:
+    if not executor_uses_github_wrapper(command_template):
+        return
+
+    vertex_selector = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower()
+    gca_selector = os.environ.get("GOOGLE_GENAI_USE_GCA", "").strip().lower()
+    has_api_key = bool(
+        os.environ.get("GEMINI_API_KEY", "").strip()
+        or os.environ.get("GOOGLE_API_KEY", "").strip()
+    )
+
+    if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
+        raise RuntimeError(
+            "El executor de Gemini requiere GEMINI_API_KEY, GOOGLE_API_KEY o habilitar autenticación Google."
+        )
+
+
+def preflight_executor(request_dir: Path, command_template: str) -> None:
+    validate_executor_configuration(command_template)
+    if not executor_uses_github_wrapper(command_template):
+        return
+
+    preflight_prompt_path = request_dir / "executor_preflight_prompt.md"
+    preflight_prompt_path.write_text(
+        "Executor preflight. Return exactly OK and do not modify the repository.\n",
+        encoding="utf-8",
+    )
+    output_path = request_dir / "executor_preflight.log"
+    env_var = os.environ.get("ORCHESTRATOR_EXECUTOR_PREFLIGHT", "")
+    try:
+        os.environ["ORCHESTRATOR_EXECUTOR_PREFLIGHT"] = "1"
+        run_command(
+            build_executor_args(
+                command_template,
+                task_prompt_file=preflight_prompt_path,
+                attempt=0,
+            ),
+            output_path=output_path,
+        )
+    finally:
+        if env_var:
+            os.environ["ORCHESTRATOR_EXECUTOR_PREFLIGHT"] = env_var
+        else:
+            os.environ.pop("ORCHESTRATOR_EXECUTOR_PREFLIGHT", None)
 
 
 def run_standard_validations(request_dir: Path) -> None:
@@ -695,6 +834,17 @@ def repair_pull_request(
     round_number: int,
     additional_feedback: str | None = None,
 ) -> bool:
+    append_reconciliation_event(
+        request_dir,
+        {
+            "event": "repair_started",
+            "round_number": round_number,
+            "pr_number": pr_state["number"],
+            "failed_checks": len(pr_state["failed_checks"]),
+            "pending_checks": len(pr_state["pending_checks"]),
+            "unresolved_threads": len(pr_state["unresolved_threads"]),
+        },
+    )
     feedback_payload = build_pr_feedback(pr_state)
     if additional_feedback:
         feedback_payload["additional_feedback"] = additional_feedback
@@ -710,16 +860,43 @@ def repair_pull_request(
         task_prompt_file=prompt_path,
         attempt=round_number,
     )
-    run_command(
-        executor_args,
-        output_path=request_dir / f"pr_reconciliation_{round_number}.log",
-    )
+    try:
+        run_command(
+            executor_args,
+            output_path=request_dir / f"pr_reconciliation_{round_number}.log",
+        )
+    except OrchestratorCommandError as exc:
+        append_reconciliation_event(
+            request_dir,
+            {
+                "event": "repair_failed",
+                "round_number": round_number,
+                "failure_category": exc.category,
+                "log_path": str(exc.output_path),
+            },
+        )
+        raise
     if not has_worktree_changes():
         run_standard_validations(request_dir)
+        append_reconciliation_event(
+            request_dir,
+            {
+                "event": "repair_noop",
+                "round_number": round_number,
+            },
+        )
         return False
     run_standard_validations(request_dir)
     create_commit(create_followup_commit_title(plan, round_number))
     push_branch(plan["branch_name"])
+    append_reconciliation_event(
+        request_dir,
+        {
+            "event": "repair_committed",
+            "round_number": round_number,
+            "branch_name": plan["branch_name"],
+        },
+    )
     return True
 
 
@@ -776,6 +953,17 @@ def reconcile_pull_request(
     auto_resolve_bot = bool(reconciliation.get("auto_resolve_bot_threads", True))
     sync_with_base_branch = bool(reconciliation.get("sync_with_base_branch", True))
     repair_rounds = 0
+    write_reconciliation_summary(
+        request_dir,
+        {
+            "status": "running",
+            "branch_name": plan["branch_name"],
+            "merge_mode": merge_mode,
+            "allow_merge": allow_merge,
+            "max_rounds": max_rounds,
+            "max_polls": max_polls,
+        },
+    )
 
     for poll_index in range(1, max_polls + 1):
         pr_state = ignore_current_reconciliation_check(
@@ -785,8 +973,29 @@ def reconcile_pull_request(
             json.dumps(pr_state, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        append_reconciliation_event(
+            request_dir,
+            {
+                "event": "poll",
+                "poll_index": poll_index,
+                "pr_number": pr_state["number"],
+                "mergeable": pr_state["mergeable"],
+                "merge_state_status": pr_state["merge_state_status"],
+                "failed_checks": len(pr_state["failed_checks"]),
+                "pending_checks": len(pr_state["pending_checks"]),
+                "unresolved_threads": len(pr_state["unresolved_threads"]),
+            },
+        )
 
         if sync_with_base_branch and pr_state["merge_state_status"] == "BEHIND":
+            append_reconciliation_event(
+                request_dir,
+                {
+                    "event": "sync_started",
+                    "poll_index": poll_index,
+                    "base_branch": pr_state["base_ref"],
+                },
+            )
             sync_feedback = sync_branch_with_base(
                 request_dir,
                 plan,
@@ -809,11 +1018,33 @@ def reconcile_pull_request(
                         f"locales fallando: {sync_feedback}"
                     ),
                 )
+            else:
+                append_reconciliation_event(
+                    request_dir,
+                    {
+                        "event": "sync_completed",
+                        "poll_index": poll_index,
+                        "base_branch": pr_state["base_ref"],
+                    },
+                )
             continue
 
         if is_pull_request_ready_for_merge(pr_state):
             if allow_merge:
                 merge_pull_request(pr_state["number"], merge_mode)
+            write_reconciliation_summary(
+                request_dir,
+                {
+                    "status": "merged" if allow_merge else "ready_without_merge",
+                    "branch_name": plan["branch_name"],
+                    "pr_number": pr_state["number"],
+                    "repair_rounds": repair_rounds,
+                    "final_state": {
+                        "mergeable": pr_state["mergeable"],
+                        "merge_state_status": pr_state["merge_state_status"],
+                    },
+                },
+            )
             return
 
         if pr_state["pending_checks"]:
@@ -830,6 +1061,14 @@ def reconcile_pull_request(
             ]
             if bot_only:
                 auto_resolve_bot_threads(pr_state)
+                append_reconciliation_event(
+                    request_dir,
+                    {
+                        "event": "bot_threads_resolved",
+                        "poll_index": poll_index,
+                        "count": len(bot_only),
+                    },
+                )
                 continue
 
         if pr_state["failed_checks"] or pr_state["unresolved_threads"]:
@@ -851,6 +1090,15 @@ def reconcile_pull_request(
             break
         time.sleep(poll_interval_seconds)
 
+    write_reconciliation_summary(
+        request_dir,
+        {
+            "status": "timed_out",
+            "branch_name": plan["branch_name"],
+            "repair_rounds": repair_rounds,
+            "last_poll_index": max_polls,
+        },
+    )
     raise RuntimeError(
         "La PR no llegó a un estado mergeable dentro del tiempo de reconciliación."
     )
@@ -934,6 +1182,7 @@ def execute_plan(
 ) -> None:
     policy = load_orchestrator_policy()
     max_attempts = int(policy.get("execution", {}).get("max_attempts_per_task", 3))
+    preflight_executor(request_dir, executor_command)
 
     ensure_branch(plan["branch_name"])
 
@@ -1005,6 +1254,7 @@ def resume_pull_request(
     plan = prepare_resume_plan(policy, pr_state)
     save_plan_bundle(request_dir, request_text, plan)
     executor_command = resolve_executor_command(args.executor_command)
+    preflight_executor(request_dir, executor_command)
     reconcile_pull_request(
         request_dir,
         plan,

@@ -84,9 +84,10 @@ El bundle se guarda en `working/product_owner_requests/<timestamp>_<slug>/`.
 Para cada tarea:
 
 1. genera un prompt estructurado con el plan global y el task actual;
-2. invoca un ejecutor externo configurable;
-3. ejecuta validaciones estándar del repo;
-4. si falla, reintenta pasando feedback de validación a la siguiente iteración.
+2. valida la configuración mínima del executor y hace un preflight cuando el backend lo soporta;
+3. invoca un ejecutor externo configurable;
+4. ejecuta validaciones estándar del repo;
+5. si falla, reintenta pasando feedback de validación a la siguiente iteración.
 
 ### 3. Validación estándar
 
@@ -124,6 +125,12 @@ La fase post-PR **no sustituye** los controles del repo ni los rebaja. Su papel 
 7. reconsultar la PR;
 8. mergear solo cuando GitHub deja de reportar checks pendientes/fallidos y no quedan conversaciones abiertas.
 
+La sesión de reconciliación deja además artefactos de trazabilidad en `working/product_owner_requests/...`:
+
+- `reconciliation_events.jsonl` con la secuencia de polls, syncs, reparaciones y cierres automáticos;
+- `reconciliation_summary.json` con el estado final de la sesión;
+- logs separados para preflight del executor, validaciones y rondas de reparación.
+
 Por defecto puede resolver automáticamente **threads abiertos creados por bots** una vez que la rama ya no tiene checks rojos ni pendientes. Antes de cerrarlos deja una nota visible en el propio hilo explicando que el estado actual de la PR ya fue revalidado y por qué ese thread se considera cerrable. No auto-resuelve feedback humano implícitamente fuera de las reglas normales de GitHub: si la PR sigue bloqueada por requisitos externos de review o protección de rama, el merge no se fuerza.
 
 La sincronización con la base ocurre dentro del mismo circuito controlado: el orquestador trae `origin/<base_branch>` a la rama activa, vuelve a ejecutar las validaciones locales y solo hace push si la rama sigue pasando los gates. Si esa sincronización introduce un fallo, ese fallo entra como feedback de la siguiente ronda de reparación; no se salta.
@@ -142,9 +149,11 @@ Reglas de seguridad del watcher:
 - exige que la PR tenga el marcador oculto del orquestador o la label `orchestrator-managed`;
 - serializa la ejecución por número de PR para no correr dos reconciliaciones en paralelo;
 - reutiliza `resume-pr`, así que sigue pasando por tests, quality, typing, docs-governance, sync con `main` y reglas de review;
-- usa por defecto `./.github/scripts/orchestrator-github-executor.sh {repo_root} {task_prompt_file} {attempt}` como executor compatible con GitHub Actions;
+- usa por defecto `./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}` como executor compatible con GitHub Actions;
 - la regla operativa recomendada es mantener `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` configurado en GitHub Actions apuntando a ese wrapper del repo, para no depender de rutas locales o wrappers efímeros;
-- para que el executor pueda autenticarse de forma estable en GitHub Actions, el repo debe tener `COPILOT_REQUESTS_TOKEN` como secret con permiso `Copilot Requests`; si no existe, el wrapper intentará usar `GITHUB_TOKEN`, pero la configuración soportada para operación estable es el secret dedicado.
+- el wrapper del repo ejecuta `gemini-2.5-pro` por defecto y fuerza la ruta Gemini de forma coherente con el resto de scripts;
+- para que el executor pueda autenticarse de forma estable en GitHub Actions, el repo debe exponer una credencial Gemini o Google válida: `GEMINI_API_KEY`, `GOOGLE_API_KEY` o autenticación Google/Vertex habilitada con `GOOGLE_GENAI_USE_VERTEXAI=1` y credenciales de aplicación disponibles en el runner;
+- si el preflight del executor falla por credenciales o configuración, la reconciliación aborta antes de entrar en rondas largas de reparación y deja el motivo clasificado en los artefactos de sesión.
 
 ## Política configurable
 
@@ -158,6 +167,26 @@ Reglas de seguridad del watcher:
 - reconciliación post-PR (polling, rondas máximas, sync con base y resolución automática de threads de bot);
 - watcher automático de reanudación para PRs gestionadas;
 - validaciones estándar.
+
+## Clasificación de fallos operativos
+
+El orquestador separa explícitamente varias familias de fallo para evitar diagnósticos ambiguos:
+
+- `executor_auth`: credenciales inválidas o sin permiso para que el backend de agente procese requests;
+- `executor_config`: executor declarado pero mal configurado para el entorno actual;
+- `executor_missing`: binario o wrapper ausente;
+- `validation`: tests, quality, typing o docs-governance rojos;
+- `command_failure`: otros errores no clasificados todavía.
+
+La intención no es maquillar el error sino **fallar antes y con una causa accionable**.
+
+## Pendiente para cierre end-to-end
+
+El flujo ya puede operar de forma homogénea sobre Gemini también en la reconciliación automática de PRs, pero para considerar el circuito **realmente cerrado de punta a punta en GitHub Actions** sigue pendiente habilitar la credencial del executor en el repo:
+
+1. configurar en GitHub Actions una credencial válida para Gemini o Google;
+2. decidir si el watcher usará `GEMINI_API_KEY`, `GOOGLE_API_KEY` o autenticación Google/Vertex del runner;
+3. verificar con una PR gestionada real que `resume-pr` completa preflight, reparación, validación y merge sin intervención manual.
 
 ## Limitaciones deliberadas del MVP
 
