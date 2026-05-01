@@ -121,6 +121,7 @@ def test_inspect_pull_request_combines_checks_and_threads(monkeypatch) -> None:
                 "comments": {
                     "nodes": [
                         {
+                            "databaseId": 321,
                             "author": {
                                 "__typename": "Bot",
                                 "login": "chatgpt-codex-connector",
@@ -139,6 +140,7 @@ def test_inspect_pull_request_combines_checks_and_threads(monkeypatch) -> None:
     assert pr_state["number"] == 7
     assert pr_state["failed_checks"][0]["name"] == "quality"
     assert pr_state["unresolved_threads"][0]["all_comments_bot"] is True
+    assert pr_state["unresolved_threads"][0]["comments"][0]["database_id"] == 321
 
 
 def test_reconcile_pull_request_repairs_then_merges(
@@ -367,6 +369,53 @@ def test_reconcile_pull_request_auto_resolves_bot_threads(
     )
 
     assert call_order == ["resolve", "merge:11:squash"]
+
+
+def test_auto_resolve_bot_threads_replies_before_resolving(monkeypatch) -> None:
+    calls: list[list[str]] = []
+    monkeypatch.setattr(
+        orchestrator,
+        "repository_coordinates",
+        lambda: ("josejavish1", "assessment_engine"),
+    )
+
+    def fake_run_git_command(args: list[str]):
+        calls.append(args)
+        return None
+
+    monkeypatch.setattr(orchestrator, "run_git_command", fake_run_git_command)
+
+    resolved = orchestrator.auto_resolve_bot_threads(
+        {
+            "number": 6,
+            "unresolved_threads": [
+                {
+                    "id": "thread-1",
+                    "is_outdated": True,
+                    "all_comments_bot": True,
+                    "comments": [
+                        {
+                            "database_id": 987,
+                            "author": "chatgpt-codex-connector",
+                            "author_type": "Bot",
+                            "body": "old comment",
+                            "state": "SUBMITTED",
+                        }
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert resolved == 1
+    assert calls[0][:4] == [
+        "gh",
+        "api",
+        "repos/josejavish1/assessment_engine/pulls/6/comments/987/replies",
+        "-f",
+    ]
+    assert "Automated reconciliation note:" in calls[0][4]
+    assert calls[1][:4] == ["gh", "api", "graphql", "-f"]
 
 
 def test_reconcile_pull_request_waits_for_pending_checks_before_repair(

@@ -44,6 +44,7 @@ query($owner:String!, $repo:String!, $number:Int!) {
           line
           comments(first:20) {
             nodes {
+              databaseId
               author {
                 __typename
                 login
@@ -399,6 +400,7 @@ def normalize_review_threads(threads: list[dict[str, Any]]) -> list[dict[str, An
                 "is_outdated": bool(thread.get("isOutdated")),
                 "comments": [
                     {
+                        "database_id": comment.get("databaseId"),
                         "author": author["login"],
                         "author_type": author["type"],
                         "body": comment.get("body", ""),
@@ -484,9 +486,23 @@ def is_pull_request_ready_for_merge(pr_state: dict[str, Any]) -> bool:
 
 def auto_resolve_bot_threads(pr_state: dict[str, Any]) -> int:
     resolved = 0
+    owner, repo = repository_coordinates()
     for thread in pr_state["unresolved_threads"]:
         if not thread["all_comments_bot"]:
             continue
+        last_comment = thread["comments"][-1] if thread["comments"] else None
+        comment_id = last_comment.get("database_id") if last_comment else None
+        if comment_id is not None:
+            resolution_note = build_bot_thread_resolution_note(thread)
+            run_git_command(
+                [
+                    "gh",
+                    "api",
+                    f"repos/{owner}/{repo}/pulls/{pr_state['number']}/comments/{comment_id}/replies",
+                    "-f",
+                    f"body={resolution_note}",
+                ]
+            )
         run_git_command(
             [
                 "gh",
@@ -500,6 +516,16 @@ def auto_resolve_bot_threads(pr_state: dict[str, Any]) -> int:
         )
         resolved += 1
     return resolved
+
+
+def build_bot_thread_resolution_note(thread: dict[str, Any]) -> str:
+    reason = "the repository checks are green"
+    if thread.get("is_outdated"):
+        reason += " and the commented lines are now outdated"
+    return (
+        "Automated reconciliation note: this bot-only thread is being resolved because "
+        f"{reason}. The current PR state has been revalidated before closure."
+    )
 
 
 def build_pr_feedback(pr_state: dict[str, Any]) -> dict[str, Any]:
