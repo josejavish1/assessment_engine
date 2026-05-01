@@ -126,7 +126,7 @@ jobs:
     timeout-minutes: 50
     concurrency:
       group: orchestrator-pr-reconcile-${{ needs.resolve-context.outputs.pr_number }}
-      cancel-in-progress: false
+      cancel-in-progress: true
     permissions:
       contents: write
       pull-requests: write
