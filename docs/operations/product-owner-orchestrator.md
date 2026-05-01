@@ -109,6 +109,8 @@ Si todas las tareas pasan:
 4. si detecta fallos o feedback abierto, entra en un ciclo de reconciliación;
 5. solo mergea cuando la PR queda verde y sin conversaciones bloqueantes.
 
+Las PR creadas por este flujo incluyen un marcador oculto `<!-- orchestrator-managed -->`. Ese marcador permite que la automatización de GitHub identifique qué PRs puede reanudar sin ambigüedad.
+
 ### 5. Reconciliación post-PR
 
 La fase post-PR **no sustituye** los controles del repo ni los rebaja. Su papel es:
@@ -122,9 +124,27 @@ La fase post-PR **no sustituye** los controles del repo ni los rebaja. Su papel 
 7. reconsultar la PR;
 8. mergear solo cuando GitHub deja de reportar checks pendientes/fallidos y no quedan conversaciones abiertas.
 
-Por defecto puede resolver automáticamente **threads abiertos creados por bots** una vez que la rama ya no tiene checks rojos ni pendientes. No auto-resuelve feedback humano implícitamente fuera de las reglas normales de GitHub: si la PR sigue bloqueada por requisitos externos de review o protección de rama, el merge no se fuerza.
+Por defecto puede resolver automáticamente **threads abiertos creados por bots** una vez que la rama ya no tiene checks rojos ni pendientes. Antes de cerrarlos deja una nota visible en el propio hilo explicando que el estado actual de la PR ya fue revalidado y por qué ese thread se considera cerrable. No auto-resuelve feedback humano implícitamente fuera de las reglas normales de GitHub: si la PR sigue bloqueada por requisitos externos de review o protección de rama, el merge no se fuerza.
 
 La sincronización con la base ocurre dentro del mismo circuito controlado: el orquestador trae `origin/<base_branch>` a la rama activa, vuelve a ejecutar las validaciones locales y solo hace push si la rama sigue pasando los gates. Si esa sincronización introduce un fallo, ese fallo entra como feedback de la siguiente ronda de reparación; no se salta.
+
+### 6. Watcher automático en GitHub
+
+El repo puede ejecutar `.github/workflows/orchestrator-pr-reconcile.yml` para relanzar `resume-pr` cuando una PR gestionada:
+
+1. recibe feedback de review o comentarios;
+2. termina un workflow relevante de CI;
+3. o se relanza manualmente con `workflow_dispatch`.
+
+Reglas de seguridad del watcher:
+
+- solo actúa sobre PRs **abiertas**, **no draft**, del **mismo repositorio**;
+- exige que la PR tenga el marcador oculto del orquestador o la label `orchestrator-managed`;
+- serializa la ejecución por número de PR para no correr dos reconciliaciones en paralelo;
+- reutiliza `resume-pr`, así que sigue pasando por tests, quality, typing, docs-governance, sync con `main` y reglas de review;
+- usa por defecto `./.github/scripts/orchestrator-github-executor.sh {repo_root} {task_prompt_file} {attempt}` como executor compatible con GitHub Actions;
+- la regla operativa recomendada es mantener `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` configurado en GitHub Actions apuntando a ese wrapper del repo, para no depender de rutas locales o wrappers efímeros;
+- para que el executor pueda autenticarse de forma estable en GitHub Actions, el repo debe tener `COPILOT_REQUESTS_TOKEN` como secret con permiso `Copilot Requests`; si no existe, el wrapper intentará usar `GITHUB_TOKEN`, pero la configuración soportada para operación estable es el secret dedicado.
 
 ## Política configurable
 
@@ -136,6 +156,7 @@ La sincronización con la base ocurre dentro del mismo circuito controlado: el o
 - rama base;
 - modo de auto-merge;
 - reconciliación post-PR (polling, rondas máximas, sync con base y resolución automática de threads de bot);
+- watcher automático de reanudación para PRs gestionadas;
 - validaciones estándar.
 
 ## Limitaciones deliberadas del MVP

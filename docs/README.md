@@ -40,6 +40,8 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `operations/agentic-development-workflow.md` | Flujo canónico para programar con agentes |
 | `operations/engineering-quality-gates.md` | Política canónica de calidad de implementación |
 | `operations/product-owner-orchestrator.md` | Orquestador local desde petición de negocio hasta PR |
+| `../.github/workflows/orchestrator-pr-reconcile.yml` | Watcher automático que reanuda PRs gestionadas del orquestador |
+| `../.github/scripts/orchestrator-github-executor.sh` | Wrapper de executor para usar Copilot CLI dentro de GitHub Actions |
 | `contracts/` | Contratos, matrices y plantillas de diseño |
 | `reference/generated/` | Referencia derivada o heredada no canónica |
 | `../GEMINI.md` | Adaptador para Gemini y memoria operativa en transición |
@@ -103,6 +105,8 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - la puerta incremental de tipado ya puede bloquear deuda nueva en la superficie viva;
 - ya existe una guía canónica para exigir spec mínima y alcance explícito en cambios asistidos por agentes;
 - ya existe un MVP de orquestador local PO-to-PR apoyado en backend de agente configurable;
+- ya existe un watcher de GitHub que puede reanudar PRs gestionadas del orquestador cuando fallan checks o aparece feedback nuevo;
+- ya existe un executor del repo compatible con GitHub Actions para que el watcher no dependa de rutas locales;
 - el baseline smoke de `smoke_ivirma` ya está cerrado para T5, global, comercial y web;
 - la suite completa de `pytest` pasa.
 

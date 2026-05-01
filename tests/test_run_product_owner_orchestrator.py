@@ -65,6 +65,7 @@ def test_create_pr_body_includes_spec_and_tasks() -> None:
 
     body = orchestrator.create_pr_body(plan)
 
+    assert orchestrator.ORCHESTRATOR_MANAGED_MARKER in body
     assert "## Change spec" in body
     assert "Update PR template" in body
     assert "keep main protected" in body
@@ -121,6 +122,7 @@ def test_inspect_pull_request_combines_checks_and_threads(monkeypatch) -> None:
                 "comments": {
                     "nodes": [
                         {
+                            "databaseId": 321,
                             "author": {
                                 "__typename": "Bot",
                                 "login": "chatgpt-codex-connector",
@@ -139,6 +141,57 @@ def test_inspect_pull_request_combines_checks_and_threads(monkeypatch) -> None:
     assert pr_state["number"] == 7
     assert pr_state["failed_checks"][0]["name"] == "quality"
     assert pr_state["unresolved_threads"][0]["all_comments_bot"] is True
+    assert pr_state["unresolved_threads"][0]["comments"][0]["database_id"] == 321
+
+
+def test_ignore_current_reconciliation_check_filters_active_workflow(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("GITHUB_RUN_ID", "12345")
+    monkeypatch.setenv("GITHUB_WORKFLOW", "Orchestrator PR Reconciliation")
+    monkeypatch.setenv("GITHUB_JOB", "reconcile")
+
+    checks = [
+        {
+            "name": "reconcile",
+            "workflow_name": "Orchestrator PR Reconciliation",
+            "status": "IN_PROGRESS",
+            "conclusion": "",
+            "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
+        },
+        {
+            "name": "typing",
+            "workflow_name": "Incremental Type Check",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "details_url": "https://example.test/check",
+        },
+    ]
+    pr_state = {
+        "number": 7,
+        "url": "https://example.test/pr/7",
+        "is_draft": False,
+        "mergeable": "MERGEABLE",
+        "merge_state_status": "BLOCKED",
+        "review_decision": "",
+        "checks": checks,
+        "failed_checks": [],
+        "pending_checks": [
+            {
+                "name": "reconcile",
+                "workflow_name": "Orchestrator PR Reconciliation",
+                "status": "IN_PROGRESS",
+                "conclusion": "",
+                "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
+            },
+        ],
+        "unresolved_threads": [],
+    }
+
+    filtered = orchestrator.ignore_current_reconciliation_check(pr_state)
+
+    assert filtered["checks"] == [checks[1]]
+    assert filtered["pending_checks"] == []
 
 
 def test_reconcile_pull_request_repairs_then_merges(
@@ -369,6 +422,60 @@ def test_reconcile_pull_request_auto_resolves_bot_threads(
     assert call_order == ["resolve", "merge:11:squash"]
 
 
+def test_auto_resolve_bot_threads_replies_before_resolving(monkeypatch) -> None:
+    calls: list[list[str]] = []
+    monkeypatch.setattr(
+        orchestrator,
+        "repository_coordinates",
+        lambda: ("josejavish1", "assessment_engine"),
+    )
+
+    def fake_run_git_command(args: list[str]):
+        calls.append(args)
+        return None
+
+    monkeypatch.setattr(orchestrator, "run_git_command", fake_run_git_command)
+
+    resolved = orchestrator.auto_resolve_bot_threads(
+        {
+            "number": 6,
+            "unresolved_threads": [
+                {
+                    "id": "thread-1",
+                    "is_outdated": True,
+                    "all_comments_bot": True,
+                    "comments": [
+                        {
+                            "database_id": 987,
+                            "author": "chatgpt-codex-connector",
+                            "author_type": "Bot",
+                            "body": "top-level comment",
+                            "state": "SUBMITTED",
+                        },
+                        {
+                            "database_id": 654,
+                            "author": "chatgpt-codex-connector",
+                            "author_type": "Bot",
+                            "body": "reply comment",
+                            "state": "SUBMITTED",
+                        },
+                    ],
+                }
+            ],
+        }
+    )
+
+    assert resolved == 1
+    assert calls[0][:4] == [
+        "gh",
+        "api",
+        "repos/josejavish1/assessment_engine/pulls/6/comments/987/replies",
+        "-f",
+    ]
+    assert "Automated reconciliation note:" in calls[0][4]
+    assert calls[1][:4] == ["gh", "api", "graphql", "-f"]
+
+
 def test_reconcile_pull_request_waits_for_pending_checks_before_repair(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -468,6 +575,87 @@ def test_reconcile_pull_request_waits_for_pending_checks_before_repair(
     )
 
     assert call_order == ["wait", "resolve", "merge:13:squash"]
+
+
+def test_reconcile_pull_request_ignores_its_own_pending_check(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    plan = {"branch_name": "feat/test-branch", "commit_title": "feat: improve flow"}
+    calls: list[str] = []
+
+    monkeypatch.setenv("GITHUB_RUN_ID", "12345")
+    monkeypatch.setenv("GITHUB_WORKFLOW", "Orchestrator PR Reconciliation")
+    monkeypatch.setenv("GITHUB_JOB", "reconcile")
+    monkeypatch.setattr(
+        orchestrator,
+        "load_orchestrator_policy",
+        lambda: {
+            "pull_request": {
+                "post_pr_reconciliation": {
+                    "enabled": True,
+                    "max_rounds": 1,
+                    "poll_interval_seconds": 0,
+                    "max_polls": 2,
+                    "auto_resolve_bot_threads": True,
+                }
+            }
+        },
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "inspect_pull_request",
+        lambda branch_name: {
+            "number": 14,
+            "url": "https://example.test/pr/14",
+            "is_draft": False,
+            "mergeable": "MERGEABLE",
+            "merge_state_status": "CLEAN",
+            "review_decision": "",
+            "checks": [
+                {
+                    "name": "reconcile",
+                    "workflow_name": "Orchestrator PR Reconciliation",
+                    "status": "IN_PROGRESS",
+                    "conclusion": "",
+                    "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
+                },
+            ],
+            "failed_checks": [],
+            "pending_checks": [
+                {
+                    "name": "reconcile",
+                    "workflow_name": "Orchestrator PR Reconciliation",
+                    "status": "IN_PROGRESS",
+                    "conclusion": "",
+                    "details_url": "https://github.com/org/repo/actions/runs/12345/job/1",
+                },
+            ],
+            "unresolved_threads": [],
+        },
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "merge_pull_request",
+        lambda pr_number, merge_mode: calls.append(f"merge:{pr_number}:{merge_mode}"),
+    )
+    monkeypatch.setattr(
+        orchestrator.time,
+        "sleep",
+        lambda seconds: pytest.fail(
+            "should not wait on the current reconciliation check"
+        ),
+    )
+
+    orchestrator.reconcile_pull_request(
+        request_dir,
+        plan,
+        executor_command="executor",
+        merge_mode="squash",
+    )
+
+    assert calls == ["merge:14:squash"]
 
 
 def test_reconcile_pull_request_syncs_when_branch_is_behind(
