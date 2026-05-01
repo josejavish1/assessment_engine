@@ -742,11 +742,13 @@ def reconcile_pull_request(
                 merge_pull_request(pr_state["number"], merge_mode)
             return
 
-        if (
-            auto_resolve_bot
-            and not pr_state["failed_checks"]
-            and not pr_state["pending_checks"]
-        ):
+        if pr_state["pending_checks"]:
+            if poll_index == max_polls:
+                break
+            time.sleep(poll_interval_seconds)
+            continue
+
+        if auto_resolve_bot and not pr_state["failed_checks"]:
             bot_only = [
                 thread
                 for thread in pr_state["unresolved_threads"]

@@ -369,6 +369,107 @@ def test_reconcile_pull_request_auto_resolves_bot_threads(
     assert call_order == ["resolve", "merge:11:squash"]
 
 
+def test_reconcile_pull_request_waits_for_pending_checks_before_repair(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    plan = {"branch_name": "feat/test-branch", "commit_title": "feat: improve flow"}
+    call_order: list[str] = []
+    pr_states = iter(
+        [
+            {
+                "number": 13,
+                "url": "https://example.test/pr/13",
+                "is_draft": False,
+                "mergeable": "MERGEABLE",
+                "merge_state_status": "BLOCKED",
+                "review_decision": "",
+                "failed_checks": [],
+                "pending_checks": [{"name": "typing"}],
+                "unresolved_threads": [{"id": "thread-1", "all_comments_bot": True}],
+            },
+            {
+                "number": 13,
+                "url": "https://example.test/pr/13",
+                "is_draft": False,
+                "mergeable": "MERGEABLE",
+                "merge_state_status": "BLOCKED",
+                "review_decision": "",
+                "failed_checks": [],
+                "pending_checks": [],
+                "unresolved_threads": [{"id": "thread-1", "all_comments_bot": True}],
+            },
+            {
+                "number": 13,
+                "url": "https://example.test/pr/13",
+                "is_draft": False,
+                "mergeable": "MERGEABLE",
+                "merge_state_status": "CLEAN",
+                "review_decision": "",
+                "failed_checks": [],
+                "pending_checks": [],
+                "unresolved_threads": [],
+            },
+        ]
+    )
+
+    monkeypatch.setattr(
+        orchestrator,
+        "load_orchestrator_policy",
+        lambda: {
+            "pull_request": {
+                "post_pr_reconciliation": {
+                    "enabled": True,
+                    "max_rounds": 1,
+                    "poll_interval_seconds": 0,
+                    "max_polls": 4,
+                    "auto_resolve_bot_threads": True,
+                }
+            }
+        },
+    )
+    monkeypatch.setattr(
+        orchestrator, "inspect_pull_request", lambda branch_name: next(pr_states)
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "repair_pull_request",
+        lambda *args, **kwargs: pytest.fail(
+            "should not repair while checks are pending"
+        ),
+    )
+
+    def fake_auto_resolve_bot_threads(pr_state: dict[str, object]) -> int:
+        call_order.append("resolve")
+        return 1
+
+    monkeypatch.setattr(
+        orchestrator,
+        "auto_resolve_bot_threads",
+        fake_auto_resolve_bot_threads,
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "merge_pull_request",
+        lambda pr_number, merge_mode: call_order.append(
+            f"merge:{pr_number}:{merge_mode}"
+        ),
+    )
+    monkeypatch.setattr(
+        orchestrator.time, "sleep", lambda seconds: call_order.append("wait")
+    )
+
+    orchestrator.reconcile_pull_request(
+        request_dir,
+        plan,
+        executor_command="executor",
+        merge_mode="squash",
+    )
+
+    assert call_order == ["wait", "resolve", "merge:13:squash"]
+
+
 def test_reconcile_pull_request_syncs_when_branch_is_behind(
     monkeypatch, tmp_path: Path
 ) -> None:
