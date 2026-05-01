@@ -353,6 +353,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     policy = load_orchestrator_policy()
     request_text = load_request_text(args)
+
+    if args.command == "run":
+        ensure_clean_worktree(allow_dirty=args.allow_dirty)
+
     request_dir = create_request_dir(policy, request_text)
 
     plan = asyncio.run(generate_plan(request_text, policy))
@@ -362,7 +366,6 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Plan generado en {request_dir}")
         return 0
 
-    ensure_clean_worktree(allow_dirty=args.allow_dirty)
     executor_command = resolve_executor_command(args.executor_command)
     execute_plan(
         request_dir,

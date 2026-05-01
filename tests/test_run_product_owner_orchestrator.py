@@ -76,3 +76,41 @@ def test_push_branch_uses_origin_and_sets_upstream(monkeypatch) -> None:
     orchestrator.push_branch("feat/test-branch")
 
     assert calls == [["git", "push", "-u", "origin", "feat/test-branch"]]
+
+
+def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> None:
+    call_order: list[str] = []
+
+    monkeypatch.setattr(
+        orchestrator,
+        "load_orchestrator_policy",
+        lambda: {"paths": {"requests_root": "working/product_owner_requests"}},
+    )
+    monkeypatch.setattr(
+        orchestrator,
+        "load_request_text",
+        lambda args: "Need stronger governance",
+    )
+
+    def fake_ensure_clean_worktree(*, allow_dirty: bool) -> None:
+        call_order.append("ensure_clean_worktree")
+
+    def fake_create_request_dir(policy, request_text):
+        call_order.append("create_request_dir")
+        return Path("/tmp/request-dir")
+
+    monkeypatch.setattr(
+        orchestrator, "ensure_clean_worktree", fake_ensure_clean_worktree
+    )
+    monkeypatch.setattr(orchestrator, "create_request_dir", fake_create_request_dir)
+    def fake_asyncio_run(coro):
+        coro.close()
+        return {"tasks": []}
+
+    monkeypatch.setattr(orchestrator.asyncio, "run", fake_asyncio_run)
+    monkeypatch.setattr(orchestrator, "save_plan_bundle", lambda *args, **kwargs: None)
+    monkeypatch.setattr(orchestrator, "resolve_executor_command", lambda raw: "executor")
+    monkeypatch.setattr(orchestrator, "execute_plan", lambda *args, **kwargs: None)
+
+    assert orchestrator.main(["run", "--request", "Need stronger governance"]) == 0
+    assert call_order[:2] == ["ensure_clean_worktree", "create_request_dir"]
