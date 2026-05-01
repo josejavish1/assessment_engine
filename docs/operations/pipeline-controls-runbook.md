@@ -74,6 +74,8 @@ En el estado actual, cuando el smoke extiende a global debe ejercitar la consoli
 | existe payload pero el DOCX sale mal | problema de render o plantilla | revisar renderer y plantilla, no la verdad base |
 | fallan tests ligados a `working/` | puede faltar baseline, no necesariamente hay bug nuevo | verificar artefactos antes de depurar código |
 
+Si la incoherencia observada es de **score vs banda cualitativa** entre torre, annex, global o web, la primera comprobación ya no debería ir a prompts ni plantillas: debe ir a la policy/helper compartida que traduce la banda y a los consumidores que la reutilizan.
+
 ## Árbol corto de respuesta
 
 ### 1. Falla antes de producir artefactos IA

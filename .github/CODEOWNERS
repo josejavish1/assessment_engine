@@ -11,3 +11,5 @@
 /.github/pull_request_template.md @josejavish1
 /.github/CODEOWNERS @josejavish1
 /.github/workflows/docs-governance.yml @josejavish1
+/.github/workflows/quality.yml @josejavish1
+/.github/workflows/typing.yml @josejavish1

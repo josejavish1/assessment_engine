@@ -40,7 +40,9 @@ entries:
       - src/assessment_engine/
       - pyproject.toml
       - .github/workflows/ci.yml
-    last_verified_against: 2026-04-30
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    last_verified_against: 2026-05-01
     notes: Punto de entrada para localizar la verdad documental.
 
   - path: docs/ai/documentation-governance.md
@@ -83,7 +85,9 @@ entries:
       - docs/ai/documentation-governance.md
       - docs/README.md
       - docs/documentation-map.yaml
-    last_verified_against: 2026-04-30
+      - docs/operations/agentic-development-workflow.md
+      - docs/operations/engineering-quality-gates.md
+    last_verified_against: 2026-05-01
     notes: Puerta de entrada breve para agentes; no contiene verdad canónica nueva.
 
   - path: CHATGPT.md
@@ -113,7 +117,9 @@ entries:
       - AGENTS.md
       - docs/ai/documentation-governance.md
       - docs/README.md
-    last_verified_against: 2026-04-30
+      - docs/operations/agentic-development-workflow.md
+      - docs/operations/engineering-quality-gates.md
+    last_verified_against: 2026-05-01
     notes: Adaptador específico para Copilot; no sustituye la documentación canónica.
 
   - path: .github/pull_request_template.md
@@ -129,7 +135,9 @@ entries:
       - docs/ai/documentation-governance.md
       - docs/README.md
       - docs/documentation-map.yaml
-    last_verified_against: 2026-04-30
+      - docs/operations/agentic-development-workflow.md
+      - docs/operations/engineering-quality-gates.md
+    last_verified_against: 2026-05-01
     notes: Checklist para forzar revisión del impacto documental en cada PR.
 
   - path: .github/CODEOWNERS
@@ -145,7 +153,9 @@ entries:
       - docs/ai/documentation-governance.md
       - docs/README.md
       - docs/documentation-map.yaml
-    last_verified_against: 2026-04-30
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    last_verified_against: 2026-05-01
     notes: Ownership mínimo de la documentación canónica y la gobernanza.
 
   - path: .github/workflows/docs-governance.yml
@@ -163,6 +173,40 @@ entries:
       - src/assessment_engine/scripts/tools/validate_documentation_governance.py
     last_verified_against: 2026-04-30
     notes: Workflow que valida metadata documental y reglas de trazabilidad.
+
+  - path: .github/workflows/quality.yml
+    kind: document
+    title: Incremental engineering quality workflow
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - pyproject.toml
+      - requirements.txt
+      - docs/operations/engineering-quality-gates.md
+      - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+    last_verified_against: 2026-05-01
+    notes: Workflow que ejecuta la puerta incremental de calidad sobre la superficie viva del proyecto.
+
+  - path: .github/workflows/typing.yml
+    kind: document
+    title: Incremental type checking workflow
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - pyproject.toml
+      - requirements.txt
+      - docs/operations/engineering-quality-gates.md
+      - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+    last_verified_against: 2026-05-01
+    notes: Workflow que ejecuta el gate incremental de tipado sobre la superficie viva del proyecto.
 
   - path: docs/SYSTEM_ARCHITECTURE.md
     kind: document
@@ -444,8 +488,13 @@ entries:
       - requirements.txt
       - pytest.ini
       - .github/workflows/ci.yml
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+      - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+      - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+      - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
       - tests/
-    last_verified_against: 2026-04-30
+    last_verified_against: 2026-05-01
     notes: Base operativa ya consolidada para ejecución, smoke y troubleshooting; la instalación y la operación principal están contrastadas contra CI y validación local.
 
   - path: docs/operations/installation.md
@@ -465,6 +514,120 @@ entries:
       - src/assessment_engine/scripts/lib/runtime_env.py
     last_verified_against: 2026-05-01
     notes: Onboarding técnico del entorno local y sus dependencias, incluyendo la validación mínima del smoke canónico en seco.
+
+  - path: docs/operations/engineering-quality-gates.md
+    kind: document
+    title: Engineering quality gates
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/agentic-development-workflow.md
+      - pyproject.toml
+      - requirements.txt
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+      - .github/pull_request_template.md
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - src/assessment_engine/scripts/lib/global_maturity_policy.py
+      - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+      - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+      - tests/test_global_coherence.py
+    review_when_source_changes:
+      - docs/operations/agentic-development-workflow.md
+      - pyproject.toml
+      - requirements.txt
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+      - .github/pull_request_template.md
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - src/assessment_engine/scripts/lib/global_maturity_policy.py
+      - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+      - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+      - tests/test_global_coherence.py
+    review_paths_on_source_change:
+      - docs/operations/engineering-quality-gates.md
+      - docs/operations/README.md
+      - docs/README.md
+    last_verified_against: 2026-05-01
+    notes: Define la puerta incremental de calidad y tipado, además de las reglas para bajar disciplina de implementación y coherencia de dominio a código, tests y workflows.
+
+  - path: docs/operations/agentic-development-workflow.md
+    kind: document
+    title: Agentic development workflow
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - .github/pull_request_template.md
+      - docs/operations/engineering-quality-gates.md
+      - docs/operations/product-owner-orchestrator.md
+      - src/assessment_engine/
+      - tests/
+      - .github/workflows/ci.yml
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    review_when_source_changes:
+      - AGENTS.md
+      - .github/copilot-instructions.md
+      - .github/pull_request_template.md
+      - docs/operations/engineering-quality-gates.md
+      - docs/operations/product-owner-orchestrator.md
+      - .github/workflows/ci.yml
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    review_paths_on_source_change:
+      - docs/operations/agentic-development-workflow.md
+      - docs/operations/engineering-quality-gates.md
+      - docs/operations/README.md
+      - docs/README.md
+    last_verified_against: 2026-05-01
+    notes: Define el flujo spec-first, el alcance mínimo y el tipo de review esperado cuando se programa con agentes de IA.
+
+  - path: docs/operations/product-owner-orchestrator.md
+    kind: document
+    title: Product owner orchestrator
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - engine_config/policies/orchestrator_policy.json
+      - engine_config/runtime_manifest.json
+      - src/assessment_engine/scripts/lib/product_owner_models.py
+      - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+      - src/assessment_engine/prompts/product_owner_prompts.py
+      - .github/workflows/ci.yml
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    review_when_source_changes:
+      - engine_config/policies/orchestrator_policy.json
+      - engine_config/runtime_manifest.json
+      - src/assessment_engine/scripts/lib/product_owner_models.py
+      - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+      - src/assessment_engine/prompts/product_owner_prompts.py
+      - .github/workflows/ci.yml
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    review_paths_on_source_change:
+      - docs/operations/product-owner-orchestrator.md
+      - docs/operations/agentic-development-workflow.md
+      - docs/operations/README.md
+      - docs/README.md
+    last_verified_against: 2026-05-01
+    notes: Documenta el MVP local que traduce una petición de negocio a spec, tareas, validación, PR y auto-merge sobre un backend de agente configurable.
 
   - path: docs/operations/pipeline-execution.md
     kind: document
@@ -685,6 +848,112 @@ entries:
       - docs/ai/documentation-governance.md
     last_verified_against: 2026-04-30
     notes: Script de validación para metadata documental, rutas y reglas de automatización.
+
+  - path: src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+    kind: document
+    title: Incremental quality gate runner
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/engineering-quality-gates.md
+      - .github/workflows/quality.yml
+      - pyproject.toml
+    last_verified_against: 2026-05-01
+    notes: Runner que calcula los ficheros Python cambiados en la superficie viva y les aplica ruff check y format-check.
+
+  - path: src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+    kind: document
+    title: Incremental typecheck runner
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/engineering-quality-gates.md
+      - .github/workflows/typing.yml
+      - pyproject.toml
+      - requirements.txt
+    last_verified_against: 2026-05-01
+    notes: Runner que calcula los ficheros Python cambiados en la superficie viva y les aplica mypy de forma incremental.
+
+  - path: src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+    kind: document
+    title: Product owner orchestrator runner
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/product-owner-orchestrator.md
+      - engine_config/policies/orchestrator_policy.json
+      - engine_config/runtime_manifest.json
+      - src/assessment_engine/prompts/product_owner_prompts.py
+      - src/assessment_engine/scripts/lib/product_owner_models.py
+    last_verified_against: 2026-05-01
+    notes: CLI local que planifica una petición de negocio, la ejecuta por tareas sobre un executor configurable y gobierna validación, PR y auto-merge.
+
+  - path: src/assessment_engine/scripts/lib/product_owner_models.py
+    kind: document
+    title: Product owner orchestrator models
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/product-owner-orchestrator.md
+      - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+      - src/assessment_engine/prompts/product_owner_prompts.py
+    last_verified_against: 2026-05-01
+    notes: Schemas estructurados para spec, tasks y planificación del orquestador local.
+
+  - path: src/assessment_engine/scripts/lib/global_maturity_policy.py
+    kind: document
+    title: Global maturity policy helper
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/engineering-quality-gates.md
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/render_global_report_from_template.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - tests/test_global_coherence.py
+    last_verified_against: 2026-05-01
+    notes: Helper compartido para score, banda, color y target del dominio global, usado para evitar duplicaciones semánticas entre builder y renderizadores.
+
+  - path: src/assessment_engine/scripts/lib/maturity_band.py
+    kind: document
+    title: Shared maturity band policy helper
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/operations/engineering-quality-gates.md
+      - src/assessment_engine/scripts/run_scoring.py
+      - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
+      - src/assessment_engine/scripts/render_tower_blueprint.py
+      - src/assessment_engine/scripts/build_global_report_payload.py
+      - src/assessment_engine/scripts/render_web_presentation.py
+      - tests/test_maturity_band.py
+      - tests/test_maturity_band_characterization.py
+    last_verified_against: 2026-05-01
+    notes: Fuente única de verdad para traducir score numérico a banda cualitativa en scoring, annex, blueprint, global y web.
 
   - path: GEMINI.md
     kind: document

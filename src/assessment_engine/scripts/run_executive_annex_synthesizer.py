@@ -2,15 +2,16 @@
 Módulo run_executive_annex_synthesizer.py.
 Implementa el flujo Top-Down: Toma el Blueprint y genera el resumen para el Anexo del CTO.
 """
+
 import asyncio
 import json
 import re
 import sys
 import uuid
+from importlib import import_module
 from pathlib import Path
-from typing import Any, Optional
+from typing import IO, Any, Optional, Protocol, cast
 
-import yaml
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
@@ -24,10 +25,17 @@ from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.common import VersionMetadata
 from assessment_engine.scripts.build_case_input import read_text
 from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.client_intelligence import (
+    load_client_intelligence_legacy_view,
+)
 from assessment_engine.scripts.lib.config_loader import (
     resolve_model_profile_for_role,
 )
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
+from assessment_engine.scripts.lib.maturity_band import (
+    ANNEX_MATURITY_BANDS,
+    resolve_maturity_band,
+)
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_annex_template_payload_path,
     resolve_blueprint_payload_path,
@@ -35,24 +43,22 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_client_dir,
     resolve_client_intelligence_path,
 )
-from assessment_engine.scripts.lib.client_intelligence import (
-    load_client_intelligence_legacy_view,
-)
 
 ROOT = Path(__file__).resolve().parents[3]
 PRIORITY_RANK = {"Alta": 0, "Media": 1, "Baja": 2}
 
+
+class _YamlModule(Protocol):
+    def safe_load(self, stream: IO[str]) -> Any: ...
+
+
+yaml = cast(_YamlModule, import_module("yaml"))
+
+
 # Helper functions (side-effect free)
 def derive_maturity_band(score: float) -> str:
-    if score >= 4.5:
-        return "Optimizado"
-    if score >= 3.5:
-        return "Gestionado"
-    if score >= 2.5:
-        return "Definido"
-    if score >= 1.5:
-        return "Repetible"
-    return "Inicial"
+    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+
 
 def infer_priority_from_size(sizing: str) -> str:
     text = str(sizing or "").strip().lower()
@@ -63,6 +69,7 @@ def infer_priority_from_size(sizing: str) -> str:
     if text in {"l", "xl", "large"}:
         return "Baja"
     return "Media"
+
 
 def truncate_list(items, limit):
     return items[:limit] if isinstance(items, list) else items
@@ -197,7 +204,9 @@ def derive_gap_rows(blueprint: BlueprintPayload) -> tuple[list[str], list[GapRow
     target_capabilities: list[str] = []
     gap_rows: list[GapRowAnnex] = []
     for pillar in sorted(blueprint.pillars_analysis, key=lambda item: item.score):
-        primary_finding = pillar.health_check_asis[0] if pillar.health_check_asis else None
+        primary_finding = (
+            pillar.health_check_asis[0] if pillar.health_check_asis else None
+        )
         if pillar.target_architecture_tobe.vision:
             target_capabilities.append(
                 f"{pillar.pilar_name}: {take_complete_sentences(pillar.target_architecture_tobe.vision, max_sentences=2, max_chars=420)}"
@@ -385,11 +394,15 @@ def enrich_annex_payload(
         for pillar in blueprint.pillars_analysis
     ]
     if radar_chart_path.exists():
-        result_payload.pillar_score_profile.radar_chart = str(radar_chart_path.resolve())
+        result_payload.pillar_score_profile.radar_chart = str(
+            radar_chart_path.resolve()
+        )
 
     result_payload.executive_summary.global_score = f"{avg_score} / 5.0"
     result_payload.executive_summary.global_band = derive_maturity_band(avg_score)
-    if str(avg_target_score) not in str(result_payload.executive_summary.target_maturity):
+    if str(avg_target_score) not in str(
+        result_payload.executive_summary.target_maturity
+    ):
         result_payload.executive_summary.target_maturity = f"{avg_target_score:.1f}"
 
     result_payload.domain_introduction.technological_domain = (
@@ -418,8 +431,11 @@ def enrich_annex_payload(
     )
     return result_payload
 
+
 def load_yaml_config(filename: str) -> dict:
-    filepath = Path(__file__).resolve().parent.parent / "prompts" / "registry" / filename
+    filepath = (
+        Path(__file__).resolve().parent.parent / "prompts" / "registry" / filename
+    )
     with filepath.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
@@ -431,8 +447,8 @@ def build_synthesis_prompt(
     context_summary: str,
     config: dict,
 ) -> str:
-    tower_name = (
-        blueprint_data.get("document_meta", {}).get("tower_name", "la torre evaluada")
+    tower_name = blueprint_data.get("document_meta", {}).get(
+        "tower_name", "la torre evaluada"
     )
     prompt = (
         f"Eres un {config['role']} con expertise en {config['expertise']}.\n"
@@ -459,6 +475,7 @@ def build_synthesis_prompt(
     prompt += "Devuelve exclusivamente el JSON final del anexo.\n"
     return prompt
 
+
 # --- Pure Business Logic Function ---
 async def generate_synthesis(
     blueprint: BlueprintPayload,
@@ -466,7 +483,7 @@ async def generate_synthesis(
     context_summary: str,
     config: dict,
     radar_chart_path: Path,
-    run_id: str
+    run_id: str,
 ) -> Optional[AnnexPayload]:
     """
     Toma los datos de entrada, ejecuta el agente IA y devuelve el payload del anexo enriquecido.
@@ -480,7 +497,7 @@ async def generate_synthesis(
         context_summary=context_summary,
         config=config,
     )
-    
+
     try:
         model_name = resolve_model_profile_for_role("section_writer")["model"]
     except Exception:
@@ -490,22 +507,23 @@ async def generate_synthesis(
         name="executive_synthesizer",
         model=model_name,
         instruction=f"Eres un {config['role']}. Tu misión es: {config['mission']}",
-        output_schema=AnnexPayload
+        output_schema=AnnexPayload,
     )
     app = AdkApp(agent=agent)
-    
+
     result = await run_agent(
         app,
         user_id=f"synthesizer_{blueprint.document_meta.tower_code}",
-        message=prompt, # El prompt se construiría aquí como antes
-        schema=AnnexPayload
+        message=prompt,  # El prompt se construiría aquí como antes
+        schema=AnnexPayload,
     )
-    
+
     if not result:
         return None
 
     result_payload = AnnexPayload.model_validate(result)
     return enrich_annex_payload(result_payload, blueprint, radar_chart_path, run_id)
+
 
 # --- I/O Orchestrator Function ---
 async def synthesize_annex(client_name: str, tower_id: str):
@@ -513,8 +531,10 @@ async def synthesize_annex(client_name: str, tower_id: str):
     Orquesta el proceso de síntesis del anexo ejecutivo. Maneja I/O.
     """
     run_id = f"run_{uuid.uuid4()}"
-    print(f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})...")
-    
+    print(
+        f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})..."
+    )
+
     client_dir = resolve_client_dir(client_name)
     tower_dir = client_dir / tower_id
     blueprint_path = resolve_blueprint_payload_path(client_name, tower_id)
@@ -522,7 +542,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
     client_intelligence_path = resolve_client_intelligence_path(client_name)
     case_input_path = resolve_case_input_path(client_name, tower_id)
     radar_chart_path = tower_dir / "pillar_radar_chart.generated.png"
-    
+
     if not blueprint_path.exists():
         print(f"❌ Error: No se encontró el Blueprint en {blueprint_path}")
         return
@@ -538,13 +558,12 @@ async def synthesize_annex(client_name: str, tower_id: str):
     context_summary = ""
     if case_input_path.exists():
         case_input = json.loads(case_input_path.read_text(encoding="utf-8"))
-        context_file = (
-            case_input.get("_build_metadata", {}).get("context_file")
-            or case_input.get("context_file")
-        )
+        context_file = case_input.get("_build_metadata", {}).get(
+            "context_file"
+        ) or case_input.get("context_file")
         if context_file and Path(context_file).exists():
             context_summary = read_text(Path(context_file))
-    
+
     final_payload = await generate_synthesis(
         blueprint,
         client_intelligence,
@@ -553,15 +572,20 @@ async def synthesize_annex(client_name: str, tower_id: str):
         radar_chart_path,
         run_id,
     )
-    
+
     if final_payload:
-        output_path.write_text(final_payload.model_dump_json(indent=2, by_alias=True), encoding="utf-8")
+        output_path.write_text(
+            final_payload.model_dump_json(indent=2, by_alias=True), encoding="utf-8"
+        )
         print(f"✅ Anexo Ejecutivo sintetizado con éxito: {output_path}")
     else:
         print("❌ Error al generar el anexo.")
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Uso: python -m assessment_engine.scripts.run_executive_annex_synthesizer <client> <tower>")
+        print(
+            "Uso: python -m assessment_engine.scripts.run_executive_annex_synthesizer <client> <tower>"
+        )
         sys.exit(1)
     asyncio.run(synthesize_annex(sys.argv[1], sys.argv[2]))

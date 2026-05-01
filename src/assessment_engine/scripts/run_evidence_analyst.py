@@ -2,10 +2,12 @@
 Módulo run_evidence_analyst.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
 import json
 from pathlib import Path
 
+from assessment_engine.scripts.lib.maturity_band import resolve_maturity_band
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 
 
@@ -42,10 +44,9 @@ def first_kpi_evidence_refs(
 
 
 def band_for_score(score: float, tower_definition: dict) -> str:
-    for band in tower_definition.get("score_bands", []):
-        if band["min"] <= score <= band["max"]:
-            return band["label"]
-    return tower_definition["score_bands"][-1]["label"]
+    return resolve_maturity_band(score, tower_definition.get("score_bands", []))[
+        "label"
+    ]
 
 
 def capability_phrase(kpi_name: str) -> str:

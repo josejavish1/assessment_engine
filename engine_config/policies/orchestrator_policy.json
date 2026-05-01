@@ -1,0 +1,36 @@
+{
+    "policy_id": "local_product_owner_orchestrator",
+    "paths": {"requests_root": "working/product_owner_requests"},
+    "planning": {"max_tasks": 5},
+    "execution": {
+        "max_attempts_per_task": 3,
+        "commit_mode": "single_commit_after_success"
+    },
+    "pull_request": {
+        "base_branch": "main",
+        "auto_merge_mode": "squash",
+        "auto_merge_enabled": true,
+        "post_pr_reconciliation": {
+            "enabled": true,
+            "max_rounds": 3,
+            "poll_interval_seconds": 20,
+            "max_polls": 30,
+            "auto_resolve_bot_threads": true,
+            "sync_with_base_branch": true
+        }
+    },
+    "validation_commands": [
+        {"name": "pytest", "command": ["python", "-m", "pytest", "tests/", "-q"]},
+        {
+            "name": "docs-governance",
+            "command": [
+                "python",
+                "src/assessment_engine/scripts/tools/validate_documentation_governance.py",
+                "--repo-root",
+                ".",
+                "--documentation-map",
+                "docs/documentation-map.yaml"
+            ]
+        }
+    ]
+}

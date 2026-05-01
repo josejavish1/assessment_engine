@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from assessment_engine.schemas.intelligence import ConfidenceAssessment
 from assessment_engine.scripts.lib.client_intelligence import (
     build_client_context_packet,
     client_intelligence_to_legacy,
@@ -7,8 +8,8 @@ from assessment_engine.scripts.lib.client_intelligence import (
     coerce_client_dossier_v2,
     coerce_client_dossier_v3,
     get_target_maturity,
+    infer_related_towers,
 )
-from assessment_engine.schemas.intelligence import ConfidenceAssessment
 
 
 def test_client_intelligence_helpers_support_v2_shape() -> None:
@@ -95,7 +96,10 @@ def test_coerce_client_dossier_v2_converts_legacy_shape() -> None:
     assert dossier["version"] == "2.0"
     assert dossier["profile"]["industry"] == "Telecomunicaciones"
     assert dossier["tower_overrides"]["T2"]["target_maturity"] == 3.9
-    assert dossier["business_context"]["ceo_agenda"]["summary"] == "Simplificar operaciones."
+    assert (
+        dossier["business_context"]["ceo_agenda"]["summary"]
+        == "Simplificar operaciones."
+    )
 
 
 def test_coerce_client_dossier_v3_builds_richer_context_packet() -> None:
@@ -125,12 +129,24 @@ def test_coerce_client_dossier_v3_builds_richer_context_packet() -> None:
     assert dossier["tower_overrides"]["T5"]["target_maturity"] == 3.7
     assert dossier["tower_overrides"]["T5"]["related_claim_ids"]
     assert len(dossier["claims"]) >= 5
-    assert any(claim["claim_id"].startswith("vendor_dependency_") for claim in dossier["claims"])
-    assert any(source["source_type"] == "public" for claim in dossier["claims"] for source in claim["sources"])
+    assert any(
+        claim["claim_id"].startswith("vendor_dependency_")
+        for claim in dossier["claims"]
+    )
+    assert any(
+        source["source_type"] == "public"
+        for claim in dossier["claims"]
+        for source in claim["sources"]
+    )
     assert packet["profile"]["priority_markets"] == ["España", "Alemania"]
     assert packet["technology_context"]["recent_incident_signals"] == [
         "Interrupciones de servicio de alto impacto"
     ]
+
+
+def test_infer_related_towers_requires_word_boundaries_for_short_keywords() -> None:
+    assert infer_related_towers("Driver modernization for android endpoints") == []
+    assert infer_related_towers("Plan de continuidad con DR verificado") == ["T5"]
 
 
 def test_client_intelligence_to_v2_accepts_v3_confidence_blocks() -> None:

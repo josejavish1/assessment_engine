@@ -37,6 +37,9 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `SYSTEM_ARCHITECTURE.md` | Arquitectura vigente del sistema |
 | `architecture/` | Descomposición canónica progresiva de la arquitectura |
 | `operations/` | Operación, validación y CI |
+| `operations/agentic-development-workflow.md` | Flujo canónico para programar con agentes |
+| `operations/engineering-quality-gates.md` | Política canónica de calidad de implementación |
+| `operations/product-owner-orchestrator.md` | Orquestador local desde petición de negocio hasta PR |
 | `contracts/` | Contratos, matrices y plantillas de diseño |
 | `reference/generated/` | Referencia derivada o heredada no canónica |
 | `../GEMINI.md` | Adaptador para Gemini y memoria operativa en transición |
@@ -44,6 +47,8 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `../.github/pull_request_template.md` | Checklist de PR para disciplina documental |
 | `../.github/CODEOWNERS` | Ownership mínimo de la documentación y gobernanza |
 | `../.github/workflows/docs-governance.yml` | Validación automática de gobernanza documental |
+| `../.github/workflows/quality.yml` | Gate incremental de calidad de implementación |
+| `../.github/workflows/typing.yml` | Gate incremental de tipado |
 
 ## Tipos documentales
 
@@ -67,7 +72,7 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `ai/documentation-governance.md` | Verified | canónica | Contrato documental central |
 | `SYSTEM_ARCHITECTURE.md` | Verified | canónica | Vista de alto nivel ya contrastada contra pipelines, schemas, MCP y artefactos reales |
 | `architecture/` | Draft | canónica | Capa viva en expansión: ya incluye flujo empresarial, artefactos y mapa de módulos críticos contrastados |
-| `operations/` | Draft | canónica | Base operativa ya separada en instalación, ejecución, controles y troubleshooting |
+| `operations/` | Draft | canónica | Base operativa ya separada en instalación, ejecución, controles, troubleshooting, calidad incremental, tipado y workflow con agentes |
 | `contracts/` | Draft | canónica | Colección mixta: ya incluye fronteras de payload/render y contratos de artefactos, pero mantiene piezas aún en diseño |
 | `reference/generated/` | Draft | reference_generated | Capa neutral para referencia derivada y para el archivo documental heredado |
 | `../AGENTS.md` | Verified | operativa | Entrada corta común para cualquier agente |
@@ -85,17 +90,26 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 2. decidir qué partes del archivo heredado en `reference/generated/legacy-gemini/` pasan a canónico y cuáles siguen siendo derivadas;
 3. seguir limpiando referencias antiguas que puedan inducir a leer el archivo como verdad principal;
 4. refinar la auditoría de arquitectura, contratos y operación;
-5. convertir las reglas del `documentation-map` en checks automáticos de CI.
+5. endurecer la nueva capa de calidad hacia más tipado y coherencia transversal;
+6. institucionalizar mejor el workflow spec-first y el review semántico en los cambios con agentes;
+7. convertir las reglas del `documentation-map` en checks automáticos de CI.
 
 ## Estado de continuidad actual
 
 Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado operativo relevante es este:
 
 - la gobernanza documental pasa;
+- la puerta incremental de calidad ya puede bloquear deuda nueva en la superficie viva;
+- la puerta incremental de tipado ya puede bloquear deuda nueva en la superficie viva;
+- ya existe una guía canónica para exigir spec mínima y alcance explícito en cambios asistidos por agentes;
+- ya existe un MVP de orquestador local PO-to-PR apoyado en backend de agente configurable;
 - el baseline smoke de `smoke_ivirma` ya está cerrado para T5, global, comercial y web;
 - la suite completa de `pytest` pasa.
 
-El siguiente tramo natural ya no es regenerar artefactos del smoke, sino seguir la auditoría documental:
+El siguiente tramo natural ya no es regenerar artefactos del smoke, sino seguir en paralelo dos líneas:
 
 - promover y mantener verificada la documentación operativa del smoke en `docs/documentation-map.yaml`;
-- continuar la revisión de arquitectura, contratos y adaptadores que siguen en `Draft` o `Needs Review`.
+- continuar la revisión de arquitectura, contratos y adaptadores que siguen en `Draft` o `Needs Review`;
+- ampliar los checks de coherencia a más dominios y endurecer el tipado incremental hacia módulos completos;
+- bajar el workflow spec-first a plantillas, hábitos de review y cambios más pequeños por iteración;
+- evolucionar el orquestador PO-to-PR hacia clasificación de riesgo y sesiones reanudables.

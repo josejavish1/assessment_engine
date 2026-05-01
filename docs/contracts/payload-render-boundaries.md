@@ -201,9 +201,12 @@ Conclusión:
 ### Lo que no debería decidir el render
 
 - reglas de scoring;
+- traducción de `score` a banda de madurez;
 - significado de los campos;
 - contrato entre etapas;
 - verdad de negocio o arquitectura.
+
+En la ruta activa, la traducción `score -> band` debe quedar resuelta antes o durante la construcción canónica del payload mediante helpers compartidos de dominio. Si un render necesita completar una banda ausente, debe hacerlo reutilizando esa misma policy compartida y no inventando una nueva semántica local.
 
 ## Tensiones actuales visibles
 

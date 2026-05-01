@@ -2,6 +2,7 @@
 Módulo render_global_report_from_template.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import re
 import sys
@@ -10,8 +11,19 @@ from pathlib import Path
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement, ns
 from docx.shared import Inches, Pt, RGBColor
+from pydantic import ValidationError
 
+from assessment_engine.schemas.global_report import (
+    BurningPlatformItem,
+    ExecutionRoadmapDraft,
+    ExecutiveDecisionsDraft,
+    ExecutiveSummaryDraft,
+    GlobalReportPayload,
+    TargetVisionDraft,
+    TowerBottomLineItem,
+)
 from assessment_engine.scripts.lib.docx_render_utils import (
     add_body_paragraph,
     add_heading_paragraph,
@@ -21,14 +33,14 @@ from assessment_engine.scripts.lib.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
+from assessment_engine.scripts.lib.global_maturity_policy import (
+    safe_float,
+    status_color_for_score,
+)
 
-
-from assessment_engine.schemas.global_report import GlobalReportPayload, ExecutiveSummaryDraft, BurningPlatformItem, TargetVisionDraft, ExecutionRoadmapDraft, ExecutiveDecisionsDraft
-from pydantic import ValidationError
 
 def load_json(path):
     return json.loads(path.read_text(encoding="utf-8-sig"))
-
 
 
 def clean_t_codes(text):
@@ -141,9 +153,7 @@ def render_cover(doc, payload: GlobalReportPayload):
     add_spacer(doc, 30)
 
     client_p = doc.add_paragraph()
-    client_run = client_p.add_run(
-        payload.meta.client.upper()
-    )
+    client_run = client_p.add_run(payload.meta.client.upper())
     client_run.font.size = Pt(24)
     client_run.font.name = "Arial"
     client_run.bold = True
@@ -208,7 +218,14 @@ def render_cover(doc, payload: GlobalReportPayload):
     doc.add_page_break()
 
 
-def render_executive_summary(doc, data: ExecutiveSummaryDraft, heatmap: list, visuals: dict, client_dir, client_name=""):
+def render_executive_summary(
+    doc,
+    data: ExecutiveSummaryDraft,
+    heatmap: list,
+    visuals: dict,
+    client_dir,
+    client_name="",
+):
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
     add_heading_paragraph(doc, "1. Resumen Ejecutivo", level=1)
     table = doc.add_table(rows=1, cols=2)
@@ -250,9 +267,7 @@ def render_executive_summary(doc, data: ExecutiveSummaryDraft, heatmap: list, vi
     desc_cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     shade_cell(desc_cell, "F2F2F2")
 
-    headline = sanitize_client_name(
-        clean_t_codes(data.headline), client_name
-    )
+    headline = sanitize_client_name(clean_t_codes(data.headline), client_name)
 
     # Formato de titular: solo negrita antes de los dos puntos
     clear_paragraph(desc_cell.paragraphs[0])
@@ -277,9 +292,7 @@ def render_executive_summary(doc, data: ExecutiveSummaryDraft, heatmap: list, vi
     add_spacer(doc, 15)
 
     # Narrativa y Bullets FUERA de la tabla para mejor legibilidad
-    narrative = sanitize_client_name(
-        clean_t_codes(data.narrative), client_name
-    )
+    narrative = sanitize_client_name(clean_t_codes(data.narrative), client_name)
     sentences = re.split(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚ])", narrative.strip())
 
     if sentences:
@@ -316,10 +329,7 @@ def render_executive_summary(doc, data: ExecutiveSummaryDraft, heatmap: list, vi
     for r in header_cell.paragraphs[0].runs:
         r.font.color.rgb = RGBColor(255, 255, 255)
 
-    impacts = [
-        sanitize_client_name(i, client_name)
-        for i in data.key_business_impacts
-    ]
+    impacts = [sanitize_client_name(i, client_name) for i in data.key_business_impacts]
     for impact in impacts:
         row = impact_table.add_row()
         body_cell = row.cells[0]
@@ -354,7 +364,9 @@ def render_executive_summary(doc, data: ExecutiveSummaryDraft, heatmap: list, vi
         doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
-def render_burning_platform(doc, platform_risks: list[BurningPlatformItem], client_name=""):
+def render_burning_platform(
+    doc, platform_risks: list[BurningPlatformItem], client_name=""
+):
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
     add_heading_paragraph(doc, "2. Principales Amenazas Sistémicas", level=1)
     add_body_paragraph(
@@ -392,9 +404,7 @@ def render_burning_platform(doc, platform_risks: list[BurningPlatformItem], clie
         r1_label.font.color.rgb = BASE_TEXT_COLOR
         r1_label.font.size = Pt(10.5)
         r1_text = p1.add_run(
-            sanitize_client_name(
-                clean_t_codes(risk.business_risk), client_name
-            )
+            sanitize_client_name(clean_t_codes(risk.business_risk), client_name)
         )
         r1_text.bold = False
         r1_text.font.color.rgb = BASE_TEXT_COLOR
@@ -422,7 +432,9 @@ def render_burning_platform(doc, platform_risks: list[BurningPlatformItem], clie
         add_spacer(doc, 10)
 
 
-def render_tower_bottom_lines(doc, heatmap: list, tower_texts: list[dict], client_name=""):
+def render_tower_bottom_lines(
+    doc, heatmap: list, tower_texts: list[TowerBottomLineItem], client_name=""
+):
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
     add_heading_paragraph(doc, "3. Diagnóstico por Área Tecnológica", level=1)
     table = doc.add_table(rows=1, cols=3)
@@ -441,12 +453,7 @@ def render_tower_bottom_lines(doc, heatmap: list, tower_texts: list[dict], clien
     color_map = {"E06666": "F4CCCC", "FFD966": "FFF2CC", "93C47D": "D9EAD3"}
     for t in heatmap:
         # Re-calculamos el color de forma estricta para asegurar consistencia
-        try:
-            val = float(str(t.get("score", "0")).replace(",", "."))
-        except Exception:
-            val = 0.0
-
-        strict_color = "E06666" if val < 2.6 else ("FFD966" if val < 3.4 else "93C47D")
+        strict_color = status_color_for_score(safe_float(t.get("score"), 0.0))
 
         row = table.add_row()
         set_cell_text(
@@ -464,22 +471,18 @@ def render_tower_bottom_lines(doc, heatmap: list, tower_texts: list[dict], clien
             bold=False,
         )
         shade_cell(row.cells[1], color_map.get(strict_color, "FFFFFF"))
-        
+
         # Recuperar texto
-        tower_id = t.get('id', '')
+        tower_id = t.get("id", "")
         text_val = ""
-        # tower_texts is now a list of dicts from pydantic dict dump or direct pydantic objects if we changed it.
-        # Wait, the signature of GlobalReportPayload has tower_bottom_lines: list[TowerBottomLineItem]
-        # But heatmap is raw dicts. We match by tower_id.
         for bottom_line_item in tower_texts:
-            item_id = getattr(bottom_line_item, "id", None) or (bottom_line_item.get("id") if isinstance(bottom_line_item, dict) else None)
-            if item_id == tower_id:
-                text_val = getattr(bottom_line_item, "bottom_line", None) or (bottom_line_item.get("bottom_line") if isinstance(bottom_line_item, dict) else "")
+            if bottom_line_item.id == tower_id:
+                text_val = bottom_line_item.bottom_line
                 break
-        
+
         if not text_val:
             text_val = t.get("executive_message", "")
-            
+
         set_cell_text(
             row.cells[2],
             sanitize_client_name(clean_t_codes(str(text_val)), client_name),
@@ -519,9 +522,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name=""):
     clear_paragraph(v_cell_body.paragraphs[0])
     p_body = v_cell_body.paragraphs[0]
     p_body.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    prop = sanitize_client_name(
-        clean_t_codes(vision.value_proposition), client_name
-    )
+    prop = sanitize_client_name(clean_t_codes(vision.value_proposition), client_name)
     prop = prop[0].upper() + prop[1:] if prop else ""
     prop = prop.replace("─", "").replace("—", "").replace(";", ",")
     r_body = p_body.add_run(prop)
@@ -551,7 +552,9 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name=""):
     add_spacer(doc, 20)
 
 
-def render_execution_roadmap(doc, roadmap: ExecutionRoadmapDraft, visuals: dict, client_dir, client_name=""):
+def render_execution_roadmap(
+    doc, roadmap: ExecutionRoadmapDraft, visuals: dict, client_dir, client_name=""
+):
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
     add_heading_paragraph(
         doc, "5. Plan de Implementación y Horizontes Temporales", level=1
@@ -600,9 +603,7 @@ def render_execution_roadmap(doc, roadmap: ExecutionRoadmapDraft, visuals: dict,
         p_bull.paragraph_format.space_after = Pt(6)
 
         program_name = clean_t_codes(p.name)
-        program_desc = sanitize_client_name(
-            clean_t_codes(p.description), client_name
-        )
+        program_desc = sanitize_client_name(clean_t_codes(p.description), client_name)
 
         r_name = p_bull.add_run(f"{program_name}: ")
         r_name.bold = True
@@ -663,9 +664,7 @@ def render_execution_roadmap(doc, roadmap: ExecutionRoadmapDraft, visuals: dict,
             )
             set_cell_text(
                 row.cells[2],
-                sanitize_client_name(
-                    clean_t_codes(init.business_case), client_name
-                ),
+                sanitize_client_name(clean_t_codes(init.business_case), client_name),
                 font_size=10.5,
             )
             set_cell_text(
@@ -715,24 +714,18 @@ def render_executive_decisions(doc, decisions: ExecutiveDecisionsDraft, client_n
         row = table.add_row()
         set_cell_text(
             row.cells[0],
-            sanitize_client_name(
-                clean_t_codes(d.decision_type), client_name
-            ),
+            sanitize_client_name(clean_t_codes(d.decision_type), client_name),
             bold=False,
             font_size=10.5,
         )
         set_cell_text(
             row.cells[1],
-            sanitize_client_name(
-                clean_t_codes(d.action_required), client_name
-            ),
+            sanitize_client_name(clean_t_codes(d.action_required), client_name),
             font_size=10.5,
         )
         set_cell_text(
             row.cells[2],
-            sanitize_client_name(
-                clean_t_codes(d.impact_if_delayed), client_name
-            ),
+            sanitize_client_name(clean_t_codes(d.impact_if_delayed), client_name),
             font_size=10.5,
         )
         shade_cell(row.cells[2], "FFFFFF")
@@ -742,9 +735,6 @@ def render_executive_decisions(doc, decisions: ExecutiveDecisionsDraft, client_n
                 for r in p.runs:
                     r.font.color.rgb = BASE_TEXT_COLOR
     autofit_table_to_contents(table)
-
-
-from docx.oxml import OxmlElement, ns
 
 
 def create_page_number_footer(section):
@@ -816,6 +806,7 @@ def load_payload(payload_path: Path) -> GlobalReportPayload:
         print(e)
         sys.exit(1)
 
+
 def render_global_report(
     payload: GlobalReportPayload,
     template_path: Path,
@@ -840,9 +831,7 @@ def render_global_report(
             client_name=client_name,
         )
     if payload.burning_platform:
-        render_burning_platform(
-            doc, payload.burning_platform, client_name=client_name
-        )
+        render_burning_platform(doc, payload.burning_platform, client_name=client_name)
     if payload.tower_bottom_lines and payload.heatmap:
         render_tower_bottom_lines(
             doc, payload.heatmap, payload.tower_bottom_lines, client_name=client_name

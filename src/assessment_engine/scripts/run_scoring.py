@@ -2,10 +2,12 @@
 Módulo run_scoring.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
 import json
 from pathlib import Path
 
+from assessment_engine.scripts.lib.maturity_band import resolve_maturity_band
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 
 
@@ -22,11 +24,13 @@ def round_display(value: float) -> float:
 
 
 def resolve_band(score: float, tower_definition: dict) -> dict:
-    normalized_score = round(score, 4)
-    for band in tower_definition.get("score_bands", []):
-        if band["min"] <= normalized_score <= band["max"]:
-            return band
-    return tower_definition.get("score_bands", [])[-1]
+    return dict(
+        resolve_maturity_band(
+            score,
+            tower_definition.get("score_bands", []),
+            score_precision=4,
+        )
+    )
 
 
 def build_scoring(case_input: dict, tower_definition: dict) -> dict:
