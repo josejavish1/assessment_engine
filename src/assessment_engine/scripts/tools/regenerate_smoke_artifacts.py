@@ -6,7 +6,6 @@ Orquesta la regeneración reproducible de artefactos smoke en working/.
 from __future__ import annotations
 
 import argparse
-import os
 import shlex
 import subprocess
 
@@ -19,7 +18,6 @@ from assessment_engine.scripts.lib.runtime_env import (
 )
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.tools.generate_smoke_data import generate_smoke_inputs
-
 
 BLUEPRINT_RESUME_STEP = "Engine: Tower Strategic Blueprint"
 
@@ -55,6 +53,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--with-global", action="store_true")
     parser.add_argument("--with-commercial", action="store_true")
     parser.add_argument("--with-web", action="store_true")
+    parser.add_argument(
+        "--global-blueprint-only",
+        action="store_true",
+        help="Ejecuta el pipeline global en modo canónico puro, sin fallback legacy.",
+    )
     parser.add_argument("--skip-vertex-preflight", action="store_true")
     parser.add_argument("--vertex-model", default=None)
     parser.add_argument("--writer-model", default=None)
@@ -211,6 +214,7 @@ def main(argv: list[str] | None = None) -> None:
                 "-m",
                 "assessment_engine.scripts.run_global_pipeline",
                 client_id,
+                *(["--blueprint-only"] if args.global_blueprint_only else []),
             ],
             "Run global pipeline",
             env,

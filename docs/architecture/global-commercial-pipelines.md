@@ -10,7 +10,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../../src/assessment_engine/schemas/global_report.py
   - ../../src/assessment_engine/schemas/commercial.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -96,6 +96,18 @@ El builder prefiere los blueprints modernos y solo conserva fallback legacy para
 
 - la consolidación global ya está pensada para descansar sobre la **verdad top-down por torre**;
 - el legado sigue presente como red de seguridad, no como modelo objetivo a largo plazo.
+
+### Señalización operativa actual
+
+La consolidación global ya deja visible qué mezcla de fuentes está usando:
+
+- `blueprint-only`
+- `mixed-blueprint-legacy`
+- `legacy-only`
+
+Ese lineage queda reflejado en `_generation_metadata.source_version` y en `meta.version` del `global_report_payload.json`.
+
+Además, `run_global_pipeline.py` ya expone `--blueprint-only` para forzar el camino canónico puro cuando quieras detectar dependencias legacy reales en un workspace o en smoke/CI.
 
 ## Refinado ejecutivo global
 

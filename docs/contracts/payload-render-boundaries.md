@@ -12,7 +12,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/render_global_report_from_template.py
   - ../../src/assessment_engine/scripts/render_commercial_report.py
   - ../../src/assessment_engine/scripts/render_web_presentation.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -44,7 +44,7 @@ No todos los consumidores aplican el contrato con la misma dureza. A día de hoy
 | Nivel | Comportamiento real | Casos |
 |---|---|---|
 | Estricto | valida con `model_validate(...)` y aborta si el payload no cumple | `render_tower_blueprint.py`, `render_global_report_from_template.py` |
-| Tolerante | intenta validar, registra desviaciones y cae a `model_construct(...)` para seguir | `render_tower_annex_from_template.py`, `render_commercial_report.py` vía `robust_load_payload(...)` |
+| Tolerante | intenta validar, registra desviaciones y cae a `model_construct(...)` para seguir | rutas legacy o de compatibilidad explícita que aún no han sido endurecidas |
 | Implícito | consume JSON sin schema Pydantic final de entrada/salida en el propio render | `render_web_presentation.py` |
 
 Por tanto, el schema sigue siendo el **contrato deseado**, pero no todos los renderizadores lo **enfuerzan** de forma estricta en ejecución.
@@ -71,17 +71,16 @@ Características de la frontera:
 
 - el sintetizador del anexo parte de un `executive handover` derivado del blueprint con score, riesgos estructurales, decisiones e iniciativas;
 - score global, bandas, gaps, riesgos e iniciativas prioritarias se fijan de forma determinista desde el blueprint antes del render;
-- el render carga el JSON con `robust_load_payload(..., AnnexPayload, "Annex")`;
-- `robust_load_payload(...)` intenta `model_validate(...)`, pero si falla registra el error y hace fallback a `model_construct(...)`;
+- el render carga el JSON con `robust_load_payload(..., AnnexPayload, "Annex", mode="strict")`;
 - después aplica `normalize_annex_payload(...)` para completar formas compatibles;
-- el contrato objetivo sigue siendo `AnnexPayload`, aunque la ruta de render sea tolerante para compatibilidad.
+- el contrato objetivo y efectivo en render ya es `AnnexPayload` estricto.
 
 Conclusión:
 
 - el payload del anexo sigue siendo el contrato estructural esperado;
 - el LLM del anexo aporta framing y lenguaje ejecutivo, pero ya no debería redefinir los hechos no negociables heredados del blueprint;
-- el render puede adaptar detalles de forma y sobrevivir a desviaciones menores, así que el enforcement actual es **tolerante**, no estrictamente bloqueante;
-- esta tolerancia no debería reinterpretarse como permiso para mover la verdad al render.
+- el render puede adaptar detalles de forma tras validar, pero ya no acepta un payload inválido;
+- la frontera contrato/presentación queda más alineada con el diseño documentado.
 
 ### 2. Blueprint payload
 
@@ -135,8 +134,7 @@ Conclusión:
 
 Características de la frontera:
 
-- el render usa `robust_load_payload(..., CommercialPayload, "Commercial Account Plan")`;
-- el cargador intenta validar y, si detecta desviaciones, hace fallback a `model_construct(...)` tras registrar el warning;
+- el render usa `robust_load_payload(..., CommercialPayload, "Commercial Account Plan", mode="strict")`;
 - consume:
   - `commercial_summary`
   - `gtm_strategy`
@@ -147,8 +145,7 @@ Características de la frontera:
 
 Conclusión:
 
-- el render comercial trabaja sobre un contrato explícito como diseño objetivo;
-- en ejecución, el enforcement actual es tolerante porque comparte `robust_load_payload(...)`;
+- el render comercial trabaja sobre un contrato explícito como diseño objetivo y ya lo exige en tiempo de render;
 - el entregable DOCX sigue siendo derivado de un payload comercial ya resuelto.
 
 ### 5. Dashboard web
@@ -209,11 +206,11 @@ Conclusión:
 
 ## Tensiones actuales visibles
 
-1. algunos renderizadores normalizan o rellenan campos para compatibilidad;
-2. `robust_load_payload(...)` prioriza continuidad de salida sobre enforcement estricto cuando detecta desviaciones de schema;
-3. el dashboard web no tiene aún un schema final explícito propio;
-4. `render_tower_blueprint.py` usa annex e inteligencia adicional para enriquecer presentación;
-5. persisten rastros legacy en parte del ecosistema documental y de artefactos.
+1. algunos consumidores todavía normalizan o rellenan campos para compatibilidad;
+2. el dashboard web no tiene aún un schema final explícito propio;
+3. `render_tower_blueprint.py` usa annex e inteligencia adicional para enriquecer presentación;
+4. persisten rastros legacy en parte del ecosistema documental y de artefactos;
+5. el sintetizador del anexo ya exige `BlueprintPayload` válido antes de construir el handover, pero otras rutas legacy aún pueden seguir siendo tolerantes.
 
 Estas tensiones no invalidan el diseño actual, pero deben permanecer visibles para que la evolución futura no mueva la verdad desde los contracts hacia la capa de presentación.
 
@@ -221,7 +218,7 @@ Estas tensiones no invalidan el diseño actual, pero deben permanecer visibles p
 
 1. Los schemas `AnnexPayload`, `BlueprintPayload`, `GlobalReportPayload` y `CommercialPayload` existen y están alineados con los nombres de payload descritos aquí.
 2. Los tests de `tests/test_contract_handover.py` y `tests/test_payload_validation.py` validan los contratos principales a nivel de schema y el baseline smoke actual ya incluye artefactos reales para blueprint, annex, global y comercial.
-3. La mayor desviación entre diseño y enforcement está en `contract_utils.py`: hoy la capa tolerante protege la generación del entregable, pero reduce la dureza del contrato en tiempo de render.
+3. La mayor desviación restante entre diseño y enforcement ya no está en los renderizadores finales de annex/commercial ni en el sintetizador del anexo, sino en las rutas legacy o de compatibilidad que todavía usan carga tolerante de forma explícita.
 
 ## Regla documental recomendada
 

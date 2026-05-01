@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from assessment_engine.schemas.blueprint import BlueprintPayload
+from assessment_engine.schemas.global_report import GlobalReportPayload
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_blueprint_payload_candidates,
     resolve_client_dir,
@@ -20,6 +22,18 @@ TEMPLATE_PATH = resolve_web_dashboard_template_path()
 def _load_json(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8-sig") as handle:
         return json.load(handle)
+
+
+def _load_global_payload(path: Path) -> dict[str, Any]:
+    payload = _load_json(path)
+    GlobalReportPayload.model_validate(payload)
+    return payload
+
+
+def _load_blueprint_payload(path: Path) -> dict[str, Any]:
+    payload = _load_json(path)
+    BlueprintPayload.model_validate(payload)
+    return payload
 
 
 def _find_blueprint_payload(tower_dir: Path, tower_id: str) -> Path | None:
@@ -296,7 +310,7 @@ def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
             f"No se encuentra el payload global: {global_payload_path}"
         )
 
-    global_payload = _load_json(global_payload_path)
+    global_payload = _load_global_payload(global_payload_path)
     nexus_data = _build_strategy(global_payload, client_id)
 
     for tower_meta in global_payload.get("heatmap", []):
@@ -305,7 +319,9 @@ def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
             continue
         tower_dir = client_dir / tower_id
         blueprint_path = _find_blueprint_payload(tower_dir, tower_id)
-        blueprint_payload = _load_json(blueprint_path) if blueprint_path else None
+        blueprint_payload = (
+            _load_blueprint_payload(blueprint_path) if blueprint_path else None
+        )
         nexus_data["towers"][tower_id] = _build_tower_nexus(
             tower_meta,
             blueprint_payload,

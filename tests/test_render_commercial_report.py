@@ -1,4 +1,8 @@
+import json
+
+import pytest
 from docx import Document
+from pydantic import ValidationError
 
 from assessment_engine.scripts.render_commercial_report import (
     load_payload,
@@ -29,3 +33,24 @@ def test_render_commercial_report_from_real_payload(tmp_path):
 
     assert "Account Action Plan" in text_content
     assert "Executive Summary & Deal Snapshot" in text_content
+
+
+def test_load_payload_fails_on_invalid_commercial_contract(tmp_path):
+    payload_path = tmp_path / "invalid_commercial.json"
+    payload_path.write_text(
+        json.dumps(
+            {
+                "meta": {"client": "test", "date": "2026-05-01", "version": "v1"},
+                "commercial_summary": {
+                    "deal_flash": {
+                        "purchase_driver": "Expansion",
+                        "ntt_win_theme": "Resilience",
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationError):
+        load_payload(payload_path)

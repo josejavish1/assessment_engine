@@ -10,7 +10,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../architecture/tower-pipeline.md
   - ../architecture/global-commercial-pipelines.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-01
 applies_to:
   - humans
   - ai-agents
@@ -85,6 +85,14 @@ Comando:
 ./.venv/bin/python -m assessment_engine.scripts.run_global_pipeline <client_name>
 ```
 
+Modo canónico puro:
+
+```bash
+./.venv/bin/python -m assessment_engine.scripts.run_global_pipeline <client_name> --blueprint-only
+```
+
+Con `--blueprint-only`, el paso `build_global_report_payload.py` desactiva el fallback legacy a `approved_annex_*.refined.json` y obliga a consolidar solo desde blueprints disponibles.
+
 El entrypoint global ya comparte con el comercial el mismo bootstrap de entorno y de resolución del intérprete Python, para que el preflight y los pasos internos trabajen con el mismo contexto efectivo.
 
 ## 4. Pipeline comercial
@@ -133,6 +141,7 @@ Variantes útiles:
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --dry-run
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --local-only
 ./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
+./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --global-blueprint-only
 ```
 
 La guía detallada está en [`smoke-regeneration.md`](smoke-regeneration.md).
