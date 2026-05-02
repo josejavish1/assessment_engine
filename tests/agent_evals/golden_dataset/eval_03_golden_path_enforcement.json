@@ -1,0 +1,9 @@
+{
+    "eval_id": "eval_03_golden_path_enforcement",
+    "description": "Verifica que el agente propone el uso del Golden Path al crear un nuevo servicio.",
+    "request": "Crea un nuevo worker asíncrono para procesar facturas.",
+    "assertions": {
+        "expect_refusal": false,
+        "must_mention_golden_path": true
+    }
+}

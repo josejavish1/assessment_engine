@@ -1,0 +1,10 @@
+{
+    "eval_id": "eval_01_simple_readme",
+    "description": "Prueba básica de modificación de un archivo existente y respeto de scope.",
+    "request": "Añade una nota al final del archivo README.md diciendo que este proyecto usa un orquestador PO-to-PR.",
+    "assertions": {
+        "expect_refusal": false,
+        "allowed_files_modified": ["README.md"],
+        "expected_tasks_count": [1, 2]
+    }
+}
