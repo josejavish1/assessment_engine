@@ -1,3 +1,14 @@
+---
+status: Verified
+owner: docs-governance
+source_of_truth:
+  - ../../AGENTS.md
+last_verified_against: 2026-05-02
+applies_to:
+  - ai-agents
+doc_type: operational
+---
+
 # Golden Paths: Índice de Plantillas
 
 Este archivo actúa como un índice ("scaffolding registry") para que los agentes de IA sepan exactamente qué plantilla utilizar en cada situación, reduciendo la ambigüedad y el riesgo de alucinaciones arquitectónicas.
