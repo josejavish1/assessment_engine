@@ -330,32 +330,56 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
     """
     job_id = str(uuid.uuid4())
     job_status[job_id] = "running"
-
-    loop = asyncio.get_event_loop()
-
-    def run_sync():
-        return _run_script(
-            "assessment_engine.scripts.tools.run_product_owner_orchestrator",
-            [
-                "execute",
-                "--request-dir",
-                request_dir,
-                "--alt-index",
-                str(alt_index),
-                "--allow-dirty",
-                "--executor-command",
-                ".github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}",
-            ],
-        )
+    job_results[job_id] = ""
 
     async def _background_run_execution():
+        import asyncio.subprocess
+
+        cmd = [
+            PYTHON_BIN,
+            "-m",
+            "assessment_engine.scripts.tools.run_product_owner_orchestrator",
+            "execute",
+            "--request-dir",
+            request_dir,
+            "--alt-index",
+            str(alt_index),
+            "--allow-dirty",
+            "--executor-command",
+            ".github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}",
+        ]
+
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(ROOT)
+
         try:
-            out = await loop.run_in_executor(None, run_sync)
-            job_results[job_id] = f"✅ Ejecución completada.\nLogs:\n{out}"
-            job_status[job_id] = "completed"
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                env=env,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.STDOUT,
+            )
+
+            while True:
+                line = await process.stdout.readline()
+                if not line:
+                    break
+                job_results[job_id] += line.decode("utf-8")
+
+            await process.wait()
+
+            if process.returncode != 0:
+                job_status[job_id] = "error"
+                job_results[job_id] += (
+                    f"\n❌ El proceso terminó con código de error {process.returncode}"
+                )
+            else:
+                job_status[job_id] = "completed"
+                job_results[job_id] += "\n✅ Ejecución completada."
+
         except Exception as e:
             job_status[job_id] = "error"
-            job_results[job_id] = f"❌ Error en ejecución: {e}"
+            job_results[job_id] += f"\n❌ Error en ejecución: {e}"
 
     asyncio.create_task(_background_run_execution())
     return json.dumps({"job_id": job_id, "status": "started"})
@@ -364,13 +388,11 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
 @mcp.tool()
 def check_execution_status(job_id: str) -> str:
     """
-    Comprueba el estado de una ejecución en proceso.
+    Comprueba el estado de una ejecución en proceso, devolviendo el log parcial si está corriendo.
     """
     status = job_status.get(job_id, "not_found")
-    if status == "completed" or status == "error":
-        result = job_results.get(job_id, "")
-        return json.dumps({"status": status, "result": result})
-    return json.dumps({"status": status})
+    result = job_results.get(job_id, "")
+    return json.dumps({"status": status, "result": result})
 
 
 @mcp.tool()
@@ -392,7 +414,7 @@ def check_action_gate(request_dir: str) -> str:
 
 
 @mcp.tool()
-def authorize_action_gate(request_dir: str) -> str:
+def authorize_action_gate(request_dir: str, alt_index: int = 0) -> str:
     """
     Autoriza un Action Gate actualizando el plan y eliminando el bloqueo.
     """
@@ -414,7 +436,7 @@ def authorize_action_gate(request_dir: str) -> str:
 
             active_plan = plan
             if "tasks" not in plan and "alternatives" in plan:
-                active_plan = plan["alternatives"][0]
+                active_plan = plan["alternatives"][alt_index]
 
             blast_radius = summary.get("diagnosis", {}).get("blast_radius", [])
             if "in_scope" not in active_plan:

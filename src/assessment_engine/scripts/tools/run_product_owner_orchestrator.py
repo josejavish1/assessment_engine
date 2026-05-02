@@ -528,7 +528,9 @@ def validate_executor_configuration(command_template: str) -> None:
 
     # Check environment variables directly as the ultimate fallback
     if not has_api_key:
-        has_api_key = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
+        has_api_key = bool(
+            os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        )
 
     if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
         raise RuntimeError(
@@ -1495,9 +1497,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     executor_command = resolve_executor_command(args.executor_command)
+    active_plan = plan["alternatives"][0] if "alternatives" in plan else plan
     execute_plan(
         request_dir,
-        plan,
+        active_plan,
         executor_command=executor_command,
         skip_pr=args.skip_pr,
         skip_auto_merge=args.skip_auto_merge,

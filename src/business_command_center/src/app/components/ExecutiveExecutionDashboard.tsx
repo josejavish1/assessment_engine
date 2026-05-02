@@ -69,7 +69,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
     setLogs(prev => prev + "\n\n⚠️ AUTORIZANDO RUPTURA DE INVARIANTE (Action Gate Bypass)...\n");
     setActionGate(null);
     setExecutionState('running');
-    const res = await authorizeActionGate(requestDir);
+    const res = await authorizeActionGate(requestDir, altIndex);
     if (res.success) {
       setLogs(prev => prev + "✅ Action Gate autorizado. Reintentando ejecución...\n");
       // Resuming execution

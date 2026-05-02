@@ -145,14 +145,14 @@ export async function checkActionGate(requestDir: string) {
   }
 }
 
-export async function authorizeActionGate(requestDir: string) {
+export async function authorizeActionGate(requestDir: string, altIndex: number = 0) {
   let mcp;
   try {
     mcp = await createClient();
     
     const result = await mcp.client.callTool({
       name: "authorize_action_gate",
-      arguments: { request_dir: requestDir }
+      arguments: { request_dir: requestDir, alt_index: altIndex }
     }, undefined, { timeout: 10000 });
     
     const textContent = (result as any).content[0].text;

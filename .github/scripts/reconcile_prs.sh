@@ -1,9 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-gh pr list 
-  --search "is:open -is:draft -label 'no-auto-update'" 
-  --json number,headRefName 
+gh pr list \
+  --search "is:open -is:draft -label 'no-auto-update'" \
+  --json number,headRefName \
   --jq '.[] | "\(.number) \(.headRefName)"' |
 while read -r pr_number pr_branch; do
   echo "::group::Processing PR #${pr_number} (branch: ${pr_branch})"
