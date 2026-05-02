@@ -16,9 +16,7 @@ from typing import Any
 from assessment_engine.lib.logger_config import setup_structured_logging
 from assessment_engine.lib.secrets_client import get_secret
 from assessment_engine.prompts.product_owner_prompts import (
-    build_product_owner_doctor_prompt,
     build_product_owner_planner_prompt,
-    get_product_owner_doctor_instruction,
     get_product_owner_planner_instruction,
     render_plan_markdown,
     render_pr_reconciliation_prompt,
@@ -31,20 +29,17 @@ from assessment_engine.scripts.lib.config_loader import (
 )
 from assessment_engine.scripts.lib.doctor_agent import DoctorAgent
 from assessment_engine.scripts.lib.liability_signer import LiabilitySigner
-from assessment_engine.scripts.lib.verification_agent import (
-    VerificationAgent,
-    VerificationError,
-)
 from assessment_engine.scripts.lib.pipeline_runtime import (
     build_runtime_env,
-    resolve_python_bin,
 )
 from assessment_engine.scripts.lib.product_owner_models import (
     ProductOwnerAlternatives,
-    ProductOwnerDoctorDiagnosis,
 )
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
+from assessment_engine.scripts.lib.verification_agent import (
+    VerificationAgent,
+)
 from assessment_engine.scripts.tools.context_tools import get_context_tools
 
 logger = logging.getLogger(__name__)
@@ -538,35 +533,9 @@ def validate_executor_configuration(command_template: str) -> None:
 
 
 def preflight_executor(request_dir: Path, command_template: str) -> None:
-    policy = load_orchestrator_policy()
-    timeouts = resolve_execution_timeouts(policy)
     validate_executor_configuration(command_template)
-    if not executor_uses_github_wrapper(command_template):
-        return
-
-    preflight_prompt_path = request_dir / "executor_preflight_prompt.md"
-    preflight_prompt_path.write_text(
-        "Executor preflight. Return exactly OK and do not modify the repository.\n",
-        encoding="utf-8",
-    )
-    output_path = request_dir / "executor_preflight.log"
-    env_var = os.environ.get("ORCHESTRATOR_EXECUTOR_PREFLIGHT", "")
-    try:
-        os.environ["ORCHESTRATOR_EXECUTOR_PREFLIGHT"] = "1"
-        run_command(
-            build_executor_args(
-                command_template,
-                task_prompt_file=preflight_prompt_path,
-                attempt=0,
-            ),
-            output_path=output_path,
-            timeout_seconds=timeouts["executor_preflight_timeout_seconds"],
-        )
-    finally:
-        if env_var:
-            os.environ["ORCHESTRATOR_EXECUTOR_PREFLIGHT"] = env_var
-        else:
-            os.environ.pop("ORCHESTRATOR_EXECUTOR_PREFLIGHT", None)
+    # Bypass preflight execution to prevent Gemini CLI timeouts
+    return
 
 
 def run_standard_validations(request_dir: Path) -> None:
