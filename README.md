@@ -39,3 +39,6 @@ La documentación canónica del proyecto empieza aquí:
 ## Estado documental actual
 
 La base de gobernanza documental ya está fijada, pero la auditoría de los documentos heredados sigue en curso. Consulta [`docs/documentation-map.yaml`](docs/documentation-map.yaml) para ver el estado de cada pieza (`Verified`, `Needs Review`, `Draft`, `Deprecated`).
+
+Este proyecto incluye capacidades de orquestación automatizada PO-to-PR.
+
