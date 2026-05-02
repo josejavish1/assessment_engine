@@ -12,7 +12,11 @@ dependencies = [
     "python-docx",
     "matplotlib",
     "python-dotenv",
-    "python-json-logger"
+    "python-json-logger",
+    "opentelemetry-distro",
+    "opentelemetry-instrumentation",
+    "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-instrumentation-logging"
 ]
 
 [build-system]

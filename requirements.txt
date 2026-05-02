@@ -83,6 +83,10 @@ opentelemetry-proto==1.38.0
 opentelemetry-resourcedetector-gcp==1.11.0a0
 opentelemetry-sdk==1.38.0
 opentelemetry-semantic-conventions==0.59b0
+opentelemetry-distro==0.45b0
+opentelemetry-instrumentation==0.45b0
+opentelemetry-instrumentation-fastapi==0.45b0
+opentelemetry-instrumentation-logging==0.45b0
 packaging==26.0
 pillow==12.2.0
 propcache==0.4.1

@@ -1,3 +1,4 @@
+# golden-path: ignore
 """
 Golden Path: FastAPI Main App Template
 Description: Plantilla base para la aplicación principal (entrypoint) de FastAPI.
