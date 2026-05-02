@@ -52,6 +52,11 @@ def check_golden_path_compliance(repo_root: Path, target_files: list[str]) -> li
             
         content = file_path.read_text(encoding="utf-8")
         
+        # Escape hatch (Opt-out explícito): Si un archivo es un helper, modelo o constante,
+        # puede eludir la regla añadiendo este pragma, justificando que no es un servicio/worker.
+        if "golden-path: ignore" in content.lower():
+            continue
+        
         has_marker = any(marker in content for marker in GOLDEN_PATH_MARKERS)
         if not has_marker:
             violations.append(rel_path)
