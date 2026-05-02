@@ -1,8 +1,15 @@
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from google.api_core import exceptions
-from assessment_engine.lib.secrets_client import get_secret, SecretNotFoundError, SecretPermissionError
+
+from assessment_engine.lib.secrets_client import (
+    SecretNotFoundError,
+    SecretPermissionError,
+    get_secret,
+)
+
 
 @patch('assessment_engine.lib.secrets_client.secretmanager.SecretManagerServiceClient')
 def test_get_secret_success(mock_client_constructor):
