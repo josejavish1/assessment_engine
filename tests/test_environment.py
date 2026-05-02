@@ -1,7 +1,9 @@
 import importlib.util
 
 import pytest
+
 from assessment_engine.schemas.blueprint import PillarBlueprintDraft
+
 
 def test_pydantic_import():
     """Verifica que los esquemas Pydantic se importan correctamente."""

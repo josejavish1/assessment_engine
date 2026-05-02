@@ -1,6 +1,11 @@
 import pytest
 from pydantic import ValidationError
-from assessment_engine.schemas.blueprint import PillarBlueprintDraft, ProjectToDo, HealthCheckAsIs, TargetArchitectureToBe
+
+from assessment_engine.schemas.blueprint import (
+    PillarBlueprintDraft,
+    ProjectToDo,
+)
+
 
 def test_pillar_blueprint_valid():
     """Verifica que un PillarBlueprintDraft válido se instancia correctamente."""

@@ -6,7 +6,7 @@ source_of_truth:
   - src/assessment_engine/scripts/
   - src/assessment_engine/mcp_server.py
   - src/assessment_engine/schemas/
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents

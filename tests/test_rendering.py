@@ -1,9 +1,12 @@
+
 import pytest
-from pathlib import Path
-import json
-import tempfile
 from docx import Document
-from assessment_engine.scripts.render_global_report_from_template import render_cover, clean_t_codes
+
+from assessment_engine.scripts.render_global_report_from_template import (
+    clean_t_codes,
+    render_cover,
+)
+
 
 def test_clean_t_codes():
     """Verifica que el formateador de texto elimina códigos técnicos y limpia espacios."""
@@ -20,7 +23,6 @@ def test_render_cover_logic():
     """
     doc = Document()
     
-    from assessment_engine.schemas.global_report import GlobalReportPayload, GlobalReportDocumentMeta
     
     # Creamos un payload mockeado usando Pydantic
     # Necesitamos mockear el resto de la estructura de GlobalReportPayload o usar construct/mocking avanzado

@@ -4,7 +4,9 @@ from pathlib import Path
 
 import yaml
 
-from assessment_engine.scripts.tools import validate_documentation_governance as validator
+from assessment_engine.scripts.tools import (
+    validate_documentation_governance as validator,
+)
 
 
 def _write_markdown(path: Path, title: str = "Doc") -> None:

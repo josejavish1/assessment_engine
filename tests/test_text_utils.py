@@ -1,10 +1,12 @@
 import pytest
+
 from assessment_engine.scripts.lib.text_utils import (
-    normalize_spaces,
     clean_text_for_word,
-    slugify,
+    normalize_spaces,
     normalize_tower_name,
+    slugify,
 )
+
 
 # Tests for normalize_spaces
 def test_normalize_spaces_with_newlines_and_multiple_spaces():

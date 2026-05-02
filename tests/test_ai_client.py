@@ -1,7 +1,13 @@
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
-from assessment_engine.scripts.lib.ai_client import run_agent, _robust_unwrap_and_validate
 from pydantic import BaseModel, ValidationError
+
+from assessment_engine.scripts.lib.ai_client import (
+    _robust_unwrap_and_validate,
+    run_agent,
+)
+
 
 class MockSchema(BaseModel):
     result: str
@@ -20,7 +26,8 @@ async def test_run_agent_mocked_success():
         def __init__(self, items): self.items = items
         def __aiter__(self): return self
         async def __anext__(self):
-            if not self.items: raise StopAsyncIteration
+            if not self.items:
+                raise StopAsyncIteration
             return self.items.pop(0)
 
     mock_app.async_stream_query.side_effect = lambda *args, **kwargs: AsyncIter([mock_event])

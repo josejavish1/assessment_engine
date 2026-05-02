@@ -1,6 +1,7 @@
-import json
 import pytest
+
 from assessment_engine.scripts.run_scoring import build_scoring
+
 
 @pytest.fixture
 def mock_case_input():

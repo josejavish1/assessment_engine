@@ -1,5 +1,7 @@
 import pytest
+
 from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
+
 
 def test_parse_clean_json():
     """Prueba que parsea un JSON limpio sin markdown."""

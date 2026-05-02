@@ -1,8 +1,9 @@
 import json
-from pathlib import Path
-import pytest
 import tempfile
-from unittest.mock import patch, MagicMock
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
 
 # Importar el módulo que queremos probar
 from assessment_engine.scripts.bootstrap import bootstrap_tower_from_matrix
