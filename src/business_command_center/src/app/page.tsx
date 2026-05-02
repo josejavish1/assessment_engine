@@ -36,15 +36,15 @@ export default function Home() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white">
+    <>
       <CommandPalette />
       <AgentContextSheet 
         task={selectedTask} 
         isOpen={!!selectedTask} 
         onClose={() => setSelectedTask(null)} 
       />
-
-      {/* Sidebar */}
+      <div className="flex h-screen bg-slate-950 text-white">
+        {/* Sidebar */}
       <aside className="w-64 bg-slate-900 flex flex-col">
         <div className="h-16 flex items-center justify-center border-b border-slate-800">
           <h1 className="text-xl font-bold tracking-tight">Assessment Platform</h1>
@@ -93,5 +93,6 @@ export default function Home() {
         </div>
       </main>
     </div>
+    </>
   );
 }
