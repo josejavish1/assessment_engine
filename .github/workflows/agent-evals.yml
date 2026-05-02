@@ -13,7 +13,9 @@ on:
 jobs:
   evals:
     runs-on: ubuntu-latest
-    if: ${{ secrets.GCP_SA_KEY != '' }}
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
       - uses: actions/checkout@v4
       
@@ -28,11 +30,16 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
           
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/698614007938/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
+          service_account: 'assessment-bot@sub403o4u0q5.iam.gserviceaccount.com'
+          
       - name: Run Agent Evals
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_GENAI_USE_VERTEXAI: "0"
-          GOOGLE_GENAI_USE_GCA: "0"
+          GOOGLE_CLOUD_PROJECT: "sub403o4u0q5"
+          GOOGLE_CLOUD_LOCATION: "europe-west1"
         run: |
           python tests/agent_evals/run_evals.py
