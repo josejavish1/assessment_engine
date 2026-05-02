@@ -140,9 +140,11 @@ async def run_agent(
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
-        retries = (
-            _execute_query_with_retry.retry.statistics.get("attempt_number", 1) - 1
-        )  # type: ignore[attr-defined]
+        try:
+            # ignore typing for tenacity retry attribute
+            retries = getattr(_execute_query_with_retry, "retry").statistics.get("attempt_number", 1) - 1
+        except Exception:
+            retries = 0
 
         # Safely access agent and model info
         agent_obj = getattr(app, "_agent", None)
