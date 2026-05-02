@@ -13,8 +13,6 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Any, Dict
 
-from assessment_engine.lib.telemetry import tracer
-
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/resource", tags=["Resource"])
@@ -28,7 +26,6 @@ class ResourceResponse(BaseModel):
     status: str
     result: Dict[str, Any]
 
-@tracer.start_as_current_span("endpoint.create_resource")
 @router.post("/", response_model=ResourceResponse)
 async def create_resource(request: ResourceRequest):
     """
