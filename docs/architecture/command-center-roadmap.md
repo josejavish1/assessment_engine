@@ -34,11 +34,12 @@ Visualizar el output del `product_owner_planner` con telemetría predictiva ante
 
 ---
 
-## Fase 3: Ejecución Iterativa Visual e HITL (End-to-End) - Completada
-Monitorizar la ejecución automática del agente (`gemini-2.5-pro`) con capacidad de interrupción.
+## Fase 3: The Apex - Ejecución Gobernanza por Agentes (Completada)
+Monitorizar la ejecución automática del agente (`gemini-2.5-pro`) con capacidad de interrupción y bajo la supervisión de un sistema de agentes especializados que garantizan la calidad y el cumplimiento normativo.
 - **Streaming de Estados en Vivo**: Las tarjetas se mueven solas a "In Progress". Se visualiza la fase real ("Pensando", "Codificando", "Ejecutando Pytest").
 - **Terminal Incrustada (Live Logs)**: Consola dentro de la tarjeta de tarea mostrando el `stdout/stderr` de los Quality Gates locales.
 - **Human-in-the-Loop (HITL) Dinámico 🚀 [SOTA]**: Implementación de la directiva `elicitInput()` de MCP. Si el agente encuentra una ambigüedad arquitectónica crítica que no puede resolver con certeza, la ejecución se pausa y la UI muestra un modal solicitando al Arquitecto una micro-decisión (ej. elegir entre dos patrones de diseño). Al responder, el agente continúa.
+- **Nota sobre Implementación**: El concepto de "Shadow Routing" (ejecutar un segundo modelo en paralelo para comparación) fue descartado en favor de un sistema de validación y firma más robusto y determinista, liderado por los agentes `Doctor`, `Verification` y `Liability Signer`, que operan sobre los artefactos generados por el agente primario.
 
 ---
 

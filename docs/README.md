@@ -36,6 +36,7 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | `../.github/copilot-instructions.md` | Adaptador breve para Copilot |
 | `SYSTEM_ARCHITECTURE.md` | Arquitectura vigente del sistema |
 | `architecture/` | Descomposición canónica progresiva de la arquitectura |
+| `architecture/elite-governance-2026.md` | Arquitectura de Gobernanza "The Apex" |
 | `operations/` | Operación, validación y CI |
 | `operations/signing-commits-policy.md` | Política y guía para la firma de commits |
 | `operations/agentic-development-workflow.md` | Flujo canónico para programar con agentes |

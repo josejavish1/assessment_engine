@@ -333,6 +333,21 @@ entries:
     last_verified_against: 2026-05-02
     notes: Plan maestro SOTA 2026 para la GUI visual del orquestador en React/Next.js conectada por MCP.
 
+  - path: docs/architecture/elite-governance-2026.md
+    kind: document
+    title: Elite Governance 2026 "The Apex" Architecture
+    doc_type: canonical
+    status: Draft
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/SYSTEM_ARCHITECTURE.md
+      - src/assessment_engine/mcp_server.py
+    last_verified_against: 2026-05-02
+    notes: Describes the The Apex governance layer with Doctor, Verification, and Liability Signer agents.
+
   - path: docs/architecture/tower-pipeline.md
     kind: document
     title: Tower pipeline architecture
