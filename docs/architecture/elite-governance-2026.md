@@ -5,7 +5,12 @@ reviewers:
   - "principal-architect"
   - "compliance-lead"
 last_updated: "2026-05-02"
-doc_type: "architectural-decision-record"
+doc_type: "canonical"
+applies_to: 
+  - "src/assessment_engine/scripts/lib"
+last_verified_against: "2026-05-02"
+source_of_truth: 
+  - "Code"
 ---
 
 # Gobernanza de Élite 2026: Arquitectura "The Apex"

@@ -1,3 +1,16 @@
+---
+status: "Draft"
+owner: "documentation-team"
+reviewers: []
+last_updated: "2026-05-02"
+doc_type: "operational"
+applies_to: 
+  - "docs"
+last_verified_against: "2026-05-02"
+source_of_truth: 
+  - "Manual"
+---
+
 # Auditoría de Documentación del Proyecto
 
 **Última auditoría:** 2026-05-02 - El inventario se ha verificado y se encuentra completo y actualizado.
