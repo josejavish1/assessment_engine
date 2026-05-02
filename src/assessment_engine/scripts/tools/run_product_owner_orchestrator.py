@@ -32,6 +32,8 @@ from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
 from assessment_engine.lib.secrets_client import get_secret, SecretNotFoundError
 
+logger = logging.getLogger(__name__)
+
 ORCHESTRATOR_MANAGED_MARKER = "<!-- orchestrator-managed -->"
 RECONCILIATION_SUMMARY_FILE = "reconciliation_summary.json"
 RECONCILIATION_TIMELINE_FILE = "reconciliation_events.jsonl"
@@ -1304,11 +1306,12 @@ def resume_pull_request(
 
 
 def main(argv: list[str] | None = None) -> int:
+    setup_structured_logging()
     args = parse_args(argv)
     policy = load_orchestrator_policy()
     if args.command == "resume-pr":
         request_dir = resume_pull_request(args, policy=policy)
-        print(f"Reconciliación completada en {request_dir}")
+        logger.info(f"Reconciliación completada en {request_dir}")
         return 0
 
     request_text = load_request_text(args)
@@ -1320,7 +1323,7 @@ def main(argv: list[str] | None = None) -> int:
     save_plan_bundle(request_dir, request_text, plan)
 
     if args.command == "plan":
-        print(f"Plan generado en {request_dir}")
+        logger.info(f"Plan generado en {request_dir}")
         return 0
 
     executor_command = resolve_executor_command(args.executor_command)
@@ -1331,9 +1334,11 @@ def main(argv: list[str] | None = None) -> int:
         skip_pr=args.skip_pr,
         skip_auto_merge=args.skip_auto_merge,
     )
-    print(f"Orquestación completada en {request_dir}")
+    logger.info(f"Orquestación completada en {request_dir}")
     return 0
 
 
 if __name__ == "__main__":
+    raise SystemExit(main())
+ame__ == "__main__":
     raise SystemExit(main())

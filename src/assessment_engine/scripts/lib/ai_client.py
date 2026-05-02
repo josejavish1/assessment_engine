@@ -141,15 +141,15 @@ async def run_agent(
         model_name = getattr(agent_obj, "model", "N/A")
 
         # Telemetry Output
-        print("\n---")
-        print("🤖 AI Agent Telemetry:")
-        print(f"   - Agent Name: {agent_name}")
-        print(f"   - Model: {model_name}")
-        print(f"   - User ID: {user_id}")
-        print(f"   - Duration: {duration:.2f}s")
-        print(f"   - Retries: {retries}")
-        print(f"   - Output Schema: {schema.__name__ if schema else 'Raw JSON'}")
-        print("---\n")
+        telemetry_data = {
+            "agent_name": agent_name,
+            "model": model_name,
+            "user_id": user_id,
+            "duration_seconds": round(duration, 2),
+            "retries": retries,
+            "output_schema": schema.__name__ if schema else 'Raw JSON'
+        }
+        logger.info("AI Agent Telemetry", extra={"telemetry": telemetry_data})
 
 
 async def call_agent(model_name: str, prompt: str, raw_output_file: Optional[Path] = None, instruction: str = "", output_schema: Any = None) -> dict:
