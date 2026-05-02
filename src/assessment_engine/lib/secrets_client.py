@@ -1,7 +1,8 @@
 
 import logging
-from google.cloud import secretmanager
+
 from google.api_core import exceptions
+from google.cloud import secretmanager
 
 logger = logging.getLogger(__name__)
 

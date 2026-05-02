@@ -17,6 +17,7 @@ from tenacity import (
     wait_exponential,
 )
 from vertexai.agent_engines import AdkApp
+
 from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
 from assessment_engine.scripts.lib.runtime_env import get_vertex_query_timeout_seconds
 
@@ -133,7 +134,7 @@ async def run_agent(
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
-        retries = _execute_query_with_retry.retry.statistics.get("attempt_number", 1) - 1
+        retries = _execute_query_with_retry.retry.statistics.get("attempt_number", 1) - 1  # type: ignore[attr-defined]
         
         # Safely access agent and model info
         agent_obj = getattr(app, "_agent", None)

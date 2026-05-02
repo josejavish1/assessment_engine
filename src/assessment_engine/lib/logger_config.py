@@ -13,6 +13,7 @@ import logging
 import logging.config
 import os
 
+
 def setup_structured_logging(level=logging.INFO):
     """
     Configura el logger raíz para usar formato JSON.

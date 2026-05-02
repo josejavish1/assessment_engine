@@ -11,6 +11,7 @@ import subprocess
 import sys
 from json import JSONDecodeError
 from pathlib import Path
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
@@ -40,7 +41,7 @@ def _summarize_validation_error(error: ValidationError) -> list[str]:
 
 
 def _inspect_payload_artifact(path: Path, schema, artifact_name: str) -> dict:
-    artifact_state = {
+    artifact_state: dict[str, Any] = {
         "path": str(path),
         "status": "missing",
     }
@@ -225,8 +226,9 @@ def get_tower_state(case_dir: str) -> str:
     return json.dumps(state, indent=2, ensure_ascii=False)
 
 if __name__ == "__main__":
-    from assessment_engine.lib.logger_config import setup_structured_logging
     import logging
+
+    from assessment_engine.lib.logger_config import setup_structured_logging
     
     setup_structured_logging(level=logging.INFO)
     
