@@ -8,6 +8,19 @@ owners:
       - GEMINI.md
 
 entries:
+  - path: templates/golden_paths/README.md
+    kind: document
+    title: Golden Paths Catalog
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - ai-agents
+    source_of_truth:
+      - AGENTS.md
+    last_verified_against: 2026-05-02
+    notes: Catálogo oficial de plantillas Golden Path.
+
   - path: README.md
     kind: document
     title: Project entry point
