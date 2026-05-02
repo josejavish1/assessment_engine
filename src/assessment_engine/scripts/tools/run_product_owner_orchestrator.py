@@ -209,13 +209,16 @@ def ensure_branch(branch_name: str) -> None:
         return  # Ya estamos en la rama correcta
 
     # Comprobar si la rama existe localmente
-    branch_exists = subprocess.run(
-        ["git", "rev-parse", "--verify", branch_name],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    ).returncode == 0
+    branch_exists = (
+        subprocess.run(
+            ["git", "rev-parse", "--verify", branch_name],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        ).returncode
+        == 0
+    )
 
     if branch_exists:
         run_git_command(["git", "checkout", branch_name])
@@ -473,11 +476,15 @@ def validate_executor_configuration(command_template: str) -> None:
 
     vertex_selector = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower()
     gca_selector = os.environ.get("GOOGLE_GENAI_USE_GCA", "").strip().lower()
-    
+
     try:
         project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "my-gcp-project")
-        gemini_api_key = get_secret(f"projects/{project_id}/secrets/gemini-api-key/versions/latest")
-        google_api_key = get_secret(f"projects/{project_id}/secrets/google-api-key/versions/latest")
+        gemini_api_key = get_secret(
+            f"projects/{project_id}/secrets/gemini-api-key/versions/latest"
+        )
+        google_api_key = get_secret(
+            f"projects/{project_id}/secrets/google-api-key/versions/latest"
+        )
         has_api_key = bool(gemini_api_key or google_api_key)
     except Exception:
         # Fallback if secret manager is not available or project_id is wrong
@@ -586,7 +593,7 @@ def create_commit(commit_title: str) -> None:
 
 
 def push_branch(branch_name: str) -> None:
-    # Use --force-with-lease to safely overwrite the remote branch if it exists from a previous 
+    # Use --force-with-lease to safely overwrite the remote branch if it exists from a previous
     # failed or divergent attempt, while preventing accidental overwrite of new human commits.
     run_git_command(["git", "push", "--force-with-lease", "-u", "origin", branch_name])
 

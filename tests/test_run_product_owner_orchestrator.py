@@ -118,7 +118,9 @@ def test_push_branch_uses_origin_and_sets_upstream(monkeypatch) -> None:
 
     orchestrator.push_branch("feat/test-branch")
 
-    assert calls == [["git", "push", "--force-with-lease", "-u", "origin", "feat/test-branch"]]
+    assert calls == [
+        ["git", "push", "--force-with-lease", "-u", "origin", "feat/test-branch"]
+    ]
 
 
 def test_inspect_pull_request_combines_checks_and_threads(monkeypatch) -> None:

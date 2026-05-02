@@ -2,6 +2,7 @@
 Módulo ai_client.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import logging
 import time
@@ -45,16 +46,16 @@ def extract_model_text(event: Any) -> Optional[str]:
 
 
 @retry(
-    retry=retry_if_exception(
-        lambda exc: not isinstance(exc, VertexQueryTimeoutError)
-    )
+    retry=retry_if_exception(lambda exc: not isinstance(exc, VertexQueryTimeoutError))
     & retry_if_exception_type((Exception,)),
     wait=wait_exponential(multiplier=1, min=2, max=30),
     stop=stop_after_attempt(5),
     before_sleep=before_sleep_log(logger, logging.INFO),
     reraise=True,
 )
-async def _execute_query_with_retry(app: AdkApp, user_id: str, message: str) -> tuple[str, list[str]]:
+async def _execute_query_with_retry(
+    app: AdkApp, user_id: str, message: str
+) -> tuple[str, list[str]]:
     """
     Realiza la consulta al agente con lógica de reintentos.
     """
@@ -76,10 +77,10 @@ async def _execute_query_with_retry(app: AdkApp, user_id: str, message: str) -> 
             raise VertexQueryTimeoutError(
                 f"Vertex agent query timed out after {timeout_seconds:.0f}s for user_id={user_id}."
             ) from exc
-        
+
         if not last_text:
             raise RuntimeError("Respuesta vacía o incompleta del modelo.")
-            
+
         return last_text, lines
 
 
@@ -99,43 +100,50 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
                         return schema.model_validate(v).model_dump(by_alias=True)
                     except Exception:
                         pass
-        logger.error(f"Fallo de validación SRE. Keys del JSON recibido: {list(data.keys()) if isinstance(data, dict) else type(data)}")
+        logger.error(
+            f"Fallo de validación SRE. Keys del JSON recibido: {list(data.keys()) if isinstance(data, dict) else type(data)}"
+        )
         raise e
 
+
 async def run_agent(
-    app: AdkApp, 
-    user_id: str, 
-    message: str, 
+    app: AdkApp,
+    user_id: str,
+    message: str,
     raw_output_file: Optional[Path] = None,
-    schema: Any = None
+    schema: Any = None,
 ) -> dict:
     """
     Ejecuta un agente de forma asíncrona y captura telemetría.
     """
     start_time = time.monotonic()
-    
+
     try:
         last_text, lines = await _execute_query_with_retry(app, user_id, message)
-        
+
         if raw_output_file:
             raw_output_file.write_text("\n".join(lines), encoding="utf-8")
 
         data = parse_json_from_text(last_text)
-        
+
         if schema:
             return _robust_unwrap_and_validate(data, schema)
-                
+
         return data
-        
+
     except Exception as e:
-        logger.error(f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}")
+        logger.error(
+            f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
+        )
         raise
-        
+
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
-        retries = _execute_query_with_retry.retry.statistics.get("attempt_number", 1) - 1  # type: ignore[attr-defined]
-        
+        retries = (
+            _execute_query_with_retry.retry.statistics.get("attempt_number", 1) - 1
+        )  # type: ignore[attr-defined]
+
         # Safely access agent and model info
         agent_obj = getattr(app, "_agent", None)
         agent_name = getattr(agent_obj, "name", "N/A")
@@ -148,16 +156,23 @@ async def run_agent(
             "user_id": user_id,
             "duration_seconds": round(duration, 2),
             "retries": retries,
-            "output_schema": schema.__name__ if schema else 'Raw JSON'
+            "output_schema": schema.__name__ if schema else "Raw JSON",
         }
         logger.info("AI Agent Telemetry", extra={"telemetry": telemetry_data})
 
 
-async def call_agent(model_name: str, prompt: str, raw_output_file: Optional[Path] = None, instruction: str = "", output_schema: Any = None) -> dict:
+async def call_agent(
+    model_name: str,
+    prompt: str,
+    raw_output_file: Optional[Path] = None,
+    instruction: str = "",
+    output_schema: Any = None,
+) -> dict:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
     """
     from google.adk.agents import Agent
+
     agent = Agent(
         model=model_name,
         name="ad_hoc_agent",
@@ -170,5 +185,5 @@ async def call_agent(model_name: str, prompt: str, raw_output_file: Optional[Pat
         user_id="ad-hoc-user",
         message=prompt,
         raw_output_file=raw_output_file,
-        schema=output_schema
+        schema=output_schema,
     )

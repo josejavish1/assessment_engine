@@ -1,4 +1,3 @@
-
 import logging
 
 from google.api_core import exceptions
@@ -6,13 +5,18 @@ from google.cloud import secretmanager
 
 logger = logging.getLogger(__name__)
 
+
 class SecretNotFoundError(Exception):
     """Raised when a secret is not found."""
+
     pass
+
 
 class SecretPermissionError(Exception):
     """Raised when there is a permission issue accessing a secret."""
+
     pass
+
 
 def get_secret(secret_version_id: str) -> str:
     """
@@ -40,8 +44,9 @@ def get_secret(secret_version_id: str) -> str:
         raise SecretNotFoundError(f"Secret not found: {secret_version_id}")
     except exceptions.PermissionDenied:
         logger.debug(f"Permission denied for secret: {secret_version_id}")
-        raise SecretPermissionError(f"Permission denied for secret: {secret_version_id}")
+        raise SecretPermissionError(
+            f"Permission denied for secret: {secret_version_id}"
+        )
     except exceptions.GoogleAPICallError as e:
         logger.debug(f"API error accessing secret {secret_version_id}: {e}")
         raise
-
