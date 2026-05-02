@@ -35,16 +35,20 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
 *   **Telemetry-Driven Metrics:** Uso de la telemetría (Fase 2) para medir el *Zero-Shot Pass Rate* (¿pasa los Quality Gates a la primera?), el *Code Churn* (reescrituras inútiles) y el coste en dólares por PR.
 *   **Shadow PR Review (Maintainer Mergeability):** Uso de un LLM hiper-especializado en un pipeline nocturno para evaluar exclusivamente si el código generado respeta los Golden Paths y las invariantes (Mergeability), evitando el uso de jueces de IA lentos en el flujo diario.
 
-### Fase 4: Agentic Command Center / Dynamic Workspace (Visión Futura)
-**Objetivo:** Evolucionar la UX de "Terminal Ciega" y "Git-First asíncrono" a una "Simbiosis Humano-IA" en tiempo real usando MCP.
-*   **Paradigma:** Dejar de tratar al agente como un chatbot y tratarlo como un co-procesador dentro de un entorno espacial.
-*   **Arquitectura:** 
-    *   **Backend:** `mcp_server.py` vitaminado con capacidades de streaming (SSE).
-    *   **Frontend:** Aplicación web (Next.js + React Flow / Tldraw) construida *por* el propio equipo de agentes de IA.
-*   **Experiencia (UX):**
-    *   **Generative UI:** Los planes del orquestador se renderizan como un tablero Kanban o un grafo de dependencias en un lienzo interactivo.
-    *   **Co-creación:** El Tech Lead puede arrastrar, modificar, aprobar o eliminar nodos (mini-tareas) visualmente antes de la ejecución.
-    *   **Telemetría Viva:** Barras de progreso, *reasoning traces* y visualización de Diffs de código integrados en el frontend durante la fase de *builder*.
+### Fase 4: Arquitectura Dual de Control (Visión Futura)
+**Objetivo:** Desacoplar la experiencia de usuario (UX) resolviendo el debate "Build vs Buy", separando la plataforma de Ingeniería de la plataforma de Negocio.
+
+#### 4A: Developer Control Plane (El Motor para Ingeniería)
+*   **Usuarios:** Tech Leads y AI Engineers.
+*   **Propósito:** Desarrollar nuevas funcionalidades, afinar los agentes y mantener el orquestador (`po-run`).
+*   **Enfoque (IDE-First):** Integración nativa del servidor MCP (`mcp_server.py`) directamente en IDEs avanzados (Cursor / VS Code). Cero mantenimiento de frontend. El ingeniero interactúa con los agentes de código directamente sobre los archivos, aprovechando las interfaces *Multi-file Diff* nativas del editor.
+
+#### 4B: Business Command Center (La Interfaz para Clientes/Consultores)
+*   **Usuarios:** Consultores, Product Owners y Clientes finales.
+*   **Propósito:** Ejecutar los Assessments, visualizar resultados, GAPs y Blueprints.
+*   **Enfoque (Custom Web Platform):** 
+    *   **Frontend:** Aplicación web dedicada (Next.js + Vercel AI SDK / React Flow) construida de forma acelerada *por* el equipo de agentes de IA usando componentes base (Shadcn/v0).
+    *   **UX (Generative UI):** Interfaz limpia y espacial. El consultor no ve código ni JSONs. Ve los "Towers" y "Pillars" del Assessment renderizados dinámicamente como gráficas interactivas, alimentados por el mismo servidor MCP en background.
 
 ---
-*Nota: Este documento sirve como "North Star" para guiar el desarrollo de los agentes internos del equipo. Las Fases 3 y 4 deben ser ejecutadas progresivamente delegando el trabajo al orquestador interno.*
+*Nota: Este documento sirve como "North Star" para guiar el desarrollo de los agentes internos del equipo. La construcción de la Fase 4B debe delegarse como una serie de Epics a los agentes del Developer Control Plane.*
