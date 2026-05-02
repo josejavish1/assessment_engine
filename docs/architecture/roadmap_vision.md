@@ -1,3 +1,15 @@
+---
+status: Verified
+owner: docs-governance
+source_of_truth:
+  - ../../AGENTS.md
+last_verified_against: 2026-05-02
+applies_to:
+  - humans
+  - ai-agents
+doc_type: canonical
+---
+
 # Visión Arquitectónica: Hacia el Sistema Operativo Agentic
 
 Este documento establece la hoja de ruta estratégica para evolucionar el Assessment Engine desde un orquestador CLI avanzado hacia una plataforma de ingeniería agentic "Top Mundial" (estándar 2026).
