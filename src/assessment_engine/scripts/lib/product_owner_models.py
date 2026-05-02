@@ -19,6 +19,10 @@ class ProductOwnerDoctorDiagnosis(BaseModel):
         default_factory=list,
         description="Lista de archivos que se modificarán para aplicar la cura.",
     )
+    required_invariant_breach: str | None = Field(
+        default=None,
+        description="Si aplica, describe qué regla arquitectónica o contrato base (invariante) es necesario romper para arreglar el problema.",
+    )
     second_order_impact: str = Field(
         description="Si is_safe_to_proceed es False, explica qué pilar o invariante se rompe y los riesgos. En español."
     )

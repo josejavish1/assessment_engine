@@ -29,6 +29,12 @@ from assessment_engine.scripts.lib.config_loader import (
     load_policy_file,
     resolve_model_profile_for_role,
 )
+from assessment_engine.scripts.lib.doctor_agent import DoctorAgent
+from assessment_engine.scripts.lib.liability_signer import LiabilitySigner
+from assessment_engine.scripts.lib.verification_agent import (
+    VerificationAgent,
+    VerificationError,
+)
 from assessment_engine.scripts.lib.pipeline_runtime import (
     build_runtime_env,
     resolve_python_bin,
@@ -564,45 +570,8 @@ def preflight_executor(request_dir: Path, command_template: str) -> None:
 
 
 def run_standard_validations(request_dir: Path) -> None:
-    policy = load_orchestrator_policy()
-    timeouts = resolve_execution_timeouts(policy)
-    python_bin = resolve_python_bin()
-    validation_commands = [
-        [python_bin if token == "python" else token for token in entry["command"]]
-        for entry in policy.get("validation_commands", [])
-    ]
-
     changed_python_files = collect_changed_python_files()
-    quality_command = [
-        python_bin,
-        "src/assessment_engine/scripts/tools/run_incremental_quality_gate.py",
-        "--repo-root",
-        ".",
-    ]
-    typing_command = [
-        python_bin,
-        "src/assessment_engine/scripts/tools/run_incremental_typecheck.py",
-        "--repo-root",
-        ".",
-    ]
-    golden_path_command = [
-        python_bin,
-        "src/assessment_engine/scripts/tools/run_golden_path_check.py",
-        "--repo-root",
-        ".",
-    ]
-    for path in changed_python_files:
-        quality_command.extend(["--path", path])
-        typing_command.extend(["--path", path])
-
-    validation_commands.extend([quality_command, typing_command, golden_path_command])
-
-    for index, command in enumerate(validation_commands, start=1):
-        run_command(
-            command,
-            output_path=request_dir / f"validation_{index}.log",
-            timeout_seconds=timeouts["validation_timeout_seconds"],
-        )
+    VerificationAgent.verify_changes(request_dir, changed_python_files)
 
 
 def resolve_execution_timeouts(policy: dict[str, Any]) -> dict[str, int]:
@@ -618,12 +587,20 @@ def resolve_execution_timeouts(policy: dict[str, Any]) -> dict[str, int]:
     }
 
 
-def create_commit(commit_title: str) -> None:
+def create_commit(
+    commit_title: str, compliance_receipt: dict[str, Any] | None = None
+) -> None:
     run_git_command(["git", "add", "-A"])
     message = (
         f"{commit_title}\n\n"
         "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
     )
+    if compliance_receipt:
+        message += (
+            f"\n\n[zk-Liability-Proof]\n"
+            f"EU-AI-Act-Compliance: {compliance_receipt.get('eu_ai_act_compliance', 'Verified')}\n"
+            f"Governance-Commitment: sha256:{compliance_receipt.get('governance_commitment_hash')}"
+        )
     run_git_command(["git", "commit", "-m", message])
 
 
@@ -1335,21 +1312,6 @@ def create_pr(
     return pr_data
 
 
-async def diagnose_error(
-    plan: dict[str, Any], task: dict[str, Any], error_log: str
-) -> dict[str, Any]:
-    model_profile = resolve_model_profile_for_role("product_owner_planner")
-
-    result = await call_agent(
-        model_name=model_profile["model"],
-        prompt=build_product_owner_doctor_prompt(plan, task, error_log),
-        instruction=get_product_owner_doctor_instruction(),
-        output_schema=ProductOwnerDoctorDiagnosis,
-        tools=get_context_tools(),
-    )
-    return ProductOwnerDoctorDiagnosis.model_validate(result).model_dump(mode="json")
-
-
 def execute_plan(
     request_dir: Path,
     plan: dict[str, Any],
@@ -1365,8 +1327,32 @@ def execute_plan(
 
     ensure_branch(plan["branch_name"])
 
+    # Cargar feedback autorizado si existe
+    authorized_feedback_path = request_dir / "authorized_feedback.json"
+    authorized_feedback_data = {}
+    if authorized_feedback_path.exists():
+        try:
+            authorized_feedback_data = json.loads(
+                authorized_feedback_path.read_text(encoding="utf-8")
+            )
+            authorized_feedback_path.unlink(missing_ok=True)  # Lo borramos tras leerlo
+            logger.info(
+                "Se ha detectado y cargado feedback autorizado por el humano para esta ejecución."
+            )
+        except Exception as e:
+            logger.warning(f"No se pudo cargar el feedback autorizado: {e}")
+
     for task in plan.get("tasks", []):
+        logger.info(f"=== INICIANDO TAREA: {task['id']} ===")
         feedback: str | None = None
+
+        # Inyectar el feedback del humano en el primer intento si aplica a esta tarea
+        if authorized_feedback_data.get("task_id") == task["id"]:
+            feedback = authorized_feedback_data.get("feedback")
+            logger.info(
+                f"Inyectando feedback autorizado al Worker para la tarea {task['id']}"
+            )
+
         for attempt in range(1, max_attempts + 1):
             task_prompt = render_task_prompt(
                 plan, task, attempt=attempt, validation_feedback=feedback
@@ -1386,6 +1372,7 @@ def execute_plan(
                     timeout_seconds=timeouts["executor_timeout_seconds"],
                 )
                 run_standard_validations(request_dir)
+                logger.info(f"=== TAREA COMPLETADA: {task['id']} ===")
                 break
             except Exception as exc:
                 raw_error = str(exc)
@@ -1393,18 +1380,31 @@ def execute_plan(
                     f"Error en intento {attempt} de tarea {task['id']}. Llamando al Agente Doctor..."
                 )
 
-                diagnosis = asyncio.run(diagnose_error(plan, task, raw_error))
+                diagnosis = asyncio.run(DoctorAgent.diagnose(plan, task, raw_error))
 
-                if not diagnosis.get("is_safe_to_proceed", False):
-                    raise RuntimeError(
-                        f"ACTION GATE TRIGGERED: El Agente Doctor ha bloqueado la auto-curación.\n"
-                        f"Diagnóstico: {diagnosis.get('diagnosis')}\n"
-                        f"Cura: {diagnosis.get('proposed_cure')}\n"
-                        f"Impacto: {diagnosis.get('second_order_impact')}\n"
-                        f"Archivos a tocar: {diagnosis.get('blast_radius')}"
+                if not diagnosis.is_safe_to_proceed:
+                    # Guardar el Action Gate State
+                    action_gate_state = {
+                        "status": "BLOCKED_BY_GOVERNANCE",
+                        "task_id": task["id"],
+                        "diagnosis": diagnosis.model_dump(mode="json"),
+                        "raw_error": raw_error,
+                    }
+                    (request_dir / "reconciliation_summary.json").write_text(
+                        json.dumps(action_gate_state, ensure_ascii=False, indent=2),
+                        encoding="utf-8",
                     )
 
-                feedback = f"SÍNTOMA:\n{raw_error}\n\nCURA PROPUESTA POR EL DOCTOR:\n{diagnosis.get('proposed_cure')}"
+                    raise RuntimeError(
+                        f"ACTION GATE TRIGGERED: El Agente Doctor ha bloqueado la auto-curación.\n"
+                        f"Diagnóstico: {diagnosis.diagnosis}\n"
+                        f"Invariante Comprometido: {diagnosis.required_invariant_breach}\n"
+                        f"Cura: {diagnosis.proposed_cure}\n"
+                        f"Impacto: {diagnosis.second_order_impact}\n"
+                        f"Archivos a tocar: {diagnosis.blast_radius}"
+                    )
+
+                feedback = f"SÍNTOMA:\n{raw_error}\n\nCURA PROPUESTA POR EL DOCTOR:\n{diagnosis.proposed_cure}"
 
                 if attempt == max_attempts:
                     raise RuntimeError(
@@ -1413,7 +1413,22 @@ def execute_plan(
         else:
             raise RuntimeError(f"No se pudo completar la tarea {task['id']}.")
 
-    create_commit(plan["commit_title"])
+    # Capturar el diff antes del commit para la firma
+    diff_result = subprocess.run(
+        ["git", "diff", "HEAD"], capture_output=True, text=True, cwd=ROOT
+    )
+    tasks = plan.get("tasks", [])
+    task_id = tasks[-1]["id"] if tasks else "global"
+
+    compliance_receipt = LiabilitySigner.generate_compliance_receipt(
+        request_dir=request_dir,
+        plan=plan,
+        task_id=task_id,
+        diff_content=diff_result.stdout,
+        verification_status="Verified_By_Orchestrator",
+    )
+
+    create_commit(plan["commit_title"], compliance_receipt=compliance_receipt)
     if not skip_pr:
         create_pr(plan, request_dir, skip_auto_merge=skip_auto_merge)
         if not skip_auto_merge and policy.get("pull_request", {}).get(

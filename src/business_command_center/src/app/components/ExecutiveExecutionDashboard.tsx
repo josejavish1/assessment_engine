@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Play, XCircle, Terminal, Activity, Loader2, GitPullRequest, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { startPlanExecution, checkExecutionStatus, abortAndRevert } from '../actions/mcp';
+import { startPlanExecution, checkExecutionStatus, abortAndRevert, checkActionGate, authorizeActionGate } from '../actions/mcp';
 
 interface ExecutiveExecutionDashboardProps {
   plan: any;
@@ -13,9 +13,10 @@ interface ExecutiveExecutionDashboardProps {
 }
 
 export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack }: ExecutiveExecutionDashboardProps) {
-  const [executionState, setExecutionState] = useState<'idle' | 'running' | 'completed' | 'error'>('idle');
+  const [executionState, setExecutionState] = useState<'idle' | 'running' | 'completed' | 'error' | 'action_gate'>('idle');
   const [logs, setLogs] = useState<string>('');
   const [eta, setEta] = useState<number>(plan?.tasks?.length * 2 || 5); // Rough estimate in minutes
+  const [actionGate, setActionGate] = useState<any>(null);
 
   const startExecution = async () => {
     setExecutionState('running');
@@ -31,8 +32,14 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
           setLogs(prev => prev + "\n✅ " + statusRes.result);
         } else if (statusRes.status === 'error') {
           clearInterval(poll);
-          setExecutionState('error');
-          setLogs(prev => prev + "\n❌ " + statusRes.result);
+          const agRes = await checkActionGate(requestDir);
+          if (agRes.success && agRes.data?.action_gate_active) {
+            setActionGate(agRes.data.data);
+            setExecutionState('action_gate');
+          } else {
+            setExecutionState('error');
+            setLogs(prev => prev + "\n❌ " + statusRes.result);
+          }
         } else {
           // Decrement ETA slightly for effect
           setEta(e => Math.max(1, e - 0.1));
@@ -55,6 +62,40 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
       alert("Ejecución abortada. El repositorio ha sido revertido a su estado seguro.");
     } else {
       setLogs(prev => prev + `\n❌ Error en el rollback: ${res.error}`);
+    }
+  };
+
+  const handleAuthorizeActionGate = async () => {
+    setLogs(prev => prev + "\n\n⚠️ AUTORIZANDO RUPTURA DE INVARIANTE (Action Gate Bypass)...\n");
+    setActionGate(null);
+    setExecutionState('running');
+    const res = await authorizeActionGate(requestDir);
+    if (res.success) {
+      setLogs(prev => prev + "✅ Action Gate autorizado. Reintentando ejecución...\n");
+      // Resuming execution
+      const runRes = await startPlanExecution(requestDir, altIndex);
+      if (runRes.success && runRes.jobId) {
+        const poll = setInterval(async () => {
+          const statusRes = await checkExecutionStatus(runRes.jobId);
+          if (statusRes.result) setLogs(statusRes.result);
+          if (statusRes.status === 'completed') {
+            clearInterval(poll);
+            setExecutionState('completed');
+          } else if (statusRes.status === 'error') {
+            clearInterval(poll);
+            const agRes = await checkActionGate(requestDir);
+            if (agRes.success && agRes.data?.action_gate_active) {
+              setActionGate(agRes.data.data);
+              setExecutionState('action_gate');
+            } else {
+              setExecutionState('error');
+            }
+          }
+        }, 3000);
+      }
+    } else {
+      setLogs(prev => prev + `\n❌ Error autorizando: ${res.error}`);
+      setExecutionState('error');
     }
   };
 
@@ -148,6 +189,66 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
         </div>
 
       </div>
+
+      {/* Action Gate Modal */}
+      {executionState === 'action_gate' && actionGate && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-slate-950 border border-destructive rounded-xl shadow-2xl max-w-3xl w-full flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-destructive/20 border-b border-destructive p-4 flex items-center gap-3">
+              <XCircle className="h-6 w-6 text-destructive" />
+              <h2 className="text-xl font-bold text-destructive">ACTION GATE TRIGGERED</h2>
+            </div>
+            
+            <div className="p-6 space-y-6 text-slate-300">
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Diagnóstico del Doctor Agent</h3>
+                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate.diagnosis.diagnosis}</p>
+              </div>
+
+              {actionGate.diagnosis.required_invariant_breach && (
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-destructive mb-2">Invariante Comprometido</h3>
+                  <p className="bg-destructive/10 p-3 rounded border border-destructive/30 text-sm text-red-200">{actionGate.diagnosis.required_invariant_breach}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Cura Propuesta</h3>
+                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate.diagnosis.proposed_cure}</p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Blast Radius (Archivos Afectados)</h3>
+                <div className="flex gap-2 flex-wrap">
+                  {actionGate.diagnosis.blast_radius?.map((file: string, idx: number) => (
+                    <Badge key={idx} variant="outline" className="bg-slate-800 border-slate-700">{file}</Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-orange-400 mb-2">Impacto Secundario (Riesgo)</h3>
+                <p className="bg-orange-500/10 p-3 rounded border border-orange-500/30 text-sm text-orange-200">{actionGate.diagnosis.second_order_impact}</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-900 p-4 border-t border-slate-800 flex justify-end gap-4">
+              <button 
+                onClick={handleKillSwitch}
+                className="px-4 py-2 rounded font-medium border border-slate-700 hover:bg-slate-800 transition-colors"
+              >
+                Denegar y Abortar
+              </button>
+              <button 
+                onClick={handleAuthorizeActionGate}
+                className="px-6 py-2 rounded font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg"
+              >
+                Autorizar Excepción
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

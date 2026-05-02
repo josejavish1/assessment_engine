@@ -123,3 +123,45 @@ export async function abortAndRevert() {
     if (mcp) await mcp.client.close();
   }
 }
+
+export async function checkActionGate(requestDir: string) {
+  let mcp;
+  try {
+    mcp = await createClient();
+    
+    const result = await mcp.client.callTool({
+      name: "check_action_gate",
+      arguments: { request_dir: requestDir }
+    }, undefined, { timeout: 10000 });
+    
+    const textContent = (result as any).content[0].text;
+    const data = JSON.parse(textContent);
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("Error checking action gate:", error);
+    return { success: false, error: error.message };
+  } finally {
+    if (mcp) await mcp.client.close();
+  }
+}
+
+export async function authorizeActionGate(requestDir: string) {
+  let mcp;
+  try {
+    mcp = await createClient();
+    
+    const result = await mcp.client.callTool({
+      name: "authorize_action_gate",
+      arguments: { request_dir: requestDir }
+    }, undefined, { timeout: 10000 });
+    
+    const textContent = (result as any).content[0].text;
+    const data = JSON.parse(textContent);
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("Error authorizing action gate:", error);
+    return { success: false, error: error.message };
+  } finally {
+    if (mcp) await mcp.client.close();
+  }
+}

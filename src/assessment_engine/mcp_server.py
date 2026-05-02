@@ -374,6 +374,89 @@ def check_execution_status(job_id: str) -> str:
 
 
 @mcp.tool()
+def check_action_gate(request_dir: str) -> str:
+    """
+    Comprueba si existe un bloqueo de Gobernanza Inmunitaria (Action Gate).
+    """
+    import os
+
+    summary_path = os.path.join(request_dir, "reconciliation_summary.json")
+    if os.path.exists(summary_path):
+        try:
+            with open(summary_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return json.dumps({"action_gate_active": True, "data": data})
+        except Exception as e:
+            return json.dumps({"action_gate_active": False, "error": str(e)})
+    return json.dumps({"action_gate_active": False})
+
+
+@mcp.tool()
+def authorize_action_gate(request_dir: str) -> str:
+    """
+    Autoriza un Action Gate actualizando el plan y eliminando el bloqueo.
+    """
+    import os
+
+    summary_path = os.path.join(request_dir, "reconciliation_summary.json")
+    plan_path = os.path.join(request_dir, "plan.json")
+
+    if not os.path.exists(summary_path):
+        return json.dumps({"success": False, "message": "No hay Action Gate activo."})
+
+    try:
+        with open(summary_path, "r", encoding="utf-8") as f:
+            summary = json.load(f)
+
+        if os.path.exists(plan_path):
+            with open(plan_path, "r", encoding="utf-8") as f:
+                plan = json.load(f)
+
+            active_plan = plan
+            if "tasks" not in plan and "alternatives" in plan:
+                active_plan = plan["alternatives"][0]
+
+            blast_radius = summary.get("diagnosis", {}).get("blast_radius", [])
+            if "in_scope" not in active_plan:
+                active_plan["in_scope"] = []
+            for file in blast_radius:
+                if file not in active_plan["in_scope"]:
+                    active_plan["in_scope"].append(file)
+
+            invariant_breach = summary.get("diagnosis", {}).get(
+                "required_invariant_breach"
+            )
+            if invariant_breach and "invariants" in active_plan:
+                active_plan["invariants"] = [
+                    inv for inv in active_plan["invariants"] if inv != invariant_breach
+                ]
+                active_plan["invariants"].append(
+                    f"EXCEPTION AUTHORIZED BY HUMAN: Se permite romper el invariante previo respecto a: {invariant_breach}"
+                )
+
+            with open(plan_path, "w", encoding="utf-8") as f:
+                json.dump(plan, f, indent=2, ensure_ascii=False)
+
+            # Guardar el feedback para el Worker
+            feedback_path = os.path.join(request_dir, "authorized_feedback.json")
+            with open(feedback_path, "w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "task_id": summary.get("task_id"),
+                        "feedback": f"SÍNTOMA ANTERIOR:\n{summary.get('raw_error')}\n\nCURA AUTORIZADA POR EL PRODUCT OWNER:\n{summary.get('diagnosis', {}).get('proposed_cure')}",
+                    },
+                    f,
+                    indent=2,
+                    ensure_ascii=False,
+                )
+
+        os.remove(summary_path)
+        return json.dumps({"success": True, "message": "Action Gate autorizado."})
+    except Exception as e:
+        return json.dumps({"success": False, "message": f"Error autorizando: {e}"})
+
+
+@mcp.tool()
 def abort_and_revert() -> str:
     """
     El 'Botón Rojo' de emergencia. Aborta la ejecución actual (mata los procesos si se puede)
