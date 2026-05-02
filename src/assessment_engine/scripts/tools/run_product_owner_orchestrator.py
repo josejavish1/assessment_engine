@@ -499,7 +499,9 @@ def create_commit(commit_title: str) -> None:
 
 
 def push_branch(branch_name: str) -> None:
-    run_git_command(["git", "push", "-u", "origin", branch_name])
+    # Use --force-with-lease to safely overwrite the remote branch if it exists from a previous 
+    # failed or divergent attempt, while preventing accidental overwrite of new human commits.
+    run_git_command(["git", "push", "--force-with-lease", "-u", "origin", branch_name])
 
 
 def repository_coordinates() -> tuple[str, str]:
