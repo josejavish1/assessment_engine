@@ -12,7 +12,10 @@ from tests.artifact_helpers import ROOT, require_artifact_es
 
 PAYLOAD_PATH = ROOT / "working" / "ivirma" / "commercial_report_payload.json"
 TEMPLATE_PATH = (
-    ROOT / "source_docs" / "templates" / "11. Template Documento General Alpha v.05.docx"
+    ROOT
+    / "source_docs"
+    / "templates"
+    / "11. Template Documento General Alpha v.05.docx"
 )
 
 

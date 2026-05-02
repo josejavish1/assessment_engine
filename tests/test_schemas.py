@@ -13,15 +13,11 @@ def test_pillar_blueprint_valid():
         "pilar_id": "T2.P1",
         "pilar_name": "Compute Foundation",
         "health_check_asis": [
-            {
-                "capability": "HA",
-                "finding": "Weak",
-                "business_risk": "High"
-            }
+            {"capability": "HA", "finding": "Weak", "business_risk": "High"}
         ],
         "target_architecture_tobe": {
             "vision": "Cloud Native",
-            "design_principles": ["IaC"]
+            "design_principles": ["IaC"],
         },
         "projects_todo": [
             {
@@ -30,13 +26,14 @@ def test_pillar_blueprint_valid():
                 "tech_objective": "Deploy",
                 "deliverables": ["Script"],
                 "sizing": "M",
-                "duration": "3 months"
+                "duration": "3 months",
             }
-        ]
+        ],
     }
     obj = PillarBlueprintDraft(**data)
     assert obj.pilar_id == "T2.P1"
     assert len(obj.projects_todo) == 1
+
 
 def test_pillar_blueprint_invalid():
     """Verifica que PillarBlueprintDraft lanza error si faltan campos obligatorios."""
@@ -47,6 +44,7 @@ def test_pillar_blueprint_invalid():
     with pytest.raises(ValidationError):
         PillarBlueprintDraft(**data)
 
+
 def test_project_todo_sizing_enum_candidate():
     """Verifica la estructura de ProjectToDo."""
     # Nota: Aquí podríamos añadir validaciones personalizadas en el futuro (ej. que sizing sea S, M, L, XL)
@@ -55,8 +53,8 @@ def test_project_todo_sizing_enum_candidate():
         "business_case": "BC",
         "tech_objective": "TO",
         "deliverables": ["D1"],
-        "sizing": "INVALID_SIZING", # Actualmente el esquema acepta cualquier string
-        "duration": "1m"
+        "sizing": "INVALID_SIZING",  # Actualmente el esquema acepta cualquier string
+        "duration": "1m",
     }
     obj = ProjectToDo(**data)
     assert obj.sizing == "INVALID_SIZING"

@@ -28,7 +28,9 @@ def test_prepare_case_runtime_sets_case_env(tmp_path, monkeypatch) -> None:
 
 
 def test_validate_runtime_environment_requires_vertex_env() -> None:
-    with pytest.raises(RuntimeError, match="Falta configuración de entorno para Vertex AI"):
+    with pytest.raises(
+        RuntimeError, match="Falta configuración de entorno para Vertex AI"
+    ):
         pipeline_runtime.validate_runtime_environment({"GOOGLE_CLOUD_PROJECT": ""})
 
 

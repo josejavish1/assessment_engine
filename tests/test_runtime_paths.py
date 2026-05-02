@@ -29,8 +29,10 @@ def test_resolve_client_dir_falls_back_to_legacy_working(monkeypatch) -> None:
     monkeypatch.setattr(
         Path,
         "exists",
-        lambda self: str(self)
-        == "/tmp/assessment-engine/src/assessment_engine/working/smoke_ivirma",
+        lambda self: (
+            str(self)
+            == "/tmp/assessment-engine/src/assessment_engine/working/smoke_ivirma"
+        ),
     )
 
     client_dir = runtime_paths.resolve_client_dir("smoke_ivirma")
@@ -79,16 +81,24 @@ def test_resolve_artifact_paths(monkeypatch) -> None:
     )
 
 
-def test_resolve_blueprint_payload_candidates_include_uppercase_legacy(monkeypatch) -> None:
+def test_resolve_blueprint_payload_candidates_include_uppercase_legacy(
+    monkeypatch,
+) -> None:
     monkeypatch.setattr(runtime_paths, "ROOT", Path("/tmp/assessment-engine"))
     monkeypatch.delenv("ASSESSMENT_CLIENT_ID", raising=False)
     monkeypatch.delenv("ASSESSMENT_TOWER_ID", raising=False)
 
-    candidates = runtime_paths.resolve_blueprint_payload_candidates("smoke_ivirma", "T1")
+    candidates = runtime_paths.resolve_blueprint_payload_candidates(
+        "smoke_ivirma", "T1"
+    )
 
     assert candidates == (
-        Path("/tmp/assessment-engine/working/smoke_ivirma/T1/blueprint_t1_payload.json"),
-        Path("/tmp/assessment-engine/working/smoke_ivirma/T1/blueprint_T1_payload.json"),
+        Path(
+            "/tmp/assessment-engine/working/smoke_ivirma/T1/blueprint_t1_payload.json"
+        ),
+        Path(
+            "/tmp/assessment-engine/working/smoke_ivirma/T1/blueprint_T1_payload.json"
+        ),
     )
 
 

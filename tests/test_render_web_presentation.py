@@ -145,6 +145,7 @@ def _build_valid_blueprint_payload() -> dict:
         ],
     }
 
+
 @pytest.fixture
 def setup_real_test_data():
     client_id = "web_test_client_real"
@@ -158,23 +159,27 @@ def setup_real_test_data():
     blueprint_dir.mkdir(exist_ok=True)
     blueprint_data = _build_valid_blueprint_payload()
     (blueprint_dir / "blueprint_T1_payload.json").write_text(json.dumps(blueprint_data))
-    
+
     yield client_id
-    
+
     import shutil
+
     shutil.rmtree(test_dir)
+
 
 def test_generate_web_dashboard_with_real_files(setup_real_test_data):
     client_id = setup_real_test_data
     output_html_path = WORKING_DIR / client_id / "presentation" / "index.html"
-    
-    # La lógica del script original usa una ruta relativa a __file__, 
+
+    # La lógica del script original usa una ruta relativa a __file__,
     # por lo que no necesita mocks si la estructura de directorios es correcta.
     generate_web_dashboard(client_id)
 
     assert output_html_path.exists(), "El fichero index.html no fue creado."
     content = output_html_path.read_text(encoding="utf-8")
-    assert len(content) > 5000, f"El contenido del HTML es demasiado pequeño ({len(content)} bytes)."
+    assert len(content) > 5000, (
+        f"El contenido del HTML es demasiado pequeño ({len(content)} bytes)."
+    )
     assert '"headline": "Test Headline"' in content, "El 'headline' no fue inyectado."
 
 

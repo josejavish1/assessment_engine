@@ -16,8 +16,13 @@ class ProductOwnerTask(BaseModel):
 
 
 class ProductOwnerPlan(BaseModel):
-    refused: bool = Field(default=False, description="Set to true if the request is destructive or out of scope.")
-    refusal_reason: str = Field(default="", description="Reason for refusal if refused is true.")
+    refused: bool = Field(
+        default=False,
+        description="Set to true if the request is destructive or out of scope.",
+    )
+    refusal_reason: str = Field(
+        default="", description="Reason for refusal if refused is true."
+    )
     request_title: str
     branch_name: str
     pr_title: str

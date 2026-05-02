@@ -64,7 +64,10 @@ def test_t5_annex_payload_schema_and_executive_limits():
     assert payload.document_meta["tower_name"] == "Resilience & Continuity"
     # Check versioning metadata
     assert payload.generation_metadata is not None
-    assert payload.generation_metadata.artifact_type in ["annex_payload", "annex_template_payload"]
+    assert payload.generation_metadata.artifact_type in [
+        "annex_payload",
+        "annex_template_payload",
+    ]
     assert payload.pillar_score_profile.radar_chart.endswith(
         "pillar_radar_chart.generated.png"
     )
@@ -76,7 +79,9 @@ def test_t5_annex_payload_schema_and_executive_limits():
     if isinstance(summary, list):
         summary = " ".join(summary)
     summary_lower = summary.lower()
-    assert any(x in summary_lower for x in ["m&a", "adquis", "crecimiento", "expansión"])
+    assert any(
+        x in summary_lower for x in ["m&a", "adquis", "crecimiento", "expansión"]
+    )
     assert any(x in summary_lower for x in ["ia", "datos", "digital", "tecnológ"])
 
 

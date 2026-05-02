@@ -63,4 +63,3 @@ def test_blueprint_prompt_shapes():
         data = _load_yaml(REGISTRY_DIR / filename)
         for key in keys:
             assert key in data, f"Missing key {key} in {filename}"
-
