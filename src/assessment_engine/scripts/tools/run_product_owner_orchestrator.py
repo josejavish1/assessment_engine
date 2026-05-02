@@ -479,11 +479,17 @@ def run_standard_validations(request_dir: Path) -> None:
         "--repo-root",
         ".",
     ]
+    golden_path_command = [
+        python_bin,
+        "src/assessment_engine/scripts/tools/run_golden_path_check.py",
+        "--repo-root",
+        ".",
+    ]
     for path in changed_python_files:
         quality_command.extend(["--path", path])
         typing_command.extend(["--path", path])
 
-    validation_commands.extend([quality_command, typing_command])
+    validation_commands.extend([quality_command, typing_command, golden_path_command])
 
     for index, command in enumerate(validation_commands, start=1):
         run_command(command, output_path=request_dir / f"validation_{index}.log")
