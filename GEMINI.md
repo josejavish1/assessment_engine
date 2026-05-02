@@ -186,6 +186,10 @@ La base documental canónica del proyecto ya no vive aquí. La ruta recomendada 
 
 ## 6. Diario de Refactorización
 
+-   **2026-05-02 - Endurecimiento del workflow de DevOps**
+    -   Se ha refactorizado el workflow `orchestrator-pr-reconcile.yml` para mejorar su mantenibilidad y robustez.
+    -   La lógica de actualización de PRs, que antes era un script inline, se ha externalizado a `.github/scripts/reconcile_prs.sh`.
+    -   El nuevo script es ejecutable e incluye una gestión de errores más estricta (`set -euo pipefail`) y asegura un estado de git limpio en cada iteración.
 -   **2026-04-30 - Cierre de Prioridad 1 / estabilización del entorno y tests**
     -   Se eliminó la dependencia artificial de `PYTHONPATH=src` en la suite de tests.
     -   Se retiró la manipulación manual de `sys.path` en `tests/conftest.py` y se actualizó `tests/test_environment.py` para verificar el paquete instalado en editable.

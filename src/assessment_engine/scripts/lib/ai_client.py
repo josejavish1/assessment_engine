@@ -7,7 +7,7 @@ import asyncio
 import logging
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from tenacity import (
     before_sleep_log,
@@ -174,6 +174,7 @@ async def call_agent(
     raw_output_file: Optional[Path] = None,
     instruction: str = "",
     output_schema: Any = None,
+    tools: Optional[list[Callable[..., Any]]] = None,
 ) -> dict:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
@@ -185,6 +186,7 @@ async def call_agent(
         name="ad_hoc_agent",
         instruction=instruction,
         output_schema=output_schema,
+        tools=tools,  # type: ignore
     )
     app = AdkApp(agent=agent)
     return await run_agent(

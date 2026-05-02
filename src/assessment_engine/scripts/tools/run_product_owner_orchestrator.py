@@ -16,7 +16,9 @@ from typing import Any
 from assessment_engine.lib.logger_config import setup_structured_logging
 from assessment_engine.lib.secrets_client import get_secret
 from assessment_engine.prompts.product_owner_prompts import (
+    build_product_owner_doctor_prompt,
     build_product_owner_planner_prompt,
+    get_product_owner_doctor_instruction,
     get_product_owner_planner_instruction,
     render_plan_markdown,
     render_pr_reconciliation_prompt,
@@ -31,9 +33,13 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
     build_runtime_env,
     resolve_python_bin,
 )
-from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
+from assessment_engine.scripts.lib.product_owner_models import (
+    ProductOwnerAlternatives,
+    ProductOwnerDoctorDiagnosis,
+)
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
+from assessment_engine.scripts.tools.context_tools import get_context_tools
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +108,14 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     run_parser.add_argument("--skip-pr", action="store_true")
     run_parser.add_argument("--skip-auto-merge", action="store_true")
 
+    execute_parser = subparsers.add_parser("execute")
+    execute_parser.add_argument("--request-dir", required=True)
+    execute_parser.add_argument("--alt-index", type=int, default=0)
+    execute_parser.add_argument("--executor-command")
+    execute_parser.add_argument("--allow-dirty", action="store_true")
+    execute_parser.add_argument("--skip-pr", action="store_true")
+    execute_parser.add_argument("--skip-auto-merge", action="store_true")
+
     resume_parser = subparsers.add_parser("resume-pr")
     resume_selector = resume_parser.add_mutually_exclusive_group(required=True)
     resume_selector.add_argument("--pr-number", type=int)
@@ -150,24 +164,45 @@ def ensure_clean_worktree(*, allow_dirty: bool) -> None:
 async def generate_plan(request_text: str, policy: dict[str, Any]) -> dict[str, Any]:
     max_tasks = int(policy.get("planning", {}).get("max_tasks", 5))
     model_profile = resolve_model_profile_for_role("product_owner_planner")
+
+    # Inyectar el contexto real del proyecto (GEMINI.md) para evitar alucinaciones
+    gemini_md_path = ROOT / "GEMINI.md"
+    repo_context = ""
+    if gemini_md_path.exists():
+        repo_context = gemini_md_path.read_text(encoding="utf-8")
+
     result = await call_agent(
         model_name=model_profile["model"],
-        prompt=build_product_owner_planner_prompt(request_text),
+        prompt=build_product_owner_planner_prompt(
+            request_text, repo_context=repo_context
+        ),
         instruction=get_product_owner_planner_instruction(max_tasks),
-        output_schema=ProductOwnerPlan,
+        output_schema=ProductOwnerAlternatives,
+        tools=get_context_tools(),
     )
-    return ProductOwnerPlan.model_validate(result).model_dump(mode="json")
+    return ProductOwnerAlternatives.model_validate(result).model_dump(mode="json")
 
 
 def save_plan_bundle(
-    request_dir: Path, request_text: str, plan: dict[str, Any]
+    request_dir: Path, request_text: str, plan_bundle: dict[str, Any]
 ) -> None:
     (request_dir / "request.txt").write_text(request_text + "\n", encoding="utf-8")
     (request_dir / "plan.json").write_text(
-        json.dumps(plan, ensure_ascii=False, indent=2),
+        json.dumps(plan_bundle, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    (request_dir / "plan.md").write_text(render_plan_markdown(plan), encoding="utf-8")
+
+    md_content = f"# Petición: {request_text[:50]}...\n\n"
+    if plan_bundle.get("is_ambiguous"):
+        md_content += f"## AMBIGUITY DETECTED\n- **Clarification required:** {plan_bundle.get('clarification_question')}\n"
+    else:
+        for idx, alt in enumerate(plan_bundle.get("alternatives", [])):
+            md_content += (
+                f"## Alternative {idx + 1}: {alt.get('approach_name', 'Plan')}\n"
+            )
+            md_content += render_plan_markdown(alt) + "\n\n---\n"
+
+    (request_dir / "plan.md").write_text(md_content, encoding="utf-8")
 
 
 def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
@@ -1300,6 +1335,21 @@ def create_pr(
     return pr_data
 
 
+async def diagnose_error(
+    plan: dict[str, Any], task: dict[str, Any], error_log: str
+) -> dict[str, Any]:
+    model_profile = resolve_model_profile_for_role("product_owner_planner")
+
+    result = await call_agent(
+        model_name=model_profile["model"],
+        prompt=build_product_owner_doctor_prompt(plan, task, error_log),
+        instruction=get_product_owner_doctor_instruction(),
+        output_schema=ProductOwnerDoctorDiagnosis,
+        tools=get_context_tools(),
+    )
+    return ProductOwnerDoctorDiagnosis.model_validate(result).model_dump(mode="json")
+
+
 def execute_plan(
     request_dir: Path,
     plan: dict[str, Any],
@@ -1338,10 +1388,27 @@ def execute_plan(
                 run_standard_validations(request_dir)
                 break
             except Exception as exc:
-                feedback = str(exc)
+                raw_error = str(exc)
+                logger.warning(
+                    f"Error en intento {attempt} de tarea {task['id']}. Llamando al Agente Doctor..."
+                )
+
+                diagnosis = asyncio.run(diagnose_error(plan, task, raw_error))
+
+                if not diagnosis.get("is_safe_to_proceed", False):
+                    raise RuntimeError(
+                        f"ACTION GATE TRIGGERED: El Agente Doctor ha bloqueado la auto-curación.\n"
+                        f"Diagnóstico: {diagnosis.get('diagnosis')}\n"
+                        f"Cura: {diagnosis.get('proposed_cure')}\n"
+                        f"Impacto: {diagnosis.get('second_order_impact')}\n"
+                        f"Archivos a tocar: {diagnosis.get('blast_radius')}"
+                    )
+
+                feedback = f"SÍNTOMA:\n{raw_error}\n\nCURA PROPUESTA POR EL DOCTOR:\n{diagnosis.get('proposed_cure')}"
+
                 if attempt == max_attempts:
                     raise RuntimeError(
-                        f"La tarea {task['id']} agotó sus reintentos: {exc}"
+                        f"La tarea {task['id']} agotó sus reintentos tras la última cura del Doctor: {exc}"
                     ) from exc
         else:
             raise RuntimeError(f"No se pudo completar la tarea {task['id']}.")
@@ -1399,9 +1466,32 @@ def main(argv: list[str] | None = None) -> int:
     setup_structured_logging()
     args = parse_args(argv)
     policy = load_orchestrator_policy()
+
     if args.command == "resume-pr":
         request_dir = resume_pull_request(args, policy=policy)
         logger.info(f"Reconciliación completada en {request_dir}")
+        return 0
+
+    if args.command == "execute":
+        request_dir = Path(args.request_dir)
+        ensure_clean_worktree(allow_dirty=args.allow_dirty)
+        plan_path = request_dir / "plan.json"
+        if not plan_path.exists():
+            raise FileNotFoundError(f"No se encontró plan.json en {request_dir}")
+        plan_bundle = json.loads(plan_path.read_text(encoding="utf-8"))
+        if "alternatives" in plan_bundle:
+            plan = plan_bundle["alternatives"][args.alt_index]
+        else:
+            plan = plan_bundle
+        executor_command = resolve_executor_command(args.executor_command)
+        execute_plan(
+            request_dir,
+            plan,
+            executor_command=executor_command,
+            skip_pr=args.skip_pr,
+            skip_auto_merge=args.skip_auto_merge,
+        )
+        logger.info(f"Orquestación completada en {request_dir}")
         return 0
 
     request_text = load_request_text(args)

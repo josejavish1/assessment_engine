@@ -6,10 +6,12 @@ para que puedan ser consumidas por un Supervisor Agent (LangGraph/CrewAI)
 o clientes MCP compatibles (Cursor, Claude Desktop, etc).
 """
 
+import asyncio
 import json
 import os
 import subprocess
 import sys
+import uuid
 from json import JSONDecodeError
 from pathlib import Path
 from typing import Any
@@ -173,7 +175,9 @@ def _run_script(module_name: str, args: list[str]) -> str:
         raise RuntimeError(
             f"Error ejecutando {module_name}:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
         )
-    return result.stdout.strip()
+    # Combine stdout and stderr since logs often go to stderr
+    combined_output = f"{result.stdout}\n{result.stderr}".strip()
+    return combined_output
 
 
 @mcp.tool()
@@ -248,12 +252,166 @@ def get_tower_state(case_dir: str) -> str:
     return json.dumps(state, indent=2, ensure_ascii=False)
 
 
+# Memoria en RAM para la cola de trabajos (Job Queue)
+job_status: dict[str, str] = {}
+job_results: dict[str, str] = {}
+
+
+async def _background_run_plan(job_id: str, request_text: str):
+    loop = asyncio.get_event_loop()
+
+    def run_sync():
+        return _run_script(
+            "assessment_engine.scripts.tools.run_product_owner_orchestrator",
+            ["plan", "--request", request_text],
+        )
+
+    try:
+        out = await loop.run_in_executor(None, run_sync)
+        found_plan = False
+        for line in out.splitlines():
+            try:
+                log_data = json.loads(line)
+                msg = log_data.get("message", "")
+                if "Plan generado en " in msg:
+                    request_dir = msg.split("Plan generado en ")[1].strip()
+                    plan_path = Path(request_dir) / "plan.json"
+                    if plan_path.exists():
+                        plan_data = plan_path.read_text(encoding="utf-8")
+                        job_results[job_id] = (
+                            f"✅ Plan generado con éxito.\nREQUEST_DIR={request_dir}\n{plan_data}"
+                        )
+                        found_plan = True
+                        break
+            except Exception:
+                continue
+        if not found_plan:
+            job_results[job_id] = (
+                f"❌ Error: Plan generated but path not found in logs.\nLogs: {out}"
+            )
+        job_status[job_id] = "completed"
+    except Exception as e:
+        job_status[job_id] = "error"
+        job_results[job_id] = f"❌ Error ejecutando orquestador: {e}"
+
+
+@mcp.tool()
+async def start_plan_generation(request_text: str) -> str:
+    """
+    Inicia la generación de un plan de forma asíncrona.
+    Devuelve un job_id inmediatamente para no bloquear al cliente HTTP.
+    """
+    job_id = str(uuid.uuid4())
+    job_status[job_id] = "running"
+
+    # Lanzar la tarea en segundo plano sin bloquear (Fire and forget)
+    asyncio.create_task(_background_run_plan(job_id, request_text))
+
+    return json.dumps({"job_id": job_id, "status": "started"})
+
+
+@mcp.tool()
+def check_plan_status(job_id: str) -> str:
+    """
+    Comprueba el estado de un plan en generación.
+    """
+    status = job_status.get(job_id, "not_found")
+    if status == "completed" or status == "error":
+        result = job_results.get(job_id, "")
+        return json.dumps({"status": status, "result": result})
+    return json.dumps({"status": status})
+
+
+@mcp.tool()
+async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
+    """
+    Inicia la ejecución (Fase 2) de un plan previamente generado y aprobado.
+    Devuelve un job_id inmediatamente.
+    """
+    job_id = str(uuid.uuid4())
+    job_status[job_id] = "running"
+
+    loop = asyncio.get_event_loop()
+
+    def run_sync():
+        return _run_script(
+            "assessment_engine.scripts.tools.run_product_owner_orchestrator",
+            [
+                "execute",
+                "--request-dir",
+                request_dir,
+                "--alt-index",
+                str(alt_index),
+                "--allow-dirty",
+                "--executor-command",
+                ".github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}",
+            ],
+        )
+
+    async def _background_run_execution():
+        try:
+            out = await loop.run_in_executor(None, run_sync)
+            job_results[job_id] = f"✅ Ejecución completada.\nLogs:\n{out}"
+            job_status[job_id] = "completed"
+        except Exception as e:
+            job_status[job_id] = "error"
+            job_results[job_id] = f"❌ Error en ejecución: {e}"
+
+    asyncio.create_task(_background_run_execution())
+    return json.dumps({"job_id": job_id, "status": "started"})
+
+
+@mcp.tool()
+def check_execution_status(job_id: str) -> str:
+    """
+    Comprueba el estado de una ejecución en proceso.
+    """
+    status = job_status.get(job_id, "not_found")
+    if status == "completed" or status == "error":
+        result = job_results.get(job_id, "")
+        return json.dumps({"status": status, "result": result})
+    return json.dumps({"status": status})
+
+
+@mcp.tool()
+def abort_and_revert() -> str:
+    """
+    El 'Botón Rojo' de emergencia. Aborta la ejecución actual (mata los procesos si se puede)
+    y ejecuta un `git reset --hard` para devolver el repositorio al estado original.
+    """
+    try:
+        # En un sistema en producción más avanzado mataríamos el proceso Popen por PID
+        subprocess.run(
+            ["git", "reset", "--hard"], cwd=str(ROOT), check=True, capture_output=True
+        )
+        subprocess.run(
+            ["git", "clean", "-fd"], cwd=str(ROOT), check=True, capture_output=True
+        )
+        return json.dumps(
+            {
+                "success": True,
+                "message": "✅ Abortado y código revertido a su estado original (git reset --hard).",
+            }
+        )
+    except Exception as e:
+        return json.dumps({"success": False, "message": f"❌ Error al revertir: {e}"})
+
+
 if __name__ == "__main__":
+    import argparse
     import logging
 
     from assessment_engine.lib.logger_config import setup_structured_logging
 
     setup_structured_logging(level=logging.INFO)
 
-    # FastMCP maneja automáticamente el transporte (stdio, SSE) y el ciclo de vida.
-    mcp.run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--transport", choices=["stdio", "sse"], default="stdio")
+    parser.add_argument("--port", type=int, default=8000)
+    args = parser.parse_args()
+
+    if args.transport == "sse":
+        mcp.settings.port = args.port
+        mcp.run(transport="sse")
+    else:
+        mcp.run()

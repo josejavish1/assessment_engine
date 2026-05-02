@@ -318,6 +318,21 @@ entries:
     last_verified_against: 2026-04-30
     notes: Nuevo destino para repartir arquitectura en piezas más mantenibles.
 
+  - path: docs/architecture/command-center-roadmap.md
+    kind: document
+    title: Command Center Roadmap
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/business_command_center/
+      - docs/operations/product-owner-orchestrator.md
+    last_verified_against: 2026-05-02
+    notes: Plan maestro SOTA 2026 para la GUI visual del orquestador en React/Next.js conectada por MCP.
+
   - path: docs/architecture/tower-pipeline.md
     kind: document
     title: Tower pipeline architecture
