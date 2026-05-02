@@ -1,9 +1,8 @@
 // src/business_command_center/src/app/page.tsx
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import KanbanColumn from './components/KanbanColumn';
-import KanbanCard from './components/KanbanCard';
 
 type Task = {
   id: string;
@@ -19,16 +18,18 @@ type Columns = {
 };
 
 const initialTasks: Columns = {
-  backlog: [
-    { id: 'task-2', title: 'Task 2', description: 'This is task 2' },
-  ],
-  inProgress: [
-    { id: 'task-1', title: 'Task 1', description: 'This is task 1', status: 'Running Pytest...' },
-  ],
-  done: [],
-};
+    backlog: [
+      { id: 'task-2', title: 'Task 2', description: 'This is task 2' },
+    ],
+    inProgress: [
+      { id: 'task-1', title: 'Task 1', description: 'This is task 1', status: 'Running Pytest...' },
+    ],
+    done: [],
+  };
 
 export default function Home() {
+    const [tasks, setTasks] = useState<Columns>(initialTasks);
+
   return (
     <div className="flex h-screen bg-slate-950 text-white">
       {/* Sidebar */}
@@ -49,6 +50,7 @@ export default function Home() {
         {/* Header */}
         <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center px-8 justify-between">
           <h2 className="text-2xl font-semibold">Assessment Engine Command Center</h2>
+          
           <div className="flex items-center space-x-2">
             <span className="relative flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -61,21 +63,9 @@ export default function Home() {
         {/* Workspace */}
         <div className="flex-1 p-8 overflow-y-auto">
           <div className="grid grid-cols-3 gap-8 h-full">
-            <KanbanColumn id="backlog" title="Backlog">
-              {initialTasks.backlog.map(task => (
-                <KanbanCard key={task.id} task={task} onDelete={() => {}} onEdit={() => {}} />
-              ))}
-            </KanbanColumn>
-            <KanbanColumn id="inProgress" title="In Progress">
-              {initialTasks.inProgress.map(task => (
-                <KanbanCard key={task.id} task={task} onDelete={() => {}} onEdit={() => {}} />
-              ))}
-            </KanbanColumn>
-            <KanbanColumn id="done" title="Done">
-              {initialTasks.done.map(task => (
-                <KanbanCard key={task.id} task={task} onDelete={() => {}} onEdit={() => {}} />
-              ))}
-            </KanbanColumn>
+            <KanbanColumn id="backlog" title="Backlog" tasks={tasks.backlog} />
+            <KanbanColumn id="inProgress" title="In Progress" tasks={tasks.inProgress} />
+            <KanbanColumn id="done" title="Done" tasks={tasks.done} />
           </div>
         </div>
       </main>
