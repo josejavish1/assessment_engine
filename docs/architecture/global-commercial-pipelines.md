@@ -10,7 +10,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
   - ../../src/assessment_engine/schemas/global_report.py
   - ../../src/assessment_engine/schemas/commercial.py
-last_verified_against: 2026-05-01
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents
