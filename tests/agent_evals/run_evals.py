@@ -1,3 +1,4 @@
+# golden-path: ignore
 import asyncio
 import json
 import logging
