@@ -30,6 +30,7 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
 from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
+from assessment_engine.lib.secrets_client import get_secret, SecretNotFoundError
 
 ORCHESTRATOR_MANAGED_MARKER = "<!-- orchestrator-managed -->"
 RECONCILIATION_SUMMARY_FILE = "reconciliation_summary.json"
@@ -388,10 +389,14 @@ def validate_executor_configuration(command_template: str) -> None:
 
     vertex_selector = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower()
     gca_selector = os.environ.get("GOOGLE_GENAI_USE_GCA", "").strip().lower()
-    has_api_key = bool(
-        os.environ.get("GEMINI_API_KEY", "").strip()
-        or os.environ.get("GOOGLE_API_KEY", "").strip()
-    )
+    
+    try:
+        project_id = "my-gcp-project"  # TODO: Move to config
+        gemini_api_key = get_secret(f"projects/{project_id}/secrets/gemini-api-key/versions/latest")
+        google_api_key = get_secret(f"projects/{project_id}/secrets/google-api-key/versions/latest")
+        has_api_key = bool(gemini_api_key or google_api_key)
+    except SecretNotFoundError:
+        has_api_key = False
 
     if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
         raise RuntimeError(

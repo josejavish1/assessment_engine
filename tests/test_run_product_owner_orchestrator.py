@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -369,10 +370,34 @@ def test_validate_executor_configuration_rejects_disabled_google_auth_without_ke
         )
 
 
+def test_validate_executor_configuration_succeeds_with_api_key(
+    monkeypatch, tmp_path: Path
+) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "0")
+    mock_get_secret = MagicMock(return_value="test-key")
+    monkeypatch.setattr(
+        "assessment_engine.scripts.tools.run_product_owner_orchestrator.get_secret",
+        mock_get_secret,
+    )
+    monkeypatch.setattr(orchestrator, "run_command", MagicMock())
+
+    orchestrator.preflight_executor(
+        request_dir,
+        "./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}",
+    )
+    assert mock_get_secret.call_count == 2
+
+
 def test_preflight_executor_runs_wrapper_probe(monkeypatch, tmp_path: Path) -> None:
     request_dir = tmp_path / "request"
     request_dir.mkdir()
     monkeypatch.setenv("GOOGLE_GENAI_USE_VERTEXAI", "1")
+    monkeypatch.setattr(
+        "assessment_engine.scripts.tools.run_product_owner_orchestrator.get_secret",
+        MagicMock(return_value="dummy-key"),
+    )
     calls: list[tuple[list[str], Path, str | None]] = []
 
     def fake_run_command(command: list[str], *, output_path: Path) -> None:
@@ -869,6 +894,9 @@ def test_resume_pull_request_reuses_branch_and_runs_reconciliation(
         orchestrator, "resolve_executor_command", lambda raw: "executor"
     )
     monkeypatch.setattr(
+        orchestrator, "preflight_executor", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
         orchestrator,
         "reconcile_pull_request",
         lambda request_dir, plan, *, executor_command, merge_mode, allow_merge: (
@@ -894,6 +922,9 @@ def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> 
         orchestrator,
         "load_request_text",
         lambda args: "Need stronger governance",
+    )
+    monkeypatch.setattr(
+        orchestrator, "preflight_executor", lambda *args, **kwargs: None
     )
 
     def fake_ensure_clean_worktree(*, allow_dirty: bool) -> None:
@@ -931,6 +962,9 @@ def test_main_resume_pr_skips_plan_generation(monkeypatch, tmp_path: Path) -> No
     monkeypatch.setattr(orchestrator, "parse_args", lambda argv=None: args)
     monkeypatch.setattr(orchestrator, "load_orchestrator_policy", lambda: {})
     monkeypatch.setattr(
+        orchestrator, "preflight_executor", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
         orchestrator,
         "resume_pull_request",
         lambda parsed_args, *, policy: request_dir,
@@ -961,6 +995,10 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
                 "auto_merge_mode": "squash",
             },
         },
+    )
+    monkeypatch.setattr(
+        "assessment_engine.scripts.tools.run_product_owner_orchestrator.get_secret",
+        MagicMock(return_value="dummy-key"),
     )
     monkeypatch.setattr(
         orchestrator, "ensure_branch", lambda branch_name: calls.append("branch")
