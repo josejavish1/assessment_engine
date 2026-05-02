@@ -25,7 +25,7 @@ def _docx_xml_and_rels(path: Path):
 
 
 def _docx_words(path: Path) -> int:
-    doc = Document(path)
+    doc = Document(path)  # type: ignore
     total = 0
     for paragraph in doc.paragraphs:
         total += len(paragraph.text.split())

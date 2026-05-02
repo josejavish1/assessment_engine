@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore
 
 from assessment_engine.scripts.tools import (
     validate_documentation_governance as validator,

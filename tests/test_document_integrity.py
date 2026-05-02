@@ -38,8 +38,8 @@ def _resolve_t5_docx_pair() -> tuple[Path, Path]:
             ROOT / "working" / "ivirma" / "T5" / "annex_t5_ivirma_final.docx",
         ),
     ]
-    return require_existing_group(
-        preferred_pairs,
+    return require_existing_group(  # type: ignore
+        preferred_pairs,  # type: ignore
         skip_message="No hay artefactos DOCX T5 disponibles en working/ para validar integridad.",
     )
 

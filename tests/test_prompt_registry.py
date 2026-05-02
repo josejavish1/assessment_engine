@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_DIR = ROOT / "src" / "assessment_engine" / "prompts" / "registry"
