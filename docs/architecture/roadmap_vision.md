@@ -22,18 +22,18 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
 *   Gobernanza mediante `AGENTS.md`.
 *   Verificación automática (Policy-as-Code) en CI/CD mediante `run_golden_path_check.py` para evitar que se creen archivos fuera del estándar.
 
-### Fase 2: Observabilidad Zero-Code en VMs (En curso)
+### Fase 2: Observabilidad Zero-Code en VMs (Completado)
 **Objetivo:** Visibilidad 100% 360 del código de negocio y del orquestador, sin acoplamiento.
 *   Adopción de *Structured JSON Logging* en todo el código base (Assessment + Orquestador).
 *   Eliminación de decoradores intrusivos en favor de auto-instrumentación (`opentelemetry-instrument`).
 *   Correlación nativa con el Ops Agent de Google Cloud (`logging.googleapis.com/trace`).
 *   Refactorización masiva de deuda técnica heredada (conversión de `print` a `logger.info`).
 
-### Fase 3: Agent Evals & Behavior CI/CD (Próximo paso)
-**Objetivo:** Verificar el comportamiento del orquestador y los agentes de forma automatizada (Red Teaming local).
-*   Creación de `tests/agent_evals/` con peticiones trampa (destructivas, out-of-scope, fuga de secretos).
-*   Pipelines en GitHub Actions que validan que el agente planificador (Product Owner Planner) rechaza acciones peligrosas o exige aprobación humana antes de modificar código crítico.
-*   Garantizar que el agente respeta las *Invariantes* del proyecto de manera consistente.
+### Fase 3: Agent Evals & Evaluation-Led Development (SOTA 2026) (Próximo paso)
+**Objetivo:** Medir la confiabilidad, coste y calidad arquitectónica de los agentes antes de enviarlos a producción, sin ralentizar el CI/CD diario.
+*   **Golden Dataset:** Creación de un entorno de pruebas con peticiones históricas reales (desde refactors complejos hasta intentos de inyección de código).
+*   **Telemetry-Driven Metrics:** Uso de la telemetría (Fase 2) para medir el *Zero-Shot Pass Rate* (¿pasa los Quality Gates a la primera?), el *Code Churn* (reescrituras inútiles) y el coste en dólares por PR.
+*   **Shadow PR Review (Maintainer Mergeability):** Uso de un LLM hiper-especializado en un pipeline nocturno para evaluar exclusivamente si el código generado respeta los Golden Paths y las invariantes (Mergeability), evitando el uso de jueces de IA lentos en el flujo diario.
 
 ### Fase 4: Agentic Command Center / Dynamic Workspace (Visión Futura)
 **Objetivo:** Evolucionar la UX de "Terminal Ciega" y "Git-First asíncrono" a una "Simbiosis Humano-IA" en tiempo real usando MCP.
