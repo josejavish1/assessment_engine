@@ -96,10 +96,13 @@ def render_task_prompt(
         "attempt": attempt,
     }
     return (
-        "Implement exactly this task in the current git branch.\n"
-        "Keep the scope bounded to the task and preserve the listed invariants.\n"
-        "Update tests and canonical documentation when needed.\n"
-        "Do not introduce a second source of truth.\n\n"
+        f"Goal: {task.get('objective', 'Implement the requested change')}\n\n"
+        "Instructions:\n"
+        "1. Implement exactly the task described in the 'Structured context' below in the current git branch.\n"
+        "2. Keep the scope bounded to the task and preserve the listed invariants.\n"
+        "3. Update tests and canonical documentation when needed.\n"
+        "4. Do not introduce a second source of truth.\n"
+        "5. You must use tools (like replace, write_file, or run_shell_command) to implement the change.\n\n"
         "Structured context:\n"
         f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n"
         f"{feedback_block}"

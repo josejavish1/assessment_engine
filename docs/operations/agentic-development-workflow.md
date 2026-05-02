@@ -78,6 +78,7 @@ Validación:
 
 ## Qué se considera best practice en este repo
 
+- **Uso estricto de Golden Paths:** Los agentes NUNCA deben crear nuevos componentes (endpoints, workers, scripts) desde cero. Siempre deben usar las plantillas de la carpeta `templates/golden_paths/` como andamiaje inicial para garantizar observabilidad, seguridad y logging consistentes.
 - una única fuente de verdad por semántica crítica;
 - lógica importante fuera de prompts y dentro de código, tests, schemas o workflows;
 - helpers o policies compartidas para reglas reutilizadas;

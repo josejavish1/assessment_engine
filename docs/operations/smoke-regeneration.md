@@ -14,7 +14,7 @@ source_of_truth:
   - ../../tests/test_contract_handover.py
   - ../../tests/test_t5_golden.py
   - ../../tests/test_payload_validation.py
-last_verified_against: 2026-05-01
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents

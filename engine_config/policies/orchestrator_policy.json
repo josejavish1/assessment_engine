@@ -17,7 +17,7 @@
             "enabled": true,
             "max_rounds": 3,
             "poll_interval_seconds": 20,
-            "max_polls": 30,
+            "max_polls": 60,
             "auto_resolve_bot_threads": true,
             "sync_with_base_branch": true
         }

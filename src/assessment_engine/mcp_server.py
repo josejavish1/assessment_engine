@@ -5,12 +5,14 @@ Este módulo expone las herramientas core de renderizado y análisis
 para que puedan ser consumidas por un Supervisor Agent (LangGraph/CrewAI)
 o clientes MCP compatibles (Cursor, Claude Desktop, etc).
 """
+
 import json
 import os
 import subprocess
 import sys
 from json import JSONDecodeError
 from pathlib import Path
+from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
@@ -40,7 +42,7 @@ def _summarize_validation_error(error: ValidationError) -> list[str]:
 
 
 def _inspect_payload_artifact(path: Path, schema, artifact_name: str) -> dict:
-    artifact_state = {
+    artifact_state: dict[str, Any] = {
         "path": str(path),
         "status": "missing",
     }
@@ -101,8 +103,16 @@ def _inspect_canonical_state(case_dir: Path) -> dict:
     blueprint_candidates = sorted(case_dir.glob("blueprint_*_payload.json"))
     annex_candidates = sorted(case_dir.glob("approved_annex_*.template_payload.json"))
 
-    blueprint_path = blueprint_candidates[0] if blueprint_candidates else case_dir / "blueprint_payload.json"
-    annex_path = annex_candidates[0] if annex_candidates else case_dir / "approved_annex.template_payload.json"
+    blueprint_path = (
+        blueprint_candidates[0]
+        if blueprint_candidates
+        else case_dir / "blueprint_payload.json"
+    )
+    annex_path = (
+        annex_candidates[0]
+        if annex_candidates
+        else case_dir / "approved_annex.template_payload.json"
+    )
 
     canonical_state = {
         "mode": "blueprint-first",
@@ -117,7 +127,9 @@ def _inspect_canonical_state(case_dir: Path) -> dict:
             "Annex",
         ),
         "deliverables": {
-            "blueprint_docx": _inspect_docx_artifact("Blueprint_Transformacion_*.docx", case_dir),
+            "blueprint_docx": _inspect_docx_artifact(
+                "Blueprint_Transformacion_*.docx", case_dir
+            ),
             "annex_docx": _inspect_docx_artifact("annex_*_final.docx", case_dir),
         },
     }
@@ -149,28 +161,35 @@ def _inspect_legacy_state(case_dir: Path) -> dict:
         }
     return legacy_state
 
+
 def _run_script(module_name: str, args: list[str]) -> str:
     """Ejecuta un script del motor de forma aislada y segura."""
     cmd = [PYTHON_BIN, "-m", module_name] + args
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT)
-    
+
     result = subprocess.run(cmd, env=env, capture_output=True, text=True)
     if result.returncode != 0:
-        raise RuntimeError(f"Error ejecutando {module_name}:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}")
+        raise RuntimeError(
+            f"Error ejecutando {module_name}:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
+        )
     return result.stdout.strip()
 
+
 @mcp.tool()
-def build_tower_payload(approved_annex_json: str, output_json: str, client_name: str, profile: str = "short") -> str:
+def build_tower_payload(
+    approved_annex_json: str, output_json: str, client_name: str, profile: str = "short"
+) -> str:
     """
     Construye un payload intermedio legacy para renderizar el Anexo de Torre.
     Convierte un annex refined heredado en un payload estructurado para DOCX.
     """
     out = _run_script(
         "assessment_engine.scripts._legacy.build_tower_annex_template_payload",
-        [approved_annex_json, output_json, client_name, profile]
+        [approved_annex_json, output_json, client_name, profile],
     )
     return f"✅ Payload construido con éxito.\n{out}"
+
 
 @mcp.tool()
 def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -> str:
@@ -179,10 +198,11 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
     Requiere el payload_json generado previamente por build_tower_payload.
     """
     out = _run_script(
-        "assessment_engine.scripts.render_tower_annex_from_template", 
-        [payload_json, template_docx, output_docx]
+        "assessment_engine.scripts.render_tower_annex_from_template",
+        [payload_json, template_docx, output_docx],
     )
     return f"✅ Documento de Torre renderizado con éxito.\n{out}"
+
 
 @mcp.tool()
 def generate_radar_chart(global_payload_json: str) -> str:
@@ -190,22 +210,25 @@ def generate_radar_chart(global_payload_json: str) -> str:
     Genera el gráfico de radar global en formato PNG a partir del payload global.
     """
     out = _run_script(
-        "assessment_engine.scripts.generate_global_radar_chart", 
-        [global_payload_json]
+        "assessment_engine.scripts.generate_global_radar_chart", [global_payload_json]
     )
     return f"✅ Gráfico generado con éxito.\n{out}"
 
+
 @mcp.tool()
-def render_commercial_docx(commercial_payload_json: str, template_docx: str, output_docx: str) -> str:
+def render_commercial_docx(
+    commercial_payload_json: str, template_docx: str, output_docx: str
+) -> str:
     """
     Renderiza el documento final DOCX del Account Action Plan Comercial.
     """
     out = _run_script(
-        "assessment_engine.scripts.render_commercial_report", 
-        [commercial_payload_json, template_docx, output_docx]
+        "assessment_engine.scripts.render_commercial_report",
+        [commercial_payload_json, template_docx, output_docx],
     )
     return f"✅ Reporte comercial renderizado.\n{out}"
-    
+
+
 @mcp.tool()
 def get_tower_state(case_dir: str) -> str:
     """
@@ -224,6 +247,13 @@ def get_tower_state(case_dir: str) -> str:
     state.update(state["legacy"])
     return json.dumps(state, indent=2, ensure_ascii=False)
 
+
 if __name__ == "__main__":
+    import logging
+
+    from assessment_engine.lib.logger_config import setup_structured_logging
+
+    setup_structured_logging(level=logging.INFO)
+
     # FastMCP maneja automáticamente el transporte (stdio, SSE) y el ciclo de vida.
     mcp.run()

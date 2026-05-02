@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import logging
 import os
 import shlex
 import signal
@@ -12,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from assessment_engine.lib.logger_config import setup_structured_logging
+from assessment_engine.lib.secrets_client import get_secret
 from assessment_engine.prompts.product_owner_prompts import (
     build_product_owner_planner_prompt,
     get_product_owner_planner_instruction,
@@ -31,6 +34,8 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
 from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
+
+logger = logging.getLogger(__name__)
 
 ORCHESTRATOR_MANAGED_MARKER = "<!-- orchestrator-managed -->"
 RECONCILIATION_SUMMARY_FILE = "reconciliation_summary.json"
@@ -191,7 +196,34 @@ def run_json_command(args: list[str]) -> Any:
 
 
 def ensure_branch(branch_name: str) -> None:
-    run_git_command(["git", "checkout", "-b", branch_name])
+    # Comprobar qué rama está activa
+    current_branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout.strip()
+
+    if current_branch == branch_name:
+        return  # Ya estamos en la rama correcta
+
+    # Comprobar si la rama existe localmente
+    branch_exists = (
+        subprocess.run(
+            ["git", "rev-parse", "--verify", branch_name],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        ).returncode
+        == 0
+    )
+
+    if branch_exists:
+        run_git_command(["git", "checkout", branch_name])
+    else:
+        run_git_command(["git", "checkout", "-b", branch_name])
 
 
 def ensure_existing_branch(branch_name: str) -> None:
@@ -444,10 +476,19 @@ def validate_executor_configuration(command_template: str) -> None:
 
     vertex_selector = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower()
     gca_selector = os.environ.get("GOOGLE_GENAI_USE_GCA", "").strip().lower()
-    has_api_key = bool(
-        os.environ.get("GEMINI_API_KEY", "").strip()
-        or os.environ.get("GOOGLE_API_KEY", "").strip()
-    )
+
+    try:
+        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "my-gcp-project")
+        gemini_api_key = get_secret(
+            f"projects/{project_id}/secrets/gemini-api-key/versions/latest"
+        )
+        google_api_key = get_secret(
+            f"projects/{project_id}/secrets/google-api-key/versions/latest"
+        )
+        has_api_key = bool(gemini_api_key or google_api_key)
+    except Exception:
+        # Fallback if secret manager is not available or project_id is wrong
+        has_api_key = False
 
     if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
         raise RuntimeError(
@@ -509,11 +550,17 @@ def run_standard_validations(request_dir: Path) -> None:
         "--repo-root",
         ".",
     ]
+    golden_path_command = [
+        python_bin,
+        "src/assessment_engine/scripts/tools/run_golden_path_check.py",
+        "--repo-root",
+        ".",
+    ]
     for path in changed_python_files:
         quality_command.extend(["--path", path])
         typing_command.extend(["--path", path])
 
-    validation_commands.extend([quality_command, typing_command])
+    validation_commands.extend([quality_command, typing_command, golden_path_command])
 
     for index, command in enumerate(validation_commands, start=1):
         run_command(
@@ -546,7 +593,9 @@ def create_commit(commit_title: str) -> None:
 
 
 def push_branch(branch_name: str) -> None:
-    run_git_command(["git", "push", "-u", "origin", branch_name])
+    # Use --force-with-lease to safely overwrite the remote branch if it exists from a previous
+    # failed or divergent attempt, while preventing accidental overwrite of new human commits.
+    run_git_command(["git", "push", "--force-with-lease", "-u", "origin", branch_name])
 
 
 def repository_coordinates() -> tuple[str, str]:
@@ -1347,11 +1396,12 @@ def resume_pull_request(
 
 
 def main(argv: list[str] | None = None) -> int:
+    setup_structured_logging()
     args = parse_args(argv)
     policy = load_orchestrator_policy()
     if args.command == "resume-pr":
         request_dir = resume_pull_request(args, policy=policy)
-        print(f"Reconciliación completada en {request_dir}")
+        logger.info(f"Reconciliación completada en {request_dir}")
         return 0
 
     request_text = load_request_text(args)
@@ -1363,7 +1413,7 @@ def main(argv: list[str] | None = None) -> int:
     save_plan_bundle(request_dir, request_text, plan)
 
     if args.command == "plan":
-        print(f"Plan generado en {request_dir}")
+        logger.info(f"Plan generado en {request_dir}")
         return 0
 
     executor_command = resolve_executor_command(args.executor_command)
@@ -1374,7 +1424,7 @@ def main(argv: list[str] | None = None) -> int:
         skip_pr=args.skip_pr,
         skip_auto_merge=args.skip_auto_merge,
     )
-    print(f"Orquestación completada en {request_dir}")
+    logger.info(f"Orquestación completada en {request_dir}")
     return 0
 
 
