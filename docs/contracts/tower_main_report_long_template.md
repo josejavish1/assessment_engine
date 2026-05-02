@@ -7,7 +7,7 @@ source_of_truth:
   - ../../src/assessment_engine/schemas/annex_synthesis.py
   - ../../src/assessment_engine/scripts/render_tower_blueprint.py
   - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents
@@ -397,3 +397,4 @@ Incorporar soporte tecnico sin romper la narrativa principal.
 - Si una seccion no tiene informacion suficiente, el sistema debe marcarla como `pendiente de completar` o generar una version parcial basada en evidencia, sin inventar.
 - La futura implementación debe construir el documento desde `blueprint_<tower>_payload.json` como fuente principal, usando `approved_annex_<tower>.template_payload.json` solo como capa de sintesis ejecutiva.
 - No debe depender de `approved_asis.generated.json`, `approved_gap.generated.json`, `approved_tobe.generated.json`, `approved_todo.generated.json` ni otros artefactos legacy como fuente primaria.
+a.

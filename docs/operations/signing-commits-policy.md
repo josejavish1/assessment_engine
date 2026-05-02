@@ -1,6 +1,6 @@
 # Política de Firma de Commits
 
-**Estado:** `Activo` | **Propietario:** `docs-governance` | **Fecha de Efectividad:** `2026-05-02`
+**status: Verified | **Propietario:** `docs-governance` | **Fecha de Efectividad:** `2026-05-02`
 
 ## 1. Resumen Ejecutivo
 

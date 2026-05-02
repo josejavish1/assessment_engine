@@ -1,14 +1,15 @@
+# --- START OF BUSINESS LOGIC ---
 import logging
 from typing import Any
 
+from assessment_engine.prompts.product_owner_prompts import (
+    build_product_owner_doctor_prompt,
+    get_product_owner_doctor_instruction,
+)
 from assessment_engine.scripts.lib.ai_client import call_agent
 from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
 from assessment_engine.scripts.lib.product_owner_models import (
     ProductOwnerDoctorDiagnosis,
-)
-from assessment_engine.prompts.product_owner_prompts import (
-    build_product_owner_doctor_prompt,
-    get_product_owner_doctor_instruction,
 )
 
 logger = logging.getLogger(__name__)

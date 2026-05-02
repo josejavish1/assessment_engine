@@ -1076,6 +1076,20 @@ entries:
     last_verified_against: 2026-04-30
     notes: Colección archivada en la capa neutral de referencia; puede consultarse, pero ya no debe competir con la documentación canónica.
 
+  - path: docs/documentation_audit.md
+    kind: document
+    title: Documentation audit trail
+    doc_type: operational
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/documentation-map.yaml
+    last_verified_against: 2026-05-02
+    notes: Inventario del estado de la documentación del proyecto.
+
 automation_rules:
   - name: architecture-changes
     when_changed:
