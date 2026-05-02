@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -61,6 +62,29 @@ def test_resolve_resume_selector_prefers_branch() -> None:
     args = orchestrator.parse_args(["resume-pr", "--branch", "feat/test"])
 
     assert orchestrator.resolve_resume_selector(args) == "feat/test"
+
+
+def test_git_status_has_relevant_changes_ignores_python_cache(monkeypatch) -> None:
+    monkeypatch.setattr(
+        orchestrator,
+        "read_git_status_lines",
+        lambda: ["?? src/assessment_engine/scripts/lib/__pycache__/"],
+    )
+
+    assert orchestrator.git_status_has_relevant_changes() is False
+
+
+def test_git_status_has_relevant_changes_keeps_real_files(monkeypatch) -> None:
+    monkeypatch.setattr(
+        orchestrator,
+        "read_git_status_lines",
+        lambda: [
+            "?? src/assessment_engine/scripts/lib/__pycache__/",
+            " M docs/README.md",
+        ],
+    )
+
+    assert orchestrator.git_status_has_relevant_changes() is True
 
 
 def test_create_pr_body_includes_spec_and_tasks() -> None:
@@ -312,7 +336,9 @@ def test_repair_pull_request_allows_noop_when_validations_pass(
     monkeypatch.setattr(
         orchestrator,
         "run_command",
-        lambda command, *, output_path: outputs.append(str(output_path)),
+        lambda command, *, output_path, timeout_seconds=None: outputs.append(
+            str(output_path)
+        ),
     )
     monkeypatch.setattr(orchestrator, "has_worktree_changes", lambda: False)
     monkeypatch.setattr(
@@ -398,14 +424,17 @@ def test_preflight_executor_runs_wrapper_probe(monkeypatch, tmp_path: Path) -> N
         "assessment_engine.scripts.tools.run_product_owner_orchestrator.get_secret",
         MagicMock(return_value="dummy-key"),
     )
-    calls: list[tuple[list[str], Path, str | None]] = []
+    calls: list[tuple[list[str], Path, str | None, int | None]] = []
 
-    def fake_run_command(command: list[str], *, output_path: Path) -> None:
+    def fake_run_command(
+        command: list[str], *, output_path: Path, timeout_seconds: int | None = None
+    ) -> None:
         calls.append(
             (
                 command,
                 output_path,
                 os.environ.get("ORCHESTRATOR_EXECUTOR_PREFLIGHT"),
+                timeout_seconds,
             )
         )
 
@@ -419,11 +448,54 @@ def test_preflight_executor_runs_wrapper_probe(monkeypatch, tmp_path: Path) -> N
     assert calls
     assert calls[0][2] == "1"
     assert calls[0][1].name == "executor_preflight.log"
+    assert calls[0][3] == 60
     assert (
         (request_dir / "executor_preflight_prompt.md")
         .read_text(encoding="utf-8")
         .startswith("Executor preflight.")
     )
+
+
+def test_run_command_times_out_and_classifies_timeout(
+    monkeypatch, tmp_path: Path
+) -> None:
+    class FakeProcess:
+        def __init__(self):
+            self.pid = 4242
+            self.returncode = None
+            self._timed_out = False
+
+        def communicate(self, timeout=None):
+            if not self._timed_out:
+                self._timed_out = True
+                raise subprocess.TimeoutExpired(cmd=["executor"], timeout=timeout)
+            self.returncode = -9
+            return ("partial stdout", "partial stderr")
+
+    output_path = tmp_path / "timeout.log"
+    killed: list[tuple[int, int]] = []
+
+    monkeypatch.setattr(orchestrator, "build_runtime_env", lambda: {})
+    monkeypatch.setattr(
+        orchestrator.subprocess, "Popen", lambda *args, **kwargs: FakeProcess()
+    )
+    monkeypatch.setattr(
+        orchestrator.os, "killpg", lambda pid, sig: killed.append((pid, sig))
+    )
+
+    with pytest.raises(
+        orchestrator.OrchestratorCommandError, match="Categoría: timeout"
+    ):
+        orchestrator.run_command(
+            ["executor", "--task"],
+            output_path=output_path,
+            timeout_seconds=5,
+        )
+
+    assert killed == [(4242, orchestrator.signal.SIGKILL)]
+    output = output_path.read_text(encoding="utf-8")
+    assert "Command timed out after 5 seconds." in output
+    assert "partial stdout" in output
 
 
 def test_reconcile_pull_request_auto_resolves_bot_threads(
