@@ -202,7 +202,31 @@ def run_json_command(args: list[str]) -> Any:
 
 
 def ensure_branch(branch_name: str) -> None:
-    run_git_command(["git", "checkout", "-b", branch_name])
+    # Comprobar qué rama está activa
+    current_branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout.strip()
+
+    if current_branch == branch_name:
+        return  # Ya estamos en la rama correcta
+
+    # Comprobar si la rama existe localmente
+    branch_exists = subprocess.run(
+        ["git", "rev-parse", "--verify", branch_name],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).returncode == 0
+
+    if branch_exists:
+        run_git_command(["git", "checkout", branch_name])
+    else:
+        run_git_command(["git", "checkout", "-b", branch_name])
 
 
 def ensure_existing_branch(branch_name: str) -> None:
