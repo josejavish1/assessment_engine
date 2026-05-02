@@ -2,6 +2,7 @@
 Módulo generate_tower_radar_chart.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import math
 import sys

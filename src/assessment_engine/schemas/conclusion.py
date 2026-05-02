@@ -1,6 +1,9 @@
 from typing import List
-from pydantic import BaseModel, Field, model_validator
+
+from pydantic import model_validator
+
 from .common import BaseDraftModel
+
 
 class ConclusionDraft(BaseDraftModel):
     section_id: str = "conclusion"

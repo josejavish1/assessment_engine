@@ -1,6 +1,9 @@
-from typing import List, Optional
+from typing import List
+
 from pydantic import BaseModel, Field
+
 from .common import BaseDraftModel
+
 
 class RiskItem(BaseModel):
     risk_name: str
@@ -8,6 +11,7 @@ class RiskItem(BaseModel):
     business_impact: str
     technical_root_cause: str
     related_pillars: List[str]
+
 
 class RisksDraft(BaseDraftModel):
     section_id: str = "risks"
@@ -20,8 +24,4 @@ class RisksDraft(BaseDraftModel):
     notes_for_reviewer: List[str] = []
 
     def get_forbidden_phrases(self) -> List[str]:
-        return [
-            "oportunidades",
-            "quick wins",
-            "solucion"
-        ]
+        return ["oportunidades", "quick wins", "solucion"]

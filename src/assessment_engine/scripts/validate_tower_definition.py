@@ -2,10 +2,10 @@
 Módulo validate_tower_definition.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
 import json
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parents[3]
 

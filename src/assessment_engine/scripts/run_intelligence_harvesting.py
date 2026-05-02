@@ -2,6 +2,7 @@
 Módulo run_intelligence_harvesting.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
 import sys
@@ -42,7 +43,7 @@ async def run_market_intelligence(client_name: str, output_path: Path):
         instruction="Eres un analista de inteligencia de mercado B2B de NTT DATA. Tu objetivo es buscar en la web y proporcionar datos basados en evidencias reales.",
     )
     app = AdkApp(agent=agent)
-    
+
     # Archivos para logs raw
     raw_reg_file = output_path.parent / "raw_harvester_reg.txt"
     raw_biz_file = output_path.parent / "raw_harvester_biz.txt"
@@ -53,29 +54,29 @@ async def run_market_intelligence(client_name: str, output_path: Path):
 
     print("  -> Ejecutando Harvester Regulatorio...")
     reg_data = await run_agent(
-        app, 
-        user_id="harvester_reg", 
+        app,
+        user_id="harvester_reg",
         message=get_regulatory_harvester_prompt(client_name),
         raw_output_file=raw_reg_file,
-        schema=RegulatoryHarvest
+        schema=RegulatoryHarvest,
     )
 
     print("  -> Ejecutando Harvester de Negocio (Agenda del CEO y Finanzas)...")
     biz_data = await run_agent(
-        app, 
-        user_id="harvester_biz", 
+        app,
+        user_id="harvester_biz",
         message=get_business_harvester_prompt(client_name),
         raw_output_file=raw_biz_file,
-        schema=BusinessHarvest
+        schema=BusinessHarvest,
     )
 
     print("  -> Ejecutando Harvester Tecnológico (OSINT)...")
     tech_data = await run_agent(
-        app, 
-        user_id="harvester_tech", 
+        app,
+        user_id="harvester_tech",
         message=get_tech_harvester_prompt(client_name),
         raw_output_file=raw_tech_file,
-        schema=TechHarvest
+        schema=TechHarvest,
     )
 
     # --- ETAPA 2: LA SÍNTESIS ---
@@ -105,7 +106,9 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "sources": [{"source": reg_source}],
                 "source_reliability_score": 70,
                 "valid_for_domains": ["tower", "global", "commercial"],
-                "related_towers": infer_related_towers(framework, " ".join(regulatory_pressures)),
+                "related_towers": infer_related_towers(
+                    framework, " ".join(regulatory_pressures)
+                ),
             }
         )
     for index, driver in enumerate(biz_data.get("business_drivers", []), start=1):
@@ -139,13 +142,17 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "sources": [{"source": biz_source}],
                 "source_reliability_score": 65,
                 "valid_for_domains": ["tower", "global", "commercial"],
-                "related_towers": infer_related_towers(transformation, " ".join(business_constraints)),
+                "related_towers": infer_related_towers(
+                    transformation, " ".join(business_constraints)
+                ),
             }
         )
     for index, trend in enumerate(tech_data.get("tech_trends", []), start=1):
         score = estimate_confidence_score(
             source_count=1,
-            specificity_signals=1 + len(vendor_dependencies) + len(recent_incident_signals),
+            specificity_signals=1
+            + len(vendor_dependencies)
+            + len(recent_incident_signals),
         )
         claims.append(
             {
@@ -156,7 +163,9 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "sources": [{"source": tech_source}],
                 "source_reliability_score": 65,
                 "valid_for_domains": ["tower", "global", "commercial"],
-                "related_towers": infer_related_towers(trend, tech_data.get("tech_footprint", "")),
+                "related_towers": infer_related_towers(
+                    trend, tech_data.get("tech_footprint", "")
+                ),
             }
         )
     for index, vendor in enumerate(vendor_dependencies, start=1):
@@ -173,11 +182,15 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "sources": [{"source": tech_source}],
                 "source_reliability_score": 65,
                 "valid_for_domains": ["tower", "global", "commercial"],
-                "related_towers": infer_related_towers(vendor, " ".join(operating_constraints)),
+                "related_towers": infer_related_towers(
+                    vendor, " ".join(operating_constraints)
+                ),
             }
         )
     for index, incident in enumerate(recent_incident_signals, start=1):
-        score = estimate_confidence_score(source_count=1, specificity_signals=2, uncertainty_penalty=5)
+        score = estimate_confidence_score(
+            source_count=1, specificity_signals=2, uncertainty_penalty=5
+        )
         claims.append(
             {
                 "claim_id": f"incident_signal_{index}",
@@ -187,7 +200,9 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "sources": [{"source": tech_source}],
                 "source_reliability_score": 60,
                 "valid_for_domains": ["tower", "global", "commercial"],
-                "related_towers": infer_related_towers(incident, "resilience operations network"),
+                "related_towers": infer_related_towers(
+                    incident, "resilience operations network"
+                ),
             }
         )
 
@@ -227,7 +242,9 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                     estimate_confidence_score(source_count=1, specificity_signals=2)
                 ),
                 "sources": [{"source": reg_source}],
-                "impacted_domains": infer_related_towers(framework, " ".join(regulatory_pressures)),
+                "impacted_domains": infer_related_towers(
+                    framework, " ".join(regulatory_pressures)
+                ),
             }
             for framework in reg_data.get("frameworks", [])
         ],
@@ -237,7 +254,9 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "confidence": build_confidence_block(
                     estimate_confidence_score(
                         source_count=1,
-                        specificity_signals=1 + len(priority_markets) + len(business_lines),
+                        specificity_signals=1
+                        + len(priority_markets)
+                        + len(business_lines),
                     )
                 ),
                 "sources": [{"source": biz_source}],
@@ -274,7 +293,9 @@ async def run_market_intelligence(client_name: str, output_path: Path):
                 "confidence": build_confidence_block(
                     estimate_confidence_score(
                         source_count=1,
-                        specificity_signals=1 + len(vendor_dependencies) + len(operating_constraints),
+                        specificity_signals=1
+                        + len(vendor_dependencies)
+                        + len(operating_constraints),
                     )
                 ),
                 "sources": [{"source": tech_source}],
@@ -314,11 +335,11 @@ async def run_market_intelligence(client_name: str, output_path: Path):
     # --- ETAPA 3: LA AUDITORÍA (Red Team) ---
     print("  -> Verificación de Coherencia y Madurez (Auditor)...")
     final_dossier = await run_agent(
-        app, 
-        user_id="auditor_agent", 
+        app,
+        user_id="auditor_agent",
         message=get_auditor_harvester_prompt(json.dumps(raw_dossier)),
         raw_output_file=raw_audit_file,
-        schema=ClientDossierV3
+        schema=ClientDossierV3,
     )
 
     output_path.write_text(

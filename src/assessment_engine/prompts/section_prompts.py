@@ -2,11 +2,20 @@
 Repositorio de prompts genéricos para secciones configurables (AS-IS, Riesgos).
 """
 
-def get_section_writer_prompt(section_cfg: dict, findings_pretty: str, scoring_pretty: str, document_profile: dict, corrective_feedback: list[str] | None = None) -> str:
+
+def get_section_writer_prompt(
+    section_cfg: dict,
+    findings_pretty: str,
+    scoring_pretty: str,
+    document_profile: dict,
+    corrective_feedback: list[str] | None = None,
+) -> str:
     rules = list(section_cfg["writer_rules"])
-    forbidden_phrases_by_section = document_profile.get("forbidden_phrases_by_section", {})
+    forbidden_phrases_by_section = document_profile.get(
+        "forbidden_phrases_by_section", {}
+    )
     forbidden_phrases = forbidden_phrases_by_section.get(section_cfg.get("id"), [])
-    
+
     if forbidden_phrases:
         rules.append(
             "No incluyas ninguna de estas expresiones o contenidos fuera de sección: "
@@ -85,7 +94,14 @@ INPUT_SCORING:
 {scoring_pretty}
 """.strip()
 
-def get_section_reviewer_prompt(section_cfg: dict, draft_pretty: str, findings_pretty: str, scoring_pretty: str, tower_definition_pretty: str) -> str:
+
+def get_section_reviewer_prompt(
+    section_cfg: dict,
+    draft_pretty: str,
+    findings_pretty: str,
+    scoring_pretty: str,
+    tower_definition_pretty: str,
+) -> str:
     checks_text = "\n".join(
         f"{i + 1}. {item}" for i, item in enumerate(section_cfg["review_checks"])
     )

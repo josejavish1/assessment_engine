@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
 from .common import VersionedPayload
+
 
 class HealthCheckAsIs(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -8,9 +10,11 @@ class HealthCheckAsIs(BaseModel):
     risk_observed: str = Field(..., alias="finding")
     impact: str = Field(..., alias="business_risk")
 
+
 class TargetArchitectureToBe(BaseModel):
     vision: str
     design_principles: list[str]
+
 
 class ProjectToDo(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
@@ -22,6 +26,7 @@ class ProjectToDo(BaseModel):
     sizing: str
     duration: str
 
+
 class PillarBlueprintDraft(BaseModel):
     pilar_id: str
     pilar_name: str
@@ -30,6 +35,7 @@ class PillarBlueprintDraft(BaseModel):
     health_check_asis: list[HealthCheckAsIs]
     target_architecture_tobe: TargetArchitectureToBe
     projects_todo: list[ProjectToDo]
+
 
 class ExecutiveSnapshot(BaseModel):
     bottom_line: str
@@ -40,19 +46,23 @@ class ExecutiveSnapshot(BaseModel):
     operational_benefits: list[str]
     transformation_complexity: str
 
+
 class CrossCapabilitiesAnalysis(BaseModel):
     common_deficiency_patterns: list[str]
     transformation_paradigm: str
     critical_technical_debt: str
 
+
 class RoadmapWave(BaseModel):
     wave: str
     projects: list[str]
+
 
 class ExternalDependency(BaseModel):
     project: str
     depends_on: str
     reason: str
+
 
 class OrchestratorBlueprintDraft(VersionedPayload):
     executive_snapshot: ExecutiveSnapshot
@@ -60,12 +70,14 @@ class OrchestratorBlueprintDraft(VersionedPayload):
     roadmap: list[RoadmapWave]
     external_dependencies: list[ExternalDependency]
 
+
 class BlueprintDocumentMeta(BaseModel):
     client_name: str
     tower_name: str
     tower_code: str
     financial_tier: str
     transformation_horizon: str
+
 
 class BlueprintPayload(OrchestratorBlueprintDraft):
     document_meta: BlueprintDocumentMeta

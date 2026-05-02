@@ -2,10 +2,15 @@
 Módulo check_docx_unresolved_placeholders.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
+import logging
 import re
 import sys
 from pathlib import Path
+
 from docx import Document
+
+logger = logging.getLogger(__name__)
 
 PLACEHOLDER_RE = re.compile(r"\{\{[^{}]+\}\}")
 
@@ -45,12 +50,12 @@ def main(argv: list[str] | None = None) -> None:
             unique.append(item)
 
     if unique:
-        print("UNRESOLVED_PLACEHOLDERS=YES")
+        logger.info("UNRESOLVED_PLACEHOLDERS=YES")
         for kind, placeholder, context in unique:
-            print(f"{kind}: {placeholder} :: {context}")
+            logger.info(f"{kind}: {placeholder} :: {context}")
         raise SystemExit(1)
 
-    print("UNRESOLVED_PLACEHOLDERS=NO")
+    logger.info("UNRESOLVED_PLACEHOLDERS=NO")
 
 
 if __name__ == "__main__":

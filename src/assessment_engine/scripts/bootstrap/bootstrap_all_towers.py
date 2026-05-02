@@ -2,7 +2,9 @@
 Módulo bootstrap_all_towers.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
+import logging
 from pathlib import Path
 
 from assessment_engine.scripts.bootstrap.bootstrap_tower_from_matrix import (
@@ -12,6 +14,8 @@ from assessment_engine.scripts.bootstrap.bootstrap_tower_from_matrix import (
 from assessment_engine.scripts.validate_tower_definition import (
     validate_tower_definition,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def find_matrix_file(tower_dir: Path) -> Path:
@@ -94,13 +98,13 @@ def main() -> None:
             )
 
     for item in summary:
-        print(f"{item['tower_id']}: {item['status']}")
+        logger.info(f"{item['tower_id']}: {item['status']}")
         if item["matrix_file"]:
-            print(f"  matrix_file: {item['matrix_file']}")
+            logger.info(f"  matrix_file: {item['matrix_file']}")
         for warning in item["warnings"]:
-            print(f"  WARNING: {warning}")
+            logger.warning(f"  WARNING: {warning}")
         for error in item["errors"]:
-            print(f"  ERROR: {error}")
+            logger.error(f"  ERROR: {error}")
 
     if had_errors:
         raise SystemExit(1)

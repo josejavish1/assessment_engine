@@ -2,32 +2,26 @@
 Módulo run_tower_blueprint_engine.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
 import sys
-from assessment_engine.schemas.blueprint import (
-    PillarBlueprintDraft, 
-    OrchestratorBlueprintDraft, 
-    BlueprintPayload,
-    ExecutiveSnapshot,
-    CrossCapabilitiesAnalysis
-)
+
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
-from assessment_engine.scripts.lib.ai_client import run_agent
+
 from assessment_engine.prompts.blueprint_prompts import (
     get_blueprint_architect_instruction,
-    get_pilar_architect_prompt,
+    get_closing_orchestrator_prompt,
     get_critic_prompt,
-    get_closing_orchestrator_prompt
+    get_pilar_architect_prompt,
 )
-from assessment_engine.scripts.lib.runtime_paths import (
-    resolve_blueprint_payload_path,
-    resolve_case_input_path,
-    resolve_client_intelligence_path,
-    resolve_client_dir,
-    resolve_tower_definition_file,
+from assessment_engine.schemas.blueprint import (
+    BlueprintPayload,
+    OrchestratorBlueprintDraft,
+    PillarBlueprintDraft,
 )
+from assessment_engine.scripts.lib.ai_client import run_agent
 from assessment_engine.scripts.lib.client_intelligence import (
     build_client_context_packet,
     build_client_context_text,
@@ -35,8 +29,18 @@ from assessment_engine.scripts.lib.client_intelligence import (
     get_target_maturity,
     load_client_intelligence,
 )
+from assessment_engine.scripts.lib.runtime_paths import (
+    resolve_blueprint_payload_path,
+    resolve_case_input_path,
+    resolve_client_dir,
+    resolve_client_intelligence_path,
+    resolve_tower_definition_file,
+)
 
-def get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data) -> dict:
+
+def get_default_blueprint_payload(
+    client_name, tower_name, tower_id, intel_data
+) -> dict:
     """Provee una estructura base completa que cumple con el contrato de BlueprintPayload."""
     return {
         "document_meta": {
@@ -44,7 +48,9 @@ def get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data)
             "tower_name": tower_name,
             "tower_code": tower_id,
             "financial_tier": intel_data.get("financial_tier", "Tier 2"),
-            "transformation_horizon": intel_data.get("transformation_horizon", "General"),
+            "transformation_horizon": intel_data.get(
+                "transformation_horizon", "General"
+            ),
         },
         "executive_snapshot": {
             "bottom_line": "Análisis estratégico pendiente de consolidación por el orquestador.",
@@ -53,17 +59,18 @@ def get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data)
             "structural_risks": [],
             "business_impact": "Pendiente de determinar impacto detallado.",
             "operational_benefits": [],
-            "transformation_complexity": "Media (estimación base)"
+            "transformation_complexity": "Media (estimación base)",
         },
         "cross_capabilities_analysis": {
             "common_deficiency_patterns": [],
             "transformation_paradigm": "Evolución por dominios técnicos.",
-            "critical_technical_debt": "Deuda técnica identificada en los pilares individuales."
+            "critical_technical_debt": "Deuda técnica identificada en los pilares individuales.",
         },
         "roadmap": [],
         "external_dependencies": [],
         "pillars_analysis": [],
     }
+
 
 async def process_pilar_blueprint(
     model_name, client_name, tower_name, pilar_data, context_str, intel_str
@@ -83,7 +90,7 @@ async def process_pilar_blueprint(
         context_str=context_str,
         intel_str=intel_str,
         answers_json=answers_json,
-        pilar_id=pilar_id
+        pilar_id=pilar_id,
     )
 
     # 1. Agente Escritor
@@ -92,15 +99,15 @@ async def process_pilar_blueprint(
             name="blueprint_architect",
             model=model_name,
             instruction=get_blueprint_architect_instruction(),
-            output_schema=PillarBlueprintDraft
+            output_schema=PillarBlueprintDraft,
         )
         app_architect = AdkApp(agent=agent_architect)
 
         raw_output = await run_agent(
-            app_architect, 
-            user_id=f"architect_{pilar_id}", 
-            message=prompt, 
-            schema=PillarBlueprintDraft
+            app_architect,
+            user_id=f"architect_{pilar_id}",
+            message=prompt,
+            schema=PillarBlueprintDraft,
         )
 
         # 2. Agente Crítico (Refinado)
@@ -109,7 +116,7 @@ async def process_pilar_blueprint(
                 name="blueprint_critic",
                 model=model_name,
                 instruction=get_blueprint_architect_instruction(),
-                output_schema=PillarBlueprintDraft
+                output_schema=PillarBlueprintDraft,
             )
             app_critic = AdkApp(agent=agent_critic)
 
@@ -117,13 +124,13 @@ async def process_pilar_blueprint(
             critic_prompt = get_critic_prompt(
                 pilar_label=pilar_label,
                 client_name=client_name,
-                raw_output_json=raw_output_json
+                raw_output_json=raw_output_json,
             )
             final_output = await run_agent(
-                app_critic, 
-                user_id=f"critic_{pilar_id}", 
-                message=critic_prompt, 
-                schema=PillarBlueprintDraft
+                app_critic,
+                user_id=f"critic_{pilar_id}",
+                message=critic_prompt,
+                schema=PillarBlueprintDraft,
             )
             return final_output or raw_output
     except Exception as e:
@@ -133,7 +140,7 @@ async def process_pilar_blueprint(
 
 async def run_tower_blueprint(client_name, tower_id):
     client_dir = resolve_client_dir(client_name)
-    tower_dir = client_dir / tower_id
+    client_dir / tower_id
     case_input_path = resolve_case_input_path(client_name, tower_id)
     intel_path = resolve_client_intelligence_path(client_name)
 
@@ -160,10 +167,15 @@ async def run_tower_blueprint(client_name, tower_id):
     )
     context_str = case_data.get("context_summary", "")
     if case_data.get("client_context") and not intel_packet:
-        intel_str = json.dumps(case_data.get("client_context", {}), indent=2, ensure_ascii=False)
+        intel_str = json.dumps(
+            case_data.get("client_context", {}), indent=2, ensure_ascii=False
+        )
 
     try:
-        from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
+        from assessment_engine.scripts.lib.config_loader import (
+            resolve_model_profile_for_role,
+        )
+
         model_name = resolve_model_profile_for_role("section_writer")["model"]
     except Exception:
         model_name = "gemini-2.5-pro"
@@ -197,7 +209,9 @@ async def run_tower_blueprint(client_name, tower_id):
     print(f"🏗️ Generando Blueprint de Transformación para {tower_name}...")
 
     # Inicialización Normalizada (Contrato Estricto)
-    blueprint_payload = get_default_blueprint_payload(client_name, tower_name, tower_id, intel_data)
+    blueprint_payload = get_default_blueprint_payload(
+        client_name, tower_name, tower_id, intel_data
+    )
     if intel_packet:
         blueprint_payload["client_context"] = intel_packet
     failed_pillars = []
@@ -205,7 +219,12 @@ async def run_tower_blueprint(client_name, tower_id):
     # PROCESAR PILARES EN SERIE PARA MÁXIMA CALIDAD
     for p_id in sorted(pillars_map.keys()):
         p_result = await process_pilar_blueprint(
-            model_name, client_name, tower_name, pillars_map[p_id], context_str, intel_str
+            model_name,
+            client_name,
+            tower_name,
+            pillars_map[p_id],
+            context_str,
+            intel_str,
         )
         if p_result:
             p_result["score"] = pillars_map[p_id]["score"]
@@ -216,10 +235,7 @@ async def run_tower_blueprint(client_name, tower_id):
             failed_pillars.append(pillars_map[p_id]["label"])
 
     if failed_pillars:
-        print(
-            "⚠️ Pilares sin respuesta válida: "
-            + ", ".join(failed_pillars)
-        )
+        print("⚠️ Pilares sin respuesta válida: " + ", ".join(failed_pillars))
 
     if not blueprint_payload["pillars_analysis"]:
         raise RuntimeError(
@@ -231,22 +247,22 @@ async def run_tower_blueprint(client_name, tower_id):
     closing_prompt = get_closing_orchestrator_prompt(
         tower_name=tower_name,
         pillars_analysis_json=json.dumps(blueprint_payload["pillars_analysis"]),
-        intel_str=intel_str
+        intel_str=intel_str,
     )
     try:
         orchestrator_agent = Agent(
             name="blueprint_orchestrator",
             model=model_name,
             instruction=get_blueprint_architect_instruction(),
-            output_schema=OrchestratorBlueprintDraft
+            output_schema=OrchestratorBlueprintDraft,
         )
         app_orchestrator = AdkApp(agent=orchestrator_agent)
 
         closing_data = await run_agent(
-            app_orchestrator, 
-            user_id="master_orchestrator", 
-            message=closing_prompt, 
-            schema=OrchestratorBlueprintDraft
+            app_orchestrator,
+            user_id="master_orchestrator",
+            message=closing_prompt,
+            schema=OrchestratorBlueprintDraft,
         )
         if closing_data:
             # Actualizamos solo si recibimos datos válidos del agente
@@ -277,12 +293,19 @@ async def run_tower_blueprint(client_name, tower_id):
     print(f"✅ Payload del Blueprint generado y validado: {output_path}")
 
 
-
 def main(argv: list[str] | None = None) -> None:
     if len(argv if argv is not None else sys.argv) < 3:
-        print("Uso: python -m assessment_engine.scripts.run_tower_blueprint_engine <client> <tower_id>")
+        print(
+            "Uso: python -m assessment_engine.scripts.run_tower_blueprint_engine <client> <tower_id>"
+        )
         sys.exit(1)
-    asyncio.run(run_tower_blueprint((argv if argv is not None else sys.argv)[1], (argv if argv is not None else sys.argv)[2]))
+    asyncio.run(
+        run_tower_blueprint(
+            (argv if argv is not None else sys.argv)[1],
+            (argv if argv is not None else sys.argv)[2],
+        )
+    )
+
 
 if __name__ == "__main__":
     main()

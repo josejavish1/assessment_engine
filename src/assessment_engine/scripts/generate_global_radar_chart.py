@@ -2,11 +2,16 @@
 Módulo generate_global_radar_chart.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
+import logging
 import math
 import sys
 from pathlib import Path
+
 import matplotlib.pyplot as plt
+
+logger = logging.getLogger(__name__)
 
 
 def load_json(path: Path):
@@ -24,7 +29,7 @@ def safe_float(value):
 
 def main(argv: list[str] | None = None) -> None:
     if len(argv if argv is not None else sys.argv) < 2:
-        print(
+        logger.info(
             "Uso: python scripts/generate_global_radar_chart.py <global_payload_json> [output_png]"
         )
         sys.exit(1)
@@ -40,7 +45,7 @@ def main(argv: list[str] | None = None) -> None:
 
     towers = payload.get("heatmap", [])
     if not towers:
-        print("No hay datos de torres en el payload.")
+        logger.warning("No hay datos de torres en el payload.")
         sys.exit(1)
 
     # Ordenación numérica estricta T1...T10
@@ -119,7 +124,7 @@ def main(argv: list[str] | None = None) -> None:
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
     plt.close()
 
-    print(f"Gráfico radar global generado en: {out_path}")
+    logger.info(f"Gráfico radar global generado en: {out_path}")
 
 
 if __name__ == "__main__":

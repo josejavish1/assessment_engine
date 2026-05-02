@@ -2,17 +2,20 @@
 Módulo bootstrap_tower_from_matrix.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
 import json
+import logging
 import re
 import unicodedata
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 from zipfile import ZipFile
-import xml.etree.ElementTree as ET
 
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 
+logger = logging.getLogger(__name__)
 
 DOCX_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 GENERIC_BLOCK_KEYS = [
@@ -664,13 +667,13 @@ def main() -> None:
     tower_definition_path = out_dir / f"tower_definition_{tower_id}.json"
     manifest_path = out_dir / "bootstrap_manifest.json"
 
-    print(f"tower_definition generado en: {tower_definition_path}")
-    print(f"bootstrap_manifest generado en: {manifest_path}")
-    print(f"pillar_count: {len(tower_definition['pillars'])}")
-    print(
+    logger.info(f"tower_definition generado en: {tower_definition_path}")
+    logger.info(f"bootstrap_manifest generado en: {manifest_path}")
+    logger.info(f"pillar_count: {len(tower_definition['pillars'])}")
+    logger.info(
         f"kpi_count: {sum(len(pillar['kpis']) for pillar in tower_definition['pillars'])}"
     )
-    print(f"warnings: {len(warnings)}")
+    logger.info(f"warnings: {len(warnings)}")
 
 
 if __name__ == "__main__":

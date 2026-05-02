@@ -2,7 +2,18 @@
 Repositorio de prompts para la sección Conclusion.
 """
 
-def get_conclusion_writer_prompt(scoring_pretty: str, asis_pretty: str, risks_pretty: str, tobe_pretty: str, gap_pretty: str, todo_pretty: str, tower_definition_pretty: str, tower_label: str, feedback_block: str) -> str:
+
+def get_conclusion_writer_prompt(
+    scoring_pretty: str,
+    asis_pretty: str,
+    risks_pretty: str,
+    tobe_pretty: str,
+    gap_pretty: str,
+    todo_pretty: str,
+    tower_definition_pretty: str,
+    tower_label: str,
+    feedback_block: str,
+) -> str:
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -57,7 +68,18 @@ INPUT_TOWER_DEFINITION:
 {tower_definition_pretty}
 """.strip()
 
-def get_conclusion_reviewer_prompt(draft_pretty: str, scoring_pretty: str, asis_pretty: str, risks_pretty: str, tobe_pretty: str, gap_pretty: str, todo_pretty: str, tower_definition_pretty: str, tower_label: str) -> str:
+
+def get_conclusion_reviewer_prompt(
+    draft_pretty: str,
+    scoring_pretty: str,
+    asis_pretty: str,
+    risks_pretty: str,
+    tobe_pretty: str,
+    gap_pretty: str,
+    todo_pretty: str,
+    tower_definition_pretty: str,
+    tower_label: str,
+) -> str:
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

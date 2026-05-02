@@ -6,7 +6,10 @@ def get_global_reviewer_instruction() -> str:
         "sin repeticiones ni incoherencias. Devuelve solo JSON valido."
     )
 
-def get_global_reviewer_prompt(document_json: str, profile_json: str, deterministic_json: str) -> str:
+
+def get_global_reviewer_prompt(
+    document_json: str, profile_json: str, deterministic_json: str
+) -> str:
     return f"""
 Actua como el agente Global Reviewer del Assessment Engine.
 
@@ -44,6 +47,7 @@ INPUT_DOCUMENT_ASSEMBLED:
 {document_json}
 """
 
+
 def get_global_refiner_instruction() -> str:
     return (
         "Eres un editor senior especializado en refinamiento de "
@@ -53,7 +57,10 @@ def get_global_refiner_instruction() -> str:
         "manteniendo la estructura original."
     )
 
-def get_global_refiner_prompt(document_json: str, review_json: str, profile_json: str) -> str:
+
+def get_global_refiner_prompt(
+    document_json: str, review_json: str, profile_json: str
+) -> str:
     return f"""
 Actua como el agente Global Refiner del Assessment Engine.
 
@@ -79,10 +86,14 @@ INPUT_DOCUMENT_ASSEMBLED:
 {document_json}
 """
 
+
 def get_executive_refiner_instruction() -> str:
     return "Eres un Senior Partner de consultoría estratégica de TI redactando un informe para el Board. Si el payload incluye `intelligence_dossier`, debes usarlo explícitamente para conectar riesgos, prioridades y roadmap con agenda del CEO, presión regulatoria, restricciones operativas y señales de negocio."
 
-def get_executive_section_prompt(instruction: str, payload_str: str, client_name: str) -> str:
+
+def get_executive_section_prompt(
+    instruction: str, payload_str: str, client_name: str
+) -> str:
     return f"""
     ANALIZA ESTE PAYLOAD Y GENERA UN NUEVO JSON ESTRATÉGICO PARA UN COMITÉ DE DIRECCIÓN.
     

@@ -247,7 +247,10 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
             subtitle_anchor = paragraph
             continue
 
-        if text.startswith(subtitle_prefix) and "Fast Infrastructure Assessment" in text:
+        if (
+            text.startswith(subtitle_prefix)
+            and "Fast Infrastructure Assessment" in text
+        ):
             rewrite_paragraph_with_style(paragraph, text, "Subtitle", "Subttulo")
             subtitle_anchor = paragraph
             continue
@@ -274,8 +277,10 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
 
         rewrite_body_paragraph(paragraph, text)
 
-    if subtitle_anchor is not None and "Update field to build contents." not in "\n".join(
-        paragraph.text for paragraph in doc.paragraphs
+    if (
+        subtitle_anchor is not None
+        and "Update field to build contents."
+        not in "\n".join(paragraph.text for paragraph in doc.paragraphs)
     ):
         insert_toc_after(subtitle_anchor)
 
@@ -283,7 +288,9 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
 
 
 def _resolve_render_mode(args: list[str]) -> tuple[str, list[str]]:
-    render_mode = os.environ.get(WORD_RENDER_MODE_ENV, "semantic").strip().lower() or "semantic"
+    render_mode = (
+        os.environ.get(WORD_RENDER_MODE_ENV, "semantic").strip().lower() or "semantic"
+    )
     filtered_args: list[str] = []
     for arg in args:
         if arg == "--semantic-styles":
@@ -348,40 +355,54 @@ def clean_brackets_and_consultant_notes(doc, payload: dict):
         "[Descripción del estado actual basada en las respuestas del cuestionario. Hazla extensa y estructurada por bullets]": "",
         "[capacidad objetivo]": "",
         "[línea de evolución]": "",
-        "[Fecha]": meta.get("date", "2026")
+        "[Fecha]": meta.get("date", "2026"),
     }
 
     # 2. Eliminar párrafos con notas de consultor completas o marcadores inútiles
     paragraphs_to_remove = []
     for p in doc.paragraphs:
         # Si es un prompt de consultor ("Teniendo en cuenta el resumen de...")
-        if "[Teniendo en cuenta el resumen de" in p.text or "[Teniendo en cuenta el Resumen ejecutivo" in p.text:
+        if (
+            "[Teniendo en cuenta el resumen de" in p.text
+            or "[Teniendo en cuenta el Resumen ejecutivo" in p.text
+        ):
             paragraphs_to_remove.append(p)
             if "Resumen ejecutivo del documento de contexto" in p.text:
                 p.insert_paragraph_before(intro.get("introduction_paragraph", ""))
             continue
-            
+
         if "[Generar un gráfico" in p.text:
             paragraphs_to_remove.append(p)
             continue
-            
-        if "[capacidad tecnológica evaluada]" in p.text or "[infraestructura evaluada]" in p.text or "[plataformas tecnológicas incluidas]" in p.text or "[alcance específico del assessment]" in p.text:
+
+        if (
+            "[capacidad tecnológica evaluada]" in p.text
+            or "[infraestructura evaluada]" in p.text
+            or "[plataformas tecnológicas incluidas]" in p.text
+            or "[alcance específico del assessment]" in p.text
+        ):
             paragraphs_to_remove.append(p)
             continue
-            
-        if "[P1]" in p.text or "[P2]" in p.text or "[P3]" in p.text or "[P4]" in p.text or "[P5]" in p.text:
+
+        if (
+            "[P1]" in p.text
+            or "[P2]" in p.text
+            or "[P3]" in p.text
+            or "[P4]" in p.text
+            or "[P5]" in p.text
+        ):
             paragraphs_to_remove.append(p)
             continue
 
         if p.text.strip().startswith("| [Torre]"):
             paragraphs_to_remove.append(p)
             continue
-            
+
         # Reemplazos de texto en línea
         for old, new in replacements.items():
             if old in p.text:
                 p.text = p.text.replace(old, new)
-                
+
     for p in paragraphs_to_remove:
         try:
             p._element.getparent().remove(p._element)
@@ -406,13 +427,14 @@ def clean_brackets_and_consultant_notes(doc, payload: dict):
                     break
             if row_has_bracket:
                 rows_to_remove.append(row)
-        
+
         # Eliminar las filas
         for row in rows_to_remove:
             try:
                 table._tbl.remove(row._tr)
             except Exception:
                 pass
+
 
 def render_extended_variant(doc, payload):
     extended = payload.get("extended_sections") or {}
@@ -529,6 +551,7 @@ def render_extended_variant(doc, payload):
         add_bullet_list(doc, conclusion.get("priority_focus_areas", []))
     add_body_paragraph(doc, conclusion.get("closing_statement", ""))
 
+
 def main(argv: list[str] | None = None) -> None:
     raw_args = list(argv if argv is not None else sys.argv)
     render_mode, parsed_args = _resolve_render_mode(raw_args[1:])
@@ -553,7 +576,7 @@ def main(argv: list[str] | None = None) -> None:
         payload_dict,
         str(payload_dict.get("document_meta", {}).get("client_name", "CLIENTE")),
     )
-        
+
     doc = Document(str(template_path))
     remove_page_break_only_paragraphs(doc)
     clean_brackets_and_consultant_notes(doc, payload_dict)
@@ -611,7 +634,10 @@ def main(argv: list[str] | None = None) -> None:
         doc, "{{EXEC_SUMMARY_BODY}}", exec_summary.get("summary_body", "")
     )
     replace_simple_placeholder(
-        doc, "{{MSG_STRENGTH_VALUE}}", exec_summary.get("message_strength", ""), font_size=10.5
+        doc,
+        "{{MSG_STRENGTH_VALUE}}",
+        exec_summary.get("message_strength", ""),
+        font_size=10.5,
     )
     replace_simple_placeholder(
         doc, "{{MSG_GAP_VALUE}}", exec_summary.get("message_gap", ""), font_size=10.5
@@ -624,19 +650,29 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     replace_simple_placeholder(
-        doc, "{{PILLAR_PROFILE_INTRO}}", profile.get("profile_intro", ""), font_size=10.5
+        doc,
+        "{{PILLAR_PROFILE_INTRO}}",
+        profile.get("profile_intro", ""),
+        font_size=10.5,
     )
-    render_note_box(doc, "{{SCORING_METHOD_NOTE}}", profile.get("scoring_method_note", ""))
+    render_note_box(
+        doc, "{{SCORING_METHOD_NOTE}}", profile.get("scoring_method_note", "")
+    )
     render_radar_chart(doc, "{{RADAR_CHART_BLOCK}}", profile.get("radar_chart", ""))
     render_pillar_score_table(doc, "{{PILLAR_SCORE_TABLE}}", profile.get("pillars", []))
 
     replace_simple_placeholder(
-        doc, "{{ASIS_NARRATIVE}}", sections.get("asis", {}).get("narrative", ""), font_size=10.5
+        doc,
+        "{{ASIS_NARRATIVE}}",
+        sections.get("asis", {}).get("narrative", ""),
+        font_size=10.5,
     )
     render_list_at_placeholder(
         doc, "{{ASIS_STRENGTHS_LIST}}", sections.get("asis", {}).get("strengths", [])
     )
-    render_list_at_placeholder(doc, "{{ASIS_GAPS_LIST}}", sections.get("asis", {}).get("gaps", []))
+    render_list_at_placeholder(
+        doc, "{{ASIS_GAPS_LIST}}", sections.get("asis", {}).get("gaps", [])
+    )
     render_list_at_placeholder(
         doc,
         "{{ASIS_OPERATIONAL_IMPACTS_LIST}}",
@@ -644,35 +680,46 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     replace_simple_placeholder(
-        doc, "{{RISKS_INTRO}}", sections.get("risks", {}).get("introduction", ""), font_size=10.5
+        doc,
+        "{{RISKS_INTRO}}",
+        sections.get("risks", {}).get("introduction", ""),
+        font_size=10.5,
     )
     render_risks_table(
         doc, "{{RISKS_TABLE}}", sections.get("risks", {}).get("risks", [])
     )
     replace_simple_placeholder(
-        doc, "{{RISKS_CLOSING}}", sections.get("risks", {}).get("closing_summary", ""), font_size=10.5
+        doc,
+        "{{RISKS_CLOSING}}",
+        sections.get("risks", {}).get("closing_summary", ""),
+        font_size=10.5,
     )
 
     replace_simple_placeholder(
         doc,
         "{{TOBE_INTRO}}",
-        sections.get("tobe", {}).get("vision", "") or sections.get("gap", {}).get("introduction", ""),
+        sections.get("tobe", {}).get("vision", "")
+        or sections.get("gap", {}).get("introduction", ""),
         font_size=10.5,
     )
     render_list_at_placeholder(
         doc,
         "{{TARGET_CAPABILITIES_LIST}}",
-        sections.get("gap", {}).get("target_capabilities", []) or sections.get("tobe", {}).get("design_principles", []),
+        sections.get("gap", {}).get("target_capabilities", [])
+        or sections.get("tobe", {}).get("design_principles", []),
     )
-    render_gap_table(
-        doc, "{{GAP_TABLE}}", sections.get("gap", {}).get("gap_rows", [])
-    )
+    render_gap_table(doc, "{{GAP_TABLE}}", sections.get("gap", {}).get("gap_rows", []))
 
     replace_simple_placeholder(
-        doc, "{{TODO_INTRO}}", sections.get("todo", {}).get("introduction", ""), font_size=10.5
+        doc,
+        "{{TODO_INTRO}}",
+        sections.get("todo", {}).get("introduction", ""),
+        font_size=10.5,
     )
     render_initiative_cards(
-        doc, "{{PRIORITY_INITIATIVES_CARDS}}", sections.get("todo", {}).get("priority_initiatives", [])
+        doc,
+        "{{PRIORITY_INITIATIVES_CARDS}}",
+        sections.get("todo", {}).get("priority_initiatives", []),
     )
 
     replace_simple_placeholder(
@@ -688,7 +735,9 @@ def main(argv: list[str] | None = None) -> None:
         font_size=10.5,
     )
     render_list_at_placeholder(
-        doc, "{{PRIORITY_AREAS_LIST}}", sections.get("conclusion", {}).get("priority_focus_areas", [])
+        doc,
+        "{{PRIORITY_AREAS_LIST}}",
+        sections.get("conclusion", {}).get("priority_focus_areas", []),
     )
     replace_simple_placeholder(
         doc,

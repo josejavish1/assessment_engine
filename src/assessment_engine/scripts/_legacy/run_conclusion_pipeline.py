@@ -2,8 +2,10 @@
 Módulo run_conclusion_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -11,10 +13,14 @@ import vertexai
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
-from assessment_engine.schemas.conclusion import ConclusionDraft
+from assessment_engine.prompts.conclusion_prompts import (
+    get_conclusion_reviewer_prompt,
+    get_conclusion_writer_prompt,
+)
 from assessment_engine.schemas.common import SectionReview
-from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
+from assessment_engine.schemas.conclusion import ConclusionDraft
 from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
 from assessment_engine.scripts.lib.editorial_autofix import (
     apply_editorial_autofix,
     should_autofix_editorial,
@@ -29,10 +35,8 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_case_dir,
     resolve_tower_definition_file,
 )
-from assessment_engine.prompts.conclusion_prompts import (
-    get_conclusion_writer_prompt,
-    get_conclusion_reviewer_prompt
-)
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[1]
 CASE_DIR = resolve_case_dir()
@@ -88,7 +92,15 @@ def build_writer_prompt(
         feedback_block = f"""\nCorrecciones obligatorias para esta nueva iteracion:\n{feedback_text}\nDebes corregir completamente esos defectos y volver a generar la seccion.\n"""
 
     return get_conclusion_writer_prompt(
-        scoring_pretty, asis_pretty, risks_pretty, tobe_pretty, gap_pretty, todo_pretty, tower_definition_pretty, TOWER_LABEL, feedback_block
+        scoring_pretty,
+        asis_pretty,
+        risks_pretty,
+        tobe_pretty,
+        gap_pretty,
+        todo_pretty,
+        tower_definition_pretty,
+        TOWER_LABEL,
+        feedback_block,
     )
 
 
@@ -112,7 +124,15 @@ def build_reviewer_prompt(
     tower_definition_pretty = json.dumps(tower_definition, ensure_ascii=False, indent=2)
 
     return get_conclusion_reviewer_prompt(
-        draft_pretty, scoring_pretty, asis_pretty, risks_pretty, tobe_pretty, gap_pretty, todo_pretty, tower_definition_pretty, TOWER_LABEL
+        draft_pretty,
+        scoring_pretty,
+        asis_pretty,
+        risks_pretty,
+        tobe_pretty,
+        gap_pretty,
+        todo_pretty,
+        tower_definition_pretty,
+        TOWER_LABEL,
     )
 
 
@@ -259,7 +279,7 @@ async def main() -> None:
         draft = None
 
         for attempt in range(1, 3):
-            print(
+            logger.info(
                 f"\n=== Writer attempt {attempt} para seccion 'conclusion' (round {review_round}) ==="
             )
             writer_message = build_writer_prompt(
@@ -278,23 +298,25 @@ async def main() -> None:
                     user_id="writer-conclusion-local-dev",
                     message=writer_message,
                     raw_output_file=WRITER_RAW_FILE,
-                    schema=ConclusionDraft
+                    schema=ConclusionDraft,
                 )
-                print("Validacion Pydantic del draft Conclusion: PASS")
+                logger.info("Validacion Pydantic del draft Conclusion: PASS")
                 draft = candidate_draft
                 break
             except Exception as e:
-                print(f"Validacion Pydantic del draft Conclusion: FAIL - {e}")
+                logger.error(f"Validacion Pydantic del draft Conclusion: FAIL - {e}")
                 corrective_feedback = [str(e)]
                 if attempt == 2:
-                    print("ERROR: El Writer no pudo generar una Conclusion valida tras 2 intentos.")
+                    logger.error(
+                        "ERROR: El Writer no pudo generar una Conclusion valida tras 2 intentos."
+                    )
                     raise
 
         if draft is None:
             raise RuntimeError("No se pudo obtener un draft Conclusion valido.")
 
         save_json(DRAFT_FILE, draft)
-        print(f"\nBorrador Conclusion guardado en: {DRAFT_FILE}")
+        logger.info(f"\nBorrador Conclusion guardado en: {DRAFT_FILE}")
 
         reviewer_message = build_reviewer_prompt(
             draft, scoring, asis, risks, tobe, gap, todo, tower_definition
@@ -304,22 +326,22 @@ async def main() -> None:
             user_id="reviewer-conclusion-local-dev",
             message=reviewer_message,
             raw_output_file=REVIEWER_RAW_FILE,
-            schema=SectionReview
+            schema=SectionReview,
         )
         review = normalize_review(review)
         save_json(REVIEW_FILE, review)
-        print(f"\nRevision Conclusion guardada en: {REVIEW_FILE}")
-        print(f"status: {review.get('status')}")
+        logger.info(f"\nRevision Conclusion guardada en: {REVIEW_FILE}")
+        logger.info(f"status: {review.get('status')}")
 
         if review.get("status") == "approve":
             approved = finalize_approved(draft, review)
             save_json(APPROVED_FILE, approved)
-            print(f"Seccion Conclusion aprobada y finalizada en: {APPROVED_FILE}")
+            logger.info(f"Seccion Conclusion aprobada y finalizada en: {APPROVED_FILE}")
             return
 
         if review.get("status") == "revise" and review_round < max_review_rounds:
             corrective_feedback = build_corrective_feedback(review)
-            print(
+            logger.info(
                 "La seccion Conclusion requiere revision. Se relanza automaticamente con feedback del reviewer."
             )
             continue
@@ -335,10 +357,10 @@ async def main() -> None:
             approved = finalize_approved(adjusted_draft, forced_review)
             save_json(APPROVED_FILE, approved)
             save_json(REVIEW_FILE, forced_review)
-            print(
+            logger.info(
                 "La sección Conclusion no convergió tras el máximo de rondas. Se entrega versión aprobada con nota de ajuste manual pendiente."
             )
-            print(f"Seccion Conclusion aprobada y finalizada en: {APPROVED_FILE}")
+            logger.info(f"Seccion Conclusion aprobada y finalizada en: {APPROVED_FILE}")
             return
 
         raise RuntimeError(f"Estado de revision no reconocido: {review.get('status')}")

@@ -2,14 +2,18 @@
 Módulo assemble_tower_annex.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
-from pathlib import Path
-import json
 
+import json
+import logging
+from pathlib import Path
+
+from assessment_engine.scripts.lib.config_loader import normalize_tower_name
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_case_dir,
     resolve_tower_definition_file,
 )
-from assessment_engine.scripts.lib.config_loader import normalize_tower_name
+
+logger = logging.getLogger(__name__)
 
 
 CASE_DIR = resolve_case_dir()
@@ -97,11 +101,11 @@ def main() -> None:
         json.dumps(annex, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    print(f"Anexo ensamblado en: {OUT_FILE}")
-    print("Secciones incluidas:", ", ".join(annex["sections"].keys()))
-    print("Estado general:", annex["status"])
-    print("score_display:", annex["summary"]["score_display"])
-    print("maturity_band:", annex["summary"]["maturity_band"])
+    logger.info(f"Anexo ensamblado en: {OUT_FILE}")
+    logger.info("Secciones incluidas:", ", ".join(annex["sections"].keys()))
+    logger.info("Estado general:", annex["status"])
+    logger.info("score_display:", annex["summary"]["score_display"])
+    logger.info("maturity_band:", annex["summary"]["maturity_band"])
 
 
 if __name__ == "__main__":

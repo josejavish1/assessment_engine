@@ -2,8 +2,12 @@
 Módulo runtime_paths.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
+import logging
 import os
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[4]
 GLOBAL_REPORT_TEMPLATE_NAME = "11. Template Documento General Alpha v.05.docx"
@@ -32,7 +36,9 @@ def resolve_client_dir(default_client: str = "generic_client") -> Path:
     return legacy
 
 
-def resolve_case_dir(default_client: str = "generic_client", default_tower: str = "T1") -> Path:
+def resolve_case_dir(
+    default_client: str = "generic_client", default_tower: str = "T1"
+) -> Path:
     override = os.environ.get("ASSESSMENT_CASE_DIR", "").strip()
     if override:
         return Path(override).resolve()
@@ -54,7 +60,9 @@ def resolve_global_report_payload_path(default_client: str = "generic_client") -
     return resolve_client_dir(default_client) / "global_report_payload.json"
 
 
-def resolve_commercial_report_payload_path(default_client: str = "generic_client") -> Path:
+def resolve_commercial_report_payload_path(
+    default_client: str = "generic_client",
+) -> Path:
     return resolve_client_dir(default_client) / "commercial_report_payload.json"
 
 
@@ -67,9 +75,9 @@ def resolve_blueprint_payload_path(
     default_tower: str = "T5",
 ) -> Path:
     tower_id = resolve_tower_id(default_tower)
-    return resolve_case_dir(default_client, tower_id) / resolve_blueprint_payload_filename(
-        tower_id
-    )
+    return resolve_case_dir(
+        default_client, tower_id
+    ) / resolve_blueprint_payload_filename(tower_id)
 
 
 def resolve_blueprint_payload_candidates(
@@ -101,7 +109,13 @@ def resolve_annex_template_payload_path(
 
 def resolve_tower_definition_file(default_tower: str = "T5") -> Path:
     tower_id = resolve_tower_id(default_tower)
-    return ROOT / "engine_config" / "towers" / tower_id / f"tower_definition_{tower_id}.json"
+    return (
+        ROOT
+        / "engine_config"
+        / "towers"
+        / tower_id
+        / f"tower_definition_{tower_id}.json"
+    )
 
 
 def resolve_global_report_template_path() -> Path:
@@ -113,4 +127,6 @@ def resolve_tower_annex_template_path() -> Path:
 
 
 def resolve_web_dashboard_template_path() -> Path:
-    return ROOT / "src" / "assessment_engine" / "templates" / WEB_DASHBOARD_TEMPLATE_NAME
+    return (
+        ROOT / "src" / "assessment_engine" / "templates" / WEB_DASHBOARD_TEMPLATE_NAME
+    )

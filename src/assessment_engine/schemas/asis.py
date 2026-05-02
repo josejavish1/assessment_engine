@@ -1,13 +1,19 @@
 from typing import List
+
 from pydantic import BaseModel, Field
+
 from .common import BaseDraftModel
+
 
 class AsIsPillar(BaseModel):
     pillar: str = Field(..., description="Nombre del pilar")
     score: float = Field(..., description="Puntuación del pilar")
-    maturity_level: str = Field(..., description="Nivel de madurez (ej. Nivel 2 - Básico)")
+    maturity_level: str = Field(
+        ..., description="Nivel de madurez (ej. Nivel 2 - Básico)"
+    )
     findings_summary: List[str] = Field(..., description="Resumen de hallazgos")
     operational_impact: str = Field(..., description="Impacto operativo")
+
 
 class AsIsDraft(BaseDraftModel):
     section_id: str = "asis"
@@ -27,5 +33,5 @@ class AsIsDraft(BaseDraftModel):
             "capacidades objetivo",
             "roadmap",
             "recomendamos",
-            "plan de accion"
+            "plan de accion",
         ]

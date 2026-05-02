@@ -2,10 +2,15 @@
 Módulo generate_executive_roadmap_image.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
+import logging
 import sys
 from pathlib import Path
+
 import matplotlib.pyplot as plt
+
+logger = logging.getLogger(__name__)
 
 
 def load_json(path: Path):
@@ -14,7 +19,7 @@ def load_json(path: Path):
 
 def main(argv: list[str] | None = None) -> None:
     if len(argv if argv is not None else sys.argv) < 2:
-        print(
+        logger.info(
             "Uso: python scripts/generate_executive_roadmap_image.py <global_payload_json> [output_png]"
         )
         sys.exit(1)
@@ -31,7 +36,7 @@ def main(argv: list[str] | None = None) -> None:
     roadmap_data = payload.get("execution_roadmap", {})
     horizons = roadmap_data.get("horizons", {})
     if not horizons:
-        print("No hay roadmap de ejecución en el payload.")
+        logger.warning("No hay roadmap de ejecución en el payload.")
         sys.exit(0)
 
     initiatives = []
@@ -59,7 +64,7 @@ def main(argv: list[str] | None = None) -> None:
             )
 
     if not initiatives:
-        print("No hay iniciativas válidas.")
+        logger.warning("No hay iniciativas válidas.")
         sys.exit(0)
 
     # Orden inverso para el eje Y (para que el primero salga arriba)
@@ -143,7 +148,7 @@ def main(argv: list[str] | None = None) -> None:
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
     plt.close()
 
-    print(f"Roadmap visual generado en: {out_path}")
+    logger.info(f"Roadmap visual generado en: {out_path}")
 
 
 if __name__ == "__main__":

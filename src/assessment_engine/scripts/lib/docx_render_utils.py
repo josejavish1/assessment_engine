@@ -109,7 +109,9 @@ def apply_bullet_list_format(paragraph):
         if child.tag.split("}")[-1] in {"numPr", "ind"}:
             pPr.remove(child)
 
-    apply_paragraph_style(paragraph, "Bullet", "NTTFlushBullet1", "List Paragraph", "Prrafodelista")
+    apply_paragraph_style(
+        paragraph, "Bullet", "NTTFlushBullet1", "List Paragraph", "Prrafodelista"
+    )
     num_id, ilvl = get_style_numbering(
         paragraph.part.document,
         "Bullet",
@@ -509,10 +511,34 @@ def render_pillar_score_table(doc, placeholder, rows):
     for item in rows:
         row = table.add_row()
         prevent_row_break(row)
-        set_cell_text(row.cells[0], item.get("pillar_label", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10.2, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[1], item.get("score_display", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10.2, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[2], item.get("maturity_band", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10.2, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[3], item.get("executive_reading", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10.2, vertical=WD_ALIGN_VERTICAL.CENTER)
+        set_cell_text(
+            row.cells[0],
+            item.get("pillar_label", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10.2,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[1],
+            item.get("score_display", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10.2,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[2],
+            item.get("maturity_band", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10.2,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[3],
+            item.get("executive_reading", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10.2,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
 
     autofit_table_to_contents(table)
     remove_paragraph(paragraph)
@@ -544,10 +570,34 @@ def render_risks_table(doc, placeholder, rows):
     for item in rows:
         row = table.add_row()
         prevent_row_break(row)
-        set_cell_text(row.cells[0], item.get("risk", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[1], item.get("impact", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[2], item.get("probability", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[3], item.get("mitigation_summary", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
+        set_cell_text(
+            row.cells[0],
+            item.get("risk", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[1],
+            item.get("impact", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[2],
+            item.get("probability", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[3],
+            item.get("mitigation_summary", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
 
     autofit_table_to_contents(table)
     remove_paragraph(paragraph)
@@ -579,10 +629,34 @@ def render_gap_table(doc, placeholder, rows):
     for item in rows:
         row = table.add_row()
         prevent_row_break(row)
-        set_cell_text(row.cells[0], item.get("pillar", ""), align=WD_ALIGN_PARAGRAPH.CENTER, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[1], item.get("as_is_summary", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[2], item.get("target_state", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
-        set_cell_text(row.cells[3], item.get("key_gap", ""), align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
+        set_cell_text(
+            row.cells[0],
+            item.get("pillar", ""),
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[1],
+            item.get("as_is_summary", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[2],
+            item.get("target_state", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
+        set_cell_text(
+            row.cells[3],
+            item.get("key_gap", ""),
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
 
     autofit_table_to_contents(table)
     remove_paragraph(paragraph)
@@ -625,9 +699,23 @@ def render_initiative_cards(doc, placeholder, cards):
         ]
         for row_idx in range(4):
             row = table.rows[row_idx + 1]
-            set_cell_text(row.cells[0], labels[row_idx], bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER, space_after=0)
+            set_cell_text(
+                row.cells[0],
+                labels[row_idx],
+                bold=True,
+                align=WD_ALIGN_PARAGRAPH.LEFT,
+                font_size=10,
+                vertical=WD_ALIGN_VERTICAL.CENTER,
+                space_after=0,
+            )
             shade_cell(row.cells[0], "D9EAF7")
-            set_cell_text(row.cells[1], values[row_idx], align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
+            set_cell_text(
+                row.cells[1],
+                values[row_idx],
+                align=WD_ALIGN_PARAGRAPH.LEFT,
+                font_size=10,
+                vertical=WD_ALIGN_VERTICAL.CENTER,
+            )
             prevent_row_break(row)
 
         autofit_table_to_contents(table)
@@ -750,9 +838,23 @@ def add_long_detail_table(doc, title, rows):
 
     for idx, (label, value) in enumerate(rows, start=1):
         row = table.rows[idx]
-        set_cell_text(row.cells[0], label, bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER, space_after=0)
+        set_cell_text(
+            row.cells[0],
+            label,
+            bold=True,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+            space_after=0,
+        )
         shade_cell(row.cells[0], "EEF5FB")
-        set_cell_text(row.cells[1], value, align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10, vertical=WD_ALIGN_VERTICAL.CENTER)
+        set_cell_text(
+            row.cells[1],
+            value,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+            font_size=10,
+            vertical=WD_ALIGN_VERTICAL.CENTER,
+        )
         prevent_row_break(row)
 
     autofit_table_to_contents(table)

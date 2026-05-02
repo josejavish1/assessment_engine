@@ -4,6 +4,7 @@ Helpers comunes para entrypoints de pipeline basados en módulos Python.
 
 import asyncio
 import importlib
+import logging
 import os
 import sys
 from pathlib import Path
@@ -11,6 +12,8 @@ from unittest.mock import patch
 
 from assessment_engine.scripts.lib.runtime_env import ensure_google_cloud_env_defaults
 from assessment_engine.scripts.lib.runtime_paths import ROOT, resolve_client_dir
+
+logger = logging.getLogger(__name__)
 
 AI_STEP_TIMEOUT_ENV = "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS"
 
@@ -83,7 +86,7 @@ def resolve_ai_step_timeout_seconds(
 
 
 def run_module_step(cmd_args: list[str], step_name: str, env: dict[str, str]) -> None:
-    print(f"\n=== {step_name} ===")
+    logger.info(f"=== {step_name} ===")
 
     if len(cmd_args) < 3 or cmd_args[1] != "-m":
         raise ValueError(f"Comando no soportado por run_module_step: {cmd_args}")
@@ -111,11 +114,9 @@ def run_module_step(cmd_args: list[str], step_name: str, env: dict[str, str]) ->
             raise RuntimeError(
                 f"Fallo nativo (SystemExit) en {step_name} con código: {exc.code}"
             ) from exc
-        print(f"[{step_name}] Finalizado con exit(0)")
+        logger.info(f"[{step_name}] Finalizado con exit(0)")
     except Exception as exc:
-        import traceback
-
-        traceback.print_exc()
+        logger.exception(f"Fallo nativo en {step_name} con error: {exc}")
         raise RuntimeError(f"Fallo nativo en {step_name} con error: {exc}") from exc
     finally:
         os.environ.clear()

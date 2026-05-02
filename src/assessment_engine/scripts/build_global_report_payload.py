@@ -6,6 +6,7 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,8 @@ from assessment_engine.scripts.lib.global_maturity_policy import (
     band_for_score,
     status_color_for_score,
 )
+
+logger = logging.getLogger(__name__)
 
 TOWER_NAMES_MAP = {
     "T1": "Infraestructura Física y CPD",
@@ -54,7 +57,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     blueprint_files = list(client_dir.glob("T*/blueprint_*_payload.json"))
 
     if not blueprint_files:
-        print(f"No se encontraron archivos de torre en {client_dir}")
+        logger.warning(f"No se encontraron archivos de torre en {client_dir}")
         return None
 
     towers_data = []
@@ -196,7 +199,7 @@ def main(argv: list[str] | None = None) -> None:
     payload = build_global_payload(client_dir, client_name)
     if payload:
         Path(raw_args[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2))
-        print("Payload dinámico generado con éxito.")
+        logger.info("Payload dinámico generado con éxito.")
 
 
 if __name__ == "__main__":

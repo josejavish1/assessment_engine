@@ -2,11 +2,11 @@
 Módulo runtime_env.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 from __future__ import annotations
 
 import os
 from typing import Any
-
 
 DEFAULT_GOOGLE_CLOUD_PROJECT = "sub403o4u0q5"
 DEFAULT_GOOGLE_CLOUD_LOCATION = "europe-west1"
@@ -50,7 +50,9 @@ def _read_positive_float_env(
         ) from exc
 
     if value <= 0:
-        raise RuntimeError(f"{name} debe ser mayor que 0. Valor recibido: {raw_value!r}")
+        raise RuntimeError(
+            f"{name} debe ser mayor que 0. Valor recibido: {raw_value!r}"
+        )
 
     return value
 

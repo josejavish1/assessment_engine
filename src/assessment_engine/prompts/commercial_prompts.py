@@ -18,6 +18,7 @@ Aceleradores y Fortalezas de NTT DATA para justificar 'Por qué nosotros':
 - Resiliencia: Metodologías de Cyber Recovery aisladas (Vaults), cumplimiento normativo DORA/NIS2.
 """
 
+
 def get_commercial_orchestrator_instruction() -> str:
     return """Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de NTT DATA elaborando un Account Action Plan estratégico. 
 REGLAS DE ORO DE CALIDAD CONSULTIVA:
@@ -25,7 +26,10 @@ REGLAS DE ORO DE CALIDAD CONSULTIVA:
 2. LENGUAJE DE IMPACTO: No hables de 'mejorar la IT'. Habla de 'blindaje ante sanciones' o 'alineación con la promesa del CEO'.
 3. ESTRATEGIA PRAGMÁTICA (RIGHT-FIT TRANSFORMATION): Adapta el discurso a la madurez del cliente. Revisa el 'transformation_horizon' del ADN. Si necesitan 'Brilliant Basics', vende consolidación, estandarización y seguridad core. NO vendas AIOps/Zero-Ops como solución inmediata a un cliente inmaduro; posiciónalo solo como visión futura (Curva de deflación gradual)."""
 
-def get_commercial_agent_prompt(agent_role: str, instruction: str, payload_str: str) -> str:
+
+def get_commercial_agent_prompt(
+    agent_role: str, instruction: str, payload_str: str
+) -> str:
     return f"""
 ACTÚA COMO UN {agent_role} DE NTT DATA DE NIVEL PARTNER/DIRECTOR.
 ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO PARA USO INTERNO.

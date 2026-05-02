@@ -6,6 +6,7 @@ Orquesta la regeneración reproducible de artefactos smoke en working/.
 from __future__ import annotations
 
 import argparse
+import logging
 import shlex
 import subprocess
 
@@ -24,6 +25,8 @@ from assessment_engine.scripts.tools.generate_smoke_data import (
     normalize_towers,
 )
 
+logger = logging.getLogger(__name__)
+
 BLUEPRINT_RESUME_STEP = "Engine: Tower Strategic Blueprint"
 
 
@@ -34,8 +37,8 @@ def run_step(
     dry_run: bool,
 ) -> None:
     printable = " ".join(shlex.quote(arg) for arg in cmd_args)
-    print(f"\n=== {step_name} ===")
-    print(printable)
+    logger.info(f"\n=== {step_name} ===")
+    logger.info(printable)
     if dry_run:
         return
 
@@ -125,7 +128,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--client", default="smoke_ivirma")
     parser.add_argument("--tower", default="T5")
     parser.add_argument("--towers", nargs="+", default=None)
-    parser.add_argument("--scenario", choices=sorted(SCENARIOS), default=DEFAULT_SCENARIO)
+    parser.add_argument(
+        "--scenario", choices=sorted(SCENARIOS), default=DEFAULT_SCENARIO
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--local-only", action="store_true")
     parser.add_argument("--with-global", action="store_true")
@@ -154,9 +159,7 @@ def main(argv: list[str] | None = None) -> None:
             args.vertex_query_timeout_seconds
         )
     if args.ai_step_timeout_seconds is not None:
-        env["ASSESSMENT_AI_STEP_TIMEOUT_SECONDS"] = str(
-            args.ai_step_timeout_seconds
-        )
+        env["ASSESSMENT_AI_STEP_TIMEOUT_SECONDS"] = str(args.ai_step_timeout_seconds)
 
     context_path, responses_path = generate_smoke_inputs(
         client=client_id,
@@ -165,10 +168,10 @@ def main(argv: list[str] | None = None) -> None:
         scenario=args.scenario,
         write_files=not args.dry_run,
     )
-    print("\n=== Smoke inputs ===")
-    print(str(context_path))
-    print(str(responses_path))
-    print(f"Towers: {', '.join(tower_ids)}")
+    logger.info("\n=== Smoke inputs ===")
+    logger.info(str(context_path))
+    logger.info(str(responses_path))
+    logger.info(f"Towers: {', '.join(tower_ids)}")
 
     for tower_id in tower_ids:
         for cmd_args, step_name in build_local_steps(
@@ -181,28 +184,28 @@ def main(argv: list[str] | None = None) -> None:
             run_step(cmd_args, step_name, env, args.dry_run)
 
     if args.local_only:
-        print("\n✅ Regeneración local completada hasta findings.json.")
+        logger.info("\n✅ Regeneración local completada hasta findings.json.")
         return
 
     if args.skip_vertex_preflight:
-        print("\n=== Vertex AI preflight ===")
-        print("Skipped by flag: --skip-vertex-preflight")
+        logger.info("\n=== Vertex AI preflight ===")
+        logger.info("Skipped by flag: --skip-vertex-preflight")
     elif args.dry_run:
-        print("\n=== Vertex AI preflight ===")
-        print("Would run Vertex AI preflight before the first AI-backed step.")
+        logger.info("\n=== Vertex AI preflight ===")
+        logger.info("Would run Vertex AI preflight before the first AI-backed step.")
     else:
-        print("\n=== Vertex AI preflight ===")
+        logger.info("\n=== Vertex AI preflight ===")
         result = run_vertex_ai_preflight(
             env=env,
             model_name=args.vertex_model,
             timeout_seconds=args.vertex_preflight_timeout_seconds,
         )
-        print("✅ Vertex AI preflight passed.")
-        print(f"   - project: {result['project']}")
-        print(f"   - location: {result['location']}")
-        print(f"   - model: {result['model']}")
+        logger.info("✅ Vertex AI preflight passed.")
+        logger.info(f"   - project: {result['project']}")
+        logger.info(f"   - location: {result['location']}")
+        logger.info(f"   - model: {result['model']}")
         if args.writer_model:
-            print(f"   - writer_model_override: {args.writer_model}")
+            logger.info(f"   - writer_model_override: {args.writer_model}")
 
     for tower_id in tower_ids:
         tower_pipeline_cmd = [
@@ -266,7 +269,7 @@ def main(argv: list[str] | None = None) -> None:
             args.dry_run,
         )
 
-    print("\n✅ Regeneración smoke finalizada.")
+    logger.info("\n✅ Regeneración smoke finalizada.")
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 Módulo generate_inputs.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import random
 from pathlib import Path

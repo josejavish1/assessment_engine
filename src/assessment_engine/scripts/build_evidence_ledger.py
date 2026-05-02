@@ -2,13 +2,17 @@
 Módulo build_evidence_ledger.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
 import json
+import logging
 import re
 from pathlib import Path
 from zipfile import ZipFile
 
 from assessment_engine.scripts.lib.runtime_paths import ROOT
+
+logger = logging.getLogger(__name__)
 
 
 def load_json(path: Path) -> dict:
@@ -173,8 +177,8 @@ def main() -> None:
         json.dumps(ledger, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    print(f"evidence_ledger generado en: {output_path}")
-    print(f"evidences: {len(ledger['evidences'])}")
+    logger.info(f"evidence_ledger generado en: {output_path}")
+    logger.info(f"evidences: {len(ledger['evidences'])}")
 
 
 if __name__ == "__main__":

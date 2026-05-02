@@ -2,6 +2,7 @@
 Módulo run_commercial_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import sys
 
 from assessment_engine.scripts.lib.pipeline_runtime import (
@@ -44,7 +45,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.run_commercial_refiner",
+            "-m",
+            "assessment_engine.scripts.run_commercial_refiner",
             str(global_payload_path),
         ],
         "Multi-Agent Commercial Refinement",
@@ -55,7 +57,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.render_commercial_report",
+            "-m",
+            "assessment_engine.scripts.render_commercial_report",
             str(commercial_payload_path),
             str(template_path),
             str(output_path),

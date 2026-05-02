@@ -2,6 +2,7 @@
 Módulo render_commercial_report.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import re
 import sys
@@ -83,9 +84,7 @@ def render_commercial_cover(doc, payload: CommercialPayload):
 
     add_spacer(doc, 30)
     client_p = doc.add_paragraph()
-    client_run = client_p.add_run(
-        payload.meta.client.upper()
-    )
+    client_run = client_p.add_run(payload.meta.client.upper())
     client_run.font.size = Pt(24)
     client_run.font.name = "Arial"
     client_run.bold = True
@@ -415,9 +414,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]):
         add_heading_paragraph(doc, "1. Executive Synthesis", level=3)
         p_syn = doc.add_paragraph()
         p_syn.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r_syn_text = p_syn.add_run(
-            clean_commercial_text(prop.executive_synthesis)
-        )
+        r_syn_text = p_syn.add_run(clean_commercial_text(prop.executive_synthesis))
         r_syn_text.bold = False
         r_syn_text.font.color.rgb = RGBColor(46, 64, 77)
         p_syn.paragraph_format.space_after = Pt(12)
@@ -650,7 +647,9 @@ def render_commercial_report(
     render_commercial_cover(doc, payload)
 
     if payload.commercial_summary:
-        render_commercial_summary(doc, payload.commercial_summary, payload.stakeholder_matrix)
+        render_commercial_summary(
+            doc, payload.commercial_summary, payload.stakeholder_matrix
+        )
     if payload.gtm_strategy:
         render_gtm_strategy(doc, payload.gtm_strategy)
     if payload.opportunities_pipeline:

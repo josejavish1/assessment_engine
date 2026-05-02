@@ -3,6 +3,7 @@ Módulo contract_utils.py.
 Proporciona utilidades para la validación resiliente de contratos entre etapas.
 Permite detectar desviaciones de esquema sin necesariamente abortar la ejecución.
 """
+
 import json
 import logging
 from pathlib import Path
@@ -35,17 +36,21 @@ def robust_load_payload(
         content = path.read_text(encoding="utf-8-sig")
         data = json.loads(content)
     except Exception as e:
-        logger.error(f"❌ Error crítico cargando JSON de {artifact_name} en {path}: {e}")
+        logger.error(
+            f"❌ Error crítico cargando JSON de {artifact_name} en {path}: {e}"
+        )
         raise
 
     try:
         # Intento de validación estricta
         return schema.model_validate(data)
     except ValidationError as e:
-        logger.warning(f"⚠️ Desviación de contrato detectada en {artifact_name} ({path.name}):")
+        logger.warning(
+            f"⚠️ Desviación de contrato detectada en {artifact_name} ({path.name}):"
+        )
         for error in e.errors():
-            loc = " -> ".join(str(x) for x in error['loc'])
-            msg = error['msg']
+            loc = " -> ".join(str(x) for x in error["loc"])
+            msg = error["msg"]
             logger.warning(f"   - Campo [{loc}]: {msg}")
 
         if mode == "strict":
@@ -62,18 +67,19 @@ def robust_load_payload(
             raise
         return schema.model_construct(**data)
 
+
 def save_versioned_payload(path: Path, payload: BaseModel, artifact_type: str):
     """
     Guarda un payload asegurando que incluya metadatos de versión y use alias.
     """
     # Si el payload no tiene metadatos, intentamos inyectarlos si el modelo lo permite
-    if hasattr(payload, 'generation_metadata') and payload.generation_metadata is None:
+    if hasattr(payload, "generation_metadata") and payload.generation_metadata is None:
         from .common import VersionMetadata
+
         payload.generation_metadata = VersionMetadata(
-            artifact_type=artifact_type,
-            artifact_version="1.0.0"
+            artifact_type=artifact_type, artifact_version="1.0.0"
         )
-    
+
     data = payload.model_dump(by_alias=True, exclude_none=False)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
     logger.info(f"✅ Artefacto {artifact_type} guardado en: {path}")

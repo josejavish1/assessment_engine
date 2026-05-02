@@ -1,6 +1,9 @@
+from typing import Any, Dict
+
 from pydantic import BaseModel, Field
-from typing import Dict, Any
+
 from .common import VersionedPayload
+
 
 class GlobalIssue(BaseModel):
     severity: str
@@ -8,6 +11,7 @@ class GlobalIssue(BaseModel):
     sections: list[str]
     message: str
     suggested_fix: str
+
 
 class GlobalReviewDraft(BaseModel):
     artifact_type: str
@@ -18,17 +22,20 @@ class GlobalReviewDraft(BaseModel):
     style_findings: list[str]
     review_notes: list[str]
 
+
 class GlobalEdit(BaseModel):
     path: str
     action: str
     value: Any
     reason: str
 
+
 class GlobalRefinerDraft(BaseModel):
     status: str
     editorial_strategy: str
     edits: list[GlobalEdit]
     review_notes: list[str]
+
 
 class ExecutiveReportDraft(BaseModel):
     executive_summary_text: str
@@ -38,15 +45,18 @@ class ExecutiveReportDraft(BaseModel):
     roadmap_execution_text: str
     executive_decisions_text: str
 
+
 class ExecutiveSummaryDraft(BaseModel):
     headline: str
     narrative: str
     key_business_impacts: list[str]
 
+
 class BurningPlatformItem(BaseModel):
     theme: str
     business_risk: str
     root_causes: list[str]
+
 
 class TowerBottomLineItem(BaseModel):
     id: str
@@ -56,22 +66,27 @@ class TowerBottomLineItem(BaseModel):
     status_color: str
     bottom_line: str
 
+
 class EvolutionPrinciple(BaseModel):
     principle: str
     description: str
 
+
 class StrategicPillar(BaseModel):
     pillar: str
     description: str
+
 
 class TargetVisionDraft(BaseModel):
     value_proposition: str
     evolution_principles: list[EvolutionPrinciple]
     strategic_pillars: list[StrategicPillar]
 
+
 class ProgramDef(BaseModel):
     name: str
     description: str
+
 
 class InitiativeDef(BaseModel):
     program: str
@@ -80,35 +95,41 @@ class InitiativeDef(BaseModel):
     start_month: int
     duration_months: int
 
+
 class HorizonsDef(BaseModel):
     quick_wins_0_3_months: list[InitiativeDef]
     year_1_3_12_months: list[InitiativeDef]
     year_2_12_24_months: list[InitiativeDef]
     year_3_24_36_months: list[InitiativeDef]
 
+
 class ExecutionRoadmapDraft(BaseModel):
     programs: list[ProgramDef]
     horizons: HorizonsDef
+
 
 class ExecutiveDecisionItem(BaseModel):
     decision_type: str
     action_required: str
     impact_if_delayed: str
 
+
 class ExecutiveDecisionsDraft(BaseModel):
     immediate_decisions: list[ExecutiveDecisionItem]
+
 
 class GlobalReportDocumentMeta(BaseModel):
     client: str
     date: str
     version: str
 
+
 class GlobalReportPayload(VersionedPayload):
     meta: GlobalReportDocumentMeta
     executive_summary: ExecutiveSummaryDraft
     burning_platform: list[BurningPlatformItem]
     intelligence_dossier: dict = Field(default_factory=dict)
-    heatmap: list[Any] = Field(default_factory=list) # Raw heatmap data passthrough
+    heatmap: list[Any] = Field(default_factory=list)  # Raw heatmap data passthrough
     tower_bottom_lines: list[TowerBottomLineItem]
     target_vision: TargetVisionDraft
     execution_roadmap: ExecutionRoadmapDraft

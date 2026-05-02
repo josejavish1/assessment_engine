@@ -2,24 +2,28 @@
 Módulo build_case_input.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import argparse
 import json
+import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from zipfile import ZipFile
 
-from assessment_engine.scripts.lib.runtime_paths import (
-    ROOT,
-    resolve_case_dir,
-    resolve_client_intelligence_path,
-)
 from assessment_engine.scripts.lib.client_intelligence import (
     build_client_context_packet,
     get_target_maturity,
     load_client_intelligence,
 )
+from assessment_engine.scripts.lib.runtime_paths import (
+    ROOT,
+    resolve_case_dir,
+    resolve_client_intelligence_path,
+)
 from assessment_engine.scripts.lib.text_utils import normalize_tower_name, slugify
+
+logger = logging.getLogger(__name__)
 
 RESPONSE_RE = re.compile(r"(T\d+\.P\d+\.K\d+\.PR\d+)\s*:\s*([1-5](?:[.,]\d+)?)")
 
@@ -156,7 +160,9 @@ def build_case_input(args: argparse.Namespace) -> dict:
 
     context_text = read_text(context_path)
     context_summary = context_text[:4000]
-    client_context = build_client_context_packet(intel, tower_id=args.tower) if intel else {}
+    client_context = (
+        build_client_context_packet(intel, tower_id=args.tower) if intel else {}
+    )
 
     return {
         "case_id": f"{client_slug}_{args.tower.lower()}_{datetime.now(timezone.utc).strftime('%Y_%m_%d')}",
@@ -220,8 +226,8 @@ def main() -> None:
         json.dumps(case_input, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    print(f"case_input generado en: {output_path}")
-    print(f"answers: {len(case_input['answers'])}")
+    logger.info(f"case_input generado en: {output_path}")
+    logger.info(f"answers: {len(case_input['answers'])}")
 
 
 if __name__ == "__main__":

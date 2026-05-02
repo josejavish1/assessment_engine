@@ -2,11 +2,13 @@ from typing import Any, Dict, List, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+
 class RegulatoryHarvest(BaseModel):
     sector: str
     frameworks: List[str]
     regulatory_pressures: List[str] = Field(default_factory=list)
     source_evidence: str
+
 
 class BusinessHarvest(BaseModel):
     ceo_agenda: str
@@ -18,6 +20,7 @@ class BusinessHarvest(BaseModel):
     business_constraints: List[str] = Field(default_factory=list)
     source_evidence: str
 
+
 class TechHarvest(BaseModel):
     tech_footprint: str
     tech_trends: List[str]
@@ -25,6 +28,7 @@ class TechHarvest(BaseModel):
     operating_constraints: List[str] = Field(default_factory=list)
     recent_incident_signals: List[str] = Field(default_factory=list)
     source_evidence: str
+
 
 class ClientDossier(BaseModel):
     client_name: str
@@ -219,7 +223,9 @@ class TechnologyContextV3(BaseModel):
 class IntelligenceClaimV3(BaseModel):
     claim_id: str
     claim: str
-    claim_type: Literal["fact", "inference", "assumption", "scenario", "alternative_hypothesis"]
+    claim_type: Literal[
+        "fact", "inference", "assumption", "scenario", "alternative_hypothesis"
+    ]
     confidence: ConfidenceAssessment
     sources: List[ClaimSource] = Field(default_factory=list)
     source_reliability_score: int | None = Field(default=None, ge=0, le=100)
@@ -228,7 +234,9 @@ class IntelligenceClaimV3(BaseModel):
 
 
 class IntelligenceReviewV3(BaseModel):
-    human_review_status: Literal["pending", "reviewed", "approved", "rejected"] = "pending"
+    human_review_status: Literal["pending", "reviewed", "approved", "rejected"] = (
+        "pending"
+    )
     approved_by: str | None = None
     approved_at: str | None = None
     review_notes: List[str] = Field(default_factory=list)
