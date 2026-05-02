@@ -6,6 +6,7 @@ Este archivo actúa como un índice ("scaffolding registry") para que los agente
 
 | Propósito | Plantilla a utilizar | Cuándo usarla |
 | :--- | :--- | :--- |
+| **Aplicación FastAPI (Main)** | `fastapi_app.py.tpl` | Cuando se crea el entrypoint de un nuevo servicio web. Inicializa el logger JSON. |
 | **Endpoint REST (API)** | `fastapi_endpoint.py.tpl` | Cuando la tarea requiere exponer funcionalidad vía HTTP. Incluye Pydantic schemas y manejo estándar de HTTPException. |
 | **Worker / Job Asíncrono** | `async_worker.py.tpl` | Cuando la tarea requiere procesamiento en segundo plano, colas de mensajes o tareas cron programadas. |
 | **Tests Unitarios / Integración** | `pytest_test.py.tpl` | Cuando se requiere añadir nueva cobertura de código. Fuerza el patrón Arrange-Act-Assert. |

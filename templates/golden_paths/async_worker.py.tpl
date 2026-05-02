@@ -50,5 +50,6 @@ async def main():
     await service.execute(payload={"test": "data"})
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    from assessment_engine.lib.logger_config import setup_structured_logging
+    setup_structured_logging(level=logging.INFO)
     asyncio.run(main())

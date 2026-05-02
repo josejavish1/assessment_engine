@@ -11,7 +11,8 @@ dependencies = [
     "pydantic-settings",
     "python-docx",
     "matplotlib",
-    "python-dotenv"
+    "python-dotenv",
+    "python-json-logger"
 ]
 
 [build-system]
