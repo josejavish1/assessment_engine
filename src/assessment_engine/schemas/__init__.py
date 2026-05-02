@@ -1,7 +1,3 @@
-from typing import Any, List, Optional
-
-from pydantic import BaseModel, Field
-
 from assessment_engine.schemas.asis import AsIsDraft
 from assessment_engine.schemas.common import SectionReview
 from assessment_engine.schemas.conclusion import ConclusionDraft
