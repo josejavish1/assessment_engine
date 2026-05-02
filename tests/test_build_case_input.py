@@ -6,7 +6,9 @@ import json
 from assessment_engine.scripts import build_case_input
 
 
-def test_build_case_input_includes_context_and_client_intelligence(monkeypatch, tmp_path) -> None:
+def test_build_case_input_includes_context_and_client_intelligence(
+    monkeypatch, tmp_path
+) -> None:
     tower_id = "T5"
     tower_dir = tmp_path / "engine_config" / "towers" / tower_id
     tower_dir.mkdir(parents=True)
@@ -42,7 +44,9 @@ def test_build_case_input_includes_context_and_client_intelligence(monkeypatch, 
     )
 
     context_path = tmp_path / "context.txt"
-    context_path.write_text("Contexto real del cliente con prioridades claras.", encoding="utf-8")
+    context_path.write_text(
+        "Contexto real del cliente con prioridades claras.", encoding="utf-8"
+    )
     responses_path = tmp_path / "responses.txt"
     responses_path.write_text("T5.P1.K1.PR1: 3.5\n", encoding="utf-8")
     intel_path = tmp_path / "working" / "client" / "client_intelligence.json"
@@ -72,7 +76,11 @@ def test_build_case_input_includes_context_and_client_intelligence(monkeypatch, 
                 "business_context": {
                     "ceo_agenda": {
                         "summary": "Blindar resiliencia.",
-                        "confidence": {"score": 80, "label": "high", "method": "custom"},
+                        "confidence": {
+                            "score": 80,
+                            "label": "high",
+                            "method": "custom",
+                        },
                         "sources": [],
                     },
                     "strategic_priorities": [],
@@ -82,7 +90,11 @@ def test_build_case_input_includes_context_and_client_intelligence(monkeypatch, 
                         "stage": "H1",
                         "label": "Brilliant Basics",
                         "rationale": "Reducir complejidad.",
-                        "confidence": {"score": 70, "label": "high", "method": "custom"},
+                        "confidence": {
+                            "score": 70,
+                            "label": "high",
+                            "method": "custom",
+                        },
                         "sources": [],
                     },
                     "constraints": [],
@@ -90,7 +102,11 @@ def test_build_case_input_includes_context_and_client_intelligence(monkeypatch, 
                 "technology_context": {
                     "footprint_summary": {
                         "summary": "Azure dominante.",
-                        "confidence": {"score": 60, "label": "medium", "method": "custom"},
+                        "confidence": {
+                            "score": 60,
+                            "label": "medium",
+                            "method": "custom",
+                        },
                         "sources": [],
                     },
                     "technology_drivers": [],
@@ -101,9 +117,21 @@ def test_build_case_input_includes_context_and_client_intelligence(monkeypatch, 
                 "tower_overrides": {
                     "T5": {
                         "target_maturity": 4.4,
-                        "business_criticality": {"score": 85, "label": "high", "method": "custom"},
-                        "regulatory_pressure": {"score": 80, "label": "high", "method": "custom"},
-                        "change_urgency": {"score": 75, "label": "high", "method": "custom"},
+                        "business_criticality": {
+                            "score": 85,
+                            "label": "high",
+                            "method": "custom",
+                        },
+                        "regulatory_pressure": {
+                            "score": 80,
+                            "label": "high",
+                            "method": "custom",
+                        },
+                        "change_urgency": {
+                            "score": 75,
+                            "label": "high",
+                            "method": "custom",
+                        },
                         "constraints": ["No interrumpir operación"],
                         "related_claim_ids": [],
                     }

@@ -23,6 +23,8 @@ Reglas obligatorias:
 - el branch_name debe ser corto, legible y seguro para git;
 - el commit_title debe ser una línea breve;
 - el pr_title debe explicar el cambio de negocio.
+- Si la petición es destructiva (borrar BD, romper estructura core, exponer secretos) o está totalmente fuera de scope, DEBES establecer `refused` a true y dar la razón en `refusal_reason`.
+- Si la petición implica crear un nuevo endpoint, worker o componente, DEBES mencionar explícitamente en el plan que se deben usar las plantillas de `templates/golden_paths/`.
 
 Piensa en este repo con estas reglas:
 - spec-first;

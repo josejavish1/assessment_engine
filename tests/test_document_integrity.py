@@ -10,26 +10,36 @@ from tests.artifact_helpers import ROOT, require_existing_group
 def _resolve_t5_docx_pair() -> tuple[Path, Path]:
     preferred_pairs = [
         (
-            ROOT / "working" / "smoke_ivirma" / "T5"
+            ROOT
+            / "working"
+            / "smoke_ivirma"
+            / "T5"
             / "Blueprint_Transformacion_T5_smoke_ivirma.docx",
-            ROOT / "working" / "smoke_ivirma" / "T5"
+            ROOT
+            / "working"
+            / "smoke_ivirma"
+            / "T5"
             / "annex_t5_smoke_ivirma_final.docx",
         ),
         (
-            ROOT / "working" / "smoke_moeve" / "T5"
+            ROOT
+            / "working"
+            / "smoke_moeve"
+            / "T5"
             / "Blueprint_Transformacion_T5_smoke_moeve.docx",
-            ROOT / "working" / "smoke_moeve" / "T5"
-            / "annex_t5_smoke_moeve_final.docx",
+            ROOT / "working" / "smoke_moeve" / "T5" / "annex_t5_smoke_moeve_final.docx",
         ),
         (
-            ROOT / "working" / "ivirma" / "T5"
+            ROOT
+            / "working"
+            / "ivirma"
+            / "T5"
             / "Blueprint_Transformacion_T5_ivirma.docx",
-            ROOT / "working" / "ivirma" / "T5"
-            / "annex_t5_ivirma_final.docx",
+            ROOT / "working" / "ivirma" / "T5" / "annex_t5_ivirma_final.docx",
         ),
     ]
-    return require_existing_group(
-        preferred_pairs,
+    return require_existing_group(  # type: ignore
+        preferred_pairs,  # type: ignore
         skip_message="No hay artefactos DOCX T5 disponibles en working/ para validar integridad.",
     )
 
@@ -63,14 +73,18 @@ def test_t5_docx_relationship_targets_exist():
             internal = f"word/{target}" if not target.startswith("word/") else target
             if target.startswith("../"):
                 internal = target.replace("../", "", 1)
-            assert internal in names, f"Missing relationship target {target} in {path.name}"
+            assert internal in names, (
+                f"Missing relationship target {target} in {path.name}"
+            )
 
 
 def test_t5_documents_contain_expected_executive_headings():
     blueprint_doc = Document(BLUEPRINT_DOCX)
     annex_doc = Document(ANNEX_DOCX)
 
-    blueprint_text = "\n".join(p.text for p in blueprint_doc.paragraphs if p.text.strip())
+    blueprint_text = "\n".join(
+        p.text for p in blueprint_doc.paragraphs if p.text.strip()
+    )
     annex_text = "\n".join(p.text for p in annex_doc.paragraphs if p.text.strip())
 
     assert "Executive Snapshot" in blueprint_text

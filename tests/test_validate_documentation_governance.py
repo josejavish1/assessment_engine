@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore
 
-from assessment_engine.scripts.tools import validate_documentation_governance as validator
+from assessment_engine.scripts.tools import (
+    validate_documentation_governance as validator,
+)
 
 
 def _write_markdown(path: Path, title: str = "Doc") -> None:
@@ -48,7 +50,9 @@ def _write_map(path: Path, entries: list[dict]) -> None:
     )
 
 
-def test_source_linked_review_requires_matching_doc_change(tmp_path: Path, monkeypatch) -> None:
+def test_source_linked_review_requires_matching_doc_change(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo_root = tmp_path
     (repo_root / "src").mkdir()
     (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
@@ -75,16 +79,22 @@ def test_source_linked_review_requires_matching_doc_change(tmp_path: Path, monke
         ],
     )
 
-    monkeypatch.setattr(validator, "git_changed_files", lambda *_args, **_kwargs: ["src/example.py"])
+    monkeypatch.setattr(
+        validator, "git_changed_files", lambda *_args, **_kwargs: ["src/example.py"]
+    )
 
-    errors = validator.validate_documentation_governance(repo_root, doc_map, "base", "head")
+    errors = validator.validate_documentation_governance(
+        repo_root, doc_map, "base", "head"
+    )
 
     assert errors == [
         "docs/example.md: source-linked changes require documentation review in one of: docs/example.md"
     ]
 
 
-def test_source_linked_review_passes_when_allowed_doc_changes(tmp_path: Path, monkeypatch) -> None:
+def test_source_linked_review_passes_when_allowed_doc_changes(
+    tmp_path: Path, monkeypatch
+) -> None:
     repo_root = tmp_path
     (repo_root / "src").mkdir()
     (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
@@ -131,12 +141,16 @@ def test_source_linked_review_passes_when_allowed_doc_changes(tmp_path: Path, mo
         lambda *_args, **_kwargs: ["src/example.py", "docs/related.md"],
     )
 
-    errors = validator.validate_documentation_governance(repo_root, doc_map, "base", "head")
+    errors = validator.validate_documentation_governance(
+        repo_root, doc_map, "base", "head"
+    )
 
     assert errors == []
 
 
-def test_source_linked_review_configuration_must_reference_real_paths(tmp_path: Path) -> None:
+def test_source_linked_review_configuration_must_reference_real_paths(
+    tmp_path: Path,
+) -> None:
     repo_root = tmp_path
     (repo_root / "src").mkdir()
     (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")

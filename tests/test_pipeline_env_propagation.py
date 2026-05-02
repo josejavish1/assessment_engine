@@ -8,15 +8,23 @@ from assessment_engine.scripts import (
 from assessment_engine.scripts.tools import regenerate_smoke_artifacts
 
 
-def test_regenerate_smoke_artifacts_propagates_skip_vertex_preflight(monkeypatch) -> None:
+def test_regenerate_smoke_artifacts_propagates_skip_vertex_preflight(
+    monkeypatch,
+) -> None:
     captured: list[tuple[list[str], str, dict[str, str], bool]] = []
 
     monkeypatch.setattr(
         regenerate_smoke_artifacts,
         "generate_smoke_inputs",
         lambda **_kwargs: (
-            regenerate_smoke_artifacts.ROOT / "working" / "smoke_ivirma" / "context.txt",
-            regenerate_smoke_artifacts.ROOT / "working" / "smoke_ivirma" / "responses.txt",
+            regenerate_smoke_artifacts.ROOT
+            / "working"
+            / "smoke_ivirma"
+            / "context.txt",
+            regenerate_smoke_artifacts.ROOT
+            / "working"
+            / "smoke_ivirma"
+            / "responses.txt",
         ),
     )
     monkeypatch.setattr(
@@ -101,8 +109,14 @@ def test_regenerate_smoke_artifacts_runs_global_pipeline_without_legacy_switches
         regenerate_smoke_artifacts,
         "generate_smoke_inputs",
         lambda **_kwargs: (
-            regenerate_smoke_artifacts.ROOT / "working" / "smoke_ivirma" / "context.txt",
-            regenerate_smoke_artifacts.ROOT / "working" / "smoke_ivirma" / "responses.txt",
+            regenerate_smoke_artifacts.ROOT
+            / "working"
+            / "smoke_ivirma"
+            / "context.txt",
+            regenerate_smoke_artifacts.ROOT
+            / "working"
+            / "smoke_ivirma"
+            / "responses.txt",
         ),
     )
     monkeypatch.setattr(
@@ -127,8 +141,14 @@ def test_regenerate_smoke_artifacts_runs_multiple_towers(monkeypatch) -> None:
         regenerate_smoke_artifacts,
         "generate_smoke_inputs",
         lambda **_kwargs: (
-            regenerate_smoke_artifacts.ROOT / "working" / "vodafone_demo" / "context.txt",
-            regenerate_smoke_artifacts.ROOT / "working" / "vodafone_demo" / "responses.txt",
+            regenerate_smoke_artifacts.ROOT
+            / "working"
+            / "vodafone_demo"
+            / "context.txt",
+            regenerate_smoke_artifacts.ROOT
+            / "working"
+            / "vodafone_demo"
+            / "responses.txt",
         ),
     )
     monkeypatch.setattr(
@@ -157,7 +177,9 @@ def test_regenerate_smoke_artifacts_runs_multiple_towers(monkeypatch) -> None:
     )
 
     tower_resume_steps = [
-        item for item in captured if item[1].startswith("Resume tower pipeline from strategic blueprint")
+        item
+        for item in captured
+        if item[1].startswith("Resume tower pipeline from strategic blueprint")
     ]
     assert [step[0][step[0].index("--tower") + 1] for step in tower_resume_steps] == [
         "T2",
@@ -181,12 +203,37 @@ def test_run_tower_pipeline_renders_annex_with_semantic_styles(monkeypatch) -> N
         _fake_run_step_async,
     )
     monkeypatch.setattr(run_tower_pipeline, "build_runtime_env", lambda: {})
-    monkeypatch.setattr(run_tower_pipeline, "prepare_case_runtime", lambda env, client_id, tower_id: run_tower_pipeline.Path("/tmp") / client_id / tower_id)
-    monkeypatch.setattr(run_tower_pipeline, "validate_runtime_environment", lambda env: None)
+    monkeypatch.setattr(
+        run_tower_pipeline,
+        "prepare_case_runtime",
+        lambda env, client_id, tower_id: (
+            run_tower_pipeline.Path("/tmp") / client_id / tower_id
+        ),
+    )
+    monkeypatch.setattr(
+        run_tower_pipeline, "validate_runtime_environment", lambda env: None
+    )
     monkeypatch.setattr(run_tower_pipeline, "resolve_python_bin", lambda: "python")
-    monkeypatch.setattr(run_tower_pipeline, "resolve_blueprint_payload_path", lambda client_id, tower_id: run_tower_pipeline.Path("/tmp") / client_id / tower_id / f"blueprint_{tower_id.lower()}_payload.json")
-    monkeypatch.setattr(run_tower_pipeline, "resolve_tower_annex_template_path", lambda: run_tower_pipeline.Path("/tmp/template.docx"))
-    monkeypatch.setattr(run_tower_pipeline, "run_vertex_ai_preflight", lambda env=None: {"project": "p", "location": "l", "model": "m"})
+    monkeypatch.setattr(
+        run_tower_pipeline,
+        "resolve_blueprint_payload_path",
+        lambda client_id, tower_id: (
+            run_tower_pipeline.Path("/tmp")
+            / client_id
+            / tower_id
+            / f"blueprint_{tower_id.lower()}_payload.json"
+        ),
+    )
+    monkeypatch.setattr(
+        run_tower_pipeline,
+        "resolve_tower_annex_template_path",
+        lambda: run_tower_pipeline.Path("/tmp/template.docx"),
+    )
+    monkeypatch.setattr(
+        run_tower_pipeline,
+        "run_vertex_ai_preflight",
+        lambda env=None: {"project": "p", "location": "l", "model": "m"},
+    )
 
     monkeypatch.setattr(
         run_tower_pipeline.Path,

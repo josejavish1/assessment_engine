@@ -13,7 +13,9 @@ def test_main_uses_runtime_client_dir(monkeypatch) -> None:
     monkeypatch.setattr(
         run_intelligence_harvesting,
         "resolve_client_intelligence_path",
-        lambda client_name: Path("/tmp/runtime-working") / client_name / "client_intelligence.json",
+        lambda client_name: (
+            Path("/tmp/runtime-working") / client_name / "client_intelligence.json"
+        ),
     )
     monkeypatch.setattr(
         run_intelligence_harvesting,

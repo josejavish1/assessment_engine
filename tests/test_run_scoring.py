@@ -1,6 +1,7 @@
-import json
 import pytest
+
 from assessment_engine.scripts.run_scoring import build_scoring
+
 
 @pytest.fixture
 def mock_case_input():
@@ -16,8 +17,9 @@ def mock_case_input():
             # Pillar 2: all scores are 4.0
             {"kpi_id": "T1.P2.K1", "value": 4.0},
             {"kpi_id": "T1.P2.K2", "value": 4.0},
-        ]
+        ],
     }
+
 
 @pytest.fixture
 def mock_tower_definition():
@@ -26,21 +28,21 @@ def mock_tower_definition():
         "working_rules": {
             "score_indicator": "mean",
             "score_pillar": "mean",
-            "score_tower": "weighted_mean"
+            "score_tower": "weighted_mean",
         },
         "pillars": [
             {
                 "pillar_id": "T1.P1",
                 "pillar_name": "Pillar One",
                 "weight_pct": 70,
-                "kpis": [{"kpi_id": "T1.P1.K1"}, {"kpi_id": "T1.P1.K2"}]
+                "kpis": [{"kpi_id": "T1.P1.K1"}, {"kpi_id": "T1.P1.K2"}],
             },
             {
                 "pillar_id": "T1.P2",
                 "pillar_name": "Pillar Two",
                 "weight_pct": 30,
-                "kpis": [{"kpi_id": "T1.P2.K1"}, {"kpi_id": "T1.P2.K2"}]
-            }
+                "kpis": [{"kpi_id": "T1.P2.K1"}, {"kpi_id": "T1.P2.K2"}],
+            },
         ],
         "score_bands": [
             {"min": 1.0, "max": 1.8, "label": "Level 1"},
@@ -49,10 +51,13 @@ def mock_tower_definition():
             {"min": 3.4, "max": 4.2, "label": "Level 4"},
             {"min": 4.2, "max": 5.0, "label": "Level 5"},
         ],
-        "maturity_scale": []
+        "maturity_scale": [],
     }
 
-def test_build_scoring_calculates_weighted_average_correctly(mock_case_input, mock_tower_definition):
+
+def test_build_scoring_calculates_weighted_average_correctly(
+    mock_case_input, mock_tower_definition
+):
     """
     Tests the core logic of build_scoring.
     - Pillar 1 avg should be 2.0.
@@ -75,9 +80,14 @@ def test_build_scoring_calculates_weighted_average_correctly(mock_case_input, mo
     assert scoring_output["tower_score_exact"] == pytest.approx(2.6)
 
     # 3. Check if the correct band was resolved
-    assert scoring_output["maturity_band_from_exact"]["label"] == "Level 2" # FIX: The logic is inclusive of the upper bound for the lower level.
+    assert (
+        scoring_output["maturity_band_from_exact"]["label"] == "Level 2"
+    )  # FIX: The logic is inclusive of the upper bound for the lower level.
 
-def test_build_scoring_handles_missing_answers_gracefully(mock_case_input, mock_tower_definition):
+
+def test_build_scoring_handles_missing_answers_gracefully(
+    mock_case_input, mock_tower_definition
+):
     """
     Tests that the scoring works even if some answers are missing.
     - Pillar 1 avg should be 2.0.

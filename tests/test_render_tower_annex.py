@@ -39,7 +39,11 @@ def test_render_tower_annex_from_real_payload(tmp_path):
     assert "ANEXO T5" in text_content
     assert "Resumen ejecutivo de la torre" in text_content
 
-    title = next(p for p in doc.paragraphs if p.text.strip() == "ANEXO T5 – Resilience & Continuity")
+    title = next(
+        p
+        for p in doc.paragraphs
+        if p.text.strip() == "ANEXO T5 – Resilience & Continuity"
+    )
     assert title.style.style_id == "Ttulo"
 
 
@@ -68,7 +72,9 @@ def test_render_tower_annex_semantic_mode_uses_word_styles(tmp_path):
     assert subtitle.style.style_id == "Subttulo"
     assert paragraphs["Resumen ejecutivo de la torre"].style.style_id == "Ttulo1"
     assert paragraphs["Perfil de madurez por pilar"].style.style_id == "Ttulo1"
-    assert not any(p.text.strip().startswith("• ") for p in doc.paragraphs if p.text.strip())
+    assert not any(
+        p.text.strip().startswith("• ") for p in doc.paragraphs if p.text.strip()
+    )
 
     with zipfile.ZipFile(output_path) as zf:
         document_xml = zf.read("word/document.xml").decode("utf-8", "ignore")
@@ -93,7 +99,11 @@ def test_render_tower_annex_can_opt_into_legacy_mode(tmp_path):
     )
 
     doc = Document(output_path)
-    title = next(p for p in doc.paragraphs if p.text.strip() == "ANEXO T5 – Resilience & Continuity")
+    title = next(
+        p
+        for p in doc.paragraphs
+        if p.text.strip() == "ANEXO T5 – Resilience & Continuity"
+    )
 
     assert title.style.style_id != "Ttulo"
 

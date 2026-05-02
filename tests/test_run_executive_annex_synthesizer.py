@@ -38,7 +38,9 @@ def test_synthesize_annex_fails_on_invalid_blueprint(monkeypatch, tmp_path):
     monkeypatch.setattr(
         run_executive_annex_synthesizer,
         "resolve_annex_template_payload_path",
-        lambda _client_name, _tower_id: tower_dir / "approved_annex_t5.template_payload.json",
+        lambda _client_name, _tower_id: (
+            tower_dir / "approved_annex_t5.template_payload.json"
+        ),
     )
     monkeypatch.setattr(
         run_executive_annex_synthesizer,

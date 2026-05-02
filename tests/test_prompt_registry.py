@@ -1,7 +1,6 @@
 from pathlib import Path
 
-import yaml
-
+import yaml  # type: ignore
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_DIR = ROOT / "src" / "assessment_engine" / "prompts" / "registry"
@@ -64,4 +63,3 @@ def test_blueprint_prompt_shapes():
         data = _load_yaml(REGISTRY_DIR / filename)
         for key in keys:
             assert key in data, f"Missing key {key} in {filename}"
-

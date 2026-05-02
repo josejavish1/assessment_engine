@@ -53,9 +53,17 @@ def test_render_tower_blueprint_uses_payload_adjacent_artifacts(tmp_path):
                 },
                 "regulatory_frameworks": [],
                 "business_context": {
-                    "ceo_agenda": {"summary": "", "confidence": "medium", "sources": []},
+                    "ceo_agenda": {
+                        "summary": "",
+                        "confidence": "medium",
+                        "sources": [],
+                    },
                     "technological_drivers": [],
-                    "osint_footprint": {"summary": "", "confidence": "medium", "sources": []},
+                    "osint_footprint": {
+                        "summary": "",
+                        "confidence": "medium",
+                        "sources": [],
+                    },
                     "transformation_horizon": {
                         "stage": "H1",
                         "label": "General",
@@ -77,4 +85,6 @@ def test_render_tower_blueprint_uses_payload_adjacent_artifacts(tmp_path):
     )
 
     assert load_client_intelligence(client_dir)["financial_tier"] == "Tier X"
-    assert load_annex_data(client_dir, "T5")["executive_summary"]["headline"] == "Adjunto"
+    assert (
+        load_annex_data(client_dir, "T5")["executive_summary"]["headline"] == "Adjunto"
+    )
