@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   CommandDialog,
   CommandEmpty,
@@ -10,31 +10,26 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { Play, FileText, Settings, Bot, Search } from 'lucide-react';
+import { Play, FileText, Settings, Bot } from 'lucide-react';
 
-export default function CommandPalette() {
-  const [open, setOpen] = useState(false);
+interface CommandPaletteProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
 
+export default function CommandPalette({ open, setOpen }: CommandPaletteProps) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       // Usar Ctrl+Shift+P (Estándar de VS Code / Paletas de Comandos modernas)
       // para evitar conflictos con navegadores.
-      if (e.key === 'P' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
+      if (e.key.toLowerCase() === 'p' && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault(); // Previene la barra de búsqueda del navegador
+        setOpen(!open);
       }
     };
     document.addEventListener('keydown', down);
-    
-    // Escuchar un evento personalizado para abrir desde un botón
-    const handleOpenCommandPalette = () => setOpen(true);
-    document.addEventListener('openCommandPalette', handleOpenCommandPalette);
-
-    return () => {
-      document.removeEventListener('keydown', down);
-      document.removeEventListener('openCommandPalette', handleOpenCommandPalette);
-    };
-  }, []);
+    return () => document.removeEventListener('keydown', down);
+  }, [open, setOpen]);
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>

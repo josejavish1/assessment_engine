@@ -34,10 +34,11 @@ const initialTasks: Columns = {
 export default function Home() {
   const [tasks] = useState<Columns>(initialTasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   return (
     <>
-      <CommandPalette />
+      <CommandPalette open={isCommandPaletteOpen} setOpen={setIsCommandPaletteOpen} />
       <AgentContextSheet 
         task={selectedTask} 
         isOpen={!!selectedTask} 
@@ -66,7 +67,7 @@ export default function Home() {
             
             {/* Search Button (Triggers Command Palette) */}
             <button 
-              onClick={() => document.dispatchEvent(new Event('openCommandPalette'))}
+              onClick={() => setIsCommandPaletteOpen(true)}
               className="hidden md:flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-1.5 rounded-md border border-slate-700 transition-colors text-sm"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
