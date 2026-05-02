@@ -391,11 +391,12 @@ def validate_executor_configuration(command_template: str) -> None:
     gca_selector = os.environ.get("GOOGLE_GENAI_USE_GCA", "").strip().lower()
     
     try:
-        project_id = "my-gcp-project"  # TODO: Move to config
+        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "my-gcp-project")
         gemini_api_key = get_secret(f"projects/{project_id}/secrets/gemini-api-key/versions/latest")
         google_api_key = get_secret(f"projects/{project_id}/secrets/google-api-key/versions/latest")
         has_api_key = bool(gemini_api_key or google_api_key)
-    except SecretNotFoundError:
+    except Exception:
+        # Fallback if secret manager is not available or project_id is wrong
         has_api_key = False
 
     if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
