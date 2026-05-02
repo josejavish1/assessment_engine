@@ -1,15 +1,18 @@
 // src/business_command_center/src/app/page.tsx
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import KanbanColumn from './components/KanbanColumn';
 import KanbanCard from './components/KanbanCard';
+import CommandPalette from './components/CommandPalette';
+import AgentContextSheet from './components/AgentContextSheet';
 
 type Task = {
   id: string;
   title: string;
   description: string;
   status?: string;
+  agentic_state?: 'thinking' | 'coding' | 'testing' | 'done';
 };
 
 type Columns = {
@@ -20,17 +23,27 @@ type Columns = {
 
 const initialTasks: Columns = {
   backlog: [
-    { id: 'task-2', title: 'Task 2', description: 'This is task 2' },
+    { id: 'task-2', title: 'Task 2: Refactorizar scripts a logger.info()', description: 'Reemplaza todos los print() en src/ por logger.info()' },
   ],
   inProgress: [
-    { id: 'task-1', title: 'Task 1', description: 'This is task 1', status: 'Running Pytest...' },
+    { id: 'task-1', title: 'Task 1: Crear plantillas Golden Path', description: 'Crear plantilla base para workers y endpoints', status: 'Running Pytest...', agentic_state: 'thinking' },
   ],
   done: [],
 };
 
 export default function Home() {
+  const [tasks] = useState<Columns>(initialTasks);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
   return (
     <div className="flex h-screen bg-slate-950 text-white">
+      <CommandPalette />
+      <AgentContextSheet 
+        task={selectedTask} 
+        isOpen={!!selectedTask} 
+        onClose={() => setSelectedTask(null)} 
+      />
+
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 flex flex-col">
         <div className="h-16 flex items-center justify-center border-b border-slate-800">
@@ -62,18 +75,18 @@ export default function Home() {
         <div className="flex-1 p-8 overflow-y-auto">
           <div className="grid grid-cols-3 gap-8 h-full">
             <KanbanColumn id="backlog" title="Backlog">
-              {initialTasks.backlog.map(task => (
-                <KanbanCard key={task.id} task={task} onDelete={() => {}} onEdit={() => {}} />
+              {tasks.backlog.map(task => (
+                <KanbanCard key={task.id} task={task} onClick={setSelectedTask} />
               ))}
             </KanbanColumn>
             <KanbanColumn id="inProgress" title="In Progress">
-              {initialTasks.inProgress.map(task => (
-                <KanbanCard key={task.id} task={task} onDelete={() => {}} onEdit={() => {}} />
+              {tasks.inProgress.map(task => (
+                <KanbanCard key={task.id} task={task} onClick={setSelectedTask} />
               ))}
             </KanbanColumn>
             <KanbanColumn id="done" title="Done">
-              {initialTasks.done.map(task => (
-                <KanbanCard key={task.id} task={task} onDelete={() => {}} onEdit={() => {}} />
+              {tasks.done.map(task => (
+                <KanbanCard key={task.id} task={task} onClick={setSelectedTask} />
               ))}
             </KanbanColumn>
           </div>
