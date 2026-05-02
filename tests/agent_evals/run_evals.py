@@ -5,13 +5,8 @@ import logging
 import sys
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock
 
-import vertexai
-
-vertexai.init = MagicMock()
-
-from assessment_engine.scripts.tools.run_product_owner_orchestrator import (  # noqa: E402
+from assessment_engine.scripts.tools.run_product_owner_orchestrator import (
     generate_plan,
     load_orchestrator_policy,
 )
