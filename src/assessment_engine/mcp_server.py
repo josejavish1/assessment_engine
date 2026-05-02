@@ -225,5 +225,10 @@ def get_tower_state(case_dir: str) -> str:
     return json.dumps(state, indent=2, ensure_ascii=False)
 
 if __name__ == "__main__":
+    from assessment_engine.lib.logger_config import setup_structured_logging
+    import logging
+    
+    setup_structured_logging(level=logging.INFO)
+    
     # FastMCP maneja automáticamente el transporte (stdio, SSE) y el ciclo de vida.
     mcp.run()
