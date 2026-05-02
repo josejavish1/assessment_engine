@@ -31,6 +31,8 @@ from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
 from assessment_engine.lib.secrets_client import get_secret, SecretNotFoundError
+from assessment_engine.lib.logger_config import setup_structured_logging
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -1339,6 +1341,4 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
-ame__ == "__main__":
     raise SystemExit(main())
