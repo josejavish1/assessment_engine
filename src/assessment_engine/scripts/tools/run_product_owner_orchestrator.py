@@ -526,6 +526,10 @@ def validate_executor_configuration(command_template: str) -> None:
         # Fallback if secret manager is not available or project_id is wrong
         has_api_key = False
 
+    # Check environment variables directly as the ultimate fallback
+    if not has_api_key:
+        has_api_key = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
+
     if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
         raise RuntimeError(
             "El executor de Gemini requiere GEMINI_API_KEY, GOOGLE_API_KEY o habilitar autenticación Google."
