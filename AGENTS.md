@@ -34,7 +34,8 @@ Este fichero es la **puerta de entrada corta para cualquier agente de IA** que t
 - no implementes sobre una instrucción vaga: explicita problema, alcance, fuente de verdad e invariantes;
 - materializa reglas importantes en código, tests, schemas o workflows, no solo en prompts;
 - actualiza `docs/documentation-map.yaml` si cambia el estado o el destino de un documento;
-- si una afirmación no puede verificarse, márcala como `Needs Review` en vez de inventarla.
+- si una afirmación no puede verificarse, márcala como `Needs Review` en vez de inventarla;
+- **GOLDEN PATHS (Estricto):** Nunca crees un archivo desde cero para un nuevo servicio, worker o endpoint. DEBES usar las plantillas ubicadas en `templates/golden_paths/` como base y rellenar únicamente la lógica de negocio. No alteres la estructura de logging ni las validaciones base de la plantilla.
 
 ## Dónde escribir
 
