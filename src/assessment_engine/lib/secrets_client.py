@@ -1,3 +1,4 @@
+# golden-path: ignore
 import logging
 
 from google.api_core import exceptions
