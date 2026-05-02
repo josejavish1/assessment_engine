@@ -31,7 +31,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GOOGLE_CLOUD_PROJECT: "sub403o4u0q5"
-          GOOGLE_CLOUD_LOCATION: "europe-west1"
+          GOOGLE_GENAI_USE_VERTEXAI: "0"
+          GOOGLE_GENAI_USE_GCA: "0"
         run: |
           python tests/agent_evals/run_evals.py
