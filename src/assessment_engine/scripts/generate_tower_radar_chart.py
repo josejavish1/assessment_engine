@@ -2,6 +2,7 @@
 Módulo generate_tower_radar_chart.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import math
 import sys
@@ -43,13 +44,13 @@ def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Pa
     fig = plt.figure(figsize=(8, 6.2))
     ax = plt.subplot(111, polar=True)
 
-    ax.set_theta_offset(math.pi / 2)
-    ax.set_theta_direction(-1)
+    ax.set_theta_offset(math.pi / 2)  # type: ignore
+    ax.set_theta_direction(-1)  # type: ignore
 
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(labels, fontsize=10)
 
-    ax.set_rlabel_position(0)
+    ax.set_rlabel_position(0)  # type: ignore
     ax.set_ylim(0, 5)
     ax.set_yticks([1, 2, 3, 4, 5])
     ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=9)

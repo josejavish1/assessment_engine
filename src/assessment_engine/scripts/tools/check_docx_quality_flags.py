@@ -2,10 +2,15 @@
 Módulo check_docx_quality_flags.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
+import logging
 import re
 import sys
 from pathlib import Path
+
 from docx import Document
+
+logger = logging.getLogger(__name__)
 
 BAD_PATTERNS = [
     r"\{\{[^{}]+\}\}",
@@ -50,14 +55,14 @@ def main(argv: list[str] | None = None) -> None:
     excessive_ellipsis = text.count("...")
 
     if flags or excessive_ellipsis > 3:
-        print("DOCX_QUALITY_FLAGS=YES")
+        logger.info("DOCX_QUALITY_FLAGS=YES")
         for pattern, count in flags:
-            print(f"pattern={pattern} count={count}")
+            logger.info(f"pattern={pattern} count={count}")
         if excessive_ellipsis > 3:
-            print(f"ellipsis_count={excessive_ellipsis}")
+            logger.info(f"ellipsis_count={excessive_ellipsis}")
         raise SystemExit(1)
 
-    print("DOCX_QUALITY_FLAGS=NO")
+    logger.info("DOCX_QUALITY_FLAGS=NO")
 
 
 if __name__ == "__main__":

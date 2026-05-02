@@ -1,6 +1,9 @@
 from typing import List
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel
+
 from .common import BaseDraftModel
+
 
 class GapItem(BaseModel):
     pillar: str
@@ -8,6 +11,7 @@ class GapItem(BaseModel):
     target_state: str
     key_gap: str
     operational_implication: str
+
 
 class GapDraft(BaseDraftModel):
     section_id: str = "gap"

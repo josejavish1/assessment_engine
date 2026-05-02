@@ -6,7 +6,7 @@ source_of_truth:
   - pyproject.toml
   - src/assessment_engine/
   - .github/workflows/ci.yml
-last_verified_against: 2026-05-02
+last_verified_against: 2026-05-03
 applies_to:
   - repository
 doc_type: canonical

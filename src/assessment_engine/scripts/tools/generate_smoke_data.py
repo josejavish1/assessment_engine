@@ -7,12 +7,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import random
 from pathlib import Path
 from typing import Any
 
 from assessment_engine.scripts.lib.client_intelligence import coerce_client_dossier_v3
 from assessment_engine.scripts.lib.runtime_paths import ROOT
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_CLIENT = "smoke_ivirma"
 DEFAULT_SEED = 42
@@ -277,12 +280,12 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     responses_count = len(responses_path.read_text(encoding="utf-8").splitlines())
-    print(
+    logger.info(
         f"✅ Inputs smoke generados en {context_path.parent} "
         f"(contexto + {responses_count} respuestas)."
     )
-    print(f"   - {context_path}")
-    print(f"   - {responses_path}")
+    logger.info(f"   - {context_path}")
+    logger.info(f"   - {responses_path}")
 
 
 if __name__ == "__main__":

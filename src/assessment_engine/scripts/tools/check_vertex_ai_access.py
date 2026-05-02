@@ -6,8 +6,11 @@ Valida de forma explícita el acceso base a Vertex AI antes de lanzar agentes.
 from __future__ import annotations
 
 import argparse
+import logging
 
 from assessment_engine.scripts.lib.runtime_env import run_vertex_ai_preflight
+
+logger = logging.getLogger(__name__)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -20,11 +23,11 @@ def main(argv: list[str] | None = None) -> None:
         model_name=args.model,
         timeout_seconds=args.timeout_seconds,
     )
-    print("✅ Vertex AI preflight passed.")
-    print(f"   - project: {result['project']}")
-    print(f"   - location: {result['location']}")
-    print(f"   - model: {result['model']}")
-    print(f"   - timeout_seconds: {result['timeout_seconds']}")
+    logger.info("✅ Vertex AI preflight passed.")
+    logger.info(f"   - project: {result['project']}")
+    logger.info(f"   - location: {result['location']}")
+    logger.info(f"   - model: {result['model']}")
+    logger.info(f"   - timeout_seconds: {result['timeout_seconds']}")
 
 
 if __name__ == "__main__":

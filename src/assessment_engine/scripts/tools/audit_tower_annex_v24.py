@@ -2,11 +2,15 @@
 Módulo audit_tower_annex_v24.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
+import logging
 import re
 import sys
 import zipfile
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 PLACEHOLDER_RE = re.compile(r"\{\{[^{}]+\}\}")
 SUSPICIOUS_PATTERNS = [
@@ -75,15 +79,15 @@ def main(argv: list[str] | None = None) -> None:
         Path(__file__).resolve().parents[3] / "render_tower_annex_from_template.py"
     )
 
-    print("=== PATHS ===")
-    print("template =", template_path)
-    print("payload  =", payload_path)
-    print("output   =", output_path)
-    print("renderer =", renderer_path)
+    logger.info("=== PATHS ===")
+    logger.info("template = %s", template_path)
+    logger.info("payload  = %s", payload_path)
+    logger.info("output   = %s", output_path)
+    logger.info("renderer = %s", renderer_path)
 
-    print("\n=== EXISTENCE ===")
+    logger.info("\n=== EXISTENCE ===")
     for p in [template_path, payload_path, output_path, renderer_path]:
-        print(f"{p.name}: {'OK' if p.exists() else 'MISSING'}")
+        logger.info(f"{p.name}: {'OK' if p.exists() else 'MISSING'}")
 
     template_placeholders = (
         extract_placeholders_from_docx(template_path) if template_path.exists() else []
@@ -95,38 +99,38 @@ def main(argv: list[str] | None = None) -> None:
         extract_placeholders_from_py(renderer_path) if renderer_path.exists() else []
     )
 
-    print("\n=== TEMPLATE PLACEHOLDERS ===")
+    logger.info("\n=== TEMPLATE PLACEHOLDERS ===")
     for x in template_placeholders:
-        print(x)
+        logger.info(x)
 
-    print("\n=== RENDERER PLACEHOLDERS ===")
+    logger.info("\n=== RENDERER PLACEHOLDERS ===")
     for x in renderer_placeholders:
-        print(x)
+        logger.info(x)
 
-    print("\n=== PLACEHOLDERS IN TEMPLATE BUT NOT IN RENDERER ===")
+    logger.info("\n=== PLACEHOLDERS IN TEMPLATE BUT NOT IN RENDERER ===")
     missing_in_renderer = sorted(
         set(template_placeholders) - set(renderer_placeholders)
     )
     for x in missing_in_renderer:
-        print(x)
+        logger.info(x)
     if not missing_in_renderer:
-        print("NONE")
+        logger.info("NONE")
 
-    print("\n=== PLACEHOLDERS STILL UNRESOLVED IN OUTPUT DOCX ===")
+    logger.info("\n=== PLACEHOLDERS STILL UNRESOLVED IN OUTPUT DOCX ===")
     for x in output_placeholders:
-        print(x)
+        logger.info(x)
     if not output_placeholders:
-        print("NONE")
+        logger.info("NONE")
 
     if output_path.exists():
-        print("\n=== SUSPICIOUS OUTPUT PATTERNS ===")
+        logger.info("\n=== SUSPICIOUS OUTPUT PATTERNS ===")
         suspicious = extract_suspicious_from_docx(output_path)
         for k, v in suspicious.items():
-            print(f"{k} -> {v}")
+            logger.info(f"{k} -> {v}")
 
     if payload_path.exists():
         payload = load_json(payload_path)
-        print("\n=== PAYLOAD CHECKS ===")
+        logger.info("\n=== PAYLOAD CHECKS ===")
         checks = {
             "document_meta.client_name": safe_get(payload, "document_meta.client_name"),
             "document_meta.tower_code": safe_get(payload, "document_meta.tower_code"),
@@ -176,26 +180,26 @@ def main(argv: list[str] | None = None) -> None:
         }
         for k, v in checks.items():
             if isinstance(v, list):
-                print(f"{k} -> LIST(len={len(v)})")
+                logger.info(f"{k} -> LIST(len={len(v)})")
                 if v:
-                    print("  first =", repr(v[0])[:300])
+                    logger.info("  first = %s", repr(v[0])[:300])
             else:
-                print(f"{k} ->", repr(v)[:300])
+                logger.info(f"{k} ->", repr(v)[:300])
 
         pillars = safe_get(payload, "pillar_score_profile.pillars", [])
-        print("\n=== FIRST PILLAR SAMPLE ===")
+        logger.info("\n=== FIRST PILLAR SAMPLE ===")
         if pillars:
             first = pillars[0]
             for k, v in first.items():
-                print(f"{k} ->", repr(v)[:300])
+                logger.info(f"{k} ->", repr(v)[:300])
         else:
-            print("NO PILLARS")
+            logger.info("NO PILLARS")
 
-    print("\n=== SUMMARY ===")
-    print("template_placeholder_count =", len(template_placeholders))
-    print("renderer_placeholder_count =", len(renderer_placeholders))
-    print("unresolved_output_count    =", len(output_placeholders))
-    print("template_minus_renderer    =", len(missing_in_renderer))
+    logger.info("\n=== SUMMARY ===")
+    logger.info("template_placeholder_count = %d", len(template_placeholders))
+    logger.info("renderer_placeholder_count = %d", len(renderer_placeholders))
+    logger.info("unresolved_output_count    = %d", len(output_placeholders))
+    logger.info("template_minus_renderer    = %d", len(missing_in_renderer))
 
 
 if __name__ == "__main__":

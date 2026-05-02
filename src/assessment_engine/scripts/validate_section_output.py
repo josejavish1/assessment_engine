@@ -2,6 +2,7 @@
 Módulo validate_section_output.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import sys
 from pathlib import Path
@@ -37,7 +38,7 @@ def load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def main() -> None:
+def main(argv=None) -> None:
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit("Uso: python scripts/validate_section_output.py <asis|risks>")
 

@@ -2,6 +2,7 @@
 Repositorio de prompts para los agentes de Inteligencia de Mercado (OSINT).
 """
 
+
 def get_regulatory_harvester_prompt(client_name: str) -> str:
     return f"""
     Analiza a la empresa '{client_name}'. Identifica a qué sector pertenece. 
@@ -16,6 +17,7 @@ def get_regulatory_harvester_prompt(client_name: str) -> str:
       "source_evidence": "De dónde sacas esta conclusión (noticia, deducción)"
     }}
     """
+
 
 def get_business_harvester_prompt(client_name: str) -> str:
     return f"""
@@ -36,6 +38,7 @@ def get_business_harvester_prompt(client_name: str) -> str:
     }}
     """
 
+
 def get_tech_harvester_prompt(client_name: str) -> str:
     return f"""
     Basado en ofertas de empleo públicas, noticias de alianzas tecnológicas o footprint digital conocido de '{client_name}', ¿qué tecnología clave utilizan o hacia dónde van? 
@@ -51,6 +54,7 @@ def get_tech_harvester_prompt(client_name: str) -> str:
       "source_evidence": "Ofertas de empleo, noticias, inferencias"
     }}
     """
+
 
 def get_auditor_harvester_prompt(dossier_json: str) -> str:
     return f"""

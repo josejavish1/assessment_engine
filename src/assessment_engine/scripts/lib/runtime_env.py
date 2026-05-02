@@ -2,11 +2,11 @@
 Módulo runtime_env.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 from __future__ import annotations
 
 import os
 from typing import Any
-
 
 DEFAULT_GOOGLE_CLOUD_PROJECT = "sub403o4u0q5"
 DEFAULT_GOOGLE_CLOUD_LOCATION = "europe-west1"
@@ -28,7 +28,7 @@ def get_google_cloud_project_location(
     env: dict[str, str] | None = None,
 ) -> tuple[str, str]:
     target = os.environ if env is None else env
-    ensure_google_cloud_env_defaults(target)
+    ensure_google_cloud_env_defaults(target)  # type: ignore
 
     project = str(target.get("GOOGLE_CLOUD_PROJECT", "")).strip()
     location = str(target.get("GOOGLE_CLOUD_LOCATION", "")).strip()
@@ -50,7 +50,9 @@ def _read_positive_float_env(
         ) from exc
 
     if value <= 0:
-        raise RuntimeError(f"{name} debe ser mayor que 0. Valor recibido: {raw_value!r}")
+        raise RuntimeError(
+            f"{name} debe ser mayor que 0. Valor recibido: {raw_value!r}"
+        )
 
     return value
 
@@ -82,8 +84,8 @@ def run_vertex_ai_preflight(
     timeout_seconds: float | None = None,
 ) -> dict[str, Any]:
     target = os.environ if env is None else env
-    ensure_google_cloud_env_defaults(target)
-    project, location = get_google_cloud_project_location(target)
+    ensure_google_cloud_env_defaults(target)  # type: ignore
+    project, location = get_google_cloud_project_location(target)  # type: ignore
 
     if not project:
         raise RuntimeError("GOOGLE_CLOUD_PROJECT no está definido.")
@@ -95,7 +97,7 @@ def run_vertex_ai_preflight(
         or str(target.get("ASSESSMENT_VERTEX_PREFLIGHT_MODEL", "")).strip()
         or DEFAULT_VERTEX_PREFLIGHT_MODEL
     )
-    resolved_timeout = timeout_seconds or get_vertex_preflight_timeout_seconds(target)
+    resolved_timeout = timeout_seconds or get_vertex_preflight_timeout_seconds(target)  # type: ignore
 
     try:
         from google.auth import default

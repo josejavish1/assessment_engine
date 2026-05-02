@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import subprocess
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 LIVE_PYTHON_PREFIXES = ("src/assessment_engine/", "tests/")
 
@@ -88,31 +91,34 @@ def main() -> int:
         violations = check_golden_path_compliance(args.repo_root, added_files)
 
         if violations:
-            print("\n[ERROR] FITNESS FUNCTION FAILED: Golden Path violation detected.")
-            print(
+            logger.error(
+                "\n[ERROR] FITNESS FUNCTION FAILED: Golden Path violation detected."
+            )
+            logger.error(
                 "Los siguientes archivos nuevos no parecen usar las plantillas oficiales:"
             )
             for v in violations:
-                print(f"  - {v}")
-            print(
+                logger.error(f"  - {v}")
+            logger.error(
                 "\nAcción requerida: NUNCA crees archivos Python desde cero para lógica de negocio o tests."
             )
-            print(
+            logger.error(
                 "DEBES usar las plantillas en 'templates/golden_paths/' que contienen los bloques"
             )
-            print(
+            logger.error(
                 "estructurales requeridos (ej. '# --- START OF BUSINESS LOGIC ---' o '# --- ARRANGE ---').\n"
             )
             return 1
 
         if added_files:
-            print(
-                f"Architectural fitness check passed. {len(added_files)} new files comply with Golden Paths."
+            logger.info(
+                "Architectural fitness check passed. %d new files comply with Golden Paths.",
+                len(added_files),
             )
         return 0
 
     except Exception as e:
-        print(f"Error executing fitness function: {e}", file=sys.stderr)
+        logger.exception("Error executing fitness function: %s", e)
         return 1
 
 

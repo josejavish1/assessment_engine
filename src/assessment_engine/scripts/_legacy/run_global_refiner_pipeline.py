@@ -2,24 +2,28 @@
 Módulo run_global_refiner_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
+import logging
 import os
 import sys
 from pathlib import Path
 
 import vertexai
 from google.adk.agents import Agent
-from assessment_engine.scripts.lib.ai_client import run_agent
 from vertexai.agent_engines import AdkApp
 
-from assessment_engine.schemas.global_report import GlobalRefinerDraft
-from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
-from assessment_engine.scripts.lib.runtime_env import ensure_google_cloud_env_defaults
 from assessment_engine.prompts.global_prompts import (
     get_global_refiner_instruction,
-    get_global_refiner_prompt
+    get_global_refiner_prompt,
 )
+from assessment_engine.schemas.global_report import GlobalRefinerDraft
+from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
+from assessment_engine.scripts.lib.runtime_env import ensure_google_cloud_env_defaults
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -42,10 +46,10 @@ def apply_edits_to_annex(annex: dict, edits: list[dict]) -> tuple[dict, int]:
         path_str = edit.get("path", "")
         action = edit.get("action", "")
         value = edit.get("value")
-        
+
         if not path_str or not action:
             continue
-            
+
         parts = path_str.strip("/").split("/")
         current = annex
         try:
@@ -54,7 +58,7 @@ def apply_edits_to_annex(annex: dict, edits: list[dict]) -> tuple[dict, int]:
                     current = current[part]
                 elif isinstance(current, list):
                     current = current[int(part)]
-            
+
             last_part = parts[-1]
             if action == "replace":
                 if isinstance(current, dict):
@@ -71,8 +75,8 @@ def apply_edits_to_annex(annex: dict, edits: list[dict]) -> tuple[dict, int]:
                     del current[int(last_part)]
                     applied_count += 1
         except Exception as e:
-            print(f"Warning: Fallo al aplicar edit {edit}: {e}")
-            
+            logger.warning(f"Warning: Fallo al aplicar edit {edit}: {e}")
+
     return annex, applied_count
 
 
@@ -97,7 +101,9 @@ async def run_global_refiner(
     review_report = load_json(review_report_file)
 
     if review_report.get("status") == "approve":
-        print("El documento ya está aprobado globalmente. No se requiere refinado.")
+        logger.info(
+            "El documento ya está aprobado globalmente. No se requiere refinado."
+        )
         output_file = case_dir / "approved_annex_refined.json"
         save_json(output_file, annex)
         return
@@ -105,24 +111,24 @@ async def run_global_refiner(
     refiner_agent = Agent(
         model=refiner_model_profile["model"],
         name="t5_global_refiner_agent",
-        instruction=get_global_refiner_instruction()
+        instruction=get_global_refiner_instruction(),
     )
     refiner_app = AdkApp(agent=refiner_agent)
 
-    print(f"\n=== Iniciando Global Refiner para {tower_id} ===")
+    logger.info(f"\n=== Iniciando Global Refiner para {tower_id} ===")
 
-    prompt = get_global_refiner_prompt(
+    prompt = get_global_refiner_prompt(  # type: ignore
         tower_id=tower_id,
         tower_name=tower_name,
         annex_json=json.dumps(annex, ensure_ascii=False, indent=2),
-        review_report_json=json.dumps(review_report, ensure_ascii=False, indent=2)
+        review_report_json=json.dumps(review_report, ensure_ascii=False, indent=2),
     )
 
     refiner_data = await run_agent(
         refiner_app,
         user_id="global_refiner_local_dev",
         message=prompt,
-        schema=GlobalRefinerDraft
+        schema=GlobalRefinerDraft,
     )
 
     if not refiner_data:
@@ -131,21 +137,21 @@ async def run_global_refiner(
     edits = refiner_data.get("edits", [])
     if edits:
         refined_annex, count = apply_edits_to_annex(annex, edits)
-        print(f"✅ Refinado aplicado: {count} parches ejecutados.")
+        logger.info(f"✅ Refinado aplicado: {count} parches ejecutados.")
     else:
         refined_annex = annex
-        print("✅ No se requirieron parches estructurales.")
+        logger.info("✅ No se requirieron parches estructurales.")
 
     output_file = case_dir / "approved_annex_refined.json"
     save_json(output_file, refined_annex)
-    
+
     plan_file = case_dir / "global_refiner_plan.json"
     save_json(plan_file, refiner_data)
 
 
 def main(argv: list[str] | None = None) -> None:
     if len(argv if argv is not None else sys.argv) != 4:
-        print(
+        logger.info(
             "Uso: python -m assessment_engine.scripts.run_global_refiner_pipeline <tower_dir> <tower_id> <tower_name>"
         )
         sys.exit(1)

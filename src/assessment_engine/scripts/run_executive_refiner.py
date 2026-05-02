@@ -2,72 +2,75 @@
 Módulo run_executive_refiner.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
 import os
 import sys
 from pathlib import Path
+
 import vertexai
 from google.adk.agents import Agent
+from pydantic import RootModel
 from vertexai.agent_engines import AdkApp
 
-from assessment_engine.schemas.global_report import (
-    ExecutiveSummaryDraft,
-    BurningPlatformItem,
-    TowerBottomLineItem,
-    TargetVisionDraft,
-    ExecutionRoadmapDraft,
-    ExecutiveDecisionsDraft
-)
-from pydantic import RootModel
-from assessment_engine.scripts.lib.ai_client import run_agent
-from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
 from assessment_engine.prompts.global_prompts import (
     get_executive_refiner_instruction,
-    get_executive_section_prompt
+    get_executive_section_prompt,
 )
+from assessment_engine.schemas.global_report import (
+    BurningPlatformItem,
+    ExecutionRoadmapDraft,
+    ExecutiveDecisionsDraft,
+    ExecutiveSummaryDraft,
+    TargetVisionDraft,
+    TowerBottomLineItem,
+)
+from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.config_loader import resolve_model_profile_for_role
 
 ROOT = Path(__file__).resolve().parents[1]
+
 
 # Tipo helper para listas
 class BurningPlatformList(RootModel):
     root: list[BurningPlatformItem]
 
+
 class TowerBottomLineList(RootModel):
     root: list[TowerBottomLineItem]
 
+
 async def call_llm_for_section(
-    model_name, section_name, instruction, payload_str, schema_cls, client_name="la compañía"
+    model_name,
+    section_name,
+    instruction,
+    payload_str,
+    schema_cls,
+    client_name="la compañía",
 ):
-    from google.adk.agents import Agent
-    from vertexai.agent_engines import AdkApp
-    from assessment_engine.prompts.global_prompts import get_executive_refiner_instruction
 
     agent = Agent(
         model=model_name,
         name=f"executive_cio_refiner_{section_name}",
         instruction=get_executive_refiner_instruction(),
-        output_schema=schema_cls
+        output_schema=schema_cls,
     )
     app = AdkApp(agent=agent)
 
     prompt = get_executive_section_prompt(
-        instruction=instruction, 
-        payload_str=payload_str, 
-        client_name=client_name
+        instruction=instruction, payload_str=payload_str, client_name=client_name
     )
 
     try:
         result = await run_agent(
-            app,
-            user_id=f"refiner-{section_name}",
-            message=prompt,
-            schema=schema_cls
+            app, user_id=f"refiner-{section_name}", message=prompt, schema=schema_cls
         )
         return result
     except Exception as e:
         print(f"Error parseando sección {section_name}: {e}")
         return None
+
 
 async def refine_executive_payload(payload):
     project = os.environ.get("GOOGLE_CLOUD_PROJECT")

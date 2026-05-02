@@ -2,17 +2,21 @@
 Módulo repair_tower_payload_scores.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
+import logging
 import re
 import sys
 from pathlib import Path
+
+from assessment_engine.scripts.lib.text_utils import clean_text_for_word
+
+logger = logging.getLogger(__name__)
 
 
 def load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
-
-from assessment_engine.scripts.lib.text_utils import clean_text_for_word
 
 def clean_text(value):
     return clean_text_for_word(value)
@@ -324,25 +328,23 @@ def main(argv: list[str] | None = None) -> None:
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    print("Payload reparado en:", payload_path)
-    print(
-        "pillar_scores_detected =", payload["_build_metadata"]["pillar_scores_detected"]
+    logger.info("Payload reparado en: %s", payload_path)
+    logger.info(
+        "pillar_scores_detected = %s",
+        payload["_build_metadata"]["pillar_scores_detected"],
     )
-    print("strongest =", strongest)
-    print("weakest =", weakest)
-    print("pillars:")
+    logger.info("strongest = %s", strongest)
+    logger.info("weakest = %s", weakest)
+    logger.info("pillars:")
     for p in repaired:
-        print(
-            " -",
+        logger.info(
+            " - %s | %s | %s | %s",
             p["pillar_label"],
-            "|",
             p["score_display"],
-            "|",
             p["maturity_band"],
-            "|",
             p["weight"],
         )
-    print("missing_required_bindings =", len(filtered))
+    logger.info("missing_required_bindings = %d", len(filtered))
 
 
 if __name__ == "__main__":

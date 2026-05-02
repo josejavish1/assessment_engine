@@ -2,7 +2,17 @@
 Repositorio de prompts para la sección TO-DO.
 """
 
-def get_todo_writer_prompt(findings_pretty: str, scoring_pretty: str, asis_pretty: str, tobe_pretty: str, gap_pretty: str, tower_definition_pretty: str, tower_label: str, feedback_block: str) -> str:
+
+def get_todo_writer_prompt(
+    findings_pretty: str,
+    scoring_pretty: str,
+    asis_pretty: str,
+    tobe_pretty: str,
+    gap_pretty: str,
+    tower_definition_pretty: str,
+    tower_label: str,
+    feedback_block: str,
+) -> str:
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -64,7 +74,17 @@ INPUT_TOWER_DEFINITION:
 {tower_definition_pretty}
 """.strip()
 
-def get_todo_reviewer_prompt(draft_pretty: str, findings_pretty: str, scoring_pretty: str, asis_pretty: str, tobe_pretty: str, gap_pretty: str, tower_definition_pretty: str, tower_label: str) -> str:
+
+def get_todo_reviewer_prompt(
+    draft_pretty: str,
+    findings_pretty: str,
+    scoring_pretty: str,
+    asis_pretty: str,
+    tobe_pretty: str,
+    gap_pretty: str,
+    tower_definition_pretty: str,
+    tower_label: str,
+) -> str:
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

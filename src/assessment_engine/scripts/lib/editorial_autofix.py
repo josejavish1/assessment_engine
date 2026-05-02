@@ -2,9 +2,9 @@
 Módulo editorial_autofix.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import re
-
 
 EDITORIAL_REPLACEMENTS = {
     "todavia": "todavía",
@@ -76,7 +76,10 @@ def should_autofix_editorial(defects: list[dict]) -> bool:
         message = str(defect.get("message", "")).strip().lower()
         if severity != "minor":
             return False
-        if not any(token in defect_type or token in message for token in ("orthograph", "ortograf", "editorial", "estilo")):
+        if not any(
+            token in defect_type or token in message
+            for token in ("orthograph", "ortograf", "editorial", "estilo")
+        ):
             return False
     return bool(defects)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import uuid
 from datetime import datetime, timezone
@@ -8,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from assessment_engine.schemas.intelligence import ClientDossierV2, ClientDossierV3
+
+logger = logging.getLogger(__name__)
 
 
 def _as_list_of_strings(values: Any) -> list[str]:

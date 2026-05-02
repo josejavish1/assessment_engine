@@ -12,7 +12,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/render_global_report_from_template.py
   - ../../src/assessment_engine/scripts/render_commercial_report.py
   - ../../src/assessment_engine/scripts/render_web_presentation.py
-last_verified_against: 2026-05-01
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents

@@ -4,6 +4,7 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 Implementa un orquestador asíncrono basado en un DAG (Directed Acyclic Graph)
 utilizando Subprocesos Asíncronos aislados para evitar Race Conditions de memoria global.
 """
+
 import argparse
 import asyncio
 import os
@@ -28,6 +29,7 @@ from assessment_engine.scripts.lib.runtime_paths import (
 SKIP_MODE = False
 START_FROM = None
 
+
 def slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", value)
     ascii_value = normalized.encode("ascii", "ignore").decode("ascii")
@@ -35,7 +37,9 @@ def slugify(value: str) -> str:
     return "_".join(part for part in cleaned.lower().split("_") if part) or "client"
 
 
-async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: str) -> None:
+async def run_step_async(
+    cmd_args: list[str], env: dict[str, str], step_name: str
+) -> None:
     """
     Ejecuta un paso de forma asíncrona mediante subprocesos.
     Garantiza aislamiento de estado (sys.argv, os.environ) para ejecución paralela segura.
@@ -50,7 +54,7 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
             return
 
     print(f"\n=== {step_name} (Iniciado) ===")
-    
+
     # Preparamos el entorno inyectando nuestras variables personalizadas
     process_env = os.environ.copy()
     process_env.update(env)
@@ -61,7 +65,7 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
             *cmd_args,
             env=process_env,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
 
         if timeout_seconds is not None:
@@ -78,19 +82,22 @@ async def run_step_async(cmd_args: list[str], env: dict[str, str], step_name: st
                 ) from exc
         else:
             stdout, stderr = await process.communicate()
-        
+
         # Volcamos la salida para mantener visibilidad de logs
         if stdout:
-            print(stdout.decode('utf-8').strip())
-            
+            print(stdout.decode("utf-8").strip())
+
         if process.returncode != 0:
-            err_msg = stderr.decode('utf-8').strip()
-            raise RuntimeError(f"Fallo nativo en {step_name} (Exit {process.returncode}):\n{err_msg}")
-            
+            err_msg = stderr.decode("utf-8").strip()
+            raise RuntimeError(
+                f"Fallo nativo en {step_name} (Exit {process.returncode}):\n{err_msg}"
+            )
+
         print(f"✅ {step_name} (Completado)")
 
     except Exception as e:
         raise RuntimeError(f"Error crítico lanzando {step_name}: {e}")
+
 
 async def run_pipeline():
     parser = argparse.ArgumentParser()
@@ -98,7 +105,9 @@ async def run_pipeline():
     parser.add_argument("--client", required=True)
     parser.add_argument("--context-file", required=True)
     parser.add_argument("--responses-file", required=True)
-    parser.add_argument("--start-from", required=False, help="Nombre del step desde el que reanudar")
+    parser.add_argument(
+        "--start-from", required=False, help="Nombre del step desde el que reanudar"
+    )
     args = parser.parse_args()
 
     global SKIP_MODE, START_FROM
@@ -129,25 +138,69 @@ async def run_pipeline():
 
     # --- FASE 1: PREPARACIÓN DETERMINISTA (SECUENCIAL) ---
     await run_step_async(
-        [python_bin, "-m", "assessment_engine.scripts.build_case_input", "--client", args.client, "--tower", tower_id, "--context-file", context_path, "--responses-file", responses_path],
-        env, "Build case_input"
+        [
+            python_bin,
+            "-m",
+            "assessment_engine.scripts.build_case_input",
+            "--client",
+            args.client,
+            "--tower",
+            tower_id,
+            "--context-file",
+            context_path,
+            "--responses-file",
+            responses_path,
+        ],
+        env,
+        "Build case_input",
     )
-    
+
     await run_step_async(
-        [python_bin, "-m", "assessment_engine.scripts.build_evidence_ledger", "--case-input", str(case_dir / "case_input.json"), "--context-file", context_path, "--responses-file", responses_path],
-        env, "Build evidence_ledger"
+        [
+            python_bin,
+            "-m",
+            "assessment_engine.scripts.build_evidence_ledger",
+            "--case-input",
+            str(case_dir / "case_input.json"),
+            "--context-file",
+            context_path,
+            "--responses-file",
+            responses_path,
+        ],
+        env,
+        "Build evidence_ledger",
     )
     await run_step_async(
-        [python_bin, "-m", "assessment_engine.scripts.run_scoring", "--case-input", str(case_dir / "case_input.json")],
-        env, "Run scoring"
+        [
+            python_bin,
+            "-m",
+            "assessment_engine.scripts.run_scoring",
+            "--case-input",
+            str(case_dir / "case_input.json"),
+        ],
+        env,
+        "Run scoring",
     )
     await run_step_async(
-        [python_bin, "-m", "assessment_engine.scripts.run_evidence_analyst", "--case-input", str(case_dir / "case_input.json"), "--evidence-ledger", str(case_dir / "evidence_ledger.json"), "--scoring-output", str(case_dir / "scoring_output.json")],
-        env, "Run evidence analyst"
+        [
+            python_bin,
+            "-m",
+            "assessment_engine.scripts.run_evidence_analyst",
+            "--case-input",
+            str(case_dir / "case_input.json"),
+            "--evidence-ledger",
+            str(case_dir / "evidence_ledger.json"),
+            "--scoring-output",
+            str(case_dir / "scoring_output.json"),
+        ],
+        env,
+        "Run evidence analyst",
     )
 
     # --- NUEVA FASE TOP-DOWN (ESTRANGULADOR: BLUEPRINT -> ANEXO) ---
-    print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico (Single Source of Truth)...")
+    print(
+        "\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico (Single Source of Truth)..."
+    )
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
         print("🔎 Ejecutando preflight de Vertex AI...")
         preflight = run_vertex_ai_preflight(env=env)
@@ -156,17 +209,39 @@ async def run_pipeline():
             f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
     blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
-    output_blueprint_docx = case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
-    
+    output_blueprint_docx = (
+        case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
+    )
+
     try:
-        await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_tower_blueprint_engine", args.client, tower_id], env, "Engine: Tower Strategic Blueprint")
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.run_tower_blueprint_engine",
+                args.client,
+                tower_id,
+            ],
+            env,
+            "Engine: Tower Strategic Blueprint",
+        )
     except Exception as e:
         print(f"⚠️ Fallo crítico en Blueprint: {e}")
         return
 
     print("\n🚀 Iniciando Síntesis Ejecutiva (El Nuevo Anexo Top-Down)...")
     try:
-        await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_executive_annex_synthesizer", args.client, tower_id], env, "Engine: Executive Annex Synthesizer")
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.run_executive_annex_synthesizer",
+                args.client,
+                tower_id,
+            ],
+            env,
+            "Engine: Executive Annex Synthesizer",
+        )
     except Exception as e:
         print(f"⚠️ Fallo en síntesis del anexo: {e}")
 
@@ -192,7 +267,7 @@ async def run_pipeline():
     #
     # # --- FASE 5: ENSAMBLADO Y RENDERIZADO ---
     # await run_step_async([python_bin, "-m", "assessment_engine.scripts.assemble_tower_annex"], env, "Assemble annex")
-    # 
+    #
     # tower_name_mock = "TOWER_NAME"
     # await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_global_review_pipeline", str(case_dir), tower_id, tower_name_mock], env, "Global review")
     # await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_global_refiner_pipeline", str(case_dir), tower_id, tower_name_mock], env, "Global refiner")
@@ -202,20 +277,39 @@ async def run_pipeline():
         # Ya no ensamblamos ni refinamos. El Synthesizer escupe el payload_path directamente listo para render.
         # await run_step_async([python_bin, "-m", "assessment_engine.scripts.build_tower_annex_template_payload", str(refined_path if refined_path.exists() else assembled_path), str(payload_path), args.client, "short"], env, "Build short template payload")
         # await run_step_async([python_bin, "-m", "assessment_engine.scripts.generate_tower_radar_chart", str(payload_path), str(radar_path)], env, "Generate short radar")
-        await run_step_async([python_bin, "-m", "assessment_engine.scripts.render_tower_annex_from_template", str(payload_path), str(template_annex_path), str(output_docx), "--semantic-styles"], env, "Render short DOCX")
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.scripts.render_tower_annex_from_template",
+                str(payload_path),
+                str(template_annex_path),
+                str(output_docx),
+                "--semantic-styles",
+            ],
+            env,
+            "Render short DOCX",
+        )
 
     async def run_blueprint_flow():
         try:
             if blueprint_payload_path.exists():
-                await run_step_async([python_bin, "-m", "assessment_engine.scripts.render_tower_blueprint", str(blueprint_payload_path), str(output_blueprint_docx)], env, "Render: Tower Strategic Blueprint DOCX")
+                await run_step_async(
+                    [
+                        python_bin,
+                        "-m",
+                        "assessment_engine.scripts.render_tower_blueprint",
+                        str(blueprint_payload_path),
+                        str(output_blueprint_docx),
+                    ],
+                    env,
+                    "Render: Tower Strategic Blueprint DOCX",
+                )
         except Exception as e:
             print(f"⚠️ Fallo no bloqueante en Blueprint Render: {e}")
 
     print("\n🚀 Finalizando: Renderizado Estándar + Blueprint en paralelo...")
-    await asyncio.gather(
-        render_standard_report(),
-        run_blueprint_flow()
-    )
+    await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
     print(f"\n✅ Pipeline {tower_id} completado con éxito.")
     print(f"📄 DOCX Resumen Ejecutivo: {output_docx}")

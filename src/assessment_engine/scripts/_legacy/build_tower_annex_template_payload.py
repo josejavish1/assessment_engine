@@ -2,7 +2,9 @@
 Módulo legacy build_tower_annex_template_payload.py.
 Contiene la lógica histórica para transformar un annex refined legacy en template payload.
 """
+
 import json
+import logging
 import re
 import sys
 from pathlib import Path
@@ -13,6 +15,8 @@ from assessment_engine.scripts.lib.text_utils import (
     clean_text_for_word,
     normalize_tower_name,
 )
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -585,18 +589,22 @@ def build_sections(annex, pillars_data, profile_name="short"):
     raw_risks = risks.get("risks")
     if not raw_risks:
         raw_risks = risks.get("risk_items", [])
-    
+
     risk_rows = []
     for item in raw_risks[: cfg["risks_limit"]]:
         risk_text = clean_text(item.get("risk") or item.get("risk_name", ""))
         impact_text = clean_text(item.get("impact") or item.get("business_impact", ""))
-        mitigation_text = clean_text(item.get("mitigation_summary") or item.get("technical_root_cause", ""))
-        
+        mitigation_text = clean_text(
+            item.get("mitigation_summary") or item.get("technical_root_cause", "")
+        )
+
         risk_rows.append(
             {
                 "risk": risk_text,
                 "impact": impact_text,
-                "probability": clean_text(item.get("probability", "") or item.get("severity", "")),
+                "probability": clean_text(
+                    item.get("probability", "") or item.get("severity", "")
+                ),
                 "mitigation_summary": mitigation_text,
             }
         )
@@ -682,7 +690,9 @@ def build_sections(annex, pillars_data, profile_name="short"):
                 tobe.get("vision", ""),
                 max_sentences=2,
             ),
-            "design_principles": dedupe_preserve_order(tobe.get("architecture_principles", [])),
+            "design_principles": dedupe_preserve_order(
+                tobe.get("architecture_principles", [])
+            ),
         },
         "todo": {
             "introduction": take_sentences(
@@ -726,7 +736,7 @@ def build_extended_sections(annex):
     conclusion = sections.get("conclusion", {})
 
     maturity_summary = asis.get("maturity_summary", {}) or {}
-    
+
     # Risks with fallback to risk_items
     raw_risks = risks.get("risks")
     if not raw_risks:
@@ -737,12 +747,19 @@ def build_extended_sections(annex):
         detailed_risks.append(
             {
                 "risk": clean_text(item.get("risk") or item.get("risk_name", "")),
-                "cause": clean_text(item.get("cause") or item.get("technical_root_cause", "")),
-                "impact": clean_text(item.get("impact") or item.get("business_impact", "")),
-                "probability": clean_text(item.get("probability") or item.get("severity", "")),
+                "cause": clean_text(
+                    item.get("cause") or item.get("technical_root_cause", "")
+                ),
+                "impact": clean_text(
+                    item.get("impact") or item.get("business_impact", "")
+                ),
+                "probability": clean_text(
+                    item.get("probability") or item.get("severity", "")
+                ),
                 "mitigation_summary": clean_text(item.get("mitigation_summary", "")),
                 "affected_pillars_display": join_clean(
-                    item.get("affected_pillars", []) or item.get("related_pillars", []), "Sin pilares explícitos"
+                    item.get("affected_pillars", []) or item.get("related_pillars", []),
+                    "Sin pilares explícitos",
                 ),
             }
         )
@@ -880,8 +897,16 @@ def main(argv: list[str] | None = None) -> None:
         if len(argv if argv is not None else sys.argv) >= 3
         else input_path.with_name("approved_annex_t5.template_payload.json")
     )
-    explicit_client_name = clean_text((argv if argv is not None else sys.argv)[3]) if len(argv if argv is not None else sys.argv) >= 4 else ""
-    profile_name = clean_text((argv if argv is not None else sys.argv)[4]).lower() if len(argv if argv is not None else sys.argv) == 5 else "short"
+    explicit_client_name = (
+        clean_text((argv if argv is not None else sys.argv)[3])
+        if len(argv if argv is not None else sys.argv) >= 4
+        else ""
+    )
+    profile_name = (
+        clean_text((argv if argv is not None else sys.argv)[4]).lower()
+        if len(argv if argv is not None else sys.argv) == 5
+        else "short"
+    )
     if profile_name not in PROFILE_SETTINGS:
         raise SystemExit(f"Perfil no soportado: {profile_name}")
 
@@ -898,9 +923,7 @@ def main(argv: list[str] | None = None) -> None:
     exec_summary = build_executive_summary(
         annex, pillars, findings_map, profile_name=profile_name
     )
-    key_business_impacts = build_key_business_impacts(
-        annex, profile_name=profile_name
-    )
+    key_business_impacts = build_key_business_impacts(annex, profile_name=profile_name)
     profile = build_pillar_score_profile(scoring, findings, pillars, exec_summary)
     sections = build_sections(annex, pillars, profile_name=profile_name)
 
@@ -928,10 +951,10 @@ def main(argv: list[str] | None = None) -> None:
         },
         "domain_introduction": {
             "introduction_paragraph": f"Este anexo presenta los resultados del assessment para la torre {normalize_tower_name(annex.get('tower_name', ''))}.",
-            "technological_domain": normalize_tower_name(annex.get('tower_name', '')),
+            "technological_domain": normalize_tower_name(annex.get("tower_name", "")),
             "domain_objective": "Optimización y transformación tecnológica.",
             "evaluated_capabilities": [],
-            "included_components": []
+            "included_components": [],
         },
         "pillar_score_profile": profile,
         "sections": sections,
@@ -942,14 +965,14 @@ def main(argv: list[str] | None = None) -> None:
         payload = AnnexPayload.model_validate(payload_dict)
         save_versioned_payload(output_path, payload, "annex_template_payload")
     except Exception as e:
-        print(f"⚠️ Fallo de contrato B4 (Best effort): {e}")
+        logger.warning(f"⚠️ Fallo de contrato B4 (Best effort): {e}")
         output_path.write_text(
             json.dumps(payload_dict, ensure_ascii=False, indent=2), encoding="utf-8"
         )
-    
-    print("Template payload generado en:", output_path)
-    print("Pillars:", len(profile["pillars"]))
-    print("Initiatives:", len(sections["todo"]["priority_initiatives"]))
+
+    logger.info("Template payload generado en:", output_path)
+    logger.info("Pillars:", len(profile["pillars"]))
+    logger.info("Initiatives:", len(sections["todo"]["priority_initiatives"]))
 
 
 if __name__ == "__main__":

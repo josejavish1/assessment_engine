@@ -2,11 +2,11 @@
 Módulo config_loader.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
 import os
 import re
 from pathlib import Path
-from assessment_engine.scripts.lib.text_utils import normalize_tower_name
 
 ROOT = Path(__file__).resolve().parents[4]
 ENGINE_CONFIG_DIR = ROOT / "engine_config"
@@ -33,10 +33,9 @@ def load_model_profile(profile_name: str) -> dict:
     if profile_name not in profiles:
         raise KeyError(f"Perfil de modelo no encontrado: {profile_name}")
     profile = dict(profiles[profile_name])
-    override_env_name = (
-        "ASSESSMENT_MODEL_OVERRIDE_"
-        + re.sub(r"[^A-Z0-9]+", "_", profile_name.upper()).strip("_")
-    )
+    override_env_name = "ASSESSMENT_MODEL_OVERRIDE_" + re.sub(
+        r"[^A-Z0-9]+", "_", profile_name.upper()
+    ).strip("_")
     override_model = os.environ.get(override_env_name, "").strip()
     if override_model:
         profile["model"] = override_model
@@ -80,7 +79,9 @@ def resolve_target_maturity_defaults(document_profile_id: str) -> dict:
     policy = load_target_maturity_policy()
     defaults = policy.get("defaults", {})
     if document_profile_id not in defaults:
-        raise KeyError(f"No hay defaults de target maturity para: {document_profile_id}")
+        raise KeyError(
+            f"No hay defaults de target maturity para: {document_profile_id}"
+        )
     return defaults[document_profile_id]
 
 

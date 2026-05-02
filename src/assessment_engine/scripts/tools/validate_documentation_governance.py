@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime
 import fnmatch
 import re
 import subprocess
-import sys
+from datetime import date, datetime
 from pathlib import Path
 
-import yaml
-
+import yaml  # type: ignore
 
 VALID_STATUSES = {"Verified", "Needs Review", "Draft", "Deprecated"}
 VALID_DOC_TYPES = {"canonical", "operational", "reference_generated", "archived"}
@@ -80,7 +78,9 @@ def validate_path_list_field(
     normalized: list[str] = []
     for item in raw_value:
         if not isinstance(item, str) or not item.strip():
-            errors.append(f"{entry_path}: {field_name} entries must be non-empty strings")
+            errors.append(
+                f"{entry_path}: {field_name} entries must be non-empty strings"
+            )
             return None
         if not path_exists(repo_root, item):
             errors.append(f"{entry_path}: {field_name} path does not exist: {item}")
@@ -90,7 +90,9 @@ def validate_path_list_field(
     return normalized
 
 
-def git_changed_files(repo_root: Path, base_sha: str | None, head_sha: str | None) -> list[str]:
+def git_changed_files(
+    repo_root: Path, base_sha: str | None, head_sha: str | None
+) -> list[str]:
     if not base_sha or not head_sha:
         return []
     if re.fullmatch(r"0+", base_sha):
@@ -123,7 +125,9 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
     }
     missing = sorted(required - set(entry))
     if missing:
-        errors.append(f"Entry {entry.get('path', '<unknown>')} is missing fields: {', '.join(missing)}")
+        errors.append(
+            f"Entry {entry.get('path', '<unknown>')} is missing fields: {', '.join(missing)}"
+        )
         return
 
     entry_path = entry["path"]
@@ -159,10 +163,14 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
 
     for truth_path in source_of_truth:
         if not path_exists(repo_root, truth_path):
-            errors.append(f"{entry_path}: source_of_truth path does not exist: {truth_path}")
+            errors.append(
+                f"{entry_path}: source_of_truth path does not exist: {truth_path}"
+            )
 
     enforce_on_source_changes = entry.get("enforce_on_source_changes")
-    if enforce_on_source_changes is not None and not isinstance(enforce_on_source_changes, bool):
+    if enforce_on_source_changes is not None and not isinstance(
+        enforce_on_source_changes, bool
+    ):
         errors.append(f"{entry_path}: enforce_on_source_changes must be a boolean")
 
     if "review_when_source_changes" in entry:
@@ -183,10 +191,16 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
             errors=errors,
         )
 
-    if absolute_path.is_file() and absolute_path.suffix == ".md" and entry_path != ".github/pull_request_template.md":
+    if (
+        absolute_path.is_file()
+        and absolute_path.suffix == ".md"
+        and entry_path != ".github/pull_request_template.md"
+    ):
         front_matter = read_front_matter(absolute_path)
         if front_matter is None:
-            errors.append(f"{entry_path}: markdown document is missing YAML front matter")
+            errors.append(
+                f"{entry_path}: markdown document is missing YAML front matter"
+            )
             return
 
         missing_front_matter = sorted(FRONT_MATTER_REQUIRED - set(front_matter))
@@ -200,20 +214,34 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
             errors.append(f"{entry_path}: front matter has invalid status")
         if front_matter.get("doc_type") not in VALID_DOC_TYPES:
             errors.append(f"{entry_path}: front matter has invalid doc_type")
-        if not isinstance(front_matter.get("source_of_truth"), list) or not front_matter.get("source_of_truth"):
-            errors.append(f"{entry_path}: front matter source_of_truth must be a non-empty list")
-        if not isinstance(front_matter.get("applies_to"), list) or not front_matter.get("applies_to"):
-            errors.append(f"{entry_path}: front matter applies_to must be a non-empty list")
+        if not isinstance(
+            front_matter.get("source_of_truth"), list
+        ) or not front_matter.get("source_of_truth"):
+            errors.append(
+                f"{entry_path}: front matter source_of_truth must be a non-empty list"
+            )
+        if not isinstance(front_matter.get("applies_to"), list) or not front_matter.get(
+            "applies_to"
+        ):
+            errors.append(
+                f"{entry_path}: front matter applies_to must be a non-empty list"
+            )
         if not is_valid_date_value(front_matter.get("last_verified_against", "")):
-            errors.append(f"{entry_path}: front matter last_verified_against must use YYYY-MM-DD")
+            errors.append(
+                f"{entry_path}: front matter last_verified_against must use YYYY-MM-DD"
+            )
 
 
-def validate_automation_rules(repo_root: Path, rules: list[dict], changed_files: list[str], errors: list[str]) -> None:
+def validate_automation_rules(
+    repo_root: Path, rules: list[dict], changed_files: list[str], errors: list[str]
+) -> None:
     for rule in rules:
         required = {"name", "when_changed", "require_review_of"}
         missing = sorted(required - set(rule))
         if missing:
-            errors.append(f"Automation rule {rule.get('name', '<unknown>')} is missing: {', '.join(missing)}")
+            errors.append(
+                f"Automation rule {rule.get('name', '<unknown>')} is missing: {', '.join(missing)}"
+            )
             continue
 
         name = rule["name"]
@@ -221,24 +249,35 @@ def validate_automation_rules(repo_root: Path, rules: list[dict], changed_files:
         require_review_of = rule["require_review_of"]
 
         if not isinstance(when_changed, list) or not when_changed:
-            errors.append(f"Automation rule {name}: when_changed must be a non-empty list")
+            errors.append(
+                f"Automation rule {name}: when_changed must be a non-empty list"
+            )
             continue
         if not isinstance(require_review_of, list) or not require_review_of:
-            errors.append(f"Automation rule {name}: require_review_of must be a non-empty list")
+            errors.append(
+                f"Automation rule {name}: require_review_of must be a non-empty list"
+            )
             continue
 
         for path in require_review_of:
             if not (repo_root / path).exists():
-                errors.append(f"Automation rule {name}: require_review_of path does not exist: {path}")
+                errors.append(
+                    f"Automation rule {name}: require_review_of path does not exist: {path}"
+                )
 
         if not changed_files:
             continue
 
-        if not any(matches_any_pattern(changed, when_changed) for changed in changed_files):
+        if not any(
+            matches_any_pattern(changed, when_changed) for changed in changed_files
+        ):
             continue
 
         if any(
-            any(is_subpath(changed, required_path) for required_path in require_review_of)
+            any(
+                is_subpath(changed, required_path)
+                for required_path in require_review_of
+            )
             for changed in changed_files
         ):
             continue
@@ -249,7 +288,9 @@ def validate_automation_rules(repo_root: Path, rules: list[dict], changed_files:
         )
 
 
-def validate_source_linked_review(entries: list[dict], changed_files: list[str], errors: list[str]) -> None:
+def validate_source_linked_review(
+    entries: list[dict], changed_files: list[str], errors: list[str]
+) -> None:
     if not changed_files:
         return
 
@@ -265,11 +306,18 @@ def validate_source_linked_review(entries: list[dict], changed_files: list[str],
             continue
 
         effective_review_sources = (
-            review_when_source_changes if review_when_source_changes is not None else entry.get("source_of_truth")
+            review_when_source_changes
+            if review_when_source_changes is not None
+            else entry.get("source_of_truth")
         )
-        effective_review_paths = entry.get("review_paths_on_source_change", [entry_path])
+        effective_review_paths = entry.get(
+            "review_paths_on_source_change", [entry_path]
+        )
 
-        if not isinstance(effective_review_sources, list) or not effective_review_sources:
+        if (
+            not isinstance(effective_review_sources, list)
+            or not effective_review_sources
+        ):
             continue
         if not isinstance(effective_review_paths, list) or not effective_review_paths:
             continue
@@ -305,10 +353,14 @@ def validate_documentation_governance(
     errors: list[str] = []
     documentation_map = load_yaml(documentation_map_path)
 
-    if "entries" not in documentation_map or not isinstance(documentation_map["entries"], list):
+    if "entries" not in documentation_map or not isinstance(
+        documentation_map["entries"], list
+    ):
         return ["documentation-map.yaml must define an entries list"]
 
-    if "owners" not in documentation_map or not isinstance(documentation_map["owners"], dict):
+    if "owners" not in documentation_map or not isinstance(
+        documentation_map["owners"], dict
+    ):
         errors.append("documentation-map.yaml must define owners")
 
     seen_paths: set[str] = set()
@@ -320,7 +372,7 @@ def validate_documentation_governance(
         if entry_path in seen_paths:
             errors.append(f"Duplicate documentation-map entry for path: {entry_path}")
             continue
-        seen_paths.add(entry_path)
+        seen_paths.add(entry_path)  # type: ignore
         validate_entry(repo_root, entry, errors)
 
     changed_files = git_changed_files(repo_root, base_sha, head_sha)

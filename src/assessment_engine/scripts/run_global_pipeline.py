@@ -2,6 +2,7 @@
 Módulo run_global_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import sys
 
 from assessment_engine.scripts.lib.pipeline_runtime import (
@@ -42,7 +43,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.build_global_report_payload",
+            "-m",
+            "assessment_engine.scripts.build_global_report_payload",
             str(client_dir),
             client_name,
             str(payload_path),
@@ -55,7 +57,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.run_executive_refiner",
+            "-m",
+            "assessment_engine.scripts.run_executive_refiner",
             str(payload_path),
         ],
         "Strategic Executive Refinement",
@@ -66,7 +69,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.generate_global_radar_chart",
+            "-m",
+            "assessment_engine.scripts.generate_global_radar_chart",
             str(payload_path),
         ],
         "Generate Global Radar Chart",
@@ -75,7 +79,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.generate_executive_roadmap_image",
+            "-m",
+            "assessment_engine.scripts.generate_executive_roadmap_image",
             str(payload_path),
         ],
         "Generate Executive Roadmap Visual",
@@ -86,7 +91,8 @@ def main(argv: list[str] | None = None) -> None:
     run_module_step(
         [
             python_bin,
-            "-m", "assessment_engine.scripts.render_global_report_from_template",
+            "-m",
+            "assessment_engine.scripts.render_global_report_from_template",
             str(payload_path),
             str(template_path),
             str(output_path),

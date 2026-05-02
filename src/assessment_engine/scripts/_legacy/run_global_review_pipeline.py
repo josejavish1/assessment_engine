@@ -2,8 +2,10 @@
 Módulo run_global_review_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
+import logging
 import os
 import sys
 from collections import Counter
@@ -11,21 +13,21 @@ from pathlib import Path
 
 import vertexai
 from google.adk.agents import Agent
-from assessment_engine.scripts.lib.ai_client import run_agent
 from vertexai.agent_engines import AdkApp
 
-from assessment_engine.schemas.global_report import GlobalReviewDraft
-from assessment_engine.scripts.lib.config_loader import (
-    load_document_profile,
-    resolve_document_profile,
-    resolve_model_profile_for_role,
-    resolve_review_rules,
-)
-from assessment_engine.scripts.lib.runtime_env import ensure_google_cloud_env_defaults
 from assessment_engine.prompts.global_prompts import (
     get_global_reviewer_instruction,
-    get_global_reviewer_prompt
+    get_global_reviewer_prompt,
 )
+from assessment_engine.schemas.global_report import GlobalReviewDraft
+from assessment_engine.scripts.lib.ai_client import run_agent
+from assessment_engine.scripts.lib.config_loader import (
+    resolve_document_profile,
+    resolve_model_profile_for_role,
+)
+from assessment_engine.scripts.lib.runtime_env import ensure_google_cloud_env_defaults
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -69,7 +71,7 @@ def build_duplicate_questions_payload(document: dict) -> list[dict]:
         for s_id, s_data in sections.items():
             for q in s_data.get("notes_for_reviewer", []):
                 if str(q).strip() == d:
-                    item["appearances"].append(s_id)
+                    item["appearances"].append(s_id)  # type: ignore
         payload.append(item)
     return payload
 
@@ -86,7 +88,7 @@ async def run_global_review(
     vertexai.Client(project=project, location=location)
 
     reviewer_model_profile = resolve_model_profile_for_role("global_reviewer")
-    document_profile = resolve_document_profile()
+    resolve_document_profile()
 
     case_dir = Path(tower_dir)
     findings_file = case_dir / "findings.json"
@@ -102,26 +104,26 @@ async def run_global_review(
     reviewer_agent = Agent(
         model=reviewer_model_profile["model"],
         name="t5_global_reviewer_agent",
-        instruction=get_global_reviewer_instruction()
+        instruction=get_global_reviewer_instruction(),
     )
     reviewer_app = AdkApp(agent=reviewer_agent)
 
-    print(f"\n=== Iniciando Global Review para {tower_id} ===")
+    logger.info(f"\n=== Iniciando Global Review para {tower_id} ===")
 
-    prompt = get_global_reviewer_prompt(
+    prompt = get_global_reviewer_prompt(  # type: ignore
         tower_id=tower_id,
         tower_name=tower_name,
         findings_json=json.dumps(findings, ensure_ascii=False, indent=2),
         scoring_json=json.dumps(scoring, ensure_ascii=False, indent=2),
         annex_json=json.dumps(annex, ensure_ascii=False, indent=2),
-        dupes_json=json.dumps(dupes_payload, ensure_ascii=False, indent=2)
+        dupes_json=json.dumps(dupes_payload, ensure_ascii=False, indent=2),
     )
 
     review_data = await run_agent(
         reviewer_app,
         user_id="global_reviewer_local_dev",
         message=prompt,
-        schema=GlobalReviewDraft
+        schema=GlobalReviewDraft,
     )
 
     if not review_data:
@@ -129,12 +131,12 @@ async def run_global_review(
 
     output_file = case_dir / "global_review_report.json"
     save_json(output_file, review_data)
-    print(f"✅ Reporte de revisión global guardado en: {output_file}")
+    logger.info(f"✅ Reporte de revisión global guardado en: {output_file}")
 
 
 def main(argv: list[str] | None = None) -> None:
     if len(argv if argv is not None else sys.argv) != 4:
-        print(
+        logger.info(
             "Uso: python -m assessment_engine.scripts.run_global_review_pipeline <tower_dir> <tower_id> <tower_name>"
         )
         sys.exit(1)

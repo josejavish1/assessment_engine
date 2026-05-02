@@ -1,6 +1,9 @@
 from typing import List
+
 from pydantic import BaseModel, Field, model_validator
+
 from .common import BaseDraftModel
+
 
 class TodoItem(BaseModel):
     initiative: str
@@ -9,6 +12,7 @@ class TodoItem(BaseModel):
     related_pillars: List[str]
     expected_outcome: str
     dependencies: List[str]
+
 
 class TodoDraft(BaseDraftModel):
     section_id: str = "todo"

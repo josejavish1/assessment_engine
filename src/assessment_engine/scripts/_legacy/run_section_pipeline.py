@@ -2,8 +2,10 @@
 Módulo run_section_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import asyncio
 import json
+import logging
 import os
 import sys
 from pathlib import Path
@@ -12,9 +14,13 @@ import vertexai
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
 
+from assessment_engine.prompts.section_prompts import (
+    get_section_reviewer_prompt,
+    get_section_writer_prompt,
+)
 from assessment_engine.schemas.asis import AsIsDraft
-from assessment_engine.schemas.risks import RisksDraft
 from assessment_engine.schemas.common import SectionReview
+from assessment_engine.schemas.risks import RisksDraft
 from assessment_engine.scripts.lib.ai_client import run_agent
 from assessment_engine.scripts.lib.config_loader import (
     resolve_document_profile,
@@ -35,10 +41,8 @@ from assessment_engine.scripts.lib.runtime_paths import (
     resolve_case_dir,
     resolve_tower_definition_file,
 )
-from assessment_engine.prompts.section_prompts import (
-    get_section_writer_prompt,
-    get_section_reviewer_prompt
-)
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[1]
 CASE_DIR = resolve_case_dir()
@@ -50,10 +54,7 @@ TOWER_ID = TOWER_DEFINITION["tower_id"]
 TOWER_NAME = TOWER_DEFINITION["tower_name"]
 TOWER_LABEL = f"{TOWER_ID} - {TOWER_NAME}"
 
-SCHEMA_MAP = {
-    "asis": AsIsDraft,
-    "risks": RisksDraft
-}
+SCHEMA_MAP = {"asis": AsIsDraft, "risks": RisksDraft}
 
 SECTION_CONFIG = {
     "asis": {
@@ -135,7 +136,7 @@ def build_writer_prompt(
         findings_pretty=findings_pretty,
         scoring_pretty=scoring_pretty,
         document_profile=document_profile,
-        corrective_feedback=corrective_feedback
+        corrective_feedback=corrective_feedback,
     )
 
 
@@ -151,13 +152,13 @@ def build_reviewer_prompt(
     findings_pretty = json.dumps(findings, ensure_ascii=False, indent=2)
     scoring_pretty = json.dumps(scoring, ensure_ascii=False, indent=2)
     tower_definition_pretty = json.dumps(tower_definition, ensure_ascii=False, indent=2)
-    
+
     return get_section_reviewer_prompt(
         section_cfg=cfg,
         draft_pretty=draft_pretty,
         findings_pretty=findings_pretty,
         scoring_pretty=scoring_pretty,
-        tower_definition_pretty=tower_definition_pretty
+        tower_definition_pretty=tower_definition_pretty,
     )
 
 
@@ -310,9 +311,9 @@ async def _run_section_logic(section: str) -> None:
     writer_raw_file = CASE_DIR / f"draft_{section}.generated.raw.txt"
     reviewer_raw_file = CASE_DIR / f"review_{section}.generated.raw.txt"
 
-    print(f"Document profile: {document_profile.get('document_profile_id')}")
-    print(f"Writer model: {writer_model_profile.get('model')}")
-    print(f"Reviewer model: {reviewer_model_profile.get('model')}")
+    logger.info(f"Document profile: {document_profile.get('document_profile_id')}")
+    logger.info(f"Writer model: {writer_model_profile.get('model')}")
+    logger.info(f"Reviewer model: {reviewer_model_profile.get('model')}")
 
     writer_agent = Agent(
         model=writer_model_profile["model"],
@@ -346,7 +347,7 @@ async def _run_section_logic(section: str) -> None:
         draft = None
 
         for attempt in range(1, max_writer_attempts + 1):
-            print(
+            logger.info(
                 f"\n=== Writer attempt {attempt} para seccion '{section}' (round {review_round}) ==="
             )
             writer_message = build_writer_prompt(
@@ -362,16 +363,16 @@ async def _run_section_logic(section: str) -> None:
                     user_id=f"writer-{section}-local-dev",
                     message=writer_message,
                     raw_output_file=writer_raw_file,
-                    schema=section_schema
+                    schema=section_schema,
                 )
-                print(f"Validacion Pydantic del draft {section}: PASS")
+                logger.info(f"Validacion Pydantic del draft {section}: PASS")
                 draft = candidate_draft
                 break
             except Exception as e:
-                print(f"Validacion Pydantic del draft {section}: FAIL - {e}")
+                logger.error(f"Validacion Pydantic del draft {section}: FAIL - {e}")
                 corrective_feedback = [str(e)]
                 if attempt == max_writer_attempts:
-                    print(
+                    logger.warning(
                         f"WARNING: El Writer no pudo generar una seccion valida para '{section}' tras {max_writer_attempts} intentos. Se continuará con el borrador generado, pero contiene advertencias."
                     )
                     draft = candidate_draft
@@ -382,7 +383,7 @@ async def _run_section_logic(section: str) -> None:
             raise RuntimeError("No se pudo obtener un draft valido.")
 
         save_json(draft_file, draft)
-        print(f"\nBorrador guardado en: {draft_file}")
+        logger.info(f"\nBorrador guardado en: {draft_file}")
 
         reviewer_message = build_reviewer_prompt(
             section, draft, findings, scoring, tower_definition
@@ -392,22 +393,22 @@ async def _run_section_logic(section: str) -> None:
             user_id=f"reviewer-{section}-local-dev",
             message=reviewer_message,
             raw_output_file=reviewer_raw_file,
-            schema=SectionReview
+            schema=SectionReview,
         )
         review = normalize_review(review, review_rules)
         save_json(review_file, review)
-        print(f"\nRevision guardada en: {review_file}")
-        print(f"status: {review.get('status')}")
+        logger.info(f"\nRevision guardada en: {review_file}")
+        logger.info(f"status: {review.get('status')}")
 
         if review.get("status") == "approve":
             approved = finalize_approved(draft, review)
             save_json(approved_file, approved)
-            print(f"Seccion aprobada y finalizada en: {approved_file}")
+            logger.info(f"Seccion aprobada y finalizada en: {approved_file}")
             return
 
         if review.get("status") == "revise" and review_round < max_review_rounds:
             corrective_feedback = build_corrective_feedback(review)
-            print(
+            logger.info(
                 "La seccion requiere revision. Se relanza automaticamente con feedback del reviewer."
             )
             continue
@@ -425,10 +426,10 @@ async def _run_section_logic(section: str) -> None:
             approved = finalize_approved(adjusted_draft, forced_review)
             save_json(approved_file, approved)
             save_json(review_file, forced_review)
-            print(
+            logger.info(
                 "La sección no convergió tras el máximo de rondas. Se entrega versión aprobada con nota de ajuste manual pendiente."
             )
-            print(f"Seccion aprobada y finalizada en: {approved_file}")
+            logger.info(f"Seccion aprobada y finalizada en: {approved_file}")
             return
         raise RuntimeError(f"Estado de revision no reconocido: {review.get('status')}")
 

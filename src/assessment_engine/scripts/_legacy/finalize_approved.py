@@ -2,9 +2,13 @@
 Módulo finalize_approved.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
+
 import json
+import logging
 import sys
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[3]
 CASE_DIR = ROOT / "working" / "client" / "T5"
@@ -19,7 +23,7 @@ def save_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def main() -> None:
+def main(argv=None) -> None:
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit("Uso: python scripts/finalize_approved.py <asis|risks>")
 
@@ -51,8 +55,8 @@ def main() -> None:
 
     save_json(approved_file, draft)
 
-    print(f"Seccion {section} finalizada en: {approved_file}")
-    print("status:", draft["status"])
+    logger.info(f"Seccion {section} finalizada en: {approved_file}")
+    logger.info("status:", draft["status"])
 
 
 if __name__ == "__main__":
