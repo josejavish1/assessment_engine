@@ -8,6 +8,20 @@ owners:
       - GEMINI.md
 
 entries:
+  - path: docs/architecture/roadmap_vision.md
+    kind: document
+    title: Roadmap de Evolución Agentic
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - AGENTS.md
+    last_verified_against: 2026-05-02
+    notes: Visión a largo plazo de la plataforma (Fases 1 a 4).
+
   - path: templates/golden_paths/README.md
     kind: document
     title: Golden Paths Catalog
