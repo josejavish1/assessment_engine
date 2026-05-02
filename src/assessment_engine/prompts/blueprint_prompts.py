@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore
 
 
 def load_prompt_config(filename: str) -> dict:

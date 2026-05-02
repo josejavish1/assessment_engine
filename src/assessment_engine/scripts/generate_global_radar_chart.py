@@ -69,11 +69,11 @@ def main(argv: list[str] | None = None) -> None:
     fig.subplots_adjust(left=0.1, right=0.7, top=0.85, bottom=0.1)
     ax = fig.add_subplot(111, polar=True)
 
-    ax.set_theta_offset(math.pi / 2)
-    ax.set_theta_direction(-1)
+    ax.set_theta_offset(math.pi / 2)  # type: ignore
+    ax.set_theta_direction(-1)  # type: ignore
 
     plt.xticks(angles[:-1], labels, color="grey", size=13)
-    ax.set_rlabel_position(0)
+    ax.set_rlabel_position(0)  # type: ignore
     plt.yticks([1, 2, 3, 4, 5], ["1", "2", "3", "4", "5"], color="grey", size=10)
     plt.ylim(0, 5.5)
 

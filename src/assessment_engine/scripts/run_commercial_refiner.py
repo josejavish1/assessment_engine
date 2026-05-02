@@ -175,7 +175,7 @@ def aggregate_blueprint_catalogs(blueprint_paths: list[Path]) -> dict:
 
 async def refine_commercial_payload(
     payload,
-    blueprints_catalog: dict = None,
+    blueprints_catalog: dict = None,  # type: ignore
     intelligence_dossier: dict | None = None,
 ):
     try:

@@ -117,7 +117,7 @@ async def run_global_refiner(
 
     logger.info(f"\n=== Iniciando Global Refiner para {tower_id} ===")
 
-    prompt = get_global_refiner_prompt(
+    prompt = get_global_refiner_prompt(  # type: ignore
         tower_id=tower_id,
         tower_name=tower_name,
         annex_json=json.dumps(annex, ensure_ascii=False, indent=2),

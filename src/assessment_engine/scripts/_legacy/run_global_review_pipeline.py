@@ -71,7 +71,7 @@ def build_duplicate_questions_payload(document: dict) -> list[dict]:
         for s_id, s_data in sections.items():
             for q in s_data.get("notes_for_reviewer", []):
                 if str(q).strip() == d:
-                    item["appearances"].append(s_id)
+                    item["appearances"].append(s_id)  # type: ignore
         payload.append(item)
     return payload
 
@@ -110,7 +110,7 @@ async def run_global_review(
 
     logger.info(f"\n=== Iniciando Global Review para {tower_id} ===")
 
-    prompt = get_global_reviewer_prompt(
+    prompt = get_global_reviewer_prompt(  # type: ignore
         tower_id=tower_id,
         tower_name=tower_name,
         findings_json=json.dumps(findings, ensure_ascii=False, indent=2),

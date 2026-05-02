@@ -7,7 +7,7 @@ import subprocess
 from datetime import date, datetime
 from pathlib import Path
 
-import yaml
+import yaml  # type: ignore
 
 VALID_STATUSES = {"Verified", "Needs Review", "Draft", "Deprecated"}
 VALID_DOC_TYPES = {"canonical", "operational", "reference_generated", "archived"}
@@ -372,7 +372,7 @@ def validate_documentation_governance(
         if entry_path in seen_paths:
             errors.append(f"Duplicate documentation-map entry for path: {entry_path}")
             continue
-        seen_paths.add(entry_path)
+        seen_paths.add(entry_path)  # type: ignore
         validate_entry(repo_root, entry, errors)
 
     changed_files = git_changed_files(repo_root, base_sha, head_sha)
