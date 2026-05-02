@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import logging
 import os
 import shlex
 import signal
@@ -12,6 +13,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from assessment_engine.lib.logger_config import setup_structured_logging
+from assessment_engine.lib.secrets_client import get_secret
 from assessment_engine.prompts.product_owner_prompts import (
     build_product_owner_planner_prompt,
     get_product_owner_planner_instruction,
@@ -31,9 +34,6 @@ from assessment_engine.scripts.lib.pipeline_runtime import (
 from assessment_engine.scripts.lib.product_owner_models import ProductOwnerPlan
 from assessment_engine.scripts.lib.runtime_paths import ROOT
 from assessment_engine.scripts.lib.text_utils import slugify
-from assessment_engine.lib.secrets_client import get_secret, SecretNotFoundError
-from assessment_engine.lib.logger_config import setup_structured_logging
-import logging
 
 logger = logging.getLogger(__name__)
 
