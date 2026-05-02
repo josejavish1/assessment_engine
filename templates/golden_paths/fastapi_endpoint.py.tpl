@@ -13,8 +13,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Any, Dict
 
-# TODO (Fase 2): Importar aquí el Tracer de OpenTelemetry
-# from assessment_engine.lib.telemetry import tracer
+from assessment_engine.lib.telemetry import tracer
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +28,7 @@ class ResourceResponse(BaseModel):
     status: str
     result: Dict[str, Any]
 
-# TODO (Fase 2): Descomentar el decorador cuando la telemetría esté lista
-# @tracer.start_as_current_span("endpoint.create_resource")
+@tracer.start_as_current_span("endpoint.create_resource")
 @router.post("/", response_model=ResourceResponse)
 async def create_resource(request: ResourceRequest):
     """
