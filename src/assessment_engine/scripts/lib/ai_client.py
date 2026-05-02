@@ -142,7 +142,12 @@ async def run_agent(
         duration = end_time - start_time
         try:
             # ignore typing for tenacity retry attribute
-            retries = getattr(_execute_query_with_retry, "retry").statistics.get("attempt_number", 1) - 1
+            retries = (
+                getattr(_execute_query_with_retry, "retry").statistics.get(
+                    "attempt_number", 1
+                )
+                - 1
+            )
         except Exception:
             retries = 0
 
