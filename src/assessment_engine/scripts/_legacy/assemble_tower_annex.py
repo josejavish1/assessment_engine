@@ -7,8 +7,8 @@ import json
 import logging
 from pathlib import Path
 
-from assessment_engine.scripts.lib.config_loader import (
-    normalize_tower_name,  # type: ignore
+from assessment_engine.scripts.lib.text_utils import (
+    normalize_tower_name,
 )
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_case_dir,
