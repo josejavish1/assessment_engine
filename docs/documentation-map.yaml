@@ -736,6 +736,25 @@ entries:
     last_verified_against: 2026-05-01
     notes: Documenta el MVP local que traduce una petición de negocio a spec, tareas, validación, PR y auto-merge sobre un backend de agente configurable.
 
+  - path: docs/operations/ci-cd-workflows.md
+    kind: document
+    title: CI/CD Workflow Visualization
+    doc_type: operational
+    status: Draft
+    owner: platform-team
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - .github/workflows/agent-evals.yml
+      - .github/workflows/ci.yml
+      - .github/workflows/docs-governance.yml
+      - .github/workflows/orchestrator-pr-reconcile.yml
+      - .github/workflows/quality.yml
+      - .github/workflows/typing.yml
+    last_verified_against: 2026-05-03
+    notes: Visual representation of the CI/CD pipelines.
+
   - path: docs/operations/pipeline-execution.md
     kind: document
     title: Pipeline execution guide

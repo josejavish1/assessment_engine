@@ -34,6 +34,20 @@ El objetivo de esta remediación es **sistémico y prospectivo**:
 - no parchear un único tower payload o un único DOCX;
 - sino asegurar que **cualquier caso futuro** use una única semántica coherente para score, banda, target, color, severidad y narrativa.
 
+## Racional de la Remediación
+
+Este esfuerzo de remediación no es una simple corrección de bugs, sino una intervención estratégica fundamental para garantizar la viabilidad y credibilidad del `assessment-engine`. La existencia de incoherencias semánticas en los entregables no es un problema técnico menor, sino un riesgo existencial para el producto.
+
+1.  **Credibilidad del Producto:** El valor principal del motor de assessments reside en su capacidad para producir análisis coherentes, defendibles y de alta calidad. Si un cliente recibe múltiples entregables (un anexo, un blueprint, un dashboard) que presentan narrativas contradictorias sobre el mismo assessment, la credibilidad de todo el producto se desmorona. La confianza del cliente es el activo más importante y la incoherencia la erosiona de forma directa.
+
+2.  **Riesgo de Decisiones de Negocio Erróneas:** Tanto el cliente como los equipos internos (comercial, consultoría) utilizan estos entregables para tomar decisiones estratégicas. Una narrativa que dramatiza en exceso un problema menor o, a la inversa, que minimiza un riesgo crítico, puede conducir a inversiones equivocadas, planificaciones incorrectas y, en última instancia, a un fracaso en la entrega de valor. La coherencia no es estética, es una precondición para la toma de decisiones informadas.
+
+3.  **Escalabilidad y Sostenibilidad del Motor:** El modelo operativo del `assessment-engine` se basa en la automatización y la generación asistida por IA. Un sistema que requiere una revisión manual intensiva y una "curación artesanal" de cada entregable para corregir incoherencias es insostenible y no escala. Resolver estas inconsistencias de raíz es una inversión directa en la eficiencia operativa y en la capacidad de procesar futuros assessments con un coste marginal decreciente.
+
+4.  **Defensa de la Propuesta de Valor:** La promesa del `assessment-engine` es transformar datos brutos en inteligencia de negocio clara y accionable. Si el resultado final es un conjunto de artefactos confusos y auto-contradictorios, la propuesta de valor se invalida. La coherencia es, por tanto, la manifestación tangible de que el motor cumple su promesa.
+
+En resumen, esta remediación es crítica porque las incoherencias semánticas atacan el núcleo del producto: su **confianza**, su **utilidad** y su **escalabilidad**. Sin una base semántica unificada y coherente, el `assessment-engine` es una colección de scripts; con ella, es una fábrica de valor.
+
 ## Problema
 
 La pipeline actual no mantiene una única semántica compartida para:

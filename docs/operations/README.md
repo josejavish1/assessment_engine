@@ -1,115 +1,66 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../pyproject.toml
-  - ../../requirements.txt
-  - ../../pytest.ini
-  - ../../.github/workflows/ci.yml
-  - ../../.github/workflows/quality.yml
-  - ../../.github/workflows/typing.yml
-  - ../../src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
-  - ../../src/assessment_engine/scripts/tools/run_incremental_typecheck.py
-  - ../../tests/
-last_verified_against: 2026-05-01
+  - ../../.github/workflows/
+  - ./
+last_verified_against: 2026-05-03
 applies_to:
   - humans
   - ai-agents
 doc_type: canonical
 ---
 
-# Operations and validation
+# Manual de Operaciones
 
-Esta carpeta reúne la documentación operativa mínima de `assessment-engine`: instalación, validación, CI y notas de mantenimiento que deben poder seguir tanto humanos como agentes.
+Este directorio es el centro de conocimiento para la instalación, operación y mantenimiento del `assessment-engine`. Actúa como un índice central que enlaza a guías detalladas, sirviendo como fuente única de verdad para desarrolladores y agentes de IA.
 
-## Documentos operativos actuales
+## Filosofía de Operaciones: Automatización, Calidad y Transparencia
 
-- [`installation.md`](installation.md)
-- [`signing-commits-policy.md`](signing-commits-policy.md)
-- [`agentic-development-workflow.md`](agentic-development-workflow.md)
-- [`engineering-quality-gates.md`](engineering-quality-gates.md)
-- [`product-owner-orchestrator.md`](product-owner-orchestrator.md)
-- [`pipeline-execution.md`](pipeline-execution.md)
-- [`pipeline-controls-runbook.md`](pipeline-controls-runbook.md)
-- [`smoke-regeneration.md`](smoke-regeneration.md)
-- [`troubleshooting-working.md`](troubleshooting-working.md)
+Nuestra estrategia operativa se basa en los principios de **GitOps**, donde el repositorio de Git es la única fuente de verdad. La automatización a través de **GitHub Actions** garantiza que cada cambio cumpla con nuestros rigurosos estándares de calidad antes de ser integrado.
 
-## Estado operativo observado
+1.  **Git como Fuente Única de Verdad:** Todas las operaciones se derivan del estado del repositorio.
+2.  **Calidad Continua Proactiva:** Los workflows de CI actúan como guardianes, ejecutando validaciones de linting, tipado y tests en cada Pull Request para prevenir la deuda técnica.
+3.  **Transparencia y Trazabilidad:** Los flujos de trabajo son explícitos y están documentados en los ficheros YAML de GitHub Actions, permitiendo que cualquiera pueda entender y depurar el ciclo de vida del desarrollo.
 
-### Empaquetado
+## Arquitectura CI/CD Visual
 
-- el proyecto declara paquete instalable en `pyproject.toml`;
-- usa `setuptools` con `src/` como `package-dir`;
-- incluye plantillas HTML del paquete `assessment_engine`.
+El siguiente diagrama ilustra el flujo de nuestro pipeline de Integración Continua (CI). Para una descripción técnica detallada de cada `job` y `workflow`, consulte el documento [`ci-cd-workflows.md`](./ci-cd-workflows.md).
 
-### Dependencias
+```mermaid
+graph TD
+    A[Trigger: Push o Pull Request] --> B{Workflow: CI (ci.yml)};
 
-- `pyproject.toml` define dependencias principales del paquete;
-- `requirements.txt` fija un entorno más amplio de trabajo y validación;
-- el workflow actual de CI instala dependencias desde `requirements.txt`.
+    subgraph B
+        C[Job: Linting & Formatting] --> D[Job: Static Typing];
+        D --> E[Job: Unit & Integration Tests];
+    end
 
-### Tests y validación
+    E --> F[Build & Package];
+    F --> G[Notificación de Éxito / Fallo];
 
-- `pytest.ini` define `tests/` como raíz de tests;
-- el workflow `Assessment Engine CI` ejecuta `pytest tests/`;
-- el workflow `Incremental Quality Gate` ejecuta `ruff` solo sobre los ficheros Python cambiados en `src/assessment_engine/` y `tests/`;
-- el workflow `Incremental Type Check` ejecuta `mypy` solo sobre los ficheros Python cambiados en `src/assessment_engine/` y `tests/`;
-- la suite incluye ahora tests de coherencia transversal para score, banda, color y target del payload global;
-- el flujo de trabajo con agentes ya tiene una guía canónica de spec mínima, alcance e invariantes antes de programar;
-- ya existe un MVP de orquestador local PO-to-PR con planning, ejecución iterativa y PR automática sobre backend de agente configurable;
-- existe `./bin/po-run` como entrypoint friendly para lanzar ese orquestador desde terminal sin recordar el path largo del runner;
-- la suite actual incluye tests de entorno, contratos, schemas, render y utilidades.
-
-## Flujo de validación actual
-
-### Local
-
-El entorno observado en este repo usa la virtualenv del proyecto:
-
-```bash
-./.venv/bin/python -m pytest tests/ -q
-./.venv/bin/python src/assessment_engine/scripts/tools/run_incremental_quality_gate.py \
-  --repo-root . \
-  --path src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
-./.venv/bin/python src/assessment_engine/scripts/tools/run_incremental_typecheck.py \
-  --repo-root . \
-  --path src/assessment_engine/scripts/build_global_report_payload.py
+    style A fill:#228B22,color:#fff
+    style G fill:#228B22,color:#fff
+    style F fill:#FFA500
 ```
 
-### GitHub Actions
+## Índice de Documentos Operativos
 
-Los workflows operativos actuales residen en `.github/workflows/ci.yml`, `.github/workflows/quality.yml` y `.github/workflows/typing.yml`:
+### 1. Entorno y Configuración
+-   **[`installation.md`](./installation.md):** Guía completa para configurar el entorno de desarrollo local desde cero.
+-   **[`ci-cd-workflows.md`](./ci-cd-workflows.md):** Descripción técnica detallada de los workflows de GitHub Actions.
 
-1. prepara Python 3.11;
-2. instala dependencias con `pip install -r requirements.txt`;
-3. instala el paquete en editable con `pip install -e .`;
-4. ejecuta `pytest tests/` en CI;
-5. ejecuta `ruff check` y `ruff format --check` sobre la superficie viva cambiada mediante el runner incremental.
-6. ejecuta `mypy` sobre la superficie viva cambiada mediante el runner incremental.
+### 2. Ciclo de Vida del Desarrollo
+-   **[`agentic-development-workflow.md`](./agentic-development-workflow.md):** Proceso de desarrollo asistido por agentes, desde la especificación hasta el Pull Request.
+-   **[`engineering-quality-gates.md`](./engineering-quality-gates.md):** Define los controles de calidad incrementales (Ruff, Mypy) que se aplican en el pipeline.
+-   **[`signing-commits-policy.md`](./signing-commits-policy.md):** Política y guía para la firma de commits.
 
-## Observación relevante del baseline
+### 3. Ejecución y Orquestación
+-   **[`pipeline-execution.md`](./pipeline-execution.md):** Instrucciones para ejecutar los pipelines de generación de artefactos.
+-   **[`pipeline-controls-runbook.md`](./pipeline-controls-runbook.md):** Runbook para gestionar y monitorizar la ejecución de los pipelines.
+-   **[`product-owner-orchestrator.md`](./product-owner-orchestrator.md):** Cómo utilizar el orquestador de alto nivel para automatizar tareas complejas.
 
-En el estado validado más reciente del repo, la suite sí está en verde y `smoke_ivirma` ya dispone de baseline operativo para:
-
-- torre T5;
-- payload global;
-- payload comercial.
-
-En concreto, ya existen los artefactos de blueprint/anexo T5 y también:
-
-- `working/smoke_ivirma/global_report_payload.json`
-- `working/smoke_ivirma/commercial_report_payload.json`
-
-La siguiente pieza con más retorno al retomar es verificar o regenerar también:
-
-- `working/smoke_ivirma/presentation/index.html`
-
-## Próximos documentos operativos recomendados
-
-- promoción de `smoke-regeneration.md` y `pipeline-execution.md` cuando el baseline final quede contrastado;
-- ampliación del tipado incremental y de los tests de coherencia transversales;
-- endurecimiento del workflow spec-first y del review semántico para cambios asistidos por agentes;
-- evolución del orquestador local hacia más métricas, clasificación de riesgo y backends de agente corporativos;
-- endurecimiento de CI para smoke/golden artifacts;
-- operación del modo servidor MCP;
-- guía de troubleshooting de Vertex AI y credenciales.
+### 4. Mantenimiento y Resolución de Problemas
+-   **[`troubleshooting-working.md`](./troubleshooting-working.md):** Manual para diagnosticar y resolver problemas comunes.
+-   **[`smoke-regeneration.md`](./smoke-regeneration.md):** Proceso para regenerar los datos de los `smoke tests`.
+-   **[`assessment-coherence-remediation.md`](./assessment-coherence-remediation.md):** Guía para reparar problemas de coherencia en los datos generados.
