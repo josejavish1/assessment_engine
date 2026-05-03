@@ -81,42 +81,52 @@ def _extract_model_parts(event: Any) -> tuple[Optional[str], list[dict]]:
     reraise=True,
 )
 async def _execute_query_with_retry(
-    app: AdkApp, user_id: str, message: str
+    app: AdkApp, user_id: str, message: str, schema: Any = None
 ) -> tuple[str, list[dict], list[str]]:
     """
-    Realiza la consulta al agente con lógica de reintentos, capturando texto y function calls.
+    Realiza la consulta al agente utilizando google-genai con automatic_function_calling.
     """
+    from google import genai
+    from google.genai import types
+
     async with _vertex_semaphore:
-        lines = []
-        full_text = []
-        function_calls = []
         timeout_seconds = get_vertex_query_timeout_seconds()
         
+        tmpl_attrs = getattr(app, "_tmpl_attrs", {})
+        agent_ref = tmpl_attrs.get("agent")
+        model_name = getattr(agent_ref, "model", "gemini-2.5-pro")
+        instruction = getattr(agent_ref, "instruction", "")
+        agent_tools = getattr(agent_ref, "tools", []) if agent_ref else []
+
+        client = genai.Client()
+        
+        config = types.GenerateContentConfig(
+            system_instruction=instruction,
+            response_mime_type="application/json" if schema else "text/plain",
+            response_schema=schema,
+            tools=agent_tools if agent_tools else None,
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False) if agent_tools else None,
+            temperature=getattr(agent_ref, "temperature", 0.0) if agent_ref else 0.0,
+        )
+
         try:
             async with asyncio.timeout(timeout_seconds):
-                async for event in app.async_stream_query(
-                    user_id=user_id,
-                    message=message,
-                ):
-                    text, new_fcs = _extract_model_parts(event)
-                    if text:
-                        lines.append(text)
-                        full_text.append(text)
-                    if new_fcs:
-                        lines.append(str(new_fcs))
-                        function_calls.extend(new_fcs)
+                response = await client.aio.models.generate_content(
+                    model=model_name,
+                    contents=message,
+                    config=config,
+                )
+                
+                final_text = response.text or "{}"
+                
+                # No longer need to manually parse function calls since the SDK handles it
+                # but we return empty function_calls list to satisfy legacy tuple unpacking
+                return final_text, [], [final_text]
 
         except TimeoutError as exc:
             raise VertexQueryTimeoutError(
                 f"Vertex agent query timed out after {timeout_seconds:.0f}s for user_id={user_id}."
             ) from exc
-
-        final_text = "".join(full_text)
-        if not final_text and not function_calls:
-            raise RuntimeError("Respuesta vacía o incompleta del modelo.")
-
-        return final_text, function_calls, lines
-
 
 def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
     # This function remains the same
@@ -160,23 +170,9 @@ async def run_agent(
     _tool_depth: int = 0,
 ) -> dict:
     """
-    Ejecuta un agente de forma asíncrona y captura telemetría avanzada.
+    Ejecuta un agente de forma asíncrona y captura telemetría avanzada usando integración nativa genai.
     """
-    if _tool_depth > 10:
-        raise RuntimeError("Agent reached maximum tool recursion depth (10). Possible hallucination loop.")
-
     start_time = time.monotonic()
-    
-    # Build the function dispatcher from the agent's tools
-    tmpl_attrs = getattr(app, "_tmpl_attrs", {})
-    agent_ref = tmpl_attrs.get("agent")
-    agent_tools = getattr(agent_ref, "tools", []) if agent_ref else []
-    function_dispatcher = {
-        tool.__name__: tool for tool in agent_tools
-    }
-    
-    # Placeholder para tokens (el ADK actual no siempre los expone fácilmente en el stream)
-    # En una implementación real extraeríamos esto de los metadatos de la respuesta final
     input_tokens_est = len(message) // 4
     output_tokens_est = 0
     is_cache_hit = False
@@ -192,7 +188,7 @@ async def run_agent(
             full_text, function_calls, lines = _query_cache[cache_key]
             is_cache_hit = True
         else:
-            full_text, function_calls, lines = await _execute_query_with_retry(app, user_id, message)
+            full_text, function_calls, lines = await _execute_query_with_retry(app, user_id, message, schema=schema)
             if len(_query_cache) >= _CACHE_MAX_SIZE:
                 _query_cache.pop(next(iter(_query_cache)))
             _query_cache[cache_key] = (full_text, function_calls, lines)
@@ -202,62 +198,8 @@ async def run_agent(
         if raw_output_file:
             raw_output_file.write_text("\n".join(lines), encoding="utf-8")
 
-        if function_calls:
-            logger.info(f"[run_id={run_id}] Function call(s) received: {function_calls}")
-            tool_results = []
-            for fc in function_calls:
-                tool_name = fc.get("name")
-                if not tool_name:
-                    logger.warning(f"[run_id={run_id}] Received a function call without a name: {fc}")
-                    continue
-
-                if tool_name in function_dispatcher:
-                    tool_func = function_dispatcher[tool_name]
-                    tool_args = fc.get("args", {})
-                    try:
-                        # Argument validation could be added here if needed
-                        result = tool_func(**tool_args)
-                        tool_results.append(
-                            {
-                                "tool_name": tool_name,
-                                "result": result,
-                                "status": "OK",
-                            }
-                        )
-                        logger.info(f"[run_id={run_id}] Executed tool '{tool_name}' with args {tool_args}. Result: {result}")
-                    except Exception as e:
-                        logger.error(f"[run_id={run_id}] Error executing tool '{tool_name}': {e}")
-                        tool_results.append(
-                            {
-                                "tool_name": tool_name,
-                                "error": str(e),
-                                "status": "Error",
-                            }
-                        )
-                else:
-                    logger.warning(f"[run_id={run_id}] Model hallucinated function name '{tool_name}', which is not a registered tool.")
-                    tool_results.append(
-                        {
-                            "tool_name": tool_name,
-                            "error": f"Function '{tool_name}' not found.",
-                            "status": "Error",
-                        }
-                    )
-            import json
-            follow_up_message = "Tool execution results:\n" + json.dumps(tool_results, indent=2) + "\n\nPlease continue and fulfill the original request schema."
-            logger.info(f"[run_id={run_id}] Feeding tool results back to the model for continuation...")
-            return await run_agent(
-                app=app,
-                user_id=user_id,
-                message=follow_up_message,
-                raw_output_file=raw_output_file,
-                schema=schema,
-                run_id=run_id,
-                _tool_depth=_tool_depth + 1
-            )
-
         if not full_text:
-             raise RuntimeError("Respuesta de texto vacía y sin 'function calls'.")
+             raise RuntimeError("Respuesta de texto vacía.")
 
         data = parse_json_from_text(full_text)
 
@@ -325,16 +267,22 @@ async def call_agent(
         "GEMINI_API_KEY"
     ):
         from google import genai
+        from google.genai import types
 
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        
+        config = types.GenerateContentConfig(
+            system_instruction=instruction,
+            response_mime_type="application/json" if output_schema else "text/plain",
+            response_schema=output_schema,
+            tools=tools if tools else None,
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False) if tools else None,
+        )
+        
         response = await client.aio.models.generate_content(
             model=model_name,
             contents=prompt,
-            config={
-                "system_instruction": instruction,
-                "response_mime_type": "application/json",
-                "response_schema": output_schema,
-            },
+            config=config,
         )
         text_parts = []
         if getattr(response, "candidates", None) and response.candidates:
