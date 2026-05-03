@@ -177,7 +177,10 @@ async def process_task(task: dict, queue: list, idx: int):
     UI_STATE["active_task"] = task; task["status"] = "Running"
     while attempts <= max_rescue_rounds:
         SENTINEL.log_transaction(task["id"], f"attempt_{attempts}", task)
-        success, logs = await run_po_orchestrator(task.get("instruction") or f"Implementa: {task['title']}")
+        prompt = task.get("instruction")
+        if not prompt:
+            prompt = f"Implementa: {task['title']}\nDescripción: {task.get('description', '')}"
+        success, logs = await run_po_orchestrator(prompt)
         if success:
             task["status"] = "Success"; SENTINEL.log_transaction(task["id"], "success", {}, cost=0.05); UI_STATE["completed_count"] += 1
             return True

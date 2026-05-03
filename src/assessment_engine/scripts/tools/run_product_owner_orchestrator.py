@@ -1633,6 +1633,10 @@ def main(argv: list[str] | None = None) -> int:
 
     executor_command = resolve_executor_command(args.executor_command)
     
+    if plan.get("is_ambiguous"):
+        logger.error(f"Petición ambigua. Pregunta del planificador: {plan.get('clarification_question', 'Sin pregunta')}")
+        return 1
+
     if plan.get("refused"):
         logger.error(f"El planificador rechazó la petición: {plan.get('refusal_reason', 'Sin razón proporcionada')}")
         return 1
