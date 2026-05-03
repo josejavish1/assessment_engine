@@ -25,25 +25,39 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
     const res = await startPlanExecution(requestDir, altIndex);
     if (res.success && res.jobId) {
       const poll = setInterval(async () => {
-        const statusRes = await checkExecutionStatus(res.jobId);
-        if (statusRes.result) setLogs(prev => "Iniciando Pipeline de Ejecución Autónoma...\nCalculando Blast Radius...\nAsignando Agentes...\n\n" + statusRes.result);
-        if (statusRes.status === 'completed') {
-          clearInterval(poll);
-          setExecutionState('completed');
-          setLogs(prev => prev + "\n✅ " + statusRes.result);
-        } else if (statusRes.status === 'error') {
-          clearInterval(poll);
-          const agRes = await checkActionGate(requestDir);
-          if (agRes.success && agRes.data?.action_gate_active) {
-            setActionGate(agRes.data.data);
-            setExecutionState('action_gate');
-          } else {
+        try {
+          const statusRes = await checkExecutionStatus(res.jobId);
+          if (!statusRes.success) {
+            clearInterval(poll);
             setExecutionState('error');
-            setLogs(prev => prev + "\n❌ " + statusRes.result);
+            setLogs(prev => prev + `\n❌ Error de conexión con el Orquestador: ${statusRes.error}`);
+            return;
           }
-        } else {
-          // Decrement ETA slightly for effect
-          setEta(e => Math.max(1, e - 0.1));
+          
+          if (statusRes.result) setLogs(prev => "Iniciando Pipeline de Ejecución Autónoma...\nCalculando Blast Radius...\nAsignando Agentes...\n\n" + statusRes.result);
+          
+          if (statusRes.status === 'completed') {
+            clearInterval(poll);
+            setExecutionState('completed');
+            setLogs(prev => prev + "\n✅ " + statusRes.result);
+          } else if (statusRes.status === 'error') {
+            clearInterval(poll);
+            const agRes = await checkActionGate(requestDir);
+            if (agRes.success && agRes.data?.action_gate_active) {
+              setActionGate(agRes.data.data);
+              setExecutionState('action_gate');
+            } else {
+              setExecutionState('error');
+              setLogs(prev => prev + "\n❌ " + statusRes.result);
+            }
+          } else {
+            // Decrement ETA slightly for effect
+            setEta(e => Math.max(1, e - 0.1));
+          }
+        } catch (err) {
+          clearInterval(poll);
+          setExecutionState('error');
+          setLogs(prev => prev + `\n❌ Error crítico en el frontend: ${err}`);
         }
       }, 3000);
     } else {
