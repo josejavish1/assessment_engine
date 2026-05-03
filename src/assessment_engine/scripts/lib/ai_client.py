@@ -75,7 +75,6 @@ def _extract_model_parts(event: Any) -> tuple[Optional[str], list[dict]]:
 def _sanitize_schema(schema_dict: Any) -> Any:
     if isinstance(schema_dict, dict):
         schema_dict.pop("additionalProperties", None)
-        schema_dict.pop("title", None)
         for value in schema_dict.values():
             _sanitize_schema(value)
     elif isinstance(schema_dict, list):
