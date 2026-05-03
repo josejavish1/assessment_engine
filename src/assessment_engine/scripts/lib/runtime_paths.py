@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parents[4]
 GLOBAL_REPORT_TEMPLATE_NAME = "11. Template Documento General Alpha v.05.docx"
 TOWER_ANNEX_TEMPLATE_NAME = "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx"
-WEB_DASHBOARD_TEMPLATE_NAME = "web_dashboard.html"
+WEB_DASHBOARD_TEMPLATE_NAME = "dashboard.html"
 
 
 def resolve_working_dir() -> Path:
@@ -128,5 +128,5 @@ def resolve_tower_annex_template_path() -> Path:
 
 def resolve_web_dashboard_template_path() -> Path:
     return (
-        ROOT / "src" / "assessment_engine" / "templates" / WEB_DASHBOARD_TEMPLATE_NAME
+        ROOT / "src" / "assessment_engine" / "templates" / "web_dashboard"
     )
