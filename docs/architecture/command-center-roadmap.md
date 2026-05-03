@@ -43,8 +43,9 @@ Monitorizar la ejecución automática del agente (`gemini-2.5-pro`) con capacida
 
 ---
 
-## Fase 4: Reconciliación, Trazabilidad y "Time-Travel" ("Close the Loop")
-Llevar la validación de GitHub PRs al dashboard y hacer la caja negra transparente.
+## Fase 4: Eficiencia Operativa, Checkpointing y Reconciliación ("Close the Loop")
+Llevar la arquitectura al siguiente nivel de resiliencia y eficiencia, abandonando el reintento desde cero en favor de una máquina de estados determinista.
+- **State Checkpointing y DAG Orchestration 🚀 [SOTA]**: El orquestador guarda su estado interno tras cada micro-paso (Worker Done, Verification Done, Commit Done). Si ocurre un fallo de red, de infraestructura o un Action Gate requiere intervención, al reanudar, el sistema salta directamente al punto de fallo en lugar de reiniciar todo el pipeline, reduciendo drásticamente los tiempos de espera y el consumo de tokens.
 - **Estado de GitHub en Vivo**: Tarjeta resumen con el PR number y el estado de los checks de GitHub Actions.
 - **Monitor de Reconciliación Automática**: Visualizar el bucle del watcher (`orchestrator-pr-reconcile.yml`). Si GitHub falla, la UI muestra cómo el agente descarga el feedback y aplica el parche.
-- **Trazabilidad "Time-Travel" 🚀 [SOTA]**: Si una tarea fracasa repetidamente (ej. falla typing 3 veces), la UI permite desplegar un "Árbol de Razonamiento". El usuario puede ver visualmente qué estrategia intentó el agente en el Intento 1, el error que obtuvo, y por qué decidió pivotar en el Intento 2, permitiendo al arquitecto entender el callejón sin salida y aportar la solución exacta.
+- **Trazabilidad "Time-Travel"**: Si una tarea fracasa repetidamente (ej. falla typing 3 veces), la UI permite desplegar un "Árbol de Razonamiento". El usuario puede ver visualmente qué estrategia intentó el agente en el Intento 1, el error que obtuvo, y por qué decidió pivotar en el Intento 2.
