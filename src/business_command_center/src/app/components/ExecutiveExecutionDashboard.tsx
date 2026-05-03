@@ -26,6 +26,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
     if (res.success && res.jobId) {
       const poll = setInterval(async () => {
         const statusRes = await checkExecutionStatus(res.jobId);
+        if (statusRes.result) setLogs(prev => "Iniciando Pipeline de Ejecución Autónoma...\nCalculando Blast Radius...\nAsignando Agentes...\n\n" + statusRes.result);
         if (statusRes.status === 'completed') {
           clearInterval(poll);
           setExecutionState('completed');
