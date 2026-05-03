@@ -50,14 +50,23 @@ def _extract_model_parts(event: Any) -> tuple[Optional[str], list[dict]]:
         for part in parts:
             if not isinstance(part, dict):
                 continue
-
             if "text" in part and part["text"]:
                 text_parts.append(part["text"])
-            
             if "function_call" in part:
                 function_calls.append(part["function_call"])
             elif "tool_calls" in part:
                 function_calls.extend(part["tool_calls"])
+    elif hasattr(event, "candidates") and event.candidates:
+        parts = getattr(event.candidates[0].content, "parts", [])
+        for part in parts:
+            if getattr(part, "text", None):
+                text_parts.append(part.text)
+            if getattr(part, "function_call", None):
+                fc = part.function_call
+                function_calls.append({
+                    "name": fc.name,
+                    "args": dict(fc.args) if fc.args else {}
+                })
 
     text = "".join(text_parts) if text_parts else None
     return text, function_calls
@@ -89,11 +98,12 @@ async def _execute_query_with_retry(
                     user_id=user_id,
                     message=message,
                 ):
-                    lines.append(str(event))
                     text, new_fcs = _extract_model_parts(event)
                     if text:
+                        lines.append(text)
                         full_text.append(text)
                     if new_fcs:
+                        lines.append(str(new_fcs))
                         function_calls.extend(new_fcs)
 
         except TimeoutError as exc:
@@ -229,8 +239,17 @@ async def run_agent(
                             "status": "Error",
                         }
                     )
-            # The calling layer is responsible for sending this back to the model if needed.
-            return {"tool_results": tool_results}
+            import json
+            follow_up_message = "Tool execution results:\n" + json.dumps(tool_results, indent=2) + "\n\nPlease continue and fulfill the original request schema."
+            logger.info(f"[run_id={run_id}] Feeding tool results back to the model for continuation...")
+            return await run_agent(
+                app=app,
+                user_id=user_id,
+                message=follow_up_message,
+                raw_output_file=raw_output_file,
+                schema=schema,
+                run_id=run_id
+            )
 
         if not full_text:
              raise RuntimeError("Respuesta de texto vacía y sin 'function calls'.")
