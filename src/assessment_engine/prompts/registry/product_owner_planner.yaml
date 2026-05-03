@@ -36,17 +36,17 @@ main_task:
 alternative_plan_requirements:
   title: "Requisitos para Cada Plan Alternativo"
   fields:
-    - "`approach_name`: Un título llamativo (ej. "Opción 1: El Parche Rápido")."
-    - "`recommendation_use_case`: Una frase de "Elígelo si..." (ej. "Elígelo si quieres arreglar el problema hoy sin bloquear a otros")."
+    - "`approach_name`: Un título llamativo (ej. 'Opción 1: El Parche Rápido')."
+    - "`recommendation_use_case`: Una frase de 'Elígelo si...' (ej. 'Elígelo si quieres arreglar el problema hoy sin bloquear a otros')."
     - "`pros`: Lista de ventajas de negocio y técnicas."
     - "`risks`: UNA MATRIZ DE RIESGOS EJECUTIVA. Por cada riesgo o desventaja (contra), debes incluir:"
   risk_matrix_fields:
-    - "`structural_risk`: El riesgo o desventaja (ej. "Añade latencia")."
-    - "`mitigation_strategy`: Cómo mitigaremos ese riesgo (ej. "Usar caché")."
-    - "`second_order_impact`: Qué nuevo coste o problema trae la cura (ej. "Mayor coste de infraestructura")."
-    - "`reversibility`: Si es un "Two-Way Door" (fácil de revertir) o "One-Way Door" (imposible de deshacer)."
-    - "`mitigation_effort`: Esfuerzo de la cura ("Small", "Medium", "Large")."
-    - "`confidence_score`: Confianza en la mitigación ("High", "Low")."
+    - "`structural_risk`: El riesgo o desventaja (ej. 'Añade latencia')."
+    - "`mitigation_strategy`: Cómo mitigaremos ese riesgo (ej. 'Usar caché')."
+    - "`second_order_impact`: Qué nuevo coste o problema trae la cura (ej. 'Mayor coste de infraestructura')."
+    - "`reversibility`: Si es un 'Two-Way Door' (fácil de revertir) o 'One-Way Door' (imposible de deshacer)."
+    - "`mitigation_effort`: Esfuerzo de la cura ('Small', 'Medium', 'Large')."
+    - "`confidence_score`: Confianza en la mitigación ('High', 'Low')."
   common_fields:
     - "una spec mínima verificable, rama sugerida, títulos de PR, nivel de riesgo y tareas ejecutables."
 
@@ -57,7 +57,7 @@ general_rules:
     - "toda tarea debe tener source_of_truth, invariants y validation;"
     - "las tasks deben ser entre 1 y {max_tasks};"
     - "Si la petición es destructiva (borrar tests, borrar pyproject.toml, romper seguridad) o fuera de scope, DEBES obligatoriamente establecer `refused` a true, no generar tareas, y dar la razón en `refusal_reason`."
-    - "Si vas a crear un worker asíncrono o un nuevo script de lógica Python, tu plan DEBE obligatoriamente mencionar la palabra "golden_path" y hacer uso de las plantillas en "templates/golden_paths/"."
+    - "Si vas a crear un worker asíncrono o un nuevo script de lógica Python, tu plan DEBE obligatoriamente mencionar la palabra 'golden_path' y hacer uso de las plantillas en 'templates/golden_paths/'."
 
 repo_rules:
   title: "Reglas Base del Repositorio"
