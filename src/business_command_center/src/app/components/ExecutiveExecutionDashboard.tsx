@@ -100,8 +100,19 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
     }
   };
 
+  // Parse and clean logs if they are JSON lines (from pythonjsonlogger)
+  const cleanLogs = logs.split('\n').map(line => {
+    try {
+      if (line.trim().startsWith('{') && line.trim().endsWith('}')) {
+        const parsed = JSON.parse(line);
+        if (parsed.message) return parsed.message;
+      }
+    } catch(e) {}
+    return line;
+  }).join('\n');
+
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-in fade-in duration-300">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-in fade-in duration-300 pb-24">
       {/* Header Bar */}
       <div className="border-b border-border/50 bg-muted/10 p-6 flex items-center justify-between shrink-0">
         <div>
@@ -203,25 +214,25 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
             <div className="p-6 space-y-6 text-slate-300">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Diagnóstico del Doctor Agent</h3>
-                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate.diagnosis.diagnosis}</p>
+                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate?.diagnosis?.diagnosis || "Diagnóstico no disponible"}</p>
               </div>
 
-              {actionGate.diagnosis.required_invariant_breach && (
+              {actionGate?.diagnosis?.required_invariant_breach && (
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wider text-destructive mb-2">Invariante Comprometido</h3>
-                  <p className="bg-destructive/10 p-3 rounded border border-destructive/30 text-sm text-red-200">{actionGate.diagnosis.required_invariant_breach}</p>
+                  <p className="bg-destructive/10 p-3 rounded border border-destructive/30 text-sm text-red-200">{actionGate?.diagnosis?.required_invariant_breach}</p>
                 </div>
               )}
 
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Cura Propuesta</h3>
-                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate.diagnosis.proposed_cure}</p>
+                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate?.diagnosis?.proposed_cure || "Sin cura propuesta"}</p>
               </div>
 
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Blast Radius (Archivos Afectados)</h3>
                 <div className="flex gap-2 flex-wrap">
-                  {actionGate.diagnosis.blast_radius?.map((file: string, idx: number) => (
+                  {actionGate?.diagnosis?.blast_radius?.map((file: string, idx: number) => (
                     <Badge key={idx} variant="outline" className="bg-slate-800 border-slate-700">{file}</Badge>
                   ))}
                 </div>
@@ -229,7 +240,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
 
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-orange-400 mb-2">Impacto Secundario (Riesgo)</h3>
-                <p className="bg-orange-500/10 p-3 rounded border border-orange-500/30 text-sm text-orange-200">{actionGate.diagnosis.second_order_impact}</p>
+                <p className="bg-orange-500/10 p-3 rounded border border-orange-500/30 text-sm text-orange-200">{actionGate?.diagnosis?.second_order_impact || "Riesgo no evaluado"}</p>
               </div>
             </div>
 
