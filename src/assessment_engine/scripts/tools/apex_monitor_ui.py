@@ -173,7 +173,10 @@ class ApexMonitorApp(App):
         
         # Init Backlog Table
         table = self.query_one(DataTable)
-        table.add_columns("ID", "Status", "Title")
+        table.add_column("ID", key="id")
+        table.add_column("Status", key="status")
+        table.add_column("Title", key="title")
+        
         self.tasks = parse_backlog()
         for i, t in enumerate(self.tasks):
             table.add_row(t["id"], t["status"], t["title"], key=t["id"])
@@ -312,12 +315,22 @@ class ApexMonitorApp(App):
                         new_status = "HARD_BLOCK"
                     
                     try:
-                         # Attempt to update existing row
-                         table.update_cell(task_id, "Status", new_status)
-                    except Exception:
-                         # If task is not in table (like EMG tasks), add it dynamically!
-                         title = details.get("title", f"Emergency Task {task_id}")
-                         table.add_row(task_id, new_status, title, key=task_id)
+                         try:
+                             table.update_cell(task_id, "status", new_status)
+                         except Exception as e_update:
+                             title = details.get("title", f"Emergency Task {task_id}")
+                             table.add_row(task_id, new_status, title, key=task_id)
+                             
+                         # Auto-scroll and highlight the active task
+                         if new_status == "Running":
+                             try:
+                                 # In textual, we can get the row index by key
+                                 row_index = table.get_row_index(task_id)
+                                 table.move_cursor(row=row_index, animate=True)
+                             except Exception:
+                                 pass
+                    except Exception as e:
+                         logger.error(f"Table operation failed for {task_id}: {e}", exc_info=True)
 
                 # Scan for tool calls in logs to feed Brain Scanner
                 if "tool_results" in str(details) or "Function call" in str(details) or event == "debate_completed":

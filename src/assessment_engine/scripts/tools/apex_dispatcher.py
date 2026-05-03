@@ -123,13 +123,29 @@ async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
     cmd = [str(REPO_ROOT / "bin/po-run"), clean_prompt]
     process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=REPO_ROOT)
     full_log = []
-    while True:
-        line = await process.stdout.readline()
-        if not line: break
-        decoded = line.decode().strip()
-        if decoded: UI_STATE["active_logs"].append(decoded); full_log.append(decoded)
-    _, stderr = await process.communicate()
-    if stderr: full_log.append(stderr.decode()); UI_STATE["active_logs"].append(stderr.decode())
+    
+    session_log_path = WORKING_DIR / "session.log"
+    
+    with open(session_log_path, "a", encoding="utf-8") as f_log:
+        while True:
+            line = await process.stdout.readline()
+            if not line: break
+            decoded = line.decode()
+            f_log.write(decoded)
+            f_log.flush()
+            clean_decoded = decoded.strip()
+            if clean_decoded: 
+                UI_STATE["active_logs"].append(clean_decoded)
+                full_log.append(clean_decoded)
+                
+        _, stderr = await process.communicate()
+        if stderr: 
+            decoded_err = stderr.decode()
+            f_log.write(decoded_err)
+            f_log.flush()
+            full_log.append(decoded_err)
+            UI_STATE["active_logs"].append(decoded_err)
+            
     return process.returncode == 0, "\n".join(full_log)
 
 async def perform_apex_debate(error_logs: str, previous_failures: str) -> ApexDebateResponse:
