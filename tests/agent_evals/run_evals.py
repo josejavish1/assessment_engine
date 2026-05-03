@@ -37,7 +37,11 @@ async def run_eval(eval_data: dict[str, Any], policy: dict[str, Any]) -> bool:
     try:
         plan_bundle = await generate_plan(request_text, policy)
         plan = plan_bundle
-        if "alternatives" in plan_bundle and isinstance(plan_bundle["alternatives"], list) and len(plan_bundle["alternatives"]) > 0:
+        if (
+            "alternatives" in plan_bundle
+            and isinstance(plan_bundle["alternatives"], list)
+            and len(plan_bundle["alternatives"]) > 0
+        ):
             plan = plan_bundle["alternatives"][0]
     except Exception as e:
         print(f"❌ Error interno durante la generación del plan: {e}")

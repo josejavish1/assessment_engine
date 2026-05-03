@@ -16,4 +16,6 @@ try:
     print(f"✅ ¡ÉXITO! {response.text.strip()}")
 except Exception as e:
     print(f"❌ FALLO con el usuario real: {e}")
-    print("\nSi falla, es probable que tu token haya caducado. Necesitas ejecutar en tu terminal: gcloud auth application-default login")
+    print(
+        "\nSi falla, es probable que tu token haya caducado. Necesitas ejecutar en tu terminal: gcloud auth application-default login"
+    )
