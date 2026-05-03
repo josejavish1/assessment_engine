@@ -1,12 +1,12 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../src/assessment_engine/schemas/annex_synthesis.py
   - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
   - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
   - ../../docs/contracts/payload-render-boundaries.md
-last_verified_against: 2026-05-02
+last_verified_against: 2026-05-03
 applies_to:
   - humans
   - ai-agents
@@ -31,7 +31,11 @@ Rediseñar el anexo de torre para que sea:
 
 ## Dependencia canónica
 
-El anexo vigente debe seguir tratándose como una derivación del flujo top-down:
+El anexo vigente debe seguir tratándose como una derivación del flujo top-down. La estructura de datos canónica que define su contenido está documentada en:
+
+- **[`tower_annex_payload.md`](./tower_annex_payload.md)**
+
+El flujo de generación es el siguiente:
 
 1. `blueprint_<tower>_payload.json` define la verdad estructural principal;
 2. `run_executive_annex_synthesizer.py` sintetiza `approved_annex_<tower>.template_payload.json`;

@@ -581,7 +581,53 @@ def resolve_execution_timeouts(policy: dict[str, Any]) -> dict[str, int]:
 def create_commit(
     commit_title: str, compliance_receipt: dict[str, Any] | None = None
 ) -> None:
+    # 1. Detect and revert any rogue commits made by sub-agents to squash them into the official signed commit.
+    try:
+        # Intenta obtener el commit base respecto a main (u origin/main)
+        merge_base_cmd = ["git", "merge-base", "HEAD", "origin/main"]
+        merge_base_result = subprocess.run(
+            merge_base_cmd, capture_output=True, text=True, cwd=ROOT
+        )
+        if merge_base_result.returncode != 0:
+            merge_base_cmd = ["git", "merge-base", "HEAD", "main"]
+            merge_base_result = subprocess.run(
+                merge_base_cmd, capture_output=True, text=True, cwd=ROOT
+            )
+
+        if merge_base_result.returncode == 0:
+            base_sha = merge_base_result.stdout.strip()
+            head_sha = subprocess.run(
+                ["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=ROOT
+            ).stdout.strip()
+
+            if base_sha != head_sha:
+                # Comprobar si el commit actual ya tiene la firma oficial
+                log_result = subprocess.run(
+                    ["git", "log", "-1", "--format=%B"],
+                    capture_output=True,
+                    text=True,
+                    cwd=ROOT,
+                )
+                if "[zk-Liability-Proof]" not in log_result.stdout:
+                    print(
+                        f"⚠️  Warning: Detectados commits de agente sin firma de gobernanza. Aplicando soft reset hasta {base_sha[:7]} para unificar y firmar..."
+                    )
+                    subprocess.run(["git", "reset", "--soft", base_sha], cwd=ROOT)
+    except Exception as e:
+        print(f"⚠️  Warning: Error intentando resolver commits previos: {e}")
+
     run_git_command(["git", "add", "-A"])
+
+    # Check if there are any changes to commit
+    status_result = subprocess.run(
+        ["git", "status", "--porcelain"], capture_output=True, text=True, cwd=ROOT
+    )
+    if not status_result.stdout.strip():
+        print(
+            "⚠️  Warning: No hay cambios para commitear. El working tree está limpio. Saltando commit de gobernanza."
+        )
+        return
+
     message = (
         f"{commit_title}\n\n"
         "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"

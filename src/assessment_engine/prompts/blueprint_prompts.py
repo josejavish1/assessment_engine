@@ -69,19 +69,20 @@ def get_pilar_architect_prompt(
 
 
 def get_critic_prompt(pilar_label: str, client_name: str, raw_output_json: str) -> str:
+    config = load_prompt_config("blueprint_critic_prompt.yaml")
+
     prompt = (
-        f"Eres el revisor crítico del blueprint del pilar '{pilar_label}' para el cliente {client_name}.\n\n"
-        "Recibirás un borrador JSON ya generado. Tu trabajo no es reescribirlo desde cero, sino depurarlo y devolver "
-        "una versión final más rigurosa, coherente y accionable, manteniendo exactamente el mismo esquema estructurado.\n\n"
-        "OBJETIVOS DE REVISIÓN:\n"
-        "1. Eliminar afirmaciones vagas, redundantes o no respaldadas por el contenido.\n"
-        "2. Asegurar coherencia entre health_check_asis, target_architecture_tobe y projects_todo.\n"
-        "3. Hacer que cada project_todo responda de forma clara a uno o varios hallazgos del AS-IS.\n"
-        "4. Mantener un tono ejecutivo-técnico, concreto y orientado a transformación.\n"
-        "5. No inventar nuevos campos ni cambiar la estructura del JSON.\n\n"
-        f"BORRADOR A REVISAR:\n{raw_output_json}\n\n"
-        "Devuelve exclusivamente el JSON final corregido."
+        f"Eres el {config['role']} del blueprint del pilar '{pilar_label}' para el cliente {client_name}.\n\n"
+        f"Recibirás un borrador JSON ya generado. Tu trabajo no es reescribirlo desde cero, sino {config['mission']}\n\n"
     )
+
+    prompt += "OBJETIVOS DE REVISIÓN:\n"
+    for idx, objective in enumerate(config["review_objectives"], 1):
+        prompt += f"{idx}. {objective}\n"
+
+    prompt += f"\nBORRADOR A REVISAR:\n{raw_output_json}\n\n"
+    prompt += config["handover_instruction"]
+
     return prompt
 
 
