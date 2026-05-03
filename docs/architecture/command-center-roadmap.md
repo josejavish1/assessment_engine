@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
   - src/business_command_center/README.md
-last_verified_against: '2026-05-02'
+last_verified_against: '2026-05-03'
 applies_to:
   - humans
 doc_type: canonical
@@ -40,6 +40,13 @@ Monitorizar la ejecución automática del agente (`gemini-2.5-pro`) con capacida
 - **Terminal Incrustada (Live Logs)**: Consola dentro de la tarjeta de tarea mostrando el `stdout/stderr` de los Quality Gates locales.
 - **Human-in-the-Loop (HITL) Dinámico 🚀 [SOTA]**: Implementación de la directiva `elicitInput()` de MCP. Si el agente encuentra una ambigüedad arquitectónica crítica que no puede resolver con certeza, la ejecución se pausa y la UI muestra un modal solicitando al Arquitecto una micro-decisión (ej. elegir entre dos patrones de diseño). Al responder, el agente continúa.
 - **Nota sobre Implementación**: El concepto de "Shadow Routing" (ejecutar un segundo modelo en paralelo para comparación) fue descartado en favor de un sistema de validación y firma más robusto y determinista, liderado por los agentes `Doctor`, `Verification` y `Liability Signer`, que operan sobre los artefactos generados por el agente primario.
+
+---
+
+## Fase 3.5: The Apex Orchestrator MVP (Prioridad Inmediata)
+Implementar el núcleo de la arquitectura "The Apex" en el backend del orquestador (`run_product_owner_orchestrator.py`) para garantizar robustez y aislamiento antes de escalar la GUI.
+- **Aislamiento Total (Shadow Workspaces) 🚀 [SOTA]**: El orquestador ejecuta las mutaciones de código en un `git worktree` efímero oculto. Esto garantiza un **Blast Radius Cero**: el directorio de trabajo real del Product Owner jamás se corrompe por alucinaciones o comandos destructivos del agente.
+- **El Bucle del Doctor (Auto-Curación) 🚀 [SOTA]**: Separación de responsabilidades en la validación. Cuando un Quality Gate falla en el Shadow Workspace, el log de error no se envía al agente codificador, sino al agente **Doctor** (Diagnosticador Puro). El Doctor analiza el fallo, emite un veredicto de seguridad (`is_safe_to_proceed`) y proporciona un plan de remediación exacto, evitando la "ceguera de taller" del codificador.
 
 ---
 

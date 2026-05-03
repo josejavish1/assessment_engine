@@ -29,31 +29,32 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 
 | Documento o carpeta | Rol |
 |---|---|
-| `../README.md` | Entrada rápida al proyecto |
-| `ai/documentation-governance.md` | Política documental común para humanos e IAs |
-| `../AGENTS.md` | Puerta de entrada breve para cualquier agente |
-| `../CHATGPT.md` | Adaptador breve para ChatGPT |
-| `../.github/copilot-instructions.md` | Adaptador breve para Copilot |
-| `SYSTEM_ARCHITECTURE.md` | Arquitectura vigente del sistema |
-| `architecture/` | Descomposición canónica progresiva de la arquitectura |
-| `architecture/elite-governance-2026.md` | Arquitectura de Gobernanza "The Apex" |
-| `operations/` | Operación, validación y CI |
-| `operations/signing-commits-policy.md` | Política y guía para la firma de commits |
-| `operations/agentic-development-workflow.md` | Flujo canónico para programar con agentes |
-| `operations/engineering-quality-gates.md` | Política canónica de calidad de implementación |
-| `operations/product-owner-orchestrator.md` | Orquestador local desde petición de negocio hasta PR |
-| `../bin/po-run` | Wrapper friendly para lanzar el orquestador local desde terminal |
-| `../.github/workflows/orchestrator-pr-reconcile.yml` | Watcher automático que reanuda PRs gestionadas del orquestador |
-| `../.github/scripts/orchestrator-gemini-executor.sh` | Wrapper de executor para usar Gemini CLI dentro de GitHub Actions |
-| `contracts/` | Contratos, matrices y plantillas de diseño |
-| `reference/generated/` | Referencia derivada o heredada no canónica |
-| `../GEMINI.md` | Adaptador para Gemini y memoria operativa en transición |
-| `documentation-map.yaml` | Inventario máquina-legible, estado y trazabilidad |
-| `../.github/pull_request_template.md` | Checklist de PR para disciplina documental y revisión de coherencia del assessment |
-| `../.github/CODEOWNERS` | Ownership mínimo de la documentación y gobernanza |
-| `../.github/workflows/docs-governance.yml` | Validación automática de gobernanza documental |
-| `../.github/workflows/quality.yml` | Gate incremental de calidad de implementación |
-| `../.github/workflows/typing.yml` | Gate incremental de tipado |
+| [`../README.md`](../README.md) | Entrada rápida al proyecto |
+| [`ai/documentation-governance.md`](ai/documentation-governance.md) | Política documental común para humanos e IAs |
+| [`../AGENTS.md`](../AGENTS.md) | Puerta de entrada breve para cualquier agente |
+| [`../CHATGPT.md`](../CHATGPT.md) | Adaptador breve para ChatGPT |
+| [`../.github/copilot-instructions.md`](../.github/copilot-instructions.md) | Adaptador breve para Copilot |
+| [`SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) | Arquitectura vigente del sistema |
+| [`architecture/`](architecture/README.md) | Descomposición canónica progresiva de la arquitectura |
+| [`architecture/elite-governance-2026.md`](architecture/elite-governance-2026.md) | Arquitectura de Gobernanza "The Apex" |
+| [`operations/`](operations/README.md) | Operación, validación y CI |
+| [`operations/signing-commits-policy.md`](operations/signing-commits-policy.md) | Política y guía para la firma de commits |
+| [`operations/agentic-development-workflow.md`](operations/agentic-development-workflow.md) | Flujo canónico para programar con agentes |
+| [`operations/engineering-quality-gates.md`](operations/engineering-quality-gates.md) | Política canónica de calidad de implementación |
+| [`operations/product-owner-orchestrator.md`](operations/product-owner-orchestrator.md) | Orquestador local desde petición de negocio hasta PR |
+| [`../bin/po-run`](../bin/po-run) | Wrapper friendly para lanzar el orquestador local desde terminal |
+| [`../.github/workflows/orchestrator-pr-reconcile.yml`](../.github/workflows/orchestrator-pr-reconcile.yml) | Watcher automático que reanuda PRs gestionadas del orquestador |
+| [`../.github/scripts/orchestrator-gemini-executor.sh`](../.github/scripts/orchestrator-gemini-executor.sh) | Wrapper de executor para usar Gemini CLI dentro de GitHub Actions |
+| [`contracts/`](contracts/artifact-contracts.md) | Contratos, matrices y plantillas de diseño |
+| [`reference/generated/`](reference/generated/legacy-gemini-index.md) | Referencia derivada o heredada no canónica |
+| [`../GEMINI.md`](../GEMINI.md) | Adaptador para Gemini y memoria operativa en transición |
+| [`documentation-map.yaml`](documentation-map.yaml) | Inventario máquina-legible del estado de la documentación |
+| [`documentation_audit.md`](documentation_audit.md) | Seguimiento del estado de salud de la documentación |
+| [`../.github/pull_request_template.md`](../.github/pull_request_template.md) | Checklist de PR para disciplina documental y coherencia |
+| [`../.github/CODEOWNERS`](../.github/CODEOWNERS) | Ownership mínimo de la documentación y gobernanza |
+| [`../.github/workflows/docs-governance.yml`](../.github/workflows/docs-governance.yml) | Validación automática de gobernanza documental |
+| [`../.github/workflows/quality.yml`](../.github/workflows/quality.yml) | Gate incremental de calidad de implementación |
+| [`../.github/workflows/typing.yml`](../.github/workflows/typing.yml) | Gate incremental de tipado |
 
 ## Tipos documentales
 
@@ -116,11 +117,3 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - ya existe un executor del repo compatible con GitHub Actions para que el watcher no dependa de rutas locales;
 - el baseline smoke de `smoke_ivirma` ya está cerrado para T5, global, comercial y web;
 - la suite completa de `pytest` pasa.
-
-El siguiente tramo natural ya no es regenerar artefactos del smoke, sino seguir en paralelo dos líneas:
-
-- promover y mantener verificada la documentación operativa del smoke en `docs/documentation-map.yaml`;
-- continuar la revisión de arquitectura, contratos y adaptadores que siguen en `Draft` o `Needs Review`;
-- ampliar los checks de coherencia a más dominios y endurecer el tipado incremental hacia módulos completos;
-- bajar el workflow spec-first a plantillas, hábitos de review y cambios más pequeños por iteración;
-- evolucionar el orquestador PO-to-PR hacia clasificación de riesgo y sesiones reanudables.

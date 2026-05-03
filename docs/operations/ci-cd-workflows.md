@@ -2,58 +2,63 @@
 status: "Verified"
 owner: "platform-team"
 last_verified_against: "2026-05-03"
-doc_type: "operational"
 applies_to:
   - humans
   - ai-agents
 source_of_truth:
-  - ../../.github/workflows/
+  - .github/workflows/agent-evals.yml
+  - .github/workflows/ci.yml
+  - .github/workflows/docs-governance.yml
+  - .github/workflows/orchestrator-pr-reconcile.yml
+  - .github/workflows/quality.yml
+  - .github/workflows/typing.yml
+doc_type: "operational"
 ---
 
-# CI/CD Workflow Visualization
+# CI/CD Workflows
 
-This document provides a high-level visualization of the CI/CD pipelines implemented using GitHub Actions. The diagram illustrates the triggers, jobs, and dependencies that form our quality gates and automation processes.
+This document provides a high-level overview of the CI/CD pipelines and quality gates implemented in this repository using GitHub Actions. The primary goal of our CI/CD system is to ensure code quality, stability, and adherence to architectural guidelines through a series of automated checks that run on every pull request.
 
-## CI/CD Flow Diagram
+## High-Level Flow Diagram
 
-The following diagram illustrates the different workflows that are triggered on pull requests and pushes to the `main` and `develop` branches.
+The following diagram illustrates the primary workflows. Most are triggered on pull requests against the `main` and `develop` branches and run in parallel as status checks.
 
 ```mermaid
 graph TD
-    subgraph "Trigger: Pull Request (to main/develop)"
-        PR[Pull Request]
-        PR -->|Parallel Jobs| QualityGates
+    subgraph Trigger
+        A[Push or Open PR to main/develop]
     end
 
-    subgraph "Primary Quality Gates"
-        QualityGates(fa:fa-shield-halved Quality Gates)
-        QualityGates --> CI[CI Workflow: ci.yml]
-        QualityGates --> Quality[Quality Workflow: quality.yml]
-        QualityGates --> Typing[Typing Workflow: typing.yml]
-        QualityGates --> Docs[Docs Gov. Workflow: docs-governance.yml]
-        
-        CI --> Job_Test(test)
-        Quality --> Job_Quality(quality)
-        Typing --> Job_Typing(typing)
-        Docs --> Job_Docs(docs-governance)
+    subgraph "CI/CD Pipeline (Runs in Parallel)"
+        A --> B[CI: Tests & Smoke Run];
+        A --> C[Quality: Incremental Checks];
+        A --> D[Typing: Incremental Type Check];
+        A --> E[Docs: Governance Check];
+        A --> F[Agent Evals (Conditional on file paths)];
     end
     
-    subgraph "Conditional Trigger: PR with AI changes"
-        PR_AI[PR with changes in prompts/, schemas/, etc.]
-        PR_AI --> AgentEvals[Agent Evals Workflow: agent-evals.yml]
-        AgentEvals --> Job_Evals(evals)
+    subgraph "Other Triggers"
+        G[Nightly Schedule] --> F;
+        H[Merge to main] --> I[Auto-reconcile open PRs];
     end
 
-    subgraph "Trigger: Push to main"
-        PushMain[Push to main]
-        PushMain --> Reconciler[PR Reconciler: orchestrator-pr-reconcile.yml]
-        Reconciler --> Job_Reconcile(reconcile)
-    end
-
-    subgraph "Trigger: Nightly Schedule"
-        Schedule[Nightly Cron]
-        Schedule --> AgentEvals
-    end
-
-    style QualityGates fill:#f9f,stroke:#333,stroke-width:2px
+    B --> Z{PR Status};
+    C --> Z;
+    D --> Z;
+    E --> Z;
+    F --> Z;
 ```
+
+## Workflow Descriptions
+
+-   **CI (`ci.yml`):** The core integration pipeline. It runs the full `pytest` suite, executes a smoke test (`regenerate_smoke_artifacts --dry-run`), and validates documentation governance. This is the main gate for overall system health.
+
+-   **Quality (`quality.yml`):** Performs incremental checks on the files changed in the pull request. This includes running linters, formatters, and a "Golden Path" check to enforce architectural fitness rules.
+
+-   **Typing (`typing.yml`):** Runs an incremental static type check using `mypy` on the changed files, ensuring type safety.
+
+-   **Docs Governance (`docs-governance.yml`):** A dedicated check to ensure that all documentation files (`.md`) have valid YAML front matter and adhere to the project's documentation standards.
+
+-   **Agent Evals (`agent-evals.yml`):** A specialized and longer-running workflow that evaluates the performance of the AI agents. It runs conditionally on PRs that modify core agent logic and also runs nightly to monitor for regressions.
+
+-   **PR Auto-Reconciler (`orchestrator-pr-reconcile.yml`):** This workflow is not a quality gate. It triggers after a merge to `main` and automatically updates all other open pull requests with the latest changes from `main` to prevent merge conflicts and ensure PRs are tested against the most recent codebase.

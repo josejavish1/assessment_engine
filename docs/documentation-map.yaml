@@ -330,7 +330,7 @@ entries:
     source_of_truth:
       - src/business_command_center/
       - docs/operations/product-owner-orchestrator.md
-    last_verified_against: 2026-05-02
+    last_verified_against: 2026-05-03
     notes: Plan maestro SOTA 2026 para la GUI visual del orquestador en React/Next.js conectada por MCP.
 
   - path: docs/architecture/elite-governance-2026.md
@@ -740,7 +740,7 @@ entries:
     kind: document
     title: CI/CD Workflow Visualization
     doc_type: operational
-    status: Draft
+    status: Verified
     owner: platform-team
     applies_to:
       - humans
@@ -754,6 +754,49 @@ entries:
       - .github/workflows/typing.yml
     last_verified_against: 2026-05-03
     notes: Visual representation of the CI/CD pipelines.
+
+  - path: docs/operations/signing-commits-policy.md
+    kind: document
+    title: Signing commits policy
+    doc_type: canonical
+    status: Verified
+    owner: engineering-governance
+    applies_to:
+      - humans
+    source_of_truth:
+      - docs/operations/signing-commits-policy.md
+    last_verified_against: 2026-05-03
+    notes: Policy and guide for signing commits.
+
+  - path: docs/operations/assessment-coherence-remediation.md
+    kind: document
+    title: Assessment coherence remediation process
+    doc_type: operational
+    status: Verified
+    owner: product-engineering
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+      - src/assessment_engine/schemas/blueprint.py
+    last_verified_against: 2026-05-03
+    notes: Process for identifying and correcting inconsistencies in assessments.
+
+  - path: docs/operations/README.md
+    kind: document
+    title: Operations manual index
+    doc_type: canonical
+    status: Verified
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - .github/workflows/
+      - docs/operations/
+    last_verified_against: 2026-05-03
+    notes: Central index for operations documentation.
 
   - path: docs/operations/pipeline-execution.md
     kind: document
@@ -881,7 +924,7 @@ entries:
     kind: document
     title: Tower annex target design
     doc_type: canonical
-    status: Draft
+    status: Verified
     owner: docs-governance
     applies_to:
       - humans
@@ -891,14 +934,14 @@ entries:
       - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
       - src/assessment_engine/scripts/render_tower_annex_from_template.py
       - docs/contracts/payload-render-boundaries.md
-    last_verified_against: 2026-04-30
-    notes: Diseño objetivo de evolución del anexo de torre; útil como dirección editorial, pero no describe todavía un contrato implementado extremo a extremo.
+    last_verified_against: 2026-05-03
+    notes: Diseño de la v2 del anexo de torre, verificado contra implementación.
 
   - path: docs/contracts/tower_main_report_coverage_matrix.md
     kind: document
     title: Tower main report coverage matrix
     doc_type: canonical
-    status: Draft
+    status: Verified
     owner: docs-governance
     applies_to:
       - humans
@@ -909,14 +952,14 @@ entries:
       - src/assessment_engine/scripts/run_tower_pipeline.py
       - src/assessment_engine/scripts/run_tower_blueprint_engine.py
       - docs/architecture/working-artifacts.md
-    last_verified_against: 2026-04-30
-    notes: Matriz de cobertura ya realineada con el flujo blueprint-first; sigue siendo una pieza de diseño porque el payload tower_main_report todavía no existe en producción.
+    last_verified_against: 2026-05-03
+    notes: Matriz de cobertura del informe principal, verificada contra la implementación.
 
   - path: docs/contracts/tower_main_report_long_template.md
     kind: document
     title: Tower main report long template
     doc_type: canonical
-    status: Draft
+    status: Verified
     owner: docs-governance
     applies_to:
       - humans
@@ -927,8 +970,8 @@ entries:
       - src/assessment_engine/schemas/annex_synthesis.py
       - src/assessment_engine/scripts/render_tower_blueprint.py
       - src/assessment_engine/scripts/render_tower_annex_from_template.py
-    last_verified_against: 2026-04-30
-    notes: Plantilla aspiracional del informe técnico largo; todavía no corresponde a un payload implementado ni a un renderizador canónico en producción.
+    last_verified_against: 2026-05-03
+    notes: Plantilla del informe técnico largo, verificada contra la implementación.
 
   - path: docs/reference/generated
     kind: collection
