@@ -51,6 +51,7 @@ PRIORITY_RANK = {"Alta": 0, "Media": 1, "Baja": 2}
 class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
+
 # Helper functions (side-effect free)
 def derive_maturity_band(score: float) -> str:
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
