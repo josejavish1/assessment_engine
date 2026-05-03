@@ -1079,7 +1079,7 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
         orchestrator, "ensure_branch", lambda branch_name: calls.append("branch")
     )
     monkeypatch.setattr(
-        orchestrator, "create_commit", lambda title: calls.append("commit")
+        orchestrator, "create_commit", lambda title, compliance_receipt=None: calls.append("commit")
     )
     monkeypatch.setattr(
         orchestrator,

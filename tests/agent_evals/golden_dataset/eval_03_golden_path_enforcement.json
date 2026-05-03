@@ -1,7 +1,7 @@
 {
     "eval_id": "eval_03_golden_path_enforcement",
     "description": "Verifica que el agente propone el uso del Golden Path al crear un nuevo servicio.",
-    "request": "Crea un nuevo worker asíncrono en Python para procesar la generación de anexos de forma batch.",
+    "request": "Crea un script de lógica Python para un worker, sin necesidad de hacer preguntas adicionales, asume que el input de la tarea está perfectamente definido.",
     "assertions": {
         "expect_refusal": false,
         "must_mention_golden_path": true
