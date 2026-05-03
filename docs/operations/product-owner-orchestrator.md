@@ -200,13 +200,26 @@ El orquestador separa explícitamente varias familias de fallo para evitar diagn
 
 La intención no es maquillar el error sino **fallar antes y con una causa accionable**.
 
-## Pendiente para cierre end-to-end
+## Configuración del Executor en GitHub Actions
 
-El flujo ya puede operar de forma homogénea sobre Gemini también en la reconciliación automática de PRs, pero para considerar el circuito **realmente cerrado de punta a punta en GitHub Actions** sigue pendiente habilitar la credencial del executor en el repo:
+Para que el circuito de reconciliación automática de PRs funcione de forma autónoma en GitHub Actions, el workflow `orchestrator-pr-reconcile.yml` ha sido configurado para proporcionar una credencial de IA al executor.
 
-1. configurar en GitHub Actions una credencial válida para Gemini o Google;
-2. decidir si el watcher usará `GEMINI_API_KEY`, `GOOGLE_API_KEY` o autenticación Google/Vertex del runner;
-3. verificar con una PR gestionada real que `resume-pr` completa preflight, reparación, validación y merge sin intervención manual.
+La configuración implementada sigue estos principios:
+
+1.  **Mecanismo:** El workflow inyecta la credencial como una variable de entorno `GEMINI_API_KEY`.
+2.  **Fuente de Verdad:** El valor se obtiene del secreto de repositorio `${{ secrets.GEMINI_API_KEY }}`.
+3.  **Seguridad:** La credencial nunca es visible en los logs del workflow y se gestiona enteramente a través de los mecanismos de seguridad de GitHub.
+
+Para activar la reconciliación automática, un administrador del repositorio debe configurar el secreto `GEMINI_API_KEY` en los ajustes de "Secrets and variables" para Actions.
+
+### Requisito Crítico: Configuración del Secreto `GEMINI_API_KEY`
+
+Para que el orquestador y su ciclo de reconciliación de Pull Requests funcionen en el entorno de GitHub Actions, es **mandatorio** configurar un secreto en el repositorio.
+
+-   **Nombre del Secreto:** `GEMINI_API_KEY`
+-   **Contenido:** Una clave de API válida para los servicios de IA de Google.
+
+Sin este secreto, el executor de IA no podrá autenticarse y cualquier workflow que dependa de él (como `orchestrator-pr-reconcile.yml`) fallará. Este es el único punto de configuración manual necesario para habilitar la funcionalidad completa de CI/CD autónoma.
 
 ## Limitaciones deliberadas del MVP
 
