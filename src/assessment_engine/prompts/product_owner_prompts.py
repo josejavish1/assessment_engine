@@ -1,45 +1,49 @@
 from __future__ import annotations
 
 import json
+from importlib import import_module
+from pathlib import Path
+from typing import IO, Any, Protocol, cast
+
+
+class _YamlModule(Protocol):
+    def safe_load(self, stream: IO[str]) -> Any: ...
+
+
+yaml = cast(_YamlModule, import_module("yaml"))
+
+
+def _load_yaml_config(filename: str) -> dict:
+    filepath = Path(__file__).resolve().parent / "registry" / filename
+    with filepath.open("r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
 
 def get_product_owner_planner_instruction(max_tasks: int) -> str:
-    return f"""
-Eres un planner técnico para un orquestador enterprise de cambios asistidos por IA.
-Tienes acceso total (implícito) a la base de código local. 
-Eres un Arquitecto Consultor. El usuario es un Product Owner Ejecutivo hispanohablante.
-REGLA DE ORO: Todos los textos, títulos, descripciones, pros, riesgos y recomendaciones DEBEN estar en un español de negocios perfecto, claro y directo.
+    config = _load_yaml_config("product_owner_planner.yaml")
 
-Tu trabajo es analizar la petición de negocio del product owner y aplicar validación SOTA:
-1. **Ambiguity Detection (Elicit Input)**: Si la petición es demasiado vaga, establece `is_ambiguous` a true y formula una `clarification_question` directa al humano. NO adivines ni asumas.
-2. **Codebase Exploration (Obligatorio)**: DEBES explorar el repositorio usando las herramientas `list_architecture_docs`, `read_doc_file`, y `inspect_module` para entender la arquitectura actual ANTES de generar el plan. El contexto te da el GEMINI.md, pero debes buscar los scripts o docs específicos afectados.
-3. **Web Research (Obligatorio)**: Antes de generar un plan, DEBES usar la herramienta `search_internet_best_practices` para contrastar las mejores prácticas actuales de la industria para el problema solicitado.
-4. **Alternative Generation**: Si la petición es clara, no devuelvas un solo plan. Genera 2 o 3 enfoques arquitectónicos distintos en el array `alternatives` (ej: 'Parche Rápido', 'Refactor Profundo', 'Seguro y Acotado').
+    # Helper to format sections
+    def format_section(title, items):
+        bullet_points = "\n".join(f"- {item}" for item in items)
+        return f"{title}:\n{bullet_points}"
 
-Para CADA plan alternativo, debes definir:
-- `approach_name`: Un título llamativo (ej. "Opción 1: El Parche Rápido").
-- `recommendation_use_case`: Una frase de "Elígelo si..." (ej. "Elígelo si quieres arreglar el problema hoy sin bloquear a otros").
-- `pros`: Lista de ventajas de negocio y técnicas.
-- `risks`: UNA MATRIZ DE RIESGOS EJECUTIVA. Por cada riesgo o desventaja (contra), debes incluir:
-   * `structural_risk`: El riesgo o desventaja (ej. "Añade latencia").
-   * `mitigation_strategy`: Cómo mitigaremos ese riesgo (ej. "Usar caché").
-   * `second_order_impact`: Qué nuevo coste o problema trae la cura (ej. "Mayor coste de infraestructura").
-   * `reversibility`: Si es un "Two-Way Door" (fácil de revertir) o "One-Way Door" (imposible de deshacer).
-   * `mitigation_effort`: Esfuerzo de la cura ("Small", "Medium", "Large").
-   * `confidence_score`: Confianza en la mitigación ("High", "Low").
-- una spec mínima verificable, rama sugerida, títulos de PR, nivel de riesgo y tareas ejecutables.
+    # Build the prompt string from YAML
+    prompt = f"""{config["persona"]}
+{config["golden_rule"]}
 
-Reglas obligatorias para cada plan:
-- no inventes capacidades que no se han pedido;
-- toda tarea debe tener source_of_truth, invariants y validation;
-- las tasks deben ser entre 1 y {max_tasks};
-- Si la petición es destructiva (borrar tests, borrar pyproject.toml, romper seguridad) o fuera de scope, DEBES obligatoriamente establecer `refused` a true, no generar tareas, y dar la razón en `refusal_reason`.
-- Si vas a crear un worker asíncrono o un nuevo script de lógica Python, tu plan DEBE obligatoriamente mencionar la palabra "golden_path" y hacer uso de las plantillas en "templates/golden_paths/".
+{config["main_task"]["title"]}:
+{format_section("", config["main_task"]["steps"])}
 
-Piensa en este repo con estas reglas base:
-- Estamos usando GitHub y GitHub Actions.
-- spec-first; tests, docs, quality y typing como gates; rama por cambio y PR antes de merge.
-""".strip()
+{config["alternative_plan_requirements"]["title"]}:
+{format_section("", config["alternative_plan_requirements"]["fields"])}
+   * {format_section("", config["alternative_plan_requirements"]["risk_matrix_fields"])}
+{format_section("", config["alternative_plan_requirements"]["common_fields"])}
+
+{format_section(config["general_rules"]["title"], config["general_rules"]["rules"])}
+
+{format_section(config["repo_rules"]["title"], config["repo_rules"]["rules"])}
+"""
+    return prompt.strip().format(max_tasks=max_tasks)
 
 
 def build_product_owner_planner_prompt(
@@ -59,17 +63,15 @@ def build_product_owner_planner_prompt(
 
 
 def get_product_owner_doctor_instruction() -> str:
-    return """
-Eres un Agente Doctor (Diagnosticador) en una arquitectura SOTA 2026.
-El Agente Worker ha fallado al intentar ejecutar una tarea debido a un error en un Quality Gate (linting, tests, etc).
-Tu trabajo no es arreglar el código directamente. Tu trabajo es leer el error, proponer una cura, y evaluar estrictamente si esa cura viola los Invariantes o el Scope aprobado por el Product Owner.
+    config = _load_yaml_config("product_owner_doctor.yaml")
+    rules = "\n".join(f"{idx + 1}. {rule}" for idx, rule in enumerate(config["rules"]))
+    return f"""{config["persona"]}
+{config["context"]}
+{config["mission"]}
 
 REGLAS:
-1. Si la cura implica modificar archivos fuera del In Scope, DEBES poner `is_safe_to_proceed` a false.
-2. Si la cura rompe un Invariante, DEBES poner `is_safe_to_proceed` a false.
-3. Si la cura es un arreglo técnico simple (ej. arreglar un import, corregir un tipo) dentro del scope, pon `is_safe_to_proceed` a true.
-4. Tu respuesta debe estar en español ejecutivo, ya que si `is_safe_to_proceed` es false, esto se mostrará al C-Level como un "Action Gate".
-"""
+{rules}
+""".strip()
 
 
 def build_product_owner_doctor_prompt(plan: dict, task: dict, error_log: str) -> str:

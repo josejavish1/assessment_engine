@@ -17,7 +17,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/render_commercial_report.py
   - ../../src/assessment_engine/scripts/render_web_presentation.py
   - ./payload-render-boundaries.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-03
 applies_to:
   - humans
   - ai-agents
@@ -92,6 +92,13 @@ Importan mucho para el lector final, pero su razón de ser es **traducir** una v
 | Global | existe `global_report_payload.json` y reutiliza información de torres disponibles |
 | Comercial | existe `commercial_report_payload.json` y se apoya en el global |
 | Web | existe `presentation/index.html` y refleja global + torres, no una historia inventada |
+
+## Contratos Detallados
+
+Para una descripción exhaustiva de los campos de los contratos principales, consulte los siguientes documentos:
+
+- [`tower_blueprint_payload.md`](./tower_blueprint_payload.md): Define la estructura del artefacto `blueprint_payload`, la fuente de verdad de cada torre.
+- [`tower_annex_payload.md`](./tower_annex_payload.md): Define la estructura del `annex_payload`, la síntesis ejecutiva para los informes de anexo.
 
 ## Reglas de interpretación si hay conflicto
 
