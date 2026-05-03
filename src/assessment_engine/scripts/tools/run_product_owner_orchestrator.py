@@ -1406,6 +1406,11 @@ def execute_plan(
     logger.info(f"Fase 2: Preparando Shadow Workspace en {shadow_worktree_path}")
     subprocess.run(["git", "worktree", "remove", "-f", str(shadow_worktree_path)], cwd=original_root, stderr=subprocess.DEVNULL)
     
+    # Capturar rama original para restaurarla después
+    original_branch = subprocess.run(["git", "branch", "--show-current"], cwd=original_root, capture_output=True, text=True).stdout.strip()
+    if not original_branch:
+        original_branch = "main" # fallback
+    
     # Nos aseguramos de que la rama exista
     ensure_branch(branch_name)
     
@@ -1420,8 +1425,8 @@ def execute_plan(
         try:
             os.chdir(original_root)
             subprocess.run(["git", "worktree", "remove", "-f", str(shadow_worktree_path)], cwd=original_root, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "checkout", branch_name], cwd=original_root, check=False)
-            logger.info("Shadow Workspace limpiado y rama restaurada en el origen.")
+            subprocess.run(["git", "checkout", original_branch], cwd=original_root, check=False)
+            logger.info(f"Shadow Workspace limpiado y rama {original_branch} restaurada en el origen.")
         except Exception as e:
             logger.error(f"Error limpiando shadow worktree: {e}")
 
