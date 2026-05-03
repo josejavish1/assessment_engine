@@ -11,19 +11,20 @@
 # =================================================================
 #
 # Propietario de la estructura documental, políticas y guías de IA.
-/docs/ @josejavish1
-/README.md @josejavish1
-/AGENTS.md @josejavish1
-/CHATGPT.md @josejavish1
-/GEMINI.md @josejavish1
-/A5_CHECKLIST.md @josejavish1
+/docs/ @docs-governance
+/README.md @docs-governance
+/AGENTS.md @docs-governance
+/CHATGPT.md @docs-governance
+/GEMINI.md @docs-governance
+/A5_CHECKLIST.md @docs-governance
 
 # =================================================================
 # Infraestructura, CI/CD y Gobernanza del Código
 # =================================================================
 #
 # Workflows, políticas de PRs y configuración de seguridad.
-/.github/ @josejavish1
+/.github/ @platform-team
+/docs/operations/ci-cd-workflows.md @platform-team
 
 # =================================================================
 # Código Fuente: Motor de Assessments (Backend)

@@ -8,13 +8,27 @@ Para mejorar la seguridad y la integridad del repositorio, todos los commits fus
 
 La firma de commits se puede realizar utilizando una clave GPG o una clave SSH.
 
-## 2. ¿Por qué es importante firmar los commits?
+## 2. Principios Clave de la Firma de Commits
 
 -   **Verificación de Identidad:** Un commit firmado prueba que fue creado por el titular de la clave privada, quien se asume que es el autor del commit.
 -   **Integridad del Código:** La firma protege contra la manipulación del código después de que el commit ha sido creado y firmado.
 -   **Trazabilidad y Confianza:** Refuerza la cadena de confianza en el historial del proyecto, algo crucial para auditorías y para mantener un alto estándar de seguridad.
 
-## 3. Configuración de la Firma de Commits con GPG
+## 3. Racional de la Política
+
+La firma de commits no es una medida meramente ceremonial; es un control de seguridad fundamental con implicaciones directas en la integridad del proyecto y la confianza del cliente. Esta política existe para mitigar riesgos específicos en un entorno de desarrollo moderno que combina contribuciones humanas y de agentes de IA.
+
+1.  **Garantía de Autoría (No Repudio):** En un proyecto donde se generan artefactos para clientes B2B, es imperativo poder demostrar que cada línea de código y cada cambio provienen de una fuente autorizada. La firma criptográfica proporciona una prueba irrefutable de que un commit fue realizado por un desarrollador específico (o un agente autorizado), impidiendo que alguien pueda atribuir cambios a otra persona o negar la autoría de los suyos.
+
+2.  **Protección contra Adulteración del Repositorio:** Un repositorio de código es un activo crítico. Si un actor malicioso obtuviera acceso a la cuenta de GitHub de un desarrollador, podría inyectar código malicioso (backdoors, filtrado de datos) en el historial del proyecto. La firma de commits, especialmente cuando se combina con la protección de ramas (`branch protection`), exige que cualquier cambio provenga de una clave privada que el atacante no posee, añadiendo una capa robusta de defensa.
+
+3.  **Habilitación de la Automatización Segura (GitOps y Agentes de IA):** A medida que el proyecto depende más de workflows automatizados y contribuciones de agentes de IA, la firma de commits se vuelve aún más crítica. Permite distinguir claramente entre los cambios realizados por un humano verificado y los realizados por un sistema automatizado. Cada agente puede (y debe) tener su propia identidad de firma, garantizando una trazabilidad completa y segura en un entorno de GitOps.
+
+4.  **Cumplimiento de Estándares Profesionales:** La firma de commits es una práctica estándar en proyectos de software de alta seguridad y en el mundo del código abierto. Adoptarla no solo mejora nuestra seguridad, sino que también alinea el proyecto con las mejores prácticas de la industria, transmitiendo madurez y profesionalismo tanto al equipo de desarrollo como a los auditores externos o clientes.
+
+En resumen, esta política es un pilar para mantener una **cadena de custodia digital** sobre nuestro código, asegurando que el historial del repositorio sea fiable, seguro y auditable en todo momento.
+
+## 4. Configuración de la Firma de Commits con GPG
 
 Esta es la opción recomendada y más robusta para la firma de commits.
 
@@ -82,7 +96,7 @@ git config --global user.signingkey 3AA5C34371567BD2
 git config --global commit.gpgsign true
 ```
 
-## 4. Configuración de la Firma de Commits con SSH
+## 5. Configuración de la Firma de Commits con SSH
 
 Como alternativa a GPG, puedes usar tu clave SSH existente para firmar commits, siempre que la hayas subido a tu cuenta de GitHub para autenticación.
 
@@ -107,7 +121,7 @@ git config --global user.signingkey ~/.ssh/id_ed25519.pub
 git config --global commit.gpgsign true
 ```
 
-## 5. Cómo Firmar Commits
+## 6. Cómo Firmar Commits
 
 Si has configurado `commit.gpgsign` como `true`, Git firmará tus commits automáticamente.
 
@@ -119,6 +133,6 @@ git commit -S -m "Mi mensaje de commit"
 
 Al hacer `git log --show-signature`, podrás ver la verificación de la firma en los commits.
 
-## 6. Verificación
+## 7. Verificación
 
 Una vez que hayas pusheado tus commits firmados a GitHub, verás una insignia "Verified" junto al hash del commit en la interfaz de usuario de GitHub, confirmando que la política se está cumpliendo correctamente.

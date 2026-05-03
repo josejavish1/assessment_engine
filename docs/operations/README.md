@@ -13,65 +13,54 @@ doc_type: canonical
 
 # Manual de Operaciones
 
-Este directorio contiene la documentación esencial para instalar, operar, validar y mantener el `assessment-engine`. Está diseñado para ser la fuente única de verdad tanto para desarrolladores humanos como para agentes de IA.
+Este directorio es el centro de conocimiento para la instalación, operación y mantenimiento del `assessment-engine`. Actúa como un índice central que enlaza a guías detalladas, sirviendo como fuente única de verdad para desarrolladores y agentes de IA.
 
-## Filosofía de Operaciones
+## Filosofía de Operaciones: Automatización, Calidad y Transparencia
 
-Nuestra estrategia operativa se fundamenta en tres pilares clave, alineados con las mejores prácticas de **GitOps y la automatización CI/CD**:
+Nuestra estrategia operativa se basa en los principios de **GitOps**, donde el repositorio de Git es la única fuente de verdad. La automatización a través de **GitHub Actions** garantiza que cada cambio cumpla con nuestros rigurosos estándares de calidad antes de ser integrado.
 
-1.  **Git como Fuente Única de Verdad:** Todas las operaciones, desde la ejecución de tests hasta los despliegues, se derivan del estado del repositorio. La configuración y la infraestructura se tratan como código.
-2.  **Automatización y Calidad Continua:** Los workflows de GitHub Actions actúan como guardianes de la calidad. Cada cambio es sometido a un riguroso proceso de validación (linting, tipado, tests) antes de ser considerado para integración, previniendo la deuda técnica de forma proactiva.
-3.  **Transparencia y Trazabilidad:** Los procesos están documentados y los flujos de trabajo son explícitos en los ficheros YAML de GitHub Actions. Esto asegura que cualquier miembro del equipo (humano o IA) pueda entender, replicar y depurar el ciclo de vida del desarrollo.
+1.  **Git como Fuente Única de Verdad:** Todas las operaciones se derivan del estado del repositorio.
+2.  **Calidad Continua Proactiva:** Los workflows de CI actúan como guardianes, ejecutando validaciones de linting, tipado y tests en cada Pull Request para prevenir la deuda técnica.
+3.  **Transparencia y Trazabilidad:** Los flujos de trabajo son explícitos y están documentados en los ficheros YAML de GitHub Actions, permitiendo que cualquiera pueda entender y depurar el ciclo de vida del desarrollo.
 
-## Índice de Documentos Operativos
+## Arquitectura CI/CD Visual
 
--   **Workflow de Desarrollo y Calidad:**
-    -   [`agentic-development-workflow.md`](agentic-development-workflow.md): Proceso de desarrollo asistido por agentes, desde la especificación hasta el Pull Request.
-    -   [`engineering-quality-gates.md`](engineering-quality-gates.md): Descripción de los controles de calidad incrementales (Ruff, Mypy).
-    -   [`signing-commits-policy.md`](signing-commits-policy.md): Política de firma de commits para garantizar la autoría y seguridad.
--   **Instalación y Entorno:**
-    -   [`installation.md`](installation.md): Guía para configurar el entorno de desarrollo local.
-    -   [`ci-cd-workflows.md`](ci-cd-workflows.md): (Este documento) Detalles técnicos sobre la arquitectura CI/CD.
--   **Ejecución de Pipelines:**
-    -   [`pipeline-execution.md`](pipeline-execution.md): Cómo ejecutar los pipelines de generación de artefactos.
-    -   [`pipeline-controls-runbook.md`](pipeline-controls-runbook.md): Guía para gestionar y controlar la ejecución de los pipelines.
-    -   [`product-owner-orchestrator.md`](product-owner-orchestrator.md): Uso del orquestador para automatizar tareas complejas.
--   **Mantenimiento y Troubleshooting:**
-    -   [`smoke-regeneration.md`](smoke-regeneration.md): Proceso para regenerar los datos de prueba (`smoke tests`).
-    -   [`troubleshooting-working.md`](troubleshooting-working.md): Manual para diagnosticar y resolver problemas comunes.
-    -   [`assessment-coherence-remediation.md`](assessment-coherence-remediation.md): Guía para reparar problemas de coherencia en los artefactos generados.
-
-## Arquitectura CI/CD
-
-El sistema de Integración Continua y Despliegue Continuo (CI/CD) se orquesta a través de GitHub Actions. El siguiente diagrama ilustra el flujo de validación que se activa ante un Pull Request o un `push` a una rama principal:
+El siguiente diagrama ilustra el flujo de nuestro pipeline de Integración Continua (CI). Para una descripción técnica detallada de cada `job` y `workflow`, consulte el documento [`ci-cd-workflows.md`](./ci-cd-workflows.md).
 
 ```mermaid
 graph TD
-    subgraph "Desarrollo Local"
-        A[Desarrollador o Agente crea un commit] --> B{Push a GitHub};
+    A[Trigger: Push o Pull Request] --> B{Workflow: CI (ci.yml)};
+
+    subgraph B
+        C[Job: Linting & Formatting] --> D[Job: Static Typing];
+        D --> E[Job: Unit & Integration Tests];
     end
 
-    subgraph "GitHub Actions Workflow"
-        B --> C{Trigger: Pull Request / Push};
-        C --> D[Paso 1: Setup Environment];
-        D --> E[Instalar Dependencias (`pip install -e .`)];
-        E --> F[Paso 2: Ejecutar Quality Gates];
-        F --> G[Ruff Check & Format];
-        F --> H[Mypy Type Check];
-        E --> I[Paso 3: Ejecutar Tests Unitarios];
-        I --> J[Pytest];
-    end
+    E --> F[Build & Package];
+    F --> G[Notificación de Éxito / Fallo];
 
-    subgraph "Resultado"
-        G --> K{¿Éxito?};
-        H --> K;
-        J --> K;
-        K -- Si Falla --> L[Notificar Fallo en PR];
-        K -- Si Pasa --> M[Permitir Merge];
-    end
-
-    style A fill:#D5F5E3
-    style B fill:#EAF2F8
-    style M fill:#D5F5E3
-    style L fill:#FADBD8
+    style A fill:#228B22,color:#fff
+    style G fill:#228B22,color:#fff
+    style F fill:#FFA500
 ```
+
+## Índice de Documentos Operativos
+
+### 1. Entorno y Configuración
+-   **[`installation.md`](./installation.md):** Guía completa para configurar el entorno de desarrollo local desde cero.
+-   **[`ci-cd-workflows.md`](./ci-cd-workflows.md):** Descripción técnica detallada de los workflows de GitHub Actions.
+
+### 2. Ciclo de Vida del Desarrollo
+-   **[`agentic-development-workflow.md`](./agentic-development-workflow.md):** Proceso de desarrollo asistido por agentes, desde la especificación hasta el Pull Request.
+-   **[`engineering-quality-gates.md`](./engineering-quality-gates.md):** Define los controles de calidad incrementales (Ruff, Mypy) que se aplican en el pipeline.
+-   **[`signing-commits-policy.md`](./signing-commits-policy.md):** Política y guía para la firma de commits.
+
+### 3. Ejecución y Orquestación
+-   **[`pipeline-execution.md`](./pipeline-execution.md):** Instrucciones para ejecutar los pipelines de generación de artefactos.
+-   **[`pipeline-controls-runbook.md`](./pipeline-controls-runbook.md):** Runbook para gestionar y monitorizar la ejecución de los pipelines.
+-   **[`product-owner-orchestrator.md`](./product-owner-orchestrator.md):** Cómo utilizar el orquestador de alto nivel para automatizar tareas complejas.
+
+### 4. Mantenimiento y Resolución de Problemas
+-   **[`troubleshooting-working.md`](./troubleshooting-working.md):** Manual para diagnosticar y resolver problemas comunes.
+-   **[`smoke-regeneration.md`](./smoke-regeneration.md):** Proceso para regenerar los datos de los `smoke tests`.
+-   **[`assessment-coherence-remediation.md`](./assessment-coherence-remediation.md):** Guía para reparar problemas de coherencia en los datos generados.

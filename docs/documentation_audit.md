@@ -71,8 +71,9 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 
 | Fichero | Estado | Notas |
 |---|---|---|
-| [`docs/operations/README.md`](operations/README.md) | Desactualizado | Punto de entrada para la documentación de operaciones. |
-| [`docs/operations/signing-commits-policy.md`](operations/signing-commits-policy.md) | Desactualizado | Política para la firma de commits, no referenciada en el mapa. |
+| [`docs/operations/README.md`](operations/README.md) | Actualizado | Punto de entrada para la documentación de operaciones. |
+| [`docs/operations/signing-commits-policy.md`](operations/signing-commits-policy.md) | Actualizado | Política para la firma de commits. |
+| [`docs/operations/ci-cd-workflows.md`](operations/ci-cd-workflows.md) | Actualizado | Documentación sobre los workflows de CI/CD. |
 | [`docs/operations/engineering-quality-gates.md`](operations/engineering-quality-gates.md) | Actualizado | Describe las puertas de calidad para el código. |
 | [`docs/operations/smoke-regeneration.md`](operations/smoke-regeneration.md) | Actualizado | Guía para regenerar los artefactos de smoke testing. |
 | [`docs/operations/product-owner-orchestrator.md`](operations/product-owner-orchestrator.md) | Actualizado | Documentación del orquestador PO-to-PR. |
@@ -88,7 +89,7 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 | Fichero | Estado | Notas |
 |---|---|---|
 | [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) | Actualizado | Instrucciones específicas para GitHub Copilot. |
-| [`.github/CODEOWNERS`](../.github/CODEOWNERS) | Desactualizado | Fichero de configuración de ownership. |
+| [`.github/CODEOWNERS`](../.github/CODEOWNERS) | Actualizado | Fichero de configuración de ownership. |
 | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Desactualizado | Workflow de Integración Continua. |
 | [`.github/workflows/quality.yml`](../.github/workflows/quality.yml) | Actualizado | Workflow de calidad de código. |
 | [`.github/workflows/typing.yml`](../.github/workflows/typing.yml) | Actualizado | Workflow de chequeo de tipos. |
