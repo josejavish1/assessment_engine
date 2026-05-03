@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../docs/contracts/tower_main_report_coverage_matrix.md
@@ -7,7 +7,7 @@ source_of_truth:
   - ../../src/assessment_engine/schemas/annex_synthesis.py
   - ../../src/assessment_engine/scripts/render_tower_blueprint.py
   - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
-last_verified_against: 2026-05-02
+last_verified_against: 2026-05-03
 applies_to:
   - humans
   - ai-agents
@@ -29,10 +29,13 @@ Este documento no es una ampliacion del anexo corto. Es el documento principal d
 
 ## Jerarquia de fuentes recomendada
 
-1. `blueprint_<tower>_payload.json` como contrato principal.
-2. `approved_annex_<tower>.template_payload.json` como sintesis ejecutiva derivada.
-3. `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json` como soporte, trazabilidad y detalle.
-4. Los ficheros `approved_asis/gap/tobe/todo/...generated.json` no deben volver a introducirse como dependencia canónica.
+La implementación de este informe deberá basarse en los siguientes contratos canónicos:
+
+1.  **[`tower_blueprint_payload.md`](./tower_blueprint_payload.md):** Contrato principal que define la estructura de `blueprint_<tower>_payload.json`. Es la fuente de verdad para el análisis técnico detallado de la torre.
+2.  **[`tower_annex_payload.md`](./tower_annex_payload.md):** Contrato secundario que define `approved_annex_<tower>.template_payload.json`. Se utilizará para poblar las secciones de resumen ejecutivo.
+3.  **Artefactos de soporte:** Ficheros como `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json` deben usarse para trazabilidad y detalle, pero no como fuente primaria para la estructura del informe.
+
+Se prohíbe explícitamente el uso de artefactos legacy (`approved_asis/gap/tobe/todo/...generated.json`) como dependencia canónica para esta plantilla.
 
 ## Directriz visual
 - Reutilizar la identidad visual de la version short.
