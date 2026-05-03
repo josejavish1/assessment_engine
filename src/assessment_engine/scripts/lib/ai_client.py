@@ -157,10 +157,14 @@ async def run_agent(
     raw_output_file: Optional[Path] = None,
     schema: Any = None,
     run_id: str | None = None,
+    _tool_depth: int = 0,
 ) -> dict:
     """
     Ejecuta un agente de forma asíncrona y captura telemetría avanzada.
     """
+    if _tool_depth > 10:
+        raise RuntimeError("Agent reached maximum tool recursion depth (10). Possible hallucination loop.")
+
     start_time = time.monotonic()
     
     # Build the function dispatcher from the agent's tools
@@ -248,7 +252,8 @@ async def run_agent(
                 message=follow_up_message,
                 raw_output_file=raw_output_file,
                 schema=schema,
-                run_id=run_id
+                run_id=run_id,
+                _tool_depth=_tool_depth + 1
             )
 
         if not full_text:
@@ -313,6 +318,8 @@ async def call_agent(
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
     """
     import os
+    
+    Path("working/apex/call_agent_dump.txt").write_text(f"---INSTRUCTION---\n{instruction}\n\n---PROMPT---\n{prompt}\n", encoding="utf-8")
 
     if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "1") == "0" and os.environ.get(
         "GEMINI_API_KEY"
