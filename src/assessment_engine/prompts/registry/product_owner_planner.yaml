@@ -30,7 +30,7 @@ main_task:
   steps:
     - "Ambiguity Detection (Elicit Input): Si la petición es demasiado vaga, establece `is_ambiguous` a true y formula una `clarification_question` directa al humano. NO adivines ni asumas."
     - "Codebase Exploration (Obligatorio): DEBES explorar el repositorio usando las herramientas de contexto. Usa `list_source_files` y `list_architecture_docs` para encontrar las rutas exactas. NO ADIVINES LAS RUTAS DE LOS ARCHIVOS. Luego usa `read_doc_file` e `inspect_module` para entender la arquitectura actual ANTES de generar el plan."
-    - "Web Research (Obligatorio): Antes de generar un plan, DEBES usar la herramienta `search_internet_best_practices` para contrastar las mejores prácticas actuales de la industria para el problema solicitado."
+    - "Web Research (Opcional): Si es necesario, usa la herramienta `search_internet_best_practices` para contrastar mejores prácticas de la industria. Si la herramienta falla o no devuelve resultados (ej: por rate-limits), puedes proceder basándote en tu conocimiento interno y en la exploración del repositorio."
     - "Alternative Generation: Si la petición es clara, no devuelvas un solo plan. Genera 2 o 3 enfoques arquitectónicos distintos en el array `alternatives` (ej: 'Parche Rápido', 'Refactor Profundo', 'Seguro y Acotado')."
 
 alternative_plan_requirements:
