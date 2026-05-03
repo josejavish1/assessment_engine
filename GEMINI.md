@@ -1,12 +1,12 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
   - docs/ai/documentation-governance.md
   - docs/README.md
   - docs/SYSTEM_ARCHITECTURE.md
   - src/assessment_engine/
-last_verified_against: 2026-05-01
+last_verified_against: 2026-05-02
 applies_to:
   - gemini
 doc_type: operational
@@ -14,7 +14,7 @@ doc_type: operational
 
 # Directiva de Agente: Memoria Operativa del Proyecto
 
-> **Estado documental:** `Needs Review`
+> **Estado documental:** `Verified`
 >
 > **Rol actual:** este fichero pasa a ser un **adaptador operativo para Gemini** y una memoria útil en transición. La política documental central vive en [`docs/ai/documentation-governance.md`](docs/ai/documentation-governance.md) y el mapa maestro en [`docs/README.md`](docs/README.md).
 >
@@ -96,6 +96,7 @@ La arquitectura actual se basa en el principio "Top-Down" para garantizar la con
 ### 2.2. Modos de Operación
 -   **1. Modo Pipeline:** Ejecución por línea de comandos de los orquestadores para generar informes de forma completa y desatendida.
 -   **2. Modo Servidor de Herramientas:** El script `mcp_server.py` expone las capacidades del motor como un servicio, permitiendo que un agente de IA supervisor externo orqueste el proceso de forma dinámica.
+-   **3. Modo de Gobernanza (Arquitectura "The Apex"):** El sistema opera bajo la supervisión de agentes especializados (`Doctor`, `Verification`, `Liability Signer`) que garantizan la calidad, el cumplimiento normativo y la trazabilidad de cada artefacto generado. Este modo, cuya interfaz se detalla en el [roadmap del Command Center](docs/architecture/command-center-roadmap.md) y su arquitectura de gobernanza en el nuevo documento de [gobernanza de élite](docs/architecture/elite-governance-2026.md), es una capa superior que envuelve los modos Pipeline y Servidor.
 
 ### 2.3. Arquitectura "Legacy" (Archivada)
 En `src/assessment_engine/scripts/_legacy` se encuentra la arquitectura anterior, que generaba cada sección del informe en paralelo. Fue abandonada por el problema de "split-brain" (inconsistencia entre secciones).
@@ -173,30 +174,17 @@ Estas acciones tienen un retorno tangible en la calidad y la experiencia de uso 
 
 ## 5. Base de Conocimiento y Documentación
 
-La base documental canónica del proyecto ya no vive aquí. La ruta recomendada es:
-
-1. `README.md`
+La base documental canónica del proyecto reside en el directorio `docs/`. La ruta de lectura recomendada es:
+1. `README.md` (raíz del proyecto)
 2. `docs/README.md`
 3. `docs/ai/documentation-governance.md`
-4. `docs/architecture/`, `docs/operations/` y `docs/contracts/`
+4. El resto de la documentación canónica en `docs/architecture/`, `docs/operations/` y `docs/contracts/`.
 
-`docs/reference/generated/legacy-gemini/` conserva la referencia heredada útil, pero no como contenedor estratégico principal. Este `GEMINI.md` debe mantenerse breve, operativo y alineado con la documentación canónica.
-
----
-
-## 6. Diario de Refactorización
-
--   **2026-04-30 - Cierre de Prioridad 1 / estabilización del entorno y tests**
-    -   Se eliminó la dependencia artificial de `PYTHONPATH=src` en la suite de tests.
-    -   Se retiró la manipulación manual de `sys.path` en `tests/conftest.py` y se actualizó `tests/test_environment.py` para verificar el paquete instalado en editable.
-    -   Se migró el backend de build de `hatchling` a `setuptools` en `pyproject.toml`, dejando también empaquetada la plantilla HTML del dashboard.
-    -   Se corrigió `pytest.ini` para eliminar configuración inválida y se actualizó la checklist operativa (`A5_CHECKLIST.md`) para reflejar el nuevo flujo de validación.
-    -   Se robustecieron tests de integridad documental para que no fallen por ausencia de artefactos concretos del workspace o por variaciones razonables en headings de plantillas DOCX.
-    -   Validación ejecutada: `pip install -e . --no-build-isolation`, tests clave de entorno/lógica/render y generación real del dashboard web para `ivirma`.
+Este fichero (`GEMINI.md`) debe mantenerse breve, operativo y alineado con la documentación canónica.
 
 ---
 
-## 7. Integración y DevOps (GitHub)
+## 6. Integración y DevOps (GitHub)
 
 Para garantizar una integración nativa, estable y segura con el repositorio de GitHub, este proyecto utiliza **GitHub CLI (`gh`)** como herramienta central de autenticación y "credential helper" para Git.
 

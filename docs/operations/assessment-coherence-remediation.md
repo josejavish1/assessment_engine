@@ -17,7 +17,7 @@ source_of_truth:
   - ../../working/vodafone_demo/T3/approved_annex_t3.template_payload.json
   - ../../working/vodafone_demo/global_report_payload.json
   - ../../working/vodafone_demo/commercial_report_payload.json
-last_verified_against: 2026-05-01
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents
@@ -1069,3 +1069,4 @@ El sistema debe producir un conjunto de entregables donde:
 - y todos los artefactos cuentan la misma historia con distinto nivel de detalle, no historias distintas.
 
 Ese resultado debe cumplirse en `vodafone_demo` como prueba inmediata, pero la solución válida es la que también queda preparada para cualquier caso futuro.
+o.

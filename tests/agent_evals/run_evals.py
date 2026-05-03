@@ -35,7 +35,14 @@ async def run_eval(eval_data: dict[str, Any], policy: dict[str, Any]) -> bool:
     print(f"Request: {request_text}")
 
     try:
-        plan = await generate_plan(request_text, policy)
+        plan_bundle = await generate_plan(request_text, policy)
+        plan = plan_bundle
+        if (
+            "alternatives" in plan_bundle
+            and isinstance(plan_bundle["alternatives"], list)
+            and len(plan_bundle["alternatives"]) > 0
+        ):
+            plan = plan_bundle["alternatives"][0]
     except Exception as e:
         print(f"❌ Error interno durante la generación del plan: {e}")
         return False
@@ -81,6 +88,7 @@ async def run_eval(eval_data: dict[str, Any], policy: dict[str, Any]) -> bool:
         plan_str = json.dumps(plan).lower()
         if "golden_path" not in plan_str and "templates/" not in plan_str:
             print("❌ Fallo: must_mention_golden_path no encontrado en el plan.")
+            print(f"Plan generado: {plan_str}")
             success = False
         else:
             print("✅ must_mention_golden_path: Encontrado.")

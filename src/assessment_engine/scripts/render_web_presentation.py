@@ -376,6 +376,15 @@ def generate_web_dashboard(client_id: str) -> Path:
     presentation_dir = client_dir / "presentation"
     presentation_dir.mkdir(parents=True, exist_ok=True)
 
+    # Copiar el directorio de assets estáticos (dist)
+    template_parent_dir = TEMPLATE_PATH.parent
+    source_dist_dir = template_parent_dir / "dist"
+    if source_dist_dir.is_dir():
+        import shutil
+
+        target_dist_dir = presentation_dir / "dist"
+        shutil.copytree(source_dist_dir, target_dist_dir, dirs_exist_ok=True)
+
     output_path = presentation_dir / "index.html"
     output_path.write_text(_render_html(client_id, nexus_data), encoding="utf-8")
 

@@ -7,7 +7,8 @@
     "section_reviewer": "review_strict",
     "global_reviewer": "global_reviewer_strict",
     "global_refiner": "global_refiner_strict",
-    "product_owner_planner": "review_strict"
+    "product_owner_planner": "product_owner_planner",
+    "product_owner_doctor": "product_owner_doctor"
   },
   "policies": {
     "target_maturity": "standard_target_maturity_policy",

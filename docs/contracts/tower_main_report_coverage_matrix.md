@@ -7,7 +7,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_tower_pipeline.py
   - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
   - ../architecture/working-artifacts.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents
@@ -116,3 +116,4 @@ Para el flujo vigente del repo, la lectura correcta no parte de los JSON legacy 
 - El nucleo tecnico del informe esta cubierto.
 - Las mayores carencias ya no estan en AS-IS/TO-BE/GAP por separado, sino en la capa de empaquetado editorial y gobierno del documento largo.
 - El siguiente paso razonable es construir un payload `tower_main_report` inicial derivado de `blueprint + annex + artifacts deterministas`, sin reintroducir dependencias sobre JSON legacy por secciones.
+s.

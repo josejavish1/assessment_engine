@@ -7,9 +7,14 @@
 /AGENTS.md @josejavish1
 /CHATGPT.md @josejavish1
 /GEMINI.md @josejavish1
+/docs/documentation_audit.md @josejavish1
 /.github/copilot-instructions.md @josejavish1
 /.github/pull_request_template.md @josejavish1
 /.github/CODEOWNERS @josejavish1
 /.github/workflows/docs-governance.yml @josejavish1
 /.github/workflows/quality.yml @josejavish1
 /.github/workflows/typing.yml @josejavish1
+
+# Operational Documents
+/A5_CHECKLIST.md @josejavish1
+

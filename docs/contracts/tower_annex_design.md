@@ -6,7 +6,7 @@ source_of_truth:
   - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
   - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
   - ../../docs/contracts/payload-render-boundaries.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-05-02
 applies_to:
   - humans
   - ai-agents
@@ -145,3 +145,4 @@ Contenido:
 
 ## Decisión de diseño
 La evolución visual o editorial del anexo no debe anunciar una nueva `artifact_version` hasta que exista un contrato implementado, emitido por el sintetizador y validado por tests y artefactos reales.
+s.

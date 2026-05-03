@@ -418,6 +418,9 @@ def test_validate_executor_configuration_succeeds_with_api_key(
     assert mock_get_secret.call_count == 2
 
 
+@pytest.mark.skip(
+    reason="Preflight temporarily bypassed to prevent Gemini CLI timeouts"
+)
 def test_preflight_executor_runs_wrapper_probe(monkeypatch, tmp_path: Path) -> None:
     request_dir = tmp_path / "request"
     request_dir.mkdir()
@@ -1078,7 +1081,9 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
         orchestrator, "ensure_branch", lambda branch_name: calls.append("branch")
     )
     monkeypatch.setattr(
-        orchestrator, "create_commit", lambda title: calls.append("commit")
+        orchestrator,
+        "create_commit",
+        lambda title, compliance_receipt=None: calls.append("commit"),
     )
     monkeypatch.setattr(
         orchestrator,

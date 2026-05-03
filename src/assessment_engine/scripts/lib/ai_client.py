@@ -7,7 +7,7 @@ import asyncio
 import logging
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from tenacity import (
     before_sleep_log,
@@ -174,17 +174,47 @@ async def call_agent(
     raw_output_file: Optional[Path] = None,
     instruction: str = "",
     output_schema: Any = None,
+    tools: Optional[list[Callable[..., Any]]] = None,
 ) -> dict:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
     """
+    import os
+
+    if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "1") == "0" and os.environ.get(
+        "GEMINI_API_KEY"
+    ):
+        from google import genai
+
+        client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        response = await client.aio.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config={
+                "system_instruction": instruction,
+                "response_mime_type": "application/json",
+                "response_schema": output_schema,
+            },
+        )
+        if raw_output_file and response.text:
+            raw_output_file.write_text(response.text, encoding="utf-8")
+
+        from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
+
+        data = parse_json_from_text(response.text or "{}")
+        if output_schema:
+            return _robust_unwrap_and_validate(data, output_schema)
+        return data
+
     from google.adk.agents import Agent
+    from vertexai.agent_engines import AdkApp
 
     agent = Agent(
         model=model_name,
         name="ad_hoc_agent",
         instruction=instruction,
         output_schema=output_schema,
+        tools=tools,  # type: ignore
     )
     app = AdkApp(agent=agent)
     return await run_agent(

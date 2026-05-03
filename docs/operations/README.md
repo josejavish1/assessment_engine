@@ -25,6 +25,7 @@ Esta carpeta reúne la documentación operativa mínima de `assessment-engine`: 
 ## Documentos operativos actuales
 
 - [`installation.md`](installation.md)
+- [`signing-commits-policy.md`](signing-commits-policy.md)
 - [`agentic-development-workflow.md`](agentic-development-workflow.md)
 - [`engineering-quality-gates.md`](engineering-quality-gates.md)
 - [`product-owner-orchestrator.md`](product-owner-orchestrator.md)

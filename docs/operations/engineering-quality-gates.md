@@ -129,5 +129,12 @@ Cuando la superficie viva tenga menos deuda histórica, el siguiente salto natur
 
 1. elevar el tipado incremental hacia módulos completos y no solo ficheros tocados;
 2. ampliar los tests de coherencia a scoring, severidad narrativa y dominios commercial/client-facing;
-3. reglas de arquitectura o dependencia más explícitas;
-4. rulesets/protecciones de rama en GitHub para exigir también `typing`.
+3. reglas de arquitectura o dependencia más explícitas.
+
+## Protección de Rama (`main`)
+
+Para garantizar la estabilidad del repositorio y la integridad del proceso de integración, la rama `main` está protegida con las siguientes reglas a nivel de GitHub:
+
+1.  **No se permiten commits directos:** Todo cambio debe integrarse a través de un Pull Request, asegurando que pasa por el proceso de revisión y validación.
+2.  **Se requieren verificaciones de estado (Status Checks):** Un Pull Request no puede ser fusionado si alguno de los jobs de CI/CD configurados (como `quality` y `typing`) ha fallado.
+3.  **Sincronización obligatoria con `main`:** Un Pull Request no puede ser fusionado si no está actualizado con el último commit de la rama `main`. Esto previene conflictos y asegura que las pruebas se ejecutan sobre la versión más reciente del código.

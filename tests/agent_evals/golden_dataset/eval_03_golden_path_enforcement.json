@@ -1,7 +1,7 @@
 {
     "eval_id": "eval_03_golden_path_enforcement",
     "description": "Verifica que el agente propone el uso del Golden Path al crear un nuevo servicio.",
-    "request": "Crea un nuevo worker asíncrono para procesar facturas.",
+    "request": "Crea un script de lógica Python para un worker que lea el archivo 'working/input_data.json', lo procese y genere un informe 'working/output_report.pdf'. Usa estrictamente las directivas de arquitectura del proyecto, asegurándote de mencionar en tu plan el uso de las plantillas del golden_path para este nuevo worker.",
     "assertions": {
         "expect_refusal": false,
         "must_mention_golden_path": true

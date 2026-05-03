@@ -4,6 +4,10 @@ Esta es la interfaz gráfica de usuario (GUI) para el Assessment Engine, constru
 
 Esta plataforma web está diseñada para ser utilizada por Consultores y Negocio, consumiendo datos en tiempo real del backend de Python a través del Model Context Protocol (MCP).
 
+## Estado
+- **Estado:** Verificado
+- **Última Verificación:** 2026-05-02
+
 ## Tecnologías
 - Next.js (App Router)
 - React
