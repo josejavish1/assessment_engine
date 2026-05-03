@@ -159,6 +159,14 @@ async def process_task(task: dict, queue: list, idx: int):
         debate = await perform_apex_debate(logs, "\n".join(previous_failures))
         previous_failures.append(f"Fallo {attempts}: {debate.reasoning}")
         if debate.decision == "INJECT_PREREQUISITE":
+            # Safeguard against infinite rescue loops: limit EMG injections for a single root task.
+            if len([t for t in queue if t.get("id", "").startswith("EMG-")]) > 5:
+                 UI_STATE["debate_transcript"].append(("SENTINEL", "Max emergency tasks reached. Hard blocking."))
+                 task["status"] = "HARD_BLOCK"
+                 SENTINEL.log_transaction(task["id"], "hard_block", {"reason": "Infinite rescue loop detected."})
+                 UI_STATE["completed_count"] += 1
+                 return False
+
             for p_task in reversed(debate.prerequisite_tasks):
                 new_task = {**p_task, "priority": "EMG", "id": f"EMG-{int(time.time()) % 1000}", "status": "Pending"}
                 queue.insert(idx, new_task); UI_STATE["all_tasks"].insert(idx, new_task)
