@@ -52,9 +52,6 @@ class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
 
-yaml = cast(_YamlModule, import_module("yaml"))
-
-
 # Helper functions (side-effect free)
 def derive_maturity_band(score: float) -> str:
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
@@ -433,6 +430,7 @@ def enrich_annex_payload(
 
 
 def load_yaml_config(filename: str) -> dict:
+    yaml = cast(_YamlModule, import_module("yaml"))
     filepath = (
         Path(__file__).resolve().parent.parent / "prompts" / "registry" / filename
     )
