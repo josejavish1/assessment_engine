@@ -467,24 +467,41 @@ def run_command(
         cwd=ROOT,
         env=env,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
         start_new_session=True,
     )
+    
+    import threading
+    import sys
+    
+    output_lines = []
+    
+    def reader_thread() -> None:
+        if process.stdout:
+            for line in process.stdout:
+                sys.stdout.write(line)
+                sys.stdout.flush()
+                output_lines.append(line)
+                
+    t = threading.Thread(target=reader_thread)
+    t.start()
+    
     try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
+        process.wait(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except (ProcessLookupError, PermissionError):
             process.kill()
-        stdout, stderr = process.communicate()
+        t.join()
+        
         timeout_note = (
             f"Command timed out after {timeout_seconds} seconds."
             if timeout_seconds
             else "Command timed out."
         )
-        output = (stdout or "") + ("\n" + stderr if stderr else "")
+        output = "".join(output_lines)
         output = f"{output}\n{timeout_note}".strip() + "\n"
         output_path.write_text(output, encoding="utf-8")
         raise OrchestratorCommandError(
@@ -499,7 +516,9 @@ def run_command(
             output_path=output_path,
             raw_output=output.strip(),
         )
-    output = (stdout or "") + ("\n" + stderr if stderr else "")
+        
+    t.join()
+    output = "".join(output_lines)
     output_path.write_text(output, encoding="utf-8")
     if process.returncode != 0:
         category = classify_command_failure(command, output)
