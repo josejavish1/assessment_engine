@@ -33,7 +33,8 @@ Reglas obligatorias para cada plan:
 - no inventes capacidades que no se han pedido;
 - toda tarea debe tener source_of_truth, invariants y validation;
 - las tasks deben ser entre 1 y {max_tasks};
-- Si la petición es destructiva o fuera de scope, DEBES establecer `refused` a true y dar la razón en `refusal_reason`.
+- Si la petición es destructiva (borrar tests, borrar pyproject.toml, romper seguridad) o fuera de scope, DEBES obligatoriamente establecer `refused` a true, no generar tareas, y dar la razón en `refusal_reason`.
+- Si vas a crear un worker asíncrono o un nuevo script de lógica Python, tu plan DEBE obligatoriamente mencionar la palabra "golden_path" y hacer uso de las plantillas en "templates/golden_paths/".
 
 Piensa en este repo con estas reglas base:
 - Estamos usando GitHub y GitHub Actions.
