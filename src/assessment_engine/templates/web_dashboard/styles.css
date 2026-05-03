@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+body { background-color: #020617; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
+.glass { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(16px); }
+.tower-card, .proj-tile, .pilar-row, .prog-card { cursor: pointer; transition: all 0.2s ease; }
+.tower-card:hover, .prog-card:hover { transform: translateY(-4px); border-color: #38bdf8; background: rgba(15, 23, 42, 0.9); }
+.proj-tile:hover { background: rgba(56, 189, 248, 0.1); border-color: #38bdf8; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+.blueprint-panel { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.blueprint-panel.open { max-height: 3000px; }
+.app-container { height: 100vh; display: flex; flex-direction: column; }
+.content-scroll { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+.sidebar-scroll { height: calc(100vh - 250px); overflow-y: auto; }
+.dimmed { opacity: 0.2; filter: grayscale(0.8); }
+.highlighted { border-color: #38bdf8 !important; box-shadow: 0 0 20px rgba(56, 189, 248, 0.3); transform: scale(1.02); }
+.gantt-bar { height: 8px; border-radius: 4px; position: relative; }
+.gantt-label { font-size: 8px; font-weight: bold; color: #64748b; margin-top: 4px; }
