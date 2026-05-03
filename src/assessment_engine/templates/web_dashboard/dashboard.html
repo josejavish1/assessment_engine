@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Dashboard v5.1 | {{ client_id }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.1.0"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container p-4 md:p-8 space-y-8">
+        <header class="flex flex-col lg:flex-row justify-between items-center glass p-8 rounded-3xl border-white/5 shadow-2xl shrink-0">
+            <div class="flex items-center gap-8">
+                <h1 class="text-5xl font-black text-white tracking-tighter uppercase leading-none">{{ client_id }}</h1>
+                <div class="h-12 w-[1px] bg-slate-700"></div>
+                <div>
+                    <span class="text-[10px] font-black text-sky-500 uppercase tracking-widest block mb-1 italic">Strategic Insights & Transformation Engine</span>
+                    <h2 id="ui-headline" class="text-xl text-slate-300 font-medium italic truncate max-w-3xl"></h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-8 bg-slate-900/60 p-4 px-8 rounded-2xl border border-white/10">
+                <div class="text-center">
+                    <p class="text-[9px] text-slate-500 font-black uppercase mb-1 tracking-widest">Global score</p>
+                    <div id="ui-score" class="text-5xl font-black text-sky-400 mono">--</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 overflow-hidden flex-1">
+            <div class="xl:col-span-4 space-y-6 sidebar-scroll custom-scrollbar pr-2">
+                <div class="glass p-6 rounded-3xl">
+                    <h2 class="text-xs font-black text-slate-500 uppercase tracking-[0.4em] text-center mb-6 border-b border-white/5 pb-4">Madurez de Torres</h2>
+                    <div class="w-full aspect-square relative flex items-center justify-center"><canvas id="globalRadarChart"></canvas></div>
+                </div>
+                <div class="glass p-8 rounded-3xl border-l-8 border-l-rose-600 shadow-xl">
+                    <h2 class="text-base font-black text-white mb-6 uppercase tracking-widest flex items-center gap-4"><i class="fa-solid fa-fire text-rose-500"></i> Burning Platform</h2>
+                    <div id="ui-burning-platform" class="space-y-8"></div>
+                </div>
+                <div class="glass p-8 rounded-3xl border-l-8 border-l-indigo-600 shadow-xl">
+                    <h2 class="text-base font-black text-white mb-6 uppercase tracking-widest flex items-center gap-4"><i class="fa-solid fa-gears text-indigo-500"></i> Modelo Operativo</h2>
+                    <div id="ui-op-model" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div class="xl:col-span-8 space-y-8 content-scroll custom-scrollbar pr-4">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 shrink-0">
+                    <div class="lg:col-span-6 glass p-10 rounded-[2.5rem] border-l-[12px] border-l-sky-500 shadow-xl">
+                        <h3 class="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] mb-6">Síntesis Ejecutiva Global</h3>
+                        <p id="ui-narrative" class="text-[11px] text-slate-300 leading-relaxed font-medium italic text-justify"></p>
+                    </div>
+                    <div class="lg:col-span-6 glass p-10 rounded-[2.5rem] border-l-8 border-l-emerald-500 shadow-xl">
+                        <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] mb-6">Impactos Críticos de Negocio</h3>
+                        <ul id="ui-business-impacts" class="space-y-4"></ul>
+                    </div>
+                </div>
+
+                <div class="glass p-10 rounded-[3rem] shadow-xl">
+                    <h2 class="text-2xl font-black text-white mb-8 tracking-tight uppercase">Capacidades por Torre</h2>
+                    <div id="ui-heatmap" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                </div>
+
+                <div class="glass p-10 rounded-[3rem] shadow-xl">
+                    <h2 class="text-2xl font-black text-white mb-8 tracking-tight flex items-center gap-4 uppercase"><i class="fa-solid fa-layer-group text-indigo-400"></i> Programas de Transformación</h2>
+                    <p class="text-slate-500 text-xs mb-6 -mt-4 uppercase tracking-widest">Haz clic en un programa para filtrar el roadmap</p>
+                    <div id="ui-programs" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+                </div>
+
+                <div class="glass p-10 rounded-[3rem] shadow-xl overflow-hidden">
+                    <h2 class="text-2xl font-black text-white mb-10 tracking-tight flex items-center gap-4 uppercase"><i class="fa-solid fa-timeline text-sky-500"></i> Roadmap de Ejecución Estratégica</h2>
+                    <div id="ui-roadmap" class="space-y-16"></div>
+                </div>
+
+                <div class="glass p-10 rounded-[3rem] shadow-xl overflow-hidden">
+                    <h2 class="text-2xl font-black text-white mb-4 tracking-tight flex items-center gap-4 uppercase"><i class="fa-solid fa-diagram-project text-emerald-400"></i> Nexo de Impacto Estratégico</h2>
+                    <p class="text-slate-500 text-xs mb-8 uppercase tracking-widest">Visualización de flujos: Gaps de Torre → Proyectos → Impacto de Negocio</p>
+                    <div id="sankey-container" class="w-full h-[600px] bg-slate-950/50 rounded-2xl border border-white/5 relative">
+                        <svg id="sankey-svg" class="w-full h-full"></svg>
+                    </div>
+                </div>
+
+                <div class="glass p-10 rounded-[3rem] shadow-xl">
+                    <h2 class="text-2xl font-black text-white mb-8 tracking-tight flex items-center gap-4 uppercase"><i class="fa-solid fa-rocket text-sky-400"></i> Command Center: Propuestas Proactivas</h2>
+                    <div id="ui-proposals" class="grid grid-cols-1 gap-8"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tower-modal" class="fixed inset-0 z-50 hidden bg-slate-950/98 backdrop-blur-3xl flex justify-center items-center p-4 md:p-8 opacity-0 transition-all duration-500">
+        <div class="bg-[#0b1222] border border-white/10 rounded-3xl w-full max-w-[1650px] h-full max-h-[92vh] flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.8)] transform scale-95 transition-all duration-500 overflow-hidden" id="modal-content">
+            <div class="p-10 border-b border-white/5 flex justify-between items-center bg-slate-900/40">
+                <div class="flex items-center gap-10">
+                    <div id="modal-score-box" class="w-24 h-24 rounded-3xl flex flex-col items-center justify-center border-2 border-white/10 bg-slate-950/50 shadow-inner">
+                        <span class="text-[9px] text-slate-500 font-black uppercase mb-1">Score</span>
+                        <span id="modal-tower-score" class="text-5xl font-black mono tracking-tighter">--</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-5 mb-2">
+                            <span id="modal-tower-id" class="px-3 py-1 bg-sky-500 text-slate-950 text-[11px] font-black rounded-lg uppercase"></span>
+                            <h2 id="modal-tower-name" class="text-5xl font-extrabold text-white tracking-tighter uppercase leading-none"></h2>
+                        </div>
+                        <span id="modal-tower-band" class="text-sm font-black tracking-[0.3em] uppercase text-slate-500"></span>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="w-16 h-16 rounded-[2rem] bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-500 transition-all flex items-center justify-center border border-white/5"><i class="fa-solid fa-xmark text-3xl"></i></button>
+            </div>
+            <div class="p-12 overflow-y-auto custom-scrollbar flex-1">
+                <div class="space-y-12 max-w-[1600px] mx-auto">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-10 items-stretch">
+                        <div class="space-y-8 flex flex-col">
+                            <div class="glass p-10 rounded-[2.5rem] border-l-[12px] border-l-sky-500 shadow-xl flex-1 flex flex-col">
+                                <h3 class="text-[10px] font-black text-sky-400 uppercase tracking-[0.3em] mb-6 italic">Bottom Line & Síntesis</h3>
+                                <p id="modal-narrative" class="text-sm text-slate-300 leading-relaxed font-medium text-justify"></p>
+                                <div class="mt-auto pt-8 border-t border-white/5">
+                                    <h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-3">Impacto en Negocio</h4>
+                                    <p id="modal-business-impact" class="text-[11px] text-slate-400 italic leading-snug"></p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="glass p-10 rounded-[2.5rem] border-l-8 border-l-rose-600 bg-rose-500/5 shadow-xl h-full">
+                                    <h4 class="text-xs font-black text-rose-400 uppercase mb-6 tracking-widest flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation"></i> Riesgos Estructurales</h4>
+                                    <ul id="modal-structural-risks" class="text-[11px] text-slate-300 space-y-4 list-none"></ul>
+                                </div>
+                                <div class="glass p-10 rounded-[2.5rem] border-l-8 border-l-rose-500 shadow-xl h-full">
+                                    <h4 class="text-xs font-black text-rose-400 uppercase mb-6 tracking-widest flex items-center gap-2"><i class="fa-solid fa-biohazard"></i> Coste de Inacción</h4>
+                                    <p id="modal-coi" class="text-sm text-rose-100/90 leading-relaxed font-medium text-justify"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-8 flex flex-col">
+                            <div class="glass p-10 rounded-[2.5rem] border border-white/5 flex flex-col bg-slate-950/40 relative">
+                                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 text-center">Métricas de Madurez de Capacidad</h3>
+                                <div class="w-full h-[400px] xl:h-[450px]"><canvas id="towerRadarChart"></canvas></div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div class="glass p-10 rounded-[2.5rem] border-l-8 border-l-indigo-500 shadow-xl bg-indigo-500/5 h-full">
+                                    <h3 class="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-4">Visión To-Be</h3>
+                                    <p id="modal-vision-text" class="text-[11px] text-slate-300 italic leading-relaxed"></p>
+                                </div>
+                                <div class="glass p-10 rounded-[2.5rem] border-l-8 border-l-emerald-500 bg-emerald-500/5 shadow-xl h-full">
+                                    <h4 class="text-xs font-black text-emerald-400 uppercase mb-6 tracking-widest flex items-center gap-3"><i class="fa-solid fa-bolt"></i> Beneficios Operativos</h4>
+                                    <ul id="modal-op-benefits" class="text-[11px] text-slate-300 space-y-4 list-none"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-12">
+                        <div class="glass p-10 rounded-[2.5rem] border-l-8 border-l-amber-500 shadow-xl bg-amber-500/5">
+                            <h4 class="text-sm font-black text-amber-400 uppercase mb-6 tracking-widest flex items-center gap-3"><i class="fa-solid fa-gavel"></i> Decisiones Estratégicas Board</h4>
+                            <ul id="modal-decisions" class="text-sm text-slate-200 space-y-4 list-none grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></ul>
+                        </div>
+                        <div class="glass p-12 rounded-[2.5rem] shadow-2xl border border-white/5 bg-slate-900/40">
+                            <div class="flex justify-between items-center mb-12">
+                                <h3 class="text-xl font-black text-sky-400 uppercase tracking-widest flex items-center gap-4"><i class="fa-solid fa-timeline"></i> Engineering Execution Roadmap</h3>
+                                <span class="text-xs font-black text-slate-500 uppercase tracking-widest px-4 py-2 border border-slate-700 rounded-lg bg-slate-800/50">Escala: 36 Meses</span>
+                            </div>
+                            <div id="modal-gantt" class="space-y-5"></div>
+                        </div>
+                        <div class="space-y-8 pt-8">
+                            <h3 class="text-3xl font-black text-white flex items-center gap-4 uppercase tracking-tight mb-8"><i class="fa-solid fa-layer-group text-sky-500"></i> Desglose Detallado por Capacidad</h3>
+                            <div id="modal-pillars-rows" class="space-y-8"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="project-modal" class="fixed inset-0 z-[100] hidden bg-slate-950/95 backdrop-blur-md flex justify-center items-center p-6 opacity-0 transition-all duration-300">
+        <div class="bg-[#0f172a] border border-sky-500/30 rounded-[3rem] w-full max-w-2xl p-12 shadow-2xl transform scale-95 transition-all duration-300 border-t-[10px] border-t-sky-500">
+            <div class="flex justify-between items-start mb-10">
+                <div><span id="proj-sizing" class="px-3 py-1 bg-sky-500 text-slate-950 text-[10px] font-black rounded-lg uppercase mb-4 inline-block tracking-widest"></span><h3 id="proj-name" class="text-3xl font-black text-white tracking-tight leading-tight"></h3></div>
+                <button onclick="closeProjectModal()" class="text-slate-500 hover:text-white transition"><i class="fa-solid fa-xmark text-3xl"></i></button>
+            </div>
+            <div class="space-y-10">
+                <div><h4 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3 italic underline">Impacto Estratégico (Valor)</h4><p id="proj-case" class="text-base text-slate-200 leading-relaxed font-light italic bg-slate-950/50 p-6 rounded-2xl"></p></div>
+                <div><h4 class="text-[10px] font-black text-sky-400 uppercase tracking-widest mb-3 underline">Objetivo de Ingeniería</h4><p id="proj-objective" class="text-base text-slate-300 leading-relaxed"></p></div>
+                <div><h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Entregables Tangibles (Evidencias)</h4><div id="proj-deliverables" class="flex flex-wrap gap-3"></div></div>
+                <div class="flex items-center gap-6 pt-6 border-t border-white/5 font-bold"><div class="flex items-center gap-3 text-sky-400 uppercase tracking-widest text-[10px]"><i class="fa-regular fa-calendar-check"></i><span id="proj-duration"></span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="proposal-modal" class="fixed inset-0 z-[110] hidden bg-slate-950/95 backdrop-blur-md flex justify-center items-center p-6 opacity-0 transition-all duration-300">
+        <div class="bg-[#0f172a] border border-emerald-500/30 rounded-[3rem] w-full max-w-3xl p-12 shadow-2xl transform scale-95 transition-all duration-300 border-t-[10px] border-t-emerald-500 relative">
+            <button onclick="closeProposalModal()" class="absolute top-8 right-8 w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 text-slate-500 hover:text-white flex items-center justify-center transition-all"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="mb-10 pr-12">
+                <span id="prop-tcv" class="px-3 py-1 bg-emerald-500 text-slate-950 text-[10px] font-black rounded-lg uppercase mb-4 inline-block tracking-widest shadow-lg shadow-emerald-500/20"></span>
+                <h3 id="prop-name" class="text-4xl font-black text-white tracking-tight leading-tight"></h3>
+            </div>
+            <div class="space-y-8">
+                <div><p id="prop-synthesis" class="text-sm text-slate-300 font-medium leading-relaxed italic bg-slate-900/50 p-6 rounded-2xl border border-white/5"></p></div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="p-6 bg-slate-900/50 rounded-2xl border border-white/5 shadow-inner">
+                        <h4 class="text-[10px] font-black text-sky-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><i class="fa-solid fa-box-open"></i> Entregables Clave</h4>
+                        <ul id="prop-deliverables" class="list-disc pl-4 text-xs text-slate-300 space-y-3 font-medium"></ul>
+                    </div>
+                    <div class="p-6 bg-emerald-500/5 rounded-2xl border border-emerald-500/10 shadow-inner">
+                        <h4 class="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> ROI / Impacto Financiero</h4>
+                        <p id="prop-roi" class="text-xs text-emerald-100/90 leading-relaxed font-medium"></p>
+                    </div>
+                </div>
+                <div class="p-6 bg-amber-500/5 rounded-2xl border border-amber-500/10 flex items-start gap-4">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1"></i>
+                    <div>
+                        <h4 class="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-1">Prerrequisitos & Dependencias</h4>
+                        <p id="prop-prereq" class="text-xs text-amber-100/80 leading-relaxed"></p>
+                    </div>
+                </div>
+                <div class="mt-8 pt-8 border-t border-white/10 flex justify-between items-center">
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Estado: <span class="text-amber-500">Pendiente Aprobación</span></span>
+                    <button class="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-[0.2em] rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] transform hover:-translate-y-1">Autorizar Iniciativa <i class="fa-solid fa-signature ml-2"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="nexus-data" type="application/json">{{ json_data }}</script>
+    <script src="main.js"></script>
+</body>
+</html>
