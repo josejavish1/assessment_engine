@@ -301,16 +301,23 @@ def build_executor_args(
 
 
 def collect_changed_python_files() -> list[str]:
-    result = subprocess.run(
+    tracked = subprocess.run(
         ["git", "diff", "--name-only", "--", "*.py"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip() or "No se pudo inspeccionar git diff.")
-    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    ).stdout.splitlines()
+    
+    untracked = subprocess.run(
+        ["git", "ls-files", "--others", "--exclude-standard", "*.py"],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    ).stdout.splitlines()
+    
+    staged = subprocess.run(
+        ["git", "diff", "--name-only", "--cached", "--", "*.py"],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    ).stdout.splitlines()
+
+    files = set(line.strip() for line in tracked + untracked + staged if line.strip())
+    return sorted(list(files))
 
 
 def has_worktree_changes() -> bool:
