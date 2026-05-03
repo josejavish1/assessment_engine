@@ -153,9 +153,20 @@ def create_request_dir(policy: dict[str, Any], request_text: str) -> Path:
     return request_dir
 
 
-def ensure_clean_worktree(*, allow_dirty: bool) -> None:
+def ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
     if allow_dirty:
         return
+
+    # Whitelist de comandos de saneamiento seguros (Remediation Mode)
+    remediation_keywords = [
+        "git reset", "git clean", "git status", 
+        "ruff check --fix", "ruff format",
+        "limpieza", "saneamiento", "restaurar", "purgar"
+    ]
+    if any(keyword in request_text.lower() for keyword in remediation_keywords):
+        logger.info("Modo Saneamiento detectado: permitiendo worktree sucio para comandos de limpieza.")
+        return
+
     if git_status_has_relevant_changes():
         raise RuntimeError(
             "El worktree no está limpio. Usa --allow-dirty solo si entiendes el riesgo."
@@ -1495,10 +1506,10 @@ def resume_pull_request(
     *,
     policy: dict[str, Any],
 ) -> Path:
-    ensure_clean_worktree(allow_dirty=args.allow_dirty)
     pr_state = inspect_pull_request(resolve_resume_selector(args))
     ensure_existing_branch(pr_state["head_ref"])
     request_text = build_resume_request_text(pr_state)
+    ensure_clean_worktree(allow_dirty=args.allow_dirty, request_text=request_text)
     request_dir = create_request_dir(policy, request_text)
     plan = prepare_resume_plan(policy, pr_state)
     save_plan_bundle(request_dir, request_text, plan)
@@ -1526,11 +1537,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "execute":
         request_dir = Path(args.request_dir)
-        ensure_clean_worktree(allow_dirty=args.allow_dirty)
         plan_path = request_dir / "plan.json"
         if not plan_path.exists():
             raise FileNotFoundError(f"No se encontró plan.json en {request_dir}")
         plan_bundle = json.loads(plan_path.read_text(encoding="utf-8"))
+        req_text = plan_bundle.get("request", "")
+        ensure_clean_worktree(allow_dirty=args.allow_dirty, request_text=req_text)
         if "alternatives" in plan_bundle:
             plan = plan_bundle["alternatives"][args.alt_index]
         else:
@@ -1548,7 +1560,7 @@ def main(argv: list[str] | None = None) -> int:
 
     request_text = load_request_text(args)
     if args.command == "run":
-        ensure_clean_worktree(allow_dirty=args.allow_dirty)
+        ensure_clean_worktree(allow_dirty=args.allow_dirty, request_text=request_text)
 
     request_dir = create_request_dir(policy, request_text)
     plan = asyncio.run(generate_plan(request_text, policy))
@@ -1559,7 +1571,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     executor_command = resolve_executor_command(args.executor_command)
-    active_plan = plan["alternatives"][0] if "alternatives" in plan else plan
+    
+    if plan.get("refused"):
+        logger.error(f"El planificador rechazó la petición: {plan.get('refusal_reason', 'Sin razón proporcionada')}")
+        return 1
+
+    if "alternatives" in plan:
+        if not plan["alternatives"]:
+            logger.error("El planificador no devolvió ninguna alternativa ejecutable.")
+            return 1
+        active_plan = plan["alternatives"][0]
+    else:
+        active_plan = plan
+
     execute_plan(
         request_dir,
         active_plan,
