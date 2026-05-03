@@ -16,6 +16,7 @@ La priorización se basa en el impacto y el esfuerzo estimado:
 
 | Prioridad | Área | Título de la Tarea | Descripción | Hallazgo Relacionado |
 |---|---|---|---|---|
+| **P1** | Clean Architecture | Migrar Orquestador a Validación Estricta con Pydantic | Refactorizar `run_product_owner_orchestrator.py` para reemplazar la deserialización genérica de `plan.json` (`json.loads`) por la rehidratación tipada estricta (`ProductOwnerAlternatives.model_validate_json`). Esto previene bugs de "ruptura de contrato" y cuelgues por lectura de claves inexistentes. | Diseño de APEX X-Ray |
 | **P1** | FinOps | Context Caching Nativo (Vertex AI) | Implementar caché de contexto para el ADN estratégico y contexto de negocio en `run_tower_pipeline.py`, reduciendo el coste de tokens de entrada hasta un 70%. | Roadmap Fase 1 |
 | **P1** | FinOps | Token Throttling por Rol | Configurar límites estrictos de `max_output_tokens` en `model_profiles.json` según la responsabilidad del agente para evitar desperdicio y alucinaciones costosas. | Roadmap Fase 1 |
 | **P1** | Seguridad | Sandboxing Estricto de Ejecución | Migrar el agente ejecutor para que las herramientas que modifican archivos o corren comandos (`run_command`) se ejecuten dentro de contenedores efímeros (Docker/gVisor) sin acceso a red, neutralizando ataques de ejecución remota de código (RCE) vía Prompt Injection. | Estrategia DevSecOps 2026 |
