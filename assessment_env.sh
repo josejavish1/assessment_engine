@@ -1,2 +1,6 @@
-export GOOGLE_CLOUD_PROJECT="sub403o4u0q5"
-export GOOGLE_CLOUD_LOCATION="europe-west1"
+#!/bin/bash
+if [ ! -d ".venv" ]; then
+    python3 -m venv .venv
+    .venv/bin/pip install -e .
+fi
+source .venv/bin/activate

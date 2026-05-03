@@ -1,0 +1,45 @@
+#!/bin/bash
+# bin/po-batch
+# Meta-Orquestador APEX con soporte para ejecución persistente inmutable.
+
+set -e
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Capa Inmóvil (Immutable Core): Snapshot del orquestador
+# Usamos un hash md5 de los scripts base para saber si hay que refrescar la cache
+DIR_HASH=$(md5sum "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_dispatcher.py" | awk '{print $1}')
+APEX_CORE_DIR="/tmp/apex_core_$DIR_HASH"
+
+if [ ! -d "$APEX_CORE_DIR" ]; then
+    echo "Inicializando Immutable Core en $APEX_CORE_DIR..."
+    mkdir -p "$APEX_CORE_DIR/assessment_engine"
+    cp -r "$REPO_ROOT/src/assessment_engine/scripts" "$APEX_CORE_DIR/assessment_engine/scripts"
+    cp -r "$REPO_ROOT/src/assessment_engine/prompts" "$APEX_CORE_DIR/assessment_engine/prompts"
+    # Touch __init__.py files
+    touch "$APEX_CORE_DIR/__init__.py"
+    touch "$APEX_CORE_DIR/assessment_engine/__init__.py"
+fi
+
+# Override el PYTHONPATH para que cargue la versión inmutable primero
+export PYTHONPATH="$APEX_CORE_DIR:$REPO_ROOT/src:$PYTHONPATH"
+# Usamos una variable de entorno para que el dispatcher sepa dónde buscar los prompts inmutables
+export APEX_PROMPTS_DIR="$APEX_CORE_DIR/assessment_engine/prompts"
+
+LOG_FILE="$REPO_ROOT/working/apex/session.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+if [ "$1" == "--daemon" ]; then
+    echo "Lanzando Apex Sentinel en segundo plano (Immutable Core)..."
+    echo "Logs disponibles en: $LOG_FILE"
+    nohup "$REPO_ROOT/.venv/bin/python" "$APEX_CORE_DIR/assessment_engine/scripts/tools/apex_dispatcher.py" --headless > "$LOG_FILE" 2>&1 &
+    PID=$!
+    echo $PID > "$REPO_ROOT/working/apex/apex.pid"
+    echo "Proceso lanzado con PID $PID."
+    echo "Puedes desconectarte tranquilamente. Para monitorizar, usa: ./bin/po-batch --monitor"
+    exit 0
+elif [ "$1" == "--monitor" ]; then
+    "$REPO_ROOT/.venv/bin/python" "$APEX_CORE_DIR/assessment_engine/scripts/tools/apex_dispatcher.py" --monitor
+else
+    "$REPO_ROOT/.venv/bin/python" "$APEX_CORE_DIR/assessment_engine/scripts/tools/apex_dispatcher.py" "$@"
+fi
