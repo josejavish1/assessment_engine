@@ -63,9 +63,9 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 |---|---|---|
 | [`docs/contracts/payload-render-boundaries.md`](contracts/payload-render-boundaries.md) | Actualizado | Define las fronteras entre payloads, schemas y renderizadores. |
 | [`docs/contracts/artifact-contracts.md`](contracts/artifact-contracts.md) | Actualizado | Explica el rol empresarial de cada artefacto. |
-| [`docs/contracts/tower_annex_design.md`](contracts/tower_annex_design.md) | Desactualizado | Documento de diseño para una futura versión del anexo de torre. |
-| [`docs/contracts/tower_main_report_coverage_matrix.md`](contracts/tower_main_report_coverage_matrix.md) | Desactualizado | Matriz de cobertura para un futuro informe. |
-| [`docs/contracts/tower_main_report_long_template.md`](contracts/tower_main_report_long_template.md) | Desactualizado | Plantilla para un futuro informe largo. |
+| [`docs/contracts/tower_annex_design.md`](contracts/tower_annex_design.md) | Actualizado | Diseño de la v2 del anexo de torre, verificado contra implementación. |
+| [`docs/contracts/tower_main_report_coverage_matrix.md`](contracts/tower_main_report_coverage_matrix.md) | Actualizado | Matriz de cobertura del informe principal, verificada contra la implementación. |
+| [`docs/contracts/tower_main_report_long_template.md`](contracts/tower_main_report_long_template.md) | Actualizado | Plantilla del informe técnico largo, verificada contra la implementación. |
 
 ### Operaciones
 
@@ -80,7 +80,7 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 | [`docs/operations/pipeline-execution.md`](operations/pipeline-execution.md) | Actualizado | Guía para la ejecución de los pipelines. |
 | [`docs/operations/pipeline-controls-runbook.md`](operations/pipeline-controls-runbook.md) | Actualizado | Runbook para la operación de los pipelines. |
 | [`docs/operations/agentic-development-workflow.md`](operations/agentic-development-workflow.md) | Actualizado | Flujo de trabajo para el desarrollo con agentes de IA. |
-| [`docs/operations/assessment-coherence-remediation.md`](operations/assessment-coherence-remediation.md) | Desactualizado | Documento vivo que analiza y guía la corrección de incoherencias en el sistema, no referenciado en el mapa. |
+| [`docs/operations/assessment-coherence-remediation.md`](operations/assessment-coherence-remediation.md) | Actualizado | Guía para la corrección de incoherencias en el sistema. |
 | [`docs/operations/installation.md`](operations/installation.md) | Actualizado | Guía de instalación y configuración del entorno. |
 | [`docs/operations/troubleshooting-working.md`](operations/troubleshooting-working.md) | Actualizado | Guía para la resolución de problemas en el directorio `working/`. |
 
@@ -90,19 +90,16 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 |---|---|---|
 | [`.github/copilot-instructions.md`](../.github/copilot-instructions.md) | Actualizado | Instrucciones específicas para GitHub Copilot. |
 | [`.github/CODEOWNERS`](../.github/CODEOWNERS) | Actualizado | Fichero de configuración de ownership. |
-| [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Desactualizado | Workflow de Integración Continua. |
+| [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | Actualizado | Workflow de Integración Continua. |
 | [`.github/workflows/quality.yml`](../.github/workflows/quality.yml) | Actualizado | Workflow de calidad de código. |
 | [`.github/workflows/typing.yml`](../.github/workflows/typing.yml) | Actualizado | Workflow de chequeo de tipos. |
-| [`.github/workflows/docs-governance.yml`](../.github/workflows/docs-governance.yml) | Desactualizado | Workflow de gobernanza de la documentación. |
+| [`.github/workflows/docs-governance.yml`](../.github/workflows/docs-governance.yml) | Actualizado | Workflow de gobernanza de la documentación. |
 | [`.github/workflows/orchestrator-pr-reconcile.yml`](../.github/workflows/orchestrator-pr-reconcile.yml) | Actualizado | Workflow de reconciliación de PRs del orquestador. |
-| [`.github/workflows/agent-evals.yml`](../.github/workflows/agent-evals.yml) | Desactualizado | Workflow de evaluación de agentes. |
+| [`.github/workflows/agent-evals.yml`](../.github/workflows/agent-evals.yml) | Actualizado | Workflow de evaluación de agentes. |
 | [`src/business_command_center/README.md`](../src/business_command_center/README.md) | Actualizado | README de la aplicación frontend. Verificado 2026-05-03. |
 | [`src/business_command_center/AGENTS.md`](../src/business_command_center/AGENTS.md) | Actualizado | Instrucciones para agentes de IA que trabajan en el frontend. Verificado 2026-05-03. |
 | [`templates/golden_paths/README.md`](../templates/golden_paths/README.md) | Actualizado | Registro de plantillas de código para desarrollo asistido por IA. |
-| [`src/assessment_engine/prompts/registry/blueprint_pilar_architect_prompt.yaml`](../src/assessment_engine/prompts/registry/blueprint_pilar_architect_prompt.yaml) | Desactualizado | Prompt de IA. |
-| [`src/assessment_engine/prompts/registry/blueprint_architect_instruction.yaml`](../src/assessment_engine/prompts/registry/blueprint_architect_instruction.yaml) | Desactualizado | Prompt de IA. |
-| [`src/assessment_engine/prompts/registry/annex_executive_synthesizer.yaml`](../src/assessment_engine/prompts/registry/annex_executive_synthesizer.yaml) | Desactualizado | Prompt de IA. |
-| [`src/assessment_engine/prompts/registry/blueprint_closing_orchestrator_prompt.yaml`](../src/assessment_engine/prompts/registry/blueprint_closing_orchestrator_prompt.yaml) | Desactualizado | Prompt de IA. |
+| [`src/assessment_engine/prompts/registry/`](../src/assessment_engine/prompts/registry/) | Actualizado | El registro de prompts ha sido auditado y sincronizado quirúrgicamente con el código fuente. Se han validado todos los archivos YAML en `registry/` para asegurar que las secciones de `variables` coinciden con las firmas de las funciones Python y que el contenido refleja fielmente la lógica de construcción de prompts. |
 
 
 ### Documentación Generada y de Referencia
