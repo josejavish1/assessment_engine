@@ -60,7 +60,11 @@ async def test_run_agent_empty_response():
     # The retry logic will catch the RuntimeError from empty response and eventually fail
     with pytest.raises(Exception):
         await run_agent(
-            app=mock_app, user_id="test-user", message="hello", schema=MockSchema
+            app=mock_app,
+            user_id="test-user",
+            message="hello",
+            schema=MockSchema,
+            run_id="test_id",
         )
 
 
@@ -83,3 +87,4 @@ def test_robust_unwrap_and_validate_failure():
     data = {"wrong_key": "bad"}
     with pytest.raises(ValidationError):
         _robust_unwrap_and_validate(data, MockSchema)
+rap_and_validate(data, MockSchema)
