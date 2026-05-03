@@ -13,6 +13,8 @@ prompt_details:
       description: "Texto con el ADN estratégico y la inteligencia del cliente."
     - name: answers_json
       description: "JSON con las respuestas del cliente a los cuestionarios técnicos."
+    - name: pilar_id
+      description: "Identificador único del pilar (usado para trazabilidad)."
   template: |
     Eres un {role}.
     {context_description}

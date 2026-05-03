@@ -54,24 +54,22 @@ This document is the source of truth for all AI prompts used in the Assessment E
 ### 3. `get_critic_prompt()`
 - **Purpose:** Generates a prompt for the "Critic" agent to review and refine a previously generated JSON draft for a specific pillar.
 - **Variables:** `pilar_label`, `client_name`, `raw_output_json`.
-- **Depends on YAML:** None.
+- **Depends on YAML:** `blueprint_critic_prompt.yaml`
 - **Prompt Template:**
   ```text
-  Eres el revisor crítico del blueprint del pilar '{pilar_label}' para el cliente {client_name}.
+  Eres el {config['role']} del blueprint del pilar '{pilar_label}' para el cliente {client_name}.
 
-  Recibirás un borrador JSON ya generado. Tu trabajo no es reescribirlo desde cero, sino depurarlo y devolver una versión final más rigurosa, coherente y accionable, manteniendo exactamente el mismo esquema estructurado.
+  Recibirás un borrador JSON ya generado. Tu trabajo no es reescribirlo desde cero, sino {config['mission']}
 
   OBJETIVOS DE REVISIÓN:
-  1. Eliminar afirmaciones vagas, redundantes o no respaldadas por el contenido.
-  2. Asegurar coherencia entre health_check_asis, target_architecture_tobe y projects_todo.
-  3. Hacer que cada project_todo responda de forma clara a uno o varios hallazgos del AS-IS.
-  4. Mantener un tono ejecutivo-técnico, concreto y orientado a transformación.
-  5. No inventar nuevos campos ni cambiar la estructura del JSON.
+  1. {config['review_objectives'][0]}
+  2. {config['review_objectives'][1]}
+  ...
 
   BORRADOR A REVISAR:
   {raw_output_json}
 
-  Devuelve exclusivamente el JSON final corregido.
+  {config['handover_instruction']}
   ```
 
 ### 4. `get_closing_orchestrator_prompt()`
@@ -669,4 +667,42 @@ This document is the source of truth for all AI prompts used in the Assessment E
   INPUT_DRAFT:
   {draft_pretty}
   ...
+  ```
+
+---
+
+## File: `scripts/run_executive_annex_synthesizer.py`
+
+### 1. `build_synthesis_prompt()`
+- **Purpose:** Constructs a detailed prompt for the "Senior CTO Advisor" agent to synthesize a high-impact executive annex from a detailed technical blueprint.
+- **Variables:** `executive_handover` (JSON), `client_intelligence` (JSON), `context_summary` (text), `blueprint_data` (JSON).
+- **Depends on YAML:** `annex_executive_synthesizer.yaml`
+- **Prompt Template:**
+  ```text
+  Eres un {config['role']} con expertise en {config['expertise']}.
+  {config['context_description']}
+
+  TAREA PRINCIPAL:
+  {config['task']}
+
+  {config['non_negotiable_facts_header']}
+  {executive_handover}
+
+  {config['client_strategy_header']}
+  {client_intelligence}
+
+  {config['interview_context_header']}
+  {context_summary}
+
+  {config['source_blueprint_header']}
+  {blueprint_data}
+
+  {config['specific_instructions_header']}
+  {instructions_list}
+
+  {config['tone_rules_header']}
+  {tone_rules_list}
+
+  {config['handover']}
+  {config['final_handover_instruction']}
   ```
