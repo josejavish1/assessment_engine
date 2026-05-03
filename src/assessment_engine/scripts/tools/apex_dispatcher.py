@@ -24,7 +24,11 @@ console = Console()
 logging.basicConfig(level=logging.INFO, filename="working/apex/error.log")
 logger = logging.getLogger("APEX-Dispatcher")
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+import os
+if "APEX_WORKSPACE_DIR" in os.environ:
+    REPO_ROOT = Path(os.environ["APEX_WORKSPACE_DIR"]).resolve()
+else:
+    REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 BACKLOG_PATH = REPO_ROOT / "docs/audits/IMPROVEMENT_BACKLOG.md"
 WORKING_DIR = REPO_ROOT / "working/apex"
 SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
@@ -42,7 +46,14 @@ UI_STATE = {
 
 def load_apex_prompt(filename: str) -> dict:
     import yaml
-    filepath = Path(__file__).resolve().parent.parent.parent / "prompts" / "registry" / filename
+    import os
+    
+    prompts_dir = os.environ.get("APEX_PROMPTS_DIR")
+    if prompts_dir:
+        filepath = Path(prompts_dir) / "registry" / filename
+    else:
+        filepath = Path(__file__).resolve().parent.parent.parent / "prompts" / "registry" / filename
+        
     with filepath.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 

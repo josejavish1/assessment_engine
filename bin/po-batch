@@ -1,41 +1,45 @@
 #!/bin/bash
 # bin/po-batch
-# Meta-Orquestador APEX con soporte para ejecución persistente.
+# Meta-Orquestador APEX con soporte para ejecución persistente inmutable.
 
 set -e
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Capa Inmóvil (Immutable Core): Snapshot del orquestador
+# Usamos un hash md5 de los scripts base para saber si hay que refrescar la cache
+DIR_HASH=$(md5sum "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_dispatcher.py" | awk '{print $1}')
+APEX_CORE_DIR="/tmp/apex_core_$DIR_HASH"
+
+if [ ! -d "$APEX_CORE_DIR" ]; then
+    echo "Inicializando Immutable Core en $APEX_CORE_DIR..."
+    mkdir -p "$APEX_CORE_DIR"
+    cp -r "$REPO_ROOT/src/assessment_engine" "$APEX_CORE_DIR/assessment_engine"
+    # Touch __init__.py files
+    touch "$APEX_CORE_DIR/__init__.py"
+fi
+
+# Override el PYTHONPATH para que cargue la versión inmutable primero
+export PYTHONPATH="$APEX_CORE_DIR:$REPO_ROOT/src:$PYTHONPATH"
+# Usamos una variable de entorno para que el dispatcher sepa dónde buscar los prompts inmutables
+export APEX_PROMPTS_DIR="$APEX_CORE_DIR/assessment_engine/prompts"
+export APEX_WORKSPACE_DIR="$REPO_ROOT"
+export APEX_CORE_DIR="$APEX_CORE_DIR"
+
 LOG_FILE="$REPO_ROOT/working/apex/session.log"
+mkdir -p "$(dirname "$LOG_FILE")"
 
-# Asegurar entorno
-if [ ! -d "$REPO_ROOT/.venv" ]; then echo "Error: .venv no encontrado."; exit 1; fi
-source "$REPO_ROOT/assessment_env.sh"
-export PYTHONPATH="$REPO_ROOT/src"
-
-# Función para ejecución en modo DAEMON (Background persistente)
-run_daemon() {
-    echo "Lanzando Apex Sentinel en segundo plano..."
+if [ "$1" == "--daemon" ]; then
+    echo "Lanzando Apex Sentinel en segundo plano (Immutable Core)..."
     echo "Logs disponibles en: $LOG_FILE"
-    nohup "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_dispatcher.py" --headless >> "$LOG_FILE" 2>&1 &
-    echo $! > "$REPO_ROOT/working/apex/apex.pid"
-    echo "Proceso lanzado con PID $(cat "$REPO_ROOT/working/apex/apex.pid")."
+    nohup "$REPO_ROOT/.venv/bin/python" "$APEX_CORE_DIR/assessment_engine/scripts/tools/apex_dispatcher.py" --headless > "$LOG_FILE" 2>&1 &
+    PID=$!
+    echo $PID > "$REPO_ROOT/working/apex/apex.pid"
+    echo "Proceso lanzado con PID $PID."
     echo "Puedes desconectarte tranquilamente. Para monitorizar, usa: ./bin/po-batch --monitor"
-}
-
-# Función para monitorizar (TUI conectada al ledger)
-run_monitor() {
-    "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_monitor_ui.py"
-}
-
-case "$1" in
-    "--daemon")
-        run_daemon
-        ;;
-    "--monitor"|"")
-        run_monitor
-        ;;
-    *)
-        echo "Uso: ./bin/po-batch [--daemon | --monitor]"
-        exit 1
-        ;;
-esac
+    exit 0
+elif [ "$1" == "--monitor" ]; then
+    "$REPO_ROOT/.venv/bin/python" "$APEX_CORE_DIR/assessment_engine/scripts/tools/apex_dispatcher.py" --monitor
+else
+    "$REPO_ROOT/.venv/bin/python" "$APEX_CORE_DIR/assessment_engine/scripts/tools/apex_dispatcher.py" "$@"
+fi
