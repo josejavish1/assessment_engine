@@ -170,6 +170,18 @@ Estas acciones tienen un retorno tangible en la calidad y la experiencia de uso 
     *   **Acción:** Mover todos los ficheros de configuración, incluyendo los YAML de los prompts, a subdirectorios dentro de `engine_config/`.
     *   **Retorno:** Mejora la "calidad de vida" del desarrollador. Un único punto de verdad para toda la configuración hace el sistema más fácil de entender y modificar.
 
+### **Prioridad 4: "Apex Enterprise Roadmap" - Hacia la Madurez Nivel 4 (CNCF)**
+*(ROI: Máximo - Eficiencia, Blindaje y Gobernanza Autónoma)*
+Esta fase eleva el proyecto a una plataforma de grado industrial, optimizando costes, seguridad y observabilidad.
+
+1.  **Blindaje Táctico y FinOps (Fase 1):**
+    *   **Acción:** Implementar **Context Caching** (Vertex AI) y **Token Throttling**. Migrar el ejecutor a **Docker Sandboxing**.
+    *   **Retorno:** Ahorro de hasta el 70% en tokens y neutralización de ataques de inyección de prompt (RCE).
+
+2.  **Observabilidad Viva y Calidad Semántica (Fase 2):**
+    *   **Acción:** Implementar **JSON Structured Logging** y **Golden Datasets**. Migrar la UI del Command Center a **SSE/WebSockets**.
+    *   **Retorno:** Trazabilidad quirúrgica y garantía de no regresión en la inteligencia del motor.
+
 ---
 
 ## 5. Base de Conocimiento y Documentación

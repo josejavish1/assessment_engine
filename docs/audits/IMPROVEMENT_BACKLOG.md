@@ -16,6 +16,9 @@ La priorización se basa en el impacto y el esfuerzo estimado:
 
 | Prioridad | Área | Título de la Tarea | Descripción | Hallazgo Relacionado |
 |---|---|---|---|---|
+| **P1** | FinOps | Context Caching Nativo (Vertex AI) | Implementar caché de contexto para el ADN estratégico y contexto de negocio en `run_tower_pipeline.py`, reduciendo el coste de tokens de entrada hasta un 70%. | Roadmap Fase 1 |
+| **P1** | FinOps | Token Throttling por Rol | Configurar límites estrictos de `max_output_tokens` en `model_profiles.json` según la responsabilidad del agente para evitar desperdicio y alucinaciones costosas. | Roadmap Fase 1 |
+| **P1** | Seguridad | Sandboxing Estricto de Ejecución | Migrar el agente ejecutor para que las herramientas que modifican archivos o corren comandos (`run_command`) se ejecuten dentro de contenedores efímeros (Docker/gVisor) sin acceso a red, neutralizando ataques de ejecución remota de código (RCE) vía Prompt Injection. | Estrategia DevSecOps 2026 |
 | **P1** | Documentación | Actualizar las instrucciones de instalación en `docs/operations/installation.md` | El documento debe reflejar el proceso de instalación moderno con `pyproject.toml` y `pip install -e .`, y eliminar las referencias a `PYTHONPATH`. | `AUDIT_RESULTS.md` |
 | **P1** | Código | Añadir Docstrings a los Pipelines Principales | Añadir docstrings a nivel de módulo y función a `run_tower_pipeline.py`, `run_global_pipeline.py`, y `run_commercial_pipeline.py` para explicar su propósito, argumentos y artefactos. | `AUDIT_RESULTS.md` |
 | **P2** | Documentación | Completar el README en `docs/architecture/README.md` | Añadir una descripción general de la sección de arquitectura, explicando el propósito de cada documento y cómo se relacionan. | `AUDIT_RESULTS.md` |

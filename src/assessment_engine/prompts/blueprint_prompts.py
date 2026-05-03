@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def load_prompt_config(filename: str) -> dict:
     """Carga un archivo de configuración de prompt YAML."""
     import yaml  # type: ignore
