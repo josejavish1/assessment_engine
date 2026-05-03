@@ -154,7 +154,8 @@ async def run_agent(
     start_time = time.monotonic()
     
     # Build the function dispatcher from the agent's tools
-    agent_ref = getattr(app, "_agent", None)
+    tmpl_attrs = getattr(app, "_tmpl_attrs", {})
+    agent_ref = tmpl_attrs.get("agent")
     agent_tools = getattr(agent_ref, "tools", []) if agent_ref else []
     function_dispatcher = {
         tool.__name__: tool for tool in agent_tools
