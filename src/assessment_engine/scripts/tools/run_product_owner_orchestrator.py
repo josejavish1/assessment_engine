@@ -1178,6 +1178,7 @@ def reconcile_pull_request(
         pr_state = ignore_current_reconciliation_check(
             inspect_pull_request(plan["branch_name"])
         )
+        logger.info(f"Reconciliando PR #{pr_state.get('number', '?')} (Intento {poll_index}/{max_polls})... Checks pendientes: {len(pr_state['pending_checks'])}, Fallidos: {len(pr_state['failed_checks'])}")
         (request_dir / f"pr_state_{poll_index}.json").write_text(
             json.dumps(pr_state, ensure_ascii=False, indent=2),
             encoding="utf-8",
