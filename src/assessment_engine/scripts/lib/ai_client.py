@@ -351,10 +351,12 @@ async def call_agent(
 
     from google.adk.agents import Agent
     from vertexai.agent_engines import AdkApp
+    import uuid
 
+    unique_id = str(uuid.uuid4()).replace("-", "_")
     agent = Agent(
         model=model_name,
-        name="ad_hoc_agent",
+        name=f"ad_hoc_agent_{unique_id}",
         instruction=instruction,
         output_schema=output_schema,
         tools=tools or [],  # type: ignore
@@ -362,7 +364,7 @@ async def call_agent(
     app = AdkApp(agent=agent)
     return await run_agent(
         app=app,
-        user_id="ad-hoc-user",
+        user_id=f"user_{unique_id}",
         message=prompt,
         raw_output_file=raw_output_file,
         schema=output_schema,

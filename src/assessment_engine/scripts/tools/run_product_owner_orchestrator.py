@@ -1178,7 +1178,6 @@ def reconcile_pull_request(
         pr_state = ignore_current_reconciliation_check(
             inspect_pull_request(plan["branch_name"])
         )
-        logger.info(f"Reconciliando PR #{pr_state.get('number', '?')} (Intento {poll_index}/{max_polls})... Checks pendientes: {len(pr_state['pending_checks'])}, Fallidos: {len(pr_state['failed_checks'])}")
         (request_dir / f"pr_state_{poll_index}.json").write_text(
             json.dumps(pr_state, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -1634,6 +1633,10 @@ def main(argv: list[str] | None = None) -> int:
 
     executor_command = resolve_executor_command(args.executor_command)
     
+    if plan.get("is_ambiguous"):
+        logger.error(f"Petición ambigua. Pregunta del planificador: {plan.get('clarification_question', 'Sin pregunta')}")
+        return 1
+
     if plan.get("refused"):
         logger.error(f"El planificador rechazó la petición: {plan.get('refusal_reason', 'Sin razón proporcionada')}")
         return 1

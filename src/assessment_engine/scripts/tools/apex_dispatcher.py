@@ -121,7 +121,17 @@ def update_ui_components(layout: Layout):
 async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
     clean_prompt = task_prompt.replace("\n", " ").replace('"', '\\"')
     cmd = [str(REPO_ROOT / "bin/po-run"), clean_prompt]
-    process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=REPO_ROOT)
+    
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    
+    process = await asyncio.create_subprocess_exec(
+        *cmd, 
+        stdout=asyncio.subprocess.PIPE, 
+        stderr=asyncio.subprocess.STDOUT, 
+        cwd=REPO_ROOT,
+        env=env
+    )
     full_log = []
     
     session_log_path = WORKING_DIR / "session.log"
@@ -138,13 +148,7 @@ async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
                 UI_STATE["active_logs"].append(clean_decoded)
                 full_log.append(clean_decoded)
                 
-        _, stderr = await process.communicate()
-        if stderr: 
-            decoded_err = stderr.decode()
-            f_log.write(decoded_err)
-            f_log.flush()
-            full_log.append(decoded_err)
-            UI_STATE["active_logs"].append(decoded_err)
+        await process.wait()
             
     return process.returncode == 0, "\n".join(full_log)
 
@@ -177,7 +181,10 @@ async def process_task(task: dict, queue: list, idx: int):
     UI_STATE["active_task"] = task; task["status"] = "Running"
     while attempts <= max_rescue_rounds:
         SENTINEL.log_transaction(task["id"], f"attempt_{attempts}", task)
-        success, logs = await run_po_orchestrator(task.get("instruction") or f"Implementa: {task['title']}")
+        prompt = task.get("instruction")
+        if not prompt:
+            prompt = f"Implementa: {task['title']}\nDescripción: {task.get('description', '')}"
+        success, logs = await run_po_orchestrator(prompt)
         if success:
             task["status"] = "Success"; SENTINEL.log_transaction(task["id"], "success", {}, cost=0.05); UI_STATE["completed_count"] += 1
             return True
