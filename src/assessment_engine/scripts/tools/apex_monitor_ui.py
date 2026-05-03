@@ -23,6 +23,8 @@ from textual.widgets import (
     RichLog,
     Static,
     Tree,
+    TabbedContent,
+    TabPane,
 )
 from textual.screen import ModalScreen
 
@@ -38,26 +40,15 @@ WORKING_DIR = REPO_ROOT / "working" / "apex"
 BACKLOG_PATH = REPO_ROOT / "docs" / "audits" / "IMPROVEMENT_BACKLOG.md"
 LEDGER_PATH = WORKING_DIR / "apex_ledger.jsonl"
 PID_PATH = WORKING_DIR / "apex.pid"
+SESSION_LOG_PATH = WORKING_DIR / "session.log"
 
 def get_latest_request_dir() -> Path | None:
-    # Find the most recently created session directory in working/
-    working_base = REPO_ROOT / "working"
-    if not working_base.exists():
+    req_base = REPO_ROOT / "working" / "product_owner_requests"
+    if not req_base.exists():
         return None
-    session_dirs = [d for d in working_base.iterdir() if d.is_dir() and d.name.startswith("session_")]
+    session_dirs = [d for d in req_base.iterdir() if d.is_dir() and d.name[0].isdigit()]
     if not session_dirs:
-        # Fallback to TOWER_ID based if possible, or just search for authorized_feedback.json
-        client_dirs = [d for d in working_base.iterdir() if d.is_dir() and not d.name.startswith("apex")]
-        latest = None
-        latest_mtime = 0
-        for client_dir in client_dirs:
-             for tower_dir in client_dir.iterdir():
-                 if tower_dir.is_dir():
-                     mtime = tower_dir.stat().st_mtime
-                     if mtime > latest_mtime:
-                         latest_mtime = mtime
-                         latest = tower_dir
-        return latest
+        return None
     session_dirs.sort(key=lambda d: d.stat().st_mtime, reverse=True)
     return session_dirs[0]
 
@@ -114,18 +105,23 @@ class ApexMonitorApp(App):
         layout: vertical;
     }
     #backlog_table {
-        height: 60%;
+        height: 50%;
     }
     #brain_scanner {
-        height: 40%;
+        height: 50%;
         border_top: solid white;
+    }
+    TabbedContent {
+        height: 1fr;
     }
     #pipeline_train {
-        height: 30%;
+        height: 1fr;
     }
     #shadow_tracker {
-        height: 70%;
-        border_top: solid white;
+        height: 1fr;
+    }
+    #terminal_mirror {
+        height: 1fr;
     }
     #hint_dialog {
         padding: 1 2;
@@ -148,11 +144,13 @@ class ApexMonitorApp(App):
         self.tasks = []
         self.active_task_id = None
         self.last_ledger_pos = 0
+        self.last_session_log_pos = 0
         self.active_branch = None
         self.is_orchestrator_alive = False
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
+        yield Static(id="status_banner", classes="panel_title")
         with Container(id="main_container"):
             with Vertical(id="left_panel"):
                 yield Label("📋 MISSION BACKLOG", classes="panel_title")
@@ -160,14 +158,18 @@ class ApexMonitorApp(App):
                 yield Label("🧠 BRAIN SCANNER", classes="panel_title")
                 yield RichLog(id="brain_scanner", wrap=True, highlight=True, markup=True)
             with Vertical(id="right_panel"):
-                yield Label("🛤️ PIPELINE TRAIN (Plan & Progress)", classes="panel_title")
-                yield Tree("Pipeline Execution", id="pipeline_train")
-                yield Label("💻 SHADOW TRACKER (Live Code Diff)", classes="panel_title")
-                yield RichLog(id="shadow_tracker", wrap=False, highlight=True)
+                with TabbedContent(initial="tab-mirror"):
+                    with TabPane("📟 Terminal Mirror", id="tab-mirror"):
+                        yield RichLog(id="terminal_mirror", wrap=True, highlight=True)
+                    with TabPane("🛤️ Pipeline Train", id="tab-train"):
+                        yield Tree("Pipeline Execution", id="pipeline_train")
+                    with TabPane("💻 Shadow Tracker", id="tab-shadow"):
+                        yield RichLog(id="shadow_tracker", wrap=False, highlight=True)
         yield Footer()
 
     def on_mount(self) -> None:
         self.title = "APEX X-Ray Command Center"
+        self.query_one("#status_banner", Static).update("TOTAL COST: $0.000 | Waiting for orchestrator...")
         
         # Init Backlog Table
         table = self.query_one(DataTable)
@@ -178,6 +180,32 @@ class ApexMonitorApp(App):
             
         self.update_state_loop()
         self.poll_git_diff()
+        self.tail_session_log()
+
+    @work(exclusive=True, thread=True)
+    def tail_session_log(self):
+        """Tails the session.log file to feed the Terminal Mirror."""
+        while True:
+            if SESSION_LOG_PATH.exists():
+                with open(SESSION_LOG_PATH, "r", encoding="utf-8", errors="replace") as f:
+                    f.seek(self.last_session_log_pos)
+                    lines = f.readlines()
+                    self.last_session_log_pos = f.tell()
+                
+                if lines:
+                    self.call_from_thread(self._update_terminal_mirror, lines)
+            time.sleep(0.5)
+
+    def _update_terminal_mirror(self, lines: list[str]):
+        log_widget = self.query_one("#terminal_mirror", RichLog)
+        for line in lines:
+            line_clean = line.strip()
+            if line_clean:
+                # Basic JSON coloring for structured logs
+                if line_clean.startswith("{") and line_clean.endswith("}"):
+                    log_widget.write(line_clean)
+                else:
+                    log_widget.write(line_clean)
 
     @work(exclusive=True, thread=True)
     def update_state_loop(self):
@@ -252,6 +280,17 @@ class ApexMonitorApp(App):
         brain = self.query_one("#brain_scanner", RichLog)
         tree = self.query_one(Tree)
 
+        total_cost = 0.0
+        # Re-read cost from beginning (not most efficient but ensures accuracy)
+        try:
+             with open(LEDGER_PATH, "r", encoding="utf-8") as f_cost:
+                  for l in f_cost:
+                       tx = json.loads(l)
+                       total_cost += tx.get("cost_usd", 0.0)
+             self.query_one("#status_banner", Static).update(f"🔥 TOTAL APEX RUN COST: [bold yellow]${total_cost:.4f}[/bold yellow] | Current: {self.active_task_id}")
+        except Exception:
+             pass
+
         for line in lines:
             try:
                 tx = json.loads(line)
@@ -273,10 +312,12 @@ class ApexMonitorApp(App):
                         new_status = "HARD_BLOCK"
                     
                     try:
-                         # Ensure the row exists before updating
+                         # Attempt to update existing row
                          table.update_cell(task_id, "Status", new_status)
                     except Exception:
-                         pass
+                         # If task is not in table (like EMG tasks), add it dynamically!
+                         title = details.get("title", f"Emergency Task {task_id}")
+                         table.add_row(task_id, new_status, title, key=task_id)
 
                 # Scan for tool calls in logs to feed Brain Scanner
                 if "tool_results" in str(details) or "Function call" in str(details) or event == "debate_completed":
