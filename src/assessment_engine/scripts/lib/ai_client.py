@@ -309,12 +309,22 @@ async def call_agent(
                 "response_schema": output_schema,
             },
         )
-        if raw_output_file and response.text:
-            raw_output_file.write_text(response.text, encoding="utf-8")
+        text_parts = []
+        if getattr(response, "candidates", None) and response.candidates:
+            for part in getattr(response.candidates[0].content, "parts", []):
+                if getattr(part, "text", None):
+                    text_parts.append(part.text)
+                elif getattr(part, "function_call", None):
+                    text_parts.append(str(part.function_call))
+        
+        final_text = "".join(text_parts) if text_parts else (response.text or "{}")
+
+        if raw_output_file and final_text:
+            raw_output_file.write_text(final_text, encoding="utf-8")
 
         from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
 
-        data = parse_json_from_text(response.text or "{}")
+        data = parse_json_from_text(final_text)
         if output_schema:
             return _robust_unwrap_and_validate(data, output_schema)
         return data
