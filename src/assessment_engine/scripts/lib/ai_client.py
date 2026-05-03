@@ -30,19 +30,46 @@ logger = logging.getLogger(__name__)
 VERTEX_CONCURRENCY_LIMIT = 5
 _vertex_semaphore = asyncio.Semaphore(VERTEX_CONCURRENCY_LIMIT)
 
+# Cache para consultas a Vertex AI
+_query_cache = {}
+_CACHE_MAX_SIZE = 128
+
 
 class VertexQueryTimeoutError(RuntimeError):
     """La consulta a Vertex AI superó el timeout configurado."""
 
 
-def extract_model_text(event: Any) -> Optional[str]:
+def _extract_model_parts(event: Any) -> tuple[Optional[str], list[dict]]:
+    """Extrae texto y `function_call` o `tool_calls` de un evento de streaming."""
+    text_parts = []
+    function_calls = []
+
     if isinstance(event, dict):
         content = event.get("content", {})
         parts = content.get("parts", [])
         for part in parts:
-            if isinstance(part, dict) and "text" in part:
-                return part["text"]
-    return None
+            if not isinstance(part, dict):
+                continue
+            if "text" in part and part["text"]:
+                text_parts.append(part["text"])
+            if "function_call" in part:
+                function_calls.append(part["function_call"])
+            elif "tool_calls" in part:
+                function_calls.extend(part["tool_calls"])
+    elif hasattr(event, "candidates") and event.candidates:
+        parts = getattr(event.candidates[0].content, "parts", [])
+        for part in parts:
+            if getattr(part, "text", None):
+                text_parts.append(part.text)
+            if getattr(part, "function_call", None):
+                fc = part.function_call
+                function_calls.append({
+                    "name": fc.name,
+                    "args": dict(fc.args) if fc.args else {}
+                })
+
+    text = "".join(text_parts) if text_parts else None
+    return text, function_calls
 
 
 @retry(
@@ -55,33 +82,40 @@ def extract_model_text(event: Any) -> Optional[str]:
 )
 async def _execute_query_with_retry(
     app: AdkApp, user_id: str, message: str
-) -> tuple[str, list[str]]:
+) -> tuple[str, list[dict], list[str]]:
     """
-    Realiza la consulta al agente con lógica de reintentos.
+    Realiza la consulta al agente con lógica de reintentos, capturando texto y function calls.
     """
     async with _vertex_semaphore:
         lines = []
-        last_text = None
+        full_text = []
+        function_calls = []
         timeout_seconds = get_vertex_query_timeout_seconds()
+        
         try:
             async with asyncio.timeout(timeout_seconds):
                 async for event in app.async_stream_query(
                     user_id=user_id,
                     message=message,
                 ):
-                    lines.append(str(event))
-                    text = extract_model_text(event)
+                    text, new_fcs = _extract_model_parts(event)
                     if text:
-                        last_text = text
+                        lines.append(text)
+                        full_text.append(text)
+                    if new_fcs:
+                        lines.append(str(new_fcs))
+                        function_calls.extend(new_fcs)
+
         except TimeoutError as exc:
             raise VertexQueryTimeoutError(
                 f"Vertex agent query timed out after {timeout_seconds:.0f}s for user_id={user_id}."
             ) from exc
 
-        if not last_text:
+        final_text = "".join(full_text)
+        if not final_text and not function_calls:
             raise RuntimeError("Respuesta vacía o incompleta del modelo.")
 
-        return last_text, lines
+        return final_text, function_calls, lines
 
 
 def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
@@ -106,25 +140,121 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
         raise e
 
 
+# Precios estimados por 1M tokens (Gemini 2.5 Pro aprox)
+PRICING = {
+    "input": 1.25,  # $ per 1M tokens
+    "output": 5.00, # $ per 1M tokens
+}
+
+def estimate_cost(input_tokens: int, output_tokens: int) -> float:
+    cost = (input_tokens / 1_000_000 * PRICING["input"]) + (output_tokens / 1_000_000 * PRICING["output"])
+    return round(cost, 5)
+
 async def run_agent(
     app: AdkApp,
     user_id: str,
     message: str,
     raw_output_file: Optional[Path] = None,
     schema: Any = None,
+    run_id: str | None = None,
 ) -> dict:
     """
-    Ejecuta un agente de forma asíncrona y captura telemetría.
+    Ejecuta un agente de forma asíncrona y captura telemetría avanzada.
     """
     start_time = time.monotonic()
+    
+    # Build the function dispatcher from the agent's tools
+    tmpl_attrs = getattr(app, "_tmpl_attrs", {})
+    agent_ref = tmpl_attrs.get("agent")
+    agent_tools = getattr(agent_ref, "tools", []) if agent_ref else []
+    function_dispatcher = {
+        tool.__name__: tool for tool in agent_tools
+    }
+    
+    # Placeholder para tokens (el ADK actual no siempre los expone fácilmente en el stream)
+    # En una implementación real extraeríamos esto de los metadatos de la respuesta final
+    input_tokens_est = len(message) // 4
+    output_tokens_est = 0
+    is_cache_hit = False
 
     try:
-        last_text, lines = await _execute_query_with_retry(app, user_id, message)
+        agent_name = getattr(getattr(app, "_agent", None), "name", "N/A")
+        instruction = getattr(getattr(app, "_agent", None), "instruction", "")
+        schema_name = schema.__name__ if schema else "Raw JSON"
+
+        cache_key = (agent_name, instruction, schema_name, user_id, message)
+        
+        if cache_key in _query_cache:
+            full_text, function_calls, lines = _query_cache[cache_key]
+            is_cache_hit = True
+        else:
+            full_text, function_calls, lines = await _execute_query_with_retry(app, user_id, message)
+            if len(_query_cache) >= _CACHE_MAX_SIZE:
+                _query_cache.pop(next(iter(_query_cache)))
+            _query_cache[cache_key] = (full_text, function_calls, lines)
+
+        output_tokens_est = len(full_text) // 4 if full_text else 0
 
         if raw_output_file:
             raw_output_file.write_text("\n".join(lines), encoding="utf-8")
 
-        data = parse_json_from_text(last_text)
+        if function_calls:
+            logger.info(f"[run_id={run_id}] Function call(s) received: {function_calls}")
+            tool_results = []
+            for fc in function_calls:
+                tool_name = fc.get("name")
+                if not tool_name:
+                    logger.warning(f"[run_id={run_id}] Received a function call without a name: {fc}")
+                    continue
+
+                if tool_name in function_dispatcher:
+                    tool_func = function_dispatcher[tool_name]
+                    tool_args = fc.get("args", {})
+                    try:
+                        # Argument validation could be added here if needed
+                        result = tool_func(**tool_args)
+                        tool_results.append(
+                            {
+                                "tool_name": tool_name,
+                                "result": result,
+                                "status": "OK",
+                            }
+                        )
+                        logger.info(f"[run_id={run_id}] Executed tool '{tool_name}' with args {tool_args}. Result: {result}")
+                    except Exception as e:
+                        logger.error(f"[run_id={run_id}] Error executing tool '{tool_name}': {e}")
+                        tool_results.append(
+                            {
+                                "tool_name": tool_name,
+                                "error": str(e),
+                                "status": "Error",
+                            }
+                        )
+                else:
+                    logger.warning(f"[run_id={run_id}] Model hallucinated function name '{tool_name}', which is not a registered tool.")
+                    tool_results.append(
+                        {
+                            "tool_name": tool_name,
+                            "error": f"Function '{tool_name}' not found.",
+                            "status": "Error",
+                        }
+                    )
+            import json
+            follow_up_message = "Tool execution results:\n" + json.dumps(tool_results, indent=2) + "\n\nPlease continue and fulfill the original request schema."
+            logger.info(f"[run_id={run_id}] Feeding tool results back to the model for continuation...")
+            return await run_agent(
+                app=app,
+                user_id=user_id,
+                message=follow_up_message,
+                raw_output_file=raw_output_file,
+                schema=schema,
+                run_id=run_id
+            )
+
+        if not full_text:
+             raise RuntimeError("Respuesta de texto vacía y sin 'function calls'.")
+
+        data = parse_json_from_text(full_text)
 
         if schema:
             return _robust_unwrap_and_validate(data, schema)
@@ -132,16 +262,18 @@ async def run_agent(
         return data
 
     except Exception as e:
-        logger.error(
-            f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
-        )
+        log_msg = f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
+        if run_id:
+            log_msg = f"[run_id={run_id}] {log_msg}"
+        logger.error(log_msg)
         raise
 
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
+        cost = estimate_cost(input_tokens_est, output_tokens_est)
+        
         try:
-            # ignore typing for tenacity retry attribute
             retries = (
                 getattr(_execute_query_with_retry, "retry").statistics.get(
                     "attempt_number", 1
@@ -151,21 +283,21 @@ async def run_agent(
         except Exception:
             retries = 0
 
-        # Safely access agent and model info
-        agent_obj = getattr(app, "_agent", None)
-        agent_name = getattr(agent_obj, "name", "N/A")
-        model_name = getattr(agent_obj, "model", "N/A")
-
         # Telemetry Output
         telemetry_data = {
-            "agent_name": agent_name,
-            "model": model_name,
-            "user_id": user_id,
+            "run_id": run_id,
+            "agent_name": getattr(getattr(app, "_agent", None), "name", "N/A"),
             "duration_seconds": round(duration, 2),
             "retries": retries,
+            "cost_usd": cost,
+            "tokens": {"input": input_tokens_est, "output": output_tokens_est},
             "output_schema": schema.__name__ if schema else "Raw JSON",
+            "cache_hit": is_cache_hit,
         }
-        logger.info("AI Agent Telemetry", extra={"telemetry": telemetry_data})
+        log_msg = "AI Agent Telemetry"
+        if run_id:
+            log_msg = f"[run_id={run_id}] {log_msg}"
+        logger.info(log_msg, extra={"telemetry": telemetry_data})
 
 
 async def call_agent(
@@ -175,6 +307,7 @@ async def call_agent(
     instruction: str = "",
     output_schema: Any = None,
     tools: Optional[list[Callable[..., Any]]] = None,
+    run_id: str | None = None,
 ) -> dict:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
@@ -196,12 +329,22 @@ async def call_agent(
                 "response_schema": output_schema,
             },
         )
-        if raw_output_file and response.text:
-            raw_output_file.write_text(response.text, encoding="utf-8")
+        text_parts = []
+        if getattr(response, "candidates", None) and response.candidates:
+            for part in getattr(response.candidates[0].content, "parts", []):
+                if getattr(part, "text", None):
+                    text_parts.append(part.text)
+                elif getattr(part, "function_call", None):
+                    text_parts.append(str(part.function_call))
+        
+        final_text = "".join(text_parts) if text_parts else (response.text or "{}")
+
+        if raw_output_file and final_text:
+            raw_output_file.write_text(final_text, encoding="utf-8")
 
         from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
 
-        data = parse_json_from_text(response.text or "{}")
+        data = parse_json_from_text(final_text)
         if output_schema:
             return _robust_unwrap_and_validate(data, output_schema)
         return data
@@ -214,7 +357,7 @@ async def call_agent(
         name="ad_hoc_agent",
         instruction=instruction,
         output_schema=output_schema,
-        tools=tools,  # type: ignore
+        tools=tools or [],  # type: ignore
     )
     app = AdkApp(agent=agent)
     return await run_agent(
@@ -223,4 +366,5 @@ async def call_agent(
         message=prompt,
         raw_output_file=raw_output_file,
         schema=output_schema,
+        run_id=run_id,
     )

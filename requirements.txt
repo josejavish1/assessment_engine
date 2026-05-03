@@ -132,3 +132,4 @@ websockets==15.0.1
 yarl==1.23.0
 zipp==3.23.0
 duckduckgo-search==8.1.1
+textual==8.2.5
