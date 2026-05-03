@@ -110,16 +110,25 @@ async def _execute_query_with_retry(
 
         client = genai.Client()
         
-        clean_schema = _sanitize_schema(schema.model_json_schema()) if schema else None
-        
-        config = types.GenerateContentConfig(
-            system_instruction=instruction,
-            response_mime_type="application/json" if schema else "text/plain",
-            response_schema=clean_schema,
-            tools=agent_tools if agent_tools else None,
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False) if agent_tools else None,
-            temperature=getattr(agent_ref, "temperature", 0.0) if agent_ref else 0.0,
-        )
+        # Google GenAI API does not support mixing function calling with JSON response mime type.
+        # We rely on parse_json_from_text and _robust_unwrap_and_validate afterwards instead.
+        if agent_tools:
+            config_kwargs = {
+                "system_instruction": instruction,
+                "tools": agent_tools,
+                "automatic_function_calling": types.AutomaticFunctionCallingConfig(disable=False),
+                "temperature": getattr(agent_ref, "temperature", 0.0) if agent_ref else 0.0,
+            }
+        else:
+            clean_schema = _sanitize_schema(schema.model_json_schema()) if schema else None
+            config_kwargs = {
+                "system_instruction": instruction,
+                "response_mime_type": "application/json" if schema else "text/plain",
+                "response_schema": clean_schema,
+                "temperature": getattr(agent_ref, "temperature", 0.0) if agent_ref else 0.0,
+            }
+            
+        config = types.GenerateContentConfig(**config_kwargs)
 
         try:
             async with asyncio.timeout(timeout_seconds):
