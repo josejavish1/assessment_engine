@@ -72,6 +72,17 @@ def _extract_model_parts(event: Any) -> tuple[Optional[str], list[dict]]:
     return text, function_calls
 
 
+def _sanitize_schema(schema_dict: Any) -> Any:
+    if isinstance(schema_dict, dict):
+        schema_dict.pop("additionalProperties", None)
+        schema_dict.pop("title", None)
+        for value in schema_dict.values():
+            _sanitize_schema(value)
+    elif isinstance(schema_dict, list):
+        for item in schema_dict:
+            _sanitize_schema(item)
+    return schema_dict
+
 @retry(
     retry=retry_if_exception(lambda exc: not isinstance(exc, VertexQueryTimeoutError))
     & retry_if_exception_type((Exception,)),
@@ -84,7 +95,7 @@ async def _execute_query_with_retry(
     app: AdkApp, user_id: str, message: str, schema: Any = None
 ) -> tuple[str, list[dict], list[str]]:
     """
-    Realiza la consulta al agente utilizando google-genai con automatic_function_calling.
+    Realiza la consulta al agente utilizando google-genai con automatic_function_calling stateful.
     """
     from google import genai
     from google.genai import types
@@ -100,10 +111,12 @@ async def _execute_query_with_retry(
 
         client = genai.Client()
         
+        clean_schema = _sanitize_schema(schema.model_json_schema()) if schema else None
+        
         config = types.GenerateContentConfig(
             system_instruction=instruction,
             response_mime_type="application/json" if schema else "text/plain",
-            response_schema=schema,
+            response_schema=clean_schema,
             tools=agent_tools if agent_tools else None,
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False) if agent_tools else None,
             temperature=getattr(agent_ref, "temperature", 0.0) if agent_ref else 0.0,
@@ -111,16 +124,12 @@ async def _execute_query_with_retry(
 
         try:
             async with asyncio.timeout(timeout_seconds):
-                response = await client.aio.models.generate_content(
+                chat = client.aio.chats.create(
                     model=model_name,
-                    contents=message,
                     config=config,
                 )
-                
+                response = await chat.send_message(message)
                 final_text = response.text or "{}"
-                
-                # No longer need to manually parse function calls since the SDK handles it
-                # but we return empty function_calls list to satisfy legacy tuple unpacking
                 return final_text, [], [final_text]
 
         except TimeoutError as exc:
