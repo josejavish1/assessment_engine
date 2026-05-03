@@ -1,0 +1,41 @@
+#!/bin/bash
+# bin/po-batch
+# Meta-Orquestador APEX con soporte para ejecución persistente.
+
+set -e
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_FILE="$REPO_ROOT/working/apex/session.log"
+
+# Asegurar entorno
+if [ ! -d "$REPO_ROOT/.venv" ]; then echo "Error: .venv no encontrado."; exit 1; fi
+source "$REPO_ROOT/assessment_env.sh"
+export PYTHONPATH="$REPO_ROOT/src"
+
+# Función para ejecución en modo DAEMON (Background persistente)
+run_daemon() {
+    echo "Lanzando Apex Sentinel en segundo plano..."
+    echo "Logs disponibles en: $LOG_FILE"
+    nohup "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_dispatcher.py" --headless >> "$LOG_FILE" 2>&1 &
+    echo $! > "$REPO_ROOT/working/apex/apex.pid"
+    echo "Proceso lanzado con PID $(cat "$REPO_ROOT/working/apex/apex.pid")."
+    echo "Puedes desconectarte tranquilamente. Para monitorizar, usa: ./bin/po-batch --monitor"
+}
+
+# Función para monitorizar (TUI conectada al ledger)
+run_monitor() {
+    "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_monitor_ui.py"
+}
+
+case "$1" in
+    "--daemon")
+        run_daemon
+        ;;
+    "--monitor"|"")
+        run_monitor
+        ;;
+    *)
+        echo "Uso: ./bin/po-batch [--daemon | --monitor]"
+        exit 1
+        ;;
+esac
