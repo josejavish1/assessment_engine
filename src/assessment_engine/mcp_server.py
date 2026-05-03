@@ -520,3 +520,6 @@ if __name__ == "__main__":
         mcp.run(transport="sse")
     else:
         mcp.run()
+
+# Trivial change for reconciliation test
+THIS IS A SYNTAX ERROR
