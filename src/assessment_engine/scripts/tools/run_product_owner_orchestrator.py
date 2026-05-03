@@ -303,17 +303,26 @@ def build_executor_args(
 def collect_changed_python_files() -> list[str]:
     tracked = subprocess.run(
         ["git", "diff", "--name-only", "--", "*.py"],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
     ).stdout.splitlines()
-    
+
     untracked = subprocess.run(
         ["git", "ls-files", "--others", "--exclude-standard", "*.py"],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
     ).stdout.splitlines()
-    
+
     staged = subprocess.run(
         ["git", "diff", "--name-only", "--cached", "--", "*.py"],
-        cwd=ROOT, capture_output=True, text=True, check=False,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
     ).stdout.splitlines()
 
     files = set(line.strip() for line in tracked + untracked + staged if line.strip())
