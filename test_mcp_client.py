@@ -1,6 +1,8 @@
 import asyncio
-from mcp.client.sse import sse_client
+
 from mcp.client.session import ClientSession
+from mcp.client.sse import sse_client
+
 
 async def main():
     try:

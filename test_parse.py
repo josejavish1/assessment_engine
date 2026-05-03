@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 out = """/home/jsanchhi/assessment_engine/.venv/lib/python3.11/site-packages/google/adk/features/_feature_decorator.py:72: UserWarning: [EXPERIMENTAL] feature FeatureName.PLUGGABLE_AUTH is enabled.
   check_feature_enabled()
 {"timestamp": "2026-05-02 14:06:32,432", "severity": "INFO", "logger": "google_genai._api_client", "message": "The project/location from the environment variables will take precedence over the API key from the environment variables."}
