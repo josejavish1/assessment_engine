@@ -1370,12 +1370,47 @@ def execute_plan(
     skip_pr: bool,
     skip_auto_merge: bool,
 ) -> None:
+    global ROOT
+    original_root = ROOT
+    import assessment_engine.scripts.lib.runtime_paths as rp
+    import atexit
+
     policy = load_orchestrator_policy()
     timeouts = resolve_execution_timeouts(policy)
     max_attempts = int(policy.get("execution", {}).get("max_attempts_per_task", 3))
     preflight_executor(request_dir, executor_command)
 
-    ensure_branch(plan["branch_name"])
+    branch_name = plan["branch_name"]
+    shadow_worktree_path = Path("/tmp") / f"shadow_worktree_{slugify(branch_name)}"
+    
+    # 1. Configurar y limpiar Shadow Worktree
+    logger.info(f"Fase 2: Preparando Shadow Workspace en {shadow_worktree_path}")
+    subprocess.run(["git", "worktree", "remove", "-f", str(shadow_worktree_path)], cwd=original_root, stderr=subprocess.DEVNULL)
+    
+    # Nos aseguramos de que la rama exista
+    ensure_branch(branch_name)
+    
+    # Mover el main worktree a detached HEAD para liberar la rama
+    subprocess.run(["git", "checkout", "--detach"], cwd=original_root, check=True)
+    
+    # Crear el worktree
+    subprocess.run(["git", "worktree", "add", "-f", str(shadow_worktree_path), branch_name], cwd=original_root, check=True)
+    
+    # 2. Inyectar el entorno de ejecución y registrar limpieza
+    def cleanup_worktree() -> None:
+        try:
+            os.chdir(original_root)
+            subprocess.run(["git", "worktree", "remove", "-f", str(shadow_worktree_path)], cwd=original_root, stderr=subprocess.DEVNULL)
+            subprocess.run(["git", "checkout", branch_name], cwd=original_root, check=False)
+            logger.info("Shadow Workspace limpiado y rama restaurada en el origen.")
+        except Exception as e:
+            logger.error(f"Error limpiando shadow worktree: {e}")
+
+    atexit.register(cleanup_worktree)
+    
+    ROOT = shadow_worktree_path
+    rp.ROOT = shadow_worktree_path
+    os.chdir(shadow_worktree_path)
 
     # Cargar feedback autorizado si existe
     authorized_feedback_path = request_dir / "authorized_feedback.json"
