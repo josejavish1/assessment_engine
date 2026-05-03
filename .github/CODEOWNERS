@@ -1,20 +1,44 @@
-# Default owner
+# =================================================================
+# Default Owner
+# =================================================================
+#
+# El propietario por defecto es una salvaguarda.
+# Intenta asignar un propietario más específico siempre que sea posible.
 * @josejavish1
 
-# Documentation governance
-/README.md @josejavish1
+# =================================================================
+# Documentación y Gobernanza
+# =================================================================
+#
+# Propietario de la estructura documental, políticas y guías de IA.
 /docs/ @josejavish1
+/README.md @josejavish1
 /AGENTS.md @josejavish1
 /CHATGPT.md @josejavish1
 /GEMINI.md @josejavish1
-/docs/documentation_audit.md @josejavish1
-/.github/copilot-instructions.md @josejavish1
-/.github/pull_request_template.md @josejavish1
-/.github/CODEOWNERS @josejavish1
-/.github/workflows/docs-governance.yml @josejavish1
-/.github/workflows/quality.yml @josejavish1
-/.github/workflows/typing.yml @josejavish1
-
-# Operational Documents
 /A5_CHECKLIST.md @josejavish1
 
+# =================================================================
+# Infraestructura, CI/CD y Gobernanza del Código
+# =================================================================
+#
+# Workflows, políticas de PRs y configuración de seguridad.
+/.github/ @josejavish1
+
+# =================================================================
+# Código Fuente: Motor de Assessments (Backend)
+# =================================================================
+#
+# El corazón del sistema de generación de informes.
+/src/assessment_engine/ @josejavish1
+/tests/ @josejavish1
+/engine_config/ @josejavish1
+/pyproject.toml @josejavish1
+/requirements.txt @josejavish1
+
+# =================================================================
+# Código Fuente: Business Command Center (Frontend)
+# =================================================================
+#
+# Interfaz de usuario para la orquestación y visualización.
+/src/business_command_center/ @josejavish1

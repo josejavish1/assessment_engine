@@ -40,6 +40,7 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 | [`docs/SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) | Actualizado | Descripción de alto nivel de la arquitectura, actualizada y alineada con el modelo "Top-Down". |
 | [`docs/documentation-map.yaml`](documentation-map.yaml) | Actualizado | Inventario máquina-legible del estado de la documentación. Pieza central de la gobernanza. |
 | [`docs/ai/documentation-governance.md`](ai/documentation-governance.md) | Actualizado | Define la política y las reglas para mantener la documentación. Muy actualizado. |
+| [`docs/documentation_audit.md`](documentation_audit.md) | Actualizado | Documento de seguimiento del estado de la documentación. |
 
 ### Arquitectura
 
