@@ -1,3 +1,40 @@
+prompt_details:
+  description: "Genera el diagnóstico técnico y el plan de acción para un pilar específico dentro de una torre de arquitectura, basándose en el contexto de negocio, los hallazgos técnicos y el ADN estratégico del cliente."
+  variables:
+    - name: tower_name
+      description: "El nombre de la torre de arquitectura que se está evaluando."
+    - name: pilar_label
+      description: "El nombre del pilar específico que se está analizando dentro de la torre."
+    - name: pilar_score
+      description: "La puntuación de madurez del pilar."
+    - name: context_str
+      description: "Texto con el contexto de negocio del cliente."
+    - name: intel_str
+      description: "Texto con el ADN estratégico y la inteligencia del cliente."
+    - name: answers_json
+      description: "JSON con las respuestas del cliente a los cuestionarios técnicos."
+  template: |
+    Eres un {role}.
+    {context_description}
+
+    CONTEXTO DEL NEGOCIO:
+    {context_str}
+
+    ADN ESTRATÉGICO (Minuto Cero):
+    {intel_str}
+
+    HALLAZGOS TÉCNICOS (Respuestas del cliente):
+    {answers_json}
+
+    TAREA:
+    {task}
+
+    REGLAS DE ORO:
+    {golden_rules_list}
+
+    {handover}
+    Devuelve la informacion en formato JSON estructurado.
+
 role: "Senior Infrastructure Architect de NTT DATA"
 context_description: "ESTÁS ELABORANDO EL BLUEPRINT DE TRANSFORMACIÓN PARA LA TORRE '{tower_name}', PILAR '{pilar_label}' (Nota: {pilar_score})."
 task: "Genera un diagnóstico técnico y un plan de acción para este pilar. EXPANDE TUS EXPLICACIONES EN UN 50%. Aporta mucho detalle técnico, arquitectónico y justificación de negocio en cada punto generado."

@@ -25,23 +25,32 @@ Nuestra estrategia operativa se basa en los principios de **GitOps**, donde el r
 
 ## Arquitectura CI/CD Visual
 
-El siguiente diagrama ilustra el flujo de nuestro pipeline de Integración Continua (CI). Para una descripción técnica detallada de cada `job` y `workflow`, consulte el documento [`ci-cd-workflows.md`](./ci-cd-workflows.md).
+El siguiente diagrama ilustra el flujo de nuestros pipelines de Integración Continua (CI). La mayoría se disparan ante un Pull Request y se ejecutan en paralelo como "status checks". Para una descripción técnica detallada de cada `job` y `workflow`, consulte el documento [`ci-cd-workflows.md`](./ci-cd-workflows.md).
 
 ```mermaid
 graph TD
-    A[Trigger: Push o Pull Request] --> B{Workflow: CI (ci.yml)};
-
-    subgraph B
-        C[Job: Linting & Formatting] --> D[Job: Static Typing];
-        D --> E[Job: Unit & Integration Tests];
+    subgraph Trigger
+        A[Push or Open PR to main/develop]
     end
 
-    E --> F[Build & Package];
-    F --> G[Notificación de Éxito / Fallo];
+    subgraph "CI/CD Pipeline (Runs in Parallel)"
+        A --> B[CI: Tests & Smoke Run];
+        A --> C[Quality: Incremental Checks];
+        A --> D[Typing: Incremental Type Check];
+        A --> E[Docs: Governance Check];
+        A --> F[Agent Evals (Conditional on file paths)];
+    end
+    
+    subgraph "Other Triggers"
+        G[Nightly Schedule] --> F;
+        H[Merge to main] --> I[Auto-reconcile open PRs];
+    end
 
-    style A fill:#228B22,color:#fff
-    style G fill:#228B22,color:#fff
-    style F fill:#FFA500
+    B --> Z{PR Status};
+    C --> Z;
+    D --> Z;
+    E --> Z;
+    F --> Z;
 ```
 
 ## Índice de Documentos Operativos
