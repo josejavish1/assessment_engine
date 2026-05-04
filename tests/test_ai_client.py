@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from pydantic import BaseModel, ValidationError
 
 from assessment_engine.scripts.lib.ai_client import (
