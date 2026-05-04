@@ -208,6 +208,11 @@ Para garantizar una integración nativa, estable y segura con el repositorio de 
 
 ---
 
+Para probar o validar cualquier cambio en Python (tanto scripts como tests), **NO** uses comandos globales como `python` o `pytest`.  
+Debes usar SIEMPRE el entorno virtual local ubicado en `/home/jsanchhi/assessment_engine/.venv`.  
+- Para ejecutar tests: `/home/jsanchhi/assessment_engine/.venv/bin/pytest`
+- Para ejecutar scripts Python: `/home/jsanchhi/assessment_engine/.venv/bin/python`
+
 ## 7. Protocolo de Ejecución Estricta para `po-run` (Orquestador Autónomo)
 
 Cuando se solicite ejecutar una tarea o implementar cambios a través del orquestador autónomo (`bin/po-run`), el agente IA (Gemini) **DEBE CUMPLIR ESTRICTAMENTE** las siguientes directrices sin excepciones, bajo pena de corromper la gobernanza del repositorio:
