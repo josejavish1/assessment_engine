@@ -50,5 +50,11 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
     *   **Frontend:** Aplicación web dedicada (Next.js + Vercel AI SDK / React Flow) construida de forma acelerada *por* el equipo de agentes de IA usando componentes base (Shadcn/v0).
     *   **UX (Generative UI):** Interfaz limpia y espacial. El consultor no ve código ni JSONs. Ve los "Towers" y "Pillars" del Assessment renderizados dinámicamente como gráficas interactivas, alimentados por el mismo servidor MCP en background.
 
+### Fase 5: Meta-Remediación y Autonomía Nivel 5 (El Meta-Sentinel)
+**Objetivo:** Eliminar la dependencia humana en fallos catastróficos del orquestador (alucinaciones en bucle, bloqueos de Git) mediante una arquitectura de auto-supervisión de dos capas.
+*   **Detector de Bucles por Telemetría:** Un observador asíncrono que audita `apex_ledger.jsonl`. En lugar de curar excepciones locales, detecta patrones sistémicos de fallo (`CYCLE DETECTED` = [Fallo -> Saneamiento -> Fallo -> Saneamiento]).
+*   **El "Meta-Sentinel Agent" (El Supervisor del Supervisor):** Al detectar un ciclo, el orquestador se congela. El Meta-Sentinel toma el control absoluto. Analiza un "System Dump" (Ledger, `git status`, procesos de Linux) para diagnosticar la corrupción sistémica.
+*   **Ejecución Out-Of-Band (OOB):** El Meta-Sentinel no usa el `Shadow Workspace`. Tiene privilegios de SysAdmin (`execute_system_command`) para matar procesos huérfanos, limpiar el árbol de trabajo principal y re-encarrilar al orquestador emitiendo un `RESUME_ORCHESTRATION`.
+
 ---
 *Nota: Este documento sirve como "North Star" para guiar el desarrollo de los agentes internos del equipo. La construcción de la Fase 4B debe delegarse como una serie de Epics a los agentes del Developer Control Plane.*

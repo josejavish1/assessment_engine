@@ -4,7 +4,7 @@ import os
 import subprocess
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path("/tmp/shadow_worktree_feat_po_orchestrator_pydantic_validation")
 WRAPPER = REPO_ROOT / "bin" / "po-run"
 ORCHESTRATOR = (
     REPO_ROOT / "src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py"

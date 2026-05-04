@@ -16,7 +16,8 @@ dependencies = [
     "opentelemetry-distro",
     "opentelemetry-instrumentation",
     "opentelemetry-instrumentation-fastapi",
-    "opentelemetry-instrumentation-logging"
+    "opentelemetry-instrumentation-logging",
+    "Jinja2~=3.1.6"
 ]
 
 [build-system]

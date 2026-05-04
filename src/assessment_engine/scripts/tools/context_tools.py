@@ -119,10 +119,31 @@ def read_doc_file(file_path: str) -> str:
         return f"Error reading file '{file_path}': {e}"
 
 
+def list_source_files() -> str:
+    """
+    Lists all Python source code files in the repository.
+    Use this to find the exact paths of the files you need to inspect.
+    """
+    _log_trace("Explorando el índice de código fuente del repositorio...")
+    src_dir = ROOT / "src"
+    if not src_dir.exists():
+        return "No src folder found."
+
+    files = list(src_dir.rglob("*.py"))
+    lines = ["Available source code files:"]
+    for f in files:
+        # Ignorar archivos en __pycache__ o entornos virtuales si se colaran
+        if "__pycache__" in str(f) or ".venv" in str(f):
+            continue
+        lines.append(f"- {f.relative_to(ROOT)}")
+    return "\n".join(lines)
+
+
 def get_context_tools() -> list[Any]:
     return [
         inspect_module,
         list_architecture_docs,
+        list_source_files,
         read_doc_file,
         search_internet_best_practices,
     ]

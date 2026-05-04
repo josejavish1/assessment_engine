@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import jinja2
+
 from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.global_report import GlobalReportPayload
 from assessment_engine.scripts.lib.global_maturity_policy import average_pillar_target
@@ -356,19 +358,18 @@ def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
     return nexus_data, client_dir
 
 
-def _load_template() -> str:
-    return TEMPLATE_PATH.read_text(encoding="utf-8")
+def _load_template() -> jinja2.Template:
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(TEMPLATE_PATH),
+        autoescape=jinja2.select_autoescape(["html", "xml"]),
+    )
+    return env.get_template("dashboard.html")
 
 
 def _render_html(client_id: str, nexus_data: dict[str, Any]) -> str:
-    json_data = json.dumps(nexus_data, ensure_ascii=False).replace(
-        "</script>", "<\\/script>"
-    )
-    return (
-        _load_template()
-        .replace("__CLIENT_ID__", client_id.upper())
-        .replace("__JSON_DATA__", json_data)
-    )
+    template = _load_template()
+    json_data = json.dumps(nexus_data, ensure_ascii=False)
+    return template.render(client_id=client_id.upper(), json_data=json_data)
 
 
 def generate_web_dashboard(client_id: str) -> Path:
@@ -376,14 +377,12 @@ def generate_web_dashboard(client_id: str) -> Path:
     presentation_dir = client_dir / "presentation"
     presentation_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copiar el directorio de assets estáticos (dist)
-    template_parent_dir = TEMPLATE_PATH.parent
-    source_dist_dir = template_parent_dir / "dist"
-    if source_dist_dir.is_dir():
-        import shutil
-
-        target_dist_dir = presentation_dir / "dist"
-        shutil.copytree(source_dist_dir, target_dist_dir, dirs_exist_ok=True)
+    # Copiar los assets estáticos
+    import shutil
+    for asset in ["styles.css", "main.js"]:
+        source_path = TEMPLATE_PATH / asset
+        if source_path.exists():
+            shutil.copy(source_path, presentation_dir / asset)
 
     output_path = presentation_dir / "index.html"
     output_path.write_text(_render_html(client_id, nexus_data), encoding="utf-8")

@@ -49,14 +49,18 @@ def build_product_owner_planner_prompt(
 ) -> str:
     context_block = ""
     if repo_context:
-        context_block = f"Contexto del Repositorio:\n{repo_context}\n\n"
+        context_block = f"=== CONTEXTO REPOSITORIO (SOLO LECTURA) ===\n{repo_context}\n=============================================\n\n"
 
     return (
-        "Convierte esta petición de product owner en un plan estructurado.\n\n"
         f"{context_block}"
-        "Petición:\n"
-        f"{request_text.strip()}\n\n"
-        "Devuelve solo JSON válido conforme al schema requerido."
+        "⚠️ ATENCIÓN: LA SIGUIENTE ES LA ÚNICA TAREA QUE DEBES RESOLVER: ⚠️\n"
+        "========================================================================\n"
+        "PETICIÓN DEL PRODUCT OWNER:\n"
+        f"{request_text.strip()}\n"
+        "========================================================================\n\n"
+        "Instrucciones Críticas:\n"
+        "1. NO inventes características ni tareas basadas en el contexto del repositorio. Tu plan debe enfocarse EXCLUSIVAMENTE en resolver la PETICIÓN DEL PRODUCT OWNER.\n"
+        "2. Devuelve solo JSON válido conforme al schema requerido."
     )
 
 

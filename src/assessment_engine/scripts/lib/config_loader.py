@@ -8,7 +8,8 @@ import os
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[4]
+from assessment_engine.scripts.lib.runtime_paths import ROOT
+
 ENGINE_CONFIG_DIR = ROOT / "engine_config"
 
 

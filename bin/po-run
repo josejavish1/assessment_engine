@@ -3,7 +3,12 @@ set -euo pipefail
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 repo_root=$(cd -- "$script_dir/.." && pwd)
-orchestrator_script="$repo_root/src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py"
+
+if [[ -n "${APEX_CORE_DIR:-}" ]]; then
+  orchestrator_script="$APEX_CORE_DIR/assessment_engine/scripts/tools/run_product_owner_orchestrator.py"
+else
+  orchestrator_script="$repo_root/src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py"
+fi
 
 usage() {
   cat <<'EOF'

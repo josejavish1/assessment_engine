@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from pydantic import ValidationError
 
 from assessment_engine.scripts.tools import (
     run_product_owner_orchestrator as orchestrator,
@@ -468,14 +469,10 @@ def test_run_command_times_out_and_classifies_timeout(
         def __init__(self):
             self.pid = 4242
             self.returncode = None
-            self._timed_out = False
+            self.stdout = ["partial stdout"]
 
-        def communicate(self, timeout=None):
-            if not self._timed_out:
-                self._timed_out = True
-                raise subprocess.TimeoutExpired(cmd=["executor"], timeout=timeout)
-            self.returncode = -9
-            return ("partial stdout", "partial stderr")
+        def wait(self, timeout=None):
+            raise subprocess.TimeoutExpired(cmd=["executor"], timeout=timeout)
 
     output_path = tmp_path / "timeout.log"
     killed: list[tuple[int, int]] = []
@@ -920,6 +917,9 @@ def test_resume_pull_request_reuses_branch_and_runs_reconciliation(
         "commit_title": "fix: address PR feedback",
         "validation_plan": ["pytest"],
         "tasks": [],
+        "risk_level": "low",
+        "problem": "problem",
+        "value_expected": "value",
     }
     args = orchestrator.parse_args(
         [
@@ -1004,7 +1004,7 @@ def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> 
         orchestrator, "preflight_executor", lambda *args, **kwargs: None
     )
 
-    def fake_ensure_clean_worktree(*, allow_dirty: bool) -> None:
+    def fake_ensure_clean_worktree(*, allow_dirty: bool, request_text: str) -> None:
         call_order.append("ensure_clean_worktree")
 
     def fake_create_request_dir(policy, request_text):
@@ -1107,3 +1107,76 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
     )
 
     assert calls == ["branch", "commit", "pr", "reconcile:squash:True"]
+
+
+def test_main_execute_command_fails_with_invalid_plan(monkeypatch, tmp_path: Path) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    plan_path = request_dir / "plan.json"
+    invalid_plan = {"is_ambiguous": "not-a-boolean"}
+    plan_path.write_text(json.dumps(invalid_plan), encoding="utf-8")
+
+    monkeypatch.setattr(orchestrator, "load_orchestrator_policy", lambda: {})
+
+    with pytest.raises(ValidationError):
+        orchestrator.main(["execute", "--request-dir", str(request_dir)])
+
+def test_main_execute_command_succeeds_with_valid_plan(monkeypatch, tmp_path: Path) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    plan_path = request_dir / "plan.json"
+    valid_plan = {
+        "is_ambiguous": False,
+        "clarification_question": "",
+        "alternatives": [
+            {
+                "refused": False,
+                "request_title": "Test Request",
+                "branch_name": "feat/test",
+                "pr_title": "feat: Test",
+                "commit_title": "feat: Test",
+                "risk_level": "low",
+                "problem": "Problem",
+                "value_expected": "Value",
+                "in_scope": [],
+                "out_of_scope": [],
+                "source_of_truth": [],
+                "invariants": [],
+                "validation_plan": [],
+                "tasks": []
+            }
+        ]
+    }
+    plan_path.write_text(json.dumps(valid_plan), encoding="utf-8")
+    (request_dir / "request.txt").write_text("Test Request")
+
+
+    monkeypatch.setattr(orchestrator, "load_orchestrator_policy", lambda: {})
+    monkeypatch.setattr(orchestrator, "ensure_clean_worktree", lambda **kwargs: None)
+    monkeypatch.setattr(orchestrator, "resolve_executor_command", lambda cmd: "dummy_command")
+    monkeypatch.setattr(orchestrator, "execute_plan", lambda *args, **kwargs: None)
+
+
+    result = orchestrator.main(["execute", "--request-dir", str(request_dir)])
+    assert result == 0
+
+
+def test_main_execute_command_succeeds_with_no_alternatives(monkeypatch, tmp_path: Path) -> None:
+    request_dir = tmp_path / "request"
+    request_dir.mkdir()
+    plan_path = request_dir / "plan.json"
+    valid_plan = {
+        "is_ambiguous": False,
+        "clarification_question": "",
+        "alternatives": []
+    }
+    plan_path.write_text(json.dumps(valid_plan), encoding="utf-8")
+    (request_dir / "request.txt").write_text("Test Request")
+
+    monkeypatch.setattr(orchestrator, "load_orchestrator_policy", lambda: {})
+    monkeypatch.setattr(orchestrator, "ensure_clean_worktree", lambda **kwargs: None)
+    monkeypatch.setattr(orchestrator, "resolve_executor_command", lambda cmd: "dummy_command")
+    monkeypatch.setattr(orchestrator, "execute_plan", lambda *args, **kwargs: None)
+
+    result = orchestrator.main(["execute", "--request-dir", str(request_dir)])
+    assert result == 0
