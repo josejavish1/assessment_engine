@@ -8,7 +8,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 from tenacity import (
     before_sleep_log,
@@ -56,7 +56,7 @@ def extract_model_text(event: Any) -> Optional[str]:
 )
 async def _execute_query_with_retry(
     app: AdkApp, user_id: str, message: str
-) -> tuple[str, list[str]]:
+) -> Tuple[str, List[str]]:
     """
     Realiza la consulta al agente con lógica de reintentos.
     """
@@ -109,20 +109,40 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
         raise e
 
 
+# Precios estimados por 1M tokens (Gemini 2.5 Pro aprox)
+PRICING = {
+    "input": 1.25,  # $ per 1M tokens
+    "output": 5.00,  # $ per 1M tokens
+}
+
+
+def estimate_cost(input_tokens: int, output_tokens: int) -> float:
+    cost = (input_tokens / 1_000_000 * PRICING["input"]) + (
+        output_tokens / 1_000_000 * PRICING["output"]
+    )
+    return round(cost, 5)
+
+
 async def run_agent(
     app: AdkApp,
     user_id: str,
     message: str,
     raw_output_file: Optional[Path] = None,
     schema: Any = None,
+    run_id: str | None = None,
 ) -> Union[Dict[str, Any], Any]:
     """
-    Ejecuta un agente de forma asíncrona y captura telemetría.
+    Ejecuta un agente de forma asíncrona y captura telemetría avanzada.
     """
     start_time = time.monotonic()
 
+    # Placeholder para tokens
+    input_tokens_est = len(message) // 4
+    output_tokens_est = 0
+
     try:
         last_text, lines = await _execute_query_with_retry(app, user_id, message)
+        output_tokens_est = len(last_text) // 4
 
         if raw_output_file:
             raw_output_file.write_text("\n".join(lines), encoding="utf-8")
@@ -135,16 +155,18 @@ async def run_agent(
         return cast(Dict[str, Any], data)
 
     except Exception as e:
-        logger.error(
-            f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
-        )
+        log_msg = f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
+        if run_id:
+            log_msg = f"[run_id={run_id}] {log_msg}"
+        logger.error(log_msg)
         raise
 
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
+        cost = estimate_cost(input_tokens_est, output_tokens_est)
+
         try:
-            # ignore typing for tenacity retry attribute
             retries = (
                 getattr(_execute_query_with_retry, "retry").statistics.get(
                     "attempt_number", 1
@@ -154,21 +176,22 @@ async def run_agent(
         except Exception:
             retries = 0
 
-        # Safely access agent and model info
-        agent_obj = getattr(app, "_agent", None)
-        agent_name = getattr(agent_obj, "name", "N/A")
-        model_name = getattr(agent_obj, "model", "N/A")
-
         # Telemetry Output
+        agent_obj = getattr(app, "_agent", None)
         telemetry_data = {
-            "agent_name": agent_name,
-            "model": model_name,
-            "user_id": user_id,
+            "run_id": run_id,
+            "agent_name": getattr(agent_obj, "name", "N/A"),
+            "model": getattr(agent_obj, "model", "N/A"),
             "duration_seconds": round(duration, 2),
             "retries": retries,
+            "cost_usd": cost,
+            "tokens": {"input": input_tokens_est, "output": output_tokens_est},
             "output_schema": schema.__name__ if schema else "Raw JSON",
         }
-        logger.info("AI Agent Telemetry", extra={"telemetry": telemetry_data})
+        log_msg = "AI Agent Telemetry"
+        if run_id:
+            log_msg = f"[run_id={run_id}] {log_msg}"
+        logger.info(log_msg, extra={"telemetry": telemetry_data})
 
 
 async def call_agent(
@@ -178,6 +201,7 @@ async def call_agent(
     instruction: str = "",
     output_schema: Any = None,
     tools: Optional[list[Callable[..., Any]]] = None,
+    run_id: str | None = None,
 ) -> Any:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
@@ -226,4 +250,5 @@ async def call_agent(
         message=prompt,
         raw_output_file=raw_output_file,
         schema=output_schema,
+        run_id=run_id,
     )

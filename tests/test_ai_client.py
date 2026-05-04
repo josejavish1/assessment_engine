@@ -11,39 +11,38 @@ from assessment_engine.scripts.lib.ai_client import (
 
 class MockSchema(BaseModel):
     result: str
-
-
 @pytest.mark.asyncio
-async def test_run_agent_mocked_success():
+@patch("google.genai.Client")
+async def test_run_agent_mocked_success(mock_client_class, caplog):
     """Verifica que run_agent funciona correctamente con una respuesta mockeada."""
+    mock_client = mock_client_class.return_value
+    mock_chat = AsyncMock()
+    mock_client.aio.chats.create.return_value = mock_chat
+
+    mock_response = MagicMock()
+    mock_response.text = '{"result": "success"}'
+    mock_chat.send_message.return_value = mock_response
+
     mock_app = MagicMock()
-    mock_event = {"content": {"parts": [{"text": '{"result": "success"}'}]}}
-
-    class AsyncIter:
-        def __init__(self, items):
-            self.items = items
-
-        def __aiter__(self):
-            return self
-
-        async def __anext__(self):
-            if not self.items:
-                raise StopAsyncIteration
-            return self.items.pop(0)
-
-    mock_app.async_stream_query.side_effect = lambda *args, **kwargs: AsyncIter(
-        [mock_event]
-    )
+    mock_agent = MagicMock()
+    mock_agent.model = "gemini-2.5-pro"
+    mock_agent.instruction = "Test instruction"
+    mock_agent.name = "test_agent"
+    mock_agent.tools = []
+    mock_app._tmpl_attrs = {"agent": mock_agent}
+    mock_app._agent = mock_agent
 
     result = await run_agent(
-        app=mock_app, user_id="test-user", message="hello", schema=MockSchema
+        app=mock_app,
+        user_id="test-user",
+        message="hello",
+        schema=MockSchema,
+        run_id="test_id",
     )
 
     assert result == {"result": "success"}
-    mock_app.async_stream_query.assert_called_once()
+    assert "[run_id=test_id]" in caplog.text
 
-
-@pytest.mark.asyncio
 async def test_run_agent_empty_response():
     """Verifica que run_agent maneja correctamente respuestas vacías."""
     mock_app = MagicMock()

@@ -931,6 +931,7 @@ def test_resume_pull_request_reuses_branch_and_runs_reconciliation(
         "problem": "Test problem",
         "value_expected": "Test value",
     }
+
     args = orchestrator.parse_args(
         [
             "resume-pr",
@@ -1073,6 +1074,9 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
         "tasks": [],
     }
     calls: list[str] = []
+
+    monkeypatch.setattr(orchestrator.subprocess, "run", MagicMock(return_value=MagicMock(stdout="", returncode=0)))
+    monkeypatch.setattr(orchestrator.os, "chdir", lambda x: None)
 
     monkeypatch.setattr(
         orchestrator.subprocess,
