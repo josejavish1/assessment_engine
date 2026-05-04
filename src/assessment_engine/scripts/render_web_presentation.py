@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import jinja2
+
 from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.global_report import GlobalReportPayload
 from assessment_engine.scripts.lib.global_maturity_policy import average_pillar_target
@@ -355,8 +357,6 @@ def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
 
     return nexus_data, client_dir
 
-
-import jinja2
 
 def _load_template() -> jinja2.Template:
     env = jinja2.Environment(
