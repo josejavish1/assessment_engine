@@ -7,7 +7,7 @@ import asyncio
 import logging
 import time
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union, Dict
 
 from tenacity import (
     before_sleep_log,

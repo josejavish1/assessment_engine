@@ -33,7 +33,7 @@ BACKLOG_PATH = REPO_ROOT / "docs/audits/IMPROVEMENT_BACKLOG.md"
 WORKING_DIR = REPO_ROOT / "working/apex"
 SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
 
-UI_STATE = {
+UI_STATE: dict[str, Any] = {
     "all_tasks": [],
     "active_task": None,
     "active_logs": [],
@@ -45,7 +45,7 @@ UI_STATE = {
 }
 
 def load_apex_prompt(filename: str) -> dict:
-    import yaml
+    import yaml  # type: ignore
     import os
     
     prompts_dir = os.environ.get("APEX_PROMPTS_DIR")
