@@ -678,8 +678,8 @@ def create_commit(
             f"\n\n[zk-Liability-Proof]\n"
             f"EU-AI-Act-Compliance: {compliance_receipt.get('eu_ai_act_compliance', 'Verified')}\n"
             f"Governance-Commitment: sha256:{compliance_receipt.get('governance_commitment_hash')}"
-            )
-            run_git_command(["git", "commit", "--no-gpg-sign", "-m", message])
+        )
+    run_git_command(["git", "commit", "--no-gpg-sign", "-m", message])
 
 def push_branch(branch_name: str) -> None:
     # Use --force-with-lease to safely overwrite the remote branch if it exists from a previous
