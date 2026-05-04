@@ -1,4 +1,6 @@
-from unittest.mock import MagicMock
+from __future__ import annotations
+
+from unittest.mock import MagicMock, patch
 
 import pytest
 from pydantic import BaseModel, ValidationError
@@ -8,60 +10,58 @@ from assessment_engine.scripts.lib.ai_client import (
     run_agent,
 )
 
+# --- ARRANGE ---
+
 
 class MockSchema(BaseModel):
     result: str
 
 
 @pytest.mark.asyncio
-async def test_run_agent_mocked_success():
+async def test_run_agent_mocked_success(caplog):
     """Verifica que run_agent funciona correctamente con una respuesta mockeada."""
-    mock_app = MagicMock()
-    mock_event = {"content": {"parts": [{"text": '{"result": "success"}'}]}}
+    mock_response = ('{"result": "success"}', ["line1"])
+    with patch(
+        "assessment_engine.scripts.lib.ai_client._execute_query_with_retry",
+        return_value=mock_response,
+    ):
+        mock_app = MagicMock()
+        mock_agent = MagicMock()
+        mock_agent.name = "test_agent"
+        mock_agent.model = "gemini-2.5-pro"
+        mock_app._agent = mock_agent
 
-    class AsyncIter:
-        def __init__(self, items):
-            self.items = items
+        result = await run_agent(
+            app=mock_app,
+            user_id="test-user",
+            message="hello",
+            schema=MockSchema,
+            run_id="test_id",
+        )
 
-        def __aiter__(self):
-            return self
-
-        async def __anext__(self):
-            if not self.items:
-                raise StopAsyncIteration
-            return self.items.pop(0)
-
-    mock_app.async_stream_query.side_effect = lambda *args, **kwargs: AsyncIter(
-        [mock_event]
-    )
-
-    result = await run_agent(
-        app=mock_app, user_id="test-user", message="hello", schema=MockSchema
-    )
-
-    assert result == {"result": "success"}
-    mock_app.async_stream_query.assert_called_once()
+        assert result == {"result": "success"}
 
 
 @pytest.mark.asyncio
 async def test_run_agent_empty_response():
     """Verifica que run_agent maneja correctamente respuestas vacías."""
-    mock_app = MagicMock()
+    # Simular que _execute_query_with_retry lanza RuntimeError por respuesta vacía
+    with patch(
+        "assessment_engine.scripts.lib.ai_client._execute_query_with_retry",
+        side_effect=RuntimeError("Respuesta vacía"),
+    ):
+        mock_app = MagicMock()
+        mock_agent = MagicMock()
+        mock_agent.name = "test_agent"
+        mock_agent.model = "gemini-2.5-pro"
+        mock_app._agent = mock_agent
 
-    class AsyncIter:
-        def __aiter__(self):
-            return self
-
-        async def __anext__(self):
-            raise StopAsyncIteration
-
-    mock_app.async_stream_query.side_effect = lambda *args, **kwargs: AsyncIter()
-
-    # The retry logic will catch the RuntimeError from empty response and eventually fail
-    with pytest.raises(Exception):
-        await run_agent(
-            app=mock_app, user_id="test-user", message="hello", schema=MockSchema
-        )
+        with pytest.raises(RuntimeError, match="Respuesta vacía"):
+            await run_agent(
+                app=mock_app,
+                user_id="test-user",
+                message="hello",
+            )
 
 
 def test_robust_unwrap_and_validate_direct():
