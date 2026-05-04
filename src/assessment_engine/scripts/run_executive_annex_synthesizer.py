@@ -52,9 +52,6 @@ class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
 
-yaml = cast(_YamlModule, import_module("yaml"))
-
-
 # Helper functions (side-effect free)
 def derive_maturity_band(score: float) -> str:
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
@@ -433,6 +430,7 @@ def enrich_annex_payload(
 
 
 def load_yaml_config(filename: str) -> dict:
+    yaml = cast(_YamlModule, import_module("yaml"))
     filepath = (
         Path(__file__).resolve().parent.parent / "prompts" / "registry" / filename
     )
@@ -454,25 +452,25 @@ def build_synthesis_prompt(
         f"Eres un {config['role']} con expertise en {config['expertise']}.\n"
         f"{config['context_description'].format(tower_name=tower_name)}\n\n"
         f"TAREA PRINCIPAL:\n{config['task']}\n\n"
-        "HECHOS NO NEGOCIABLES PARA EL ANEXO EJECUTIVO:\n"
+        f"{config['non_negotiable_facts_header']}\n"
         f"{json.dumps(executive_handover, ensure_ascii=False, indent=2)}\n\n"
-        "CONTEXTO ESTRATÉGICO DEL CLIENTE:\n"
+        f"{config['client_strategy_header']}\n"
         f"{json.dumps(client_intelligence, ensure_ascii=False, indent=2)}\n\n"
-        "CONTEXTO DEL CASO / ENTREVISTA:\n"
+        f"{config['interview_context_header']}\n"
         f"{context_summary or 'No hay contexto adicional disponible.'}\n\n"
-        "BLUEPRINT TÉCNICO FUENTE:\n"
+        f"{config['source_blueprint_header']}\n"
         f"{json.dumps(blueprint_data, ensure_ascii=False, indent=2)}\n\n"
-        "INSTRUCCIONES ESPECÍFICAS:\n"
+        f"{config['specific_instructions_header']}\n"
     )
     for idx, instruction in enumerate(config.get("instructions", []), start=1):
         prompt += f"{idx}. {instruction}\n"
 
-    prompt += "\nREGLAS DE TONO:\n"
+    prompt += f"\n{config['tone_rules_header']}\n"
     for idx, rule in enumerate(config.get("tone_rules", []), start=1):
         prompt += f"{idx}. {rule}\n"
 
     prompt += f"\n{config.get('handover', '')}\n"
-    prompt += "Devuelve exclusivamente el JSON final del anexo.\n"
+    prompt += f"{config.get('final_handover_instruction', '')}\n"
     return prompt
 
 

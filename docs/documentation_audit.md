@@ -99,10 +99,7 @@ Este documento realiza un seguimiento del estado de la documentación del proyec
 | [`src/business_command_center/README.md`](../src/business_command_center/README.md) | Actualizado | README de la aplicación frontend. Verificado 2026-05-03. |
 | [`src/business_command_center/AGENTS.md`](../src/business_command_center/AGENTS.md) | Actualizado | Instrucciones para agentes de IA que trabajan en el frontend. Verificado 2026-05-03. |
 | [`templates/golden_paths/README.md`](../templates/golden_paths/README.md) | Actualizado | Registro de plantillas de código para desarrollo asistido por IA. |
-| [`src/assessment_engine/prompts/registry/blueprint_pilar_architect_prompt.yaml`](../src/assessment_engine/prompts/registry/blueprint_pilar_architect_prompt.yaml) | Desactualizado | Prompt de IA. |
-| [`src/assessment_engine/prompts/registry/blueprint_architect_instruction.yaml`](../src/assessment_engine/prompts/registry/blueprint_architect_instruction.yaml) | Desactualizado | Prompt de IA. |
-| [`src/assessment_engine/prompts/registry/annex_executive_synthesizer.yaml`](../src/assessment_engine/prompts/registry/annex_executive_synthesizer.yaml) | Desactualizado | Prompt de IA. |
-| [`src/assessment_engine/prompts/registry/blueprint_closing_orchestrator_prompt.yaml`](../src/assessment_engine/prompts/registry/blueprint_closing_orchestrator_prompt.yaml) | Desactualizado | Prompt de IA. |
+| [`src/assessment_engine/prompts/registry/`](../src/assessment_engine/prompts/registry/) | Actualizado | El registro de prompts ha sido auditado y sincronizado quirúrgicamente con el código fuente. Se han validado todos los archivos YAML en `registry/` para asegurar que las secciones de `variables` coinciden con las firmas de las funciones Python y que el contenido refleja fielmente la lógica de construcción de prompts. |
 
 
 ### Documentación Generada y de Referencia

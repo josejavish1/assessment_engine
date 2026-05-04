@@ -170,6 +170,18 @@ Estas acciones tienen un retorno tangible en la calidad y la experiencia de uso 
     *   **Acción:** Mover todos los ficheros de configuración, incluyendo los YAML de los prompts, a subdirectorios dentro de `engine_config/`.
     *   **Retorno:** Mejora la "calidad de vida" del desarrollador. Un único punto de verdad para toda la configuración hace el sistema más fácil de entender y modificar.
 
+### **Prioridad 4: "Apex Enterprise Roadmap" - Hacia la Madurez Nivel 4 (CNCF)**
+*(ROI: Máximo - Eficiencia, Blindaje y Gobernanza Autónoma)*
+Esta fase eleva el proyecto a una plataforma de grado industrial, optimizando costes, seguridad y observabilidad.
+
+1.  **Blindaje Táctico y FinOps (Fase 1):**
+    *   **Acción:** Implementar **Context Caching** (Vertex AI) y **Token Throttling**. Migrar el ejecutor a **Docker Sandboxing**.
+    *   **Retorno:** Ahorro de hasta el 70% en tokens y neutralización de ataques de inyección de prompt (RCE).
+
+2.  **Observabilidad Viva y Calidad Semántica (Fase 2):**
+    *   **Acción:** Implementar **JSON Structured Logging** y **Golden Datasets**. Migrar la UI del Command Center a **SSE/WebSockets**.
+    *   **Retorno:** Trazabilidad quirúrgica y garantía de no regresión en la inteligencia del motor.
+
 ---
 
 ## 5. Base de Conocimiento y Documentación
@@ -193,3 +205,18 @@ Para garantizar una integración nativa, estable y segura con el repositorio de 
 -   Las operaciones de control de versiones (`push`, `pull`, `fetch`) se ejecutan a través de HTTPS utilizando la sesión viva gestionada por `gh`.
 -   El sistema está configurado mediante `gh auth setup-git`.
 -   Para verificar el estado de la conexión en cualquier momento, usar: `gh auth status`.
+
+---
+
+Para probar o validar cualquier cambio en Python (tanto scripts como tests), **NO** uses comandos globales como `python` o `pytest`.  
+Debes usar SIEMPRE el entorno virtual local ubicado en `/home/jsanchhi/assessment_engine/.venv`.  
+- Para ejecutar tests: `/home/jsanchhi/assessment_engine/.venv/bin/pytest`
+- Para ejecutar scripts Python: `/home/jsanchhi/assessment_engine/.venv/bin/python`
+
+## 7. Protocolo de Ejecución Estricta para `po-run` (Orquestador Autónomo)
+
+Cuando se solicite ejecutar una tarea o implementar cambios a través del orquestador autónomo (`bin/po-run`), el agente IA (Gemini) **DEBE CUMPLIR ESTRICTAMENTE** las siguientes directrices sin excepciones, bajo pena de corromper la gobernanza del repositorio:
+
+1.  **Cero Interferencia Manual Previa:** **PROHIBIDO** editar archivos manualmente con herramientas de reemplazo de texto (`replace`, `write_file`) antes o durante la ejecución de `po-run`. Si el usuario pide que una tarea se haga con `po-run`, el orquestador debe ser el único encargado de invocar al agente *Worker* para realizar los cambios en la rama efímera.
+2.  **Confiar en el Bucle de Reconciliación (Auto-Heal):** Si la Pull Request generada por el orquestador falla en la integración continua (Quality Gates, Linting, Type Checking) o recibe comentarios de revisión (por ejemplo, del bot Codex), **PROHIBIDO** silenciar los bots o saltarse los checks usando la API de GitHub (`gh api`) o comandos forzados. El agente debe permitir que el orquestador detecte los fallos, despierte al `Agente Doctor` y haga un nuevo commit automático para sanar la rama.
+3.  **Prohibición Absoluta de Merges Forzados:** **ESTÁ TERMINANTEMENTE PROHIBIDO** el uso de comandos como `gh pr merge --admin` para forzar la integración a producción ignorando las reglas de protección de rama. El orquestador fusionará automáticamente cuando el estado sea estrictamente "MERGEABLE". Si el orquestador agota sus intentos (max rounds), el agente Gemini debe notificar al usuario y analizar los logs de fallo del orquestador, pero **nunca saltarse la barrera**.

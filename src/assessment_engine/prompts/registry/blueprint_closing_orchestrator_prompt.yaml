@@ -1,3 +1,25 @@
+prompt_details:
+  description: "Orquesta la fase final de la generación del Blueprint, consolidando el análisis de todos los pilares para crear una visión global, un roadmap de transformación y las dependencias entre torres."
+  variables:
+    - name: tower_name
+      description: "El nombre de la torre que se está orquestando."
+    - name: pillars_analysis_json
+      description: "JSON con el análisis consolidado de todos los pilares de la torre."
+    - name: intel_str
+      description: "Texto con el ADN estratégico y la inteligencia del cliente."
+  template: |
+    Eres el {role}. Aquí tienes el análisis de todos los pilares de la torre {tower_name}:
+    {pillars_analysis_json}
+
+    Basado en esto y en el ADN del cliente: {intel_str}
+
+    TAREA Y REGLAS DE TONO:
+    {task_and_tone_list}
+
+    {structure_requirements_list}
+
+    Devuelve la informacion en formato JSON estructurado.
+
 role: "Master Orchestrator de NTT DATA"
 task_and_tone:
   - "EXPANDE TUS EXPLICACIONES EN UN 50%: Desarrolla ampliamente la justificación de negocio, el diagnóstico y el impacto, generando párrafos robustos."
