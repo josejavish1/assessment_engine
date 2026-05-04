@@ -5,9 +5,10 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 
 import asyncio
 import logging
+import os
 import time
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union, cast
 
 from tenacity import (
     before_sleep_log,
@@ -41,7 +42,7 @@ def extract_model_text(event: Any) -> Optional[str]:
         parts = content.get("parts", [])
         for part in parts:
             if isinstance(part, dict) and "text" in part:
-                return part["text"]
+                return str(part["text"])
     return None
 
 
@@ -55,7 +56,7 @@ def extract_model_text(event: Any) -> Optional[str]:
 )
 async def _execute_query_with_retry(
     app: AdkApp, user_id: str, message: str
-) -> tuple[str, list[str]]:
+) -> Tuple[str, List[str]]:
     """
     Realiza la consulta al agente con lógica de reintentos.
     """
@@ -85,7 +86,9 @@ async def _execute_query_with_retry(
 
 
 def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
-    # This function remains the same
+    """
+    Intenta validar los datos contra el esquema, manejando anidamientos comunes.
+    """
     try:
         return schema.model_validate(data).model_dump(by_alias=True)
     except Exception as e:
@@ -94,7 +97,7 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
                 first_val = list(data.values())[0]
                 if isinstance(first_val, (dict, list)):
                     return _robust_unwrap_and_validate(first_val, schema)
-            for k, v in data.items():
+            for v in data.values():
                 if isinstance(v, (dict, list)):
                     try:
                         return schema.model_validate(v).model_dump(by_alias=True)
@@ -109,12 +112,16 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
 # Precios estimados por 1M tokens (Gemini 2.5 Pro aprox)
 PRICING = {
     "input": 1.25,  # $ per 1M tokens
-    "output": 5.00, # $ per 1M tokens
+    "output": 5.00,  # $ per 1M tokens
 }
 
+
 def estimate_cost(input_tokens: int, output_tokens: int) -> float:
-    cost = (input_tokens / 1_000_000 * PRICING["input"]) + (output_tokens / 1_000_000 * PRICING["output"])
+    cost = (input_tokens / 1_000_000 * PRICING["input"]) + (
+        output_tokens / 1_000_000 * PRICING["output"]
+    )
     return round(cost, 5)
+
 
 async def run_agent(
     app: AdkApp,
@@ -123,15 +130,14 @@ async def run_agent(
     raw_output_file: Optional[Path] = None,
     schema: Any = None,
     run_id: str | None = None,
-) -> dict:
+) -> Union[Dict[str, Any], Any]:
     """
     Ejecuta un agente de forma asíncrona y captura telemetría avanzada.
     """
     start_time = time.monotonic()
-    
-    # Placeholder para tokens (el ADK actual no siempre los expone fácilmente en el stream)
-    # En una implementación real extraeríamos esto de los metadatos de la respuesta final
-    input_tokens_est = len(message) // 4  # Heurística simple si no hay metadatos
+
+    # Placeholder para tokens
+    input_tokens_est = len(message) // 4
     output_tokens_est = 0
 
     try:
@@ -146,7 +152,7 @@ async def run_agent(
         if schema:
             return _robust_unwrap_and_validate(data, schema)
 
-        return data
+        return cast(Dict[str, Any], data)
 
     except Exception as e:
         log_msg = f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
@@ -159,7 +165,7 @@ async def run_agent(
         end_time = time.monotonic()
         duration = end_time - start_time
         cost = estimate_cost(input_tokens_est, output_tokens_est)
-        
+
         try:
             retries = (
                 getattr(_execute_query_with_retry, "retry").statistics.get(
@@ -171,9 +177,11 @@ async def run_agent(
             retries = 0
 
         # Telemetry Output
+        agent_obj = getattr(app, "_agent", None)
         telemetry_data = {
             "run_id": run_id,
-            "agent_name": getattr(getattr(app, "_agent", None), "name", "N/A"),
+            "agent_name": getattr(agent_obj, "name", "N/A"),
+            "model": getattr(agent_obj, "model", "N/A"),
             "duration_seconds": round(duration, 2),
             "retries": retries,
             "cost_usd": cost,
@@ -194,31 +202,32 @@ async def call_agent(
     output_schema: Any = None,
     tools: Optional[list[Callable[..., Any]]] = None,
     run_id: str | None = None,
-) -> dict:
+) -> Any:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
     """
-    import os
-
     if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "1") == "0" and os.environ.get(
         "GEMINI_API_KEY"
     ):
         from google import genai
 
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+        # Build config carefully to satisfy Mypy/GenAI types
+        config: Dict[str, Any] = {
+            "system_instruction": instruction,
+            "response_mime_type": "application/json",
+        }
+        if output_schema:
+            config["response_schema"] = output_schema
+
         response = await client.aio.models.generate_content(
             model=model_name,
             contents=prompt,
-            config={
-                "system_instruction": instruction,
-                "response_mime_type": "application/json",
-                "response_schema": output_schema,
-            },
+            config=cast(Any, config),
         )
         if raw_output_file and response.text:
             raw_output_file.write_text(response.text, encoding="utf-8")
-
-        from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
 
         data = parse_json_from_text(response.text or "{}")
         if output_schema:
@@ -226,7 +235,6 @@ async def call_agent(
         return data
 
     from google.adk.agents import Agent
-    from vertexai.agent_engines import AdkApp
 
     agent = Agent(
         model=model_name,

@@ -28,6 +28,7 @@ logger = logging.getLogger("APEX-Dispatcher")
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 BACKLOG_PATH = REPO_ROOT / "docs/audits/IMPROVEMENT_BACKLOG.md"
 WORKING_DIR = REPO_ROOT / "working/apex"
+WORKING_DIR.mkdir(parents=True, exist_ok=True)
 SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
 
 UI_STATE = {
