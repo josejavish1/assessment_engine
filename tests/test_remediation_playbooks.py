@@ -1,7 +1,12 @@
-import unittest
-from unittest.mock import patch, MagicMock
 import subprocess
-from assessment_engine.scripts.lib.remediation_playbooks import check_git_status, clean_workspace, RemediationResult
+import unittest
+from unittest.mock import MagicMock, patch
+
+from assessment_engine.scripts.lib.remediation_playbooks import (
+    check_git_status,
+    clean_workspace,
+)
+
 
 class TestRemediationPlaybooks(unittest.TestCase):
 

@@ -1068,6 +1068,9 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
     }
     calls: list[str] = []
 
+    monkeypatch.setattr(orchestrator.subprocess, "run", MagicMock(return_value=MagicMock(stdout="", returncode=0)))
+    monkeypatch.setattr(orchestrator.os, "chdir", lambda x: None)
+
     monkeypatch.setattr(
         orchestrator,
         "load_orchestrator_policy",
