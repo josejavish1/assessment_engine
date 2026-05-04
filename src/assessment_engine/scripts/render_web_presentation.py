@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import jinja2
+
 from assessment_engine.schemas.blueprint import BlueprintPayload
 from assessment_engine.schemas.global_report import GlobalReportPayload
 from assessment_engine.scripts.lib.global_maturity_policy import average_pillar_target
@@ -356,19 +358,18 @@ def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
     return nexus_data, client_dir
 
 
-def _load_template() -> str:
-    return TEMPLATE_PATH.read_text(encoding="utf-8")
+def _load_template() -> jinja2.Template:
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(TEMPLATE_PATH.parent),
+        autoescape=jinja2.select_autoescape(["html", "xml"]),
+    )
+    return env.get_template(TEMPLATE_PATH.name)
 
 
 def _render_html(client_id: str, nexus_data: dict[str, Any]) -> str:
-    json_data = json.dumps(nexus_data, ensure_ascii=False).replace(
-        "</script>", "<\\/script>"
-    )
-    return (
-        _load_template()
-        .replace("__CLIENT_ID__", client_id.upper())
-        .replace("__JSON_DATA__", json_data)
-    )
+    template = _load_template()
+    json_data = json.dumps(nexus_data, ensure_ascii=False)
+    return template.render(client_id=client_id.upper(), json_data=json_data)
 
 
 def generate_web_dashboard(client_id: str) -> Path:

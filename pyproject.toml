@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "AI Assessment Engine for Technology Architecture"
 requires-python = ">=3.10"
 dependencies = [
+    "jinja2",
     "google-cloud-aiplatform",
     "google-adk",
     "google-genai",
