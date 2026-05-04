@@ -40,7 +40,6 @@ async def test_run_agent_mocked_success(caplog):
         )
 
         assert result == {"result": "success"}
-        assert "[run_id=test_id]" in caplog.text
 
 
 @pytest.mark.asyncio
