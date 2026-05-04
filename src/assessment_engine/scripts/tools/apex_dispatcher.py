@@ -74,7 +74,10 @@ def load_apex_prompt(filename: str) -> dict:
         filepath = Path(prompts_dir) / "registry" / filename
     else:
         filepath = (
-            Path(__file__).resolve().parent.parent.parent / "prompts" / "registry" / filename
+            Path(__file__).resolve().parent.parent.parent
+            / "prompts"
+            / "registry"
+            / filename
         )
 
     with filepath.open("r", encoding="utf-8") as f:
@@ -124,7 +127,9 @@ def update_ui_components(layout: Layout) -> None:
                 )
             )
         else:
-            layout["active_mission"].update(Panel("Esperando tareas...", title="MISSION"))
+            layout["active_mission"].update(
+                Panel("Esperando tareas...", title="MISSION")
+            )
 
         # Brain
         text = Text()
@@ -244,7 +249,7 @@ def parse_backlog() -> List[Task]:
         if "Área" in area or "Prioridad" in p:
             continue
         task: Task = {
-            "id": f"T{len(tasks)+1}",
+            "id": f"T{len(tasks) + 1}",
             "priority": p,
             "title": title,
             "description": desc,
@@ -293,7 +298,9 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
                 )
                 task["status"] = "HARD_BLOCK"
                 SENTINEL.log_transaction(
-                    task["id"], "hard_block", {"reason": "Infinite rescue loop detected."}
+                    task["id"],
+                    "hard_block",
+                    {"reason": "Infinite rescue loop detected."},
                 )
                 UI_STATE["completed_count"] += 1
                 return False

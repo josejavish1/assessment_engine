@@ -11,6 +11,8 @@ from assessment_engine.scripts.lib.ai_client import (
 
 class MockSchema(BaseModel):
     result: str
+
+
 @pytest.mark.asyncio
 @patch("google.genai.Client")
 async def test_run_agent_mocked_success(mock_client_class, caplog):
@@ -42,6 +44,7 @@ async def test_run_agent_mocked_success(mock_client_class, caplog):
 
     assert result == {"result": "success"}
     assert "[run_id=test_id]" in caplog.text
+
 
 async def test_run_agent_empty_response():
     """Verifica que run_agent maneja correctamente respuestas vacías."""
