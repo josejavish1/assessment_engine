@@ -1,5 +1,6 @@
 import time
 
+# --- START OF BUSINESS LOGIC ---
 from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
