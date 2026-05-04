@@ -1,20 +1,21 @@
 import asyncio
+
+# --- START OF BUSINESS LOGIC ---
 import json
 import logging
-import subprocess
+import os
 import re
-import time
 import sys
+import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Tuple, TypedDict, cast
 
-from rich.live import Live
-from rich.table import Table
-from rich.panel import Panel
-from rich.layout import Layout
 from rich.console import Console
+from rich.layout import Layout
+from rich.live import Live
+from rich.panel import Panel
+from rich.table import Table
 from rich.text import Text
-from rich.progress import Progress, BarColumn, TextColumn
 
 from assessment_engine.scripts.lib.ai_client import call_agent
 from assessment_engine.scripts.lib.apex_models import ApexDebateResponse
@@ -22,251 +23,386 @@ from assessment_engine.scripts.lib.apex_sentinel import ApexSentinel
 
 # Configuración
 console = Console()
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, filename="working/apex/error.log")
 logger = logging.getLogger("APEX-Dispatcher")
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+if "APEX_WORKSPACE_DIR" in os.environ:
+    REPO_ROOT = Path(os.environ["APEX_WORKSPACE_DIR"]).resolve()
+else:
+    REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 BACKLOG_PATH = REPO_ROOT / "docs/audits/IMPROVEMENT_BACKLOG.md"
 WORKING_DIR = REPO_ROOT / "working/apex"
-WORKING_DIR.mkdir(parents=True, exist_ok=True)
 SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
 
-UI_STATE = {
+
+class Task(TypedDict):
+    id: str
+    priority: str
+    title: str
+    description: str
+    status: str
+    instruction: Optional[str]
+
+
+class UiState(TypedDict):
+    all_tasks: List[Task]
+    active_task: Optional[Task]
+    active_logs: List[str]
+    debate_transcript: List[Tuple[str, Any]]
+    total_cost: float
+    start_time: float
+    completed_count: int
+    last_event: str
+
+
+UI_STATE: UiState = {
     "all_tasks": [],
     "active_task": None,
     "active_logs": [],
     "debate_transcript": [],
     "total_cost": 0.0,
     "start_time": time.time(),
-    "completed_count": 0
+    "completed_count": 0,
+    "last_event": "Inicializando...",
 }
 
+
 def load_apex_prompt(filename: str) -> dict:
-    import yaml
-    filepath = Path(__file__).resolve().parent.parent.parent / "prompts" / "registry" / filename
+    import yaml  # type: ignore
+
+    prompts_dir = os.environ.get("APEX_PROMPTS_DIR")
+    if prompts_dir:
+        filepath = Path(prompts_dir) / "registry" / filename
+    else:
+        filepath = (
+            Path(__file__).resolve().parent.parent.parent
+            / "prompts"
+            / "registry"
+            / filename
+        )
+
     with filepath.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return cast(dict, yaml.safe_load(f))
+
 
 def make_layout() -> Layout:
     layout = Layout()
     layout.split_column(
         Layout(name="header", size=3),
-        Layout(name="active_mission", size=7),
+        Layout(name="active_mission", size=6),
         Layout(name="brain_stream", ratio=1),
         Layout(name="terminal_mirror", size=8),
-        Layout(name="registry", size=12),
+        Layout(name="registry", size=10),
         Layout(name="footer", size=3),
     )
     return layout
 
-def generate_header() -> Panel:
-    elapsed = time.time() - UI_STATE["start_time"]
-    m, s = divmod(int(elapsed), 60)
-    h, m = divmod(m, 60)
-    timer = f"{h:02d}:{m:02d}:{s:02d}"
-    
-    total = len(UI_STATE["all_tasks"])
-    done = UI_STATE["completed_count"]
-    pct = (done / total * 100) if total > 0 else 0
-    
-    content = Text.assemble(
-        (" APEX SENTINEL ", "bold white on blue"),
-        f" | BURN: ${UI_STATE['total_cost']:.3f} | ",
-        (f"PROGRESS: {pct:.1f}% ({done}/{total}) ", "bold yellow"),
-        f"| UPTIME: {timer}"
-    )
-    return Panel(content, style="blue")
 
-def generate_forge_mission() -> Panel:
-    if not UI_STATE["active_task"]:
-        return Panel("Esperando tareas...", title="MISSION")
-    t = UI_STATE["active_task"]
-    return Panel(
-        f"[bold cyan]ID:[/] {t['id']}  [bold cyan]PRIO:[/] {t['priority']}  [bold cyan]STATUS:[/] {t['status']}\n[bold white]MISIÓN:[/] {t['title']}",
-        title="[bold red]CURRENT MISSION[/]", border_style="red"
-    )
+def update_ui_components(layout: Layout) -> None:
+    try:
+        # Header
+        elapsed = time.time() - UI_STATE["start_time"]
+        m, s = divmod(int(elapsed), 60)
+        h, m = divmod(m, 60)
+        total = len(UI_STATE["all_tasks"])
+        done = UI_STATE["completed_count"]
+        pct = (done / total * 100) if total > 0 else 0
+        header_text = Text.assemble(
+            (" APEX SENTINEL ", "bold white on blue"),
+            f" | BURN: ${UI_STATE['total_cost']:.3f} | ",
+            (f"PROGRESS: {pct:.1f}% ({done}/{total}) ", "bold yellow"),
+            f"| UPTIME: {h:02d}:{m:02d}:{s:02d}",
+        )
+        layout["header"].update(Panel(header_text, style="blue"))
 
-def generate_brain_stream() -> Panel:
-    text = Text()
-    for role, msg in UI_STATE["debate_transcript"][-8:]:
-        color = "yellow" if "DOCTOR" in role else "magenta"
-        if "SENTINEL" in role: color = "blue"
-        text.append(f"[{role}]: ", style=f"bold {color}")
-        text.append(f"{msg}\n", style="italic")
-    return Panel(text, title="[bold]BRAIN STREAM (AI Reasoning)[/]", border_style="yellow")
+        # Mission
+        active_task = UI_STATE["active_task"]
+        if active_task:
+            status_color = "green" if "Running" in active_task["status"] else "yellow"
+            mission_text = f"[bold cyan]ID:[/] {active_task['id']}  [bold {status_color}]STATUS:[/] {active_task['status']}\n[bold white]MISIÓN:[/] {active_task['title'][:80]}"
+            layout["active_mission"].update(
+                Panel(
+                    mission_text,
+                    title="[bold red]CURRENT MISSION[/]",
+                    border_style="red",
+                )
+            )
+        else:
+            layout["active_mission"].update(
+                Panel("Esperando tareas...", title="MISSION")
+            )
 
-def generate_terminal_mirror() -> Panel:
-    logs = "\n".join(UI_STATE["active_logs"][-6:])
-    return Panel(logs, title="[bold]TERMINAL MIRROR[/]", border_style="dim")
+        # Brain
+        text = Text()
+        for role, msg in UI_STATE["debate_transcript"][-6:]:
+            color = "yellow" if "DOCTOR" in role else "magenta"
+            if "SENTINEL" in role:
+                color = "blue"
+            text.append(f"[{role}]: ", style=f"bold {color}")
+            text.append(f"{str(msg)[:200]}\n", style="italic")
+        layout["brain_stream"].update(
+            Panel(text, title="[bold]BRAIN STREAM[/]", border_style="yellow")
+        )
 
-def generate_registry() -> Panel:
-    table = Table(expand=True, box=None, show_header=True)
-    table.add_column("ID", style="dim", width=8)
-    table.add_column("Status", width=15)
-    table.add_column("Task Title", ratio=1)
-    
-    # Mostrar ventana inteligente del backlog
-    current_idx = 0
-    for i, t in enumerate(UI_STATE["all_tasks"]):
-        if UI_STATE["active_task"] and t["id"] == UI_STATE["active_task"]["id"]:
-            current_idx = i
-            break
-    
-    start = max(0, current_idx - 2)
-    end = start + 8
-    visible = UI_STATE["all_tasks"][start:end]
-    
-    for t in visible:
-        s = t["status"]
-        color = "white"
-        if "Success" in s: color = "green"
-        elif "Running" in s: color = "yellow"
-        elif "HARD_BLOCK" in s: color = "red"
-        table.add_row(t["id"], f"[{color}]{s}[/]", t["title"])
-        
-    return Panel(table, title=f"[bold]REGISTRY (Total: {len(UI_STATE['all_tasks'])})[/]", border_style="blue")
+        # Logs
+        logs = "\n".join(UI_STATE["active_logs"][-6:])
+        layout["terminal_mirror"].update(
+            Panel(logs, title="[bold]TERMINAL MIRROR[/]", border_style="dim")
+        )
+
+        # Registry
+        table = Table(expand=True, box=None, show_header=True)
+        table.add_column("ID", width=8)
+        table.add_column("Status", width=15)
+        table.add_column("Task Title", ratio=1)
+        start = max(0, UI_STATE["completed_count"] - 1)
+        for t in UI_STATE["all_tasks"][start : start + 7]:
+            color = "green" if "Success" in t["status"] else "white"
+            table.add_row(t["id"], f"[{color}]{t['status']}[/]", t["title"][:50])
+        layout["registry"].update(
+            Panel(table, title="[bold]BACKLOG[/]", border_style="blue")
+        )
+        layout["footer"].update(Panel(f"LOG: {UI_STATE['last_event']}", style="dim"))
+    except Exception as e:
+        layout["footer"].update(Panel(f"UI Error: {e}", style="red"))
+
 
 async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
-    # Sanitizar el prompt de saltos de línea para la CLI
     clean_prompt = task_prompt.replace("\n", " ").replace('"', '\\"')
     cmd = [str(REPO_ROOT / "bin/po-run"), clean_prompt]
-    
+
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+
     process = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        cwd=REPO_ROOT
+        stderr=asyncio.subprocess.STDOUT,
+        cwd=REPO_ROOT,
+        env=env,
     )
-    
     full_log = []
-    while True:
-        line = await process.stdout.readline()
-        if not line: break
-        decoded = line.decode().strip()
-        if decoded:
-            UI_STATE["active_logs"].append(decoded)
-            full_log.append(decoded)
-    
-    _, stderr = await process.communicate()
-    if stderr:
-        UI_STATE["active_logs"].append(stderr.decode())
-        full_log.append(stderr.decode())
-        
+
+    session_log_path = WORKING_DIR / "session.log"
+
+    with open(session_log_path, "a", encoding="utf-8") as f_log:
+        if process.stdout:
+            while True:
+                line = await process.stdout.readline()
+                if not line:
+                    break
+                decoded = line.decode()
+                f_log.write(decoded)
+                f_log.flush()
+                clean_decoded = decoded.strip()
+                if clean_decoded:
+                    UI_STATE["active_logs"].append(clean_decoded)
+                    full_log.append(clean_decoded)
+
+        await process.wait()
+
     return process.returncode == 0, "\n".join(full_log)
 
-async def perform_apex_debate(error_logs: str, previous_failures: str) -> ApexDebateResponse:
-    UI_STATE["debate_transcript"].append(("SENTINEL", "Activando Tribunal Supremo..."))
-    
+
+async def perform_apex_debate(
+    error_logs: str, previous_failures: str
+) -> ApexDebateResponse:
+    UI_STATE["debate_transcript"].append(("SENTINEL", "Iniciando debate..."))
     doctor_config = load_apex_prompt("apex_doctor.yaml")
     architect_config = load_apex_prompt("apex_architect.yaml")
-    invariants = (REPO_ROOT / "GEMINI.md").read_text()
-
     doctor_prompt = doctor_config["prompt_details"]["template"].format(
-        error_logs=error_logs[:1500], 
-        previous_failures=previous_failures
+        error_logs=error_logs[:1500], previous_failures=previous_failures
     )
-    
     architect_prompt = architect_config["prompt_details"]["template"].format(
-        repository_invariants=invariants,
-        proposed_strategy=doctor_prompt
+        repository_invariants=(REPO_ROOT / "GEMINI.md").read_text(),
+        proposed_strategy=doctor_prompt,
     )
-
     data = await call_agent(
         model_name="gemini-2.5-pro",
         prompt=architect_prompt,
         output_schema=ApexDebateResponse,
-        instruction="Eres el Tribunal APEX con Autonomía Total. Resuelve el bloqueo."
+        instruction="Resuelve el bloqueo.",
     )
-    
     response = ApexDebateResponse(**data)
-    UI_STATE["debate_transcript"].append(("ARCHITECT", f"Veredicto: {response.decision}"))
-    SENTINEL.log_transaction(UI_STATE["active_task"]["id"] if UI_STATE["active_task"] else "N/A", "debate_completed", {
-        "decision": response.decision,
-        "reasoning": response.reasoning,
-        "injected_tasks": [t.get("title") for t in response.prerequisite_tasks]
-    }, cost=0.15)
+    UI_STATE["debate_transcript"].append(("ARCHITECT", response.decision))
+
+    active_id = UI_STATE["active_task"]["id"] if UI_STATE["active_task"] else "N/A"
+    SENTINEL.log_transaction(
+        active_id,
+        "debate_completed",
+        {"decision": response.decision, "reasoning": response.reasoning},
+        cost=0.15,
+    )
     return response
 
 
-def parse_backlog() -> list[dict[str, str]]:
-    if not BACKLOG_PATH.exists(): return []
+def parse_backlog() -> List[Task]:
+    if not BACKLOG_PATH.exists():
+        return []
     content = BACKLOG_PATH.read_text()
-    pattern = r"\|\s*(\*?\*?P[123]\*?\*?)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|"
+    pattern = (
+        r"\|\s*(\*?\*?P[123]\*?\*?)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|"
+    )
     matches = re.findall(pattern, content)
-    tasks = []
+    tasks: List[Task] = []
     for match in matches:
-        priority, area, title, desc = [m.strip().replace("*", "") for m in match]
-        if "Área" in area or "Prioridad" in priority: continue
-        tasks.append({
-            "id": f"T{len(tasks)+1}", "priority": priority, "title": title,
-            "description": desc, "status": "Pending"
-        })
+        p, area, title, desc = [m.strip().replace("*", "") for m in match]
+        if "Área" in area or "Prioridad" in p:
+            continue
+        task: Task = {
+            "id": f"T{len(tasks) + 1}",
+            "priority": p,
+            "title": title,
+            "description": desc,
+            "status": "Pending",
+            "instruction": None,
+        }
+        tasks.append(task)
     return tasks
 
-async def main():
-    headless = "--headless" in sys.argv
-    layout = make_layout()
-    UI_STATE["all_tasks"] = parse_backlog()
-    
-    for t in UI_STATE["all_tasks"]:
-        prev = SENTINEL.get_task_status(t["id"])
-        if prev in ["success", "hard_block"]:
-            t["status"] = f"Done ({prev})"
-            UI_STATE["completed_count"] += 1
 
-    with Live(layout, refresh_per_second=4, screen=not headless):
+async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
+    attempts = 0
+    max_rescue_rounds = 3
+    previous_failures: List[str] = []
+    UI_STATE["active_task"] = task
+    task["status"] = "Running"
+    while attempts <= max_rescue_rounds:
+        SENTINEL.log_transaction(
+            task["id"], f"attempt_{attempts}", cast(Dict[str, Any], task)
+        )
+        prompt = task.get("instruction")
+        if not prompt:
+            prompt = f"Implementa: {task['title']}\nDescripción: {task.get('description', '')}"
+
+        success, logs = await run_po_orchestrator(prompt)
+        if success:
+            task["status"] = "Success"
+            SENTINEL.log_transaction(task["id"], "success", {}, cost=0.05)
+            UI_STATE["completed_count"] += 1
+            return True
+
+        SENTINEL.log_transaction(
+            task["id"], "attempt_failed", {"error_snippet": logs[-300:]}
+        )
+        attempts += 1
+        task["status"] = "Rescuing"
+        debate = await perform_apex_debate(logs, "\n".join(previous_failures))
+        previous_failures.append(f"Fallo {attempts}: {debate.reasoning}")
+
+        if debate.decision == "INJECT_PREREQUISITE":
+            # Safeguard against infinite rescue loops
+            emg_tasks = [t for t in queue if t.get("id", "").startswith("EMG-")]
+            if len(emg_tasks) > 5:
+                UI_STATE["debate_transcript"].append(
+                    ("SENTINEL", "Max emergency tasks reached. Hard blocking.")
+                )
+                task["status"] = "HARD_BLOCK"
+                SENTINEL.log_transaction(
+                    task["id"],
+                    "hard_block",
+                    {"reason": "Infinite rescue loop detected."},
+                )
+                UI_STATE["completed_count"] += 1
+                return False
+
+            if debate.prerequisite_tasks:
+                for p_task_data in reversed(debate.prerequisite_tasks):
+                    new_task: Task = {
+                        "id": f"EMG-{int(time.time()) % 1000}",
+                        "priority": "EMG",
+                        "title": p_task_data.get("title", "Emergency Task"),
+                        "description": p_task_data.get("description", ""),
+                        "status": "Pending",
+                        "instruction": p_task_data.get("instruction"),
+                    }
+                    # FIX: Evitar inserción duplicada si queue e all_tasks son la misma lista
+                    queue.insert(idx, new_task)
+                    if queue is not UI_STATE["all_tasks"]:
+                        UI_STATE["all_tasks"].insert(idx, new_task)
+
+            task["status"] = "Waiting EMG"
+            return False
+
+        elif debate.decision == "REJECTED" or debate.is_terminal_failure:
+            task["status"] = "HARD_BLOCK"
+            SENTINEL.log_transaction(
+                task["id"], "hard_block", {"reason": debate.reasoning}
+            )
+            UI_STATE["completed_count"] += 1
+            if task.get("priority") == "EMG":
+                UI_STATE["last_event"] = (
+                    f"🛑 CRITICAL: Fallo en pre-requisito EMG ({task['id']}). Deteniendo orquestador."
+                )
+                print(
+                    f"\n[!] ERROR CRÍTICO: La tarea de emergencia {task['id']} ha sido bloqueada (HARD_BLOCK)."
+                )
+                print(f"Razón: {debate.reasoning}")
+                print(
+                    "Como es una tarea de infraestructura crítica, no es seguro continuar. Abortando."
+                )
+                sys.exit(1)
+            return False
+        task["instruction"] = debate.revised_instruction
+    return False
+
+
+async def monitor_mode(layout: Layout) -> None:
+    UI_STATE["all_tasks"] = parse_backlog()
+    while True:
+        if SENTINEL.ledger_path.exists():
+            with SENTINEL.ledger_path.open("r") as f:
+                UI_STATE["total_cost"] = 0
+                for line in f:
+                    try:
+                        tx = json.loads(line)
+                        UI_STATE["total_cost"] += tx.get("cost_usd", 0.0)
+                        for t in UI_STATE["all_tasks"]:
+                            if t["id"] == tx["task_id"]:
+                                if tx["event"] == "success":
+                                    t["status"] = "Success"
+                                elif tx["event"] == "hard_block":
+                                    t["status"] = "HARD_BLOCK"
+                                elif "attempt" in tx["event"]:
+                                    t["status"] = "Running"
+                                    UI_STATE["active_task"] = t
+                        if tx["event"] == "debate_completed":
+                            UI_STATE["debate_transcript"].append(
+                                ("ARCHITECT", tx["details"]["decision"])
+                            )
+                    except Exception:
+                        continue
+        update_ui_components(layout)
+        await asyncio.sleep(1)
+
+
+async def main() -> None:
+    mode = "monitor" if "--monitor" in sys.argv else "worker"
+    layout = make_layout()
+    if mode == "monitor":
+        with Live(layout, refresh_per_second=2, screen=True):
+            await monitor_mode(layout)
+        return
+    UI_STATE["all_tasks"] = parse_backlog()
+    with Live(layout, refresh_per_second=2, screen="--headless" not in sys.argv):
         i = 0
         while i < len(UI_STATE["all_tasks"]):
             task = UI_STATE["all_tasks"][i]
-            if "Done" in task["status"]: i += 1; continue
-            
-            UI_STATE["active_task"] = task
-            task["status"] = "Running"
-            UI_STATE["active_logs"] = [] # Clear logs for new task
-            
-            success, logs = await run_po_orchestrator(task.get("instruction") or f"Implementa: {task['title']}")
-
-            if success:
-                task["status"] = "Success"
-                SENTINEL.log_transaction(task["id"], "success", {}, cost=0.05)
-                UI_STATE["completed_count"] += 1
+            if SENTINEL.get_task_status(task["id"]) in ["success", "hard_block"]:
                 i += 1
-            else:
-                SENTINEL.log_transaction(task["id"], "attempt_failed", {"error_snippet": logs[-500:]})
-                task["status"] = "Rescuing"
-
-                debate = await perform_apex_debate(logs, "Fallo inicial.")
-                
-                if debate.decision == "INJECT_PREREQUISITE":
-                    # Lógica de recursividad corregida: inyectar DELANTE de la tarea actual
-                    new_tasks = []
-                    for p_task in debate.prerequisite_tasks:
-                        nt = {**p_task, "priority": "EMG", "id": f"EMG-{int(time.time()) % 1000}", "status": "Pending"}
-                        new_tasks.append(nt)
-                    
-                    # Insertar y NO incrementar i para que procese las nuevas
-                    for nt in reversed(new_tasks):
-                        UI_STATE["all_tasks"].insert(i, nt)
-                    
-                    task["status"] = "Waiting EMG"
-                    # No incrementamos i, así que el bucle procesará la primera EMG inyectada
-                elif debate.decision == "REJECTED" or debate.is_terminal_failure:
-                    task["status"] = "HARD_BLOCK"
-                    SENTINEL.log_transaction(task["id"], "hard_block", {"reason": debate.reasoning})
-                    i += 1
-                else:
-                    # APPROVED: Reintento con instrucción revisada
-                    task["instruction"] = debate.revised_instruction
-                    # No incrementamos i para reintentar la misma tarea con la nueva instrucción
-            
+                continue
+            if "--headless" not in sys.argv:
+                update_ui_components(layout)
+            await process_task(task, UI_STATE["all_tasks"], i)
             UI_STATE["total_cost"] = SENTINEL.total_cost
-            if not headless:
-                layout["header"].update(generate_header())
-                layout["active_mission"].update(generate_forge_mission())
-                layout["brain_stream"].update(generate_brain_stream())
-                layout["terminal_mirror"].update(generate_terminal_mirror())
-                layout["registry"].update(generate_registry())
-                layout["footer"].update(Panel(f"Control: Ctrl+C para suspender | Ledger: working/apex/apex_ledger.jsonl", style="dim"))
+            if "--headless" not in sys.argv:
+                update_ui_components(layout)
+
+            # Si la tarea actual quedó en 'Waiting EMG', no incrementamos 'i'
+            # para procesar la tarea inyectada en el siguiente ciclo.
+            if task["status"] != "Waiting EMG":
+                i += 1
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,7 +1,3 @@
-from docx import Document
-from pathlib import Path
-
-
 def replace_text_in_doc(doc, old_text, new_text):
     for p in doc.paragraphs:
         if old_text in p.text:

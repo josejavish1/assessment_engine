@@ -155,7 +155,9 @@ async def run_agent(
         return cast(Dict[str, Any], data)
 
     except Exception as e:
-        log_msg = f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
+        log_msg = (
+            f"Fallo crítico tras múltiples reintentos para el usuario {user_id}: {e}"
+        )
         if run_id:
             log_msg = f"[run_id={run_id}] {log_msg}"
         logger.error(log_msg)

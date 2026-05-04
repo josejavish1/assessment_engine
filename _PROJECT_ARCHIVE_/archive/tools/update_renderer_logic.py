@@ -1,6 +1,7 @@
 import re
-from docx.shared import Pt, RGBColor
+
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt, RGBColor
 
 
 def process_footnotes(doc, dossier):

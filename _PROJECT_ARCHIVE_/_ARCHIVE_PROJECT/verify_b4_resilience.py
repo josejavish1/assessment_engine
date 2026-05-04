@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
 
