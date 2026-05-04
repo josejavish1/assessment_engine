@@ -1,10 +1,10 @@
 from pathlib import Path
 
-import yaml  # type: ignore
-
 
 def load_prompt_config(filename: str) -> dict:
     """Carga un archivo de configuración de prompt YAML."""
+    import yaml  # type: ignore
+
     # Ubicamos el directorio registry relativo a este archivo
     registry_dir = Path(__file__).resolve().parent / "registry"
     filepath = registry_dir / filename

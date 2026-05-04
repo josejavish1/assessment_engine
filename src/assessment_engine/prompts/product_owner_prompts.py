@@ -10,10 +10,8 @@ class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
 
-yaml = cast(_YamlModule, import_module("yaml"))
-
-
 def _load_yaml_config(filename: str) -> dict:
+    yaml = cast(_YamlModule, import_module("yaml"))
     filepath = Path(__file__).resolve().parent / "registry" / filename
     with filepath.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
