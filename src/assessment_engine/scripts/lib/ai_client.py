@@ -5,9 +5,10 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 
 import asyncio
 import logging
+import os
 import time
 from pathlib import Path
-from typing import Any, Callable, Optional, Union, Dict
+from typing import Any, Callable, Dict, Optional, Union, cast
 
 from tenacity import (
     before_sleep_log,
@@ -41,7 +42,7 @@ def extract_model_text(event: Any) -> Optional[str]:
         parts = content.get("parts", [])
         for part in parts:
             if isinstance(part, dict) and "text" in part:
-                return part["text"]
+                return str(part["text"])
     return None
 
 
@@ -85,7 +86,9 @@ async def _execute_query_with_retry(
 
 
 def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
-    # This function remains the same
+    """
+    Intenta validar los datos contra el esquema, manejando anidamientos comunes.
+    """
     try:
         return schema.model_validate(data).model_dump(by_alias=True)
     except Exception as e:
@@ -94,7 +97,7 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
                 first_val = list(data.values())[0]
                 if isinstance(first_val, (dict, list)):
                     return _robust_unwrap_and_validate(first_val, schema)
-            for k, v in data.items():
+            for v in data.values():
                 if isinstance(v, (dict, list)):
                     try:
                         return schema.model_validate(v).model_dump(by_alias=True)
@@ -112,7 +115,7 @@ async def run_agent(
     message: str,
     raw_output_file: Optional[Path] = None,
     schema: Any = None,
-) -> dict:
+) -> Union[Dict[str, Any], Any]:
     """
     Ejecuta un agente de forma asíncrona y captura telemetría.
     """
@@ -129,7 +132,7 @@ async def run_agent(
         if schema:
             return _robust_unwrap_and_validate(data, schema)
 
-        return data
+        return cast(Dict[str, Any], data)
 
     except Exception as e:
         logger.error(
@@ -175,31 +178,32 @@ async def call_agent(
     instruction: str = "",
     output_schema: Any = None,
     tools: Optional[list[Callable[..., Any]]] = None,
-) -> dict:
+) -> Any:
     """
     Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
     """
-    import os
-
     if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "1") == "0" and os.environ.get(
         "GEMINI_API_KEY"
     ):
         from google import genai
 
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        
+        # Build config carefully to satisfy Mypy/GenAI types
+        config: Dict[str, Any] = {
+            "system_instruction": instruction,
+            "response_mime_type": "application/json",
+        }
+        if output_schema:
+            config["response_schema"] = output_schema
+            
         response = await client.aio.models.generate_content(
             model=model_name,
             contents=prompt,
-            config={
-                "system_instruction": instruction,
-                "response_mime_type": "application/json",
-                "response_schema": output_schema,
-            },
+            config=cast(Any, config),
         )
         if raw_output_file and response.text:
             raw_output_file.write_text(response.text, encoding="utf-8")
-
-        from assessment_engine.scripts.lib.json_from_model import parse_json_from_text
 
         data = parse_json_from_text(response.text or "{}")
         if output_schema:
@@ -207,7 +211,6 @@ async def call_agent(
         return data
 
     from google.adk.agents import Agent
-    from vertexai.agent_engines import AdkApp
 
     agent = Agent(
         model=model_name,

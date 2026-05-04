@@ -469,12 +469,16 @@ def test_run_command_times_out_and_classifies_timeout(
             self.pid = 4242
             self.returncode = None
             self._timed_out = False
+            self.stdout = ["partial stdout"]
 
-        def communicate(self, timeout=None):
+        def wait(self, timeout=None):
             if not self._timed_out:
                 self._timed_out = True
-                raise subprocess.TimeoutExpired(cmd=["executor"], timeout=timeout)
+                raise subprocess.TimeoutExpired(cmd=["executor"], timeout=float(timeout) if timeout is not None else 0.0)
             self.returncode = -9
+
+        def communicate(self, timeout=None):
+            self.wait(timeout=timeout)
             return ("partial stdout", "partial stderr")
 
     output_path = tmp_path / "timeout.log"
@@ -920,6 +924,9 @@ def test_resume_pull_request_reuses_branch_and_runs_reconciliation(
         "commit_title": "fix: address PR feedback",
         "validation_plan": ["pytest"],
         "tasks": [],
+        "risk_level": "low",
+        "problem": "Test problem",
+        "value_expected": "Test value",
     }
     args = orchestrator.parse_args(
         [
@@ -1004,9 +1011,8 @@ def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> 
         orchestrator, "preflight_executor", lambda *args, **kwargs: None
     )
 
-    def fake_ensure_clean_worktree(*, allow_dirty: bool) -> None:
+    def fake_ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
         call_order.append("ensure_clean_worktree")
-
     def fake_create_request_dir(policy, request_text):
         call_order.append("create_request_dir")
         return Path("/tmp/request-dir")

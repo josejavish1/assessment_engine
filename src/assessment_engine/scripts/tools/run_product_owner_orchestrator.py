@@ -11,7 +11,7 @@ import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from assessment_engine.lib.logger_config import setup_structured_logging
 from assessment_engine.lib.secrets_client import get_secret
@@ -481,8 +481,8 @@ def run_command(
         start_new_session=True,
     )
     
-    import threading
     import sys
+    import threading
     
     output_lines = []
     
@@ -1408,8 +1408,9 @@ def execute_plan(
 ) -> None:
     global ROOT
     original_root = ROOT
-    import assessment_engine.scripts.lib.runtime_paths as rp
     import atexit
+
+    import assessment_engine.scripts.lib.runtime_paths as rp
 
     policy = load_orchestrator_policy()
     timeouts = resolve_execution_timeouts(policy)
@@ -1590,7 +1591,7 @@ def resume_pull_request(
     ensure_clean_worktree(allow_dirty=args.allow_dirty, request_text=request_text)
     request_dir = create_request_dir(policy, request_text)
     plan = prepare_resume_plan(policy, pr_state)
-    plan_bundle = ProductOwnerAlternatives(alternatives=[plan]).model_dump(mode="json")
+    plan_bundle = ProductOwnerAlternatives(alternatives=[cast(Any, plan)]).model_dump(mode="json")
     save_plan_bundle(request_dir, request_text, plan_bundle)
     executor_command = resolve_executor_command(args.executor_command)
     preflight_executor(request_dir, executor_command)
