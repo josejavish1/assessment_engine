@@ -50,5 +50,12 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
     *   **Frontend:** Aplicación web dedicada (Next.js + Vercel AI SDK / React Flow) construida de forma acelerada *por* el equipo de agentes de IA usando componentes base (Shadcn/v0).
     *   **UX (Generative UI):** Interfaz limpia y espacial. El consultor no ve código ni JSONs. Ve los "Towers" y "Pillars" del Assessment renderizados dinámicamente como gráficas interactivas, alimentados por el mismo servidor MCP en background.
 
+### Fase 5: The Stigmergic Enterprise Fabric (Plataforma a Nivel Mundial)
+**Objetivo:** Transformar el motor de ejecución en un sistema descentralizado, neuro-simbólico y legalmente inexpugnable, diseñado para escalar en el mercado corporativo global (Big Four, Multinacionales IT).
+*   **Cumplimiento Legal (EU AI Act):** Aislamiento nativo en *Shadow Workspaces* con mecanismos "Pause & Approve" (Art. 14) y un Sistema Inmune *Out-of-Band* (Agentes Macrófagos) que previene vulnerabilidades o filtraciones de PII antes de que el código toque producción.
+*   **Estigmergia Digital (Coordinación sin Cuellos de Botella):** Sustitución del paso de mensajes jerárquico por coordinación a través del entorno. Miles de agentes pueden colaborar simultáneamente dejando "rastros digitales" (marcadores JSON) en un *Shared Knowledge Graph*, permitiendo un escalado infinito sin que el orquestador colapse.
+*   **Inferencia Activa y FEP (Free Energy Principle):** Erradicación matemática del riesgo de alucinación corporativa. Los agentes operan bajo una capa cognitiva que minimiza la "Sorpresa" (Variational Free Energy). Si un agente encuentra alta entropía (datos financieros que no cuadran), está matemáticamente forzado a buscar información (Information Gain) en lugar de inventar respuestas.
+*   **Economía Cognitiva Interna:** El motor funciona como un mercado dinámico. Las tareas se subastan internamente, asegurando matemáticamente que siempre interviene la combinación más eficiente de agentes (Routing inteligente multi-proveedor) para maximizar el margen de beneficio sin perder la calidad estricta garantizada por contratos Pydantic.
+
 ---
-*Nota: Este documento sirve como "North Star" para guiar el desarrollo de los agentes internos del equipo. La construcción de la Fase 4B debe delegarse como una serie de Epics a los agentes del Developer Control Plane.*
+*Nota: Este documento sirve como "North Star" para guiar el desarrollo de los agentes internos del equipo. La construcción de la Fase 4B y la Fase 5 deben delegarse como una serie de Epics a los agentes del Developer Control Plane.*

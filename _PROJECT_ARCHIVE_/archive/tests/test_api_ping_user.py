@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+
 import vertexai
 from vertexai.generative_models import GenerativeModel
 
