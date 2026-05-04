@@ -214,7 +214,7 @@ async def call_agent(
         name="ad_hoc_agent",
         instruction=instruction,
         output_schema=output_schema,
-        tools=tools,  # type: ignore
+        tools=tools or [],  # type: ignore
     )
     app = AdkApp(agent=agent)
     return await run_agent(

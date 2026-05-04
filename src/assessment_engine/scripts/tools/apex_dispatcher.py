@@ -206,7 +206,14 @@ async def process_task(task: dict, queue: list, idx: int):
                 queue.insert(idx, new_task); UI_STATE["all_tasks"].insert(idx, new_task)
             task["status"] = "Waiting EMG"; return False 
         elif debate.decision == "REJECTED" or debate.is_terminal_failure:
-            task["status"] = "HARD_BLOCK"; SENTINEL.log_transaction(task["id"], "hard_block", {"reason": debate.reasoning}); UI_STATE["completed_count"] += 1; return False
+            task["status"] = "HARD_BLOCK"; SENTINEL.log_transaction(task["id"], "hard_block", {"reason": debate.reasoning}); UI_STATE["completed_count"] += 1
+            if task.get("priority") == "EMG":
+                UI_STATE["last_event"] = f"🛑 CRITICAL: Fallo en pre-requisito EMG ({task['id']}). Deteniendo orquestador."
+                print(f"\n[!] ERROR CRÍTICO: La tarea de emergencia {task['id']} ha sido bloqueada (HARD_BLOCK).")
+                print(f"Razón: {debate.reasoning}")
+                print("Como es una tarea de infraestructura crítica, no es seguro continuar. Abortando.")
+                sys.exit(1)
+            return False
         task["instruction"] = debate.revised_instruction
     return False
 
@@ -247,7 +254,11 @@ async def main():
             await process_task(task, UI_STATE["all_tasks"], i)
             UI_STATE["total_cost"] = SENTINEL.total_cost
             if not "--headless" in sys.argv: update_ui_components(layout)
-            i += 1
+            
+            # Si la tarea actual quedó en 'Waiting EMG', no incrementamos 'i'
+            # para procesar la tarea inyectada en el siguiente ciclo.
+            if task["status"] != "Waiting EMG":
+                i += 1
 
 if __name__ == "__main__":
     asyncio.run(main())
