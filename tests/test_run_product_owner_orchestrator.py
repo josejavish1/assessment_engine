@@ -474,7 +474,10 @@ def test_run_command_times_out_and_classifies_timeout(
         def wait(self, timeout=None):
             if not self._timed_out:
                 self._timed_out = True
-                raise subprocess.TimeoutExpired(cmd=["executor"], timeout=float(timeout) if timeout is not None else 0.0)
+                raise subprocess.TimeoutExpired(
+                    cmd=["executor"],
+                    timeout=float(timeout) if timeout is not None else 0.0,
+                )
             self.returncode = -9
 
         def communicate(self, timeout=None):
@@ -1011,8 +1014,11 @@ def test_main_checks_clean_worktree_before_creating_request_dir(monkeypatch) -> 
         orchestrator, "preflight_executor", lambda *args, **kwargs: None
     )
 
-    def fake_ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
+    def fake_ensure_clean_worktree(
+        *, allow_dirty: bool, request_text: str = ""
+    ) -> None:
         call_order.append("ensure_clean_worktree")
+
     def fake_create_request_dir(policy, request_text):
         call_order.append("create_request_dir")
         return Path("/tmp/request-dir")
@@ -1068,7 +1074,11 @@ def test_execute_plan_runs_reconciliation_before_auto_merge(
     }
     calls: list[str] = []
 
-    monkeypatch.setattr(orchestrator.subprocess, "run", MagicMock(return_value=MagicMock(stdout="", returncode=0)))
+    monkeypatch.setattr(
+        orchestrator.subprocess,
+        "run",
+        MagicMock(return_value=MagicMock(stdout="", returncode=0)),
+    )
     monkeypatch.setattr(orchestrator.os, "chdir", lambda x: None)
 
     monkeypatch.setattr(

@@ -9,7 +9,6 @@ from assessment_engine.scripts.lib.remediation_playbooks import (
 
 
 class TestRemediationPlaybooks(unittest.TestCase):
-
     @patch("subprocess.run")
     def test_check_git_status_clean(self, mock_run):
         mock_run.return_value = MagicMock(stdout="", returncode=0)
@@ -33,10 +32,13 @@ class TestRemediationPlaybooks(unittest.TestCase):
 
     @patch("subprocess.run")
     def test_clean_workspace_failure(self, mock_run):
-        mock_run.side_effect = subprocess.CalledProcessError(1, "git reset", stderr="Error resetting")
+        mock_run.side_effect = subprocess.CalledProcessError(
+            1, "git reset", stderr="Error resetting"
+        )
         result = clean_workspace()
         self.assertFalse(result.success)
         self.assertIn("Cleanup failed", result.message)
+
 
 if __name__ == "__main__":
     unittest.main()

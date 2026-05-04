@@ -160,12 +160,20 @@ def ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
     # Whitelist de comandos de saneamiento seguros (Remediation Mode)
     logger.info(f"Evaluando modo saneamiento para: '{request_text}'")
     remediation_keywords = [
-        "git reset", "git clean", "git status", 
-        "ruff check --fix", "ruff format",
-        "limpieza", "saneamiento", "restaurar", "purgar"
+        "git reset",
+        "git clean",
+        "git status",
+        "ruff check --fix",
+        "ruff format",
+        "limpieza",
+        "saneamiento",
+        "restaurar",
+        "purgar",
     ]
     if any(keyword in request_text.lower() for keyword in remediation_keywords):
-        logger.info("Modo Saneamiento detectado: permitiendo worktree sucio para comandos de limpieza.")
+        logger.info(
+            "Modo Saneamiento detectado: permitiendo worktree sucio para comandos de limpieza."
+        )
         return
 
     if git_status_has_relevant_changes():
@@ -221,7 +229,7 @@ def save_plan_bundle(
 def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"  # Desactivar prompts interactivos de Git
-    
+
     try:
         result = subprocess.run(
             args,
@@ -234,7 +242,7 @@ def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
         )
     except subprocess.TimeoutExpired:
         raise RuntimeError(f"Timeout excedido ejecutando: {' '.join(args)}")
-        
+
     if result.returncode != 0:
         raise RuntimeError(
             result.stderr.strip() or f"Fallo ejecutando: {' '.join(args)}"
@@ -381,7 +389,9 @@ def git_status_has_relevant_changes() -> bool:
             path = path.split("->", maxsplit=1)[1].strip()
         if is_ignorable_git_status_path(path):
             continue
-        logger.warning(f"Worktree sucio detectado por el archivo: '{path}' (status: '{line[:2]}')")
+        logger.warning(
+            f"Worktree sucio detectado por el archivo: '{path}' (status: '{line[:2]}')"
+        )
         return True
     return False
 
@@ -480,22 +490,22 @@ def run_command(
         text=True,
         start_new_session=True,
     )
-    
+
     import sys
     import threading
-    
+
     output_lines = []
-    
+
     def reader_thread() -> None:
         if process.stdout:
             for line in process.stdout:
                 sys.stdout.write(line)
                 sys.stdout.flush()
                 output_lines.append(line)
-                
+
     t = threading.Thread(target=reader_thread)
     t.start()
-    
+
     try:
         process.wait(timeout=timeout_seconds)
     except subprocess.TimeoutExpired:
@@ -504,7 +514,7 @@ def run_command(
         except (ProcessLookupError, PermissionError):
             process.kill()
         t.join()
-        
+
         timeout_note = (
             f"Command timed out after {timeout_seconds} seconds."
             if timeout_seconds
@@ -525,7 +535,7 @@ def run_command(
             output_path=output_path,
             raw_output=output.strip(),
         )
-        
+
     t.join()
     output = "".join(output_lines)
     output_path.write_text(output, encoding="utf-8")
@@ -680,6 +690,7 @@ def create_commit(
             f"Governance-Commitment: sha256:{compliance_receipt.get('governance_commitment_hash')}"
         )
     run_git_command(["git", "commit", "--no-gpg-sign", "-m", message])
+
 
 def push_branch(branch_name: str) -> None:
     # Use --force-with-lease to safely overwrite the remote branch if it exists from a previous
@@ -1419,37 +1430,58 @@ def execute_plan(
 
     branch_name = plan["branch_name"]
     shadow_worktree_path = Path("/tmp") / f"shadow_worktree_{slugify(branch_name)}"
-    
+
     # 1. Configurar y limpiar Shadow Worktree
     logger.info(f"Fase 2: Preparando Shadow Workspace en {shadow_worktree_path}")
-    subprocess.run(["git", "worktree", "remove", "-f", str(shadow_worktree_path)], cwd=original_root, stderr=subprocess.DEVNULL)
-    
+    subprocess.run(
+        ["git", "worktree", "remove", "-f", str(shadow_worktree_path)],
+        cwd=original_root,
+        stderr=subprocess.DEVNULL,
+    )
+
     # Capturar rama original para restaurarla después
-    original_branch = subprocess.run(["git", "branch", "--show-current"], cwd=original_root, capture_output=True, text=True).stdout.strip()
+    original_branch = subprocess.run(
+        ["git", "branch", "--show-current"],
+        cwd=original_root,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
     if not original_branch:
-        original_branch = "main" # fallback
-    
+        original_branch = "main"  # fallback
+
     # Nos aseguramos de que la rama exista
     ensure_branch(branch_name)
-    
+
     # Mover el main worktree a detached HEAD para liberar la rama
     subprocess.run(["git", "checkout", "--detach"], cwd=original_root, check=True)
-    
+
     # Crear el worktree
-    subprocess.run(["git", "worktree", "add", "-f", str(shadow_worktree_path), branch_name], cwd=original_root, check=True)
-    
+    subprocess.run(
+        ["git", "worktree", "add", "-f", str(shadow_worktree_path), branch_name],
+        cwd=original_root,
+        check=True,
+    )
+
     # 2. Inyectar el entorno de ejecución y registrar limpieza
     def cleanup_worktree() -> None:
         try:
             os.chdir(original_root)
-            subprocess.run(["git", "worktree", "remove", "-f", str(shadow_worktree_path)], cwd=original_root, stderr=subprocess.DEVNULL)
-            subprocess.run(["git", "checkout", original_branch], cwd=original_root, check=False)
-            logger.info(f"Shadow Workspace limpiado y rama {original_branch} restaurada en el origen.")
+            subprocess.run(
+                ["git", "worktree", "remove", "-f", str(shadow_worktree_path)],
+                cwd=original_root,
+                stderr=subprocess.DEVNULL,
+            )
+            subprocess.run(
+                ["git", "checkout", original_branch], cwd=original_root, check=False
+            )
+            logger.info(
+                f"Shadow Workspace limpiado y rama {original_branch} restaurada en el origen."
+            )
         except Exception as e:
             logger.error(f"Error limpiando shadow worktree: {e}")
 
     atexit.register(cleanup_worktree)
-    
+
     ROOT = shadow_worktree_path
     rp.ROOT = shadow_worktree_path
     os.chdir(shadow_worktree_path)
@@ -1591,7 +1623,9 @@ def resume_pull_request(
     ensure_clean_worktree(allow_dirty=args.allow_dirty, request_text=request_text)
     request_dir = create_request_dir(policy, request_text)
     plan = prepare_resume_plan(policy, pr_state)
-    plan_bundle = ProductOwnerAlternatives(alternatives=[cast(Any, plan)]).model_dump(mode="json")
+    plan_bundle = ProductOwnerAlternatives(alternatives=[cast(Any, plan)]).model_dump(
+        mode="json"
+    )
     save_plan_bundle(request_dir, request_text, plan_bundle)
     executor_command = resolve_executor_command(args.executor_command)
     preflight_executor(request_dir, executor_command)
@@ -1677,13 +1711,17 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     executor_command = resolve_executor_command(args.executor_command)
-    
+
     if plan.get("is_ambiguous"):
-        logger.error(f"Petición ambigua. Pregunta del planificador: {plan.get('clarification_question', 'Sin pregunta')}")
+        logger.error(
+            f"Petición ambigua. Pregunta del planificador: {plan.get('clarification_question', 'Sin pregunta')}"
+        )
         return 1
 
     if plan.get("refused"):
-        logger.error(f"El planificador rechazó la petición: {plan.get('refusal_reason', 'Sin razón proporcionada')}")
+        logger.error(
+            f"El planificador rechazó la petición: {plan.get('refusal_reason', 'Sin razón proporcionada')}"
+        )
         return 1
 
     if "alternatives" in plan:

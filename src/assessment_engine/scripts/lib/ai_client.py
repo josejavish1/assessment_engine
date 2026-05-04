@@ -188,7 +188,7 @@ async def call_agent(
         from google import genai
 
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        
+
         # Build config carefully to satisfy Mypy/GenAI types
         config: Dict[str, Any] = {
             "system_instruction": instruction,
@@ -196,7 +196,7 @@ async def call_agent(
         }
         if output_schema:
             config["response_schema"] = output_schema
-            
+
         response = await client.aio.models.generate_content(
             model=model_name,
             contents=prompt,
