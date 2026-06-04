@@ -51,7 +51,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
             {alternatives.map((alt: any, idx: number) => (
               <div key={idx} className={`flex flex-col bg-card rounded-2xl border ${idx === 1 ? 'border-primary ring-1 ring-primary/20 shadow-md' : 'border-border/60 shadow-sm'} overflow-hidden relative`}>
                 {idx === 1 && <div className="absolute top-0 left-0 w-full h-1 bg-primary" />}
-                
+
                 <div className="p-6 border-b border-border/50">
                   <Badge variant="outline" className={`mb-3 ${alt.risk_level === 'high' ? 'text-destructive border-destructive/30 bg-destructive/10' : alt.risk_level === 'medium' ? 'text-amber-500 border-amber-500/30 bg-amber-500/10' : 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'}`}>
                     Riesgo: {alt.risk_level}
@@ -88,7 +88,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
                           <div className="pl-6 space-y-2">
                             <p className="text-xs text-foreground flex items-center gap-1.5"><ShieldAlert className="h-3 w-3 text-primary"/> <span className="font-medium text-muted-foreground">Mitigación:</span> {risk.mitigation_strategy}</p>
                             <p className="text-xs text-foreground flex items-center gap-1.5"><Target className="h-3 w-3 text-amber-500"/> <span className="font-medium text-muted-foreground">Impacto:</span> {risk.second_order_impact}</p>
-                            
+
                             <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-border/50">
                               <Badge variant="secondary" className="text-[10px] bg-background">
                                 🚪 {risk.reversibility}
@@ -108,7 +108,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
                 </div>
 
                 <div className="p-6 bg-muted/10 border-t border-border/50 mt-auto">
-                  <button 
+                  <button
                     onClick={() => {
                       setSelectedAlt(idx);
                       setShowTechnical(true);
@@ -131,7 +131,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-in slide-in-from-right-8 duration-300">
       <div className="border-b border-border/50 bg-muted/10 p-8 flex items-start justify-between shrink-0">
         <div>
-          <button 
+          <button
             onClick={() => setShowTechnical(false)}
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
@@ -162,7 +162,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
 
       <div className="flex-1 p-8 overflow-y-auto pb-32">
         <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Columna Izquierda: Specs y Scope */}
           <div className="lg:col-span-1 space-y-8">
             <section>
@@ -208,7 +208,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
                 </div>
               </div>
             </section>
-            
+
             <section>
               <h3 className="text-lg font-semibold flex items-center gap-2 mb-4 border-b border-border/50 pb-2">
                 <ExternalLink className="h-5 w-5 text-amber-500" /> Source of Truth
@@ -228,7 +228,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
             <h3 className="text-xl font-semibold flex items-center gap-2 mb-6">
               <Code2 className="h-6 w-6 text-blue-500" /> Tareas Propuestas ({currentPlan.tasks?.length || 0})
             </h3>
-            
+
             <div className="space-y-4">
               {currentPlan.tasks?.map((t: any, i: number) => (
                 <div key={i} className="bg-card border border-border/50 rounded-xl p-5 shadow-sm">
@@ -237,7 +237,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
                     <h4 className="text-base font-semibold text-foreground">{t.title}</h4>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">{t.objective || t.description}</p>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-muted/20 p-3 rounded-lg border border-border/50">
                       <span className="text-xs font-semibold text-muted-foreground uppercase mb-2 block">Validation</span>

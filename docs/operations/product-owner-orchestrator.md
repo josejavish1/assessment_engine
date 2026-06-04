@@ -5,9 +5,9 @@ source_of_truth:
   - ../../bin/po-run
   - ../../engine_config/policies/orchestrator_policy.json
   - ../../engine_config/runtime_manifest.json
-  - ../../src/assessment_engine/scripts/lib/product_owner_models.py
-  - ../../src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
-  - ../../src/assessment_engine/prompts/product_owner_prompts.py
+  - ../../src/infrastructure/product_owner_models.py
+  - ../../src/application/tools/run_product_owner_orchestrator.py
+  - ../../src/domain/prompts/product_owner_prompts.py
   - ../../.github/workflows/ci.yml
   - ../../.github/workflows/quality.yml
   - ../../.github/workflows/typing.yml
@@ -45,14 +45,14 @@ Esto sigue mejor el patrón enterprise de 2026:
 El CLI `run_product_owner_orchestrator.py` acepta una petición de negocio como texto o fichero:
 
 ```bash
-python src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py plan \
+python src/application/tools/run_product_owner_orchestrator.py plan \
   --request "Quiero que el informe global priorice los riesgos críticos de continuidad"
 ```
 
 o bien:
 
 ```bash
-python src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py run \
+python src/application/tools/run_product_owner_orchestrator.py run \
   --request-file ./request.txt \
   --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
 ```
@@ -74,7 +74,7 @@ Ese wrapper:
 También puede **reanudar una PR existente** para seguir la reconciliación:
 
 ```bash
-python src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py resume-pr \
+python src/application/tools/run_product_owner_orchestrator.py resume-pr \
   --pr-number 6 \
   --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
 ```

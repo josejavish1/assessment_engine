@@ -2,12 +2,12 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
-  - ../../src/assessment_engine/scripts/run_intelligence_harvesting.py
-  - ../../src/assessment_engine/scripts/render_web_presentation.py
-  - ../../src/assessment_engine/scripts/lib/pipeline_runtime.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/run_commercial_pipeline.py
+  - ../../src/application/run_intelligence_harvesting.py
+  - ../../src/application/render_web_presentation.py
+  - ../../src/infrastructure/pipeline_runtime.py
   - ../architecture/tower-pipeline.md
   - ../architecture/global-commercial-pipelines.md
 last_verified_against: 2026-05-02

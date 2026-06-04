@@ -1,26 +1,16 @@
-import importlib.util
+from __future__ import annotations
 
 import pytest
 
-from assessment_engine.schemas.blueprint import PillarBlueprintDraft
+from domain.schemas.blueprint import BlueprintPayload
 
 
-def test_pydantic_import():
-    """Verifica que los esquemas Pydantic se importan correctamente."""
-    assert PillarBlueprintDraft is not None
-
-
-def test_package_is_importable():
-    """Verifica que el paquete instalado es importable sin hacks de sys.path."""
-    spec = importlib.util.find_spec("assessment_engine")
-    assert spec is not None
-    assert spec.origin is not None
-    assert "src/assessment_engine" in spec.origin
+def test_pydantic_import() -> None:
+    assert BlueprintPayload is not None
 
 
 @pytest.mark.asyncio
-async def test_async_works():
-    """Verifica que el plugin de asyncio para pytest funciona."""
+async def test_async_works() -> None:
     import asyncio
 
     await asyncio.sleep(0.1)

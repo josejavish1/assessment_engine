@@ -9,7 +9,7 @@ export async function readLiveTrace() {
     if (!fs.existsSync(tracePath)) {
       return "Inicializando agente...";
     }
-    
+
     const content = fs.readFileSync(tracePath, 'utf-8');
     const lines = content.split('\n').filter(l => l.trim() !== '');
     if (lines.length > 0) {

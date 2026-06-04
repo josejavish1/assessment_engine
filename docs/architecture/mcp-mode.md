@@ -2,8 +2,8 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/mcp_server.py
-  - ../../src/assessment_engine/scripts/
+  - ../../src/domain/mcp_server.py
+  - ../../src/application/
 last_verified_against: 2026-05-01
 applies_to:
   - humans
@@ -19,7 +19,7 @@ Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP
 
 El servidor vive en:
 
-- `src/assessment_engine/mcp_server.py`
+- `src/domain/mcp_server.py`
 
 Usa:
 

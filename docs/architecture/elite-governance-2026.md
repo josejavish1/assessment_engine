@@ -6,10 +6,10 @@ reviewers:
   - "compliance-lead"
 last_updated: "2026-05-02"
 doc_type: "canonical"
-applies_to: 
-  - "src/assessment_engine/scripts/lib"
+applies_to:
+  - "src/application/lib"
 last_verified_against: "2026-05-02"
-source_of_truth: 
+source_of_truth:
   - "Code"
 ---
 

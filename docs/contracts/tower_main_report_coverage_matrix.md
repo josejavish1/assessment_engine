@@ -2,10 +2,10 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/schemas/blueprint.py
-  - ../../src/assessment_engine/schemas/annex_synthesis.py
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
+  - ../../src/domain/schemas/blueprint.py
+  - ../../src/domain/schemas/annex_synthesis.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_tower_blueprint_engine.py
   - ../architecture/working-artifacts.md
 last_verified_against: 2026-05-03
 applies_to:

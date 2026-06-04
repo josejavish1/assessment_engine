@@ -6,7 +6,7 @@ source_of_truth:
   - ../../requirements.txt
   - ../../tests/test_environment.py
   - ../../.github/workflows/ci.yml
-  - ../../src/assessment_engine/scripts/lib/runtime_env.py
+  - ../../src/infrastructure/runtime_env.py
 last_verified_against: 2026-05-01
 applies_to:
   - humans

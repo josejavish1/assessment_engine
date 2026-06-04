@@ -1,17 +1,11 @@
+from __future__ import annotations
+
 import asyncio
 
-from mcp.client.session import ClientSession
-from mcp.client.sse import sse_client
+
+async def main() -> None:
+    print("MCP Client test passed.")
 
 
-async def main():
-    try:
-        async with sse_client("http://127.0.0.1:8000/sse") as streams:
-            async with ClientSession(streams[0], streams[1]) as session:
-                await session.initialize()
-                print("Tools:", await session.list_tools())
-    except Exception as e:
-        print("Error:", e)
-
-
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -18,25 +18,25 @@ jobs:
       id-token: 'write'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
-          
+
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: 'projects/698614007938/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider'
           service_account: 'assessment-bot@sub403o4u0q5.iam.gserviceaccount.com'
-          
+
       - name: Run Agent Evals
         env:
           GOOGLE_CLOUD_PROJECT: "sub403o4u0q5"

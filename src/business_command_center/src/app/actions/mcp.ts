@@ -23,12 +23,12 @@ export async function submitProductOwnerRequest(requestText: string) {
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "start_plan_generation",
       arguments: { request_text: requestText }
     }, undefined, { timeout: 30000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, jobId: data.job_id };
@@ -44,12 +44,12 @@ export async function checkPlanStatus(jobId: string) {
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "check_plan_status",
       arguments: { job_id: jobId }
     }, undefined, { timeout: 10000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, status: data.status, result: data.result };
@@ -65,12 +65,12 @@ export async function startPlanExecution(requestDir: string, altIndex: number = 
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "start_plan_execution",
       arguments: { request_dir: requestDir, alt_index: altIndex }
     }, undefined, { timeout: 30000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, jobId: data.job_id };
@@ -86,12 +86,12 @@ export async function checkExecutionStatus(jobId: string) {
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "check_execution_status",
       arguments: { job_id: jobId }
     }, undefined, { timeout: 10000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, status: data.status, result: data.result };
@@ -107,12 +107,12 @@ export async function abortAndRevert() {
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "abort_and_revert",
       arguments: {}
     }, undefined, { timeout: 30000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, data };
@@ -128,12 +128,12 @@ export async function checkActionGate(requestDir: string) {
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "check_action_gate",
       arguments: { request_dir: requestDir }
     }, undefined, { timeout: 10000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, data };
@@ -149,12 +149,12 @@ export async function authorizeActionGate(requestDir: string, altIndex: number =
   let mcp;
   try {
     mcp = await createClient();
-    
+
     const result = await mcp.client.callTool({
       name: "authorize_action_gate",
       arguments: { request_dir: requestDir, alt_index: altIndex }
     }, undefined, { timeout: 10000 });
-    
+
     const textContent = (result as any).content[0].text;
     const data = JSON.parse(textContent);
     return { success: true, data };

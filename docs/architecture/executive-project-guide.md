@@ -3,11 +3,11 @@ status: Verified
 owner: docs-governance
 source_of_truth:
   - ../SYSTEM_ARCHITECTURE.md
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
-  - ../../src/assessment_engine/scripts/render_web_presentation.py
-  - ../../src/assessment_engine/schemas/
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/run_commercial_pipeline.py
+  - ../../src/application/render_web_presentation.py
+  - ../../src/domain/schemas/
   - ./tower-pipeline.md
   - ./global-commercial-pipelines.md
   - ./critical-modules.md
@@ -44,16 +44,16 @@ en una cadena de activos que soporta decisiones de transformación.
 
 ## Cómo leer el sistema en 15 minutos
 
-1. **Empieza por la lógica de valor, no por los renderers.**  
+1. **Empieza por la lógica de valor, no por los renderers.**
    El proyecto manda por payloads y pipelines, no por DOCX u HTML.
 
-2. **Entiende la jerarquía de verdad.**  
+2. **Entiende la jerarquía de verdad.**
    Por torre manda el `blueprint_<tower>_payload.json`. Después vienen annex, global, comercial y web como derivaciones por audiencia.
 
-3. **Distingue bien las capas.**  
+3. **Distingue bien las capas.**
    Torre = diagnóstico; global = agenda ejecutiva; comercial = activación de cuenta; web = superficie visual.
 
-4. **Lee los renderers como consumidores.**  
+4. **Lee los renderers como consumidores.**
    Un renderer puede normalizar o tolerar desviaciones, pero no debería redefinir el contrato del sistema.
 
 ## La cadena principal de valor
@@ -103,16 +103,16 @@ La pieza detallada está en [`critical-modules.md`](critical-modules.md).
 
 ## Qué riesgos hay que explicar a negocio o delivery
 
-1. **Drift entre contratos y presentación**  
+1. **Drift entre contratos y presentación**
    aparece cuando el renderer compensa demasiado y oculta un problema real de payload.
 
-2. **Dependencia de IA para tramos críticos**  
+2. **Dependencia de IA para tramos críticos**
    sin acceso operativo a Vertex AI, la parte con más valor del sistema no se completa.
 
-3. **Convivencia con legado**  
+3. **Convivencia con legado**
    algunas capas aún toleran fallback legacy; eso protege continuidad, pero añade complejidad.
 
-4. **Confundir output bonito con output confiable**  
+4. **Confundir output bonito con output confiable**
    la calidad visual importa, pero no sustituye a contrato, linaje y coherencia entre capas.
 
 ## Qué significa que el proyecto esté “bien” o “mal”

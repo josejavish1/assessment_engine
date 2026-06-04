@@ -144,7 +144,7 @@ export default function AgentContextSheet({ task, plan, isOpen, onClose }: Agent
             </div>
           )}
         </ScrollArea>
-        
+
         <div className="p-6 border-t border-border/50 bg-muted/20">
            <button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-2.5 px-4 rounded-md transition-colors shadow-sm">
               {plan ? "Aprobar y Ejecutar (Gate 1)" : "Aprobar y Continuar"}

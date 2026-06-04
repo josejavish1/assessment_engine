@@ -48,7 +48,7 @@ export default function Home() {
 
   const requestPlanFromAgent = async (prompt: string, history: Message[]) => {
     setIsSubmitting(true);
-    
+
     // Build context-aware prompt for the backend
     let fullPrompt = prompt;
     if (history.length > 0) {
@@ -57,7 +57,7 @@ export default function Home() {
     }
 
     const response = await submitProductOwnerRequest(fullPrompt);
-    
+
     if (response.success && response.jobId) {
       const pollInterval = setInterval(async () => {
         const statusRes = await checkPlanStatus(response.jobId);
@@ -71,7 +71,7 @@ export default function Home() {
         if (statusRes.status === "completed") {
           clearInterval(pollInterval);
           setIsSubmitting(false);
-          
+
           let planData = null;
           let reqDir = "";
           try {
@@ -84,11 +84,11 @@ export default function Home() {
                 }
                 const jsonPart = lines.slice(requestDirLine ? 2 : 1).join('\n');
                 planData = JSON.parse(jsonPart);
-                
+
                 setGeneratedPlan(planData);
                 setRequestDir(reqDir);
                 setViewMode('planning');
-                
+
                 let assistantMessage = 'He generado una nueva versión del plan de arquitectura basada en tus indicaciones. Revisa las alternativas a la derecha.';
                 if (planData.is_ambiguous) {
                   assistantMessage = planData.clarification_question;
@@ -140,14 +140,14 @@ export default function Home() {
     const newUserMsg: Message = { id: generateId(), role: 'user', content };
     const newHistory = [...chatMessages, newUserMsg];
     setChatMessages(newHistory);
-    
+
     // Solicitamos el nuevo plan iterado
     await requestPlanFromAgent(content, chatMessages);
   };
 
   const handleApprovePlan = (altIndex: number) => {
     setApprovedAltIndex(altIndex);
-    
+
     // Inyectar tareas al Kanban Backlog
     const approvedPlan = generatedPlan.alternatives ? generatedPlan.alternatives[altIndex] : generatedPlan;
     if (approvedPlan && approvedPlan.tasks) {
@@ -161,7 +161,7 @@ export default function Home() {
         }))
       }));
     }
-    
+
     setViewMode('execution');
   };
 
@@ -175,13 +175,13 @@ export default function Home() {
   return (
     <>
       {viewMode !== 'planning' && (
-        <FloatingOmnibar 
-          onPlanGenerated={(plan, request, requestDir) => handleOmnibarSubmit(plan, request, requestDir)} 
+        <FloatingOmnibar
+          onPlanGenerated={(plan, request, requestDir) => handleOmnibarSubmit(plan, request, requestDir)}
           isSubmitting={isSubmitting}
           setIsSubmitting={setIsSubmitting}
         />
       )}
-      
+
       <div className="flex h-screen bg-background text-foreground">
         {/* Sidebar */}
         <aside className="w-16 lg:w-64 bg-muted/30 border-r border-border flex flex-col justify-between z-10 relative transition-all">
@@ -234,31 +234,31 @@ export default function Home() {
 
           {/* Liquid Render */}
           {viewMode === 'execution' && generatedPlan ? (
-            <ExecutiveExecutionDashboard 
-              plan={generatedPlan.alternatives ? generatedPlan.alternatives[approvedAltIndex] : generatedPlan} 
-              requestDir={requestDir} 
+            <ExecutiveExecutionDashboard
+              plan={generatedPlan.alternatives ? generatedPlan.alternatives[approvedAltIndex] : generatedPlan}
+              requestDir={requestDir}
               altIndex={approvedAltIndex}
-              onBack={() => setViewMode('planning')} 
+              onBack={() => setViewMode('planning')}
             />
           ) : viewMode === 'planning' && generatedPlan ? (
             <div className="flex-1 flex overflow-hidden">
               {/* Left Panel: Chat Interface */}
               <div className="w-[350px] shrink-0 border-r border-border/50 shadow-xl z-10 hidden md:block">
-                <AgentChat 
-                  messages={chatMessages} 
-                  isSubmitting={isSubmitting} 
-                  onSendMessage={handleChatSendMessage} 
+                <AgentChat
+                  messages={chatMessages}
+                  isSubmitting={isSubmitting}
+                  onSendMessage={handleChatSendMessage}
                 />
               </div>
-              
+
               {/* Right Panel: Artifact Canvas */}
               <div className="flex-1 overflow-hidden relative">
                 {isSubmitting && (
                   <div className="absolute inset-0 z-20 bg-background/50 backdrop-blur-[2px] flex flex-col items-center justify-center animate-in fade-in">
                   </div>
                 )}
-                <ArtifactCanvas 
-                  plan={generatedPlan} 
+                <ArtifactCanvas
+                  plan={generatedPlan}
                   onApprove={handleApprovePlan}
                   onReject={handleRejectPlan}
                 />

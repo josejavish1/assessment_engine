@@ -2,12 +2,12 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
-  - ../../src/assessment_engine/scripts/render_web_presentation.py
-  - ../../src/assessment_engine/scripts/tools/check_vertex_ai_access.py
-  - ../../src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/run_commercial_pipeline.py
+  - ../../src/application/render_web_presentation.py
+  - ../../src/application/tools/check_vertex_ai_access.py
+  - ../../src/application/tools/regenerate_smoke_artifacts.py
   - ./pipeline-execution.md
   - ./smoke-regeneration.md
   - ./troubleshooting-working.md
@@ -41,11 +41,11 @@ Este runbook resume la **operación real** del sistema: qué controles conviene 
 
 ## Orden recomendado de ejecución
 
-1. **preflight IA** si vas a tocar tramos con agentes;  
-2. **pipeline por torre** para crear la verdad base;  
-3. **pipeline global** para consolidar;  
-4. **pipeline comercial** para activar cuenta;  
-5. **render web** para superficie visual;  
+1. **preflight IA** si vas a tocar tramos con agentes;
+2. **pipeline por torre** para crear la verdad base;
+3. **pipeline global** para consolidar;
+4. **pipeline comercial** para activar cuenta;
+5. **render web** para superficie visual;
 6. **smoke y tests** cuando necesites validar baseline o regresiones.
 
 ## Señales mínimas de salud por fase

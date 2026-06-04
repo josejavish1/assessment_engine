@@ -2,17 +2,17 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/schemas/intelligence.py
-  - ../../src/assessment_engine/scripts/lib/client_intelligence.py
-  - ../../src/assessment_engine/scripts/run_intelligence_harvesting.py
-  - ../../src/assessment_engine/scripts/build_case_input.py
-  - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - ../../src/assessment_engine/scripts/build_global_report_payload.py
-  - ../../src/assessment_engine/scripts/run_executive_refiner.py
-  - ../../src/assessment_engine/scripts/run_commercial_refiner.py
-  - ../../src/assessment_engine/prompts/intelligence_prompts.py
-  - ../../src/assessment_engine/prompts/global_prompts.py
-  - ../../src/assessment_engine/prompts/commercial_prompts.py
+  - ../../src/domain/schemas/intelligence.py
+  - ../../src/infrastructure/client_intelligence.py
+  - ../../src/application/run_intelligence_harvesting.py
+  - ../../src/application/build_case_input.py
+  - ../../src/application/run_tower_blueprint_engine.py
+  - ../../src/application/build_global_report_payload.py
+  - ../../src/application/run_executive_refiner.py
+  - ../../src/application/run_commercial_refiner.py
+  - ../../src/domain/prompts/intelligence_prompts.py
+  - ../../src/domain/prompts/global_prompts.py
+  - ../../src/domain/prompts/commercial_prompts.py
 last_verified_against: 2026-05-01
 applies_to:
   - humans

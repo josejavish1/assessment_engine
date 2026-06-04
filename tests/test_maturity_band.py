@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from assessment_engine.scripts.lib.maturity_band import (
+from domain.maturity_band import (
     ANNEX_MATURITY_BANDS,
     GLOBAL_MATURITY_BANDS,
     MaturityBandDefinition,

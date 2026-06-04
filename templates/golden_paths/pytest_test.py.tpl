@@ -29,10 +29,10 @@ class TestComponenteEstandar:
         # --- ARRANGE ---
         # setup_data = {"input": "valid"}
         # service = MiServicio(config=mock_config)
-        
+
         # --- ACT ---
         # result = service.execute(setup_data)
-        
+
         # --- ASSERT ---
         # assert result["status"] == "success"
         pass
@@ -44,7 +44,7 @@ class TestComponenteEstandar:
         # --- ARRANGE ---
         # setup_data = {"input": "invalid"}
         # service = MiServicio(config=mock_config)
-        
+
         # --- ACT / ASSERT ---
         # with pytest.raises(ValueError, match="Input inválido"):
         #     service.execute(setup_data)

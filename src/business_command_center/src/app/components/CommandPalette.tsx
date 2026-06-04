@@ -36,7 +36,7 @@ export default function CommandPalette({ open, setOpen, onPlanGenerated }: Comma
         setOpen((open) => !open);
       }
     };
-    
+
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
   }, [setOpen]);
@@ -54,7 +54,7 @@ export default function CommandPalette({ open, setOpen, onPlanGenerated }: Comma
       if (statusRes.status === "completed") {
         clearInterval(pollInterval);
         setIsSubmitting(false);
-        
+
         let planData = null;
         try {
             const textContent = statusRes.result;
@@ -82,10 +82,10 @@ export default function CommandPalette({ open, setOpen, onPlanGenerated }: Comma
     if (e.key === 'Enter' && inputValue.trim() !== '') {
       e.preventDefault();
       setIsSubmitting(true);
-      
+
       const requestText = inputValue;
       const response = await submitProductOwnerRequest(requestText);
-      
+
       if (response.success && response.jobId) {
         pollJobStatus(response.jobId, requestText);
       } else {
@@ -98,8 +98,8 @@ export default function CommandPalette({ open, setOpen, onPlanGenerated }: Comma
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput 
-        placeholder="Ej: Quiero endurecer la reconciliación automática de PRs..." 
+      <CommandInput
+        placeholder="Ej: Quiero endurecer la reconciliación automática de PRs..."
         value={inputValue}
         onValueChange={setInputValue}
         onKeyDown={handleKeyDown}

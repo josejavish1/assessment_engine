@@ -2,19 +2,19 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - ../../src/assessment_engine/scripts/render_tower_blueprint.py
-  - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/build_global_report_payload.py
-  - ../../src/assessment_engine/scripts/run_executive_refiner.py
-  - ../../src/assessment_engine/scripts/render_global_report_from_template.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_refiner.py
-  - ../../src/assessment_engine/scripts/render_commercial_report.py
-  - ../../src/assessment_engine/scripts/render_web_presentation.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_tower_blueprint_engine.py
+  - ../../src/application/run_executive_annex_synthesizer.py
+  - ../../src/application/render_tower_blueprint.py
+  - ../../src/application/render_tower_annex_from_template.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/build_global_report_payload.py
+  - ../../src/application/run_executive_refiner.py
+  - ../../src/application/render_global_report_from_template.py
+  - ../../src/application/run_commercial_pipeline.py
+  - ../../src/application/run_commercial_refiner.py
+  - ../../src/application/render_commercial_report.py
+  - ../../src/application/render_web_presentation.py
 last_verified_against: 2026-04-30
 applies_to:
   - humans
@@ -110,16 +110,16 @@ No actúa como simple conversor de un único payload: compone una vista híbrida
 
 ## 6. Puntos frágiles reales del sistema
 
-1. **Dependencia de Vertex / ADK en módulos de generación y refinado**  
+1. **Dependencia de Vertex / ADK en módulos de generación y refinado**
    Si la autenticación o el entorno IA fallan, se cae la parte más valiosa del flujo.
 
-2. **Convivencia de flujo moderno y fallback legacy**  
+2. **Convivencia de flujo moderno y fallback legacy**
    `build_global_report_payload.py` aún tolera artefactos antiguos. Es útil operativamente, pero introduce complejidad y riesgo de interpretación híbrida.
 
-3. **Renderers con capacidad de normalización**  
+3. **Renderers con capacidad de normalización**
    Son necesarios para robustez, pero si asumen demasiada lógica pueden ocultar desviaciones del contrato.
 
-4. **Acoplamiento indirecto entre capas**  
+4. **Acoplamiento indirecto entre capas**
    El blueprint manda, pero varias capas reutilizan datos o contextos derivados. Cuando eso no se documenta, el sistema parece más lineal de lo que realmente es.
 
 ## 7. Regla práctica para futuras decisiones

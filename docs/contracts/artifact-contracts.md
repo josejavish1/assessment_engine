@@ -2,20 +2,20 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/schemas/blueprint.py
-  - ../../src/assessment_engine/schemas/annex_synthesis.py
-  - ../../src/assessment_engine/schemas/global_report.py
-  - ../../src/assessment_engine/schemas/commercial.py
-  - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - ../../src/assessment_engine/scripts/build_global_report_payload.py
-  - ../../src/assessment_engine/scripts/run_executive_refiner.py
-  - ../../src/assessment_engine/scripts/run_commercial_refiner.py
-  - ../../src/assessment_engine/scripts/render_tower_blueprint.py
-  - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
-  - ../../src/assessment_engine/scripts/render_global_report_from_template.py
-  - ../../src/assessment_engine/scripts/render_commercial_report.py
-  - ../../src/assessment_engine/scripts/render_web_presentation.py
+  - ../../src/domain/schemas/blueprint.py
+  - ../../src/domain/schemas/annex_synthesis.py
+  - ../../src/domain/schemas/global_report.py
+  - ../../src/domain/schemas/commercial.py
+  - ../../src/application/run_tower_blueprint_engine.py
+  - ../../src/application/run_executive_annex_synthesizer.py
+  - ../../src/application/build_global_report_payload.py
+  - ../../src/application/run_executive_refiner.py
+  - ../../src/application/run_commercial_refiner.py
+  - ../../src/application/render_tower_blueprint.py
+  - ../../src/application/render_tower_annex_from_template.py
+  - ../../src/application/render_global_report_from_template.py
+  - ../../src/application/render_commercial_report.py
+  - ../../src/application/render_web_presentation.py
   - ./payload-render-boundaries.md
 last_verified_against: 2026-05-03
 applies_to:
@@ -109,13 +109,13 @@ Para una descripción exhaustiva de los campos de los contratos principales, con
 
 ## Riesgos contractuales visibles hoy
 
-1. **Tolerancia de algunos renders**  
+1. **Tolerancia de algunos renders**
    `robust_load_payload(...)` protege continuidad, pero puede ocultar desviaciones de contrato.
 
-2. **Capa web sin schema final explícito**  
+2. **Capa web sin schema final explícito**
    `render_web_presentation.py` compone una vista útil, pero su contrato está más implícito que en DOCX global/comercial.
 
-3. **Convivencia de activo moderno y fallback legacy**  
+3. **Convivencia de activo moderno y fallback legacy**
    especialmente en la consolidación global, útil para resiliencia pero sensible a híbridos.
 
 ## Qué significa “contrato cumplido”

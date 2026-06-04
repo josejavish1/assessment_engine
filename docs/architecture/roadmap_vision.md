@@ -46,7 +46,7 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
 #### 4B: Business Command Center (La Interfaz para Clientes/Consultores)
 *   **Usuarios:** Consultores, Product Owners y Clientes finales.
 *   **Propósito:** Ejecutar los Assessments, visualizar resultados, GAPs y Blueprints.
-*   **Enfoque (Custom Web Platform):** 
+*   **Enfoque (Custom Web Platform):**
     *   **Frontend:** Aplicación web dedicada (Next.js + Vercel AI SDK / React Flow) construida de forma acelerada *por* el equipo de agentes de IA usando componentes base (Shadcn/v0).
     *   **UX (Generative UI):** Interfaz limpia y espacial. El consultor no ve código ni JSONs. Ve los "Towers" y "Pillars" del Assessment renderizados dinámicamente como gráficas interactivas, alimentados por el mismo servidor MCP en background.
 

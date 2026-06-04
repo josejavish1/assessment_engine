@@ -5,7 +5,7 @@ source_of_truth:
   - docs/ai/documentation-governance.md
   - docs/README.md
   - docs/SYSTEM_ARCHITECTURE.md
-  - src/assessment_engine/
+  - src/domain/
 last_verified_against: 2026-05-02
 applies_to:
   - gemini
@@ -99,7 +99,7 @@ La arquitectura actual se basa en el principio "Top-Down" para garantizar la con
 -   **3. Modo de Gobernanza (Arquitectura "The Apex"):** El sistema opera bajo la supervisión de agentes especializados (`Doctor`, `Verification`, `Liability Signer`) que garantizan la calidad, el cumplimiento normativo y la trazabilidad de cada artefacto generado. Este modo, cuya interfaz se detalla en el [roadmap del Command Center](docs/architecture/command-center-roadmap.md) y su arquitectura de gobernanza en el nuevo documento de [gobernanza de élite](docs/architecture/elite-governance-2026.md), es una capa superior que envuelve los modos Pipeline y Servidor.
 
 ### 2.3. Arquitectura "Legacy" (Archivada)
-En `src/assessment_engine/scripts/_legacy` se encuentra la arquitectura anterior, que generaba cada sección del informe en paralelo. Fue abandonada por el problema de "split-brain" (inconsistencia entre secciones).
+En `src/application/_legacy` se encuentra la arquitectura anterior, que generaba cada sección del informe en paralelo. Fue abandonada por el problema de "split-brain" (inconsistencia entre secciones).
 
 ---
 
@@ -208,8 +208,8 @@ Para garantizar una integración nativa, estable y segura con el repositorio de 
 
 ---
 
-Para probar o validar cualquier cambio en Python (tanto scripts como tests), **NO** uses comandos globales como `python` o `pytest`.  
-Debes usar SIEMPRE el entorno virtual local ubicado en `/home/jsanchhi/assessment_engine/.venv`.  
+Para probar o validar cualquier cambio en Python (tanto scripts como tests), **NO** uses comandos globales como `python` o `pytest`.
+Debes usar SIEMPRE el entorno virtual local ubicado en `/home/jsanchhi/assessment_engine/.venv`.
 - Para ejecutar tests: `/home/jsanchhi/assessment_engine/.venv/bin/pytest`
 - Para ejecutar scripts Python: `/home/jsanchhi/assessment_engine/.venv/bin/python`
 

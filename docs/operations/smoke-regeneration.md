@@ -2,15 +2,15 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/scripts/tools/generate_smoke_data.py
-  - ../../src/assessment_engine/scripts/tools/check_vertex_ai_access.py
-  - ../../src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
-  - ../../src/assessment_engine/scripts/lib/runtime_env.py
-  - ../../src/assessment_engine/scripts/lib/ai_client.py
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
-  - ../../src/assessment_engine/scripts/render_web_presentation.py
+  - ../../src/application/tools/generate_smoke_data.py
+  - ../../src/application/tools/check_vertex_ai_access.py
+  - ../../src/application/tools/regenerate_smoke_artifacts.py
+  - ../../src/infrastructure/runtime_env.py
+  - ../../src/infrastructure/ai_client.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/run_commercial_pipeline.py
+  - ../../src/application/render_web_presentation.py
   - ../../tests/test_contract_handover.py
   - ../../tests/test_t5_golden.py
   - ../../tests/test_payload_validation.py
