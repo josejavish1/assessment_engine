@@ -21,7 +21,7 @@ def test_sovereign_convergence_and_sort():
 
     graph = EpistemicGraph(client_id=client_id)
     resolver = EntityResolutionEngine()
-    ontology = OntologyRegistry()
+    OntologyRegistry()
 
     # --- SIMULACIÓN TORRE 1 (INFRA) ---
     # Proyecto A: "Despliegue de Landing Zone en AWS"

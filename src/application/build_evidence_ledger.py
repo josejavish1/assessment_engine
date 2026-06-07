@@ -1,6 +1,5 @@
 import argparse
 import json
-import logging
 import re
 from pathlib import Path
 from typing import Any, cast
@@ -67,7 +66,7 @@ def support_tags_from_score(score: float) -> list[str]:
 def build_evidence_entries(
     case_input: dict, context_path: Path, responses_path: Path, tower_definition: dict
 ) -> list[dict]:
-    client_slug = case_input.get("client", "generic")
+    case_input.get("client", "generic")
 
     # 1. Load Knowledge Bases
     storage_dir = Path(case_input["_build_metadata"]["context_file"]).parent

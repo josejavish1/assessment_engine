@@ -48,7 +48,7 @@ async def build_findings(
 ) -> dict:
     evidences = evidence_ledger.get("evidences", [])
     tower_id = scoring_output.get("tower_id", "Unknown")
-    context_summary = case_input.get("context_summary", "")
+    case_input.get("context_summary", "")
 
     # Extraer las respuestas del test para dar profundidad a la IA
     # 'case_input' contiene la lista de 'answers' que tienen [kpi_id, score, context]
