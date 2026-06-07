@@ -1,192 +1,256 @@
 """
-Repositorio de prompts para los agentes de Inteligencia de Mercado (OSINT).
+Repositorio de prompts (TIER 1 DIPLOMATIC STANDARDS 2026).
+ESTRICTO RETORNO DE JSON + SCHEMA ENFORCEMENT.
 """
 
+JSON_MANDATE = "\n\n### REGLA DE ORO: Devuelve ÚNICAMENTE un bloque de código JSON válido. No incluyas explicaciones, preámbulos ni comentarios fuera del JSON. Debes seguir el esquema solicitado estrictamente."
 
-def get_regulatory_harvester_prompt(client_name: str) -> str:
+
+def get_grounding_harvester_prompt(context_text: str) -> str:
     return f"""
-    Analiza a la empresa '{client_name}'. Identifica a qué sector pertenece.
-    Basado estrictamente en su sector operando en Europa/España, dime cuáles son los marcos normativos de ciberseguridad o resiliencia que le aplican obligatoriamente por ley.
-    (Ej: DORA para finanzas, NIS2/PIC para operadores esenciales o energía, ENS para sector público).
+    Eres un ANALISTA STAFF de NTT DATA. Extrae las VERDADES TÉCNICAS desde los fragmentos proporcionados.
 
-    Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:
+    ### FRAGMENTOS DE VERDAD (GROUND TRUTH):
+    {context_text}
+
+    REGLA DE ORO: Si algún fragmento menciona un hyperscaler dominante (Azure/AWS/GCP), identifícalo.
+
+    ESTRUCTURA REQUERIDA (JSON):
     {{
-      "sector": "Sector en texto plano",
-      "frameworks": ["Ley 1", "Ley 2"],
-      "regulatory_pressures": ["Presión regulatoria o de cumplimiento 1", "Presión 2"],
-      "source_evidence": "De dónde sacas esta conclusión (noticia, deducción)"
-    }}
-    """
-
-
-def get_business_harvester_prompt(client_name: str) -> str:
-    return f"""
-    Busca noticias recientes o resúmenes de informes de resultados/estrategia de la empresa '{client_name}'.
-    1. ¿Cuáles son los objetivos corporativos declarados por su dirección general?
-    2. Estima su tamaño de facturación anual y clasifícalo en un 'financial_tier' (Tier 1: >1.000M€, Tier 2: 100M€-1.000M€, Tier 3: <100M€).
-
-    Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:
-    {{
-      "ceo_agenda": "Resumen de la agenda del CEO",
-      "business_drivers": ["Objetivo 1", "Objetivo 2"],
-      "financial_tier": "Tier 1 o Tier 2 o Tier 3",
-      "priority_markets": ["Mercado o geografía 1", "Mercado 2"],
-      "business_lines": ["B2B", "IoT", "Cloud"],
-      "active_transformations": ["Programa de transformación 1", "Programa 2"],
-      "business_constraints": ["Restricción financiera u operativa 1", "Restricción 2"],
-      "source_evidence": "URL o fuente inferida"
-    }}
-    """
-
-
-def get_tech_harvester_prompt(client_name: str) -> str:
-    return f"""
-    Basado en ofertas de empleo públicas, noticias de alianzas tecnológicas o footprint digital conocido de '{client_name}', ¿qué tecnología clave utilizan o hacia dónde van?
-    (Ej: ¿Están migrando a Azure? ¿Usan fuertemente SAP? ¿Servicios industriales OT/IT?).
-
-    Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:
-    {{
-      "tech_footprint": "Resumen del ecosistema tecnológico",
-      "tech_trends": ["Tendencia 1", "Tendencia 2"],
-      "vendor_dependencies": ["Vendor o plataforma dominante 1", "Vendor 2"],
-      "operating_constraints": ["Restricción operativa o legado 1", "Restricción 2"],
-      "recent_incident_signals": ["Incidente público, outage o señal de resiliencia 1"],
-      "source_evidence": "Ofertas de empleo, noticias, inferencias"
-    }}
-    """
-
-
-def get_auditor_harvester_prompt(dossier_json: str) -> str:
-    return f"""
-    Eres el Auditor de Calidad Estratégica del Dossier de Inteligencia de este cliente. Aquí tienes el borrador:
-    {dossier_json}
-
-
-    TAREAS:
-    0. PRECEDENCIA EPISTÉMICA: Reconoce que toda la información que procesas proviene de OSINT (fuentes públicas, internet). Estos datos son TANGENCIALES y tienen menor peso de verdad que la documentación interna del cliente.
-    1. VIGENCIA TEMPORAL: Revisa exhaustivamente las fechas de las noticias, proyectos o incidentes. Si un proyecto, alianza o estrategia tiene más de 3 años de antigüedad y no hay evidencia de continuidad, descártalo o márcalo explícitamente como "Legacy/Obsoleto".
-    2. Comprueba la coherencia regulatoria.
-    3. Valida el financial_tier.
-    4. Genera business_context.transformation_horizon.
-    5. Genera tower_overrides.
-    6. Completa technology_context y business_context con señales concretas.
-    7. Mantén la trazabilidad.
-    8. Distingue hechos, inferencias y supuestos en claims. Asígnales a las claims extraídas de OSINT una confidence.score baja (ej. 40-60) a menos que provengan de reportes financieros oficiales muy recientes.
-
-
-    Devuelve ÚNICAMENTE un JSON válido con la siguiente estructura (MANTENIENDO TODOS LOS CAMPOS DEL BORRADOR MÁS LAS CORRECCIONES):
-    {{
-      "version": "3.0",
-      "client_name": "...",
-      "metadata": {{
-        "dossier_id": "client-abc123",
-        "schema_version": "3.0",
-        "created_at": "2026-05-01T00:00:00+00:00",
-        "modified_at": "2026-05-01T00:00:00+00:00",
-        "last_verified_at": "2026-05-01T00:00:00+00:00 o null",
-        "lang": "es",
-        "generated_by": "assessment_engine",
-        "prompt_version": "intelligence_prompts_v3",
-        "timeliness": {{
-          "created_at": "2026-05-01T00:00:00+00:00",
-          "modified_at": "2026-05-01T00:00:00+00:00",
-          "last_verified_at": "2026-05-01T00:00:00+00:00 o null",
-          "valid_until": null,
-          "stale_after_days": 30
-        }}
-      }},
-      "profile": {{
-        "industry": "...",
-        "financial_tier": "Tier 1 o Tier 2 o Tier 3",
-        "operating_model": "Texto breve o null",
-        "regions": ["EU", "UK"],
-        "priority_markets": ["España", "Alemania"],
-        "business_lines": ["B2B", "Cloud", "IoT"]
-      }},
-      "regulatory_context": [
-        {{
-          "name": "...",
-          "applicability": "low|medium|high",
-          "confidence": {{"score": 80, "label": "high", "method": "custom"}},
-          "sources": [{{"source": "..."}}],
-          "impacted_domains": ["T5", "T6"]
-        }}
+      "hyperscaler_dominante": "string",
+      "observaciones_clave": [
+          {{ "fact": "string", "fragment_id": "UUID del fragmento exacto" }}
       ],
-      "business_context": {{
-        "ceo_agenda": {{
-          "summary": "...",
-          "confidence": {{"score": 80, "label": "high", "method": "custom"}},
-          "sources": [{{"source": "..."}}],
-          "evidence_strength": "high|medium|low"
-        }},
-        "strategic_priorities": [
-          {{
-            "name": "...",
-            "confidence": {{"score": 70, "label": "high", "method": "custom"}},
-            "sources": [{{"source": "..."}}],
-            "rationale": "..."
-          }}
-        ],
-        "business_model_signals": ["..."],
-        "active_transformations": ["..."],
-        "transformation_horizon": {{
-          "stage": "H1|H2|H3",
-          "label": "...",
-          "rationale": "...",
-          "confidence": {{"score": 60, "label": "medium", "method": "custom"}},
-          "sources": [{{"source": "..."}}]
-        }},
-        "constraints": ["..."]
-      }},
-      "technology_context": {{
-        "footprint_summary": {{
-          "summary": "...",
-          "confidence": {{"score": 60, "label": "medium", "method": "custom"}},
-          "sources": [{{"source": "..."}}],
-          "evidence_strength": "high|medium|low"
-        }},
-        "technology_drivers": [
-          {{
-            "name": "...",
-            "confidence": {{"score": 60, "label": "medium", "method": "custom"}},
-            "sources": [{{"source": "..."}}],
-            "rationale": "..."
-          }}
-        ],
-        "vendor_dependencies": ["..."],
-        "operating_constraints": ["..."],
-        "recent_incident_signals": ["..."]
-      }},
-      "tower_overrides": {{
-        "T1": {{
-          "target_maturity": 4.0,
-          "business_criticality": {{"score": 80, "label": "high", "method": "custom"}},
-          "regulatory_pressure": {{"score": 80, "label": "high", "method": "custom"}},
-          "change_urgency": {{"score": 70, "label": "high", "method": "custom"}},
-          "rationale": "...",
-          "constraints": ["..."],
-          "related_claim_ids": ["claim_1"]
-        }}
-      }},
-      "claims": [
-        {{
-          "claim_id": "claim_1",
-          "claim": "...",
-          "claim_type": "fact|inference|assumption|scenario|alternative_hypothesis",
-          "confidence": {{"score": 70, "label": "high", "method": "custom"}},
-          "sources": [{{"source": "..."}}],
-          "source_reliability_score": 70,
-          "valid_for_domains": ["global", "commercial"],
-          "related_towers": ["T5"]
-        }}
-      ],
-      "review": {{
-        "human_review_status": "pending|reviewed|approved|rejected",
-        "approved_by": null,
-        "approved_at": null,
-        "review_notes": []
-      }},
-      "extensions": {{}}
+      "restricciones_operativas": [
+          {{ "restriction": "string", "fragment_id": "UUID del fragmento" }}
+      ]
     }}
-    IMPORTANTE: `tower_overrides` DEBE usar claves "T1", "T2", etc. y `target_maturity` DEBE ser numérico decimal.
+    {JSON_MANDATE}
+    """
+
+
+def get_business_harvester_prompt(
+    client_name: str, context_text: str, grounding_json: str = "{}"
+) -> str:
+    return f"""
+    Analiza la agenda del CEO y el contexto de negocio para '{client_name}'.
+    Utiliza ÚNICAMENTE los fragmentos validados en el GROUNDING y el CONTEXTO RAG.
+
+    SI BUSCAS EN INTERNET: Debes proporcionar la URL exacta de la fuente en el campo 'source_evidence' o junto al driver.
+
+    GROUNDING: {grounding_json}
+
+    CONTEXTO EXTRAÍDO (RAG):
+    {context_text}
+
+    ESTRUCTURA REQUERIDA (JSON):
+    {{
+      "ceo_agenda": "Resumen ejecutivo de la agenda",
+      "business_drivers": [
+          {{ "name": "string", "fragment_id": "UUID del fragmento", "external_url": "Opcional: URL si es OSINT" }}
+      ],
+      "financial_tier": "Tier 1, 2 o 3",
+      "priority_markets": ["string"],
+      "business_lines": ["string"],
+      "active_transformations": ["string"],
+      "business_constraints": ["string"],
+      "source_evidence": "Cita literal + URL si es externa"
+    }}
+    {JSON_MANDATE}
+    """
+
+
+def get_tech_harvester_prompt(
+    client_name: str, context_text: str, grounding_json: str = "{}"
+) -> str:
+    return f"""
+    Investiga el stack tecnológico para '{client_name}'.
+    GROUNDING: {grounding_json}
+
+    CONTEXTO EXTRAÍDO (RAG):
+    {context_text}
+
+    SI ENCUENTRAS DATOS EN INTERNET: Es obligatorio incluir la URL de la fuente (ej: casos de éxito de AWS, informes técnicos).
+
+    ESTRUCTURA REQUERIDA (JSON):
+    {{
+      "tech_footprint": "Resumen del footprint + URLs detectadas",
+      "tech_trends": ["Tendencias clave"],
+      "vendor_dependencies": ["string"],
+      "operating_constraints": ["string"],
+      "recent_incident_signals": ["string"],
+      "source_evidence": "Evidencia detectada con URLs"
+    }}
+    {JSON_MANDATE}
+    """
+
+
+def get_regulatory_harvester_prompt(
+    client_name: str, context_text: str, grounding_json: str = "{}"
+) -> str:
+    return f"""
+    Analiza el sector y la regulación para '{client_name}'.
+
+    CONTEXTO EXTRAÍDO (RAG):
+    {context_text}
+
+    ESTRUCTURA REQUERIDA (JSON):
+    {{
+      "sector": "string",
+      "frameworks": ["string"],
+      "regulatory_pressures": ["string"],
+      "source_evidence": "Evidencia detectada"
+    }}
+    {JSON_MANDATE}
+    """
+
+
+def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> str:
+    return f"""
+    Eres un SOCIO (Partner) de una firma Tier 1. Refina este análisis técnico de TORRE para un CIO.
+    MATERIAL: {findings_json}
+    GROUNDING: {grounding_json}
+
+    ### MANDATO TIER 1:
+    1. SOBRIEDAD EXTREMA: Elimina cualquier rastro de lenguaje emocional o impreciso.
+    2. PRESERVACIÓN DE EVIDENCIA: Es CRÍTICO que mantengas todos los 'fragment_id' asociados a cada hallazgo y fortaleza. No los borres.
+    3. COHERENCIA ESTRATÉGICA: Asegura que los riesgos identificados en los pilares se reflejen correctamente en el 'assessment_summary'.
+    4. FOCO EN VALOR: Reescribe las iniciativas para que suenen como inversiones estratégicas, no solo tareas técnicas.
+
+    ESTRUCTURA DE SALIDA (MANDATORIA):
+    Debes devolver un JSON con la estructura EXACTA del input, incluyendo la lista 'pillar_findings' completa.
+
+    {JSON_MANDATE}
+    """
+
+
+def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> str:
+    return f"""
+    Eres un SOCIO (Partner) de una firma Tier 1. Refina este análisis técnico para un CEO.
+    MATERIAL: {findings_json}
+    GROUNDING: {grounding_json}
+
+    ### MANUAL DE ESTILO "ÉLITE 2026" (MANDATORIO):
+    1. NEUTRALIDAD CONSTRUCTIVA: No juzgues. Describe la "Deuda Técnica Acumulada". Trata al cliente con respeto profesional. Cero auto-crítica.
+    2. SANEAMIENTO DE REDUNDANCIAS: Asegura 'Unicidad de Mensaje'. No repitas el resumen ejecutivo en las implicaciones de negocio. Cada sección debe aportar un ángulo nuevo.
+    3. FILTRO DE EMPODERAMIENTO: En lugar de pedir un "cambio cultural", pide un "Programa de Empoderamiento Técnico". Habla de liberar el talento actual de NTT DATA hacia la ingeniería de plataforma.
+    4. PRAGMATISMO OPERATIVO (ANTI-TORRE DE MARFIL): En los roadmaps a corto plazo (Wave 1 / 0-6 meses), usa verbos como "Diseño", "PoC", "Definición de estándares" o "Piloto". PROHIBIDO proponer "Implantaciones masivas" en infraestructura crítica en menos de 6 meses.
+    5. VARIEDAD SEMÁNTICA: Evita la fatiga de la palabra "industrialización". Usa sinónimos como "sistematización", "escalabilidad", "maduración".
+    6. REFERENCIAS EXACTAS: Si haces una afirmación sobre el mercado o una métrica, MANTÉN la URL o cita de Gartner/AWS proporcionada por el SOTA Researcher.
+
+    ESTRUCTURA DE SALIDA (JSON):
+    Debes devolver un objeto con las claves exactas de GlobalReportPayload:
+    ['meta', 'executive_summary', 'burning_platform', 'tower_bottom_lines', 'target_vision', 'execution_roadmap', 'executive_decisions']
+
+    MANTÉN la estructura interna de listas y objetos de forma estricta.
+
+    {JSON_MANDATE}
+    """
+
+
+def get_sota_researcher_prompt(
+    pillar_name: str, gap_text: str, grounding_json: str = "{}"
+) -> str:
+    return f"""
+    Eres un INVESTIGADOR STAFF de Gartner/Forrester especializado en tecnología de vanguardia 2026.
+    Tu misión es encontrar la solución "Estado del Arte" (SOTA) y referencias de mercado para el pilar '{pillar_name}'.
+
+    ### PROBLEMA DETECTADO:
+    {gap_text}
+
+    ### CONTEXTO CLIENTE:
+    {grounding_json}
+
+    ### MANDATO TIER 1 (FACT-CHECKING):
+    1. Busca la tendencia líder de 2026 (ej: AIOps, Platform Engineering, Zero Trust Data Security).
+    2. Identifica el "Top Tier" de patrones arquitectónicos AGNÓSTICOS AL VENDOR (Cloud-Native) que resuelven esto. Evita hacer un 'vendor lock-in' extremo con nombres comerciales muy específicos a menos que sea estrictamente necesario.
+    3. Explica el "Sustainable Uplift": ¿Qué ventaja competitiva gana el cliente?
+    4. REFERENCIA DE MERCADO OPCIONAL: Si, y solo si, conoces una referencia REAL y verificable (ej. un reporte de Gartner, CNCF, NIS2) que sustente esta solución, inclúyela en 'source_reference'. Si vas a inventar una URL o no tienes un dato empírico demostrable, DEJA EL CAMPO VACÍO o con valor nulo. Nunca inventes referencias.
+
+    ESTRUCTURA REQUERIDA (JSON):
+    {{
+      "sota_solution_name": "Nombre de la solución",
+      "architectural_pattern": "Patrón técnico específico",
+      "strategic_benefit": "Impacto de negocio a largo plazo",
+      "source_reference": "Título del reporte y URL de referencia"
+    }}
+    {JSON_MANDATE}
+    """
+
+
+def get_technical_analyst_prompt(
+    tower_id: str, pillar_name: str, score: float, context: str, evidences: str
+) -> str:
+    return f"""
+    Eres un CONSULTOR STAFF Tier 1. Analiza el pilar '{pillar_name}'.
+    Score {score}, Contexto {context}.
+
+    ### EVIDENCIAS DISPONIBLES (FRAGMENTOS):
+    {evidences}
+
+    REGLA DE ORO: Tus conclusiones deben estar ancladas a fragmentos reales.
+
+    ESTRUCTURA REQUERIDA (JSON):
+    {{
+      "strength": "string",
+      "strength_fragment_id": "UUID del fragmento que justifica la fortaleza",
+      "gap": "string",
+      "gap_fragment_id": "UUID del fragmento que justifica la brecha",
+      "risk_title": "string",
+      "initiatives": [
+          {{ "title": "string", "rationale": "string", "horizon": "string" }}
+      ]
+    }}
+    ATENCIÓN: Si no hay un fragmento claro para la fortaleza o la brecha, deja el fragment_id como nulo.
+    {JSON_MANDATE}
+    """
+
+
+def get_auditor_harvester_prompt(dossier_json: str, grounding_json: str = "{}") -> str:
+    return f"""
+    Eres un AUDITOR SENIOR NTT DATA. Tu misión es consolidar el Dossier de Inteligencia.
+    MATERIAL: {dossier_json}
+    GROUNDING: {grounding_json}
+
+    ### PROTOCOLO DE EXCELENCIA (TIER 1):
+    1. HUMANIZACIÓN DE EVIDENCIAS: No uses "claims[X]". Usa el Título de la fuente entre corchetes, ej: [Redeia - Informe Anual 2024].
+    2. MATRIZ DE IMPACTO REGULATORIO: Cada ley en 'regulatory_context' debe incluir su Nivel de Impacto (Crítico, Alto, Medio).
+    3. FILTRO DE AUTORIDAD: Prioriza la información de PDFs oficiales y webs corporativas sobre vídeos de YouTube o blogs. Si hay contradicción, manda el documento oficial.
+    4. PRECISIÓN FINANCIERA: Si el EBITDA o Ingresos están en los claims, asegúrate de que aparezcan las cifras exactas.
+
+    ESTRUCTURA DE SALIDA: JSON idéntico al esquema ClientDossierV3.
+    {JSON_MANDATE}
+    """
+
+
+def get_adversary_harvester_prompt(
+    dossier_json: str, grounding_json: str = "{}"
+) -> str:
+    return f"""
+    Analiza este Dossier: {dossier_json}.
+    Busca:
+    1. Referencias técnicas ilegibles (ej: claims[X]) que deban ser humanizadas.
+    2. Leyes sin impacto definido.
+    3. Alucinaciones o contradicciones con el GROUNDING: {grounding_json}.
+    Devuelve JSON: {{ 'objections': [{{ 'severity': 'string', 'reason': 'string' }}] }}.
+    {JSON_MANDATE}
+    """
+
+
+def get_judge_harvester_prompt(dossier_json: str, objections_json: str) -> str:
+    return f"""
+    Juez Supremo: Genera la versión FINAL de máxima autoridad técnica.
+    Toma el dossier y aplica las correcciones basadas en las objeciones.
+
+    DOSSIER: {dossier_json}
+    OBJECIONES: {objections_json}
+
+    ### MANDATOS CRÍTICOS (TIER 1 GOBERNANZA):
+    1. CITAS HUMANAS: Asegura que cada afirmación cite la fuente por su nombre [Título], no por su índice.
+    2. IMPACTO: No permitas leyes sin su nivel de impacto (Crítico/Alto/Medio).
+    3. INTEGRIDAD DE CLAIMS: MANTÉN la sección 'claims' con todos sus objetos y URLs reales. NO modifiques ni vacíes este campo bajo ninguna circunstancia.
+    4. MANDATO DE ENTIDADES (SOTA): Tienes prohibido generalizar nombres de software, vendors, cantidades financieras o nombres de proyectos. Si el material fuente menciona 'Dynatrace' o '689 M€', el informe final DEBE mencionar 'Dynatrace' o '689 M€', no 'herramienta de monitorización' o 'buenos resultados'. La precisión es sagrada.
+
+    Debes devolver ÚNICAMENTE el objeto JSON raíz con las claves de ClientDossierV3.
+    {JSON_MANDATE}
     """

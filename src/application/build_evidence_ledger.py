@@ -1,21 +1,15 @@
-"""
-Módulo build_evidence_ledger.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
-
 import argparse
 import json
 import logging
 import re
 from pathlib import Path
+from typing import Any, cast
 from zipfile import ZipFile
 
-from infrastructure.runtime_paths import ROOT
-
-logger = logging.getLogger(__name__)
-
-
-from typing import Any, cast
+"""
+Módulo build_evidence_ledger.py.
+Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+"""
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -73,40 +67,80 @@ def support_tags_from_score(score: float) -> list[str]:
 def build_evidence_entries(
     case_input: dict, context_path: Path, responses_path: Path, tower_definition: dict
 ) -> list[dict]:
-    context_text = read_text(context_path)
-    context_sentences = split_sentences(context_text)
+    client_slug = case_input.get("client", "generic")
+
+    # 1. Load Knowledge Bases
+    storage_dir = Path(case_input["_build_metadata"]["context_file"]).parent
+    vault_path = storage_dir / "evidence_vault.json"
+    tree_path = storage_dir / "raptor_tree.json"
+
+    fragments = []
+    if vault_path.exists():
+        vault_data = json.loads(vault_path.read_text(encoding="utf-8"))
+        fragments = vault_data.get("fragments", [])
+
+    raptor_nodes = {}
+    if tree_path.exists():
+        tree_data = json.loads(tree_path.read_text(encoding="utf-8"))
+        raptor_nodes = tree_data.get("nodes", {})
+
     answers = case_input.get("answers", [])
     answers_by_kpi = {answer["kpi_id"]: answer for answer in answers}
 
     evidences = []
     next_id = 1
 
+    # 2. Process Pillars with Hierarchical Context
     for pillar in tower_definition.get("pillars", []):
+        p_id = pillar["pillar_id"]
         keywords = pillar_keywords(pillar)
-        matched = []
-        for sentence in context_sentences:
-            tokens = tokenize(sentence)
+
+        # --- STRATEGIC ALIGNMENT (RAPTOR LEVEL 1) ---
+        # Find the best matching summary for this pillar
+        best_summary = None
+        for node in raptor_nodes.values():
+            if node["level"] == 1:
+                # If the group_key or content matches keywords
+                tokens = tokenize(node["content"])
+                if tokens & keywords:
+                    best_summary = node
+                    break
+
+        if best_summary:
+            evidences.append(
+                {
+                    "evidence_id": f"STRAT-{p_id}",
+                    "raptor_node_id": best_summary["node_id"],
+                    "source_type": "strategic_summary",
+                    "excerpt": best_summary["content"],
+                    "pillar_ids": [p_id],
+                    "supports": ["executive_summary", "asis"],
+                    "is_strategic_anchor": True,
+                }
+            )
+
+        # --- GRANULAR ALIGNMENT (FRAGMENTS) ---
+        matched_fragments = []
+        for frag in fragments:
+            tokens = tokenize(frag["content"])
             if tokens & keywords:
-                matched.append(sentence)
-            if len(matched) >= 3:
+                matched_fragments.append(frag)
+            if len(matched_fragments) >= 5:
                 break
 
-        if not matched:
-            matched = [
-                f"El contexto del cliente menciona capacidades y dependencias relevantes para {pillar['pillar_name']}."
-            ]
-
-        for sentence in matched:
+        for frag in matched_fragments:
             related_kpis = [kpi["kpi_id"] for kpi in pillar.get("kpis", [])]
             evidences.append(
                 {
-                    "evidence_id": f"CTX-{case_input['tower_id']}-{next_id:02d}",
-                    "source_type": "context_summary",
-                    "source_name": context_path.name,
-                    "excerpt": sentence,
-                    "pillar_ids": [pillar["pillar_id"]],
+                    "evidence_id": f"FRAG-{frag['fragment_id'][:8]}",
+                    "fragment_id": frag["fragment_id"],
+                    "source_type": "atomic_fragment",
+                    "source_name": Path(frag["source_uri"]).name,
+                    "excerpt": frag["content"],
+                    "pillar_ids": [p_id],
                     "kpi_ids": related_kpis,
                     "supports": ["asis", "risk", "executive_summary"],
+                    "location": frag.get("location_metadata", {}),
                     "validation_state": case_input.get(
                         "validation_state", "Exploratoria"
                     ),
@@ -114,6 +148,7 @@ def build_evidence_entries(
             )
             next_id += 1
 
+        # --- TECHNICAL REALITY (TEST ANSWERS) ---
         for kpi in pillar.get("kpis", []):
             answer = answers_by_kpi.get(kpi["kpi_id"])
             if not answer:
@@ -128,7 +163,7 @@ def build_evidence_entries(
                         f"{answer['question_id']} = {score:.1f}/5 en '{kpi['kpi_name']}' "
                         f"para el pilar '{pillar['pillar_name']}'."
                     ),
-                    "pillar_ids": [pillar["pillar_id"]],
+                    "pillar_ids": [p_id],
                     "kpi_ids": [kpi["kpi_id"]],
                     "supports": support_tags_from_score(score),
                     "validation_state": case_input.get(

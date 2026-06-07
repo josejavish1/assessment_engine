@@ -96,7 +96,8 @@ La arquitectura actual se basa en el principio "Top-Down" para garantizar la con
 ### 2.2. Modos de Operación
 -   **1. Modo Pipeline:** Ejecución por línea de comandos de los orquestadores para generar informes de forma completa y desatendida.
 -   **2. Modo Servidor de Herramientas:** El script `mcp_server.py` expone las capacidades del motor como un servicio, permitiendo que un agente de IA supervisor externo orqueste el proceso de forma dinámica.
--   **3. Modo de Gobernanza (Arquitectura "The Apex"):** El sistema opera bajo la supervisión de agentes especializados (`Doctor`, `Verification`, `Liability Signer`) que garantizan la calidad, el cumplimiento normativo y la trazabilidad de cada artefacto generado. Este modo, cuya interfaz se detalla en el [roadmap del Command Center](docs/architecture/command-center-roadmap.md) y su arquitectura de gobernanza en el nuevo documento de [gobernanza de élite](docs/architecture/elite-governance-2026.md), es una capa superior que envuelve los modos Pipeline y Servidor.
+-   **3. Modo de Gobernanza (Arquitectura "The Apex"):** El sistema opera bajo la supervisión de agentes especializados (`Doctor`, `Verification`, `Liability Signer`) que garantizan la calidad, el cumplimiento normativo y la trazabilidad de cada artefacto generado.
+-   **4. Modo "Sovereign Graph" (Estrategia Basada en Grafos):** El motor ahora construye un Grafo Acíclico Dirigido (DAG) en memoria para resolver dependencias estratégicas y convergencia semántica de iniciativas, generando un Roadmap matemático orquestado en Waves. El entregable incluye un "Digital Twin State Object" (JSON) que alimenta un Dashboard Ejecutivo Interactivo.
 
 ### 2.3. Arquitectura "Legacy" (Archivada)
 En `src/application/_legacy` se encuentra la arquitectura anterior, que generaba cada sección del informe en paralelo. Fue abandonada por el problema de "split-brain" (inconsistencia entre secciones).

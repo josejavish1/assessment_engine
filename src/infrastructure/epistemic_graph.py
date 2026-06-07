@@ -1,32 +1,100 @@
+import json
 import sqlite3
 import time
-from typing import Dict
+import uuid
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+from pydantic import BaseModel, Field
+
+
+class GraphEvent(BaseModel):
+    """
+    Tier-1 Sovereign Graph Event.
+    Enables Bitemporal tracking and immutability.
+    """
+
+    event_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    subject: str
+    predicate: str
+    object_val: str
+    source: str
+    confidence: float
+    timestamp: float = Field(default_factory=lambda: time.time())
+    valid_from: float = Field(default_factory=lambda: time.time())
+    valid_to: Optional[float] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class EpistemicGraph:
     """
-    Tier-1 Epistemic Knowledge Graph (In-Memory SQLite).
-    Resolves data conflicts mathematically via confidence and temporal weighting.
+    Tier-1 Sovereign Epistemic Graph (V3).
+    Implements Bitemporal CQRS with persistent Ledger and Materialized View.
     """
 
-    def __init__(self):
+    def __init__(self, client_id: str = "generic"):
+        self.client_id = client_id
+        # Sovereign Ledger Persistence
+        self.ledger_path = Path(f"working/{client_id}/epistemic_ledger.jsonl")
+        self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Read Model (Materialized View in Memory SQLite)
         self.conn = sqlite3.connect(":memory:")
         self._init_db()
+        self._replay_ledger()
 
     def _init_db(self):
         cursor = self.conn.cursor()
         cursor.execute("""
             CREATE TABLE knowledge (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 subject TEXT NOT NULL,
                 predicate TEXT NOT NULL,
                 object TEXT NOT NULL,
                 source TEXT NOT NULL,
                 confidence REAL NOT NULL,
-                timestamp INTEGER NOT NULL,
-                UNIQUE(subject, predicate, source)
+                timestamp REAL NOT NULL,
+                valid_from REAL NOT NULL,
+                valid_to REAL,
+                event_id TEXT PRIMARY KEY
             )
         """)
+        self.conn.commit()
+
+    def _replay_ledger(self):
+        """Reconstructs the materialized view from the immutable ledger."""
+        if not self.ledger_path.exists():
+            return
+
+        with open(self.ledger_path, "r") as f:
+            for line in f:
+                try:
+                    event_data = json.loads(line)
+                    event = GraphEvent(**event_data)
+                    self._materialize(event)
+                except Exception:
+                    continue  # Robustness: skip corrupted lines
+
+    def _materialize(self, event: GraphEvent):
+        """Projects an event into the materialized view."""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO knowledge
+            (subject, predicate, object, source, confidence, timestamp, valid_from, valid_to, event_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                event.subject.upper(),
+                event.predicate.upper(),
+                event.object_val,
+                event.source.upper(),
+                float(event.confidence),
+                event.timestamp,
+                event.valid_from,
+                event.valid_to,
+                event.event_id,
+            ),
+        )
         self.conn.commit()
 
     def inject_triple(
@@ -36,48 +104,58 @@ class EpistemicGraph:
         object_val: str,
         source: str,
         confidence: float,
-        timestamp: int = None,
+        timestamp: float = None,
+        **kwargs,
     ):
-        if timestamp is None:
-            timestamp = int(time.time())
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO knowledge (subject, predicate, object, source, confidence, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """,
-            (
-                subject.upper(),
-                predicate.upper(),
-                object_val,
-                source.upper(),
-                float(confidence),
-                int(timestamp),
-            ),
+        """
+        Injects a triple as an immutable event and materializes it.
+        """
+        event = GraphEvent(
+            subject=subject,
+            predicate=predicate,
+            object_val=object_val,
+            source=source,
+            confidence=confidence,
+            timestamp=timestamp if timestamp is not None else time.time(),
+            metadata=kwargs,
         )
-        self.conn.commit()
 
-    def resolve_truth(self) -> Dict[str, Dict[str, str]]:
+        # 1. Write Model: Persistent Ledger (Append-Only)
+        with open(self.ledger_path, "a") as f:
+            f.write(event.model_dump_json() + "\n")
+
+        # 2. Read Model: Project to SQLite
+        self._materialize(event)
+
+    def resolve_truth(
+        self, at_timestamp: Optional[int] = None
+    ) -> Dict[str, Dict[str, str]]:
         """
         Returns the mathematically resolved truth.
-        Groups by Subject and Predicate, taking the Object with the highest confidence.
-        If confidence is equal, takes the most recent timestamp.
+        Supports Time-Travel via at_timestamp.
         """
         cursor = self.conn.cursor()
-        cursor.execute("""
+
+        time_filter = "AND valid_to IS NULL"
+        if at_timestamp:
+            time_filter = f"AND valid_from <= {at_timestamp} AND (valid_to IS NULL OR valid_to > {at_timestamp})"
+
+        query = f"""
             SELECT subject, predicate, object, source, confidence
             FROM knowledge k1
-            WHERE confidence = (
+            WHERE 1=1 {time_filter} AND confidence = (
                 SELECT MAX(confidence)
                 FROM knowledge k2
                 WHERE k1.subject = k2.subject AND k1.predicate = k2.predicate
+                AND k2.valid_from <= COALESCE(?, 9999999999)
+                AND (k2.valid_to IS NULL OR k2.valid_to > COALESCE(?, 0))
             )
             ORDER BY subject, predicate, timestamp DESC
-        """)
+        """
+
+        cursor.execute(query, (at_timestamp, at_timestamp))
 
         resolved = {}
-        # We might have multiple rows if confidence and timestamp are identical,
-        # but the loop naturally takes the first one we encounter per predicate.
         for row in cursor.fetchall():
             subj, pred, obj, src, conf = row
             if subj not in resolved:

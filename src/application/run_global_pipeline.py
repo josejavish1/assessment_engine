@@ -39,7 +39,7 @@ def main(argv: list[str] | None = None) -> None:
 
     python_bin = resolve_python_bin()
 
-    # 1. Generar Payload Inicial
+    # 1. Generar Payload Inicial (Sovereign Graph Engine)
     run_module_step(
         [
             python_bin,
@@ -49,7 +49,19 @@ def main(argv: list[str] | None = None) -> None:
             client_name,
             str(payload_path),
         ],
-        "Build Global Payload",
+        "Build Global Payload (Graph-Based Roadmap)",
+        env,
+    )
+
+    # 1.5. Exportar State Object para el Gemelo Digital (DTO)
+    run_module_step(
+        [
+            python_bin,
+            "-m",
+            "application.export_graph_state",
+            client_name,
+        ],
+        "Export Digital Twin State Object",
         env,
     )
 
@@ -59,7 +71,10 @@ def main(argv: list[str] | None = None) -> None:
             python_bin,
             "-m",
             "application.run_executive_refiner",
+            "--findings-path",
             str(payload_path),
+            "--client",
+            client_name,
         ],
         "Strategic Executive Refinement",
         env,

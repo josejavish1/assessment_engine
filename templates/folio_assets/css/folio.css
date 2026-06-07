@@ -1,0 +1,186 @@
+/*
+ * Sovereign Portal V13 - Editorial Identity
+ * Aesthetic: Premium Whitepaper / McKinsey Digital Folio
+ */
+
+/* Fonts imported locally or using system fallbacks for Sovereignty */
+
+:root {
+    --bg-main: #FFFFFF;
+    --bg-side: #F8F9FA;
+    --text-primary: #1A1C1E;
+    --text-secondary: #44474E;
+    --accent-blue: #005FB8;
+    --accent-red: #BA1A1A;
+    --border-soft: #E9ECEF;
+    --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- Navigation Sidebar --- */
+aside {
+    width: 350px;
+    background: var(--bg-side);
+    border-right: 1px solid var(--border-soft);
+    display: flex;
+    flex-direction: column;
+    padding: 4rem 2.5rem;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.nav-brand {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    letter-spacing: 0.2em;
+    margin-bottom: 3.5rem;
+}
+
+.nav-section { margin-bottom: 3rem; }
+.nav-label { font-size: 0.65rem; color: #adb5bd; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1.2rem; display: block; }
+
+.nav-link {
+    display: block;
+    padding: 0.8rem 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover { color: var(--accent-blue); }
+.nav-link.active {
+    color: var(--accent-blue);
+    padding-left: 1rem;
+    border-left: 2px solid var(--accent-blue);
+}
+
+.nav-annex-link { font-size: 0.8rem; padding-left: 1rem; border-left: 1px solid #dee2e6; margin-left: 0.2rem; }
+
+/* --- Main Content Portal --- */
+main {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    padding: 8rem 10rem;
+    scroll-behavior: smooth;
+}
+
+.chapter-container { max-width: 1000px; margin: 0 auto; }
+
+.h1-chapter {
+    font-family: var(--font-serif);
+    font-size: 3.5rem;
+    line-height: 1.1;
+    margin-bottom: 2.5rem;
+    letter-spacing: -0.02em;
+}
+
+.intro-lead {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 5rem;
+    line-height: 1.6;
+}
+
+.section-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    letter-spacing: 0.2em;
+    margin-bottom: 1.5rem;
+    display: block;
+}
+
+/* --- Summary Components --- */
+.summary-stat-card {
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    padding: 3rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-premium);
+}
+
+.mini-score-card {
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    padding: 2rem;
+    border-radius: 4px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.mini-score-card:hover { border-color: var(--accent-blue); transform: translateY(-5px); }
+
+/* --- Annex Detail Styling --- */
+.pillar-block { margin-bottom: 8rem; padding-top: 4rem; border-top: 1px solid var(--border-soft); }
+.pilar-title { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-blue); font-weight: 700; text-transform: uppercase; margin-bottom: 2rem; }
+
+.finding-card { margin-bottom: 3.5rem; }
+.finding-title { font-weight: 800; font-size: 1.3rem; margin-bottom: 1.2rem; display: block; }
+.finding-body { color: var(--text-secondary); font-size: 1.1rem; text-align: justify; margin-bottom: 2rem; }
+
+.evidence-box {
+    background: #F8F9FA;
+    border-radius: 6px;
+    padding: 2.5rem;
+    border-left: 5px solid var(--accent-blue);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #495057;
+    line-height: 1.5;
+}
+
+.evidence-label { font-weight: 900; font-size: 0.65rem; color: var(--accent-blue); margin-bottom: 1rem; display: block; }
+
+.risk-tag {
+    display: inline-block;
+    color: var(--accent-red);
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    letter-spacing: 0.1em;
+}
+
+/* --- Project Roadmaps --- */
+.project-folio-card {
+    border: 1px solid var(--border-soft);
+    padding: 2.5rem;
+    background: #fff;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+.project-folio-card:hover { border-color: var(--accent-blue); box-shadow: var(--shadow-premium); }
+
+.project-mini-card {
+    background: var(--bg-side);
+    border: 1px solid var(--border-soft);
+    padding: 2rem;
+    border-radius: 6px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #DEE2E6; border-radius: 10px; }

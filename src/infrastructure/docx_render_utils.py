@@ -171,6 +171,8 @@ def resolve_radar_chart_image(image_path: Any) -> Any:
         try:
             _, encoded = image_path.split(";base64,", 1)
             raw = base64.b64decode(encoded)
+            if not raw or len(raw) < 10:
+                return None
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
             tmp.write(raw)
             tmp.close()

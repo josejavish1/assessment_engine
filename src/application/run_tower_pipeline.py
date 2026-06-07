@@ -55,12 +55,10 @@ async def run_step_async(
 
     print(f"\n=== {step_name} (Iniciado) ===")
 
-    # Preparamos el entorno inyectando nuestras variables personalizadas
     process_env = os.environ.copy()
     process_env.update(env)
     timeout_seconds = resolve_ai_step_timeout_seconds(process_env, step_name)
 
-    # --- HEARTBEAT LOGIC START ---
     async def _communicate_with_heartbeat(proc, timeout_sec=None):
         import time
 
@@ -77,26 +75,20 @@ async def run_step_async(
                     break
                 chunks.append(line)
 
-        # We start reading concurrently
         out_task = asyncio.create_task(read_stream(proc.stdout, stdout_chunks))
         err_task = asyncio.create_task(read_stream(proc.stderr, stderr_chunks))
 
         last_heartbeat = time.time()
         while not out_task.done() or not err_task.done() or proc.returncode is None:
-            # Check for overall timeout
             if timeout_sec is not None and (time.time() - start_time) > timeout_sec:
                 proc.kill()
                 raise asyncio.TimeoutError()
-
-            # Print heartbeat every 30 seconds
             if time.time() - last_heartbeat > 30:
                 print(
                     "⏳ [Heartbeat] El motor sigue trabajando en segundo plano...",
                     flush=True,
                 )
                 last_heartbeat = time.time()
-
-            # Wait a little bit
             try:
                 await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=1.0)
             except asyncio.TimeoutError:
@@ -105,8 +97,6 @@ async def run_step_async(
         await out_task
         await err_task
         return b"".join(stdout_chunks), b"".join(stderr_chunks)
-
-    # --- HEARTBEAT LOGIC END ---
 
     try:
         process = await asyncio.create_subprocess_exec(
@@ -130,7 +120,6 @@ async def run_step_async(
         else:
             stdout, stderr = await _communicate_with_heartbeat(process)
 
-        # Volcamos la salida para mantener visibilidad de logs
         if stdout:
             print(stdout.decode("utf-8").strip())
 
@@ -152,9 +141,7 @@ async def run_pipeline():
     parser.add_argument("--client", required=True)
     parser.add_argument("--context-file", required=True)
     parser.add_argument("--responses-file", required=True)
-    parser.add_argument(
-        "--start-from", required=False, help="Nombre del step desde el que reanudar"
-    )
+    parser.add_argument("--start-from", required=False, help="Step name to start from")
     args = parser.parse_args()
 
     global SKIP_MODE, START_FROM
@@ -167,11 +154,19 @@ async def run_pipeline():
     python_bin = resolve_python_bin()
 
     env = build_runtime_env()
-    case_dir = prepare_case_runtime(
-        env,
-        client_id=client_slug,
-        tower_id=tower_id,
-    )
+    case_dir = prepare_case_runtime(env, client_id=client_slug, tower_id=tower_id)
+
+    # --- COGNITIVE RESET ---
+    print(f"🔄 [Cognitive Reset] Purgando razonamiento previo para {tower_id}...")
+    if case_dir.exists():
+        for f in ["findings.json", "evidence_ledger.json", "blueprint_t2_payload.json"]:
+            path_to_del = case_dir / f
+            if path_to_del.exists():
+                path_to_del.unlink()
+
+    import time
+
+    env["AI_EXECUTION_SEED"] = str(time.time())
 
     validate_runtime_environment(env)
 
@@ -183,7 +178,6 @@ async def run_pipeline():
     template_annex_path = resolve_tower_annex_template_path()
     output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
 
-    # --- FASE 1: PREPARACIÓN DETERMINISTA (SECUENCIAL) ---
     await run_step_async(
         [
             python_bin,
@@ -217,6 +211,7 @@ async def run_pipeline():
         env,
         "Build evidence_ledger",
     )
+
     await run_step_async(
         [
             python_bin,
@@ -228,6 +223,7 @@ async def run_pipeline():
         env,
         "Run scoring",
     )
+
     await run_step_async(
         [
             python_bin,
@@ -244,17 +240,44 @@ async def run_pipeline():
         "Run evidence analyst",
     )
 
-    # --- NUEVA FASE TOP-DOWN (ESTRANGULADOR: BLUEPRINT -> ANEXO) ---
-    print(
-        "\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico (Single Source of Truth)..."
+    # --- ETAPA DE REFINADO EJECUTIVO (Tier 1 Standards) ---
+    # --- ETAPA DE INVESTIGACIÓN SOTA (State of the Art 2026) ---
+    await run_step_async(
+        [
+            python_bin,
+            "-m",
+            "application.run_sota_researcher",
+            "--findings-path",
+            str(case_dir / "findings.json"),
+            "--client",
+            args.client,
+        ],
+        env,
+        "Run SOTA researcher",
     )
+
+    await run_step_async(
+        [
+            python_bin,
+            "-m",
+            "application.run_executive_refiner",
+            "--findings-path",
+            str(case_dir / "findings.json"),
+            "--client",
+            args.client,
+        ],
+        env,
+        "Run executive refiner",
+    )
+
+    print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico...")
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
         print("🔎 Ejecutando preflight de Vertex AI...")
         preflight = run_vertex_ai_preflight(env=env)
         print(
-            "✅ Vertex AI listo "
-            f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
+            f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
+
     blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
     output_blueprint_docx = (
         case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
@@ -276,7 +299,7 @@ async def run_pipeline():
         print(f"⚠️ Fallo crítico en Blueprint: {e}")
         return
 
-    print("\n🚀 Iniciando Síntesis Ejecutiva (El Nuevo Anexo Top-Down)...")
+    print("\n🚀 Iniciando Síntesis Ejecutiva...")
     try:
         await run_step_async(
             [
@@ -292,38 +315,18 @@ async def run_pipeline():
     except Exception as e:
         print(f"⚠️ Fallo en síntesis del anexo: {e}")
 
-    # LEGACY CODE - COMENTADO PARA EVITAR SPLIT BRAIN
-    # # --- FASE 2: GENERACIÓN AGÉNTICA (PARALELIZABLE) [RAMA A] ---
-    # print("\n🚀 Iniciando Generación Paralela Rama A (AS-IS + RISKS + OSINT)...")
-    # await asyncio.gather(
-    #     run_step_async([python_bin, "-m", "application.run_section_pipeline", "asis"], env, "Generate AS-IS"),
-    #     run_step_async([python_bin, "-m", "application.run_section_pipeline", "risks"], env, "Generate Risks"),
-    #     # OSINT no se corre por torre, solo lo dejamos como placeholder si fuera necesario a futuro
-    # )
-    #
-    # # --- FASE 3: ANÁLISIS ESTRATÉGICO (PARALELIZABLE) [RAMA B] ---
-    # print("\n🚀 Iniciando Análisis Estratégico Paralelo Rama B (GAP + TO-BE)...")
-    # await asyncio.gather(
-    #     run_step_async([python_bin, "-m", "application.run_tobe_pipeline"], env, "Generate TO-BE"),
-    #     run_step_async([python_bin, "-m", "application.run_gap_pipeline"], env, "Generate GAP")
-    # )
-    #
-    # # --- FASE 4: CIERRE DEL REPORTE (SECUENCIAL) [RAMA C] ---
-    # await run_step_async([python_bin, "-m", "application.run_todo_pipeline"], env, "Generate TO-DO")
-    # await run_step_async([python_bin, "-m", "application.run_conclusion_pipeline"], env, "Generate Conclusion")
-    #
-    # # --- FASE 5: ENSAMBLADO Y RENDERIZADO ---
-    # await run_step_async([python_bin, "-m", "application.assemble_tower_annex"], env, "Assemble annex")
-    #
-    # tower_name_mock = "TOWER_NAME"
-    # await run_step_async([python_bin, "-m", "application.run_global_review_pipeline", str(case_dir), tower_id, tower_name_mock], env, "Global review")
-    # await run_step_async([python_bin, "-m", "application.run_global_refiner_pipeline", str(case_dir), tower_id, tower_name_mock], env, "Global refiner")
-
-    # Pipeline final de renderizado (Re-acondicionado para usar el nuevo Payload del Sintetizador)
     async def render_standard_report():
-        # Ya no ensamblamos ni refinamos. El Synthesizer escupe el payload_path directamente listo para render.
-        # await run_step_async([python_bin, "-m", "application.build_tower_annex_template_payload", str(refined_path if refined_path.exists() else assembled_path), str(payload_path), args.client, "short"], env, "Build short template payload")
-        # await run_step_async([python_bin, "-m", "application.generate_tower_radar_chart", str(payload_path), str(radar_path)], env, "Generate short radar")
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "application.generate_tower_radar_chart",
+                str(payload_path),
+                str(payload_path.with_name("pillar_radar_chart.generated.png")),
+            ],
+            env,
+            "Generate short radar",
+        )
         await run_step_async(
             [
                 python_bin,
@@ -339,28 +342,25 @@ async def run_pipeline():
         )
 
     async def run_blueprint_flow():
-        try:
-            if blueprint_payload_path.exists():
-                await run_step_async(
-                    [
-                        python_bin,
-                        "-m",
-                        "adapters.render_tower_blueprint",
-                        str(blueprint_payload_path),
-                        str(output_blueprint_docx),
-                    ],
-                    env,
-                    "Render: Tower Strategic Blueprint DOCX",
-                )
-        except Exception as e:
-            print(f"⚠️ Fallo no bloqueante en Blueprint Render: {e}")
+        if blueprint_payload_path.exists():
+            await run_step_async(
+                [
+                    python_bin,
+                    "-m",
+                    "adapters.render_tower_blueprint",
+                    str(blueprint_payload_path),
+                    str(output_blueprint_docx),
+                ],
+                env,
+                "Render: Tower Strategic Blueprint DOCX",
+            )
 
     print("\n🚀 Finalizando: Renderizado Estándar + Blueprint en paralelo...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
     print(f"\n✅ Pipeline {tower_id} completado con éxito.")
     print(f"📄 DOCX Resumen Ejecutivo: {output_docx}")
-    print(f"🚀 DOCX Blueprint Estratégico (Definitivo): {output_blueprint_docx}")
+    print(f"🚀 DOCX Blueprint Estratégico: {output_blueprint_docx}")
 
 
 if __name__ == "__main__":

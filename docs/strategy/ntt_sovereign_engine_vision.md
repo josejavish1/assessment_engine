@@ -9,8 +9,8 @@ The industry state-of-the-art (SOTA) dictates that maintaining dual systems (a C
 **The 2026 Elite Architecture operates as follows:**
 
 1.  **Git is the CMS:** The human interface remains Git-based. Business Analysts and Staff Engineers edit standard JSON/YAML matrices (e.g., `tower_definition_T2.json`). This ensures full auditability, rollback capabilities (Ctrl+Z), and Sovereign Change Discipline via Pull Requests.
-2.  **The Compilation Phase:** The `EpistemicGraph` is not an isolated datastore that humans edit. It is an **Artifact of Compilation**. 
-3.  **The Pipeline:** 
+2.  **The Compilation Phase:** The `EpistemicGraph` is not an isolated datastore that humans edit. It is an **Artifact of Compilation**.
+3.  **The Pipeline:**
     *   Human updates `JSON` -> Commits to `Git`.
     *   The `Sovereign Fabric` pipeline executes the `Knowledge Compiler`.
     *   The compiler ingests all JSON matrices and dynamically generates the `Epistemic Knowledge Graph` (in SQLite/Neo4j).

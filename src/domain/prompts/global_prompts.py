@@ -88,26 +88,33 @@ INPUT_DOCUMENT_ASSEMBLED:
 
 
 def get_executive_refiner_instruction() -> str:
-    return "Eres un Senior Partner de consultoría estratégica de TI redactando un informe para el Board. Si el payload incluye `intelligence_dossier`, debes usarlo explícitamente para conectar riesgos, prioridades y roadmap con agenda del CEO, presión regulatoria, restricciones operativas y señales de negocio."
+    return """Eres un Senior Partner de consultoría estratégica de TI redactando un informe para el Board.
+Tu objetivo es transformar el análisis técnico en un 'Modelo de Viabilidad Sistémica' irrefutable.
+REGLAS DE ÉLITE:
+1. RESILIENCIA INSTITUCIONAL: No hables de personas o rotación; habla de 'Entropía de la Memoria Sistémica' y 'Opacidad Operativa'.
+2. AUTORIDAD FINANCIERA: Usa 'Modelos de Sensibilidad' (VaR) para el impacto del riesgo, vinculando la indisponibilidad con la degradación del Free Cash Flow y sanciones (NIS2/GDPR).
+3. SOBERANÍA JURISDICCIONAL: Evalúa la 'Inmunidad a Leyes Extraterritoriales' y la 'Soberanía por Diseño' (HYOK, Regiones locales).
+Si el payload incluye `intelligence_dossier`, conéctalo explícitamente con la agenda del CEO y señales de negocio."""
 
 
 def get_executive_section_prompt(
     instruction: str, payload_str: str, client_name: str
 ) -> str:
     return f"""
-    ANALIZA ESTE PAYLOAD Y GENERA UN NUEVO JSON ESTRATÉGICO PARA UN COMITÉ DE DIRECCIÓN.
+    ACTÚA COMO UN PARTNER ESTRATÉGICO GENERANDO UN 'MODELO DE VIABILIDAD SISTÉMICA' PARA EL BOARD.
+    ANALIZA ESTE PAYLOAD Y GENERA UN NUEVO JSON ESTRATÉGICO DE ALTA AUTORIDAD.
 
-    REGLA DE ORO DE REDACCIÓN (NTT DATA STANDARDS):
-    - ESTÁ PROHIBIDO el uso de la primera persona del plural ("nuestro", "nosotros", "hemos detectado").
-    - El tono debe ser puramente profesional, externo y objetivo.
+    REGLA DE ORO DE REDACCIÓN (ÉLITE MUNDIAL):
+    - ESTÁ PROHIBIDO el uso de la primera persona del plural ("nuestro", "nosotros").
+    - El tono debe ser puramente profesional, externo y de autoridad analítica.
     - Se debe referir a la infraestructura como "la infraestructura de {client_name}" o "la plataforma analizada".
-    - NUNCA uses el término "The Burning Platform" en los textos; usa "Principales Amenazas Sistémicas".
+    - NUNCA uses el término "The Burning Platform"; usa "Principales Amenazas Sistémicas".
 
     {instruction}
 
     REGLA ESTRICTA DE ESTILO (NIVEL CIO/BOARD):
-    - ESTÁ TERMINANTEMENTE PROHIBIDO usar códigos internos como T1, T2, T3, T6, etc. Habla de "Sistemas Legacy", "Ciberseguridad", "Redes", etc.
-    - Céntrate en el impacto de negocio (Riesgo, P&L, Time-to-Market, Operaciones).
+    - ESTÁ TERMINANTEMENTE PROHIBIDO usar códigos internos como T1, T2, etc. Habla de dominios funcionales (Ciberseguridad, Redes, Operaciones).
+    - Céntrate en la Viabilidad Estratégica, Riesgo Financiero y Time-to-Value.
     - Devuelve ÚNICAMENTE un objeto JSON válido, acorde al esquema solicitado.
 
     DATOS DE ENTRADA (PAYLOAD BRUTO):

@@ -1,3 +1,6 @@
+import uuid
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from .common import VersionedPayload
@@ -6,9 +9,12 @@ from .common import VersionedPayload
 class HealthCheckAsIs(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
+    node_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     target_state: str = Field(..., alias="capability")
     risk_observed: str = Field(..., alias="finding")
     impact: str = Field(..., alias="business_risk")
+    fragment_id: Optional[str] = None
+    literal_evidence: Optional[str] = None
 
 
 class TargetArchitectureToBe(BaseModel):
@@ -19,12 +25,14 @@ class TargetArchitectureToBe(BaseModel):
 class ProjectToDo(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
+    node_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     initiative: str = Field(..., alias="name")
     expected_outcome: str = Field(..., alias="business_case")
     objective: str = Field(..., alias="tech_objective")
     deliverables: list[str]
     sizing: str
     duration: str
+    program_id: Optional[str] = None
 
 
 class PillarBlueprintDraft(BaseModel):

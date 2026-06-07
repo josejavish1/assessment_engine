@@ -392,13 +392,66 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _load_industry_profile(industry_name: str) -> dict[str, Any]:
+    """Carga el marco de consultoría de élite específico para la industria."""
+    config_dir = (
+        Path(__file__).resolve().parents[2] / "engine_config" / "industry_profiles"
+    )
+    # Mapeo de industria a perfil de configuración
+    mapping = {
+        "energía": "critical_infrastructure",
+        "eléctrico": "critical_infrastructure",
+        "infraestructura crítica": "critical_infrastructure",
+        "transporte": "critical_infrastructure",
+        "retail": "retail",
+        "comercio": "retail",
+        "banca": "banking",
+        "finanzas": "banking",
+        "seguros": "banking",
+        "salud": "healthcare",
+        "hospital": "healthcare",
+    }
+
+    industry_lower = industry_name.lower()
+    profile_key = "default"
+    for key, val in mapping.items():
+        if key in industry_lower:
+            profile_key = val
+            break
+
+    profile_path = config_dir / f"{profile_key}.json"
+    if profile_path.exists():
+        try:
+            return json.loads(profile_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            logger.warning(f"Error cargando perfil de industria {profile_key}: {e}")
+            return {}
+    return {}
+
+
 def build_client_context_packet(
     data: dict[str, Any], tower_id: str | None = None
 ) -> dict[str, Any]:
-    packet = {
+    packet: dict[str, Any] = {
         "_EPISTEMIC_WARNING": "ESTOS DATOS SON OSINT (PUBLICOS). SON TANGENCIALES. SI CONTRADICEN EL DOCUMENTO DE CONTEXTO INTERNO DEL CLIENTE, EL DOCUMENTO INTERNO ES LA UNICA VERDAD ABSOLUTA.",
         "confidence_level": "LOW_TO_MEDIUM (External OSINT)",
     }
+
+    industry_name = ""
+    if is_client_dossier_v3(data):
+        profile = data.get("profile", {})
+        industry_name = profile.get("industry", "")
+        # ... (rest of extraction)
+    elif is_client_dossier_v2(data):
+        industry_name = data.get("profile", {}).get("industry", "")
+    else:
+        industry_name = data.get("industry", "")
+
+    # Inyectar marco de élite por industria
+    industry_profile = _load_industry_profile(industry_name)
+    if industry_profile:
+        packet["industry_elite_framework"] = industry_profile.get("elite_framework", {})
+
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})
         business_context = data.get("business_context", {})
@@ -498,7 +551,10 @@ from infrastructure.epistemic_graph import EpistemicGraph
 
 def build_client_context_text(data: dict[str, Any], tower_id: str | None = None) -> str:
     # 1. Initialize the Epistemic Graph
-    graph = EpistemicGraph()
+    client_name = data.get("client_name", "generic")
+    from infrastructure.text_utils import slugify
+
+    graph = EpistemicGraph(client_id=slugify(client_name))
 
     # 2. Inject OSINT (Low Confidence)
     # Extracting basic assumptions from OSINT data
@@ -539,7 +595,15 @@ from typing import cast
 def load_client_intelligence(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
-    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
+    data = cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
+
+    # HARD VALIDATION GATE: Enforce Integrity
+    if not verify_dossier_integrity(data):
+        raise RuntimeError(
+            f"❌ SECURITY VIOLATION: Dossier integrity check failed for {path}. The file has been tampered with."
+        )
+
+    return data
 
 
 def load_client_intelligence_legacy_view(path: Path) -> dict[str, Any]:
@@ -945,3 +1009,60 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
         ]
         tower_data["related_claim_ids"] = related_claim_ids
     return serialized
+
+
+import hashlib
+
+
+def compute_dossier_hash(data: dict[str, Any]) -> str:
+    """Calcula un hash SHA-256 determinista para el dossier, ignorando el bloque de integridad."""
+    # Hacer una copia profunda para no modificar el original
+    clean_data = json.loads(json.dumps(data))
+
+    # Purgar el bloque de integridad si existe para que el hash sea estable
+    if "metadata" in clean_data and "integrity" in clean_data["metadata"]:
+        clean_data["metadata"]["integrity"] = None
+
+    # Serializar con claves ordenadas para determinismo
+    canonical_json = json.dumps(clean_data, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+
+
+def sign_dossier(data: dict[str, Any]) -> dict[str, Any]:
+    """Calcula y añade el bloque de integridad al dossier."""
+    # Asegurar que existe la estructura de metadata
+    if "metadata" not in data:
+        data["metadata"] = {}
+
+    # Calcular hash (que ignorará cualquier integrity previo)
+    dossier_hash = compute_dossier_hash(data)
+
+    data["metadata"]["integrity"] = {
+        "hash": dossier_hash,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+    return data
+
+
+def verify_dossier_integrity(data: dict[str, Any]) -> bool:
+    """Verifica si el hash del dossier coincide con el firmado en su metadata."""
+    if (
+        "metadata" not in data
+        or "integrity" not in data["metadata"]
+        or not data["metadata"]["integrity"]
+    ):
+        logger.warning(
+            "Dossier sin bloque de integridad. Saltando verificación (Modo Legacy)."
+        )
+        return True
+
+    signed_hash = data["metadata"]["integrity"].get("hash")
+    current_hash = compute_dossier_hash(data)
+
+    if signed_hash != current_hash:
+        logger.error(
+            f"FALLO DE INTEGRIDAD: El hash firmado ({signed_hash}) no coincide con el real ({current_hash})."
+        )
+        return False
+
+    return True

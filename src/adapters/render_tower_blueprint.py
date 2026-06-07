@@ -453,16 +453,9 @@ def render_snapshot_page(
             business_angles.append(clean_text_for_render(text))
 
     if not business_angles:
-        for candidate in [
-            snap.business_impact,
-            snap.cost_of_inaction,
-            snap.bottom_line,
-        ]:
-            cleaned = clean_text_for_render(candidate)
-            if cleaned and cleaned not in business_angles:
-                business_angles.append(cleaned)
-            if len(business_angles) >= 3:
-                break
+        business_angles.append(
+            "La transformación tecnológica propuesta asegura la competitividad, fortalece la resiliencia operativa y garantiza el cumplimiento normativo."
+        )
 
     add_heading_paragraph(doc, "Por qué importa al negocio", level=2)
     for item in business_angles[:4]:

@@ -1,14 +1,8 @@
-from typing import Any
-
-"""
-Módulo render_global_report_from_template.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
-
 import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
@@ -16,6 +10,11 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement, ns
 from docx.shared import Inches, Pt, RGBColor
 from pydantic import ValidationError
+
+"""
+Módulo render_global_report_from_template.py.
+Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+"""
 
 from domain.schemas.global_report import (
     BurningPlatformItem,

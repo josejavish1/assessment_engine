@@ -1,19 +1,18 @@
-from typing import Any
-
-"""
-Módulo render_commercial_report.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
-
 import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
+
+"""
+Módulo render_commercial_report.py.
+Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+"""
 
 from adapters.render_global_report_from_template import (
     add_smart_bullet_list,

@@ -1,0 +1,153 @@
+/*
+ * Sovereign Strategic Terminal V11 - Executive Storyteller
+ * Aesthetic: Industrial Matte / High-End Disruptive
+ */
+
+/* System fonts used for Sovereignty */
+
+:root {
+    --bg: #05070A;
+    --surface: #0D0F14;
+    --border: rgba(255, 255, 255, 0.05);
+    --mint: #86EFAC;
+    --crimson: #EE6666;
+    --cobalt: #7983C3;
+    --gold: #E3B341;
+    --text-dim: #8B949E;
+
+    --font-insight: 'Crimson Pro', serif;
+    --font-base: 'Inter', sans-serif;
+    --font-data: 'IBM Plex Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; background: var(--bg); }
+
+body {
+    background-color: var(--bg);
+    color: #C9D1D9;
+    font-family: var(--font-base);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* --- Narrative Layout --- */
+.narrative-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+section {
+    min-height: 100vh;
+    padding: 8rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+    font-family: var(--font-data);
+    font-size: 0.7rem;
+    color: var(--mint);
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    margin-bottom: 1.5rem;
+}
+
+.title-large {
+    font-family: var(--font-insight);
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 0.95;
+    margin-bottom: 3rem;
+}
+
+.lead-text {
+    font-family: var(--font-insight);
+    font-size: 1.5rem;
+    color: #D1D5DB;
+    max-width: 900px;
+    margin-bottom: 4rem;
+    font-style: italic;
+}
+
+/* --- Apex Cards --- */
+.apex-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.apex-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 3rem;
+    position: relative;
+}
+
+.apex-val {
+    font-family: var(--font-data);
+    font-size: 5rem;
+    color: #fff;
+    line-height: 1;
+}
+
+/* --- AS-IS Map --- */
+.asis-layout {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 3rem;
+    height: 800px;
+}
+
+.map-container {
+    background: #080B10;
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.evidence-vault {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    overflow-y: auto;
+}
+
+/* --- Project Grid --- */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    transition: all 0.3s ease;
+}
+
+.project-card:hover {
+    border-color: var(--mint);
+    background: rgba(134, 239, 172, 0.02);
+}
+
+.project-card strong {
+    display: block;
+    font-size: 0.9rem;
+    color: #fff;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.project-card p {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+/* --- Interactions --- */
+.highlighted { border-color: #fff !important; box-shadow: 0 0 30px rgba(255,255,255,0.05); }
+.node-group { cursor: pointer; }
+.link-line { stroke: rgba(255,255,255,0.05); stroke-dasharray: 2, 2; }

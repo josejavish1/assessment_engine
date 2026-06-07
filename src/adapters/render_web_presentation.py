@@ -1,5 +1,7 @@
 """Render the strategic web dashboard from global and tower payloads."""
 
+# ruff: noqa: E402
+
 from __future__ import annotations
 
 import json
@@ -9,6 +11,10 @@ from typing import Any
 
 import jinja2
 
+SRC_ROOT = Path(__file__).resolve().parents[1]
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
 from domain.maturity_band import (
     GLOBAL_MATURITY_BANDS,
     resolve_maturity_band,
@@ -17,6 +23,7 @@ from domain.schemas.blueprint import BlueprintPayload
 from domain.schemas.global_report import GlobalReportPayload
 from infrastructure.global_maturity_policy import average_pillar_target
 from infrastructure.runtime_paths import (
+    ROOT,
     resolve_blueprint_payload_candidates,
     resolve_client_dir,
     resolve_global_report_payload_path,
@@ -158,8 +165,20 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
         for tower_meta in global_payload.get("heatmap", [])
     ]
 
+    # Load Digital Twin State Object if available
+    client_dir = resolve_client_dir(client_id)
+    dto_state_path = client_dir / "digital_twin_state.json"
+    dto_state = {}
+    if dto_state_path.exists():
+        try:
+            with dto_state_path.open("r", encoding="utf-8-sig") as f:
+                dto_state = json.load(f)
+        except Exception:
+            pass
+
     return {
-        "meta": {"client": client_id.upper(), "version": "v5.1 Strategic Ops"},
+        "meta": {"client": client_id.upper(), "version": "v6.0 Digital Twin (DTO)"},
+        "dto_state": dto_state,
         "strategy": {
             "headline": executive_summary.get("headline", ""),
             "narrative": executive_summary.get("narrative", ""),
@@ -179,6 +198,7 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
             "proactive_proposals": execution_roadmap.get("proactive_proposals", [])
             or _default_proposals(),
         },
+        "executive_decisions": global_payload.get("executive_decisions", {}),
         "heatmap": heatmap,
         "towers": {},
     }
@@ -366,10 +386,51 @@ def _load_template() -> jinja2.Template:
     return env.get_template(TEMPLATE_PATH.name)
 
 
+# New SOTA Template Configuration: THE SOVEREIGN PORTAL (Multi-Annex)
+TEMPLATE_NAME = "strategic_terminal.html"
+STRATEGIC_TEMPLATE_PATH = ROOT / "templates" / TEMPLATE_NAME
+FOLIO_ASSETS = ROOT / "templates" / "folio_assets"
+SHARED_ASSETS = ROOT / "templates" / "terminal_assets"
+
+
+def _json_for_script(payload: dict[str, Any]) -> str:
+    # We need to escape <, > and & for safety in <script> blocks
+    # The test expects specific escaped sequences
+    return (
+        json.dumps(payload, separators=(",", ":"))
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+    )
+
+
 def _render_html(client_id: str, nexus_data: dict[str, Any]) -> str:
-    template = _load_template()
-    json_data = json.dumps(nexus_data, ensure_ascii=False)
-    return template.render(client_id=client_id.upper(), json_data=json_data)
+    import copy
+
+    from jinja2 import Environment, FileSystemLoader
+
+    env = Environment(
+        loader=FileSystemLoader(STRATEGIC_TEMPLATE_PATH.parent), autoescape=True
+    )
+    template = env.get_template(TEMPLATE_NAME)
+
+    # Deep copy and isolate DTO state
+    nexus_payload = copy.deepcopy(nexus_data)
+    dto_state = nexus_payload.pop("dto_state", {})
+
+    # Assets Bundling
+    folio_css = (FOLIO_ASSETS / "css" / "folio.css").read_text(encoding="utf-8")
+    state_js = (SHARED_ASSETS / "js" / "terminal_state.js").read_text(encoding="utf-8")
+    folio_js = (FOLIO_ASSETS / "js" / "folio_app.js").read_text(encoding="utf-8")
+
+    return template.render(
+        client_id=client_id.upper(),
+        json_data=_json_for_script(nexus_payload),
+        dto_state=_json_for_script(dto_state),
+        folio_css=folio_css,
+        state_js=state_js,
+        folio_js=folio_js,
+    )
 
 
 def generate_web_dashboard(client_id: str) -> Path:

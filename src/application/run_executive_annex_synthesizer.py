@@ -1,10 +1,3 @@
-from typing import Any
-
-"""
-Módulo run_executive_annex_synthesizer.py.
-Implementa el flujo Top-Down: Toma el Blueprint y genera el resumen para el Anexo del CTO.
-"""
-
 import asyncio
 import json
 import re
@@ -12,7 +5,12 @@ import sys
 import uuid
 from importlib import import_module
 from pathlib import Path
-from typing import IO, Optional, Protocol, cast
+from typing import IO, Any, Optional, Protocol, cast
+
+"""
+Módulo run_executive_annex_synthesizer.py.
+Implementa el flujo Top-Down: Toma el Blueprint y genera el resumen para el Anexo del CTO.
+"""
 
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
@@ -515,12 +513,35 @@ async def generate_synthesis(
     )
     app = AdkApp(agent=agent)
 
-    result = await run_agent(
-        app,
-        user_id=f"synthesizer_{blueprint.document_meta.tower_code}",
-        message=prompt,  # El prompt se construiría aquí como antes
-        schema=AnnexPayload,
-    )
+    result = None
+    last_error = ""
+    for attempt in range(3):
+        try:
+            msg = prompt
+            if last_error:
+                msg += f"\n\n🚨 VIOLACIÓN DE PROTOCOLO EN INTENTO ANTERIOR:\n{last_error}\nCorrige el texto inmediatamente.\n"
+            result = await run_agent(
+                app,
+                user_id=f"synthesizer_{blueprint.document_meta.tower_code}",
+                message=msg,
+                schema=AnnexPayload,
+            )
+
+            if result:
+                from infrastructure.governance import StructuralIntegrityGate
+
+                StructuralIntegrityGate.verify_dossier_logic(result)
+                break
+        except Exception as e:
+            last_error = str(e)
+            print(
+                f"    🚨 VIOLACIÓN DIPLOMÁTICA O ERROR: {e}. Reintentando Anexo (Intento {attempt + 1})..."
+            )
+
+    if last_error:
+        print(
+            f"⚠️ Fallo crítico en el Sintetizador de Anexo tras 3 intentos. Último error: {last_error}"
+        )
 
     if not result:
         return None

@@ -1,15 +1,14 @@
-from typing import Any
-
-"""Render the tower annex DOCX from a validated payload and template."""
-
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
+
+"""Render the tower annex DOCX from a validated payload and template."""
 
 from application.generate_tower_radar_chart import (
     generate_radar_chart_from_pillars,

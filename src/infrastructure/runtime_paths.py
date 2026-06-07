@@ -127,6 +127,4 @@ def resolve_tower_annex_template_path() -> Path:
 
 
 def resolve_web_dashboard_template_path() -> Path:
-    return (
-        ROOT / "src" / "assessment_engine" / "templates" / WEB_DASHBOARD_TEMPLATE_NAME
-    )
+    return ROOT / "templates" / WEB_DASHBOARD_TEMPLATE_NAME

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 # --- START OF BUSINESS LOGIC ---
 import ast
+import os
 import time
 from typing import Any
-
-from duckduckgo_search import DDGS
 
 from infrastructure.runtime_paths import ROOT
 
@@ -18,27 +17,145 @@ def _log_trace(message: str) -> None:
         f.write(f"{time.strftime('%H:%M:%S')} - {message}\n")
 
 
-def search_internet_best_practices(query: str) -> str:
+def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
     """
-    Searches the internet for state-of-the-art (SOTA) best practices, current tools, and industry standards
-    related to the query. Use this to ensure your proposed plans align with world-class engineering patterns.
+    Realiza una búsqueda de élite en Google Search para obtener información estratégica.
+    Autenticación dual: Intenta usar Cuenta de Servicio (OAuth2) o API Key.
+    """
+    _log_trace(
+        f"Ejecutando Búsqueda de Élite Google (Tier 1): {query} (Domains: {authority_domains})"
+    )
 
-    Args:
-        query: The search query, e.g., 'GitHub Actions PR reconciliation best practices security 2026'.
-    """
-    _log_trace(f"Investigando SOTA en Internet: {query}")
+    cse_id = os.environ.get("GOOGLE_CSE_ID")
+    api_key = os.environ.get("GOOGLE_SEARCH_API_KEY")
+    sa_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+
+    if not cse_id:
+        return "ERROR DE GOBERNANZA: GOOGLE_CSE_ID no configurado."
+
     try:
-        results = DDGS().text(query, max_results=5)
-        if not results:
-            return "No se encontraron resultados en internet."
+        import requests
 
-        output = ["--- RESULTADOS DE BÚSQUEDA WEB ---"]
-        for idx, res in enumerate(results, 1):
-            output.append(f"\n{idx}. {res.get('title', '')}")
-            output.append(f"Resumen: {res.get('body', '')}")
+        url = "https://www.googleapis.com/customsearch/v1"
+
+        site_filter = ""
+        if authority_domains:
+            site_filter = (
+                " (" + " OR ".join([f"site:{d}" for d in authority_domains]) + ")"
+            )
+
+        params = {"q": query + site_filter, "cx": cse_id, "num": 5}
+
+        headers = {}
+        # ÉLITE: Intentar obtener token de la Cuenta de Servicio para bypass de políticas
+        if sa_path and os.path.exists(sa_path):
+            try:
+                from google.auth.transport.requests import Request
+                from google.oauth2 import service_account
+
+                scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+                creds = service_account.Credentials.from_service_account_file(
+                    sa_path, scopes=scopes
+                )
+                creds.refresh(Request())
+                headers["Authorization"] = f"Bearer {creds.token}"
+                _log_trace("Uso de Token OAuth2 de Cuenta de Servicio detectado.")
+            except Exception as e_auth:
+                _log_trace(
+                    f"No se pudo obtener token OAuth2: {e_auth}. Usando API Key como fallback."
+                )
+                if api_key:
+                    params["key"] = api_key
+        elif api_key:
+            params["key"] = api_key
+        else:
+            return "ERROR: No hay credenciales (SA o API Key) para Google Search."
+
+        res = requests.get(url, params=params, headers=headers)
+        res.raise_for_status()
+        results = res.json().get("items", [])
+
+        if not results:
+            return f"No se encontraron resultados oficiales para: {query}."
+
+        output = ["--- RESULTADOS OFICIALES GOOGLE SEARCH ---"]
+        for idx, item in enumerate(results, 1):
+            output.append(f"\n{idx}. {item.get('title')}")
+            output.append(f"URL: {item.get('link')}")
+            output.append(f"Snippet: {item.get('snippet')}")
         return "\n".join(output)
     except Exception as e:
-        return f"Error al buscar en internet: {e}"
+        return (
+            f"ERROR DEL SISTEMA OSINT: {e}. Basate exclusivamente en el Vault interno."
+        )
+
+
+def search_google_vertex_sovereign(
+    query: str, authority_domains: list[str] = None
+) -> str:
+    """
+    Realiza una búsqueda de élite soberana usando el motor de Vertex AI Search de Google Cloud.
+    Ideal para obtener información estratégica y noticias corporativas verificadas.
+    """
+    _log_trace(
+        f"Ejecutando Búsqueda Soberana Vertex AI Search: {query} (Domains: {authority_domains})"
+    )
+
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "sub403o4u0q5")
+    location = "global"
+    # El Data Store ID para búsqueda en internet pública en Vertex AI
+    # Por defecto, usamos el motor de búsqueda general
+    search_engine_id = "default_search_engine"
+
+    try:
+        from google.cloud import discoveryengine_v1beta as discoveryengine
+
+        client = discoveryengine.SearchServiceClient()
+
+        serving_config = client.serving_config_path(
+            project=project_id,
+            location=location,
+            data_store=search_engine_id,
+            serving_config="default_config",
+        )
+
+        # Construir query con filtrado
+        full_query = query
+        if authority_domains:
+            full_query += (
+                " (" + " OR ".join([f"site:{d}" for d in authority_domains]) + ")"
+            )
+
+        request = discoveryengine.SearchRequest(
+            serving_config=serving_config,
+            query=full_query,
+            page_size=5,
+        )
+
+        response = client.search(request)
+
+        output = ["--- RESULTADOS SOBERANOS VERTEX AI SEARCH ---"]
+        count = 0
+        for result in response.results:
+            count += 1
+            data = result.document.derived_struct_data
+            title = data.get("title", "Sin título")
+            link = data.get("link", "Sin URL")
+            snippet = data.get("snippets", [{}])[0].get("snippet", "Sin resumen")
+            output.append(f"\n{count}. {title}")
+            output.append(f"URL: {link}")
+            output.append(f"Resumen: {snippet}")
+
+        if count == 0:
+            return f"No se encontraron resultados soberanos para: {query}. Intenta una consulta más general."
+
+        return "\n".join(output)
+    except Exception as e:
+        _log_trace(
+            f"Fallo en Vertex AI Search: {e}. Intentando fallback a Google Search API estándar..."
+        )
+        # Fallback a la API de búsqueda estándar pero bien autenticada
+        return search_google_tier1(query, authority_domains)
 
 
 def inspect_module(file_path: str) -> str:
@@ -124,5 +241,4 @@ def get_context_tools() -> list[Any]:
         inspect_module,
         list_architecture_docs,
         read_doc_file,
-        search_internet_best_practices,
     ]

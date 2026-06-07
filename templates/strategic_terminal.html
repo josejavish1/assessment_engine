@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sovereign Strategic Portal | {{ client_id }}</title>
+
+    <!-- Engines -->
+    <!-- Font Awesome (Removed for Sovereignty/Zero Lock-in) -->
+
+    <style>
+        {{ folio_css | safe }}
+    </style>
+</head>
+<body>
+    <aside>
+        <div class="nav-brand">SOVEREIGN_PORTAL_V12</div>
+
+        <div class="nav-section">
+            <span class="nav-label">Main_Chapters</span>
+            <div class="nav-link" onclick="PortalEngine.showChapter('exec-summary')">01. Executive Preface</div>
+            <div class="nav-link" onclick="PortalEngine.showChapter('as-is-global')">02. AS-IS Situation</div>
+            <div class="nav-link" onclick="PortalEngine.showChapter('to-be-vision')">03. TO-BE Strategy</div>
+            <div class="nav-link" onclick="PortalEngine.showChapter('to-do-roadmap')">04. TO-DO Roadmap</div>
+        </div>
+
+        <div class="nav-section">
+            <span class="nav-label">Technical_Annexes</span>
+            <div id="nav-annex-list">
+                <!-- Annex Links Injected -->
+            </div>
+        </div>
+    </aside>
+
+    <main id="portal-main-content">
+        <!-- Chapters Injected Here -->
+    </main>
+
+    <!-- DATA -->
+    <script id="nexus-data" type="application/json">{{ json_data | safe }}</script>
+    <script id="dto-state" type="application/json">{{ dto_state | safe }}</script>
+
+    <!-- SCRIPTS -->
+    <script>
+        {{ state_js | safe }}
+        {{ folio_js | safe }}
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Hydrate State
+            TerminalState.init();
+
+            // 2. Inject Annex Links
+            const annexList = document.getElementById('nav-annex-list');
+            const towers = TerminalState.heatmap;
+            annexList.innerHTML = towers.map(t => `
+                <div class="nav-link nav-annex-link" onclick="PortalEngine.showChapter('annex-${t.id}')">
+                    Annex: ${t.id} - ${t.name}
+                </div>
+            `).join('');
+
+            // 3. Boot Portal
+            PortalEngine.init();
+        });
+    </script>
+</body>
+</html>
