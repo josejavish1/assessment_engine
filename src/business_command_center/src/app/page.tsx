@@ -38,10 +38,10 @@ export default function Home() {
   return (
     <div className="flex h-screen bg-slate-950 text-white">
       <CommandPalette />
-      <AgentContextSheet 
-        task={selectedTask} 
-        isOpen={!!selectedTask} 
-        onClose={() => setSelectedTask(null)} 
+      <AgentContextSheet
+        task={selectedTask}
+        isOpen={!!selectedTask}
+        onClose={() => setSelectedTask(null)}
       />
 
       {/* Sidebar */}

@@ -21,9 +21,9 @@ type KanbanCardProps = {
 
 const KanbanCard: React.FC<KanbanCardProps> = ({ task, onClick }) => {
   const isThinking = task.agentic_state === 'thinking';
-  
+
   return (
-    <Card 
+    <Card
       onClick={() => onClick && onClick(task)}
       className={`mb-3 cursor-grab active:cursor-grabbing transition-colors bg-slate-900 text-slate-100 group
         ${isThinking ? 'border-transparent bg-[length:200%_100%] animate-shimmer bg-gradient-to-r from-slate-800 via-blue-500/20 to-slate-800' : 'border-slate-700 hover:border-slate-400'}
@@ -39,7 +39,7 @@ const KanbanCard: React.FC<KanbanCardProps> = ({ task, onClick }) => {
         <p className="text-xs text-slate-400 line-clamp-2 mb-3">
           {task.description}
         </p>
-        
+
         {task.status && (
           <Badge variant="outline" className={`${isThinking ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'} text-xs flex w-fit items-center gap-1`}>
             {isThinking ? <Loader2 className="h-3 w-3 animate-spin" /> : null}

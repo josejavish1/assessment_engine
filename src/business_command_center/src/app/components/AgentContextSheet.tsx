@@ -88,7 +88,7 @@ export default function AgentContextSheet({ task, isOpen, onClose }: AgentContex
             </div>
           </div>
         </ScrollArea>
-        
+
         <div className="p-6 border-t border-slate-800 bg-slate-900/50">
            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
               Aprobar y Continuar
