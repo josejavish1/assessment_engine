@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -50,7 +50,7 @@ class ToBeDraft(BaseDraftModel):
 
     @field_validator("target_capabilities_by_pillar")
     @classmethod
-    def validate_pillars_not_empty(cls, v):
+    def validate_pillars_not_empty(cls, v: Any) -> Any:
         if not v:
             raise ValueError("Debe haber al menos un pilar con capacidades objetivo")
         return v

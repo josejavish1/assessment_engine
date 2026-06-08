@@ -166,5 +166,11 @@ Esto permite al `NetworkXAnalyzer` aplicar algoritmos de teoría de grafos para 
 Cruza el **Árbol RAPTOR** (visión global del Word) con el **Pre-Scoring** (visión técnica del Test).
 *   Si el Test tiene una nota baja en un área que el RAPTOR ha marcado como "Prioridad Estratégica", el sistema eleva automáticamente la **Gravedad del Riesgo** y la **Prioridad de la Iniciativa**.
 
-### 4. Pydantic Contract Governance (P4.4)
-Cada bit de información que sale de la IA debe pasar por un validador de esquema estricto. Si la IA olvida un campo o cambia un formato, el pipeline se detiene. **Esto garantiza que el Portal V13 nunca tenga pantallas blancas o errores de carga.**
+### 5. Atribución Jerárquica (Inheritance & Shadowing)
+En la Fase 2, el sistema no solo extrae datos, sino que los atribuye a la **Sociedad Legal** y **País** correspondientes.
+*   **Nodo Raíz (Global):** Tecnologías transversales (ej. AWS, Oracle) se declaran a nivel holding.
+*   **Sombreado (Specific):** Las filiales heredan el stack global pero pueden sobrescribirlo con tecnologías propias (ej. Reintel -> 400GE).
+Esto permite que el Assessment de Madurez sea quirúrgico por entidad sin perder la visión consolidada del grupo.
+
+### 6. Atomic Fidelity Sentinel (Constraint-Satisfaction)
+Un guardián determinista (Python) valida que las **Entidades de Oro** (marcas y métricas críticas) detectadas por el motor de Deep-Reading no se diluyan durante la redacción ejecutiva. Si el Socio Director omite un vendor como 'Siemens' o una métrica como '52k km', el sistema rechaza el informe y fuerza una re-redacción de alta densidad.

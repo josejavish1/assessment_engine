@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from domain.schemas.intelligence import ClientDossierV2, ClientDossierV3
+from infrastructure.epistemic_graph import EpistemicGraph
 
 logger = logging.getLogger(__name__)
 
@@ -422,7 +424,9 @@ def _load_industry_profile(industry_name: str) -> dict[str, Any]:
     profile_path = config_dir / f"{profile_key}.json"
     if profile_path.exists():
         try:
-            return json.loads(profile_path.read_text(encoding="utf-8"))
+            return cast(
+                dict[str, Any], json.loads(profile_path.read_text(encoding="utf-8"))
+            )
         except Exception as e:
             logger.warning(f"Error cargando perfil de industria {profile_key}: {e}")
             return {}
@@ -546,9 +550,6 @@ def build_client_context_packet(
     return client_intelligence_to_legacy(data)
 
 
-from infrastructure.epistemic_graph import EpistemicGraph
-
-
 def build_client_context_text(data: dict[str, Any], tower_id: str | None = None) -> str:
     # 1. Initialize the Epistemic Graph
     client_name = data.get("client_name", "generic")
@@ -587,9 +588,6 @@ def build_client_context_text(data: dict[str, Any], tower_id: str | None = None)
     json_str = json.dumps(packet, ensure_ascii=False, indent=2)
 
     return f"{resolved_text}\n\n--- RESTO DE DATOS TANGENCIALES ---\n{json_str}"
-
-
-from typing import cast
 
 
 def load_client_intelligence(path: Path) -> dict[str, Any]:
@@ -1009,9 +1007,6 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
         ]
         tower_data["related_claim_ids"] = related_claim_ids
     return serialized
-
-
-import hashlib
 
 
 def compute_dossier_hash(data: dict[str, Any]) -> str:

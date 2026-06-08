@@ -42,7 +42,7 @@ class RaptorEngine:
                 pass
         return RaptorTree(client_id=self.client_id)
 
-    async def build_tree(self, fragments: List[EvidenceFragment]):
+    async def build_tree(self, fragments: List[EvidenceFragment]) -> None:
         """
         Builds the tree from raw fragments (Level 0).
         """
@@ -107,7 +107,7 @@ class RaptorEngine:
         self, nodes: List[RaptorNode]
     ) -> Dict[str, List[RaptorNode]]:
         """Groups nodes based on their heading hierarchy."""
-        groups = {}
+        groups: Dict[str, List[RaptorNode]] = {}
         for n in nodes:
             # Use the hierarchy from metadata as grouping key
             hierarchy = n.metadata.get("hierarchy", [])
@@ -146,13 +146,13 @@ class RaptorEngine:
                 self.app, user_id="raptor_engine", message=prompt, schema=RaptorSummary
             )
             if isinstance(res, dict):
-                return res.get("summary", "Resumen no generado.")
+                return str(res.get("summary", "Resumen no generado."))
             return str(res)
         except Exception as e:
             logger.warning(f"Error generando resumen Raptor (fallback aplicado): {e}")
             return "Resumen no disponible debido a un error de procesamiento."
 
-    def _save_tree(self):
+    def _save_tree(self) -> None:
         self.tree_path.write_text(self.tree.model_dump_json(indent=2), encoding="utf-8")
 
     def get_context_at_level(self, level: int) -> str:

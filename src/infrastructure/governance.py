@@ -15,6 +15,16 @@ class FidelitySentinel:
     """Garantiza la preservación de entidades técnicas críticas durante la síntesis."""
 
     @staticmethod
+    def verify_field_occupancy(raw_data: List[Any], final_list: List[Any], field_name: str) -> List[str]:
+        """Verifica que no haya habido una pérdida masiva de elementos en una lista técnica."""
+        violations = []
+        if raw_data and not final_list:
+            violations.append(f"Estructura Crítica: El campo '{field_name}' está VACÍO en el resultado, pero contenía datos en el material bruto.")
+        elif len(raw_data) > 0 and len(final_list) < (len(raw_data) * 0.5):
+            violations.append(f"Densidad Insuficiente: El campo '{field_name}' ha sufrido una dilución de datos superior al 50%.")
+        return violations
+
+    @staticmethod
     def verify_entity_retention(
         raw_entities: List[str], final_text: str, context: str = "General"
     ) -> List[str]:
@@ -62,14 +72,14 @@ class StructuralIntegrityGate:
     ]
 
     @classmethod
-    def verify_dossier_logic(cls, data: Dict[str, Any]):
-        violations = []
+    def verify_dossier_logic(cls, data: Dict[str, Any]) -> bool:
+        violations: List[str] = []
 
         # 1. Validar Claims y Drivers (Colisiones de Vendors)
         cls._verify_evidence_integrity(data, violations)
 
         # 2. DETECTOR DE ARROGANCIA (Fast String Matching)
-        def check_text_recursive(obj, path):
+        def check_text_recursive(obj: Any, path: str) -> None:
             if isinstance(obj, str):
                 cls._check_sober_tone(obj, path, violations)
             elif isinstance(obj, dict):
@@ -91,7 +101,9 @@ class StructuralIntegrityGate:
         return True
 
     @classmethod
-    def _verify_evidence_integrity(cls, data: Dict[str, Any], violations: List[str]):
+    def _verify_evidence_integrity(
+        cls, data: Dict[str, Any], violations: List[str]
+    ) -> None:
         """Verifica que las evidencias externas tengan trazabilidad y snapshots."""
         claims = data.get("claims", [])
         for i, claim in enumerate(claims):
@@ -107,7 +119,7 @@ class StructuralIntegrityGate:
                 )
 
     @classmethod
-    def _check_sober_tone(cls, text: str, context: str, violations: List[str]):
+    def _check_sober_tone(cls, text: str, context: str, violations: List[str]) -> None:
         """Detecta lenguaje no profesional, hiperbólico o agresivo."""
         text_norm = text.lower()
         for term in cls.FORBIDDEN_TONE_TERMS:

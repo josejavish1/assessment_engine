@@ -31,7 +31,7 @@ class EvidenceSnapshotter:
         Solo devuelve evidencias que hayan sido verificadas al 100%.
         """
         urls = self._extract_urls(text)
-        claims = []
+        claims: List[Dict[str, Any]] = []
 
         for url in urls:
             logger.info(f"🛡️ Validando evidencia externa: {url}")
@@ -108,9 +108,9 @@ class EvidenceSnapshotter:
                     timeout=20.0, follow_redirects=True, headers=self.headers
                 ) as client:
                     print(f"      📥 [BINARY] Descargando documento: {final_human_url}")
-                    response = await client.get(final_human_url)
-                    if response.status_code == 200:
-                        file_path.write_bytes(response.content)
+                    r_bin = await client.get(final_human_url)
+                    if r_bin.status_code == 200:
+                        file_path.write_bytes(r_bin.content)
                         return {
                             "source_type": "EXTERNAL_DOCUMENT",
                             "url": final_human_url,
@@ -124,9 +124,7 @@ class EvidenceSnapshotter:
                             ),
                             "captured_at": datetime.now(timezone.utc).isoformat(),
                             "status": "verified",
-                            "content_hash": hashlib.sha256(
-                                response.content
-                            ).hexdigest(),
+                            "content_hash": hashlib.sha256(r_bin.content).hexdigest(),
                         }
             except Exception as e:
                 logger.warning(f"Fallo descarga directa de {final_human_url}: {e}")
@@ -152,7 +150,12 @@ class EvidenceSnapshotter:
                     content = (
                         await page.content() if not is_binary else await response.body()
                     )
-                    content_bytes = content if is_binary else content.encode("utf-8")
+
+                    content_bytes: bytes
+                    if isinstance(content, str):
+                        content_bytes = content.encode("utf-8")
+                    else:
+                        content_bytes = content
 
                     file_path.write_bytes(content_bytes)
                     await browser.close()
@@ -185,7 +188,7 @@ class EvidenceSnapshotter:
                 "error": str(e),
             }
 
-    async def register_wayback(self, url: str):
+    async def register_wayback(self, url: str) -> None:
         """
         (Opcional) Registra la URL en Archive.org para persistencia histórica.
         """
@@ -196,7 +199,9 @@ class EvidenceIntegrityManager:
     """Orquestador de la integridad de evidencias para el Dossier final."""
 
     @staticmethod
-    def sync_claims_with_dossier(dossier: Dict[str, Any], claims: List[Dict[str, Any]]):
+    def sync_claims_with_dossier(
+        dossier: Dict[str, Any], claims: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Vincula los snapshots capturados con las menciones en el dossier.
         """

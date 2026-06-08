@@ -1,28 +1,19 @@
 {
   "changed_files": [
-    "src/business_command_center/public/file.svg",
-    "src/business_command_center/public/globe.svg",
-    "src/business_command_center/public/next.svg",
-    "src/business_command_center/public/vercel.svg",
-    "src/business_command_center/public/window.svg",
-    "src/business_command_center/src/app/components/AgentContextSheet.tsx",
-    "src/business_command_center/src/app/components/KanbanCard.tsx",
-    "src/business_command_center/src/app/globals.css",
-    "src/business_command_center/src/app/page.tsx"
+    ".github/change-plan/semantic_review_summary.json",
+    "src/application/run_intelligence_harvesting.py",
+    "src/infrastructure/client_intelligence.py",
+    "src/infrastructure/evidence_engine.py",
+    "src/infrastructure/evidence_governance.py",
+    "src/infrastructure/governance.py",
+    "src/infrastructure/raptor_engine.py"
   ],
   "contract_change": false,
   "doc_change": false,
   "execution_contract_task_id": null,
   "overlapping_paths": [
-    "src/business_command_center/public/file.svg",
-    "src/business_command_center/public/globe.svg",
-    "src/business_command_center/public/next.svg",
-    "src/business_command_center/public/vercel.svg",
-    "src/business_command_center/public/window.svg",
-    "src/business_command_center/src/app/components/AgentContextSheet.tsx",
-    "src/business_command_center/src/app/components/KanbanCard.tsx",
-    "src/business_command_center/src/app/globals.css",
-    "src/business_command_center/src/app/page.tsx"
+    "src/application/run_intelligence_harvesting.py",
+    "src/infrastructure/client_intelligence.py"
   ],
   "planned_paths": [
     "./.pre-commit-config.yaml",
@@ -234,5 +225,10 @@
   "semantic_drift": {},
   "stateful_change": [],
   "test_change": false,
-  "unplanned_changed_files": []
+  "unplanned_changed_files": [
+    "src/infrastructure/evidence_engine.py",
+    "src/infrastructure/evidence_governance.py",
+    "src/infrastructure/governance.py",
+    "src/infrastructure/raptor_engine.py"
+  ]
 }

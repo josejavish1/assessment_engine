@@ -75,9 +75,9 @@ class EvidenceEngine:
         media_dir = self.storage_dir / "media" / slugify(path.name)
         media_dir.mkdir(parents=True, exist_ok=True)
 
-        doc = docx.Document(path)
-        fragments = []
-        heading_stack = []
+        doc = docx.Document(str(path))
+        fragments: List[EvidenceFragment] = []
+        heading_stack: List[str] = []
 
         # Extract images from the docx (zip)
         try:
@@ -90,7 +90,7 @@ class EvidenceEngine:
         except Exception as e:
             logger.warning(f"Could not extract images from {path.name}: {e}")
 
-        def iter_block_items(parent):
+        def iter_block_items(parent: Any) -> Any:
             """Iterates through paragraphs and tables in order."""
             from docx.document import Document
 
@@ -199,8 +199,8 @@ class EvidenceEngine:
         content = path.read_text(encoding="utf-8")
         # Simple hierarchical detection for MD/TXT if it uses # or uppercase lines
         lines = [line.strip() for line in content.split("\n")]
-        fragments = []
-        heading_stack = []
+        fragments: List[EvidenceFragment] = []
+        heading_stack: List[str] = []
 
         for i, line in enumerate(lines):
             if not line:
@@ -241,7 +241,7 @@ class EvidenceEngine:
     def _parse_html(self, path: Path) -> List[EvidenceFragment]:
         """Simple HTML to text parser for external snapshots."""
         try:
-            from bs4 import BeautifulSoup
+            from bs4 import BeautifulSoup  # type: ignore
         except ImportError:
             print("⚠️ BeautifulSoup4 not installed. Falling back to raw text for HTML.")
             return self._parse_text(path)
@@ -292,7 +292,7 @@ class EvidenceEngine:
             location_metadata=location,
         )
 
-    def _save_ledger(self):
+    def _save_ledger(self) -> None:
         self.ledger_path.write_text(
             self.ledger.model_dump_json(indent=2), encoding="utf-8"
         )

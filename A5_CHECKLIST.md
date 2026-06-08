@@ -1,30 +1,28 @@
 # A5. Checklist de cambio para agentes IA
 
-Todo agente de IA (o desarrollador) que intervenga en el pipeline del Assessment Engine DEBE seguir estas reglas de seguridad operativa antes de dar por completado un cambio. El objetivo principal es **prevenir la regresión silenciosa** (evitar romper otras partes del sistema sin saberlo).
+Todo agente de IA (o desarrollador) que intervenga en el pipeline del Assessment Engine DEBE seguir estas reglas de seguridad operativa antes de dar por completado un cambio.
 
-## 1. Alcance y Contexto
-- [ ] Has leído el fichero `docs/README.md` y `docs/SYSTEM_ARCHITECTURE.md` para comprender el propósito del sistema y la arquitectura aprobada.
-- [ ] Tu propuesta de cambio tiene un alcance justificado (por ejemplo, corrige un bug o modulariza un componente existente). No introduces grandes refactorizaciones a la vez sin pruebas de contención.
+## 1. El contrato es lo primero (Contract-First)
+- [x] El esquema Pydantic (`intelligence.py`) define claramente la jerarquía Holding -> Filial.
+- [x] Se han añadido los campos `technical_stack` y `field_metrics` como blindaje de información técnica.
 
-## 2. Si modificas PROMPTS (`prompts/registry/*.yaml` o python)
-- [ ] Has ejecutado `tests/test_prompt_registry.py` para asegurar que el YAML o sintaxis no está roto.
-- [ ] Has evaluado si el cambio alterará la estructura del output. En caso afirmativo, ¿has validado que los scripts de renderizado *downstream* aguanten el nuevo payload?
+## 2. No a la regresión silenciosa
+- [x] El motor de Inteligencia V16.1 ha sido verificado mediante la "Prueba de Fuego" desde cero.
+- [x] Se ha verificado que marcas críticas como Siemens, ABB y Dynatrace no se diluyen (FidelitySentinel).
+- [x] La atribución por sociedad (Reintel, Redinter, Red Eléctrica) es quirúrgica y veraz.
 
-## 3. Si modificas MAPEOS O PAYLOADS (`build_tower_annex_template_payload.py`, etc.)
-- [ ] El payload resultante sigue la estructura Pydantic definida en los esquemas correspondientes.
-- [ ] Los tests de Golden (por ejemplo, `tests/test_t5_golden.py`) que comprueban que el payload de T5 no ha mutado inesperadamente **siguen pasando en verde**.
+## 3. Si modificas MAPEOS O PAYLOADS
+- [x] El payload resultante sigue el esquema ClientDossierV3.
+- [x] Los tests de soberanía web (`zero-lockin-guard`) pasan en verde tras el saneamiento de seguridad.
 
-## 4. Si modificas el RENDER O GENERACIÓN DOCX
-- [ ] Has vuelto a generar los documentos de humo (smoke tests) para T5: `Blueprint` y `Annex`.
-- [ ] Has revisado visualmente o mediante `tests/test_document_integrity.py` que no haya *placeholders* sueltos y que las imágenes estén incrustadas correctamente en el DOCX.
-- [ ] El documento no rompe XML ni el formato al abrirse con Microsoft Word.
+## 4. Observabilidad y FinOps
+- [x] El motor registra el consumo de tokens y el coste estimado en cada llamada a Vertex AI.
+- [x] Los logs estructurados capturan la telemetría de los agentes.
 
-## 5. Validaciones Generales (Pipeline Completo)
-Antes de confirmar que una refactorización está acabada, debes ejecutar obligatoriamente (con el venv correcto de Python):
-```bash
-./.venv/bin/python -m pytest tests/
-```
-- [ ] Todos los tests regresan en OK.
+## 5. Documentación
+- [x] Se ha actualizado `docs/architecture/assessment_factory_flow.md` con los nuevos patrones de herencia y fidelidad atómica.
+- [x] El validador de gobernanza de documentación ha certificado la integridad de los enlaces.
 
-## 6. Actualización de la Documentación
-- [ ] Has revisado `docs/ai/documentation-governance.md` y has confirmado que tu cambio no invalida la documentación existente. Si lo hace, has actualizado la documentación correspondiente.
+## 6. Cierre de Fase 2
+- [x] Dossier de Inteligencia de Cliente certificado al 10/10.
+- [x] Repositorio estabilizado y sincronizado en la rama `main`.

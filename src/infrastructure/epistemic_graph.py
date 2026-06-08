@@ -3,7 +3,7 @@ import sqlite3
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 from pydantic import BaseModel, Field
 
@@ -43,7 +43,7 @@ class EpistemicGraph:
         self._init_db()
         self._replay_ledger()
 
-    def _init_db(self):
+    def _init_db(self) -> None:
         cursor = self.conn.cursor()
         cursor.execute("""
             CREATE TABLE knowledge (
@@ -60,7 +60,7 @@ class EpistemicGraph:
         """)
         self.conn.commit()
 
-    def _replay_ledger(self):
+    def _replay_ledger(self) -> None:
         """Reconstructs the materialized view from the immutable ledger."""
         if not self.ledger_path.exists():
             return
@@ -74,7 +74,7 @@ class EpistemicGraph:
                 except Exception:
                     continue  # Robustness: skip corrupted lines
 
-    def _materialize(self, event: GraphEvent):
+    def _materialize(self, event: GraphEvent) -> None:
         """Projects an event into the materialized view."""
         cursor = self.conn.cursor()
         cursor.execute(
@@ -104,21 +104,23 @@ class EpistemicGraph:
         object_val: str,
         source: str,
         confidence: float,
-        timestamp: float = None,
-        **kwargs,
-    ):
+        timestamp: Optional[float] = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Injects a triple as an immutable event and materializes it.
         """
+        effective_ts = timestamp if timestamp is not None else time.time()
         event = GraphEvent(
             subject=subject,
             predicate=predicate,
             object_val=object_val,
             source=source,
             confidence=confidence,
-            timestamp=timestamp if timestamp is not None else time.time(),
-            metadata=kwargs,
+            timestamp=effective_ts,
+            **kwargs,
         )
+
 
         # 1. Write Model: Persistent Ledger (Append-Only)
         with open(self.ledger_path, "a") as f:
@@ -155,7 +157,7 @@ class EpistemicGraph:
 
         cursor.execute(query, (at_timestamp, at_timestamp))
 
-        resolved = {}
+        resolved: Dict[str, Dict[str, Any]] = {}
         for row in cursor.fetchall():
             subj, pred, obj, src, conf = row
             if subj not in resolved:
@@ -174,6 +176,8 @@ class EpistemicGraph:
         lines = ["=== CONTEXTO ESTRATÉGICO RESOLVIDO (ABSOLUTE GROUND TRUTH) ==="]
         for subj, predicates in truth.items():
             lines.append(f"ENTIDAD: {subj}")
-            for pred, data in predicates.items():
-                lines.append(f"  - {pred}: {data['value']}")
+            for pred, data_raw in predicates.items():
+                data = cast(Dict[str, Any], data_raw)
+                val = data.get("value", "N/A")
+                lines.append(f"  - {pred}: {val}")
         return "\n".join(lines)

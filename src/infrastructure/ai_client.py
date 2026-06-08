@@ -111,14 +111,18 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
 
 # Precios estimados por 1M tokens (Gemini 2.5 Pro aprox)
 PRICING = {
-    "input": 1.25,  # $ per 1M tokens
-    "output": 5.00,  # $ per 1M tokens
+    "gemini-2.5-pro": {"input": 1.25, "output": 5.00},  # $ per 1M tokens
+    "gemini-2.5-flash": {"input": 0.10, "output": 0.40},
+    "default": {"input": 1.25, "output": 5.00},
 }
 
 
-def estimate_cost(input_tokens: int, output_tokens: int) -> float:
-    cost = (input_tokens / 1_000_000 * PRICING["input"]) + (
-        output_tokens / 1_000_000 * PRICING["output"]
+def estimate_cost(input_tokens: int, output_tokens: int, model: str = "default") -> float:
+    # Normalize model name for pricing lookups
+    clean_model = model.lower()
+    price = PRICING.get(clean_model, PRICING["default"])
+    cost = (input_tokens / 1_000_000 * price["input"]) + (
+        output_tokens / 1_000_000 * price["output"]
     )
     return round(cost, 5)
 
@@ -166,7 +170,12 @@ async def run_agent(
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
-        cost = estimate_cost(input_tokens_est, output_tokens_est)
+        
+        # Telemetry Metadata
+        agent_obj = getattr(app, "_agent", None)
+        model_name = getattr(agent_obj, "model", "default")
+        
+        cost = estimate_cost(input_tokens_est, output_tokens_est, model=model_name)
 
         try:
             retries = (
