@@ -270,6 +270,12 @@ async def run_pipeline():
         "Run executive refiner",
     )
 
+    # --- CONCURRENCY & I/O FLUSH SLEEP (TIER 1 SOVEREIGN QUALITY ASSURANCE) ---
+    # Garantiza que el archivo findings.json refinado esté 100% asentado en el disco físico
+    # antes de que el motor del Blueprint de la torre intente leerlo, previniendo retrasos de caché de I/O.
+    print("⏳ [Sovereign QA] Esperando asentamiento físico del archivo findings.json en disco...")
+    await asyncio.sleep(2.0)
+
     print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico...")
     if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
         print("🔎 Ejecutando preflight de Vertex AI...")

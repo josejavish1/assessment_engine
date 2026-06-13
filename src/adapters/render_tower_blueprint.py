@@ -176,11 +176,8 @@ def clear_document_body(doc) -> None:
 
 
 def resolve_client_dir(payload_path: Path, payload_data: dict) -> Path:
-    client_name = payload_data.get("document_meta", {}).get("client_name", "")
-    candidate = payload_path.parents[1]
-    if candidate.name.lower() == str(client_name).lower().replace(" ", "_"):
-        return candidate
-    return ROOT / "working" / str(client_name).lower().replace(" ", "_")
+    # Always trust the physical directory structure since payload_path is like working/redeia_v3/T2/payload.json
+    return payload_path.parents[1]
 
 
 def load_client_intelligence(client_dir: Path) -> dict:
@@ -508,101 +505,188 @@ def render_cross_capabilities_analysis(doc, payload: BlueprintPayload) -> Any:
         add_bullet_p(doc, item)
 
 
-def render_pilar_detail(doc, pilar: PillarBlueprintDraft) -> Any:
-    add_heading_paragraph(doc, f"Capacidad: {pilar.pilar_name}", level=1)
+def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
+    add_heading_paragraph(doc, "Diagnóstico Tecnológico Consolidado (AS-IS)", level=1)
+    
+    for pilar in payload.pillars_analysis:
+        add_heading_paragraph(doc, f"Capacidad: {pilar.pilar_name}", level=2)
+        
+        table = doc.add_table(rows=1, cols=3)
+        finalize_table(table)
+        headers = ["Capacidad Técnica", "Hallazgo / Evidencia", "Riesgo de Negocio"]
+        for i, header in enumerate(headers):
+            set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
+            shade_cell(table.rows[0].cells[i], "D9EAF7")
 
-    add_heading_paragraph(doc, "A. Health Check Técnico (AS-IS)", level=2)
-    table = doc.add_table(rows=1, cols=3)
-    finalize_table(table)
-    headers = ["Capacidad Técnica", "Hallazgo / Evidencia", "Riesgo de Negocio"]
-    for i, header in enumerate(headers):
-        set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
-        shade_cell(table.rows[0].cells[i], "D9EAF7")
-
-    for row_data in pilar.health_check_asis:
-        row = table.add_row()
-        set_cell_text(row.cells[0], row_data.target_state, bold=True, font_size=10)
-        set_cell_text(row.cells[1], row_data.risk_observed, font_size=10)
-        set_cell_text(row.cells[2], row_data.impact, font_size=10)
-        for cell in row.cells:
-            for paragraph in cell.paragraphs:
-                for run in paragraph.runs:
-                    run.font.color.rgb = BASE_TEXT_COLOR
-    autofit_table_to_contents(table)
-    add_spacer(doc, 10)
-
-    add_heading_paragraph(doc, "B. Arquitectura Objetivo (TO-BE)", level=2)
-    add_body_paragraph(
-        doc, pilar.target_architecture_tobe.vision, color_rgb=BASE_TEXT_COLOR
-    )
-    principles = doc.add_paragraph()
-    principles_run = principles.add_run("Principios de Diseño:")
-    principles_run.bold = True
-    principles_run.font.size = Pt(10)
-    principles_run.font.color.rgb = BASE_TEXT_COLOR
-    for principle in pilar.target_architecture_tobe.design_principles:
-        add_bullet_p(doc, principle)
-
-    add_heading_paragraph(doc, "C. Transformation Backlog (Iniciativas TO-DO)", level=2)
-    for project in pilar.projects_todo:
-        project_table = doc.add_table(rows=5, cols=2)
-        finalize_table(project_table)
-        merged = project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
-        set_cell_text(merged, project.initiative.upper(), bold=True, font_size=11)
-        shade_cell(merged, "0072BC")
-        for run in merged.paragraphs[0].runs:
-            run.font.color.rgb = RGBColor(255, 255, 255)
-
-        rows = [
-            ("Business Rationale", project.expected_outcome),
-            ("Objetivo Técnico", project.objective),
-            (
-                "Entregables (DoD)",
-                "\n".join([f"• {item}" for item in project.deliverables]),
-            ),
-            (
-                "Sizing & Duración",
-                f"Complejidad: {project.sizing} | Estimación: {project.duration}",
-            ),
-        ]
-        for idx, (label, value) in enumerate(rows, 1):
-            set_cell_text(
-                project_table.rows[idx].cells[0], label, bold=True, font_size=9
-            )
-            shade_cell(project_table.rows[idx].cells[0], "F2F2F2")
-            set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
-            for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
-                run.font.color.rgb = BASE_TEXT_COLOR
-        autofit_table_to_contents(project_table)
+        for row_data in pilar.health_check_asis:
+            row = table.add_row()
+            set_cell_text(row.cells[0], row_data.target_state, bold=True, font_size=10)
+            set_cell_text(row.cells[1], row_data.risk_observed, font_size=10)
+            
+            # Risk coloring logic
+            impact_text = row_data.impact
+            impact_lower = impact_text.lower()
+            if any(k in impact_lower for k in ["crítico", "alto", "crítica", "alta", "severo", "material"]):
+                shade_cell(row.cells[2], "FADBD8") # Light red
+            elif any(k in impact_lower for k in ["medio", "moderado"]):
+                shade_cell(row.cells[2], "FCF3CF") # Light amber
+                
+            set_cell_text(row.cells[2], impact_text, font_size=10)
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.color.rgb = BASE_TEXT_COLOR
+        autofit_table_to_contents(table)
         add_spacer(doc, 10)
 
 
+def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
+    add_heading_paragraph(doc, "Arquitectura Objetivo y Visión Soberana (TO-BE)", level=1)
+    
+    if payload.cross_capabilities_analysis:
+        add_body_paragraph(doc, payload.cross_capabilities_analysis.transformation_paradigm, color_rgb=BASE_TEXT_COLOR)
+
+    add_body_paragraph(
+        doc,
+        "La arquitectura objetivo propuesta se rige por un modelo soberano agnóstico, evitando el vendor lock-in e integrando las infraestructuras críticas con los ecosistemas Cloud de mayor innovación tecnológica (e.g. AWS).",
+        color_rgb=BASE_TEXT_COLOR
+    )
+    
+    if hasattr(payload, "design_principles") and payload.design_principles:
+        add_heading_paragraph(doc, "Principios de Diseño Unificados", level=2)
+        for principle in payload.design_principles:
+            add_bullet_p(doc, principle)
+
+
+def _derive_charter_details(proj_name: str):
+    name_lower = proj_name.lower()
+    if "kubernetes" in name_lower or "contenedores" in name_lower:
+        return "Cloud Architect, SRE, DevOps Engineer", "Curva de aprendizaje tecnológica, Complejidad de red CNI.", "Plan de capacitación agresivo y emparejamiento (pairing) con SREs externos."
+    elif "scada" in name_lower or "ot" in name_lower or "legacy" in name_lower:
+        return "OT Security Specialist, Network Architect", "Interrupción de operaciones críticas, Falsos positivos en red.", "Despliegue en modo simulación (Shadow Mode) y ventanas de mantenimiento fuera de pico."
+    elif "platform engineering" in name_lower or "idp" in name_lower:
+        return "Platform Engineer, Product Manager (Internal)", "Baja adopción por parte de los desarrolladores.", "Tratar la plataforma como un Producto: UX impecable y evangelización interna activa."
+    elif "observabilidad" in name_lower or "aiops" in name_lower:
+        return "Data Engineer, SRE", "Ruido excesivo de alertas, Falta de correlación.", "Afinación agresiva de SLIs/SLOs antes de activar alertas; priorizar síntomas sobre causas."
+    return "Arquitecto de Soluciones, Ingeniero de Sistemas", "Resistencia al cambio organizativo.", "Gestión del cambio (OCM) ejecutiva y comunicación constante de 'Quick Wins'."
+
+
+def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
+    doc.add_page_break()
+    add_heading_paragraph(doc, "Anexo Técnico: Fichas Profundas de Proyectos (Charters)", level=1)
+    
+    # 1. Extract and group all projects by transformation typology
+    from collections import defaultdict
+    grouped_projects = defaultdict(list)
+    
+    for pilar in payload.pillars_analysis:
+        for project in pilar.projects_todo:
+            typology = getattr(project, "transformation_typology", "Iniciativas Core")
+            grouped_projects[typology].append((pilar.pilar_name, project))
+            
+    # 2. Render groups
+    project_idx = 1
+    for typology, projects_in_group in grouped_projects.items():
+        add_heading_paragraph(doc, f"Vector de Transformación: {typology}", level=2)
+        add_spacer(doc, 10)
+        
+        for pilar_name, project in projects_in_group:
+            add_heading_paragraph(doc, f"Iniciativa {project_idx}: {project.initiative}", level=3)
+            
+            project_table = doc.add_table(rows=10, cols=2)
+            finalize_table(project_table)
+            
+            merged = project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
+            set_cell_text(merged, "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA", bold=True, font_size=11)
+            shade_cell(merged, "0072BC")
+            for run in merged.paragraphs[0].runs:
+                run.font.color.rgb = RGBColor(255, 255, 255)
+
+            perfiles, riesgos, mitigante = _derive_charter_details(project.initiative)
+            deps = [d.depends_on for d in payload.external_dependencies if d.project == project.initiative]
+            deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+
+            rows = [
+                ("Dominio Arquitectónico", pilar_name),
+                ("Business Case / Impacto ROI", project.expected_outcome),
+                ("Objetivo de Ingeniería (Profundo)", project.objective),
+                ("Dependencias Técnicas (Predecesores)", deps_text),
+                (
+                    "Entregables Técnicos Duros (DoD)",
+                    "\n".join([f"• {item}" for item in project.deliverables]),
+                ),
+                (
+                    "Sizing & Cronograma",
+                    f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
+                ),
+                ("Perfiles de Ingeniería Requeridos", perfiles),
+                ("Riesgos Críticos de Ejecución", riesgos),
+                ("Estrategia de Mitigación", mitigante),
+            ]
+            for idx, (label, value) in enumerate(rows, 1):
+                set_cell_text(
+                    project_table.rows[idx].cells[0], label, bold=True, font_size=9
+                )
+                shade_cell(project_table.rows[idx].cells[0], "F2F2F2")
+                set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
+                for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
+                    run.font.color.rgb = BASE_TEXT_COLOR
+            
+            autofit_table_to_contents(project_table)
+            add_spacer(doc, 15)
+            project_idx += 1
+
+
 def render_roadmap_page(doc, payload: BlueprintPayload) -> Any:
-    add_heading_paragraph(doc, "4. Strategic Roadmap & Dependencies", level=1)
+    add_heading_paragraph(doc, "Roadmap Estratégico y Matriz de Dependencias (SOTA)", level=1)
+    
+    add_body_paragraph(
+        doc,
+        "La siguiente matriz establece la ruta crítica de ejecución (Gantt). Las iniciativas no son compartimentos estancos; su secuenciación matemática garantiza que los habilitadores técnicos (dependencias) se desplieguen antes de la construcción de las capas superiores.",
+        color_rgb=BASE_TEXT_COLOR
+    )
 
-    for wave in payload.roadmap:
-        add_heading_paragraph(doc, wave.wave, level=2)
-        for project in wave.projects:
-            add_bullet_p(doc, project)
-
-    add_heading_paragraph(doc, "Matriz de Sinergias Cruzadas", level=2)
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
-    headers = ["Iniciativa", "Dependencia / Habilita a", "Razón Técnica"]
+    headers = ["Horizonte / Fase", "Iniciativa de Ingeniería", "Dependencias Técnicas (Predecesores)"]
     for i, header in enumerate(headers):
         set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
         shade_cell(table.rows[0].cells[i], "D9EAF7")
 
-    for dependency in payload.external_dependencies:
-        row = table.add_row()
-        set_cell_text(row.cells[0], dependency.project, bold=True, font_size=9.5)
-        set_cell_text(row.cells[1], dependency.depends_on, font_size=9.5)
-        set_cell_text(row.cells[2], dependency.reason, font_size=9.5)
-        for cell in row.cells:
-            for paragraph in cell.paragraphs:
-                for run in paragraph.runs:
-                    run.font.color.rgb = BASE_TEXT_COLOR
+    # Gather all internal projects for quick lookup
+    internal_projects = set()
+    for pilar in payload.pillars_analysis:
+        for proj in pilar.projects_todo:
+            internal_projects.add(proj.initiative)
+
+    for wave in payload.roadmap:
+        for project_name in wave.projects:
+            # Find dependencies specifically for this project
+            deps = []
+            for d in payload.external_dependencies:
+                if d.project == project_name:
+                    dep_name = d.depends_on
+                    tag = "[Interna]" if dep_name in internal_projects else "[Cross-Tower]"
+                    deps.append(f"{tag} {dep_name}")
+            
+            deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+            
+            row = table.add_row()
+            set_cell_text(row.cells[0], wave.wave, bold=True, font_size=9.5)
+            set_cell_text(row.cells[1], project_name, font_size=9.5)
+            set_cell_text(row.cells[2], deps_text, font_size=9)
+            
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.color.rgb = BASE_TEXT_COLOR
+                        if "[Cross-Tower]" in run.text:
+                            run.font.color.rgb = RGBColor(192, 0, 0) # Dark red for cross-tower
+                        elif "[Interna]" in run.text:
+                            run.font.color.rgb = RGBColor(0, 112, 192) # Blue for internal
+                        
     autofit_table_to_contents(table)
+    add_spacer(doc, 15)
 
 
 def render_maturity_profile(doc, annex_data: dict) -> Any:
@@ -787,10 +871,11 @@ def render_blueprint(
     render_maturity_profile(doc, annex_data)
     render_cross_capabilities_analysis(doc, payload)
 
-    for pillar in payload.pillars_analysis:
-        render_pilar_detail(doc, pillar)
-
+    render_consolidated_asis(doc, payload)
+    render_consolidated_tobe(doc, payload)
     render_roadmap_page(doc, payload)
+    render_deep_project_charters(doc, payload)
+
     render_conclusion(doc, annex_data)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)

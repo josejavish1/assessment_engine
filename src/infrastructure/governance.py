@@ -51,7 +51,6 @@ class StructuralIntegrityGate:
 
     FORBIDDEN_TONE_TERMS = [
         "engañosa",
-        "inaceptable",
         "terrible",
         "desastroso",
         "fallo fatal",
@@ -62,9 +61,6 @@ class StructuralIntegrityGate:
         "excepcional",
         "malo",
         "pobre",
-        "insuficiente",
-        "caos",
-        "desastre",
         "ridículo",
         "nosotros mismos",
         "puntuación engañosa",

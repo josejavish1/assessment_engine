@@ -1,9 +1,14 @@
 import argparse
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Any, cast
 from zipfile import ZipFile
+
+from infrastructure.runtime_paths import ROOT
+
+logger = logging.getLogger(__name__)
 
 """
 Módulo build_evidence_ledger.py.

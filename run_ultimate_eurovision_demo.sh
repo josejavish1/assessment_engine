@@ -1,0 +1,67 @@
+
+#!/bin/bash
+# Script para ejecutar el Assessment Pipeline completo para Eurovision Services
+
+CLIENT="Eurovision Services"
+SLUG="eurovision_services"
+CONTEXT="working/eurovision_demo_ultimate/contexto_eurovision_elite.docx"
+RESPONSES="working/eurovision_demo_ultimate/preguntas_eurovision_con_notas_v2.txt"
+TOWERS=("T2")
+
+echo "========================================================"
+echo " INICIANDO ASSESSMENT ENGINE - EUROVISION DEMO ULTIMATE"
+echo "========================================================"
+
+# --- LIMPIEZA PREVIA DE CONTROL (Asegura regeneración completa) ---
+echo "🧹 Limpiando ejecuciones previas de '$SLUG'..."
+rm -rf "working/$SLUG"
+mkdir -p "working/$SLUG"
+
+source .env
+export GOOGLE_APPLICATION_CREDENTIALS=/home/jsanchhi/.secrets/sa-key.json
+export PYTHONPATH=src
+
+# --- FASE 0: INGESTA DE DOCUMENTOS (EVIDENCIAS Y RAPTOR) ---
+echo "📥 FASE 0: Ejecutando Ingesta de Documentos (Evidence & Raptor Engine)..."
+./.venv/bin/python ingest_eurovision.py
+if [ $? -ne 0 ]; then
+    echo "❌ Fallo en la ingesta. Deteniendo el pipeline."
+    exit 1
+fi
+
+# --- FASE 1: COSECHA DE INTELIGENCIA DE MERCADO Y CLIENTE (MESA DE TRABAJO DINÁMICA) ---
+echo "🔍 FASE 1: Cosechando Inteligencia Estratégica (Market & Client Intelligence)..."
+./.venv/bin/python src/application/run_intelligence_harvesting.py "${CLIENT}" "${CONTEXT}"
+if [ $? -ne 0 ]; then
+    echo "❌ Fallo en el cosechador de inteligencia. Deteniendo el pipeline."
+    exit 1
+fi
+
+# --- FASE 2: PIPELINE DE TORRES TÉCNICAS (CON CONTEXTO E INTELIGENCIA) ---
+for TOWER in "${TOWERS[@]}"; do
+    echo ""
+    echo "▶️ PROCESANDO TORRE $TOWER"
+    echo "--------------------------------------------------------"
+    ./.venv/bin/python src/application/run_tower_pipeline.py \
+        --tower "$TOWER" \
+        --client "$CLIENT" \
+        --context-file "$CONTEXT" \
+        --responses-file "$RESPONSES"
+        
+    if [ $? -ne 0 ]; then
+        echo "❌ Fallo en la ejecución de la torre $TOWER. Deteniendo el pipeline."
+        exit 1
+    fi
+done
+
+echo "🌍 FASE 3: Ejecutando Consolidación Global..."
+./.venv/bin/python -m src.application.run_global_pipeline "${SLUG}"
+
+echo "💼 FASE 4: Ejecutando Refinado Comercial..."
+./.venv/bin/python -m src.application.run_commercial_pipeline "${SLUG}"
+
+echo "🖥️ FASE 5: Generando Dashboard Web..."
+./.venv/bin/python -m src.adapters.render_web_presentation "${SLUG}"
+
+echo ""
+echo "✅ EJECUCIÓN DEL PIPELINE COMPLETADA PARA TODAS LAS TORRES Y ENTREGABLES GLOBALES."

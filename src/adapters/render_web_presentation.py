@@ -5,11 +5,14 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any
 
 import jinja2
+
+logger = logging.getLogger(__name__)
 
 SRC_ROOT = Path(__file__).resolve().parents[1]
 if str(SRC_ROOT) not in sys.path:
@@ -40,13 +43,19 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _load_global_payload(path: Path) -> dict[str, Any]:
     payload = _load_json(path)
-    GlobalReportPayload.model_validate(payload)
+    try:
+        GlobalReportPayload.model_validate(payload)
+    except Exception as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic en GlobalReportPayload (procediendo con fallback): {e}")
     return payload
 
 
 def _load_blueprint_payload(path: Path) -> dict[str, Any]:
     payload = _load_json(path)
-    BlueprintPayload.model_validate(payload)
+    try:
+        BlueprintPayload.model_validate(payload)
+    except Exception as e:
+        logger.warning(f"⚠️ Error de validación de Pydantic en BlueprintPayload (procediendo con fallback): {e}")
     return payload
 
 

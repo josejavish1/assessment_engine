@@ -259,7 +259,7 @@ def main(argv: list[str] | None = None) -> None:
     payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
     client_dir = payload_path.parent
 
-    with payload_path.open("r", encoding="utf-8") as f:
+    with payload_path.open("r", encoding="utf-8-sig") as f:
         payload = json.load(f)
 
     # Buscar blueprints tácticos

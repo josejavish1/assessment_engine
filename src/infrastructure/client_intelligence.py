@@ -351,17 +351,52 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
+    profile = data.get("profile", {}) or {}
+    
+    # Soporte nativo para esquemas V3 (Mapeo directo sin fricción ni fallos de validación)
     if is_client_dossier_v3(data):
-        data = client_intelligence_to_v2(data)
+        business_context = data.get("business_context", {}) or {}
+        technology_context = data.get("technology_context", {}) or {}
+        regulatory_context = data.get("regulatory_context", []) or []
+        claims = data.get("claims", []) or []
+        
+        return {
+            "client_name": data.get("client_name", ""),
+            "industry": profile.get("industry", ""),
+            "financial_tier": profile.get("financial_tier", "Tier 2"),
+            "regulatory_frameworks": [
+                str(item.get("name", "")).strip()
+                for item in regulatory_context
+                if isinstance(item, dict) and str(item.get("name", "")).strip()
+            ],
+            "ceo_agenda": str(
+                business_context.get("ceo_agenda", {}).get("summary", "")
+            ).strip(),
+            "technological_drivers": [
+                str(item.get("name", "")).strip()
+                for item in technology_context.get("technology_drivers", [])
+                if isinstance(item, dict) and str(item.get("name", "")).strip()
+            ],
+            "osint_footprint": str(
+                technology_context.get("footprint_summary", {}).get("summary", "")
+            ).strip(),
+            "transformation_horizon": summarize_transformation_horizon(data),
+            "target_maturity_matrix": extract_target_maturity_map(data),
+            "evidences": [
+                str(item.get("claim", "")).strip()
+                for item in claims
+                if isinstance(item, dict) and str(item.get("claim", "")).strip()
+            ],
+            "version": data.get("version", "3.0"),
+        }
 
     if not is_client_dossier_v2(data):
         return data
 
-    profile = data.get("profile", {})
-    business_context = data.get("business_context", {})
-    regulatory_frameworks = data.get("regulatory_frameworks", [])
-    technological_drivers = business_context.get("technological_drivers", [])
-    evidence_register = data.get("evidence_register", [])
+    business_context = data.get("business_context", {}) or {}
+    regulatory_frameworks = data.get("regulatory_frameworks", []) or []
+    technological_drivers = business_context.get("technological_drivers", []) or []
+    evidence_register = data.get("evidence_register", []) or []
 
     return {
         "client_name": data.get("client_name", ""),
@@ -1016,7 +1051,7 @@ def compute_dossier_hash(data: dict[str, Any]) -> str:
 
     # Purgar el bloque de integridad si existe para que el hash sea estable
     if "metadata" in clean_data and "integrity" in clean_data["metadata"]:
-        clean_data["metadata"]["integrity"] = None
+        del clean_data["metadata"]["integrity"]
 
     # Serializar con claves ordenadas para determinismo
     canonical_json = json.dumps(clean_data, sort_keys=True, ensure_ascii=False)

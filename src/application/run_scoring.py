@@ -66,7 +66,7 @@ def build_scoring(case_input: dict, tower_definition: dict) -> dict:
         item["score_exact"] * (float(item["weight_pct"]) / 100.0)
         for item in pillar_scores
     )
-    target_maturity_default = 4.0
+    target_maturity_default = float(case_input.get("target_maturity_default", 4.0))
     band = resolve_band(tower_score, tower_definition)
 
     return {

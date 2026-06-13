@@ -107,3 +107,32 @@ def get_closing_orchestrator_prompt(
 
     prompt += "\nDevuelve la informacion en formato JSON estructurado.\n"
     return str(prompt)
+
+
+def get_gravity_profiler_prompt(intel_str: str, client_name: str) -> str:
+    prompt = (
+        f"Eres un Arquitecto de Misión Crítica (Tier 1) analizando el contexto de {client_name}.\n"
+        f"Basándote en este ADN Estratégico:\n{intel_str}\n\n"
+        "Debes deducir el 'Perfil de Gravedad Arquitectónica' del cliente. Extrae los siguientes valores:\n"
+        "- on_premise_weight: 0.0 a 1.0 (Qué porcentaje de carga debe quedarse On-Premise por latencia, regulación o legado SCADA/OT).\n"
+        "- cloud_native_weight: 0.0 a 1.0 (Qué porcentaje puede ir a Cloud Público).\n"
+        "- regulatory_strictness: 'Alta', 'Media' o 'Baja' (Ej. Operadores críticos como energía o banca son 'Alta').\n"
+        "- vendor_lockin_tolerance: 'Alta', 'Media' o 'Baja' (Operadores críticos suelen tener tolerancia 'Baja').\n"
+        "- strategic_directive: La directiva resultante en pocas palabras (Ej. 'Sovereign Hybrid Edge', 'Cloud-First Agnostic', 'Strict On-Premise').\n"
+        "\nDevuelve la información en formato JSON estricto."
+    )
+    return prompt
+
+
+def get_dependency_resolver_prompt(projects_json: str) -> str:
+    prompt = (
+        "Eres un Arquitecto de Dependencias Topológicas (SOTA 2026).\n"
+        "Tu única misión es mapear las dependencias técnicas entre esta lista cerrada de proyectos.\n"
+        f"PROYECTOS APROBADOS:\n{projects_json}\n\n"
+        "REGLAS ESTRICTAS:\n"
+        "1. NO PUEDES inventar proyectos nuevos. Solo puedes usar los nombres exactos proporcionados.\n"
+        "2. Identifica si un proyecto es habilitador técnico de otro. (Ej: 'Landing Zone' habilita a 'Kubernetes').\n"
+        "3. Devuelve una lista de 'ExternalDependency' con campos: 'project' (el que depende), 'depends_on' (el habilitador previo exacto), y 'reason' (razón técnica).\n"
+        "\nDevuelve la información en formato JSON estructurado."
+    )
+    return prompt

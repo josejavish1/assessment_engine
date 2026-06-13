@@ -120,11 +120,6 @@ class RaptorEngine:
 
     async def _summarize_group(self, nodes: List[RaptorNode]) -> str:
         """Calls LLM to summarize a cluster of nodes."""
-        from pydantic import BaseModel
-
-        class RaptorSummary(BaseModel):
-            summary: str
-
         context = "\n".join([f"- {n.content}" for n in nodes])
         prompt = f"""
         RESUME LOS SIGUIENTES FRAGMENTOS EN UN PÁRRAFO ESTRATÉGICO.
@@ -138,16 +133,20 @@ class RaptorEngine:
         1. Sé conciso y profesional.
         2. Mantén datos técnicos críticos (nombres de productos, versiones, porcentajes).
         3. No inventes información fuera del contexto proporcionado.
+        4. Devuelve ÚNICAMENTE el texto del resumen en texto plano, sin JSON ni etiquetas.
         """
 
         try:
-            # Usar schema de Pydantic para forzar salida estructurada en el ADK
-            res = await run_agent(
-                self.app, user_id="raptor_engine", message=prompt, schema=RaptorSummary
+            import os
+            from google import genai
+            api_key = os.environ.get("GEMINI_API_KEY")
+            client = genai.Client(api_key=api_key)
+            response = await client.aio.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config={"system_instruction": "Eres un experto en síntesis estratégica NTT DATA."}
             )
-            if isinstance(res, dict):
-                return str(res.get("summary", "Resumen no generado."))
-            return str(res)
+            return str(response.text).strip()
         except Exception as e:
             logger.warning(f"Error generando resumen Raptor (fallback aplicado): {e}")
             return "Resumen no disponible debido a un error de procesamiento."

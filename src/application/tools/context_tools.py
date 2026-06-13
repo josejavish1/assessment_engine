@@ -45,31 +45,12 @@ def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
             )
 
         params = {"q": query + site_filter, "cx": cse_id, "num": 5}
-
         headers = {}
-        # ÉLITE: Intentar obtener token de la Cuenta de Servicio para bypass de políticas
-        if sa_path and os.path.exists(sa_path):
-            try:
-                from google.auth.transport.requests import Request
-                from google.oauth2 import service_account
 
-                scopes = ["https://www.googleapis.com/auth/cloud-platform"]
-                creds = service_account.Credentials.from_service_account_file(
-                    sa_path, scopes=scopes
-                )
-                creds.refresh(Request())
-                headers["Authorization"] = f"Bearer {creds.token}"
-                _log_trace("Uso de Token OAuth2 de Cuenta de Servicio detectado.")
-            except Exception as e_auth:
-                _log_trace(
-                    f"No se pudo obtener token OAuth2: {e_auth}. Usando API Key como fallback."
-                )
-                if api_key:
-                    params["key"] = api_key
-        elif api_key:
+        if api_key:
             params["key"] = api_key
         else:
-            return "ERROR: No hay credenciales (SA o API Key) para Google Search."
+            return "ERROR: No hay API Key para Google Search."
 
         res = requests.get(url, params=params, headers=headers)
         res.raise_for_status()

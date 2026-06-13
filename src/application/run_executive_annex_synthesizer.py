@@ -352,11 +352,7 @@ def enrich_annex_payload(
     risks = derive_risks(blueprint)
     initiatives = derive_priority_initiatives(blueprint)
     design_principles = unique_list(
-        [
-            principle
-            for pillar in blueprint.pillars_analysis
-            for principle in pillar.target_architecture_tobe.design_principles
-        ],
+        getattr(blueprint, "design_principles", []),
         limit=6,
     )
 

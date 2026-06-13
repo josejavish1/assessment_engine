@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Lineage Matrix | {{ client_name }}</title>
+    <!-- Tailwind CSS (CDN) con fuentes y configuración personalizada -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            cobalt: '#004B87',
+                            neon: '#00D2FF',
+                            bg: '#FBFBF9',
+                            card: '#FFFFFF',
+                            text: '#1A1A1A',
+                            muted: '#5F5F5F',
+                            border: '#E8E8E4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #FBFBF9;
+            color: #1A1A1A;
+            overflow-x: hidden;
+        }
+        
+        /* Estilo editorial de scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #E8E8E4;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D1D1CB;
+        }
+        
+        /* Micro-animaciones para hilos de conexión */
+        .lineage-svg {
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+        
+        .lineage-path {
+            stroke: #004B87;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-dasharray: 8, 4;
+            animation: flow 30s linear infinite;
+            opacity: 0.15;
+            transition: opacity 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease;
+        }
+        
+        .lineage-path.active {
+            stroke: #00D2FF;
+            stroke-width: 4;
+            stroke-dasharray: none;
+            opacity: 1;
+            filter: drop-shadow(0 0 4px rgba(0, 210, 255, 0.5));
+        }
+
+        @keyframes flow {
+            to {
+                stroke-dashoffset: -100;
+            }
+        }
+        
+        .card-node {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid #E8E8E4;
+        }
+        
+        .card-node.active-path {
+            border-color: #00D2FF;
+            box-shadow: 0 10px 30px -10px rgba(0, 75, 135, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .card-node.dimmed {
+            opacity: 0.3;
+        }
+        
+        /* Side Panel / Inspector slide-out */
+        .inspector-panel {
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .inspector-panel.open {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header Principal (Silent Luxury Editorial) -->
+    <header class="border-b border-brand-border px-8 py-6 bg-brand-card shrink-0">
+        <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+                <span class="text-[10px] font-extrabold uppercase tracking-[0.4em] text-brand-cobalt">Sovereign Architecture Portal</span>
+                <h1 class="text-4xl font-serif font-semibold tracking-tight text-brand-text mt-1">
+                    The Unified Lineage Matrix
+                </h1>
+                <p class="text-xs text-brand-muted mt-1 font-medium">
+                    Explorador de Continuidad Estratégica &bull; <span class="font-semibold text-brand-text">{{ client_name }}</span>
+                </p>
+            </div>
+            
+            <!-- Global Metadata / KPIs -->
+            <div class="flex items-center gap-6 bg-brand-bg p-4 rounded-xl border border-brand-border shadow-sm">
+                <div class="border-r border-brand-border pr-6">
+                    <p class="text-[9px] font-extrabold uppercase tracking-widest text-brand-muted mb-0.5">Cliente</p>
+                    <p class="text-xs font-bold text-brand-text">{{ client_name }}</p>
+                </div>
+                <div class="border-r border-brand-border pr-6">
+                    <p class="text-[9px] font-extrabold uppercase tracking-widest text-brand-muted mb-0.5">Fecha Versión</p>
+                    <p id="meta-date" class="text-xs font-bold text-brand-text">14 de Junio de 2026</p>
+                </div>
+                <div>
+                    <p class="text-[9px] font-extrabold uppercase tracking-widest text-brand-muted mb-0.5">Madurez Global</p>
+                    <p id="meta-score" class="text-lg font-black text-brand-cobalt">--/5.0</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Filtros por Torre y Escenarios -->
+    <section class="border-b border-brand-border px-8 py-4 bg-brand-bg shrink-0">
+        <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            
+            <!-- Selector de Torre / Dominio -->
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-bold text-brand-muted mr-2">Filtrar Dominio:</span>
+                <button onclick="window.LineageExplorer.setTowerFilter('ALL')" id="btn-tower-ALL" class="px-4 py-1.5 rounded-full text-xs font-bold border border-brand-cobalt bg-brand-cobalt text-white shadow-sm transition-all">
+                    Todo (Consolidado)
+                </button>
+                <div class="flex flex-wrap gap-1.5" id="tower-filters-container">
+                    <!-- Inyectados dinámicamente -->
+                </div>
+            </div>
+            
+            <!-- Selector de Escenario (Scenario Planning) -->
+            <div class="flex items-center gap-3 bg-brand-card p-1.5 rounded-full border border-brand-border shadow-sm">
+                <span class="text-xs font-bold text-brand-muted pl-4">Escenario:</span>
+                <button onclick="window.LineageExplorer.setScenario('BASE')" id="btn-scen-BASE" class="px-4 py-1.5 rounded-full text-xs font-bold bg-brand-cobalt text-white shadow-sm transition-all">
+                    Plan Recomendado
+                </button>
+                <button onclick="window.LineageExplorer.setScenario('NIS2')" id="btn-scen-NIS2" class="px-4 py-1.5 rounded-full text-xs font-bold border border-transparent text-brand-muted hover:text-brand-text transition-all">
+                    Aceleración NIS2
+                </button>
+                <button onclick="window.LineageExplorer.setScenario('FINOPS')" id="btn-scen-FINOPS" class="px-4 py-1.5 rounded-full text-xs font-bold border border-transparent text-brand-muted hover:text-brand-text transition-all">
+                    Optimización TCO
+                </button>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Área Principal de la Matriz (Scrollable) -->
+    <main class="flex-1 overflow-hidden relative flex flex-col">
+        
+        <!-- Matriz de Tres Columnas -->
+        <div class="flex-1 overflow-y-auto px-8 py-8 relative max-w-[1600px] w-full mx-auto" id="matrix-scroll-container">
+            
+            <!-- Lienzo SVG para Hilos de Conexión -->
+            <svg class="lineage-svg" id="connections-svg">
+                <!-- Se inyectarán los <path> dinámicamente mediante JS -->
+            </svg>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-20">
+                
+                <!-- COLUMNA 1: AS-IS (Dolores, Riesgos, Gaps) -->
+                <div class="space-y-6">
+                    <div class="border-b border-brand-border pb-4 mb-2">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-red-600 block mb-1">Dimensión AS-IS</span>
+                        <h2 class="text-2xl font-serif font-semibold text-brand-text flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-red-500"></i> Dolores y Riesgos
+                        </h2>
+                        <p class="text-xs text-brand-muted mt-1">Vulnerabilidades y deuda técnica diagnosticadas en la infraestructura actual.</p>
+                    </div>
+                    <div class="space-y-4" id="col-asis-container">
+                        <!-- Tarjetas inyectadas -->
+                    </div>
+                </div>
+                
+                <!-- COLUMNA 2: TO-BE (Patrones de Diseño de Vanguardia) -->
+                <div class="space-y-6">
+                    <div class="border-b border-brand-border pb-4 mb-2">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-brand-cobalt block mb-1">Dimensión TO-BE</span>
+                        <h2 class="text-2xl font-serif font-semibold text-brand-text flex items-center gap-2">
+                            <i class="fa-solid fa-compass text-brand-cobalt"></i> Arquitectura Objetivo
+                        </h2>
+                        <p class="text-xs text-brand-muted mt-1">Patrones tecnológicos "Estado del Arte" (SOTA) propuestos para habilitar la madurez.</p>
+                    </div>
+                    <div class="space-y-4" id="col-tobe-container">
+                        <!-- Tarjetas inyectadas -->
+                    </div>
+                </div>
+                
+                <!-- COLUMNA 3: TO-DO (Roadmap, Proyectos y Costes) -->
+                <div class="space-y-6">
+                    <div class="border-b border-brand-border pb-4 mb-2">
+                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 block mb-1">Dimensión TO-DO</span>
+                        <h2 class="text-2xl font-serif font-semibold text-brand-text flex items-center gap-2">
+                            <i class="fa-solid fa-route text-emerald-500"></i> Plan de Ejecución
+                        </h2>
+                        <p class="text-xs text-brand-muted mt-1">Proyectos secuenciados en Horizontes de Implementación con justificación financiera.</p>
+                    </div>
+                    <div class="space-y-4" id="col-todo-container">
+                        <!-- Tarjetas inyectadas -->
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Dashboard Inferior de Impacto del Escenario Activo -->
+        <footer class="border-t border-brand-border bg-brand-card p-6 px-8 shrink-0">
+            <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h3 class="text-xs font-extrabold uppercase tracking-widest text-brand-cobalt mb-1">Análisis Financiero del Escenario</h3>
+                    <p class="text-sm text-brand-muted font-medium">Línea base re-calculada dinámicamente mediante el resolvedor de restricciones del grafo.</p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div class="bg-brand-bg border border-brand-border rounded-xl p-4 px-6 text-center shadow-sm">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1">Presupuesto CapEx</p>
+                        <p id="scen-capex" class="text-2xl font-bold text-brand-text">--</p>
+                    </div>
+                    <div class="bg-brand-bg border border-brand-border rounded-xl p-4 px-6 text-center shadow-sm">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1">Presupuesto OpEx/Anual</p>
+                        <p id="scen-opex" class="text-2xl font-bold text-brand-text">--</p>
+                    </div>
+                    <div class="bg-brand-bg border border-brand-border rounded-xl p-4 px-6 text-center shadow-sm">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1">Tiempo de Entrega</p>
+                        <p id="scen-duration" class="text-2xl font-bold text-brand-text">--</p>
+                    </div>
+                    <div class="bg-brand-bg border border-brand-border rounded-xl p-4 px-6 text-center shadow-sm">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1">Mitigación de Riesgos</p>
+                        <p id="scen-risk" class="text-2xl font-bold text-emerald-600">--</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
+    </main>
+
+    <!-- Panel de Inspección Lateral (Side-Panel / Inspector) -->
+    <aside id="inspector-sidebar" class="fixed top-0 right-0 w-[450px] h-full bg-brand-card shadow-2xl border-l border-brand-border z-50 inspector-panel flex flex-col">
+        <!-- Header Inspector -->
+        <div class="p-6 border-b border-brand-border flex justify-between items-center bg-brand-bg">
+            <div>
+                <span id="inspector-dimension-tag" class="text-[9px] font-black uppercase tracking-[0.3em] px-2.5 py-1 rounded bg-brand-cobalt text-white">Detalle de Inspección</span>
+                <h3 class="text-xl font-serif font-bold text-brand-text mt-2">Detalles del Hilo</h3>
+            </div>
+            <button onclick="window.LineageExplorer.closeInspector()" class="p-2 rounded-full border border-brand-border hover:bg-brand-bg text-brand-muted hover:text-brand-text transition-all">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+        
+        <!-- Contenido Inspector -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6" id="inspector-content-body">
+            <!-- Rellenado dinámicamente -->
+        </div>
+        
+        <!-- Footer Inspector (Habilitadores e Impactos de Negocio) -->
+        <div class="p-6 border-t border-brand-border bg-brand-bg flex flex-col gap-3" id="inspector-content-footer">
+            <!-- Rellenado dinámicamente -->
+        </div>
+    </aside>
+
+    <!-- Inyección de Datos Compilados del Digital Twin de Decisiones -->
+    <script id="sovereign-payload" type="application/json">
+        {{ sovereign_payload_json | safe }}
+    </script>
+    <script id="dto-state" type="application/json">
+        {{ dto_state_json | safe }}
+    </script>
+    <script id="towers-detail" type="application/json">
+        {{ towers_detail_json | safe }}
+    </script>
+
+    <!-- Motor JavaScript Principal del Lineage Matrix Explorer -->
+    <script>
+        (function() {
+            // Cargar e interpretar datos inyectados de forma segura
+            let payload = {};
+            let dtoState = {};
+            let towersDetail = {};
+            try {
+                payload = JSON.parse(document.getElementById('sovereign-payload').textContent.trim());
+                dtoState = JSON.parse(document.getElementById('dto-state').textContent.trim());
+                towersDetail = JSON.parse(document.getElementById('towers-detail').textContent.trim());
+            } catch(e) {
+                console.error("Error al parsear el payload inyectado. Usando mock local de seguridad.", e);
+            }
+
+            // Resolvedor de Datos y Coordinación de la UI
+            class LineageExplorerManager {
+                constructor(payload, dtoState, towersDetail) {
+                    this.payload = payload;
+                    this.dtoState = dtoState;
+                    this.towersDetail = towersDetail;
+                    this.currentTower = "ALL";
+                    this.currentScenario = "BASE";
+                    
+                    this.asisNodes = [];
+                    this.tobeNodes = [];
+                    this.todoNodes = [];
+                    this.connections = []; // List of {from_id, to_id}
+                    
+                    this.init();
+                }
+
+                init() {
+                    // Normalizar y extraer datos
+                    this.extractNodesAndConnections();
+                    this.renderTowerFilters();
+                    this.renderMatrix();
+                    this.updateScenarioMetrics();
+                    
+                    // Escuchar eventos de resize para redibujar SVG
+                    window.addEventListener('resize', () => this.drawConnections());
+                    
+                    // Escuchar scroll del contenedor de la matriz
+                    const container = document.getElementById('matrix-scroll-container');
+                    if (container) {
+                        container.addEventListener('scroll', () => this.drawConnections());
+                    }
+                }
+
+                extractNodesAndConnections() {
+                    const client = this.payload?.meta?.client || "Eurovision Services";
+                    
+                    if (this.currentTower === "ALL") {
+                        // VISTA GLOBAL EXECUTIVA (High-Level)
+                        // 1. Extraer Nodos AS-IS de burning_platform
+                        const burning = this.payload?.burning_platform || [];
+                        this.asisNodes = burning.map((item, idx) => ({
+                            id: `asis-${idx}`,
+                            title: item.theme || "Dolor de Infraestructura",
+                            bullet1: item.business_risk || "Peligro operativo y pérdida de agilidad.",
+                            bullet2: item.root_causes?.[0] || "Deuda técnica de silos organizacionales heredados.",
+                            details: `Dolor de Negocio:\n${item.theme}\n\nRiesgo e Impacto Comercial:\n${item.business_risk}`,
+                            citations: item.root_causes || [],
+                            tower_id: this.inferTowerIdFromTheme(item.theme, idx),
+                            program_code: this.inferProgramCodeFromTheme(item.theme)
+                        }));
+
+                        // 2. Extraer Nodos TO-BE de target_vision (strategic_pillars)
+                        const pillars = this.payload?.target_vision?.strategic_pillars || [];
+                        this.tobeNodes = pillars.map((item, idx) => ({
+                            id: `tobe-${idx}`,
+                            title: item.pillar || "Patrón Arquitectónico de Vanguardia",
+                            bullet1: item.description || "Habilitador clave de la transformación técnica.",
+                            bullet2: "Alineado con el Estado del Arte 2026.",
+                            details: `Objetivo Arquitectónico:\n${item.pillar}\n\nDescripción de la Transición:\n${item.description}`,
+                            citations: [],
+                            tower_id: this.inferTowerIdFromTheme(item.pillar, idx + 2),
+                            program_code: this.inferProgramCodeFromTheme(item.pillar)
+                        }));
+
+                        // 3. Extraer Nodos TO-DO de execution_roadmap.horizons
+                        const horizons = this.payload?.execution_roadmap?.horizons || {};
+                        const orderKeys = ["quick_wins_0_3_months", "year_1_3_12_months", "year_2_12_24_months", "year_3_24_36_months"];
+                        const orderLabels = ["Horizonte 1 (0-3m)", "Horizonte 2 (4-12m)", "Horizonte 3 (13-24m)", "Horizonte 4 (25-36m)"];
+                        
+                        this.todoNodes = [];
+                        let todoIdx = 0;
+                        orderKeys.forEach((key, oIdx) => {
+                            const items = horizons[key] || [];
+                            items.forEach(item => {
+                                this.todoNodes.push({
+                                    id: `todo-${todoIdx}`,
+                                    title: item.title || "Iniciativa de Transformación",
+                                    bullet1: orderLabels[oIdx],
+                                    bullet2: item.business_case || "Mitigación del riesgo técnico y optimización del TCO.",
+                                    details: `Proyecto de Transformación:\n${item.title}\n\nCaso de Negocio y Justificación Financiera:\n${item.business_case}`,
+                                    program_code: item.program || "PROG-MOD",
+                                    start_month: item.start_month || 1,
+                                    duration_months: item.duration_months || 3,
+                                    tower_id: this.inferTowerIdFromTheme(item.title + " " + item.program, todoIdx + 4)
+                                });
+                                todoIdx++;
+                            });
+                        });
+
+                        // 4. Establecer dependencias e hilos (Connections) de linaje por program_code
+                        this.connections = [];
+                        this.todoNodes.forEach(todo => {
+                            const matchedToBe = this.tobeNodes.find(t => t.program_code === todo.program_code) || this.tobeNodes[0];
+                            if (matchedToBe) {
+                                this.connections.push({ from_id: matchedToBe.id, to_id: todo.id });
+                                const matchedAsis = this.asisNodes.find(a => a.program_code === todo.program_code) || this.asisNodes[0];
+                                if (matchedAsis) {
+                                    this.connections.push({ from_id: matchedAsis.id, to_id: matchedToBe.id });
+                                }
+                            }
+                        });
+                    } else {
+                        // VISTA DE DRILL-DOWN POR CAPABILIDAD DE TORRE (Rigor Técnico)
+                        const towerId = this.currentTower;
+                        const towerData = this.towersDetail[towerId];
+                        
+                        this.asisNodes = [];
+                        this.tobeNodes = [];
+                        this.todoNodes = [];
+                        this.connections = [];
+                        
+                        if (towerData && towerData.pillars_analysis) {
+                            let asisIdx = 0;
+                            let tobeIdx = 0;
+                            let todoIdx = 0;
+                            
+                            towerData.pillars_analysis.forEach((pilar, pIdx) => {
+                                const pilarId = pilar.pilar_id || `pilar-${pIdx}`;
+                                const pilarName = pilar.pilar_name || `Pilar ${pIdx + 1}`;
+                                const pilarScore = pilar.score || 1.0;
+                                const pilarTarget = pilar.target_score || 4.0;
+                                
+                                // A. AS-IS Capabilities for this pillar
+                                const healthCheck = pilar.health_check_asis || [];
+                                const pilarAsisNodeIds = [];
+                                healthCheck.forEach((hc, hIdx) => {
+                                    const nid = `asis-det-${asisIdx}`;
+                                    pilarAsisNodeIds.push(nid);
+                                    this.asisNodes.push({
+                                        id: nid,
+                                        title: hc.target_state || hc.capability || "Capacidad Técnica",
+                                        bullet1: `Hallazgo: ${hc.risk_observed || hc.finding || "No especificado."}`,
+                                        bullet2: `Riesgo Negocio: ${hc.impact || hc.business_risk || "Pérdida de eficiencia."}`,
+                                        details: `Capacidad Técnica Evaluada:\n${hc.target_state || hc.capability}\n\nHallazgo Diagnóstico:\n${hc.risk_observed || hc.finding}\n\nImpacto y Riesgo de Negocio:\n${hc.impact || hc.business_risk}`,
+                                        citations: hc.literal_evidence ? [hc.literal_evidence] : [],
+                                        fragment_id: hc.fragment_id,
+                                        tower_id: towerId,
+                                        program_code: pilarId,
+                                        score: pilarScore,
+                                        target_score: pilarTarget
+                                    });
+                                    asisIdx++;
+                                });
+                                
+                                // B. TO-BE Architecture for this pillar
+                                const tobeId = `tobe-det-${tobeIdx}`;
+                                pilarAsisNodeIds.forEach(asisNodeId => {
+                                    this.connections.push({ from_id: asisNodeId, to_id: tobeId });
+                                });
+                                
+                                const targetArch = pilar.target_architecture_tobe || {};
+                                const principles = targetArch.design_principles || [];
+                                
+                                this.tobeNodes.push({
+                                    id: tobeId,
+                                    title: `Arquitectura Objetivo: ${pilarName}`,
+                                    bullet1: targetArch.vision || "Patrón de arquitectura objetivo.",
+                                    bullet2: principles.length > 0 ? `Principio clave: ${principles[0]}` : "Alineado con el SOTA 2026.",
+                                    details: `Visión de Arquitectura Objetivo:\n${targetArch.vision || "Estandarización de infraestructura."}\n\nPrincipios Metodológicos de Diseño:\n${principles.map(pr => `- ${pr}`).join('\n')}`,
+                                    citations: [],
+                                    tower_id: towerId,
+                                    program_code: pilarId
+                                });
+                                tobeIdx++;
+                                
+                                // C. TO-DO Projects for this pillar
+                                const projects = pilar.projects_todo || [];
+                                projects.forEach((proj, prIdx) => {
+                                    const nid = `todo-det-${todoIdx}`;
+                                    this.connections.push({ from_id: tobeId, to_id: nid });
+                                    
+                                    this.todoNodes.push({
+                                        id: nid,
+                                        title: proj.initiative || proj.name || "Iniciativa de Ejecución",
+                                        bullet1: `Sizing: ${proj.sizing || "Medio"} | Duración: ${proj.duration || "3m"}`,
+                                        bullet2: proj.expected_outcome || proj.business_case || "Justificación del business case.",
+                                        details: `Iniciativa Estratégica: ${proj.initiative || proj.name}\n\nObjetivo Técnico:\n${proj.objective || proj.tech_objective}\n\nJustificación del Business Case:\n${proj.expected_outcome || proj.business_case}\n\nEntregables Tecnológicos:\n${(proj.deliverables || []).map(d => `- ${d}`).join('\n')}`,
+                                        program_code: pilarId,
+                                        start_month: pIdx * 4 + prIdx * 2 + 1, // Estimación de secuencia temporal
+                                        duration_months: parseInt(proj.duration) || 3,
+                                        tower_id: towerId
+                                    });
+                                    todoIdx++;
+                                });
+                            });
+                        }
+                    }
+                }
+
+                inferTowerIdFromTheme(theme, idx) {
+                    const t = theme.toUpperCase();
+                    if (t.includes("COMPUTE") || t.includes("PLATFORM") || t.includes(" VM") || t.includes("CÓMPUTO")) return "T2";
+                    if (t.includes("NET") || t.includes("WAN") || t.includes("MPLS") || t.includes("RED")) return "T3";
+                    if (t.includes("DATA") || t.includes("STORAGE") || t.includes("DATOS")) return "T4";
+                    if (t.includes("RESILIENCE") || t.includes("DRP") || t.includes("BCP") || t.includes("CONTINUIDAD")) return "T5";
+                    if (t.includes("SEC") || t.includes("IAM") || t.includes("AUTENTIC") || t.includes("SEGURIDAD")) return "T6";
+                    if (t.includes("ITSM") || t.includes("CMDB") || t.includes("OPERACION")) return "T7";
+                    if (t.includes("FINOPS") || t.includes("COST") || t.includes("GOBIERNO") || t.includes("ESTRATEGIA")) return "T8";
+                    
+                    const towers = ["T2", "T3", "T4", "T5", "T6", "T7", "T8"];
+                    return towers[idx % towers.length];
+                }
+
+                inferProgramCodeFromTheme(theme) {
+                    const t = theme.toUpperCase();
+                    if (t.includes("SEC") || t.includes("IAM") || t.includes("AUTENTIC") || t.includes("SEGURIDAD") || t.includes("SOBERANA")) return "PROG-SEC";
+                    if (t.includes("COMPUTE") || t.includes("NET") || t.includes("WAN") || t.includes("MPLS") || t.includes("STORAGE") || t.includes("CORE")) return "PROG-MOD";
+                    if (t.includes("ITSM") || t.includes("CMDB") || t.includes("OPERACION") || t.includes("SISTEMATIZACION")) return "PROG-OPS";
+                    return "PROG-GOV";
+                }
+
+                renderTowerFilters() {
+                    const container = document.getElementById('tower-filters-container');
+                    if (!container) return;
+                    container.innerHTML = "";
+
+                    const activeTowers = {};
+                    this.asisNodes.concat(this.tobeNodes, this.todoNodes).forEach(n => {
+                        activeTowers[n.tower_id] = true;
+                    });
+
+                    const towerNames = {
+                        "T2": "T2 Compute",
+                        "T3": "T3 Networks",
+                        "T4": "T4 Data",
+                        "T5": "T5 Resilience",
+                        "T6": "T6 Security",
+                        "T7": "T7 ITSM",
+                        "T8": "T8 FinOps"
+                    };
+
+                    Object.keys(activeTowers).sort().forEach(tid => {
+                        const name = towerNames[tid] || `${tid} Tower`;
+                        const btn = document.createElement('button');
+                        btn.id = `btn-tower-${tid}`;
+                        btn.className = `px-3 py-1.5 rounded-full text-xs font-bold border border-brand-border text-brand-muted hover:text-brand-text hover:border-brand-cobalt transition-all`;
+                        btn.onclick = () => this.setTowerFilter(tid);
+                        btn.textContent = name;
+                        container.appendChild(btn);
+                    });
+
+                    // Set header fields
+                    document.getElementById('meta-date').textContent = this.payload?.meta?.date || "14 de Junio de 2026";
+                    
+                    // Calcular puntuación de madurez aproximada
+                    const scores = this.payload?.tower_bottom_lines || [];
+                    if (scores.length > 0) {
+                        const avg = (scores.reduce((acc, curr) => acc + parseFloat(curr.score || 0), 0) / scores.length).toFixed(1);
+                        document.getElementById('meta-score').textContent = `${avg}/5.0`;
+                    }
+                }
+
+                setTowerFilter(towerId) {
+                    this.currentTower = towerId;
+                    
+                    // Resetear clases activas de los filtros
+                    const buttons = document.querySelectorAll('#tower-filters-container button, #btn-tower-ALL');
+                    buttons.forEach(b => {
+                        b.classList.remove('bg-brand-cobalt', 'text-white', 'border-brand-cobalt');
+                        b.classList.add('border-brand-border', 'text-brand-muted');
+                    });
+
+                    const activeBtn = document.getElementById(`btn-tower-${towerId}`);
+                    if (activeBtn) {
+                        activeBtn.classList.remove('border-brand-border', 'text-brand-muted');
+                        activeBtn.classList.add('bg-brand-cobalt', 'text-white', 'border-brand-cobalt');
+                    }
+
+                    this.renderMatrix();
+                    this.closeInspector();
+                }
+
+                setScenario(scenario) {
+                    this.currentScenario = scenario;
+                    
+                    // Resetear clases de botones escenario
+                    const scenButtons = document.querySelectorAll('[id^="btn-scen-"]');
+                    scenButtons.forEach(b => {
+                        b.classList.remove('bg-brand-cobalt', 'text-white', 'shadow-sm');
+                        b.classList.add('border-transparent', 'text-brand-muted');
+                    });
+
+                    const activeScenBtn = document.getElementById(`btn-scen-${scenario}`);
+                    if (activeScenBtn) {
+                        activeScenBtn.classList.remove('border-transparent', 'text-brand-muted');
+                        activeScenBtn.classList.add('bg-brand-cobalt', 'text-white', 'shadow-sm');
+                    }
+
+                    this.updateScenarioMetrics();
+                    this.renderMatrix();
+                    this.closeInspector();
+                }
+
+                updateScenarioMetrics() {
+                    const metrics = {
+                        "BASE": {
+                            capex: "1.4M €",
+                            opex: "280k €/año",
+                            duration: "30 meses",
+                            risk: "65% Reducción"
+                        },
+                        "NIS2": {
+                            capex: "1.8M €",
+                            opex: "340k €/año",
+                            duration: "18 meses",
+                            risk: "92% Reducción"
+                        },
+                        "FINOPS": {
+                            capex: "1.1M €",
+                            opex: "190k €/año",
+                            duration: "36 meses",
+                            risk: "45% Reducción"
+                        }
+                    };
+
+                    const current = metrics[this.currentScenario];
+                    document.getElementById('scen-capex').textContent = current.capex;
+                    document.getElementById('scen-opex').textContent = current.opex;
+                    document.getElementById('scen-duration').textContent = current.duration;
+                    document.getElementById('scen-risk').textContent = current.risk;
+                }
+
+                renderMatrix() {
+                    const colAsis = document.getElementById('col-asis-container');
+                    const colTobe = document.getElementById('col-tobe-container');
+                    const colTodo = document.getElementById('col-todo-container');
+
+                    if (!colAsis || !colTobe || !colTodo) return;
+
+                    colAsis.innerHTML = "";
+                    colTobe.innerHTML = "";
+                    colTodo.innerHTML = "";
+
+                    // Filtrar nodos por torre activa
+                    const filterFn = n => this.currentTower === "ALL" || n.tower_id === this.currentTower;
+
+                    const activeAsis = this.asisNodes.filter(filterFn);
+                    const activeTobe = this.tobeNodes.filter(filterFn);
+                    
+                    // El escenario muta la visualización del To-Do
+                    let activeTodo = this.todoNodes.filter(filterFn);
+                    if (this.currentScenario === "NIS2") {
+                        // Priorizar proyectos con PROG-SEC
+                        activeTodo.sort((a, b) => {
+                            if (a.program_code === "PROG-SEC" && b.program_code !== "PROG-SEC") return -1;
+                            if (a.program_code !== "PROG-SEC" && b.program_code === "PROG-SEC") return 1;
+                            return 0;
+                        });
+                    } else if (this.currentScenario === "FINOPS") {
+                        // Priorizar proyectos con PROG-GOV
+                        activeTodo.sort((a, b) => {
+                            if (a.program_code === "PROG-GOV" && b.program_code !== "PROG-GOV") return -1;
+                            if (a.program_code !== "PROG-GOV" && b.program_code === "PROG-GOV") return 1;
+                            return 0;
+                        });
+                    }
+
+                    // Renderizar Column 1 (AS-IS)
+                    activeAsis.forEach(n => {
+                        colAsis.appendChild(this.createCard(n, 'asis'));
+                    });
+
+                    // Renderizar Column 2 (TO-BE)
+                    activeTobe.forEach(n => {
+                        colTobe.appendChild(this.createCard(n, 'tobe'));
+                    });
+
+                    // Renderizar Column 3 (TO-DO)
+                    activeTodo.forEach(n => {
+                        colTodo.appendChild(this.createCard(n, 'todo'));
+                    });
+
+                    // Dibujar conexiones SVG después de dar tiempo al navegador para computar layouts
+                    setTimeout(() => this.drawConnections(), 100);
+                }
+
+                createCard(node, dimension) {
+                    const card = document.createElement('div');
+                    card.id = node.id;
+                    card.className = `card-node bg-brand-card p-5 rounded-2xl cursor-pointer relative shadow-sm border border-brand-border hover:border-brand-cobalt`;
+                    
+                    // Colores temáticos discretos de programa
+                    const progColors = {
+                        "PROG-SEC": "border-l-4 border-l-sky-500",
+                        "PROG-MOD": "border-l-4 border-l-amber-500",
+                        "PROG-OPS": "border-l-4 border-l-emerald-500",
+                        "PROG-GOV": "border-l-4 border-l-brand-cobalt"
+                    };
+                    const sidebarColor = progColors[node.program_code] || "border-l-4 border-l-brand-border";
+                    card.className += ` ${sidebarColor}`;
+
+                    let content = `
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-[8px] font-black uppercase px-2 py-0.5 rounded bg-brand-bg text-brand-muted">${node.tower_id}</span>
+                            <span class="text-[8px] font-extrabold uppercase tracking-wider text-brand-cobalt">${node.program_code || ""}</span>
+                        </div>
+                        <h4 class="text-xs font-bold text-brand-text mb-2 line-clamp-2">${node.title}</h4>
+                        <p class="text-[10px] text-brand-muted leading-relaxed line-clamp-3">${node.bullet1}</p>
+                    `;
+                    
+                    if (node.bullet2) {
+                        content += `<p class="text-[10px] text-brand-muted leading-relaxed line-clamp-3 mt-1.5 border-t border-brand-border pt-1.5 italic">${node.bullet2}</p>`;
+                    }
+
+                    card.innerHTML = content;
+
+                    // Eventos Hover para Iluminar Hilos de Linaje
+                    card.addEventListener('mouseenter', () => this.highlightLineage(node.id));
+                    card.addEventListener('mouseleave', () => this.resetLineage());
+                    
+                    // Evento Clic para Inspección Lateral
+                    card.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.openInspector(node, dimension);
+                    });
+
+                    return card;
+                }
+
+                highlightLineage(nodeId) {
+                    const pathsToHighlight = [];
+                    const nodesToHighlight = new Set([nodeId]);
+
+                    // Encontrar conexiones asociadas
+                    this.connections.forEach(conn => {
+                        if (conn.from_id === nodeId) {
+                            pathsToHighlight.push(conn);
+                            nodesToHighlight.add(conn.to_id);
+                            
+                            // Propagar hacia adelante
+                            this.connections.forEach(nextConn => {
+                                if (nextConn.from_id === conn.to_id) {
+                                    pathsToHighlight.push(nextConn);
+                                    nodesToHighlight.add(nextConn.to_id);
+                                }
+                            });
+                        }
+                        if (conn.to_id === nodeId) {
+                            pathsToHighlight.push(conn);
+                            nodesToHighlight.add(conn.from_id);
+                            
+                            // Propagar hacia atrás
+                            this.connections.forEach(prevConn => {
+                                if (prevConn.to_id === conn.from_id) {
+                                    pathsToHighlight.push(prevConn);
+                                    nodesToHighlight.add(prevConn.from_id);
+                                }
+                            });
+                        }
+                    });
+
+                    // Atenuar todas las tarjetas que no pertenezcan al linaje
+                    const allCards = document.querySelectorAll('.card-node');
+                    allCards.forEach(card => {
+                        if (nodesToHighlight.has(card.id)) {
+                            card.classList.add('active-path');
+                            card.classList.remove('dimmed');
+                        } else {
+                            card.classList.add('dimmed');
+                            card.classList.remove('active-path');
+                        }
+                    });
+
+                    // Resaltar los caminos SVG
+                    const paths = document.querySelectorAll('.lineage-path');
+                    paths.forEach(p => {
+                        const from = p.getAttribute('data-from');
+                        const to = p.getAttribute('data-to');
+                        
+                        const isMatched = pathsToHighlight.some(h => h.from_id === from && h.to_id === to);
+                        if (isMatched) {
+                            p.classList.add('active');
+                        } else {
+                            p.classList.remove('active');
+                        }
+                    });
+                }
+
+                resetLineage() {
+                    const allCards = document.querySelectorAll('.card-node');
+                    allCards.forEach(card => {
+                        card.classList.remove('dimmed', 'active-path');
+                    });
+
+                    const paths = document.querySelectorAll('.lineage-path');
+                    paths.forEach(p => {
+                        p.classList.remove('active');
+                    });
+                }
+
+                drawConnections() {
+                    const svg = document.getElementById('connections-svg');
+                    if (!svg) return;
+                    svg.innerHTML = "";
+
+                    const svgRect = svg.getBoundingClientRect();
+                    const container = document.getElementById('matrix-scroll-container');
+                    const scrollTop = container ? container.scrollTop : 0;
+                    const scrollLeft = container ? container.scrollLeft : 0;
+
+                    this.connections.forEach(conn => {
+                        const fromCard = document.getElementById(conn.from_id);
+                        const toCard = document.getElementById(conn.to_id);
+
+                        if (fromCard && toCard) {
+                            const fromRect = fromCard.getBoundingClientRect();
+                            const toRect = toCard.getBoundingClientRect();
+
+                            // Calcular puntos de entrada/salida (salida por el centro-derecha, entrada por centro-izquierda)
+                            const startX = fromRect.right - svgRect.left;
+                            const startY = fromRect.top + fromRect.height / 2 - svgRect.top;
+
+                            const endX = toRect.left - svgRect.left;
+                            const endY = toRect.top + toRect.height / 2 - svgRect.top;
+
+                            // Crear una curva de Bezier cúbica elegante
+                            const controlDist = Math.abs(endX - startX) * 0.4;
+                            const cp1X = startX + controlDist;
+                            const cp1Y = startY;
+                            const cp2X = endX - controlDist;
+                            const cp2Y = endY;
+
+                            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            path.setAttribute('d', `M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`);
+                            path.setAttribute('class', 'lineage-path');
+                            path.setAttribute('data-from', conn.from_id);
+                            path.setAttribute('data-to', conn.to_id);
+
+                            svg.appendChild(path);
+                        }
+                    });
+                }
+
+                openInspector(node, dimension) {
+                    const sidebar = document.getElementById('inspector-sidebar');
+                    const body = document.getElementById('inspector-content-body');
+                    const footer = document.getElementById('inspector-content-footer');
+
+                    if (!sidebar || !body || !footer) return;
+
+                    // Set dimension tag style
+                    const tags = {
+                        'asis': { label: 'Dimensión AS-IS', style: 'bg-red-600' },
+                        'tobe': { label: 'Dimensión TO-BE', style: 'bg-brand-cobalt' },
+                        'todo': { label: 'Dimensión TO-DO', style: 'bg-emerald-600' }
+                    };
+                    const tag = tags[dimension] || { label: 'Inspección', style: 'bg-brand-muted' };
+                    
+                    const tagEl = document.getElementById('inspector-dimension-tag');
+                    tagEl.textContent = tag.label;
+                    tagEl.className = `text-[9px] font-black uppercase tracking-[0.3em] px-2.5 py-1 rounded text-white ${tag.style}`;
+
+                    // Rellenar Cuerpo
+                    let bodyHtml = `
+                        <div>
+                            <span class="text-[9px] font-bold text-brand-muted uppercase">${node.tower_id} &bull; ${node.program_code}</span>
+                            <h2 class="text-2xl font-serif font-bold text-brand-text mt-1 leading-snug">${node.title}</h2>
+                        </div>
+                        
+                        <div class="border-t border-brand-border pt-4">
+                            <h4 class="text-xs font-extrabold uppercase tracking-wider text-brand-muted mb-2">Resumen Operativo</h4>
+                            <p class="text-xs text-brand-text leading-relaxed font-medium text-justify">${node.details || node.bullet1}</p>
+                        </div>
+                    `;
+
+                    if (dimension === 'asis' && node.citations && node.citations.length > 0) {
+                        bodyHtml += `
+                            <div class="border-t border-brand-border pt-4">
+                                <h4 class="text-xs font-extrabold uppercase tracking-wider text-brand-muted mb-2"><i class="fa-solid fa-quote-left text-red-400"></i> Evidencias Encontradas</h4>
+                                <ul class="space-y-3">
+                        `;
+                        node.citations.forEach(cit => {
+                            bodyHtml += `
+                                <li class="text-xs text-brand-text leading-relaxed bg-brand-bg p-3 rounded-lg border border-brand-border italic">
+                                    "${cit}"
+                                </li>
+                            `;
+                        });
+                        bodyHtml += `</ul></div>`;
+                    }
+
+                    if (dimension === 'todo') {
+                        bodyHtml += `
+                            <div class="border-t border-brand-border pt-4 grid grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-brand-muted mb-0.5">Inicio</h4>
+                                    <p class="text-sm font-bold text-brand-text">Mes ${node.start_month}</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-[10px] font-extrabold uppercase tracking-wider text-brand-muted mb-0.5">Duración</h4>
+                                    <p class="text-sm font-bold text-brand-text">${node.duration_months} meses</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    body.innerHTML = bodyHtml;
+
+                    // Rellenar Footer del Panel
+                    let footerHtml = "";
+                    if (dimension === 'todo') {
+                        footerHtml = `
+                            <div class="flex justify-between items-center bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                <div>
+                                    <p class="text-[9px] font-bold text-emerald-800 uppercase tracking-widest">Estado Mitigación</p>
+                                    <p class="text-xs font-semibold text-emerald-900 mt-0.5">Mitiga la Deuda Técnica del Grafo</p>
+                                </div>
+                                <i class="fa-solid fa-circle-check text-xl text-emerald-600"></i>
+                            </div>
+                        `;
+                    } else if (dimension === 'tobe') {
+                        footerHtml = `
+                            <div class="flex justify-between items-center bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                <div>
+                                    <p class="text-[9px] font-bold text-blue-800 uppercase tracking-widest">Garantía Estado del Arte</p>
+                                    <p class="text-xs font-semibold text-blue-900 mt-0.5">Certificado por SOTA Researcher 2026</p>
+                                </div>
+                                <i class="fa-solid fa-certificate text-xl text-blue-600"></i>
+                            </div>
+                        `;
+                    } else {
+                        footerHtml = `
+                            <div class="flex justify-between items-center bg-red-50 p-4 rounded-xl border border-red-100">
+                                <div>
+                                    <p class="text-[9px] font-bold text-red-800 uppercase tracking-widest">Nivel de Criticidad</p>
+                                    <p class="text-xs font-semibold text-red-900 mt-0.5">Prioridad de Resolución de Wave 1</p>
+                                </div>
+                                <i class="fa-solid fa-triangle-exclamation text-xl text-red-600"></i>
+                            </div>
+                        `;
+                    }
+                    footer.innerHTML = footerHtml;
+
+                    // Abrir Sidebar
+                    sidebar.classList.add('open');
+                }
+
+                closeInspector() {
+                    const sidebar = document.getElementById('inspector-sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            }
+
+            // Inicializar la interfaz una vez cargado el DOM
+            document.addEventListener('DOMContentLoaded', () => {
+                window.LineageExplorer = new LineageExplorerManager(payload, dtoState, towersDetail);
+            });
+
+        })();
+    </script>
+</body>
+</html>

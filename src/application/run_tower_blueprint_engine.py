@@ -17,8 +17,10 @@ from domain.prompts.blueprint_prompts import (
     get_closing_orchestrator_prompt,
     get_critic_prompt,
     get_pilar_architect_prompt,
+    get_gravity_profiler_prompt,
 )
 from domain.schemas.blueprint import (
+    ArchitecturalGravityProfile,
     BlueprintPayload,
     OrchestratorBlueprintDraft,
     PillarBlueprintDraft,
@@ -324,6 +326,43 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     except Exception:
         model_name = "gemini-2.5-pro"
 
+    # --- DYNAMIC CONTEXT PROFILER (TIER 1 GRAVITY RESOLUTION) ---
+    print("🔎 [Pre-flight] Calculando el Perfil de Gravedad Arquitectónica del cliente...")
+    try:
+        profiler_agent = Agent(
+            name="gravity_profiler",
+            model=model_name,
+            instruction="Eres un analista experto que genera perfiles JSON matemáticos basados en contexto. Responde siempre con el JSON pedido.",
+            output_schema=ArchitecturalGravityProfile,
+        )
+        app_profiler = AdkApp(agent=profiler_agent)
+        
+        gravity_prompt = get_gravity_profiler_prompt(intel_str, client_name)
+        gravity_profile = await run_agent(
+            app_profiler,
+            user_id="gravity_profiler_agent",
+            message=gravity_prompt,
+            schema=ArchitecturalGravityProfile,
+        )
+        
+        if gravity_profile:
+            gravity_constraint = (
+                f"\n\n⚠️ MANDATO DE GRAVEDAD ARQUITECTÓNICA (COMPLIANCE STRICTO):\n"
+                f"El análisis de este cliente dicta la siguiente gravedad matemática:\n"
+                f"- Peso On-Premise Obligatorio: {gravity_profile.get('on_premise_weight', 0.0) * 100}%\n"
+                f"- Viabilidad Cloud-Native: {gravity_profile.get('cloud_native_weight', 0.0) * 100}%\n"
+                f"- Rigurosidad Regulatoria: {gravity_profile.get('regulatory_strictness', 'Media')}\n"
+                f"- Tolerancia a Vendor Lock-in: {gravity_profile.get('vendor_lockin_tolerance', 'Media')}\n"
+                f"DIRECTIVA DE DISEÑO: {gravity_profile.get('strategic_directive', 'Adoptar mejor esfuerzo tecnológico')}\n\n"
+                f"DEBES respetar esta gravedad de forma absoluta. Prohibido proponer arquitecturas Cloud-Native "
+                f"si el peso On-Premise o la rigurosidad regulatoria lo desaconsejan."
+            )
+            intel_str += gravity_constraint
+            print(f"✅ Perfil de Gravedad Calculado: {gravity_profile.get('strategic_directive')}")
+    except Exception as e:
+        print(f"⚠️ Error calculando Perfil de Gravedad: {e}. Se usará contexto estándar.")
+    # -------------------------------------------------------------
+
     # Agrupar respuestas por pilar
     pillars_map = {}
     tower_def_path = resolve_tower_definition_file(tower_id)
@@ -426,6 +465,37 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             "No se pudo generar ningún análisis de pilar para el blueprint."
         )
 
+    # --- DETERMINISTIC BYPASS DEFENSIVE RE-MAPPING (MANDATORY QUALITY GATE) ---
+    # Asegura que las iniciativas técnicas detalladas SOTA se inyecten ANTES del cierre
+    # para que el orquestador genere el roadmap con los nombres reales.
+    try:
+        if findings_path.exists():
+            refined_findings = json.loads(findings_path.read_text(encoding="utf-8-sig"))
+    except Exception as read_err:
+        print(f"⚠️ Warning loading findings.json for final mapping: {read_err}")
+
+    if "pillars_analysis" in blueprint_payload:
+        for p_analysis in blueprint_payload["pillars_analysis"]:
+            p_id = p_analysis.get("pilar_id")
+            for p_find in refined_findings.get("pillar_findings", []):
+                if p_find["pillar_id"] == p_id:
+                    initiatives = p_find.get("candidate_initiatives", [])
+                    if initiatives:
+                        sota_projects = []
+                        for idx, init in enumerate(initiatives):
+                            sota_projects.append({
+                                "name": init.get("title", f"Iniciativa Estratégica {idx + 1}"),
+                                "transformation_typology": init.get("typology", "Core Modernization"),
+                                "business_case": init.get("business_case", ""),
+                                "tech_objective": init.get("rationale", "Evolución técnica."),
+                                "deliverables": init.get("deliverables", []),
+                                "sizing": "L",
+                                "duration": init.get("horizon", "Sin calendario detallado"),
+                                "program_id": None
+                            })
+                        p_analysis["projects_todo"] = sota_projects
+                    break
+
     # AGENTE DE CIERRE: SNAPSHOT Y ROADMAP
     print("    -> Generando Snapshot Ejecutivo y Roadmap Estratégico...")
     closing_prompt = get_closing_orchestrator_prompt(
@@ -460,6 +530,37 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     from infrastructure.governance import StructuralIntegrityGate
 
                     StructuralIntegrityGate.verify_dossier_logic(closing_data)
+                    
+                    # --- MATHEMATICAL TRIBUNAL (REFLECTION LOOP VALIDATION) ---
+                    # Extraer nombres reales de proyectos para validar dependencias y roadmap
+                    valid_project_names = [
+                        proj["name"]
+                        for pilar in blueprint_payload.get("pillars_analysis", [])
+                        for proj in pilar.get("projects_todo", [])
+                    ]
+                    
+                    # Validar dependencias inventadas (Gap 2)
+                    invalid_deps = []
+                    for dep in closing_data.get("external_dependencies", []):
+                        if dep.get("depends_on") not in valid_project_names and dep.get("depends_on") not in ["Independiente", "Ninguna"]:
+                            invalid_deps.append(dep.get("depends_on"))
+                    if invalid_deps:
+                        raise ValueError(f"HAS INVENTADO DEPENDENCIAS. Los siguientes proyectos habilitadores no existen en la lista de proyectos aprobados: {invalid_deps}. Solo puedes usar proyectos reales.")
+                        
+                    # Validar roadmap inventado
+                    invalid_roadmap = []
+                    for wave in closing_data.get("roadmap", []):
+                        for proj in wave.get("projects", []):
+                            if proj not in valid_project_names:
+                                invalid_roadmap.append(proj)
+                    if invalid_roadmap:
+                        raise ValueError(f"HAS INVENTADO PROYECTOS EN EL ROADMAP. Los siguientes proyectos no existen en la lista de proyectos aprobados: {invalid_roadmap}.")
+
+                    # Validar número de principios (Gap 1)
+                    principles = closing_data.get("design_principles", [])
+                    if len(principles) > 10:
+                        raise ValueError(f"Demasiados principios de diseño ({len(principles)}). Condénsalos en un máximo de 5 a 7 principios maestros transversales para toda la torre.")
+
                     blueprint_payload.update(closing_data)
                     break
             except Exception as e:
@@ -483,6 +584,31 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         blueprint_payload=blueprint_payload,
         tower_id=tower_id,
     )
+
+    # --- SOVEREIGN POLICY ENGINE COMPILER (ZERO-DEFECT QUALITY GATE) ---
+    # Analiza el Grafo y peina las incoherencias lógicas de forma determinista
+    print("🛡️ [Sovereign QA] Ejecutando el Motor de Políticas Arquitectónicas...")
+    try:
+        from infrastructure.policy_engine import SovereignPolicyEngine
+        engine = SovereignPolicyEngine(graph)
+        blueprint_payload = engine.compile(blueprint_payload)
+    except Exception as policy_err:
+        print(f"⚠️ Error ejecutando Sovereign Policy Engine: {policy_err}")
+
+    # --- DEFENSIVE CLIENT NAME SANITIZATION (AIRTIGHT QUALITY GATE) ---
+    # Elimina placeholders bracketados de la IA como [Cliente] o [CLIENTE]
+    def scrub_client_placeholders(obj, name):
+        if isinstance(obj, dict):
+            return {k: scrub_client_placeholders(v, name) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [scrub_client_placeholders(x, name) for x in obj]
+        elif isinstance(obj, str):
+            for pl in ["[Cliente]", "[CLIENTE]", "[cliente]", "[CLIENT]", "[client]"]:
+                obj = obj.replace(pl, name)
+            return obj
+        return obj
+
+    blueprint_payload = scrub_client_placeholders(blueprint_payload, client_name)
 
     # Validación Final del Contrato con Pydantic
     try:

@@ -116,6 +116,18 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
+    # 5. Renderizar Lineage Matrix Explorer Portal (Digital Twin)
+    run_module_step(
+        [
+            python_bin,
+            "-m",
+            "adapters.render_lineage_portal",
+            client_name,
+        ],
+        "Render Lineage Matrix Explorer Portal",
+        env,
+    )
+
     print(f"\nInforme Global Estratégico finalizado: {output_path}")
 
 

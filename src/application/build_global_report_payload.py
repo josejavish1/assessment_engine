@@ -317,13 +317,28 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         )
 
     # EXECUTIVE REFINEMENT (TIER 1 OVERRIDE)
-    if client_name.lower() == "redeia":
-        payload["executive_summary"]["headline"] = (
-            "Redeia: Catalizador de la Doble Transición - Estrategia de Modernización 2026"
-        )
-        payload["executive_summary"]["narrative"] = (
-            "Redeia se encuentra en una coyuntura estratégica crítica, actuando como el catalizador de la transición ecológica y digital en España. El presente assessment revela un Índice de Madurez Tecnológica Global de 3.0/5.0, caracterizado por un núcleo operacional robusto pero condicionado por silos tecnológicos y una deuda técnica acumulada en procesos manuales. La transición hacia el modelo H2 (Hyperautomation) es el imperativo para habilitar el Plan Estratégico 2025-2030. La arquitectura Sovereign DTO propuesta orquesta una transformación en tres Waves, priorizando la resiliencia cibernética (NIS2) y la industrialización de la plataforma Azure (Círculo de Datos) como cimientos ineludibles para la escalabilidad del negocio y la excelencia operativa exigida a un operador de infraestructuras críticas nacionales."
-        )
+    # Extraemos el headline y la narrativa de nivel C de forma dinámica si están definidos en las extensiones del cliente
+    intel_headline = None
+    intel_narrative = None
+    
+    if intelligence_path.exists():
+        try:
+            raw_intel = load_client_intelligence(intelligence_path)
+            extensions = raw_intel.get("extensions", {}) if isinstance(raw_intel, dict) else {}
+            exec_sum = extensions.get("executive_summary", {}) if isinstance(extensions, dict) else {}
+            if isinstance(exec_sum, dict):
+                intel_headline = exec_sum.get("headline")
+                intel_narrative = exec_sum.get("narrative")
+        except Exception:
+            pass
+
+    if intel_headline:
+        payload["executive_summary"]["headline"] = intel_headline
+    else:
+        payload["executive_summary"]["headline"] = f"{client_name}: Estrategia de Modernización de Infraestructura"
+
+    if intel_narrative:
+        payload["executive_summary"]["narrative"] = intel_narrative
 
     return payload
 
