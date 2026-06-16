@@ -277,7 +277,13 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
             "stage": "H1", "label": "Estandarización", "rationale": "Fallback estándar."
         }
 
-    industry_str = "Energy & Critical Infrastructure" if "redeia" in client_name.lower() else "Broadcast Infrastructure"
+    # SANEAMIENTO SECTORIAL: Desacoplar industrias hardcodeadas (Punto 1)
+    if "redeia" in client_name.lower():
+        industry_str = "Energy & Critical Infrastructure"
+    elif "eurovision" in client_name.lower():
+        industry_str = "Broadcast Infrastructure"
+    else:
+        industry_str = "Enterprise & Infrastructure Technology"
 
     final_json = {
         "version": "3.0", "client_name": client_name,

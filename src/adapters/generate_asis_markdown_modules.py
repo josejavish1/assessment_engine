@@ -1,0 +1,351 @@
+import os
+import json
+import csv
+import sys
+from pathlib import Path
+
+def generate_modules(payload_path: str):
+    payload_path_obj = Path(payload_path)
+    tower_dir = payload_path_obj.parent
+    modules_dir = tower_dir / "asis_modules"
+    modules_dir.mkdir(parents=True, exist_ok=True)
+    
+    print(f"📂 Iniciando Extracción de Módulos Docs-as-Code en: {modules_dir}")
+    
+    # 1. Cargar payloads técnicos del blueprint
+    with open(payload_path, 'r', encoding='utf-8-sig') as f:
+        data = json.load(f)
+        
+    tower_meta = data.get("document_meta", {})
+    tower_name = tower_meta.get("tower_name", "Desconocida")
+    tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
+    client_name = tower_meta.get("client_name", "Cliente")
+    pillars = data.get("pillars_analysis", [])
+    snap = data.get("executive_snapshot", {})
+    cca = data.get("cross_capabilities_analysis", {})
+    
+    # Cargar approved_annex de síntesis si existe
+    annex_path = tower_dir / f"approved_annex_{tower_id.lower()}.template_payload.json"
+    annex_data = {}
+    if annex_path.exists():
+        with open(annex_path, 'r', encoding='utf-8-sig') as af:
+            try:
+                annex_data = json.load(af)
+            except Exception:
+                pass
+            
+    exec_sum = annex_data.get("executive_summary", {})
+    score_profile = annex_data.get("pillar_score_profile", {})
+    
+    # Cargar client_intelligence de OSINT si existe
+    client_intel_path = payload_path_obj.parents[1] / "client_intelligence.json"
+    intel = {}
+    if client_intel_path.exists():
+        with open(client_intel_path, "r", encoding="utf-8-sig") as cif:
+            try:
+                intel = json.load(cif)
+            except Exception:
+                pass
+    business_context = intel.get("business_context", {})
+    ceo_agenda_raw = business_context.get("ceo_agenda", {}).get("summary", "")
+
+    # SOTA 2026: Cargar dinámicamente la definición de la torre y tejer los KPIs en un párrafo fluido (Sin sub-bullets)
+    pillars_list_md = ""
+    tower_def_path = Path("engine_config/towers") / tower_id / f"tower_definition_{tower_id.lower()}.json"
+    if not tower_def_path.exists():
+        # Fallback si no coincide minúsculas/mayúsculas
+        tower_def_path = Path("engine_config/towers") / tower_id / f"tower_definition_{tower_id}.json"
+        
+    if tower_def_path.exists():
+        with open(tower_def_path, "r", encoding="utf-8-sig") as tdf:
+            try:
+                t_def = json.load(tdf)
+                for p in t_def.get("pillars", []):
+                    p_name = p.get("pillar_name", "Pilar")
+                    p_weight = p.get("weight_pct", "0")
+                    
+                    # Extraer nombres de KPIs para tejerlos de forma natural
+                    kpi_names = []
+                    for kpi in p.get("kpis", []):
+                        k_name = kpi.get("kpi_name", "KPI").strip()
+                        # Normalizar minúsculas al vuelo si no es acrónimo
+                        if k_name and not k_name.isupper() and len(k_name) > 4:
+                            k_name = k_name[0].lower() + k_name[1:]
+                        kpi_names.append(k_name)
+                        
+                    # Tejer los KPIs de forma gramaticalmente correcta (ej: a, b y c)
+                    if len(kpi_names) > 1:
+                        kpi_str = ", ".join(kpi_names[:-1]) + " y " + kpi_names[-1]
+                    elif kpi_names:
+                        kpi_str = kpi_names[0]
+                    else:
+                        kpi_str = "las capacidades operativas del pilar"
+                        
+                    pillars_list_md += f"* **{p_name} (Peso: {p_weight}%)**: Evalúa de manera integral la madurez operativa y los baselines técnicos de la infraestructura, analizando críticamente factores clave como {kpi_str}.\n"
+            except Exception as e:
+                print(f"⚠️ Error parsing tower definition: {e}")
+                
+    if not pillars_list_md:
+        # Fallback genérico mínimo seguro si falla el JSON
+        for p in pillars:
+            p_name = p.get('pilar_name', 'Pilar')
+            pillars_list_md += f"* **{p_name}**: Evaluación técnica y análisis de brechas operativas en la torre.\n"
+
+    # ---------------------------------------------------------
+    # APÉNDICE B: OBJETIVO, ALCANCE Y METODOLOGÍA (01_introduccion.md)
+    # SOTA: Movido al final del documento como Apéndice B (McKinsey Style)
+    # ---------------------------------------------------------
+    intro_content = f"""# Objetivo, Alcance y Metodología del Assessment
+
+## Objetivo y Alcance
+Este documento técnico anexo detalla de manera exhaustiva el diagnóstico de situación actual (AS-IS) de la torre **{tower_name}** para **{client_name}**. El objetivo principal es identificar y registrar de manera estructurada las brechas operativas, riesgos de continuidad y obsolescencias tecnológicas dentro del perímetro de evaluación.
+
+El alcance técnico incluye el inventario de infraestructura y la topología operativa, restringida estrictamente a los sistemas activos de producción del cliente, evaluando el nivel de madurez operativa basándose en evidencias de auditoría recopiladas empíricamente.
+
+## Proceso de Ejecución del Assessment
+La información base para este análisis ha sido recopilada de manera sistemática a partir de las sesiones de contexto de arquitectura mantenidas con los responsables operativos de {client_name}, así como de las respuestas detalladas proporcionadas por los equipos técnicos en los cuestionarios de autoevaluación de la torre.
+
+## Metodología de Valoración de Madurez
+La madurez se califica en una escala analítica del 1,00 al 5,00, donde cada nivel determina un estadio de control:
+* **Nivel 1 - Inicial (1.0-1.8):** Prácticas ad-hoc, inestables o dependientes del esfuerzo heroico de personas clave.
+* **Nivel 2 - Básico (1.8-2.6):** Prácticas funcionales de manera parcial o irregular, sin consistencia organizativa.
+* **Nivel 3 - Estandarizado (2.6-3.4):** Procesos formalizados e implantados de manera coherente en toda la organización.
+* **Nivel 4 - Optimizado (3.4-4.2):** Capacidades industrializadas, gobernadas predictivamente y sustentadas en métricas.
+* **Nivel 5 - Avanzado (4.2-5.0):** Procesos dinámicos impulsados por automatización inteligente y mejora continua.
+
+### Capacidades Evaluadas y Cálculo del Score
+El nivel de madurez técnica y el score global de la torre se consolidan mediante el promedio ponderado de las calificaciones obtenidas en las siguientes dimensiones y KPIs evaluados:
+
+{pillars_list_md}
+
+## Metodología Cuantitativa de Riesgos (FAIR)
+Este diagnóstico técnico aplica el estándar internacional **O-FAIR (Factor Analysis of Information Risk)** del *The Open Group* para modelar, cuantificar y priorizar la exposición al riesgo de infraestructura en términos financieros reales.
+
+Para evitar la **\"Falacia de los Promedios\"** (donde las estimaciones fijas e individuales distorsionan el riesgo real), el motor de políticas de la plataforma aplica un algoritmo de simulación actuarial de **Monte Carlo de 10.000 iteraciones** para cada hallazgo detectado, basado en los siguientes principios científicos:
+
+1. **Estimaciones de Tres Puntos (Incertidumbre):** Cada nivel cualitativo de la auditoría (escala 1 a 5) se traduce a un rango dinámico definido por tres parámetros: **Mínimo, Más Probable y Máximo**.
+   - Frecuencia de Amenaza (TEF): Mapea la probabilidad anualizada de exposición (de 0,1 a 24 eventos de amenaza al año).
+   - Vulnerabilidad (Vuln): Mapea la probabilidad de éxito de la amenaza según el nivel de controles (de 5% a 100%).
+   - Magnitud de Pérdida (LM): Mapea el impacto financiero directo e indirecto (laboral, cumplimiento, remediación) desde 100 € hasta 500.000 € por incidente.
+2. **Modelado con Curvas de Probabilidad Beta-PERT:** Para cada una de las 10.000 simulaciones de la simulación, el motor toma muestras aleatorias de las curvas de densidad de probabilidad continua **Beta-PERT** correspondientes a cada parámetro. Esto permite capturar el comportamiento realista de los incidentes tecnológicos (donde existe una \"larga cola\" de costes de remediación elevados hacia la derecha).
+3. **Cálculo del Exposición Anualizada de Pérdida (ALE):** En cada iteración se realiza un sorteo de Bernoulli basado en la vulnerabilidad muestreada. Si el evento de pérdida se materializa, el coste anualizado para esa simulación es el producto de la frecuencia por la pérdida promedio:
+   **ALE = Frecuencia de Amenaza x Vulnerabilidad x Magnitud de Pérdida**
+4. **Métricas de Convergencia Estadística (ALE y P90):** El valor final de **ALE Proyectado** reflejado en las tablas detalladas del informe representa la **media estadística de pérdida resultante de esas 10.000 iteraciones independientes**. Adicionalmente, el sistema calcula la métrica **P90 (Percentil 90)** para alertar a la dirección sobre la exposición financiera máxima esperada en el peor escenario razonable de negocio.
+"""
+    with open(modules_dir / "01_introduccion.md", "w", encoding="utf-8") as f_out:
+        f_out.write(intro_content.strip())
+
+    # ---------------------------------------------------------
+    # MÓDULO 2: RESUMEN EJECUTIVO (02_resumen_ejecutivo.md)
+    # SOTA: Renombrados los apartados a lenguaje sumamente formal y consultivo
+    # ---------------------------------------------------------
+    re_content = []
+    re_content.append("# Resumen Ejecutivo y Contexto de Negocio\n")
+    
+    re_content.append("## Diagnóstico de Situación")
+    if exec_sum:
+        raw_headline = exec_sum.get('headline', 'Diagnóstico General')
+        clean_headline = raw_headline.replace(" (Bottom Line)", "").replace("(Bottom Line)", "").strip()
+        re_content.append(f"**{clean_headline}**\n")
+        
+        # SOTA 2026: Separación MECE estricta. Extraemos solo el primer párrafo de diagnóstico técnico,
+        # enviando las visiones habilitadoras de futuro al siguiente apartado estratégico.
+        body_text = exec_sum.get("summary_body", "")
+        if "\n\n" in body_text:
+            body_text = body_text.split("\n\n")[0].strip()
+        re_content.append(body_text)
+    elif snap:
+        re_content.append(snap.get("bottom_line", ""))
+        
+    if ceo_agenda_raw:
+        re_content.append("\n## Impacto y Relevancia Estratégica para el Negocio")
+        re_content.append(ceo_agenda_raw)
+        
+    if exec_sum and exec_sum.get("key_business_impacts"):
+        re_content.append("\n## Principales Impactos de Negocio")
+        for item in exec_sum.get("key_business_impacts", []):
+            re_content.append(f"* {item}")
+    elif snap and snap.get("structural_risks"):
+        re_content.append("\n## Riesgos de Negocio más Materiales")
+        for r in snap.get("structural_risks", []):
+            re_content.append(f"* {r}")
+            
+    with open(modules_dir / "02_resumen_ejecutivo.md", "w", encoding="utf-8") as f_out:
+        f_out.write("\n".join(re_content).strip())
+
+    # ---------------------------------------------------------
+    # MÓDULO 3: DESCRIPCIÓN DE PLATAFORMA (03_descripcion_plataforma.md)
+    # ---------------------------------------------------------
+    desc_content = f"""# Descripción de la Plataforma de Infraestructura Actual
+
+A continuación, se define de manera consolidada y unificada el inventario técnico, arquitectura y estado operativo general del entorno. Esta descripción unifica el contexto tecnológico general para evitar repeticiones innecesarias entre dominios:
+
+{pillars[0].get("asis_architecture_description", "Descripción técnica de plataforma no disponible.") if pillars else ""}
+"""
+    with open(modules_dir / "03_descripcion_plataforma.md", "w", encoding="utf-8") as f_out:
+        f_out.write(desc_content.strip())
+
+    # ---------------------------------------------------------
+    # MÓDULO 4: MATRIZ DE MADUREZ EN CSV (04_matriz_madurez.csv)
+    # ---------------------------------------------------------
+    csv_mat_path = modules_dir / "04_matriz_madurez.csv"
+    annex_pillars_map = {}
+    if score_profile:
+        for ap in score_profile.get("pillars", []):
+            annex_pillars_map[ap.get("pillar_label")] = ap.get("executive_reading")
+            
+    with open(csv_mat_path, 'w', newline='', encoding='utf-8') as cf_out:
+        writer = csv.writer(cf_out, delimiter=';')
+        writer.writerow(["Pilar / Capacidad Evaluada", "Score AS-IS", "Análisis de Brecha y Justificación de Nota"])
+        
+        for p in pillars:
+            p_name = p.get("pilar_name", "Pilar")
+            justification = annex_pillars_map.get(p_name)
+            if not justification:
+                desc = p.get("asis_description", p.get("asis_architecture_description", "No descripto."))
+                justification = desc.split(".")[0] + "." if desc else "Evaluado con éxito."
+                
+            writer.writerow([
+                p_name,
+                f"{p.get('score', 0.0):.2f}",
+                justification
+            ])
+
+    # ---------------------------------------------------------
+    # MÓDULO 5: ANALISIS TRANSVERSAL DE LA PLATAFORMA (05_transversal.md)
+    # ---------------------------------------------------------
+    # SOTA: Cosechar todas las deudas, paradigmas y debilidades transversales del Blueprint
+    trans_content = []
+    trans_content.append("# Análisis Transversal de Capacidades\n")
+    
+    if cca:
+        trans_content.append("## El Paradigma de Transformación")
+        trans_content.append(cca.get("transformation_paradigm", "No definido.") + "\n")
+        
+        trans_content.append("## Deuda Técnica Crítica")
+        trans_content.append(cca.get("critical_technical_debt", "No definido.") + "\n")
+        
+        trans_content.append("## Patrones Comunes de Deficiencia")
+        def_patterns = cca.get("common_deficiency_patterns", [])
+        if isinstance(def_patterns, str):
+            trans_content.append(def_patterns + "\n")
+        else:
+            for pat in def_patterns:
+                trans_content.append(f"* {pat}")
+            trans_content.append("")
+            
+    with open(modules_dir / "05_transversal.md", "w", encoding="utf-8") as f_out:
+        f_out.write("\n".join(trans_content).strip())
+
+    # ---------------------------------------------------------
+    # MÓDULO 6: REGISTRO DE RIESGOS EN CSV (06_matriz_riesgos_fair.csv)
+    # ---------------------------------------------------------
+    # SOTA: Exportar en formato de 3 columnas de alta gama del Blueprint
+    csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
+    with open(csv_risks_path, 'w', newline='', encoding='utf-8') as cf_out:
+        writer = csv.writer(cf_out, delimiter=';')
+        writer.writerow(["Capacidad Técnica Evaluada", "Diagnóstico Técnico y Evidencias de Auditoría (Audit RAG)", "Riesgo de Negocio e Impacto Operativo", "TEF", "LM", "ALE"])
+        
+        for pilar in pillars:
+            p_name = pilar.get("pilar_name", "General")
+            for hc in pilar.get("health_check_asis", []):
+                # Normalizar llaves
+                finding = hc.get("finding", hc.get("risk_observed", "No descripto."))
+                evidence = hc.get("literal_evidence", "No se aportó evidencia literal.")
+                biz_risk = hc.get("business_risk", hc.get("impact", "No descripto."))
+                
+                # Combinar hallazgo y cita de evidencia
+                finding_full = f"{finding}\n\nEvidencia Forense Literal (Audit RAG):\n\"{evidence}\""
+                
+                tef = hc.get("threat_event_frequency", 0.0)
+                lm = hc.get("loss_magnitude", 0.0)
+                ale = hc.get("fair_ale_score", 0.0)
+                
+                writer.writerow([
+                    f"{p_name} - {hc.get('target_state', hc.get('capability', 'Capacidad'))}",
+                    finding_full,
+                    biz_risk,
+                    f"{tef:.1f}",
+                    f"{lm:.1f}",
+                    f"{ale:.0f}"
+                ])
+
+    # ---------------------------------------------------------
+    # MÓDULO 7: CONCLUSIONES Y BRECHAS (07_conclusiones.md)
+    # ---------------------------------------------------------
+    conc_content = []
+    conc_content.append("# Conclusiones, Brechas y Coste de Inacción\n")
+    
+    # SOTA: Añadimos el AS-IS Resumido en prosa en las conclusiones
+    conc_content.append("## Resumen de Situación (AS-IS Consolidado)")
+    asis_resumido = f"El estado actual de la infraestructura de {tower_name}, subproducto de una evolución orgánica para dar servicio a una operación crítica, ha alcanzado un punto de inflexión. La plataforma se caracteriza por una fragmentación estructural, herramientas y operaciones en silos discretos para los entornos on-premise y cloud, y una dependencia sistémica de flujos de aprobación y procesos manuales para la provisión y el ciclo de vida."
+    conc_content.append(asis_resumido + "\n")
+    
+    conc_content.append("## Fortalezas y Brechas Clave (Diagnóstico Rápido)")
+    conc_content.append("A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:")
+    
+    # Las fortalezas y brechas se exportarán como listas en conclusiones, para ser convertidas en la tabla a 2 columnas
+    strengths_list = []
+    msg_strength = exec_sum.get("message_strength", "")
+    if msg_strength:
+        strengths_list.append(msg_strength)
+    benefits = snap.get("operational_benefits", [])
+    if isinstance(benefits, str):
+        strengths_list.append(benefits)
+    else:
+        strengths_list.extend(benefits)
+        
+    gaps_list = []
+    msg_gap = exec_sum.get("message_gap", "")
+    if msg_gap:
+        gaps_list.append(msg_gap)
+    weaknesses = snap.get("structural_risks", [])
+    if isinstance(weaknesses, str):
+        gaps_list.append(weaknesses)
+    else:
+        gaps_list.extend(weaknesses)
+        
+    # Guardamos de forma especial para que el compilador las detecte
+    conc_content.append("--- TABLA COMPARATIVA FORTALEZAS VS BRECHAS ---")
+    conc_content.append("FORTALEZAS_CLAVE:")
+    for s in strengths_list:
+        conc_content.append(f"* {s}")
+    conc_content.append("BRECHAS_CLAVE:")
+    for g in gaps_list:
+        conc_content.append(f"* {g}")
+    conc_content.append("--- FIN TABLA --- \n")
+        
+    # SOTA 2026: Saneamiento regulatorio universal (Punto 2)
+    doc_lang = tower_meta.get("language", "es").lower()
+    reg_frameworks = tower_meta.get("regulatory_frameworks")
+    if not reg_frameworks:
+        reg_frameworks = "ENS y NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
+        
+    conc_content.append("## Implicaciones Operativas Clave")
+    conc_content.append("* **Cuellos de botella sistémicos:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.")
+    conc_content.append("* **Detección tardía de fallas:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de incidentes críticos.")
+    conc_content.append(f"* **Riesgo de configuration drift:** El mantenimiento manual de las configuraciones dificulta demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.\n")
+        
+    conc_content.append("## Coste de Inacción (Do Nothing) y Siguientes Pasos")
+    msg_bottle = exec_sum.get("message_bottleneck", "")
+    if msg_bottle:
+        conc_content.append(msg_bottle + "\n")
+        
+    coi = snap.get("cost_of_inaction", [])
+    if isinstance(coi, str):
+        conc_content.append(coi + "\n")
+    else:
+        for item in coi:
+            conc_content.append(f"* {item}")
+            
+    with open(modules_dir / "07_conclusiones.md", "w", encoding="utf-8") as f_out:
+        f_out.write("\n".join(conc_content).strip())
+        
+    print(f"🎉 ¡Módulos Docs-as-Code extraídos con éxito en: {modules_dir}!")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Uso: python generate_asis_markdown_modules.py <blueprint_payload.json>")
+        sys.exit(1)
+    generate_modules(sys.argv[1])

@@ -1,8 +1,10 @@
+import os
 import json
 import uuid
 import re
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
+from pathlib import Path
 from infrastructure.epistemic_graph import EpistemicGraph
 
 class BaseSovereignPolicy(ABC):
@@ -58,6 +60,9 @@ class DeduplicationPolicy(BaseSovereignPolicy):
         
         # Check if we are in Tower 2
         tower_code = payload.get("document_meta", {}).get("tower_code", "")
+        doc_lang = payload.get("document_meta", {}).get("language", "es").lower()
+        cloud_provider = payload.get("document_meta", {}).get("cloud_provider", "AWS")
+        
         if tower_code == "T2":
             for p in pillars:
                 p_id = p.get("pilar_id")
@@ -69,25 +74,42 @@ class DeduplicationPolicy(BaseSovereignPolicy):
                             platform_eng_projects.append(proj)
                             p["projects_todo"].remove(proj) # Remove duplicate from other pillars
 
-            # If duplicates were found and removed, we inject the consolidated master into T2.P4
+            # If duplicates were found and removed, we inject the consolidated master into T2.P4 (Localized)
             if platform_eng_projects:
                 for p in pillars:
                     if p.get("pilar_id") == target_pilar_id:
-                        unified_project = {
-                            "node_id": str(uuid.uuid4()),
-                            "name": "Programa Estratégico de Platform Engineering y Autoservicio Híbrido",
-                            "transformation_typology": "Automation & Platform Engineering",
-                            "business_case": "Reducción de la carga cognitiva de los equipos de desarrollo y operaciones mediante la unificación de portales y catálogos sobre AWS.",
-                            "tech_objective": "Consolidar las iniciativas de cómputo híbrido, landing zones y provisión automática bajo una única Plataforma Interna de Desarrollo (IDP) unificada y autoservicio.",
-                            "deliverables": [
-                                "Definición del catálogo de servicios unificado.",
-                                "Integración de las APIs de provisión de AWS EKS y Landing Zones.",
-                                "Despliegue del portal central de Autoservicio para el desarrollador."
-                            ],
-                            "sizing": "XL",
-                            "duration": "Horizonte 1 (0-6 meses)",
-                            "program_id": None
-                        }
+                        if doc_lang == "es":
+                            unified_project = {
+                                "node_id": str(uuid.uuid4()),
+                                "name": "Programa Estratégico de Platform Engineering y Autoservicio Híbrido",
+                                "transformation_typology": "Automation & Platform Engineering",
+                                "business_case": f"Reducción de la carga cognitiva de los equipos de desarrollo y operaciones mediante la unificación de portales y catálogos sobre {cloud_provider}.",
+                                "tech_objective": f"Consolidar las iniciativas de cómputo híbrido, landing zones y provisión automática bajo una única Plataforma Interna de Desarrollo (IDP) unificada y autoservicio.",
+                                "deliverables": [
+                                    "Definición del catálogo de servicios unificado.",
+                                    f"Integración de las APIs de provisión de {cloud_provider} Landing Zones.",
+                                    "Despliegue del portal central de Autoservicio para el desarrollador."
+                                ],
+                                "sizing": "XL",
+                                "duration": "Horizonte 1 (0-6 meses)",
+                                "program_id": None
+                            }
+                        else:
+                            unified_project = {
+                                "node_id": str(uuid.uuid4()),
+                                "name": "Platform Engineering and Hybrid Self-Service Strategic Program",
+                                "transformation_typology": "Automation & Platform Engineering",
+                                "business_case": f"Reduction of developer cognitive load through unified catalogs and self-service portals over {cloud_provider}.",
+                                "tech_objective": "Consolidate compute, landing zone, and automated provisioning capabilities under a single Internal Developer Platform (IDP).",
+                                "deliverables": [
+                                    "Unified service catalog definition.",
+                                    f"API integration for {cloud_provider} Landing Zone provisioning.",
+                                    "Developer Self-Service portal deployment."
+                                ],
+                                "sizing": "XL",
+                                "duration": "Horizon 1 (0-6 months)",
+                                "program_id": None
+                            }
                         # Replace or append
                         p["projects_todo"] = [unified_project]
                         break
@@ -125,8 +147,28 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
     Polymorphic Policy: SCADA / OT Security Isolation Perimeter (Specific).
     Injects physical unidirectional data diode telemetry deliverables
     when an OT containment project coexists with an IT AIOps/observability project.
+    
+    SOTA 2026: SECTOR-LOCKED. Only executes if the client belongs to "Critical Infrastructure" or "Energy".
+    Prevents leaking physical diode controls into financial or retail projects!
     """
     def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+        # Detectar el sector del cliente en el entorno
+        client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
+        intel_path = Path(f"working/{client_id}/client_intelligence.json")
+        
+        industry = "Standard"
+        if intel_path.exists():
+            try:
+                with open(intel_path, "r", encoding="utf-8-sig") as inf:
+                    intel = json.load(inf)
+                    industry = intel.get("profile", {}).get("industry", "Standard")
+            except Exception:
+                pass
+                
+        # SANEAMIENTO SECTORIAL: Si el cliente no es infraestructura crítica o energía, saltamos la política
+        if "Critical Infrastructure" not in industry and "Energy" not in industry:
+            return payload
+            
         pillars = payload.get("pillars_analysis", [])
         if not pillars:
             return payload
@@ -208,7 +250,7 @@ class ArchiMateDeliverablesPolicy(BaseSovereignPolicy):
                         proj["deliverables"] = list(new_deliverables)
                     else:
                         # Fallback for completely unknown projects, still better than generic
-                        proj["deliverables"] = ["Documento de Diseño Técnico (HLD/LLD)", "Repositorio de Código (IaC/Config)", "Plan de Pruebas y Validación"]
+                        proj["deliverables"] = ["Documento de Diseño Técnico (HLD/LLD)", "Repositorio de Código (IaC/Config)", "Plan de Pruebas y Validation"]
 
         return payload
 
@@ -221,6 +263,13 @@ class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
     """
     def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
         pillars = payload.get("pillars_analysis", [])
+        doc_lang = payload.get("document_meta", {}).get("language", "es").lower()
+        
+        # SANEAMIENTO REGULATORIO: Desacoplar normativas del business case (Punto 2)
+        reg_frameworks = payload.get("document_meta", {}).get("regulatory_frameworks")
+        if not reg_frameworks:
+            reg_frameworks = "ENS/NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
+            
         for p in pillars:
             asis_findings = p.get("health_check_asis", [])
             for proj in p.get("projects_todo", []):
@@ -241,9 +290,10 @@ class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
                             
                     if matched_finding:
                         impact = matched_finding.get("impact", matched_finding.get("business_risk", ""))
-                        proj["business_case"] = f"Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'."
+                        proj["business_case"] = f"Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'." if doc_lang == "es" else f"Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'."
+                        proj["mitigates_risk_id"] = matched_finding.get("node_id")
                     else:
-                        proj["business_case"] = "Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo (ENS/NIS2)."
+                        proj["business_case"] = f"Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks})." if doc_lang == "es" else f"Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks})."
                         
         return payload
 
@@ -276,7 +326,8 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                         "deliverables": ["Plan de Remediación", "Ejecución de Parches/Configuraciones", "Informe de Cierre de Brecha"],
                         "sizing": "S",
                         "duration": "Horizonte 1 (Mes 1-3)",
-                        "program_id": None
+                        "program_id": None,
+                        "mitigates_risk_id": finding.get("node_id")
                     }
                     p["projects_todo"].append(fallback_proj)
                     # Update all_proj_text so we don't duplicate fallback projects for similar orphans
@@ -284,6 +335,155 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
 
         return payload
 
+
+class FairRiskPolicy(BaseSovereignPolicy):
+    """
+    Polymorphic Policy: SOTA 2026 Quantitative FAIR Risk Engine.
+    Executes a true, academic-grade 10,000-run Monte Carlo simulation for each finding,
+    sampling Threat Event Frequency (TEF), Vulnerability, and Loss Magnitude (LM) from
+    calibrated Beta-PERT distributions to calculate the mean ALE and P90 worst-case exposure.
+    """
+    def _sample_pert(self, min_val: float, most_likely: float, max_val: float, size: int = 10000) -> Any:
+        import numpy as np
+        range_val = max_val - min_val
+        alpha = 1.0 + 4.0 * (most_likely - min_val) / range_val
+        beta_val = 1.0 + 4.0 * (max_val - most_likely) / range_val
+        return min_val + np.random.beta(alpha, beta_val, size=size) * range_val
+
+    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+        import os
+        import numpy as np
+        pillars = payload.get("pillars_analysis", [])
+        
+        # 1. Cargar el JSON de perfiles de riesgo FAIR de la gobernanza
+        profiles_path = Path("engine_config/policies/fair_risk_profiles.json")
+        profiles = {}
+        if profiles_path.exists():
+            with open(profiles_path, "r", encoding="utf-8") as pf:
+                profiles = json.load(pf)
+                
+        # 2. Cargar client_intelligence.json de forma segura para detectar el sector y jerarquía del cliente
+        client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
+        intel_path = Path(f"working/{client_id}/client_intelligence.json")
+        
+        industry = "Standard"
+        hierarchy = "Standard"
+        if intel_path.exists():
+            try:
+                with open(intel_path, "r", encoding="utf-8-sig") as inf:
+                    intel = json.load(inf)
+                    p_meta = intel.get("profile", {})
+                    industry = p_meta.get("industry", "Standard")
+                    hierarchy = p_meta.get("hierarchy", "Standard")
+            except Exception:
+                pass
+                
+        # 3. Clasificar el preset dinámicamente según la volumetría del cliente
+        preset_key = "MID_MARKET"
+        if "Critical Infrastructure" in industry or "Energy" in industry:
+            preset_key = "CRITICAL_INFRASTRUCTURE"
+        elif "Global" in hierarchy or "Mega" in hierarchy:
+            preset_key = "MEGA_ENTERPRISE"
+            
+        preset = profiles.get(preset_key, profiles.get("MID_MARKET", {}))
+        
+        # Traducir los mapas a diccionarios de tipos nativos (int keys)
+        tef_map = {int(k): v for k, v in preset.get("tef_map", {}).items()}
+        vuln_map = {int(k): v for k, v in preset.get("vuln_map", {}).items()}
+        lm_map = {int(k): v for k, v in preset.get("lm_map", {}).items()}
+        
+        # Fallbacks de seguridad en caso de que falle la carga del JSON
+        if not tef_map: tef_map = {
+            1: {"min": 0.01, "ml": 0.1, "max": 0.2},
+            2: {"min": 0.1, "ml": 0.25, "max": 0.5},
+            3: {"min": 0.5, "ml": 1.0, "max": 3.0},
+            4: {"min": 2.0, "ml": 4.0, "max": 8.0},
+            5: {"min": 6.0, "ml": 12.0, "max": 24.0}
+        }
+        if not vuln_map: vuln_map = {
+            1: {"min": 0.05, "ml": 0.10, "max": 0.15},
+            2: {"min": 0.15, "ml": 0.25, "max": 0.35},
+            3: {"min": 0.30, "ml": 0.50, "max": 0.70},
+            4: {"min": 0.70, "ml": 0.85, "max": 0.95},
+            5: {"min": 0.90, "ml": 1.00, "max": 1.00}
+        }
+        if not lm_map: lm_map = {
+            1: {"min": 500.0, "ml": 1000.0, "max": 3000.0},
+            2: {"min": 2000.0, "ml": 5000.0, "max": 15000.0},
+            3: {"min": 10000.0, "ml": 25000.0, "max": 80000.0},
+            4: {"min": 50000.0, "ml": 100000.0, "max": 300000.0},
+            5: {"min": 250000.0, "ml": 500000.0, "max": 1500000.0}
+        }
+        
+        for p in pillars:
+            for finding in p.get("health_check_asis", []):
+                text = (finding.get("finding", "") + " " + finding.get("impact", "")).lower()
+                
+                # Heurísticas para TEF (Threat Event Frequency) 1-5
+                tef = 3
+                if any(k in text for k in ["ransomware", "ataque", "pública", "internet", "ddos", "hack"]): tef = 5
+                elif any(k in text for k in ["interno", "error", "manual", "legacy", "obsoleto"]): tef = 4
+                
+                # Heurísticas para Vulnerabilidad (1-5)
+                vuln = 3
+                if any(k in text for k in ["sin parchear", "sin soporte", "crítico", "vulnerabilidad"]): vuln = 5
+                elif any(k in text for k in ["manual", "falta", "ausencia", "carencia"]): vuln = 4
+                
+                # Heurísticas para Loss Magnitude (1-5) - SANEAMIENTO REGULACIONES INTERNACIONALES (Punto 4)
+                lm = 3
+                if any(k in text for k in ["parada total", "caída catastrófica", "indisponibilidad crítica"]): lm = 5
+                elif any(k in text for k in ["nis2", "ens", "soc2", "hipaa", "fedramp", "gdpr", "lgpd", "multa", "sanción", "retraso", "indisponibilidad", "pérdida de datos", "legal", "compliance", "regulatory", "penalty"]): lm = 4
+                
+                # 4. DETERMINAR RANGOS DE INCERTIDUMBRE (Beta-PERT standard - O-FAIR compliant)
+                # TEF range
+                tef_range = tef_map.get(tef, {"min": 0.5, "ml": 1.0, "max": 3.0})
+                tef_min = float(tef_range.get("min", 0.5))
+                tef_ml = float(tef_range.get("ml", 1.0))
+                tef_max = float(tef_range.get("max", 3.0))
+                
+                # Vuln range
+                vuln_range = vuln_map.get(vuln, {"min": 0.3, "ml": 0.5, "max": 0.7})
+                vuln_min = float(vuln_range.get("min", 0.3))
+                vuln_ml = float(vuln_range.get("ml", 0.5))
+                vuln_max = float(vuln_range.get("max", 0.7))
+                
+                # LM range
+                lm_range = lm_map.get(lm, {"min": 10000.0, "ml": 25000.0, "max": 80000.0})
+                lm_min = float(lm_range.get("min", 10000.0))
+                lm_ml = float(lm_range.get("ml", 25000.0))
+                lm_max = float(lm_range.get("max", 80000.0))
+                
+                # 5. SIMULACIÓN DE MONTE CARLO (10.000 iteraciones en numpy)
+                size = 10000
+                tef_samples = self._sample_pert(tef_min, tef_ml, tef_max, size=size)
+                vuln_samples = self._sample_pert(vuln_min, vuln_ml, vuln_max, size=size)
+                lm_samples = self._sample_pert(lm_min, lm_ml, lm_max, size=size)
+                
+                # Sorteo de Bernoulli para materialización de la pérdida
+                U = np.random.uniform(0.0, 1.0, size=size)
+                losses_occurred = U < vuln_samples
+                
+                # El coste por iteración es el impacto ponderado por la frecuencia de incidentes
+                loss_per_run = np.where(losses_occurred, tef_samples * lm_samples, 0.0)
+                
+                # Métricas estadísticas SOTA
+                mean_ale = float(np.mean(loss_per_run))
+                p90_ale = float(np.percentile(loss_per_run, 90.0))
+                min_ale = float(np.min(loss_per_run))
+                max_ale = float(np.max(loss_per_run))
+                
+                # Redondeo limpio
+                ale_euros = round(mean_ale, 2)
+                
+                finding["threat_event_frequency"] = tef
+                finding["vulnerability_level"] = vuln
+                finding["loss_magnitude"] = lm
+                finding["fair_ale_score"] = ale_euros
+                finding["fair_p90_score"] = round(p90_ale, 2)
+                finding["fair_min_score"] = round(min_ale, 2)
+                finding["fair_max_score"] = round(max_ale, 2)
+                
+        return payload
 
 class SovereignPolicyEngine:
     """
@@ -295,6 +495,7 @@ class SovereignPolicyEngine:
         self.graph = graph
         self.policies: List[BaseSovereignPolicy] = [
             ClientSanitizationPolicy(),
+            FairRiskPolicy(),
             DeduplicationPolicy(),
             SequencingPolicy(),
             OTPerimeterPolicy(),
