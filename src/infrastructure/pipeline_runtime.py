@@ -34,6 +34,9 @@ def build_runtime_env(
     ensure_google_cloud_env_defaults(env)
     if include_pythonpath:
         env["PYTHONPATH"] = str(ROOT / "src")
+    
+    # SOTA 2026: Force Python to instantly stream stdout/stderr without memory buffering
+    env["PYTHONUNBUFFERED"] = "1"
     return env
 
 
@@ -65,12 +68,13 @@ def resolve_ai_step_timeout_seconds(
     env: dict[str, str],
     step_name: str,
 ) -> float | None:
-    if "Engine:" not in step_name and "Refinement" not in step_name:
+    # SOTA 2026: Enforce strict timeouts for expensive AI engines and refiners to prevent eternal hangs
+    if "Engine:" not in step_name and "Refinement" not in step_name and "Run " not in step_name:
         return None
 
     raw_value = str(env.get(AI_STEP_TIMEOUT_ENV, "")).strip()
     if not raw_value:
-        return None
+        return 120.0 # SOTA 2026: Default limit to fail-fast on Google Cloud API hangs
 
     try:
         timeout_seconds = float(raw_value)

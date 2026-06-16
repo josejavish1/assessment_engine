@@ -51,8 +51,7 @@ structure_requirements:
     - ''critical_technical_debt'': Un párrafo resumiendo qué elementos del AS-IS están
     bloqueando el futuro técnico.'
   3: 'Genera los ''design_principles'': Deduce un set transversal de 3 a 7 Principios de Diseño Maestro (ej. "Security by Design", "Sovereign Edge") que rijan toda la torre, basados en el perfil del cliente.'
-  4: 'Genera el ''transformation_roadmap'': Ordena TODOS los proyectos de los pilares
-    en 3 Waves (Wave 1: 0-6m, Wave 2: 6-12m, Wave 3: 12-24m).'
+  4: 'Genera el ''roadmap'': Ordena TODOS los proyectos de los pilares en 3 Waves (Wave 1: 0-6m, Wave 2: 6-12m, Wave 3: 12-24m). REGLA INQUEBRANTABLE: DEBES INCLUIR ABSOLUTAMENTE TODOS LOS PROYECTOS del análisis de pilares. Está ESTRICTAMENTE PROHIBIDO omitir proyectos.'
   5: 'Genera las ''external_dependencies'': Mapea qué proyectos exactos de la torre dependen de otros proyectos exactos.'
 task_and_tone:
 - 'EXPANDE TUS EXPLICACIONES EN UN 50%: Desarrolla ampliamente la justificación de

@@ -15,6 +15,12 @@ class HealthCheckAsIs(BaseModel):
     impact: str = Field(..., alias="business_risk", description="Riesgo de negocio real derivado directamente de este hallazgo técnico.")
     fragment_id: Optional[str] = Field(None, description="Identificador único del fragmento de evidencia del RAG.")
     literal_evidence: Optional[str] = Field(None, description="Cita de texto literal exacta extraída del RAG como evidencia.")
+    
+    # --- FAIR Risk Quantification Fields ---
+    threat_event_frequency: int = Field(..., description="Estimación FAIR de la frecuencia de la amenaza (1 a 5).")
+    vulnerability_level: int = Field(..., description="Estimación FAIR de la vulnerabilidad del activo (1 a 5).")
+    loss_magnitude: int = Field(..., description="Estimación FAIR del impacto financiero en caso de pérdida (1 a 5).")
+    fair_ale_score: Optional[float] = Field(None, description="Annualized Loss Expectancy calculado matemáticamente.")
 
 
 class ArchitecturalGravityProfile(BaseModel):
@@ -24,6 +30,7 @@ class ArchitecturalGravityProfile(BaseModel):
     regulatory_strictness: str = Field(..., description="Nivel de rigurosidad regulatoria (e.g., Alto/Medio/Bajo) que restringe la soberanía del dato.")
     vendor_lockin_tolerance: str = Field(..., description="Tolerancia del cliente a quedar atado a un proveedor cloud específico (Alta/Media/Baja).")
     strategic_directive: str = Field(..., description="Directriz arquitectónica resultante (e.g., 'Sovereign Hybrid Edge', 'Cloud-First', 'Aggressive Strangler Fig').")
+    recommended_target_maturity: float = Field(..., description="Nivel de madurez objetivo recomendado (ej. 4.0, 4.2, 4.5) basado en la criticidad y ambición del cliente.")
 
 
 class TargetArchitectureToBe(BaseModel):
@@ -38,6 +45,40 @@ class TargetArchitectureToBe(BaseModel):
             "como extensión elástica, plano de control unificado y habilitador de analítica, sin generar vendor lock-in estructural."
         )
     )
+    vision_3_years: str = Field(
+        default="Visión a 3 años no definida.",
+        description="Descripción del objetivo de madurez y capacidades a alcanzar en el horizonte de 3 años (Nivel 5 básico)."
+    )
+    vision_5_years: str = Field(
+        default="Visión a 5 años no definida.",
+        description="Descripción de la visión aspiracional a 5 años (Consolidación, AIOps, etc.)."
+    )
+    levers_technology: list[str] = Field(
+        default_factory=list,
+        description="Palancas tecnológicas para alcanzar el TO-BE."
+    )
+    levers_process: list[str] = Field(
+        default_factory=list,
+        description="Palancas de procesos (ITIL, SRE, DevOps) para alcanzar el TO-BE."
+    )
+    levers_operation: list[str] = Field(
+        default_factory=list,
+        description="Palancas operativas (guardias, roles, NOC, capacitación) para alcanzar el TO-BE."
+    )
+    expected_benefits: list[str] = Field(
+        default_factory=list,
+        description="Beneficios esperados de alcanzar el modelo TO-BE."
+    )
+    cost_of_inaction_risks: list[str] = Field(
+        default_factory=list,
+        description="Riesgos específicos si no se actúa y dependencias clave (El Cost of Inaction por dominio)."
+    )
+
+
+class WorkBreakdownStructureTask(BaseModel):
+    task_name: str = Field(..., description="Nombre de la tarea o fase (Ej. Fase 1: HLD, Fase 2: LLD & Build).")
+    required_profile: str = Field(..., description="Perfil (gerente_cuenta, arquitecto, experto, project_manager, tecnico_medio, tecnico_junior).")
+    estimated_hours: int = Field(..., description="Horas estimadas de esfuerzo.")
 
 
 class ProjectToDo(BaseModel):
@@ -47,11 +88,11 @@ class ProjectToDo(BaseModel):
     initiative: str = Field(
         ..., 
         alias="name", 
-        description="Nombre del proyecto técnico. EXIGENCIA DE INGENIERÍA DURA: Debe requerir implementación técnica hands-on (ej. IaC, Kubernetes, Landing Zones, Automatización). Prohibido proponer Workshops, Comités o reuniones."
+        description="Nombre del proyecto técnico. EXIGENCIA DE INGENIERÍA DURA: Debe requerir implementación técnica hands-on."
     )
     transformation_typology: str = Field(
         ...,
-        description="Clasificación o Vector de Inversión al que pertenece este proyecto (e.g., 'Core Modernization', 'Security & Sovereignty', 'Automation Engine')."
+        description="Clasificación o Vector de Inversión (e.g., 'Core Modernization', 'Security & Sovereignty')."
     )
     expected_outcome: str = Field(..., alias="business_case", description="Justificación e impacto estratégico en el negocio de realizar este proyecto.")
     objective: str = Field(
@@ -59,10 +100,38 @@ class ProjectToDo(BaseModel):
         alias="tech_objective", 
         description="Objetivo técnico específico de ingeniería. Prohibidos proyectos blandos de definición o gobernanza consultiva."
     )
-    deliverables: list[str] = Field(..., description="Entregables técnicos tangibles y verificables (DoD).")
+    
+    # --- Board-Ready Project Charter Fields ---
+    project_description: Optional[str] = Field(None, description="Descripción ejecutiva del proyecto en lenguaje llano para el CIO.")
+    smart_objectives: Optional[str] = Field(None, description="Objetivos SMART cuantificables (Ej. Reducir latencia 40% en Q4).")
+    in_scope: Optional[list[str]] = Field(None, description="Alcance estricto incluido en el proyecto (In-Scope).")
+    out_of_scope: Optional[list[str]] = Field(None, description="Límites del proyecto: Qué NO está incluido (Out-of-Scope) para evitar scope creep.")
+    deliverables: list[str] = Field(..., description="Entregables técnicos duros (DoD - Definition of Done).")
+    governance_roles: Optional[list[str]] = Field(None, description="Perfiles clave y matriz RACI básica (Ej. Sponsor: CIO, Lead: Cloud Architect).")
+    critical_risks: Optional[list[str]] = Field(None, description="Riesgos técnicos/operativos de ejecución y su estrategia de mitigación.")
+    
     sizing: str = Field(..., description="Dimensión estimativa del proyecto (S, M, L, XL).")
-    duration: str = Field(..., description="Duración estimada del proyecto (ej. '3 Meses', '6 Meses').")
+    duration: str = Field(..., description="Duración y horizonte estimado (ej. 'Fase 1: 0-6 Meses').")
     program_id: Optional[str] = None
+    
+    # --- FinOps & Traceability Fields (Calculated deterministically, not by the architect LLM) ---
+    wbs_breakdown: Optional[list[WorkBreakdownStructureTask]] = Field(None, description="Desglose WBS calculado.")
+    capex_estimate: Optional[str] = Field(None, description="Estimación matemática del CAPEX.")
+    opex_estimate: Optional[str] = Field(None, description="Estimación matemática del OPEX con margen.")
+    roi_justification: Optional[str] = Field(None, description="Justificación de ROI y Hard/Soft Savings.")
+    mitigates_risk_id: Optional[str] = Field(None, description="ID del HealthCheckAsIs que resuelve.")
+
+
+class ProjectCharterEnrichment(BaseModel):
+    commercial_name: Optional[str] = Field(None, description="Nombre comercial SOTA del proyecto, refinado y de alto impacto para C-Levels.")
+    project_description: str = Field(..., description="Descripción ejecutiva del proyecto en lenguaje llano para el CIO.")
+    smart_objectives: str = Field(..., description="Objetivos SMART cuantificables (Ej. Reducir latencia 40% en Q4).")
+    in_scope: list[str] = Field(..., description="Alcance estricto incluido en el proyecto (In-Scope).")
+    out_of_scope: list[str] = Field(..., description="Límites del proyecto: Qué NO está incluido (Out-of-Scope) para evitar scope creep.")
+    governance_roles: list[str] = Field(..., description="Perfiles clave y matriz RACI básica.")
+    critical_risks: list[str] = Field(..., description="Riesgos técnicos/operativos de ejecución y su estrategia de mitigación.")
+    wbs_breakdown: list[WorkBreakdownStructureTask] = Field(..., description="Desglose WBS calculado.")
+    roi_justification: str = Field(..., description="Justificación de ROI y Hard/Soft Savings.")
 
 
 class PillarBlueprintDraft(BaseModel):
@@ -73,6 +142,10 @@ class PillarBlueprintDraft(BaseModel):
     pilar_name: str
     score: float = 0.0
     target_score: float = 4.0
+    asis_architecture_description: str = Field(
+        default="Descripción no disponible.",
+        description="Narrativa técnica profunda y detallada (mínimo 3 párrafos) que describe la arquitectura, inventario y topología ACTUAL (AS-IS) de este pilar, antes de enumerar los riesgos."
+    )
     health_check_asis: list[HealthCheckAsIs]
     target_architecture_tobe: TargetArchitectureToBe
     projects_todo: list[ProjectToDo]
@@ -138,3 +211,4 @@ class BlueprintDocumentMeta(BaseModel):
 class BlueprintPayload(OrchestratorBlueprintDraft):
     document_meta: BlueprintDocumentMeta
     pillars_analysis: list[PillarBlueprintDraft]
+    total_fair_ale: Optional[float] = Field(None, description="Expectativa de pérdida anualizada (ALE) consolidada en euros.")

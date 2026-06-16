@@ -142,6 +142,7 @@ async def run_pipeline():
     parser.add_argument("--context-file", required=True)
     parser.add_argument("--responses-file", required=True)
     parser.add_argument("--start-from", required=False, help="Step name to start from")
+    parser.add_argument("--force", action="store_true", help="Force rebuild everything and purge cache")
     args = parser.parse_args()
 
     global SKIP_MODE, START_FROM
@@ -156,16 +157,19 @@ async def run_pipeline():
     env = build_runtime_env()
     case_dir = prepare_case_runtime(env, client_id=client_slug, tower_id=tower_id)
 
-    # --- COGNITIVE RESET ---
-    print(f"🔄 [Cognitive Reset] Purgando razonamiento previo para {tower_id}...")
-    if case_dir.exists():
-        for f in ["findings.json", "evidence_ledger.json", "blueprint_t2_payload.json"]:
-            path_to_del = case_dir / f
-            if path_to_del.exists():
-                path_to_del.unlink()
+    # --- SOTA 2026: COGNITIVE RESET CACHE-GATED ---
+    # Solo purgamos los archivos si se especifica el flag explícito --force
+    if args.force:
+        print(f"🔄 [Cognitive Reset] Purgando razonamiento previo para {tower_id}...")
+        if case_dir.exists():
+            for f in ["findings.json", "evidence_ledger.json", "blueprint_t2_payload.json", "case_input.json", "scoring_output.json", f"approved_annex_{tower_id.lower()}.template_payload.json"]:
+                path_to_del = case_dir / f
+                if path_to_del.exists():
+                    path_to_del.unlink()
+    else:
+        print(f"📈 [Incremental Mode] Respetando caché local existente en {case_dir}. Use --force para reconstruir de cero.")
 
     import time
-
     env["AI_EXECUTION_SEED"] = str(time.time())
 
     validate_runtime_environment(env)
@@ -177,151 +181,198 @@ async def run_pipeline():
     payload_path = case_dir / f"{annex_stem}.template_payload.json"
     template_annex_path = resolve_tower_annex_template_path()
     output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
-
-    await run_step_async(
-        [
-            python_bin,
-            "-m",
-            "application.build_case_input",
-            "--client",
-            args.client,
-            "--tower",
-            tower_id,
-            "--context-file",
-            context_path,
-            "--responses-file",
-            responses_path,
-        ],
-        env,
-        "Build case_input",
-    )
-
-    await run_step_async(
-        [
-            python_bin,
-            "-m",
-            "application.build_evidence_ledger",
-            "--case-input",
-            str(case_dir / "case_input.json"),
-            "--context-file",
-            context_path,
-            "--responses-file",
-            responses_path,
-        ],
-        env,
-        "Build evidence_ledger",
-    )
-
-    await run_step_async(
-        [
-            python_bin,
-            "-m",
-            "application.run_scoring",
-            "--case-input",
-            str(case_dir / "case_input.json"),
-        ],
-        env,
-        "Run scoring",
-    )
-
-    await run_step_async(
-        [
-            python_bin,
-            "-m",
-            "application.run_evidence_analyst",
-            "--case-input",
-            str(case_dir / "case_input.json"),
-            "--evidence-ledger",
-            str(case_dir / "evidence_ledger.json"),
-            "--scoring-output",
-            str(case_dir / "scoring_output.json"),
-        ],
-        env,
-        "Run evidence analyst",
-    )
-
-    # --- ETAPA DE REFINADO EJECUTIVO (Tier 1 Standards) ---
-    # --- ETAPA DE INVESTIGACIÓN SOTA (State of the Art 2026) ---
-    await run_step_async(
-        [
-            python_bin,
-            "-m",
-            "application.run_sota_researcher",
-            "--findings-path",
-            str(case_dir / "findings.json"),
-            "--client",
-            args.client,
-        ],
-        env,
-        "Run SOTA researcher",
-    )
-
-    await run_step_async(
-        [
-            python_bin,
-            "-m",
-            "application.run_executive_refiner",
-            "--findings-path",
-            str(case_dir / "findings.json"),
-            "--client",
-            args.client,
-        ],
-        env,
-        "Run executive refiner",
-    )
-
-    # --- CONCURRENCY & I/O FLUSH SLEEP (TIER 1 SOVEREIGN QUALITY ASSURANCE) ---
-    # Garantiza que el archivo findings.json refinado esté 100% asentado en el disco físico
-    # antes de que el motor del Blueprint de la torre intente leerlo, previniendo retrasos de caché de I/O.
-    print("⏳ [Sovereign QA] Esperando asentamiento físico del archivo findings.json en disco...")
-    await asyncio.sleep(2.0)
-
-    print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico...")
-    if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
-        print("🔎 Ejecutando preflight de Vertex AI...")
-        preflight = run_vertex_ai_preflight(env=env)
-        print(
-            f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
-        )
-
     blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
     output_blueprint_docx = (
         case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
     )
 
-    try:
+    # ---------------------------------------------------------
+    # 1. Build case_input (Cache-Gated)
+    # ---------------------------------------------------------
+    case_input_file = case_dir / "case_input.json"
+    if args.force or not case_input_file.exists() or case_input_file.stat().st_size == 0:
         await run_step_async(
             [
                 python_bin,
                 "-m",
-                "application.run_tower_blueprint_engine",
+                "application.build_case_input",
+                "--client",
                 args.client,
+                "--tower",
                 tower_id,
+                "--context-file",
+                context_path,
+                "--responses-file",
+                responses_path,
             ],
             env,
-            "Engine: Tower Strategic Blueprint",
+            "Build case_input",
         )
-    except Exception as e:
-        print(f"⚠️ Fallo crítico en Blueprint: {e}")
-        return
+    else:
+        print("⏭️  [Cache Bypass] Build case_input already generated. Skipping.")
 
+    # ---------------------------------------------------------
+    # 2. Build evidence_ledger (Cache-Gated)
+    # ---------------------------------------------------------
+    evidence_ledger_file = case_dir / "evidence_ledger.json"
+    if args.force or not evidence_ledger_file.exists() or evidence_ledger_file.stat().st_size == 0:
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "application.build_evidence_ledger",
+                "--case-input",
+                str(case_dir / "case_input.json"),
+                "--context-file",
+                context_path,
+                "--responses-file",
+                responses_path,
+            ],
+            env,
+            "Build evidence_ledger",
+        )
+    else:
+        print("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
+
+    # ---------------------------------------------------------
+    # 3. Run scoring (Cache-Gated)
+    # ---------------------------------------------------------
+    scoring_file = case_dir / "scoring_output.json"
+    if args.force or not scoring_file.exists() or scoring_file.stat().st_size == 0:
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "application.run_scoring",
+                "--case-input",
+                str(case_dir / "case_input.json"),
+            ],
+            env,
+            "Run scoring",
+        )
+    else:
+        print("⏭️  [Cache Bypass] Run scoring already generated. Skipping.")
+
+    # ---------------------------------------------------------
+    # 4. Analyst Chain (analyst + sota + refiner - Cache-Gated)
+    # ---------------------------------------------------------
+    findings_file = case_dir / "findings.json"
+    if args.force or not findings_file.exists() or findings_file.stat().st_size == 0:
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "application.run_evidence_analyst",
+                "--case-input",
+                str(case_dir / "case_input.json"),
+                "--evidence-ledger",
+                str(case_dir / "evidence_ledger.json"),
+                "--scoring-output",
+                str(case_dir / "scoring_output.json"),
+            ],
+            env,
+            "Run evidence analyst",
+        )
+
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "application.run_sota_researcher",
+                "--findings-path",
+                str(case_dir / "findings.json"),
+                "--client",
+                args.client,
+            ],
+            env,
+            "Run SOTA researcher",
+        )
+
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "application.run_executive_refiner",
+                "--findings-path",
+                str(case_dir / "findings.json"),
+                "--client",
+                args.client,
+            ],
+            env,
+            "Run executive refiner",
+        )
+        print("⏳ [Sovereign QA] Esperando asentamiento físico del archivo findings.json en disco...")
+        await asyncio.sleep(2.0)
+    else:
+        print("⏭️  [Cache Bypass] Findings and SOTA research already generated. Skipping Analyst Chain.")
+
+    # ---------------------------------------------------------
+    # 5. Engine: Tower Strategic Blueprint (Cache-Gated)
+    # ---------------------------------------------------------
+    print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico...")
+    if args.force or not blueprint_payload_path.exists() or blueprint_payload_path.stat().st_size == 0:
+        if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
+            print("🔎 Ejecutando preflight de Vertex AI...")
+            preflight = run_vertex_ai_preflight(env=env)
+            print(f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})")
+
+        try:
+            await run_step_async(
+                [
+                    python_bin,
+                    "-m",
+                    "application.run_tower_blueprint_engine",
+                    args.client,
+                    tower_id,
+                ],
+                env,
+                "Engine: Tower Strategic Blueprint",
+            )
+        except Exception as e:
+            print(f"⚠️ Fallo crítico en Blueprint: {e}")
+            return
+    else:
+        print("⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call.")
+
+    # ---------------------------------------------------------
+    # 6. Engine: Executive Annex Synthesizer (Cache-Gated)
+    # ---------------------------------------------------------
     print("\n🚀 Iniciando Síntesis Ejecutiva...")
-    try:
+    if args.force or not payload_path.exists() or payload_path.stat().st_size == 0:
+        try:
+            await run_step_async(
+                [
+                    python_bin,
+                    "-m",
+                    "application.run_executive_annex_synthesizer",
+                    args.client,
+                    tower_id,
+                ],
+                env,
+                "Engine: Executive Annex Synthesizer",
+            )
+        except Exception as e:
+            print(f"⚠️ Fallo en síntesis del anexo: {e}")
+    else:
+        print("⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call.")
+
+    # ---------------------------------------------------------
+    # 7. Render Word Documents (Always executed in <1s for Zero-Token rendering)
+    # ---------------------------------------------------------
+    async def render_standard_report():
+        # SOTA 2026: Fase 1 - Generar módulos Markdown/CSV editables desde el blueprint_payload_path técnico
         await run_step_async(
             [
                 python_bin,
                 "-m",
-                "application.run_executive_annex_synthesizer",
-                args.client,
-                tower_id,
+                "adapters.generate_asis_markdown_modules",
+                str(blueprint_payload_path),
             ],
             env,
-            "Engine: Executive Annex Synthesizer",
+            "Generate AS-IS Markdown Modules",
         )
-    except Exception as e:
-        print(f"⚠️ Fallo en síntesis del anexo: {e}")
-
-    async def render_standard_report():
+        
+        # SOTA 2026: Gráfico de radar de soporte visual
         await run_step_async(
             [
                 python_bin,
@@ -333,18 +384,18 @@ async def run_pipeline():
             env,
             "Generate short radar",
         )
+        
+        # SOTA 2026: Fase 2 - Compilar el Word final desde los módulos
         await run_step_async(
             [
                 python_bin,
                 "-m",
-                "adapters.render_tower_annex_from_template",
-                str(payload_path),
-                str(template_annex_path),
-                str(output_docx),
-                "--semantic-styles",
+                "adapters.compile_asis_docx_from_modules",
+                str(case_dir),
+                str(case_dir / f"AS-IS_Anexo_Tecnico_{tower_id}.docx"),
             ],
             env,
-            "Render short DOCX",
+            "Compile AS-IS DOCX from Modules",
         )
 
     async def run_blueprint_flow():

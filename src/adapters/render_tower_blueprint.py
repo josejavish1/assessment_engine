@@ -540,6 +540,121 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
         add_spacer(doc, 10)
 
 
+def render_fair_risk_heatmap(doc, payload: BlueprintPayload) -> Any:
+    add_heading_paragraph(doc, "Matriz de Riesgo Cuantitativa (FAIR)", level=1)
+    add_body_paragraph(
+        doc,
+        "La siguiente matriz consolida la expectativa de pérdida anualizada (ALE) de las vulnerabilidades detectadas en el estado actual, basada en factores de frecuencia de la amenaza (TEF) y magnitud de pérdida (LM). "
+        "Nota: La métrica ALE representa la exposición aislada de cada riesgo. Varios riesgos pueden compartir la misma causa raíz, por lo que su sumatorio refleja el volumen total de amenaza bajo gestión, no un impacto simultáneo garantizado.",
+        color_rgb=BASE_TEXT_COLOR
+    )
+    
+    # 5x5 Matrix initialization: rows are TEF (Frequency, 5 to 1), cols are LM (Magnitude, 1 to 5)
+    matrix = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
+    
+    has_fair_data = False
+    risk_details = []
+    risk_counter = 1
+    
+    for pilar in payload.pillars_analysis:
+        for finding in pilar.health_check_asis:
+            tef = getattr(finding, "threat_event_frequency", 0)
+            lm = getattr(finding, "loss_magnitude", 0)
+            ale = getattr(finding, "fair_ale_score", 0.0)
+            if tef > 0 and lm > 0:
+                has_fair_data = True
+                r_id = f"R{risk_counter:02d}"
+                risk_counter += 1
+                matrix[tef][lm].append(r_id)
+                risk_details.append({
+                    "id": r_id,
+                    "pilar": pilar.pilar_name,
+                    "finding": finding.risk_observed,
+                    "target_state": finding.target_state,
+                    "tef": tef,
+                    "lm": lm,
+                    "ale": ale,
+                    "risk_score": tef * lm
+                })
+                
+    if not has_fair_data:
+        add_body_paragraph(doc, "No hay datos cuantitativos FAIR suficientes para renderizar el mapa de calor.", color_rgb=BASE_TEXT_COLOR)
+        return
+        
+    table = doc.add_table(rows=6, cols=6)
+    finalize_table(table)
+    
+    # Headers
+    set_cell_text(table.rows[0].cells[0], "Frecuencia \\ Impacto", bold=True, font_size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+    for c in range(1, 6):
+        set_cell_text(table.rows[0].cells[c], f"Nivel {c}", bold=True, font_size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+        shade_cell(table.rows[0].cells[c], "F2F2F2")
+        
+    for r_idx, r in enumerate(range(5, 0, -1), 1):
+        set_cell_text(table.rows[r_idx].cells[0], f"Freq {r}", bold=True, font_size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+        shade_cell(table.rows[r_idx].cells[0], "F2F2F2")
+        for c in range(1, 6):
+            cell = table.rows[r_idx].cells[c]
+            risk_score = r * c
+            color = "D9F2D9" # Green
+            if risk_score >= 20: color = "C00000" # Dark Red
+            elif risk_score >= 15: color = "FF0000" # Red
+            elif risk_score >= 10: color = "FFC000" # Amber
+            elif risk_score >= 5: color = "FFFF00" # Yellow
+            
+            shade_cell(cell, color)
+            
+            items = matrix[r][c]
+            if items:
+                set_cell_text(cell, ", ".join(items), font_size=9, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+                if risk_score >= 15: # Red or Dark Red, white text
+                    for paragraph in cell.paragraphs:
+                        for run in paragraph.runs:
+                            run.font.color.rgb = RGBColor(255, 255, 255)
+            else:
+                set_cell_text(cell, "", font_size=8)
+
+    autofit_table_to_contents(table)
+    add_spacer(doc, 15)
+
+    # Detailed Risk Table
+    # Sort by ALE descending
+    risk_details.sort(key=lambda x: x["ale"], reverse=True)
+    
+    add_heading_paragraph(doc, "Detalle de Exposición al Riesgo (FAIR)", level=2)
+    risk_table = doc.add_table(rows=1, cols=5)
+    finalize_table(risk_table)
+    headers = ["ID", "Dominio", "Hallazgo / Brecha", "Coordenadas (Freq x Imp)", "Exposición de Riesgo (ALE)"]
+    for i, header in enumerate(headers):
+        set_cell_text(risk_table.rows[0].cells[i], header, bold=True, font_size=9)
+        shade_cell(risk_table.rows[0].cells[i], "D9EAF7")
+        
+    for detail in risk_details:
+        row = risk_table.add_row()
+        set_cell_text(row.cells[0], detail["id"], font_size=8, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text(row.cells[1], detail["pilar"], font_size=8)
+        set_cell_text(row.cells[2], f"{detail['target_state']}: {detail['finding']}", font_size=8)
+        set_cell_text(row.cells[3], f"TEF: {detail['tef']} | LM: {detail['lm']}", font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
+        
+        # Risk level color for ALE
+        risk_score = detail["risk_score"]
+        color = "D9F2D9" # Green
+        if risk_score >= 20: color = "C00000" # Dark Red
+        elif risk_score >= 15: color = "FF0000" # Red
+        elif risk_score >= 10: color = "FFC000" # Amber
+        elif risk_score >= 5: color = "FFFF00" # Yellow
+        
+        ale_val = detail["ale"]
+        set_cell_text(row.cells[4], f"{ale_val:,.2f} €".replace(",", "X").replace(".", ",").replace("X", "."), font_size=8, align=WD_ALIGN_PARAGRAPH.RIGHT)
+        shade_cell(row.cells[4], color)
+        if risk_score >= 15: # Red or Dark Red, white text
+            for paragraph in row.cells[4].paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.rgb = RGBColor(255, 255, 255)
+                            
+    autofit_table_to_contents(risk_table)
+    add_spacer(doc, 15)
+
 def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
     add_heading_paragraph(doc, "Arquitectura Objetivo y Visión Soberana (TO-BE)", level=1)
     
@@ -556,19 +671,6 @@ def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
         add_heading_paragraph(doc, "Principios de Diseño Unificados", level=2)
         for principle in payload.design_principles:
             add_bullet_p(doc, principle)
-
-
-def _derive_charter_details(proj_name: str):
-    name_lower = proj_name.lower()
-    if "kubernetes" in name_lower or "contenedores" in name_lower:
-        return "Cloud Architect, SRE, DevOps Engineer", "Curva de aprendizaje tecnológica, Complejidad de red CNI.", "Plan de capacitación agresivo y emparejamiento (pairing) con SREs externos."
-    elif "scada" in name_lower or "ot" in name_lower or "legacy" in name_lower:
-        return "OT Security Specialist, Network Architect", "Interrupción de operaciones críticas, Falsos positivos en red.", "Despliegue en modo simulación (Shadow Mode) y ventanas de mantenimiento fuera de pico."
-    elif "platform engineering" in name_lower or "idp" in name_lower:
-        return "Platform Engineer, Product Manager (Internal)", "Baja adopción por parte de los desarrolladores.", "Tratar la plataforma como un Producto: UX impecable y evangelización interna activa."
-    elif "observabilidad" in name_lower or "aiops" in name_lower:
-        return "Data Engineer, SRE", "Ruido excesivo de alertas, Falta de correlación.", "Afinación agresiva de SLIs/SLOs antes de activar alertas; priorizar síntomas sobre causas."
-    return "Arquitecto de Soluciones, Ingeniero de Sistemas", "Resistencia al cambio organizativo.", "Gestión del cambio (OCM) ejecutiva y comunicación constante de 'Quick Wins'."
 
 
 def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
@@ -593,7 +695,81 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
         for pilar_name, project in projects_in_group:
             add_heading_paragraph(doc, f"Iniciativa {project_idx}: {project.initiative}", level=3)
             
-            project_table = doc.add_table(rows=10, cols=2)
+            deps = [d.depends_on for d in payload.external_dependencies if d.project == project.initiative]
+            deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+
+            # Resolve mitigated risk text
+            mitigated_risk_text = "N/A"
+            if getattr(project, "mitigates_risk_id", None):
+                for p_ana in payload.pillars_analysis:
+                    for hc in p_ana.health_check_asis:
+                        if hc.node_id == project.mitigates_risk_id:
+                            mitigated_risk_text = f"[{hc.target_state}] {hc.risk_observed}"
+                            break
+
+            # Resolve FinOps (Hiding internal margins from the client)
+            capex = getattr(project, "capex_estimate", "N/A")
+            opex = getattr(project, "opex_estimate", "N/A")
+            
+            # Sanitize OPEX to remove internal margin calculations if present
+            # We want to keep just the final sell price
+            clean_opex = opex
+            if "(Margen" in opex:
+                clean_opex = opex.split("(Margen")[0].strip()
+            
+            finops_text = f"Inversión de Implantación: {clean_opex}\nInversión de Licencias/Hardware: {capex}"
+
+            # Resolve WBS
+            wbs_items = getattr(project, "wbs_breakdown", [])
+            wbs_text = "Desglose no disponible."
+            if wbs_items:
+                try:
+                    wbs_text = "\n".join([f"• {w.task_name} (Perfil: {w.required_profile})" for w in wbs_items])
+                except Exception:
+                    # In case of parsing dicts vs objects
+                    wbs_text = "\n".join([f"• {w.get('task_name')} (Perfil: {w.get('required_profile')})" for w in wbs_items if isinstance(w, dict)])
+
+            # Resolve new fields
+            proj_desc = getattr(project, "project_description", "N/A") or "N/A"
+            smart_obj = getattr(project, "smart_objectives", "N/A") or "N/A"
+            in_scope_list = getattr(project, "in_scope", []) or []
+            out_scope_list = getattr(project, "out_of_scope", []) or []
+            gov_roles_list = getattr(project, "governance_roles", []) or []
+            crit_risks_list = getattr(project, "critical_risks", []) or []
+            
+            in_scope = "\n".join([f"• {item}" for item in in_scope_list]) or "N/A"
+            out_scope = "\n".join([f"• {item}" for item in out_scope_list]) or "N/A"
+            gov_roles = "\n".join([f"• {item}" for item in gov_roles_list]) or "N/A"
+            crit_risks = "\n".join([f"• {item}" for item in crit_risks_list]) or "N/A"
+            roi_just = getattr(project, "roi_justification", "N/A") or "N/A"
+
+            rows = [
+                ("Dominio Arquitectónico", pilar_name),
+                ("Descripción Ejecutiva", proj_desc),
+                ("Objetivo SMART", smart_obj),
+                ("Riesgo AS-IS Mitigado (Trazabilidad)", mitigated_risk_text),
+                ("Alcance (In-Scope)", in_scope),
+                ("Fuera de Alcance (Out-of-Scope)", out_scope),
+                ("Dependencias Técnicas (Predecesores)", deps_text),
+                (
+                    "Entregables Técnicos Duros (DoD)",
+                    "\n".join([f"• {item}" for item in project.deliverables]),
+                ),
+                (
+                    "Work Breakdown Structure (LLD Fases)",
+                    wbs_text
+                ),
+                (
+                    "Sizing & Cronograma",
+                    f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
+                ),
+                ("Estimación FinOps & TCO (3 Años)", finops_text),
+                ("Justificación de ROI & Valor", roi_just),
+                ("Perfiles y Gobernanza (RACI)", gov_roles),
+                ("Riesgos de Ejecución y Mitigación", crit_risks),
+            ]
+            
+            project_table = doc.add_table(rows=len(rows)+1, cols=2)
             finalize_table(project_table)
             
             merged = project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
@@ -602,27 +778,6 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
             for run in merged.paragraphs[0].runs:
                 run.font.color.rgb = RGBColor(255, 255, 255)
 
-            perfiles, riesgos, mitigante = _derive_charter_details(project.initiative)
-            deps = [d.depends_on for d in payload.external_dependencies if d.project == project.initiative]
-            deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
-
-            rows = [
-                ("Dominio Arquitectónico", pilar_name),
-                ("Business Case / Impacto ROI", project.expected_outcome),
-                ("Objetivo de Ingeniería (Profundo)", project.objective),
-                ("Dependencias Técnicas (Predecesores)", deps_text),
-                (
-                    "Entregables Técnicos Duros (DoD)",
-                    "\n".join([f"• {item}" for item in project.deliverables]),
-                ),
-                (
-                    "Sizing & Cronograma",
-                    f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
-                ),
-                ("Perfiles de Ingeniería Requeridos", perfiles),
-                ("Riesgos Críticos de Ejecución", riesgos),
-                ("Estrategia de Mitigación", mitigante),
-            ]
             for idx, (label, value) in enumerate(rows, 1):
                 set_cell_text(
                     project_table.rows[idx].cells[0], label, bold=True, font_size=9
@@ -637,7 +792,7 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
             project_idx += 1
 
 
-def render_roadmap_page(doc, payload: BlueprintPayload) -> Any:
+def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> Any:
     add_heading_paragraph(doc, "Roadmap Estratégico y Matriz de Dependencias (SOTA)", level=1)
     
     add_body_paragraph(
@@ -645,6 +800,21 @@ def render_roadmap_page(doc, payload: BlueprintPayload) -> Any:
         "La siguiente matriz establece la ruta crítica de ejecución (Gantt). Las iniciativas no son compartimentos estancos; su secuenciación matemática garantiza que los habilitadores técnicos (dependencias) se desplieguen antes de la construcción de las capas superiores.",
         color_rgb=BASE_TEXT_COLOR
     )
+    
+    # Try to generate Mermaid Gantt
+    from application.generate_mermaid_gantt import generate_mermaid_gantt
+    import tempfile
+    import os
+    
+    payload_path = output_path.parent / f"blueprint_{payload.document_meta.tower_code.lower()}_payload.json"
+    png_path = Path(tempfile.gettempdir()) / f"gantt_{payload_path.name}.png"
+    if payload_path.exists() and generate_mermaid_gantt(payload_path, png_path):
+        doc.add_picture(str(png_path), width=Inches(6.5))
+        add_spacer(doc, 10)
+        try:
+            os.remove(png_path)
+        except OSError:
+            pass
 
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
@@ -872,8 +1042,9 @@ def render_blueprint(
     render_cross_capabilities_analysis(doc, payload)
 
     render_consolidated_asis(doc, payload)
+    render_fair_risk_heatmap(doc, payload)
     render_consolidated_tobe(doc, payload)
-    render_roadmap_page(doc, payload)
+    render_roadmap_page(doc, payload, output_path)
     render_deep_project_charters(doc, payload)
 
     render_conclusion(doc, annex_data)

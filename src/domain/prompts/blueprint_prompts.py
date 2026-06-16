@@ -88,7 +88,7 @@ def get_critic_prompt(pilar_label: str, client_name: str, raw_output_json: str) 
 
 
 def get_closing_orchestrator_prompt(
-    tower_name: str, pillars_analysis_json: str, intel_str: str
+    tower_name: str, pillars_analysis_json: str, intel_str: str, total_ale: float = 0.0
 ) -> Any:
     config = load_prompt_config("blueprint_closing_orchestrator_prompt.yaml")
 
@@ -96,6 +96,9 @@ def get_closing_orchestrator_prompt(
     prompt += f"{pillars_analysis_json}\n\n"
 
     prompt += f"Basado en esto y en el ADN del cliente: {intel_str}\n\n"
+    
+    if total_ale > 0:
+        prompt += f"MANDATO FINANCIERO (FAIR ALE): La Expectativa de Pérdida Anualizada (ALE) consolidada para los riesgos de esta torre es de {total_ale:,.2f} €. DEBES utilizar este valor explícitamente en el texto del 'Cost of Inaction' (cost_of_inaction) para cuantificar financieramente el riesgo ante el Comité de Dirección.\n\n"
 
     prompt += "TAREA Y REGLAS DE TONO:\n"
     for rule in config["task_and_tone"]:
@@ -119,6 +122,7 @@ def get_gravity_profiler_prompt(intel_str: str, client_name: str) -> str:
         "- regulatory_strictness: 'Alta', 'Media' o 'Baja' (Ej. Operadores críticos como energía o banca son 'Alta').\n"
         "- vendor_lockin_tolerance: 'Alta', 'Media' o 'Baja' (Operadores críticos suelen tener tolerancia 'Baja').\n"
         "- strategic_directive: La directiva resultante en pocas palabras (Ej. 'Sovereign Hybrid Edge', 'Cloud-First Agnostic', 'Strict On-Premise').\n"
+        "- recommended_target_maturity: Un número flotante (ej. 4.0, 4.2, 4.5) que represente el nivel de madurez objetivo recomendado basado en la criticidad del negocio y la ambición del cliente.\n"
         "\nDevuelve la información en formato JSON estricto."
     )
     return prompt
@@ -134,5 +138,28 @@ def get_dependency_resolver_prompt(projects_json: str) -> str:
         "2. Identifica si un proyecto es habilitador técnico de otro. (Ej: 'Landing Zone' habilita a 'Kubernetes').\n"
         "3. Devuelve una lista de 'ExternalDependency' con campos: 'project' (el que depende), 'depends_on' (el habilitador previo exacto), y 'reason' (razón técnica).\n"
         "\nDevuelve la información en formato JSON estructurado."
+    )
+    return prompt
+
+
+def get_bid_manager_prompt(client_name: str, project_name: str, project_objective: str, project_sizing: str, mitigated_risk_impact: str) -> str:
+    prompt = (
+        f"Eres un Bid Manager y Solution Architect Senior de NTT DATA preparando un 'Project Charter' a nivel de Comité de Dirección para el cliente {client_name}.\n"
+        f"PROYECTO: {project_name}\n"
+        f"OBJETIVO: {project_objective}\n"
+        f"TALLA (Sizing): {project_sizing}\n"
+        f"RIESGO A MITIGAR: {mitigated_risk_impact}\n\n"
+        "REGLAS ESTRICTAS (NTT DATA TIER-1 SOTA 2026):\n"
+        "1. commercial_name: Reescribe el nombre genérico del proyecto para que sea un título SOTA de alto impacto comercial.\n"
+        "2. project_description: Escribe una descripción ejecutiva en lenguaje llano de 3-4 líneas. Explica al CIO exactamente DE QUÉ TRATA el proyecto, sin usar acrónimos técnicos incomprensibles.\n"
+        "3. smart_objectives: Escribe un objetivo SMART cuantificable.\n"
+        "4. in_scope / out_of_scope: Define los límites estrictos de ingeniería. En out_of_scope, añade cláusulas defensivas para NTT DATA (ej. Licencias a cargo del cliente, migraciones legacy complejas excluidas).\n"
+        "5. governance_roles: Define 3-4 roles RACI críticos, INCLUYENDO OBLIGATORIAMENTE los deberes del cliente (ej. 'Cliente: Sponsor y provisión de accesos').\n"
+        "6. critical_risks: Identifica 2 riesgos de ejecución y su mitigación.\n"
+        "7. wbs_breakdown: Genera un Work Breakdown Structure (WBS) exhaustivo con Fases reales de delivery (ej. Fase 1: HLD, Fase 2: LLD & Build, Fase 3: Migración, Fase 4: Hypercare). "
+        "Asigna un esfuerzo en horas realista basado en la talla del proyecto. OBLIGATORIO: Debes incluir al menos una tarea de Gestión de Proyecto (PMO/QA). "
+        "OBLIGATORIO: El perfil debe ser estrictamente uno de estos: 'gerente_cuenta', 'arquitecto', 'experto', 'project_manager', 'tecnico_medio', 'tecnico_junior'.\n"
+        "8. roi_justification: Redacta un ROI profundo basado en el Riesgo a Mitigar (Hard/Soft savings). Tienes el dato del ALE (Annualized Loss Expectancy) en el riesgo a mitigar si aplica.\n"
+        "\nDevuelve la información en el formato JSON estricto."
     )
     return prompt
