@@ -1,6 +1,6 @@
-import pytest
 from infrastructure.epistemic_graph import EpistemicGraph
 from infrastructure.policy_engine import SovereignPolicyEngine
+
 
 def test_sovereign_policy_engine_compilation():
     # 1. Initialize a temporary graph in memory

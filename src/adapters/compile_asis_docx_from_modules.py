@@ -1,23 +1,21 @@
-import os
-import json
 import csv
+import json
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+
 from docx import Document
-from docx.shared import Inches, RGBColor, Pt
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.shared import Inches, Pt, RGBColor
 
 from infrastructure.docx_render_utils import (
-    add_heading_paragraph,
     autofit_table_to_contents,
     finalize_table,
     set_cell_text,
-    shade_cell,
 )
 from infrastructure.text_utils import clean_text_for_word
 
@@ -1073,9 +1071,12 @@ def compile_docx(tower_dir: str, output_path: str):
             # Severity Shading on Cell 2
             vuln = r.get("vulnerability_level", 3.0) if hasattr(r, "get") else 3.0
             bg_color = "D9F2D9" # Verde claro
-            if (tef * vuln) >= 15 or ale >= 1000000: bg_color = "F8D7DA" # Rojo claro
-            elif (tef * vuln) >= 10 or ale >= 250000: bg_color = "FFF3CD" # Amarillo claro
-            elif (tef * vuln) >= 5 or ale >= 50000: bg_color = "E2E3E5" # Gris claro
+            if (tef * vuln) >= 15 or ale >= 1000000:
+                bg_color = "F8D7DA" # Rojo claro
+            elif (tef * vuln) >= 10 or ale >= 250000:
+                bg_color = "FFF3CD" # Amarillo claro
+            elif (tef * vuln) >= 5 or ale >= 50000:
+                bg_color = "E2E3E5" # Gris claro
             shade_cell(row.cells[2], bg_color)
             
             if r_idx % 2 == 1:
