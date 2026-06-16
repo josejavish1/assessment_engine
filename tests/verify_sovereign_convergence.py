@@ -9,6 +9,7 @@ from infrastructure.text_utils import slugify
 
 
 def test_sovereign_convergence_and_sort():
+    # --- ARRANGE ---
     client_name = "NTT_DATA_ELITE_TEST"
     client_id = slugify(client_name)
     working_dir = Path(f"working/{client_id}")
@@ -76,6 +77,7 @@ def test_sovereign_convergence_and_sort():
 
     # --- ORQUESTACIÓN GLOBAL ---
     print("\n🧠 Ejecutando Orquestador Estratégico (Topological Sort)...")
+    # --- ACT ---
     results = run_strategic_orchestration(client_name)
 
     roadmap = results["roadmap"]
@@ -85,6 +87,7 @@ def test_sovereign_convergence_and_sort():
         for proj in wave["projects"]:
             print(f"  - {proj}")
 
+    # --- ASSERT ---
     # VALIDACIONES FINALES
     truth = graph.resolve_truth()
 

@@ -2,6 +2,7 @@ from infrastructure.networkx_analyzer import NetworkXAnalyzer
 
 
 def test_topological_sorting():
+    # --- ARRANGE ---
     analyzer = NetworkXAnalyzer()
 
     # Define a simple strategic dependency
@@ -25,9 +26,11 @@ def test_topological_sorting():
         },
     ]
 
+    # --- ACT ---
     analyzer.build_graph_from_triples(triples)
 
     # Detect Cycles
+    # --- ASSERT ---
     assert len(analyzer.detect_cycles()) == 0
 
     # Waves

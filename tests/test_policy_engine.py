@@ -7,6 +7,7 @@ def test_sovereign_policy_engine_compilation():
 
     os.environ["ASSESSMENT_CLIENT_ID"] = "redeia_v3"
     # 1. Initialize a temporary graph in memory
+    # --- ARRANGE ---
     graph = EpistemicGraph(client_id="test_client")
 
     # 2. Setup a dummy blueprint payload representing Tower 2 with incoherencies
@@ -77,6 +78,7 @@ def test_sovereign_policy_engine_compilation():
     engine = SovereignPolicyEngine(graph)
 
     # 4. Compile the payload (executes all registered policies)
+    # --- ACT ---
     compiled_payload = engine.compile(payload)
 
     # --- TESTING POLICY 1: DEDUPLICATION ---
