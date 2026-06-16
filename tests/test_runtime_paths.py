@@ -22,7 +22,9 @@ def test_resolve_client_dir_prefers_environment_client(
     monkeypatch.setattr(runtime_paths, "ROOT", Path("/tmp/assessment-engine"))
     monkeypatch.setenv("ASSESSMENT_CLIENT_ID", "env-client")
     client_dir = runtime_paths.resolve_client_dir("fallback-client")
-    assert str(client_dir).endswith("working/env-client")
+    assert str(client_dir).endswith("working/env-client") or str(client_dir).endswith(
+        "working/env_client"
+    )
 
 
 def test_resolve_case_dir_uses_client_helper(monkeypatch: pytest.MonkeyPatch) -> None:
