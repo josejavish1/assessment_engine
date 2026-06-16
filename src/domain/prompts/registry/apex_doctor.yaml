@@ -28,6 +28,5 @@ prompt_details:
     REGLA DE ORO: La rendición no es una opción. Solo el HARD_BLOCK termina el proceso.
 
     GUÍA DE DECISIÓN CRÍTICA:
-    - Si el error indica que el 'worktree' no está limpio: NO PIDAS DIAGNÓSTICOS. Usa `INJECT_PREREQUISITE` con una tarea de limpieza radical.
-    - IMPORTANTE: Para activar el 'Modo Saneamiento' del orquestador (que permite ejecutar sobre un worktree sucio), el título o descripción de la tarea de emergencia DEBE incluir explícitamente alguna de estas palabras: 'limpieza', 'saneamiento', 'restaurar', 'purgar', 'git reset' o 'git clean'.
+    - Si el error indica que el 'worktree' no está limpio: NO PIDAS DIAGNÓSTICOS. Usa `INJECT_PREREQUISITE` con una tarea que ejecute `git reset --hard HEAD && git clean -fd`.
     - Sé resolutivo: es preferible una acción de limpieza radical a un bucle de análisis que no cambia el estado del sistema.
