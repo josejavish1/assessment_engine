@@ -6,8 +6,8 @@ applies_to:
   - humans
   - ai-agents
 source_of_truth:
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - src/assessment_engine/schemas/blueprint.py
+  - src/application/run_tower_blueprint_engine.py
+  - src/domain/schemas/blueprint.py
 doc_type: "operational"
 ---
 

@@ -1,7 +1,4 @@
-"""
-Módulo run_tower_blueprint_engine.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Module `run_tower_blueprint_engine.py`. Implements the core logic and primary utilities for the Assessment Engine pipeline."""
 
 import asyncio
 import json
@@ -41,7 +38,23 @@ from assessment_engine.scripts.lib.runtime_paths import (
 def get_default_blueprint_payload(
     client_name, tower_name, tower_id, intel_data
 ) -> dict:
-    """Provee una estructura base completa que cumple con el contrato de BlueprintPayload."""
+    """Generate a foundational blueprint payload dictionary.
+
+    Creates a complete dictionary structure compliant with the blueprint data
+    contract. The structure is populated with metadata derived from the input
+    arguments and pre-defined placeholder values for subsequent processing stages.
+
+    Args:
+        client_name (str): The name of the client.
+        tower_name (str): The name of the technology tower.
+        tower_id (str): The unique identifier or code for the tower.
+        intel_data (dict): A dictionary containing intelligence data. The keys
+            'financial_tier' and 'transformation_horizon' are extracted from this
+            dictionary. If keys are not present, default values are used.
+
+    Returns:
+        dict: A dictionary representing the default blueprint payload structure.
+    """
     return {
         "document_meta": {
             "client_name": client_name,
@@ -75,7 +88,34 @@ def get_default_blueprint_payload(
 async def process_pilar_blueprint(
     model_name, client_name, tower_name, pilar_data, context_str, intel_str
 ):
-    """Procesa un pilar individual con el Squad de Arquitecto + Crítico."""
+    """Asynchronously generates and refines a blueprint for a single data pillar.
+
+    This function orchestrates a two-phase generative process using an
+    Architect/Critic agent model. The 'Architect' agent first creates an initial
+    blueprint draft from the provided pillar data, context, and intelligence.
+    Subsequently, a 'Critic' agent attempts to review and refine this draft. The
+    function handles exceptions internally to ensure operational resilience.
+
+    Args:
+        model_name (str): The identifier for the generative model to be used by
+            the architect and critic agents.
+        client_name (str): The name of the client for whom the blueprint is being
+            generated, used for contextualizing the critic's review.
+        tower_name (str): The name of the tower construct to which the pillar
+            belongs.
+        pilar_data (dict): A dictionary containing pillar-specific data,
+            expected to have keys 'id', 'label', 'score', and 'answers'.
+        context_str (str): A string providing general contextual information for
+            the generation task.
+        intel_str (str): A string containing specific intelligence or
+            supplemental information relevant to the pillar.
+
+    Returns:
+        Optional[PillarBlueprintDraft]: The refined blueprint object from the
+        Critic agent. If the critic phase fails but the architect phase
+        succeeds, the initial draft from the Architect is returned. Returns
+        None if the initial architect phase fails or an exception occurs.
+    """
     print(f"    -> Analizando Pilar: {pilar_data['label']}...")
 
     pilar_id = pilar_data["id"]
@@ -93,7 +133,7 @@ async def process_pilar_blueprint(
         pilar_id=pilar_id,
     )
 
-    # 1. Agente Escritor
+    # Phase 1: Writer Agent Execution
     try:
         agent_architect = Agent(
             name="blueprint_architect",
@@ -110,7 +150,7 @@ async def process_pilar_blueprint(
             schema=PillarBlueprintDraft,
         )
 
-        # 2. Agente Crítico (Refinado)
+        # Phase 2: Critic Agent Execution for Refinement
         if raw_output:
             agent_critic = Agent(
                 name="blueprint_critic",
@@ -139,6 +179,7 @@ async def process_pilar_blueprint(
 
 
 async def run_tower_blueprint(client_name, tower_id):
+    r"""{'docstring': 'Asynchronously orchestrates the generation of a client\'s Transformation Blueprint.\n\n    This coroutine manages the end-to-end process of creating a blueprint\n    document. The process involves several distinct phases:\n    1.  Data Loading: Loads the client\'s assessment data, intelligence\n        context, and the corresponding tower definition from the filesystem.\n    2.  Pillar Processing: Serially processes each "pillar" of the\n        assessment. An AI agent generates a detailed analysis for each\n        pillar based on its score and associated data.\n    3.  Final Orchestration: Consolidates the individual pillar analyses\n        using a final orchestrator agent, which produces a high-level\n        executive snapshot and a strategic roadmap.\n    4.  Validation and Serialization: Validates the complete blueprint\n        payload against a Pydantic data schema to ensure structural\n        integrity before serializing it to a JSON file in the client\'s\n        output directory.\n\n    Args:\n        client_name (str): The unique identifier for the client, used to\n            resolve file paths for input data and output artifacts.\n        tower_id (str): The unique identifier for the assessment tower, used to load\n            the corresponding case data and tower definition.\n\n    Returns:\n        None. The function\'s primary side effect is writing the generated\n        blueprint to a JSON file.\n\n    Raises:\n        FileNotFoundError: If a required input file, such as the case input or the\n            tower definition, cannot be found.\n        json.JSONDecodeError: If the case input or tower definition files are not\n            valid JSON.\n        RuntimeError: If no pillar analysis can be successfully generated, the final\n            orchestration agent fails, or the generated payload fails Pydantic\n            model validation.'}."""
     client_dir = resolve_client_dir(client_name)
     client_dir / tower_id
     case_input_path = resolve_case_input_path(client_name, tower_id)
@@ -159,7 +200,7 @@ async def run_tower_blueprint(client_name, tower_id):
 
     tower_name = case_data.get("tower_name")
 
-    # Preparar contexto masivo
+    # Aggregate all required data into a comprehensive context for the agent.
     intel_str = (
         build_client_context_text(raw_intel_data, tower_id=tower_id)
         if intel_packet
@@ -180,7 +221,7 @@ async def run_tower_blueprint(client_name, tower_id):
     except Exception:
         model_name = "gemini-2.5-pro"
 
-    # Agrupar respuestas por pilar
+    # Group agent responses by their corresponding pillar for structured downstream processing.
     pillars_map = {}
     tower_def_path = resolve_tower_definition_file(tower_id)
     tower_def = json.loads(tower_def_path.read_text(encoding="utf-8"))
@@ -208,7 +249,7 @@ async def run_tower_blueprint(client_name, tower_id):
 
     print(f"🏗️ Generando Blueprint de Transformación para {tower_name}...")
 
-    # Inicialización Normalizada (Contrato Estricto)
+    # Normalized initialization to conform to the strict data contract.
     blueprint_payload = get_default_blueprint_payload(
         client_name, tower_name, tower_id, intel_data
     )
@@ -216,7 +257,7 @@ async def run_tower_blueprint(client_name, tower_id):
         blueprint_payload["client_context"] = intel_packet
     failed_pillars = []
 
-    # PROCESAR PILARES EN SERIE PARA MÁXIMA CALIDAD
+    # Process pillars serially to maximize output quality by maintaining sequential context between steps.
     for p_id in sorted(pillars_map.keys()):
         p_result = await process_pilar_blueprint(
             model_name,
@@ -242,7 +283,7 @@ async def run_tower_blueprint(client_name, tower_id):
             "No se pudo generar ningún análisis de pilar para el blueprint."
         )
 
-    # AGENTE DE CIERRE: SNAPSHOT Y ROADMAP
+    # Final Phase: Snapshot and Roadmap Generation
     print("    -> Generando Snapshot Ejecutivo y Roadmap Estratégico...")
     closing_prompt = get_closing_orchestrator_prompt(
         tower_name=tower_name,
@@ -265,18 +306,18 @@ async def run_tower_blueprint(client_name, tower_id):
             schema=OrchestratorBlueprintDraft,
         )
         if closing_data:
-            # Actualizamos solo si recibimos datos válidos del agente
+            # Update the state only upon receiving a valid response from the agent.
             blueprint_payload.update(closing_data)
     except Exception as e:
         raise RuntimeError(f"Error en agente de cierre blueprint: {e}") from e
 
-    # Validación Final del Contrato con Pydantic
+    # Perform a final validation against the Pydantic model to ensure data contract conformance.
     try:
         blueprint_payload["_generation_metadata"] = {
             "artifact_type": "blueprint_payload",
             "artifact_version": "1.0.0",
         }
-        # Forzamos validación para asegurar que el JSON resultante sea íntegro
+        # Enforce validation to guarantee the integrity of the final JSON output.
         validated_model = BlueprintPayload.model_validate(blueprint_payload)
         final_payload_dict = validated_model.model_dump(by_alias=True)
     except Exception as val_err:
@@ -284,7 +325,7 @@ async def run_tower_blueprint(client_name, tower_id):
             f"Error de validación en payload final del blueprint: {val_err}"
         ) from val_err
 
-    # GUARDAR PAYLOAD
+    #
     output_path = resolve_blueprint_payload_path(client_name, tower_id)
     output_path.write_text(
         json.dumps(final_payload_dict, indent=2, ensure_ascii=False),
@@ -294,6 +335,23 @@ async def run_tower_blueprint(client_name, tower_id):
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Executes the Tower Blueprint engine from the command line.
+
+    Serves as the main entry point for the script. It parses command-line
+    arguments to obtain a client identifier and a tower ID, then initiates the
+    asynchronous blueprint execution process. The function defaults to using
+    `sys.argv` if `argv` is None.
+
+    Args:
+        argv: An optional list of command-line arguments. If provided, it must
+            contain at least three elements: the script name, a client
+            identifier string, and a tower ID string.
+
+    Raises:
+        SystemExit: If fewer than three arguments are provided, a usage message
+            is printed to standard output and the program terminates with a
+            status code of 1.
+    """
     if len(argv if argv is not None else sys.argv) < 3:
         print(
             "Uso: python -m assessment_engine.scripts.run_tower_blueprint_engine <client> <tower_id>"

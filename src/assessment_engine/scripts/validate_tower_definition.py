@@ -1,7 +1,4 @@
-"""
-Módulo validate_tower_definition.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Implements the core logic and utilities for the Assessment Engine pipeline."""
 
 import argparse
 import json
@@ -11,10 +8,12 @@ ROOT = Path(__file__).resolve().parents[3]
 
 
 def load_json(path: Path) -> dict:
+    """Parse and return the content of a UTF-8 encoded JSON file."""
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
+    r"""{'docstring': "Validates the structural and referential integrity of a tower definition dictionary.\n\n    This function performs a comprehensive series of checks on a dictionary\n    that defines a tower's structure, aggregating all detected issues into\n    lists of errors and warnings rather than failing on the first violation.\n    It verifies the presence of required keys, validates data types, checks for\n    empty strings, and ensures the uniqueness of identifiers (pillars, KPIs,\n    questions). The validation also confirms the hierarchical consistency of\n    these identifiers (e.g., a KPI ID must be prefixed by its parent pillar's\n    ID), that pillar weights sum to 100, and that referential integrity is\n    maintained between the top-level questions list and those nested within\n    pillars.\n\n    Args:\n        definition: The dictionary containing the tower definition to be\n            validated.\n\n    Returns:\n        A tuple where the first element is a list of error strings, and the\n        second is a list of warning strings. Both lists will be empty if the\n        definition is valid.\n\n    Raises:\n        AttributeError: If a list within the definition, such as 'pillars' or\n            'kpis', contains a non-dictionary element."}."""
     errors: list[str] = []
     warnings: list[str] = []
 
@@ -161,6 +160,18 @@ def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
 
 
 def main() -> None:
+    """Parse and validate a tower definition file from a command-line path.
+
+    Acts as the main entry point for the validation script. The function parses a
+    single positional command-line argument, which is the path to a tower
+    definition JSON file. It loads the specified file, invokes the core
+    validation logic, and reports the results (errors, warnings, or an OK
+    status) to standard output.
+
+    Raises:
+        SystemExit: If any validation errors are found, the script terminates with
+            a status code of 1.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("definition_json")
     args = parser.parse_args()

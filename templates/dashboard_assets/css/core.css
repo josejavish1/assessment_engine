@@ -1,0 +1,80 @@
+/* Core Styles for Sovereign Dashboard */
+/* Sovereign system fonts */
+
+:root {
+    --bg-main: #020617;
+    --text-main: #f8fafc;
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --accent-sky: #38bdf8;
+    --accent-emerald: #10b981;
+    --accent-rose: #f43f5e;
+    --border-glass: rgba(255, 255, 255, 0.08);
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.glass {
+    background: var(--glass-bg);
+    border: 1px solid var(--border-glass);
+    backdrop-filter: blur(16px);
+}
+
+.tower-card, .proj-tile, .pilar-row, .prog-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tower-card:hover, .prog-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-sky);
+    background: rgba(15, 23, 42, 0.9);
+}
+
+.proj-tile:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: var(--accent-sky);
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+.app-container { height: 100vh; display: flex; flex-direction: column; }
+.content-scroll { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+.sidebar-scroll { height: calc(100vh - 250px); overflow-y: auto; }
+
+.tower-card.highlighted {
+    border-color: var(--accent-sky);
+    background: rgba(56, 189, 248, 0.1);
+    transform: translateX(10px);
+    box-shadow: -10px 0 20px rgba(56, 189, 248, 0.2);
+}
+
+.tower-card.dimmed {
+    opacity: 0.4;
+    filter: grayscale(0.5);
+}
+
+.proj-tile {
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.02);
+}
+
+.proj-tile:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+h1, h2, h3, b {
+    letter-spacing: -0.02em;
+}
+
+.sidebar-scroll {
+    mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+}

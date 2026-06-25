@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts genéricos para secciones configurables (AS-IS, Riesgos).
-"""
+"""Defines generic prompt templates for configurable assessment sections, such as 'AS-IS' and 'Risks'."""
 
 
 def get_section_writer_prompt(
@@ -10,6 +8,7 @@ def get_section_writer_prompt(
     document_profile: dict,
     corrective_feedback: list[str] | None = None,
 ) -> str:
+    r"""{'docstring': "Constructs a structured prompt to guide a large language model in writing a document section.\n\n    This function assembles multiple data sources—section configuration, assessment\n    findings, scoring data, document-wide rules, and optional corrective\n    feedback—into a single prompt string. For sections with an 'id' of 'asis' or\n    'risks', the function injects a mandatory JSON schema into the prompt to enforce\n    a predictable, machine-parseable output structure from the model.\n\n    Args:\n        section_cfg: A dictionary containing the configuration for the target\n            section. Must include 'writer_rules' and 'writer_description' keys.\n        findings_pretty: A pre-formatted string of assessment findings to be used\n            as input for the model.\n        scoring_pretty: A pre-formatted string of assessment scores to be used as\n            input for the model.\n        document_profile: A dictionary defining document-wide rules. The function\n            specifically utilizes the 'forbidden_phrases_by_section' key.\n        corrective_feedback: An optional list of feedback strings to guide the\n            revision of the section content.\n\n    Returns:\n        The complete prompt string to be sent to a language model.\n\n    Raises:\n        KeyError: If 'writer_rules' or 'writer_description' are absent from the\n            `section_cfg` dictionary."}."""
     rules = list(section_cfg["writer_rules"])
     forbidden_phrases_by_section = document_profile.get(
         "forbidden_phrases_by_section", {}
@@ -30,7 +29,7 @@ def get_section_writer_prompt(
         feedback_text = "\n".join(f"- {item}" for item in corrective_feedback)
         feedback_block = f"""\nCorrecciones obligatorias para esta nueva iteracion:\n{feedback_text}\nDebes corregir completamente esos defectos y volver a generar la seccion.\n"""
 
-    # Forzar la estructura del JSON para evitar alucinaciones en Vertex AI
+    # Constrains model output to a strict JSON schema to mitigate response variability and ensure reliable downstream parsing on platforms such as Vertex AI.
     json_structure = ""
     if section_cfg.get("id") == "asis":
         json_structure = """
@@ -102,6 +101,7 @@ def get_section_reviewer_prompt(
     scoring_pretty: str,
     tower_definition_pretty: str,
 ) -> str:
+    r"""{'docstring': 'Construct a prompt for the section reviewer agent.\n\n    Assembles a multi-part Spanish-language prompt for a large language model.\n    This function populates a predefined template with section-specific\n    configuration, a document draft, findings, scoring data, and a\n    ground-truth "tower" definition. The prompt instructs the model on its\n    role, review criteria, and required JSON output format.\n\n    Args:\n        section_cfg: Configuration dictionary for the section. Must contain the\n            keys \'review_description\' (a string describing the agent\'s task)\n            and \'review_checks\' (a list of strings detailing specific review\n            points).\n        draft_pretty: A pre-formatted string containing the draft content to be\n            reviewed.\n        findings_pretty: A pre-formatted string containing findings relevant to\n            the section.\n        scoring_pretty: A pre-formatted string containing scoring information.\n        tower_definition_pretty: A pre-formatted string containing the\n            ground-truth "tower" definition, including methodological\n            criteria and scoring rules.\n\n    Returns:\n        A complete prompt string, ready for use with a language model.\n\n    Raises:\n        KeyError: If \'review_description\' or \'review_checks\' are not present\n            in `section_cfg`.'}."""
     checks_text = "\n".join(
         f"{i + 1}. {item}" for i, item in enumerate(section_cfg["review_checks"])
     )

@@ -2,30 +2,28 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - docs/README.md
-  - docs/ai/documentation-governance.md
-  - pyproject.toml
-  - src/assessment_engine/
-  - .github/workflows/ci.yml
-last_verified_against: 2026-05-02
-applies_to:
-  - repository
+  - docs/documentation-map.yaml
+last_verified_against: "2026-06-04"
+applies_to: ["humans", "ai-agents"]
 doc_type: canonical
+notes: "Project Master Entry."
 ---
 
-# assessment-engine
+# Assessment Engine
 
-`assessment-engine` es un motor de assessment tecnológico que genera entregables B2B a partir de evidencias, configuración metodológica y pipelines orquestados en Python.
+Este proyecto es una factoría industrial de evaluación de arquitectura tecnológica.
 
-La documentación canónica del proyecto empieza aquí:
+## Visión General
+El motor utiliza IA generativa y una metodología estructurada por torres (T1-T10) para analizar el estado actual de los clientes y proponer planes de transformación.
 
-- **Mapa maestro:** [`docs/README.md`](docs/README.md)
-- **Política documental para humanos e IAs:** [`docs/ai/documentation-governance.md`](docs/ai/documentation-governance.md)
-- **Arquitectura actual:** [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md)
-- **Inventario de documentación:** [`docs/documentation_audit.md`](docs/documentation_audit.md)
+## Arquitectura Hexagonal
+El proyecto sigue los principios de Clean Architecture:
+- **Domain:** Lógica de negocio y reglas de puntuación.
+- **Application:** Orquestación de pipelines.
+- **Adapters:** Conectores externos.
 
-## Punto de entrada recomendado
-
-1. Lee [`docs/README.md`](docs/README.md) para entender qué documentos son canónicos.
-2. Revisa [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) para la arquitectura vigente.
-3. Consulta [`docs/documentation_audit.md`](docs/documentation_audit.md) para ver el estado de cada documento.
+## Gobernanza Soberana
+El desarrollo está gobernado por radares automáticos que garantizan:
+1. Zero Vendor Lock-in.
+2. Integridad de tipado Tier-1.
+3. Disciplina de cambio absoluta.

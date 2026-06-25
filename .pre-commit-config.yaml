@@ -1,0 +1,81 @@
+exclude: "^mutants/|^working/|^.venv/|^src/business_command_center/node_modules/|^_PROJECT_ARCHIVE_/"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-ast
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.14
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+    -   id: mypy
+        files: \.py$
+        args: [--strict, --ignore-missing-imports, --explicit-package-bases]
+        additional_dependencies: ["pydantic", "types-PyYAML", "types-requests", "pytest", "pytest-asyncio"]
+
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.163.0
+    hooks:
+      - id: semgrep
+        args: ['--config', 'p/python', '--error']
+
+  - repo: local
+    hooks:
+      - id: zero-lockin-guard
+        name: Prove Zero Vendor Lock-in (Chaos Engineering)
+        entry: bash -c "/home/jsanchhi/assessment_engine/bin/prove-zero-lockin"
+        language: system
+        pass_filenames: false
+
+      - id: ast-shield
+        name: AST Architecture Topology Guard
+        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/architecture_topology_validator.py --repo-root ."
+        language: system
+        pass_filenames: false
+
+      - id: golden-path
+        name: Golden Path Checker
+        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/agents/product_owner/golden_path_radar_agent.py --repo-root . --report-only"
+        language: system
+        pass_filenames: false
+
+      - id: security-posture
+        name: Security Posture Guard
+        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/security_posture_validator.py --repo-root ."
+        language: system
+        pass_filenames: false
+
+      - id: docs-governance
+        name: Documentation Governance Link Checker
+        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/documentation_governance_validator.py --repo-root . --documentation-map /home/jsanchhi/assessment_engine/docs/documentation-map.yaml"
+        language: system
+        pass_filenames: false
+
+      - id: change-discipline
+        name: Change Discipline & Blast Radius Guard
+        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/change_discipline_validator.py --repo-root . --request-dir .github/change-plan"
+        language: system
+        pass_filenames: false
+
+      - id: docs-language-guard
+        name: Docs & Comments Language Guard (SOTA English Only)
+        entry: /home/jsanchhi/assessment_enginev2/.venv/bin/python scripts/enforce_english_comments.py
+        language: system
+        files: \.py$

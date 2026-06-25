@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
   - docs/documentation-map.yaml
   - pyproject.toml
-  - src/assessment_engine/
+  - src/domain/
   - .github/workflows/ci.yml
 last_verified_against: 2026-05-05
 applies_to:
@@ -119,3 +119,15 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - existe un wrapper de executor Gemini en el repo, pero no está conectado al reconciliador de PR actual;
 - el baseline smoke de `smoke_ivirma` ya está cerrado para T5, global, comercial y web;
 - la suite completa de `pytest` pasa.
+
+
+- [Sovereign Engine Vision SOTA 2026](strategy/ntt_sovereign_engine_vision.md)
+- [Epistemic Graph & Dynamic Assessments](strategy/epistemic_graph_and_dynamic_assessments.md)
+### Hito SOTA 2026: The Digital Twin Architect (Continuous Assessment)
+*   **Estado:** En Diseño.
+*   **Objetivo:** Transicionar del modelo de evaluación estática (Word/PDF) a un modelo de Grafo Epistémico Persistente.
+*   **Implementación:** Evolucionar el `EpistemicGraph` (actualmente en SQLite in-memory) a un repositorio gráfico persistente (Neo4j o similar).
+*   **Valor Comercial:** Permite "Continuous Readiness". Si el cliente cambia un componente en su data center, el Grafo se actualiza y la IA reescribe automáticamente los vectores de impacto en tiempo real.
+*   **Overlays Planificados:**
+    *   *AI-Readiness Agent:* Inferencia matemática de madurez de IA basada en topología de datos existente.
+    *   *Sovereign Benchmarking:* Comparativas de mercado dinámicas extraídas de evaluaciones históricas anonimizadas.

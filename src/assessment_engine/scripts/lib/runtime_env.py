@@ -1,7 +1,4 @@
-"""
-Módulo runtime_env.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides the core logic and utility functions for the Assessment Engine's data processing pipeline."""
 
 from __future__ import annotations
 
@@ -18,6 +15,22 @@ DEFAULT_VERTEX_QUERY_TIMEOUT_SECONDS = 180.0
 def ensure_google_cloud_env_defaults(
     env: dict[str, str] | None = None,
 ) -> dict[str, str] | None:
+    """Set default Google Cloud environment variables if they are not present.
+
+    Modifies a dictionary of environment variables in-place to ensure default
+    values for `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` exist. This
+    function uses `dict.setdefault` and will not overwrite existing values.
+
+    If `env` is None, `os.environ` is modified directly.
+
+    Args:
+        env: The environment dictionary to modify. If None, `os.environ` is
+            used as the target for modification.
+
+    Returns:
+        The original dictionary passed as the `env` argument, which has been
+        modified. Returns None if the input `env` was None.
+    """
     target = os.environ if env is None else env
     target.setdefault("GOOGLE_CLOUD_PROJECT", DEFAULT_GOOGLE_CLOUD_PROJECT)
     target.setdefault("GOOGLE_CLOUD_LOCATION", DEFAULT_GOOGLE_CLOUD_LOCATION)
@@ -27,6 +40,7 @@ def ensure_google_cloud_env_defaults(
 def get_google_cloud_project_location(
     env: dict[str, str] | None = None,
 ) -> tuple[str, str]:
+    """Return the Google Cloud project and location from environment variables."""
     target = os.environ if env is None else env
     ensure_google_cloud_env_defaults(target)  # type: ignore
 
@@ -60,6 +74,7 @@ def _read_positive_float_env(
 def get_vertex_preflight_timeout_seconds(
     env: dict[str, str] | None = None,
 ) -> float:
+    """Get the timeout for the Vertex preflight check in seconds."""
     return _read_positive_float_env(
         "ASSESSMENT_VERTEX_PREFLIGHT_TIMEOUT_SECONDS",
         DEFAULT_VERTEX_PREFLIGHT_TIMEOUT_SECONDS,
@@ -70,6 +85,7 @@ def get_vertex_preflight_timeout_seconds(
 def get_vertex_query_timeout_seconds(
     env: dict[str, str] | None = None,
 ) -> float:
+    """Return the Vertex AI query timeout in seconds from an environment variable."""
     return _read_positive_float_env(
         "ASSESSMENT_VERTEX_QUERY_TIMEOUT_SECONDS",
         DEFAULT_VERTEX_QUERY_TIMEOUT_SECONDS,
@@ -83,6 +99,45 @@ def run_vertex_ai_preflight(
     model_name: str | None = None,
     timeout_seconds: float | None = None,
 ) -> dict[str, Any]:
+    """Perform a preflight check for Vertex AI connectivity and configuration.
+
+    This function validates that the runtime environment can successfully communicate
+    with Google Cloud Vertex AI services. It performs a sequence of checks:
+    1.  Resolves the Google Cloud project and location from environment variables.
+    2.  Verifies that the necessary Google Cloud client libraries are installed.
+    3.  Attempts to authenticate using Application Default Credentials (ADC).
+    4.  Contacts the Vertex AI API to validate the specified project and location.
+    5.  Queries the Model Garden Service to ensure the target model is available.
+
+    Args:
+        env: A dictionary of environment variables to use for configuration. If
+            None, `os.environ` is used as the source. Defaults to None.
+        model_name: The name of the Vertex AI model to verify. The resolution
+            order is: this argument, the `ASSESSMENT_VERTEX_PREFLIGHT_MODEL`
+            environment variable, then a hardcoded default model.
+        timeout_seconds: The timeout in seconds for individual API calls to Vertex
+            AI. If not provided, a default value is resolved from the
+            environment or a hardcoded fallback.
+
+    Returns:
+        A dictionary containing the resolved configuration from the successful
+        preflight check, with the following keys:
+            - project (str): The resolved Google Cloud project ID.
+            - location (str): The resolved Google Cloud location (region).
+            - detected_project (str): The project ID detected from credentials.
+            - model (str): The resolved model name that was checked.
+            - publisher_model_name (str): The full resource name of the model.
+            - timeout_seconds (float): The timeout value used for API calls.
+
+    Raises:
+        RuntimeError: If any stage of the preflight check fails, including:
+            - Missing `GOOGLE_CLOUD_PROJECT` or `GOOGLE_CLOUD_LOCATION`
+              environment variables.
+            - Failure to import the required `google-cloud-aiplatform` library.
+            - Authentication failures via `google.auth.default`.
+            - Any API-level error from Vertex AI, such as an invalid project,
+              non-existent location, permission denied, or a model not found.
+    """
     target = os.environ if env is None else env
     ensure_google_cloud_env_defaults(target)  # type: ignore
     project, location = get_google_cloud_project_location(target)  # type: ignore

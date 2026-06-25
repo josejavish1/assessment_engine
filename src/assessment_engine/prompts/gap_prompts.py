@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección GAP.
-"""
+"""Provides the prompt templates required for the Gap Analysis portion of the assessment engine."""
 
 
 def get_gap_writer_prompt(
@@ -12,6 +10,34 @@ def get_gap_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Constructs a prompt for the GAP analysis writer agent.
+
+    Assembles a detailed prompt, in Spanish, that instructs a large language model
+    (LLM) to generate the GAP analysis section of a technical assessment report.
+    The function populates a predefined template with structured data representing
+    the current state (AS-IS), target state (TO-BE), findings, scoring, and
+    methodological definitions for a specific assessment 'tower'.
+
+    Args:
+        findings_pretty: A string containing a formatted representation of the
+            assessment findings.
+        scoring_pretty: A string containing a formatted representation of the
+            assessment scoring data.
+        asis_pretty: A string containing a formatted representation of the AS-IS
+            (current state) analysis.
+        tobe_pretty: A string containing a formatted representation of the TO-BE
+            (target state) analysis.
+        tower_definition_pretty: A string containing the methodological
+            definition of the assessment tower.
+        tower_label: The specific label for the assessment tower (e.g.,
+            'Security') to be contextualized in the prompt.
+        feedback_block: An optional string containing corrective feedback from a
+            prior generation attempt, used to guide subsequent responses.
+
+    Returns:
+        A single string containing the fully constructed prompt ready for
+        submission to a large language model.
+    """
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -79,6 +105,7 @@ def get_gap_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Construct a prompt for an AI agent to review a GAP assessment section."""
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

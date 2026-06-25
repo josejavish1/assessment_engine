@@ -27,18 +27,18 @@ class WorkerService:
         Ejecuta la lógica de negocio del worker.
         """
         logger.info("Iniciando ejecución del worker con payload: %s", payload)
-        
+
         try:
             # --- START OF BUSINESS LOGIC ---
             # El agente debe insertar la lógica de negocio específica aquí.
-            
+
             result = {"status": "success", "processed_data": payload}
-            
+
             # --- END OF BUSINESS LOGIC ---
-            
+
             logger.info("Ejecución completada con éxito.")
             return result
-            
+
         except Exception as e:
             logger.error("Fallo inesperado durante la ejecución del worker: %s", str(e), exc_info=True)
             # Propagar el error de forma controlada o manejarlo según las políticas de reintento

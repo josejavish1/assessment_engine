@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+echo "🔥 INICIANDO OPERACIÓN TIERRA QUEMADA (Chaos Engineering) 🔥"
+chaos_dir=$(mktemp -d)
+cp -a "." "$chaos_dir/"
+cd "$chaos_dir"
+rm -rf src/adapters
+export SOVEREIGN_LLM_PROVIDER="fake"
+export PYTHONPATH="src"
+source .venv/bin/activate
+if pytest tests/; then
+    echo "✅ Zero Vendor Lock-in garantizado."
+    exit 0
+else
+    echo "❌ Vendor Lock-in detectado."
+    exit 1
+fi

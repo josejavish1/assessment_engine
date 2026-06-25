@@ -1,7 +1,4 @@
-"""
-Módulo render_global_report_from_template.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides core logic and utilities for the Assessment Engine's global report generation pipeline."""
 
 import json
 import re
@@ -40,27 +37,62 @@ from assessment_engine.scripts.lib.global_maturity_policy import (
 
 
 def load_json(path):
+    """Load a JSON object from a file, decoding its content as 'utf-8-sig'."""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def clean_t_codes(text):
+    """Removes specific code patterns and internal reference tags from a string.
+
+    This function applies a series of regular expression substitutions to remove
+    predefined patterns, including T-codes and internal reference markers. Leading
+    and trailing whitespace is also stripped from the result.
+
+    The following patterns are removed:
+    - Parenthesized T-codes (e.g., `(T12)`, `(T1 other text)`).
+    - Standalone, word-bounded T-codes (e.g., `T1`, `T12`).
+    - Internal reference tags (e.g., `[[REF:id]]`, `[REF:id]`).
+
+    Args:
+        text (Any): The input value to process. If not a `str`, it is
+            returned unmodified.
+
+    Returns:
+        Any: The cleaned string or the original non-string input.
+    """
     if not isinstance(text, str):
         return text
     text = re.sub(r"\(T\d{1,2}[^\)]*\)", "", text)
     text = re.sub(r"\bT\d{1,2}\b", "", text)
-    # Strip any [[REF:...]] or [REF:...] tags
+    # Remove internal reference tags (e.g., [[REF:...]]) from the text prior to rendering, as they are not intended for the final report.
     text = re.sub(r"\[\[?REF:[^\]]*\]\]?", "", text)
     return text.strip()
 
 
 def sanitize_client_name(text, client_name):
+    """Sanitizes a string by replacing client-specific names with a generic term.
+
+    Performs a case-insensitive search and replace to anonymize text. This
+    function replaces all occurrences of `client_name` with the generic Spanish
+    phrase 'la organización'. It also removes preceding Spanish possessive
+    prepositions (i.e., ' de ' or ' del '). The function handles `client_name`
+    variations where spaces are substituted with underscores.
+
+    Args:
+        text (str): The input string to sanitize.
+        client_name (str): The client name to be replaced.
+
+    Returns:
+        str: The sanitized text. If `text` is not a string or `client_name` is
+            falsy, the original `text` is returned unmodified.
+    """
     if not isinstance(text, str) or not client_name:
         return text
 
-    # Reemplazar nombre del cliente con guiones bajos (ej: smoke_moeve)
+    # Sanitize the client name by replacing spaces and special characters with underscores to generate a valid, filesystem-safe identifier for use in filenames.
     clean_name = client_name.replace("_", " ")
 
-    # 1. Eliminar "de [Cliente]" o "del [Cliente]"
+    # Step 1: Normalize text by removing client-specific possessive prepositions (e.g., 'de [Client]', 'del [Client]').
     text = re.sub(
         rf"\s+del?\s+{re.escape(client_name)}\b", "", text, flags=re.IGNORECASE
     )
@@ -68,7 +100,7 @@ def sanitize_client_name(text, client_name):
         rf"\s+del?\s+{re.escape(clean_name)}\b", "", text, flags=re.IGNORECASE
     )
 
-    # 2. Reemplazar menciones directas por "la organización"
+    # Step 2: Generalize the narrative by replacing direct client mentions with the term 'the organization' for standardization.
     text = re.sub(
         rf"\b{re.escape(client_name)}\b", "la organización", text, flags=re.IGNORECASE
     )
@@ -80,6 +112,27 @@ def sanitize_client_name(text, client_name):
 
 
 def clear_document_body(doc):
+    """Clears all content from the body of a `python-docx` document, preserving section properties.
+
+    This function directly manipulates the underlying XML of the document. It iterates
+    through all top-level child elements within the `<w:body>` tag and removes them,
+    with the sole exception of the `<w:sectPr>` (section properties) element.
+
+    This procedure is typically used to reset a template document, removing all
+    placeholder text and objects while retaining the page layout configuration
+    (e.g., margins, page orientation, headers, footers) defined in the section
+    properties. The modification is performed in-place.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` Document object to modify.
+
+    Returns:
+        None.
+
+    Raises:
+        AttributeError: If the provided `doc` object does not have the expected
+            internal `_body._element` structure.
+    """
     body = doc._body._element
     for child in list(body):
         if (
@@ -90,12 +143,39 @@ def clear_document_body(doc):
 
 
 def add_spacer(doc, points=12):
+    """{'docstring': 'Add a vertical spacer to a document object.'}."""
     p = doc.add_paragraph()
     p.paragraph_format.space_after = Pt(points)
 
 
 def add_smart_bullet_list(container, items, color_rgb=None, bold_prefix=True):
-    # Robustez: si nos llega un string en lugar de una lista, lo envolvemos para no iterar por caracteres
+    """Adds a formatted bulleted list to a python-docx container.
+
+    This function iterates through a list of items, adding each as a paragraph
+    styled as a bullet point. It first attempts to apply the 'List Bullet'
+    style from the document's template. If this style is not available (a
+    KeyError is caught internally), it falls back to manually formatting the
+    paragraph with a '•' character and appropriate indentation.
+
+    The function provides conditional formatting based on content. If an item
+    string contains a `": "` or `" - "` separator, the text is split. The
+    portion of the string preceding the first separator can be bolded based on
+    the `bold_prefix` argument. The item text is sanitized using an internal
+    `clean_t_codes` function before rendering.
+
+    Args:
+        container (Union[docx.document.Document, docx.table._Cell]): The
+            python-docx object to which the list will be added (e.g., a
+            Document or a table Cell).
+        items (Union[str, List[str]]): A list of strings for the bullet points.
+            A single string will be treated as a single-item list.
+        color_rgb (Optional[docx.shared.RGBColor]): An RGBColor object to apply
+            to the text. Defaults to None, using the style's default color.
+        bold_prefix (bool): If True, bolds the text preceding a separator.
+            If no separator is present, the entire item is bolded. Defaults to
+            True.
+    """
+    # Robustness: Coerce input to a list if it is a string to prevent unintended character-wise iteration where a list of strings is expected.
     if isinstance(items, str):
         items = [items]
     if not items:
@@ -107,7 +187,7 @@ def add_smart_bullet_list(container, items, color_rgb=None, bold_prefix=True):
         try:
             p.style = "List Bullet"
         except KeyError:
-            # Fallback en caso de que el estilo no exista en la plantilla
+            # Provide a fallback mechanism to ensure robust rendering if the specified style is not found within the document template.
             p.paragraph_format.left_indent = Pt(20)
             p.paragraph_format.first_line_indent = Pt(-15)
             b = p.add_run("• ")
@@ -138,18 +218,41 @@ def add_smart_bullet_list(container, items, color_rgb=None, bold_prefix=True):
 
 
 def render_cover(doc, payload: GlobalReportPayload):
-    # Reducimos algo el margen superior inicial
+    """Renders a formatted cover page into a `python-docx` document object.
+
+    This function populates the first page of the provided document with a
+    title, client name, report date, version reference, and a multi-paragraph
+    legal disclaimer. It applies specific typographic and layout styles,
+    including fonts, sizes, colors, alignment, and vertical spacing to
+    structure the content. The operation concludes by inserting a page break,
+    ensuring subsequent content begins on a new page.
+
+    Args:
+        doc (docx.document.Document): The document object to which the cover page
+            content will be added. This object is modified in-place.
+        payload (GlobalReportPayload): A data object containing the report's
+            metadata, specifically the `client`, `date`, and `version`
+            attributes required for rendering the cover page.
+
+    Returns:
+        None.
+
+    Raises:
+        AttributeError: If `payload.meta` or its required attributes (`client`,
+            `date`, `version`) do not exist.
+    """
+    # Slightly reduce the document's initial top margin to optimize vertical space on the first page.
     doc.add_paragraph().paragraph_format.space_after = Pt(60)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    # Title Case excepto preposiciones
+    # Apply Title Case formatting, ensuring minor words such as articles and prepositions remain lowercase.
     run = title_p.add_run("Informe Estratégico de\nMadurez Tecnológica")
     run.font.size = Pt(34)
     run.font.name = "Georgia"
     run.font.color.rgb = RGBColor(0, 114, 188)
     run.bold = False
 
-    # Menos espacio entre título y nombre del cliente
+    # Reduce vertical spacing between the report title and client name to achieve a more compact header layout.
     add_spacer(doc, 30)
 
     client_p = doc.add_paragraph()
@@ -158,7 +261,7 @@ def render_cover(doc, payload: GlobalReportPayload):
     client_run.font.name = "Arial"
     client_run.bold = True
 
-    # Reducimos sustancialmente este bloque que empujaba la fecha muy abajo
+    # This block's vertical spacing is substantially reduced to correct a layout artifact where the date element was rendered with excessive top margin.
     doc.add_paragraph().paragraph_format.space_after = Pt(100)
 
     version_p = doc.add_paragraph()
@@ -168,14 +271,14 @@ def render_cover(doc, payload: GlobalReportPayload):
     version_run.font.name = "Arial"
     version_run.font.color.rgb = RGBColor(127, 127, 127)
 
-    # Espaciador ajustado (150pt) para que el aviso legal esté bajo pero no salte de página
+    # A 150-point spacer is used to position the legal disclaimer near the page bottom while preventing overflow onto a subsequent page.
     add_spacer(doc, 150)
 
     disclaimer_p1 = doc.add_paragraph()
     disclaimer_p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     disclaimer_p1.paragraph_format.space_after = Pt(
         2
-    )  # Espacio mínimo entre párrafos del aviso
+    )  # Defines the minimum required spacing between paragraphs within the legal disclaimer section.
     disclaimer_title_run = disclaimer_p1.add_run("Aviso Legal y Confidencialidad: ")
     disclaimer_title_run.font.size = Pt(8)
     disclaimer_title_run.font.name = "Arial"
@@ -226,13 +329,51 @@ def render_executive_summary(
     client_dir,
     client_name="",
 ):
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
+    """Populates the executive summary section of a Word document object.
+
+    Constructs a formatted summary by calculating an average score from a
+    heatmap, adding a narrative headline and body, listing key business
+    impacts in a table, and embedding a radar chart visualization. The function
+    directly modifies the input document object, applying specific branding
+    styles (e.g., fonts, colors, table shading) to all generated content.
+    Textual content is sanitized to replace client-specific placeholders.
+
+    Args:
+        doc (docx.document.Document): The document object to be modified in-place.
+        data (ExecutiveSummaryDraft): A data transfer object containing the textual
+            content, requiring `headline`, `narrative`, and
+            `key_business_impacts` attributes.
+        heatmap (list[dict]): A list of dictionaries where each dictionary
+            represents a topic and is expected to contain a 'score' key with a
+            numerical value. Used to calculate the average score.
+        visuals (dict[str, str]): A dictionary mapping visual element names to their
+            corresponding filenames. A 'radar_chart' key is expected.
+        client_dir (pathlib.Path): The filesystem path to the directory containing
+            client-specific assets, such as the radar chart image.
+        client_name (str): The client's name, used to replace placeholders in the
+            text. Defaults to an empty string.
+
+    Returns:
+        None: The function modifies the `doc` object in place and does not return
+            a value.
+
+    Raises:
+        AttributeError: If the `data` object is missing a required attribute
+            (`headline`, `narrative`, or `key_business_impacts`).
+        IOError: If the radar chart image file specified in `visuals` cannot be
+            opened or read due to permissions or other filesystem issues.
+        ValueError: If the radar chart image file is in an unsupported format
+            or is otherwise invalid.
+    """
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "1. Resumen Ejecutivo", level=1)
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
     table.autofit = False
 
-    # Configurar anchos: 35% (2.1") y 65% (3.9") aprox para A4
+    # Set column widths to an approximate 35/65 ratio (2.1" and 3.9" respectively). This distribution is optimized for readability on a standard A4 page layout.
     table.columns[0].width = Inches(2.1)
     table.columns[1].width = Inches(3.9)
 
@@ -250,7 +391,7 @@ def render_executive_summary(
         except Exception:
             pass
 
-    # Formato puntuación: [X] / 5, fondo #0072BC, tamaño 36, blanco
+    # Define styling for score rendering: format as '[X] / 5', apply a #0072BC background, set font size to 36pt, and set font color to white.
     set_cell_text(
         score_cell,
         f"{score_val} / 5",
@@ -269,7 +410,7 @@ def render_executive_summary(
 
     headline = sanitize_client_name(clean_t_codes(data.headline), client_name)
 
-    # Formato de titular: solo negrita antes de los dos puntos
+    # Apply bold formatting exclusively to the title's substring preceding the colon, in accordance with style guide requirements.
     clear_paragraph(desc_cell.paragraphs[0])
     p = desc_cell.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -291,12 +432,12 @@ def render_executive_summary(
 
     add_spacer(doc, 15)
 
-    # Narrativa y Bullets FUERA de la tabla para mejor legibilidad
+    # Architectural decision: Narrative text and bullet points are rendered outside of any table structure to improve content flow and readability.
     narrative = sanitize_client_name(clean_t_codes(data.narrative), client_name)
     sentences = re.split(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚ])", narrative.strip())
 
     if sentences:
-        # La primera frase actúa como el Bottom Line
+        # The first sentence of the narrative is semantically designated as the 'Bottom Line' or executive summary statement.
         p_intro = doc.add_paragraph()
         p_intro.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         r_intro = p_intro.add_run(sentences[0])
@@ -305,7 +446,7 @@ def render_executive_summary(
         p_intro.paragraph_format.space_before = Pt(12)
         p_intro.paragraph_format.space_after = Pt(6)
 
-        # El resto de frases se presentan como bullets
+        # All subsequent sentences in the collection are formatted as distinct bullet points to enhance readability.
         if len(sentences) > 1:
             add_smart_bullet_list(
                 doc, sentences[1:], color_rgb=BASE_TEXT_COLOR, bold_prefix=False
@@ -313,7 +454,7 @@ def render_executive_summary(
 
     add_spacer(doc, 15)
 
-    # Tabla de Principales Impactos de Negocio
+    #
     impact_table = doc.add_table(rows=1, cols=1)
     finalize_table(impact_table)
 
@@ -335,7 +476,7 @@ def render_executive_summary(
         body_cell = row.cells[0]
         shade_cell(body_cell, "F2F2F2")
 
-        # Escribir directamente en el párrafo 0 de la celda para evitar el "intro" extra
+        # Inject content directly into the cell's first paragraph (p[0]) to preempt the library's default behavior of inserting an unwanted leading paragraph.
         p_bull = body_cell.paragraphs[0]
         clear_paragraph(p_bull)
         p_bull.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -367,7 +508,37 @@ def render_executive_summary(
 def render_burning_platform(
     doc, platform_risks: list[BurningPlatformItem], client_name=""
 ):
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
+    """Renders the systemic threats ('Burning Platform') section into a document.
+
+    Generates a 'Principales Amenazas Sistémicas' section within the provided
+    `python-docx` document object. This function first adds a main heading and a
+    descriptive paragraph. It then iterates through each systemic risk provided
+    in `platform_risks`, creating a distinct, styled table for each one.
+
+    Each table consists of a header cell for the threat's theme, a cell
+    detailing the business risk, and a final cell containing a bulleted list
+    of root causes. Text content is sanitized to replace generic placeholders
+    with the specified `client_name`.
+
+    Args:
+        doc (docx.document.Document): An active `python-docx` Document object to
+            which the content will be appended.
+        platform_risks (list[BurningPlatformItem]): A sequence of data objects,
+            where each object must contain `theme`, `business_risk`, and
+            `root_causes` attributes.
+        client_name (str): The client's name, used to replace placeholders in the
+            risk descriptions. Defaults to an empty string.
+
+    Returns:
+        None: The function modifies the `doc` object in place.
+
+    Raises:
+        AttributeError: If an object within `platform_risks` lacks one of the
+            required attributes (`theme`, `business_risk`, `root_causes`).
+    """
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "2. Principales Amenazas Sistémicas", level=1)
     add_body_paragraph(
         doc,
@@ -378,7 +549,7 @@ def render_burning_platform(
         table = doc.add_table(rows=3, cols=1)
         finalize_table(table)
 
-        # Row 0: Header
+        #
         h_cell = table.rows[0].cells[0]
         theme = sanitize_client_name(clean_t_codes(risk.theme), client_name)
         theme = theme[0].upper() + theme[1:] if theme else ""
@@ -393,7 +564,7 @@ def render_burning_platform(
         for r in h_cell.paragraphs[0].runs:
             r.font.color.rgb = RGBColor(255, 255, 255)
 
-        # Row 1: Riesgo de Negocio
+        #
         r_cell = table.rows[1].cells[0]
         shade_cell(r_cell, "F2F2F2")
         clear_paragraph(r_cell.paragraphs[0])
@@ -410,7 +581,7 @@ def render_burning_platform(
         r1_text.font.color.rgb = BASE_TEXT_COLOR
         r1_text.font.size = Pt(10.5)
 
-        # Row 2: Causas Raíz
+        #
         c_cell = table.rows[2].cells[0]
         shade_cell(c_cell, "F2F2F2")
         clear_paragraph(c_cell.paragraphs[0])
@@ -435,7 +606,38 @@ def render_burning_platform(
 def render_tower_bottom_lines(
     doc, heatmap: list, tower_texts: list[TowerBottomLineItem], client_name=""
 ):
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
+    """Generates and appends a technology area diagnosis table to a Word document.
+
+    Constructs a three-column table summarizing the maturity and executive
+    diagnosis for each technology area (tower). The table is populated by merging
+    data from a heatmap structure with corresponding executive summary texts.
+    The second column, representing maturity, is color-coded based on the
+    numerical score of the technology area. The diagnosis text is sourced from
+    `tower_texts` by matching the tower 'id'; if no match is found, the function
+    falls back to an 'executive_message' field within the `heatmap` data.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` Document object to which
+            the table will be appended.
+        heatmap (list[dict]): A list of dictionaries, where each dictionary
+            represents a technology area. Each dictionary is expected to contain
+            'id', 'name', 'score', 'band', and an optional 'executive_message' key.
+        tower_texts (list[TowerBottomLineItem]): A list of data objects, each
+            providing the executive diagnosis. Each object must have 'id' and
+            'bottom_line' attributes to be correlated with an item in `heatmap`.
+        client_name (str): The client name used to replace placeholders within the
+            final diagnosis text. Defaults to an empty string.
+
+    Returns:
+        None.
+
+    Raises:
+        AttributeError: If an object in `tower_texts` lacks the required 'id' or
+            'bottom_line' attributes.
+    """
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "3. Diagnóstico por Área Tecnológica", level=1)
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
@@ -452,7 +654,7 @@ def render_tower_bottom_lines(
             r.font.color.rgb = RGBColor(255, 255, 255)
     color_map = {"E06666": "F4CCCC", "FFD966": "FFF2CC", "93C47D": "D9EAD3"}
     for t in heatmap:
-        # Re-calculamos el color de forma estricta para asegurar consistencia
+        # The color value is explicitly recalculated here to enforce strict consistency and prevent potential state-related discrepancies across document sections.
         strict_color = status_color_for_score(safe_float(t.get("score"), 0.0))
 
         row = table.add_row()
@@ -472,7 +674,7 @@ def render_tower_bottom_lines(
         )
         shade_cell(row.cells[1], color_map.get(strict_color, "FFFFFF"))
 
-        # Recuperar texto
+        #
         tower_id = t.get("id", "")
         text_val = ""
         for bottom_line_item in tower_texts:
@@ -488,7 +690,7 @@ def render_tower_bottom_lines(
             sanitize_client_name(clean_t_codes(str(text_val)), client_name),
             font_size=10.5,
         )
-        # Apply base text color to cell content
+        #
         for p in row.cells[2].paragraphs:
             for r in p.runs:
                 r.font.color.rgb = BASE_TEXT_COLOR
@@ -497,13 +699,37 @@ def render_tower_bottom_lines(
 
 
 def render_target_vision(doc, vision: TargetVisionDraft, client_name=""):
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
+    """Renders the target state vision section into a Word document.
+
+    Populates a `docx.document.Document` object with a complete section for the
+    "Visión de Estado Objetivo (To-Be)". This section includes a main heading,
+    a formatted table for the strategic value proposition, and bulleted lists
+    detailing the maturity evolution principles and enabling strategic pillars.
+    Placeholders in the source text are replaced with the provided client name.
+
+    Args:
+        doc (docx.document.Document): The document object to be mutated.
+        vision (TargetVisionDraft): A data object containing the vision's textual
+            components. Must expose `value_proposition` (str), `evolution_principles`
+            (list), and `strategic_pillars` (list) attributes.
+        client_name (str): The client's name, used to replace placeholders.
+
+    Returns:
+        None. The `doc` object is modified in place.
+
+    Raises:
+        AttributeError: If the `vision` object or its nested elements lack the
+            required attributes (e.g., `value_proposition`, `pillar`, `description`).
+    """
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "4. Visión de Estado Objetivo (To-Be)", level=1)
 
     table = doc.add_table(rows=2, cols=1)
     finalize_table(table)
 
-    # Row 0: Header
+    #
     v_cell_header = table.rows[0].cells[0]
     set_cell_text(
         v_cell_header,
@@ -516,7 +742,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name=""):
     for r in v_cell_header.paragraphs[0].runs:
         r.font.color.rgb = RGBColor(255, 255, 255)
 
-    # Row 1: Body
+    #
     v_cell_body = table.rows[1].cells[0]
     shade_cell(v_cell_body, "F2F2F2")
     clear_paragraph(v_cell_body.paragraphs[0])
@@ -555,7 +781,37 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name=""):
 def render_execution_roadmap(
     doc, roadmap: ExecutionRoadmapDraft, visuals: dict, client_dir, client_name=""
 ):
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
+    """Generates and appends the execution roadmap section to a `docx` document.
+
+    This function constructs the 'Implementation Plan and Time Horizons' section of a
+    report. It first generates a table detailing the transversal programs and their
+    descriptions. Subsequently, it creates distinct tables for each implementation
+    phase (Quick Wins, Year 1, Year 2, and Year 3), itemizing the initiatives,
+    their business cases, start months, and durations. All textual content is
+    rendered in Spanish.
+
+    Args:
+        doc (docx.document.Document): The document object to be modified in-place.
+        roadmap (ExecutionRoadmapDraft): A data object containing a list of programs
+            and initiatives organized by time horizon.
+        visuals (dict): A dictionary intended to hold visual assets. This parameter
+            is currently unused by the function.
+        client_dir (str): The path to the client's output directory. This parameter
+            is currently unused by the function.
+        client_name (str, optional): The client's name, used for placeholder
+            substitution in text content. Defaults to an empty string.
+
+    Returns:
+        None: The function modifies the `doc` object directly.
+
+    Raises:
+        AttributeError: If the `roadmap` object or its nested structures do not
+            conform to the expected schema (e.g., missing `programs`,
+            `horizons`, or initiative attributes).
+    """
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(
         doc, "5. Plan de Implementación y Horizontes Temporales", level=1
     )
@@ -567,7 +823,7 @@ def render_execution_roadmap(
     table_p = doc.add_table(rows=1, cols=1)
     finalize_table(table_p)
 
-    # Row 0: Header
+    #
     p_cell_header = table_p.rows[0].cells[0]
     set_cell_text(
         p_cell_header,
@@ -580,7 +836,7 @@ def render_execution_roadmap(
     for r in p_cell_header.paragraphs[0].runs:
         r.font.color.rgb = RGBColor(255, 255, 255)
 
-    # Program rows
+    #
     programs = roadmap.programs
     for p in programs:
         row = table_p.add_row()
@@ -679,7 +935,7 @@ def render_execution_roadmap(
                 font_size=10.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER,
             )
-            # Apply base text color to non-header cells
+            #
             for cell in row.cells:
                 for p in cell.paragraphs:
                     for r in p.runs:
@@ -689,7 +945,10 @@ def render_execution_roadmap(
 
 
 def render_executive_decisions(doc, decisions: ExecutiveDecisionsDraft, client_name=""):
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # #2E404D
+    r"""{'docstring': "Appends a formatted 'Executive Decisions' section to a Word document.\n\n    This function constructs and adds a section detailing priority executive\n    decisions. The section comprises a level-1 heading, an introductory\n    paragraph, and a three-column table. The table is populated with data from\n    the `decisions` object, listing the decision scope, required action, and\n    the impact of any delay for each item. All content is styled according to\n    predefined corporate branding guidelines, and textual data is sanitized\n    prior to rendering.\n\n    Args:\n        doc (docx.document.Document): The `python-docx` Document object to which\n            the executive decisions section will be appended.\n        decisions (ExecutiveDecisionsDraft): A data object encapsulating decision\n            details. This object must possess an `immediate_decisions` attribute,\n            which is an iterable of objects. Each of these inner objects must,\n            in turn, provide `decision_type`, `action_required`, and\n            `impact_if_delayed` attributes.\n        client_name (str): The name of the client, used to replace placeholder\n            text in the rendered content. Defaults to an empty string.\n\n    Returns:\n        None. The function modifies the `doc` object in-place.\n\n    Raises:\n        AttributeError: If `decisions` or its contained elements lack the\n            required attributes (e.g., `immediate_decisions`, `decision_type`)."}."""
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "6. Decisiones Ejecutivas Prioritarias", level=1)
     add_body_paragraph(
         doc,
@@ -729,7 +988,7 @@ def render_executive_decisions(doc, decisions: ExecutiveDecisionsDraft, client_n
             font_size=10.5,
         )
         shade_cell(row.cells[2], "FFFFFF")
-        # Apply base text color to non-header cells
+        #
         for cell in row.cells:
             for p in cell.paragraphs:
                 for r in p.runs:
@@ -738,23 +997,60 @@ def render_executive_decisions(doc, decisions: ExecutiveDecisionsDraft, client_n
 
 
 def create_page_number_footer(section):
-    # Activar pie de página diferente para la primera página
+    """Adds a 'Página X de Y' page number to a document section's footer.
+
+    Configures the section footer to display a dynamic page count on all pages
+    except the first, which is reserved for a title page. The function enables
+    the 'different_first_page' property and clears the first page's footer
+    content. It then modifies the primary footer by directly manipulating the
+    underlying OOXML to insert 'PAGE' and 'NUMPAGES' fields. The resulting
+    footer text is centered and styled with a 9pt gray (RGB 127, 127, 127)
+    Arial font.
+
+    Args:
+        section (docx.section.Section): The document section object to be
+            modified in-place.
+
+    Raises:
+        IndexError: If the primary footer (`section.footer`) does not contain at
+            least one paragraph to modify.
+        AttributeError: If the `section` object does not have the expected
+            attributes of a `docx.section.Section` instance.
+    """
+    # Enable the 'different first page' header/footer setting to accommodate a distinct title page layout that omits standard footer content.
     section.different_first_page_header_footer = True
 
-    # Asegurarnos de que el pie de página de la primera página (portada) esté vacío
+    # Explicitly clear the first-page footer content to ensure the cover page remains devoid of footers, adhering to the specified report format.
     first_page_footer = section.first_page_footer
     for p in first_page_footer.paragraphs:
         clear_paragraph(p)
 
-    # Configuramos el pie de página normal (el de las siguientes páginas)
+    # Configure the primary footer for application to all pages subsequent to the title page.
     footer = section.footer
     paragraph = footer.paragraphs[0]
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # Limpiar cualquier texto previo
+    #
     clear_paragraph(paragraph)
 
     def add_field(p, field_code):
+        r"""Inserts a complex Word field into a specified paragraph.
+
+        This function directly manipulates the underlying Office Open XML (OOXML)
+        structure of a `docx.paragraph.Paragraph` object to insert a complex field.
+        It constructs the required sequence of `w:fldChar` elements (with `begin`,
+        `separate`, and `end` types) and a `w:instrText` element containing the
+        field instructions. A placeholder text of "0" is added as the default
+        field result, which is intended to be updated by a Word processing
+        application upon opening the document. The added run is styled with a
+        9pt gray Arial font.
+
+        Args:
+            p (docx.paragraph.Paragraph): The paragraph object into which the
+                field will be inserted. This object is modified in place.
+            field_code (str): The instruction string for the Word field, such as
+                'PAGE \\* MERGEFORMAT' or 'NUMPAGES'.
+        """
         run = p.add_run()
         run.font.size = Pt(9)
         run.font.name = "Arial"
@@ -773,7 +1069,7 @@ def create_page_number_footer(section):
         fldChar2.set(ns.qn("w:fldCharType"), "separate")
         run._r.append(fldChar2)
 
-        # Texto de respaldo
+        #
         t = OxmlElement("w:t")
         t.text = "0"
         run._r.append(t)
@@ -798,6 +1094,25 @@ def create_page_number_footer(section):
 
 
 def load_payload(payload_path: Path) -> GlobalReportPayload:
+    """Load and validate a global report payload from a JSON file.
+
+    Reads and parses a JSON file from the given path, then validates its
+    contents against the `GlobalReportPayload` Pydantic model. If the data
+    does not conform to the model's schema, this function prints a detailed
+    validation error to standard output and terminates the process with a
+    non-zero exit code.
+
+    Args:
+        payload_path (pathlib.Path): The file system path to the JSON payload.
+
+    Returns:
+        GlobalReportPayload: An instance of `GlobalReportPayload` populated
+            with the validated data from the file.
+
+    Raises:
+        FileNotFoundError: If the file at `payload_path` does not exist.
+        json.JSONDecodeError: If the file content is not valid JSON.
+    """
     payload_dict = load_json(payload_path)
     try:
         return GlobalReportPayload.model_validate(payload_dict)
@@ -813,6 +1128,7 @@ def render_global_report(
     output_path: Path,
     client_dir: Path,
 ) -> Path:
+    r"""{'docstring': 'Populates a Word document template to generate a global report.\n\nThis function orchestrates the rendering of a multi-section report. It first\nclears the body of the provided `.docx` template, then conditionally populates\nit with content from the data payload. It processes each available section,\nsuch as the executive summary or roadmap, by calling dedicated rendering\nsubroutines. The final document is saved to the specified output path.\n\nArgs:\n    payload (GlobalReportPayload): A structured data object containing the\n        metadata and content for all potential report sections.\n    template_path (Path): Filesystem path to the source `.docx` template file.\n    output_path (Path): Filesystem path where the generated `.docx` report\n        will be saved. Parent directories are created if they do not exist.\n    client_dir (Path): Filesystem path to the client-specific asset\n        directory, used for resolving relative paths to resources like images.\n\nReturns:\n    Path: The filesystem path of the successfully generated report, identical\n    to the `output_path` argument.\n\nRaises:\n    docx.opc.exceptions.PackageNotFoundError: If the file at `template_path`\n        does not exist, is not a valid ZIP archive, or is not a valid\n        Office Open XML file.\n    OSError: If the output directory cannot be created or the output file\n        cannot be written due to filesystem permissions or other I/O errors.'}."""
     doc = Document(str(template_path))
     clear_document_body(doc)
 
@@ -857,6 +1173,32 @@ def render_global_report(
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Parses command-line arguments to render a global report from a template.
+
+    This function serves as the main entry point for the command-line report
+    generation script. It orchestrates the loading of a JSON payload and the
+    rendering of a template to produce a final report file.
+
+    It requires exactly three command-line arguments in the following order:
+    1. Path to the JSON payload file.
+    2. Path to the template file.
+    3. Path for the output report file.
+
+    Args:
+        argv: An optional list of command-line arguments. If `None`, `sys.argv`
+            is used. The list is expected to contain the script name followed
+            by the payload, template, and output paths.
+
+    Raises:
+        FileNotFoundError: If the file specified by the payload or template
+            path does not exist. This exception is propagated from downstream
+            functions.
+
+    Side Effects:
+        Writes the rendered report to the file specified by the output path.
+        Exits the program via `sys.exit(1)` if the number of command-line
+        arguments is not exactly four (script name plus three required arguments).
+    """
     if len(argv if argv is not None else sys.argv) != 4:
         sys.exit(1)
     payload_path = Path((argv if argv is not None else sys.argv)[1])

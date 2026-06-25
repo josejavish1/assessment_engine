@@ -5,9 +5,9 @@ source_of_truth:
   - ../../pytest.ini
   - ../../tests/test_contract_handover.py
   - ../../tests/test_t5_golden.py
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/run_commercial_pipeline.py
   - ../architecture/working-artifacts.md
 last_verified_against: 2026-05-01
 applies_to:

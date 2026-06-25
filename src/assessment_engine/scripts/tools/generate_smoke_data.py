@@ -1,7 +1,4 @@
-"""
-Módulo generate_smoke_data.py.
-Genera inputs sintéticos y deterministas para el caso smoke_ivirma.
-"""
+"""Generates a synthetic, deterministic dataset for the `smoke_ivirma` integration test."""
 
 from __future__ import annotations
 
@@ -166,6 +163,22 @@ SCENARIOS: dict[str, dict[str, Any]] = {
 
 
 def normalize_towers(towers: list[str] | None) -> list[str]:
+    """Normalizes, deduplicates, and filters a list of tower identifiers.
+
+    This function processes a list of tower strings by converting each identifier
+    to uppercase, stripping leading/trailing whitespace, and removing any
+    duplicates. Identifiers that result in an empty string after normalization
+    are discarded. If the provided `towers` list is None or empty, a predefined
+    default list (`DEFAULT_TOWERS`) is used as the source.
+
+    Args:
+        towers: An optional list of tower identifier strings. If None or empty,
+            a default list is used instead.
+
+    Returns:
+        A new list containing the unique, non-empty, normalized tower
+        identifiers.
+    """
     normalized: list[str] = []
     for tower in towers or DEFAULT_TOWERS:
         tower_id = tower.upper().strip()
@@ -175,6 +188,20 @@ def normalize_towers(towers: list[str] | None) -> list[str]:
 
 
 def resolve_scenario_config(name: str) -> dict[str, Any]:
+    """Resolve and retrieve the configuration for a given scenario name.
+
+    The provided name is stripped of leading and trailing whitespace. If the
+    resulting string is empty, the default scenario configuration is used.
+
+    Args:
+        name: The name of the scenario to look up.
+
+    Returns:
+        The configuration dictionary for the specified scenario.
+
+    Raises:
+        ValueError: If the scenario name, after defaulting, is not found.
+    """
     scenario_name = name.strip() or DEFAULT_SCENARIO
     if scenario_name not in SCENARIOS:
         available = ", ".join(sorted(SCENARIOS))
@@ -190,6 +217,37 @@ def build_responses(
     seed: int,
     tower_targets: dict[str, tuple[float, float]] | None = None,
 ) -> list[str]:
+    """Generates mock Key Performance Indicator (KPI) survey responses from tower definition files.
+
+    This function reads tower definition JSON files for specified towers, locating
+    them within a conventional directory structure under the provided root path.
+    For each KPI defined, it generates a random score within a configurable range
+    and formats the result as a response string. This is primarily used for
+    generating deterministic test data.
+
+    The expected file path for a tower definition is:
+    `{root}/engine_config/towers/{tower_id}/tower_definition_{tower_id}.json`
+
+    Args:
+        root: The root `pathlib.Path` for the configuration directory structure.
+        towers: A list of tower ID strings to process. If a corresponding
+            definition file for a tower ID does not exist, it is silently skipped.
+        seed: An integer used to seed the random number generator, ensuring
+            deterministic score generation across runs.
+        tower_targets: An optional dictionary mapping tower IDs to a tuple of
+            (min_score, max_score) for score generation. If a tower ID is not
+            found in this dictionary, a default range of (2.0, 3.0) is used.
+            If the entire argument is None, a global default mapping is used.
+
+    Returns:
+        A list of strings, where each string is a formatted KPI response,
+        e.g., "some_kpi_id.PR1: 2.7".
+
+    Raises:
+        KeyError: If a KPI object within a tower definition JSON file is
+            missing the required 'kpi_id' key.
+        json.JSONDecodeError: If a tower definition file is not valid JSON.
+    """
     rng = random.Random(seed)
     responses_lines: list[str] = []
     targets = tower_targets or DEFAULT_TOWER_TARGETS
@@ -223,6 +281,49 @@ def generate_smoke_inputs(
     root: Path = ROOT,
     write_files: bool = True,
 ) -> tuple[Path, Path]:
+    """Generates input files for a smoke test from a named scenario.
+
+    This function orchestrates the creation of necessary input files for a smoke
+    test, including a context file, a responses file, and an optional client
+    intelligence dossier. It resolves a scenario configuration by name, which
+    dictates the context content and response generation targets. All artifacts
+    are written to a client-specific subdirectory.
+
+    If a scenario specifies a client dossier template, a corresponding JSON file
+    is generated. If no template is provided, any pre-existing dossier file at the
+    destination is removed to ensure a clean state.
+
+    When `write_files` is False, the function operates in a dry-run mode,
+    returning the calculated destination paths without performing any disk I/O.
+
+    Args:
+        client: The client identifier. Used to construct the output directory
+            path, e.g., `{root}/working/{client}`. If an empty or
+            whitespace-only string is provided, it defaults to `DEFAULT_CLIENT`.
+        towers: An optional list of tower names to use for generating responses.
+            If None, a default set of towers is used.
+        seed: An integer seed for the random number generator to ensure
+            reproducible response data generation.
+        scenario: The name of a predefined test scenario. This name is used to
+            look up a configuration defining the context, tower targets, and
+            an optional dossier template.
+        root: The root directory for test artifacts. Outputs are placed within a
+            `working/{client_id}` subdirectory of this path.
+        write_files: If True, creates the output directory and writes all
+            generated files. If False, performs a dry run without any disk
+            modifications.
+
+    Returns:
+        A tuple containing the `pathlib.Path` objects for the context file and
+        the responses file, respectively. These paths are returned even if
+        `write_files` is False.
+
+    Raises:
+        ValueError: If the specified `scenario` name does not correspond to a
+            known configuration.
+        OSError: If an error occurs during directory creation or file I/O, such
+            as a permissions issue.
+    """
     client_id = client.strip() or DEFAULT_CLIENT
     client_dir = root / "working" / client_id
     scenario_config = resolve_scenario_config(scenario)
@@ -263,6 +364,7 @@ def generate_smoke_inputs(
 
 
 def main(argv: list[str] | None = None) -> None:
+    r"""{'docstring': 'Generate smoke test data from command-line arguments.\n\nServes as the main entry point for the data generation script. It parses\ncommand-line arguments for client, seed, towers, and scenario. The parsed\narguments are then used to invoke `generate_smoke_inputs`. Upon completion,\nit logs the paths of the generated context and response files and reports\nthe total count of responses created.\n\nArgs:\n    argv: A list of command-line arguments to parse. If None, arguments\n        are parsed from `sys.argv`.'}."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--client", default=DEFAULT_CLIENT)
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED)

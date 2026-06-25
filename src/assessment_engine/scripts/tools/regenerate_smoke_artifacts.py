@@ -1,7 +1,4 @@
-"""
-Módulo regenerate_smoke_artifacts.py.
-Orquesta la regeneración reproducible de artefactos smoke en working/.
-"""
+"""Provides a reproducible process for regenerating smoke test artifacts within the 'working/' directory."""
 
 from __future__ import annotations
 
@@ -36,6 +33,27 @@ def run_step(
     env: dict[str, str],
     dry_run: bool,
 ) -> None:
+    """Executes a shell command as a logged step within a subprocess.
+
+    Logs a human-readable name and a shell-quoted version of the command,
+    then executes it using `subprocess.run`. The subprocess inherits the
+    environment from the parent process, which is then updated with the
+    provided `env` variables. Execution occurs in the `ROOT` directory.
+
+    If `dry_run` is True, the command is logged but not executed. If the
+    subprocess returns a non-zero exit code, this function raises a
+    `SystemExit` exception to terminate the program.
+
+    Args:
+        cmd_args: A list of strings representing the command and its arguments.
+        step_name: A descriptive name for the step, used for logging headers.
+        env: A dictionary of environment variables to set for the subprocess.
+        dry_run: If True, the command is logged but not executed.
+
+    Raises:
+        SystemExit: If the command subprocess returns a non-zero exit code. The
+            exit code of the exception will match that of the subprocess.
+    """
     printable = " ".join(shlex.quote(arg) for arg in cmd_args)
     logger.info(f"\n=== {step_name} ===")
     logger.info(printable)
@@ -59,6 +77,26 @@ def build_local_steps(
     context_path: str,
     responses_path: str,
 ) -> list[tuple[list[str], str]]:
+    """Constructs a sequence of shell commands for executing the assessment engine pipeline.
+
+    This function generates an ordered list of commands to run the four main
+    stages of the local assessment engine: building case inputs, creating an
+    evidence ledger, performing scoring, and running the evidence analyst. The
+    commands are structured to form a pipeline, where the output artifacts of
+    one stage serve as inputs for subsequent stages.
+
+    Args:
+        python_bin: The file path to the Python interpreter executable.
+        client_id: The unique identifier for the client.
+        tower_id: The unique identifier for the tower.
+        context_path: The file path to the context data input file.
+        responses_path: The file path to the responses data input file.
+
+    Returns:
+        A list of tuples. Each tuple contains a list of command-line arguments
+        representing a single pipeline step, and a corresponding human-readable
+        string label for that step.
+    """
     tower_dir = ROOT / "working" / client_id / tower_id
     case_input_path = tower_dir / "case_input.json"
     evidence_ledger_path = tower_dir / "evidence_ledger.json"
@@ -124,6 +162,40 @@ def build_local_steps(
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Orchestrates the regeneration of smoke test artifacts for the assessment engine.
+
+    This function serves as the main entry point for the smoke artifact
+    regeneration script. It parses command-line arguments to configure and
+    execute a multi-stage pipeline. The pipeline consists of the following
+    stages:
+
+    1.  Generation of synthetic input data (context and responses) based on a
+        specified scenario and seed.
+    2.  Execution of local processing steps for each specified "tower" up to the
+        generation of the `findings.json` artifact.
+    3.  An optional preflight check to verify connectivity and configuration with
+        the Vertex AI service.
+    4.  Optional execution of the full tower, global, commercial, and web
+        rendering pipelines, which typically involve AI model interactions.
+
+    A dry-run mode is provided to print the commands for each step without
+    executing them. Configuration overrides, such as model names and timeouts,
+    are passed to the underlying pipeline scripts via environment variables.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv[1:]` is
+            used.
+
+    Returns:
+        None. The function executes its pipeline via side effects, including
+        file system I/O and subprocess execution.
+
+    Raises:
+        subprocess.CalledProcessError: If any of the executed pipeline scripts
+            fail by returning a non-zero exit code.
+        Exception: Propagates any unhandled exceptions from helper functions
+            responsible for file I/O, network requests, or environment setup.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--client", default="smoke_ivirma")
     parser.add_argument("--tower", default="T5")

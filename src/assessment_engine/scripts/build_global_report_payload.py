@@ -1,7 +1,4 @@
-"""
-Módulo build_global_report_payload.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Implements the core logic for the Assessment Engine pipeline, orchestrating the data aggregation and structuring required for the final global report payload."""
 
 from __future__ import annotations
 
@@ -39,6 +36,7 @@ TOWER_NAMES_MAP = {
 
 
 def load_json(path: Path) -> dict[str, Any] | None:
+    """Load and parse a JSON file, returning None if the file is nonexistent or invalid."""
     if not path.exists():
         return None
     try:
@@ -53,7 +51,8 @@ def _build_source_version(blueprint_towers: list[str]) -> str:
 
 
 def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] | None:
-    # Intentamos cargar los nuevos Blueprints primero
+    r"""{'docstring': "Aggregates data from multiple tower blueprints into a global report payload.\n\n    Scans a specified client directory for tower-specific blueprint payload files,\n    identified by the glob pattern 'T*/blueprint_*_payload.json'. It processes\n    each blueprint to extract metrics, strategic risks, initiatives, architectural\n    principles, and operating model implications. An optional\n    'client_intelligence.json' file is also loaded to provide additional\n    context. The aggregated data collections are deduplicated and capped to\n    fixed limits. All extracted information is compiled, scored, and\n    structured into a single dictionary for global client reporting.\n\n    Args:\n        client_dir: The root `pathlib.Path` for a client's data. This directory\n            is expected to contain subdirectories for each assessment tower (e.g.,\n            'T1', 'T2'), which in turn hold the blueprint JSON files.\n        client_name: The name of the client, used to populate metadata in the\n            output dictionary.\n\n    Returns:\n        A dictionary containing the structured global report payload. Returns\n        `None` if no tower blueprint files are found or if no data can be\n        successfully processed from the located files. The returned dictionary\n        includes keys such as `executive_summary`, `heatmap`, `strategic_risks`,\n        `key_initiatives`, and `intelligence_dossier`."}."""
+    # Prioritizes loading new Blueprints to ensure the most recent configurations are processed first, thereby superseding any extant or default settings.
     blueprint_files = list(client_dir.glob("T*/blueprint_*_payload.json"))
 
     if not blueprint_files:
@@ -77,7 +76,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         except Exception:
             intelligence_dossier = {}
 
-    # 1. Prioridad: Procesar Blueprints
+    # Stage 1: Process Blueprints as the canonical source for assessment criteria and structural definitions.
     for bp in sorted(
         blueprint_files,
         key=lambda x: int(x.parent.name[1:]) if x.parent.name[1:].isdigit() else 99,
@@ -92,7 +91,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             tid, data.get("document_meta", {}).get("tower_name", tid)
         )
 
-        # Extraer datos del Blueprint
+        #
         pillars_analysis = data.get("pillars_analysis", [])
         avg_score = average_pillar_score(pillars_analysis, default=0.0)
         target_score = average_pillar_target(pillars_analysis, default=4.0)
@@ -134,7 +133,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                     }
                 )
 
-        # Recolectar principios e implicaciones del Blueprint si existen
+        #
         if data.get("architecture_principles"):
             all_principles.extend(data.get("architecture_principles", []))
         if data.get("operating_model_implications"):
@@ -147,7 +146,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
 
     avg_score = round(sum(float(t["score"]) for t in towers_data) / len(towers_data), 1)
 
-    # Eliminar duplicados y limitar
+    # Deduplicates the collection and enforces a cardinality limit to control payload size and processing overhead.
     unique_principles = list(dict.fromkeys(all_principles))[:10]
     unique_implications = list(dict.fromkeys(all_implications))[:10]
 
@@ -191,6 +190,26 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Builds a global report payload and writes it to a JSON file.
+
+    This function serves as the main entry point for a command-line script. It
+    parses arguments for a client directory, client name, and an output file
+    path. It then invokes `build_global_payload` to construct the report data,
+    serializes this data into a JSON formatted string, and writes the result to
+    the specified output file.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv` is used.
+            The list is expected to contain the script name followed by three
+            arguments: client directory, client name, and output path.
+
+    Raises:
+        SystemExit: If the number of provided arguments is less than four
+            (i.e., script name + three required arguments).
+        IOError: If an error occurs while writing the output JSON file to disk.
+        TypeError: If the payload returned by `build_global_payload` contains
+            objects that cannot be serialized to JSON.
+    """
     raw_args = list(argv if argv is not None else sys.argv)
     if len(raw_args) < 4:
         sys.exit(1)

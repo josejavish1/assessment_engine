@@ -21,7 +21,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
   const startExecution = async () => {
     setExecutionState('running');
     setLogs("Iniciando Pipeline de Ejecución Autónoma...\nCalculando Blast Radius...\nAsignando Agentes...\n\n");
-    
+
     const res = await startPlanExecution(requestDir, altIndex);
     if (res.success && res.jobId) {
       const poll = setInterval(async () => {
@@ -54,7 +54,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
 
   const handleKillSwitch = async () => {
     if (!confirm("⚠️ ATENCIÓN: ¿Estás seguro de querer abortar la ejecución? El sistema ejecutará un 'git reset --hard' para revertir todos los cambios y asegurar el repositorio.")) return;
-    
+
     setLogs(prev => prev + "\n\n🚨 ABORTANDO EJECUCIÓN...\nEjecutando git reset --hard...");
     const res = await abortAndRevert();
     setExecutionState('error');
@@ -116,7 +116,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
       {/* Header Bar */}
       <div className="border-b border-border/50 bg-muted/10 p-6 flex items-center justify-between shrink-0">
         <div>
-          <button 
+          <button
             onClick={onBack}
             disabled={executionState === 'running'}
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors disabled:opacity-50"
@@ -140,16 +140,16 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
                <p className="text-xl font-mono text-foreground">{Math.ceil(eta)} min</p>
              </div>
           )}
-          
-          <button 
+
+          <button
             onClick={handleKillSwitch}
             disabled={executionState !== 'running'}
             className="px-4 py-2 rounded-lg font-bold border-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all disabled:opacity-30 flex items-center gap-2"
           >
             <XCircle className="h-5 w-5" /> The Kill Switch
           </button>
-          
-          <button 
+
+          <button
             onClick={startExecution}
             disabled={executionState === 'running' || executionState === 'completed'}
             className="px-6 py-2.5 rounded-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg disabled:opacity-50 flex items-center gap-2"
@@ -161,7 +161,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
       </div>
 
       <div className="flex-1 flex overflow-hidden p-6 gap-6 bg-muted/5">
-        
+
         {/* Left Column: Causal Pipeline */}
         <div className="w-1/3 flex flex-col gap-4 overflow-y-auto">
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -210,7 +210,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
               <XCircle className="h-6 w-6 text-destructive" />
               <h2 className="text-xl font-bold text-destructive">ACTION GATE TRIGGERED</h2>
             </div>
-            
+
             <div className="p-6 space-y-6 text-slate-300">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Diagnóstico del Doctor Agent</h3>
@@ -245,13 +245,13 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
             </div>
 
             <div className="bg-slate-900 p-4 border-t border-slate-800 flex justify-end gap-4">
-              <button 
+              <button
                 onClick={handleKillSwitch}
                 className="px-4 py-2 rounded font-medium border border-slate-700 hover:bg-slate-800 transition-colors"
               >
                 Denegar y Abortar
               </button>
-              <button 
+              <button
                 onClick={handleAuthorizeActionGate}
                 className="px-6 py-2 rounded font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg"
               >

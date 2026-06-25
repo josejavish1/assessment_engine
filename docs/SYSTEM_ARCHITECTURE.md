@@ -2,10 +2,10 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - src/assessment_engine/
-  - src/assessment_engine/scripts/
-  - src/assessment_engine/mcp_server.py
-  - src/assessment_engine/schemas/
+  - src/domain/
+  - src/application/
+  - src/domain/mcp_server.py
+  - src/domain/schemas/
 last_verified_against: 2026-05-02
 applies_to:
   - humans

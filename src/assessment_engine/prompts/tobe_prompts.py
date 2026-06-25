@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección TO-BE.
-"""
+"""Contains the prompt templates for the 'TO-BE' section of the assessment."""
 
 
 def get_tobe_writer_prompt(
@@ -11,6 +9,7 @@ def get_tobe_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Generate the prompt for the TO-BE Writer agent."""
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -77,6 +76,7 @@ def get_tobe_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Construct the prompt for the TO-BE section reviewer agent by formatting the provided document context."""
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

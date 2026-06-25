@@ -61,7 +61,7 @@ export function AgentChat({ messages, isSubmitting, onSendMessage }: AgentChatPr
           <Bot className="h-4 w-4 text-primary" /> Architect Agent
         </h3>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto p-4 space-y-6" ref={scrollRef}>
         {messages.map((msg) => (
           <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -102,7 +102,7 @@ export function AgentChat({ messages, isSubmitting, onSendMessage }: AgentChatPr
             minRows={1}
             maxRows={8}
           />
-          <button 
+          <button
             onClick={handleSend}
             disabled={isSubmitting || inputValue.trim() === ''}
             className="bg-primary text-primary-foreground p-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors mb-0.5 mr-0.5"

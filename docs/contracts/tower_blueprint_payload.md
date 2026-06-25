@@ -2,7 +2,7 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/schemas/blueprint.py
+  - ../../src/domain/schemas/blueprint.py
 last_verified_against: 2026-05-03
 applies_to:
   - humans
@@ -14,7 +14,7 @@ doc_type: canonical
 
 Este documento define la estructura y campos del artefacto `blueprint_<tower>_payload.json`, que actúa como la **fuente de verdad** para el análisis de una torre tecnológica.
 
-El schema Pydantic que gobierna este contrato se encuentra en `src/assessment_engine/schemas/blueprint.py`.
+El schema Pydantic que gobierna este contrato se encuentra en `src/domain/schemas/blueprint.py`.
 
 ## Modelo Principal: `BlueprintPayload`
 

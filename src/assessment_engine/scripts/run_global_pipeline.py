@@ -1,7 +1,4 @@
-"""
-Módulo run_global_pipeline.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Main entry point for orchestrating the end-to-end Assessment Engine pipeline."""
 
 import sys
 
@@ -19,6 +16,7 @@ from assessment_engine.scripts.lib.runtime_paths import (
 
 
 def main(argv: list[str] | None = None) -> None:
+    r"""{'docstring': 'Orchestrates the end-to-end pipeline to generate a consolidated executive report.\n\n    This function serves as the main entry point for the global report generation\n    script. It executes a multi-stage pipeline by invoking a series of\n    subordinate modules as separate processes. The pipeline stages include:\n\n    1.  Payload Generation: Constructs a core JSON data payload from various\n        client-specific input sources.\n    2.  AI Refinement: Processes the JSON payload through an AI model to\n        synthesize high-level strategic insights.\n    3.  Visuals Generation: Creates data visualizations, including a radar\n        chart and an executive roadmap image, from the refined payload.\n    4.  DOCX Rendering: Assembles the structured content and generated visuals\n        into a final DOCX report using a predefined template.\n\n    An optional preflight check is performed to validate the Vertex AI\n    environment configuration. This check can be disabled by setting the\n    `ASSESSMENT_SKIP_VERTEX_PREFLIGHT` environment variable to "1".\n\n    Args:\n        argv: Command-line arguments, where the first element after the script\n            name is the client name. If `None`, `sys.argv` is used.\n\n    Returns:\n        None. This function produces a DOCX file as a side effect and prints its\n        path to standard output upon successful completion.\n\n    Raises:\n        SystemExit: If the client name is not provided as a command-line\n            argument.\n        FileNotFoundError: If the directory for the specified client or a\n            required template file cannot be found.\n        Exception: Propagates exceptions from the preflight check or any of the\n            pipeline subprocesses, indicating a failure in a specific stage.'}."""
     if len(argv if argv is not None else sys.argv) < 2:
         print("Uso: python -m scripts.run_global_pipeline <client_name>")
         sys.exit(1)
@@ -39,7 +37,7 @@ def main(argv: list[str] | None = None) -> None:
 
     python_bin = resolve_python_bin()
 
-    # 1. Generar Payload Inicial
+    # Stage 1: Initial Payload Generation. Constructs the core data payload from various input sources, forming the basis for subsequent analysis.
     run_module_step(
         [
             python_bin,
@@ -53,7 +51,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 2. Refinado Estratégico con IA (CIO Level)
+    # Stage 2: AI-driven Strategic Refinement. The initial payload is processed by AI models to synthesize high-level strategic insights and narrative themes.
     run_module_step(
         [
             python_bin,
@@ -65,7 +63,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 3. Generar Visuales
+    # Stage 3: Visuals Generation. Generates data visualizations, such as charts and diagrams, based on the refined payload data.
     run_module_step(
         [
             python_bin,
@@ -87,7 +85,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 4. Renderizar DOCX
+    # Stage 4: DOCX Document Rendering. Assembles the structured content and generated visuals into a final, formatted DOCX report.
     run_module_step(
         [
             python_bin,

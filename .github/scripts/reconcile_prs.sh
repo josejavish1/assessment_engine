@@ -13,7 +13,7 @@ while read -r pr_number pr_branch; do
   git reset --hard origin/main
 
   git fetch origin "${pr_branch}:${pr_branch}"
-  
+
   merge_base=$(git merge-base origin/main "${pr_branch}")
   main_head=$(git rev-parse origin/main)
 
@@ -26,7 +26,7 @@ while read -r pr_number pr_branch; do
   echo "Branch '${pr_branch}' needs updating. Rebasing onto 'main'."
 
   git checkout "${pr_branch}"
-  
+
   if ! git rebase origin/main; then
     echo "::error::Conflict detected while rebasing '${pr_branch}'. Aborting rebase."
     gh pr comment "${pr_number}" --body "Automatic rebase failed due to merge conflicts. Please resolve them manually and push the changes."

@@ -1,9 +1,6 @@
-"""
-Servidor MCP (Model Context Protocol) para el Assessment Engine.
+"""Defines the Model Context Protocol (MCP) server for the Assessment Engine.
 
-Este módulo expone las herramientas core de renderizado y análisis
-para que puedan ser consumidas por un Supervisor Agent (LangGraph/CrewAI)
-o clientes MCP compatibles (Cursor, Claude Desktop, etc).
+This module provides an API that exposes core assessment, rendering, and plan execution functionalities. It is designed for consumption by supervisor agents (e.g., LangGraph, CrewAI) or other MCP-compliant clients.
 """
 
 import asyncio
@@ -22,10 +19,10 @@ from pydantic import ValidationError
 from assessment_engine.schemas.annex_synthesis import AnnexPayload
 from assessment_engine.schemas.blueprint import BlueprintPayload
 
-# Inicializar FastMCP
+#
 mcp = FastMCP("Assessment Engine Core")
 
-# Rutas base
+# Defines singleton path constants for core application directories and resources.
 ROOT = Path(__file__).resolve().parents[2]
 PYTHON_BIN = sys.executable
 LOAD_ERRORS = (JSONDecodeError, OSError, UnicodeDecodeError)
@@ -165,7 +162,7 @@ def _inspect_legacy_state(case_dir: Path) -> dict:
 
 
 def _run_script(module_name: str, args: list[str]) -> str:
-    """Ejecuta un script del motor de forma aislada y segura."""
+    """Executes a specified engine script in a secure, isolated subprocess environment."""
     cmd = [PYTHON_BIN, "-m", module_name] + args
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT)
@@ -175,7 +172,7 @@ def _run_script(module_name: str, args: list[str]) -> str:
         raise RuntimeError(
             f"Error ejecutando {module_name}:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
         )
-    # Combine stdout and stderr since logs often go to stderr
+    # Redirects stderr to stdout, ensuring a single, unified stream captures all subprocess output for comprehensive logging, as critical errors are often routed to stderr.
     combined_output = f"{result.stdout}\n{result.stderr}".strip()
     return combined_output
 
@@ -184,9 +181,28 @@ def _run_script(module_name: str, args: list[str]) -> str:
 def build_tower_payload(
     approved_annex_json: str, output_json: str, client_name: str, profile: str = "short"
 ) -> str:
-    """
-    Construye un payload intermedio legacy para renderizar el Anexo de Torre.
-    Convierte un annex refined heredado en un payload estructurado para DOCX.
+    """Generates a JSON payload for Tower Annex rendering from a legacy artifact.
+
+    This function acts as a wrapper, executing a legacy script to transform an
+    'annex refined' JSON artifact into the canonical payload format required
+    for DOCX document generation. It passes the provided arguments directly to
+    the underlying script.
+
+    Args:
+        approved_annex_json: Path to the input JSON file containing the legacy
+            'annex refined' data.
+        output_json: Path to the file where the generated JSON payload will be
+            written.
+        client_name: Name of the client to be embedded within the payload.
+        profile: The rendering profile that dictates the transformation logic.
+            Defaults to 'short'.
+
+    Returns:
+        A success message concatenated with the standard output from the script
+        upon successful execution.
+
+    Raises:
+        RuntimeError: If the underlying script execution encounters an error.
     """
     out = _run_script(
         "assessment_engine.scripts._legacy.build_tower_annex_template_payload",
@@ -197,9 +213,26 @@ def build_tower_payload(
 
 @mcp.tool()
 def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -> str:
-    """
-    Renderiza el documento final DOCX del Anexo de Torre usando una plantilla corporativa.
-    Requiere el payload_json generado previamente por build_tower_payload.
+    """Invokes an external script to populate a DOCX template using a structured JSON payload.
+
+    This function serves as a high-level wrapper for the
+    `assessment_engine.scripts.render_tower_annex_from_template` script,
+    forwarding the provided file paths as command-line arguments.
+
+    Args:
+        payload_json: The file path to the input JSON data.
+        template_docx: The file path to the source DOCX template.
+        output_docx: The destination file path for the rendered DOCX document.
+
+    Returns:
+        A string containing a success message concatenated with the standard
+        output from the rendering script upon successful execution.
+
+    Raises:
+        FileNotFoundError: If the `payload_json` or `template_docx` file cannot
+            be located by the underlying script.
+        RuntimeError: If the underlying script returns a non-zero exit code or
+            otherwise fails during execution.
     """
     out = _run_script(
         "assessment_engine.scripts.render_tower_annex_from_template",
@@ -210,8 +243,24 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
 
 @mcp.tool()
 def generate_radar_chart(global_payload_json: str) -> str:
-    """
-    Genera el gráfico de radar global en formato PNG a partir del payload global.
+    """Generates a global radar chart by invoking a subordinate script.
+
+    This function acts as a wrapper, passing the provided JSON payload as a
+    command-line argument to the `assessment_engine.scripts.generate_global_radar_chart`
+    script for processing. It captures the standard output from the script upon
+    successful completion.
+
+    Args:
+        global_payload_json: A JSON string containing the aggregated global
+            assessment data.
+
+    Returns:
+        A formatted string containing a success message prefixed to the standard
+        output from the generation script.
+
+    Raises:
+        Exception: Propagated from the script runner if the chart generation
+            script encounters an error during execution.
     """
     out = _run_script(
         "assessment_engine.scripts.generate_global_radar_chart", [global_payload_json]
@@ -223,8 +272,29 @@ def generate_radar_chart(global_payload_json: str) -> str:
 def render_commercial_docx(
     commercial_payload_json: str, template_docx: str, output_docx: str
 ) -> str:
-    """
-    Renderiza el documento final DOCX del Account Action Plan Comercial.
+    """Renders a commercial action plan into a DOCX document from a JSON payload.
+
+    This function serves as a wrapper that invokes the external script
+    `assessment_engine.scripts.render_commercial_report` in a separate process.
+    It passes the source JSON, template, and output file paths as command-line
+    arguments to the script.
+
+    Args:
+        commercial_payload_json: The file path to the JSON payload containing
+            the commercial account action plan data.
+        template_docx: The file path to the DOCX template document.
+        output_docx: The destination file path for the generated DOCX report.
+
+    Returns:
+        A confirmation message concatenated with the standard output from the
+        rendering script upon successful execution.
+
+    Raises:
+        FileNotFoundError: If the `commercial_payload_json` or `template_docx`
+            file does not exist at the specified paths.
+        subprocess.CalledProcessError: If the underlying rendering script
+            exits with a non-zero status code, indicating an error during
+            document generation.
     """
     out = _run_script(
         "assessment_engine.scripts.render_commercial_report",
@@ -235,11 +305,7 @@ def render_commercial_docx(
 
 @mcp.tool()
 def get_tower_state(case_dir: str) -> str:
-    """
-    Inspecciona un directorio de caso y devuelve un resumen JSON del estado
-    de los artefactos de la torre. Prioriza el flujo canónico blueprint->annex
-    y mantiene el detalle legacy por compatibilidad y diagnóstico.
-    """
+    r"""{'docstring': "Generate a JSON-serialized summary of tower artifact states.\n\n    This function inspects a specified case directory to determine the state of\n    its artifacts. It distinguishes between artifacts generated by the canonical\n    blueprint-to-annex workflow and those from legacy processes. The resulting\n    JSON object contains distinct 'canonical' and 'legacy' keys. For backward\n    compatibility, the contents of the 'legacy' key are also merged into the\n    top-level of the JSON object.\n\n    Args:\n        case_dir: The file system path to the case directory to inspect.\n\n    Returns:\n        A JSON-formatted string summarizing the state of the tower artifacts.\n        If the path specified by `case_dir` does not exist or is not a\n        directory, a plain-text error string is returned."}."""
     path = Path(case_dir)
     if not path.exists() or not path.is_dir():
         return f"Error: Directorio {case_dir} no encontrado."
@@ -252,7 +318,7 @@ def get_tower_state(case_dir: str) -> str:
     return json.dumps(state, indent=2, ensure_ascii=False)
 
 
-# Memoria en RAM para la cola de trabajos (Job Queue)
+# Maintains the in-memory state of all asynchronous jobs, mapping job IDs to their current status, logs, and final results.
 job_status: dict[str, str] = {}
 job_results: dict[str, str] = {}
 
@@ -261,6 +327,7 @@ async def _background_run_plan(job_id: str, request_text: str):
     loop = asyncio.get_event_loop()
 
     def run_sync():
+        """Synchronously execute the 'plan' command of the product owner orchestrator script."""
         return _run_script(
             "assessment_engine.scripts.tools.run_product_owner_orchestrator",
             ["plan", "--request", request_text],
@@ -297,14 +364,26 @@ async def _background_run_plan(job_id: str, request_text: str):
 
 @mcp.tool()
 async def start_plan_generation(request_text: str) -> str:
-    """
-    Inicia la generación de un plan de forma asíncrona.
-    Devuelve un job_id inmediatamente para no bloquear al cliente HTTP.
+    """Dispatches an asynchronous job to generate a Commercial Account Action Plan.
+
+    Schedules the plan generation to run as a background task and returns a unique
+    job identifier immediately. This non-blocking design enables a client to use
+    the returned `job_id` to poll for completion status without waiting for the
+    operation to finish.
+
+    Args:
+        request_text: The user-provided prompt or details required for plan
+            generation.
+
+    Returns:
+        A JSON-serialized string containing the unique `job_id` for the
+        background task and an initial status of 'started'.
+        Example: '{"job_id": "...", "status": "started"}'
     """
     job_id = str(uuid.uuid4())
     job_status[job_id] = "running"
 
-    # Lanzar la tarea en segundo plano sin bloquear (Fire and forget)
+    # Dispatches the task to a background process to prevent blocking the main server thread. This fire-and-forget pattern allows for an immediate HTTP response while the job executes asynchronously.
     asyncio.create_task(_background_run_plan(job_id, request_text))
 
     return json.dumps({"job_id": job_id, "status": "started"})
@@ -312,9 +391,7 @@ async def start_plan_generation(request_text: str) -> str:
 
 @mcp.tool()
 def check_plan_status(job_id: str) -> str:
-    """
-    Comprueba el estado de un plan en generación.
-    """
+    """Return the status of a plan generation job as a JSON-formatted string."""
     status = job_status.get(job_id, "not_found")
     if status == "completed" or status == "error":
         result = job_results.get(job_id, "")
@@ -324,10 +401,7 @@ def check_plan_status(job_id: str) -> str:
 
 @mcp.tool()
 async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
-    """
-    Inicia la ejecución (Fase 2) de un plan previamente generado y aprobado.
-    Devuelve un job_id inmediatamente.
-    """
+    r"""{'docstring': 'Initiates the asynchronous execution of an action plan in a background process.\n\n    This function spawns a separate process to run the product owner orchestrator\n    script (`run_product_owner_orchestrator`). A unique job ID is generated\n    and returned immediately, allowing the caller to track the long-running\n    task without blocking. The subprocess\'s standard output and final status\n    are captured in global state, accessible via the job ID through other\n    functions.\n\n    Args:\n        request_dir: The file system path to the directory containing the\n            action plan request to execute.\n        alt_index: The zero-based index of the alternative plan within the\n            request to execute. Defaults to 0.\n\n    Returns:\n        A JSON-formatted string containing the unique job ID and an initial\n        status of "started". Example:\n        \'{"job_id": "...", "status": "started"}\''}."""
     job_id = str(uuid.uuid4())
     job_status[job_id] = "running"
     job_results[job_id] = ""
@@ -387,9 +461,7 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
 
 @mcp.tool()
 def check_execution_status(job_id: str) -> str:
-    """
-    Comprueba el estado de una ejecución en proceso, devolviendo el log parcial si está corriendo.
-    """
+    """Return the status and result of an execution job as a JSON-serialized string."""
     status = job_status.get(job_id, "not_found")
     result = job_results.get(job_id, "")
     return json.dumps({"status": status, "result": result})
@@ -397,8 +469,26 @@ def check_execution_status(job_id: str) -> str:
 
 @mcp.tool()
 def check_action_gate(request_dir: str) -> str:
-    """
-    Comprueba si existe un bloqueo de Gobernanza Inmunitaria (Action Gate).
+    """Checks for an active Immune Governance Action Gate for a given plan.
+
+    Determines if a mandatory manual approval step is required by verifying the
+    existence and readability of a `reconciliation_summary.json` file within the
+    specified request directory. The presence of this file signifies an active
+    action gate.
+
+    Args:
+        request_dir: The file system path to the directory containing the plan's
+            reconciliation files.
+
+    Returns:
+        A JSON-formatted string describing the action gate status. The structure of
+        the returned JSON object depends on the state of the summary file:
+        - If `reconciliation_summary.json` exists and is successfully parsed,
+          returns `{"action_gate_active": true, "data": <content>}` where
+          `<content>` is the parsed JSON data from the file.
+        - If the file does not exist, returns `{"action_gate_active": false}`.
+        - If the file exists but an error occurs during I/O or JSON decoding,
+          returns `{"action_gate_active": false, "error": "<error_message>"}`.
     """
     import os
 
@@ -415,8 +505,29 @@ def check_action_gate(request_dir: str) -> str:
 
 @mcp.tool()
 def authorize_action_gate(request_dir: str, alt_index: int = 0) -> str:
-    """
-    Autoriza un Action Gate actualizando el plan y eliminando el bloqueo.
+    """Resolves a pending Action Gate by applying an authorization summary to a plan file.
+
+    This function operates on a file-based signaling mechanism within a specified
+    directory. It reads authorization details from `reconciliation_summary.json`,
+    modifies the corresponding `plan.json` to reflect the authorized changes,
+    generates an `authorized_feedback.json` audit file, and finally deletes the
+    summary file to signify completion.
+
+    The modifications include updating the plan's `in_scope` files based on the
+    summary's `blast_radius` and overriding specified invariants with an explicit
+    authorization notice.
+
+    Args:
+        request_dir (str): The path to the directory containing the `plan.json`
+            and `reconciliation_summary.json` files.
+        alt_index (int): The index of the alternative plan to use from
+            `plan.json` if the primary plan lacks a "tasks" field. Defaults to 0.
+
+    Returns:
+        str: A JSON-formatted string with a 'success' (bool) status and a
+            'message' (str). On failure, the message contains a description of
+            the error, which may include missing files, malformed JSON, or
+            filesystem permission issues.
     """
     import os
 
@@ -459,7 +570,7 @@ def authorize_action_gate(request_dir: str, alt_index: int = 0) -> str:
             with open(plan_path, "w", encoding="utf-8") as f:
                 json.dump(plan, f, indent=2, ensure_ascii=False)
 
-            # Guardar el feedback para el Worker
+            #
             feedback_path = os.path.join(request_dir, "authorized_feedback.json")
             with open(feedback_path, "w", encoding="utf-8") as f:
                 json.dump(
@@ -480,12 +591,26 @@ def authorize_action_gate(request_dir: str, alt_index: int = 0) -> str:
 
 @mcp.tool()
 def abort_and_revert() -> str:
-    """
-    El 'Botón Rojo' de emergencia. Aborta la ejecución actual (mata los procesos si se puede)
-    y ejecuta un `git reset --hard` para devolver el repositorio al estado original.
+    """Forcefully reverts the working directory to the `HEAD` commit.
+
+    This function provides a destructive reset capability by reverting the repository
+    to its last committed state. It executes `git reset --hard` followed by
+    `git clean -fd`. This operation discards all uncommitted local modifications,
+    including staged changes, and removes all untracked files and directories.
+
+    Potential exceptions during the execution of git commands are caught and
+    encapsulated within the returned JSON object.
+
+    Returns:
+        str: A JSON-formatted string representing the outcome of the operation.
+            The object contains the following keys:
+            - 'success' (bool): True if the repository was reverted successfully,
+              False otherwise.
+            - 'message' (str): A description of the result or the error that
+              occurred.
     """
     try:
-        # En un sistema en producción más avanzado mataríamos el proceso Popen por PID
+        # Architectural Note: In a production deployment, the subprocess should be terminated directly via its PID rather than relying on `proc.terminate()`. This provides a more deterministic and forceful cleanup, mitigating the risk of orphaned processes.
         subprocess.run(
             ["git", "reset", "--hard"], cwd=str(ROOT), check=True, capture_output=True
         )

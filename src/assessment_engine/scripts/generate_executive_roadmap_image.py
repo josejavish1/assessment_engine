@@ -1,7 +1,4 @@
-"""
-Módulo generate_executive_roadmap_image.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides core logic and utilities for generating executive roadmap images as part of the Assessment Engine's output pipeline."""
 
 import json
 import logging
@@ -14,10 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 def load_json(path: Path):
+    """Load and deserialize a JSON document from a file path."""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def main(argv: list[str] | None = None) -> None:
+    r"""{'docstring': "Generates and saves a Gantt-style roadmap image from a JSON data file.\n\n    Serves as the main command-line entry point for roadmap visualization.\n\n    This function parses command-line arguments to identify an input JSON file\n    and an optional output path. It loads the JSON payload, expecting a structure\n    containing an 'execution_roadmap' key, which in turn holds a 'horizons'\n    dictionary. This dictionary maps time-based keys (e.g., \n    'quick_wins_0_3_months') to lists of initiative objects. Each initiative\n    is then rendered as a horizontal bar in a Gantt-style chart using matplotlib.\n\n    The resulting chart displays initiatives across a 36-month timeline,\n    grouped and colored by their respective time horizons. The final image is\n    saved to the specified or a default output path. The script will terminate\n    via `sys.exit` if command-line arguments are invalid or if the payload\n    contains no valid roadmap data to visualize.\n\n    Args:\n        argv: A list of command-line arguments. If None, `sys.argv` is used.\n            The list is expected to contain:\n            - at index 1: The path to the input JSON payload file.\n            - at index 2 (optional): The path for the output PNG image. If\n              not provided, the output defaults to 'global_roadmap_timeline.png'\n              in the same directory as the input file.\n\n    Raises:\n        FileNotFoundError: If the input JSON file specified in `argv` does\n            not exist.\n        json.JSONDecodeError: If the input file is not a valid JSON document."}."""
     if len(argv if argv is not None else sys.argv) < 2:
         logger.info(
             "Uso: python scripts/generate_executive_roadmap_image.py <global_payload_json> [output_png]"
@@ -67,12 +66,12 @@ def main(argv: list[str] | None = None) -> None:
         logger.warning("No hay iniciativas válidas.")
         sys.exit(0)
 
-    # Orden inverso para el eje Y (para que el primero salga arriba)
+    # Inverts the Y-axis to align with conventional Gantt chart layout, where the earliest chronological item appears at the top.
     initiatives.reverse()
 
     fig, ax = plt.subplots(figsize=(14, max(6, len(initiatives) * 0.4)))
 
-    # Dibujar barras de Gantt
+    #
     for idx, init in enumerate(initiatives):
         y_pos = idx
         ax.barh(
@@ -102,13 +101,13 @@ def main(argv: list[str] | None = None) -> None:
     ax.set_ylim(-1, len(initiatives))
     ax.set_yticks([])
 
-    # Eje X con meses y marcas anuales
+    #
     ax.set_xticks(range(0, 37, 3))
     ax.set_xticklabels([f"M{i}" for i in range(0, 37, 3)], fontsize=10, color="grey")
     ax.xaxis.set_ticks_position("top")
     ax.xaxis.set_label_position("top")
 
-    # Líneas verticales anuales (12, 24, 36 meses)
+    #
     for x in [3, 12, 24, 36]:
         ax.axvline(x, color="grey", linestyle="--", alpha=0.5)
 
@@ -131,7 +130,7 @@ def main(argv: list[str] | None = None) -> None:
         30, -0.8, "Año 3", color="#93c47d", fontsize=11, fontweight="bold", ha="center"
     )
 
-    # Limpiar bordes
+    #
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_visible(False)
     ax.spines["bottom"].set_visible(False)

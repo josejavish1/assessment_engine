@@ -1,7 +1,4 @@
-"""
-Módulo run_evidence_analyst.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Serves as the main entry point for executing the Assessment Engine pipeline."""
 
 import argparse
 import json
@@ -12,16 +9,40 @@ from assessment_engine.scripts.lib.runtime_paths import ROOT
 
 
 def load_json(path: Path) -> dict:
+    """Load and parse a JSON file from a specified `pathlib.Path`."""
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def normalize_statement(value: str) -> str:
+    """{'docstring': 'Normalize a string by collapsing consecutive whitespace and stripping ends.'}."""
     return " ".join(str(value).split()).strip()
 
 
 def first_evidence_refs(
     evidences: list[dict], pillar_id: str, limit: int = 3
 ) -> list[str]:
+    """Retrieve the first `limit` evidence IDs associated with a given pillar.
+
+    Iterates through a list of evidence dictionaries, filtering for entries
+    where the `pillar_id` is present in the 'pillar_ids' list. The
+    'evidence_id' is extracted from each match until the collection
+    reaches the specified `limit`.
+
+    Args:
+        evidences: A list of evidence dictionaries. Each dictionary is expected
+            to contain a 'pillar_ids' key (a list of strings). Dictionaries
+            matching the `pillar_id` must also contain an 'evidence_id' key.
+        pillar_id: The pillar identifier to filter by.
+        limit: The maximum number of evidence IDs to retrieve.
+
+    Returns:
+        A list of string evidence IDs. The list will contain at most `limit`
+        elements.
+
+    Raises:
+        KeyError: If a dictionary matching the `pillar_id` lacks the
+            'evidence_id' key.
+    """
     refs = []
     for evidence in evidences:
         if pillar_id in evidence.get("pillar_ids", []):
@@ -34,6 +55,7 @@ def first_evidence_refs(
 def first_kpi_evidence_refs(
     evidences: list[dict], kpi_id: str, limit: int = 2
 ) -> list[str]:
+    r"""{'docstring': "Retrieve the first `limit` evidence IDs for a specified KPI.\n\n    Iterates through a collection of evidence dictionaries, extracting the\n    `evidence_id` for each entry that contains the specified `kpi_id` in its\n    `kpi_ids` list. The collection stops once the number of found IDs reaches\n    the `limit`.\n\n    Args:\n        evidences: A list of dictionaries representing evidence records. Each\n            relevant record is expected to contain an 'evidence_id' (str) and an\n            optional 'kpi_ids' (list[str]).\n        kpi_id: The identifier of the KPI to match against evidence records.\n        limit: The maximum number of evidence IDs to return.\n\n    Returns:\n        A list of `evidence_id` strings matching the `kpi_id`, containing at\n        most `limit` elements.\n\n    Raises:\n        KeyError: If an evidence dictionary contains the matching `kpi_id` but\n            lacks the 'evidence_id' key."}."""
     refs = []
     for evidence in evidences:
         if kpi_id in evidence.get("kpi_ids", []):
@@ -44,12 +66,29 @@ def first_kpi_evidence_refs(
 
 
 def band_for_score(score: float, tower_definition: dict) -> str:
+    """Return the maturity band label for a given score from a tower definition."""
     return resolve_maturity_band(score, tower_definition.get("score_bands", []))[
         "label"
     ]
 
 
 def capability_phrase(kpi_name: str) -> str:
+    """Map a Key Performance Indicator (KPI) name to a standard capability phrase.
+
+    This function translates a given KPI name into a predefined Spanish phrase
+    that describes a technical capability or status. The translation is performed
+    by matching specific, case-insensitive keywords (e.g., "rto/rpo", "backup",
+    "failover") within the input `kpi_name`. If a keyword is found, the
+    corresponding standard phrase is returned. If no keywords are matched, a
+    generic default phrase is constructed using the original `kpi_name`.
+
+    Args:
+        kpi_name (str): The name of the Key Performance Indicator.
+
+    Returns:
+        str: A standardized Spanish phrase corresponding to the KPI, or a generic
+        default phrase if no specific keywords are matched.
+    """
     name = kpi_name.lower()
     if "rto/rpo" in name:
         return "RTO/RPO medidos y revisados periódicamente."
@@ -83,22 +122,26 @@ def capability_phrase(kpi_name: str) -> str:
 
 
 def strength_statement(kpi_name: str) -> str:
+    """Return a normalized Spanish-language strength statement for a given KPI."""
     return normalize_statement(
         f"{kpi_name} presenta una base funcional ya implantada, con evidencia suficiente para sostener un nivel operativo aprovechable."
     )
 
 
 def gap_statement(kpi_name: str) -> str:
+    """Generate a normalized, standard Spanish gap statement for a given KPI."""
     return normalize_statement(
         f"{kpi_name} no está todavía industrializado ni validado con la consistencia necesaria, lo que limita la resiliencia demostrable del pilar."
     )
 
 
 def risk_title(pillar_name: str) -> str:
+    """Return a normalized, Spanish-language risk title for a given operational pillar."""
     return normalize_statement(f"Brecha operativa en {pillar_name}")
 
 
 def initiative_title(pillar_name: str) -> str:
+    """Generate a normalized initiative title from a strategic pillar name."""
     return normalize_statement(f"Programa de mejora para {pillar_name}")
 
 
@@ -108,6 +151,42 @@ def build_findings(
     scoring_output: dict,
     tower_definition: dict,
 ) -> dict:
+    """Generate a comprehensive findings report from assessment inputs.
+
+    Synthesizes scoring data, user answers, and evidence into a structured
+    findings document. For each pillar in the tower definition, the function
+    analyzes corresponding Key Performance Indicator (KPI) scores to identify
+    strengths (score >= 3.0) and gaps (score < 3.0). It generates default
+    descriptive statements for pillars that lack explicit strengths or gaps.
+    Based on the overall pillar score, it formulates default risks and candidate
+    initiatives. The function concludes by creating a tower-level summary that
+    identifies the strongest and weakest pillars and provides high-level key
+    messages.
+
+    Args:
+        case_input: A dictionary containing case metadata and user responses,
+            expecting an 'answers' key with a list of KPI answer objects.
+        evidence_ledger: A dictionary containing all collected evidence, expecting
+            an 'evidences' key with a list of evidence objects.
+        scoring_output: A dictionary with scoring results, expecting
+            'pillar_scores' (a list of per-pillar score objects) and
+            'tower_score_exact'.
+        tower_definition: A dictionary defining the assessment structure, expecting a
+            'pillars' key with a list of pillar objects, each containing its
+            respective 'kpis'.
+
+    Returns:
+        A dictionary representing the complete findings report, containing a
+        high-level 'assessment_summary' and a list of detailed
+        'pillar_findings'.
+
+    Raises:
+        KeyError: If a 'pillar_id' from `tower_definition` is absent in the
+            `scoring_output`'s pillar score map, or if other expected keys are
+            missing from the input dictionaries.
+        ValueError: If a KPI answer's 'value' cannot be converted to a float, or
+            if the 'pillar_scores' list in `scoring_output` is empty.
+    """
     evidences = evidence_ledger.get("evidences", [])
     answers_by_kpi = {
         answer["kpi_id"]: answer for answer in case_input.get("answers", [])
@@ -318,6 +397,27 @@ def build_findings(
 
 
 def main() -> None:
+    """Run the evidence analyst pipeline to generate findings from input files.
+
+    This function serves as the main entry point for the script. It parses
+    command-line arguments to get paths for a case input, evidence ledger, and
+    scoring output. It loads data from these JSON files and dynamically loads a
+    corresponding tower definition based on the `tower_id` in the case input.
+    The collected data is processed to build findings, which are then written
+    to a 'findings.json' file in the same directory as the case input.
+
+    The script requires the following command-line arguments:
+        --case-input: Path to the case input JSON file.
+        --evidence-ledger: Path to the evidence ledger JSON file.
+        --scoring-output: Path to the scoring output JSON file.
+
+    Raises:
+        FileNotFoundError: If any of the input files or the derived tower
+            definition file do not exist.
+        json.JSONDecodeError: If any of the input JSON files are malformed.
+        KeyError: If the 'tower_id' key is missing from the case input data.
+        OSError: If an error occurs while writing the output `findings.json` file.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--case-input", required=True)
     parser.add_argument("--evidence-ledger", required=True)

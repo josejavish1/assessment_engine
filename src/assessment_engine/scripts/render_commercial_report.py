@@ -1,7 +1,4 @@
-"""
-Módulo render_commercial_report.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Implements the core logic and utilities for the Assessment Engine's commercial report generation pipeline."""
 
 import json
 import re
@@ -41,19 +38,22 @@ BASE_TEXT_COLOR = RGBColor(46, 64, 77)
 
 
 def clean_commercial_text(text):
+    r"""{'docstring': "Sanitizes a string for inclusion in a commercial report.\n\n    Performs a series of cleaning operations on an input string. This function\n    removes T-codes by calling `clean_t_codes`, strips unresolved `[[REF:...]]`\n    tags via a regular expression, eliminates specific dash characters ('─', '—'),\n    replaces semicolons with commas, and removes leading and trailing whitespace.\n\n    If the provided input is not a string, it is returned unmodified.\n\n    Args:\n        text (Any): The input value to sanitize.\n\n    Returns:\n        str | Any: The sanitized string, or the original input `text` if it was\n            not of type `str`."}."""
     if not isinstance(text, str):
         return text
     cleaned = clean_t_codes(text)
-    # Remove any stray [[REF:...]] tags
+    # Executes a final sanitization pass to remove unresolved reference tags that may have persisted through the generation pipeline. This operation guarantees a clean, artifact-free document output.
     cleaned = re.sub(r"\[\[REF:[^\]]*\]\]", "", cleaned)
     return cleaned.replace("─", "").replace("—", "").replace(";", ",").strip()
 
 
 def load_json(path):
+    """Load and parse a UTF-8 encoded JSON file from the specified path."""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def clear_document_body(doc):
+    r"""{'docstring': "Clears all block-level content from the document body, preserving section properties.\n\nThis function directly manipulates the `lxml` element representing the\ndocument's body (`w:body`). It iterates through all direct child elements,\nsuch as paragraphs (`w:p`) and tables (`w:tbl`), and removes them. The\nfinal `w:sectPr` (section properties) element is explicitly preserved.\n\nPreserving the section properties is crucial for maintaining the document's\npage layout, including margins, orientation, and page size, when the document\nis cleared for subsequent repopulation.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to modify\n        in-place."}."""
     body = doc._body._element
     for child in list(body):
         if (
@@ -64,6 +64,7 @@ def clear_document_body(doc):
 
 
 def load_payload(payload_path: Path) -> CommercialPayload:
+    """Load and strictly parse a CommercialPayload from a file."""
     return robust_load_payload(
         payload_path,
         CommercialPayload,
@@ -73,6 +74,7 @@ def load_payload(payload_path: Path) -> CommercialPayload:
 
 
 def render_commercial_cover(doc, payload: CommercialPayload):
+    r"""{'docstring': "Constructs and appends the cover page for an Account Action Plan report.\n\nPopulates the provided `docx.document.Document` object with a formatted\ncover page. The page includes a main title ('Account Action Plan'), the\nclient's name, the report date, a classification notice, and a detailed\nconfidentiality disclaimer. The content is styled with specific fonts,\nsizes, colors, and spacing. The function concludes by inserting a page break\nto ensure subsequent content begins on a new page.\n\nArgs:\n    doc: An active `docx.document.Document` object to which the cover page\n        content will be written. This object is modified in-place.\n    payload: A `CommercialPayload` data object containing the report's\n        metadata, specifically the client name (`payload.meta.client`) and\n        date (`payload.meta.date`).\n\nRaises:\n    AttributeError: If the `payload` object lacks the required `meta.client`\n        or `meta.date` attributes, or if `doc` does not conform to the\n        `docx.document.Document` interface."}."""
     doc.add_paragraph().paragraph_format.space_after = Pt(60)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -124,9 +126,10 @@ def render_commercial_cover(doc, payload: CommercialPayload):
 
 
 def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list):
+    r"""{'docstring': 'Render the executive summary and deal snapshot into a python-docx Document.\n\n    Constructs the initial section of a commercial report within a given\n    `docx.document.Document` object. This function adds a static context\n    disclaimer, a deal snapshot table detailing Total Addressable Market (TAM),\n    purchase drivers, and win themes, followed by bulleted lists for the\n    problem statement ("Why Now") and the proposed strategy ("How We Win").\n    If stakeholder data is provided, a stakeholder value matrix is appended.\n\n    Args:\n        doc (docx.document.Document): The document object to be modified.\n        data (CommercialSummaryDraft): A data container with summary content.\n            Expected attributes include `estimated_tam`, `deal_flash` (an object\n            with `purchase_driver` and `ntt_win_theme` attributes),\n            `why_now_bullets` (list[str]), and `how_we_win_bullets` (list[str]).\n        matrix (list): A list of objects representing stakeholders. Each object\n            must have `role`, `focus`, and `message` attributes. If the list\n            is empty, the stakeholder matrix section is omitted.\n\n    Returns:\n        None. The `doc` object is modified in place.\n\n    Raises:\n        AttributeError: If `data` or an element within `matrix` is missing an\n            expected attribute.'}."""
     add_heading_paragraph(doc, "1. Executive Summary & Deal Snapshot", level=1)
 
-    # 1. Disclaimer Box
+    #
     warn_table = doc.add_table(rows=1, cols=1)
     finalize_table(warn_table)
     w_cell = warn_table.rows[0].cells[0]
@@ -145,7 +148,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list):
     wr2.font.color.rgb = RGBColor(127, 127, 127)
     add_spacer(doc, 15)
 
-    # 2. Flash Table
+    #
     flash_table = doc.add_table(rows=3, cols=2)
     flash_table.alignment = WD_TABLE_ALIGNMENT.LEFT
     finalize_table(flash_table)
@@ -197,7 +200,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list):
     autofit_table_to_contents(flash_table)
     add_spacer(doc, 15)
 
-    # 3. Bullets
+    #
     p_why = doc.add_paragraph()
     r_why = p_why.add_run("El Problema (Why Now):")
     r_why.bold = True
@@ -282,6 +285,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list):
 
 
 def render_gtm_strategy(doc, gtm: GtmStrategy):
+    r"""{'docstring': 'Renders and appends a go-to-market strategy section to a Word document.\n\nThis function adds a level 1 heading, "2. Go-To-Market", to the specified\ndocument object. It then constructs and styles a two-column table detailing\npredefined go-to-market vectors and their corresponding strategies. The\nstrategy descriptions are sourced from the provided `gtm` object\'s attributes.\nThe `doc` object is modified in-place.\n\nArgs:\n    doc (docx.document.Document): The document object to which the section\n        will be appended. This object is modified in-place.\n    gtm (GtmStrategy): An object possessing `trojan_horse`,\n        `self_funded_transformation`, and `lock_in` string attributes\n        that detail the respective strategies.\n\nReturns:\n    None.\n\nRaises:\n    AttributeError: If the `gtm` object lacks one of the required strategy\n        attributes.'}."""
     add_heading_paragraph(doc, "2. Go-To-Market", level=1)
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
@@ -321,6 +325,7 @@ def render_gtm_strategy(doc, gtm: GtmStrategy):
 
 
 def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]):
+    r"""{'docstring': 'Appends a formatted commercial opportunities pipeline section to a Word document.\n\nThis function adds a section titled "3. Pipeline de Oportunidades". For each\nopportunity in the provided pipeline, it generates and appends a formatted\ntable. Each table details financial estimates (Total Contract Value),\nco-sell vendor, revenue type, the client\'s cost of inaction (COI), and a\n"Red Team" analysis. The analysis consists of a potential client objection\nand the corresponding mitigation strategy.\n\nArgs:\n    doc (docx.document.Document): The Word document object to which the\n        pipeline section will be appended.\n    pipeline (list[OpportunityPipelineItem]): A list of objects, where each\n        represents a single commercial opportunity with its associated\n        details.\n\nReturns:\n    None. The function modifies the input `doc` object in-place.\n\nRaises:\n    AttributeError: If an object within the `pipeline` list is missing an\n        expected attribute (e.g., \'initiative\', \'estimated_tcv\',\n        \'client_objection\').'}."""
     add_heading_paragraph(doc, "3. Pipeline de Oportunidades", level=1)
     add_body_paragraph(
         doc,
@@ -395,6 +400,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]):
 
 
 def render_proactive_proposals(doc, proposals: list[ProposalDraft]):
+    r"""{'docstring': 'Renders and appends detailed proactive proposal annexes to a Word document.\n\nIterates through a list of `ProposalDraft` objects and appends a formatted,\nmulti-section annex for each to the provided document. A page break precedes\neach proposal annex. The content for each proposal is structured into\ndistinct sections, including executive synthesis, strategy, context,\nsolution, scope, governance, risks (as a table), and investment.\n\nArgs:\n    doc (docx.document.Document): The document object to which the rendered\n        proposal content will be appended. This object is modified in-place.\n    proposals (list[ProposalDraft]): A list of data objects, where each\n        object contains the structured content for a single proposal.\n\nReturns:\n    None. This function modifies the `doc` object directly.\n\nRaises:\n    AttributeError: If a `ProposalDraft` object or its nested structures\n        lack a required attribute that the rendering logic attempts to access.\n    TypeError: If `proposals` is not a list or another iterable type.'}."""
     add_heading_paragraph(doc, "4. Anexos: Propuestas Proactivas", level=1)
     add_body_paragraph(
         doc,
@@ -614,10 +620,32 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]):
 
 
 def process_footnotes(doc, dossier):
-    # Strip any remaining [[REF:...]] tags directly from all paragraphs and tables
+    """Strip residual placeholder reference tags from a `python-docx` document.
+
+    Performs a final sanitization pass on a document object, modifying it in-place
+    to remove placeholder tags before serialization. The function iterates through
+    all paragraphs in the main body and within all table cells, removing any text
+    matching the pattern ``[[REF:...]]``. This prevents rendering artifacts from
+    appearing in the final output.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` document to process.
+            This object is modified in-place.
+        dossier (Any): Unused argument included for API consistency; reserved for
+            future use.
+
+    Returns:
+        None.
+
+    Raises:
+        AttributeError: If `doc` is not a `python-docx` Document object and lacks
+            expected attributes such as `.paragraphs` or `.tables`.
+    """
+    # Prior to serialization, executes a final recursive scan to strip any residual `[[REF:...]]` placeholder tags from all document objects. This sanitization step prevents rendering artifacts from appearing in the final output.
     ref_pattern = re.compile(r"\[\[REF:[^\]]*\]\]")
 
     def strip_refs_from_paragraph(p):
+        """Strip internal reference markers from a paragraph object in-place."""
         if "[[" in p.text:
             for run in p.runs:
                 if "[[" in run.text:
@@ -638,6 +666,34 @@ def render_commercial_report(
     template_path: Path,
     output_path: Path,
 ) -> Path:
+    """Generates a commercial report by populating a Word document template.
+
+    Orchestrates the creation of a complete commercial report. The function loads
+    a specified `.docx` template, clears its existing body content, and adds
+    page numbering to the footer. It then sequentially renders various sections
+    of the report—such as the cover, summary, and opportunity pipeline—based
+    on the presence of corresponding data in the `payload` object. Finally,
+    it processes and inserts footnotes before saving the completed document to
+    the specified output path.
+
+    Args:
+        payload (CommercialPayload): A data object containing all structured
+            information required for the report sections.
+        template_path (Path): The file system path to the source `.docx`
+            template document.
+        output_path (Path): The file system path where the final rendered `.docx`
+            report will be saved.
+
+    Returns:
+        Path: The file system path of the generated report, identical to
+            `output_path`.
+
+    Raises:
+        FileNotFoundError: If the document template at `template_path` does not
+            exist.
+        IOError: If the rendered document cannot be saved to `output_path` due
+            to file system or permission issues.
+    """
     doc = Document(str(template_path))
     clear_document_body(doc)
 
@@ -663,6 +719,33 @@ def render_commercial_report(
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Renders a commercial report from the command line.
+
+    This function serves as the primary entry point for script execution. It
+    parses command-line arguments specifying a payload file, a template file,
+    and an output path. It then orchestrates the data loading, report
+    rendering, and result serialization processes.
+
+    The script exits with a non-zero status code if an incorrect number of
+    arguments is provided.
+
+    Command-line usage:
+        python render_commercial_report.py <payload_path> <template_path> <output_path>
+
+    Args:
+        argv: A list of command-line arguments, defaulting to `sys.argv`. The
+            list must contain exactly four string elements in the following
+            order: script name, path to the JSON payload file, path to the
+            report template file, and the destination path for the output file.
+
+    Returns:
+        None.
+
+    Raises:
+        SystemExit: If the number of command-line arguments is not equal to 4.
+        FileNotFoundError: If the specified payload or template file path does
+            not exist.
+    """
     if len(argv if argv is not None else sys.argv) != 4:
         sys.exit(1)
     payload_path = Path((argv if argv is not None else sys.argv)[1])

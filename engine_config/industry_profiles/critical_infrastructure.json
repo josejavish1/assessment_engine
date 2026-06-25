@@ -1,0 +1,10 @@
+{
+  "industry": "Critical Infrastructure",
+  "elite_framework": {
+    "primary_regulation": "Local/Regional Critical Infrastructure Protection Laws (e.g., NIS2 in EU, NERC CIP, etc.)",
+    "sovereignty_level": "High Data Residency / Sovereign Cloud Requirements",
+    "risk_modeling": "Value-at-Risk (High Impact on National Essential Services & Public Safety)",
+    "key_vendors_context": "Strategic local partners + Hyperscalers with strictly local/sovereign regions",
+    "strategic_priorities": "Systemic Resilience, Jurisdictional Immunity, Secure IT/OT Convergence"
+  }
+}

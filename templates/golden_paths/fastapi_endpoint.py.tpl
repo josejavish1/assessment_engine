@@ -32,18 +32,18 @@ async def create_resource(request: ResourceRequest):
     Crea un nuevo recurso.
     """
     logger.info("Recibida petición para crear recurso: %s", request.data)
-    
+
     try:
         # --- START OF BUSINESS LOGIC ---
         # El agente debe insertar la lógica de negocio específica aquí.
-        
+
         processed_result = {"input": request.data, "action": "processed"}
-        
+
         # --- END OF BUSINESS LOGIC ---
-        
+
         logger.info("Recurso procesado con éxito.")
         return ResourceResponse(status="success", result=processed_result)
-        
+
     except ValueError as ve:
         logger.warning("Error de validación en el negocio: %s", str(ve))
         raise HTTPException(status_code=400, detail=str(ve))

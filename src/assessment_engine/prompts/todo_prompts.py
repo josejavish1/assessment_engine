@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección TO-DO.
-"""
+"""Defines standardized prompts for the TO-DO section of the assessment engine."""
 
 
 def get_todo_writer_prompt(
@@ -13,6 +11,32 @@ def get_todo_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Constructs the LLM prompt for generating the TO-DO assessment section.
+
+    This function assembles a detailed prompt for a language model designated as
+    the 'Writer' agent. The prompt instructs the model to synthesize various
+    assessment inputs—such as findings, scoring, and gap analysis—into a
+    structured JSON object. This JSON object represents the TO-DO section for a
+    specific assessment tower and must conform to a predefined schema.
+
+    Args:
+        findings_pretty: A string representation of the assessment findings.
+        scoring_pretty: A string representation of the assessment scoring data.
+        asis_pretty: A string representation of the 'as-is' state analysis.
+        tobe_pretty: A string representation of the 'to-be' state analysis.
+        gap_pretty: A string representation of the gap analysis between the
+            'as-is' and 'to-be' states.
+        tower_definition_pretty: A string representation of the methodological
+            definition for the assessment tower.
+        tower_label: The specific name or label of the assessment tower to provide
+            context within the prompt.
+        feedback_block: An optional string containing iterative feedback for the
+            model to incorporate for output refinement. Can be an empty string.
+
+    Returns:
+        A single string containing the complete, formatted prompt ready for
+        submission to the language model.
+    """
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -85,6 +109,30 @@ def get_todo_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Constructs an instructional prompt for a language model to review a TO-DO section.
+
+    This function assembles a detailed prompt that directs a language model to
+    act as a "Reviewer" agent. The prompt provides the necessary context from
+    various document sections (e.g., draft, findings, scoring) and establishes
+    strict rules for reviewing the TO-DO section of a specified assessment tower.
+    The generated instructions require the model to evaluate consistency, quality,
+    and traceability, and to return its findings in a predefined JSON format.
+
+    Args:
+        draft_pretty: A string containing the formatted full draft document.
+        findings_pretty: A string containing the formatted findings section.
+        scoring_pretty: A string containing the formatted scoring section.
+        asis_pretty: A string containing the formatted AS-IS (current state) section.
+        tobe_pretty: A string containing the formatted TO-BE (desired state) section.
+        gap_pretty: A string containing the formatted GAP analysis section.
+        tower_definition_pretty: A string containing the formatted methodological
+            definition for the tower.
+        tower_label: The label identifying the specific tower under review.
+
+    Returns:
+        A fully formatted string prompt ready for use with a language model,
+        containing all context, rules, and the required JSON output schema.
+    """
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

@@ -39,7 +39,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
       if (statusRes.status === "completed") {
         clearInterval(pollInterval);
         setIsSubmitting(false);
-        
+
         let planData = null;
         let requestDir = "";
         try {
@@ -68,12 +68,12 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
 
   const handleSubmit = async () => {
     if (inputValue.trim() === '') return;
-    
+
     const requestText = inputValue;
     setIsSubmitting(true);
     setTraceMsg('Iniciando orquestador asíncrono...');
     const response = await submitProductOwnerRequest(requestText);
-    
+
     if (response.success && response.jobId) {
       pollJobStatus(response.jobId, requestText);
     } else {
@@ -112,7 +112,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
           disabled={isSubmitting}
           autoFocus
         />
-        <button 
+        <button
           onClick={handleSubmit}
           disabled={isSubmitting || inputValue.trim() === ''}
           className="bg-primary text-primary-foreground p-3 rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors ml-2"

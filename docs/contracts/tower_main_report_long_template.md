@@ -3,10 +3,10 @@ status: Verified
 owner: docs-governance
 source_of_truth:
   - ../../docs/contracts/tower_main_report_coverage_matrix.md
-  - ../../src/assessment_engine/schemas/blueprint.py
-  - ../../src/assessment_engine/schemas/annex_synthesis.py
-  - ../../src/assessment_engine/scripts/render_tower_blueprint.py
-  - ../../src/assessment_engine/scripts/render_tower_annex_from_template.py
+  - ../../src/domain/schemas/blueprint.py
+  - ../../src/domain/schemas/annex_synthesis.py
+  - ../../src/application/render_tower_blueprint.py
+  - ../../src/application/render_tower_annex_from_template.py
 last_verified_against: 2026-05-03
 applies_to:
   - humans

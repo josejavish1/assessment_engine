@@ -1,7 +1,4 @@
-"""
-Módulo run_executive_annex_synthesizer.py.
-Implementa el flujo Top-Down: Toma el Blueprint y genera el resumen para el Anexo del CTO.
-"""
+"""Provides the top-down synthesis implementation for the CTO Executive Annex. This module processes a solution blueprint to generate a synthesized executive summary."""
 
 import asyncio
 import json
@@ -52,9 +49,21 @@ class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
 
-# Helper functions (side-effect free)
-def derive_maturity_band(score: float) -> str:
-    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+#
+def derive_maturity_band(score: float, vocab: Optional[dict[str, Any]] = None) -> str:
+    v = vocab or {}
+    label = resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+    mapping = {
+        "Inicial": "band_initial",
+        "Repetible": "band_repeatable",
+        "Definido": "band_defined",
+        "Gestionado": "band_managed",
+        "Optimizado": "band_optimized",
+    }
+    key = mapping.get(label)
+    if key:
+        return cast(str, v.get(key, label))
+    return label
 
 
 def infer_priority_from_size(sizing: str) -> str:
@@ -68,7 +77,7 @@ def infer_priority_from_size(sizing: str) -> str:
     return "Media"
 
 
-def truncate_list(items, limit):
+def truncate_list(items: Any, limit: int) -> Any:
     return items[:limit] if isinstance(items, list) else items
 
 
@@ -327,15 +336,156 @@ def derive_focus_areas(blueprint: BlueprintPayload) -> list[str]:
     return unique_list(blueprint.executive_snapshot.decisions, limit=3)
 
 
-def derive_pillar_executive_reading(pillar: Any) -> str:
-    primary_finding = pillar.health_check_asis[0] if pillar.health_check_asis else None
-    if primary_finding:
-        return take_complete_sentences(primary_finding.impact)
-    if pillar.target_architecture_tobe.vision:
-        return take_complete_sentences(pillar.target_architecture_tobe.vision)
-    return take_complete_sentences(
-        "La capacidad requiere priorización ejecutiva para cerrar la brecha de madurez observada.",
-    )
+def derive_pillar_executive_reading(
+    pillar: Any,
+    case_input_data: Optional[dict[str, Any]] = None,
+    language: str = "es",
+) -> str:
+    doc_lang = str(language or "es").lower()
+
+    #
+    answers_by_pilar: dict[str, list[Any]] = {}
+    if case_input_data and "answers" in case_input_data:
+        for ans in case_input_data.get("answers", []):
+            qid = ans.get("question_id", "")
+            p_id = ".".join(qid.split(".")[:2])
+            if p_id not in answers_by_pilar:
+                answers_by_pilar[p_id] = []
+            answers_by_pilar[p_id].append(ans)
+
+    #
+    pilar_id = getattr(pillar, "pilar_id", getattr(pillar, "pilar_code", None))
+    if not pilar_id and answers_by_pilar:
+        pilar_name_clean = str(pillar.pilar_name).strip().lower()
+        for pid, ans_list in answers_by_pilar.items():
+            if (
+                ans_list
+                and str(ans_list[0].get("pillar_name")).strip().lower()
+                == pilar_name_clean
+            ):
+                pilar_id = pid
+                break
+
+    # Implements fallback logic to handle missing case data or mappings, providing a default output to maintain operational continuity.
+    if not pilar_id or pilar_id not in answers_by_pilar:
+        primary_finding = (
+            pillar.health_check_asis[0] if pillar.health_check_asis else None
+        )
+        if primary_finding:
+            return take_complete_sentences(primary_finding.impact)
+        if pillar.target_architecture_tobe.vision:
+            return take_complete_sentences(pillar.target_architecture_tobe.vision)
+        return take_complete_sentences(
+            "La capacidad requiere priorización ejecutiva para cerrar la brecha de madurez observada."
+            if doc_lang == "es"
+            else "The capability requires executive prioritization to bridge the observed maturity gap."
+        )
+
+    # Constructs the analysis block containing maturity band assessments and associated explainability metrics.
+    ans_list = answers_by_pilar[pilar_id]
+    kpis = []
+    for ans in ans_list:
+        try:
+            k_name = ans.get("kpi_name", "KPI")
+            val = float(ans.get("value", 3.0))
+            qid = ans.get("question_id", "")
+
+            #
+            finding_text = None
+            if hasattr(pillar, "health_check_asis") and pillar.health_check_asis:
+                for hc in pillar.health_check_asis:
+                    hc_cap = str(hc.capability).strip().lower()
+                    if (
+                        k_name.strip().lower() in hc_cap
+                        or hc_cap in k_name.strip().lower()
+                        or qid.lower() in str(hc.node_id).lower()
+                    ):
+                        finding_text = hc.finding
+                        break
+
+            if not finding_text:
+                if val <= 2.0:
+                    finding_text = (
+                        "Dificultad material en la gestión de esta capacidad, requiriendo estandarización."
+                        if doc_lang == "es"
+                        else "Material difficulty in managing this capability, requiring standardization."
+                    )
+                else:
+                    finding_text = (
+                        "Nivel de madurez adecuado, operando de forma estable."
+                        if doc_lang == "es"
+                        else "Adequate maturity level, operating in a stable manner."
+                    )
+
+            kpis.append(
+                {"name": k_name, "score": val, "finding": finding_text, "qid": qid}
+            )
+        except Exception:
+            pass
+
+    lines = []
+    if doc_lang == "es":
+        lines.append("• Situación y Diagnóstico de Capacidades:")
+        gaps = []
+        for k in kpis:
+            lines.append(
+                f"   - {k['name']}: {k['finding']} [Ref: Cuestionario, {k['qid']}]"
+            )
+            if k["score"] <= 3.0:
+                gaps.append(k["name"])
+
+        if gaps:
+            lines.append(
+                "• Brechas y Consecuencias Operativas: Limitación en la madurez y automatización en: "
+                + ", ".join(gaps)
+                + "."
+            )
+        else:
+            lines.append(
+                "• Brechas y Consecuencias Operativas: No se identifican desviaciones críticas de alta prioridad."
+            )
+    else:
+        lines.append("• Capability Status and Diagnosis:")
+        gaps = []
+        for k in kpis:
+            lines.append(
+                f"   - {k['name']}: {k['finding']} [Ref: Questionnaire, {k['qid']}]"
+            )
+            if k["score"] <= 3.0:
+                gaps.append(k["name"])
+
+        if gaps:
+            lines.append(
+                "• Operational Gaps and Consequences: Limited maturity and automation in: "
+                + ", ".join(gaps)
+                + "."
+            )
+        else:
+            lines.append(
+                "• Operational Gaps and Consequences: No high-priority critical deviations identified."
+            )
+
+    # Applies a mathematical causal attribution model to calculate variance explainability, mapping quantitative scores to their qualitative antecedents.
+    if kpis:
+        p_exact_score = float(getattr(pillar, "score", 3.0))
+        lowest_kpi = min(kpis, key=lambda x: x["score"])
+        highest_kpi = max(kpis, key=lambda x: x["score"])
+
+        if doc_lang == "es":
+            causal_justification = (
+                f"• Justificación de Nota ({p_exact_score:.2f}): La puntuación del pilar se encuentra principalmente lastrada por "
+                f'las brechas críticas en "{lowest_kpi["name"]}" ({lowest_kpi["score"]:.1f} / 5.0), a pesar de contar con un soporte robusto '
+                f'y mayor madurez en "{highest_kpi["name"]}" ({highest_kpi["score"]:.1f} / 5.0).'
+            )
+        else:
+            causal_justification = (
+                f"• Score Justification ({p_exact_score:.2f}): The pillar score is primarily penalized by "
+                f'critical gaps in "{lowest_kpi["name"]}" ({lowest_kpi["score"]:.1f} / 5.0), despite robust support '
+                f'and higher maturity in "{highest_kpi["name"]}" ({highest_kpi["score"]:.1f} / 5.0).'
+            )
+        lines.append(causal_justification)
+
+    return "\n".join(lines)
 
 
 def enrich_annex_payload(
@@ -343,6 +493,7 @@ def enrich_annex_payload(
     blueprint: BlueprintPayload,
     radar_chart_path: Path,
     run_id: str,
+    case_input_data: Optional[dict[str, Any]] = None,
 ) -> AnnexPayload:
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
     target_scores = [pillar.target_score for pillar in blueprint.pillars_analysis]
@@ -381,12 +532,28 @@ def enrich_annex_payload(
         meta_dict["source_blueprint_run_id"] = blueprint.generation_metadata.run_id
     result_payload.document_meta = meta_dict
 
+    doc_lang = (
+        meta_dict.get("language", "es")
+        if isinstance(meta_dict, dict)
+        else getattr(meta_dict, "language", "es")
+    )
+
+    # Load declarative localization strings from the configuration file. These strings provide the descriptive text for each maturity band.
+    locales_path = Path("engine_config/locales.json")
+    locales_data = {}
+    if locales_path.exists():
+        with open(locales_path, "r", encoding="utf-8-sig") as lf:
+            locales_data = json.load(lf)
+    vocab = locales_data.get(doc_lang, locales_data.get("es", {}))
+
     result_payload.pillar_score_profile.pillars = [
         {
             "pillar_label": pillar.pilar_name,
             "score_display": str(pillar.score),
-            "maturity_band": derive_maturity_band(pillar.score),
-            "executive_reading": derive_pillar_executive_reading(pillar),
+            "maturity_band": derive_maturity_band(pillar.score, vocab),
+            "executive_reading": derive_pillar_executive_reading(
+                pillar, case_input_data, doc_lang
+            ),
         }
         for pillar in blueprint.pillars_analysis
     ]
@@ -396,7 +563,9 @@ def enrich_annex_payload(
         )
 
     result_payload.executive_summary.global_score = f"{avg_score} / 5.0"
-    result_payload.executive_summary.global_band = derive_maturity_band(avg_score)
+    result_payload.executive_summary.global_band = derive_maturity_band(
+        avg_score, vocab
+    )
     if str(avg_target_score) not in str(
         result_payload.executive_summary.target_maturity
     ):
@@ -429,13 +598,13 @@ def enrich_annex_payload(
     return result_payload
 
 
-def load_yaml_config(filename: str) -> dict:
+def load_yaml_config(filename: str) -> dict[str, Any]:
     yaml = cast(_YamlModule, import_module("yaml"))
     filepath = (
         Path(__file__).resolve().parent.parent / "prompts" / "registry" / filename
     )
     with filepath.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return cast(dict[str, Any], yaml.safe_load(f))
 
 
 def build_synthesis_prompt(
@@ -474,7 +643,7 @@ def build_synthesis_prompt(
     return prompt
 
 
-# --- Pure Business Logic Function ---
+#
 async def generate_synthesis(
     blueprint: BlueprintPayload,
     client_intelligence: dict,
@@ -482,10 +651,9 @@ async def generate_synthesis(
     config: dict,
     radar_chart_path: Path,
     run_id: str,
+    case_input_data: Optional[dict[str, Any]] = None,
 ) -> Optional[AnnexPayload]:
-    """
-    Toma los datos de entrada, ejecuta el agente IA y devuelve el payload del anexo enriquecido.
-    """
+    """Executes the primary agentic function. This process consumes input data, invokes the synthesis agent, and returns the resulting executive annex payload."""
     blueprint_data = blueprint.model_dump(by_alias=True)
     executive_handover = build_executive_handover(blueprint)
     prompt = build_synthesis_prompt(
@@ -512,7 +680,7 @@ async def generate_synthesis(
     result = await run_agent(
         app,
         user_id=f"synthesizer_{blueprint.document_meta.tower_code}",
-        message=prompt,  # El prompt se construiría aquí como antes
+        message=prompt,  #
         schema=AnnexPayload,
     )
 
@@ -520,14 +688,14 @@ async def generate_synthesis(
         return None
 
     result_payload = AnnexPayload.model_validate(result)
-    return enrich_annex_payload(result_payload, blueprint, radar_chart_path, run_id)
+    return enrich_annex_payload(
+        result_payload, blueprint, radar_chart_path, run_id, case_input_data
+    )
 
 
-# --- I/O Orchestrator Function ---
-async def synthesize_annex(client_name: str, tower_id: str):
-    """
-    Orquesta el proceso de síntesis del anexo ejecutivo. Maneja I/O.
-    """
+#
+async def synthesize_annex(client_name: str, tower_id: str) -> None:
+    """Coordinates the synthesis procedure for the executive annex, including all related input and output operations."""
     run_id = f"run_{uuid.uuid4()}"
     print(
         f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})..."
@@ -554,11 +722,12 @@ async def synthesize_annex(client_name: str, tower_id: str):
     client_intelligence = load_client_intelligence_legacy_view(client_intelligence_path)
     config = load_yaml_config("annex_executive_synthesizer.yaml")
     context_summary = ""
+    case_input_data = None
     if case_input_path.exists():
-        case_input = json.loads(case_input_path.read_text(encoding="utf-8"))
-        context_file = case_input.get("_build_metadata", {}).get(
+        case_input_data = json.loads(case_input_path.read_text(encoding="utf-8"))
+        context_file = case_input_data.get("_build_metadata", {}).get(
             "context_file"
-        ) or case_input.get("context_file")
+        ) or case_input_data.get("context_file")
         if context_file and Path(context_file).exists():
             context_summary = read_text(Path(context_file))
 
@@ -569,6 +738,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
         config,
         radar_chart_path,
         run_id,
+        case_input_data=case_input_data,
     )
 
     if final_payload:

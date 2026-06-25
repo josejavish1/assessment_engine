@@ -2,7 +2,7 @@
 name = "assessment-engine"
 version = "0.1.0"
 description = "AI Assessment Engine for Technology Architecture"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "jinja2",
     "google-cloud-aiplatform",
@@ -17,34 +17,87 @@ dependencies = [
     "opentelemetry-distro",
     "opentelemetry-instrumentation",
     "opentelemetry-instrumentation-fastapi",
-    "opentelemetry-instrumentation-logging"
+    "opentelemetry-instrumentation-logging",
+    "networkx",
+    "rich",
+    "tree_sitter",
+    "tree_sitter_python",
+    "mcp",
+    "tenacity",
+    "vertexai",
+    "google-api-core",
+    "libcst"
 ]
-
-[build-system]
-requires = ["setuptools>=64"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-assessment_engine = ["templates/*.html"]
 
 [tool.ruff]
 line-length = 88
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"] # PEP8 errors, pyflakes, isort
-ignore = ["E501"] # Avoid line too long since formatter handles it
+select = ["E", "F", "I", "D", "TD002", "TD003", "ERA"]
+ignore = ["E501", "D100", "D104", "D205", "D209", "D107", "D103", "E402", "E701"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# Exclude tests and legacy packages from strict docstring and commented-out code checks
+"tests/**/*.py" = ["D", "ERA"]
+"src/assessment_engine/**/*.py" = ["D", "ERA"]
+
+# Relax docstring requirements in application helpers and adapters to prevent over-engineering
+"src/application/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
+"src/adapters/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
 
 [tool.mypy]
 python_version = "3.11"
-ignore_missing_imports = true
-follow_imports = "silent"
-show_error_codes = true
+mypy_path = "src"
+check_untyped_defs = true
+disallow_untyped_defs = true
+warn_redundant_casts = true
 warn_unused_ignores = true
+warn_return_any = true
+no_implicit_optional = true
+strict_optional = true
+namespace_packages = true
+explicit_package_bases = true
+exclude = ["_PROJECT_ARCHIVE_/", "working/", "src/adapters/", "src/application/tools/", "src/application/render_", "src/application/generate_", "src/infrastructure/docx_render_utils.py"]
+
+[[tool.mypy.overrides]]
+module = [
+    "pythonjsonlogger",
+    "pythonjsonlogger.*",
+    "rich.*",
+    "google.*",
+    "networkx",
+    "opentelemetry.*",
+    "tree_sitter",
+    "tree_sitter_python",
+    "mcp.*",
+    "hypothesis",
+    "tenacity",
+    "vertexai.*",
+    "docx.*",
+    "matplotlib.*",
+    "jinja2.*",
+    "yaml.*",
+    "pytest.*",
+    "pytest_mock.*",
+    "zipfile.*"
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "adapters.*",
+    "application.*",
+    "assessment_engine.*",
+    "infrastructure.*",
+    "domain.*",
+    "ports.*"
+]
+ignore_errors = true

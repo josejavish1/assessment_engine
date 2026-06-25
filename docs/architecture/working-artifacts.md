@@ -2,19 +2,19 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/assessment_engine/scripts/build_case_input.py
-  - ../../src/assessment_engine/scripts/build_evidence_ledger.py
-  - ../../src/assessment_engine/scripts/run_scoring.py
-  - ../../src/assessment_engine/scripts/run_evidence_analyst.py
-  - ../../src/assessment_engine/scripts/run_tower_pipeline.py
-  - ../../src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - ../../src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - ../../src/assessment_engine/scripts/run_global_pipeline.py
-  - ../../src/assessment_engine/scripts/build_global_report_payload.py
-  - ../../src/assessment_engine/scripts/run_commercial_pipeline.py
-  - ../../src/assessment_engine/scripts/run_commercial_refiner.py
-  - ../../src/assessment_engine/scripts/run_intelligence_harvesting.py
-  - ../../src/assessment_engine/scripts/generate_tower_radar_chart.py
+  - ../../src/application/build_case_input.py
+  - ../../src/application/build_evidence_ledger.py
+  - ../../src/application/run_scoring.py
+  - ../../src/application/run_evidence_analyst.py
+  - ../../src/application/run_tower_pipeline.py
+  - ../../src/application/run_tower_blueprint_engine.py
+  - ../../src/application/run_executive_annex_synthesizer.py
+  - ../../src/application/run_global_pipeline.py
+  - ../../src/application/build_global_report_payload.py
+  - ../../src/application/run_commercial_pipeline.py
+  - ../../src/application/run_commercial_refiner.py
+  - ../../src/application/run_intelligence_harvesting.py
+  - ../../src/application/generate_tower_radar_chart.py
 last_verified_against: 2026-05-01
 applies_to:
   - humans

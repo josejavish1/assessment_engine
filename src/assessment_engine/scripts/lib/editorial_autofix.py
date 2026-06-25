@@ -1,7 +1,4 @@
-"""
-Módulo editorial_autofix.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides the core logic and utility functions for the Assessment Engine's automated editorial correction pipeline."""
 
 import json
 import re
@@ -70,6 +67,29 @@ def _walk(value):
 
 
 def should_autofix_editorial(defects: list[dict]) -> bool:
+    """Assess whether a list of defects exclusively comprises minor editorial issues.
+
+    This function evaluates a list of defect dictionaries to determine if the
+    entire set qualifies for an automated editorial fix. A list qualifies only if
+    it is non-empty and every defect within it satisfies two conditions:
+
+    1. The 'severity' of the defect must be 'minor'.
+    2. The 'type' or 'message' string must contain one of the following
+       substrings: "orthograph", "ortograf", "editorial", or "estilo".
+
+    The checks are performed in a case-insensitive manner after stripping
+    leading and trailing whitespace from the relevant string values.
+
+    Args:
+        defects: A list of dictionaries, where each dictionary represents a
+            single defect. The function defensively handles missing or non-string
+            values for 'severity', 'type', and 'message' keys.
+
+    Returns:
+        True if the list is non-empty and all defects meet the specified
+        editorial criteria, False otherwise. This includes returning False
+        for an empty or None input list.
+    """
     for defect in defects or []:
         severity = str(defect.get("severity", "")).strip().lower()
         defect_type = str(defect.get("type", "")).strip().lower()
@@ -85,6 +105,7 @@ def should_autofix_editorial(defects: list[dict]) -> bool:
 
 
 def apply_editorial_autofix(draft: dict) -> tuple[dict, int]:
+    r"""{'docstring': 'Apply automated editorial fixes to a document draft.\n\n    Performs a deep copy of the input `draft` via JSON serialization and\n    deserialization to ensure the original object is not mutated. The function\n    then recursively traverses the copied data structure, applying a set of\n    predefined editorial corrections to all string values.\n\n    Args:\n        draft: A JSON-serializable dictionary representing the document to be\n            processed.\n\n    Returns:\n        A tuple containing the modified dictionary with all fixes applied and an\n        integer count of the total number of replacements made.\n\n    Raises:\n        TypeError: If the input `draft` contains non-JSON-serializable types.'}."""
     cloned = json.loads(json.dumps(draft, ensure_ascii=False))
     updated, replacements = _walk(cloned)
     return updated, replacements

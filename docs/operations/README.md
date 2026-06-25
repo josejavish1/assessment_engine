@@ -40,7 +40,7 @@ graph TD
         A --> E[Docs: Governance Check];
         A --> F[Agent Evals (Conditional on file paths)];
     end
-    
+
     subgraph "Other Triggers"
         G[Nightly Schedule] --> F;
         H[Merge to main] --> I[Auto-reconcile open PRs];

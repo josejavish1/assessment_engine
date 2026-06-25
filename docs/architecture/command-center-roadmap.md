@@ -11,7 +11,7 @@ doc_type: canonical
 # Assessment Engine Command Center: SOTA Orchestrator (Edición 2026)
 
 ## Objetivo
-Convertir el "Command Center" en la **Interfaz Gráfica Definitiva (GUI) para el `Product Owner Orchestrator`** de Python. 
+Convertir el "Command Center" en la **Interfaz Gráfica Definitiva (GUI) para el `Product Owner Orchestrator`** de Python.
 El sistema fusiona el flujo local de desarrollo con las tecnologías de vanguardia de 2026 (Model Context Protocol avanzado, Human-in-the-Loop determinista y grafos de razonamiento) para garantizar un código perfecto, auditable y alineado con la arquitectura ("Golden Paths").
 
 ---
