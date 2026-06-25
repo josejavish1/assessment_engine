@@ -51,14 +51,18 @@ class _YamlModule(Protocol):
 # Helper functions (side-effect free)
 def derive_maturity_band(score: float, vocab: Optional[dict[str, Any]] = None) -> str:
     v = vocab or {}
-    if score < 2.0:
-        return cast(str, v.get("band_initial", "Inicial"))
-    elif score < 3.0:
-        return cast(str, v.get("band_standardized", "Estandarizado"))
-    elif score < 4.0:
-        return cast(str, v.get("band_managed", "Gestionado"))
-    else:
-        return cast(str, v.get("band_optimized", "Optimizado"))
+    label = resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+    mapping = {
+        "Inicial": "band_initial",
+        "Repetible": "band_repeatable",
+        "Definido": "band_defined",
+        "Gestionado": "band_managed",
+        "Optimizado": "band_optimized",
+    }
+    key = mapping.get(label)
+    if key:
+        return cast(str, v.get(key, label))
+    return label
 
 
 def infer_priority_from_size(sizing: str) -> str:

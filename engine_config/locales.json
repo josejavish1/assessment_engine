@@ -115,7 +115,9 @@
     "currency_symbol": "€",
     "currency_format": "EU",
     "version_label": "Versión",
-    "date_label": "Junio 2026"
+    "date_label": "Junio 2026",
+    "band_repeatable": "Repetible",
+    "band_defined": "Definido"
   },
   "en": {
     "thousands_sep": ",",
@@ -233,7 +235,9 @@
     "currency_symbol": "$",
     "currency_format": "US",
     "version_label": "Version",
-    "date_label": "June 2026"
+    "date_label": "June 2026",
+    "band_repeatable": "Repeatable",
+    "band_defined": "Defined"
   },
   "pt": {
     "thousands_sep": ".",
@@ -351,7 +355,9 @@
     "currency_symbol": "R$",
     "currency_format": "US",
     "version_label": "Versão",
-    "date_label": "Junho 2026"
+    "date_label": "Junho 2026",
+    "band_repeatable": "Repetível",
+    "band_defined": "Definido"
   },
   "fr": {
     "thousands_sep": " ",
@@ -469,7 +475,9 @@
     "currency_symbol": "€",
     "currency_format": "EU",
     "version_label": "Version",
-    "date_label": "Juin 2026"
+    "date_label": "Juin 2026",
+    "band_repeatable": "Répétable",
+    "band_defined": "Défini"
   },
   "ja": {
     "thousands_sep": ",",
@@ -585,6 +593,8 @@
     "currency_symbol": "¥",
     "currency_format": "US",
     "version_label": "バージョン",
-    "date_label": "2026年6月"
+    "date_label": "2026年6月",
+    "band_repeatable": "反復可能",
+    "band_defined": "定義済"
   }
 }
