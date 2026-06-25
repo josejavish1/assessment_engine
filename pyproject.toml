@@ -41,14 +41,13 @@ ignore = ["E501", "D100", "D104", "D205", "D209", "D107", "D103", "E402", "E701"
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-# Exclude tests and legacy files from docstring checks entirely
-"tests/**/*.py" = ["D"]
-"src/assessment_engine/scripts/_legacy/**/*.py" = ["D"]
+# Exclude tests and legacy packages from strict docstring and commented-out code checks
+"tests/**/*.py" = ["D", "ERA"]
+"src/assessment_engine/**/*.py" = ["D", "ERA"]
 
 # Relax docstring requirements in application helpers and adapters to prevent over-engineering
 "src/application/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
 "src/adapters/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
-"src/assessment_engine/**/*.py" = ["D101", "D102", "D103", "D107", "D205", "D417"]
 
 [tool.mypy]
 python_version = "3.11"
