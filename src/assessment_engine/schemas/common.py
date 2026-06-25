@@ -34,6 +34,7 @@ def collect_all_strings(data: Any) -> List[str]:
 
 class BaseDraftModel(BaseModel):
     r"""{'BaseDraftModel': 'A base Pydantic model for draftable content sections.\n\nProvides common fields and validation logic for content sections that undergo a\ndraft and review process. It incorporates a mechanism to sanitize reviewer\nnotes and enforce content restrictions by disallowing a configurable list of\nforbidden phrases in other fields.\n\nAttributes:\n    section_id: The unique string identifier for the content section.\n    notes_for_reviewer: A list of strings containing notes for a reviewer.\n        During validation, any note containing a forbidden phrase is silently\n        removed.', 'get_forbidden_phrases': "Return a list of phrases forbidden for use in the model's fields.", 'validate_forbidden_phrases': 'Sanitizes reviewer notes and validates string fields against forbidden phrases.\n\nThis Pydantic `model_validator` is executed after model initialization to\nenforce content restrictions. It performs two distinct operations:\n\n1.  It filters the `notes_for_reviewer` list, silently removing any note\n    that contains a forbidden phrase (case-insensitively).\n2.  It inspects all other string-type fields in the model. If a forbidden\n    phrase is found within any of these other fields, validation fails.\n\nThe list of forbidden phrases is sourced from `get_forbidden_phrases()`.\n\nReturns:\n    The validated model instance (`self`), with the `notes_for_reviewer` list\n    potentially sanitized.\n\nRaises:\n    ValueError: If a case-insensitive match for a forbidden phrase is found\n        in any string field of the model, excluding `notes_for_reviewer`.'}."""
+
     section_id: str
     notes_for_reviewer: List[str] = []
 
@@ -111,6 +112,7 @@ class Defect(BaseModel):
         suggested_fix: A human-readable description of the recommended action
             or code modification to resolve the defect.
     """
+
     severity: str = Field(..., pattern="^(critical|major|minor)$")
     type: str
     message: str
@@ -136,6 +138,7 @@ class SectionReview(BaseModel):
         review_notes (List[str]): A list of general textual notes from the
             reviewer. Defaults to an empty list.
     """
+
     section_id: str
     status: str = Field(..., pattern="^(approve|revise|human_validation_required)$")
     overall_assessment: str
@@ -165,6 +168,7 @@ class VersionMetadata(BaseModel):
         run_id: An optional unique identifier for the specific execution or run
             that produced the artifact. Defaults to None.
     """
+
     artifact_type: str
     artifact_version: str = "1.0.0"
     source_version: Optional[str] = None
@@ -193,6 +197,7 @@ class VersionedPayload(BaseModel):
         generation_metadata: An optional container for metadata about the payload's
             generation, such as software version and creation timestamp.
     """
+
     model_config = ConfigDict(populate_by_name=True)
 
     generation_metadata: Optional[VersionMetadata] = Field(

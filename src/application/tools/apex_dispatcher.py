@@ -37,6 +37,7 @@ SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
 
 class Task(TypedDict):
     """Define the dictionary structure for a task object."""
+
     id: str
     priority: str
     title: str
@@ -69,6 +70,7 @@ class UiState(TypedDict):
         last_event: A human-readable string describing the most recent
             significant event.
     """
+
     all_tasks: List[Task]
     active_task: Optional[Task]
     active_logs: List[str]

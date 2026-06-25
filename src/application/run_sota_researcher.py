@@ -22,6 +22,7 @@ def load_json(path: Path) -> dict[str, Any]:
     """Load and parse a JSON file from a `pathlib.Path` object."""
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
 
+
 async def research_pillar(client, p_name, gap_text, grounding_json):
     """Asynchronously researches a topic using a generative model with web search.
 
@@ -51,47 +52,54 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
             is returned in case of unrecoverable API or JSON parsing failures.
     """
     import asyncio
+
     print(f"        * Investigando vanguardia (CON INTERNET) para: {p_name}")
     prompt = get_sota_researcher_prompt(p_name, gap_text, grounding_json)
-    
+
     config = types.GenerateContentConfig(
         tools=[{"google_search": {}}],
-        system_instruction="Eres un Investigador Senior de Gartner. Tu misión es encontrar soluciones disruptivas 2026 usando búsqueda web."
+        system_instruction="Eres un Investigador Senior de Gartner. Tu misión es encontrar soluciones disruptivas 2026 usando búsqueda web.",
     )
-    
+
     response = None
     max_attempts = 3
     for attempt in range(1, max_attempts + 1):
         try:
             response = await client.aio.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
-                config=config
+                model="gemini-2.5-flash", contents=prompt, config=config
             )
             break
         except Exception as e:
-            print(f"        ⚠️ [Reintento {attempt}/{max_attempts}] Fallo temporal en consulta SOTA para {p_name}: {e}")
+            print(
+                f"        ⚠️ [Reintento {attempt}/{max_attempts}] Fallo temporal en consulta SOTA para {p_name}: {e}"
+            )
             if attempt == max_attempts:
-                print(f"        ❌ Fallo definitivo de API en SOTA para {p_name}. Aplicando fallback vacío.")
+                print(
+                    f"        ❌ Fallo definitivo de API en SOTA para {p_name}. Aplicando fallback vacío."
+                )
                 return p_name, {}
             await asyncio.sleep(2)
-    
+
     try:
         import re
+
         text = response.text or "{}"
-        match = re.search(r'\{.*\}', text, re.DOTALL)
+        match = re.search(r"\{.*\}", text, re.DOTALL)
         if match:
             text = match.group(0)
         sota_result = json.loads(text)
     except Exception as e:
         print(f"Error parsing JSON from search: {e}")
         sota_result = {}
-        
+
     return p_name, sota_result
+
 
 async def inject_sota(client_name: str, findings: dict) -> dict:
     r"""{'docstring': "Asynchronously enriches strategic findings with state-of-the-art research.\n\n    This function orchestrates an asynchronous research task for each strategic\n    pillar defined in the `findings` dictionary. For each pillar's specified\n    gap, it queries the Gemini API to identify relevant solutions,\n    architectural patterns, and strategic benefits. Optional, pre-existing\n    client data, loaded based on `client_name`, can provide grounding context\n    for the queries. The results are integrated back into the `findings`\n    dictionary by modifying the 'candidate_initiatives' in-place with new\n    titles and detailed, evidence-supported rationales.\n\n    Args:\n        client_name (str): The client identifier used to locate and load\n            supplementary grounding data for the research queries.\n        findings (dict): A dictionary containing the initial analysis, which is\n            modified in-place. It is expected to contain a 'pillar_findings'\n            key mapping to a list of pillar dictionaries. Each pillar\n            dictionary should contain keys such as 'pillar_name', 'gaps', and\n            'candidate_initiatives'.\n\n    Returns:\n        dict: The original `findings` dictionary object, now augmented with the\n        research results.\n\n    Raises:\n        IndexError: If 'gaps' or 'candidate_initiatives' lists within a pillar\n            are empty where at least one element is expected.\n        FileNotFoundError: Propagated if the client intelligence file specified\n            by `client_name` does not exist.\n        google.api_core.exceptions.GoogleAPICallError: Propagated from the\n            `genai` client upon API errors, such as authentication failure,\n            invalid requests, or network connectivity issues."}."""
-    print("    -> [Investigación SOTA] Lanzando investigación profunda 2026 con Internet...")
+    print(
+        "    -> [Investigación SOTA] Lanzando investigación profunda 2026 con Internet..."
+    )
 
     intel_path = resolve_client_intelligence_path(client_name)
     grounding_data = {}
@@ -140,6 +148,7 @@ async def inject_sota(client_name: str, findings: dict) -> dict:
 
     return findings
 
+
 async def main():
     """Orchestrates the SOTA research enrichment process from the command line.
 
@@ -176,6 +185,7 @@ async def main():
         json.dumps(enriched, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
     print(f"✅ Conocimiento SOTA inyectado con éxito: {findings_path}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

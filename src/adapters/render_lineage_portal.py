@@ -33,27 +33,29 @@ def _load_json(path: Path) -> dict[str, Any]:
 def _load_towers_detail(client_name: str) -> dict[str, Any]:
     client_dir = resolve_client_dir(client_name)
     towers_detail = {}
-    
+
     # The system architecture defines a fixed, inclusive range of tower identifiers from T2 to T8 that require processing.
     for i in range(2, 9):
         tower_id = f"T{i}"
         blueprint_file = client_dir / tower_id / f"blueprint_t{i}_payload.json"
         if not blueprint_file.exists():
             # If an initial key lookup is unsuccessful, a fallback mechanism attempts a case-insensitive match using a normalized, lowercase variant of the key.
-            blueprint_file = client_dir / tower_id / f"blueprint_{tower_id.lower()}_payload.json"
-            
+            blueprint_file = (
+                client_dir / tower_id / f"blueprint_{tower_id.lower()}_payload.json"
+            )
+
         if blueprint_file.exists():
             try:
                 data = _load_json(blueprint_file)
                 towers_detail[tower_id] = {
                     "document_meta": data.get("document_meta", {}),
                     "executive_snapshot": data.get("executive_snapshot", {}),
-                    "pillars_analysis": data.get("pillars_analysis", [])
+                    "pillars_analysis": data.get("pillars_analysis", []),
                 }
                 logger.info(f"Loaded blueprint details for tower {tower_id}")
             except Exception as e:
                 logger.warning(f"Could not load blueprint for {tower_id}: {e}")
-                
+
     return towers_detail
 
 
@@ -83,12 +85,16 @@ def render_lineage_portal(client_name: str) -> Path:
     output_dir = client_dir / "portal"
     output_path = output_dir / "index.html"
 
-    logger.info(f"🎨 [Lineage Portal] Generando Lineage Matrix Explorer para {client_name}...")
+    logger.info(
+        f"🎨 [Lineage Portal] Generando Lineage Matrix Explorer para {client_name}..."
+    )
 
     # Load the global state payload, containing system-wide configuration and metadata required for template hydration.
     global_payload_path = resolve_global_report_payload_path(client_name)
     if not global_payload_path.exists():
-        logger.warning(f"⚠️ Payload global no encontrado en {global_payload_path}. Generando con dict vacío.")
+        logger.warning(
+            f"⚠️ Payload global no encontrado en {global_payload_path}. Generando con dict vacío."
+        )
         global_payload = {}
     else:
         global_payload = _load_json(global_payload_path)
@@ -96,7 +102,9 @@ def render_lineage_portal(client_name: str) -> Path:
     # Load the Digital Twin Object (DTO) state, which constitutes the primary operational data snapshot for visualization.
     dto_state_path = client_dir / "digital_twin_state.json"
     if not dto_state_path.exists():
-        logger.warning(f"⚠️ Digital Twin State no encontrado en {dto_state_path}. Generando con dict vacío.")
+        logger.warning(
+            f"⚠️ Digital Twin State no encontrado en {dto_state_path}. Generando con dict vacío."
+        )
         dto_state = {}
     else:
         dto_state = _load_json(dto_state_path)
@@ -106,8 +114,10 @@ def render_lineage_portal(client_name: str) -> Path:
 
     #
     if not TEMPLATE_PATH.exists():
-        raise FileNotFoundError(f"No se encuentra la plantilla del portal en: {TEMPLATE_PATH}")
-    
+        raise FileNotFoundError(
+            f"No se encuentra la plantilla del portal en: {TEMPLATE_PATH}"
+        )
+
     template_content = TEMPLATE_PATH.read_text(encoding="utf-8")
 
     #
@@ -116,14 +126,16 @@ def render_lineage_portal(client_name: str) -> Path:
         client_name=client_name,
         sovereign_payload_json=json.dumps(global_payload, ensure_ascii=False),
         dto_state_json=json.dumps(dto_state, ensure_ascii=False),
-        towers_detail_json=json.dumps(towers_detail, ensure_ascii=False)
+        towers_detail_json=json.dumps(towers_detail, ensure_ascii=False),
     )
 
     #
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path.write_text(rendered_html, encoding="utf-8")
-    
-    logger.info(f"✅ Lineage Matrix Explorer renderizado exitosamente en: {output_path}")
+
+    logger.info(
+        f"✅ Lineage Matrix Explorer renderizado exitosamente en: {output_path}"
+    )
     return output_path
 
 

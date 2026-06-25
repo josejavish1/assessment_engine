@@ -52,18 +52,27 @@ def safe_shade_cell(cell: Any, fill: str) -> None:
     for child in list(tcPr):
         if child.tag.endswith("shd"):
             tcPr.remove(child)
-            
+
     shd = OxmlElement("w:shd")
     shd.set(qn("w:val"), "clear")
     shd.set(qn("w:color"), "auto")
     shd.set(qn("w:fill"), fill)
-    
+
     # This sequence is dictated by the official w:tcPr XSD schema definition.
     order = [
-        "cnfStyle", "tcW", "tcBorders", "shd", "noWrap", "tcMar",
-        "textDirection", "tcFitText", "vAlign", "wHeader", "vMerge"
+        "cnfStyle",
+        "tcW",
+        "tcBorders",
+        "shd",
+        "noWrap",
+        "tcMar",
+        "textDirection",
+        "tcFitText",
+        "vAlign",
+        "wHeader",
+        "vMerge",
     ]
-    
+
     # Finds the first element that must succeed w:shd according to the OpenXML schema to determine the correct insertion point.
     insert_before = None
     for child in list(tcPr):
@@ -72,7 +81,7 @@ def safe_shade_cell(cell: Any, fill: str) -> None:
             if order.index(tag_name) > order.index("shd"):
                 insert_before = child
                 break
-                
+
     if insert_before is not None:
         insert_before.addprevious(shd)
     else:
@@ -108,22 +117,31 @@ def safe_autofit_table_to_contents(table: Any) -> None:
     for row in table.rows:
         for cell in row.cells:
             tcPr = cell._tc.get_or_add_tcPr()
-            
+
             # Removes any pre-existing tcW (cell width) element to prevent conflicts with the new auto-fit properties.
             for child in list(tcPr):
                 if child.tag.endswith("tcW"):
                     tcPr.remove(child)
-                    
+
             tcW = OxmlElement("w:tcW")
             tcW.set(qn("w:type"), "auto")
             tcW.set(qn("w:w"), "0")
-            
+
             # The sequence of child elements within w:tcPr is strictly defined by the OpenXML standard.
             order = [
-                "cnfStyle", "tcW", "tcBorders", "shd", "noWrap", "tcMar",
-                "textDirection", "tcFitText", "vAlign", "wHeader", "vMerge"
+                "cnfStyle",
+                "tcW",
+                "tcBorders",
+                "shd",
+                "noWrap",
+                "tcMar",
+                "textDirection",
+                "tcFitText",
+                "vAlign",
+                "wHeader",
+                "vMerge",
             ]
-            
+
             insert_before = None
             for child in list(tcPr):
                 tag_name = child.tag.split("}")[-1]
@@ -131,7 +149,7 @@ def safe_autofit_table_to_contents(table: Any) -> None:
                     if order.index(tag_name) > order.index("tcW"):
                         insert_before = child
                         break
-                        
+
             if insert_before is not None:
                 insert_before.addprevious(tcW)
             else:
@@ -145,7 +163,7 @@ def add_markdown_runs(
     default_italic: bool = False,
     font_size: float = 10.5,
     font_name: str = "Arial",
-    color_rgb: Any = None
+    color_rgb: Any = None,
 ) -> None:
     """Parses a string with Markdown-style bold syntax into formatted docx runs.
 
@@ -198,7 +216,7 @@ def add_markdown_runs(
             run = paragraph.add_run(part)
             run.bold = default_bold
             run.italic = default_italic
-            
+
         run.font.name = font_name
         run.font.size = Pt(font_size)
         if color_rgb:
@@ -211,7 +229,7 @@ def safe_set_cell_text(
     bold: bool = False,
     align: Any = WD_ALIGN_PARAGRAPH.LEFT,
     font_size: float = 9.0,
-    color_rgb: Any = None
+    color_rgb: Any = None,
 ) -> None:
     r"""Replaces the content of a `python-docx` table cell with formatted text.
 
@@ -259,7 +277,7 @@ def safe_set_cell_text(
         raw_lines = clean_txt.replace("\\n", "\n").split("\n")
         for line in raw_lines:
             # Leading whitespace is preserved initially as it indicates hierarchical depth; stripping is deferred.
-            is_subpoint = (line.startswith("   ") or line.strip().startswith("-"))
+            is_subpoint = line.startswith("   ") or line.strip().startswith("-")
 
             clean_line = line.strip()
             if not clean_line:
@@ -279,12 +297,17 @@ def safe_set_cell_text(
                 bullet_prefix = "- "
             else:
                 p.paragraph_format.left_indent = Inches(0.0)
-                bullet_prefix = "• " if clean_txt.startswith(("-", "•")) or line.strip().startswith(("-", "•")) else ""
+                bullet_prefix = (
+                    "• "
+                    if clean_txt.startswith(("-", "•"))
+                    or line.strip().startswith(("-", "•"))
+                    else ""
+                )
 
             # Heuristic to detect and structure list items that follow a '• Title: Description' pattern.
             if ":" in clean_line:
                 label, desc = clean_line.split(":", 1)
-                
+
                 #
                 run_lbl = p.add_run(f"{bullet_prefix}{label.strip()}: ")
                 run_lbl.bold = True
@@ -294,10 +317,18 @@ def safe_set_cell_text(
                     run_lbl.font.color.rgb = RGBColor(*color_rgb)
 
                 #
-                add_markdown_runs(p, desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb)
+                add_markdown_runs(
+                    p, desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
+                )
             else:
                 p.add_run(bullet_prefix)
-                add_markdown_runs(p, clean_line, default_bold=bold, font_size=font_size, color_rgb=color_rgb)
+                add_markdown_runs(
+                    p,
+                    clean_line,
+                    default_bold=bold,
+                    font_size=font_size,
+                    color_rgb=color_rgb,
+                )
     else:
         #
         p = cell.paragraphs[0] if cell.paragraphs else cell.add_paragraph()
@@ -305,10 +336,10 @@ def safe_set_cell_text(
         p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(2)
         p.paragraph_format.line_spacing = 1.0
-        
+
         # Clears any pre-existing text runs from the paragraph to prevent content duplication.
         p.text = ""
-        
+
         # Heuristic to detect and structure paragraphs that follow a 'Title: Description' pattern.
         if ":" in clean_txt and not clean_txt.startswith("http"):
             label, desc = clean_txt.split(":", 1)
@@ -319,9 +350,17 @@ def safe_set_cell_text(
             if color_rgb:
                 run_lbl.font.color.rgb = RGBColor(*color_rgb)
 
-            add_markdown_runs(p, desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb)
+            add_markdown_runs(
+                p, desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
+            )
         else:
-            add_markdown_runs(p, clean_txt, default_bold=bold, font_size=font_size, color_rgb=color_rgb)
+            add_markdown_runs(
+                p,
+                clean_txt,
+                default_bold=bold,
+                font_size=font_size,
+                color_rgb=color_rgb,
+            )
 
     # CRITICAL: A table cell must contain at least one paragraph to prevent document corruption, which can cause a fatal error in Microsoft Word.
     if not cell.paragraphs:
@@ -360,6 +399,7 @@ class DocxCompiler(DocumentCompiler):
         """
         #
         from infrastructure.runtime_paths import resolve_tower_annex_template_path
+
         template_path = resolve_tower_annex_template_path()
         try:
             doc = Document(str(template_path))
@@ -410,7 +450,7 @@ class DocxCompiler(DocumentCompiler):
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(node.space_after)
-        
+
         # Mapear alineación string
         align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
         align_str = node.align.upper()
@@ -420,11 +460,11 @@ class DocxCompiler(DocumentCompiler):
             align_const = WD_ALIGN_PARAGRAPH.LEFT
         elif align_str == "RIGHT":
             align_const = WD_ALIGN_PARAGRAPH.RIGHT
-            
+
         p.paragraph_format.alignment = align_const
 
         #
-        is_bullet = (node.style == "List Bullet" or node.style == "Bullet")
+        is_bullet = node.style == "List Bullet" or node.style == "Bullet"
         if is_bullet:
             apply_bullet_list_format(p)
 
@@ -435,19 +475,19 @@ class DocxCompiler(DocumentCompiler):
             default_bold=node.bold,
             default_italic=node.italic,
             font_size=node.font_size,
-            color_rgb=node.text_color_rgb
+            color_rgb=node.text_color_rgb,
         )
 
     def _compile_heading(self, doc: Document, node: HeadingNode) -> None:
         is_appendix = node.text.startswith("Apéndice")
         p = add_heading_paragraph(doc, node.text, level=node.level)
-        
+
         if is_appendix and p:
             try:
                 p.style = "Appendix Heading 1"
             except Exception:
                 pass
-        
+
         #
         if node.primary_color_rgb and p:
             for run in p.runs:
@@ -487,13 +527,13 @@ class DocxCompiler(DocumentCompiler):
         for r_idx, row_node in enumerate(node.rows):
             for c_idx in range(num_cols):
                 cell = table.rows[r_idx].cells[c_idx]
-                
+
                 #
                 if c_idx < len(row_node.cells):
                     cell_node = row_node.cells[c_idx]
                 else:
                     cell_node = CellNode(text="", bold=False, align="LEFT")
-                
+
                 #
                 align_const = WD_ALIGN_PARAGRAPH.LEFT
                 align_str = cell_node.align.upper()
@@ -511,7 +551,7 @@ class DocxCompiler(DocumentCompiler):
                     bold=cell_node.bold,
                     align=align_const,
                     font_size=cell_node.font_size,
-                    color_rgb=cell_node.text_color_rgb
+                    color_rgb=cell_node.text_color_rgb,
                 )
 
                 #

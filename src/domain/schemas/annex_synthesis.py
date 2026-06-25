@@ -7,6 +7,7 @@ from .common import VersionedPayload
 
 class MaturityScoreProfile(BaseModel):
     r"""{'docstring': 'Represents a maturity score profile for a given assessment.\n\n    This data model encapsulates introductory text, scoring methodology notes,\na radar chart visualization, and a detailed breakdown of scoring pillars\nderived from a blueprint definition.\n\n    Attributes:\n        profile_intro: Introductory text for the maturity score profile.\n        scoring_method_note: An explanatory note on the scoring methodology used.\n        radar_chart: Data for a radar chart visualization, typically a\n            base64-encoded image or a data URI. Defaults to an empty string.\n        pillars: A list of dictionaries, where each dictionary represents a\n            scoring pillar. The attributes for each pillar are programmatically\n            mapped from a corresponding blueprint definition.'}."""
+
     profile_intro: str
     scoring_method_note: str
     radar_chart: str = ""
@@ -33,6 +34,7 @@ class ExecutiveSummaryAnnex(BaseModel):
         message_bottleneck (str): The introductory message for the bottlenecks section.
         key_business_impacts (List[str]): A list of key identified business impacts.
     """
+
     global_score: str
     global_band: str
     target_maturity: str
@@ -46,6 +48,7 @@ class ExecutiveSummaryAnnex(BaseModel):
 
 class AsIsAnnex(BaseModel):
     """Model an As-Is analysis annex, capturing narrative, strengths, gaps, and operational impacts."""
+
     narrative: str
     strengths: List[str]
     gaps: List[str]
@@ -54,12 +57,14 @@ class AsIsAnnex(BaseModel):
 
 class ToBeAnnex(BaseModel):
     """Model the vision and design principles for a target system."""
+
     vision: str
     design_principles: List[str]
 
 
 class RiskItemAnnex(BaseModel):
     """Model a single, structured risk item for document annexes."""
+
     risk: str
     impact: str
     probability: str
@@ -76,6 +81,7 @@ class RisksAnnex(BaseModel):
         closing_summary: An optional concluding summary for the risks annex.
             Defaults to an empty string if not provided.
     """
+
     introduction: str
     risks: List[RiskItemAnnex]
     closing_summary: str = ""
@@ -83,6 +89,7 @@ class RisksAnnex(BaseModel):
 
 class GapRowAnnex(BaseModel):
     """Model a single gap analysis entry, including the pillar, current state, target state, and the identified gap."""
+
     pillar: str
     as_is_summary: str
     target_state: str
@@ -105,6 +112,7 @@ class GapAnnex(BaseModel):
         closing_summary: A concluding summary of the analysis findings; defaults
             to an empty string.
     """
+
     introduction: str
     target_capabilities: List[str]
     gap_rows: List[GapRowAnnex]
@@ -113,6 +121,7 @@ class GapAnnex(BaseModel):
 
 class InitiativeAnnex(BaseModel):
     """Model a single strategic initiative within a document annex."""
+
     sequence: int
     initiative: str
     objective: str
@@ -123,6 +132,7 @@ class InitiativeAnnex(BaseModel):
 
 class TodoAnnex(BaseModel):
     r"""{'docstring': 'Represents a structured TODO annex containing key initiatives.\n\n    This model organizes a collection of priority initiatives within a larger\n    document structure, framed by an introduction and an optional closing summary.\n\n    Attributes:\n        introduction (str): The introductory text or overview for the annex.\n        priority_initiatives (List[InitiativeAnnex]): A sequence of detailed\n            priority initiatives.\n        closing_summary (str): An optional concluding summary. Defaults to an\n            empty string.'}."""
+
     introduction: str
     priority_initiatives: List[InitiativeAnnex]
     closing_summary: str = ""
@@ -143,6 +153,7 @@ class ConclusionAnnex(BaseModel):
             immediate attention or action.
         closing_statement: A formal, concluding remark to end the report.
     """
+
     final_assessment: str
     executive_message: str
     priority_focus_areas: List[str]
@@ -151,6 +162,7 @@ class ConclusionAnnex(BaseModel):
 
 class AnnexSections(BaseModel):
     """Model a complete collection of structured annex sections."""
+
     asis: AsIsAnnex
     tobe: ToBeAnnex
     gap: GapAnnex
@@ -177,6 +189,7 @@ class DomainIntroduction(BaseModel):
         included_components: A sequence of components, systems, or tools included
             in the evaluation.
     """
+
     introduction_paragraph: str
     technological_domain: str
     domain_objective: str
@@ -205,6 +218,7 @@ class AnnexPayload(VersionedPayload):
         sections (AnnexSections): An object that aggregates the main content
             sections of the annex document.
     """
+
     document_meta: dict
     executive_summary: ExecutiveSummaryAnnex
     domain_introduction: DomainIntroduction

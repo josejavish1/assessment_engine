@@ -47,7 +47,9 @@ def verify_text_content() -> None:
     # Phase 1: Establishes a baseline of verbatim paragraph correspondence between the source and target documents.
     intersection = set(orig_paras) & set(shadow_paras)
     print(f"✅ Párrafos idénticos en ambos documentos: {len(intersection)}")
-    print(f"   Porcentaje de coincidencia textual de párrafos: {len(intersection) / len(orig_paras) * 100:.1f}%")
+    print(
+        f"   Porcentaje de coincidencia textual de párrafos: {len(intersection) / len(orig_paras) * 100:.1f}%"
+    )
     print("-" * 70)
 
     # Phase 2: Produces contextualized textual excerpts for manual, side-by-side visual inspection of confirmed paragraph matches.
@@ -74,24 +76,36 @@ def verify_text_content() -> None:
     print("\n--- [Original V3] Primeras 2 Fortalezas o Brechas en SWOT:")
     orig_swot_text = []
     for table in doc_orig.tables:
-        if len(table.rows) > 0 and len(table.rows[0].cells) > 0 and "Fortalezas" in table.rows[0].cells[0].text:
+        if (
+            len(table.rows) > 0
+            and len(table.rows[0].cells) > 0
+            and "Fortalezas" in table.rows[0].cells[0].text
+        ):
             for row in table.rows[1:3]:
                 if len(row.cells) >= 2:
-                    orig_swot_text.append((row.cells[0].text[:80], row.cells[1].text[:80]))
+                    orig_swot_text.append(
+                        (row.cells[0].text[:80], row.cells[1].text[:80])
+                    )
     for idx, (s, g) in enumerate(orig_swot_text):
-        print(f"   Punto {idx+1}:")
+        print(f"   Punto {idx + 1}:")
         print(f"     └─ Fortaleza: {s}...")
         print(f"     └─ Brecha:    {g}...")
 
     print("\n--- [Shadow V4] Primeras 2 Fortalezas o Brechas en SWOT:")
     shadow_swot_text = []
     for table in doc_shadow.tables:
-        if len(table.rows) > 0 and len(table.rows[0].cells) > 0 and "Fortalezas" in table.rows[0].cells[0].text:
+        if (
+            len(table.rows) > 0
+            and len(table.rows[0].cells) > 0
+            and "Fortalezas" in table.rows[0].cells[0].text
+        ):
             for row in table.rows[1:3]:
                 if len(row.cells) >= 2:
-                    shadow_swot_text.append((row.cells[0].text[:80], row.cells[1].text[:80]))
+                    shadow_swot_text.append(
+                        (row.cells[0].text[:80], row.cells[1].text[:80])
+                    )
     for idx, (s, g) in enumerate(shadow_swot_text):
-        print(f"   Punto {idx+1}:")
+        print(f"   Punto {idx + 1}:")
         print(f"     └─ Fortaleza: {s}...")
         print(f"     └─ Brecha:    {g}...")
 

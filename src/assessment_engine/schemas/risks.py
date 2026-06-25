@@ -22,6 +22,7 @@ class RiskItem(BaseModel):
         related_pillars (List[str]): A list of business or technical pillars
             associated with the risk (e.g., 'Security', 'Reliability').
     """
+
     risk_name: str
     severity: str = Field(..., pattern="^(High|Medium|Low|Critical)$")
     business_impact: str
@@ -31,6 +32,7 @@ class RiskItem(BaseModel):
 
 class RisksDraft(BaseDraftModel):
     """Return a static list of forbidden phrases for the risks section."""
+
     section_id: str = "risks"
     status: str = "draft"
     tower_id: str

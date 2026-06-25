@@ -28,12 +28,16 @@ class ApexDebateResponse(BaseModel):
             impossible. If True, the task is considered a hard block, and
             further execution attempts are prohibited.
     """
+
     decision: Literal["APPROVED", "REJECTED", "INJECT_PREREQUISITE"] = Field(
         description="An enumeration of the possible decision outcomes. `APPROVED`: The operation is authorized to proceed. `REJECTED`: The operation is terminated and will not be executed. `INJECT_PREREQUISITE`: The operation is suspended pending completion of newly defined prerequisite sub-tasks."
     )
-    reasoning: str = Field(description="A comprehensive justification for the decision rendered.")
+    reasoning: str = Field(
+        description="A comprehensive justification for the decision rendered."
+    )
     revised_instruction: str | None = Field(
-        default=None, description="A specific technical instruction for the agent or system responsible for task execution."
+        default=None,
+        description="A specific technical instruction for the agent or system responsible for task execution.",
     )
     prerequisite_tasks: list[dict[str, str]] = Field(
         default_factory=list,
@@ -58,6 +62,7 @@ class ApexBatchStatus(BaseModel):
         branch_name (Optional[str]): The source control branch name associated
             with the task, if applicable. Defaults to None.
     """
+
     task_id: str
     status: Literal["pending", "running", "success", "failed", "aborted"]
     attempts: int

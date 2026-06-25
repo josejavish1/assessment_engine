@@ -6,6 +6,7 @@ from typing import TypedDict
 
 class MaturityBandDefinition(TypedDict):
     """Specify a maturity band with an inclusive numerical range and an associated label."""
+
     min: float
     max: float
     label: str

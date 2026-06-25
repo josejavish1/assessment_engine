@@ -156,7 +156,9 @@ def format_currency_custom(
         A string representing the formatted monetary value.
     """
     symbol = vocab.get("currency_symbol", "€")
-    format_type = vocab.get("currency_format", "EU")  # Specifies the locale format, e.g., "EU" or "US".
+    format_type = vocab.get(
+        "currency_format", "EU"
+    )  # Specifies the locale format, e.g., "EU" or "US".
     lang = str(doc_lang or "es").lower()
 
     # Perform number formatting via direct string and mathematical manipulation to ensure OS-agnostic behavior.

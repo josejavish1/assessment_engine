@@ -21,7 +21,9 @@ class FidelitySentinel:
     r"""[{'method_name': 'FidelitySentinel', 'docstring': 'A namespace for static methods that perform data fidelity validations.\n\nThese methods are designed to verify that data transformations or text\nsynthesis processes do not result in a significant loss of critical\ninformation. Key checks include ensuring entity retention and maintaining\ncollection cardinality above specified thresholds.'}, {'method_name': 'verify_field_occupancy', 'docstring': 'Validates that the cardinality of a collection has not significantly decreased.\n\nThis check flags two conditions:\n1. Complete Loss: The final list is empty when the original was not.\n2. Significant Dilution: The final list contains less than 50% of the\n   items from the original list.\n\nArgs:\n    raw_data (List[Any]): The list of data from the original source.\n    final_list (List[Any]): The list of data after processing.\n    field_name (str): The name of the field being verified, used for\n        generating violation messages.\n\nReturns:\n    List[str]: A list of string messages describing any violations found. An\n    empty list is returned if no violations are detected.'}, {'method_name': 'verify_entity_retention', 'docstring': 'Verifies that critical entities from a source list are retained in final text.\n\nThis method performs a case-insensitive substring check to confirm the\npresence of each specified entity. Entities are normalized by converting them\nto lowercase and stripping leading/trailing whitespace before the check.\nEntities that are empty or have fewer than 3 characters are ignored.\n\nArgs:\n    raw_entities (List[str]): A list of critical entity strings that must\n        be present in the final output.\n    final_text (str): The final, synthesized text to be checked for entity\n        retention.\n    context (str, optional): A string providing context for the verification,\n        used in violation messages. Defaults to "General".\n\nReturns:\n    List[str]: A list of violation messages for each entity not found in\n    `final_text`. Returns an empty list if all valid entities are retained.'}]."""
 
     @staticmethod
-    def verify_field_occupancy(raw_data: List[Any], final_list: List[Any], field_name: str) -> List[str]:
+    def verify_field_occupancy(
+        raw_data: List[Any], final_list: List[Any], field_name: str
+    ) -> List[str]:
         """Assess data loss by comparing pre- and post-processing list lengths.
 
         This function quantifies data loss by comparing the number of elements in a
@@ -43,9 +45,13 @@ class FidelitySentinel:
         """
         violations = []
         if raw_data and not final_list:
-            violations.append(f"Estructura Crítica: El campo '{field_name}' está VACÍO en el resultado, pero contenía datos en el material bruto.")
+            violations.append(
+                f"Estructura Crítica: El campo '{field_name}' está VACÍO en el resultado, pero contenía datos en el material bruto."
+            )
         elif len(raw_data) > 0 and len(final_list) < (len(raw_data) * 0.5):
-            violations.append(f"Densidad Insuficiente: El campo '{field_name}' ha sufrido una dilución de datos superior al 50%.")
+            violations.append(
+                f"Densidad Insuficiente: El campo '{field_name}' ha sufrido una dilución de datos superior al 50%."
+            )
         return violations
 
     @staticmethod

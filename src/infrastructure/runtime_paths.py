@@ -50,6 +50,7 @@ def resolve_client_dir(default_client: str = "generic_client") -> Path:
             directory. This path is not guaranteed to exist on the filesystem.
     """
     from infrastructure.text_utils import slugify
+
     client_id = slugify(resolve_client_id(default_client))
     primary = resolve_working_dir() / client_id
     legacy = ROOT / "src" / "assessment_engine" / "working" / client_id

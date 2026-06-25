@@ -728,10 +728,10 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
         None. The function modifies the input `doc` object in-place.
     """
     add_heading_paragraph(doc, "Diagnóstico Tecnológico Consolidado (AS-IS)", level=1)
-    
+
     for pilar in payload.pillars_analysis:
         add_heading_paragraph(doc, f"Capacidad: {pilar.pilar_name}", level=2)
-        
+
         table = doc.add_table(rows=1, cols=3)
         finalize_table(table)
         headers = ["Capacidad Técnica", "Hallazgo / Evidencia", "Riesgo de Negocio"]
@@ -743,15 +743,22 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
             row = table.add_row()
             set_cell_text(row.cells[0], row_data.target_state, bold=True, font_size=10)
             set_cell_text(row.cells[1], row_data.risk_observed, font_size=10)
-            
+
             #
             impact_text = row_data.impact
             impact_lower = impact_text.lower()
-            if any(k in impact_lower for k in ["crítico", "alto", "crítica", "alta", "severo", "material"]):
-                shade_cell(row.cells[2], "FADBD8") # Defines the RGB value for the Light Red color state.
+            if any(
+                k in impact_lower
+                for k in ["crítico", "alto", "crítica", "alta", "severo", "material"]
+            ):
+                shade_cell(
+                    row.cells[2], "FADBD8"
+                )  # Defines the RGB value for the Light Red color state.
             elif any(k in impact_lower for k in ["medio", "moderado"]):
-                shade_cell(row.cells[2], "FCF3CF") # Defines the RGB value for the Light Amber color state.
-                
+                shade_cell(
+                    row.cells[2], "FCF3CF"
+                )  # Defines the RGB value for the Light Amber color state.
+
             set_cell_text(row.cells[2], impact_text, font_size=10)
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
@@ -768,16 +775,16 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload) -> Any:
         doc,
         "La siguiente matriz consolida la expectativa de pérdida anualizada (ALE) de las vulnerabilidades detectadas en el estado actual, basada en factores de frecuencia de la amenaza (TEF) y magnitud de pérdida (LM). "
         "Nota: La métrica ALE representa la exposición aislada de cada riesgo. Varios riesgos pueden compartir la misma causa raíz, por lo que su sumatorio refleja el volumen total de amenaza bajo gestión, no un impacto simultáneo garantizado.",
-        color_rgb=BASE_TEXT_COLOR
+        color_rgb=BASE_TEXT_COLOR,
     )
-    
+
     # Initializes a 5x5 matrix for risk assessment. Rows represent TEF (Frequency) on a scale of 5 to 1, and columns represent LM (Magnitude) on a scale of 1 to 5.
     matrix = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
-    
+
     has_fair_data = False
     risk_details = []
     risk_counter = 1
-    
+
     for pilar in payload.pillars_analysis:
         for finding in pilar.health_check_asis:
             tef = getattr(finding, "threat_event_frequency", 0)
@@ -788,48 +795,84 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload) -> Any:
                 r_id = f"R{risk_counter:02d}"
                 risk_counter += 1
                 matrix[tef][lm].append(r_id)
-                risk_details.append({
-                    "id": r_id,
-                    "pilar": pilar.pilar_name,
-                    "finding": finding.risk_observed,
-                    "target_state": finding.target_state,
-                    "tef": tef,
-                    "lm": lm,
-                    "ale": ale,
-                    "risk_score": tef * lm
-                })
-                
+                risk_details.append(
+                    {
+                        "id": r_id,
+                        "pilar": pilar.pilar_name,
+                        "finding": finding.risk_observed,
+                        "target_state": finding.target_state,
+                        "tef": tef,
+                        "lm": lm,
+                        "ale": ale,
+                        "risk_score": tef * lm,
+                    }
+                )
+
     if not has_fair_data:
-        add_body_paragraph(doc, "No hay datos cuantitativos FAIR suficientes para renderizar el mapa de calor.", color_rgb=BASE_TEXT_COLOR)
+        add_body_paragraph(
+            doc,
+            "No hay datos cuantitativos FAIR suficientes para renderizar el mapa de calor.",
+            color_rgb=BASE_TEXT_COLOR,
+        )
         return
-        
+
     table = doc.add_table(rows=6, cols=6)
     finalize_table(table)
-    
+
     #
-    set_cell_text(table.rows[0].cells[0], "Frecuencia \\ Impacto", bold=True, font_size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+    set_cell_text(
+        table.rows[0].cells[0],
+        "Frecuencia \\ Impacto",
+        bold=True,
+        font_size=9,
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+    )
     for c in range(1, 6):
-        set_cell_text(table.rows[0].cells[c], f"Nivel {c}", bold=True, font_size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text(
+            table.rows[0].cells[c],
+            f"Nivel {c}",
+            bold=True,
+            font_size=9,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
         shade_cell(table.rows[0].cells[c], "F2F2F2")
-        
+
     for r_idx, r in enumerate(range(5, 0, -1), 1):
-        set_cell_text(table.rows[r_idx].cells[0], f"Freq {r}", bold=True, font_size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text(
+            table.rows[r_idx].cells[0],
+            f"Freq {r}",
+            bold=True,
+            font_size=9,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
         shade_cell(table.rows[r_idx].cells[0], "F2F2F2")
         for c in range(1, 6):
             cell = table.rows[r_idx].cells[c]
             risk_score = r * c
-            color = "D9F2D9" # Defines the RGB value for the Green color state.
-            if risk_score >= 20: color = "C00000" # Defines the RGB value for the Dark Red color state.
-            elif risk_score >= 15: color = "FF0000" # Defines the RGB value for the Red color state.
-            elif risk_score >= 10: color = "FFC000" # Defines the RGB value for the Amber color state.
-            elif risk_score >= 5: color = "FFFF00" # Defines the RGB value for the Yellow color state.
-            
+            color = "D9F2D9"  # Defines the RGB value for the Green color state.
+            if risk_score >= 20:
+                color = "C00000"  # Defines the RGB value for the Dark Red color state.
+            elif risk_score >= 15:
+                color = "FF0000"  # Defines the RGB value for the Red color state.
+            elif risk_score >= 10:
+                color = "FFC000"  # Defines the RGB value for the Amber color state.
+            elif risk_score >= 5:
+                color = "FFFF00"  # Defines the RGB value for the Yellow color state.
+
             shade_cell(cell, color)
-            
+
             items = matrix[r][c]
             if items:
-                set_cell_text(cell, ", ".join(items), font_size=9, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-                if risk_score >= 15: # A specific text color (white) is required for high contrast against Red or Dark Red backgrounds to maintain readability.
+                set_cell_text(
+                    cell,
+                    ", ".join(items),
+                    font_size=9,
+                    bold=True,
+                    align=WD_ALIGN_PARAGRAPH.CENTER,
+                )
+                if (
+                    risk_score >= 15
+                ):  # A specific text color (white) is required for high contrast against Red or Dark Red backgrounds to maintain readability.
                     for paragraph in cell.paragraphs:
                         for run in paragraph.runs:
                             run.font.color.rgb = RGBColor(255, 255, 255)
@@ -842,40 +885,71 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload) -> Any:
     #
     # Sorts risks in descending order by Annualized Loss Expectancy (ALE) to prioritize the most significant threats.
     risk_details.sort(key=lambda x: x["ale"], reverse=True)
-    
+
     add_heading_paragraph(doc, "Detalle de Exposición al Riesgo (FAIR)", level=2)
     risk_table = doc.add_table(rows=1, cols=5)
     finalize_table(risk_table)
-    headers = ["ID", "Dominio", "Hallazgo / Brecha", "Coordenadas (Freq x Imp)", "Exposición de Riesgo (ALE)"]
+    headers = [
+        "ID",
+        "Dominio",
+        "Hallazgo / Brecha",
+        "Coordenadas (Freq x Imp)",
+        "Exposición de Riesgo (ALE)",
+    ]
     for i, header in enumerate(headers):
         set_cell_text(risk_table.rows[0].cells[i], header, bold=True, font_size=9)
         shade_cell(risk_table.rows[0].cells[i], "D9EAF7")
-        
+
     for detail in risk_details:
         row = risk_table.add_row()
-        set_cell_text(row.cells[0], detail["id"], font_size=8, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text(
+            row.cells[0],
+            detail["id"],
+            font_size=8,
+            bold=True,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
         set_cell_text(row.cells[1], detail["pilar"], font_size=8)
-        set_cell_text(row.cells[2], f"{detail['target_state']}: {detail['finding']}", font_size=8)
-        set_cell_text(row.cells[3], f"TEF: {detail['tef']} | LM: {detail['lm']}", font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
-        
+        set_cell_text(
+            row.cells[2], f"{detail['target_state']}: {detail['finding']}", font_size=8
+        )
+        set_cell_text(
+            row.cells[3],
+            f"TEF: {detail['tef']} | LM: {detail['lm']}",
+            font_size=8,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+
         # Determines the appropriate cell background color based on the calculated Annualized Loss Expectancy (ALE) risk level.
         risk_score = detail["risk_score"]
-        color = "D9F2D9" # Defines the RGB value for the Green color state.
-        if risk_score >= 20: color = "C00000" # Defines the RGB value for the Dark Red color state.
-        elif risk_score >= 15: color = "FF0000" # Defines the RGB value for the Red color state.
-        elif risk_score >= 10: color = "FFC000" # Defines the RGB value for the Amber color state.
-        elif risk_score >= 5: color = "FFFF00" # Defines the RGB value for the Yellow color state.
-        
+        color = "D9F2D9"  # Defines the RGB value for the Green color state.
+        if risk_score >= 20:
+            color = "C00000"  # Defines the RGB value for the Dark Red color state.
+        elif risk_score >= 15:
+            color = "FF0000"  # Defines the RGB value for the Red color state.
+        elif risk_score >= 10:
+            color = "FFC000"  # Defines the RGB value for the Amber color state.
+        elif risk_score >= 5:
+            color = "FFFF00"  # Defines the RGB value for the Yellow color state.
+
         ale_val = detail["ale"]
-        set_cell_text(row.cells[4], f"{ale_val:,.2f} €".replace(",", "X").replace(".", ",").replace("X", "."), font_size=8, align=WD_ALIGN_PARAGRAPH.RIGHT)
+        set_cell_text(
+            row.cells[4],
+            f"{ale_val:,.2f} €".replace(",", "X").replace(".", ",").replace("X", "."),
+            font_size=8,
+            align=WD_ALIGN_PARAGRAPH.RIGHT,
+        )
         shade_cell(row.cells[4], color)
-        if risk_score >= 15: # A specific text color (white) is required for high contrast against Red or Dark Red backgrounds to maintain readability.
+        if (
+            risk_score >= 15
+        ):  # A specific text color (white) is required for high contrast against Red or Dark Red backgrounds to maintain readability.
             for paragraph in row.cells[4].paragraphs:
                 for run in paragraph.runs:
                     run.font.color.rgb = RGBColor(255, 255, 255)
-                            
+
     autofit_table_to_contents(risk_table)
     add_spacer(doc, 15)
+
 
 def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
     """Populates a document object with the 'TO-BE' architecture section.
@@ -902,17 +976,23 @@ def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
         AttributeError: If `payload` is missing the `cross_capabilities_analysis`
             attribute.
     """
-    add_heading_paragraph(doc, "Arquitectura Objetivo y Visión Soberana (TO-BE)", level=1)
-    
+    add_heading_paragraph(
+        doc, "Arquitectura Objetivo y Visión Soberana (TO-BE)", level=1
+    )
+
     if payload.cross_capabilities_analysis:
-        add_body_paragraph(doc, payload.cross_capabilities_analysis.transformation_paradigm, color_rgb=BASE_TEXT_COLOR)
+        add_body_paragraph(
+            doc,
+            payload.cross_capabilities_analysis.transformation_paradigm,
+            color_rgb=BASE_TEXT_COLOR,
+        )
 
     add_body_paragraph(
         doc,
         "La arquitectura objetivo propuesta se rige por un modelo soberano agnóstico, evitando el vendor lock-in e integrando las infraestructuras críticas con los ecosistemas Cloud de mayor innovación tecnológica (e.g. AWS).",
-        color_rgb=BASE_TEXT_COLOR
+        color_rgb=BASE_TEXT_COLOR,
     )
-    
+
     if hasattr(payload, "design_principles") and payload.design_principles:
         add_heading_paragraph(doc, "Principios de Diseño Unificados", level=2)
         for principle in payload.design_principles:
@@ -922,28 +1002,39 @@ def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
 def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
     r"""{'docstring': 'Renders a technical appendix of detailed project charters into a document.\n\n    Generates and appends a series of formatted tables, representing detailed\n    project charters, to a document object. The function processes projects\n    from the input payload, first grouping them by their `transformation_typology`.\n    For each project, it aggregates comprehensive details including an executive\n    summary, S.M.A.R.T. objectives, scope definitions, technical dependencies,\n    financial estimates, Work Breakdown Structure (WBS), and risk analysis.\n\n    Financial data (OPEX) is sanitized to remove internal margin calculations\n    before rendering. The function is robust to variations in the payload\n    structure, using default values for missing attributes and handling potential\n    type inconsistencies in WBS data.\n\n    Args:\n        doc: A document object, typically from a library like `python-docx`, to\n            which the appendix is added. This object is modified in-place.\n        payload (BlueprintPayload): A data object containing the project blueprint,\n            including architectural pillars, project definitions, dependencies,\n            and financial data.\n\n    Returns:\n        None. The function modifies the `doc` object directly.\n\n    Raises:\n        AttributeError: If the `payload` object or its nested structures do not\n            conform to the expected schema (e.g., missing `pillars_analysis`).'}."""
     doc.add_page_break()
-    add_heading_paragraph(doc, "Anexo Técnico: Fichas Profundas de Proyectos (Charters)", level=1)
-    
+    add_heading_paragraph(
+        doc, "Anexo Técnico: Fichas Profundas de Proyectos (Charters)", level=1
+    )
+
     # Projects are first grouped by their transformation typology to structure the subsequent rendering stages.
     from collections import defaultdict
+
     grouped_projects = defaultdict(list)
-    
+
     for pilar in payload.pillars_analysis:
         for project in pilar.projects_todo:
             typology = getattr(project, "transformation_typology", "Iniciativas Core")
             grouped_projects[typology].append((pilar.pilar_name, project))
-            
+
     #
     project_idx = 1
     for typology, projects_in_group in grouped_projects.items():
         add_heading_paragraph(doc, f"Vector de Transformación: {typology}", level=2)
         add_spacer(doc, 10)
-        
+
         for pilar_name, project in projects_in_group:
-            add_heading_paragraph(doc, f"Iniciativa {project_idx}: {project.initiative}", level=3)
-            
-            deps = [d.depends_on for d in payload.external_dependencies if d.project == project.initiative]
-            deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+            add_heading_paragraph(
+                doc, f"Iniciativa {project_idx}: {project.initiative}", level=3
+            )
+
+            deps = [
+                d.depends_on
+                for d in payload.external_dependencies
+                if d.project == project.initiative
+            ]
+            deps_text = (
+                " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+            )
 
             #
             mitigated_risk_text = "N/A"
@@ -951,19 +1042,21 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
                 for p_ana in payload.pillars_analysis:
                     for hc in p_ana.health_check_asis:
                         if hc.node_id == project.mitigates_risk_id:
-                            mitigated_risk_text = f"[{hc.target_state}] {hc.risk_observed}"
+                            mitigated_risk_text = (
+                                f"[{hc.target_state}] {hc.risk_observed}"
+                            )
                             break
 
             # Performs FinOps resolution by sanitizing financial data to exclude internal cost margins from client-facing documents.
             capex = getattr(project, "capex_estimate", "N/A")
             opex = getattr(project, "opex_estimate", "N/A")
-            
+
             # The OPEX value is sanitized to strip any internal margin calculations, ensuring only the client-facing cost is presented.
             # The financial data is filtered to retain only the final selling price for this context.
             clean_opex = opex
             if "(Margen" in opex:
                 clean_opex = opex.split("(Margen")[0].strip()
-            
+
             finops_text = f"Inversión de Implantación: {clean_opex}\nInversión de Licencias/Hardware: {capex}"
 
             #
@@ -971,10 +1064,21 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
             wbs_text = "Desglose no disponible."
             if wbs_items:
                 try:
-                    wbs_text = "\n".join([f"• {w.task_name} (Perfil: {w.required_profile})" for w in wbs_items])
+                    wbs_text = "\n".join(
+                        [
+                            f"• {w.task_name} (Perfil: {w.required_profile})"
+                            for w in wbs_items
+                        ]
+                    )
                 except Exception:
                     # Handles potential inconsistencies in data types (dict vs. object) during payload parsing to ensure robust attribute access.
-                    wbs_text = "\n".join([f"• {w.get('task_name')} (Perfil: {w.get('required_profile')})" for w in wbs_items if isinstance(w, dict)])
+                    wbs_text = "\n".join(
+                        [
+                            f"• {w.get('task_name')} (Perfil: {w.get('required_profile')})"
+                            for w in wbs_items
+                            if isinstance(w, dict)
+                        ]
+                    )
 
             #
             proj_desc = getattr(project, "project_description", "N/A") or "N/A"
@@ -983,7 +1087,7 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
             out_scope_list = getattr(project, "out_of_scope", []) or []
             gov_roles_list = getattr(project, "governance_roles", []) or []
             crit_risks_list = getattr(project, "critical_risks", []) or []
-            
+
             in_scope = "\n".join([f"• {item}" for item in in_scope_list]) or "N/A"
             out_scope = "\n".join([f"• {item}" for item in out_scope_list]) or "N/A"
             gov_roles = "\n".join([f"• {item}" for item in gov_roles_list]) or "N/A"
@@ -1002,10 +1106,7 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
                     "Entregables Técnicos Duros (DoD)",
                     "\n".join([f"• {item}" for item in project.deliverables]),
                 ),
-                (
-                    "Work Breakdown Structure (LLD Fases)",
-                    wbs_text
-                ),
+                ("Work Breakdown Structure (LLD Fases)", wbs_text),
                 (
                     "Sizing & Cronograma",
                     f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
@@ -1015,12 +1116,19 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
                 ("Perfiles y Gobernanza (RACI)", gov_roles),
                 ("Riesgos de Ejecución y Mitigación", crit_risks),
             ]
-            
-            project_table = doc.add_table(rows=len(rows)+1, cols=2)
+
+            project_table = doc.add_table(rows=len(rows) + 1, cols=2)
             finalize_table(project_table)
-            
-            merged = project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
-            set_cell_text(merged, "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA", bold=True, font_size=11)
+
+            merged = (
+                project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
+            )
+            set_cell_text(
+                merged,
+                "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA",
+                bold=True,
+                font_size=11,
+            )
             shade_cell(merged, "0072BC")
             for run in merged.paragraphs[0].runs:
                 run.font.color.rgb = RGBColor(255, 255, 255)
@@ -1033,7 +1141,7 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
                 set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
                 for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
                     run.font.color.rgb = BASE_TEXT_COLOR
-            
+
             autofit_table_to_contents(project_table)
             add_spacer(doc, 15)
             project_idx += 1
@@ -1071,21 +1179,26 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
         AttributeError: If the `payload` object lacks expected attributes, such
             as `roadmap` or `external_dependencies`, indicating malformed input.
     """
-    add_heading_paragraph(doc, "Roadmap Estratégico y Matriz de Dependencias (SOTA)", level=1)
-    
+    add_heading_paragraph(
+        doc, "Roadmap Estratégico y Matriz de Dependencias (SOTA)", level=1
+    )
+
     add_body_paragraph(
         doc,
         "La siguiente matriz establece la ruta crítica de ejecución (Gantt). Las iniciativas no son compartimentos estancos; su secuenciación matemática garantiza que los habilitadores técnicos (dependencias) se desplieguen antes de la construcción de las capas superiores.",
-        color_rgb=BASE_TEXT_COLOR
+        color_rgb=BASE_TEXT_COLOR,
     )
-    
+
     # Attempts to generate a Mermaid syntax Gantt chart; this operation may fail and should be handled gracefully.
     import os
     import tempfile
 
     from application.generate_mermaid_gantt import generate_mermaid_gantt
-    
-    payload_path = output_path.parent / f"blueprint_{payload.document_meta.tower_code.lower()}_payload.json"
+
+    payload_path = (
+        output_path.parent
+        / f"blueprint_{payload.document_meta.tower_code.lower()}_payload.json"
+    )
     png_path = Path(tempfile.gettempdir()) / f"gantt_{payload_path.name}.png"
     if payload_path.exists() and generate_mermaid_gantt(payload_path, png_path):
         doc.add_picture(str(png_path), width=Inches(6.5))
@@ -1097,7 +1210,11 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
 
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
-    headers = ["Horizonte / Fase", "Iniciativa de Ingeniería", "Dependencias Técnicas (Predecesores)"]
+    headers = [
+        "Horizonte / Fase",
+        "Iniciativa de Ingeniería",
+        "Dependencias Técnicas (Predecesores)",
+    ]
     for i, header in enumerate(headers):
         set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
         shade_cell(table.rows[0].cells[i], "D9EAF7")
@@ -1115,25 +1232,35 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
             for d in payload.external_dependencies:
                 if d.project == project_name:
                     dep_name = d.depends_on
-                    tag = "[Interna]" if dep_name in internal_projects else "[Cross-Tower]"
+                    tag = (
+                        "[Interna]"
+                        if dep_name in internal_projects
+                        else "[Cross-Tower]"
+                    )
                     deps.append(f"{tag} {dep_name}")
-            
-            deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
-            
+
+            deps_text = (
+                " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+            )
+
             row = table.add_row()
             set_cell_text(row.cells[0], wave.wave, bold=True, font_size=9.5)
             set_cell_text(row.cells[1], project_name, font_size=9.5)
             set_cell_text(row.cells[2], deps_text, font_size=9)
-            
+
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
                         run.font.color.rgb = BASE_TEXT_COLOR
                         if "[Cross-Tower]" in run.text:
-                            run.font.color.rgb = RGBColor(192, 0, 0) # Defines the RGB value for Dark Red, used to signify cross-tower project dependencies.
+                            run.font.color.rgb = RGBColor(
+                                192, 0, 0
+                            )  # Defines the RGB value for Dark Red, used to signify cross-tower project dependencies.
                         elif "[Interna]" in run.text:
-                            run.font.color.rgb = RGBColor(0, 112, 192) # Defines the RGB value for Blue, used to signify internal project dependencies.
-                        
+                            run.font.color.rgb = RGBColor(
+                                0, 112, 192
+                            )  # Defines the RGB value for Blue, used to signify internal project dependencies.
+
     autofit_table_to_contents(table)
     add_spacer(doc, 15)
 

@@ -20,11 +20,13 @@ class TargetMaturity(BaseModel):
         justification: A textual explanation detailing the rationale behind the
             recommended target maturity.
     """
+
     recommended_level: str = Field(
         ..., description="Target maturity level (e.g., 'Level 4 - Optimized')."
     )
     recommended_score_reference: str = Field(
-        ..., description="The numerical score corresponding to the target maturity level (e.g., 4.0)."
+        ...,
+        description="The numerical score corresponding to the target maturity level (e.g., 4.0).",
     )
     justification: str = Field(
         ..., description="A detailed rationale for the target maturity level."
@@ -39,6 +41,7 @@ class PillarCapability(BaseModel):
         target_capabilities: A list of capability identifiers to be attained for the
             pillar.
     """
+
     pillar: str = Field(..., description="The name of the pillar.")
     target_capabilities: List[str] = Field(
         ..., description="A list of capabilities to be attained."
@@ -47,6 +50,7 @@ class PillarCapability(BaseModel):
 
 class ToBeDraft(BaseDraftModel):
     r"""[{'name': 'ToBeDraft', 'path': 'tobe.py', 'type': 'class', 'docstring': 'Represents the data model for the \'To-Be\' section of a draft document.\n\nThis class defines the Pydantic model for the target state description,\nincluding strategic goals, capabilities, architecture, and operational changes.\nIt enforces data integrity through built-in validation rules.\n\nAttributes:\n    section_id: The unique identifier for this section, fixed to "tobe".\n    status: The current status of the draft section, defaulting to "draft".\n    tower_id: The unique identifier of the associated technology tower.\n    tower_name: The name of the associated technology tower.\n    section_title: The title of the section, fixed to "TO-BE".\n    introduction: An introductory text describing the target state.\n    target_maturity: A `TargetMaturity` object detailing the desired\n        maturity level and its justification.\n    target_capabilities_by_pillar: A list of `PillarCapability` objects,\n        each outlining target capabilities for a specific pillar.\n    architecture_principles: A list of key architecture principles that will\n        govern the target state.\n    operating_model_implications: A list of anticipated implications for the\n        organization\'s operating model.\n    notes_for_reviewer: An optional list of notes intended for the document\n        reviewer.'}, {'name': 'get_forbidden_phrases', 'path': 'tobe.py', 'type': 'function', 'docstring': 'Return a static list of forbidden phrases for content validation.'}, {'name': 'validate_pillars_not_empty', 'path': 'tobe.py', 'type': 'function', 'docstring': 'Validate that `target_capabilities_by_pillar` is not empty.\n\nThis Pydantic class method validator ensures that the list of target\ncapability pillars contains at least one entry.\n\nArgs:\n    cls: The class being validated.\n    v: The input value for the `target_capabilities_by_pillar` field.\n\nReturns:\n    The input value `v` if it is not an empty list.\n\nRaises:\n    ValueError: If the input list `v` is empty.'}]."""
+
     section_id: str = "tobe"
     status: str = "draft"
     tower_id: str
@@ -110,6 +114,7 @@ class Defect(BaseModel):
         suggested_fix (str): A recommended action or code modification to resolve the
             defect.
     """
+
     severity: str = Field(..., pattern="^(critical|major|minor)$")
     type: str
     message: str
@@ -137,6 +142,7 @@ class ToBeReview(BaseModel):
         review_notes (List[str]): A list of general notes, comments, or
             observations from the reviewer. Defaults to an empty list.
     """
+
     section_id: str = "tobe"
     status: str = Field(..., pattern="^(approve|revise|human_validation_required)$")
     overall_assessment: str

@@ -37,6 +37,7 @@ SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
 
 class Task(TypedDict):
     r"""{'docstring': "Defines the structure for a dictionary representing a single task.\n\nThis `TypedDict` enforces a consistent schema for task objects, which is\nused for static type analysis and data validation.\n\nAttributes:\n    id: A unique string identifier for the task.\n    priority: A string representing the priority level of the task.\n    title: A short, descriptive title for the task.\n    description: A detailed explanation of the task's objective.\n    status: The current execution status of the task.\n    instruction: An optional machine-readable instruction or command."}."""
+
     id: str
     priority: str
     title: str
@@ -67,6 +68,7 @@ class UiState(TypedDict):
         last_event (str): A human-readable string describing the most recent
             event.
     """
+
     all_tasks: List[Task]
     active_task: Optional[Task]
     active_logs: List[str]

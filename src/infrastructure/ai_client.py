@@ -122,13 +122,18 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
 
 # Estimated pricing in USD per one million tokens, based on approximate rates for the Gemini 2.5 Pro model.
 PRICING = {
-    "gemini-2.5-pro": {"input": 1.25, "output": 5.00},  # Cost in USD per one million tokens.
+    "gemini-2.5-pro": {
+        "input": 1.25,
+        "output": 5.00,
+    },  # Cost in USD per one million tokens.
     "gemini-2.5-flash": {"input": 0.10, "output": 0.40},
     "default": {"input": 1.25, "output": 5.00},
 }
 
 
-def estimate_cost(input_tokens: int, output_tokens: int, model: str = "default") -> float:
+def estimate_cost(
+    input_tokens: int, output_tokens: int, model: str = "default"
+) -> float:
     """Calculate the estimated cost of an API request based on token usage.
 
     Computes the cost by looking up a model's price per million tokens from
@@ -242,11 +247,11 @@ async def run_agent(
     finally:
         end_time = time.monotonic()
         duration = end_time - start_time
-        
+
         #
         agent_obj = getattr(app, "_agent", None)
         model_name = getattr(agent_obj, "model", "default")
-        
+
         cost = estimate_cost(input_tokens_est, output_tokens_est, model=model_name)
 
         try:

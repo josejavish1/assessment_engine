@@ -170,7 +170,6 @@ class EpistemicGraph:
             **kwargs,
         )
 
-
         # Defines the CQRS Write Model, which consists of a persistent, append-only event ledger.
         with open(self.ledger_path, "a") as f:
             f.write(event.model_dump_json() + "\n")

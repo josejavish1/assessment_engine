@@ -102,6 +102,7 @@ class BusinessDriverFact(BaseModel):
         external_url (Optional[str]): An optional URL pointing to an external
             reference.
     """
+
     name: str
     fragment_id: Optional[str] = None
     external_url: Optional[str] = None
@@ -109,6 +110,7 @@ class BusinessDriverFact(BaseModel):
 
 class ObservationFact(BaseModel):
     """Represent a single, atomic fact with optional source provenance."""
+
     fact: str
     fragment_id: Optional[str] = None
     external_url: Optional[str] = None
@@ -116,6 +118,7 @@ class ObservationFact(BaseModel):
 
 class RestrictionFact(BaseModel):
     """Model a single restriction statement with optional source identifiers."""
+
     restriction: str
     fragment_id: Optional[str] = None
     external_url: Optional[str] = None
@@ -137,6 +140,7 @@ class RegulatoryHarvest(BaseModel):
             document that substantiates the analysis. Defaults to a placeholder
             string if not explicitly provided.
     """
+
     sector: str
     frameworks: List[str]
     regulatory_pressures: List[str] = Field(default_factory=list)
@@ -166,6 +170,7 @@ class BusinessHarvest(BaseModel):
         source_evidence: A citation or description of the source from which the
             data was extracted.
     """
+
     ceo_agenda: str
     business_drivers: List[BusinessDriverFact]
     financial_tier: str
@@ -262,6 +267,7 @@ class TechHarvest(BaseModel):
         source_evidence: A string describing the origin or evidence for the
             aggregated data.
     """
+
     # Implements a cascading attribution model for multi-level analysis.
     group_level_stack: List[Dict[str, Any]] = Field(
         default_factory=list,
@@ -346,6 +352,7 @@ class TechHarvest(BaseModel):
 
 class ConfidenceV3(BaseModel):
     """Model a confidence score with its associated qualitative label and provenance."""
+
     score: int
     label: str
     method: str = "custom"
@@ -353,6 +360,7 @@ class ConfidenceV3(BaseModel):
 
 class SourceV3(BaseModel):
     """Represent an information source with its textual content and an optional URL."""
+
     source: str
     url: Optional[str] = None
 
@@ -369,6 +377,7 @@ class SourcedTextV3(BaseModel):
         sources: A list of source objects that provide evidence or context for the
             summary. Defaults to an empty list.
     """
+
     summary: str
     confidence: ConfidenceV3
     sources: List[SourceV3] = Field(default_factory=list)
@@ -392,6 +401,7 @@ class TransformationHorizonV3(BaseModel):
         sources (List[SourceV3]): A list of data sources or references that
             support the assessment.
     """
+
     stage: Literal["H1", "H2", "H3"]
     label: str
     rationale: str
@@ -401,6 +411,7 @@ class TransformationHorizonV3(BaseModel):
 
 class ClientDossierV3(BaseModel):
     r"""{'docstring': 'Represents a structured dossier of client intelligence data, version 3.0.\n\nThis model serves as the canonical schema for capturing comprehensive client\ninformation, including their profile, business and technology contexts,\nregulatory landscape, and strategic priorities. It is designed to be populated\nfrom various data sources and includes robust pre-validation logic to handle\nstructural inconsistencies.\n\nAttributes:\n    version: The schema version identifier.\n    client_name: The legal name of the client entity.\n    metadata: A dictionary for metadata, such as creation timestamps or source IDs.\n    profile: A dictionary containing client profile information (e.g., industry, size).\n    regulatory_context: A list of dictionaries detailing the relevant regulatory environment.\n    business_context: A dictionary describing the client\'s business landscape, including strategic goals.\n    technology_context: A dictionary detailing the client\'s technology stack, architecture, and drivers.\n    tower_overrides: A dictionary for custom overrides related to specific business units or "towers".\n    claims: A list of verifiable assertions made about the client.\n    review: A dictionary containing review status and quality assurance metadata.\n    extensions: A dictionary for custom, non-standard data extensions.'}."""
+
     version: str = "3.0"
     client_name: str
     metadata: Dict[str, Any]

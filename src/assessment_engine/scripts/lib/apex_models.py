@@ -27,12 +27,16 @@ class ApexDebateResponse(BaseModel):
             physically impossible (a "HARD_BLOCK"), signifying an unrecoverable
             state. Defaults to False.
     """
+
     decision: Literal["APPROVED", "REJECTED", "INJECT_PREREQUISITE"] = Field(
         description="The verdict on the task's feasibility. APPROVED: The task may proceed. REJECTED: The task must be aborted. INJECT_PREREQUISITE: The task is paused pending completion of prerequisite emergency tasks."
     )
-    reasoning: str = Field(description="A detailed rationale supporting the rendered verdict.")
+    reasoning: str = Field(
+        description="A detailed rationale supporting the rendered verdict."
+    )
     revised_instruction: str | None = Field(
-        default=None, description="A precise, technical directive for the assigned worker agent to execute."
+        default=None,
+        description="A precise, technical directive for the assigned worker agent to execute.",
     )
     prerequisite_tasks: list[dict[str, str]] = Field(
         default_factory=list,
@@ -60,6 +64,7 @@ class ApexBatchStatus(BaseModel):
         branch_name: The source control branch associated with the task, if
             applicable.
     """
+
     task_id: str
     status: Literal["pending", "running", "success", "failed", "aborted"]
     attempts: int

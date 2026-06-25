@@ -52,7 +52,7 @@ def build_runtime_env(
     ensure_google_cloud_env_defaults(env)
     if include_pythonpath:
         env["PYTHONPATH"] = str(ROOT / "src")
-    
+
     # Sets the Python interpreter to unbuffered mode. This ensures stdout and stderr are written directly to their respective streams, facilitating real-time log streaming from subprocesses.
     env["PYTHONUNBUFFERED"] = "1"
     return env
@@ -144,12 +144,16 @@ def resolve_ai_step_timeout_seconds(
             present but contains a non-numeric or non-positive value.
     """
     # Enforce a timeout on AI-related subprocesses to mitigate the risk of indefinite execution stalls.
-    if "Engine:" not in step_name and "Refinement" not in step_name and "Run " not in step_name:
+    if (
+        "Engine:" not in step_name
+        and "Refinement" not in step_name
+        and "Run " not in step_name
+    ):
         return None
 
     raw_value = str(env.get(AI_STEP_TIMEOUT_ENV, "")).strip()
     if not raw_value:
-        return 120.0 # A default timeout is set for Google Cloud API calls to prevent indefinite hangs on unresponsive network requests.
+        return 120.0  # A default timeout is set for Google Cloud API calls to prevent indefinite hangs on unresponsive network requests.
 
     try:
         timeout_seconds = float(raw_value)

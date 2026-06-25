@@ -25,6 +25,7 @@ class TodoItem(BaseModel):
         dependencies (List[str]): A list of identifiers for other tasks or items
             that must be completed before this one can be started.
     """
+
     initiative: str
     objective: str
     priority: str = Field(..., pattern="^(Alta|Media|Baja|High|Medium|Low)$")
@@ -35,6 +36,7 @@ class TodoItem(BaseModel):
 
 class TodoDraft(BaseDraftModel):
     r"""{'TodoDraft': 'Represents a data model for a "TO-DO" section draft.\n\nAttributes:\n    section_id: The unique identifier for the section. Defaults to "todo".\n    status: The current status of the draft. Defaults to "draft".\n    tower_id: The identifier for the associated tower.\n    tower_name: The name of the associated tower.\n    section_title: The title of the section. Defaults to "TO-DO".\n    introduction: Introductory text for the TO-DO list.\n    todo_items: A list of individual `TodoItem` objects.\n    closing_summary: A concluding summary for the TO-DO section.\n    notes_for_reviewer: Optional notes intended for a reviewer.', 'TodoDraft.get_forbidden_phrases': 'Return a static list of forbidden phrases for the TO-DO section.', 'TodoDraft.validate_todo_items': 'Validate that the `todo_items` list is not empty.\n\nThis is a Pydantic model validator that runs after model initialization to\nenforce the presence of at least one to-do item.\n\nReturns:\n    The validated instance of the class.\n\nRaises:\n    ValueError: If the `todo_items` list is empty.'}."""
+
     section_id: str = "todo"
     status: str = "draft"
     tower_id: str

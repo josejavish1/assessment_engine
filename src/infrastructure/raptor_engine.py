@@ -75,7 +75,9 @@ class RaptorEngine:
 
         # Phase 2: Iteratively construct higher levels of the summary tree via recursive clustering and summarization.
         level = 0
-        while len(current_level_nodes) > 1 and level < 3:  # To manage computational complexity in the prototype implementation, the summarization hierarchy is constrained to a maximum of three levels.
+        while (
+            len(current_level_nodes) > 1 and level < 3
+        ):  # To manage computational complexity in the prototype implementation, the summarization hierarchy is constrained to a maximum of three levels.
             level += 1
             print(f"   -> [RAPTOR] Generando Nivel {level} (Resúmenes en Paralelo)...")
 
@@ -151,12 +153,15 @@ class RaptorEngine:
             import os
 
             from google import genai
+
             api_key = os.environ.get("GEMINI_API_KEY")
             client = genai.Client(api_key=api_key)
             response = await client.aio.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=prompt,
-                config={"system_instruction": "Eres un experto en síntesis estratégica NTT DATA."}
+                config={
+                    "system_instruction": "Eres un experto en síntesis estratégica NTT DATA."
+                },
             )
             return str(response.text).strip()
         except Exception as e:

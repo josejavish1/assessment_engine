@@ -89,7 +89,9 @@ class RaptorTree(BaseModel):
     """
 
     client_id: str
-    nodes: Dict[str, RaptorNode] = Field(default_factory=dict)  # Provides an indexed lookup of all nodes within the tree, mapping each unique node identifier to its corresponding RaptorNode object.
+    nodes: Dict[str, RaptorNode] = Field(
+        default_factory=dict
+    )  # Provides an indexed lookup of all nodes within the tree, mapping each unique node identifier to its corresponding RaptorNode object.
     root_id: Optional[str] = None
 
 

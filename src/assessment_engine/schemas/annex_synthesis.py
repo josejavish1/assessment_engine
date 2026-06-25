@@ -23,6 +23,7 @@ class MaturityScoreProfile(BaseModel):
         pillars (List[dict]): A list of dictionaries, where each dictionary
             represents a pillar of the maturity model and its associated scores.
     """
+
     profile_intro: str
     scoring_method_note: str
     radar_chart: str = ""
@@ -55,6 +56,7 @@ class ExecutiveSummaryAnnex(BaseModel):
         key_business_impacts (List[str]): A list of strings, each describing a key
             business impact identified during the assessment.
     """
+
     global_score: str
     global_band: str
     target_maturity: str
@@ -68,6 +70,7 @@ class ExecutiveSummaryAnnex(BaseModel):
 
 class AsIsAnnex(BaseModel):
     """Model an As-Is Annex detailing a current state analysis."""
+
     narrative: str
     strengths: List[str]
     gaps: List[str]
@@ -76,12 +79,14 @@ class AsIsAnnex(BaseModel):
 
 class ToBeAnnex(BaseModel):
     """Encapsulate the high-level vision and guiding design principles for a system."""
+
     vision: str
     design_principles: List[str]
 
 
 class RiskItemAnnex(BaseModel):
     """Represent a single risk item with its description, impact, probability, and mitigation summary."""
+
     risk: str
     impact: str
     probability: str
@@ -90,6 +95,7 @@ class RiskItemAnnex(BaseModel):
 
 class RisksAnnex(BaseModel):
     """Represent the risks annex section of a document."""
+
     introduction: str
     risks: List[RiskItemAnnex]
     closing_summary: str = ""
@@ -108,6 +114,7 @@ class GapRowAnnex(BaseModel):
         target_state: A description of the desired future state ('To-Be').
         key_gap: The identified delta between the current and target states.
     """
+
     pillar: str
     as_is_summary: str
     target_state: str
@@ -116,6 +123,7 @@ class GapRowAnnex(BaseModel):
 
 class GapAnnex(BaseModel):
     r"""{'docstring': 'Defines the data structure for a gap analysis annex.\n\nThis Pydantic model specifies the schema for an appendix that outlines the\nfindings of a capability gap analysis. It includes an introduction, the\nscope of assessed capabilities, detailed gap descriptions, and an optional\nsummary.\n\nAttributes:\n    introduction: A string containing the introductory text for the gap\n        analysis section.\n    target_capabilities: A list of strings, where each string represents a\n        capability that was evaluated during the analysis.\n    gap_rows: A list of `GapRowAnnex` objects, with each object detailing\n        a specific identified capability gap.\n    closing_summary: An optional string containing the concluding summary of\n        the analysis. Defaults to an empty string.'}."""
+
     introduction: str
     target_capabilities: List[str]
     gap_rows: List[GapRowAnnex]
@@ -124,6 +132,7 @@ class GapAnnex(BaseModel):
 
 class InitiativeAnnex(BaseModel):
     """Define the data model for a single strategic initiative within an annex document."""
+
     sequence: int
     initiative: str
     objective: str
@@ -144,6 +153,7 @@ class TodoAnnex(BaseModel):
             each representing a detailed initiative.
         closing_summary (str): An optional concluding summary for the section.
     """
+
     introduction: str
     priority_initiatives: List[InitiativeAnnex]
     closing_summary: str = ""
@@ -151,6 +161,7 @@ class TodoAnnex(BaseModel):
 
 class ConclusionAnnex(BaseModel):
     """Represents the concluding section of a synthesized report."""
+
     final_assessment: str
     executive_message: str
     priority_focus_areas: List[str]
@@ -168,6 +179,7 @@ class AnnexSections(BaseModel):
         risks (RisksAnnex): The section identifying potential risks and mitigation plans.
         conclusion (ConclusionAnnex): The concluding section summarizing the annex findings.
     """
+
     asis: AsIsAnnex
     tobe: ToBeAnnex
     gap: GapAnnex
@@ -195,6 +207,7 @@ class DomainIntroduction(BaseModel):
         included_components: A list of core technologies, architectural
             components, or sub-systems that constitute the domain.
     """
+
     introduction_paragraph: str
     technological_domain: str
     domain_objective: str
@@ -221,6 +234,7 @@ class AnnexPayload(VersionedPayload):
         sections: An `AnnexSections` instance that holds the main, detailed content
             sections of the document.
     """
+
     document_meta: dict
     executive_summary: ExecutiveSummaryAnnex
     domain_introduction: DomainIntroduction

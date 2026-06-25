@@ -20,6 +20,7 @@ class AsIsPillar(BaseModel):
         operational_impact: A description of the operational consequences
             associated with the findings.
     """
+
     pillar: str = Field(..., description="Pillar name")
     score: float = Field(..., description="Pillar score")
     maturity_level: str = Field(
@@ -49,6 +50,7 @@ class AsIsDraft(BaseDraftModel):
         cross_cutting_themes: A list of themes that span multiple pillars.
         notes_for_reviewer: Optional notes intended for document reviewers.
     """
+
     section_id: str = "asis"
     status: str = "draft"
     tower_id: str

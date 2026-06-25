@@ -22,6 +22,7 @@ class GlobalIssue(BaseModel):
         suggested_fix (str): An actionable, human-readable suggestion for resolving
             the issue.
     """
+
     severity: str
     type: str
     sections: list[str]
@@ -52,6 +53,7 @@ class GlobalReviewDraft(BaseModel):
         review_notes (list[str]): A list of general notes or comments from the
             reviewer.
     """
+
     artifact_type: str
     status: str
     global_issues: list[GlobalIssue]
@@ -63,6 +65,7 @@ class GlobalReviewDraft(BaseModel):
 
 class GlobalEdit(BaseModel):
     """{'docstring': 'Represent a single, atomic global configuration edit.'}."""
+
     path: str
     action: str
     value: Any
@@ -85,6 +88,7 @@ class GlobalRefinerDraft(BaseModel):
         review_notes (list[str]): A sequence of textual notes or comments from
             reviewers.
     """
+
     status: str
     editorial_strategy: str
     edits: list[GlobalEdit]
@@ -110,6 +114,7 @@ class ExecutiveReportDraft(BaseModel):
         executive_decisions_text: The section detailing key decisions required from
             the report's audience.
     """
+
     executive_summary_text: str
     burning_platform_text: str
     tower_bottom_lines: dict[str, str]
@@ -120,6 +125,7 @@ class ExecutiveReportDraft(BaseModel):
 
 class ExecutiveSummaryDraft(BaseModel):
     """Model a draft executive summary with a headline, narrative, and key business impacts."""
+
     headline: str
     narrative: str
     key_business_impacts: list[str]
@@ -127,6 +133,7 @@ class ExecutiveSummaryDraft(BaseModel):
 
 class BurningPlatformItem(BaseModel):
     """Represents a single thematic issue in a 'burning platform' analysis."""
+
     theme: str
     business_risk: str
     root_causes: list[str]
@@ -134,6 +141,7 @@ class BurningPlatformItem(BaseModel):
 
 class TowerBottomLineItem(BaseModel):
     """Represent a single data row for a tower's bottom-line summary."""
+
     id: str
     name: str
     score: str
@@ -144,6 +152,7 @@ class TowerBottomLineItem(BaseModel):
 
 class EvolutionPrinciple(BaseModel):
     """Represents a single evolution principle, containing its title and description."""
+
     principle: str
     description: str
 
@@ -159,12 +168,14 @@ class StrategicPillar(BaseModel):
         pillar: The name or title of the strategic pillar.
         description: A detailed explanation of the pillar's scope and objectives.
     """
+
     pillar: str
     description: str
 
 
 class TargetVisionDraft(BaseModel):
     r"""{'docstring': 'Represents a draft of a strategic target vision for a product or system.\n\nThis data model encapsulates the core components of a strategic vision,\nincluding its value proposition, the principles guiding its evolution, and the\nfoundational pillars that support the strategy.\n\nAttributes:\n    value_proposition: The central value statement defining the vision.\n    evolution_principles: A list of `EvolutionPrinciple` objects guiding\n        future development and adaptation.\n    strategic_pillars: A list of `StrategicPillar` objects that form the\n        foundational columns of the strategic vision.'}."""
+
     value_proposition: str
     evolution_principles: list[EvolutionPrinciple]
     strategic_pillars: list[StrategicPillar]
@@ -172,6 +183,7 @@ class TargetVisionDraft(BaseModel):
 
 class ProgramDef(BaseModel):
     """A data model for a program's definition, including its name and description."""
+
     name: str
     description: str
 
@@ -191,6 +203,7 @@ class InitiativeDef(BaseModel):
         duration_months: The planned duration of the initiative, measured in whole
             months.
     """
+
     program: str
     title: str
     business_case: str
@@ -215,6 +228,7 @@ class HorizonsDef(BaseModel):
         year_3_24_36_months (list[InitiativeDef]): Initiatives planned for the 24 to
             36-month timeframe.
     """
+
     quick_wins_0_3_months: list[InitiativeDef]
     year_1_3_12_months: list[InitiativeDef]
     year_2_12_24_months: list[InitiativeDef]
@@ -232,12 +246,14 @@ class ExecutionRoadmapDraft(BaseModel):
         horizons: A `HorizonsDef` object defining the temporal structure and
             intervals for the roadmap.
     """
+
     programs: list[ProgramDef]
     horizons: HorizonsDef
 
 
 class ExecutiveDecisionItem(BaseModel):
     """Represent a single item requiring an executive decision."""
+
     decision_type: str
     action_required: str
     impact_if_delayed: str
@@ -245,11 +261,13 @@ class ExecutiveDecisionItem(BaseModel):
 
 class ExecutiveDecisionsDraft(BaseModel):
     """Model a draft of immediate executive decisions."""
+
     immediate_decisions: list[ExecutiveDecisionItem]
 
 
 class GlobalReportDocumentMeta(BaseModel):
     """Represent the metadata structure for a global report document."""
+
     client: str
     date: str
     version: str
@@ -278,11 +296,14 @@ class GlobalReportPayload(VersionedPayload):
         visuals: A dictionary mapping unique visual element identifiers to their
             data, such as a URL or a base64-encoded string.
     """
+
     meta: GlobalReportDocumentMeta
     executive_summary: ExecutiveSummaryDraft
     burning_platform: list[BurningPlatformItem]
     intelligence_dossier: dict = Field(default_factory=dict)
-    heatmap: list[Any] = Field(default_factory=list)  # Raw heatmap data structured for direct consumption and client-side rendering, decoupling data generation from presentation logic.
+    heatmap: list[Any] = Field(
+        default_factory=list
+    )  # Raw heatmap data structured for direct consumption and client-side rendering, decoupling data generation from presentation logic.
     tower_bottom_lines: list[TowerBottomLineItem]
     target_vision: TargetVisionDraft
     execution_roadmap: ExecutionRoadmapDraft

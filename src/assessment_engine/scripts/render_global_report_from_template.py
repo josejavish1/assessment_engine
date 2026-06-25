@@ -365,7 +365,9 @@ def render_executive_summary(
         ValueError: If the radar chart image file is in an unsupported format
             or is otherwise invalid.
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "1. Resumen Ejecutivo", level=1)
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
@@ -534,7 +536,9 @@ def render_burning_platform(
         AttributeError: If an object within `platform_risks` lacks one of the
             required attributes (`theme`, `business_risk`, `root_causes`).
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "2. Principales Amenazas Sistémicas", level=1)
     add_body_paragraph(
         doc,
@@ -631,7 +635,9 @@ def render_tower_bottom_lines(
         AttributeError: If an object in `tower_texts` lacks the required 'id' or
             'bottom_line' attributes.
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "3. Diagnóstico por Área Tecnológica", level=1)
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
@@ -715,7 +721,9 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name=""):
         AttributeError: If the `vision` object or its nested elements lack the
             required attributes (e.g., `value_proposition`, `pillar`, `description`).
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "4. Visión de Estado Objetivo (To-Be)", level=1)
 
     table = doc.add_table(rows=2, cols=1)
@@ -801,7 +809,9 @@ def render_execution_roadmap(
             conform to the expected schema (e.g., missing `programs`,
             `horizons`, or initiative attributes).
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(
         doc, "5. Plan de Implementación y Horizontes Temporales", level=1
     )
@@ -936,7 +946,9 @@ def render_execution_roadmap(
 
 def render_executive_decisions(doc, decisions: ExecutiveDecisionsDraft, client_name=""):
     r"""{'docstring': "Appends a formatted 'Executive Decisions' section to a Word document.\n\n    This function constructs and adds a section detailing priority executive\n    decisions. The section comprises a level-1 heading, an introductory\n    paragraph, and a three-column table. The table is populated with data from\n    the `decisions` object, listing the decision scope, required action, and\n    the impact of any delay for each item. All content is styled according to\n    predefined corporate branding guidelines, and textual data is sanitized\n    prior to rendering.\n\n    Args:\n        doc (docx.document.Document): The `python-docx` Document object to which\n            the executive decisions section will be appended.\n        decisions (ExecutiveDecisionsDraft): A data object encapsulating decision\n            details. This object must possess an `immediate_decisions` attribute,\n            which is an iterable of objects. Each of these inner objects must,\n            in turn, provide `decision_type`, `action_required`, and\n            `impact_if_delayed` attributes.\n        client_name (str): The name of the client, used to replace placeholder\n            text in the rendered content. Defaults to an empty string.\n\n    Returns:\n        None. The function modifies the `doc` object in-place.\n\n    Raises:\n        AttributeError: If `decisions` or its contained elements lack the\n            required attributes (e.g., `immediate_decisions`, `decision_type`)."}."""
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
+    BASE_TEXT_COLOR = RGBColor(
+        46, 64, 77
+    )  # Define the primary text color (#2E404D) to maintain consistency with corporate branding guidelines.
     add_heading_paragraph(doc, "6. Decisiones Ejecutivas Prioritarias", level=1)
     add_body_paragraph(
         doc,

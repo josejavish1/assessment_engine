@@ -14,7 +14,7 @@ LIVE_PYTHON_PREFIXES = (
     "src/adapters/",
     "src/ports/",
     "tests/",
-    "working/"
+    "working/",
 )
 ZERO_SHA_RE = re.compile(r"^0+$")
 

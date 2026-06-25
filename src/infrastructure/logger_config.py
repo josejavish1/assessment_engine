@@ -65,6 +65,7 @@ def setup_structured_logging(level=logging.INFO) -> Any:
 
     class GCPOpsAgentFormatter(jsonlogger.JsonFormatter):
         r"""{'docstring': "Enrich a log record with Google Cloud-specific observability fields.\n\nExtends the base formatter's `add_fields` method to inject fields\nspecifically recognized by Google Cloud's operations suite (Cloud Logging\nand Cloud Trace). The `log_record` dictionary is modified in-place.\n\nKey transformations include:\n1.  **Severity Normalization**: The `severity` field is converted to its\n    uppercase string representation (e.g., 'info' -> 'INFO') to align\n    with the canonical `LogSeverity` enumeration required by Cloud Logging.\n2.  **Trace Correlation**: OpenTelemetry trace context attributes (`otelTraceID`,\n    `otelSpanID`) are mapped to the `logging.googleapis.com/trace` and\n    `logging.googleapis.com/spanId` fields. The full trace resource name is\n    constructed using the `GOOGLE_CLOUD_PROJECT` environment variable,\n    enabling automatic correlation of logs with traces in Cloud Trace.\n\nArgs:\n    log_record (dict): The log record dictionary to be modified in-place.\n    record (logging.LogRecord): The original `LogRecord` instance from the\n        Python logging framework.\n    message_dict (dict): A dictionary containing the formatted log message\n        and any extra fields."}."""
+
         def add_fields(self, log_record, record, message_dict):
             """Enriches a log record with fields for integration with Google Cloud Logging.
 

@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 class RemediationResult(NamedTuple):
     """Represent the outcome of a remediation action with a success flag and message."""
+
     success: bool
     message: str
 

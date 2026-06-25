@@ -462,14 +462,14 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
         A new dictionary with data mapped to the legacy format. If the schema is not recognized as V2 or V3, the original `data` dictionary is returned.
     """
     profile = data.get("profile", {}) or {}
-    
+
     # Ensures native support for V3 schemas, allowing for direct data mapping without transformation or validation errors.
     if is_client_dossier_v3(data):
         business_context = data.get("business_context", {}) or {}
         technology_context = data.get("technology_context", {}) or {}
         regulatory_context = data.get("regulatory_context", []) or []
         claims = data.get("claims", []) or []
-        
+
         return {
             "client_name": data.get("client_name", ""),
             "industry": profile.get("industry", ""),

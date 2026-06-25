@@ -76,7 +76,7 @@ def main(argv: list[str] | None = None) -> None:
             the script name followed by a single path to a .docx file.
 
     Raises:
-        SystemExit: 
+        SystemExit:
             - If the number of command-line arguments is not two (script name
               and path).
             - If the specified DOCX file path does not exist.

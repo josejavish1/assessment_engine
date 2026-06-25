@@ -12,7 +12,10 @@ logger = logging.getLogger(__name__)
 
 class EpistemicTriple(BaseModel):
     """Represent an epistemic knowledge triplet as a (subject, predicate, object) structure."""
-    subject: str = Field(description="The subject of the knowledge triplet, representing the primary entity or concept. Example: 'REDEIA'.")
+
+    subject: str = Field(
+        description="The subject of the knowledge triplet, representing the primary entity or concept. Example: 'REDEIA'."
+    )
     predicate: str = Field(
         description="The predicate of the knowledge triplet, defining the attribute or relationship that links the subject to the object. Examples: 'CLOUD_PROVIDER', 'MAIN_HYPERSCALER', 'INDUSTRY'."
     )
@@ -23,6 +26,7 @@ class EpistemicTriple(BaseModel):
 
 class EpistemicTriplesList(BaseModel):
     """Model a list of epistemic triples."""
+
     triples: List[EpistemicTriple] = Field(default_factory=list)
 
 

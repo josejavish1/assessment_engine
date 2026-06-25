@@ -7,11 +7,14 @@ from .common import BaseDraftModel
 
 class TargetMaturity(BaseModel):
     """Represent a recommended target maturity level with its corresponding score and justification."""
+
     recommended_level: str = Field(
-        ..., description="The target maturity level designation (e.g., 'Level 4 - Optimized')."
+        ...,
+        description="The target maturity level designation (e.g., 'Level 4 - Optimized').",
     )
     recommended_score_reference: str = Field(
-        ..., description="The numerical score corresponding to the target level (e.g., 4.0)."
+        ...,
+        description="The numerical score corresponding to the target level (e.g., 4.0).",
     )
     justification: str = Field(
         ..., description="A detailed rationale for the selected target level."
@@ -20,6 +23,7 @@ class TargetMaturity(BaseModel):
 
 class PillarCapability(BaseModel):
     """Represents the required capabilities for a target level within an engineering pillar."""
+
     pillar: str = Field(..., description="The name of the pillar.")
     target_capabilities: List[str] = Field(
         ..., description="A list of capabilities required to attain the target level."
@@ -28,6 +32,7 @@ class PillarCapability(BaseModel):
 
 class ToBeDraft(BaseDraftModel):
     r"""[{'path': 'ToBeDraft', 'docstring': 'A data model for the \'To-Be\' section of a document draft.\n\nDefines the desired future state, including target maturity, capabilities,\narchitectural principles, and operational implications.\n\nAttributes:\n    section_id: The unique identifier for this section, fixed to "tobe".\n    status: The current status of the draft, fixed to "draft".\n    tower_id: The unique identifier for the associated tower.\n    tower_name: The human-readable name of the tower.\n    section_title: The title of this section, fixed to "TO-BE".\n    introduction: An introductory text describing the future state.\n    target_maturity: The desired maturity level for the tower.\n    target_capabilities_by_pillar: A list of target capabilities, grouped by\n        their respective pillars.\n    architecture_principles: A list of key architectural principles that\n        define the target state.\n    operating_model_implications: A list of implications for the operating\n        model resulting from the proposed changes.\n    notes_for_reviewer: An optional list of internal notes for reviewers.'}, {'path': 'ToBeDraft.get_forbidden_phrases', 'docstring': "Return a list of forbidden phrases for the 'To-Be' section."}, {'path': 'ToBeDraft.validate_pillars_not_empty', 'docstring': 'Validate that `target_capabilities_by_pillar` is not an empty list.\n\nThis is a Pydantic validator ensuring the field is a non-empty collection.\n\nArgs:\n    v: The input list for the `target_capabilities_by_pillar` field.\n\nReturns:\n    The original list `v` if it is not empty.\n\nRaises:\n    ValueError: If the input list `v` is empty.'}]."""
+
     section_id: str = "tobe"
     status: str = "draft"
     tower_id: str
@@ -91,6 +96,7 @@ class Defect(BaseModel):
         message: A human-readable description of the specific issue.
         suggested_fix: A detailed recommendation for resolving the defect.
     """
+
     severity: str = Field(..., pattern="^(critical|major|minor)$")
     type: str
     message: str
@@ -115,6 +121,7 @@ class ToBeReview(BaseModel):
         review_notes (List[str]): A list of general notes or comments from the
             reviewer. Defaults to an empty list.
     """
+
     section_id: str = "tobe"
     status: str = Field(..., pattern="^(approve|revise|human_validation_required)$")
     overall_assessment: str

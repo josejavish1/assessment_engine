@@ -394,7 +394,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         model_name = "gemini-2.5-pro"
 
     # Resolve data dependencies and establish processing priorities.
-    print("🔎 [Pre-flight] Calculando el Perfil de Gravedad Arquitectónica del cliente...")
+    print(
+        "🔎 [Pre-flight] Calculando el Perfil de Gravedad Arquitectónica del cliente..."
+    )
     dynamic_target_maturity = 4.0
     try:
         profiler_agent = Agent(
@@ -404,7 +406,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             output_schema=ArchitecturalGravityProfile,
         )
         app_profiler = AdkApp(agent=profiler_agent)
-        
+
         gravity_prompt = get_gravity_profiler_prompt(intel_str, client_name)
         gravity_profile = await run_agent(
             app_profiler,
@@ -412,9 +414,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             message=gravity_prompt,
             schema=ArchitecturalGravityProfile,
         )
-        
+
         if gravity_profile:
-            dynamic_target_maturity = gravity_profile.get("recommended_target_maturity", 4.0)
+            dynamic_target_maturity = gravity_profile.get(
+                "recommended_target_maturity", 4.0
+            )
             gravity_constraint = (
                 f"\n\n⚠️ MANDATO DE GRAVEDAD ARQUITECTÓNICA (COMPLIANCE STRICTO):\n"
                 f"El análisis de este cliente dicta la siguiente gravedad matemática:\n"
@@ -428,9 +432,13 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 f"si el peso On-Premise o la rigurosidad regulatoria lo desaconsejan."
             )
             intel_str += gravity_constraint
-            print(f"✅ Perfil de Gravedad Calculado: {gravity_profile.get('strategic_directive')} (Target: {dynamic_target_maturity})")
+            print(
+                f"✅ Perfil de Gravedad Calculado: {gravity_profile.get('strategic_directive')} (Target: {dynamic_target_maturity})"
+            )
     except Exception as e:
-        print(f"⚠️ Error calculando Perfil de Gravedad: {e}. Se usará contexto estándar.")
+        print(
+            f"⚠️ Error calculando Perfil de Gravedad: {e}. Se usará contexto estándar."
+        )
     #
 
     #
@@ -492,27 +500,37 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             p_result["score"] = pillars_map[p_id]["score"]
             # The `target_score` from the client intelligence data must be preserved, overriding any model-generated values.
             from infrastructure.client_intelligence import get_target_maturity
+
             p_result["target_score"] = get_target_maturity(intel_data, tower_id, 4.0)
-            
+
             blueprint_analysis = p_result.get("pillar_analysis", p_result)
 
             # Verify generated content against the RAG source corpus to mitigate model hallucination.
             # Create a normalized reference corpus from the input context to serve as the ground truth for validating model output.
-            corpus = (context_str + " " + enhanced_intel_str + " " + json.dumps(pillars_map[p_id]["answers"])).lower()
+            corpus = (
+                context_str
+                + " "
+                + enhanced_intel_str
+                + " "
+                + json.dumps(pillars_map[p_id]["answers"])
+            ).lower()
             import re
-            corpus_clean = re.sub(r'\s+', ' ', corpus)
+
+            corpus_clean = re.sub(r"\s+", " ", corpus)
 
             for finding in blueprint_analysis.get("health_check_asis", []):
                 evidence = finding.get("literal_evidence", "")
                 if evidence and evidence != "No se proporcionó evidencia literal.":
-                    evidence_clean = re.sub(r'\s+', ' ', evidence.lower())
+                    evidence_clean = re.sub(r"\s+", " ", evidence.lower())
                     # Flag generated text as a potential hallucination if it is not present in the reference corpus.
                     if evidence_clean not in corpus_clean:
                         # Validate that generated findings meet a 70% lexical similarity threshold against the source corpus as a heuristic to detect potential model hallucinations.
                         words = evidence_clean.split()
                         matched_words = sum(1 for w in words if w in corpus_clean)
                         if not words or (matched_words / len(words)) < 0.7:
-                            finding["literal_evidence"] = "[ALERTA RAG] Cita literal no validada matemáticamente en el documento original."
+                            finding["literal_evidence"] = (
+                                "[ALERTA RAG] Cita literal no validada matemáticamente en el documento original."
+                            )
 
             # Inject deterministic data from trusted systems directly into the payload, bypassing the generative analysis stages.
             refined = pillars_map[p_id].get("refined_findings", {})
@@ -574,16 +592,26 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     if initiatives:
                         sota_projects = []
                         for idx, init in enumerate(initiatives):
-                            sota_projects.append({
-                                "name": init.get("title", f"Iniciativa Estratégica {idx + 1}"),
-                                "transformation_typology": init.get("typology", "Core Modernization"),
-                                "business_case": init.get("business_case", ""),
-                                "tech_objective": init.get("rationale", "Evolución técnica."),
-                                "deliverables": init.get("deliverables", []),
-                                "sizing": "L",
-                                "duration": init.get("horizon", "Sin calendario detallado"),
-                                "program_id": None
-                            })
+                            sota_projects.append(
+                                {
+                                    "name": init.get(
+                                        "title", f"Iniciativa Estratégica {idx + 1}"
+                                    ),
+                                    "transformation_typology": init.get(
+                                        "typology", "Core Modernization"
+                                    ),
+                                    "business_case": init.get("business_case", ""),
+                                    "tech_objective": init.get(
+                                        "rationale", "Evolución técnica."
+                                    ),
+                                    "deliverables": init.get("deliverables", []),
+                                    "sizing": "L",
+                                    "duration": init.get(
+                                        "horizon", "Sin calendario detallado"
+                                    ),
+                                    "program_id": None,
+                                }
+                            )
                         p_analysis["projects_todo"] = sota_projects
                     break
 
@@ -602,6 +630,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     print("🛡️ [Sovereign QA] Ejecutando el Motor de Políticas Arquitectónicas...")
     try:
         from infrastructure.policy_engine import SovereignPolicyEngine
+
         engine = SovereignPolicyEngine(graph)
         blueprint_payload = engine.compile(blueprint_payload)
     except Exception as policy_err:
@@ -620,7 +649,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         tower_name=tower_name,
         pillars_analysis_json=json.dumps(blueprint_payload["pillars_analysis"]),
         intel_str=intel_str,
-        total_ale=total_ale
+        total_ale=total_ale,
     )
     try:
         orchestrator_agent = Agent(
@@ -651,7 +680,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     from infrastructure.governance import StructuralIntegrityGate
 
                     StructuralIntegrityGate.verify_dossier_logic(closing_data)
-                    
+
                     # Validate consistency of scoring and financial metrics.
                     #
                     valid_project_names = [
@@ -659,26 +688,33 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         for pilar in blueprint_payload.get("pillars_analysis", [])
                         for proj in pilar.get("projects_todo", [])
                     ]
-                    
+
                     def fuzzy_match(name, choices, cutoff=0.6):
                         """Find the single best fuzzy string match from a sequence of choices."""
-                        matches = difflib.get_close_matches(name, choices, n=1, cutoff=cutoff)
+                        matches = difflib.get_close_matches(
+                            name, choices, n=1, cutoff=cutoff
+                        )
                         return matches[0] if matches else None
 
                     #
                     invalid_deps = []
                     for dep in closing_data.get("external_dependencies", []):
                         dep_name = dep.get("depends_on")
-                        if dep_name not in valid_project_names and dep_name not in ["Independiente", "Ninguna"]:
+                        if dep_name not in valid_project_names and dep_name not in [
+                            "Independiente",
+                            "Ninguna",
+                        ]:
                             corrected = fuzzy_match(dep_name, valid_project_names)
                             if corrected:
                                 dep["depends_on"] = corrected
                             else:
                                 invalid_deps.append(dep_name)
-                                
+
                     if invalid_deps:
-                        raise ValueError(f"HAS INVENTADO DEPENDENCIAS. Los siguientes proyectos habilitadores no existen en la lista de proyectos aprobados: {invalid_deps}. Solo puedes usar proyectos reales.")
-                        
+                        raise ValueError(
+                            f"HAS INVENTADO DEPENDENCIAS. Los siguientes proyectos habilitadores no existen en la lista de proyectos aprobados: {invalid_deps}. Solo puedes usar proyectos reales."
+                        )
+
                     #
                     invalid_roadmap = []
                     mapped_projects = set()
@@ -696,18 +732,24 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                                 corrected_projects.append(proj)
                                 mapped_projects.add(proj)
                         wave["projects"] = corrected_projects
-                        
+
                     if invalid_roadmap:
-                        raise ValueError(f"HAS INVENTADO PROYECTOS EN EL ROADMAP. Los siguientes proyectos no existen en la lista de proyectos aprobados: {invalid_roadmap}.")
-                        
+                        raise ValueError(
+                            f"HAS INVENTADO PROYECTOS EN EL ROADMAP. Los siguientes proyectos no existen en la lista de proyectos aprobados: {invalid_roadmap}."
+                        )
+
                     missing_projects = set(valid_project_names) - mapped_projects
                     if missing_projects:
-                        raise ValueError(f"HAS OMITIDO PROYECTOS DEL ROADMAP. Regla inquebrantable rota. Debes incluir TODOS los proyectos. Te has dejado estos: {list(missing_projects)}")
+                        raise ValueError(
+                            f"HAS OMITIDO PROYECTOS DEL ROADMAP. Regla inquebrantable rota. Debes incluir TODOS los proyectos. Te has dejado estos: {list(missing_projects)}"
+                        )
 
                     # Validate the architectural principle count against the expected number (Ref: Quality Gap 1).
                     principles = closing_data.get("design_principles", [])
                     if len(principles) > 10:
-                        raise ValueError(f"Demasiados principios de diseño ({len(principles)}). Condénsalos en un máximo de 5 a 7 principios maestros transversales para toda la torre.")
+                        raise ValueError(
+                            f"Demasiados principios de diseño ({len(principles)}). Condénsalos en un máximo de 5 a 7 principios maestros transversales para toda la torre."
+                        )
 
                     blueprint_payload.update(closing_data)
                     break
@@ -721,11 +763,17 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 "⚠️ Fallo crítico en el Orquestador tras 3 intentos. Aplicando Degradación Elegante (Borrando dependencias inventadas y añadiendo proyectos huérfanos)..."
             )
             # Remove invalid project dependencies to maintain the integrity of the dependency graph.
-            valid_deps = [d for d in closing_data.get("external_dependencies", []) if d.get("depends_on") in valid_project_names or d.get("depends_on") in ["Independiente", "Ninguna"]]
+            valid_deps = [
+                d
+                for d in closing_data.get("external_dependencies", [])
+                if d.get("depends_on") in valid_project_names
+                or d.get("depends_on") in ["Independiente", "Ninguna"]
+            ]
             closing_data["external_dependencies"] = valid_deps
-            
+
             # Append unmapped projects to the final roadmap wave for manual review to prevent data loss.
             import difflib
+
             def f_match(name, choices, cutoff=0.6):
                 """Return the single best fuzzy match for a string from an iterable of choices."""
                 m = difflib.get_close_matches(name, choices, n=1, cutoff=cutoff)
@@ -748,7 +796,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             missing_projects = list(set(valid_project_names) - mapped_projs)
             if missing_projects and closing_data.get("roadmap"):
                 closing_data["roadmap"][-1]["projects"].extend(missing_projects)
-            
+
             blueprint_payload.update(closing_data)
     except Exception as e:
         raise RuntimeError(f"Error en agente de cierre blueprint: {e}") from e
@@ -819,7 +867,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                             mitigated_risk_text = f"[{hc.get('capability', hc.get('target_state'))}] {hc.get('finding', hc.get('risk_observed'))} -> Riesgo: {hc.get('business_risk', hc.get('impact'))}"
                             fair_ale = hc.get("fair_ale_score", 0.0)
                             break
-                            
+
             if fair_ale > 0:
                 mitigated_risk_text += f" | FAIR ALE: {fair_ale:,.2f} €"
 
@@ -828,9 +876,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 project_name=proj.get("name", ""),
                 project_objective=proj.get("tech_objective", ""),
                 project_sizing=proj.get("sizing", "M"),
-                mitigated_risk_impact=mitigated_risk_text
+                mitigated_risk_impact=mitigated_risk_text,
             )
-            
+
             enrichment_data = await run_agent(
                 app_bid_manager,
                 user_id=f"bid_manager_{proj.get('node_id', proj_idx)}",
@@ -842,52 +890,74 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 rate_card_path = Path("engine_config/rate_card.json")
                 if rate_card_path.exists():
                     try:
-                        rate_data = json.loads(rate_card_path.read_text(encoding="utf-8-sig"))
+                        rate_data = json.loads(
+                            rate_card_path.read_text(encoding="utf-8-sig")
+                        )
                         rates = rate_data.get("tarifas_hora", {})
                         margin = rate_data.get("margenes", {}).get("consultoria", 0.45)
-                        
+
                         total_cost = 0.0
                         for task in enrichment_data.get("wbs_breakdown", []):
                             profile = task.get("required_profile", "experto")
                             hours = task.get("estimated_hours", 0)
-                            rate = rates.get(profile, 58) # If the primary model fails, reroute the request to the 'experto' model configuration as a fallback.
-                            total_cost += (hours * rate)
-                            
+                            rate = rates.get(
+                                profile, 58
+                            )  # If the primary model fails, reroute the request to the 'experto' model configuration as a fallback.
+                            total_cost += hours * rate
+
                         sell_price = total_cost / (1 - margin)
-                        enrichment_data["opex_estimate"] = f"{sell_price:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
-                        
+                        enrichment_data["opex_estimate"] = (
+                            f"{sell_price:,.2f} €".replace(",", "X")
+                            .replace(".", ",")
+                            .replace("X", ".")
+                        )
+
                         sizing = proj.get("sizing", "M").upper()
                         if sizing in ["L", "XL"]:
-                            enrichment_data["capex_estimate"] = "~150.000,00 € (Estimación paramétrica de licenciamiento Enterprise / Nodos físicos)"
+                            enrichment_data["capex_estimate"] = (
+                                "~150.000,00 € (Estimación paramétrica de licenciamiento Enterprise / Nodos físicos)"
+                            )
                         else:
-                            enrichment_data["capex_estimate"] = "Bajo / Nulo (Suscripciones cloud menores a 20.000€)"
-                            
+                            enrichment_data["capex_estimate"] = (
+                                "Bajo / Nulo (Suscripciones cloud menores a 20.000€)"
+                            )
+
                     except Exception as finops_err:
                         print(f"⚠️ Error calculando FinOps matemático: {finops_err}")
-                
-                if "commercial_name" in enrichment_data and enrichment_data["commercial_name"]:
+
+                if (
+                    "commercial_name" in enrichment_data
+                    and enrichment_data["commercial_name"]
+                ):
                     old_name = proj["name"]
                     new_name = enrichment_data["commercial_name"]
                     proj["name"] = new_name
-                    
+
                     #
                     for wave in blueprint_payload.get("roadmap", []):
-                        wave["projects"] = [new_name if p == old_name else p for p in wave.get("projects", [])]
-                        
+                        wave["projects"] = [
+                            new_name if p == old_name else p
+                            for p in wave.get("projects", [])
+                        ]
+
                     #
                     for d in blueprint_payload.get("external_dependencies", []):
                         if d.get("project") == old_name:
                             d["project"] = new_name
                         if d.get("depends_on") == old_name:
                             d["depends_on"] = new_name
-                    
-                blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][proj_idx].update(enrichment_data)
+
+                blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][
+                    proj_idx
+                ].update(enrichment_data)
 
         enrichment_tasks = []
-        for p_idx, p_analysis in enumerate(blueprint_payload.get("pillars_analysis", [])):
+        for p_idx, p_analysis in enumerate(
+            blueprint_payload.get("pillars_analysis", [])
+        ):
             for proj_idx, proj in enumerate(p_analysis.get("projects_todo", [])):
                 enrichment_tasks.append(enrich_project(p_idx, proj_idx, proj))
-                
+
         if enrichment_tasks:
             await asyncio.gather(*enrichment_tasks)
             print("✅ Enriquecimiento de Bid Manager completado.")
@@ -909,14 +979,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         return obj
 
     blueprint_payload = scrub_client_placeholders(blueprint_payload, client_name)
-    
+
     #
     total_ale = 0.0
     for pilar in blueprint_payload.get("pillars_analysis", []):
         for finding in pilar.get("health_check_asis", []):
             val = finding.get("fair_ale_score")
             total_ale += float(val) if val is not None else 0.0
-    
+
     blueprint_payload["total_fair_ale"] = total_ale
 
     #

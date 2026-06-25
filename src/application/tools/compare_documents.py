@@ -48,7 +48,40 @@ def inspect_doc(path: str) -> dict:
             num_paras += 1
             word_count += len(text.split())
             # Evaluates if a given paragraph qualifies as a heading by analyzing its associated style properties or matching its text against a heading-specific regular expression.
-            if p.style.name.startswith("Heading") or (p.text.startswith(("1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "Dominio:"))) or (any(keyword in text.upper() for keyword in ["INFORME", "PORTADA", "ANEXO", "CONTROL DOCUMENTAL", "INDICE", "RESUMEN EJECUTIVO", "REGISTRO FORENSE", "SIGUIENTES PASOS"])):
+            if (
+                p.style.name.startswith("Heading")
+                or (
+                    p.text.startswith(
+                        (
+                            "1.",
+                            "2.",
+                            "3.",
+                            "4.",
+                            "5.",
+                            "6.",
+                            "7.",
+                            "8.",
+                            "9.",
+                            "Dominio:",
+                        )
+                    )
+                )
+                or (
+                    any(
+                        keyword in text.upper()
+                        for keyword in [
+                            "INFORME",
+                            "PORTADA",
+                            "ANEXO",
+                            "CONTROL DOCUMENTAL",
+                            "INDICE",
+                            "RESUMEN EJECUTIVO",
+                            "REGISTRO FORENSE",
+                            "SIGUIENTES PASOS",
+                        ]
+                    )
+                )
+            ):
                 headings.append((p.style.name, text[:60]))
 
     for t in doc.tables:
@@ -97,11 +130,21 @@ def compare():
     print("=======================================================")
     print(f"{'Métrica':<30} | {'Legacy V3 (Modules)':<20} | {'Shadow V4 (AST)':<20}")
     print("-" * 75)
-    print(f"{'Número de Párrafos':<30} | {legacy_stats['num_paragraphs']:<20} | {shadow_stats['num_paragraphs']:<20}")
-    print(f"{'Número de Tablas':<30} | {legacy_stats['num_tables']:<20} | {shadow_stats['num_tables']:<20}")
-    print(f"{'Número Total de Filas':<30} | {legacy_stats['num_rows']:<20} | {shadow_stats['num_rows']:<20}")
-    print(f"{'Número Total de Celdas':<30} | {legacy_stats['num_cells']:<20} | {shadow_stats['num_cells']:<20}")
-    print(f"{'Recuento Estimado de Palabras':<30} | {legacy_stats['word_count']:<20} | {shadow_stats['word_count']:<20}")
+    print(
+        f"{'Número de Párrafos':<30} | {legacy_stats['num_paragraphs']:<20} | {shadow_stats['num_paragraphs']:<20}"
+    )
+    print(
+        f"{'Número de Tablas':<30} | {legacy_stats['num_tables']:<20} | {shadow_stats['num_tables']:<20}"
+    )
+    print(
+        f"{'Número Total de Filas':<30} | {legacy_stats['num_rows']:<20} | {shadow_stats['num_rows']:<20}"
+    )
+    print(
+        f"{'Número Total de Celdas':<30} | {legacy_stats['num_cells']:<20} | {shadow_stats['num_cells']:<20}"
+    )
+    print(
+        f"{'Recuento Estimado de Palabras':<30} | {legacy_stats['word_count']:<20} | {shadow_stats['word_count']:<20}"
+    )
     print("=======================================================\n")
 
     print("📋 Encabezados del Documento Original (Legacy V3):")

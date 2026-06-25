@@ -32,11 +32,13 @@ ROOT = Path(__file__).resolve().parents[1]
 # Type alias for list-based data structures to improve type-hinting clarity and code readability.
 class BurningPlatformList(RootModel):
     """Represent a list of BurningPlatformItem objects as a Pydantic RootModel."""
+
     root: list[BurningPlatformItem]
 
 
 class TowerBottomLineList(RootModel):
     """Define a root model for a list of `TowerBottomLineItem` objects."""
+
     root: list[TowerBottomLineItem]
 
 

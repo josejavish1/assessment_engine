@@ -12,8 +12,11 @@ from infrastructure.epistemic_graph import EpistemicGraph
 
 class BaseSovereignPolicy(ABC):
     r"""{'BaseSovereignPolicy': 'Abstract base class for sovereign data policies.\n\nDefines the abstract interface for policies that evaluate an `EpistemicGraph`\nto make a decision and subsequently patch a data payload to enforce that\ndecision.\n\nSubclasses must implement the `evaluate_and_patch` method to provide the\nconcrete policy logic. This component-based design enables a pluggable system\nwhere diverse policies (e.g., for data residency, access control, or redaction)\ncan be developed and applied in a consistent, standardized manner.', 'BaseSovereignPolicy.evaluate_and_patch': 'Evaluate the policy against a knowledge graph and patch a data payload.\n\nThis abstract method defines the primary contract for policy execution. Subclasses\nmust implement this method to analyze the provided `EpistemicGraph`, render a\npolicy decision, and modify the `payload` dictionary to enforce it.\n\nArgs:\n    graph: The knowledge graph instance containing the epistemic state for\n        policy evaluation.\n    payload: The data payload to be modified. While implementations may modify\n        this dictionary in-place, the returned dictionary should always be\n        treated as the canonical result by callers.\n\nReturns:\n    The modified data payload reflecting the enforcement of the policy.'}."""
+
     @abstractmethod
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Evaluate a knowledge graph against a policy and patch a data payload.
 
         This abstract method defines the interface for policy rule evaluation and
@@ -49,7 +52,10 @@ class ClientSanitizationPolicy(BaseSovereignPolicy):
     integrity of the original data structure. The core logic is implemented in the
     `evaluate_and_patch` method.
     """
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Recursively substitutes client name placeholders within a data payload.
 
         This method traverses the nested dictionary and list structure of the payload
@@ -79,7 +85,7 @@ class ClientSanitizationPolicy(BaseSovereignPolicy):
                 cyclical references that exceed the system's recursion limit.
         """
         client_name = payload.get("document_meta", {}).get("client_name", "REDEIA")
-        
+
         def scrub(obj: Any) -> Any:
             """Recursively substitutes client-specific placeholders within a data structure.
 
@@ -110,7 +116,15 @@ class ClientSanitizationPolicy(BaseSovereignPolicy):
             elif isinstance(obj, list):
                 return [scrub(x) for x in obj]
             elif isinstance(obj, str):
-                for placeholder in ["[Cliente]", "[CLIENTE]", "[cliente]", "[CLIENT]", "[client]", "[CUSTOMER]", "[customer]"]:
+                for placeholder in [
+                    "[Cliente]",
+                    "[CLIENTE]",
+                    "[cliente]",
+                    "[CLIENT]",
+                    "[client]",
+                    "[CUSTOMER]",
+                    "[customer]",
+                ]:
                     obj = obj.replace(placeholder, client_name)
                 # A final sanitization pass using a regular expression removes any residual bracketed placeholders.
                 obj = re.sub(r"\[[Cc]liente\]", client_name, obj)
@@ -122,7 +136,10 @@ class ClientSanitizationPolicy(BaseSovereignPolicy):
 
 class DeduplicationPolicy(BaseSovereignPolicy):
     r"""{'docstring': "Consolidates disparate platform engineering projects into a canonical program.\n\n    This policy operates specifically on documents where the `tower_code` metadata\n    is 'T2'. It scans the 'pillars_analysis' list for any projects containing\n    'Platform Engineering' or 'Ingeniería de Plataforma' in their names. If\n    such projects are found, they are removed from their original pillars.\n\n    A single, new strategic program is then generated and injected into the\n    target 'T2.P4' pillar, replacing its entire 'projects_todo' list. The\n    description and deliverables of this canonical program are localized to\n    English or Spanish and customized with the 'cloud_provider' specified in\n    the document's metadata.\n\n    If the document's `tower_code` is not 'T2' or no platform engineering\n    projects are found, the input `payload` is returned without modification.\n\n    Args:\n        graph (EpistemicGraph): The epistemic graph, providing contextual data.\n            This argument is currently unused in this policy's logic.\n        payload (Dict[str, Any]): The document analysis payload to be processed.\n            This dictionary is modified in place. It is expected to contain:\n            'document_meta' (Dict): Metadata including 'tower_code' (str),\n                'language' (str), and 'cloud_provider' (str).\n            'pillars_analysis' (List[Dict]): A list of pillar objects, where\n                each pillar has a 'pilar_id' (str) and 'projects_todo' (List).\n\n    Returns:\n        Dict[str, Any]: The input `payload` dictionary, potentially modified.\n            If consolidation occurs, the original `payload` object is returned\n            with platform engineering projects unified into the 'T2.P4' pillar."}."""
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Consolidates disparate platform engineering projects into a single strategic program for Tower 2 documents.
 
         This policy operates on payloads where the `document_meta.tower_code` is 'T2'. It scans all pillars for projects with names containing "Platform Engineering" or its Spanish equivalent, "Ingeniería de Plataforma". Any such projects are removed from their original pillars.
@@ -151,23 +168,28 @@ class DeduplicationPolicy(BaseSovereignPolicy):
 
         # The consolidation logic specifically targets initiatives labeled 'Platform Engineering' (or its Spanish-language equivalent) for migration to Tower 2.
         platform_eng_projects = []
-        target_pilar_id = "T2.P4" # Provides a deterministic fallback to the self-service pillar when a target pillar is unspecified.
-        
+        target_pilar_id = "T2.P4"  # Provides a deterministic fallback to the self-service pillar when a target pillar is unspecified.
+
         # This consolidation logic is scoped to Tower 2, the designated canonical pillar for all platform initiatives.
         tower_code = payload.get("document_meta", {}).get("tower_code", "")
         doc_lang = payload.get("document_meta", {}).get("language", "es").lower()
         cloud_provider = payload.get("document_meta", {}).get("cloud_provider", "AWS")
-        
+
         if tower_code == "T2":
             for p in pillars:
                 p_id = p.get("pilar_id")
                 projects = p.get("projects_todo", [])
                 for proj in list(projects):
                     name = proj.get("name", "")
-                    if "platform engineering" in name.lower() or "ingeniería de plataforma" in name.lower():
+                    if (
+                        "platform engineering" in name.lower()
+                        or "ingeniería de plataforma" in name.lower()
+                    ):
                         if p_id != target_pilar_id:
                             platform_eng_projects.append(proj)
-                            p["projects_todo"].remove(proj) # Remove the redundant initiative from its source pillar post-consolidation.
+                            p["projects_todo"].remove(
+                                proj
+                            )  # Remove the redundant initiative from its source pillar post-consolidation.
 
             # Upon successful consolidation, the canonical initiative is injected into the designated T2.P4 pillar.
             if platform_eng_projects:
@@ -183,11 +205,11 @@ class DeduplicationPolicy(BaseSovereignPolicy):
                                 "deliverables": [
                                     "Definición del catálogo de servicios unificado.",
                                     f"Integración de las APIs de provisión de {cloud_provider} Landing Zones.",
-                                    "Despliegue del portal central de Autoservicio para el desarrollador."
+                                    "Despliegue del portal central de Autoservicio para el desarrollador.",
                                 ],
                                 "sizing": "XL",
                                 "duration": "Horizonte 1 (0-6 meses)",
-                                "program_id": None
+                                "program_id": None,
                             }
                         else:
                             unified_project = {
@@ -199,11 +221,11 @@ class DeduplicationPolicy(BaseSovereignPolicy):
                                 "deliverables": [
                                     "Unified service catalog definition.",
                                     f"API integration for {cloud_provider} Landing Zone provisioning.",
-                                    "Developer Self-Service portal deployment."
+                                    "Developer Self-Service portal deployment.",
                                 ],
                                 "sizing": "XL",
                                 "duration": "Horizon 1 (0-6 months)",
-                                "program_id": None
+                                "program_id": None,
                             }
                         #
                         p["projects_todo"] = [unified_project]
@@ -239,7 +261,10 @@ class SequencingPolicy(BaseSovereignPolicy):
         TypeError: If 'pillars_analysis' or 'projects_todo' keys are present
             but their corresponding values are not lists.
     """
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         r"""{'docstring': "Patches project timelines and objectives in a payload based on business rules.\n\n    This method enforces a logical project sequence by modifying the `duration`\n    and `tech_objective` fields for projects within the payload. It scans project\n    names for keywords to distinguish between foundational work and subsequent\n    technical implementation.\n\n    Specifically, projects with names indicating strategy or adoption are assigned\n    to an early time horizon ('Horizonte 1'), while projects related to technical\n    pilots or platform development are assigned to a later one ('Horizonte 2').\n    The payload dictionary is modified in-place.\n\n    Args:\n        graph: The epistemic graph for context. This argument is currently unused.\n        payload: The input data structure containing project information. The method\n            expects a nested structure of `payload['pillars_analysis'][...]['projects_todo']`.\n\n    Returns:\n        The payload dictionary, modified with updated project data.\n\n    Raises:\n        TypeError: If a value expected to be a list (e.g., for `pillars_analysis`\n            or `projects_todo`) is present but has a non-iterable type.\n        AttributeError: If a project's `name` value is not a string and does not\n            support the `.lower()` method."}."""
         pillars = payload.get("pillars_analysis", [])
         if not pillars:
@@ -250,19 +275,32 @@ class SequencingPolicy(BaseSovereignPolicy):
             for proj in p.get("projects_todo", []):
                 name = proj.get("name", "")
                 # Enforces the business rule that foundational projects and adoption plans must be scheduled in the H1-Kickoff horizon.
-                if "adopción de plataforma de contenedores" in name.lower() or "estrategia de adopción" in name.lower():
+                if (
+                    "adopción de plataforma de contenedores" in name.lower()
+                    or "estrategia de adopción" in name.lower()
+                ):
                     proj["duration"] = "Horizonte 1 - Fase de Arranque (Mes 1-2)"
-                    proj["tech_objective"] = "Establecer las directrices operativas, de gobernanza, de costes y de seguridad para cargas de contenedores antes de iniciar desarrollos técnicos de IDP."
+                    proj["tech_objective"] = (
+                        "Establecer las directrices operativas, de gobernanza, de costes y de seguridad para cargas de contenedores antes de iniciar desarrollos técnicos de IDP."
+                    )
                 # Enforces the business rule that technical pilots and Initial Deployment Platforms (IDPs) are scheduled for the H2 horizon or later.
-                elif "plataforma interna de desarrollo" in name.lower() or "piloto" in name.lower() or "kubernetes" in name.lower() or "eks" in name.lower():
+                elif (
+                    "plataforma interna de desarrollo" in name.lower()
+                    or "piloto" in name.lower()
+                    or "kubernetes" in name.lower()
+                    or "eks" in name.lower()
+                ):
                     proj["duration"] = "Horizonte 2 (Mes 3-12)"
-                    
+
         return payload
 
 
 class OTPerimeterPolicy(BaseSovereignPolicy):
     r"""{'docstring': "Evaluate a portfolio and idempotently inject data diode security controls.\n\nThis method enforces a mandatory security control for clients in the\n'Critical Infrastructure' or 'Energy' sectors. It inspects the project\nportfolio for the coexistence of Operational Technology (OT/SCADA) and IT\nAIOps initiatives. If both are found, it patches the respective projects\nin-place by appending deliverables to implement a hardware data diode,\nthereby ensuring a secure, one-way data flow from the OT to the IT\nenvironment.\n\nThe client's industry is determined by first attempting to read a\n`client_intelligence.json` file, whose path is derived from the\n`ASSESSMENT_CLIENT_ID` environment variable. If this file is absent or\nunreadable, it falls back to inspecting the client name within the payload.\nThe policy is resilient to file I/O exceptions, which are suppressed.\nThe patching operation is idempotent and will not add duplicate deliverables.\n\nArgs:\n    graph (EpistemicGraph): The epistemic knowledge graph for the assessment.\n        This argument is required by the policy interface but is not used in\n        this method's logic.\n    payload (Dict[str, Any]): The project portfolio data structure. Expected to\n        contain a 'document_meta' dictionary and a 'pillars_analysis' list\n        of project dictionaries.\n\nReturns:\n    Dict[str, Any]: The `payload` dictionary, potentially modified in-place to\n        include data diode deliverables. Returns the original payload if the\n        client is not in a relevant sector or if the triggering project types\n        are not both present."}."""
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         r"""{'docstring': "Conditionally injects data diode security controls into a project portfolio.\n\nThis policy enforces a mandatory security control for clients operating within\nthe 'Critical Infrastructure' or 'Energy' sectors. It first determines the\nclient's industry by reading a `client_intelligence.json` file, with a\nfallback mechanism that inspects the client name in the payload metadata.\n\nThe policy activates only if the sector matches and the project portfolio\ncontains a combination of both Operational Technology (OT/SCADA) and IT\nAIOps initiatives. Upon activation, the function modifies the relevant\nprojects in-place, injecting deliverables and technical objectives to\nmandate the implementation of a hardware data diode. This ensures a secure,\none-way data flow from the OT to the IT environment.\n\nThe modification is idempotent; it verifies the absence of existing data\ndiode deliverables before injection to prevent duplication. If the activation\nconditions are not met, the original payload is returned unmodified.\n\nArgs:\n    graph (EpistemicGraph): The epistemic graph for the assessment. Unused by\n        this policy.\n    payload (Dict[str, Any]): The project portfolio data structure. Expected to\n        contain 'pillars_analysis' (a list of pillars, each with a\n        'projects_todo' list) and 'document_meta' (containing 'client_name').\n\nReturns:\n    Dict[str, Any]: The payload, potentially modified to include data diode\n        deliverables. Returns the original payload if policy conditions are\n        not met."}."""
         # Resolve client's industry sector from environment metadata to enforce sector-specific policy execution.
         client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
@@ -278,28 +316,38 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
                 pass
         else:
             # Implements a security fallback to prevent execution failure in CI/CD environments where the full governance repository may be unavailable.
-            client_name = payload.get("document_meta", {}).get("client_name", "").upper()
+            client_name = (
+                payload.get("document_meta", {}).get("client_name", "").upper()
+            )
             if "REDEIA" in client_name:
                 industry = "Critical Infrastructure"
 
         # SECTOR-LOCK ENFORCEMENT: Halts policy execution if the client's industry sector is not 'Critical Infrastructure' or 'Energy'.
         if "Critical Infrastructure" not in industry and "Energy" not in industry:
             return payload
-            
+
         pillars = payload.get("pillars_analysis", [])
         if not pillars:
             return payload
 
         has_scada = False
         has_aiops = False
-        
+
         # Verifies the precondition that both OT/SCADA and IT AIOps initiatives coexist in the project portfolio.
         for p in pillars:
             for proj in p.get("projects_todo", []):
                 name = proj.get("name", "").lower()
-                if "scada" in name or "legada" in name or "infraestructura legacy" in name:
+                if (
+                    "scada" in name
+                    or "legada" in name
+                    or "infraestructura legacy" in name
+                ):
                     has_scada = True
-                if "aiops" in name or "observabilidad predictiva" in name or "observabilidad" in name:
+                if (
+                    "aiops" in name
+                    or "observabilidad predictiva" in name
+                    or "observabilidad" in name
+                ):
                     has_aiops = True
 
         # If the precondition is met, inject mandatory hardware data diode controls to enforce a physical security perimeter.
@@ -307,19 +355,39 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
             for p in pillars:
                 for proj in p.get("projects_todo", []):
                     name = proj.get("name", "").lower()
-                    if "scada" in name or "legada" in name or "infraestructura legacy" in name:
+                    if (
+                        "scada" in name
+                        or "legada" in name
+                        or "infraestructura legacy" in name
+                    ):
                         if "deliverables" not in proj:
                             proj["deliverables"] = []
                         # Ensures policy execution is idempotent by preventing the re-injection of existing deliverables.
-                        if not any("diodo de datos" in d.lower() for d in proj["deliverables"]):
-                            proj["deliverables"].append("Implementación de un Diodo de Datos Unidireccional por Hardware para extracción segura de telemetría sin canal de retorno.")
-                            proj["tech_objective"] += " El aislamiento físico del entorno SCADA se mantendrá de forma inquebrantable mediante el uso de un diodo de datos unidireccional."
-                    if "aiops" in name or "observabilidad predictiva" in name or "observabilidad" in name:
+                        if not any(
+                            "diodo de datos" in d.lower() for d in proj["deliverables"]
+                        ):
+                            proj["deliverables"].append(
+                                "Implementación de un Diodo de Datos Unidireccional por Hardware para extracción segura de telemetría sin canal de retorno."
+                            )
+                            proj["tech_objective"] += (
+                                " El aislamiento físico del entorno SCADA se mantendrá de forma inquebrantable mediante el uso de un diodo de datos unidireccional."
+                            )
+                    if (
+                        "aiops" in name
+                        or "observabilidad predictiva" in name
+                        or "observabilidad" in name
+                    ):
                         if "deliverables" not in proj:
                             proj["deliverables"] = []
-                        if not any("diodo de datos" in d.lower() for d in proj["deliverables"]):
-                            proj["deliverables"].append("Despliegue del gateway receptor del Diodo de Datos de OT para ingesta pasiva de telemetría en AWS IoT Core.")
-                            proj["tech_objective"] += " Toda la ingesta de telemetría en tiempo real de subestaciones y OT se canalizará de forma 100% pasiva y segura mediante diodos de datos unidireccionales."
+                        if not any(
+                            "diodo de datos" in d.lower() for d in proj["deliverables"]
+                        ):
+                            proj["deliverables"].append(
+                                "Despliegue del gateway receptor del Diodo de Datos de OT para ingesta pasiva de telemetría en AWS IoT Core."
+                            )
+                            proj["tech_objective"] += (
+                                " Toda la ingesta de telemetría en tiempo real de subestaciones y OT se canalizará de forma 100% pasiva y segura mediante diodos de datos unidireccionales."
+                            )
         return payload
 
 
@@ -355,7 +423,10 @@ class ArchiMateDeliverablesPolicy(BaseSovereignPolicy):
             list/dict structure (e.g., `payload['pillars_analysis']` is not
             a list).
     """
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Replaces generic or missing project deliverables with specific, catalog-based items.
 
         Iterates through projects within the payload's nested structure. If a
@@ -386,50 +457,114 @@ class ArchiMateDeliverablesPolicy(BaseSovereignPolicy):
                 not iterable.
         """
         catalog = {
-            "kubernetes": ["Manifiestos Base YAML", "Módulo Terraform EKS", "Helm Charts de Gobernanza", "Pipeline GitLab/GitHub Actions"],
-            "eks": ["Manifiestos Base YAML", "Módulo Terraform EKS", "Helm Charts de Gobernanza", "Pipeline GitLab/GitHub Actions"],
-            "contenedores": ["Manifiestos Base YAML", "Módulo Terraform EKS", "Helm Charts de Gobernanza", "Pipeline GitLab/GitHub Actions"],
-            "landing zone": ["AWS Control Tower Account Factory", "Políticas SCP (Service Control Policies)", "Módulo Terraform Base Network"],
-            "platform engineering": ["Catálogo Backstage/IDP", "Plantillas de Autoservicio IaC", "Framework de SLIs/SLOs"],
-            "observabilidad": ["Dashboards Grafana/CloudWatch", "Reglas de Alertas PromQL", "Integración PagerDuty/ServiceNow"],
-            "aiops": ["Dashboards Grafana/CloudWatch", "Modelos de Detección de Anomalías", "Integración ITSM"],
-            "scada": ["Topología de Red Purdue", "Reglas de Firewall Perimetral", "Diodo de Datos Unidireccional"],
-            "automatización": ["Playbooks Ansible", "Módulos Terraform", "Pipelines CI/CD"],
-            "iac": ["Módulos Terraform", "Repositorio GitOps", "Políticas OPA/Sentinel"],
-            "dr": ["Runbooks de Recuperación", "Plan de Pruebas de Failover", "Plantillas AWS Elastic Disaster Recovery"],
-            "disaster recovery": ["Runbooks de Recuperación", "Plan de Pruebas de Failover", "Plantillas AWS Elastic Disaster Recovery"],
-            "backup": ["Políticas de Retención", "Bóveda Inmutable", "Pruebas de Restauración Automatizadas"]
+            "kubernetes": [
+                "Manifiestos Base YAML",
+                "Módulo Terraform EKS",
+                "Helm Charts de Gobernanza",
+                "Pipeline GitLab/GitHub Actions",
+            ],
+            "eks": [
+                "Manifiestos Base YAML",
+                "Módulo Terraform EKS",
+                "Helm Charts de Gobernanza",
+                "Pipeline GitLab/GitHub Actions",
+            ],
+            "contenedores": [
+                "Manifiestos Base YAML",
+                "Módulo Terraform EKS",
+                "Helm Charts de Gobernanza",
+                "Pipeline GitLab/GitHub Actions",
+            ],
+            "landing zone": [
+                "AWS Control Tower Account Factory",
+                "Políticas SCP (Service Control Policies)",
+                "Módulo Terraform Base Network",
+            ],
+            "platform engineering": [
+                "Catálogo Backstage/IDP",
+                "Plantillas de Autoservicio IaC",
+                "Framework de SLIs/SLOs",
+            ],
+            "observabilidad": [
+                "Dashboards Grafana/CloudWatch",
+                "Reglas de Alertas PromQL",
+                "Integración PagerDuty/ServiceNow",
+            ],
+            "aiops": [
+                "Dashboards Grafana/CloudWatch",
+                "Modelos de Detección de Anomalías",
+                "Integración ITSM",
+            ],
+            "scada": [
+                "Topología de Red Purdue",
+                "Reglas de Firewall Perimetral",
+                "Diodo de Datos Unidireccional",
+            ],
+            "automatización": [
+                "Playbooks Ansible",
+                "Módulos Terraform",
+                "Pipelines CI/CD",
+            ],
+            "iac": [
+                "Módulos Terraform",
+                "Repositorio GitOps",
+                "Políticas OPA/Sentinel",
+            ],
+            "dr": [
+                "Runbooks de Recuperación",
+                "Plan de Pruebas de Failover",
+                "Plantillas AWS Elastic Disaster Recovery",
+            ],
+            "disaster recovery": [
+                "Runbooks de Recuperación",
+                "Plan de Pruebas de Failover",
+                "Plantillas AWS Elastic Disaster Recovery",
+            ],
+            "backup": [
+                "Políticas de Retención",
+                "Bóveda Inmutable",
+                "Pruebas de Restauración Automatizadas",
+            ],
         }
-        
+
         pillars = payload.get("pillars_analysis", [])
         for p in pillars:
             for proj in p.get("projects_todo", []):
                 name = proj.get("name", "").lower()
                 tech_obj = proj.get("tech_objective", "").lower()
                 combined_text = name + " " + tech_obj
-                
+
                 # The policy injects content only when existing deliverables are absent, empty, or contain generic placeholder text.
                 current_deliverables = proj.get("deliverables", [])
-                is_generic = not current_deliverables or any("diseño de arquitectura" in d.lower() for d in current_deliverables)
-                
+                is_generic = not current_deliverables or any(
+                    "diseño de arquitectura" in d.lower() for d in current_deliverables
+                )
+
                 if is_generic:
                     new_deliverables = set()
                     for keyword, hard_deliverables in catalog.items():
                         if keyword in combined_text:
                             new_deliverables.update(hard_deliverables)
-                            
+
                     if new_deliverables:
                         proj["deliverables"] = list(new_deliverables)
                     else:
                         # Assigns a reasoned default for unrecognized project types to avoid the use of low-signal generic placeholders.
-                        proj["deliverables"] = ["Documento de Diseño Técnico (HLD/LLD)", "Repositorio de Código (IaC/Config)", "Plan de Pruebas y Validation"]
+                        proj["deliverables"] = [
+                            "Documento de Diseño Técnico (HLD/LLD)",
+                            "Repositorio de Código (IaC/Config)",
+                            "Plan de Pruebas y Validation",
+                        ]
 
         return payload
 
 
 class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
     r"""{'docstring': "Grounds project business cases against AS-IS findings or generates a fallback.\n\nIterates through projects defined in `payload['pillars_analysis']`. For each\nproject where the `business_case` is absent or a placeholder, it attempts\nto link the project to a finding in `health_check_asis`. The linkage is\nestablished using a word-overlap heuristic: a match occurs if the project's\nname and technical objective share more than one significant word (length > 5)\nwith a finding's text.\n\nIf a match is found, the business case is rewritten as 'Direct Mitigation',\nincorporating the finding's impact, and a `mitigates_risk_id` key is added\nto the project. If no match is found, a fallback 'Strategic Enabler'\nbusiness case is generated, referencing regulatory frameworks from\n`document_meta`. The generated text is localized based on the\n`document_meta.language` field.\n\nArgs:\n    graph: The epistemic graph for contextual analysis. This argument is\n        reserved for future use and is not currently utilized by the policy.\n    payload: The input data structure to be modified. It is expected to\n        contain a `pillars_analysis` key (a list of pillar dictionaries)\n        and a `document_meta` key. Each pillar should contain `projects_todo`\n        and `health_check_asis` lists. This dictionary is modified in-place.\n\nReturns:\n    The mutated `payload` dictionary with enriched business cases.\n\nRaises:\n    TypeError: If a value within the `payload` does not match its expected\n        type, for example, if `pillars_analysis` is not an iterable.\n    AttributeError: If an element within a list (e.g., `projects_todo`) is\n        not a dictionary and therefore does not support the `.get()` method."}."""
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Populates missing project business cases by linking them to risk findings.
 
         This method iterates through projects within the `payload['pillars_analysis']`
@@ -467,37 +602,54 @@ class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
         """
         pillars = payload.get("pillars_analysis", [])
         doc_lang = payload.get("document_meta", {}).get("language", "es").lower()
-        
+
         # Enforces regulatory sanitization rule #2, which decouples specific compliance artifacts from the core business case to maintain modularity.
         reg_frameworks = payload.get("document_meta", {}).get("regulatory_frameworks")
         if not reg_frameworks:
-            reg_frameworks = "ENS/NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
-            
+            reg_frameworks = (
+                "ENS/NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
+            )
+
         for p in pillars:
             asis_findings = p.get("health_check_asis", [])
             for proj in p.get("projects_todo", []):
                 bc = proj.get("business_case", "")
-                if not bc or "impacto estratégico basado en la validación" in bc.lower():
+                if (
+                    not bc
+                    or "impacto estratégico basado en la validación" in bc.lower()
+                ):
                     # Establishes business case validity by linking the initiative to a semantically related finding from the AS-IS assessment.
                     name = proj.get("name", "").lower()
                     tech_obj = proj.get("tech_objective", "").lower()
-                    
+
                     matched_finding = None
                     for finding in asis_findings:
-                        f_text = finding.get("finding", finding.get("risk_observed", "")).lower()
+                        f_text = finding.get(
+                            "finding", finding.get("risk_observed", "")
+                        ).lower()
                         # Employs a word overlap heuristic to establish a semantic link between the initiative and AS-IS findings.
                         words = [w for w in f_text.split() if len(w) > 5]
                         if sum(1 for w in words if w in name or w in tech_obj) > 1:
                             matched_finding = finding
                             break
-                            
+
                     if matched_finding:
-                        impact = matched_finding.get("impact", matched_finding.get("business_risk", ""))
-                        proj["business_case"] = f"Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'." if doc_lang == "es" else f"Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'."
+                        impact = matched_finding.get(
+                            "impact", matched_finding.get("business_risk", "")
+                        )
+                        proj["business_case"] = (
+                            f"Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'."
+                            if doc_lang == "es"
+                            else f"Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'."
+                        )
                         proj["mitigates_risk_id"] = matched_finding.get("node_id")
                     else:
-                        proj["business_case"] = f"Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks})." if doc_lang == "es" else f"Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks})."
-                        
+                        proj["business_case"] = (
+                            f"Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks})."
+                            if doc_lang == "es"
+                            else f"Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks})."
+                        )
+
         return payload
 
 
@@ -538,7 +690,10 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                 project, or finding) is not a dictionary and does not support the
                 `.get()` method.
     """
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Evaluates an analysis payload for unmitigated risks and patches the data structure by injecting corresponding remediation projects.
 
         This method iterates through each 'pillar' within the payload's
@@ -580,9 +735,14 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
         for p in pillars:
             asis_findings = p.get("health_check_asis", [])
             projects = p.get("projects_todo", [])
-            
-            all_proj_text = " ".join([proj.get("name", "") + " " + proj.get("tech_objective", "") for proj in projects]).lower()
-            
+
+            all_proj_text = " ".join(
+                [
+                    proj.get("name", "") + " " + proj.get("tech_objective", "")
+                    for proj in projects
+                ]
+            ).lower()
+
             for finding in asis_findings:
                 f_text = finding.get("finding", finding.get("risk_observed", ""))
                 # Defines an 'orphan finding' as an identified AS-IS gap that lacks a corresponding TO-BE remediation initiative.
@@ -595,29 +755,44 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                         "transformation_typology": "Core Modernization & Risk Mitigation",
                         "business_case": f"Mitigación Directa de Riesgo: {finding.get('impact', finding.get('business_risk', 'Riesgo Operativo'))}",
                         "tech_objective": f"Resolver la brecha detectada en el AS-IS: {f_text}",
-                        "deliverables": ["Plan de Remediación", "Ejecución de Parches/Configuraciones", "Informe de Cierre de Brecha"],
+                        "deliverables": [
+                            "Plan de Remediación",
+                            "Ejecución de Parches/Configuraciones",
+                            "Informe de Cierre de Brecha",
+                        ],
                         "sizing": "S",
                         "duration": "Horizonte 1 (Mes 1-3)",
                         "program_id": None,
-                        "mitigates_risk_id": finding.get("node_id")
+                        "mitigates_risk_id": finding.get("node_id"),
                     }
                     p["projects_todo"].append(fallback_proj)
                     # Append processed findings to an aggregate text corpus to prevent redundant remediation projects for semantically similar orphan findings.
-                    all_proj_text += " " + fallback_proj["name"].lower() + " " + fallback_proj["tech_objective"].lower()
+                    all_proj_text += (
+                        " "
+                        + fallback_proj["name"].lower()
+                        + " "
+                        + fallback_proj["tech_objective"].lower()
+                    )
 
         return payload
 
 
 class FairRiskPolicy(BaseSovereignPolicy):
     """Generate random samples from a Beta-PERT distribution defined by minimum, most likely, and maximum values."""
-    def _sample_pert(self, min_val: float, most_likely: float, max_val: float, size: int = 10000) -> Any:
+
+    def _sample_pert(
+        self, min_val: float, most_likely: float, max_val: float, size: int = 10000
+    ) -> Any:
         import numpy as np
+
         range_val = max_val - min_val
         alpha = 1.0 + 4.0 * (most_likely - min_val) / range_val
         beta_val = 1.0 + 4.0 * (max_val - most_likely) / range_val
         return min_val + np.random.beta(alpha, beta_val, size=size) * range_val
 
-    def evaluate_and_patch(self, graph: EpistemicGraph, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def evaluate_and_patch(
+        self, graph: EpistemicGraph, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Performs a quantitative risk analysis on qualitative findings using the Open FAIR methodology and enriches the input payload with the results.
 
         This method processes a payload of qualitative findings, loading a client-
@@ -661,19 +836,20 @@ class FairRiskPolicy(BaseSovereignPolicy):
         import os
 
         import numpy as np
+
         pillars = payload.get("pillars_analysis", [])
-        
+
         # Load FAIR model parameters from the canonical governance repository.
         profiles_path = Path("engine_config/policies/fair_risk_profiles.json")
         profiles = {}
         if profiles_path.exists():
             with open(profiles_path, "r", encoding="utf-8") as pf:
                 profiles = json.load(pf)
-                
+
         # Load client metadata to ascertain the industry sector for sector-lock policy enforcement.
         client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
         intel_path = Path(f"working/{client_id}/client_intelligence.json")
-        
+
         industry = "Standard"
         hierarchy = "Standard"
         if intel_path.exists():
@@ -685,104 +861,167 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     hierarchy = p_meta.get("hierarchy", "Standard")
             except Exception:
                 pass
-                
+
         # Select the risk model preset that is calibrated to the client's organizational scale and data volume.
         preset_key = "MID_MARKET"
         if "Critical Infrastructure" in industry or "Energy" in industry:
             preset_key = "CRITICAL_INFRASTRUCTURE"
         elif "Global" in hierarchy or "Mega" in hierarchy:
             preset_key = "MEGA_ENTERPRISE"
-            
+
         preset = profiles.get(preset_key, profiles.get("MID_MARKET", {}))
-        
+
         # Coerce string-based map keys to integer types for compatibility with downstream processing.
         tef_map = {int(k): v for k, v in preset.get("tef_map", {}).items()}
         vuln_map = {int(k): v for k, v in preset.get("vuln_map", {}).items()}
         lm_map = {int(k): v for k, v in preset.get("lm_map", {}).items()}
-        
+
         # Establishes safe default values to ensure resilience against configuration file parsing errors or unavailability.
-        if not tef_map: tef_map = {
-            1: {"min": 0.01, "ml": 0.1, "max": 0.2},
-            2: {"min": 0.1, "ml": 0.25, "max": 0.5},
-            3: {"min": 0.5, "ml": 1.0, "max": 3.0},
-            4: {"min": 2.0, "ml": 4.0, "max": 8.0},
-            5: {"min": 6.0, "ml": 12.0, "max": 24.0}
-        }
-        if not vuln_map: vuln_map = {
-            1: {"min": 0.05, "ml": 0.10, "max": 0.15},
-            2: {"min": 0.15, "ml": 0.25, "max": 0.35},
-            3: {"min": 0.30, "ml": 0.50, "max": 0.70},
-            4: {"min": 0.70, "ml": 0.85, "max": 0.95},
-            5: {"min": 0.90, "ml": 1.00, "max": 1.00}
-        }
-        if not lm_map: lm_map = {
-            1: {"min": 500.0, "ml": 1000.0, "max": 3000.0},
-            2: {"min": 2000.0, "ml": 5000.0, "max": 15000.0},
-            3: {"min": 10000.0, "ml": 25000.0, "max": 80000.0},
-            4: {"min": 50000.0, "ml": 100000.0, "max": 300000.0},
-            5: {"min": 250000.0, "ml": 500000.0, "max": 1500000.0}
-        }
-        
+        if not tef_map:
+            tef_map = {
+                1: {"min": 0.01, "ml": 0.1, "max": 0.2},
+                2: {"min": 0.1, "ml": 0.25, "max": 0.5},
+                3: {"min": 0.5, "ml": 1.0, "max": 3.0},
+                4: {"min": 2.0, "ml": 4.0, "max": 8.0},
+                5: {"min": 6.0, "ml": 12.0, "max": 24.0},
+            }
+        if not vuln_map:
+            vuln_map = {
+                1: {"min": 0.05, "ml": 0.10, "max": 0.15},
+                2: {"min": 0.15, "ml": 0.25, "max": 0.35},
+                3: {"min": 0.30, "ml": 0.50, "max": 0.70},
+                4: {"min": 0.70, "ml": 0.85, "max": 0.95},
+                5: {"min": 0.90, "ml": 1.00, "max": 1.00},
+            }
+        if not lm_map:
+            lm_map = {
+                1: {"min": 500.0, "ml": 1000.0, "max": 3000.0},
+                2: {"min": 2000.0, "ml": 5000.0, "max": 15000.0},
+                3: {"min": 10000.0, "ml": 25000.0, "max": 80000.0},
+                4: {"min": 50000.0, "ml": 100000.0, "max": 300000.0},
+                5: {"min": 250000.0, "ml": 500000.0, "max": 1500000.0},
+            }
+
         for p in pillars:
             for finding in p.get("health_check_asis", []):
-                text = (finding.get("finding", "") + " " + finding.get("impact", "")).lower()
-                
+                text = (
+                    finding.get("finding", "") + " " + finding.get("impact", "")
+                ).lower()
+
                 # Implements heuristics for mapping qualitative Threat Event Frequency (TEF) ratings (1-5) to quantitative annualized ranges.
                 tef = 3
-                if any(k in text for k in ["ransomware", "ataque", "pública", "internet", "ddos", "hack"]): tef = 5
-                elif any(k in text for k in ["interno", "error", "manual", "legacy", "obsoleto"]): tef = 4
-                
+                if any(
+                    k in text
+                    for k in [
+                        "ransomware",
+                        "ataque",
+                        "pública",
+                        "internet",
+                        "ddos",
+                        "hack",
+                    ]
+                ):
+                    tef = 5
+                elif any(
+                    k in text
+                    for k in ["interno", "error", "manual", "legacy", "obsoleto"]
+                ):
+                    tef = 4
+
                 # Implements heuristics for mapping qualitative Vulnerability ratings (1-5) to quantitative probability ranges.
                 vuln = 3
-                if any(k in text for k in ["sin parchear", "sin soporte", "crítico", "vulnerabilidad"]): vuln = 5
-                elif any(k in text for k in ["manual", "falta", "ausencia", "carencia"]): vuln = 4
-                
+                if any(
+                    k in text
+                    for k in [
+                        "sin parchear",
+                        "sin soporte",
+                        "crítico",
+                        "vulnerabilidad",
+                    ]
+                ):
+                    vuln = 5
+                elif any(
+                    k in text for k in ["manual", "falta", "ausencia", "carencia"]
+                ):
+                    vuln = 4
+
                 # Implements heuristics for mapping qualitative Loss Magnitude (1-5) to quantitative monetary ranges, compliant with international regulatory sanitization rule #4.
                 lm = 3
-                if any(k in text for k in ["parada total", "caída catastrófica", "indisponibilidad crítica"]): lm = 5
-                elif any(k in text for k in ["nis2", "ens", "soc2", "hipaa", "fedramp", "gdpr", "lgpd", "multa", "sanción", "retraso", "indisponibilidad", "pérdida de datos", "legal", "compliance", "regulatory", "penalty"]): lm = 4
-                
+                if any(
+                    k in text
+                    for k in [
+                        "parada total",
+                        "caída catastrófica",
+                        "indisponibilidad crítica",
+                    ]
+                ):
+                    lm = 5
+                elif any(
+                    k in text
+                    for k in [
+                        "nis2",
+                        "ens",
+                        "soc2",
+                        "hipaa",
+                        "fedramp",
+                        "gdpr",
+                        "lgpd",
+                        "multa",
+                        "sanción",
+                        "retraso",
+                        "indisponibilidad",
+                        "pérdida de datos",
+                        "legal",
+                        "compliance",
+                        "regulatory",
+                        "penalty",
+                    ]
+                ):
+                    lm = 4
+
                 # Define uncertainty for model inputs using a Beta-PERT distribution, as specified by the Open FAIR standard.
                 #
                 tef_range = tef_map.get(tef, {"min": 0.5, "ml": 1.0, "max": 3.0})
                 tef_min = float(tef_range.get("min", 0.5))
                 tef_ml = float(tef_range.get("ml", 1.0))
                 tef_max = float(tef_range.get("max", 3.0))
-                
+
                 #
                 vuln_range = vuln_map.get(vuln, {"min": 0.3, "ml": 0.5, "max": 0.7})
                 vuln_min = float(vuln_range.get("min", 0.3))
                 vuln_ml = float(vuln_range.get("ml", 0.5))
                 vuln_max = float(vuln_range.get("max", 0.7))
-                
+
                 #
-                lm_range = lm_map.get(lm, {"min": 10000.0, "ml": 25000.0, "max": 80000.0})
+                lm_range = lm_map.get(
+                    lm, {"min": 10000.0, "ml": 25000.0, "max": 80000.0}
+                )
                 lm_min = float(lm_range.get("min", 10000.0))
                 lm_ml = float(lm_range.get("ml", 25000.0))
                 lm_max = float(lm_range.get("max", 80000.0))
-                
+
                 # Execute a 10,000-iteration Monte Carlo simulation to model the loss exposure distribution.
                 size = 10000
                 tef_samples = self._sample_pert(tef_min, tef_ml, tef_max, size=size)
                 vuln_samples = self._sample_pert(vuln_min, vuln_ml, vuln_max, size=size)
                 lm_samples = self._sample_pert(lm_min, lm_ml, lm_max, size=size)
-                
+
                 # Models the materialization of a threat event within a one-year period as a Bernoulli trial.
                 U = np.random.uniform(0.0, 1.0, size=size)
                 losses_occurred = U < vuln_samples
-                
+
                 # Annualized loss is computed as a function of threat event frequency and probable loss magnitude.
                 loss_per_run = np.where(losses_occurred, tef_samples * lm_samples, 0.0)
-                
+
                 #
                 mean_ale = float(np.mean(loss_per_run))
                 p90_ale = float(np.percentile(loss_per_run, 90.0))
                 min_ale = float(np.min(loss_per_run))
                 max_ale = float(np.max(loss_per_run))
-                
+
                 # Round final computed metrics to a fixed precision for presentation clarity.
                 ale_euros = round(mean_ale, 2)
-                
+
                 finding["threat_event_frequency"] = tef
                 finding["vulnerability_level"] = vuln
                 finding["loss_magnitude"] = lm
@@ -790,11 +1029,13 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 finding["fair_p90_score"] = round(p90_ale, 2)
                 finding["fair_min_score"] = round(min_ale, 2)
                 finding["fair_max_score"] = round(max_ale, 2)
-                
+
         return payload
+
 
 class SovereignPolicyEngine:
     r"""[{'name': 'SovereignPolicyEngine', 'docstring': 'Orchestrates the sequential execution of a predefined sovereign policy chain.\n\nThis engine processes a dictionary-like payload by applying a fixed, ordered\nsequence of `BaseSovereignPolicy` instances. Each policy evaluates and\npotentially transforms the payload based on contextual information from an\nepistemic graph. The transformation is cumulative, with the output of one\npolicy serving as the input for the next.\n\nAttributes:\n    graph (EpistemicGraph): The knowledge graph providing context for policy\n        evaluations.\n    policies (List[BaseSovereignPolicy]): The ordered list of policy objects\n        to be executed.'}, {'name': '__init__', 'docstring': 'Initializes the SovereignPolicyEngine.\n\nStores the provided epistemic graph and initializes a predefined, ordered list\nof sovereign policies for evaluation.\n\nArgs:\n    graph (EpistemicGraph): The epistemic graph instance that policies will\n        use for analysis.'}, {'name': 'compile', 'docstring': "Applies the full policy chain sequentially to a configuration payload.\n\nThis method orchestrates the policy evaluation pipeline. It first performs a\nrecursive unescape operation on the input payload, then iterates through each\nregistered policy, applying its transformation logic. The output of each\npolicy evaluation serves as the input to the subsequent policy, creating a\ncumulative transformation.\n\nArgs:\n    blueprint_payload (Dict[str, Any]): The input configuration data to which\n        policies will be applied.\n\nReturns:\n    Dict[str, Any]: The transformed payload after the application of all\n        policies.\n\nRaises:\n    Exception: Propagates any exception raised by an individual policy's\n        `evaluate_and_patch` method. This can occur if the payload is\n        malformed or violates a specific policy constraint (e.g., ValueError,\n        KeyError)."}]."""
+
     def __init__(self, graph: EpistemicGraph):
         """Initializes the PolicyEngine with a graph and a default policy chain.
 
@@ -815,7 +1056,7 @@ class SovereignPolicyEngine:
             OTPerimeterPolicy(),
             ArchiMateDeliverablesPolicy(),
             BusinessCaseGroundingPolicy(),
-            ReverseTraceabilityPolicy()
+            ReverseTraceabilityPolicy(),
         ]
 
     def compile(self, blueprint_payload: Dict[str, Any]) -> Dict[str, Any]:

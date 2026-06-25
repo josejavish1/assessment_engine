@@ -404,7 +404,9 @@ def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
             process's stderr if available.
     """
     env = os.environ.copy()
-    env["GIT_TERMINAL_PROMPT"] = "0"  # Git interactivity is disabled by setting `GIT_TERMINAL_PROMPT=0`. This is essential for ensuring the script can execute non-interactively within automated CI/CD pipelines or other headless environments.
+    env["GIT_TERMINAL_PROMPT"] = (
+        "0"  # Git interactivity is disabled by setting `GIT_TERMINAL_PROMPT=0`. This is essential for ensuring the script can execute non-interactively within automated CI/CD pipelines or other headless environments.
+    )
 
     try:
         result = subprocess.run(
@@ -709,6 +711,7 @@ def load_json_file(path: Path) -> dict[str, Any]:
 
 class OrchestratorCommandError(RuntimeError):
     r"""{'docstring': "Raised when an external command executed by the orchestrator fails.\n\nEncapsulates details of a failed subprocess, including the command, its\noutput, and a category for programmatic error handling.\n\nAttributes:\n    category (str): A string categorizing the failed command (e.g., 'build', 'test').\n    command (list[str]): The executed command as a list of strings.\n    output_path (pathlib.Path): The path to the file containing the command's\n        captured stdout and stderr.\n    raw_output (str): The raw string content of the combined stdout and stderr."}."""
+
     def __init__(
         self,
         message: str,
@@ -2454,7 +2457,9 @@ def execute_plan(
             authorized_feedback_data = json.loads(
                 authorized_feedback_path.read_text(encoding="utf-8")
             )
-            authorized_feedback_path.unlink(missing_ok=True)  # The file is unlinked immediately after its contents are read into memory. This enforces a strict process-once semantic for the data and maintains a clean state in the working directory.
+            authorized_feedback_path.unlink(
+                missing_ok=True
+            )  # The file is unlinked immediately after its contents are read into memory. This enforces a strict process-once semantic for the data and maintains a clean state in the working directory.
             logger.info(
                 "Se ha detectado y cargado feedback autorizado por el humano para esta ejecución."
             )

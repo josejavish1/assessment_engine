@@ -32,10 +32,20 @@ class MetaExtract(BaseModel):
             transformation stage, contextualized by the client's observed
             investments, public statements, and business plans.
     """
-    dominant_hyperscaler: str = Field(description="Infers the client's dominant public cloud provider based on their technology footprint (e.g., AWS, Azure, GCP). Value is 'N/A - 100% On-Premise' if the client operates without a public cloud presence.")
-    stage: Literal["H1", "H2", "H3"] = Field(description="The assigned transformation phase: H1 (Brilliant Basics), H2 (Hyperautomation & Scale), or H3 (Vanguard & AI-First), determined by the client's automation level and strategic objectives.")
-    label: str = Field(description="A concise, executive-level label representing the transformation horizon (e.g., 'Intelligent Scaling & Cloud Native').")
-    rationale: str = Field(description="Detailed strategic rationale for assigning this specific transformation phase, contextualized by the client's current investment and business plans.")
+
+    dominant_hyperscaler: str = Field(
+        description="Infers the client's dominant public cloud provider based on their technology footprint (e.g., AWS, Azure, GCP). Value is 'N/A - 100% On-Premise' if the client operates without a public cloud presence."
+    )
+    stage: Literal["H1", "H2", "H3"] = Field(
+        description="The assigned transformation phase: H1 (Brilliant Basics), H2 (Hyperautomation & Scale), or H3 (Vanguard & AI-First), determined by the client's automation level and strategic objectives."
+    )
+    label: str = Field(
+        description="A concise, executive-level label representing the transformation horizon (e.g., 'Intelligent Scaling & Cloud Native')."
+    )
+    rationale: str = Field(
+        description="Detailed strategic rationale for assigning this specific transformation phase, contextualized by the client's current investment and business plans."
+    )
+
 
 from infrastructure.client_intelligence import (
     sign_dossier,
@@ -53,7 +63,13 @@ Garantiza que Eurovision Services sea 100% independiente de Redeia.
 MODEL_FAST = os.environ.get("MODEL_TIER_FAST", "gemini-2.5-flash")
 MODEL_PRO = os.environ.get("MODEL_TIER_PRO", "gemini-2.5-pro")
 
-async def probe_ai(prompt: str, schema: Type[BaseModel] = None, model_name: str = MODEL_FAST, client_name: Optional[str] = None) -> Any:
+
+async def probe_ai(
+    prompt: str,
+    schema: Type[BaseModel] = None,
+    model_name: str = MODEL_FAST,
+    client_name: Optional[str] = None,
+) -> Any:
     """Queries a generative AI model with grounding and optional data isolation.
 
     Sends a prompt to a Google generative AI model, utilizing Google Search for
@@ -95,9 +111,12 @@ async def probe_ai(prompt: str, schema: Type[BaseModel] = None, model_name: str 
     """
     from google import genai
     from google.genai import types
-    client = genai.Client(vertexai=True, project="sub403o4u0q5", location="europe-west1")
+
+    client = genai.Client(
+        vertexai=True, project="sub403o4u0q5", location="europe-west1"
+    )
     tools = [types.Tool(google_search=types.GoogleSearch())]
-    
+
     # Enforces strict, context-agnostic data isolation between client datasets. This rule is critical for maintaining data confidentiality and preventing cross-contamination.
     anti_mix = ""
     if client_name:
@@ -109,14 +128,23 @@ async def probe_ai(prompt: str, schema: Type[BaseModel] = None, model_name: str 
             "institucional o colectivo genérico (ej: 'Dirección Ejecutiva' o 'Comité Técnico') en lugar de "
             "alucinar o heredar nombres propios de otras compañías."
         )
-    
+
     try:
-        res = client.models.generate_content(model=model_name, contents=[prompt + anti_mix], config=types.GenerateContentConfig(tools=cast(Any, tools), temperature=0.0))
+        res = client.models.generate_content(
+            model=model_name,
+            contents=[prompt + anti_mix],
+            config=types.GenerateContentConfig(tools=cast(Any, tools), temperature=0.0),
+        )
         text = res.text
         links = []
-        if res.candidates and res.candidates[0].grounding_metadata and res.candidates[0].grounding_metadata.grounding_chunks:
+        if (
+            res.candidates
+            and res.candidates[0].grounding_metadata
+            and res.candidates[0].grounding_metadata.grounding_chunks
+        ):
             for chunk in res.candidates[0].grounding_metadata.grounding_chunks:
-                if chunk.web: links.append(chunk.web.uri)
+                if chunk.web:
+                    links.append(chunk.web.uri)
         if text and "{" in text:
             start, end = text.find("{"), text.rfind("}") + 1
             data = json.loads(text[start:end])
@@ -125,6 +153,7 @@ async def probe_ai(prompt: str, schema: Type[BaseModel] = None, model_name: str 
         return {"text": text or "", "_links": links}
     except Exception:
         return {"text": "", "_links": []}
+
 
 class SourceVault:
     """Extracts brand and metric intelligence 'atoms' from unstructured data.
@@ -155,6 +184,7 @@ class SourceVault:
         source_type: A string descriptor for the data source type (e.g.,
             'pdf', 'html'), which is embedded in each extracted atom.
     """
+
     def __init__(self, client_name: str = ""):
         """Initialize the instance with a client name."""
         self.atoms = []
@@ -187,34 +217,60 @@ class SourceVault:
             Appends dictionary objects representing found intelligence to the
             instance's `self.atoms` list.
         """
-        if not data: return
+        if not data:
+            return
         raw = str(data.get("text", "")) + str(data)
-        
+
         # Stage 1: Brand Intelligence Extraction. Aggregates and processes brand-specific data points from designated public and private sources.
-        brands = ["Siemens", "ABB", "GE", "AWS", "Google", "Dynatrace", "Splunk", "Oracle", "SAP", "Microsoft"]
+        brands = [
+            "Siemens",
+            "ABB",
+            "GE",
+            "AWS",
+            "Google",
+            "Dynatrace",
+            "Splunk",
+            "Oracle",
+            "SAP",
+            "Microsoft",
+        ]
         if self.client_name and "eurovision" in self.client_name.lower():
             brands.append("EBU")
-            
+
         for b in brands:
             if b.lower() in raw.lower():
                 idx = raw.lower().find(b.lower())
-                self.atoms.append({
-                    "category": "stack", "value": b,
-                    "snippet": raw[max(0, idx-100):min(len(raw), idx+250)],
-                    "uri": source_uri, "type": source_type
-                })
-        
+                self.atoms.append(
+                    {
+                        "category": "stack",
+                        "value": b,
+                        "snippet": raw[max(0, idx - 100) : min(len(raw), idx + 250)],
+                        "uri": source_uri,
+                        "type": source_type,
+                    }
+                )
+
         # Stage 2: Metric Derivation. Computes quantitative metrics from raw, unstructured intelligence data.
-        hits = re.findall(r"(\d+[\.,]\d+|\d+)\s*(km|MW|ms|Gbps|CHF|%)", raw, re.IGNORECASE)
+        hits = re.findall(
+            r"(\d+[\.,]\d+|\d+)\s*(km|MW|ms|Gbps|CHF|%)", raw, re.IGNORECASE
+        )
         for val, unit in hits:
             idx = raw.find(val)
-            self.atoms.append({
-                "category": "metric", "value": val, "unit": unit,
-                "snippet": raw[max(0, idx-100):min(len(raw), idx+250)],
-                "uri": source_uri, "type": source_type
-            })
+            self.atoms.append(
+                {
+                    "category": "metric",
+                    "value": val,
+                    "unit": unit,
+                    "snippet": raw[max(0, idx - 100) : min(len(raw), idx + 250)],
+                    "uri": source_uri,
+                    "type": source_type,
+                }
+            )
 
-async def run_market_intelligence(client_name: str, output_path: Path, context_file: Path = None) -> None:
+
+async def run_market_intelligence(
+    client_name: str, output_path: Path, context_file: Path = None
+) -> None:
     """Orchestrates an asynchronous, multi-stage market intelligence pipeline.
 
     This function executes a comprehensive intelligence gathering and analysis
@@ -258,14 +314,25 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
     # Stage 0: Internal Ingestion. Establishes the canonical data source for subsequent executive insight generation.
     if context_file and context_file.exists():
         from docx import Document
+
         doc_text = "\n".join([p.text for p in Document(context_file).paragraphs])
-        vault.ingest({"text": doc_text}, source_uri=str(context_file), source_type="Internal Document")
+        vault.ingest(
+            {"text": doc_text},
+            source_uri=str(context_file),
+            source_type="Internal Document",
+        )
 
     # Stage 1: Web Intelligence Probing. Executes targeted scans of public web sources to acquire relevant client-specific intelligence.
     print("  -> [FASE 1] Cosechando Huellas Técnicas Reales...")
     tasks = [
-        probe_ai(f"Estrategia independiente de {client_name} tras el acuerdo con EBU.", client_name=client_name),
-        probe_ai(f"Stack tecnológico de broadcast y nube de {client_name}.", client_name=client_name),
+        probe_ai(
+            f"Estrategia independiente de {client_name} tras el acuerdo con EBU.",
+            client_name=client_name,
+        ),
+        probe_ai(
+            f"Stack tecnológico de broadcast y nube de {client_name}.",
+            client_name=client_name,
+        ),
     ]
     res_strat, res_stack = await asyncio.gather(*tasks)
     vault.ingest(res_strat, source_uri="Web-Strategy", source_type="Web Search")
@@ -273,18 +340,41 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
 
     # Stage 2: PDF Deep Mining and Analysis. Performs deep content extraction and semantic analysis on specified PDF documents.
     snapshotter = EvidenceSnapshotter(storage_dir=output_path.parent)
-    pdf_search = await probe_ai(f"filetype:pdf {client_name} ESG OR Annual Report", client_name=client_name)
-    captured = await snapshotter.process_urls(" ".join(pdf_search.get("_links", [])[:5]))
-    
-    for snap in [c for c in captured if c.get("local_snapshot") and c["local_snapshot"].endswith(".pdf")]:
+    pdf_search = await probe_ai(
+        f"filetype:pdf {client_name} ESG OR Annual Report", client_name=client_name
+    )
+    captured = await snapshotter.process_urls(
+        " ".join(pdf_search.get("_links", [])[:5])
+    )
+
+    for snap in [
+        c
+        for c in captured
+        if c.get("local_snapshot") and c["local_snapshot"].endswith(".pdf")
+    ]:
         local_p = output_path.parent.parent.parent / snap["local_snapshot"]
         if local_p.exists():
             print(f"       📖 Minería PDF: {snap['url']}")
             from google import genai
             from google.genai import types
-            client = genai.Client(vertexai=True, project="sub403o4u0q5", location="europe-west1")
-            res = client.models.generate_content(model=MODEL_PRO, contents=["Extrae marcas y métricas en texto denso.", types.Part.from_bytes(data=Path(local_p).read_bytes(), mime_type="application/pdf")])
-            vault.ingest({"text": res.text or ""}, source_uri=snap["url"], source_type="PDF Document")
+
+            client = genai.Client(
+                vertexai=True, project="sub403o4u0q5", location="europe-west1"
+            )
+            res = client.models.generate_content(
+                model=MODEL_PRO,
+                contents=[
+                    "Extrae marcas y métricas en texto denso.",
+                    types.Part.from_bytes(
+                        data=Path(local_p).read_bytes(), mime_type="application/pdf"
+                    ),
+                ],
+            )
+            vault.ingest(
+                {"text": res.text or ""},
+                source_uri=snap["url"],
+                source_type="PDF Document",
+            )
 
     # Stage 3: Semantic Labeling and Classification. Applies semantic tags to and classifies synthesized data against a predefined, structured ontology.
     print("  -> [FASE 3] Etiquetado y Citación de Bóveda...")
@@ -293,11 +383,17 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
 
     # Stage 4: Intelligence Synthesis. Consolidates and integrates intelligence from multiple sources into a unified analytical model.
     print("  -> [FASE 4] Redactando Narrativa (Anti-Contaminación)...")
-    narrative = await probe_ai(f"Resume Estrategia y Agenda de Liderazgo para {client_name}. No inventes nombres de CEOs si no aparecen en los datos.", model_name=MODEL_PRO, client_name=client_name)
+    narrative = await probe_ai(
+        f"Resume Estrategia y Agenda de Liderazgo para {client_name}. No inventes nombres de CEOs si no aparecen en los datos.",
+        model_name=MODEL_PRO,
+        client_name=client_name,
+    )
 
     # Stage 4.5: Dynamic Maturity Target Calculation. Executes the Sovereign Target Model to compute dynamic, strategic maturity targets.
-    print("  -> [FASE 4.5] Evaluando Criterios de Madurez por Torre (Conjoint Multi-Criteria Matrix)...")
-    
+    print(
+        "  -> [FASE 4.5] Evaluando Criterios de Madurez por Torre (Conjoint Multi-Criteria Matrix)..."
+    )
+
     if "redeia" in client_name.lower():
         client_context_str = (
             "footprint de transporte eléctrico y telecomunicaciones críticas, "
@@ -330,62 +426,80 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
         f"3. 'feasibility': Viabilidad operacional y facilidad de implementación técnica real considerando la inercia cultural y que actualmente se opera con excels heterogéneos ({feasibility_example_str}).\n\n"
         f"Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (claves T1, T2... T10):\n"
         f"{{\n"
-        f"  \"T1\": {{\n"
-        f"    \"criticality\": 60,\n"
-        f"    \"compliance\": 40,\n"
-        f"    \"feasibility\": 70,\n"
-        f"    \"justification\": \"Explicación estratégica de por qué se asignan estos valores en base a los hechos del cliente.\"\n"
+        f'  "T1": {{\n'
+        f'    "criticality": 60,\n'
+        f'    "compliance": 40,\n'
+        f'    "feasibility": 70,\n'
+        f'    "justification": "Explicación estratégica de por qué se asignan estos valores en base a los hechos del cliente."\n'
         f"  }},\n"
-        f"  \"T2\": {{\n"
-        f"    \"criticality\": 75,\n"
-        f"    \"compliance\": 80,\n"
-        f"    \"feasibility\": 50,\n"
-        f"    \"justification\": \"...\"\n"
+        f'  "T2": {{\n'
+        f'    "criticality": 75,\n'
+        f'    "compliance": 80,\n'
+        f'    "feasibility": 50,\n'
+        f'    "justification": "..."\n'
         f"  }},\n"
         f"  ...\n"
         f"}}"
     )
-    raw_overrides = await probe_ai(overrides_prompt, model_name=MODEL_PRO, client_name=client_name)
+    raw_overrides = await probe_ai(
+        overrides_prompt, model_name=MODEL_PRO, client_name=client_name
+    )
 
     # Stage 4.6: Deterministic Mathematical Computation. Applies the Sovereign Target Engine's deterministic mathematical formula to derive a precise maturity score.
-    print("  -> [FASE 4.6] Ejecutando Algoritmo de Decisión Multicriterio (Sovereign Target Engine)...")
+    print(
+        "  -> [FASE 4.6] Ejecutando Algoritmo de Decisión Multicriterio (Sovereign Target Engine)..."
+    )
     calculated_overrides = {}
     if isinstance(raw_overrides, dict):
         for tower_id, metrics in raw_overrides.items():
-            if not isinstance(metrics, dict): continue
+            if not isinstance(metrics, dict):
+                continue
             try:
                 crit = float(metrics.get("criticality", 50))
                 comp = float(metrics.get("compliance", 50))
                 feas = float(metrics.get("feasibility", 50))
-                
+
                 # Defines the deterministic utility function that maps weighted scores for Criticality, Complexity, and Feasibility to a final target value. The formula is `Target = 3.0 + 2.0 * ((Crit*0.4 + Comp*0.4 + Feas*0.2) / 100)`.
                 # The base `3.0` and multiplier `2.0` constants enforce a strict, asymmetrical output range of [3.0, 5.0] for the calculated target value. This constraint prevents score drift outside the defined maturity spectrum.
-                raw_target = 3.0 + 2.0 * ((crit * 0.4 + comp * 0.4 + feas * 0.2) / 100.0)
+                raw_target = 3.0 + 2.0 * (
+                    (crit * 0.4 + comp * 0.4 + feas * 0.2) / 100.0
+                )
                 target_score = round(raw_target, 1)
-                
+
                 calculated_overrides[tower_id] = {
                     "target_maturity": target_score,
                     "metrics": {
                         "business_criticality": crit,
                         "regulatory_compliance": comp,
-                        "implementation_feasibility": feas
+                        "implementation_feasibility": feas,
                     },
-                    "justification": metrics.get("justification", "Alineación multicriterio calculada.")
+                    "justification": metrics.get(
+                        "justification", "Alineación multicriterio calculada."
+                    ),
                 }
-                just_str = metrics.get('justification', '')[:60]
-                print(f"       * {tower_id}: Score Calculado = {target_score} (Justificación: {just_str}...)")
+                just_str = metrics.get("justification", "")[:60]
+                print(
+                    f"       * {tower_id}: Score Calculado = {target_score} (Justificación: {just_str}...)"
+                )
             except Exception as e:
                 calculated_overrides[tower_id] = {
                     "target_maturity": 4.0,
-                    "justification": f"Fallback estándar por fallo en cálculo: {e}"
+                    "justification": f"Fallback estándar por fallo en cálculo: {e}",
                 }
     else:
         # Provides a fallback mechanism to ensure system stability and graceful degradation in the event of a malformed or non-compliant JSON response from the large language model.
-        print("  ⚠️ Fallo en el retorno de matriz de madurez. Aplicando fallbacks estándar.")
-        calculated_overrides = {f"T{i}": {"target_maturity": 4.0, "justification": "Estándar por defecto."} for i in range(1, 11)}
+        print(
+            "  ⚠️ Fallo en el retorno de matriz de madurez. Aplicando fallbacks estándar."
+        )
+        calculated_overrides = {
+            f"T{i}": {"target_maturity": 4.0, "justification": "Estándar por defecto."}
+            for i in range(1, 11)
+        }
 
     # Stage 5: Final Assembly. Executes dynamic just-in-time (JIT) data extraction and enforces schema integrity through Pydantic model validation.
-    print("  -> [FASE 4.7] Extrayendo Meta-Arquitectura e Hyperscaler Dominante de forma Dinámica (Agnóstico)...")
+    print(
+        "  -> [FASE 4.7] Extrayendo Meta-Arquitectura e Hyperscaler Dominante de forma Dinámica (Agnóstico)..."
+    )
     meta_prompt = (
         f"Analiza de forma síncrona el contexto recopilado de la empresa '{client_name}':\n"
         f"1. Narrativa: {narrative.get('text', 'N/A')}\n"
@@ -394,29 +508,33 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
     )
     from google import genai
     from google.genai import types
-    client_gen = genai.Client(vertexai=True, project="sub403o4u0q5", location="europe-west1")
-    
+
+    client_gen = genai.Client(
+        vertexai=True, project="sub403o4u0q5", location="europe-west1"
+    )
+
     try:
         res_meta = client_gen.models.generate_content(
             model=MODEL_PRO,
             contents=[meta_prompt],
             config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=MetaExtract
-            )
+                response_mime_type="application/json", response_schema=MetaExtract
+            ),
         )
         meta_data = json.loads(res_meta.text)
         dominant_hyperscaler = meta_data.get("dominant_hyperscaler", "AWS")
         horizon_obj = {
             "stage": meta_data.get("stage", "H1"),
             "label": meta_data.get("label", "Estandarización"),
-            "rationale": meta_data.get("rationale", "Calculado dinámicamente.")
+            "rationale": meta_data.get("rationale", "Calculado dinámicamente."),
         }
     except Exception as e:
         print(f"  ⚠️ Error en extracción de meta-datos: {e}. Usando fallbacks.")
         dominant_hyperscaler = "AWS"
         horizon_obj = {
-            "stage": "H1", "label": "Estandarización", "rationale": "Fallback estándar."
+            "stage": "H1",
+            "label": "Estandarización",
+            "rationale": "Fallback estándar.",
         }
 
     # Decouples industry-vertical-specific logic from the core processing pipeline. This design enables dynamic, pluggable data source integration as specified in the system architecture.
@@ -428,28 +546,40 @@ async def run_market_intelligence(client_name: str, output_path: Path, context_f
         industry_str = "Enterprise & Infrastructure Technology"
 
     final_json = {
-        "version": "3.0", "client_name": client_name,
-        "metadata": {"dossier_id": f"{slugify(client_name)}-purist", "schema_version": "3.0", "created_at": datetime.now(timezone.utc).isoformat(), "lang": "es"},
+        "version": "3.0",
+        "client_name": client_name,
+        "metadata": {
+            "dossier_id": f"{slugify(client_name)}-purist",
+            "schema_version": "3.0",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "lang": "es",
+        },
         "profile": {"industry": industry_str, "hierarchy": "Global Entity"},
-        "regulatory_context": [], 
+        "regulatory_context": [],
         "business_context": {
             "ceo_agenda": {"summary": narrative.get("text", "N/A")},
-            "transformation_horizon": horizon_obj
+            "transformation_horizon": horizon_obj,
         },
         "technology_context": {
             "footprint_summary": {"summary": narrative.get("text", "N/A")},
             "group_level_stack": organized.get("stack", []),
             "field_metrics": organized.get("metrics", []),
-            "dominant_hyperscaler": dominant_hyperscaler
+            "dominant_hyperscaler": dominant_hyperscaler,
         },
         "tower_overrides": calculated_overrides,
-        "review": {"summary": "Certificación Purist V35.0 (Aislamiento de Contexto)", "status": "Final"},
-        "claims": captured
+        "review": {
+            "summary": "Certificación Purist V35.0 (Aislamiento de Contexto)",
+            "status": "Final",
+        },
+        "claims": captured,
     }
 
     final_json = sign_dossier(final_json)
-    output_path.write_text(json.dumps(final_json, indent=2, ensure_ascii=False), encoding="utf-8-sig")
+    output_path.write_text(
+        json.dumps(final_json, indent=2, ensure_ascii=False), encoding="utf-8-sig"
+    )
     print(f"✅ BLUEPRINT SANEADO Y COMPLETADO: {output_path}")
+
 
 def main() -> None:
     """Executes the market intelligence harvesting process from the command line.
@@ -465,7 +595,18 @@ def main() -> None:
     3.  `output_dir` (str, optional): The path to the output directory. If
         not provided, a default path is resolved using the `client_id`.
     """
-    if len(sys.argv) < 2: return
-    asyncio.run(run_market_intelligence(sys.argv[1], Path(sys.argv[3]) if len(sys.argv) > 3 else resolve_client_intelligence_path(sys.argv[1]), Path(sys.argv[2]) if len(sys.argv) > 2 else None))
+    if len(sys.argv) < 2:
+        return
+    asyncio.run(
+        run_market_intelligence(
+            sys.argv[1],
+            Path(sys.argv[3])
+            if len(sys.argv) > 3
+            else resolve_client_intelligence_path(sys.argv[1]),
+            Path(sys.argv[2]) if len(sys.argv) > 2 else None,
+        )
+    )
 
-if __name__ == "__main__": main()
+
+if __name__ == "__main__":
+    main()

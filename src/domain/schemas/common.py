@@ -35,6 +35,7 @@ def collect_all_strings(data: Any) -> List[str]:
 
 class BaseDraftModel(BaseModel):
     r"""{'BaseDraftModel': "A Pydantic base model for content sections with phrase-based validation.\n\nProvides common fields for section identification and reviewer notes. Includes a\nbuilt-in validation mechanism that disallows specified phrases within the model's\ndata. Subclasses must override the `get_forbidden_phrases` method to define a\nlist of disallowed strings for validation to occur.\n\nAttributes:\n    section_id: The unique identifier for the content section.\n    notes_for_reviewer: A list of textual notes for a reviewer. Any note\n        containing a forbidden phrase is silently removed during validation.", 'BaseDraftModel.get_forbidden_phrases': "Return a list of forbidden phrases for validation.\n\nThis method serves as an extension point for subclasses to specify disallowed\nstrings. The base implementation returns an empty list, which disables phrase\nvalidation.\n\nReturns:\n    List[str]: A list of phrases that are forbidden within the model's fields.", 'BaseDraftModel.validate_forbidden_phrases': 'Validate model fields against a list of forbidden phrases.\n\nA Pydantic `model_validator` that executes post-initialization. This validator\nperforms a case-insensitive search for forbidden phrases obtained from the\n`get_forbidden_phrases` method.\n\nThe validation process consists of two steps:\n1.  The `notes_for_reviewer` list is filtered, silently removing any entry\n    that contains a forbidden phrase.\n2.  All other string-based fields within the model are recursively scanned.\n    Validation fails upon finding the first forbidden phrase.\n\nReturns:\n    The validated instance of the model (`self`), with the\n    `notes_for_reviewer` attribute potentially modified.\n\nRaises:\n    ValueError: If a forbidden phrase is detected in any string field,\n        excluding those in `notes_for_reviewer`.'}."""
+
     section_id: str
     notes_for_reviewer: List[str] = []
 
@@ -109,6 +110,7 @@ class Defect(BaseModel):
         message: A human-readable description of the identified issue.
         suggested_fix: A proposed solution or guidance for resolving the defect.
     """
+
     severity: str = Field(..., pattern="^(critical|major|minor)$")
     type: str
     message: str
@@ -133,6 +135,7 @@ class SectionReview(BaseModel):
         review_notes (List[str]): Additional notes or comments from the reviewer,
             defaulting to an empty list.
     """
+
     section_id: str
     status: str = Field(..., pattern="^(approve|revise|human_validation_required)$")
     overall_assessment: str
@@ -157,6 +160,7 @@ class VersionMetadata(BaseModel):
         run_id (Optional[str]): A unique identifier for the specific execution or run
             that produced the artifact. Defaults to None.
     """
+
     artifact_type: str
     artifact_version: str = "1.0.0"
     source_version: Optional[str] = None
@@ -183,6 +187,7 @@ class VersionedPayload(BaseModel):
             attribute is populated from the `_generation_metadata` key. Defaults
             to `None` if the key is absent.
     """
+
     model_config = ConfigDict(populate_by_name=True)
 
     generation_metadata: Optional[VersionMetadata] = Field(

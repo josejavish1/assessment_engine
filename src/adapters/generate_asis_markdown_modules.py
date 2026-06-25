@@ -118,7 +118,7 @@ def generate_modules(payload_path: str):
 
     tower_meta = data.get("document_meta", {})
     doc_lang = tower_meta.get("language", "es").lower()
-    
+
     #
     locales_path = Path("engine_config/locales.json")
     locales_data = {}
@@ -129,7 +129,7 @@ def generate_modules(payload_path: str):
             except Exception:
                 pass
     vocab = locales_data.get(doc_lang, locales_data.get("es", {}))
-    
+
     tower_name = tower_meta.get("tower_name", "Desconocida")
     tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
     client_name = tower_meta.get("client_name", "Cliente")
@@ -430,17 +430,29 @@ A continuación, se define de manera consolidada y unificada el inventario técn
     # SECTION MAPPING: Module 7 (Conclusions and Gaps) maps to `07_conclusiones.md`.
     #
     conc_content = []
-    conc_content.append(f"# {vocab.get('conclusions_title', 'Conclusiones, Brechas y Coste de Inacción')}\n")
+    conc_content.append(
+        f"# {vocab.get('conclusions_title', 'Conclusiones, Brechas y Coste de Inacción')}\n"
+    )
 
     # Inserts the AS-IS summary into the conclusions section to provide final context.
-    conc_content.append(f"## {vocab.get('asis_consolidated_title', 'Resumen de Situación (AS-IS Consolidado)')}")
-    asis_resumido_tmpl = vocab.get('asis_consolidated_body', "El estado actual de la infraestructura de {tower_name}, subproducto de una evolución orgánica para dar servicio a una operación crítica, ha alcanzado un punto de inflexión. La plataforma se caracteriza por una fragmentación estructural, herramientas y operaciones en silos discretos para los entornos on-premise y cloud, y una dependencia sistémica de flujos de aprobación y procesos manuales para la provisión y el ciclo de vida.")
+    conc_content.append(
+        f"## {vocab.get('asis_consolidated_title', 'Resumen de Situación (AS-IS Consolidado)')}"
+    )
+    asis_resumido_tmpl = vocab.get(
+        "asis_consolidated_body",
+        "El estado actual de la infraestructura de {tower_name}, subproducto de una evolución orgánica para dar servicio a una operación crítica, ha alcanzado un punto de inflexión. La plataforma se caracteriza por una fragmentación estructural, herramientas y operaciones en silos discretos para los entornos on-premise y cloud, y una dependencia sistémica de flujos de aprobación y procesos manuales para la provisión y el ciclo de vida.",
+    )
     asis_resumido = asis_resumido_tmpl.format(tower_name=tower_name)
     conc_content.append(asis_resumido + "\n")
 
-    conc_content.append(f"## {vocab.get('quick_diagnosis_title', 'Fortalezas y Brechas Clave (Diagnóstico Rápido)')}")
     conc_content.append(
-        vocab.get('quick_diagnosis_intro', "A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:")
+        f"## {vocab.get('quick_diagnosis_title', 'Fortalezas y Brechas Clave (Diagnóstico Rápido)')}"
+    )
+    conc_content.append(
+        vocab.get(
+            "quick_diagnosis_intro",
+            "A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:",
+        )
     )
 
     # Structures strengths and gaps as discrete lists for rendering into a two-column table.
@@ -482,18 +494,31 @@ A continuación, se define de manera consolidada y unificada el inventario técn
             "ENS y NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
         )
 
-    conc_content.append(f"## {vocab.get('operational_implications_title', 'Implicaciones Operativas Clave')}")
-    
+    conc_content.append(
+        f"## {vocab.get('operational_implications_title', 'Implicaciones Operativas Clave')}"
+    )
+
     # Loads localized implication text from `locales.json` to generate context-specific output.
-    bottlenecks_txt = vocab.get('bottlenecks_bullet', "**Cuellos de botella sistémicos:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.")
-    delayed_txt = vocab.get('delayed_faults_bullet', "**Detección tardía de fallas:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de incidentes críticos.")
-    drift_tmpl = vocab.get('config_drift_bullet', "**Riesgo de configuration drift:** El mantenimiento manual de las configuraciones dificulta demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.")
-    
+    bottlenecks_txt = vocab.get(
+        "bottlenecks_bullet",
+        "**Cuellos de botella sistémicos:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
+    )
+    delayed_txt = vocab.get(
+        "delayed_faults_bullet",
+        "**Detección tardía de fallas:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de incidentes críticos.",
+    )
+    drift_tmpl = vocab.get(
+        "config_drift_bullet",
+        "**Riesgo de configuration drift:** El mantenimiento manual de las configuraciones dificulta demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.",
+    )
+
     conc_content.append(f"* {bottlenecks_txt}")
     conc_content.append(f"* {delayed_txt}")
     conc_content.append(f"* {drift_tmpl.format(reg_frameworks=reg_frameworks)}\n")
 
-    conc_content.append(f"## {vocab.get('coi_title', 'Coste de Inacción (Do Nothing) y Siguientes Pasos')}")
+    conc_content.append(
+        f"## {vocab.get('coi_title', 'Coste de Inacción (Do Nothing) y Siguientes Pasos')}"
+    )
     msg_bottle = exec_sum.get("message_bottleneck", "")
     if msg_bottle:
         conc_content.append(msg_bottle + "\n")

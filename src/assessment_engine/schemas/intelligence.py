@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class RegulatoryHarvest(BaseModel):
     """Represent the collected regulatory intelligence for a specific sector."""
+
     sector: str
     frameworks: List[str]
     regulatory_pressures: List[str] = Field(default_factory=list)
@@ -35,6 +36,7 @@ class BusinessHarvest(BaseModel):
         source_evidence: A URL or document reference indicating the origin or
             justification for the collected intelligence.
     """
+
     ceo_agenda: str
     business_drivers: List[str]
     financial_tier: str = Field(..., pattern="^(Tier 1|Tier 2|Tier 3)$")
@@ -47,6 +49,7 @@ class BusinessHarvest(BaseModel):
 
 class TechHarvest(BaseModel):
     r"""{'docstring': "A structured container for harvested technical intelligence data.\n\n    This Pydantic model aggregates various signals related to an organization's\n    technology stack, strategic trends, and operational context.\n\n    Attributes:\n        tech_footprint (str): A summary of the organization's known technology\n            stack.\n        tech_trends (List[str]): A list of key technology trends observed within\n            the organization or its industry.\n        vendor_dependencies (List[str]): A list of key third-party vendors and\n            services the organization relies on. Defaults to an empty list.\n        operating_constraints (List[str]): A list of known constraints or\n            limitations affecting operations, such as budget, compliance, or\n            legacy systems. Defaults to an empty list.\n        recent_incident_signals (List[str]): A list of signals and learnings\n            derived from recent operational incidents or outages. Defaults to an\n            empty list.\n        source_evidence (str): A description of or link to the source material\n            from which this intelligence was derived."}."""
+
     tech_footprint: str
     tech_trends: List[str]
     vendor_dependencies: List[str] = Field(default_factory=list)
@@ -57,6 +60,7 @@ class TechHarvest(BaseModel):
 
 class ClientDossier(BaseModel):
     r"""{'docstring': 'A data model for a comprehensive client intelligence dossier.\n\nThis model aggregates key business, technological, and strategic information\nabout a client organization to inform strategic engagement.\n\nAttributes:\n    client_name (str): The official name of the client organization.\n    industry (str): The primary industry sector in which the client operates.\n    financial_tier (str): A classification of the client\'s financial standing,\n        e.g., "Tier 1", "Fortune 500".\n    regulatory_frameworks (List[str]): Key regulatory and compliance\n        frameworks applicable to the client.\n    ceo_agenda (str): A summary of the stated priorities and strategic goals\n        of the client\'s Chief Executive Officer.\n    technological_drivers (List[str]): Key technological trends and drivers\n        influencing the client\'s business operations and strategy.\n    osint_footprint (str): A summary of the client\'s public digital footprint\n        derived from Open-Source Intelligence (OSINT).\n    transformation_horizon (str): The expected timeframe for the client\'s major\n        business or technological transformations, e.g., "3-5 years".\n    target_maturity_matrix (Dict[str, float]): A dictionary mapping business or\n        technical capabilities to their target maturity scores.\n    evidences (List[str]): A collection of sources, citations, or evidence\n        supporting the information contained within the dossier.'}."""
+
     client_name: str
     industry: str
     financial_tier: str
@@ -84,12 +88,14 @@ class EvidenceRef(BaseModel):
         note (str | None): An optional, human-readable annotation regarding
             the evidence.
     """
+
     source: str
     note: str | None = None
 
 
 class SourcedText(BaseModel):
     """Represent a text summary with its confidence score and supporting evidence sources."""
+
     summary: str
     confidence: Confidence = "medium"
     sources: List[EvidenceRef] = Field(default_factory=list)
@@ -111,6 +117,7 @@ class SourcedItem(BaseModel):
         sources (List[EvidenceRef]): A list of references to the evidence supporting
             this item. Defaults to an empty list.
     """
+
     name: str
     confidence: Confidence = "medium"
     sources: List[EvidenceRef] = Field(default_factory=list)
@@ -118,6 +125,7 @@ class SourcedItem(BaseModel):
 
 class RegulatoryFramework(BaseModel):
     r"""{'docstring': 'Represents a single regulatory framework and its associated evidence.\n\nThis data model encapsulates the core components of a regulatory framework,\nincluding its official name, a qualitative assessment of its applicability, and\nreferences to the source documents that define it.\n\nAttributes:\n    name (str): The official name of the regulatory framework (e.g., \'GDPR\').\n    applicability (Applicability): A qualitative assessment of the framework\'s\n        scope and impact. Defaults to "medium".\n    sources (List[EvidenceRef]): A list of references to the evidence or legal\n        texts that constitute the framework. Defaults to an empty list.'}."""
+
     name: str
     applicability: Applicability = "medium"
     sources: List[EvidenceRef] = Field(default_factory=list)
@@ -139,6 +147,7 @@ class TransformationHorizon(BaseModel):
         sources (List[EvidenceRef]): A list of references to evidence supporting
             this transformation. Defaults to an empty list.
     """
+
     stage: HorizonStage
     label: str
     rationale: str
@@ -167,6 +176,7 @@ class TowerContext(BaseModel):
             technology, personnel) applicable to the tower. Defaults to an
             empty list.
     """
+
     target_maturity: float = Field(ge=1.0, le=5.0)
     business_criticality: Confidence = "medium"
     regulatory_pressure: Confidence = "medium"
@@ -188,6 +198,7 @@ class ClientProfile(BaseModel):
         regions (List[str]): Geographical regions where the client has a presence.
             Defaults to an empty list.
     """
+
     industry: str
     financial_tier: str
     operating_model: str | None = None
@@ -212,6 +223,7 @@ class BusinessContext(BaseModel):
         constraints (List[str]): A list of known business, technical, or
             operational constraints. Defaults to an empty list.
     """
+
     ceo_agenda: SourcedText
     technological_drivers: List[SourcedItem] = Field(default_factory=list)
     osint_footprint: SourcedText
@@ -234,6 +246,7 @@ class EvidenceClaim(BaseModel):
         sources (List[EvidenceRef]): A list of references to the evidence that
             supports this claim. Defaults to an empty list.
     """
+
     claim_id: str
     claim: str
     claim_type: ClaimType
@@ -243,6 +256,7 @@ class EvidenceClaim(BaseModel):
 
 class ClientDossierV2(BaseModel):
     r"""{'docstring': 'Represents a version 2.0 structured dossier for a client.\n\nThis model serves as a comprehensive data container for all relevant client\ninformation, including profile, business context, applicable regulations,\nand evidence claims. It is the primary input for various assessment and\nintelligence-gathering processes.\n\nAttributes:\n    version (Literal["2.0"]): The schema version identifier, fixed to "2.0".\n    client_name (str): The unique name or identifier for the client.\n    profile (ClientProfile): A data structure containing the client\'s profile\n        information.\n    regulatory_frameworks (List[RegulatoryFramework]): A list of regulatory\n        frameworks applicable to the client. Defaults to an empty list.\n    business_context (BusinessContext): A data structure describing the\n        client\'s business operations and environment.\n    tower_overrides (Dict[str, TowerContext]): A dictionary mapping tower names\n        to specific contexts. This allows for overrides of the general\n        business context for distinct service lines or business units.\n        Defaults to an empty dictionary.\n    evidence_register (List[EvidenceClaim]): A comprehensive list of all\n        evidence claims asserted within the dossier. Defaults to an empty\n        list.'}."""
+
     version: Literal["2.0"] = "2.0"
     client_name: str
     profile: ClientProfile
@@ -268,6 +282,7 @@ class ConfidenceAssessment(BaseModel):
         method: A string describing the method used to determine the confidence
             assessment. Defaults to "custom".
     """
+
     score: int = Field(ge=0, le=100)
     label: Confidence
     method: str = "custom"
@@ -306,6 +321,7 @@ class TimelinessWindow(BaseModel):
             the information should be considered stale. If provided, must be a
             positive integer (>= 1).
     """
+
     created_at: str | None = None
     modified_at: str | None = None
     last_verified_at: str | None = None
@@ -328,6 +344,7 @@ class ClaimSource(BaseModel):
             Values outside this range will raise a `pydantic.ValidationError`.
             Defaults to None.
     """
+
     source: str
     note: str | None = None
     source_type: str = "public"
@@ -350,6 +367,7 @@ class SourcedTextV3(BaseModel):
         evidence_strength: An optional classification of the overall strength of
             the supporting evidence (e.g., 'STRONG', 'MODERATE').
     """
+
     summary: str
     confidence: ConfidenceAssessment
     sources: List[ClaimSource] = Field(default_factory=list)
@@ -374,6 +392,7 @@ class SourcedItemV3(BaseModel):
         rationale: An optional, human-readable justification for the assigned
             confidence level.
     """
+
     name: str
     confidence: ConfidenceAssessment
     sources: List[ClaimSource] = Field(default_factory=list)
@@ -398,6 +417,7 @@ class RegulatoryFrameworkV3(BaseModel):
         impacted_domains (List[str]): A list of business or technical domains
             affected by this regulation.
     """
+
     name: str
     applicability: Applicability = "medium"
     confidence: ConfidenceAssessment
@@ -421,6 +441,7 @@ class TransformationHorizonV3(BaseModel):
         sources (List[ClaimSource]): A list of evidentiary sources supporting the
             transformation claim. Defaults to an empty list.
     """
+
     stage: HorizonStage
     label: str
     rationale: str
@@ -450,6 +471,7 @@ class TowerContextV3(BaseModel):
         related_claim_ids: A list of identifiers for related claims or evidence
             that support the contextual assessments. Defaults to an empty list.
     """
+
     target_maturity: float = Field(ge=1.0, le=5.0)
     business_criticality: ConfidenceAssessment
     regulatory_pressure: ConfidenceAssessment
@@ -461,6 +483,7 @@ class TowerContextV3(BaseModel):
 
 class ClientProfileV3(BaseModel):
     r"""{'docstring': "Represents a structured profile of a client (Version 3).\n\nThis data model captures key business and operational characteristics of a client,\nsuch as industry, financial standing, and geographical presence.\n\nAttributes:\n    industry: The primary industry in which the client operates.\n    financial_tier: A classification of the client's financial standing.\n    operating_model: The client's operational model. Defaults to None.\n    regions: A list of geographical regions where the client is active.\n    priority_markets: A list of key markets targeted by the client.\n    business_lines: A list of the lines of business the client is engaged in."}."""
+
     industry: str
     financial_tier: str
     operating_model: str | None = None
@@ -486,6 +509,7 @@ class BusinessContextV3(BaseModel):
         constraints (list[str]): A list of limitations, restrictions, or
             challenges faced by the business.
     """
+
     ceo_agenda: SourcedTextV3
     strategic_priorities: List[SourcedItemV3] = Field(default_factory=list)
     business_model_signals: List[str] = Field(default_factory=list)
@@ -516,6 +540,7 @@ class TechnologyContextV3(BaseModel):
             signals or takeaways derived from recent operational incidents involving
             this technology.
     """
+
     footprint_summary: SourcedTextV3
     technology_drivers: List[SourcedItemV3] = Field(default_factory=list)
     vendor_dependencies: List[str] = Field(default_factory=list)
@@ -548,6 +573,7 @@ class IntelligenceClaimV3(BaseModel):
         related_towers (List[str]): A list of intelligence towers or verticals
             related to this claim. Defaults to an empty list.
     """
+
     claim_id: str
     claim: str
     claim_type: Literal[
@@ -576,6 +602,7 @@ class IntelligenceReviewV3(BaseModel):
         review_notes (List[str]): A list of textual notes or comments associated
             with the review process. Defaults to an empty list.
     """
+
     human_review_status: Literal["pending", "reviewed", "approved", "rejected"] = (
         "pending"
     )
@@ -605,6 +632,7 @@ class IntelligenceMetadataV3(BaseModel):
         timeliness (TimelinessWindow | None): The optional time window for which
             the dossier's intelligence is considered relevant.
     """
+
     dossier_id: str
     schema_version: Literal["3.0"] = "3.0"
     created_at: str
@@ -648,6 +676,7 @@ class ClientDossierV3(BaseModel):
             accommodated by the standard schema fields. Defaults to an empty
             dictionary.
     """
+
     version: Literal["3.0"] = "3.0"
     client_name: str
     metadata: IntelligenceMetadataV3

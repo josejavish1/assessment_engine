@@ -121,41 +121,69 @@ async def main():
 
     # Sovereign Quality Assurance: Re-merge pristine, unmodified fields post-LLM processing to mitigate the risk of data loss or hallucination-induced corruption.
     # Re-inject structured data blocks that are not intended for LLM mutation, ensuring their integrity is preserved.
-    for key in ["_generation_metadata", "meta", "intelligence_dossier", "heatmap", "visuals", "tower_bottom_lines"]:
+    for key in [
+        "_generation_metadata",
+        "meta",
+        "intelligence_dossier",
+        "heatmap",
+        "visuals",
+        "tower_bottom_lines",
+    ]:
         if key in findings and key not in refined:
             refined[key] = findings[key]
 
     # Preserve the integrity of the heatmap data structure, a critical input for the global radar chart visualization.
-    if "heatmap" in findings and (not refined.get("heatmap") or len(refined.get("heatmap", [])) == 0):
+    if "heatmap" in findings and (
+        not refined.get("heatmap") or len(refined.get("heatmap", [])) == 0
+    ):
         refined["heatmap"] = findings["heatmap"]
 
     # Section: Preventative Schema Normalization in the Refined Layer
     if "burning_platform" in refined and isinstance(refined["burning_platform"], list):
         for item in refined["burning_platform"]:
-            if isinstance(item, dict) and "root_causes" in item and isinstance(item["root_causes"], str):
+            if (
+                isinstance(item, dict)
+                and "root_causes" in item
+                and isinstance(item["root_causes"], str)
+            ):
                 item["root_causes"] = [item["root_causes"]]
-                
-    if "tower_bottom_lines" in refined and isinstance(refined["tower_bottom_lines"], list):
+
+    if "tower_bottom_lines" in refined and isinstance(
+        refined["tower_bottom_lines"], list
+    ):
         for item in refined["tower_bottom_lines"]:
             if isinstance(item, dict):
-                if "score" not in item: item["score"] = 4.0
-                if "band" not in item: item["band"] = "Managed"
-                if "status_color" not in item: item["status_color"] = "green"
-                
+                if "score" not in item:
+                    item["score"] = 4.0
+                if "band" not in item:
+                    item["band"] = "Managed"
+                if "status_color" not in item:
+                    item["status_color"] = "green"
+
     if "target_vision" in refined and isinstance(refined["target_vision"], dict):
         target_v = refined["target_vision"]
-        if "evolution_principles" in target_v and isinstance(target_v["evolution_principles"], list):
+        if "evolution_principles" in target_v and isinstance(
+            target_v["evolution_principles"], list
+        ):
             for item in target_v["evolution_principles"]:
-                if isinstance(item, dict) and "title" in item and "principle" not in item:
+                if (
+                    isinstance(item, dict)
+                    and "title" in item
+                    and "principle" not in item
+                ):
                     item["principle"] = item["title"]
-        if "strategic_pillars" in target_v and isinstance(target_v["strategic_pillars"], list):
+        if "strategic_pillars" in target_v and isinstance(
+            target_v["strategic_pillars"], list
+        ):
             for item in target_v["strategic_pillars"]:
                 if isinstance(item, dict) and "title" in item and "pillar" not in item:
                     item["pillar"] = item["title"]
 
-    if "execution_roadmap" in refined and isinstance(refined["execution_roadmap"], dict):
+    if "execution_roadmap" in refined and isinstance(
+        refined["execution_roadmap"], dict
+    ):
         roadmap = refined["execution_roadmap"]
-        
+
         # Normalize the `programs` data structure to conform to the canonical schema.
         if "programs" in roadmap and isinstance(roadmap["programs"], list):
             normalized_programs = []
@@ -163,34 +191,46 @@ async def main():
                 if isinstance(p, dict):
                     p_copy = p.copy()
                     if "description" not in p_copy or not p_copy["description"]:
-                        p_copy["description"] = p_copy.get("name") or p_copy.get("id") or "Programa de transformación tecnológica."
+                        p_copy["description"] = (
+                            p_copy.get("name")
+                            or p_copy.get("id")
+                            or "Programa de transformación tecnológica."
+                        )
                     normalized_programs.append(p_copy)
                 else:
                     normalized_programs.append(p)
             roadmap["programs"] = normalized_programs
-            
+
         # Validate the existence of the `horizons` data structure, initializing if absent to prevent downstream null pointer exceptions.
         if "horizons" not in roadmap or not roadmap["horizons"]:
             roadmap["horizons"] = {
                 "quick_wins_0_3_months": [],
                 "year_1_3_12_months": [],
                 "year_2_12_24_months": [],
-                "year_3_24_36_months": []
+                "year_3_24_36_months": [],
             }
-            
+
         if "horizons" in roadmap and isinstance(roadmap["horizons"], dict):
             h_dict = roadmap["horizons"]
-            if "quick_wins_0_6_months" in h_dict and "quick_wins_0_3_months" not in h_dict:
+            if (
+                "quick_wins_0_6_months" in h_dict
+                and "quick_wins_0_3_months" not in h_dict
+            ):
                 h_dict["quick_wins_0_3_months"] = h_dict["quick_wins_0_6_months"]
                 del h_dict["quick_wins_0_6_months"]
             if "year_1_6_12_months" in h_dict and "year_1_3_12_months" not in h_dict:
                 h_dict["year_1_3_12_months"] = h_dict["year_1_6_12_months"]
                 del h_dict["year_1_6_12_months"]
-                
-            for h_key in ["quick_wins_0_3_months", "year_1_3_12_months", "year_2_12_24_months", "year_3_24_36_months"]:
+
+            for h_key in [
+                "quick_wins_0_3_months",
+                "year_1_3_12_months",
+                "year_2_12_24_months",
+                "year_3_24_36_months",
+            ]:
                 if h_key not in h_dict or h_dict[h_key] is None:
                     h_dict[h_key] = []
-                    
+
                 if isinstance(h_dict[h_key], list):
                     normalized_list = []
                     for item in h_dict[h_key]:
@@ -199,23 +239,41 @@ async def main():
 
                         if isinstance(item, dict):
                             item_copy = item.copy()
-                            
+
                             # Stage 1: Consolidate program-related fields into a unified `program` object.
                             if "program" not in item_copy or not item_copy["program"]:
-                                p_val = item_copy.get("program_id") or item_copy.get("program_name") or item_copy.get("program_title") or item_copy.get("program") or ""
+                                p_val = (
+                                    item_copy.get("program_id")
+                                    or item_copy.get("program_name")
+                                    or item_copy.get("program_title")
+                                    or item_copy.get("program")
+                                    or ""
+                                )
                                 item_copy["program"] = p_val
                             if "program_id" in item_copy:
                                 del item_copy["program_id"]
-                                
+
                             # Stage 2: Consolidate business case fields into a unified `business_case` object.
-                            if "business_case" not in item_copy or not item_copy["business_case"]:
-                                bc_val = item_copy.get("objective") or item_copy.get("description") or item_copy.get("business_impact") or item_copy.get("impact") or "Mitigación de deuda técnica."
+                            if (
+                                "business_case" not in item_copy
+                                or not item_copy["business_case"]
+                            ):
+                                bc_val = (
+                                    item_copy.get("objective")
+                                    or item_copy.get("description")
+                                    or item_copy.get("business_impact")
+                                    or item_copy.get("impact")
+                                    or "Mitigación de deuda técnica."
+                                )
                                 item_copy["business_case"] = bc_val
                             if "objective" in item_copy:
                                 del item_copy["objective"]
-                                
+
                             # Stage 3: Normalize `start_month`, applying a default value if the field is null or zero to ensure valid temporal calculations.
-                            if "start_month" not in item_copy or item_copy["start_month"] == 0:
+                            if (
+                                "start_month" not in item_copy
+                                or item_copy["start_month"] == 0
+                            ):
                                 if h_key == "quick_wins_0_3_months":
                                     item_copy["start_month"] = 1
                                 elif h_key == "year_1_3_12_months":
@@ -226,9 +284,12 @@ async def main():
                                     item_copy["start_month"] = 24
                                 else:
                                     item_copy["start_month"] = 1
-                                    
+
                             # Stage 4: Normalize `duration_months`, applying a default value if the field is null or zero to prevent invalid temporal calculations.
-                            if "duration_months" not in item_copy or item_copy["duration_months"] == 0:
+                            if (
+                                "duration_months" not in item_copy
+                                or item_copy["duration_months"] == 0
+                            ):
                                 if h_key == "quick_wins_0_3_months":
                                     item_copy["duration_months"] = 3
                                 elif h_key == "year_1_3_12_months":
@@ -239,15 +300,21 @@ async def main():
                                     item_copy["duration_months"] = 12
                                 else:
                                     item_copy["duration_months"] = 6
-                                    
+
                             normalized_list.append(item_copy)
                         else:
                             normalized_list.append(item)
                     h_dict[h_key] = normalized_list
 
-    if "executive_decisions" in refined and isinstance(refined["executive_decisions"], list):
-        refined["executive_decisions"] = {"immediate_decisions": refined["executive_decisions"]}
-    elif "executive_decisions" in refined and isinstance(refined["executive_decisions"], dict):
+    if "executive_decisions" in refined and isinstance(
+        refined["executive_decisions"], list
+    ):
+        refined["executive_decisions"] = {
+            "immediate_decisions": refined["executive_decisions"]
+        }
+    elif "executive_decisions" in refined and isinstance(
+        refined["executive_decisions"], dict
+    ):
         if "immediate_decisions" not in refined["executive_decisions"]:
             refined["executive_decisions"]["immediate_decisions"] = []
 

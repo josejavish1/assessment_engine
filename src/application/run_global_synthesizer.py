@@ -28,10 +28,24 @@ class PriorityAction(BaseModel):
         justification (str): The business rationale articulating the strategic
             priority for executing this block of initiatives.
     """
-    horizon: str = Field(..., description="The implementation time horizon for the initiative. Examples: '[Quick Win]', '[Short Term]', '[Medium Term]'.")
-    title: str = Field(..., description="A semantic title for the initiative group. Example: 'End-to-End Immutability in Backup and Recovery Systems'.")
-    actions: list[str] = Field(..., description="A list of bullet points detailing the specific technical actions or projects that constitute this initiative group.")
-    justification: str = Field(..., description="The business rationale articulating the strategic priority for executing this block of initiatives.")
+
+    horizon: str = Field(
+        ...,
+        description="The implementation time horizon for the initiative. Examples: '[Quick Win]', '[Short Term]', '[Medium Term]'.",
+    )
+    title: str = Field(
+        ...,
+        description="A semantic title for the initiative group. Example: 'End-to-End Immutability in Backup and Recovery Systems'.",
+    )
+    actions: list[str] = Field(
+        ...,
+        description="A list of bullet points detailing the specific technical actions or projects that constitute this initiative group.",
+    )
+    justification: str = Field(
+        ...,
+        description="The business rationale articulating the strategic priority for executing this block of initiatives.",
+    )
+
 
 class GlobalExecutiveSummary(BaseModel):
     """A data model for the globally synthesized executive summary report.
@@ -57,22 +71,24 @@ class GlobalExecutiveSummary(BaseModel):
         priority_actions_taxonomy: A semantic grouping of prioritized actions and
             projects, structured as a coherent consulting narrative.
     """
+
     executive_context: str = Field(
         ...,
-        description="An introductory paragraph establishing the business context, including relevant background such as major outages, critical incidents, or systemic risks. The language must be concise, executive-level, and impact-oriented."
+        description="An introductory paragraph establishing the business context, including relevant background such as major outages, critical incidents, or systemic risks. The language must be concise, executive-level, and impact-oriented.",
     )
     cross_tower_synthesis: list[str] = Field(
         ...,
-        description="A list of 3 to 5 bullet points synthesizing the most critical cross-functional issues identified across all technology verticals. This field must focus on systemic patterns (e.g., technical debt, manual operations, governance gaps) rather than isolated vertical-specific problems."
+        description="A list of 3 to 5 bullet points synthesizing the most critical cross-functional issues identified across all technology verticals. This field must focus on systemic patterns (e.g., technical debt, manual operations, governance gaps) rather than isolated vertical-specific problems.",
     )
     cost_of_inaction_narrative: str = Field(
         ...,
-        description="A concluding summary paragraph. It must explicitly state the total financial Annualized Loss Expectancy (ALE) value provided in the input prompt and articulate the unacceptability of maintaining the current operational status quo."
+        description="A concluding summary paragraph. It must explicitly state the total financial Annualized Loss Expectancy (ALE) value provided in the input prompt and articulate the unacceptability of maintaining the current operational status quo.",
     )
     priority_actions_taxonomy: list[PriorityAction] = Field(
         ...,
-        description="A semantic grouping of prioritized actions and projects, structured as a coherent consulting narrative."
+        description="A semantic grouping of prioritized actions and projects, structured as a coherent consulting narrative.",
     )
+
 
 async def synthesize_global_asis(working_dir: str):
     """Asynchronously aggregates tower data to synthesize a global executive summary.
@@ -101,36 +117,37 @@ async def synthesize_global_asis(working_dir: str):
         None. The function's output is persisted to a file as a side effect.
     """
     print("🚀 Iniciando Global Executive Synthesizer (SOTA 2026)...")
-    
+
     payloads = []
     total_ale_global = 0.0
     tower_summaries = []
     all_projects = []
-    
+
     search_pattern = os.path.join(working_dir, "T*", "blueprint_*_payload.json")
     for file_path in glob.glob(search_pattern):
-        with open(file_path, 'r', encoding='utf-8-sig') as f:
+        with open(file_path, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
             payloads.append(data)
-            
+
             total_ale_global += data.get("total_fair_ale", 0.0)
             snapshot = data.get("executive_snapshot", {})
             tower_summaries.append(
                 f"--- TORRE: {data.get('document_meta', {}).get('tower_name')} ---\n"
                 f"{snapshot.get('bottom_line', '')}\n"
             )
-            
+
             for pilar in data.get("pillars_analysis", []):
                 for proj in pilar.get("projects_todo", []):
-                    all_projects.append(f"- [{proj.get('sizing', 'N/A')}] {proj.get('initiative', proj.get('name', ''))}: {proj.get('objective', '')}")
+                    all_projects.append(
+                        f"- [{proj.get('sizing', 'N/A')}] {proj.get('initiative', proj.get('name', ''))}: {proj.get('objective', '')}"
+                    )
 
-            
     if not payloads:
         print("❌ No payloads found for synthesis.")
         return
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
-    
+
     # Establishes the foundational business context from client intelligence data, which is a prerequisite for all subsequent synthesis and analytical operations.
     intel_str = "Operador de infraestructura crítica."
     intel_path = Path(working_dir) / "client_intelligence.json"
@@ -165,23 +182,26 @@ async def synthesize_global_asis(working_dir: str):
             output_schema=GlobalExecutiveSummary,
         )
         app_synthesizer = AdkApp(agent=synthesizer_agent)
-        
+
         result = await run_agent(
             app_synthesizer,
             user_id="global_synthesizer",
             message=prompt,
             schema=GlobalExecutiveSummary,
         )
-        
+
         if result:
             out_path = Path(working_dir) / "global_asis_executive_summary.json"
-            out_path.write_text(json.dumps(result, indent=4, ensure_ascii=False), encoding="utf-8-sig")
+            out_path.write_text(
+                json.dumps(result, indent=4, ensure_ascii=False), encoding="utf-8-sig"
+            )
             print(f"✅ Síntesis Ejecutiva Global guardada en: {out_path}")
         else:
             print("⚠️ El agente no devolvió resultados.")
-            
+
     except Exception as e:
         print(f"⚠️ Error en Global Executive Synthesizer: {e}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

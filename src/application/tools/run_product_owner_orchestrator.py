@@ -349,7 +349,9 @@ def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
             message will contain the contents of stderr, if available.
     """
     env = os.environ.copy()
-    env["GIT_TERMINAL_PROMPT"] = "0"  # Disables interactive Git prompts to facilitate non-interactive execution within automated CI/CD environments.
+    env["GIT_TERMINAL_PROMPT"] = (
+        "0"  # Disables interactive Git prompts to facilitate non-interactive execution within automated CI/CD environments.
+    )
 
     try:
         result = subprocess.run(
@@ -595,6 +597,7 @@ def load_json_file(path: Path) -> dict[str, Any]:
 
 class OrchestratorCommandError(RuntimeError):
     r"""[{'identifier': 'run_product_owner_orchestrator.OrchestratorCommandError', 'docstring': "Indicates a failure during the execution of an orchestrated subprocess command.\n\nThis exception is raised when a command invoked via a subprocess returns a\nnon-zero exit code. It encapsulates the context of the failure, including\nthe command itself, its output, and a categorized failure type to facilitate\nprogrammatic handling and debugging.\n\nAttributes:\n    category (str): A string categorizing the failure (e.g., 'build', 'test').\n    command (list[str]): The command and its arguments that resulted in failure.\n    output_path (pathlib.Path): The filesystem path to the file containing the\n        complete stdout and stderr from the command execution.\n    raw_output (str): A string containing the captured raw stdout and stderr\n        from the failed command."}, {'identifier': 'run_product_owner_orchestrator.OrchestratorCommandError.__init__', 'docstring': "Initializes the OrchestratorCommandError instance.\n\nArgs:\n    message (str): A high-level error message summarizing the failure. This\n        message is passed to the parent `RuntimeError` constructor.\n    category (str): The category of the command that failed (e.g., 'build').\n    command (list[str]): The command and arguments that were executed as a list\n        of strings.\n    output_path (pathlib.Path): The path to the log file containing the command's\n        output.\n    raw_output (str): The complete, raw captured stdout and stderr from the\n        subprocess as a single string."}]."""
+
     def __init__(
         self,
         message: str,
@@ -2249,7 +2252,9 @@ def execute_plan(
             authorized_feedback_data = json.loads(
                 authorized_feedback_path.read_text(encoding="utf-8")
             )
-            authorized_feedback_path.unlink(missing_ok=True)  # The file is deleted immediately post-read to maintain a clean filesystem state and prevent residual artifacts.
+            authorized_feedback_path.unlink(
+                missing_ok=True
+            )  # The file is deleted immediately post-read to maintain a clean filesystem state and prevent residual artifacts.
             logger.info(
                 "Se ha detectado y cargado feedback autorizado por el humano para esta ejecución."
             )

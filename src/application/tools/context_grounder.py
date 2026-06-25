@@ -35,7 +35,9 @@ def extract_core_grounding(docx_path: Path) -> Dict[str, Any]:
     # The current implementation is a deterministic, heuristic-based extractor. Future iterations may integrate a dedicated AI model for more sophisticated and context-aware entity extraction.
     # This heuristic-based extractor serves as a baseline. For more complex scenarios, a specialized Grounding Agent should be implemented to replace this logic.
     return {
-        "text_blob": full_text[:10000],  # Generates a representative data sample to facilitate agent-based processing, ensuring the agent has sufficient context.
+        "text_blob": full_text[
+            :10000
+        ],  # Generates a representative data sample to facilitate agent-based processing, ensuring the agent has sufficient context.
         "source": docx_path.name,
     }
 

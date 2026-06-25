@@ -175,7 +175,9 @@ async def run_pipeline():
     parser.add_argument("--context-file", required=True)
     parser.add_argument("--responses-file", required=True)
     parser.add_argument("--start-from", required=False, help="Step name to start from")
-    parser.add_argument("--force", action="store_true", help="Force rebuild everything and purge cache")
+    parser.add_argument(
+        "--force", action="store_true", help="Force rebuild everything and purge cache"
+    )
     args = parser.parse_args()
 
     global SKIP_MODE, START_FROM
@@ -195,14 +197,24 @@ async def run_pipeline():
     if args.force:
         print(f"🔄 [Cognitive Reset] Purgando razonamiento previo para {tower_id}...")
         if case_dir.exists():
-            for f in ["findings.json", "evidence_ledger.json", "blueprint_t2_payload.json", "case_input.json", "scoring_output.json", f"approved_annex_{tower_id.lower()}.template_payload.json"]:
+            for f in [
+                "findings.json",
+                "evidence_ledger.json",
+                "blueprint_t2_payload.json",
+                "case_input.json",
+                "scoring_output.json",
+                f"approved_annex_{tower_id.lower()}.template_payload.json",
+            ]:
                 path_to_del = case_dir / f
                 if path_to_del.exists():
                     path_to_del.unlink()
     else:
-        print(f"📈 [Incremental Mode] Respetando caché local existente en {case_dir}. Use --force para reconstruir de cero.")
+        print(
+            f"📈 [Incremental Mode] Respetando caché local existente en {case_dir}. Use --force para reconstruir de cero."
+        )
 
     import time
+
     env["AI_EXECUTION_SEED"] = str(time.time())
 
     validate_runtime_environment(env)
@@ -223,7 +235,11 @@ async def run_pipeline():
     # Stage 1: Construct the `case_input` data structure. This stage is cache-gated.
     #
     case_input_file = case_dir / "case_input.json"
-    if args.force or not case_input_file.exists() or case_input_file.stat().st_size == 0:
+    if (
+        args.force
+        or not case_input_file.exists()
+        or case_input_file.stat().st_size == 0
+    ):
         await run_step_async(
             [
                 python_bin,
@@ -248,7 +264,11 @@ async def run_pipeline():
     # Stage 2: Assemble the `evidence_ledger` containing all data required for scoring. This stage is cache-gated.
     #
     evidence_ledger_file = case_dir / "evidence_ledger.json"
-    if args.force or not evidence_ledger_file.exists() or evidence_ledger_file.stat().st_size == 0:
+    if (
+        args.force
+        or not evidence_ledger_file.exists()
+        or evidence_ledger_file.stat().st_size == 0
+    ):
         await run_step_async(
             [
                 python_bin,
@@ -334,20 +354,30 @@ async def run_pipeline():
             env,
             "Run executive refiner",
         )
-        print("⏳ [Sovereign QA] Esperando asentamiento físico del archivo findings.json en disco...")
+        print(
+            "⏳ [Sovereign QA] Esperando asentamiento físico del archivo findings.json en disco..."
+        )
         await asyncio.sleep(2.0)
     else:
-        print("⏭️  [Cache Bypass] Findings and SOTA research already generated. Skipping Analyst Chain.")
+        print(
+            "⏭️  [Cache Bypass] Findings and SOTA research already generated. Skipping Analyst Chain."
+        )
 
     #
     # Stage 5: Generate the Tower Strategic Blueprint payload. This stage is cache-gated.
     #
     print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico...")
-    if args.force or not blueprint_payload_path.exists() or blueprint_payload_path.stat().st_size == 0:
+    if (
+        args.force
+        or not blueprint_payload_path.exists()
+        or blueprint_payload_path.stat().st_size == 0
+    ):
         if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
             print("🔎 Ejecutando preflight de Vertex AI...")
             preflight = run_vertex_ai_preflight(env=env)
-            print(f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})")
+            print(
+                f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
+            )
 
         try:
             await run_step_async(
@@ -365,7 +395,9 @@ async def run_pipeline():
             print(f"⚠️ Fallo crítico en Blueprint: {e}")
             return
     else:
-        print("⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call.")
+        print(
+            "⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call."
+        )
 
     #
     # Stage 6: Synthesize the Executive Annex payload. This stage is cache-gated.
@@ -387,7 +419,9 @@ async def run_pipeline():
         except Exception as e:
             print(f"⚠️ Fallo en síntesis del anexo: {e}")
     else:
-        print("⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call.")
+        print(
+            "⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call."
+        )
 
     #
     # Stage 7: Render the final DOCX artifacts. This stage is not cached, as the rendering execution time is negligible, making cache overhead non-beneficial.
@@ -425,7 +459,7 @@ async def run_pipeline():
             env,
             "Generate AS-IS Markdown Modules",
         )
-        
+
         # Generate radar chart visualization for quantitative summary.
         await run_step_async(
             [
@@ -438,7 +472,7 @@ async def run_pipeline():
             env,
             "Generate short radar",
         )
-        
+
         # Phase 2: Compile the final DOCX report from the intermediate module artifacts.
         await run_step_async(
             [

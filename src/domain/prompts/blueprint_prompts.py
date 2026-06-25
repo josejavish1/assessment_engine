@@ -181,7 +181,7 @@ def get_closing_orchestrator_prompt(
     prompt += f"{pillars_analysis_json}\n\n"
 
     prompt += f"Basado en esto y en el ADN del cliente: {intel_str}\n\n"
-    
+
     if total_ale > 0:
         prompt += f"MANDATO FINANCIERO (FAIR ALE): La Expectativa de Pérdida Anualizada (ALE) consolidada para los riesgos de esta torre es de {total_ale:,.2f} €. DEBES utilizar este valor explícitamente en el texto del 'Cost of Inaction' (cost_of_inaction) para cuantificar financieramente el riesgo ante el Comité de Dirección.\n\n"
 
@@ -247,7 +247,13 @@ def get_dependency_resolver_prompt(projects_json: str) -> str:
     return prompt
 
 
-def get_bid_manager_prompt(client_name: str, project_name: str, project_objective: str, project_sizing: str, mitigated_risk_impact: str) -> str:
+def get_bid_manager_prompt(
+    client_name: str,
+    project_name: str,
+    project_objective: str,
+    project_sizing: str,
+    mitigated_risk_impact: str,
+) -> str:
     r"""{'docstring': "Constructs a Spanish-language prompt to generate a project charter JSON.\n\n    The generated prompt instructs a language model to act as a senior Bid Manager\n    and Solution Architect from NTT DATA. It provides the model with specific\n    project details and a strict set of rules for generating a comprehensive\n    project charter in a JSON format.\n\n    Args:\n        client_name: The name of the client for whom the project is intended.\n        project_name: The internal or generic name of the project.\n        project_objective: A high-level description of the project's goal.\n        project_sizing: The estimated size or scale of the project (e.g., 'Small').\n        mitigated_risk_impact: The business or technical risk the project is\n            designed to mitigate.\n\n    Returns:\n        A complete prompt string in Spanish, ready for use with a generative AI."}."""
     prompt = (
         f"Eres un Bid Manager y Solution Architect Senior de NTT DATA preparando un 'Project Charter' a nivel de Comité de Dirección para el cliente {client_name}.\n"

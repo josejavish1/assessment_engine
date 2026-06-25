@@ -9,7 +9,9 @@ def extract_tables_xml(path: str):
         root = ET.fromstring(xml_data)
 
         #
-        tbl_elements = root.findall(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tbl")
+        tbl_elements = root.findall(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tbl"
+        )
         return tbl_elements
 
 
@@ -51,8 +53,12 @@ def compare_tables():
         w_tbl = working_tbls[0]
         s_tbl = shadow_tbls[0]
 
-        w_tblPr = w_tbl.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblPr")
-        s_tblPr = s_tbl.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblPr")
+        w_tblPr = w_tbl.find(
+            "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblPr"
+        )
+        s_tblPr = s_tbl.find(
+            "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tblPr"
+        )
 
         print("   [w:tblPr en V3]:")
         for child in list(w_tblPr) if w_tblPr is not None else []:
@@ -63,11 +69,27 @@ def compare_tables():
             print(f"      ├─ {child.tag.split('}')[-1]}: {child.attrib}")
 
         #
-        w_cell = w_tbl.find(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc")
-        s_cell = s_tbl.find(".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc")
+        w_cell = w_tbl.find(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc"
+        )
+        s_cell = s_tbl.find(
+            ".//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc"
+        )
 
-        w_tcPr = w_cell.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tcPr") if w_cell is not None else None
-        s_tcPr = s_cell.find("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tcPr") if s_cell is not None else None
+        w_tcPr = (
+            w_cell.find(
+                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tcPr"
+            )
+            if w_cell is not None
+            else None
+        )
+        s_tcPr = (
+            s_cell.find(
+                "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tcPr"
+            )
+            if s_cell is not None
+            else None
+        )
 
         print("\n   [w:tcPr de la primera celda en V3]:")
         for child in list(w_tcPr) if w_tcPr is not None else []:

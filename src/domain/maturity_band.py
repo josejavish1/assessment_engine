@@ -6,6 +6,7 @@ from typing import TypedDict
 
 class MaturityBandDefinition(TypedDict):
     """Define the schema for a single maturity band definition."""
+
     min: float
     max: float
     label: str

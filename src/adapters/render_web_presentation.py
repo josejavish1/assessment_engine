@@ -46,7 +46,9 @@ def _load_global_payload(path: Path) -> dict[str, Any]:
     try:
         GlobalReportPayload.model_validate(payload)
     except Exception as e:
-        logger.warning(f"⚠️ Error de validación de Pydantic en GlobalReportPayload (procediendo con fallback): {e}")
+        logger.warning(
+            f"⚠️ Error de validación de Pydantic en GlobalReportPayload (procediendo con fallback): {e}"
+        )
     return payload
 
 
@@ -55,7 +57,9 @@ def _load_blueprint_payload(path: Path) -> dict[str, Any]:
     try:
         BlueprintPayload.model_validate(payload)
     except Exception as e:
-        logger.warning(f"⚠️ Error de validación de Pydantic en BlueprintPayload (procediendo con fallback): {e}")
+        logger.warning(
+            f"⚠️ Error de validación de Pydantic en BlueprintPayload (procediendo con fallback): {e}"
+        )
     return payload
 
 

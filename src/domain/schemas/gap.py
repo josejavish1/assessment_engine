@@ -7,6 +7,7 @@ from .common import BaseDraftModel
 
 class GapItem(BaseModel):
     """Represent a single item in a gap analysis report."""
+
     pillar: str
     as_is_summary: str
     target_state: str
@@ -33,6 +34,7 @@ class GapDraft(BaseDraftModel):
             multiple areas.
         notes_for_reviewer: An optional list of notes for the document reviewer.
     """
+
     section_id: str = "gap"
     status: str = "draft"
     tower_id: str

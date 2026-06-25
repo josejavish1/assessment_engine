@@ -42,15 +42,15 @@ def generate_mermaid_gantt(payload_path: Path, output_png_path: Path) -> bool:
         or non-200 responses from both external rendering APIs.
     """
     try:
-        with open(payload_path, 'r', encoding='utf-8-sig') as f:
+        with open(payload_path, "r", encoding="utf-8-sig") as f:
             data = json.load(f)
-            
+
         roadmap = data.get("roadmap", [])
         if not roadmap:
             return False
 
         mermaid_code = "%%{init: {'gantt': {'useWidth': 1400, 'useMaxWidth': false, 'barHeight': 30, 'fontSize': 14}}}%%\ngantt\n    title Strategic Transformation Roadmap (Topological)\n    dateFormat  YYYY-MM-DD\n    axisFormat  %Y-%m\n\n"
-        
+
         #
         deps = data.get("external_dependencies", [])
         dep_map = {}
@@ -71,23 +71,29 @@ def generate_mermaid_gantt(payload_path: Path, output_png_path: Path) -> bool:
             for p in pilar.get("projects_todo", []):
                 name = p.get("name")
                 sizing_map[name] = p.get("sizing", "M").upper()
-                typology_map[name] = p.get("transformation_typology", "General Transformation")
+                typology_map[name] = p.get(
+                    "transformation_typology", "General Transformation"
+                )
 
         roadmap_projects_by_typology = {}
         for w_idx, wave in enumerate(roadmap):
             for p_idx, proj in enumerate(wave.get("projects", [])):
-                safe_name = proj.replace(':', '-').replace('"', "'")
+                safe_name = proj.replace(":", "-").replace('"', "'")
                 # Mermaid.js syntax imposes a strict constraint on task identifiers, which must be alphanumeric and contain no spaces. Consequently, project names undergo a sanitization process to generate compliant IDs before their inclusion in the diagram definition.
                 m_id = f"p{w_idx}_{p_idx}"
-                proj_id_map[proj] = {"m_id": m_id, "safe_name": safe_name, "wave_idx": w_idx}
-                
+                proj_id_map[proj] = {
+                    "m_id": m_id,
+                    "safe_name": safe_name,
+                    "wave_idx": w_idx,
+                }
+
                 typology = typology_map.get(proj, "General Transformation")
                 if typology not in roadmap_projects_by_typology:
                     roadmap_projects_by_typology[typology] = []
                 roadmap_projects_by_typology[typology].append((w_idx, proj))
 
         start_date = datetime.date.today()
-        
+
         # The start date for each successive wave is calculated dynamically. This date is set to the completion time of the project with the maximum duration in the immediately preceding wave, thereby enforcing a sequential, non-overlapping execution model for the waves.
         wave_start_dates = [start_date]
         for w_idx, wave in enumerate(roadmap):
@@ -101,61 +107,69 @@ def generate_mermaid_gantt(payload_path: Path, output_png_path: Path) -> bool:
             # The start time for a subsequent wave is calculated based on the completion time of the project with the maximum duration in the preceding wave. A fixed buffer is added to this completion time to ensure temporal separation between dependent waves.
             next_start = wave_start_dates[-1] + relativedelta(days=max_dur_days + 15)
             wave_start_dates.append(next_start)
-        
+
         import re
+
         independent_count_total = 0
-        
+
         for typology, projs in roadmap_projects_by_typology.items():
-            safe_section = re.sub(r'[^a-zA-Z0-9\s]', '', typology)
+            safe_section = re.sub(r"[^a-zA-Z0-9\s]", "", typology)
             mermaid_code += f"    section {safe_section}\n"
-            
+
             for w_idx, proj in projs:
                 p_data = proj_id_map.get(proj)
-                if not p_data: continue
-                
+                if not p_data:
+                    continue
+
                 m_id = p_data["m_id"]
                 safe_name = p_data["safe_name"]
                 if len(safe_name) > 60:
                     safe_name = safe_name[:57] + "..."
-                
+
                 project_deps = dep_map.get(proj, [])
                 mermaid_deps = []
                 for d in project_deps:
                     if d in proj_id_map:
                         mermaid_deps.append(proj_id_map[d]["m_id"])
-                        
+
                 #
                 sizing = sizing_map.get(proj, "M")
                 durations = {"S": 45, "M": 90, "L": 150, "XL": 240}
                 dur_days = durations.get(sizing, 90)
                 duration_str = f"{dur_days}d"
-                
+
                 if mermaid_deps:
                     deps_str = "after " + " ".join(mermaid_deps)
-                    mermaid_code += f"    {safe_name} :{m_id}, {deps_str}, {duration_str}\n"
+                    mermaid_code += (
+                        f"    {safe_name} :{m_id}, {deps_str}, {duration_str}\n"
+                    )
                 else:
                     # Root nodes, defined as projects with no intra-wave dependencies, are scheduled to commence at the calculated start date of their respective wave. A minor, incremental offset is applied to each root node's start time to prevent visual overlap and enhance readability in the rendered Gantt chart.
-                    w_start = wave_start_dates[w_idx] + relativedelta(days=10 * independent_count_total)
+                    w_start = wave_start_dates[w_idx] + relativedelta(
+                        days=10 * independent_count_total
+                    )
                     mermaid_code += f"    {safe_name} :{m_id}, {w_start.strftime('%Y-%m-%d')}, {duration_str}\n"
                     independent_count_total += 1
 
         #
         import zlib
-        
+
         # The kroki.io service is designated as the primary rendering engine. This selection is based on its extensive support for multiple diagrammatic formats and its superior output fidelity relative to other available rendering services.
         # The Kroki rendering service API mandates a specific payload encoding scheme. The Mermaid diagram definition must first be compressed using zlib, and the resulting byte stream must then be encoded into a URL-safe Base64 string.
-        compressed = zlib.compress(mermaid_code.encode('utf-8'), 9)
-        encoded = base64.urlsafe_b64encode(compressed).decode('ascii')
-        
+        compressed = zlib.compress(mermaid_code.encode("utf-8"), 9)
+        encoded = base64.urlsafe_b64encode(compressed).decode("ascii")
+
         url = f"https://kroki.io/mermaid/png/{encoded}"
-        
+
         response = requests.get(url, timeout=15)
         if response.status_code == 200:
-            with open(output_png_path, 'wb') as f:
+            with open(output_png_path, "wb") as f:
                 f.write(response.content)
             return True
         else:
-            print(f"Failed to generate Mermaid Gantt via Kroki: HTTP {response.status_code} - {response.text[:100]}")
+            print(
+                f"Failed to generate Mermaid Gantt via Kroki: HTTP {response.status_code} - {response.text[:100]}"
+            )
             # A fallback mechanism is implemented for diagram rendering. If the primary service endpoint (Kroki) fails, the system redirects rendering requests to a secondary, public endpoint (mermaid.ink) to maintain service availability.
             graphbytes = mermaid_code.encode("utf8")
             base64_bytes = base64.b64encode(graphbytes)
@@ -163,7 +177,7 @@ def generate_mermaid_gantt(payload_path: Path, output_png_path: Path) -> bool:
             url = f"https://mermaid.ink/img/{base64_string}?type=png"
             response = requests.get(url, timeout=15)
             if response.status_code == 200:
-                with open(output_png_path, 'wb') as f:
+                with open(output_png_path, "wb") as f:
                     f.write(response.content)
                 return True
             return False

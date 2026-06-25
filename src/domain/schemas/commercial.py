@@ -5,12 +5,14 @@ from .common import VersionedPayload
 
 class DealFlash(BaseModel):
     """Model a deal flash summary with the customer's purchase driver and the deal's win theme."""
+
     purchase_driver: str
     ntt_win_theme: str
 
 
 class CommercialSummaryDraft(BaseModel):
     """Defines the data schema for a commercial summary draft."""
+
     deal_flash: DealFlash
     why_now_bullets: list[str]
     how_we_win_bullets: list[str]
@@ -35,6 +37,7 @@ class GtmStrategy(BaseModel):
             costs for customers, making it difficult or expensive for them to
             migrate to a competitor's offerings.
     """
+
     trojan_horse: str
     self_funded_transformation: str
     lock_in: str
@@ -42,6 +45,7 @@ class GtmStrategy(BaseModel):
 
 class StakeholderMatrixItem(BaseModel):
     """Represent a single entry in a stakeholder communication matrix."""
+
     role: str
     focus: str
     message: str
@@ -49,6 +53,7 @@ class StakeholderMatrixItem(BaseModel):
 
 class AccountDirectorOutput(BaseModel):
     r"""{'docstring': "Data model for the consolidated output of an Account Director's analysis.\n\n    Attributes:\n        commercial_summary: A structured representation of the commercial summary draft.\n        gtm_strategy: The proposed Go-To-Market (GTM) strategy.\n        stakeholder_matrix: A list that maps key stakeholders to their designated\n            project roles."}."""
+
     commercial_summary: CommercialSummaryDraft
     gtm_strategy: GtmStrategy
     stakeholder_matrix: list[StakeholderMatrixItem]
@@ -56,6 +61,7 @@ class AccountDirectorOutput(BaseModel):
 
 class OpportunityPipelineItem(BaseModel):
     """{'docstring': 'Model a single entry in a commercial opportunity pipeline.'}."""
+
     initiative: str
     tower_origin: str
     vendor_cosell: str
@@ -76,29 +82,34 @@ class PresalesArchitectOutput(BaseModel):
         opportunities_pipeline: A list of `OpportunityPipelineItem` objects, each
             detailing a single identified sales opportunity.
     """
+
     opportunities_pipeline: list[OpportunityPipelineItem]
 
 
 class ContextAndWhy(BaseModel):
     """Represent the context and justification for a decision or action."""
+
     origin: str
     cost_of_inaction: str
 
 
 class SolutionAndWhat(BaseModel):
     """Models the desired outcome and key success metric for a solution."""
+
     target_state: str
     north_star_metric: str
 
 
 class EngagementManagerOutput(BaseModel):
     """Encapsulates the context ('why') and solution ('what') of a strategic proposal."""
+
     context_and_why: ContextAndWhy
     solution_and_what: SolutionAndWhat
 
 
 class ScopeAndHow(BaseModel):
     """Defines the scope, deliverables, and exclusions for a project."""
+
     phases: list[str]
     deliverables: list[str]
     out_of_scope: list[str]
@@ -106,6 +117,7 @@ class ScopeAndHow(BaseModel):
 
 class DeliveryTeam(BaseModel):
     """Model a delivery team with its associated member roles."""
+
     team_roles: list[str]
 
 
@@ -124,6 +136,7 @@ class LeadSolutionsArchitectOutput(BaseModel):
         ai_transformation_strategy (str): A high-level summary of the AI
             transformation strategy.
     """
+
     scope_and_how: ScopeAndHow
     delivery_team: DeliveryTeam
     ai_transformation_strategy: str
@@ -136,12 +149,14 @@ class GovernanceAndAssumptions(BaseModel):
         governance_model: The identifier or description of the governance model.
         assumptions: A list of strings, each articulating a key assumption.
     """
+
     governance_model: str
     assumptions: list[str]
 
 
 class RiskManagementItem(BaseModel):
     r"""{'docstring': 'Represent a single risk and its corresponding mitigation.\n\nAttributes:\n    risk: A description of the identified risk.\n    mitigation: The plan or action to mitigate the identified risk.'}."""
+
     risk: str
     mitigation: str
 
@@ -160,6 +175,7 @@ class DeliveryAndRiskDirectorOutput(BaseModel):
         activation_plan: An ordered list of strings describing the sequential steps for
             project activation or deployment.
     """
+
     governance_and_assumptions: GovernanceAndAssumptions
     risk_management: list[RiskManagementItem]
     activation_plan: list[str]
@@ -167,12 +183,14 @@ class DeliveryAndRiskDirectorOutput(BaseModel):
 
 class WhyNttData(BaseModel):
     """Represent the 'Why NTT DATA' section of a commercial document."""
+
     accelerators: list[str]
     partnerships: str
 
 
 class InvestmentAndTimeline(BaseModel):
     """Model the estimated duration and Total Contract Value (TCV) range for a project."""
+
     estimated_duration: str
     tcv_range: str
 
@@ -192,6 +210,7 @@ class SalesPartnerOutput(BaseModel):
         executive_synthesis: A concise summary of the proposal, intended for
             executive review.
     """
+
     why_ntt_data: WhyNttData
     investment_and_timeline: InvestmentAndTimeline
     executive_synthesis: str
@@ -228,6 +247,7 @@ class ProposalDraft(BaseModel):
         executive_synthesis (str): A concise summary of the proposal for
             executives.
     """
+
     initiative_name: str
     context_and_why: ContextAndWhy
     solution_and_what: SolutionAndWhat
@@ -251,6 +271,7 @@ class CommercialDocumentMeta(BaseModel):
         version: The document version string, preferably following semantic
             versioning (e.g., "1.0.0").
     """
+
     client: str
     date: str
     version: str
@@ -278,6 +299,7 @@ class CommercialPayload(VersionedPayload):
         intelligence_dossier (dict): A flexible container for competitive and
             market intelligence.
     """
+
     meta: CommercialDocumentMeta
     commercial_summary: CommercialSummaryDraft
     gtm_strategy: GtmStrategy

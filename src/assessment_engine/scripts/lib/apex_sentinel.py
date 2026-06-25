@@ -10,10 +10,9 @@ logger = logging.getLogger("Apex-Sentinel")
 
 class ApexTransaction(BaseModel):
     r"""{'docstring': "Represents a single transactional event within a task's lifecycle.\n\n    This Pydantic model captures a discrete state transition or action for a\n    specific task, along with associated metadata such as timing, cost, and\n    contextual details. Each instance serves as an immutable record of a step\n    in the task's execution history.\n\n    Attributes:\n        task_id: The unique identifier for the task to which this transaction\n            belongs.\n        event: The name of the event, representing a state in the task's state\n            machine. This attribute governs the control flow and operational\n            logic.\n        details: A dictionary containing arbitrary key-value data relevant to the\n            event.\n        timestamp: The UTC Unix timestamp indicating when the event occurred.\n        cost_usd: The monetary cost associated with this transaction in USD.\n            Defaults to 0.0."}."""
+
     task_id: str
-    event: (
-        str  # Defines the discrete states within the task's state machine. These states govern the control flow and operational logic for task execution and resolution.
-    )
+    event: str  # Defines the discrete states within the task's state machine. These states govern the control flow and operational logic for task execution and resolution.
     details: dict[str, Any]
     timestamp: float
     cost_usd: float = 0.0

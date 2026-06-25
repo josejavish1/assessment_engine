@@ -350,12 +350,18 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     # Dynamically extracts the headline and C-level narrative from client-specific configuration extensions, if such extensions are provided.
     intel_headline = None
     intel_narrative = None
-    
+
     if intelligence_path.exists():
         try:
             raw_intel = load_client_intelligence(intelligence_path)
-            extensions = raw_intel.get("extensions", {}) if isinstance(raw_intel, dict) else {}
-            exec_sum = extensions.get("executive_summary", {}) if isinstance(extensions, dict) else {}
+            extensions = (
+                raw_intel.get("extensions", {}) if isinstance(raw_intel, dict) else {}
+            )
+            exec_sum = (
+                extensions.get("executive_summary", {})
+                if isinstance(extensions, dict)
+                else {}
+            )
             if isinstance(exec_sum, dict):
                 intel_headline = exec_sum.get("headline")
                 intel_narrative = exec_sum.get("narrative")
@@ -365,7 +371,9 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     if intel_headline:
         payload["executive_summary"]["headline"] = intel_headline
     else:
-        payload["executive_summary"]["headline"] = f"{client_name}: Estrategia de Modernización de Infraestructura"
+        payload["executive_summary"]["headline"] = (
+            f"{client_name}: Estrategia de Modernización de Infraestructura"
+        )
 
     if intel_narrative:
         payload["executive_summary"]["narrative"] = intel_narrative
