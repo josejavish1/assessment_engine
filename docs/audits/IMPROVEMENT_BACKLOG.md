@@ -1,3 +1,15 @@
+---
+status: Needs Review
+owner: docs-governance
+source_of_truth:
+  - docs/
+  - src/assessment_engine/
+last_verified_against: 2026-06-25
+applies_to:
+  - humans
+doc_type: operational
+---
+
 # Backlog de Mejoras de Documentación y Código
 
 ## 1. Introducción

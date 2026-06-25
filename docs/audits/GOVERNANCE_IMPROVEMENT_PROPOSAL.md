@@ -1,3 +1,16 @@
+---
+status: Needs Review
+owner: docs-governance
+source_of_truth:
+  - docs/ai/documentation-governance.md
+  - docs/documentation-map.yaml
+last_verified_against: 2026-06-25
+applies_to:
+  - humans
+  - ai-agents
+doc_type: operational
+---
+
 # Propuesta de Mejora de la Gobernanza de la Documentación
 
 ## 1. Introducción

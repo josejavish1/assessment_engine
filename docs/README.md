@@ -43,8 +43,9 @@ Si un documento narrativo contradice al código o a los contratos, **manda el re
 | [`operations/engineering-quality-gates.md`](operations/engineering-quality-gates.md) | Política canónica de calidad de implementación |
 | [`operations/product-owner-orchestrator.md`](operations/product-owner-orchestrator.md) | Orquestador local desde petición de negocio hasta PR |
 | [`../bin/po-run`](../bin/po-run) | Wrapper friendly para lanzar el orquestador local desde terminal |
-| [`../.github/workflows/orchestrator-pr-reconcile.yml`](../.github/workflows/orchestrator-pr-reconcile.yml) | Watcher automático que reanuda PRs gestionadas del orquestador |
-| [`../.github/scripts/orchestrator-gemini-executor.sh`](../.github/scripts/orchestrator-gemini-executor.sh) | Wrapper de executor para usar Gemini CLI dentro de GitHub Actions |
+| [`../.github/workflows/orchestrator-pr-reconcile.yml`](../.github/workflows/orchestrator-pr-reconcile.yml) | Reconciliador de ramas de PR abiertas tras cambios en `main`; no es un executor de agentes |
+| [`../.github/scripts/reconcile_prs.sh`](../.github/scripts/reconcile_prs.sh) | Script usado por el reconciliador para rebasear ramas de PR contra `origin/main` |
+| [`../.github/scripts/orchestrator-gemini-executor.sh`](../.github/scripts/orchestrator-gemini-executor.sh) | Wrapper local de executor Gemini; no está cableado por el reconciliador actual de GitHub |
 | [`contracts/`](contracts/artifact-contracts.md) | Contratos, matrices y plantillas de diseño |
 | [`reference/generated/`](reference/generated/legacy-gemini-index.md) | Referencia derivada o heredada no canónica |
 | [`../GEMINI.md`](../GEMINI.md) | Adaptador para Gemini y memoria operativa en transición |
@@ -113,8 +114,9 @@ Si una sesión nueva necesita reanudar el trabajo sin contexto previo, el estado
 - ya existe un MVP de orquestador local PO-to-PR apoyado en backend de agente configurable;
 - ya existe `./bin/po-run` como entrada corta e interactiva para lanzar ese flujo desde terminal;
 - el orquestador local ya acota los `run` del executor con timeout explícito y evita que la propia ejecución ensucie el worktree con `__pycache__/`;
-- ya existe un watcher de GitHub que puede reanudar PRs gestionadas del orquestador cuando fallan checks o aparece feedback nuevo;
-- ya existe un executor del repo compatible con GitHub Actions para que el watcher no dependa de rutas locales;
+- ya existe un reconciliador de GitHub que, tras cambios en `main` o por ejecución manual, intenta rebasear ramas de PR abiertas no draft que no tengan la label `no-auto-update`;
+- no existe todavía un watcher de GitHub que reanude automáticamente `resume-pr` ante feedback, reviews o checks fallidos;
+- existe un wrapper de executor Gemini en el repo, pero no está conectado al reconciliador de PR actual;
 - el baseline smoke de `smoke_ivirma` ya está cerrado para T5, global, comercial y web;
 - la suite completa de `pytest` pasa.
 

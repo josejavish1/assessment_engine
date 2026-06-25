@@ -1,5 +1,5 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
   - ../../bin/po-run
@@ -11,7 +11,9 @@ source_of_truth:
   - ../../.github/workflows/ci.yml
   - ../../.github/workflows/quality.yml
   - ../../.github/workflows/typing.yml
-last_verified_against: 2026-05-02
+  - ../../.github/workflows/orchestrator-pr-reconcile.yml
+  - ../../.github/scripts/reconcile_prs.sh
+last_verified_against: 2026-06-25
 applies_to:
   - humans
   - ai-agents
@@ -152,26 +154,41 @@ Por defecto puede resolver automáticamente **threads abiertos creados por bots*
 
 La sincronización con la base ocurre dentro del mismo circuito controlado: el orquestador trae `origin/<base_branch>` a la rama activa, vuelve a ejecutar las validaciones locales y solo hace push si la rama sigue pasando los gates. Si esa sincronización introduce un fallo, ese fallo entra como feedback de la siguiente ronda de reparación; no se salta.
 
-### 6. Watcher automático en GitHub
+### 6. Reconciliador actual de PRs en GitHub
 
-El repo puede ejecutar `.github/workflows/orchestrator-pr-reconcile.yml` para relanzar `resume-pr` cuando una PR gestionada:
+El workflow `.github/workflows/orchestrator-pr-reconcile.yml` existe, pero su comportamiento actual es más limitado que una reanudación agentic de `resume-pr`.
 
-1. recibe feedback de review o comentarios;
-2. sale de draft con `ready_for_review`;
-3. o se relanza manualmente con `workflow_dispatch`.
+Estado verificado contra `.github/workflows/orchestrator-pr-reconcile.yml` y `.github/scripts/reconcile_prs.sh`:
 
-Reglas de seguridad del watcher:
+- se ejecuta tras `push` a `main` o manualmente con `workflow_dispatch`;
+- lista PRs abiertas, no draft, que no tengan la label `no-auto-update`;
+- resetea el checkout local a `origin/main`;
+- rebasea cada rama de PR sobre `origin/main`;
+- comenta en la PR si el rebase tiene conflictos;
+- hace `push --force-with-lease` cuando el rebase termina correctamente.
 
-- solo actúa sobre PRs **abiertas**, **no draft**, del **mismo repositorio**;
-- exige que la PR tenga el marcador oculto del orquestador o la label `orchestrator-managed`;
-- serializa la ejecución por número de PR para no correr dos reconciliaciones en paralelo;
-- no se relanza por cada workflow verde intermedio: el run abierto por `pull_request` mantiene el polling de checks hasta que la PR queda lista para merge o necesita reparación;
-- reutiliza `resume-pr`, así que sigue pasando por tests, quality, typing, docs-governance, sync con `main` y reglas de review;
-- usa por defecto `./.github/scripts/orchestrator-gemini-executor.sh {repo_root} {task_prompt_file} {attempt}` como executor compatible con GitHub Actions;
-- la regla operativa recomendada es mantener `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` configurado en GitHub Actions apuntando a ese wrapper del repo, para no depender de rutas locales o wrappers efímeros;
-- el wrapper del repo ejecuta `gemini-2.5-pro` por defecto y fuerza la ruta Gemini de forma coherente con el resto de scripts;
-- para que el executor pueda autenticarse de forma estable en GitHub Actions, el repo debe exponer una credencial Gemini o Google válida: `GEMINI_API_KEY`, `GOOGLE_API_KEY` o autenticación Google/Vertex habilitada con `GOOGLE_GENAI_USE_VERTEXAI=1` y credenciales de aplicación disponibles en el runner;
-- si el preflight del executor falla por credenciales o configuración, la reconciliación aborta antes de entrar en rondas largas de reparación y deja el motivo clasificado en los artefactos de sesión.
+Límites explícitos del reconciliador actual:
+
+- no llama a `run_product_owner_orchestrator.py resume-pr`;
+- no inspecciona threads de review ni feedback humano;
+- no filtra por marcador oculto `<!-- orchestrator-managed -->`;
+- no exige label `orchestrator-managed`;
+- no ejecuta el wrapper `orchestrator-gemini-executor.sh`;
+- no repara checks fallidos con un backend de agente;
+- no ejecuta los gates locales después del rebase dentro de ese workflow.
+
+Por tanto, este workflow debe leerse como **actualizador de ramas de PR**, no como watcher agentic end-to-end.
+
+### 7. Watcher agentic objetivo
+
+La automatización descrita abajo sigue siendo un objetivo de endurecimiento, no una capacidad verificada del workflow actual:
+
+1. relanzar `resume-pr` cuando una PR gestionada reciba feedback, salga de draft o tenga checks fallidos;
+2. exigir marcador oculto del orquestador o label `orchestrator-managed`;
+3. serializar ejecución por número de PR;
+4. ejecutar validación estándar después de cada reparación;
+5. usar un executor configurado explícitamente para GitHub Actions;
+6. fallar temprano si las credenciales del executor no están disponibles.
 
 ## Política configurable
 
@@ -183,7 +200,8 @@ Reglas de seguridad del watcher:
 - rama base;
 - modo de auto-merge;
 - reconciliación post-PR (polling, rondas máximas, sync con base y resolución automática de threads de bot);
-- watcher automático de reanudación para PRs gestionadas;
+- reconciliación post-PR del orquestador local;
+- reconciliador de ramas de PR abiertas en GitHub;
 - timeouts del executor, del preflight y de las validaciones;
 - validaciones estándar.
 
@@ -202,11 +220,12 @@ La intención no es maquillar el error sino **fallar antes y con una causa accio
 
 ## Pendiente para cierre end-to-end
 
-El flujo ya puede operar de forma homogénea sobre Gemini también en la reconciliación automática de PRs, pero para considerar el circuito **realmente cerrado de punta a punta en GitHub Actions** sigue pendiente habilitar la credencial del executor en el repo:
+El flujo local puede operar con un executor configurable, pero para considerar el circuito **realmente cerrado de punta a punta en GitHub Actions** sigue pendiente implementar y verificar un watcher agentic que invoque `resume-pr`:
 
 1. configurar en GitHub Actions una credencial válida para Gemini o Google;
 2. decidir si el watcher usará `GEMINI_API_KEY`, `GOOGLE_API_KEY` o autenticación Google/Vertex del runner;
-3. verificar con una PR gestionada real que `resume-pr` completa preflight, reparación, validación y merge sin intervención manual.
+3. conectar `.github/workflows/orchestrator-pr-reconcile.yml` o un nuevo workflow a `resume-pr`;
+4. verificar con una PR gestionada real que `resume-pr` completa preflight, reparación, validación y merge sin intervención manual.
 
 ## Limitaciones deliberadas del MVP
 
