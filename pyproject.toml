@@ -95,6 +95,9 @@ ignore_errors = true
 module = [
     "adapters.*",
     "application.*",
-    "assessment_engine.*"
+    "assessment_engine.*",
+    "infrastructure.*",
+    "domain.*",
+    "ports.*"
 ]
 ignore_errors = true
