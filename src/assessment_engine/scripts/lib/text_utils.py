@@ -72,7 +72,9 @@ def slugify(value: str) -> str:
     return cleaned or "generic"
 
 
-def format_currency_custom(val: float, vocab: dict[str, Any], doc_lang: str = "es") -> str:
+def format_currency_custom(
+    val: float, vocab: dict[str, Any], doc_lang: str = "es"
+) -> str:
     """
     Formatea una cifra monetaria de forma dinámica e i18n basándose en locales.json.
     Soporta símbolos de divisa y formatos locales (comas/puntos) de forma matemática pura
@@ -84,16 +86,18 @@ def format_currency_custom(val: float, vocab: dict[str, Any], doc_lang: str = "e
 
     # Formateo numérico matemático puro independiente del SO
     formatted_num = f"{val:,.2f}"  # ej: "1,234,567.89"
-    
+
     if format_type == "EU" or lang in ["es", "pt", "fr"]:
         # Convertir de standard 1,234,567.89 a europeo 1.234.567,89
-        formatted_num = formatted_num.replace(",", "X").replace(".", ",").replace("X", ".")
-        
+        formatted_num = (
+            formatted_num.replace(",", "X").replace(".", ",").replace("X", ".")
+        )
+
     if lang == "ja":
         # El yen japonés no utiliza decimales en contextos generales
         formatted_num = f"{int(round(val)):,}"
         return f"{formatted_num}{symbol}"
-        
+
     # Ensamblar según el estándar del país
     if lang in ["en", "ja"]:
         return f"{symbol}{formatted_num}"
