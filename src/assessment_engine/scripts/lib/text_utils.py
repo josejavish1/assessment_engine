@@ -7,9 +7,10 @@ especialmente para su uso en renderizadores de Word/XML.
 import html
 import re
 import unicodedata
+from typing import Any
 
 
-def deep_unescape(obj):
+def deep_unescape(obj: Any) -> Any:
     """
     Recorre de forma recursiva cualquier estructura de datos (dict, list, str)
     y sanea/des-escapa entidades HTML de todos los strings.
