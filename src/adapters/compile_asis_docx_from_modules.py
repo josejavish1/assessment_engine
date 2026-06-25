@@ -554,7 +554,9 @@ def compile_docx(tower_dir: str, output_path: str):
             global_reading = s_data.get("maturity_band_from_exact", {}).get("reading", "Gobernanza estándar.")
 
     # Resolver diccionario de traducciones de la sesión actual de forma universal (Zero-Assumption)
-    vocab = locales.get(doc_lang, locales.get("es", {}))
+    vocab_fallback = LANG_VOCAB.get(doc_lang, LANG_VOCAB.get("es", {}))
+    vocab_loaded = locales.get(doc_lang, locales.get("es", {}))
+    vocab = {**vocab_fallback, **vocab_loaded}
     org_label = "holding" if client_group else ("group" if doc_lang == "en" else "organización")
 
     # ---------------------------------------------------------
