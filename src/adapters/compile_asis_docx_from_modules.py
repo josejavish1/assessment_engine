@@ -20,11 +20,26 @@ from infrastructure.docx_render_utils import (
 )
 from infrastructure.text_utils import clean_text_for_word
 
-# --- CORPORATE STYLING CONSTANTS ---
+# Define constants for branding and document styling.
 COLOR_BLUE = "0072BC"
 COLOR_HEADER_BG = "D9EAF7"
 COLOR_ROW_ALT = "F2F2F2"
 def format_currency_custom(value: float, thousands_sep: str, decimal_sep: str) -> str:
+    """Formats a float into a string with custom thousands and decimal separators.
+
+    The input value is first formatted to a string with exactly two decimal
+    places. The integer part is then grouped by thousands using the provided
+    separator, and the standard decimal point is replaced with the custom
+    decimal separator.
+
+    Args:
+        value: The numeric value to format.
+        thousands_sep: The character to use as the thousands separator.
+        decimal_sep: The character to use as the decimal separator.
+
+    Returns:
+        The formatted numeric string.
+    """
     parts = f"{value:.2f}".split(".")
     integer_part = parts[0]
     decimal_part = parts[1]
@@ -34,7 +49,7 @@ def format_currency_custom(value: float, thousands_sep: str, decimal_sep: str) -
     return f"{formatted_integer}{decimal_sep}{decimal_part}"
 
 
-# SOTA 2026: Diccionario completo de localización (i18n) para escalabilidad multi-país absoluta
+# Use an internationalization (i18n) dictionary to support multiple locales.
 LANG_VOCAB = {
     "es": {
         "title": "Informe de Situación Actual (AS-IS)",
@@ -167,6 +182,16 @@ LANG_VOCAB = {
 }
 
 def shade_cell(cell, color_hex):
+    """Applies a background color shading to a table cell.
+
+    This function directly manipulates the underlying Open Office XML (OOXML)
+    of the cell's properties to set its background fill color.
+
+    Args:
+        cell (docx.table._Cell): The table cell object to modify.
+        color_hex (str): A six-character RRGGBB hexadecimal string representing
+            the background color (e.g., 'FFC000').
+    """
     tcPr = cell._tc.get_or_add_tcPr()
     shd = OxmlElement("w:shd")
     shd.set(qn("w:val"), "clear")
@@ -175,33 +200,72 @@ def shade_cell(cell, color_hex):
     tcPr.append(shd)
 
 def set_cell_border_white(cell):
-    """Aplica bordes blancos gruesos a las celdas del mapa de calor para lograr un diseño de mosaico premium."""
+    r"""{'docstring': 'Set a 2.0 pt white border on a table cell.\n\nDirectly manipulates the underlying Office Open XML (OOXML) representation\nof a table cell to apply a single, white, 2.0 pt border to all four sides.\nThis effect is typically used to create visual separation between cells in\na heatmap-style table, giving them a tiled appearance.\n\nArgs:\n    cell (docx.table.Cell): The target table cell object whose borders will\n        be modified in-place.\n\nRaises:\n    AttributeError: If the provided `cell` object does not conform to the\n        expected internal OOXML structure.'}."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcBorders = OxmlElement('w:tcBorders')
     
     for border_name in ['top', 'left', 'bottom', 'right']:
         border = OxmlElement(f'w:{border_name}')
         border.set(qn('w:val'), 'single')
-        border.set(qn('w:sz'), '16') # 16 = 2.0 pt de grosor
+        border.set(qn('w:sz'), '16') # The OpenXML value of 16 corresponds to a 2.0 pt border thickness (16 / 8 = 2.0 pt).
         border.set(qn('w:space'), '0')
-        border.set(qn('w:color'), 'FFFFFF') # Blanco puro
+        border.set(qn('w:color'), 'FFFFFF') #
         tcBorders.append(border)
         
     tcPr.append(tcBorders)
 
 def set_cell_text_custom(cell, text, bold=False, font_size=9, align=WD_ALIGN_PARAGRAPH.LEFT, color_rgb=None):
-    # Saneamiento SOTA: Erradicar asteriscos accidentales del texto
+    r"""Populates a `docx` table cell with richly formatted, multi-line text.
+
+    This function processes an input string by clearing the target cell and then
+    inserting the string as a series of formatted paragraphs. It applies several
+    formatting rules:
+
+    - Sanitization: Removes markdown emphasis characters (`*`, `_`, `**`, `__`).
+    - Paragraphs: Each line in the input string (separated by `\n` or `\n`)
+      becomes a separate paragraph in the cell.
+    - Bullet Points: Lines are prefixed with bullet points (`•` for top-level,
+      `-` for indented sub-points).
+    - Hierarchy: Indentation is applied to lines that start with leading
+      whitespace or a hyphen.
+    - Label Highlighting: Lines containing a colon (e.g., "Gaps: ...") are split,
+      with the text before the colon rendered in bold.
+    - Citation Formatting: Source citations matching the pattern `[Ref: ...]` are
+      extracted and appended with a distinct style (smaller, italic, gray font).
+
+    For single-line input without newlines, processing is delegated to the
+    `set_cell_text` helper function.
+
+    Args:
+        cell (docx.table._Cell): The `python-docx` table cell object to modify.
+            Any existing content in the cell will be cleared.
+        text (str): The content to insert into the cell. Newline characters are
+            interpreted as paragraph breaks.
+        bold (bool): If True, applies bold formatting to entire lines that do not
+            contain a formatting label (i.e., a colon). Defaults to False.
+        font_size (int): The font size in points (Pt). Defaults to 9.
+        align (WD_ALIGN_PARAGRAPH): An alignment constant from the
+            `docx.enum.text.WD_ALIGN_PARAGRAPH` enumeration. Defaults to
+            `WD_ALIGN_PARAGRAPH.LEFT`.
+        color_rgb (docx.shared.RGBColor or None): An `RGBColor` object for the
+            primary text color. If None, the style's default color is used.
+            Defaults to None.
+
+    Returns:
+        None. The `cell` object is modified in-place.
+    """
+    # Sanitization: Remove markdown emphasis characters from body text.
     clean_txt = str(text).replace("**", "").replace("__", "").replace("*", "").replace("_", "")
     
-    # Si el texto contiene saltos de línea (físicos o escapados), construimos párrafos separados
+    # Handle multi-line input by splitting the text into separate paragraphs at each newline character.
     if "\n" in clean_txt or "\\n" in clean_txt:
-        # Limpiar los párrafos vacíos por defecto que python-docx añade al crear la celda
+        # Remove the default empty paragraph that `python-docx` adds on cell creation to avoid unwanted vertical space.
         for p in list(cell.paragraphs):
             cell._tc.remove(p._element)
             
         raw_lines = clean_txt.replace("\\n", "\n").split("\n")
         for line in raw_lines:
-            # Conservar espacios iniciales para detectar jerarquía antes de hacer strip
+            # Preserve leading whitespace for subsequent hierarchy detection; it will be stripped later.
             is_subpoint = (line.startswith("   ") or line.strip().startswith("-"))
             
             clean_line = line.strip()
@@ -213,26 +277,26 @@ def set_cell_text_custom(cell, text, bold=False, font_size=9, align=WD_ALIGN_PAR
             p.paragraph_format.space_before = Pt(1)
             p.paragraph_format.alignment = align
             
-            # Quitar viñetas anteriores para reconstruirlas uniformemente
+            # Clear any existing list formatting from the paragraph to ensure a consistent state before applying a new style.
             if clean_line.startswith("•") or clean_line.startswith("-"):
                 clean_line = clean_line[1:].strip()
                 
             if is_subpoint:
-                # SUB-BULLET INDENTADO (Punto 2 - Jerárquico)
+                # Define the style for an indented, secondary bullet point, per requirement 2.
                 p.paragraph_format.left_indent = Inches(0.25)
                 bullet_prefix = "- "
             else:
-                # BULLET PRINCIPAL AL MARGEN
+                #
                 p.paragraph_format.left_indent = Inches(0.0)
                 bullet_prefix = "• "
                 
-            # SOTA 2026: Detección y extracción dinámica de citas humanas [Ref: ...]
+            # Implement detection and extraction of user-provided citations (e.g., '[Ref: ...]').
             ref_text = ""
             if "[Ref:" in clean_line:
                 clean_line, ref_part = clean_line.split("[Ref:", 1)
                 ref_text = "[Ref:" + ref_part
                 
-            # Si tiene etiqueta en negrita (ej: "Brechas:"), la formateamos
+            # Detect and apply bold formatting to leading labels (e.g., 'Gaps:') to enhance scannability.
             if ":" in clean_line:
                 label, desc = clean_line.split(":", 1)
                 run_lbl = p.add_run(f"{bullet_prefix}{label.strip()}: ")
@@ -255,15 +319,15 @@ def set_cell_text_custom(cell, text, bold=False, font_size=9, align=WD_ALIGN_PAR
                 if color_rgb:
                     run.font.color.rgb = color_rgb
                     
-            # Inyectar la referencia humana discreta al final (Itálica, Gris Claro, Letra Pequeña)
+            # Append the source reference to the paragraph with distinct formatting (italic, gray, smaller font size).
             if ref_text:
                 run_ref = p.add_run(f" {ref_text.strip()}")
                 run_ref.font.name = "Arial"
-                run_ref.font.size = Pt(font_size - 1) # Un punto más pequeño
+                run_ref.font.size = Pt(font_size - 1) #
                 run_ref.font.italic = True
-                run_ref.font.color.rgb = RGBColor(120, 130, 140) # Gris claro elegante
+                run_ref.font.color.rgb = RGBColor(120, 130, 140) #
     else:
-        # Texto simple ordinario de una sola línea
+        #
         set_cell_text(cell, clean_txt, bold=bold, align=align, font_size=font_size)
         p = cell.paragraphs[0]
         for r in p.runs:
@@ -271,7 +335,8 @@ def set_cell_text_custom(cell, text, bold=False, font_size=9, align=WD_ALIGN_PAR
                 r.font.color.rgb = color_rgb
 
 def add_body_paragraph(doc, text, bold=False, italic=False, space_after=6, text_color_rgb=(46, 64, 77), style='Normal') -> Any:
-    # Saneamiento SOTA: Erradicar asteriscos accidentales del texto
+    r"""{'docstring': "Adds a sanitized and formatted paragraph to a `docx.Document` object.\n\n    The input text is first sanitized by removing markdown emphasis markers\n    (`*`, `_`, `**`, `__`). The function then adds the cleaned text as a new,\n    justified paragraph formatted with a consistent 'Arial' 10pt font.\n\n    For bulleted styles (e.g., 'List Bullet', 'Bullet'), any text preceding\n    the first colon is automatically rendered in bold to enhance readability;\n    this behavior overrides the `bold` parameter.\n\n    If a specified style name does not exist in the document's template, the\n    function falls back to the 'Normal' style. For a non-existent bulleted\n    style, it also manually prepends a '•' character to simulate a list item.\n\n    Args:\n        doc (docx.document.Document): The document instance to which the\n            paragraph will be added.\n        text (str): The raw string content for the paragraph. Markdown emphasis\n            characters will be removed.\n        bold (bool, optional): If True, applies bold formatting to the entire\n            paragraph. This parameter is ignored for bulleted styles containing\n            a colon. Defaults to False.\n        italic (bool, optional): If True, applies italic formatting to the\n            entire paragraph. Defaults to False.\n        space_after (int, optional): The spacing in points (Pt) to apply after\n            the paragraph. Defaults to 6.\n        text_color_rgb (tuple[int, int, int], optional): An RGB tuple specifying\n            the font color. Each value must be in the range 0-255. Defaults\n            to (46, 64, 77).\n        style (str, optional): The name of the paragraph style to apply from\n            the document template. Defaults to 'Normal'.\n\n    Returns:\n        docx.text.paragraph.Paragraph: The newly created paragraph object that was\n            added to the document.\n\n    Raises:\n        ValueError: If any value in the `text_color_rgb` tuple is outside the\n            valid 0-255 range."}."""
+    # Sanitization: Remove markdown emphasis characters from body text.
     clean_txt = text.replace("**", "").replace("__", "").replace("*", "").replace("_", "")
     
     is_bullet = (style == 'List Bullet' or style == 'Bullet')
@@ -290,7 +355,7 @@ def add_body_paragraph(doc, text, bold=False, italic=False, space_after=6, text_
     p.paragraph_format.space_after = Pt(space_after)
     p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     
-    # SOTA: Auto-bolding on the first 3-4 words of bullet points for executive scanning (usando clean_txt)
+    # Programmatically bold the leading words of each bullet point to improve scannability.
     if is_bullet and ":" in clean_txt:
         parts = clean_txt.split(":", 1)
         run_bold = p.add_run(parts[0] + ":")
@@ -313,7 +378,8 @@ def add_body_paragraph(doc, text, bold=False, italic=False, space_after=6, text_
     return p
 
 def add_heading(doc, text, level, primary_color_rgb=(0, 114, 188)):
-    # Saneamiento SOTA: Erradicar asteriscos de los encabezados
+    r"""{'docstring': "Adds a sanitized and styled heading to a document.\n\n    Sanitizes the input text by removing markdown emphasis characters ('*', '_')\n    before adding it as a heading. The function applies specific paragraph\n    and font styles based on the heading level. Paragraph formatting includes\n    spacing adjustments and ensuring headings are not separated from subsequent\n    paragraphs. Level 1 headings are configured to start on a new page via the\n    'Page break before' style property, preventing the creation of extraneous\n    blank pages.\n\n    Args:\n        doc (docx.document.Document): The document object to which the heading\n            will be added.\n        text (str): The raw heading text from which markdown emphasis will be\n            removed.\n        level (int): The heading level, where 0 represents a title and 1-9\n            represent heading levels.\n        primary_color_rgb (Tuple[int, int, int]): An RGB tuple for the text\n            color. Defaults to (0, 114, 188).\n\n    Returns:\n        docx.text.paragraph.Paragraph: The newly created and styled heading\n            paragraph object.\n\n    Raises:\n        ValueError: If `level` is not an integer between 0 and 9, or if any\n            value in `primary_color_rgb` is outside the 0-255 range."}."""
+    # Sanitization: Remove markdown emphasis characters from heading text.
     clean_txt = text.replace("**", "").replace("__", "").replace("*", "").replace("_", "")
     
     h = doc.add_heading(clean_txt, level)
@@ -321,12 +387,12 @@ def add_heading(doc, text, level, primary_color_rgb=(0, 114, 188)):
     h.paragraph_format.space_after = Pt(6)
     h.paragraph_format.keep_with_next = True
     
-    # SOTA 2026: Cada capítulo principal (Heading 1) comienza de forma obligatoria en una página nueva.
-    # Esto evita las páginas en blanco accidentales causadas por la duplicación de add_page_break() manuales.
+    # Each chapter styled with 'Heading 1' is configured to begin on a new page.
+    # Using the 'Page break before' style property prevents the creation of empty pages that can result from explicit `add_page_break()` calls.
     if level == 1:
         h.paragraph_format.page_break_before = True
     
-    # Custom color and sizes
+    # Define color palettes and dimensional parameters for document elements.
     for run in h.runs:
         run.font.color.rgb = RGBColor(*primary_color_rgb)
         run.font.name = "Arial"
@@ -341,6 +407,7 @@ def add_heading(doc, text, level, primary_color_rgb=(0, 114, 188)):
     return h
 
 def add_spacer(doc, points=12):
+    """Add a vertical spacer to a document via an empty paragraph."""
     p = doc.add_paragraph()
     p.paragraph_format.space_after = Pt(points)
     p.paragraph_format.space_before = Pt(0)
@@ -348,6 +415,30 @@ def add_spacer(doc, points=12):
     return p
 
 def add_toc(doc):
+    r"""Inserts an Office Open XML field code to generate a Table of Contents (TOC).
+
+    This function directly manipulates the underlying OOXML structure of the
+    document to add a complex field for a TOC. It constructs the necessary
+    `w:fldChar` (field character) and `w:instrText` (instruction text)
+    elements. The generated field code is `TOC \\o "1-3" \\h \\z \\u`, which
+    instructs a word processing application to build a hyperlinked TOC using
+    heading levels 1 through 3.
+
+    The inserted TOC is a placeholder that must be updated by the end-user in a
+    host application (e.g., by right-clicking the field and selecting 'Update
+    Field' in Microsoft Word) to populate its content.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` document object to which
+            the TOC field will be added.
+
+    Returns:
+        None. The `doc` object is modified in-place.
+
+    Raises:
+        AttributeError: If `doc` is not a valid `docx.document.Document` object
+            or lacks the required methods for manipulation.
+    """
     p = doc.add_paragraph()
     p.paragraph_format.space_after = Pt(12)
     run = p.add_run()
@@ -367,7 +458,23 @@ def add_toc(doc):
     r_element.append(fldChar3)
 
 def set_update_fields(doc):
-    """Fuerza a Microsoft Word a regenerar y rellenar dinámicamente el índice TOC al abrir."""
+    """Configures the document to automatically update fields upon opening.
+
+    Injects a `w:updateFields` element with its `w:val` attribute set to "true"
+    into the document's core settings XML part (`/word/settings.xml`). This
+    instructs consuming applications, such as Microsoft Word, to regenerate all
+    dynamic fields (e.g., Table of Contents, page number references) when the
+    document is next opened.
+
+    This function modifies the `doc` object in-place.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` document object to be
+            modified.
+
+    Returns:
+        None
+    """
     settings = doc.settings.element
     update_fields = OxmlElement('w:updateFields')
     update_fields.set(qn('w:val'), 'true')
@@ -375,7 +482,7 @@ def set_update_fields(doc):
 
 
 def parse_and_append_markdown_section(doc, md_path: Path, p_color_rgb, text_color_rgb, start_header=None, end_header=None, skip_level_1=False):
-    """Parsea una sección específica de un Markdown inyectando estilos."""
+    r"""{'docstring': "Parses a specified section of a Markdown file and appends it to a DOCX document.\n\nReads a Markdown file and converts its syntax into formatted DOCX elements.\nThe function handles headings (levels 1-4), bullet points (`*` or `-`), and\nblockquotes (`>`). HTML entities within the source file are unescaped.\n\nParsing can be constrained to a specific section by providing `start_header`\nand `end_header` substrings. These are matched case-insensitively against\nlevel 2 headings to start and stop the inclusion process. If the specified\nMarkdown file does not exist, the function returns silently. Certain\nhardcoded placeholder lines for tables are also ignored.\n\nArgs:\n    doc (docx.document.Document): The document object to which content will be\n        appended. This object is modified in-place.\n    md_path (pathlib.Path): The path to the source Markdown file.\n    p_color_rgb (tuple[int, int, int]): An RGB tuple for primary heading styles.\n    text_color_rgb (tuple[int, int, int]): An RGB tuple for body text styles.\n    start_header (Optional[str]): A case-insensitive substring that, when found\n        in a level 2 heading, starts content parsing. If None, parsing\n        begins from the file's start. Defaults to None.\n    end_header (Optional[str]): A case-insensitive substring that, when found\n        in a level 2 heading, terminates content parsing. Defaults to None.\n    skip_level_1 (bool): If True, level 1 headings are skipped and not added\n        to the document. Defaults to False.\n\nReturns:\n    None. The `doc` object is modified in-place.\n\nRaises:\n    IOError: If the file at `md_path` exists but cannot be opened or read."}."""
     if not md_path.exists():
         return
         
@@ -399,11 +506,11 @@ def parse_and_append_markdown_section(doc, md_path: Path, p_color_rgb, text_colo
         if not recording:
             continue
             
-        # Ignorar marcadores especiales de tabla
+        # Skip processing for lines that are markers for table placeholders.
         if "--- TABLA COMPARATIVA" in cleaned or "FORTALEZAS_CLAVE:" in cleaned or "BRECHAS_CLAVE:" in cleaned or "--- FIN TABLA" in cleaned:
             continue
             
-        # 1. Encabezados
+        # Assemble and render Section 1: Chapter Headings.
         if cleaned.startswith("# "):
             if skip_level_1:
                 continue
@@ -423,7 +530,30 @@ def parse_and_append_markdown_section(doc, md_path: Path, p_color_rgb, text_colo
 
 
 def add_appendix_heading(doc, text: str, primary_color_rgb: Any) -> Any:
-    """Agrega un título de apéndice estilo Century Gothic, 16 Pt, Negrita, sin numeración."""
+    """Adds a styled paragraph to a document, formatted as an appendix heading.
+
+    This function creates and appends a new paragraph with specific formatting
+    attributes suitable for an appendix title. The applied styling includes:
+      - Font: Century Gothic, 16pt, Bold.
+      - Color: Set according to `primary_color_rgb`.
+      - Paragraph Spacing: 18pt before and 6pt after.
+      - Pagination: Configured to keep the heading with the subsequent paragraph.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` document object to modify.
+        text (str): The title text for the appendix heading.
+        primary_color_rgb (Union[docx.shared.RGBColor, tuple[int, int, int]]):
+            The RGB color for the heading text, provided as a `python-docx`
+            RGBColor object or a 3-tuple of integers (0-255).
+
+    Returns:
+        docx.text.paragraph.Paragraph: The newly created and appended paragraph
+            object containing the formatted appendix heading.
+
+    Raises:
+        TypeError: If `primary_color_rgb` is a tuple that does not contain
+            exactly three integer elements.
+    """
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(18)
     p.paragraph_format.space_after = Pt(6)
@@ -440,7 +570,29 @@ def add_appendix_heading(doc, text: str, primary_color_rgb: Any) -> Any:
 
 
 def extract_key_bullets_from_md(md_path: Path, section_marker: str) -> list[str]:
-    """Extrae las fortalezas o brechas del archivo conclusions para armar la tabla a dos columnas."""
+    """Extracts bullet point text from a designated section of a Markdown file.
+
+    Parses a Markdown file to locate a section beginning after a specific marker.
+    The function initiates content extraction upon finding a line containing
+    `section_marker`. It then collects all subsequent lines formatted as bullet
+    points (i.e., starting with `* ` or `- `), stripping the marker itself
+    from the captured text. The process also applies HTML entity unescaping to
+    each line read from the source file.
+
+    Extraction is terminated if a line begins with "BRECHAS_CLAVE:",
+    "FORTALEZAS_CLAVE:", contains "--- FIN TABLA", or if the end of the file is
+    reached.
+
+    Args:
+        md_path (pathlib.Path): The file system path to the input Markdown file.
+        section_marker (str): A substring used to identify the line that immediately
+            precedes the target bullet points.
+
+    Returns:
+        list[str]: A list containing the text of each extracted bullet point.
+            Returns an empty list if the file does not exist, the section marker
+            is not found, or the section contains no qualifying bullet points.
+    """
     if not md_path.exists():
         return []
     with open(md_path, 'r', encoding='utf-8') as f:
@@ -461,19 +613,46 @@ def extract_key_bullets_from_md(md_path: Path, section_marker: str) -> list[str]
 
 
 def compile_docx(tower_dir: str, output_path: str):
+    """Assembles a DOCX report from modular source files and assessment data.
+
+    Generates a styled DOCX report by orchestrating content from a structured
+    directory of source files. The function integrates corporate branding profiles,
+    internationalization (i18n) locales, assessment data (JSON, CSV), and
+    narrative sections (Markdown) into a Word template. The final document
+    includes a cover page, table of contents, executive summary, maturity
+    analysis, quantitative risk matrix, and appendices.
+
+    Args:
+        tower_dir: The root directory path for a specific assessment. This
+            directory must contain an `asis_modules` subdirectory with Markdown
+            and CSV content, along with root-level JSON files for the assessment
+            payload (e.g., `blueprint_*.json`) and scoring results
+            (`scoring_output.json`).
+        output_path: The full destination file path for the compiled DOCX document.
+            The parent directory will be created if it does not exist.
+
+    Returns:
+        None. The document is generated and saved to the specified `output_path`.
+
+    Raises:
+        FileNotFoundError: If required input files or directories are not found.
+        json.JSONDecodeError: If a JSON configuration or data file is malformed.
+        ValueError: If data within a source file cannot be parsed into the
+            expected numeric type.
+    """
     tower_dir_obj = Path(tower_dir)
     modules_dir = tower_dir_obj / "asis_modules"
     
     print(f"📦 Compilando Anexo Técnico AS-IS Word desde módulos en: {modules_dir}")
     
-    # SOTA 2026: Carga de localización i18n desde archivo de gobernanza (Universal Multi-Country)
+    # Internationalization (i18n) settings are loaded from a central configuration file to support multiple regions.
     locales_path = Path("engine_config/locales.json")
     locales = {}
     if locales_path.exists():
         with open(locales_path, "r", encoding="utf-8-sig") as lf:
             locales = json.load(lf)
             
-    # SOTA 2026: Carga dinámica de perfiles de marca de NTT DATA
+    # Dynamically load corporate brand profiles based on the operational context.
     brand_path = Path("engine_config/brand_profile.json")
     with open(brand_path, "r", encoding="utf-8-sig") as bf:
         brand = json.load(bf)
@@ -486,13 +665,13 @@ def compile_docx(tower_dir: str, output_path: str):
     alt_row_hex = styling.get("alternate_row_color_hex", "F2F2F2")
     text_color_rgb = styling.get("text_dark_color_rgb", [46, 64, 77])
     
-    # Convert hex color to RGB tuple for headings
+    #
     r_color = int(p_color_hex[0:2], 16)
     g_color = int(p_color_hex[2:4], 16)
     b_color = int(p_color_hex[4:6], 16)
     p_color_rgb = (r_color, g_color, b_color)
     
-    # Cargar plantilla pre-estilizada
+    #
     from infrastructure.runtime_paths import resolve_tower_annex_template_path
     template_path = resolve_tower_annex_template_path()
     try:
@@ -502,16 +681,16 @@ def compile_docx(tower_dir: str, output_path: str):
         doc = Document()
         print("   ⚠️ No se encontró plantilla. Inicializando documento en blanco.")
 
-    # LIMPIEZA ELITE: Vaciar párrafos y tablas placeholder de la plantilla
+    # Initialize the document by removing all placeholder paragraphs and tables from the template.
     for p in list(doc.paragraphs):
         p._element.getparent().remove(p._element)
     for t in list(doc.tables):
         t._element.getparent().remove(t._element)
 
-    # SOTA 2026: Resolución dinámica del archivo del blueprint_payload (Universal Multi-Tenant)
+    # The `blueprint_payload` file path is resolved dynamically to support a multi-tenant architecture.
     payload_path = next(tower_dir_obj.glob("blueprint_*_payload.json"), None)
     if not payload_path:
-        payload_path = tower_dir_obj / "blueprint_t2_payload.json" # Fallback de seguridad
+        payload_path = tower_dir_obj / "blueprint_t2_payload.json" #
         
     scoring_path = tower_dir_obj / "scoring_output.json"
     
@@ -524,9 +703,9 @@ def compile_docx(tower_dir: str, output_path: str):
     client_group = None
     custom_overview_intro = None
     
-    # Inicialización de metadatos dinámicos i18n y solvers
-    doc_lang = "es" # Idioma por defecto
-    doc_date = datetime.now().strftime("%d %B %Y") # Fecha del sistema por defecto
+    #
+    doc_lang = "es" #
+    doc_date = datetime.now().strftime("%d %B %Y") # Use the current system date if a date is not provided in the payload.
     doc_version = "1.0"
     currency = "€"
     
@@ -536,11 +715,11 @@ def compile_docx(tower_dir: str, output_path: str):
             tower_meta = b_data.get("document_meta", {})
             tower_name = tower_meta.get("tower_name", "Desconocida")
             client_name = tower_meta.get("client_name", "Cliente")
-            client_group = tower_meta.get("client_parent_group") # Carga dinámica de holding
+            client_group = tower_meta.get("client_parent_group") #
             global_fair_ale = b_data.get("total_fair_ale", 0.0)
-            custom_overview_intro = b_data.get("platform_overview_intro") # Carga de introducción personalizada
+            custom_overview_intro = b_data.get("platform_overview_intro") #
             
-            # Carga de parámetros i18n del payload (Zero-Assumptions Standard)
+            # Load internationalization (i18n) parameters from the input payload. The implementation avoids using default or hardcoded locales.
             doc_lang = tower_meta.get("language", "es").lower()
             doc_date = tower_meta.get("date", doc_date)
             doc_version = tower_meta.get("version", doc_version)
@@ -553,15 +732,15 @@ def compile_docx(tower_dir: str, output_path: str):
             global_band = s_data.get("maturity_band_from_exact", {}).get("label", "Definido")
             global_reading = s_data.get("maturity_band_from_exact", {}).get("reading", "Gobernanza estándar.")
 
-    # Resolver diccionario de traducciones de la sesión actual de forma universal (Zero-Assumption)
+    # Resolve the translation dictionary for the current session. This implementation is designed to be tenant-agnostic.
     vocab_fallback = LANG_VOCAB.get(doc_lang, LANG_VOCAB.get("es", {}))
     vocab_loaded = locales.get(doc_lang, locales.get("es", {}))
     vocab = {**vocab_fallback, **vocab_loaded}
     org_label = "holding" if client_group else ("group" if doc_lang == "en" else "organización")
 
-    # ---------------------------------------------------------
-    # 0. PORTADA CORPORATIVA ELEGANTE (Nivel Top Mundial)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Section 0: Corporate Cover Page.
+    #
     add_spacer(doc, 40)
     
     p_corp = doc.add_paragraph()
@@ -594,7 +773,7 @@ def compile_docx(tower_dir: str, output_path: str):
     run_cli_lbl.font.size = Pt(10)
     run_cli_lbl.font.color.rgb = RGBColor(120, 130, 140)
     
-    # SANEAMIENTO PORTADA: Eliminar fugas de holding Red Eléctrica de la portada (Punto 1)
+    # Data Sanitization: Avoid hardcoding client-specific holding company names on the cover page to prevent data leakage, per requirement 1.
     if client_group:
         run_cli = p_client.add_run(f"{client_name.upper()} ({client_group})\n")
     else:
@@ -618,36 +797,36 @@ def compile_docx(tower_dir: str, output_path: str):
     run_date.font.size = Pt(9.5)
     run_date.font.color.rgb = RGBColor(150, 150, 150)
     
-    # 0.1. El salto de página manual de la Portada hacia el Índice
+    #
     doc.add_page_break()
 
-    # ---------------------------------------------------------
-    # 0.1 ÍNDICE / TABLA DE CONTENIDOS (TOC NATIVO - Título 4)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Section 0.1: Table of Contents (TOC).
+    #
     add_heading(doc, vocab["toc_title"], level=4, primary_color_rgb=p_color_rgb)
     add_toc(doc)
     
-    # SOTA 2026: Retirados todos los saltos de página manuales intermedios entre capítulos.
-    # El salto de página se ejecuta de forma natural y nativa gracias a que 'Heading 1'
-    # tiene configurada de forma obligatoria la propiedad h.paragraph_format.page_break_before = True.
+    # Manual page breaks are not used. Page breaks between chapters are controlled by the 'Page break before' property of the 'Heading 1' style.
+    # A page break is automatically inserted before this element. The underlying 'Heading 1' style in the document template is configured with the 'Page break before' property.
+    # The `page_break_before` property is enabled on this style to ensure each chapter begins on a new page.
 
-    # ---------------------------------------------------------
-    # CAPÍTULO 1: RESUMEN EJECUTIVO Y CONTEXTO DE NEGOCIO (The Hook - Punto 1)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Chapter 1: Executive Summary and Business Context.
+    #
     parse_and_append_markdown_section(doc, modules_dir / "02_resumen_ejecutivo.md", p_color_rgb, text_color_rgb)
     
-    # ---------------------------------------------------------
-    # CAPÍTULO 2: OBJETIVO, ALCANCE Y METODOLOGÍA DEL ASSESSMENT (Unificado y completo al inicio)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Chapter 2: Objective, Scope, and Assessment Methodology.
+    #
     add_heading(doc, vocab["justification_table_headers"][0].split(" / ")[1] if "/" in vocab["justification_table_headers"][0] else "Metodología", level=1, primary_color_rgb=p_color_rgb)
     parse_and_append_markdown_section(doc, modules_dir / "01_introduccion.md", p_color_rgb, text_color_rgb, skip_level_1=True)
 
-    # ---------------------------------------------------------
-    # CAPÍTULO 3: PERFIL DE MADUREZ Y EVALUACIÓN GENERAL (The Diagnosis)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Chapter 3: Maturity Profile and General Evaluation.
+    #
     add_heading(doc, vocab["radar_title"], level=1, primary_color_rgb=p_color_rgb)
     
-    # 3.1 Cuadro de Mando Global (Global Maturity Dashboard - cols=2 - Centrado - Punto 2)
+    # Assemble and render Section 3.1: Global Maturity Dashboard; centered, 2-column layout per requirement 2.
     add_heading(doc, vocab["dashboard_title"], level=2, primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["dashboard_intro"], text_color_rgb=text_color_rgb)
     
@@ -655,46 +834,46 @@ def compile_docx(tower_dir: str, output_path: str):
     dash_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     finalize_table(dash_table)
     
-    # SANEAMIENTO CONTENIDO: Resolver scores y bandas cualitativas 100% dinámicos desde la Fuente de Verdad (Multitenant Absoluto)
+    # Data Sanitization: Ensure data integrity by dynamically resolving scores and qualitative bands from the canonical scoring output.
     formatted_global_score = f"{global_score:.2f}".replace(".", ",") if doc_lang == "es" else f"{global_score:.2f}"
     display_score_str = f"{formatted_global_score} / 5,00" if doc_lang == "es" else f"{formatted_global_score} / 5.00"
     display_band_str = f"{global_band}"
     
-    # Cabeceras del Cuadro de Mando
+    #
     for i, h_txt in enumerate([vocab["score_lbl"], vocab["maturity_lbl"]]):
         set_cell_text_custom(dash_table.rows[0].cells[i], h_txt, bold=True, font_size=9, color_rgb=RGBColor(255,255,255), align=WD_ALIGN_PARAGRAPH.CENTER)
         shade_cell(dash_table.rows[0].cells[i], p_color_hex)
-        dash_table.rows[0].cells[i].width = Inches(3.25) # Estirado a 3.25"
+        dash_table.rows[0].cells[i].width = Inches(3.25) #
         
     set_cell_text_custom(dash_table.rows[1].cells[0], display_score_str, bold=True, font_size=16, align=WD_ALIGN_PARAGRAPH.CENTER)
     set_cell_text_custom(dash_table.rows[1].cells[1], display_band_str, bold=True, font_size=12, align=WD_ALIGN_PARAGRAPH.CENTER)
     
-    # Sombreados de severidad de acuerdo con el score definitivo leído de los datos (score < 3.40 -> Amarillo cálido)
+    # Apply conditional cell shading based on the final severity score. A score below 3.40 receives a yellow background.
     shade_cell(dash_table.rows[1].cells[0], "FFF3CD" if global_score < 3.4 else "D9F2D9")
     shade_cell(dash_table.rows[1].cells[1], "FFF3CD" if global_score < 3.4 else "D9F2D9")
     
-    # Estirar celdas de datos
+    # Set data cells to expand to the full table width to maintain a fixed layout.
     dash_table.rows[1].cells[0].width = Inches(3.25)
-    dash_table.rows[1].cells[1].width = Inches(3.25) # Total = 6.5"
+    dash_table.rows[1].cells[1].width = Inches(3.25) #
     
-    # Removido autofit_table_to_contents para preservar el ancho de ventana de 6.5"
+    # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
     dash_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     add_spacer(doc, 10)
     
     add_body_paragraph(doc, f"**{vocab['resilience_reading']}** {global_reading}", text_color_rgb=text_color_rgb)
     add_spacer(doc, 15)
     
-    # 3.2 Gráfico de Radar de Página Completa (Punto 2 - Grande 6.0")
+    # Assemble and render Section 3.2: Full-Page Radar Chart; 6.0-inch width per requirement 2.
     add_heading(doc, vocab["radar_title"], level=2, primary_color_rgb=p_color_rgb)
     radar_path = tower_dir_obj / "pillar_radar_chart.generated.png"
     if radar_path.exists():
         add_spacer(doc, 5)
-        doc.add_picture(str(radar_path), width=Inches(6.0)) # Stretched to 6.0 inches
+        doc.add_picture(str(radar_path), width=Inches(6.0)) #
         p_img = doc.paragraphs[-1]
         p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
         add_spacer(doc, 15)
         
-    # 3.3 Matriz de Justificación de Notas (ALINEADA A LA IZQUIERDA - Sin columna Meta TO-BE)
+    # Assemble and render Section 3.3: Score Justification Matrix; left-aligned, omits 'TO-BE Target' column.
     csv_mat_path = modules_dir / "04_matriz_madurez.csv"
     if csv_mat_path.exists():
         mat_table = doc.add_table(rows=1, cols=3)
@@ -708,7 +887,7 @@ def compile_docx(tower_dir: str, output_path: str):
             
         with open(csv_mat_path, 'r', encoding='utf-8') as cf:
             reader = csv.reader(cf, delimiter=';')
-            next(reader) # Saltar cabecera
+            next(reader) #
             
             for r_idx, row_data in enumerate(reader):
                 row = mat_table.add_row()
@@ -723,24 +902,24 @@ def compile_docx(tower_dir: str, output_path: str):
         autofit_table_to_contents(mat_table)
         add_spacer(doc, 20)
         
-    # ---------------------------------------------------------
-    # CAPÍTULO 4: DIAGNÓSTICO TECNOLÓGICO Y ANÁLISIS TRANSVERSAL DE LA PLATAFORMA (Fusión de Élite)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Chapter 4: Technology Diagnosis and Cross-Cutting Platform Analysis.
+    #
     add_heading(doc, vocab["platform_overview_title"], level=1, primary_color_rgb=p_color_rgb)
     
-    # 4.1. Descripción de la Plataforma de Infraestructura Actual (El Baseline)
+    # Assemble and render Section 4.1: Current State Infrastructure Platform Description.
     add_heading(doc, vocab["platform_overview_title"], level=2, primary_color_rgb=p_color_rgb)
     
-    # SANEAMIENTO VOLUMETRÍAS: Desacoplar volumetría dura para que sea 100% universal (Punto 2)
+    # Data Sanitization: Decouple volumetric data from the core logic to ensure scalability, per requirement 2.
     p_vol = doc.add_paragraph()
     p_vol.paragraph_format.space_after = Pt(10)
     p_vol.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     
     if custom_overview_intro:
-        # Si el payload contiene un overview detallado personalizado por el RAG de la torre
+        # Conditionally process the detailed overview if present in the payload. This content may be populated by an external RAG system.
         overview_text = custom_overview_intro.strip()
     else:
-        # Fallback genérico, elegante e impecable de nivel consultor senior que se adapta a cualquier cliente y torre
+        # Provide a generic fallback message that is not specific to any client or technology.
         overview_text = (
             f"{vocab['default_overview_text']}{tower_name} de {client_name} se basan "
             f"en un modelo de provisión técnica y telemetrías estructuradas recogidas durante la fase de auditoría. "
@@ -757,11 +936,11 @@ def compile_docx(tower_dir: str, output_path: str):
     
     parse_and_append_markdown_section(doc, modules_dir / "03_descripcion_plataforma.md", p_color_rgb, text_color_rgb, skip_level_1=True)
     
-    # 4.2. Fortalezas y Brechas Clave (SWOT y deudas de la torre)
+    # Assemble and render Section 4.2: Key Strengths and Gaps.
     add_heading(doc, vocab["swot_title"], level=2, primary_color_rgb=p_color_rgb)
     parse_and_append_markdown_section(doc, modules_dir / "07_conclusiones.md", p_color_rgb, text_color_rgb, start_header="Resumen de Situación", end_header="Fortalezas y Brechas")
     
-    # Tabla de Diagnóstico Rápido: FORTALEZAS VS BRECHAS (¡A DOS COLUMNAS - ALINEADA A LA IZQUIERDA - Sin bullet manual!)
+    # Assemble and render the Quick Diagnosis Table using a two-column, left-aligned layout.
     strengths = extract_key_bullets_from_md(modules_dir / "07_conclusiones.md", "FORTALEZAS_CLAVE:")
     gaps = extract_key_bullets_from_md(modules_dir / "07_conclusiones.md", "BRECHAS_CLAVE:")
     
@@ -771,10 +950,10 @@ def compile_docx(tower_dir: str, output_path: str):
         diag_table.style = 'Table Grid'
         
         set_cell_text_custom(diag_table.rows[0].cells[0], vocab["swot_headers"][0], bold=True, font_size=9.5, color_rgb=RGBColor(255,255,255), align=WD_ALIGN_PARAGRAPH.CENTER)
-        shade_cell(diag_table.rows[0].cells[0], "28B463") # Green shading
+        shade_cell(diag_table.rows[0].cells[0], "28B463") #
         
         set_cell_text_custom(diag_table.rows[0].cells[1], vocab["swot_headers"][1], bold=True, font_size=9.5, color_rgb=RGBColor(255,255,255), align=WD_ALIGN_PARAGRAPH.CENTER)
-        shade_cell(diag_table.rows[0].cells[1], "C0392B") # Red shading
+        shade_cell(diag_table.rows[0].cells[1], "C0392B") #
         
         max_rows = max(len(strengths), len(gaps))
         for r_idx in range(max_rows):
@@ -792,27 +971,27 @@ def compile_docx(tower_dir: str, output_path: str):
         autofit_table_to_contents(diag_table)
         add_spacer(doc, 20)
         
-    # Implicaciones Operativas Clave
+    # Assemble and render the Key Operational Implications section.
     parse_and_append_markdown_section(doc, modules_dir / "07_conclusiones.md", p_color_rgb, text_color_rgb, start_header="Implicaciones Operativas Clave", end_header="Coste de Inacción")
     doc.add_paragraph()
     
-    # 4.3. Análisis Transversal de Capacidades (Paradigma, Deuda y Patrones Comunes)
+    # Assemble and render Section 4.3: Cross-Cutting Capability Analysis.
     add_heading(doc, vocab["transversal_title"], level=2, primary_color_rgb=p_color_rgb)
     parse_and_append_markdown_section(doc, modules_dir / "05_transversal.md", p_color_rgb, text_color_rgb, skip_level_1=True)
 
-    # ---------------------------------------------------------
-    # CAPÍTULO 5: MATRIZ DE RIESGO CUANTITATIVA (FAIR HEATMAP & SEGMENTED MATRIX)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Chapter 5: Quantitative Risk Matrix.
+    #
     add_heading(doc, vocab["risk_matrix_title"], level=1, primary_color_rgb=p_color_rgb)
     
-    # Formatear el ALE de forma dinámica bajo localización matemática aislada (Punto 2)
+    # Format the Annualized Loss Expectancy (ALE) value. Localization logic is isolated in a separate function, per requirement 2.
     t_sep = vocab.get("thousands_sep", ".")
     d_sep = vocab.get("decimal_sep", ",")
     formatted_ale = format_currency_custom(global_fair_ale, t_sep, d_sep)
         
     add_body_paragraph(doc, f"{vocab['risk_intro_1']}{org_label}{vocab['risk_intro_2']}**{formatted_ale} {currency}**{vocab['risk_intro_3']}", text_color_rgb=text_color_rgb)
     
-    # Leer riesgos desde CSV para armar el mapa de calor y agrupar por pilar
+    #
     csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
     risks_data_list = []
     risks_by_pilar = {}
@@ -832,7 +1011,7 @@ def compile_docx(tower_dir: str, output_path: str):
                     "tef": float(row_data[3]),
                     "lm": float(row_data[4]),
                     "ale": float(row_data[5]),
-                    "prioritization_rationale": row_data[6] if len(row_data) > 6 else None # Carga opcional de justificación
+                    "prioritization_rationale": row_data[6] if len(row_data) > 6 else None #
                 }
                 risks_data_list.append(r_item)
                 
@@ -840,7 +1019,7 @@ def compile_docx(tower_dir: str, output_path: str):
                     risks_by_pilar[pilar_full_name] = []
                 risks_by_pilar[pilar_full_name].append(r_item)
                 
-    # 5.1 DIBUJAR MAPA DE CALOR 5x5 PREMIUM (MOSAICO WORD-NATIVE CENTRADO)
+    # Assemble and render Section 5.1: 5x5 Heatmap as a centered, native table mosaic.
     if risks_data_list:
         add_heading(doc, vocab["exposure_summary_title"], level=2, primary_color_rgb=p_color_rgb)
         
@@ -850,23 +1029,23 @@ def compile_docx(tower_dir: str, output_path: str):
             r_lm = min(5, max(1, int(round(r["lm"]))))
             matrix_cells[r_tef][r_lm].append(r["id"])
             
-        # Crear tabla de 6x6 en Word (Headers + 5x5) centrado y estirado a la ventana
+        # Initialize a 6x6 table (5x5 data grid plus headers). The table is centered and set to full page width.
         heatmap_table = doc.add_table(rows=6, cols=6)
         heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER
         finalize_table(heatmap_table)
         
-        # Cabecera Columnas (LM - Impacto)
+        #
         set_cell_text_custom(heatmap_table.rows[0].cells[0], "TEF \\ LM", bold=True, font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
         shade_cell(heatmap_table.rows[0].cells[0], COLOR_BLUE)
         set_cell_border_white(heatmap_table.rows[0].cells[0])
-        heatmap_table.rows[0].cells[0].width = Inches(1.0) # Ancho columna 0
+        heatmap_table.rows[0].cells[0].width = Inches(1.0) #
         for col_idx in range(1, 6):
             set_cell_text_custom(heatmap_table.rows[0].cells[col_idx], f"LM {col_idx}", bold=True, font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
             shade_cell(heatmap_table.rows[0].cells[col_idx], COLOR_BLUE)
             set_cell_border_white(heatmap_table.rows[0].cells[col_idx])
-            heatmap_table.rows[0].cells[col_idx].width = Inches(1.1) # Ancho columnas 1-5 (1.1 * 5 = 5.5 + 1.0 = 6.5" estirado)
+            heatmap_table.rows[0].cells[col_idx].width = Inches(1.1) # Set widths for data columns 1-5. Total width is 6.5 inches: (1.1 inches * 5) + 1.0 inch for the header column.
             
-        # Rellenar la matriz 5x5 de forma simétrica y estirada a la ventana
+        # Populate the 5x5 data matrix with content, ensuring it fills the full width of the table.
         for row_idx, tef_val in enumerate(range(5, 0, -1), 1):
             set_cell_text_custom(heatmap_table.rows[row_idx].cells[0], f"TEF {tef_val}", bold=True, font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
             shade_cell(heatmap_table.rows[row_idx].cells[0], COLOR_BLUE)
@@ -876,7 +1055,7 @@ def compile_docx(tower_dir: str, output_path: str):
             for col_idx, lm_val in enumerate(range(1, 6), 1):
                 cell = heatmap_table.rows[row_idx].cells[col_idx]
                 
-                # Configurar dimensiones perfectas de mosaico de ventana
+                # Configure table dimensions to create a fixed, full-width mosaic layout.
                 cell.width = Inches(1.1)
                 heatmap_table.rows[row_idx].height = Inches(0.85)
                 
@@ -888,19 +1067,19 @@ def compile_docx(tower_dir: str, output_path: str):
                 
                 severity = tef_val * lm_val
                 if severity >= 15:
-                    shade_cell(cell, "FADBD8") # Soft Red
+                    shade_cell(cell, "FADBD8") #
                 elif severity >= 8:
-                    shade_cell(cell, "FCF3CF") # Soft Amber
+                    shade_cell(cell, "FCF3CF") #
                 else:
-                    shade_cell(cell, "D5F5E3") # Soft Green
+                    shade_cell(cell, "D5F5E3") #
                     
-        heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER # Force alignment post-autofit
+        heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER # Recalculate cell content alignment. This is required because the initial auto-fit operation may not apply alignment correctly.
         add_spacer(doc, 15)
             
-        # DIBUJAR LEYENDA METODOLÓGICA DE LAS ESCALAS (Punto 1 - Leyenda)
+        # Assemble and render the Methodological Scale Legend, per requirement 1.
         add_heading(doc, "Leyendas Metodológicas", level=3, primary_color_rgb=p_color_rgb)
         
-        # Tabla 1: Escala de Frecuencia de Amenaza (TEF) (Estirada a la ventana - Punto 1)
+        # Assemble and render Table 1: Threat Event Frequency (TEF) Scale; full-width per requirement 1.
         add_heading(doc, vocab["tef_title"], level=4, primary_color_rgb=p_color_rgb)
         tef_table = doc.add_table(rows=1, cols=3)
         tef_table.alignment = WD_TABLE_ALIGNMENT.LEFT
@@ -910,10 +1089,10 @@ def compile_docx(tower_dir: str, output_path: str):
             set_cell_text_custom(tef_table.rows[0].cells[i], h_txt, bold=True, font_size=8.5, color_rgb=RGBColor(255,255,255), align=WD_ALIGN_PARAGRAPH.CENTER)
             shade_cell(tef_table.rows[0].cells[i], p_color_hex)
             
-        # Configurar anchos estirados para cabecera TEF
+        #
         tef_table.rows[0].cells[0].width = Inches(1.0)
         tef_table.rows[0].cells[1].width = Inches(1.2)
-        tef_table.rows[0].cells[2].width = Inches(4.3) # Total = 6.5"
+        tef_table.rows[0].cells[2].width = Inches(4.3) #
             
         tef_data = [
             ("TEF 1", "Muy Bajo" if doc_lang == "es" else "Very Low", "< 0,1 eventos/año (menos de una vez cada 10 años)" if doc_lang == "es" else "< 0.1 events/year (less than once every 10 years)"),
@@ -928,7 +1107,7 @@ def compile_docx(tower_dir: str, output_path: str):
             set_cell_text_custom(row.cells[1], row_vals[1], font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
             set_cell_text_custom(row.cells[2], row_vals[2], font_size=8)
             
-            # Aplicar anchos estirados a las filas TEF
+            #
             row.cells[0].width = Inches(1.0)
             row.cells[1].width = Inches(1.2)
             row.cells[2].width = Inches(4.3)
@@ -938,10 +1117,10 @@ def compile_docx(tower_dir: str, output_path: str):
                 shade_cell(row.cells[1], alt_row_hex)
                 shade_cell(row.cells[2], alt_row_hex)
                 
-        # Removido autofit_table_to_contents para preservar el ancho de ventana de 6.5"
+        # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
         add_spacer(doc, 10)
         
-        # Tabla 2: Escala de Magnitud de Pérdida (LM) (Estirada a la ventana - Punto 1)
+        # Assemble and render Table 2: Loss Magnitude (LM) Scale; full-width per requirement 1.
         add_heading(doc, vocab["lm_title"], level=4, primary_color_rgb=p_color_rgb)
         lm_table = doc.add_table(rows=1, cols=3)
         lm_table.alignment = WD_TABLE_ALIGNMENT.LEFT
@@ -951,10 +1130,10 @@ def compile_docx(tower_dir: str, output_path: str):
             set_cell_text_custom(lm_table.rows[0].cells[i], f"{h_txt} ({currency})", bold=True, font_size=8.5, color_rgb=RGBColor(255,255,255), align=WD_ALIGN_PARAGRAPH.CENTER)
             shade_cell(lm_table.rows[0].cells[i], p_color_hex)
             
-        # Configurar anchos estirados para cabecera LM
+        #
         lm_table.rows[0].cells[0].width = Inches(1.0)
         lm_table.rows[0].cells[1].width = Inches(1.2)
-        lm_table.rows[0].cells[2].width = Inches(4.3) # Total = 6.5"
+        lm_table.rows[0].cells[2].width = Inches(4.3) #
             
         lm_data = [
             ("LM 1", "Muy Bajo" if doc_lang == "es" else "Very Low", f"< 1.000 {currency}" if doc_lang == "es" else f"< 1,000 {currency}"),
@@ -969,7 +1148,7 @@ def compile_docx(tower_dir: str, output_path: str):
             set_cell_text_custom(row.cells[1], row_vals[1], font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
             set_cell_text_custom(row.cells[2], row_vals[2], font_size=8)
             
-            # Aplicar anchos estirados a las filas LM
+            #
             row.cells[0].width = Inches(1.0)
             row.cells[1].width = Inches(1.2)
             row.cells[2].width = Inches(4.3)
@@ -979,10 +1158,10 @@ def compile_docx(tower_dir: str, output_path: str):
                 shade_cell(row.cells[1], alt_row_hex)
                 shade_cell(row.cells[2], alt_row_hex)
                 
-        # Removido autofit_table_to_contents para preservar el de la ventana
+        # Disable the `autofit` property to enforce a fixed table width relative to the page margins.
         add_spacer(doc, 20)
 
-    # 5.2 TOP DE RIESGOS PRIORITARIOS (Con sangrado e introducción jerárquica - Punto 4.1)
+    # Assemble and render Section 5.2: Top Priority Risks; hierarchical indentation per requirement 4.1.
     if risks_data_list:
         add_heading(doc, vocab["top_risks_title"], level=2, primary_color_rgb=p_color_rgb)
         add_body_paragraph(doc, vocab["top_risks_intro"], text_color_rgb=text_color_rgb)
@@ -994,7 +1173,7 @@ def compile_docx(tower_dir: str, output_path: str):
             p_top = add_body_paragraph(doc, f"{r_item['id']}: {r_item['pilar']} - {r_item['capability']} (ALE: {r_item['ale']:,.0f} {currency})".replace(",", "."), style='Bullet', text_color_rgb=text_color_rgb)
             p_top.paragraph_format.space_after = Pt(2)
             
-            # Sub-bullet jerárquico indentado para el motivo de priorización (Punto 4.1)
+            # Apply an indented, hierarchical sub-bullet style for the prioritization rationale, per requirement 4.1.
             p_mot = doc.add_paragraph()
             p_mot.paragraph_format.left_indent = Inches(0.4)
             p_mot.paragraph_format.space_after = Pt(6)
@@ -1005,10 +1184,10 @@ def compile_docx(tower_dir: str, output_path: str):
             run_mot_lbl.font.size = Pt(9.5)
             run_mot_lbl.font.color.rgb = RGBColor(*text_color_rgb)
             
-            # SANEAMIENTO EXPLICACIONES: Resolver la lógica de priorización de forma 100% genérica (Punto 3)
+            # Data Sanitization: Use a universal prioritization logic resolver to avoid client-specific implementations, per requirement 3.
             mot = r_item.get("prioritization_rationale")
             if not mot:
-                # Si no está en el payload, se genera dinámicamente usando el impacto del riesgo mitigando el hardcoding de Redeia
+                # If a value is not provided in the payload, generate it dynamically based on the risk impact to avoid hardcoded dependencies.
                 biz_impact_txt = r_item.get("business_risk", "Exposición de riesgo crítica que compromete la resiliencia operativa.")
                 mot = f"La persistencia de esta brecha arriesga directamente la continuidad del servicio {org_label}, exponiéndolo a un coste de inacción crítico debido a: {biz_impact_txt}"
                 
@@ -1019,7 +1198,7 @@ def compile_docx(tower_dir: str, output_path: str):
             
         add_spacer(doc, 15)
 
-    # 5.3 REGISTRO DETALLADO SEGMENTADO POR PILAR (ALINEADO A LA IZQUIERDA - ALINEACIÓN LEFT EN CELDAS - Punto 4.2)
+    # Assemble and render Section 5.3: Detailed Risk Register by Pillar; left-aligned content per requirement 4.2.
     add_heading(doc, vocab["detailed_risks_title"], level=2, primary_color_rgb=p_color_rgb)
     
     for p_name, p_risks in risks_by_pilar.items():
@@ -1037,11 +1216,11 @@ def compile_docx(tower_dir: str, output_path: str):
         for r_idx, r in enumerate(p_risks):
             row = table_risks.add_row()
             
-            # 1. ID de Riesgo
+            #
             set_cell_text_custom(row.cells[0], r["id"], bold=True, font_size=8.5, align=WD_ALIGN_PARAGRAPH.CENTER)
             shade_cell(row.cells[0], alt_row_hex)
             
-            # 2. Descripción y Evidencia (ALINEADA ESTRICTAMENTE A LA IZQUIERDA - Punto 4.2)
+            # Assemble and render Section 2: Description and Evidence, left-aligned per requirement 4.2.
             p_desc = row.cells[1].paragraphs[0]
             p_desc.alignment = WD_ALIGN_PARAGRAPH.LEFT
             
@@ -1065,7 +1244,7 @@ def compile_docx(tower_dir: str, output_path: str):
                 run.font.name = "Arial"
                 run.font.size = Pt(8.5)
                 
-            # 3. Riesgo de Negocio e Impacto FAIR (ALINEADO ESTRICTAMENTE A LA IZQUIERDA - Punto 4.2)
+            # Assemble and render Section 3: Business Risk and FAIR Impact, left-aligned per requirement 4.2.
             p_risk = row.cells[2].paragraphs[0]
             p_risk.alignment = WD_ALIGN_PARAGRAPH.LEFT
             
@@ -1088,15 +1267,15 @@ def compile_docx(tower_dir: str, output_path: str):
                 run.font.name = "Arial"
                 run.font.size = Pt(8.5)
             
-            # Severity Shading on Cell 2
+            # Apply conditional color shading to the cell based on the severity value.
             vuln = r.get("vulnerability_level", 3.0) if hasattr(r, "get") else 3.0
-            bg_color = "D9F2D9" # Verde claro
+            bg_color = "D9F2D9" #
             if (tef * vuln) >= 15 or ale >= 1000000:
-                bg_color = "F8D7DA" # Rojo claro
+                bg_color = "F8D7DA" #
             elif (tef * vuln) >= 10 or ale >= 250000:
-                bg_color = "FFF3CD" # Amarillo claro
+                bg_color = "FFF3CD" #
             elif (tef * vuln) >= 5 or ale >= 50000:
-                bg_color = "E2E3E5" # Gris claro
+                bg_color = "E2E3E5" #
             shade_cell(row.cells[2], bg_color)
             
             if r_idx % 2 == 1:
@@ -1105,15 +1284,15 @@ def compile_docx(tower_dir: str, output_path: str):
         autofit_table_to_contents(table_risks)
         add_spacer(doc, 15)
         
-    # ---------------------------------------------------------
-    # CAPÍTULO 6: SIGUIENTES PASOS Y COSTE DE INACCIÓN
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Chapter 6: Next Steps and Cost of Inaction.
+    #
     add_heading(doc, vocab["next_steps_title"], level=1, primary_color_rgb=p_color_rgb)
     parse_and_append_markdown_section(doc, modules_dir / "07_conclusiones.md", p_color_rgb, text_color_rgb, start_header="Coste de Inacción")
 
-    # ---------------------------------------------------------
-    # APÉNDICE A: GLOSARIO / LISTA DE ABREVIATURAS (Estilo FNMT páginas 4-5 - ALINEADO A LA IZQUIERDA - Estirada a la ventana - Punto 1)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Appendix A: Glossary and Abbreviations.
+    #
     add_appendix_heading(doc, vocab["appendix_a_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_a_intro"], text_color_rgb=text_color_rgb)
     
@@ -1130,16 +1309,16 @@ def compile_docx(tower_dir: str, output_path: str):
             set_cell_text_custom(gloss_table.rows[0].cells[i], h_txt, bold=True, font_size=9, color_rgb=RGBColor(255,255,255), align=WD_ALIGN_PARAGRAPH.CENTER)
             shade_cell(gloss_table.rows[0].cells[i], p_color_hex)
         
-        # Configurar anchos estirados para cabecera del glosario
+        #
         gloss_table.rows[0].cells[0].width = Inches(1.5)
-        gloss_table.rows[0].cells[1].width = Inches(5.0) # Total = 6.5"
+        gloss_table.rows[0].cells[1].width = Inches(5.0) #
         
         for g_idx, (term, desc) in enumerate(sorted(glossary.items())):
             row = gloss_table.add_row()
             set_cell_text_custom(row.cells[0], term, bold=True, font_size=8.5)
             set_cell_text_custom(row.cells[1], desc, font_size=8)
             
-            # Aplicar anchos estirados a las filas del glosario
+            #
             row.cells[0].width = Inches(1.5)
             row.cells[1].width = Inches(5.0)
             
@@ -1147,19 +1326,19 @@ def compile_docx(tower_dir: str, output_path: str):
                 shade_cell(row.cells[0], alt_row_hex)
                 shade_cell(row.cells[1], alt_row_hex)
                 
-        # Removido autofit_table_to_contents para preservar el ancho de ventana de 6.5"
+        # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
 
-    # ---------------------------------------------------------
-    # APÉNDICE B: CLÁUSULA DE LIMITACIÓN DE RESPONSABILIDAD (DISCLAIMER)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Appendix B: Limitation of Liability.
+    #
     add_appendix_heading(doc, vocab["appendix_b_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["disclaimer_text_1"], text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, vocab["disclaimer_text_2"], text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, vocab["disclaimer_text_3"], text_color_rgb=text_color_rgb)
 
-    # ---------------------------------------------------------
-    # APÉNDICE C: REGISTRO DE CUSTODIA DE FUENTES DE INFORMACIÓN (Audit Trail - Punto 3)
-    # ---------------------------------------------------------
+    #
+    # Assemble and render Appendix C: Information Source Custody Record.
+    #
     add_appendix_heading(doc, vocab["appendix_c_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_c_intro"], text_color_rgb=text_color_rgb)
     
@@ -1173,14 +1352,14 @@ def compile_docx(tower_dir: str, output_path: str):
         
     source_table.rows[0].cells[0].width = Inches(1.5)
     source_table.rows[0].cells[1].width = Inches(2.0)
-    source_table.rows[0].cells[2].width = Inches(3.0) # Total = 6.5"
+    source_table.rows[0].cells[2].width = Inches(3.0) #
     
-    # SANEAMIENTO APÉNDICE C: Generación de fuentes 100% sincera sin inventar ficheros que no existen (Punto 4)
+    # Data Sanitization: Prevent generation of invalid source file paths in the bibliography, per requirement 4.
     src_data = []
     source_docs = b_data.get("source_documents") if payload_path.exists() else None
     
     if source_docs:
-        # Si están registradas en el payload, las pintamos tal cual son en disco
+        # If source file paths are provided in the payload, use them directly, overriding any dynamic generation logic.
         for doc_item in source_docs:
             src_data.append((
                 doc_item.get("code", "[Doc]"),
@@ -1188,7 +1367,7 @@ def compile_docx(tower_dir: str, output_path: str):
                 doc_item.get("desc", "Documento bajo custodia de auditoría.")
             ))
     else:
-        # Generación de bibliografía lógica adaptando la torre y cliente actual sin inventar archivos crudos falsos
+        # Dynamically generate a context-aware bibliography based on the specified technology stack to avoid invalid source file references.
         src_data = [
             ("[Cuestionario de Autoevaluación]", f"preguntas_{client_name.lower()}_con_notas.txt", f"{vocab['bib_cues']}{tower_name}{vocab['bib_cues_desc']}{client_name}."),
             ("[Dossier de Contexto]", f"contexto_{client_name.lower()}_elite.docx", f"{vocab['bib_contexto']}{client_name}{vocab['bib_contexto_desc']}"),
@@ -1210,10 +1389,10 @@ def compile_docx(tower_dir: str, output_path: str):
             shade_cell(row.cells[1], alt_row_hex)
             shade_cell(row.cells[2], alt_row_hex)
 
-    # SOTA: Forzar regeneración del índice TOC en Word al abrir el documento
+    # Insert a field code to instruct the host application to update the Table of Contents upon opening.
     set_update_fields(doc)
 
-    # Guardar documento final
+    #
     output_path_obj = Path(output_path)
     output_path_obj.parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)

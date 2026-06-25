@@ -1,4 +1,14 @@
 from domain.schemas.asis import AsIsDraft
+from domain.schemas.ast import (
+    DocNode,
+    DocumentAST,
+    HeadingNode,
+    PageBreakNode,
+    ParagraphNode,
+    PictureNode,
+    SpacerNode,
+    TableNode,
+)
 from domain.schemas.common import SectionReview
 from domain.schemas.conclusion import ConclusionDraft
 from domain.schemas.gap import GapDraft
@@ -14,4 +24,12 @@ __all__ = [
     "TodoDraft",
     "ConclusionDraft",
     "SectionReview",
+    "DocumentAST",
+    "DocNode",
+    "ParagraphNode",
+    "HeadingNode",
+    "TableNode",
+    "SpacerNode",
+    "PageBreakNode",
+    "PictureNode",
 ]

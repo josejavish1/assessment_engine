@@ -48,6 +48,27 @@ WORD_RENDER_MODE_ENV = "AE_WORD_RENDER_MODE"
 
 
 def normalize_annex_payload(payload_dict: dict) -> dict:
+    """Normalize the structure of a tower annex payload dictionary.
+
+    This function ensures that a raw data payload dictionary conforms to a
+    standard structure before being used for document rendering. It creates a
+    copy of the input dictionary and performs the following normalizations:
+    - Ensures top-level keys ('document_meta', 'executive_summary', etc.) exist.
+    - Joins list-based 'summary_body' into a single string.
+    - Populates a missing 'headline' and 'key_business_impacts' with defaults.
+    - Transforms a legacy 'tobe_gap' section into separate 'tobe' and 'gap'
+      sections for backward compatibility.
+    - Populates a missing 'domain_introduction' section using data from
+      'document_meta' and 'executive_summary'.
+
+    Args:
+        payload_dict: The raw data dictionary for the annex document. It may
+            have missing keys or legacy structures.
+
+    Returns:
+        A new dictionary with a standardized structure, suitable for rendering.
+        The original input dictionary is not modified.
+    """
     normalized = dict(payload_dict)
     meta = dict(normalized.get("document_meta") or {})
     executive_summary = dict(normalized.get("executive_summary") or {})
@@ -107,6 +128,16 @@ def _replace_client_placeholders(value, client_name: str) -> Any:
 
 
 def insert_toc_after(paragraph) -> None:
+    """Insert a Table of Contents (TOC) into the document after a given paragraph.
+
+    This function adds a new heading titled "Contents" and then inserts a Word
+    field code for a standard TOC that includes heading levels 1 and 2. The new
+    content is styled and formatted according to predefined styles.
+
+    Args:
+        paragraph (docx.text.paragraph.Paragraph): The paragraph object after which
+            the TOC section will be inserted.
+    """
     heading = insert_paragraph_after_block(paragraph)
     heading.add_run("Contents")
     apply_paragraph_style(heading, "TOC Heading", "TtuloTDC")
@@ -121,6 +152,21 @@ def insert_toc_after(paragraph) -> None:
 
 
 def rewrite_paragraph_with_style(paragraph, text: str, *styles: str) -> None:
+    """Rewrite a paragraph with new text and styles.
+
+    This function completely replaces the content and styling of a given paragraph
+    object. It first clears any existing runs and paragraph properties, then
+    applies the new styles, and finally adds the cleaned text. If the cleaned
+    text is empty, the paragraph will remain empty but styled.
+
+    Args:
+        paragraph: The paragraph object to modify in-place.
+        text: The new text content to be placed in the paragraph.
+        *styles: A variable number of style names to apply to the paragraph.
+
+    Returns:
+        None.
+    """
     clean_value = clean_text(text)
     clear_paragraph(paragraph)
     clear_paragraph_properties(paragraph)
@@ -130,6 +176,21 @@ def rewrite_paragraph_with_style(paragraph, text: str, *styles: str) -> None:
 
 
 def rewrite_body_paragraph(paragraph, text: str) -> None:
+    """Rewrite a paragraph with new text and apply standard body formatting.
+
+    The function clears the paragraph's existing content and formatting, then
+    populates it with the provided text. It applies a specific "NTT Body Text"
+    style, falling back to the "Normal" style if the primary one is unavailable.
+    It also sets specific paragraph formatting like justification, spacing, and
+    font size.
+
+    If the input `text` is empty or becomes empty after cleaning, the function
+    exits without modifying the paragraph.
+
+    Args:
+        paragraph: The python-docx Paragraph object to be modified in-place.
+        text: The new string content for the paragraph.
+    """
     clean_value = clean_text(text)
     if not clean_value:
         return
@@ -152,6 +213,20 @@ def rewrite_body_paragraph(paragraph, text: str) -> None:
 
 
 def style_existing_field_paragraph(paragraph, *styles: str) -> None:
+    """Clear existing formatting and apply a new set of styles to a paragraph.
+
+    This function first removes all existing paragraph-level formatting properties.
+    It then applies the given styles and sets a standard spacing of 0pt before,
+    3pt after, and a line spacing of 1.0.
+
+    Args:
+        paragraph: The paragraph object to modify in-place.
+        *styles: One or more style names (str) to apply to the paragraph.
+
+    Raises:
+        AttributeError: If the provided `paragraph` object does not have the
+            expected `paragraph_format` attribute.
+    """
     clear_paragraph_properties(paragraph)
     apply_paragraph_style(paragraph, *styles)
     paragraph.paragraph_format.space_before = Pt(0)
@@ -160,6 +235,17 @@ def style_existing_field_paragraph(paragraph, *styles: str) -> None:
 
 
 def polish_semantic_tables(doc) -> None:
+    """Apply a standard style and formatting to all tables in a document.
+
+    This function iterates through every table in the provided Word document,
+    applying a consistent visual style. It sets a specific table style,
+    clears cell shading, and standardizes vertical alignment, paragraph spacing,
+    line spacing, text alignment, font size, and header row font color.
+
+    Args:
+        doc (docx.document.Document): The python-docx Document object to modify
+            in-place.
+    """
     for table in doc.tables:
         apply_table_style(
             table,
@@ -191,6 +277,26 @@ def polish_semantic_tables(doc) -> None:
 
 
 def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
+    """Applies semantic styles and formatting to a tower annex document in-place.
+
+    This function iterates through all paragraphs of a python-docx Document,
+    identifying titles, subtitles, and various heading levels based on their
+    exact text content. It applies the corresponding Word styles to these
+    elements. The function also converts text-based bullet points into
+    proper list items, ensures a table of contents is present and correctly
+    styled, and applies final formatting to any tables in the document.
+
+    Args:
+        doc: The python-docx Document object to be styled. This object is
+            modified in-place.
+        payload_dict: A dictionary containing metadata for the document under the
+            'document_meta' key. Expected sub-keys include 'tower_code',
+            'tower_name', and 'client_name'.
+
+    Raises:
+        KeyError: If required keys (e.g., 'document_meta', 'tower_code') are
+            missing from `payload_dict`.
+    """
     enable_update_fields_on_open(doc)
 
     heading_level_1 = {
@@ -322,6 +428,24 @@ def _ensure_radar_chart_path(payload_path: Path, profile: dict) -> str:
 
 
 def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
+    """Cleans a document by replacing placeholders and removing instructional content.
+
+    This function sanitizes a document object in-place by performing a series
+    of text replacements and structural modifications. It replaces template
+    placeholders (e.g., '[Cliente]') with data from the payload, removes
+    instructional paragraphs intended for consultants, and purges placeholder
+    rows from tables.
+
+    Args:
+        doc: A `docx.Document` object to be cleaned. The object is modified
+            directly.
+        payload: A dictionary containing metadata and content used to populate the
+            document. Expected to contain keys like 'document_meta' and
+            'domain_introduction'.
+
+    Returns:
+        None. The input `doc` object is modified in-place.
+    """
     meta = payload.get("document_meta", {})
     intro = payload.get("domain_introduction", {})
 
@@ -329,7 +453,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
     tower_name = meta.get("tower_name", "TORRE")
     tower_code = meta.get("tower_code", "TX")
 
-    # 1. Definir los reemplazos en línea
+    # Step 1: Construct the primary replacement map. This dictionary contains key-value pairs for direct, inline text substitution throughout the document.
     replacements = {
         "[Cliente]": client_name,
         "[cliente]": client_name,
@@ -359,10 +483,10 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
         "[Fecha]": meta.get("date", "2026"),
     }
 
-    # 2. Eliminar párrafos con notas de consultor completas o marcadores inútiles
+    # Step 2: Sanitize the document by removing paragraphs that serve as instructional notes or contain non-content template markers. This ensures the final output is clean of authoring artifacts.
     paragraphs_to_remove = []
     for p in doc.paragraphs:
-        # Si es un prompt de consultor ("Teniendo en cuenta el resumen de...")
+        # Identifies and marks for deletion any paragraphs containing instructional prompts, such as "Teniendo en cuenta el resumen de...". This sanitization step removes non-content markers intended for document authors from the final output.
         if (
             "[Teniendo en cuenta el resumen de" in p.text
             or "[Teniendo en cuenta el Resumen ejecutivo" in p.text
@@ -399,7 +523,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
             paragraphs_to_remove.append(p)
             continue
 
-        # Reemplazos de texto en línea
+        # Performs a comprehensive inline text substitution pass across the entire document body. Each key in the predefined replacement map is replaced with its corresponding value.
         for old, new in replacements.items():
             if old in p.text:
                 p.text = p.text.replace(old, new)
@@ -410,7 +534,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
         except Exception:
             pass
 
-    # 3. Limpiar Tablas de Plantilla (borrar filas vacías que contienen corchetes de ejemplo)
+    # Step 3: Purge placeholder rows from all tables. Rows are identified for removal if they contain markers, typically denoted by bracket notation (e.g., "[EXAMPLE]"), which are used in the template for illustrative purposes only.
     for table in doc.tables:
         rows_to_remove = []
         for row in table.rows:
@@ -418,7 +542,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
             for cell in row.cells:
                 for p in cell.paragraphs:
                     if "[" in p.text and "]" in p.text:
-                        # Si es solo la fecha, la reemplazamos, si no, marcamos la fila para borrar
+                        # Conditionally processes table rows. A row is preserved and its date placeholder is substituted if the cell contains *only* the placeholder. Otherwise, the entire row is flagged for subsequent deletion to sanitize the output.
                         if "[Fecha]" in p.text:
                             p.text = p.text.replace("[Fecha]", replacements["[Fecha]"])
                         else:
@@ -429,7 +553,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
             if row_has_bracket:
                 rows_to_remove.append(row)
 
-        # Eliminar las filas
+        #
         for row in rows_to_remove:
             try:
                 table._tbl.remove(row._tr)
@@ -438,6 +562,24 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
 
 
 def render_extended_variant(doc, payload) -> Any:
+    """Render the extended, detailed sections of the tower annex report into a document.
+
+    Populates a document with a detailed analysis of the tower's current state
+    (AS-IS), risks, target state (TO-BE), gaps, prioritized initiatives,
+    and an extended conclusion. The function retrieves this information from the
+    `extended_sections` key within the provided payload. If this key is
+    missing or its value is empty, the function returns immediately without
+    modifying the document.
+
+    Args:
+        doc (Any): The document object (e.g., a `docx.document.Document` instance)
+            to which content will be added. This object is modified in place.
+        payload (dict): A dictionary containing the source data for the report.
+            Expects a nested structure under the 'extended_sections' key.
+
+    Returns:
+        None. The function modifies the `doc` object in place.
+    """
     extended = payload.get("extended_sections") or {}
     if not extended:
         return
@@ -554,6 +696,32 @@ def render_extended_variant(doc, payload) -> Any:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Renders a Tower Annex DOCX document from a template and a JSON payload.
+
+    This function serves as the main entry point for the script. It orchestrates the
+    entire document generation process by parsing command-line arguments, loading
+    and validating the JSON data payload, and then systematically populating a
+    .docx template with the provided data. The process involves replacing simple
+    text placeholders, rendering complex data structures like lists, tables,
+    and charts, and applying specific formatting styles before saving the final
+    document to the specified output path.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv` is
+            used. The script expects three positional arguments and an
+            optional flag: `<payload_json> <template_docx> <output_docx>
+            [--semantic-styles|--legacy-styles]`.
+
+    Returns:
+        None. The function writes the generated document to a file as a side
+        effect.
+
+    Raises:
+        SystemExit: If the number of command-line arguments is incorrect.
+        FileNotFoundError: If the specified payload JSON or template DOCX file
+            does not exist.
+        ValueError: If the payload JSON is malformed or fails data validation.
+    """
     raw_args = list(argv if argv is not None else sys.argv)
     render_mode, parsed_args = _resolve_render_mode(raw_args[1:])
     if len(parsed_args) != 3:
@@ -565,7 +733,7 @@ def main(argv: list[str] | None = None) -> None:
     template_path = Path(parsed_args[1]).resolve()
     output_path = Path(parsed_args[2]).resolve()
 
-    # Cargar y validar contrato de forma robusta
+    # Instantiates and validates the contract data model. This critical step ensures the integrity and correctness of input data prior to commencing the document rendering process.
     payload = robust_load_payload(
         payload_path,
         AnnexPayload,

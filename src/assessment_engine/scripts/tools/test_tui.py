@@ -1,6 +1,6 @@
 import time
 
-# --- START OF BUSINESS LOGIC ---
+#
 from rich.console import Console
 from rich.layout import Layout
 from rich.live import Live
@@ -11,6 +11,7 @@ console = Console()
 
 
 def make_layout() -> Layout:
+    """Construct the main application TUI layout with header, footer, backlog, and details panels."""
     layout = Layout()
     layout.split_column(
         Layout(name="header", size=3),
@@ -25,6 +26,26 @@ def make_layout() -> Layout:
 
 
 def generate_table(tasks):
+    """Constructs a `rich.table.Table` from an iterable of task records.
+
+    The function initializes a table with predefined columns ("Task ID", "Status",
+    "Progress") and populates it by iterating through the input tasks. The
+    progress value is formatted as a percentage string for display.
+
+    Args:
+        tasks: An iterable of task records. Each record must be a sequence
+            (e.g., tuple or list) containing exactly three elements: the
+            task ID (str), the status (str), and the progress (int or float).
+
+    Returns:
+        A `rich.table.Table` instance populated with the provided task data.
+
+    Raises:
+        ValueError: If a record within the `tasks` iterable does not contain
+            exactly three elements, preventing successful unpacking.
+        TypeError: If a record within the `tasks` iterable is not itself an
+            iterable object.
+    """
     table = Table(title="Backlog Status")
     table.add_column("Task ID")
     table.add_column("Status")
@@ -35,6 +56,24 @@ def generate_table(tasks):
 
 
 def main():
+    """Initializes and runs a terminal-based user interface for task monitoring.
+
+    This function constructs and displays a terminal dashboard using the rich library.
+    The TUI is built on a `Layout` object, which is partitioned into a header, a
+    task backlog table, a details panel, and a footer. The entire layout is
+    rendered within a `Live` context to enable real-time updates.
+
+    A simulation loop executes to demonstrate progress by periodically
+    incrementing a sample task's completion percentage and refreshing the
+    backlog table. The application runs until this simulation completes or is
+    terminated by the user (Ctrl+C).
+
+    Args:
+        None.
+
+    Returns:
+        None.
+    """
     layout = make_layout()
     tasks = [
         ["T1", "Success", 100],

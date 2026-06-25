@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección Conclusion.
-"""
+"""Provides prompts for generating the 'Conclusion' section of a document."""
 
 
 def get_conclusion_writer_prompt(
@@ -14,6 +12,33 @@ def get_conclusion_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Assembles the prompt for the Conclusion Writer agent.
+
+    This function constructs a detailed prompt for a language model tasked with
+    generating the conclusion section of a technology assessment. It integrates
+    various analytical inputs, such as scoring, state analysis (AS-IS and TO-BE),
+    risks, gap analysis, and action items, into a structured set of instructions.
+
+    Args:
+        scoring_pretty: A string containing the formatted scoring data.
+        asis_pretty: A string containing the formatted "As-Is" (current state)
+            analysis.
+        risks_pretty: A string containing the formatted risk analysis.
+        tobe_pretty: A string containing the formatted "To-Be" (desired future
+            state) description.
+        gap_pretty: A string containing the formatted gap analysis between the
+            current and future states.
+        todo_pretty: A string containing the formatted action items.
+        tower_definition_pretty: A string containing the formatted definition of
+            the technology assessment tower.
+        tower_label: The display label for the assessment tower, used for
+            contextualization within the prompt.
+        feedback_block: A string containing supplementary instructions or feedback
+            to guide the agent's output.
+
+    Returns:
+        A complete, formatted prompt string to be sent to a language model.
+    """
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -80,6 +105,39 @@ def get_conclusion_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Constructs a prompt for an AI agent to review an assessment's conclusion.
+
+    The generated prompt instructs an AI agent to act as a reviewer for the
+    conclusion section of a technical assessment. The agent is directed to
+    evaluate the conclusion's consistency with other report sections (e.g.,
+    scoring, AS-IS, risks, TO-BE), its overall quality, and its adherence to
+    the provided methodological definition. The agent's findings are expected
+    to be returned in a structured JSON format.
+
+    Args:
+        draft_pretty: A string containing the formatted conclusion draft for
+            review.
+        scoring_pretty: A string containing the formatted scoring section for
+            consistency validation.
+        asis_pretty: A string containing the formatted AS-IS section for
+            contextual reference.
+        risks_pretty: A string containing the formatted risks section for
+            contextual reference.
+        tobe_pretty: A string containing the formatted TO-BE section for
+            contextual reference.
+        gap_pretty: A string containing the formatted GAP analysis section for
+            contextual reference.
+        todo_pretty: A string containing the formatted TO-DO section for
+            contextual reference.
+        tower_definition_pretty: A string containing the formatted methodological
+            definition for the specified tower, used as the ground truth for
+            review.
+        tower_label: The string identifier for the specific assessment tower.
+
+    Returns:
+        A complete, formatted prompt string to be sent to the AI reviewer
+        agent.
+    """
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

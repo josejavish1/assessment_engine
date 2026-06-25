@@ -1,7 +1,4 @@
-"""
-Módulo run_global_pipeline.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines the primary orchestration logic and core utilities for the Assessment Engine pipeline."""
 
 import sys
 
@@ -19,6 +16,36 @@ from infrastructure.runtime_paths import (
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Run the end-to-end global strategic assessment pipeline for a client.
+
+    Serves as the main command-line entry point, orchestrating a sequence of
+    modules as isolated subprocesses to generate a consolidated executive
+    report and an interactive digital twin interface.
+
+    The pipeline execution consists of the following stages:
+      1. Generation of a data payload from the Sovereign Graph Engine.
+      2. Export of the current graph state as a Data Transfer Object (DTO).
+      3. AI-driven refinement of the payload for executive-level analysis.
+      4. Generation of data visualizations (e.g., radar chart, roadmap).
+      5. Rendering of the final DOCX report from a template.
+      6. Rendering of the interactive Lineage Matrix Explorer portal.
+
+    The pipeline requires a single command-line argument specifying the
+    `client_name`, which is used to resolve input data paths and name the
+    final output artifacts.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv` is used.
+            The first argument after the script name must be the `client_name`.
+
+    Raises:
+        FileNotFoundError: If the client directory or required template files
+            cannot be located based on the provided `client_name`.
+        subprocess.CalledProcessError: If any of the external module
+            subprocesses return a non-zero exit code.
+        RuntimeError: If the Vertex AI preflight check fails due to issues such
+            as authentication or API configuration.
+    """
     if len(argv if argv is not None else sys.argv) < 2:
         print("Uso: python -m scripts.run_global_pipeline <client_name>")
         sys.exit(1)
@@ -39,7 +66,7 @@ def main(argv: list[str] | None = None) -> None:
 
     python_bin = resolve_python_bin()
 
-    # 1. Generar Payload Inicial (Sovereign Graph Engine)
+    # Step 1: Generate the initial data payload via the Sovereign Graph Engine.
     run_module_step(
         [
             python_bin,
@@ -53,7 +80,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 1.5. Exportar State Object para el Gemelo Digital (DTO)
+    # Step 1.5: Export the current state object as a Data Transfer Object (DTO) for the Digital Twin.
     run_module_step(
         [
             python_bin,
@@ -65,7 +92,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 2. Refinado Estratégico con IA (CIO Level)
+    # Step 2: Apply strategic refinement using an AI model configured for CIO-level analysis.
     run_module_step(
         [
             python_bin,
@@ -80,7 +107,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 3. Generar Visuales
+    # Step 3: Generate all required data visualizations and graphics.
     run_module_step(
         [
             python_bin,
@@ -102,7 +129,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 4. Renderizar DOCX
+    # Step 4: Render the final assessment report in DOCX format.
     run_module_step(
         [
             python_bin,
@@ -116,7 +143,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 5. Renderizar Lineage Matrix Explorer Portal (Digital Twin)
+    # Step 5: Render the interactive Lineage Matrix Explorer Portal, which serves as the digital twin interface.
     run_module_step(
         [
             python_bin,

@@ -1,6 +1,6 @@
-"""
-Módulo check_docx_unresolved_placeholders.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+"""Verifies that all placeholders in a DOCX document have been resolved.
+
+This script functions as a quality gate within the Assessment Engine pipeline to ensure the integrity and completeness of generated document artifacts.
 """
 
 import logging
@@ -16,6 +16,28 @@ PLACEHOLDER_RE = re.compile(r"\{\{[^{}]+\}\}")
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Scans a .docx document for unresolved template placeholders.
+
+    This function serves as the main entry point for a command-line script. It
+    parses a Microsoft Word (.docx) file, iterating through all paragraphs and
+    table cells to find text matching a predefined placeholder regular expression.
+    If any placeholders are found, their details are logged, and the program
+    terminates with an exit code of 1. If the document contains no
+    placeholders, a success message is logged, and the program exits cleanly.
+
+    Args:
+        argv: A list of command-line arguments. If `None`, `sys.argv` is used.
+            The list is expected to contain exactly two elements: the script name
+            and the path to the .docx file to be inspected.
+
+    Returns:
+        None.
+
+    Raises:
+        SystemExit: If the number of provided arguments is not two, if the
+            specified .docx file does not exist, or if unresolved placeholders
+            are found (exit code 1).
+    """
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit(
             "Uso: python -m scripts.tools.check_docx_unresolved_placeholders <docx_path>"

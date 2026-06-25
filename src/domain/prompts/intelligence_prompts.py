@@ -1,12 +1,29 @@
-"""
-Repositorio de prompts (TIER 1 DIPLOMATIC STANDARDS 2026).
-ESTRICTO RETORNO DE JSON + SCHEMA ENFORCEMENT.
+"""Prompt repository compliant with TIER 1 DIPLOMATIC STANDARDS 2026.
+
+All prompts enforce strict JSON output and schema validation.
 """
 
 JSON_MANDATE = "\n\n### REGLA DE ORO: Devuelve ÚNICAMENTE un bloque de código JSON válido. No incluyas explicaciones, preámbulos ni comentarios fuera del JSON. Debes seguir el esquema solicitado estrictamente."
 
 
 def get_grounding_harvester_prompt(context_text: str) -> str:
+    """Generates a Spanish language model prompt for structured technical fact extraction.
+
+    The prompt instructs the model to act as a staff analyst from NTT DATA. It is
+    tasked with parsing the provided context, identifying a dominant hyperscaler
+    (Azure, AWS, or GCP), and extracting key technical facts and operational
+    restrictions. The prompt mandates a specific JSON structure for the model's
+    output.
+
+    Args:
+        context_text (str): A string containing the ground truth fragments to be
+            embedded into the prompt for analysis.
+
+    Returns:
+        str: A complete prompt string in Spanish, directing the language model to
+            return a JSON object with 'hyperscaler_dominante',
+            'observaciones_clave', and 'restricciones_operativas' keys.
+    """
     return f"""
     Eres un ANALISTA STAFF de NTT DATA. Extrae las VERDADES TÉCNICAS desde los fragmentos proporcionados.
 
@@ -32,6 +49,7 @@ def get_grounding_harvester_prompt(context_text: str) -> str:
 def get_business_harvester_prompt(
     client_name: str, context_text: str, grounding_json: str = "{}"
 ) -> str:
+    """Generate a Spanish-language prompt for business intelligence analysis from client, context, and grounding data."""
     return f"""
     Analiza la agenda del CEO y el contexto de negocio para '{client_name}'.
     Utiliza ÚNICAMENTE los fragmentos validados en el GROUNDING y el CONTEXTO RAG.
@@ -63,6 +81,7 @@ def get_business_harvester_prompt(
 def get_tech_harvester_prompt(
     client_name: str, context_text: str, grounding_json: str = "{}"
 ) -> str:
+    """Generate a Spanish-language prompt to investigate a client's technology stack."""
     return f"""
     Investiga el stack tecnológico para '{client_name}'.
     GROUNDING: {grounding_json}
@@ -88,6 +107,7 @@ def get_tech_harvester_prompt(
 def get_regulatory_harvester_prompt(
     client_name: str, context_text: str, grounding_json: str = "{}"
 ) -> str:
+    """Constructs a Spanish-language prompt for regulatory analysis using client and context data."""
     return f"""
     Analiza el sector y la regulación para '{client_name}'.
 
@@ -106,6 +126,7 @@ def get_regulatory_harvester_prompt(
 
 
 def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> str:
+    """Construct a Spanish-language prompt to refine a technical tower analysis for a CIO-level audience."""
     return f"""
     Eres un SOCIO (Partner) de una firma Tier 1. Refina este análisis técnico de TORRE para un CIO.
     MATERIAL: {findings_json}
@@ -125,6 +146,34 @@ def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> 
 
 
 def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> str:
+    """Generates a structured prompt for an LLM to synthesize a CEO-level report.
+
+    This function assembles a detailed, multi-part prompt that instructs a
+    Large Language Model (LLM) to act as a Tier 1 consulting partner. The
+    primary task is to transform a raw, technical analysis into a polished,
+    strategic report suitable for a CEO audience.
+
+    The generated prompt includes several key components:
+    - A specific persona for the LLM to adopt.
+    - A mandatory "ÉLITE 2026" style guide that dictates tone, semantics,
+      and pragmatic constraints for recommendations.
+    - A strict JSON output structure mandate based on the `GlobalReportPayload`
+      schema, reinforced by an externally defined `JSON_MANDATE` constant.
+
+    Args:
+        findings_json: A JSON-formatted string containing the raw technical
+            analysis, metrics, and observations to be synthesized into the report.
+        grounding_json: An optional JSON-formatted string providing supplemental
+            context, such as market data or established facts, to ground the LLM's
+            response. Defaults to an empty JSON object string ("{}").
+
+    Returns:
+        A complete prompt string formatted for submission to a compatible LLM.
+
+    Raises:
+        NameError: If the required module-level constant `JSON_MANDATE` is not
+            defined in the scope where this function is called.
+    """
     return f"""
     Eres un SOCIO (Partner) de una firma Tier 1. Refina este análisis técnico para un CEO.
     MATERIAL: {findings_json}
@@ -151,6 +200,28 @@ def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}") ->
 def get_sota_researcher_prompt(
     pillar_name: str, gap_text: str, grounding_json: str = "{}"
 ) -> str:
+    """Constructs a language model prompt to identify a State-of-the-Art (SOTA) solution.
+
+    This function generates a detailed prompt instructing a large language model to
+    assume the persona of a staff researcher from a leading technology advisory
+    firm. The prompt is engineered to solicit a SOTA solution for a specified
+    technology pillar and problem description. The response is explicitly
+    requested in a structured JSON format, detailing the solution name, its
+    underlying architectural pattern, its strategic business benefit, and an
+    optional, verifiable source reference.
+
+    Args:
+        pillar_name: The technology or business domain requiring a SOTA solution.
+        gap_text: A description of the specific problem or capability gap to be
+            addressed.
+        grounding_json: An optional JSON string providing client-specific context
+            to ground the model's response. Defaults to an empty JSON object
+            string.
+
+    Returns:
+        A string containing the complete, formatted prompt ready for submission
+        to a language model.
+    """
     return f"""
     Eres un INVESTIGADOR STAFF de Gartner/Forrester especializado en tecnología de vanguardia 2026.
     Tu misión es encontrar la solución "Estado del Arte" (SOTA) y referencias de mercado para el pilar '{pillar_name}'.
@@ -181,6 +252,30 @@ def get_sota_researcher_prompt(
 def get_technical_analyst_prompt(
     tower_id: str, pillar_name: str, score: float, context: str, evidences: str
 ) -> str:
+    """Constructs a Spanish-language prompt for a generative model to act as a technical analyst.
+
+    This function formats a string that instructs a generative model to analyze
+    a specified technical pillar based on a score, context, and supporting
+    evidence. The prompt directs the model to ground its analysis in the
+    provided evidence fragments and to structure its response as a specific
+    JSON object.
+
+    Args:
+        tower_id: The identifier for the technical tower. This parameter is
+            currently unused in the prompt but is maintained for signature
+            compatibility.
+        pillar_name: The name of the technical pillar for analysis.
+        score: The numerical score assigned to the pillar.
+        context: A string providing the background context for the analysis.
+        evidences: A string containing pre-formatted evidence fragments. The model
+            is instructed to reference these fragments by their identifiers in
+            its response.
+
+    Returns:
+        A formatted string containing a complete Spanish-language prompt for
+        the generative model. The prompt includes role-playing instructions,
+        context, evidence, and a mandatory JSON output schema.
+    """
     return f"""
     Eres un CONSULTOR STAFF Tier 1. Analiza el pilar '{pillar_name}'.
     Score {score}, Contexto {context}.
@@ -207,6 +302,26 @@ def get_technical_analyst_prompt(
 
 
 def get_auditor_harvester_prompt(dossier_json: str, grounding_json: str = "{}") -> str:
+    """Constructs a prompt for a large language model to consolidate an intelligence dossier.
+
+    The generated prompt instructs the model to assume the persona of a senior
+    auditor. It provides the model with a primary dossier and supplementary
+    grounding data, mandating the consolidation of this information according to
+    a strict protocol. This protocol enforces specific rules for evidence
+    citation, regulatory impact analysis, source prioritization, and financial
+    data precision. The final output is required to conform to the
+    `ClientDossierV3` JSON schema.
+
+    Args:
+        dossier_json: A JSON-formatted string representing the primary intelligence
+            dossier to be consolidated.
+        grounding_json: A JSON-formatted string containing supplementary data to
+            support the consolidation. Defaults to an empty JSON object string.
+
+    Returns:
+        A fully formatted prompt string ready for submission to a large
+        language model.
+    """
     return f"""
     Eres un AUDITOR SENIOR NTT DATA. Tu misión es consolidar el Dossier de Inteligencia.
     MATERIAL: {dossier_json}
@@ -226,6 +341,7 @@ def get_auditor_harvester_prompt(dossier_json: str, grounding_json: str = "{}") 
 def get_adversary_harvester_prompt(
     dossier_json: str, grounding_json: str = "{}"
 ) -> str:
+    """Construct a Spanish-language LLM prompt to identify defects in a dossier against grounding data."""
     return f"""
     Analiza este Dossier: {dossier_json}.
     Busca:
@@ -238,6 +354,35 @@ def get_adversary_harvester_prompt(
 
 
 def get_judge_harvester_prompt(dossier_json: str, objections_json: str) -> str:
+    """Constructs a prompt for a language model to refine a JSON dossier.
+
+    The generated prompt instructs a language model to act as a final technical
+    authority ('Juez Supremo'). It applies a given set of corrections from an
+    objections object to a source dossier object. The prompt enforces a strict set
+    of governance mandates, including:
+
+    -   Source Citation: All claims must cite the human-readable source title.
+    -   Impact Level: Legal items must specify an impact level (e.g., Critical,
+        High, Medium).
+    -   Claim Integrity: The original 'claims' section, including all objects
+        and URLs, must be preserved without modification.
+    -   Entity Specificity: Named entities such as software, vendors, financial
+        quantities, or project names must be maintained with their original
+        specificity and not be generalized.
+
+    The model is explicitly commanded to return only the corrected JSON object,
+    which must adhere to the ClientDossierV3 schema.
+
+    Args:
+        dossier_json (str): A JSON-formatted string representing the source
+            dossier to be corrected.
+        objections_json (str): A JSON-formatted string containing the objections
+            to apply to the dossier.
+
+    Returns:
+        str: A complete, formatted string prompt ready for use with a language
+            model.
+    """
     return f"""
     Juez Supremo: Genera la versión FINAL de máxima autoridad técnica.
     Toma el dossier y aplica las correcciones basadas en las objeciones.

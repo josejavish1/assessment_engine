@@ -1,7 +1,4 @@
-"""
-Módulo regenerate_smoke_artifacts.py.
-Orquesta la regeneración reproducible de artefactos smoke en working/.
-"""
+"""Orchestrates the reproducible regeneration of smoke test artifacts within the `working/` directory."""
 
 from __future__ import annotations
 
@@ -36,6 +33,24 @@ def run_step(
     env: dict[str, str],
     dry_run: bool,
 ) -> None:
+    """Executes a shell command as a discrete step in a larger process.
+
+    Logs a descriptive step name and the shell-quoted command for inspection.
+    If `dry_run` is True, the command is not executed. Otherwise, the command
+    is run as a subprocess from the project's root directory with the specified
+    environment variables.
+
+    Args:
+        cmd_args: A sequence of strings representing the command and its
+            arguments.
+        step_name: A human-readable name for the step, used for logging.
+        env: A dictionary of environment variables to set for the child process.
+        dry_run: If True, logs the command without execution.
+
+    Raises:
+        SystemExit: If the subprocess returns a non-zero exit code, indicating
+            failure.
+    """
     printable = " ".join(shlex.quote(arg) for arg in cmd_args)
     logger.info(f"\n=== {step_name} ===")
     logger.info(printable)
@@ -59,6 +74,7 @@ def build_local_steps(
     context_path: str,
     responses_path: str,
 ) -> list[tuple[list[str], str]]:
+    r"""{'docstring': "Construct a sequence of local command-line steps for a smoke test.\n\nAssembles a multi-step command pipeline to generate various test artifacts,\nsuch as case inputs and evidence ledgers, for a given client and tower. The\ncommands are designed for sequential execution, as the output of one step\nserves as the input for a subsequent step.\n\nArgs:\n    python_bin: The path to the Python executable for running modules.\n    client_id: The identifier for the client under test.\n    tower_id: The identifier for the specific tower configuration.\n    context_path: The file path to the context input data.\n    responses_path: The file path to the responses input data.\n\nReturns:\n    A list of command steps to be executed. Each item is a tuple\n    containing a command (as a list of strings for a subprocess) and a\n    human-readable description of the command's purpose."}."""
     tower_dir = ROOT / "working" / client_id / tower_id
     case_input_path = tower_dir / "case_input.json"
     evidence_ledger_path = tower_dir / "evidence_ledger.json"
@@ -124,6 +140,32 @@ def build_local_steps(
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Orchestrates the end-to-end regeneration of smoke test artifacts.
+
+    This function serves as the main entry point for a command-line utility
+    that regenerates all artifacts for a smoke test client. It parses command-
+    line arguments to configure and execute a multi-stage pipeline.
+
+    The process begins by generating synthetic user inputs (context and responses).
+    It then proceeds with a series of local-only pipeline steps. If not
+    restricted to local execution, it continues with AI-backed steps that
+    require Vertex AI access, optionally performing a preflight check to
+    validate credentials and model availability. The pipeline can conclude by
+    running optional global, commercial, and web-rendering stages.
+
+    Execution can be customized via flags for partial regeneration (e.g.,
+    `--local-only`) or for a dry run, which prints the commands that would be
+    executed without running them.
+
+    Args:
+        argv: A list of command-line arguments to parse. If None, defaults to
+            `sys.argv[1:]`.
+
+    Raises:
+        subprocess.CalledProcessError: If any of the orchestrated pipeline steps
+            fail by returning a non-zero exit code and the `--dry-run` flag
+            is not set.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--client", default="smoke_ivirma")
     parser.add_argument("--tower", default="T5")

@@ -1,5 +1,4 @@
-"""
-Módulo run_global_review_pipeline.py.
+"""Módulo run_global_review_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
 

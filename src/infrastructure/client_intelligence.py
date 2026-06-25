@@ -34,6 +34,7 @@ def _confidence_label_from_score(score: int) -> str:
 
 
 def build_confidence_block(score: int = 50, method: str = "custom") -> dict[str, Any]:
+    """Construct a standardized confidence block dictionary from a score and method."""
     return {
         "score": score,
         "label": _confidence_label_from_score(score),
@@ -76,6 +77,29 @@ _TOWER_KEYWORDS: dict[str, tuple[str, ...]] = {
 
 
 def infer_related_towers(*texts: str) -> list[str]:
+    """Infer related tower IDs by matching keywords within one or more text strings.
+
+    The function concatenates all provided texts into a single, lowercase string
+    to form a search corpus. It then searches this corpus for keywords from a
+    predefined mapping of tower IDs to their associated keywords. A tower ID is
+    included in the result if any of its associated keywords are present in the
+    corpus.
+
+    The keyword search is case-insensitive and is constrained to match whole
+    words only. For example, the keyword 'api' will match 'API' or ' api ',
+    but not 'paprika'.
+
+    Args:
+        *texts (str): One or more text strings to be searched.
+
+    Returns:
+        list[str]: A list of unique tower IDs whose keywords were found. The order
+            of IDs in the list depends on the iteration order of the internal
+            keyword mapping. Returns an empty list if no matches are found.
+
+    Raises:
+        TypeError: If any of the provided elements in `texts` is not a string.
+    """
     joined = " ".join(texts).lower()
     matches: list[str] = []
     for tower_id, keywords in _TOWER_KEYWORDS.items():
@@ -94,6 +118,7 @@ def estimate_confidence_score(
     specificity_signals: int = 0,
     uncertainty_penalty: int = 0,
 ) -> int:
+    r"""{'docstring': 'Calculates an estimated confidence score from intelligence signals.\n\nThe score originates from a base value of 40 and is adjusted based on the\nquantity and reliability of sources, the number of specific signals, and\nany uncertainty penalties. The final score is clamped to the inclusive\nrange [15, 95]. All arguments are keyword-only.\n\nArgs:\n    source_count: The number of independent intelligence sources. Each of\n        the first three sources contributes 10 points to the score.\n    source_reliability: An optional average reliability score for the\n        sources, nominally on a 0-100 scale. A score of 50 is\n        neutral. The adjustment is `round((reliability - 50) / 5)`.\n    specificity_signals: The count of specific, verifiable signals or\n        details. Each of the first four signals contributes 5 points.\n    uncertainty_penalty: A penalty score to be subtracted from the total,\n        reflecting ambiguity or contradictory evidence.\n\nReturns:\n    An integer representing the final estimated confidence score, clamped\n    between 15 and 95, inclusive.'}."""
     base = 40
     base += min(source_count, 3) * 10
     base += min(specificity_signals, 4) * 5
@@ -174,6 +199,7 @@ def _append_claim(
 
 
 def is_client_dossier_v2(data: dict[str, Any]) -> bool:
+    """Check if a dictionary conforms to the shallow v2 client dossier schema."""
     return (
         isinstance(data, dict)
         and data.get("version") == "2.0"
@@ -183,6 +209,7 @@ def is_client_dossier_v2(data: dict[str, Any]) -> bool:
 
 
 def is_client_dossier_v3(data: dict[str, Any]) -> bool:
+    """Check if a dictionary structurally conforms to the Client Dossier v3 schema."""
     return (
         isinstance(data, dict)
         and data.get("version") == "3.0"
@@ -194,6 +221,30 @@ def is_client_dossier_v3(data: dict[str, Any]) -> bool:
 
 
 def summarize_transformation_horizon(data: dict[str, Any]) -> str:
+    """Generate a summary string of a client's transformation horizon.
+
+    Parses a client dossier dictionary to extract and format transformation
+    horizon details. The function is designed for backward compatibility by
+    handling multiple data schemas. It first attempts to resolve horizon data
+    from a nested structure (`business_context.transformation_horizon`) used in
+    v2 and v3 schemas. As a fallback for legacy schemas, it checks for a
+    top-level `transformation_horizon` key.
+
+    Args:
+        data: The client dossier dictionary. For nested schemas, this is
+            expected to contain a `transformation_horizon` dictionary under the
+            `business_context` key. This dictionary may contain optional string
+            values for 'stage', 'label', and 'rationale'. For flat schemas, a
+            top-level `transformation_horizon` key is read directly.
+
+    Returns:
+        A formatted string summary, such as "Stage: Label. Rationale.".
+        Missing components are omitted from the output. Returns "General"
+        if no horizon data can be resolved.
+
+    Raises:
+        AttributeError: If the input `data` does not support the `.get()` method.
+    """
     if is_client_dossier_v3(data):
         horizon = data.get("business_context", {}).get("transformation_horizon", {})
     elif is_client_dossier_v2(data):
@@ -211,6 +262,31 @@ def summarize_transformation_horizon(data: dict[str, Any]) -> str:
 
 
 def extract_target_maturity_map(data: dict[str, Any]) -> dict[str, float]:
+    """Extracts a mapping of tower IDs to target maturity scores from a dossier.
+
+    Parses a client dossier dictionary to create a standardized map of tower IDs
+    to their target maturity scores. The function adapts its parsing strategy
+    based on the dossier version.
+
+    For legacy dossier formats (pre-V2), it reads from the
+    `target_maturity_matrix` key. For V2 and V3 formats, it iterates through
+    the `tower_overrides` dictionary, extracting the `target_maturity` value
+    for each tower.
+
+    The function is designed to handle malformed data gracefully. Any tower ID
+    or score that cannot be correctly cast to a string or float, respectively,
+    is silently ignored. Tower IDs are canonicalized to uppercase strings in
+    the output map.
+
+    Args:
+        data (dict[str, Any]): The client dossier data dictionary.
+
+    Returns:
+        dict[str, float]: A dictionary mapping uppercase tower IDs to their
+            corresponding float-cast target maturity scores. An empty dictionary
+            is returned if the dossier contains no extractable maturity data or
+            if the relevant fields are malformed.
+    """
     target_map: dict[str, float] = {}
     if not is_client_dossier_v2(data) and not is_client_dossier_v3(data):
         raw_map = data.get("target_maturity_matrix", {})
@@ -239,10 +315,34 @@ def extract_target_maturity_map(data: dict[str, Any]) -> dict[str, float]:
 def get_target_maturity(
     data: dict[str, Any], tower_id: str, default: float = 4.0
 ) -> float:
+    """Return the target maturity for a tower ID using a case-insensitive lookup."""
     return extract_target_maturity_map(data).get(tower_id.upper(), default)
 
 
 def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
+    """Converts a client intelligence dossier into its v2 schema representation.
+
+    This function serves as a compatibility layer to transform client dossier data
+    into the v2 schema. It inspects the input data and applies the appropriate
+    transformation logic:
+
+    1.  If the input `data` already conforms to the v2 schema, it is returned
+        without modification.
+    2.  If the input is identified as a v3 schema dossier, its fields are
+        systematically extracted and mapped to the corresponding v2 structure.
+    3.  For any other format, a direct coercion to the v2 schema is attempted.
+
+    Args:
+        data (dict[str, Any]): The source client intelligence dossier, which can be
+            in v2, v3, or an unrecognized legacy format.
+
+    Returns:
+        dict[str, Any]: A dictionary that conforms to the ClientDossierV2 schema.
+
+    Raises:
+        pydantic.ValidationError: If the data transformed from a v3 dossier is
+            structurally incompatible with the v2 schema during validation.
+    """
     if is_client_dossier_v2(data):
         return data
 
@@ -351,9 +451,19 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
+    """Transforms a client intelligence dossier from a V2 or V3 schema into a legacy format.
+
+    The function inspects the input `data` to identify its schema version, prioritizing V3 over V2. Based on the detected version, it extracts and maps relevant fields to a common legacy dictionary structure. If the schema is neither V2 nor V3, the original `data` dictionary is returned without modification.
+
+    Args:
+        data: The client intelligence dossier, represented as a dictionary, conforming to either the V2 or V3 schema.
+
+    Returns:
+        A new dictionary with data mapped to the legacy format. If the schema is not recognized as V2 or V3, the original `data` dictionary is returned.
+    """
     profile = data.get("profile", {}) or {}
     
-    # Soporte nativo para esquemas V3 (Mapeo directo sin fricción ni fallos de validación)
+    # Ensures native support for V3 schemas, allowing for direct data mapping without transformation or validation errors.
     if is_client_dossier_v3(data):
         business_context = data.get("business_context", {}) or {}
         technology_context = data.get("technology_context", {}) or {}
@@ -430,11 +540,11 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _load_industry_profile(industry_name: str) -> dict[str, Any]:
-    """Carga el marco de consultoría de élite específico para la industria."""
+    """Loads the configuration profile and analytical framework corresponding to the specified industry vertical."""
     config_dir = (
         Path(__file__).resolve().parents[2] / "engine_config" / "industry_profiles"
     )
-    # Mapeo de industria a perfil de configuración
+    # Maps industry verticals to their respective configuration profiles, defining the analytical frameworks to be applied.
     mapping = {
         "energía": "critical_infrastructure",
         "eléctrico": "critical_infrastructure",
@@ -471,6 +581,29 @@ def _load_industry_profile(industry_name: str) -> dict[str, Any]:
 def build_client_context_packet(
     data: dict[str, Any], tower_id: str | None = None
 ) -> dict[str, Any]:
+    """Constructs a standardized v3-formatted client context packet from a dossier.
+
+    The function processes multi-versioned dossier data, enriches it with an
+    industry-specific analytical framework, and optionally filters content based
+    on a specified tower ID. For dossier formats other than v3, it delegates
+    the conversion to a legacy utility.
+
+    Args:
+        data: The raw client dossier dictionary. Its structure must conform to a
+            supported dossier version (e.g., v2, v3).
+        tower_id: The identifier for a specific business unit ('tower'). If
+            provided, it is used to select tower-specific context overrides and to
+            filter claims. Defaults to None, in which case no tower-specific
+            filtering or overrides are applied.
+
+    Returns:
+        A dictionary representing the standardized client context packet,
+        structured according to the v3 dossier format.
+
+    Raises:
+        TypeError: If an expected collection (e.g., a list of claims or regions)
+            within the input `data` is of an incorrect, non-iterable type.
+    """
     packet: dict[str, Any] = {
         "_EPISTEMIC_WARNING": "ESTOS DATOS SON OSINT (PUBLICOS). SON TANGENCIALES. SI CONTRADICEN EL DOCUMENTO DE CONTEXTO INTERNO DEL CLIENTE, EL DOCUMENTO INTERNO ES LA UNICA VERDAD ABSOLUTA.",
         "confidence_level": "LOW_TO_MEDIUM (External OSINT)",
@@ -480,13 +613,13 @@ def build_client_context_packet(
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})
         industry_name = profile.get("industry", "")
-        # ... (rest of extraction)
+        #
     elif is_client_dossier_v2(data):
         industry_name = data.get("profile", {}).get("industry", "")
     else:
         industry_name = data.get("industry", "")
 
-    # Inyectar marco de élite por industria
+    # Injects the loaded industry-specific analytical framework into the data structure.
     industry_profile = _load_industry_profile(industry_name)
     if industry_profile:
         packet["industry_elite_framework"] = industry_profile.get("elite_framework", {})
@@ -586,22 +719,47 @@ def build_client_context_packet(
 
 
 def build_client_context_text(data: dict[str, Any], tower_id: str | None = None) -> str:
-    # 1. Initialize the Epistemic Graph
+    """Constructs a consolidated text context from client intelligence data.
+
+    Models client information by populating an `EpistemicGraph` with data
+    derived from the input payload. It specifically injects OSINT-based
+    technology vendor dependencies as low-confidence facts. The graph is then
+    resolved into a coherent textual representation. The original input data,
+    along with the `tower_id`, is preserved by serializing it as a JSON
+    object and appending it to the resolved text after a fixed separator.
+
+    Args:
+        data: A dictionary of client intelligence data. The function expects a
+            structure that may include 'client_name' (str) and
+            'technology_context' (dict). If present, 'technology_context'
+            should contain a 'vendor_dependencies' (list[str]) key.
+        tower_id: An optional identifier for the data processing tower, which
+            is included in the tangential data payload.
+
+    Returns:
+        A single string containing the resolved graph context, followed by a
+        separator and a JSON object representing the tangential data packet.
+
+    Raises:
+        TypeError: If the data packet constructed for the JSON payload contains
+            non-serializable objects.
+    """
+    # Initializes the primary Epistemic Graph data structure.
     client_name = data.get("client_name", "generic")
     from infrastructure.text_utils import slugify
 
     graph = EpistemicGraph(client_id=slugify(client_name))
 
-    # 2. Inject OSINT (Low Confidence)
-    # Extracting basic assumptions from OSINT data
-    client_name = "CLIENTE"  # Fallback
+    # Injects Open-Source Intelligence (OSINT) data into the graph, explicitly classifying it as a low-confidence source.
+    # Extracts foundational assumptions and context from the aggregated Open-Source Intelligence (OSINT) data.
+    client_name = "CLIENTE"  # Implements a fallback mechanism to ensure graceful handling of processing failures or unavailable data.
 
-    # We heuristically extract tech footprint and vendors from OSINT
+    # Heuristically extracts technology stack and vendor relationship data from Open-Source Intelligence (OSINT) sources.
     if is_client_dossier_v3(data):
         tech_context = data.get("technology_context", {})
         vendors = tech_context.get("vendor_dependencies", [])
         for vendor in vendors:
-            # Injecting OSINT vendor as low confidence
+            # Injects data from the third-party OSINT vendor, explicitly classifying it as a low-confidence source.
             graph.inject_triple(
                 subject=client_name,
                 predicate="CLOUD_PROVIDER_OSINT",
@@ -610,15 +768,15 @@ def build_client_context_text(data: dict[str, Any], tower_id: str | None = None)
                 confidence=0.4,
             )
 
-    # 3. Inject Ground Truth (High Confidence)
-    # The true ground truth is the context file. The actual Epistemic Graph resolution
-    # involving the context DOCX happens dynamically in run_tower_blueprint_engine.py
-    # or the respective pipeline engine, where the real text is passed to the AI extractor.
+    # Injects ground truth data, derived from trusted internal sources, and classifies it as a high-confidence source.
+    # The context file is designated as the canonical ground truth, serving as the authoritative source for the primary Epistemic Graph resolution process.
+    # The initial processing stage involving the source DOCX is dynamically executed by the `run_tower_blueprint_engine.py` module.
+    # Alternatively, the designated pipeline engine handles this stage, passing the extracted raw text to the AI service for analysis.
 
-    # 4. Resolve and export
+    # Performs conflict resolution on the graph nodes and edges, then exports the consolidated data structure.
     resolved_text = graph.get_resolved_context_string()
 
-    # Also append the original JSON for other fields, but wrapped
+    # The original JSON payload for non-graph fields is appended to preserve the raw input for downstream systems.
     packet = build_client_context_packet(data, tower_id=tower_id)
     json_str = json.dumps(packet, ensure_ascii=False, indent=2)
 
@@ -626,11 +784,31 @@ def build_client_context_text(data: dict[str, Any], tower_id: str | None = None)
 
 
 def load_client_intelligence(path: Path) -> dict[str, Any]:
+    """Load and validate client intelligence data from a JSON file.
+
+    Loads a client intelligence dossier from a specified JSON file path. The
+    function first checks for the file's existence, returning an empty dict
+    if it is not found. If the file exists, it is read, parsed as JSON, and
+    subjected to an integrity verification check before being returned.
+
+    Args:
+        path (pathlib.Path): The file system path to the client intelligence
+            JSON file.
+
+    Returns:
+        dict[str, Any]: A dictionary containing the client intelligence data,
+            or an empty dictionary if the source file does not exist.
+
+    Raises:
+        RuntimeError: If the loaded data fails the integrity verification check,
+            indicating potential file corruption or tampering.
+        json.JSONDecodeError: If the file contains malformed JSON.
+    """
     if not path.exists():
         return {}
     data = cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
 
-    # HARD VALIDATION GATE: Enforce Integrity
+    # A validation gate to enforce the structural and semantic integrity of the dossier before further processing.
     if not verify_dossier_integrity(data):
         raise RuntimeError(
             f"❌ SECURITY VIOLATION: Dossier integrity check failed for {path}. The file has been tampered with."
@@ -640,6 +818,7 @@ def load_client_intelligence(path: Path) -> dict[str, Any]:
 
 
 def load_client_intelligence_legacy_view(path: Path) -> dict[str, Any]:
+    """Load client intelligence data from a path and convert it to the legacy view format."""
     return client_intelligence_to_legacy(load_client_intelligence(path))
 
 
@@ -717,6 +896,29 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
 
 
 def coerce_client_dossier_v2(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
+    """Coerces a client dossier dictionary from any known format into the V2 format.
+
+    Detects the format of the input dictionary (V2, V3, or legacy) and
+    converts it into a validated V2 representation. If the input is already in
+    V2 format, its `client_name` is updated and the structure is re-validated.
+    V3 format data is downgraded, and any other format is treated as legacy and
+    upgraded.
+
+    Args:
+        client_name (str): The name of the client to associate with the dossier.
+        data (dict[str, Any]): The input client dossier dictionary, which can
+            be in V2, V3, or a legacy format.
+
+    Returns:
+        dict[str, Any]: A JSON-serializable dictionary representing the client
+        dossier in the validated V2 format.
+
+    Raises:
+        pydantic.ValidationError: If the input data is in V2 format but fails
+            model validation.
+        ValueError: If a V3 or legacy dossier conversion to the V2 format
+            fails due to missing or malformed data.
+    """
     if is_client_dossier_v2(data):
         dossier = dict(data)
         dossier["client_name"] = client_name
@@ -729,6 +931,7 @@ def coerce_client_dossier_v2(client_name: str, data: dict[str, Any]) -> dict[str
 
 
 def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
+    r"""{'docstring': "Coerces a client data dictionary into a canonical Client Dossier V3 format.\n\n    Transforms a raw client data dictionary, which may conform to a legacy, V2,\n    or V3 schema, into a validated and fully populated V3 client dossier.\n\n    The function first detects the input schema version. If the data is already\n    in V3 format, it performs minimal enrichment by setting default metadata\n    fields (e.g., dossier ID, timestamps) before re-validating.\n\n    For older V2 or legacy formats, a comprehensive transformation is executed.\n    This process involves:\n    1.  Coercing legacy data into an intermediate V2-like structure.\n    2.  Mapping fields from the V2 structure to the corresponding V3 context\n        sections (profile, business, technology, regulatory).\n    3.  Generating structured `Claim` objects from unstructured or\n        semi-structured evidence lists (e.g., `evidence_register`,\n        `regulatory_frameworks`, `vendor_dependencies`).\n    4.  Populating all required V3 fields with coerced data or defaults.\n    5.  Linking generated claims to relevant `tower_overrides`.\n\n    The final dictionary is validated against the `ClientDossierV3` Pydantic\n    model to ensure schema compliance.\n\n    Args:\n        client_name: The unique identifier for the client, used to populate the\n            dossier's name and generate a unique dossier ID.\n        data: A dictionary containing the client's data. The structure can\n            conform to a legacy format, Client Dossier V2, or Client Dossier V3.\n\n    Returns:\n        A JSON-serializable dictionary representing the client's dossier,\n        validated and structured according to the ClientDossierV3 schema.\n\n    Raises:\n        pydantic.ValidationError: If the final transformed data fails validation\n            against the ClientDossierV3 schema."}."""
     if is_client_dossier_v3(data):
         dossier = dict(data)
         dossier["client_name"] = client_name
@@ -1045,26 +1248,64 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
 
 
 def compute_dossier_hash(data: dict[str, Any]) -> str:
-    """Calcula un hash SHA-256 determinista para el dossier, ignorando el bloque de integridad."""
-    # Hacer una copia profunda para no modificar el original
+    """Computes a deterministic SHA-256 hash for a dossier dictionary.
+
+    This function generates a stable and reproducible hash by creating a canonical
+    representation of the dossier data. To prevent side effects on the original
+    object, it first performs a deep copy via a JSON serialization-deserialization
+    cycle. It then removes any pre-existing `integrity` block from the `metadata`
+    section of the copy, ensuring the hashing process is idempotent. Finally, the
+    cleaned data is serialized to a canonical JSON string (with sorted keys and
+    `ensure_ascii=False`), encoded to UTF-8, and hashed using SHA-256.
+
+    Args:
+        data (dict[str, Any]): The dossier object to be hashed. The dictionary
+            must be fully JSON-serializable.
+
+    Returns:
+        str: The lowercase hexadecimal representation of the SHA-256 hash.
+
+    Raises:
+        TypeError: If the input `data` contains non-JSON-serializable types,
+            which is raised during the internal serialization step.
+    """
+    # Performs a deep copy of the input object to prevent unintended side effects by decoupling it from the original data structure.
     clean_data = json.loads(json.dumps(data))
 
-    # Purgar el bloque de integridad si existe para que el hash sea estable
+    # Purges any pre-existing integrity block from the data structure to ensure a stable and deterministic hash calculation.
     if "metadata" in clean_data and "integrity" in clean_data["metadata"]:
         del clean_data["metadata"]["integrity"]
 
-    # Serializar con claves ordenadas para determinismo
+    # Serializes the data structure with sorted keys to ensure a deterministic and reproducible output.
     canonical_json = json.dumps(clean_data, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
 
 def sign_dossier(data: dict[str, Any]) -> dict[str, Any]:
-    """Calcula y añade el bloque de integridad al dossier."""
-    # Asegurar que existe la estructura de metadata
+    """Adds or updates a cryptographic integrity block within a dossier.
+
+    Calculates a cryptographic hash of the dossier and writes it, along with a
+    current UTC timestamp, into the dossier's metadata. The hash computation is
+    idempotent with respect to the integrity block itself; re-signing a dossier
+    will produce the same hash but an updated timestamp. If a "metadata" key
+    does not exist, it will be created. The integrity block is stored under
+    `data["metadata"]["integrity"]`.
+
+    Args:
+        data: The dossier dictionary to sign. This object is modified in-place.
+
+    Returns:
+        The same input dictionary object, now containing the integrity block.
+
+    Raises:
+        TypeError: If `data` is not a dictionary-like object, or if
+            `data["metadata"]` exists and is not a dictionary.
+    """
+    # Initializes the metadata structure if it does not already exist.
     if "metadata" not in data:
         data["metadata"] = {}
 
-    # Calcular hash (que ignorará cualquier integrity previo)
+    # Computes the dossier hash, deliberately excluding any existing integrity block to ensure idempotent outcomes.
     dossier_hash = compute_dossier_hash(data)
 
     data["metadata"]["integrity"] = {
@@ -1075,7 +1316,7 @@ def sign_dossier(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def verify_dossier_integrity(data: dict[str, Any]) -> bool:
-    """Verifica si el hash del dossier coincide con el firmado en su metadata."""
+    r"""{'docstring': "Verifies dossier integrity by comparing a stored hash with a computed hash.\n\n    This function validates the integrity of a dossier dictionary by calculating its\n    current hash and comparing it to a signed hash stored within the data\n    structure itself at `data['metadata']['integrity']['hash']`.\n\n    The hash computation, performed by the `compute_dossier_hash` utility,\n    must operate on a canonical representation of the dossier data, with the\n    `integrity` block itself being excluded from the input. This exclusion is\n    critical to prevent recursive hash mismatches.\n\n    If the `metadata` or `integrity` keys are missing, or if the `integrity`\n    block is empty (e.g., `None` or an empty dictionary), the check is bypassed\n    for backward compatibility with legacy dossiers. In this case, a warning\n    is logged, and the function returns `True`.\n\n    Args:\n        data: The dossier object, structured as a dictionary. It is expected\n            to contain a `metadata` key which in turn may hold an `integrity`\n            dictionary containing the signed `hash` string.\n\n    Returns:\n        True if the computed hash matches the stored hash, or if the integrity\n        check is skipped for legacy dossiers. False if the hashes do not\n        match, indicating potential data tampering or corruption.\n\n    Raises:\n        TypeError: If `data['metadata']` exists but is not a subscriptable type\n            (e.g., not a dictionary).\n        AttributeError: If `data['metadata']['integrity']` exists but is not a\n            dictionary-like object that supports the `.get()` method."}."""
     if (
         "metadata" not in data
         or "integrity" not in data["metadata"]

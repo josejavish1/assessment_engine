@@ -1,5 +1,4 @@
-"""
-Módulo assemble_tower_annex.py.
+"""Módulo assemble_tower_annex.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
 

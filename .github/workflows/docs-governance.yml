@@ -23,7 +23,7 @@ jobs:
       - name: Install validator dependency
         run: |
           python -m pip install --upgrade pip
-          pip install PyYAML
+          pip install PyYAML libcst ruff
 
       - name: Validate documentation governance
         env:
@@ -33,3 +33,18 @@ jobs:
           python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml
+
+      - name: SOTA Google-Style & Language Gate
+        run: |
+          # 1. Validate docstrings, TODOs, and commented-out code using Ruff
+          ruff check . --select D,TD,ERA --pydocstyle-convention google
+
+          # 2. Validate that 100% of source comments and descriptions are in Tier 1 English
+          python scripts/enforce_english_comments.py $(find src/ -name "*.py" | grep -v "_legacy")
+
+      - name: Semantic Comment Linter (Anti-AI-Bro/Slop Guard)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          python scripts/semantic_comment_linter.py

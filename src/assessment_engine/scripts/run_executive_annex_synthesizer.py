@@ -1,7 +1,4 @@
-"""
-Módulo run_executive_annex_synthesizer.py.
-Implementa el flujo Top-Down: Toma el Blueprint y genera el resumen para el Anexo del CTO.
-"""
+"""Provides the top-down synthesis implementation for the CTO Executive Annex. This module processes a solution blueprint to generate a synthesized executive summary."""
 
 import asyncio
 import json
@@ -52,7 +49,7 @@ class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
 
-# Helper functions (side-effect free)
+#
 def derive_maturity_band(score: float, vocab: Optional[dict[str, Any]] = None) -> str:
     v = vocab or {}
     label = resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
@@ -346,7 +343,7 @@ def derive_pillar_executive_reading(
 ) -> str:
     doc_lang = str(language or "es").lower()
 
-    # 1. Agrupar las respuestas del cuestionario por pilar ID
+    #
     answers_by_pilar: dict[str, list[Any]] = {}
     if case_input_data and "answers" in case_input_data:
         for ans in case_input_data.get("answers", []):
@@ -356,7 +353,7 @@ def derive_pillar_executive_reading(
                 answers_by_pilar[p_id] = []
             answers_by_pilar[p_id].append(ans)
 
-    # 2. Buscar el ID del pilar actual
+    #
     pilar_id = getattr(pillar, "pilar_id", getattr(pillar, "pilar_code", None))
     if not pilar_id and answers_by_pilar:
         pilar_name_clean = str(pillar.pilar_name).strip().lower()
@@ -369,7 +366,7 @@ def derive_pillar_executive_reading(
                 pilar_id = pid
                 break
 
-    # Comportamiento fallback si no hay datos de caso o mapeo
+    # Implements fallback logic to handle missing case data or mappings, providing a default output to maintain operational continuity.
     if not pilar_id or pilar_id not in answers_by_pilar:
         primary_finding = (
             pillar.health_check_asis[0] if pillar.health_check_asis else None
@@ -384,7 +381,7 @@ def derive_pillar_executive_reading(
             else "The capability requires executive prioritization to bridge the observed maturity gap."
         )
 
-    # 3. Construcción del bloque SOTA explicable
+    # Constructs the analysis block containing maturity band assessments and associated explainability metrics.
     ans_list = answers_by_pilar[pilar_id]
     kpis = []
     for ans in ans_list:
@@ -393,7 +390,7 @@ def derive_pillar_executive_reading(
             val = float(ans.get("value", 3.0))
             qid = ans.get("question_id", "")
 
-            # Buscar el finding cualitativo real del pilar en health_check_asis
+            #
             finding_text = None
             if hasattr(pillar, "health_check_asis") and pillar.health_check_asis:
                 for hc in pillar.health_check_asis:
@@ -468,7 +465,7 @@ def derive_pillar_executive_reading(
                 "• Operational Gaps and Consequences: No high-priority critical deviations identified."
             )
 
-    # 4. Atribución Causal Matemática (Explicabilidad de Varianza)
+    # Applies a mathematical causal attribution model to calculate variance explainability, mapping quantitative scores to their qualitative antecedents.
     if kpis:
         p_exact_score = float(getattr(pillar, "score", 3.0))
         lowest_kpi = min(kpis, key=lambda x: x["score"])
@@ -541,7 +538,7 @@ def enrich_annex_payload(
         else getattr(meta_dict, "language", "es")
     )
 
-    # Cargar localización declarativa SOTA para las bandas de madurez
+    # Load declarative localization strings from the configuration file. These strings provide the descriptive text for each maturity band.
     locales_path = Path("engine_config/locales.json")
     locales_data = {}
     if locales_path.exists():
@@ -646,7 +643,7 @@ def build_synthesis_prompt(
     return prompt
 
 
-# --- Pure Business Logic Function ---
+#
 async def generate_synthesis(
     blueprint: BlueprintPayload,
     client_intelligence: dict,
@@ -656,9 +653,7 @@ async def generate_synthesis(
     run_id: str,
     case_input_data: Optional[dict[str, Any]] = None,
 ) -> Optional[AnnexPayload]:
-    """
-    Toma los datos de entrada, ejecuta el agente IA y devuelve el payload del anexo enriquecido.
-    """
+    """Executes the primary agentic function. This process consumes input data, invokes the synthesis agent, and returns the resulting executive annex payload."""
     blueprint_data = blueprint.model_dump(by_alias=True)
     executive_handover = build_executive_handover(blueprint)
     prompt = build_synthesis_prompt(
@@ -685,7 +680,7 @@ async def generate_synthesis(
     result = await run_agent(
         app,
         user_id=f"synthesizer_{blueprint.document_meta.tower_code}",
-        message=prompt,  # El prompt se construiría aquí como antes
+        message=prompt,  #
         schema=AnnexPayload,
     )
 
@@ -698,11 +693,9 @@ async def generate_synthesis(
     )
 
 
-# --- I/O Orchestrator Function ---
+#
 async def synthesize_annex(client_name: str, tower_id: str) -> None:
-    """
-    Orquesta el proceso de síntesis del anexo ejecutivo. Maneja I/O.
-    """
+    """Coordinates the synthesis procedure for the executive annex, including all related input and output operations."""
     run_id = f"run_{uuid.uuid4()}"
     print(
         f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})..."

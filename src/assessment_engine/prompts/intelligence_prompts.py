@@ -1,9 +1,8 @@
-"""
-Repositorio de prompts para los agentes de Inteligencia de Mercado (OSINT).
-"""
+"""Defines a collection of prompt templates for instructing Market Intelligence (OSINT) agents."""
 
 
 def get_regulatory_harvester_prompt(client_name: str) -> str:
+    """Construct a Spanish-language prompt to identify cybersecurity regulations for a client."""
     return f"""
     Analiza a la empresa '{client_name}'. Identifica a qué sector pertenece. 
     Basado estrictamente en su sector operando en Europa/España, dime cuáles son los marcos normativos de ciberseguridad o resiliencia que le aplican obligatoriamente por ley. 
@@ -20,6 +19,7 @@ def get_regulatory_harvester_prompt(client_name: str) -> str:
 
 
 def get_business_harvester_prompt(client_name: str) -> str:
+    """Generate a Spanish-language prompt for harvesting business intelligence on a client."""
     return f"""
     Busca noticias recientes o resúmenes de informes de resultados/estrategia de la empresa '{client_name}'. 
     1. ¿Cuáles son los objetivos corporativos declarados por su dirección general? 
@@ -40,6 +40,7 @@ def get_business_harvester_prompt(client_name: str) -> str:
 
 
 def get_tech_harvester_prompt(client_name: str) -> str:
+    """Generate a technology footprint harvesting prompt for a given client name."""
     return f"""
     Basado en ofertas de empleo públicas, noticias de alianzas tecnológicas o footprint digital conocido de '{client_name}', ¿qué tecnología clave utilizan o hacia dónde van? 
     (Ej: ¿Están migrando a Azure? ¿Usan fuertemente SAP? ¿Servicios industriales OT/IT?).
@@ -57,6 +58,25 @@ def get_tech_harvester_prompt(client_name: str) -> str:
 
 
 def get_auditor_harvester_prompt(dossier_json: str) -> str:
+    """Constructs a Spanish-language prompt for an LLM to audit and enrich a client intelligence dossier.
+
+    This function generates a prompt instructing a Large Language Model (LLM) to
+    assume the persona of a Strategic Quality Auditor. The prompt contains a set
+    of explicit tasks for validating, correcting, and enriching a supplied client
+    intelligence dossier. Key tasks include checking regulatory coherence,
+    validating financial tiers, inferring transformation horizons, overriding
+    technology tower maturity targets based on industry, and populating business
+    and technology context fields. The prompt also mandates that the LLM's output
+    strictly adheres to a specified JSON schema and maintains traceability for
+    all claims.
+
+    Args:
+        dossier_json (str): A JSON-formatted string representing the draft client
+            intelligence dossier to be audited and enriched by the LLM.
+
+    Returns:
+        str: A complete prompt string in Spanish, ready for submission to an LLM.
+    """
     return f"""
     Eres el Auditor de Calidad Estratégica del Dossier de Inteligencia de este cliente. Aquí tienes el borrador:
     {dossier_json}

@@ -1,6 +1,6 @@
-"""
-Módulo check_vertex_ai_access.py.
-Valida de forma explícita el acceso base a Vertex AI antes de lanzar agentes.
+"""The `check_vertex_ai_access.py` module.
+
+Provides functionality to explicitly validate foundational access to Vertex AI. This pre-flight check is intended to run prior to agent instantiation to ensure proper credentials and permissions are configured.
 """
 
 from __future__ import annotations
@@ -14,6 +14,20 @@ logger = logging.getLogger(__name__)
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Executes the Vertex AI preflight check from the command line.
+
+    Parses command-line arguments for the model name and timeout duration. It then
+    invokes the preflight check routine and logs the details of a successful
+    verification, including project, location, and model information.
+
+    Args:
+        argv: An optional list of command-line arguments. If None, `sys.argv[1:]`
+            is used by the argument parser.
+
+    Raises:
+        KeyError: If the dictionary returned by the preflight check is missing
+            an expected key, such as 'project' or 'location'.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=None)
     parser.add_argument("--timeout-seconds", type=float, default=None)

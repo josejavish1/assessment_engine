@@ -1,7 +1,4 @@
-"""
-Módulo generate_tower_radar_chart.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides functionality for generating tower-based radar charts to visualize assessment results."""
 
 import json
 import math
@@ -12,10 +9,25 @@ import matplotlib.pyplot as plt
 
 
 def load_json(path: Path):
+    """Parse a UTF-8 encoded JSON file from a given path."""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def safe_float(value):
+    """Safely convert a value to a float.
+
+    Converts a value to a float, suppressing exceptions. This function handles
+    `None`, numeric types (`int`, `float`), and strings. String inputs are
+    normalized by replacing comma decimal separators with periods prior to
+    conversion.
+
+    Args:
+        value (Any): The input value to convert.
+
+    Returns:
+        Optional[float]: The converted float, or `None` if the input is `None` or
+            if the conversion fails.
+    """
     if value is None:
         return None
     if isinstance(value, (int, float)):
@@ -28,6 +40,7 @@ def safe_float(value):
 
 
 def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Path:
+    r"""{'docstring': "Generates and saves a polar plot (radar chart) from pillar score data.\n\n    This function visualizes a list of pillar scores as a radar chart using\n    matplotlib. It plots each pillar's label and score on a polar axis. The\n    radial axis is fixed on a scale of 0 to 5. Scores that are missing or\n    cannot be converted to a float are treated as 0.0. The resulting chart is\n    saved as an image file to the specified path.\n\n    Args:\n        pillars: A list of dictionaries, each representing a pillar. Each\n            dictionary should contain a 'pillar_label' key with a string value\n            for the axis label and a 'score_display' key with a value that can\n            be converted to a float.\n        out_path: The file system path where the generated radar chart image\n            will be saved. Parent directories are created if they do not exist.\n\n    Returns:\n        The path to the saved chart image file, identical to the `out_path`\n        argument.\n\n    Raises:\n        ValueError: If the `pillars` list is empty or if none of the provided\n            dictionaries contain a 'score_display' value that can be\n            converted to a float."}."""
     labels = [p.get("pillar_label", "") for p in pillars]
     values = [safe_float(p.get("score_display")) for p in pillars]
 
@@ -66,6 +79,36 @@ def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Pa
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Generate a radar chart and update the source JSON payload.
+
+    This function serves as the main entry point for a command-line script.
+    It performs the following sequence of operations:
+    1. Parses command-line arguments for an input JSON file and an optional
+       output PNG file path.
+    2. Loads the JSON payload from the specified input file.
+    3. Extracts pillar score data from the `pillar_score_profile.pillars` key.
+    4. Invokes the chart generation logic with the extracted data.
+    5. Updates the in-memory JSON payload to include a `radar_chart` key
+       referencing the path of the generated image.
+    6. Overwrites the original input file with the updated JSON payload.
+
+    If an output path is not provided, the image is saved as
+    'pillar_radar_chart.generated.png' in the same directory as the input file.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv` is
+            used. The first argument (`argv[1]`) must be the path to the
+            input JSON file. The second argument (`argv[2]`) is an optional
+            path for the output PNG image.
+
+    Raises:
+        SystemExit: If the number of command-line arguments is incorrect, or if
+            the pillar data within the payload is invalid and causes a
+            `ValueError` during chart generation.
+        FileNotFoundError: If the input JSON file specified by `argv[1]` does
+            not exist.
+        json.JSONDecodeError: If the input file is not a valid JSON document.
+    """
     if len(argv if argv is not None else sys.argv) not in (2, 3):
         raise SystemExit(
             "Uso: python -m scripts.generate_tower_radar_chart <template_payload_json> [output_png]"

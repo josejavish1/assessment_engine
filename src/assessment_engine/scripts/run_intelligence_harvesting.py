@@ -1,7 +1,4 @@
-"""
-Módulo run_intelligence_harvesting.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines and orchestrates the primary intelligence harvesting pipeline for the Assessment Engine. This script serves as the main entry point for data ingestion, processing, synthesis, and auditing stages."""
 
 import asyncio
 import json
@@ -34,6 +31,40 @@ from assessment_engine.scripts.lib.runtime_paths import resolve_client_intellige
 
 
 async def run_market_intelligence(client_name: str, output_path: Path):
+    """Orchestrates the end-to-end market intelligence gathering and analysis pipeline.
+
+    This asynchronous function executes a multi-stage process to generate a
+    comprehensive intelligence dossier for a specified client. The pipeline
+    consists of three primary stages:
+
+    1.  **Harvesting**: Executes specialized agents (Regulatory, Business, Tech)
+        to collect raw open-source intelligence (OSINT) data.
+    2.  **Synthesis**: Processes and consolidates the harvested data into a
+        structured draft dossier, creating distinct claims with calculated
+        confidence scores.
+    3.  **Auditing**: Submits the draft dossier to an adversarial 'auditor' agent
+        to verify coherence, check for inconsistencies, and produce the final
+        version.
+
+    The final, audited dossier is then written to the specified output file path
+    as a JSON object.
+
+    Args:
+        client_name: The name of the client company to be researched.
+        output_path: The file path where the final JSON intelligence dossier
+            will be saved. Parent directories will be created if they do not
+            exist.
+
+    Returns:
+        None. The result is written to the file specified by `output_path`.
+
+    Raises:
+        OSError: If the output directory cannot be created or the final dossier
+            file cannot be written to `output_path`.
+        Exception: Propagates exceptions from the underlying `run_agent` calls,
+            which could include network errors, API failures, or schema
+            validation errors on an agent's response.
+    """
     print(f"\n🔍 Iniciando Inteligencia de Mercado para: {client_name}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -44,13 +75,13 @@ async def run_market_intelligence(client_name: str, output_path: Path):
     )
     app = AdkApp(agent=agent)
 
-    # Archivos para logs raw
+    # Configuration for file system paths used to store raw, unprocessed log data prior to ingestion and analysis.
     raw_reg_file = output_path.parent / "raw_harvester_reg.txt"
     raw_biz_file = output_path.parent / "raw_harvester_biz.txt"
     raw_tech_file = output_path.parent / "raw_harvester_tech.txt"
     raw_audit_file = output_path.parent / "raw_auditor_agent.txt"
 
-    # --- ETAPA 1: LOS HARVESTERS ---
+    # Stage 1: Ingests and processes raw data to extract preliminary intelligence artifacts.
 
     print("  -> Ejecutando Harvester Regulatorio...")
     reg_data = await run_agent(
@@ -79,7 +110,7 @@ async def run_market_intelligence(client_name: str, output_path: Path):
         schema=TechHarvest,
     )
 
-    # --- ETAPA 2: LA SÍNTESIS ---
+    # Stage 2: Synthesizes extracted artifacts into a consolidated, structured intelligence model.
     print("  -> Preparando borrador (Analista)...")
     now_iso = datetime.now(timezone.utc).isoformat()
     reg_source = reg_data.get("source_evidence", "")
@@ -332,7 +363,7 @@ async def run_market_intelligence(client_name: str, output_path: Path):
         },
     }
 
-    # --- ETAPA 3: LA AUDITORÍA (Red Team) ---
+    # Stage 3: Subjects the consolidated model to adversarial analysis (Red Team audit) to verify its robustness and accuracy.
     print("  -> Verificación de Coherencia y Madurez (Auditor)...")
     final_dossier = await run_agent(
         app,
@@ -349,6 +380,19 @@ async def run_market_intelligence(client_name: str, output_path: Path):
 
 
 def main():
+    """Execute the market intelligence harvesting pipeline for a specified client.
+
+    This function serves as the main entry point for the script. It parses a
+    client name from command-line arguments, resolves the corresponding output
+    directory path, and initiates the asynchronous harvesting process.
+
+    Example:
+        python run_intelligence_harvesting.py my_client
+
+    Raises:
+        SystemExit: If the client name is not provided as a command-line
+            argument.
+    """
     if len(sys.argv) < 2:
         print("Uso: python run_intelligence_harvesting.py <client_name>")
         sys.exit(1)

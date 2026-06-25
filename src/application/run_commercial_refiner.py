@@ -1,7 +1,4 @@
-"""
-Módulo run_commercial_refiner.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines the primary logic and utilities for the Assessment Engine pipeline."""
 
 import asyncio
 import json
@@ -41,7 +38,7 @@ async def call_commercial_agent(
     schema_cls,
     client_name="el cliente",
 ):
-
+    r"""{'docstring': 'Asynchronously invokes a commercial agent to process a payload against a schema.\n\n    Initializes an `Agent` instance with a specified model and instruction set.\n    The function then constructs a formatted prompt containing the payload and\n    executes the agent. It attempts to parse the agent\'s output using the\n    provided schema class. If any exception occurs during execution or parsing,\n    the error is printed to standard output and an empty dictionary is returned.\n\n    Args:\n        model_name (str): The identifier for the language model to be used.\n        agent_role (str): A descriptive role for the agent (e.g., "sales analyst")\n            used in prompt construction.\n        instruction (str): The specific task or command for the agent to execute.\n        payload_str (str): A string representation of the data payload for the\n            agent to process.\n        schema_cls (Type): The class definition (e.g., a Pydantic model) used to\n            validate and structure the agent\'s output.\n        client_name (str): The name of the client. Defaults to "el cliente".\n\n    Returns:\n        Any: An instance of `schema_cls` containing the structured output from the\n            agent on successful execution. Returns an empty dictionary (`{}`) if\n            any exception occurs during the process.'}."""
     agent = Agent(
         model=model_name,
         name=f"commercial_{agent_role.replace(' ', '')[-10:]}",
@@ -68,6 +65,33 @@ async def call_commercial_agent(
 
 
 async def build_proactive_proposal(model_name, opp, payload_str, client_name):
+    """Asynchronously orchestrates multiple AI agents to generate a commercial proposal.
+
+    This coroutine coordinates four concurrent calls to distinct commercial AI
+    agents, each responsible for a specific section of a proactive proposal. It
+    awaits the completion of all agent tasks and aggregates their structured
+    outputs into a single, comprehensive dictionary.
+
+    Args:
+        model_name (str): The identifier for the generative AI model to be used by
+            the agents.
+        opp (dict): A dictionary containing details about the commercial opportunity.
+            It is expected to contain an 'initiative' key which provides the
+            proposal's title.
+        payload_str (str): A serialized data payload, such as a JSON string,
+            containing the core context for proposal generation.
+        client_name (str): The name of the client for whom the proposal is
+            generated.
+
+    Returns:
+        dict: A dictionary representing the complete commercial proposal. The
+            structure includes keys such as 'initiative_name',
+            'context_and_why', 'solution_and_what', 'scope_and_how',
+            'delivery_team', 'ai_transformation_strategy',
+            'governance_and_assumptions', 'risk_management', 'activation_plan',
+            'why_ntt_data', 'investment_and_timeline', and
+            'executive_synthesis'.
+    """
     opp_name = opp.get("initiative", "Iniciativa Estratégica")
     print(
         f"    -> 🟢 Agente A1 (Engagement Manager): Contexto y Valor para '{opp_name}'..."
@@ -133,7 +157,42 @@ async def build_proactive_proposal(model_name, opp, payload_str, client_name):
 
 
 def aggregate_blueprint_catalogs(blueprint_paths: list[Path]) -> dict:
-    """Consolida el catálogo técnico de todos los blueprints encontrados."""
+    """Aggregates multiple blueprint JSON files into a single structured catalog.
+
+    This function iterates through a list of file paths, each pointing to a JSON
+    file representing a 'tower' blueprint. It reads each file using 'utf-8-sig'
+    encoding and extracts metadata, summaries, and project initiatives. The
+    extracted data is organized into a dictionary keyed by tower ID.
+
+    The process is designed to be robust. If a file cannot be read, contains
+    malformed JSON, or an unexpected error occurs during processing, a message
+    is printed to standard output, and the function proceeds to the next file.
+    Missing keys within a valid JSON structure are handled gracefully by
+    substituting default values (e.g., 'UNKNOWN', empty strings, or empty lists).
+
+    Args:
+        blueprint_paths (list[Path]): A list of `pathlib.Path` objects, where each
+            path points to a blueprint JSON file to be processed.
+
+    Returns:
+        dict: A catalog where keys are tower IDs (str) and values are
+            dictionaries containing the aggregated information for that tower.
+            The structure for each tower's entry is as follows:
+            {
+                'tower_name': str,
+                'executive_bottom_line': str,
+                'technical_debt': str,
+                'initiatives': [
+                    {
+                        'name': str | None,
+                        'objective': str | None,
+                        'sizing': typing.Any,
+                        'deliverables': list
+                    },
+                    ...
+                ]
+            }
+    """
     catalog = {}
     for bp_path in blueprint_paths:
         try:
@@ -178,12 +237,13 @@ async def refine_commercial_payload(
     blueprints_catalog: dict = None,  # type: ignore
     intelligence_dossier: dict | None = None,
 ):
+    r"""{'docstring': "Orchestrates a multi-agent system to refine a commercial payload.\n\n    This coroutine executes a three-phase process to generate a comprehensive\n    commercial strategy. It first defines a high-level strategy, then qualifies\n    a pipeline of opportunities by cross-referencing this strategy with tactical\n    blueprints, and finally builds detailed proposals for the highest-ranked\n    opportunities. The process leverages distinct agents for each phase: a 'Global\n    Account Director', a 'Presales Architect', and a proposal generation agent.\n\n    Args:\n        payload (dict): The primary input dictionary containing strategic global\n            context and client metadata under a 'meta' key. May also contain\n            an 'intelligence_dossier'.\n        blueprints_catalog (dict | None, optional): A catalog of tactical\n            blueprints providing technical context for opportunity generation.\n            Defaults to None, which is treated as an empty dictionary.\n        intelligence_dossier (dict | None, optional): Specific intelligence data\n            regarding the client. If None, the function attempts to source this\n            data from the `payload` dictionary. Defaults to None.\n\n    Returns:\n        dict: A refined commercial payload. The structure includes metadata,\n            an executive summary, go-to-market strategy, stakeholder map, a\n            qualified opportunity pipeline, and detailed proactive proposals.\n\n    Raises:\n        TypeError: If the internal context constructed from the inputs contains\n            objects that are not JSON-serializable.\n        Exception: Propagates exceptions raised from downstream agent\n            coroutines (`call_commercial_agent`, `build_proactive_proposal`),\n            which may include API errors or data validation failures."}."""
     try:
         model_name = resolve_model_profile_for_role("global_refiner")["model"]
     except Exception:
         model_name = "gemini-2.5-pro"
 
-    # Construir contexto híbrido
+    #
     hybrid_context = {
         "strategic_global_context": payload,
         "tactical_tower_blueprints": blueprints_catalog or {},
@@ -252,6 +312,31 @@ async def refine_commercial_payload(
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Orchestrates the commercial refinement of a global payload from the command line.
+
+    This function serves as the main entry point for the refinement process. It reads a specified global payload JSON file, discovers and aggregates context from related files within the same parent directory, invokes the core asynchronous refining logic, and writes the resulting commercial report to a new JSON file.
+
+    The expected directory structure is as follows:
+    - A parent directory (e.g., 'client_data/').
+    - The input payload (e.g., 'client_data/global_payload.json').
+    - Technical blueprint subdirectories (e.g., 'client_data/T01/', 'client_data/T02/').
+    - An optional client intelligence file ('client_data/client_intelligence.json').
+
+    Args:
+        argv: A list of command-line arguments. If `None`, `sys.argv` is used.
+            The list is expected to contain the script name followed by the path
+            to the input global payload JSON file.
+
+    Returns:
+        None. The function's output is a side effect: the refined payload is
+        written to `commercial_report_payload.json` in the same directory
+        as the input payload, and progress is printed to standard output.
+
+    Raises:
+        FileNotFoundError: If the specified global payload JSON file does not exist.
+        json.JSONDecodeError: If the global payload or any of the discovered
+            context files (blueprints, client intelligence) contain malformed JSON.
+    """
     if len(argv if argv is not None else sys.argv) < 2:
         print("Uso: python run_commercial_refiner.py <global_payload_json>")
         sys.exit(1)
@@ -262,7 +347,7 @@ def main(argv: list[str] | None = None) -> None:
     with payload_path.open("r", encoding="utf-8-sig") as f:
         payload = json.load(f)
 
-    # Buscar blueprints tácticos
+    #
     blueprint_paths = list(client_dir.glob("T*/blueprint_*_payload.json"))
     print(
         f"🔍 Encontrados {len(blueprint_paths)} blueprints técnicos para el contexto híbrido."

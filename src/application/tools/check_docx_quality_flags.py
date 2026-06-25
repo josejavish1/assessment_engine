@@ -22,6 +22,26 @@ BAD_PATTERNS = [
 
 
 def collect_text(doc) -> Any:
+    """Extracts all textual content from a `python-docx` document object.
+
+    This function traverses all paragraphs in the main document body and within
+    all table cells. Text from each non-empty paragraph is collected. The
+    resulting text segments are then joined into a single string, with each
+    segment separated by a newline character.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` document object from
+            which to extract text.
+
+    Returns:
+        str: A single string containing all text from the document's
+            paragraphs and tables, separated by newlines.
+
+    Raises:
+        AttributeError: If the `doc` object does not conform to the expected
+            `python-docx` Document interface and lacks `paragraphs` or `tables`
+            attributes.
+    """
     parts = []
     for p in doc.paragraphs:
         if p.text:
@@ -36,6 +56,32 @@ def collect_text(doc) -> Any:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Scan a DOCX file for predefined quality degradation patterns.
+
+    Serves as the main entry point for a command-line script that validates a
+    Microsoft Word document (.docx) against a set of quality criteria. The
+    script expects a single command-line argument specifying the path to the
+    document. It extracts the full text content and scans for matches against
+    predefined regular expression patterns and for an excessive number of
+    ellipsis occurrences (more than 3).
+
+    The script's outcome is communicated via logging and exit codes. If quality
+    issues are detected, it logs 'DOCX_QUALITY_FLAGS=YES' with details of the
+    findings and exits with a status code of 1. If the document passes all
+    checks, it logs 'DOCX_QUALITY_FLAGS=NO' and exits successfully.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv` is used.
+            Primarily intended for testing. The list is expected to contain
+            the script name followed by a single path to a .docx file.
+
+    Raises:
+        SystemExit: 
+            - If the number of command-line arguments is not two (script name
+              and path).
+            - If the specified DOCX file path does not exist.
+            - If quality flags are found, exiting with a status code of 1.
+    """
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit(
             "Uso: python -m scripts.tools.check_docx_quality_flags <docx_path>"

@@ -1,7 +1,4 @@
-"""
-Módulo bootstrap_all_towers.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines the primary orchestration logic and foundational utilities for the Assessment Engine's data processing pipeline."""
 
 import argparse
 import logging
@@ -19,6 +16,23 @@ logger = logging.getLogger(__name__)
 
 
 def find_matrix_file(tower_dir: Path) -> Path:
+    """Locates a matrix file within a directory, prioritizing the '.docx' format.
+
+    Searches non-recursively within the specified directory. The selection process
+    prioritizes files with a case-insensitive '.docx' suffix. If one or more
+    '.docx' files exist, the path to the lexicographically first among them is
+    returned. If no '.docx' files are present, the function returns the path to
+    the lexicographically first file of any type.
+
+    Args:
+        tower_dir: The directory path to search.
+
+    Returns:
+        The path to the identified matrix file.
+
+    Raises:
+        FileNotFoundError: If the specified directory contains no files.
+    """
     candidates = sorted(path for path in tower_dir.iterdir() if path.is_file())
     if not candidates:
         raise FileNotFoundError(f"No hay ficheros matriz en {tower_dir}")
@@ -29,6 +43,26 @@ def find_matrix_file(tower_dir: Path) -> Path:
 
 
 def main() -> None:
+    """Discovers and bootstraps tower configurations from source documents.
+
+    This script functions as the main entry point for a command-line utility that
+    processes a collection of "tower" configurations. It scans a specified source
+    directory for tower subdirectories, identifies the primary matrix file within
+    each, and then generates and validates the corresponding engine configurations.
+
+    The process iterates through all discovered towers, collecting status
+    information, warnings, and errors. A final summary report is logged to the
+    console. The script's input and output directories are configured via the
+    `--source-root` and `--engine-root` command-line arguments.
+
+    The final exit code is 0 if all towers are processed without critical
+    errors (warnings are tolerated), and 1 if any tower fails.
+
+    Raises:
+        SystemExit: If no tower directories are found in the source root, or if
+            any tower fails the bootstrapping or validation process, causing the
+            script to terminate with a non-zero exit code.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--source-root",

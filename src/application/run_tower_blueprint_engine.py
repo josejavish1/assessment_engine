@@ -1,13 +1,10 @@
-"""
-Módulo run_tower_blueprint_engine.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines the primary pipeline for processing blueprint payloads. This includes model-based analysis of architectural pillars, data validation against schemas, and synchronization with a central knowledge graph."""
 
 import asyncio
 import json
 import sys
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
@@ -17,23 +14,20 @@ from domain.prompts.blueprint_prompts import (
     get_blueprint_architect_instruction,
     get_closing_orchestrator_prompt,
     get_critic_prompt,
-    get_pilar_architect_prompt,
     get_gravity_profiler_prompt,
-    get_bid_manager_prompt,
+    get_pilar_architect_prompt,
 )
 from domain.schemas.blueprint import (
     ArchitecturalGravityProfile,
     BlueprintPayload,
     OrchestratorBlueprintDraft,
     PillarBlueprintDraft,
-    ProjectCharterEnrichment,
 )
 from infrastructure.ai_client import run_agent
 from infrastructure.client_intelligence import (
     build_client_context_packet,
     build_client_context_text,
     client_intelligence_to_legacy,
-    get_target_maturity,
     load_client_intelligence,
 )
 from infrastructure.entity_resolution import EntityResolutionEngine
@@ -54,16 +48,39 @@ def sync_findings_to_graph(
     blueprint_payload: dict,
     tower_id: str,
 ):
-    """
-    Tier-1 Graph-First Sync.
-    Injects findings and initiatives from a blueprint payload into the Sovereign Graph.
+    """Populates a knowledge graph with entities and relationships from a structured blueprint payload.
+
+    This function processes a blueprint payload by iterating through its pillars,
+    risks (from `health_check_asis`), and initiatives (from `projects_todo`).
+    It uses an entity resolver to generate stable semantic identifiers for each
+    risk and initiative, which are then injected as nodes and relationships
+    (triples) into the provided `EpistemicGraph` instance. Relationships
+    created include risks impacting pillars and initiatives addressing pillars.
+    External dependencies between initiatives are also parsed and added to the graph.
+
+    Note: This function modifies the `blueprint_payload` dictionary in-place by
+    adding a `node_id` key to each risk and initiative dictionary.
+
+    Args:
+        graph: The `EpistemicGraph` instance to be populated.
+        entity_resolver: The component used to generate stable semantic identifiers
+            for entities.
+        ontology: The ontology registry for the graph. Note: This parameter is
+            present in the signature but not used in the function's logic.
+        blueprint_payload: A dictionary containing the structured blueprint data.
+            This argument is modified in-place.
+        tower_id: The unique identifier for the Tower, used as a source attribute
+            for the injected graph triples.
+
+    Returns:
+        None.
     """
     _ = blueprint_payload.get("document_meta", {}).get("client_name", "generic")
     for pillar in blueprint_payload.get("pillars_analysis", []):
         pillar_id = pillar.get("pilar_id", "UNKNOWN")
         _ = pillar.get("pilar_name", "UNKNOWN")
 
-        # 1. Inject Pillar context
+        # Inject pillar-specific context to constrain the analysis scope for the model.
         graph.inject_triple(
             subject=pillar_id,
             predicate="BELONGS_TO_TOWER",
@@ -72,11 +89,11 @@ def sync_findings_to_graph(
             confidence=1.0,
         )
 
-        # 2. Inject Health Checks (Risks)
+        #
         for hc in pillar.get("health_check_asis", []):
             finding_text = hc.get("finding", "")
             risk_id = entity_resolver.get_semantic_id(finding_text, context="RISK")
-            hc["node_id"] = risk_id  # Sync back to payload for the "view"
+            hc["node_id"] = risk_id  #
 
             graph.inject_triple(
                 subject=risk_id,
@@ -94,11 +111,11 @@ def sync_findings_to_graph(
                 confidence=1.0,
             )
 
-        # 3. Inject Projects (Initiatives)
+        #
         for proj in pillar.get("projects_todo", []):
             proj_name = proj.get("name", "")
             proj_id = entity_resolver.get_semantic_id(proj_name, context="INITIATIVE")
-            proj["node_id"] = proj_id  # Sync back
+            proj["node_id"] = proj_id  #
 
             graph.inject_triple(
                 subject=proj_id,
@@ -118,7 +135,7 @@ def sync_findings_to_graph(
                 confidence=1.0,
             )
 
-    # 4. Inject External Dependencies from Orchestrator
+    #
     for dep in blueprint_payload.get("external_dependencies", []):
         proj_a_name = dep.get("project", "")
         proj_b_name = dep.get("depends_on", "")
@@ -140,7 +157,24 @@ def sync_findings_to_graph(
 def get_default_blueprint_payload(
     client_name, tower_name, tower_id, intel_data
 ) -> dict:
-    """Provee una estructura base completa que cumple con el contrato de BlueprintPayload."""
+    """Constructs a default, schema-compliant dictionary for a blueprint payload.
+
+    Initializes a baseline payload dictionary using provided metadata and populates
+    remaining sections with default or placeholder values. This ensures a
+    consistent and valid structure for subsequent processing.
+
+    Args:
+        client_name (str): The name of the client associated with the blueprint.
+        tower_name (str): The name of the specific technology tower.
+        tower_id (str): The unique identifier or code for the technology tower.
+        intel_data (dict): A dictionary containing supplementary intelligence
+            data. Expected keys include 'financial_tier' and
+            'transformation_horizon'.
+
+    Returns:
+        dict: A dictionary representing the default blueprint payload, conforming
+            to the required schema.
+    """
     return {
         "document_meta": {
             "client_name": client_name,
@@ -174,14 +208,43 @@ def get_default_blueprint_payload(
 async def process_pilar_blueprint(
     model_name, client_name, tower_name, pilar_data, context_str, intel_str
 ):
-    """Procesa un pilar individual con el Squad de Arquitecto + Crítico."""
+    """Asynchronously processes an architectural pillar using a two-phase generative AI pipeline.
+
+    This function orchestrates a two-phase process to generate architectural
+    findings. In the first phase, an "architect" agent produces an initial draft
+    based on the provided pillar data, context, and supplementary intelligence.
+    In the second phase, a "critic" agent reviews and refines this draft to
+    improve technical accuracy and clarity. The context is enhanced with any
+    pre-existing refined findings before being passed to the architect agent.
+
+    Args:
+        model_name (str): The identifier of the generative model to be used for
+            both architect and critic agents.
+        client_name (str): The name of the client for whom the blueprint is
+            being generated, used in the critic phase.
+        tower_name (str): The name of the architectural tower to which the pillar
+            belongs.
+        pilar_data (dict[str, Any]): A dictionary containing pillar data. Expected
+            keys include 'id' (str), 'label' (str), 'score' (float | int),
+            'answers' (dict), and an optional 'refined_findings' (dict).
+        context_str (str): The primary contextual information for the analysis.
+        intel_str (str): Supplementary intelligence or reference material to guide
+            the generation.
+
+    Returns:
+        Optional[PillarBlueprintDraft]: An instance of `PillarBlueprintDraft`
+        containing the refined findings. If the refinement (critic) phase fails
+        but the initial (architect) phase succeeds, the initial draft is
+        returned. Returns `None` if the initial phase fails or a critical
+        exception occurs during processing.
+    """
     print(f"    -> Analizando Pilar: {pilar_data['label']}...")
 
     pilar_id = pilar_data["id"]
     pilar_label = pilar_data["label"]
     pilar_score = pilar_data["score"]
 
-    # Enriquecer context_str con los hallazgos refinados (SOTA + Fragmentos)
+    # Enrich the context string with refined findings, including technical standard references and supporting source text fragments.
     refined = pilar_data.get("refined_findings", {})
     refined_str = json.dumps(refined, indent=2, ensure_ascii=False) if refined else ""
 
@@ -198,7 +261,7 @@ async def process_pilar_blueprint(
         pilar_id=pilar_id,
     )
 
-    # 1. Agente Escritor
+    # Phase 1: Generate the initial set of findings from the source context.
     try:
         agent_architect = Agent(
             name="blueprint_architect",
@@ -215,7 +278,7 @@ async def process_pilar_blueprint(
             schema=PillarBlueprintDraft,
         )
 
-        # 2. Agente Crítico (Refinado)
+        # Phase 2: Refine and validate the initial findings.
         if raw_output:
             agent_critic = Agent(
                 name="blueprint_critic",
@@ -244,6 +307,7 @@ async def process_pilar_blueprint(
 
 
 async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
+    r"""{'docstring': "Asynchronously orchestrates the generation of a client transformation blueprint.\n\n    This function coordinates a multi-stage pipeline to analyze a client's\n    current state from assessment data and produce a strategic roadmap. The\n    process integrates data ingestion, knowledge graph construction, generative AI\n    analysis with RAG-based validation, policy enforcement, and financial estimation.\n\n    The pipeline stages include:\n    1.  Data Ingestion: Loads client assessment answers, findings, and intelligence.\n    2.  Knowledge Graph Construction: Builds an epistemic graph to resolve and unify\n        context from disparate data sources.\n    3.  Constraint Profiling: Assesses architectural constraints (e.g., on-premise\n        vs. cloud preference) to guide subsequent analysis.\n    4.  Pillar Processing: Sequentially analyzes each architectural pillar using\n        generative models, validating outputs against the source corpus.\n    5.  Policy Enforcement: Applies a rules engine to the generated payload to\n        ensure compliance with architectural and business constraints.\n    6.  Orchestration and Finalization: Generates an executive summary and roadmap,\n        with a validation and retry loop to ensure logical consistency and\n        dependency resolution.\n    7.  Financial Estimation: Enriches proposed initiatives with budgetary\n        estimates derived from a deterministic rate card.\n    8.  Serialization: Validates the final data structure and writes the complete\n        blueprint payload to a JSON file.\n\n    Args:\n        client_name: The identifier for the client, used to resolve input and\n            output data paths.\n        tower_id: The identifier for the assessment tower being processed.\n\n    Returns:\n        None. The function produces its output as a side effect by writing the\n        generated blueprint to a JSON file.\n\n    Raises:\n        FileNotFoundError: If a required input file, such as the tower\n            definition or case data, is not found at its expected path.\n        json.JSONDecodeError: If a required input JSON file is malformed and\n            cannot be parsed.\n        RuntimeError: If pillar analysis fails for all pillars, the final\n            orchestration model fails after multiple retries, or the final\n            generated payload fails structural validation against its schema."}."""
     client_dir = resolve_client_dir(client_name)
     client_dir / tower_id
     case_input_path = resolve_case_input_path(client_name, tower_id)
@@ -269,7 +333,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     tower_name = case_data.get("tower_name")
     context_str = case_data.get("context_summary", "")
 
-    # --- EPISTEMIC GRAPH RESOLUTION ---
+    # Resolve logical inconsistencies in the payload knowledge graph.
     print("🧠 [Epistemic Engine] Ingestando contexto e inteligencia...")
     from infrastructure.epistemic_extractor import extract_triples_from_text
     from infrastructure.epistemic_graph import EpistemicGraph
@@ -279,7 +343,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     entity_resolver = EntityResolutionEngine()
     ontology = OntologyRegistry()
 
-    # 1. Extraer del OSINT (Baja Confianza)
+    #
     if raw_intel_data:
         osint_triples = await extract_triples_from_text(
             json.dumps(raw_intel_data, ensure_ascii=False)
@@ -293,7 +357,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 confidence=0.4,
             )
 
-    # 2. Extraer del Contexto Interno (Alta Confianza)
+    #
     if context_str:
         ctx_triples = await extract_triples_from_text(context_str)
         for t in ctx_triples:
@@ -305,15 +369,15 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 confidence=1.0,
             )
 
-    # 3. Resolver la Verdad Absoluta
+    # Phase 3: Reconcile signals from all data sources.
     resolved_truth = graph.get_resolved_context_string()
 
-    # Inyectar al flujo
+    #
     intel_str_tangential = json.dumps(intel_data, indent=2, ensure_ascii=False)
     intel_str = f"--- VERDAD EPISTÉMICA RESUELTA ---\n{resolved_truth}\n\n--- DATOS OSINT CRUDOS (TANGENCIALES) ---\n{intel_str_tangential}"
-    # ----------------------------------
+    #
 
-    # Preparar contexto masivo
+    #
     intel_str = (
         build_client_context_text(raw_intel_data, tower_id=tower_id)
         if intel_packet
@@ -329,7 +393,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     except Exception:
         model_name = "gemini-2.5-pro"
 
-    # --- DYNAMIC CONTEXT PROFILER (TIER 1 GRAVITY RESOLUTION) ---
+    # Resolve data dependencies and establish processing priorities.
     print("🔎 [Pre-flight] Calculando el Perfil de Gravedad Arquitectónica del cliente...")
     dynamic_target_maturity = 4.0
     try:
@@ -367,9 +431,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             print(f"✅ Perfil de Gravedad Calculado: {gravity_profile.get('strategic_directive')} (Target: {dynamic_target_maturity})")
     except Exception as e:
         print(f"⚠️ Error calculando Perfil de Gravedad: {e}. Se usará contexto estándar.")
-    # -------------------------------------------------------------
+    #
 
-    # Agrupar respuestas por pilar
+    #
     pillars_map = {}
     tower_def_path = resolve_tower_definition_file(tower_id)
     tower_def = json.loads(tower_def_path.read_text(encoding="utf-8"))
@@ -394,7 +458,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 / len(p_data["answers"]),
                 1,
             )
-        # INYECTAR LA VERDAD REFINADA (SOTA) EN EL PILAR
+        # Integrate the refined technical standard finding into its corresponding pillar in the main payload.
         for p_find in refined_findings.get("pillar_findings", []):
             if p_find["pillar_id"] == p_id:
                 p_data["refined_findings"] = p_find
@@ -402,7 +466,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     print(f"🏗️ Generando Blueprint de Transformación para {tower_name}...")
 
-    # Inicialización Normalizada (Contrato Estricto)
+    #
     blueprint_payload = get_default_blueprint_payload(
         client_name, tower_name, tower_id, intel_data
     )
@@ -410,10 +474,10 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         blueprint_payload["client_context"] = intel_packet
     failed_pillars = []
 
-    # PROCESAR PILARES EN SERIE PARA MÁXIMA CALIDAD
+    # Pillars are processed serially to prevent resource contention and to ensure the analysis of each pillar remains independent.
     for p_id in sorted(pillars_map.keys()):
-        # Añadimos el SOTA y el refined finding al intel_str para que el Cerebro 2 lo respete
-        # Limpiamos el hack del prompt
+        # Append the technical standard reference and the refined finding to the context string for use in subsequent processing stages.
+        # Remove temporary string artifacts that were previously required for prompt formatting.
         enhanced_intel_str = intel_str
 
         p_result = await process_pilar_blueprint(
@@ -426,14 +490,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         )
         if p_result:
             p_result["score"] = pillars_map[p_id]["score"]
-            # SOTA 2026: Preserve the mathematically calculated target_score from the client intelligence dossier
+            # The `target_score` from the client intelligence data must be preserved, overriding any model-generated values.
             from infrastructure.client_intelligence import get_target_maturity
             p_result["target_score"] = get_target_maturity(intel_data, tower_id, 4.0)
             
             blueprint_analysis = p_result.get("pillar_analysis", p_result)
 
-            # --- PROGRAMMATIC RAG CHECKER (GAP A: ZERO HALLUCINATION) ---
-            # Create a normalized reference corpus from the inputs provided to the LLM
+            # Verify generated content against the RAG source corpus to mitigate model hallucination.
+            # Create a normalized reference corpus from the input context to serve as the ground truth for validating model output.
             corpus = (context_str + " " + enhanced_intel_str + " " + json.dumps(pillars_map[p_id]["answers"])).lower()
             import re
             corpus_clean = re.sub(r'\s+', ' ', corpus)
@@ -442,21 +506,21 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 evidence = finding.get("literal_evidence", "")
                 if evidence and evidence != "No se proporcionó evidencia literal.":
                     evidence_clean = re.sub(r'\s+', ' ', evidence.lower())
-                    # If the exact sequence (or a very close one) isn't in the corpus, flag it
+                    # Flag generated text as a potential hallucination if it is not present in the reference corpus.
                     if evidence_clean not in corpus_clean:
-                        # Fallback: check if at least 70% of the words are in the corpus (to account for minor formatting differences like punctuation)
+                        # Validate that generated findings meet a 70% lexical similarity threshold against the source corpus as a heuristic to detect potential model hallucinations.
                         words = evidence_clean.split()
                         matched_words = sum(1 for w in words if w in corpus_clean)
                         if not words or (matched_words / len(words)) < 0.7:
                             finding["literal_evidence"] = "[ALERTA RAG] Cita literal no validada matemáticamente en el documento original."
 
-            # --- DETERMINISTIC DATA BYPASS (TIER 1 ELITE ARCHITECTURE) ---
+            # Inject deterministic data from trusted systems directly into the payload, bypassing the generative analysis stages.
             refined = pillars_map[p_id].get("refined_findings", {})
             initiatives = refined.get("candidate_initiatives", [])
             if initiatives:
                 if "projects_todo" not in blueprint_analysis:
                     blueprint_analysis["projects_todo"] = []
-                # Limpiamos las alucinaciones del LLM y forzamos el SOTA real
+                # Validate generated findings against the reference corpus and canonical technical data to mitigate model hallucinations.
                 sota_projects = []
                 for idx, init in enumerate(initiatives):
                     sota_projects.append(
@@ -478,7 +542,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         }
                     )
                 blueprint_analysis["projects_todo"] = sota_projects
-            # -------------------------------------------------------------
+            #
 
             blueprint_payload["pillars_analysis"].append(blueprint_analysis)
         else:
@@ -492,9 +556,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             "No se pudo generar ningún análisis de pilar para el blueprint."
         )
 
-    # --- DETERMINISTIC BYPASS DEFENSIVE RE-MAPPING (MANDATORY QUALITY GATE) ---
-    # Asegura que las iniciativas técnicas detalladas SOTA se inyecten ANTES del cierre
-    # para que el orquestador genere el roadmap con los nombres reales.
+    # Re-map references for deterministic data to ensure payload integrity.
+    # Inject pre-defined technical initiatives into the payload before finalization.
+    # Ensures the orchestrator uses canonical project identifiers for roadmap generation.
     try:
         if findings_path.exists():
             refined_findings = json.loads(findings_path.read_text(encoding="utf-8-sig"))
@@ -523,7 +587,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         p_analysis["projects_todo"] = sota_projects
                     break
 
-    # --- GRAPH-FIRST SYNCHRONIZATION (TIER 1 SOVEREIGN FABRIC) ---
+    # Synchronize the processed payload with the master knowledge graph.
     print(f"🔄 Sincronizando hallazgos de {tower_id} con el Epistemic Graph...")
     sync_findings_to_graph(
         graph=graph,
@@ -533,8 +597,8 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         tower_id=tower_id,
     )
 
-    # --- SOVEREIGN POLICY ENGINE COMPILER (ZERO-DEFECT QUALITY GATE) ---
-    # Analiza el Grafo y peina las incoherencias lógicas de forma determinista
+    # Apply registered policies to the final payload to enforce architectural and business constraints.
+    # Traverse the finding and initiative graph to resolve logical and dependency inconsistencies.
     print("🛡️ [Sovereign QA] Ejecutando el Motor de Políticas Arquitectónicas...")
     try:
         from infrastructure.policy_engine import SovereignPolicyEngine
@@ -543,14 +607,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     except Exception as policy_err:
         print(f"⚠️ Error ejecutando Sovereign Policy Engine: {policy_err}")
 
-    # Calculate ALE before closing to pass it to the orchestrator
+    # Calculate the Annualized Loss Expectancy (ALE) for each finding, which is a required input for the final orchestration stage.
     total_ale = 0.0
     for pilar in blueprint_payload.get("pillars_analysis", []):
         for finding in pilar.get("health_check_asis", []):
             val = finding.get("fair_ale_score")
             total_ale += float(val) if val is not None else 0.0
 
-    # AGENTE DE CIERRE: SNAPSHOT Y ROADMAP
+    # Generate the final summary and strategic roadmap from all processed findings.
     print("    -> Generando Snapshot Ejecutivo y Roadmap Estratégico...")
     closing_prompt = get_closing_orchestrator_prompt(
         tower_name=tower_name,
@@ -582,13 +646,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 )
 
                 if closing_data:
-                    from infrastructure.governance import StructuralIntegrityGate
                     import difflib
+
+                    from infrastructure.governance import StructuralIntegrityGate
 
                     StructuralIntegrityGate.verify_dossier_logic(closing_data)
                     
-                    # --- MATHEMATICAL TRIBUNAL (REFLECTION LOOP VALIDATION) ---
-                    # Extraer nombres reales de proyectos para validar dependencias y roadmap
+                    # Validate consistency of scoring and financial metrics.
+                    #
                     valid_project_names = [
                         proj["name"]
                         for pilar in blueprint_payload.get("pillars_analysis", [])
@@ -596,10 +661,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     ]
                     
                     def fuzzy_match(name, choices, cutoff=0.6):
+                        """Find the single best fuzzy string match from a sequence of choices."""
                         matches = difflib.get_close_matches(name, choices, n=1, cutoff=cutoff)
                         return matches[0] if matches else None
 
-                    # Validar y autocorregir dependencias
+                    #
                     invalid_deps = []
                     for dep in closing_data.get("external_dependencies", []):
                         dep_name = dep.get("depends_on")
@@ -613,7 +679,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     if invalid_deps:
                         raise ValueError(f"HAS INVENTADO DEPENDENCIAS. Los siguientes proyectos habilitadores no existen en la lista de proyectos aprobados: {invalid_deps}. Solo puedes usar proyectos reales.")
                         
-                    # Validar y autocorregir roadmap
+                    #
                     invalid_roadmap = []
                     mapped_projects = set()
                     for wave in closing_data.get("roadmap", []):
@@ -638,7 +704,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     if missing_projects:
                         raise ValueError(f"HAS OMITIDO PROYECTOS DEL ROADMAP. Regla inquebrantable rota. Debes incluir TODOS los proyectos. Te has dejado estos: {list(missing_projects)}")
 
-                    # Validar número de principios (Gap 1)
+                    # Validate the architectural principle count against the expected number (Ref: Quality Gap 1).
                     principles = closing_data.get("design_principles", [])
                     if len(principles) > 10:
                         raise ValueError(f"Demasiados principios de diseño ({len(principles)}). Condénsalos en un máximo de 5 a 7 principios maestros transversales para toda la torre.")
@@ -652,15 +718,16 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 )
         if last_error and closing_data:
             print(
-                f"⚠️ Fallo crítico en el Orquestador tras 3 intentos. Aplicando Degradación Elegante (Borrando dependencias inventadas y añadiendo proyectos huérfanos)..."
+                "⚠️ Fallo crítico en el Orquestador tras 3 intentos. Aplicando Degradación Elegante (Borrando dependencias inventadas y añadiendo proyectos huérfanos)..."
             )
-            # Graceful degradation: Remove invalid dependencies and save what we have
+            # Remove invalid project dependencies to maintain the integrity of the dependency graph.
             valid_deps = [d for d in closing_data.get("external_dependencies", []) if d.get("depends_on") in valid_project_names or d.get("depends_on") in ["Independiente", "Ninguna"]]
             closing_data["external_dependencies"] = valid_deps
             
-            # Graceful degradation: Add missing projects to the last wave
+            # Append unmapped projects to the final roadmap wave for manual review to prevent data loss.
             import difflib
             def f_match(name, choices, cutoff=0.6):
+                """Return the single best fuzzy match for a string from an iterable of choices."""
                 m = difflib.get_close_matches(name, choices, n=1, cutoff=cutoff)
                 return m[0] if m else None
 
@@ -686,11 +753,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     except Exception as e:
         raise RuntimeError(f"Error en agente de cierre blueprint: {e}") from e
 
-    # --- BID MANAGER AGENT (DEEP CHARTER ENRICHMENT) ---
+    # Enrich initiative charters with budgetary and resource estimates.
     print("💼 [Bid Manager] Enriqueciendo proyectos con WBS, TCO, y ROI...")
     try:
-        from domain.schemas.blueprint import ProjectCharterEnrichment
         from domain.prompts.blueprint_prompts import get_bid_manager_prompt
+        from domain.schemas.blueprint import ProjectCharterEnrichment
 
         bid_manager_agent = Agent(
             name="bid_manager_architect",
@@ -701,7 +768,48 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         app_bid_manager = AdkApp(agent=bid_manager_agent)
 
         async def enrich_project(p_analysis_idx, proj_idx, proj):
-            # Resolve mitigated risk impact text and FAIR score
+            """Asynchronously enriches a project with a generative model and financial data.
+
+            This coroutine augments a given project dictionary. It first resolves the
+            textual description and financial impact (FAIR ALE) of any mitigated risk
+            by searching the global `blueprint_payload` object. It then invokes a
+            generative model to produce a detailed project charter, including a Work
+            Breakdown Structure (WBS).
+
+            Financial metrics are calculated based on a `rate_card.json` configuration
+            file. The function computes the total cost from the WBS, applies a standard
+            margin to determine the OpEx (sell price), and provides a parametric estimate
+            for CapEx based on the project's size. All monetary values are formatted
+            as strings for presentation.
+
+            If the generative model proposes a new `commercial_name`, the function
+            updates the project's name and performs a cascading update across the
+            `roadmap` and `external_dependencies` sections of the global
+            `blueprint_payload` to ensure referential integrity.
+
+            Note: This function operates via side effects, modifying the global
+            `blueprint_payload` dictionary in-place.
+
+            Args:
+                p_analysis_idx (int): Index of the parent pillar analysis within the
+                    `blueprint_payload["pillars_analysis"]` list.
+                proj_idx (int): Index of the project within the pillar analysis's
+                    `projects_todo` list.
+                proj (Dict[str, Any]): The project dictionary to be enriched.
+
+            Returns:
+                None. The function modifies the global `blueprint_payload` object
+                in-place.
+
+            Raises:
+                KeyError: If essential keys are absent from the `proj` dictionary or
+                    the `blueprint_payload` structure.
+                IndexError: If `p_analysis_idx` or `proj_idx` are outside the valid
+                    bounds of their respective lists.
+                json.JSONDecodeError: If the `rate_card.json` file contains malformed
+                    JSON.
+            """
+            #
             mitigated_risk_text = "N/A"
             fair_ale = 0.0
             if proj.get("mitigates_risk_id"):
@@ -730,7 +838,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 schema=ProjectCharterEnrichment,
             )
             if enrichment_data:
-                # Calculate FinOps deterministically using engine_config/rate_card.json
+                #
                 rate_card_path = Path("engine_config/rate_card.json")
                 if rate_card_path.exists():
                     try:
@@ -742,7 +850,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         for task in enrichment_data.get("wbs_breakdown", []):
                             profile = task.get("required_profile", "experto")
                             hours = task.get("estimated_hours", 0)
-                            rate = rates.get(profile, 58) # fallback to experto
+                            rate = rates.get(profile, 58) # If the primary model fails, reroute the request to the 'experto' model configuration as a fallback.
                             total_cost += (hours * rate)
                             
                         sell_price = total_cost / (1 - margin)
@@ -762,11 +870,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     new_name = enrichment_data["commercial_name"]
                     proj["name"] = new_name
                     
-                    # Update roadmap references
+                    #
                     for wave in blueprint_payload.get("roadmap", []):
                         wave["projects"] = [new_name if p == old_name else p for p in wave.get("projects", [])]
                         
-                    # Update external dependencies references
+                    #
                     for d in blueprint_payload.get("external_dependencies", []):
                         if d.get("project") == old_name:
                             d["project"] = new_name
@@ -786,9 +894,10 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     except Exception as bid_err:
         print(f"⚠️ Error en Bid Manager Agent: {bid_err}")
 
-    # --- DEFENSIVE CLIENT NAME SANITIZATION (AIRTIGHT QUALITY GATE) ---
-    # Elimina placeholders bracketados de la IA como [Cliente] o [CLIENTE]
+    # Remove client name placeholders from all generated text before finalization.
+    # Remove bracketed, generic placeholders from model-generated text.
     def scrub_client_placeholders(obj, name):
+        r"""{'docstring': 'Recursively substitutes client placeholders within a nested data structure.\n\n    Traverses dictionaries and lists, recursively processing their elements. For\n    any string value encountered, this function replaces all occurrences of a\n    predefined set of placeholders with the provided name. The specific\n    placeholders targeted for replacement are `[Cliente]`, `[CLIENTE]`,\n    `[cliente]`, `[CLIENT]`, and `[client]`. Data types other than\n    dictionaries, lists, or strings are returned unmodified.\n\n    Args:\n        obj (dict | list | Any): The data structure to traverse. Can be a\n            dictionary, list, or any other data type.\n        name (str): The string to substitute for the client placeholders.\n\n    Returns:\n        (dict | list | Any): A new data structure with the same type and nesting\n            as `obj`, where all string placeholders have been replaced.'}."""
         if isinstance(obj, dict):
             return {k: scrub_client_placeholders(v, name) for k, v in obj.items()}
         elif isinstance(obj, list):
@@ -801,7 +910,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     blueprint_payload = scrub_client_placeholders(blueprint_payload, client_name)
     
-    # --- COI (Cost of Inaction) MATHEMATICAL AGGREGATION ---
+    #
     total_ale = 0.0
     for pilar in blueprint_payload.get("pillars_analysis", []):
         for finding in pilar.get("health_check_asis", []):
@@ -810,13 +919,13 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     
     blueprint_payload["total_fair_ale"] = total_ale
 
-    # Validación Final del Contrato con Pydantic
+    #
     try:
         blueprint_payload["_generation_metadata"] = {
             "artifact_type": "blueprint_payload",
             "artifact_version": "1.0.0",
         }
-        # Forzamos validación para asegurar que el JSON resultante sea íntegro
+        #
         validated_model = BlueprintPayload.model_validate(blueprint_payload)
         final_payload_dict = validated_model.model_dump(by_alias=True)
     except Exception as val_err:
@@ -824,7 +933,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             f"Error de validación en payload final del blueprint: {val_err}"
         ) from val_err
 
-    # GUARDAR PAYLOAD
+    #
     output_path = resolve_blueprint_payload_path(client_name, tower_id)
     output_path.write_text(
         json.dumps(final_payload_dict, indent=2, ensure_ascii=False),
@@ -834,6 +943,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
 
 def main(argv: list[str] | None = None) -> None:
+    r"""{'docstring': 'Parses command-line arguments and initiates the Tower Blueprint process.\n\nThis function serves as the primary command-line entry point. It requires two\npositional arguments: a client identifier and a tower identifier. These are\nused to invoke the asynchronous `run_tower_blueprint` function. If the\nrequired arguments are not supplied, a usage message is printed to standard\noutput and the program terminates.\n\nArgs:\n    argv: An optional list of string arguments, intended for testing. If None,\n        `sys.argv` is used as the source of command-line arguments.\n\nRaises:\n    SystemExit: If fewer than two arguments (`client` and `tower_id`) are\n        provided on the command line.'}."""
     if len(argv if argv is not None else sys.argv) < 3:
         print(
             "Uso: python -m application.run_tower_blueprint_engine <client> <tower_id>"

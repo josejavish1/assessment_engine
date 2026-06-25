@@ -52,7 +52,7 @@ class _YamlModule(Protocol):
     def safe_load(self, stream: IO[str]) -> Any: ...
 
 
-# Helper functions (side-effect free)
+# The following utility functions are architecturally constrained to be pure; they must not produce side effects and their output must depend solely on their input.
 def derive_maturity_band(score: float) -> str:
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
 
@@ -474,7 +474,7 @@ def build_synthesis_prompt(
     return prompt
 
 
-# --- Pure Business Logic Function ---
+#
 async def generate_synthesis(
     blueprint: BlueprintPayload,
     client_intelligence: dict,
@@ -483,9 +483,7 @@ async def generate_synthesis(
     radar_chart_path: Path,
     run_id: str,
 ) -> Optional[AnnexPayload]:
-    """
-    Toma los datos de entrada, ejecuta el agente IA y devuelve el payload del anexo enriquecido.
-    """
+    """Executes the core synthesis logic by processing input data through the specified AI agent to produce an enriched annex payload. This function is designed to be pure, encapsulating all business logic without external side effects."""
     blueprint_data = blueprint.model_dump(by_alias=True)
     executive_handover = build_executive_handover(blueprint)
     prompt = build_synthesis_prompt(
@@ -546,11 +544,9 @@ async def generate_synthesis(
     return enrich_annex_payload(result_payload, blueprint, radar_chart_path, run_id)
 
 
-# --- I/O Orchestrator Function ---
+#
 async def synthesize_annex(client_name: str, tower_id: str):
-    """
-    Orquesta el proceso de síntesis del anexo ejecutivo. Maneja I/O.
-    """
+    """Coordinates the complete synthesis process for the executive annex. This function serves as the primary entry point, handling all I/O operations and orchestrating the data processing pipeline."""
     run_id = f"run_{uuid.uuid4()}"
     print(
         f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})..."

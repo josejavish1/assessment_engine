@@ -1,5 +1,4 @@
-"""
-Módulo finalize_approved.py.
+"""Módulo finalize_approved.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
 

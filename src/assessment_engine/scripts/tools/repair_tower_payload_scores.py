@@ -1,7 +1,4 @@
-"""
-Módulo repair_tower_payload_scores.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Implements the primary logic and utility functions for the Assessment Engine pipeline."""
 
 import json
 import logging
@@ -15,14 +12,30 @@ logger = logging.getLogger(__name__)
 
 
 def load_json(path: Path):
+    """Deserialize a JSON file from a file system path using UTF-8-SIG encoding."""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def clean_text(value):
+    """Clean a text string by calling `clean_text_for_word`."""
     return clean_text_for_word(value)
 
 
 def safe_float(value):
+    """Robustly convert an arbitrary value to a float.
+
+    Converts a value of type int, float, or str to a float, suppressing
+    exceptions. For string inputs, the value is normalized by removing
+    percentage signs ('%') and replacing commas with periods ('.') to handle
+    common formats. If the value is `None` or if the conversion to float
+    fails for any reason (e.g., `ValueError`), `None` is returned.
+
+    Args:
+        value (typing.Any): The input value to convert.
+
+    Returns:
+        typing.Optional[float]: The converted float, or `None` if conversion fails.
+    """
     if value is None:
         return None
     if isinstance(value, (int, float)):
@@ -35,6 +48,7 @@ def safe_float(value):
 
 
 def format_score(value):
+    """Format a value as a string with one decimal place, returning an empty string on conversion failure."""
     num = safe_float(value)
     if num is None:
         return ""
@@ -42,6 +56,27 @@ def format_score(value):
 
 
 def derive_band_from_score(score):
+    """Maps a numeric score to a predefined descriptive band string.
+
+    The function categorizes a floating-point score into one of five predefined
+    string labels based on its value. The input is first safely converted to a
+    float.
+
+    The categorization rules are as follows:
+      - score < 2.0: "Nivel 1 - Inicial"
+      - 2.0 <= score < 3.0: "Nivel 2 - Básico"
+      - 3.0 <= score < 4.0: "Nivel 3 - Estandarizado"
+      - 4.0 <= score < 5.0: "Nivel 4 - Optimizado"
+      - score >= 5.0: "Nivel 5 - Avanzado"
+
+    Args:
+        score: The score to categorize. Accepts types that can be converted
+            to a float, such as str, int, or float.
+
+    Returns:
+        A string representing the corresponding band. Returns an empty string if
+        the input score cannot be parsed as a float.
+    """
     value = safe_float(score)
     if value is None:
         return ""
@@ -57,6 +92,24 @@ def derive_band_from_score(score):
 
 
 def truncate_words(text, max_words):
+    """Truncates a string to a specified maximum number of words.
+
+    The input string is first processed by the `clean_text` helper function.
+    The resulting string is then split into words. If the word count exceeds
+    `max_words`, the string is truncated to the specified number of words.
+    Any trailing punctuation (commas, semicolons, colons, periods) is stripped
+    from the truncated segment before an ellipsis ("...") is appended.
+
+    Args:
+        text (str): The input string to truncate.
+        max_words (int): The maximum number of words to retain in the output.
+
+    Returns:
+        str: The processed string, truncated with an appended ellipsis if the
+            original word count exceeds `max_words`. Returns the cleaned,
+            unmodified string if the word count is within the limit, or an
+            empty string if the cleaned input is empty.
+    """
     text = clean_text(text)
     if not text:
         return ""
@@ -67,6 +120,24 @@ def truncate_words(text, max_words):
 
 
 def take_sentences(text, max_sentences=1, max_chars=240):
+    """Extract a sequence of sentences from a text, subject to sentence-count and character-length limits.
+
+    The function first normalizes whitespace in the input `text` before splitting it into sentences using common terminal punctuation (`.`, `!`, `?`). It then iteratively accumulates sentences, stopping when either the `max_sentences` limit is reached or when adding the next sentence would cause the total length to exceed `max_chars`.
+
+    If the very first sentence exceeds `max_chars`, the function falls back to returning the original cleaned text, hard-truncated to the character limit. The returned string is guaranteed to end with a terminal punctuation mark; a period (`.`) is appended if one is not present.
+
+    Args:
+        text (str): The input text from which to extract sentences.
+        max_sentences (int): The maximum number of sentences to extract.
+            Defaults to 1.
+        max_chars (int): The maximum character limit for the output string.
+            Defaults to 240.
+
+    Returns:
+        str: A string containing the extracted sentences, adhering to the specified
+            limits. Returns an empty string if the input text becomes empty
+            after internal cleaning.
+    """
     text = clean_text(text)
     if not text:
         return ""
@@ -91,6 +162,28 @@ def take_sentences(text, max_sentences=1, max_chars=240):
 
 
 def shorten_to_complete_sentence(text, max_words):
+    """Truncates a text to one or two complete sentences based on a word count hint.
+
+    The function first cleans the input text. It then employs a two-pass
+    strategy to extract a grammatically complete summary. The first pass
+    attempts to extract a single sentence within a character limit heuristically
+    derived from `max_words` (specifically, `max(max_words * 9, 140)`).
+
+    If the first pass fails (returns an empty string) or the result appears
+    truncated (contains an ellipsis), a second, more lenient pass is executed.
+    This second pass attempts to extract up to two complete sentences with a
+    higher character limit (`max(max_words * 9, 200)`).
+
+    Args:
+        text (str): The input text to shorten.
+        max_words (int): A target maximum word count used to calculate a
+            heuristic character limit for truncation.
+
+    Returns:
+        str: The shortened text, ending in one or two complete sentences. Returns
+            an empty string if the input text is empty or becomes empty after
+            cleaning.
+    """
     text = clean_text(text)
     if not text:
         return ""
@@ -103,6 +196,7 @@ def shorten_to_complete_sentence(text, max_words):
 
 
 def infer_short_interpretation(score_value, fallback_summary=""):
+    r"""{'docstring': "Derives a short, human-readable interpretation from a numerical score or a fallback text summary.\n\nPriority is given to the `fallback_summary`. If this argument is provided and is not an empty string after whitespace cleaning, it is truncated to a maximum length and returned.\n\nIf no valid `fallback_summary` is available, the function attempts to convert `score_value` to a float. This numerical value is then mapped to a predefined, qualitative Spanish-language interpretation based on a series of thresholds.\n\nArgs:\n    score_value: The score to interpret. Expected to be a numeric type or a\n        string representation of a number.\n    fallback_summary: An optional string to use as the interpretation, taking\n        precedence over `score_value`.\n\nReturns:\n    A string interpretation. This will be the truncated `fallback_summary` if\n    one was provided, a Spanish-language text corresponding to the score's\n    value, or an empty string if the `score_value` is invalid and no\n    `fallback_summary` is available."}."""
     fallback_summary = clean_text(fallback_summary)
     if fallback_summary:
         return shorten_to_complete_sentence(fallback_summary, 26)
@@ -121,6 +215,7 @@ def infer_short_interpretation(score_value, fallback_summary=""):
 
 
 def main(argv: list[str] | None = None) -> None:
+    r"""{'docstring': 'Consolidates pillar scores from multiple sources into a primary JSON payload.\n\n    Processes a primary JSON payload file by integrating scoring data from\n    auxiliary JSON files located in the same directory. The script reads\n    `scoring_output.json` for quantitative scores, `findings.json` for maturity\n    assessments, and optionally `approved_asis.json` as a fallback source.\n\n    The consolidation logic establishes a canonical pillar order and merges scores\n    with a defined precedence. It calculates maturity bands, identifies the\n    strongest and weakest pillars based on numeric scores, and populates the\n    `pillar_score_profile` section of the payload. Additionally, it updates\n    the `_build_metadata` and `_build_diagnostics` sections. The final,\n    enriched payload overwrites the original input file.\n\n    Args:\n        argv: A list of command-line arguments. If None, `sys.argv` is used.\n            The list must contain the script name followed by a single\n            argument: the path to the primary payload JSON file.\n\n    Raises:\n        SystemExit: If the number of command-line arguments is not two (script\n            name and one path).\n        FileNotFoundError: If the main payload file, `scoring_output.json`, or\n            `findings.json` cannot be found.\n        json.JSONDecodeError: If any of the JSON files being read are invalid.\n        KeyError: If the input payload has a malformed structure, such as a\n            missing key required for processing.'}."""
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit(
             "Uso: python -m scripts.tools.repair_tower_payload_scores <template_payload_json>"
@@ -135,7 +230,7 @@ def main(argv: list[str] | None = None) -> None:
     approved_asis_path = base / "approved_asis.json"
     approved_asis = load_json(approved_asis_path) if approved_asis_path.exists() else {}
 
-    # orden canónico desde el payload ya generado
+    # Enforces a canonical ordering for elements, referencing a previously generated payload, to ensure deterministic output and consistency.
     current_pillars = payload.get("pillar_score_profile", {}).get("pillars", [])
     pillar_order = []
     pillar_labels = {}
@@ -155,7 +250,7 @@ def main(argv: list[str] | None = None) -> None:
                 pillar_order.append(pid)
                 pillar_labels[pid] = plabel
 
-    # scoring_output.json
+    #
     scoring_map = {}
     for p in scoring.get("pillar_scores", []):
         pid = clean_text(p.get("pillar_id"))
@@ -168,7 +263,7 @@ def main(argv: list[str] | None = None) -> None:
             "weight": clean_text(p.get("weight_pct")),
         }
 
-    # findings.json
+    #
     findings_map = {}
     findings_lookup = {}
     for p in findings.get("pillar_findings", []):
@@ -198,7 +293,7 @@ def main(argv: list[str] | None = None) -> None:
             )
         findings_lookup[pid] = summary
 
-    # approved_asis.json
+    #
     asis_map = {}
     asis_pillars = (
         approved_asis.get("content", {})
@@ -300,7 +395,7 @@ def main(argv: list[str] | None = None) -> None:
         "scoring_output.pillar_scores + findings.pillar_findings"
     )
 
-    # limpia diagnostics de strongest/weakest
+    # Strips diagnostic data from the 'strongest' and 'weakest' fields to streamline the final payload and ensure conformance with the target schema.
     old = payload.get("_build_diagnostics", {}).get("missing_required_bindings", [])
     filtered = [
         x

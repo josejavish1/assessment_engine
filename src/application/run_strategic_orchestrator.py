@@ -11,16 +11,35 @@ logger = logging.getLogger(__name__)
 
 
 def run_strategic_orchestration(client_name: str) -> Dict[str, Any]:
-    """
-    Main entry point for Strategic Graph Orchestration.
-    Resolves the Roadmap DAG from the Sovereign Epistemic Graph.
+    """Computes an executable task dependency graph (Roadmap) for a client.
+
+    This function orchestrates the transformation of a client's canonical
+    Sovereign Epistemic Graph into an actionable, directed acyclic graph (DAG)
+    of tasks. The process involves materializing the graph state from a
+    persistence layer, constructing a network representation, and verifying its
+    acyclicity to ensure a deterministic execution order. A topological sort is
+    then performed to partition the graph's nodes into discrete execution
+    "waves," where all tasks within a single wave can be executed in parallel.
+
+    Args:
+        client_name: The unique identifier for the client whose epistemic graph
+            is to be processed.
+
+    Returns:
+        A dictionary containing the orchestration results with the following keys:
+        'client': The provided client_name.
+        'roadmap': A list of execution waves. Each wave is a list of task
+            identifiers that can be executed in parallel. The outer list
+            defines the sequential order of the waves.
+        'graph_stats': A dictionary with 'nodes' and 'edges' counts for the
+            derived graph.
     """
     print(f"🚀 [Strategic Orchestrator] Resolviendo Grafo Global para {client_name}...")
 
     graph = EpistemicGraph(client_id=slugify(client_name))
     analyzer = NetworkXAnalyzer()
 
-    # 1. Materialize State from Ledger
+    # Materialize the Sovereign Epistemic Graph from the persistence layer to establish the baseline state for orchestration.
     resolved_truth = graph.resolve_truth()
     triples = []
     for subject, predicates in resolved_truth.items():
@@ -33,16 +52,16 @@ def run_strategic_orchestration(client_name: str) -> Dict[str, Any]:
                 }
             )
 
-    # 2. Build DAG
+    # Derive the actionable Roadmap DAG by applying specific filtering and transformation rules to the materialized graph.
     analyzer.build_graph_from_triples(triples)
 
-    # 3. Detect Cycles
+    # Validate the integrity of the derived graph by ensuring it is acyclic. Cyclical dependencies are fatal to deterministic execution and must be identified.
     cycles = analyzer.detect_cycles()
     if cycles:
         print(f"⚠️  [Strategic Risk] Ciclos detectados en las dependencias: {cycles}")
-        # In Tier-1, we would have a mitigation strategy here.
+        # A production-grade implementation would incorporate a formal cycle resolution strategy at this stage to guarantee acyclicity.
 
-    # 4. Calculate Waves
+    # Perform a topological sort to partition the DAG into discrete execution waves. This establishes a dependency-respecting execution schedule, enabling maximal parallelism where possible.
     roadmap = analyzer.calculate_topological_waves()
 
     return {

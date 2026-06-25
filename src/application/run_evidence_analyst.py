@@ -1,6 +1,6 @@
-"""
-Módulo run_evidence_analyst.py (AI ENHANCED EDITION 2026 - FULL CONTEXT).
-Refactorizado para que la IA vea no solo el score, sino la RESPUESTA REAL del cliente.
+"""Coordinates the evidence analysis process.
+
+This module orchestrates an AI agent's analysis of client feedback. It supplies the agent with both quantitative scores and their corresponding full-text qualitative responses. This dual-input architecture enables a more sophisticated, context-aware evaluation than would be possible with numerical data alone.
 """
 
 import argparse
@@ -19,12 +19,35 @@ from infrastructure.runtime_paths import ROOT
 
 
 def load_json(path: Path) -> dict[str, Any]:
+    """Parse a UTF-8 encoded JSON file from a file system path."""
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
 
 
 def first_evidence_refs(
     evidences: list[dict], pillar_id: str, limit: int = 3
 ) -> list[str]:
+    """Extracts up to a specified limit of evidence IDs for a given pillar.
+
+    This function iterates through a list of evidence dictionaries in their
+    provided order. It collects the 'evidence_id' from each dictionary where
+    the 'pillar_ids' list contains the specified `pillar_id`, stopping once
+    the `limit` is reached.
+
+    Args:
+        evidences: A list of dictionaries representing evidence items. Each item
+            must contain an 'evidence_id' key (str) and may optionally contain
+            a 'pillar_ids' key (list[str]).
+        pillar_id: The identifier for the pillar to retrieve evidence for.
+        limit: The maximum number of evidence IDs to return.
+
+    Returns:
+        A list of evidence ID strings, maintaining their original relative order,
+        with a length no greater than `limit`.
+
+    Raises:
+        KeyError: If a dictionary in `evidences` is missing the required
+            'evidence_id' key.
+    """
     refs = []
     for evidence in evidences:
         if pillar_id in evidence.get("pillar_ids", []):
@@ -35,6 +58,26 @@ def first_evidence_refs(
 
 
 def band_for_score(score: float, tower_definition: dict) -> str:
+    """Retrieves the maturity band label for a given score and tower definition.
+
+    This function determines the appropriate maturity band for a score by consulting
+    the `score_bands` list within the provided tower definition. It then
+    extracts and returns the 'label' from the resulting band dictionary.
+
+    Args:
+        score: The numerical score to classify into a band.
+        tower_definition: A dictionary containing the tower configuration. This
+            dictionary is expected to contain a "score_bands" key, which holds
+            a list of band definition dictionaries.
+
+    Returns:
+        The string label of the maturity band corresponding to the input score.
+
+    Raises:
+        KeyError: If the resolved band dictionary does not contain a "label" key.
+        TypeError: If no matching band can be found and the underlying resolution
+            logic returns a non-subscriptable type (e.g., None).
+    """
     return resolve_maturity_band(score, tower_definition.get("score_bands", []))[
         "label"
     ]
@@ -46,17 +89,50 @@ async def build_findings(
     scoring_output: dict,
     tower_definition: dict,
 ) -> dict:
+    """Generate qualitative findings by analyzing evidence and scores with an AI agent.
+
+    This function orchestrates an AI-powered analysis for a given assessment case.
+    For each scored pillar, it aggregates strategic context, granular evidence
+    fragments, and the user's test answers. It then prompts a Gemini-based AI
+    agent to synthesize this information into actionable insights. The agent
+    identifies specific strengths, gaps, risks, and proposes candidate
+    initiatives for improvement. The results for all pillars are compiled into a
+    single, structured findings report.
+
+    Args:
+        case_input: A dictionary containing the raw inputs for the assessment case,
+            including user-provided answers to KPIs.
+        evidence_ledger: A dictionary containing all extracted evidence fragments,
+            categorized and linked to relevant pillars.
+        scoring_output: A dictionary with the quantitative scoring results,
+            including the overall tower score and individual pillar scores.
+        tower_definition: A dictionary containing the configuration and metadata for
+            the specific assessment tower, including maturity band definitions.
+
+    Returns:
+        A dictionary representing the complete findings report, structured
+        according to the 'findings' schema. This includes a summary, case
+        metadata, and detailed, AI-generated qualitative analysis for each pillar.
+
+    Raises:
+        KeyError: If essential keys (e.g., 'pillar_id', 'pillar_name', 'score_exact'
+            within a pillar entry, or 'tower_score_display_1d' in `scoring_output`)
+            are missing from the input dictionaries.
+        Exception: Propagates exceptions from the underlying AI agent client
+            during the `run_agent` call, which may include network errors,
+            API authentication failures, or timeouts.
+    """
     evidences = evidence_ledger.get("evidences", [])
     tower_id = scoring_output.get("tower_id", "Unknown")
     case_input.get("context_summary", "")
 
-    # Extraer las respuestas del test para dar profundidad a la IA
-    # 'case_input' contiene la lista de 'answers' que tienen [kpi_id, score, context]
+    # Extract the complete, verbatim test responses. Supplying the full qualitative text is essential for the AI to perform deep contextual analysis and identify nuances not captured by quantitative scores.
+    # The canonical data structure for an answer should be defined in a corresponding Pydantic model or dataclass, making this comment redundant. The type signature of the function should serve as the source of truth.
     answers_text = ""
     for ans in case_input.get("answers", []):
         answers_text += f"- KPI {ans.get('kpi_id')}: Score {ans.get('score')} | Info: {ans.get('context', 'Sin comentarios')}\n"
 
-    # Setup AI Agent
+    #
     agent = Agent(
         name="technical_analyst",
         model="gemini-2.5-pro",
@@ -75,7 +151,7 @@ async def build_findings(
             f"    -> Analizando pilar {p_id} con IA (Contexto Jerárquico + Respuestas Test)..."
         )
 
-        # 1. Separar Evidencias: Estratégicas vs Granulares
+        # Partitioning evidence is a prerequisite for the agent's hierarchical analysis. Strategic evidence provides high-level context, while granular evidence is used for detailed, KPI-specific evaluation.
         p_strat_context = [
             e.get("excerpt", "")
             for e in evidences
@@ -92,7 +168,7 @@ async def build_findings(
         strat_str = "\n".join(p_strat_context)
         granular_str = "\n".join(p_granular_evidence)[:3000]
 
-        # 2. Filtrar respuestas del test de este pilar
+        # Isolate test responses relevant to the current analytical pillar. This scopes the agent's context to a specific strategic area, preventing cross-contamination of evidence and maintaining analytical focus.
         p_answers = "\n".join(
             [a for a in answers_text.split("\n") if f"KPI {p_id}." in a]
         )
@@ -105,7 +181,7 @@ async def build_findings(
         {p_answers}
         """
 
-        # 3. Llamada al agente con evidencia granulada
+        # Invoke the agent with the granular evidence subset for detailed analysis. This payload contains the specific data points required for generating pillar-specific insights.
         analysis = await run_agent(
             app,
             user_id="tech_analyst",
@@ -174,6 +250,23 @@ async def build_findings(
 
 
 async def main():
+    """Executes the main evidence analysis pipeline from command-line arguments.
+
+    This coroutine serves as the primary entry point for the script. It parses
+    command-line arguments to obtain paths for a case input file, an evidence
+    ledger, and a scoring output file. After loading these JSON-formatted inputs,
+    it extracts the `tower_id` from the scoring data to dynamically locate and
+    load the corresponding tower definition file. The collected data is then
+    passed to the `build_findings` coroutine. Finally, the generated analysis
+    findings are serialized and written to a `findings.json` file located in the
+    same directory as the scoring output file.
+
+    Raises:
+        FileNotFoundError: If the case input, evidence ledger, scoring output,
+            or the dynamically located tower definition file does not exist.
+        KeyError: If the `tower_id` key is not found in the loaded scoring
+            output data.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--case-input", required=True)
     parser.add_argument("--evidence-ledger", required=True)

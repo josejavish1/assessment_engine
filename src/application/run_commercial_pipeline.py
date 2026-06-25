@@ -1,7 +1,4 @@
-"""
-Módulo run_commercial_pipeline.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides the primary entry point and orchestration logic for the commercial assessment pipeline."""
 
 import sys
 
@@ -20,6 +17,7 @@ from infrastructure.runtime_paths import (
 
 
 def main(argv: list[str] | None = None) -> None:
+    r"""{'docstring': 'Orchestrate the commercial data processing and report generation pipeline.\n\n    This function serves as the main entry point for processing a specific client\'s\n    data and generating a final "Account Action Plan" report. The pipeline is\n    driven by a single command-line argument: the client\'s name.\n\n    The pipeline consists of two primary phases executed as separate Python\n    modules:\n    1.  Data Refinement: Invokes `application.run_commercial_refiner` to\n        process and structure the client\'s raw data payload using a\n        multi-agent system.\n    2.  Report Rendering: Invokes `adapters.render_commercial_report` to render\n        the refined data into a Microsoft Word (.docx) document using a\n        predefined template.\n\n    Prior to execution, an optional preflight check verifies the Vertex AI\n    environment. This check can be disabled by setting the\n    `ASSESSMENT_SKIP_VERTEX_PREFLIGHT` environment variable to "1". All file\n    paths for input payloads, templates, and outputs are resolved dynamically\n    based on the provided client name.\n\n    Args:\n        argv: A list of command-line arguments. If None, `sys.argv` is used.\n            The script expects the second element (`argv[1]`) to be the\n            client\'s name.\n\n    Returns:\n        None.\n\n    Raises:\n        SystemExit: If the required client name argument is not provided.\n        FileNotFoundError: If the client directory, input payload files, or\n            report template cannot be located by the path resolution helpers.\n        subprocess.CalledProcessError: If the data refinement or report rendering\n            sub-modules fail during execution.'}."""
     if len(argv if argv is not None else sys.argv) < 2:
         print("Uso: python -m scripts.run_commercial_pipeline <client_name>")
         sys.exit(1)
@@ -41,7 +39,7 @@ def main(argv: list[str] | None = None) -> None:
 
     python_bin = resolve_python_bin()
 
-    # 1. Ejecutar Refinador Comercial Multi-Agente
+    # Phase 1: Refine and structure the commercial data inputs using the designated multi-agent system.
     run_module_step(
         [
             python_bin,
@@ -53,7 +51,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # 2. Renderizar Documento Word Confidencial
+    # Phase 2: Generate the final output artifact, a confidential Microsoft Word document, from the refined commercial data.
     run_module_step(
         [
             python_bin,

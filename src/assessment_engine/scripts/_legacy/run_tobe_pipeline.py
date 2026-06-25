@@ -1,5 +1,4 @@
-"""
-Módulo run_tobe_pipeline.py.
+"""Módulo run_tobe_pipeline.py.
 Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
 """
 

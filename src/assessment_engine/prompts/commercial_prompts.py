@@ -20,6 +20,7 @@ Aceleradores y Fortalezas de NTT DATA para justificar 'Por qué nosotros':
 
 
 def get_commercial_orchestrator_instruction() -> str:
+    """Return the static instructional prompt for the commercial orchestrator agent."""
     return """Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de NTT DATA elaborando un Account Action Plan estratégico. 
 REGLAS DE ORO DE CALIDAD CONSULTIVA:
 1. PRIORIZACIÓN ESTRATÉGICA: Si el ADN del cliente indica marcos como NIS2, PIC o DORA, prioriza las iniciativas de Resiliencia y Seguridad en el TOP del Roadmap, independientemente de la nota técnica.
@@ -30,6 +31,7 @@ REGLAS DE ORO DE CALIDAD CONSULTIVA:
 def get_commercial_agent_prompt(
     agent_role: str, instruction: str, payload_str: str
 ) -> str:
+    r"""{'docstring': "Constructs a rule-based prompt in Spanish for a commercial AI agent.\n\nThis function populates a predefined template to generate a comprehensive prompt\nfor a large language model. The prompt instructs the model to act as a\nsenior-level commercial agent (e.g., Partner/Director at NTT DATA) and\ngenerate a strategic account action plan. It integrates fixed commercial rules,\ncompetitive advantages (`NTTDATA_WIN_THEMES`), and a service catalog\n(`REFERENCE_CATALOG`) with dynamic, task-specific instructions and contextual\ninput data.\n\nArgs:\n    agent_role: The commercial role for the LLM to assume, specified in\n        Spanish (e.g., 'PARTNER DE CYBERSEGURIDAD').\n    instruction: A specific task instruction for the current analysis phase,\n        which is embedded directly into the prompt.\n    payload_str: A string, typically a serialized JSON object, containing\n        the contextual input data for the agent's analysis.\n\nReturns:\n    A single string containing the fully constructed prompt, ready for\n    submission to a large language model."}."""
     return f"""
 ACTÚA COMO UN {agent_role} DE NTT DATA DE NIVEL PARTNER/DIRECTOR.
 ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO PARA USO INTERNO.

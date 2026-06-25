@@ -1,7 +1,4 @@
-"""
-Módulo ai_client.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+r"""The ai_client.py module.\n\nThis module encapsulates the core logic and utilities for interfacing with the Assessment Engine pipeline."""
 
 import asyncio
 import logging
@@ -23,20 +20,38 @@ from vertexai.agent_engines import AdkApp
 from infrastructure.json_from_model import parse_json_from_text
 from infrastructure.runtime_env import get_vertex_query_timeout_seconds
 
-# Configuración de Logging básica
+#
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Semáforo global
+#
 VERTEX_CONCURRENCY_LIMIT = 5
 _vertex_semaphore = asyncio.Semaphore(VERTEX_CONCURRENCY_LIMIT)
 
 
 class VertexQueryTimeoutError(RuntimeError):
-    """La consulta a Vertex AI superó el timeout configurado."""
+    """{'docstring': 'Error raised when a request to a Vertex AI service times out.'}."""
 
 
 def extract_model_text(event: Any) -> Optional[str]:
+    """Safely extracts the first text block from a model response event.
+
+    Parses a nested dictionary, such as an event from a streaming model API, to
+    locate and return the first textual content block. The function is designed
+    to robustly handle malformed or incomplete data by traversing the expected
+    structure `event['content']['parts'][...]['text']`.
+
+    It gracefully handles missing keys, incorrect types, or empty lists at any
+    level of the nested structure without raising exceptions.
+
+    Args:
+        event (Any): The model response event, expected to be a dictionary.
+
+    Returns:
+        Optional[str]: The string content from the first part containing a 'text'
+            key. Returns None if no such part is found or if the event
+            structure does not conform to the expected format.
+    """
     if isinstance(event, dict):
         content = event.get("content", {})
         parts = content.get("parts", [])
@@ -57,9 +72,7 @@ def extract_model_text(event: Any) -> Optional[str]:
 async def _execute_query_with_retry(
     app: AdkApp, user_id: str, message: str
 ) -> Tuple[str, List[str]]:
-    """
-    Realiza la consulta al agente con lógica de reintentos.
-    """
+    """Executes a query against the specified agent, incorporating retry logic to handle transient failures."""
     async with _vertex_semaphore:
         lines = []
         last_text = None
@@ -86,9 +99,7 @@ async def _execute_query_with_retry(
 
 
 def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
-    """
-    Intenta validar los datos contra el esquema, manejando anidamientos comunes.
-    """
+    """Validates input data against a specified schema, with explicit handling for common nested data structures."""
     try:
         return schema.model_validate(data).model_dump(by_alias=True)
     except Exception as e:
@@ -109,16 +120,38 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
         raise e
 
 
-# Precios estimados por 1M tokens (Gemini 2.5 Pro aprox)
+# Estimated pricing in USD per one million tokens, based on approximate rates for the Gemini 2.5 Pro model.
 PRICING = {
-    "gemini-2.5-pro": {"input": 1.25, "output": 5.00},  # $ per 1M tokens
+    "gemini-2.5-pro": {"input": 1.25, "output": 5.00},  # Cost in USD per one million tokens.
     "gemini-2.5-flash": {"input": 0.10, "output": 0.40},
     "default": {"input": 1.25, "output": 5.00},
 }
 
 
 def estimate_cost(input_tokens: int, output_tokens: int, model: str = "default") -> float:
-    # Normalize model name for pricing lookups
+    """Calculate the estimated cost of an API request based on token usage.
+
+    Computes the cost by looking up a model's price per million tokens from
+    the module-level `PRICING` constant. The model name lookup is
+    case-insensitive. If the specified model is not found, the pricing for the
+    "default" model is used as a fallback. The total cost is the sum of the
+    input and output token costs.
+
+    Args:
+        input_tokens (int): The number of tokens in the input prompt.
+        output_tokens (int): The number of tokens in the generated output.
+        model (str): The model identifier for which to look up pricing.
+
+    Returns:
+        float: The estimated cost of the request, rounded to 5 decimal places.
+
+    Raises:
+        KeyError: If the fallback "default" model is not in the `PRICING`
+            dictionary, or if a model's retrieved pricing entry is missing
+            the required 'input' or 'output' keys.
+        TypeError: If `input_tokens` or `output_tokens` are not numeric types.
+    """
+    # Normalizes the model name to a canonical format for consistent pricing lookups.
     clean_model = model.lower()
     price = PRICING.get(clean_model, PRICING["default"])
     cost = (input_tokens / 1_000_000 * price["input"]) + (
@@ -135,12 +168,51 @@ async def run_agent(
     schema: Any = None,
     run_id: str | None = None,
 ) -> Union[Dict[str, Any], Any]:
-    """
-    Ejecuta un agente de forma asíncrona y captura telemetría avanzada.
+    """Executes an agent, parses its JSON response, and logs detailed telemetry.
+
+    This function orchestrates the full lifecycle of an asynchronous agent
+    interaction. It sends a message to the agent, handles transient failures
+    with an automatic retry mechanism, and processes the response. The agent's
+    text output is expected to be a valid JSON string.
+
+    If a `schema` is provided (e.g., a Pydantic model), the parsed JSON is
+    validated and coerced into an instance of that schema. If `raw_output_file`
+    is specified, the raw agent output is persisted to disk.
+
+    A `finally` block guarantees that a comprehensive telemetry record is logged
+    for every execution attempt. This record includes performance metrics such
+    as duration, estimated token counts, approximate cost, and the number of
+    retries, ensuring observability even in cases of failure.
+
+    Args:
+        app: The configured application instance which contains the agent
+            definition.
+        user_id: A unique identifier for the end-user initiating the request.
+        message: The input prompt to be processed by the agent.
+        raw_output_file: If provided, the raw text output from the agent is
+            written to this file path.
+        schema: An optional class or type (e.g., a Pydantic model) used to
+            validate and parse the agent's JSON output.
+        run_id: An optional identifier for this specific execution, used for
+            correlating logs and telemetry.
+
+    Returns:
+        An instance of the provided `schema` if validation is successful, or a
+        `dict` representing the parsed JSON if no `schema` is provided.
+
+    Raises:
+        json.JSONDecodeError: If the agent's output is not a parsable JSON
+            string.
+        pydantic.ValidationError: If a `schema` is provided and the JSON data
+            fails validation against it.
+        IOError: If an error occurs while writing the output to the
+            `raw_output_file`.
+        Exception: Propagates the underlying exception from the agent execution
+            if all retry attempts are exhausted.
     """
     start_time = time.monotonic()
 
-    # Placeholder para tokens
+    # A placeholder value for token counts, to be populated later in the execution flow.
     input_tokens_est = len(message) // 4
     output_tokens_est = 0
 
@@ -171,7 +243,7 @@ async def run_agent(
         end_time = time.monotonic()
         duration = end_time - start_time
         
-        # Telemetry Metadata
+        #
         agent_obj = getattr(app, "_agent", None)
         model_name = getattr(agent_obj, "model", "default")
         
@@ -187,7 +259,7 @@ async def run_agent(
         except Exception:
             retries = 0
 
-        # Telemetry Output
+        #
         agent_obj = getattr(app, "_agent", None)
         telemetry_data = {
             "run_id": run_id,
@@ -214,8 +286,46 @@ async def call_agent(
     tools: Optional[list[Callable[..., Any]]] = None,
     run_id: str | None = None,
 ) -> Any:
-    """
-    Helper simplificado para inicializar y correr un AdkApp en una sola llamada.
+    """Execute a single-turn agent interaction with a generative model.
+
+    This function provides a dual-mode interface for interacting with Google's
+    generative models, determined by environment variables.
+
+    1.  **Direct API Mode**: If the `GOOGLE_GENAI_USE_VERTEXAI` environment
+        variable is set to '0' and `GEMINI_API_KEY` is present, the function
+        communicates directly with the Google Generative AI API.
+    2.  **ADK Mode**: Otherwise, it constructs and executes a temporary agent
+        using the Google Agent Development Kit (ADK) framework.
+
+    Args:
+        model_name: The identifier for the generative model to be invoked (e.g.,
+            'gemini-1.5-pro').
+        prompt: The user-provided query or instruction for the model.
+        raw_output_file: An optional file path to which the raw JSON response from
+            the model will be written. Defaults to None.
+        instruction: A system-level instruction to guide model behavior,
+            influencing its persona, style, or response format.
+        output_schema: A Pydantic model or compatible type used to validate and
+            structure the model's JSON output. Defaults to None.
+        tools: A list of callable functions available to the model. This
+            argument is only effective when operating in ADK mode. Defaults to None.
+        run_id: An optional identifier for a specific execution trace. This
+            argument is only effective when operating in ADK mode. Defaults to
+            None.
+
+    Returns:
+        The model's response, parsed and validated. If an `output_schema` is
+        provided, the return value is an instance of that schema. Otherwise, it
+        is the parsed JSON object (e.g., a dict).
+
+    Raises:
+        pydantic.ValidationError: If `output_schema` is provided and the model's
+            output fails validation against the schema.
+        json.JSONDecodeError: If the model's response cannot be parsed as valid
+            JSON.
+        google.api_core.exceptions.GoogleAPICallError: If an error occurs during
+            the API call to the generative model service.
+        IOError: If `raw_output_file` is specified but the file cannot be written.
     """
     if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "1") == "0" and os.environ.get(
         "GEMINI_API_KEY"
@@ -224,7 +334,7 @@ async def call_agent(
 
         client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-        # Build config carefully to satisfy Mypy/GenAI types
+        # The configuration dictionary is constructed to satisfy both Mypy static type checking and the GenAI library's expected type structure.
         config: Dict[str, Any] = {
             "system_instruction": instruction,
             "response_mime_type": "application/json",
@@ -252,7 +362,7 @@ async def call_agent(
         name="ad_hoc_agent",
         instruction=instruction,
         output_schema=output_schema,
-        tools=tools or [],  # type: ignore
+        tools=tools or [],  # type: ignore # TODO(jsanchhi): #82 Resolve tools typing mismatch with google.adk.agents.Agent schema.
     )
     app = AdkApp(agent=agent)
     return await run_agent(

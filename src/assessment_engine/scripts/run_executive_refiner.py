@@ -1,7 +1,4 @@
-"""
-Módulo run_executive_refiner.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Contains the core logic and primary utilities for the Assessment Engine pipeline."""
 
 import asyncio
 import json
@@ -32,12 +29,14 @@ from assessment_engine.scripts.lib.config_loader import resolve_model_profile_fo
 ROOT = Path(__file__).resolve().parents[1]
 
 
-# Tipo helper para listas
+# Type alias for list-based data structures to improve type-hinting clarity and code readability.
 class BurningPlatformList(RootModel):
+    """Represent a list of BurningPlatformItem objects as a Pydantic RootModel."""
     root: list[BurningPlatformItem]
 
 
 class TowerBottomLineList(RootModel):
+    """Define a root model for a list of `TowerBottomLineItem` objects."""
     root: list[TowerBottomLineItem]
 
 
@@ -49,7 +48,7 @@ async def call_llm_for_section(
     schema_cls,
     client_name="la compañía",
 ):
-
+    r"""{'docstring': 'Asynchronously executes a language model agent to parse and structure a document section.\n\n    Initializes and configures an `Agent` and `AdkApp` to process a given text\n    payload. It constructs a detailed prompt by combining a base instruction with the\n    section-specific instruction, client name, and payload. The function then\n    invokes the agent asynchronously. Any exceptions encountered during the\n    agent\'s execution or the parsing of its response are caught, logged to standard\n    output, and result in a `None` return value.\n\n    Args:\n        model_name (str): The identifier for the language model to be used.\n        section_name (str): An identifier for the document section being processed,\n            used for naming the agent and logging.\n        instruction (str): A specific directive for the agent on how to process\n            the payload.\n        payload_str (str): The raw string content of the section to be refined.\n        schema_cls (Type[SchemaT]): The class defining the desired output structure,\n            typically a Pydantic model.\n        client_name (str): The name of the client to be inserted into the prompt.\n            Defaults to "la compañía".\n\n    Returns:\n        Optional[SchemaT]: An instance of `schema_cls` populated with the data\n        extracted and refined by the language model, or `None` if an exception\n        occurs during the process.'}."""
     agent = Agent(
         model=model_name,
         name=f"executive_cio_refiner_{section_name}",
@@ -73,6 +72,41 @@ async def call_llm_for_section(
 
 
 async def refine_executive_payload(payload):
+    """Asynchronously orchestrates the generation of a structured executive report from a raw data payload.
+
+    This function serves as an asynchronous orchestrator that sequentially invokes
+    a Large Language Model (LLM) via the Vertex AI SDK to generate distinct
+    sections of an executive report. It initializes the Vertex AI client using
+    `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` environment variables and
+    resolves the appropriate generative model name. The input payload is
+    serialized to a JSON string to serve as the context for a series of LLM
+    calls, each targeting a specific report section. The final output is a
+    composite dictionary containing both select original data from the input and
+    the newly generated, structured content.
+
+    Args:
+        payload (dict): The input dictionary containing the raw data and metadata
+            to be refined. This payload is used as the context for the LLM and
+            is expected to contain keys such as `meta`, `visuals`, `heatmap`,
+            and `intelligence_dossier`.
+
+    Returns:
+        dict: A dictionary representing the complete report. It includes keys
+            copied from the input `payload` (`meta`, `visuals`, `heatmap`,
+            `intelligence_dossier`) and the newly generated sections
+            (`executive_summary`, `burning_platform`, `tower_bottom_lines`,
+            `target_vision`, `execution_roadmap`, `executive_decisions`). A
+            generated section key is omitted if its generation fails or returns
+            no content.
+
+    Raises:
+        ValueError: If the `GOOGLE_CLOUD_PROJECT` environment variable is not set.
+        TypeError: If the input `payload` contains objects that are not JSON
+            serializable.
+        Exception: Propagates exceptions from underlying Vertex AI API calls,
+            which may include errors related to authentication, permissions,
+            invalid arguments, or network timeouts.
+    """
     project = os.environ.get("GOOGLE_CLOUD_PROJECT")
     location = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
     vertexai.init(project=project, location=location)
@@ -169,6 +203,25 @@ async def refine_executive_payload(payload):
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Run the executive payload refinement process on a specified JSON file.
+
+    This function serves as the main entry point for the command-line interface.
+    It reads a JSON object from a file path specified via a command-line
+    argument, processes it using the `refine_executive_payload` coroutine, and
+    overwrites the original file with the refined JSON object.
+
+    Args:
+        argv: A list of command-line arguments. If `None`, `sys.argv` is used.
+            The list is expected to contain the script name followed by the path
+            to the target JSON payload file.
+
+    Raises:
+        SystemExit: If the path to the payload JSON file is not provided.
+        FileNotFoundError: If the file at the specified path does not exist.
+        PermissionError: If the file cannot be read from or written to due to
+            insufficient permissions.
+        json.JSONDecodeError: If the file content is not valid JSON.
+    """
     if len(argv if argv is not None else sys.argv) < 2:
         print("Uso: python run_executive_refiner.py <payload_json>")
         sys.exit(1)

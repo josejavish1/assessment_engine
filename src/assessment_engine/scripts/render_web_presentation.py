@@ -1,4 +1,4 @@
-"""Render the strategic web dashboard from global and tower payloads."""
+"""Renders global and tower-specific data payloads into a self-contained, static HTML dashboard for strategic analysis."""
 
 from __future__ import annotations
 
@@ -373,11 +373,31 @@ def _render_html(client_id: str, nexus_data: dict[str, Any]) -> str:
 
 
 def generate_web_dashboard(client_id: str) -> Path:
+    """Generates a self-contained web dashboard for a specified client.
+
+    This function orchestrates the creation of a portable HTML dashboard. It
+    creates a dedicated output directory (`<client_dir>/presentation/`), copies
+    all pre-compiled frontend assets (e.g., JavaScript, CSS) into a `dist`
+    subdirectory to ensure portability, and renders the final `index.html` with
+    client-specific data. The resulting presentation can be opened directly in a
+    web browser from the local filesystem.
+
+    Args:
+        client_id: The unique identifier for the client.
+
+    Returns:
+        A `pathlib.Path` object representing the path to the generated `index.html`.
+
+    Raises:
+        ValueError: If `client_id` does not correspond to a known client.
+        OSError: If a file system error occurs during directory or file
+            creation, such as a permissions issue.
+    """
     nexus_data, client_dir = _build_nexus_data(client_id)
     presentation_dir = client_dir / "presentation"
     presentation_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copiar el directorio de assets estáticos (dist)
+    # Pre-compiled frontend assets (e.g., JavaScript, CSS, images) are bundled into the output directory. This ensures the static dashboard is fully self-contained, portable, and requires no external dependencies for rendering.
     template_parent_dir = TEMPLATE_PATH.parent
     source_dist_dir = template_parent_dir / "dist"
     if source_dist_dir.is_dir():
@@ -394,6 +414,22 @@ def generate_web_dashboard(client_id: str) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Executes the web presentation generation process from command-line arguments.
+
+    Serves as the primary entry point for command-line execution. The function
+    processes the provided argument vector to extract a client ID, which is
+    then used to trigger the generation of a web dashboard. If no client ID is
+    supplied via the command line, a predetermined default ID is used.
+
+    Args:
+        argv: An optional list of string arguments, conventionally `sys.argv`.
+            If `None`, `sys.argv` is automatically used. The second element
+            (`argv[1]`) is expected to be the target client ID.
+
+    Returns:
+        An integer exit code, consistently 0, signifying successful completion
+        of the process.
+    """
     args = argv if argv is not None else sys.argv
     client_id = args[1] if len(args) > 1 else "ivirma"
     generate_web_dashboard(client_id)

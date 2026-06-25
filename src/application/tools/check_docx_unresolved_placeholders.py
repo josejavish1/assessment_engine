@@ -1,7 +1,4 @@
-"""
-Módulo check_docx_unresolved_placeholders.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines the core logic and utilities for the unresolved DOCX placeholder validation stage within the Assessment Engine pipeline."""
 
 import logging
 import re
@@ -16,6 +13,34 @@ PLACEHOLDER_RE = re.compile(r"\{\{[^{}]+\}\}")
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Scans a Microsoft Word (.docx) document for unresolved placeholders.
+
+    This function serves as the main entry point for a command-line script that
+    validates a DOCX file. It systematically inspects all paragraphs in the
+    document's main body and within all table cells, searching for text that
+    matches the `PLACEHOLDER_RE` regular expression.
+
+    If any unresolved placeholders are found, the script logs each unique
+    instance, prints a machine-readable marker "UNRESOLVED_PLACEHOLDERS=YES"
+    to standard output, and terminates the process with a non-zero exit code.
+    If the document is clean, it prints "UNRESOLVED_PLACEHOLDERS=NO" and exits
+    with a status code of 0.
+
+    This behavior is designed for integration into automated workflows, such as
+    CI/CD pipelines, to ensure document templating processes have completed
+    successfully.
+
+    Args:
+        argv: A list of command-line arguments. If `None`, `sys.argv` is used.
+            The list is expected to contain two elements: the script name and
+            the path to the target .docx file.
+
+    Raises:
+        SystemExit:
+            - If the number of command-line arguments is not two.
+            - If the specified .docx file does not exist at the given path.
+            - If one or more unresolved placeholders are found (exit code 1).
+    """
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit(
             "Uso: python -m scripts.tools.check_docx_unresolved_placeholders <docx_path>"

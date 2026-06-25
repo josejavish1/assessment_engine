@@ -5,10 +5,31 @@ from pathlib import Path
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
-    """
-    Filtro de Curación Semántica Universal SOTA 2026:
-    Limpia y corrige de raíz la ambigüedad, especulaciones y anacronismos en la prosa generada por IA.
-    Garantiza consistencia absoluta y asertividad de grado consultor estratégico.
+    """Rephrases technical prose to remove speculative language and align it with formal compliance terminology.
+
+    This function applies two primary sets of transformations:
+    1.  It replaces speculative or conditional phrases (e.g., "posiblemente",
+        "potencialmente") with more declarative, assertive equivalents based on a
+        pre-defined mapping.
+    2.  It inspects the text for compliance-related keywords (e.g.,
+        "automatización", "runbooks", "compliance"). If found, it may replace the
+        entire input string with a standardized statement that frames the
+        subject within target-state regulatory frameworks like ENS and NIS2.
+        This transformation is language-dependent. If keywords are present but
+        no specific replacement rule matches, a suffix is appended to indicate
+        planned automation.
+
+    The function is designed to standardize descriptions in formal reports,
+    ensuring consistent, assertive, and compliance-oriented language.
+
+    Args:
+        text: The source prose to sanitize.
+        doc_lang: The language identifier (e.g., "es", "en") used to select the
+            appropriate set of transformation rules. Defaults to "es".
+
+    Returns:
+        The sanitized string, which may be a significant modification or a
+        complete replacement of the original input.
     """
     if not text:
         return text
@@ -16,7 +37,7 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
     t = str(text).strip()
     lang = str(doc_lang).lower()
 
-    # --- REGLA 1: ASERTIVIDAD UNIVERSAL (Eradica dudas y especulaciones) ---
+    # RULE 1: Replace speculative or conditional language with declarative phrasing.
     speculative_patterns = {
         "posiblemente con componentes Mainframe": "integrando servidores corporativos y entornos de misión crítica de rango medio (Unix/AIX, AS/400 y plataformas legacy)",
         "posiblemente con componentes mainframe": "integrando servidores corporativos y entornos de misión crítica de rango medio (Unix/AIX, AS/400 y plataformas legacy)",
@@ -29,7 +50,7 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
         if old in t:
             t = t.replace(old, new)
 
-    # --- REGLA 2: ALINEACIÓN TEMPORAL DE FORTALEZAS (Evita Split-Brain de NIS2/ENS) ---
+    # RULE 2: Re-aligns terminology describing current strengths to match future-state compliance frameworks (e.g., NIS2/ENS).
     compliance_keywords = [
         "demostrar",
         "industrialización",
@@ -61,6 +82,29 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
 
 
 def generate_modules(payload_path: str):
+    """Generates a structured set of AS-IS assessment report modules from a JSON payload.
+
+    This function processes a primary JSON payload, enriching it with data from
+    supplementary files such as approved annexes, client intelligence reports,
+    tower definitions, and localization vocabularies. The aggregated data is then
+    serialized into a series of Markdown (.md) and CSV (.csv) files that
+    constitute a complete technical AS-IS report.
+
+    All output files are written to an `asis_modules` subdirectory, which is
+    created within the same directory as the input `payload_path`.
+
+    Args:
+        payload_path (str): The file system path to the main JSON payload file.
+
+    Returns:
+        None. The function's primary effect is writing files to the file system.
+
+    Raises:
+        FileNotFoundError: If the file specified by `payload_path` does not exist.
+        json.JSONDecodeError: If the main payload file contains malformed JSON.
+        OSError: If an error occurs during directory creation or file I/O, such as
+            insufficient write permissions.
+    """
     payload_path_obj = Path(payload_path)
     tower_dir = payload_path_obj.parent
     modules_dir = tower_dir / "asis_modules"
@@ -68,14 +112,14 @@ def generate_modules(payload_path: str):
 
     print(f"📂 Iniciando Extracción de Módulos Docs-as-Code en: {modules_dir}")
 
-    # 1. Cargar payloads técnicos del blueprint
+    # Loads technical payloads from the blueprint configuration, which serves as the primary data source.
     with open(payload_path, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
 
     tower_meta = data.get("document_meta", {})
     doc_lang = tower_meta.get("language", "es").lower()
     
-    # Cargar traducciones i18n
+    #
     locales_path = Path("engine_config/locales.json")
     locales_data = {}
     if locales_path.exists():
@@ -93,7 +137,7 @@ def generate_modules(payload_path: str):
     snap = data.get("executive_snapshot", {})
     cca = data.get("cross_capabilities_analysis", {})
 
-    # Cargar approved_annex de síntesis si existe
+    # Loads the `approved_annex` data if present, which contains curated and validated findings.
     annex_path = tower_dir / f"approved_annex_{tower_id.lower()}.template_payload.json"
     annex_data = {}
     if annex_path.exists():
@@ -106,7 +150,7 @@ def generate_modules(payload_path: str):
     exec_sum = annex_data.get("executive_summary", {})
     score_profile = annex_data.get("pillar_score_profile", {})
 
-    # Cargar client_intelligence de OSINT si existe
+    # Loads `client_intelligence` data from OSINT sources if the corresponding dataset is available.
     client_intel_path = payload_path_obj.parents[1] / "client_intelligence.json"
     intel = {}
     if client_intel_path.exists():
@@ -118,7 +162,7 @@ def generate_modules(payload_path: str):
     business_context = intel.get("business_context", {})
     ceo_agenda_raw = business_context.get("ceo_agenda", {}).get("summary", "")
 
-    # SOTA 2026: Cargar dinámicamente la definición de la torre y tejer los KPIs en un párrafo fluido (Sin sub-bullets)
+    # Dynamically loads the tower definition and integrates KPIs into a narrative paragraph, avoiding bulleted lists to maintain prose flow.
     pillars_list_md = ""
     tower_def_path = (
         Path("engine_config/towers")
@@ -126,7 +170,7 @@ def generate_modules(payload_path: str):
         / f"tower_definition_{tower_id.lower()}.json"
     )
     if not tower_def_path.exists():
-        # Fallback si no coincide minúsculas/mayúsculas
+        # Provides a fallback for case-insensitive key matching to handle variations in source data.
         tower_def_path = (
             Path("engine_config/towers")
             / tower_id
@@ -141,16 +185,16 @@ def generate_modules(payload_path: str):
                     p_name = p.get("pillar_name", "Pilar")
                     p_weight = p.get("weight_pct", "0")
 
-                    # Extraer nombres de KPIs para tejerlos de forma natural
+                    # Extracts Key Performance Indicator (KPI) names for integration into narrative text.
                     kpi_names = []
                     for kpi in p.get("kpis", []):
                         k_name = kpi.get("kpi_name", "KPI").strip()
-                        # Normalizar minúsculas al vuelo si no es acrónimo
+                        # Normalizes text to lowercase while preserving the case of known acronyms to maintain technical accuracy.
                         if k_name and not k_name.isupper() and len(k_name) > 4:
                             k_name = k_name[0].lower() + k_name[1:]
                         kpi_names.append(k_name)
 
-                    # Tejer los KPIs de forma gramaticalmente correcta (ej: a, b y c)
+                    # Formats the KPI list into a grammatically standard series (e.g., 'a, b, and c') for prose integration.
                     if len(kpi_names) > 1:
                         kpi_str = ", ".join(kpi_names[:-1]) + " y " + kpi_names[-1]
                     elif kpi_names:
@@ -163,15 +207,15 @@ def generate_modules(payload_path: str):
                 print(f"⚠️ Error parsing tower definition: {e}")
 
     if not pillars_list_md:
-        # Fallback genérico mínimo seguro si falla el JSON
+        # Returns a default empty string on a JSON parsing exception to prevent downstream processing failures.
         for p in pillars:
             p_name = p.get("pilar_name", "Pilar")
             pillars_list_md += f"* **{p_name}**: Evaluación técnica y análisis de brechas operativas en la torre.\n"
 
-    # ---------------------------------------------------------
-    # APÉNDICE B: OBJETIVO, ALCANCE Y METODOLOGÍA (01_introduccion.md)
-    # SOTA: Movido al final del documento como Apéndice B (McKinsey Style)
-    # ---------------------------------------------------------
+    #
+    # SECTION MAPPING: Appendix B (Objective, Scope, Methodology) maps to `01_introduccion.md`.
+    # The following section is designated for Appendix B to conform to the standard report structure.
+    #
     intro_content = f"""# Objetivo, Alcance y Metodología del Assessment
 
 ## Objetivo y Alcance
@@ -212,10 +256,10 @@ Para evitar la **\"Falacia de los Promedios\"** (donde las estimaciones fijas e 
     with open(modules_dir / "01_introduccion.md", "w", encoding="utf-8") as f_out:
         f_out.write(intro_content.strip())
 
-    # ---------------------------------------------------------
-    # MÓDULO 2: RESUMEN EJECUTIVO (02_resumen_ejecutivo.md)
-    # SOTA: Renombrados los apartados a lenguaje sumamente formal y consultivo
-    # ---------------------------------------------------------
+    #
+    # SECTION MAPPING: Module 2 (Executive Summary) maps to `02_resumen_ejecutivo.md`.
+    # Revises section titles to align with formal reporting terminology.
+    #
     re_content = []
     re_content.append("# Resumen Ejecutivo y Contexto de Negocio\n")
 
@@ -229,8 +273,8 @@ Para evitar la **\"Falacia de los Promedios\"** (donde las estimaciones fijas e 
         )
         re_content.append(f"**{clean_headline}**\n")
 
-        # SOTA 2026: Separación MECE estricta. Extraemos solo el primer párrafo de diagnóstico técnico,
-        # enviando las visiones habilitadoras de futuro al siguiente apartado estratégico.
+        # Enforces a Mutually Exclusive, Collectively Exhaustive (MECE) structure by extracting only the primary technical diagnosis paragraph.
+        # Excludes forward-looking and strategic recommendations to maintain focus on current-state analysis.
         body_text = exec_sum.get("summary_body", "")
         if "\n\n" in body_text:
             body_text = body_text.split("\n\n")[0].strip()
@@ -254,9 +298,9 @@ Para evitar la **\"Falacia de los Promedios\"** (donde las estimaciones fijas e 
     with open(modules_dir / "02_resumen_ejecutivo.md", "w", encoding="utf-8") as f_out:
         f_out.write("\n".join(re_content).strip())
 
-    # ---------------------------------------------------------
-    # MÓDULO 3: DESCRIPCIÓN DE PLATAFORMA (03_descripcion_plataforma.md)
-    # ---------------------------------------------------------
+    #
+    # SECTION MAPPING: Module 3 (Platform Description) maps to `03_descripcion_plataforma.md`.
+    #
     desc_raw = (
         pillars[0].get(
             "asis_architecture_description",
@@ -277,9 +321,9 @@ A continuación, se define de manera consolidada y unificada el inventario técn
     ) as f_out:
         f_out.write(desc_content.strip())
 
-    # ---------------------------------------------------------
-    # MÓDULO 4: MATRIZ DE MADUREZ EN CSV (04_matriz_madurez.csv)
-    # ---------------------------------------------------------
+    #
+    # SECTION MAPPING: Module 4 (Maturity Matrix) maps to `04_matriz_madurez.csv`.
+    #
     csv_mat_path = modules_dir / "04_matriz_madurez.csv"
     annex_pillars_map = {}
     if score_profile:
@@ -310,10 +354,10 @@ A continuación, se define de manera consolidada y unificada el inventario técn
 
             writer.writerow([p_name, f"{p.get('score', 0.0):.2f}", justification])
 
-    # ---------------------------------------------------------
-    # MÓDULO 5: ANALISIS TRANSVERSAL DE LA PLATAFORMA (05_transversal.md)
-    # ---------------------------------------------------------
-    # SOTA: Cosechar todas las deudas, paradigmas y debilidades transversales del Blueprint
+    #
+    # SECTION MAPPING: Module 5 (Cross-Cutting Platform Analysis) maps to `05_transversal.md`.
+    #
+    # Consolidates technical debt, legacy paradigms, and cross-cutting weaknesses from the blueprint into a single dataset.
     trans_content = []
     trans_content.append("# Análisis Transversal de Capacidades\n")
 
@@ -336,10 +380,10 @@ A continuación, se define de manera consolidada y unificada el inventario técn
     with open(modules_dir / "05_transversal.md", "w", encoding="utf-8") as f_out:
         f_out.write("\n".join(trans_content).strip())
 
-    # ---------------------------------------------------------
-    # MÓDULO 6: REGISTRO DE RIESGOS EN CSV (06_matriz_riesgos_fair.csv)
-    # ---------------------------------------------------------
-    # SOTA: Exportar en formato de 3 columnas de alta gama del Blueprint
+    #
+    # SECTION MAPPING: Module 6 (Risk Register, FAIR) maps to `06_matriz_riesgos_fair.csv`.
+    #
+    # Exports data in the three-column format required by the blueprint specification.
     csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
     with open(csv_risks_path, "w", newline="", encoding="utf-8") as cf_out:
         writer = csv.writer(cf_out, delimiter=";")
@@ -357,12 +401,12 @@ A continuación, se define de manera consolidada y unificada el inventario técn
         for pilar in pillars:
             p_name = pilar.get("pilar_name", "General")
             for hc in pilar.get("health_check_asis", []):
-                # Normalizar llaves
+                #
                 finding = hc.get("finding", hc.get("risk_observed", "No descripto."))
                 evidence = hc.get("literal_evidence", "No se aportó evidencia literal.")
                 biz_risk = hc.get("business_risk", hc.get("impact", "No descripto."))
 
-                # Combinar hallazgo y cita de evidencia
+                #
                 finding_full = (
                     f'{finding}\n\nEvidencia Forense Literal (Audit RAG):\n"{evidence}"'
                 )
@@ -382,13 +426,13 @@ A continuación, se define de manera consolidada y unificada el inventario técn
                     ]
                 )
 
-    # ---------------------------------------------------------
-    # MÓDULO 7: CONCLUSIONES Y BRECHAS (07_conclusiones.md)
-    # ---------------------------------------------------------
+    #
+    # SECTION MAPPING: Module 7 (Conclusions and Gaps) maps to `07_conclusiones.md`.
+    #
     conc_content = []
     conc_content.append(f"# {vocab.get('conclusions_title', 'Conclusiones, Brechas y Coste de Inacción')}\n")
 
-    # SOTA: Añadimos el AS-IS Resumido en prosa en las conclusiones
+    # Inserts the AS-IS summary into the conclusions section to provide final context.
     conc_content.append(f"## {vocab.get('asis_consolidated_title', 'Resumen de Situación (AS-IS Consolidado)')}")
     asis_resumido_tmpl = vocab.get('asis_consolidated_body', "El estado actual de la infraestructura de {tower_name}, subproducto de una evolución orgánica para dar servicio a una operación crítica, ha alcanzado un punto de inflexión. La plataforma se caracteriza por una fragmentación estructural, herramientas y operaciones en silos discretos para los entornos on-premise y cloud, y una dependencia sistémica de flujos de aprobación y procesos manuales para la provisión y el ciclo de vida.")
     asis_resumido = asis_resumido_tmpl.format(tower_name=tower_name)
@@ -399,7 +443,7 @@ A continuación, se define de manera consolidada y unificada el inventario técn
         vocab.get('quick_diagnosis_intro', "A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:")
     )
 
-    # Las fortalezas y brechas se exportarán como listas en conclusiones, para ser convertidas en la tabla a 2 columnas
+    # Structures strengths and gaps as discrete lists for rendering into a two-column table.
     strengths_list = []
     msg_strength = exec_sum.get("message_strength", "")
     if msg_strength:
@@ -420,7 +464,7 @@ A continuación, se define de manera consolidada y unificada el inventario técn
     else:
         gaps_list.extend(weaknesses)
 
-    # Guardamos de forma especial para que el compilador las detecte
+    # Serializes data to a specific format required by the downstream document compilation service.
     conc_content.append("--- TABLA COMPARATIVA FORTALEZAS VS BRECHAS ---")
     conc_content.append("FORTALEZAS_CLAVE:")
     for s in strengths_list:
@@ -430,7 +474,7 @@ A continuación, se define de manera consolidada y unificada el inventario técn
         conc_content.append(f"* {sanitize_semantic_prose(g, doc_lang)}")
     conc_content.append("--- FIN TABLA --- \n")
 
-    # SOTA 2026: Saneamiento regulatorio universal (Punto 2)
+    # Implements regulatory terminology harmonization as specified by Requirement 2.
     doc_lang = tower_meta.get("language", "es").lower()
     reg_frameworks = tower_meta.get("regulatory_frameworks")
     if not reg_frameworks:
@@ -440,7 +484,7 @@ A continuación, se define de manera consolidada y unificada el inventario técn
 
     conc_content.append(f"## {vocab.get('operational_implications_title', 'Implicaciones Operativas Clave')}")
     
-    # Cargar implicaciones dinámicas localizadas desde locales.json
+    # Loads localized implication text from `locales.json` to generate context-specific output.
     bottlenecks_txt = vocab.get('bottlenecks_bullet', "**Cuellos de botella sistémicos:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.")
     delayed_txt = vocab.get('delayed_faults_bullet', "**Detección tardía de fallas:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de incidentes críticos.")
     drift_tmpl = vocab.get('config_drift_bullet', "**Riesgo de configuration drift:** El mantenimiento manual de las configuraciones dificulta demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.")

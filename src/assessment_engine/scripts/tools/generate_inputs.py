@@ -1,6 +1,7 @@
-"""
-Módulo generate_inputs.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+"""Implements the primary orchestration and data transformation logic for the Assessment Engine pipeline.
+
+This module is responsible for ingesting various data sources and generating the
+standardized input artifacts required for subsequent assessment stages.
 """
 
 import json

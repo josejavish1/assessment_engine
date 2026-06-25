@@ -1,4 +1,4 @@
-"""Render the strategic web dashboard from global and tower payloads."""
+"""Composes the web-based user interface by serializing global and tower-specific data transfer objects into a structured presentation model."""
 
 # ruff: noqa: E402
 
@@ -174,7 +174,7 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
         for tower_meta in global_payload.get("heatmap", [])
     ]
 
-    # Load Digital Twin State Object if available
+    # If a Digital Twin state object is available, it is loaded to provide supplementary data for the presentation layer.
     client_dir = resolve_client_dir(client_id)
     dto_state_path = client_dir / "digital_twin_state.json"
     dto_state = {}
@@ -395,7 +395,7 @@ def _load_template() -> jinja2.Template:
     return env.get_template(TEMPLATE_PATH.name)
 
 
-# New SOTA Template Configuration: THE SOVEREIGN PORTAL (Multi-Annex)
+# Configuration parameters for the multi-annex sovereign portal template rendering.
 TEMPLATE_NAME = "strategic_terminal.html"
 STRATEGIC_TEMPLATE_PATH = ROOT / "templates" / TEMPLATE_NAME
 FOLIO_ASSETS = ROOT / "templates" / "folio_assets"
@@ -403,8 +403,8 @@ SHARED_ASSETS = ROOT / "templates" / "terminal_assets"
 
 
 def _json_for_script(payload: dict[str, Any]) -> str:
-    # We need to escape <, > and & for safety in <script> blocks
-    # The test expects specific escaped sequences
+    # The HTML-unsafe characters (<, >, &) are escaped to mitigate Cross-Site Scripting (XSS) vulnerabilities when embedding data into inline script elements.
+    # The preservation of escaped sequences is required to satisfy specific, established test case assertions.
     return (
         json.dumps(payload, separators=(",", ":"))
         .replace("<", "\\u003c")
@@ -423,11 +423,11 @@ def _render_html(client_id: str, nexus_data: dict[str, Any]) -> str:
     )
     template = env.get_template(TEMPLATE_NAME)
 
-    # Deep copy and isolate DTO state
+    # Performs a deep copy of the DTO to prevent downstream mutations from propagating to the original object state.
     nexus_payload = copy.deepcopy(nexus_data)
     dto_state = nexus_payload.pop("dto_state", {})
 
-    # Assets Bundling
+    # Defines the process for bundling and copying static assets required for the web presentation.
     folio_css = (FOLIO_ASSETS / "css" / "folio.css").read_text(encoding="utf-8")
     state_js = (SHARED_ASSETS / "js" / "terminal_state.js").read_text(encoding="utf-8")
     folio_js = (FOLIO_ASSETS / "js" / "folio_app.js").read_text(encoding="utf-8")
@@ -443,11 +443,37 @@ def _render_html(client_id: str, nexus_data: dict[str, Any]) -> str:
 
 
 def generate_web_dashboard(client_id: str) -> Path:
+    """Generates a web-based dashboard presentation for a specified client.
+
+    This function orchestrates the creation of a client-specific dashboard. It
+    fetches the necessary data, prepares a target directory structure
+    (`<client_dir>/presentation/`), and copies static web assets from a source
+    `dist` directory into the target if the source exists. The function then
+    renders an HTML template with the client's data and writes the result to
+    `index.html` within the presentation directory.
+
+    Args:
+        client_id: The unique identifier for the client for whom the dashboard
+            is to be generated.
+
+    Returns:
+        A `pathlib.Path` object pointing to the newly created `index.html` file.
+
+    Raises:
+        ValueError: If the data for the specified `client_id` cannot be
+            retrieved or is invalid, likely from the internal call to
+            `_build_nexus_data`.
+        FileNotFoundError: If a required source template file cannot be found
+            during the rendering process.
+        PermissionError: If the process lacks the necessary filesystem permissions
+            to create directories or write files.
+        IOError: If an error occurs while writing the final HTML file to disk.
+    """
     nexus_data, client_dir = _build_nexus_data(client_id)
     presentation_dir = client_dir / "presentation"
     presentation_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copiar el directorio de assets estáticos (dist)
+    # The compiled static asset directory (`dist`) is copied to the final output destination to enable serving.
     template_parent_dir = TEMPLATE_PATH.parent
     source_dist_dir = template_parent_dir / "dist"
     if source_dist_dir.is_dir():
@@ -464,6 +490,7 @@ def generate_web_dashboard(client_id: str) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Execute the web presentation generation for a specified client ID."""
     args = argv if argv is not None else sys.argv
     client_id = args[1] if len(args) > 1 else "ivirma"
     generate_web_dashboard(client_id)

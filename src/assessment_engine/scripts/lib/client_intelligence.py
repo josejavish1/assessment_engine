@@ -32,6 +32,7 @@ def _confidence_label_from_score(score: int) -> str:
 
 
 def build_confidence_block(score: int = 50, method: str = "custom") -> dict[str, Any]:
+    """Construct a confidence block dictionary from a numerical score and a method."""
     return {
         "score": score,
         "label": _confidence_label_from_score(score),
@@ -74,6 +75,7 @@ _TOWER_KEYWORDS: dict[str, tuple[str, ...]] = {
 
 
 def infer_related_towers(*texts: str) -> list[str]:
+    r"""{'docstring': "Infer associated tower IDs by matching predefined keywords in text.\n\n    Scans a variable number of input strings for keywords defined in the private\n    `_TOWER_KEYWORDS` mapping. The function performs a case-insensitive,\n    whole-word search.\n\n    All input texts are concatenated into a single string and converted to\n    lowercase before matching. A tower is considered a match if any of its\n    associated keywords are present as distinct words in the combined text. The\n    whole-word matching is implemented using regular expressions to prevent\n    substring matches (e.g., matching 'art' within 'cart').\n\n    Args:\n        *texts: A variable number of string arguments to be scanned.\n\n    Returns:\n        list[str]: A list of tower IDs corresponding to the keywords found.\n            Returns an empty list if no matches are identified."}."""
     joined = " ".join(texts).lower()
     matches: list[str] = []
     for tower_id, keywords in _TOWER_KEYWORDS.items():
@@ -92,6 +94,33 @@ def estimate_confidence_score(
     specificity_signals: int = 0,
     uncertainty_penalty: int = 0,
 ) -> int:
+    """Calculate a confidence score from various intelligence signals.
+
+    The score is computed using a heuristic model. It originates from a base
+    value of 40 and is adjusted by several factors:
+
+    - Source Count: +10 points per source, capped at 3 sources.
+    - Specificity: +5 points per signal, capped at 4 signals.
+    - Source Reliability: Adjusts score by `round((reliability - 50) / 5)`.
+    - Uncertainty: A direct penalty subtraction.
+
+    The final score is clamped to the inclusive range [15, 95]. All
+    arguments are keyword-only.
+
+    Args:
+        source_count: The number of independent sources. Contribution is capped
+            at 3.
+        source_reliability: An optional aggregate reliability score for the sources,
+            typically on a 0-100 scale where 50 is neutral.
+        specificity_signals: The number of specific, verifiable details in the
+            information. Contribution is capped at 4.
+        uncertainty_penalty: A penalty to subtract from the score, reflecting
+            ambiguity or contradictory evidence.
+
+    Returns:
+        An integer representing the computed confidence score, clamped to a value
+        between 15 and 95, inclusive.
+    """
     base = 40
     base += min(source_count, 3) * 10
     base += min(specificity_signals, 4) * 5
@@ -172,6 +201,7 @@ def _append_claim(
 
 
 def is_client_dossier_v2(data: dict[str, Any]) -> bool:
+    """Check if a dictionary conforms to the client dossier v2 schema."""
     return (
         isinstance(data, dict)
         and data.get("version") == "2.0"
@@ -181,6 +211,7 @@ def is_client_dossier_v2(data: dict[str, Any]) -> bool:
 
 
 def is_client_dossier_v3(data: dict[str, Any]) -> bool:
+    """Return whether the input dictionary conforms to the client dossier v3 schema."""
     return (
         isinstance(data, dict)
         and data.get("version") == "3.0"
@@ -192,6 +223,29 @@ def is_client_dossier_v3(data: dict[str, Any]) -> bool:
 
 
 def summarize_transformation_horizon(data: dict[str, Any]) -> str:
+    """Generates a summary string from a client's transformation horizon data.
+
+    This function processes a client dossier dictionary to extract and format
+    transformation horizon information. It handles multiple dossier schemas by
+    probing for data in different locations:
+      - For v2/v3 dossiers, it expects a nested dictionary at
+        `data['business_context']['transformation_horizon']`.
+      - For flat structures, it expects data at the top-level key
+        `data['transformation_horizon']`.
+
+    The summary is constructed by combining the 'stage', 'label', and 'rationale'
+    fields. The headline is formed from 'stage' and 'label', and the 'rationale'
+    is appended as a descriptive sentence.
+
+    Args:
+        data (dict[str, Any]): The client dossier dictionary.
+
+    Returns:
+        str: A formatted summary, typically "{stage}: {label}. {rationale}".
+            The format is adjusted if component parts are missing from the source
+            data. Returns 'General' if no specific horizon information can be
+            extracted.
+    """
     if is_client_dossier_v3(data):
         horizon = data.get("business_context", {}).get("transformation_horizon", {})
     elif is_client_dossier_v2(data):
@@ -209,6 +263,42 @@ def summarize_transformation_horizon(data: dict[str, Any]) -> str:
 
 
 def extract_target_maturity_map(data: dict[str, Any]) -> dict[str, float]:
+    """Extracts a map of tower IDs to target maturity scores from a client dossier.
+
+    This function supports two primary dossier schemas, identified by the presence
+    of specific keys. The dossier version is determined by external functions
+    (`is_client_dossier_v2`, `is_client_dossier_v3`).
+
+    1.  **Legacy Dossier:** Data is sourced from a flat map located under the
+        `target_maturity_matrix` key.
+        Example schema:
+            {
+                'target_maturity_matrix': {'tower_a': 3.5, 'tower_b': 4.0}
+            }
+
+    2.  **V2/V3 Dossier:** Data is sourced from a nested structure where each
+        tower's target maturity is specified under the `tower_overrides` key.
+        Example schema:
+            {
+                'tower_overrides': {
+                    'tower_a': {'target_maturity': 3.5},
+                    'tower_b': {'target_maturity': 4.0}
+                }
+            }
+
+    The function normalizes all tower ID keys to uppercase. It is robust
+    against malformed data; entries with non-numeric scores or incorrect
+    structural types are skipped without raising an exception.
+
+    Args:
+        data: The client dossier dictionary, conforming to either the legacy
+            or v2/v3 schema.
+
+    Returns:
+        A dictionary mapping uppercase tower IDs to their float target maturity
+        scores. Returns an empty dictionary if the relevant source keys are
+        missing or no valid entries can be parsed.
+    """
     target_map: dict[str, float] = {}
     if not is_client_dossier_v2(data) and not is_client_dossier_v3(data):
         raw_map = data.get("target_maturity_matrix", {})
@@ -237,10 +327,32 @@ def extract_target_maturity_map(data: dict[str, Any]) -> dict[str, float]:
 def get_target_maturity(
     data: dict[str, Any], tower_id: str, default: float = 4.0
 ) -> float:
+    """Return the target maturity for a case-insensitive tower ID, or a default value."""
     return extract_target_maturity_map(data).get(tower_id.upper(), default)
 
 
 def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
+    """Transforms a client intelligence data dictionary into the V2 schema.
+
+    The function handles multiple input schemas. If the data already conforms to
+    the V2 schema, it is returned directly. Data conforming to the V3 schema is
+    systematically restructured to align with V2 specifications. This includes
+    remapping fields, transforming nested objects, and normalizing value types.
+    For unrecognized or legacy schemas, a basic coercion mechanism is applied
+    as a fallback. The resultant dictionary is validated against the V2 Pydantic
+    model before being returned.
+
+    Args:
+        data: The input client intelligence dictionary. The data can be structured
+            according to the V2, V3, or a legacy schema.
+
+    Returns:
+        A dictionary conforming to the V2 client dossier schema.
+
+    Raises:
+        pydantic.ValidationError: If the data converted from the V3 or a legacy
+            format fails to validate against the V2 schema.
+    """
     if is_client_dossier_v2(data):
         return data
 
@@ -349,6 +461,23 @@ def client_intelligence_to_v2(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
+    """Transforms a client intelligence dossier into a legacy dictionary format.
+
+    This function accepts a client intelligence data structure, which may be in a
+    v2 or v3 format, and converts it into a flattened, legacy dictionary. If the
+    provided dossier is identified as v3, it is first transformed into the v2
+    format. The function then validates if the resulting data conforms to the v2
+    dossier structure. If it does not, the original input dictionary is returned
+    unmodified.
+
+    Args:
+        data: The client intelligence dossier, expected to be in v2 or v3 format.
+
+    Returns:
+        A new dictionary representing the flattened legacy format, or the
+        original `data` dictionary if the input cannot be processed as a v2
+        dossier.
+    """
     if is_client_dossier_v3(data):
         data = client_intelligence_to_v2(data)
 
@@ -395,6 +524,30 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
 def build_client_context_packet(
     data: dict[str, Any], tower_id: str | None = None
 ) -> dict[str, Any]:
+    """Constructs a structured client context packet from a client dossier dictionary.
+
+    The function inspects the input `data` to determine if it uses the V3
+    dossier schema or a legacy format. If the format is V3, it extracts and
+    restructures client information—including profile, business, technology, and
+    regulatory contexts—into a standardized dictionary. When a `tower_id` is
+    provided, the function filters claims to include only those relevant to the
+    specified tower and incorporates any tower-specific context overrides. A
+    maximum of six relevant claims are included. For non-V3 dossiers, processing
+    is delegated to a legacy conversion function.
+
+    Args:
+        data: The client dossier dictionary, which may be in the V3 schema or a
+            supported legacy format.
+        tower_id: An optional, case-insensitive identifier for a business tower. If
+            specified, this is used to select tower-specific context and to
+            filter the dossier's claims.
+
+    Returns:
+        A dictionary representing the client context packet. The packet contains
+        summarized information under keys such as `profile`,
+        `business_context`, `technology_context`, and a filtered list of
+        `priority_claims`.
+    """
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})
         business_context = data.get("business_context", {})
@@ -490,17 +643,35 @@ def build_client_context_packet(
 
 
 def build_client_context_text(data: dict[str, Any], tower_id: str | None = None) -> str:
+    """Build and serialize a client context packet into a formatted JSON string."""
     packet = build_client_context_packet(data, tower_id=tower_id)
     return json.dumps(packet, ensure_ascii=False, indent=2)
 
 
 def load_client_intelligence(path: Path) -> dict[str, Any]:
+    """Load client intelligence data from a JSON file.
+
+    The file is read with 'utf-8-sig' encoding, which handles an optional
+    leading BOM. If the specified path does not exist, an empty dictionary
+    is returned.
+
+    Args:
+        path: The filesystem path to the client intelligence JSON file.
+
+    Returns:
+        A dictionary containing the loaded client intelligence data.
+
+    Raises:
+        json.JSONDecodeError: If the file contains malformed JSON.
+        OSError: If an I/O error occurs while attempting to read the file.
+    """
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def load_client_intelligence_legacy_view(path: Path) -> dict[str, Any]:
+    """Load client intelligence data from a file and return it in the legacy view."""
     return client_intelligence_to_legacy(load_client_intelligence(path))
 
 
@@ -578,6 +749,29 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
 
 
 def coerce_client_dossier_v2(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
+    """Coerces a client intelligence data structure into the V2 dossier format.
+
+    This function normalizes a given dictionary into a validated V2 client
+    dossier. It handles three cases based on the input data's detected format:
+    - V2 format: The data is validated, enriched with `client_name`, and returned.
+    - V3 format: The data is down-converted to the V2 format.
+    - Legacy format: The data is coerced into the V2 format.
+
+    Args:
+        client_name: The name of the client to associate with the dossier.
+        data: The raw client intelligence data dictionary, which may be
+            structured in V2, V3, or a legacy format.
+
+    Returns:
+        A dictionary representing the client dossier, validated and structured
+        according to the V2 format.
+
+    Raises:
+        pydantic.ValidationError: If the input `data` is identified as V2 but
+            fails Pydantic model validation.
+        ValueError: If the input `data` is identified as a legacy format but is
+            malformed, preventing coercion to V2.
+    """
     if is_client_dossier_v2(data):
         dossier = dict(data)
         dossier["client_name"] = client_name
@@ -590,6 +784,30 @@ def coerce_client_dossier_v2(client_name: str, data: dict[str, Any]) -> dict[str
 
 
 def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
+    """Coerces client data from various formats into a standard V3 dossier.
+
+    This function operates as a data migration and enrichment layer. If the input
+    `data` already conforms to the V3 schema, it performs lightweight enrichment,
+    such as populating default metadata fields. If the `data` is in a legacy
+    or v2 format, the function executes a comprehensive transformation. This
+    process involves restructuring disparate fields, normalizing data types, and
+    generating a series of standardized claims from various input signals. The
+    final output is always validated against the V3 schema before being returned.
+
+    Args:
+        client_name (str): The unique identifier or name for the client.
+        data (dict[str, Any]): A dictionary containing the client's information,
+            which can be in a legacy, v2, or the target v3 format.
+
+    Returns:
+        dict[str, Any]: A dictionary representing the client dossier, guaranteed
+        to conform to the V3 schema and serialized for JSON compatibility.
+
+    Raises:
+        pydantic.ValidationError: If the input data (for an existing V3 payload)
+            or the coerced payload (from older formats) fails to validate against
+            the `ClientDossierV3` Pydantic model.
+    """
     if is_client_dossier_v3(data):
         dossier = dict(data)
         dossier["client_name"] = client_name

@@ -20,12 +20,12 @@ def _load_yaml_config(filename: str) -> dict:
 def get_product_owner_planner_instruction(max_tasks: int) -> str:
     config = _load_yaml_config("product_owner_planner.yaml")
 
-    # Helper to format sections
+    #
     def format_section(title, items):
         bullet_points = "\n".join(f"- {item}" for item in items)
         return f"{title}:\n{bullet_points}"
 
-    # Build the prompt string from YAML
+    #
     prompt = f"""{config["persona"]}
 {config["golden_rule"]}
 

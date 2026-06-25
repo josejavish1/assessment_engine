@@ -1,4 +1,4 @@
-"""Render the Unified Lineage Matrix Explorer portal from global and DTO state payloads."""
+"""Renders and persists the static HTML for the Unified Lineage Matrix Explorer portal by hydrating a Jinja2 template with global and Digital Twin Object (DTO) state payloads."""
 
 from __future__ import annotations
 
@@ -34,12 +34,12 @@ def _load_towers_detail(client_name: str) -> dict[str, Any]:
     client_dir = resolve_client_dir(client_name)
     towers_detail = {}
     
-    # Iterate through possible towers T2-T8
+    # The system architecture defines a fixed, inclusive range of tower identifiers from T2 to T8 that require processing.
     for i in range(2, 9):
         tower_id = f"T{i}"
         blueprint_file = client_dir / tower_id / f"blueprint_t{i}_payload.json"
         if not blueprint_file.exists():
-            # Try lowercase name as fallback
+            # If an initial key lookup is unsuccessful, a fallback mechanism attempts a case-insensitive match using a normalized, lowercase variant of the key.
             blueprint_file = client_dir / tower_id / f"blueprint_{tower_id.lower()}_payload.json"
             
         if blueprint_file.exists():
@@ -58,13 +58,34 @@ def _load_towers_detail(client_name: str) -> dict[str, Any]:
 
 
 def render_lineage_portal(client_name: str) -> Path:
+    """Generates a static HTML data lineage portal for a specified client.
+
+    Aggregates data from a global report payload, a Digital Twin Object (DTO)
+    state file (`digital_twin_state.json`), and supplementary tower metadata.
+    The function gracefully handles missing payload and DTO state files by
+    substituting empty dictionaries. These aggregated data sources are serialized
+    to JSON strings and injected into a Jinja2 template. The final rendered HTML
+    is written to a dedicated portal directory for the client (`<client_dir>/portal/`),
+    creating the directory structure if it does not exist.
+
+    Args:
+        client_name (str): The unique identifier for the client, used to derive
+            paths for input data files and the output portal directory.
+
+    Returns:
+        pathlib.Path: The absolute path to the generated `index.html` file.
+
+    Raises:
+        FileNotFoundError: If the main Jinja2 template file cannot be found at
+            its configured path.
+    """
     client_dir = resolve_client_dir(client_name)
     output_dir = client_dir / "portal"
     output_path = output_dir / "index.html"
 
     logger.info(f"🎨 [Lineage Portal] Generando Lineage Matrix Explorer para {client_name}...")
 
-    # 1. Cargar Payload Global
+    # Load the global state payload, containing system-wide configuration and metadata required for template hydration.
     global_payload_path = resolve_global_report_payload_path(client_name)
     if not global_payload_path.exists():
         logger.warning(f"⚠️ Payload global no encontrado en {global_payload_path}. Generando con dict vacío.")
@@ -72,7 +93,7 @@ def render_lineage_portal(client_name: str) -> Path:
     else:
         global_payload = _load_json(global_payload_path)
 
-    # 2. Cargar DTO State (Digital Twin)
+    # Load the Digital Twin Object (DTO) state, which constitutes the primary operational data snapshot for visualization.
     dto_state_path = client_dir / "digital_twin_state.json"
     if not dto_state_path.exists():
         logger.warning(f"⚠️ Digital Twin State no encontrado en {dto_state_path}. Generando con dict vacío.")
@@ -80,16 +101,16 @@ def render_lineage_portal(client_name: str) -> Path:
     else:
         dto_state = _load_json(dto_state_path)
 
-    # 2.5 Cargar Detalles de Torres
+    # Augment the primary Digital Twin Object (DTO) with supplementary, tower-specific metadata attributes.
     towers_detail = _load_towers_detail(client_name)
 
-    # 3. Leer Plantilla HTML
+    #
     if not TEMPLATE_PATH.exists():
         raise FileNotFoundError(f"No se encuentra la plantilla del portal en: {TEMPLATE_PATH}")
     
     template_content = TEMPLATE_PATH.read_text(encoding="utf-8")
 
-    # 4. Renderizar con Jinja2
+    #
     template = jinja2.Template(template_content)
     rendered_html = template.render(
         client_name=client_name,
@@ -98,7 +119,7 @@ def render_lineage_portal(client_name: str) -> Path:
         towers_detail_json=json.dumps(towers_detail, ensure_ascii=False)
     )
 
-    # 5. Escribir Portal Estático
+    #
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path.write_text(rendered_html, encoding="utf-8")
     
@@ -107,6 +128,23 @@ def render_lineage_portal(client_name: str) -> Path:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Executes the lineage portal rendering process from the command line.
+
+    Serves as the main entry point for the script. This function parses
+    command-line arguments to identify a target client and subsequently
+    invokes the rendering process for the Lineage Matrix Explorer.
+    It handles argument validation and encapsulates rendering exceptions,
+    translating outcomes into standard process exit codes.
+
+    Args:
+        argv: A list of command-line arguments. If None, `sys.argv` is used.
+            The second element (`argv[1]`) is expected to be the client name.
+
+    Returns:
+        An integer exit code. Returns `0` for successful rendering and `1` for
+        any failure, including an incorrect argument count or an exception
+        raised during the rendering process.
+    """
     args = argv if argv is not None else sys.argv
     if len(args) < 2:
         print("Uso: python -m adapters.render_lineage_portal <client_name>")
@@ -116,8 +154,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         render_lineage_portal(client_name)
         return 0
-    except Exception as e:
-        logger.exception(f"❌ Fallo al renderizar el Lineage Matrix Explorer:")
+    except Exception:
+        logger.exception("❌ Fallo al renderizar el Lineage Matrix Explorer:")
         return 1
 
 

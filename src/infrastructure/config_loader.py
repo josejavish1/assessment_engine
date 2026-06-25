@@ -1,7 +1,4 @@
-"""
-Módulo config_loader.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Implements the core logic and utility functions for the Assessment Engine pipeline."""
 
 import json
 import os
@@ -23,14 +20,64 @@ def _load_json(path: Path) -> Any:
 
 
 def load_runtime_manifest() -> Any:
+    """Load and parse the runtime manifest from its canonical location.
+
+    The manifest, a file named `runtime_manifest.json`, is expected to reside in
+    the engine's configuration directory (`ENGINE_CONFIG_DIR`). It contains
+    metadata about the runtime environment and its components.
+
+    Returns:
+        The deserialized content of the runtime manifest. The specific type
+        depends on the JSON document's root element, but is typically a dict.
+
+    Raises:
+        FileNotFoundError: If the manifest file cannot be found at the expected
+            location.
+        json.JSONDecodeError: If the manifest file contains malformed JSON.
+    """
     return _load_json(ENGINE_CONFIG_DIR / "runtime_manifest.json")
 
 
 def load_model_profiles() -> Any:
+    """Load and parse the model profiles configuration file.
+
+    This function locates and reads the `model_profiles.json` file from the
+    engine's configuration directory and deserializes its JSON content.
+
+    Returns:
+        The deserialized JSON content of the `model_profiles.json` file.
+
+    Raises:
+        FileNotFoundError: If the `model_profiles.json` file cannot be found.
+        json.JSONDecodeError: If the file content is not valid JSON.
+    """
     return _load_json(ENGINE_CONFIG_DIR / "model_profiles.json")
 
 
 def load_model_profile(profile_name: str) -> Any:
+    """Loads a model configuration profile by name, with environment override support.
+
+    Retrieves a specified model configuration profile and returns a mutable copy.
+    This function supports dynamic overriding of the 'model' key within the
+    profile via a corresponding environment variable.
+
+    The environment variable name is constructed by prefixing the `profile_name`
+    with `ASSESSMENT_MODEL_OVERRIDE_`, converting it to uppercase, and replacing
+    all non-alphanumeric characters with underscores. For example, a profile
+    named 'claude-3-sonnet' is overridden by the environment variable
+    `ASSESSMENT_MODEL_OVERRIDE_CLAUDE_3_SONNET`.
+
+    Args:
+        profile_name (str): The name of the model profile to load.
+
+    Returns:
+        Dict[str, Any]: A mutable dictionary containing the configuration for the
+            requested model profile. The 'model' key is replaced if a valid
+            environment variable override exists.
+
+    Raises:
+        KeyError: If `profile_name` does not exist in the available profiles.
+    """
     data = load_model_profiles()
     profiles = data.get("profiles", {})
     if profile_name not in profiles:
@@ -46,22 +93,45 @@ def load_model_profile(profile_name: str) -> Any:
 
 
 def load_document_profile(profile_name: str) -> dict:
+    """Load a document profile configuration by its profile name."""
     return _load_json(ENGINE_CONFIG_DIR / "document_profiles" / f"{profile_name}.json")
 
 
 def load_policy_file(file_name: str) -> dict:
+    """Load a policy configuration file by its base name from the policies directory."""
     return _load_json(ENGINE_CONFIG_DIR / "policies" / f"{file_name}.json")
 
 
 def load_target_maturity_policy() -> dict:
+    """Load the 'target_maturity_policy' configuration file."""
     return load_policy_file("target_maturity_policy")
 
 
 def load_review_policy() -> dict:
+    """Load the 'review_policy' configuration."""
     return load_policy_file("review_policy")
 
 
 def resolve_model_profile_for_role(role_name: str) -> dict:
+    """Resolve and load the model profile configuration for a specified role.
+
+    Loads the runtime manifest to identify the model profile name associated
+    with the given `role_name`. It then loads and returns the contents of that
+    specific model profile configuration file.
+
+    Args:
+        role_name (str): The identifier for the role whose model profile is to be
+            resolved and loaded.
+
+    Returns:
+        dict: The configuration dictionary loaded from the model profile file.
+
+    Raises:
+        KeyError: If the provided `role_name` does not map to a configured
+            model profile in the runtime manifest.
+        FileNotFoundError: If the runtime manifest file or the resolved model
+            profile file cannot be located on the filesystem.
+    """
     manifest = load_runtime_manifest()
     model_profiles = manifest.get("model_profiles", {})
     profile_name = model_profiles.get(role_name)
@@ -71,6 +141,18 @@ def resolve_model_profile_for_role(role_name: str) -> dict:
 
 
 def resolve_document_profile() -> dict:
+    """Loads the document profile specified in the runtime manifest.
+
+    This function retrieves the active document profile name from the runtime
+    manifest and uses it to load the corresponding profile configuration.
+
+    Returns:
+        dict: The configuration dictionary of the resolved document profile.
+
+    Raises:
+        KeyError: If the 'document_profile' key is missing from the runtime
+            manifest or its value is empty.
+    """
     manifest = load_runtime_manifest()
     profile_name = manifest.get("document_profile")
     if not profile_name:
@@ -79,6 +161,24 @@ def resolve_document_profile() -> dict:
 
 
 def resolve_target_maturity_defaults(document_profile_id: str) -> dict:
+    """Resolves the default target maturity configuration for a specified document profile.
+
+    This function loads the global target maturity policy via the
+    `load_target_maturity_policy()` helper. It then accesses the 'defaults'
+    section of the policy and retrieves the configuration dictionary
+    corresponding to the given `document_profile_id`.
+
+    Args:
+        document_profile_id: The unique identifier for the document profile,
+            used as the key for the lookup within the 'defaults' policy section.
+
+    Returns:
+        A dictionary containing the default target maturity settings.
+
+    Raises:
+        KeyError: If the 'defaults' section of the loaded policy does not
+            contain an entry for the provided `document_profile_id`.
+    """
     policy = load_target_maturity_policy()
     defaults = policy.get("defaults", {})
     if document_profile_id not in defaults:
@@ -89,5 +189,6 @@ def resolve_target_maturity_defaults(document_profile_id: str) -> dict:
 
 
 def resolve_review_rules() -> dict:
+    """{'docstring': "Extract the 'rules' dictionary from the main review policy configuration."}."""
     policy = load_review_policy()
     return policy.get("rules", {})

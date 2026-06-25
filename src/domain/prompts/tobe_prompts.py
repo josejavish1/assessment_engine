@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección TO-BE.
-"""
+"""Provides a centralized repository of prompt templates for the TO-BE analysis component."""
 
 
 def get_tobe_writer_prompt(
@@ -11,6 +9,28 @@ def get_tobe_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Constructs a Spanish-language prompt for a language model agent.
+
+    This function generates a prompt instructing a "Writer" agent to create the
+    "TO-BE" section for an assessment report concerning a specific technology
+    tower. The prompt includes the contextual "AS-IS" analysis data,
+    methodological definitions, explicit generation rules, and a required
+    JSON output schema.
+
+    Args:
+        findings_pretty: A string representation of the 'AS-IS' analysis findings.
+        scoring_pretty: A string representation of the 'AS-IS' scoring results.
+        case_input_pretty: A string representation of the initial case input data.
+        tower_definition_pretty: A string representation of the methodological
+            definition for the relevant assessment tower.
+        tower_label: The display name of the assessment tower.
+        feedback_block: A string containing supplemental instructions or feedback
+            to be injected into the prompt's rules section.
+
+    Returns:
+        A complete prompt string in Spanish, structured to guide a language
+        model in generating a specific JSON output.
+    """
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -77,6 +97,35 @@ def get_tobe_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Constructs the prompt for a Large Language Model to review a 'TO-BE' section.
+
+    This function assembles a detailed prompt in Spanish instructing an LLM agent
+    to act as a reviewer for the 'TO-BE' section of an assessment document. The
+    prompt provides comprehensive context, including the current document draft,
+    findings, scoring data, and the authoritative methodological definition for the
+    specified tower. It explicitly defines the review criteria, operational rules,
+    and the required JSON output schema to ensure a structured and consistent
+    response from the model.
+
+    Args:
+        draft_pretty: A formatted string representing the current state of the entire
+            assessment document.
+        findings_pretty: A formatted string containing the 'findings' section of the
+            assessment.
+        scoring_pretty: A formatted string detailing the scoring data and observed
+            gaps.
+        case_input_pretty: A formatted string of the initial input data for the
+            assessment case.
+        tower_definition_pretty: A formatted string of the methodological
+            definition for the tower, which serves as the ground truth for the
+            review.
+        tower_label: The string identifier for the specific assessment tower to be
+            reviewed.
+
+    Returns:
+        A complete, formatted string containing the prompt to be sent to the LLM
+        agent.
+    """
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

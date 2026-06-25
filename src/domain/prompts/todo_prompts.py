@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección TO-DO.
-"""
+"""Contains prompt templates for managing TO-DO list items and tasks."""
 
 
 def get_todo_writer_prompt(
@@ -13,6 +11,35 @@ def get_todo_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Constructs a Spanish-language prompt for an LLM to generate a TO-DO section.
+
+    This function assembles a detailed, rule-based prompt that instructs a
+    generative language model to act as a 'Writer' agent. The prompt's goal is
+    to produce the TO-DO section for a technology assessment report, which
+    translates prioritized gaps from prior analyses into concrete, actionable
+    initiatives. The function integrates all necessary contextual sections
+    (findings, scoring, as-is, to-be, gap analysis, and tower definition)
+    into a single request.
+
+    Args:
+        findings_pretty: A string containing the formatted findings section.
+        scoring_pretty: A string containing the formatted scoring and
+            prioritization section.
+        asis_pretty: A string containing the formatted 'as-is' state analysis.
+        tobe_pretty: A string containing the formatted 'to-be' state analysis.
+        gap_pretty: A string containing the formatted gap analysis.
+        tower_definition_pretty: A string containing the formatted
+            methodological definition of the assessment tower.
+        tower_label: The specific name of the assessment tower, used to populate
+            the prompt template.
+        feedback_block: A string containing corrective instructions or feedback
+            from prior generation attempts to refine the output.
+
+    Returns:
+        A string containing the complete Spanish-language prompt, designed to
+        instruct an LLM to generate the TO-DO section as a structured JSON
+        object.
+    """
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -85,6 +112,7 @@ def get_todo_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Construct a Spanish-language prompt for an AI agent to review an assessment's TO-DO section."""
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

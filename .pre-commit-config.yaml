@@ -73,3 +73,9 @@ repos:
         entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/change_discipline_validator.py --repo-root . --request-dir .github/change-plan"
         language: system
         pass_filenames: false
+
+      - id: docs-language-guard
+        name: Docs & Comments Language Guard (SOTA English Only)
+        entry: /home/jsanchhi/assessment_enginev2/.venv/bin/python scripts/enforce_english_comments.py
+        language: system
+        files: \.py$

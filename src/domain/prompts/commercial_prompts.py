@@ -27,6 +27,7 @@ MARCO DE CONSULTORÍA DE ÉLITE (STRATEGIC VIABILITY & AUTHORITY):
 
 
 def get_commercial_orchestrator_instruction() -> str:
+    """Return the base instruction prompt for the commercial orchestrator AI agent."""
     return f"""Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de NTT DATA elaborando un Account Action Plan estratégico.
 REGLAS DE ORO DE CALIDAD CONSULTIVA (NIVEL STAFF/PARTNER):
 1. PRIORIZACIÓN ESTRATÉGICA: Si el ADN del cliente indica marcos como NIS2, PIC o DORA, prioriza las iniciativas de Resiliencia y Seguridad en el TOP del Roadmap, independientemente de la nota técnica.
@@ -38,6 +39,7 @@ REGLAS DE ORO DE CALIDAD CONSULTIVA (NIVEL STAFF/PARTNER):
 def get_commercial_agent_prompt(
     agent_role: str, instruction: str, payload_str: str
 ) -> str:
+    """Format a commercial AI agent prompt by injecting a role, instruction, and payload into a predefined template."""
     return f"""
 ACTÚA COMO UN {agent_role} DE NTT DATA DE NIVEL PARTNER/DIRECTOR CON VISIÓN SISTÉMICA.
 ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO.

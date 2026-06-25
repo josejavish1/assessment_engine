@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts genéricos para secciones configurables (AS-IS, Riesgos).
-"""
+"""Defines generic prompt templates for dynamically generating standardized report sections, such as 'AS-IS' and 'Risks'."""
 
 
 def get_section_writer_prompt(
@@ -10,6 +8,41 @@ def get_section_writer_prompt(
     document_profile: dict,
     corrective_feedback: list[str] | None = None,
 ) -> str:
+    """Constructs a prompt for the 'Writer' AI agent to generate a document section.
+
+    This function assembles a multi-component prompt by integrating section-
+    specific rules, document-level forbidden phrases, optional corrective
+    feedback, and primary input data (findings and scoring). For specific
+    section IDs, such as 'asis' and 'risks', it injects a predefined JSON schema
+    into the prompt to enforce a structured, machine-parsable output from the
+    language model.
+
+    Args:
+        section_cfg: A dictionary containing the configuration for the target
+            document section. Must contain 'writer_rules' (an iterable) and
+            'writer_description' (a string). The 'id' key is used to look up
+            forbidden phrases and determine if a JSON schema is required.
+        findings_pretty: A pre-formatted string representing analytical findings
+            to be included as input in the prompt.
+        scoring_pretty: A pre-formatted string representing scoring data to be
+            included as input in the prompt.
+        document_profile: A dictionary representing the profile of the overall
+            document, used to retrieve constraints such as section-specific
+            forbidden phrases.
+        corrective_feedback: An optional list of strings containing feedback
+            from a previous generation attempt to guide regeneration. Defaults
+            to None.
+
+    Returns:
+        A complete, formatted prompt string ready for submission to the
+        Writer AI agent.
+
+    Raises:
+        KeyError: If 'writer_rules' or 'writer_description' keys are missing
+            from the `section_cfg` dictionary.
+        TypeError: If the 'writer_rules' value in `section_cfg` or the
+            `corrective_feedback` argument (if provided) is not an iterable.
+    """
     rules = list(section_cfg["writer_rules"])
     forbidden_phrases_by_section = document_profile.get(
         "forbidden_phrases_by_section", {}
@@ -30,7 +63,7 @@ def get_section_writer_prompt(
         feedback_text = "\n".join(f"- {item}" for item in corrective_feedback)
         feedback_block = f"""\nCorrecciones obligatorias para esta nueva iteracion:\n{feedback_text}\nDebes corregir completamente esos defectos y volver a generar la seccion.\n"""
 
-    # Forzar la estructura del JSON para evitar alucinaciones en Vertex AI
+    # Enforces a strict JSON output format to guarantee schema compliance from the Vertex AI model, preventing downstream parsing failures or data corruption.
     json_structure = ""
     if section_cfg.get("id") == "asis":
         json_structure = """
@@ -102,6 +135,7 @@ def get_section_reviewer_prompt(
     scoring_pretty: str,
     tower_definition_pretty: str,
 ) -> str:
+    r"""[{'docstring': "Assembles a formatted prompt in Spanish for an AI section reviewer agent.\n\nThis function builds a detailed prompt that instructs a language model on\nhow to review a specific document section. The prompt specifies the agent's\nrole, a list of checks to perform, strict JSON output formatting rules,\nand provides the full context including the draft text, related findings,\nscoring data, and the authoritative tower definition.\n\nArgs:\n    section_cfg: A dictionary containing the configuration for the section\n        review. Expected to contain the keys 'review_description' (str)\n        and 'review_checks' (iterable of strings).\n    draft_pretty: A pre-formatted string representing the current draft\n        of the section.\n    findings_pretty: A pre-formatted string of findings relevant to the\n        section.\n    scoring_pretty: A pre-formatted string containing scoring information.\n    tower_definition_pretty: A pre-formatted string of the tower definition,\n        which serves as the source of truth for the review criteria.\n\nReturns:\n    A complete prompt string in Spanish, ready for submission to the AI\n    reviewer.\n\nRaises:\n    KeyError: If 'review_description' or 'review_checks' are not present\n        in `section_cfg`.\n    TypeError: If the value of `section_cfg['review_checks']` is not an\n        iterable."}]."""
     checks_text = "\n".join(
         f"{i + 1}. {item}" for i, item in enumerate(section_cfg["review_checks"])
     )

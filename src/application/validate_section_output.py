@@ -1,7 +1,4 @@
-"""
-Módulo validate_section_output.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Provides core business logic and utility functions for the Assessment Engine pipeline."""
 
 import json
 import sys
@@ -34,11 +31,40 @@ SECTION_RULES = {
 
 
 def load_json(path: Path) -> dict:
+    """Load and parse a JSON file from the given path."""
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def main(argv=None) -> None:
+    """Validates a section's generated JSON output against a predefined set of rules.
+
+    Acts as the main entry point for a command-line validation script. The script
+    takes a single argument, the section name (e.g., 'asis', 'risks'), and reads
+    a corresponding JSON file named 'approved_{section}.generated.json'. It then
+    checks specified text fields within the JSON object for the presence of
+    case-insensitive forbidden substrings.
+
+    The outcome, 'VALIDATION_STATUS=PASS' or 'VALIDATION_STATUS=FAIL', is
+    printed to standard output. In case of failure, detailed error messages are
+    also printed before the process terminates with a non-zero exit code.
+
+    Args:
+        argv: An optional list of command-line arguments. If None, `sys.argv`
+            is used. The list is expected to contain the script name at index 0
+            and the target section name at index 1.
+
+    Returns:
+        None: The function communicates its result by printing to standard output
+            and exiting the process; it does not return any value.
+
+    Raises:
+        SystemExit: Raised if command-line arguments are invalid (not exactly one
+            section argument provided), if the section name is not supported, or
+            if the validation fails due to a forbidden phrase being detected.
+        FileNotFoundError: Raised if the 'approved_{section}.generated.json' file
+            corresponding to the specified section does not exist.
+    """
     if len(argv if argv is not None else sys.argv) != 2:
         raise SystemExit("Uso: python scripts/validate_section_output.py <asis|risks>")
 

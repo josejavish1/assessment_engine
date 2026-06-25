@@ -1,7 +1,4 @@
-"""
-Módulo audit_tower_annex_v24.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Contains the primary implementation of the Assessment Engine pipeline, including core logic and utility functions."""
 
 import json
 import logging
@@ -21,6 +18,29 @@ SUSPICIOUS_PATTERNS = [
 
 
 def read_zip_xml_texts(docx_path: Path):
+    """Extracts and decodes all XML content from the 'word/' directory of a DOCX file.
+
+    This function treats the DOCX file as a ZIP archive and iterates through its
+    contents, filtering for files located within the 'word/' subdirectory that
+    end with the '.xml' extension. These files typically contain the main document
+    content, headers, footers, and styles.
+
+    The binary content of each matching file is decoded into a UTF-8 string;
+    decoding errors are ignored. Any other exceptions raised during the read
+    operation for an individual file within the archive are suppressed.
+
+    Args:
+        docx_path (pathlib.Path): The filesystem path to the input DOCX file.
+
+    Returns:
+        list[str]: A list containing the decoded XML content for each valid
+            and readable XML file within the archive's 'word/' directory.
+
+    Raises:
+        FileNotFoundError: If the file at `docx_path` does not exist.
+        zipfile.BadZipFile: If the file at `docx_path` is not a valid ZIP
+            archive or is corrupted.
+    """
     texts = []
     with zipfile.ZipFile(docx_path, "r") as zf:
         for name in zf.namelist():
@@ -33,6 +53,23 @@ def read_zip_xml_texts(docx_path: Path):
 
 
 def extract_placeholders_from_docx(docx_path: Path):
+    """Extracts unique placeholder names from a Microsoft Word (.docx) document.
+
+    The function reads a .docx file as a zip archive, iterates through the raw
+    text of its internal XML components, and applies a regular expression to
+    identify all placeholder strings.
+
+    Args:
+        docx_path: A `pathlib.Path` object for the target .docx document.
+
+    Returns:
+        A sorted `list` of unique placeholder name strings.
+
+    Raises:
+        FileNotFoundError: If the file at `docx_path` does not exist.
+        zipfile.BadZipFile: If the file at `docx_path` is not a valid zip archive
+            or is otherwise corrupted.
+    """
     found = set()
     for text in read_zip_xml_texts(docx_path):
         found.update(PLACEHOLDER_RE.findall(text))
@@ -40,6 +77,26 @@ def extract_placeholders_from_docx(docx_path: Path):
 
 
 def extract_suspicious_from_docx(docx_path: Path):
+    """Count occurrences of suspicious regex patterns within a DOCX file's text.
+
+    This function operates by extracting all raw text from the underlying XML
+    components of the .docx file (which is a zip archive). It then
+    concatenates this text and scans it for a predefined list of regular
+    expression patterns, counting the non-overlapping matches for each.
+
+    Args:
+        docx_path (pathlib.Path): The file system path to the input .docx file.
+
+    Returns:
+        Dict[str, int]: A dictionary where keys are the suspicious pattern
+            strings and values are the integer counts of non-overlapping
+            matches found for each pattern.
+
+    Raises:
+        FileNotFoundError: If the file at `docx_path` does not exist.
+        zipfile.BadZipFile: If the file at `docx_path` is not a valid ZIP
+            archive, the underlying format for .docx files.
+    """
     joined = "\n".join(read_zip_xml_texts(docx_path))
     result = {}
     for pat in SUSPICIOUS_PATTERNS:
@@ -48,15 +105,18 @@ def extract_suspicious_from_docx(docx_path: Path):
 
 
 def extract_placeholders_from_py(py_path: Path):
+    """Return a sorted list of unique placeholders found in a Python file."""
     text = py_path.read_text(encoding="utf-8", errors="ignore")
     return sorted(set(PLACEHOLDER_RE.findall(text)))
 
 
 def load_json(path: Path):
+    """Deserialize a JSON file from a path using 'utf-8-sig' encoding."""
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def safe_get(data, path, default=None):
+    """Safely retrieve a nested value from a dictionary using a dot-separated path."""
     cur = data
     for part in path.split("."):
         if isinstance(cur, dict) and part in cur:
@@ -67,6 +127,40 @@ def safe_get(data, path, default=None):
 
 
 def main(argv: list[str] | None = None) -> None:
+    """Executes a diagnostic audit on a DOCX document generation process.
+
+    This function serves as the main entry point for a command-line diagnostic
+    tool that inspects the inputs and outputs of a document rendering workflow.
+    It performs a series of automated checks and logs the findings to standard
+    output.
+
+    The audit process includes:
+    1.  Path Resolution and Validation: Resolves and verifies the existence of
+        the input template DOCX, payload JSON, output DOCX, and a hardcoded
+        renderer Python script.
+    2.  Placeholder Extraction: Extracts Jinja-style placeholders from the
+        template DOCX, the renderer script's source code, and the final
+        output DOCX.
+    3.  Consistency Analysis: Identifies discrepancies, such as placeholders
+        present in the template but not referenced in the renderer script.
+    4.  Output Verification: Reports any placeholders that remain unresolved
+        in the generated output document.
+    5.  Pattern Scanning: Scans the output document for potentially anomalous
+        text patterns.
+    6.  Payload Inspection: Checks the JSON payload for the presence and
+        structure of critical data fields required for rendering.
+    7.  Summary Reporting: Concludes with a quantitative summary of the findings.
+
+    Args:
+        argv: An optional list of command-line arguments. If None, `sys.argv`
+            is used. The script requires three arguments following the script
+            name: the path to the template DOCX file, the path to the payload
+            JSON file, and the path to the generated output DOCX file.
+
+    Raises:
+        SystemExit: If the number of command-line arguments is not equal to
+            four (script name plus three required path arguments).
+    """
     if len(argv if argv is not None else sys.argv) != 4:
         raise SystemExit(
             "Uso: python -m scripts.tools.audit_tower_annex_v24 <template_docx> <payload_json> <output_docx>"

@@ -1,7 +1,4 @@
-"""
-Módulo generate_inputs.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Defines the core logic and utilities for the Assessment Engine pipeline."""
 
 import json
 import random

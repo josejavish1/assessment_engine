@@ -1,7 +1,4 @@
-"""
-Módulo bootstrap_all_towers.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-"""
+"""Implements the bootstrapping procedure for the Assessment Engine pipeline. This module is responsible for the initialization and configuration of all constituent service components, referred to as 'towers'."""
 
 import argparse
 import logging
@@ -19,6 +16,22 @@ logger = logging.getLogger(__name__)
 
 
 def find_matrix_file(tower_dir: Path) -> Path:
+    """Locate the primary matrix file in a directory, prioritizing `.docx` files.
+
+    The function scans for files within the specified directory, sorting them
+    lexicographically. It gives precedence to the first file with a `.docx`
+    extension (case-insensitive). If no `.docx` file is present, it returns
+    the first file in the sorted list, regardless of its type.
+
+    Args:
+        tower_dir: The filesystem path to the directory to be searched.
+
+    Returns:
+        A `pathlib.Path` object representing the located matrix file.
+
+    Raises:
+        FileNotFoundError: If the `tower_dir` contains no files.
+    """
     candidates = sorted(path for path in tower_dir.iterdir() if path.is_file())
     if not candidates:
         raise FileNotFoundError(f"No hay ficheros matriz en {tower_dir}")
@@ -29,6 +42,30 @@ def find_matrix_file(tower_dir: Path) -> Path:
 
 
 def main() -> None:
+    """Orchestrates the bootstrapping and validation of all tower configurations.
+
+    This function serves as the script's main entry point. It parses command-line
+    arguments specifying source and destination directories, then iterates through
+    each tower subdirectory found in the source location. For each tower, it
+    locates the primary matrix file, executes the bootstrap process to generate an
+    engine configuration, and validates the resulting definition.
+
+    A summary of the outcome for each tower (OK, WARNING, or ERROR), including
+    any diagnostic messages, is logged upon completion.
+
+    The process is controlled via the following command-line arguments:
+      --source-root: The root directory containing tower source subdirectories.
+      --engine-root: The root directory where generated engine configurations
+                     will be written.
+
+    Returns:
+        None.
+
+    Raises:
+        SystemExit: If no tower directories are found in the source root, or if
+            any tower encounters a fatal error during processing, causing the
+            script to terminate with a non-zero exit code.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--source-root",

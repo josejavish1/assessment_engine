@@ -5,6 +5,7 @@ from typing import TypedDict
 
 
 class MaturityBandDefinition(TypedDict):
+    """Define the schema for a single maturity band definition."""
     min: float
     max: float
     label: str
@@ -30,6 +31,7 @@ def resolve_maturity_band(
     *,
     score_precision: int | None = None,
 ) -> MaturityBandDefinition:
+    r"""{'docstring': "Maps a numerical score to its corresponding maturity band definition.\n\n    The function iterates through an ordered sequence of bands and returns the\n    first definition whose inclusive `min` and `max` score range contains the\n    input `score`. The score can optionally be rounded to a specified number of\n    decimal places before comparison.\n\n    If the score does not fall within any of the defined bands, the last band\n    in the sequence is returned as a fallback.\n\n    Args:\n        score: The numerical score to categorize.\n        bands: An iterable of `MaturityBandDefinition` objects. The order is\n            significant, as the first band whose range contains the score is\n            returned. Each definition must be a mapping with 'min' and 'max' keys.\n        score_precision: If provided, the number of decimal places to which the\n            `score` will be rounded before comparison.\n\n    Returns:\n        The first `MaturityBandDefinition` from `bands` whose score range\n        contains the `score`. If no band matches, the last band in the `bands`\n        iterable is returned.\n\n    Raises:\n        ValueError: If the `bands` iterable is empty."}."""
     band_list = tuple(bands)
     if not band_list:
         raise ValueError("At least one maturity band is required.")

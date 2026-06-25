@@ -1,4 +1,5 @@
 def get_global_reviewer_instruction() -> str:
+    """Return the static global instruction prompt in Spanish for the reviewer agent."""
     return (
         "Eres un editor senior especializado en QA y revision de calidad "
         "de informes ejecutivos de arquitectura e infraestructura corporativa. "
@@ -10,6 +11,26 @@ def get_global_reviewer_instruction() -> str:
 def get_global_reviewer_prompt(
     document_json: str, profile_json: str, deterministic_json: str
 ) -> str:
+    """Constructs the prompt for the Global Reviewer agent.
+
+    This function interpolates JSON string representations of a document, its
+    profile, and prior validation results into a static, Spanish-language
+    prompt template. The resulting prompt instructs an AI agent to perform a
+    holistic quality review of the document, checking for issues such as
+    internal consistency, redundancy, and stylistic coherence.
+
+    Args:
+        document_json: A JSON string representing the fully assembled document
+            to be reviewed.
+        profile_json: A JSON string containing the document's profile and
+            structural metadata.
+        deterministic_json: A JSON string containing the results from any
+            preceding deterministic validation checks.
+
+    Returns:
+        The fully constructed prompt as a single string, ready for use with an
+        AI model.
+    """
     return f"""
 Actua como el agente Global Reviewer del Assessment Engine.
 
@@ -49,6 +70,7 @@ INPUT_DOCUMENT_ASSEMBLED:
 
 
 def get_global_refiner_instruction() -> str:
+    """Return the Spanish-language system prompt for the global refiner agent."""
     return (
         "Eres un editor senior especializado en refinamiento de "
         "informes ejecutivos de arquitectura e infraestructura corporativa. "
@@ -61,6 +83,7 @@ def get_global_refiner_instruction() -> str:
 def get_global_refiner_prompt(
     document_json: str, review_json: str, profile_json: str
 ) -> str:
+    """Construct the prompt for the Global Refiner agent from document, review, and profile JSON strings."""
     return f"""
 Actua como el agente Global Refiner del Assessment Engine.
 
@@ -88,6 +111,7 @@ INPUT_DOCUMENT_ASSEMBLED:
 
 
 def get_executive_refiner_instruction() -> str:
+    """Return the static instruction prompt for the 'Executive Refiner' persona."""
     return """Eres un Senior Partner de consultoría estratégica de TI redactando un informe para el Board.
 Tu objetivo es transformar el análisis técnico en un 'Modelo de Viabilidad Sistémica' irrefutable.
 REGLAS DE ÉLITE:
@@ -100,6 +124,7 @@ Si el payload incluye `intelligence_dossier`, conéctalo explícitamente con la 
 def get_executive_section_prompt(
     instruction: str, payload_str: str, client_name: str
 ) -> str:
+    """Generate a Spanish-language LLM prompt for a strategic executive board analysis."""
     return f"""
     ACTÚA COMO UN PARTNER ESTRATÉGICO GENERANDO UN 'MODELO DE VIABILIDAD SISTÉMICA' PARA EL BOARD.
     ANALIZA ESTE PAYLOAD Y GENERA UN NUEVO JSON ESTRATÉGICO DE ALTA AUTORIDAD.

@@ -1,8 +1,8 @@
-"""
-Módulo run_tower_pipeline.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
-Implementa un orquestador asíncrono basado en un DAG (Directed Acyclic Graph)
-utilizando Subprocesos Asíncronos aislados para evitar Race Conditions de memoria global.
+"""Defines the primary orchestration logic for the Assessment Engine pipeline.
+
+This module implements a Directed Acyclic Graph (DAG) based asynchronous orchestrator
+that executes pipeline stages in isolated subprocesses to mitigate global state
+corruption and race conditions.
 """
 
 import argparse
@@ -31,6 +31,20 @@ START_FROM = None
 
 
 def slugify(value: str) -> str:
+    """Generate a sanitized, ASCII-based slug from a string.
+
+    Converts the input string into a URL-friendly slug. The transformation
+    involves NFKD Unicode normalization, ASCII-encoding with lossy character
+    conversion, replacement of non-alphanumeric characters with underscores,
+    conversion to lowercase, and collapsing of consecutive underscores.
+
+    Args:
+        value (str): The string to convert into a slug.
+
+    Returns:
+        str: The resulting slug. If the transformation results in an empty
+            string, the default value 'client' is returned instead.
+    """
     normalized = unicodedata.normalize("NFKD", value)
     ascii_value = normalized.encode("ascii", "ignore").decode("ascii")
     cleaned = "".join(ch if ch.isalnum() else "_" for ch in ascii_value)
@@ -40,9 +54,33 @@ def slugify(value: str) -> str:
 async def run_step_async(
     cmd_args: list[str], env: dict[str, str], step_name: str
 ) -> None:
-    """
-    Ejecuta un paso de forma asíncrona mediante subprocesos.
-    Garantiza aislamiento de estado (sys.argv, os.environ) para ejecución paralela segura.
+    """Execute a pipeline step in an isolated, asynchronous subprocess.
+
+    Ensures process-level state isolation (e.g., `sys.argv`, `os.environ`) to
+    facilitate safe, concurrent execution of pipeline stages. The function
+    manages the full lifecycle of the subprocess, including its creation,
+    environment variable injection, real-time streaming of stdout and stderr, and
+    timeout enforcement.
+
+    The execution of a step can be conditionally skipped. This behavior is
+    controlled by the global module-level variables `SKIP_MODE` and `START_FROM`,
+    which enables pipelines to be resumed from a specified step.
+
+    Args:
+        cmd_args: A list of strings representing the command and its arguments
+            to execute.
+        env: A dictionary of environment variables to set for the subprocess.
+            These variables augment the parent process's environment.
+        step_name: The human-readable name of the pipeline step, used for
+            logging and error reporting.
+
+    Returns:
+        None
+
+    Raises:
+        RuntimeError: If the subprocess exits with a non-zero status code,
+            exceeds its configured execution timeout, or if a critical error
+            occurs during subprocess instantiation.
     """
     global SKIP_MODE
     if SKIP_MODE:
@@ -55,7 +93,7 @@ async def run_step_async(
 
     print(f"\n=== {step_name} (Iniciado) ===")
 
-    # Preparamos el entorno inyectando nuestras variables personalizadas
+    # Injects custom environment variables into the subprocess environment to configure its execution context and behavior.
     process_env = os.environ.copy()
     process_env.update(env)
     timeout_seconds = resolve_ai_step_timeout_seconds(process_env, step_name)
@@ -83,7 +121,7 @@ async def run_step_async(
         else:
             stdout, stderr = await process.communicate()
 
-        # Volcamos la salida para mantener visibilidad de logs
+        # Asynchronously streams the subprocess's stdout and stderr to the main process's logger to ensure real-time visibility into its execution status and to capture diagnostic information.
         if stdout:
             print(stdout.decode("utf-8").strip())
 
@@ -100,6 +138,44 @@ async def run_step_async(
 
 
 async def run_pipeline():
+    """Orchestrates an asynchronous, multi-stage pipeline for technology tower assessments.
+
+    This function serves as the primary entry point for executing a complete assessment.
+    It consumes command-line arguments to configure the pipeline's inputs and
+    behavior. The pipeline can be resumed from a specific step if a previous run
+    was interrupted.
+
+    The pipeline proceeds through several distinct phases:
+    1.  **Initialization**: Parses arguments, builds a runtime environment, and
+        creates a unique case directory for all generated artifacts.
+    2.  **Foundational Analysis**: Sequentially executes scripts to generate core
+        data, including the case input, evidence ledger, scoring data, and
+        evidence analysis.
+    3.  **Strategic Synthesis**: Executes a top-down synthesis flow, including an
+        optional Vertex AI preflight check, followed by the core strategic
+        blueprint and executive annex synthesizer engines.
+    4.  **Parallel Rendering**: Concurrently renders the final output documents
+        using `asyncio.gather`, producing a comprehensive Strategic Blueprint
+        DOCX and a standardized executive summary annex DOCX.
+
+    Command-line arguments are used for configuration instead of function parameters:
+        --tower: The technology tower identifier (e.g., "SECURITY").
+        --client: The name of the client being assessed.
+        --context-file: Path to the input context JSON file.
+        --responses-file: Path to the input responses JSON file.
+        --start-from (optional): The name of the step to resume execution from.
+
+    Returns:
+        None. The function's side effects include the creation of a case
+        directory populated with intermediate analysis files and final report
+        documents.
+
+    Raises:
+        Exception: Propagated from failures in underlying asynchronous subprocess
+            calls, which may indicate script execution errors or file I/O issues.
+            Critical failures during the strategic synthesis phase will terminate
+            execution.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--tower", required=True)
     parser.add_argument("--client", required=True)
@@ -136,7 +212,7 @@ async def run_pipeline():
     template_annex_path = resolve_tower_annex_template_path()
     output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
 
-    # --- FASE 1: PREPARACIÓN DETERMINISTA (SECUENCIAL) ---
+    # Phase 1: Sequential, deterministic preparation of foundational data and environment.
     await run_step_async(
         [
             python_bin,
@@ -197,7 +273,7 @@ async def run_pipeline():
         "Run evidence analyst",
     )
 
-    # --- NUEVA FASE TOP-DOWN (ESTRANGULADOR: BLUEPRINT -> ANEXO) ---
+    # Implements the top-down phase of the Strangler Fig pattern, migrating from the legacy Blueprint model to the new Annex architecture.
     print(
         "\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico (Single Source of Truth)..."
     )
@@ -245,38 +321,63 @@ async def run_pipeline():
     except Exception as e:
         print(f"⚠️ Fallo en síntesis del anexo: {e}")
 
-    # LEGACY CODE - COMENTADO PARA EVITAR SPLIT BRAIN
-    # # --- FASE 2: GENERACIÓN AGÉNTICA (PARALELIZABLE) [RAMA A] ---
-    # print("\n🚀 Iniciando Generación Paralela Rama A (AS-IS + RISKS + OSINT)...")
-    # await asyncio.gather(
-    #     run_step_async([python_bin, "-m", "assessment_engine.scripts.run_section_pipeline", "asis"], env, "Generate AS-IS"),
-    #     run_step_async([python_bin, "-m", "assessment_engine.scripts.run_section_pipeline", "risks"], env, "Generate Risks"),
-    #     # OSINT no se corre por torre, solo lo dejamos como placeholder si fuera necesario a futuro
-    # )
+    # Legacy code block decommissioned during a phased migration. This code is preserved but commented out to prevent a split-brain scenario where both old and new logic could execute concurrently.
+    # Phase 2: Parallel execution of agentic generation tasks (Branch A).
     #
-    # # --- FASE 3: ANÁLISIS ESTRATÉGICO (PARALELIZABLE) [RAMA B] ---
-    # print("\n🚀 Iniciando Análisis Estratégico Paralelo Rama B (GAP + TO-BE)...")
-    # await asyncio.gather(
-    #     run_step_async([python_bin, "-m", "assessment_engine.scripts.run_tobe_pipeline"], env, "Generate TO-BE"),
-    #     run_step_async([python_bin, "-m", "assessment_engine.scripts.run_gap_pipeline"], env, "Generate GAP")
-    # )
     #
-    # # --- FASE 4: CIERRE DEL REPORTE (SECUENCIAL) [RAMA C] ---
-    # await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_todo_pipeline"], env, "Generate TO-DO")
-    # await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_conclusion_pipeline"], env, "Generate Conclusion")
     #
-    # # --- FASE 5: ENSAMBLADO Y RENDERIZADO ---
-    # await run_step_async([python_bin, "-m", "assessment_engine.scripts.assemble_tower_annex"], env, "Assemble annex")
     #
-    # tower_name_mock = "TOWER_NAME"
-    # await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_global_review_pipeline", str(case_dir), tower_id, tower_name_mock], env, "Global review")
-    # await run_step_async([python_bin, "-m", "assessment_engine.scripts.run_global_refiner_pipeline", str(case_dir), tower_id, tower_name_mock], env, "Global refiner")
+    # The OSINT (Open-Source Intelligence) gathering step is not executed on a per-tower basis in the current architecture. This node is maintained as a placeholder for potential future activation or re-implementation.
+    #
+    #
+    # Phase 3: Parallel execution of strategic analysis tasks (Branch B).
+    #
+    #
+    #
+    #
+    #
+    #
+    # Phase 4: Sequential aggregation and finalization of report components (Branch C).
+    #
+    #
+    #
+    # Phase 5: Final document assembly and rendering.
+    #
+    #
+    #
+    #
+    #
 
-    # Pipeline final de renderizado (Re-acondicionado para usar el nuevo Payload del Sintetizador)
+    # Defines the final rendering pipeline stage, which has been refactored to consume the standardized payload format produced by the Synthesizer service.
     async def render_standard_report():
-        # Ya no ensamblamos ni refinamos. El Synthesizer escupe el payload_path directamente listo para render.
-        # await run_step_async([python_bin, "-m", "assessment_engine.scripts.build_tower_annex_template_payload", str(refined_path if refined_path.exists() else assembled_path), str(payload_path), args.client, "short"], env, "Build short template payload")
-        # await run_step_async([python_bin, "-m", "assessment_engine.scripts.generate_tower_radar_chart", str(payload_path), str(radar_path)], env, "Generate short radar")
+        """Asynchronously renders a DOCX report from a standardized payload.
+
+        Invokes an external Python script (`render_tower_annex_from_template`) to
+        perform the final rendering stage of the report generation pipeline. This
+        function consumes a standardized payload file produced by an upstream
+        'Synthesizer' service.
+
+        Note:
+            This function does not accept arguments directly. It relies on the
+            following variables being present in its execution context:
+            - `python_bin` (str): Path to the Python interpreter.
+            - `payload_path` (str): Path to the input JSON payload file.
+            - `template_annex_path` (str): Path to the DOCX template file.
+            - `output_docx` (str): Path for the generated DOCX report.
+            - `env` (dict): Environment variables for the subprocess.
+
+        Returns:
+            None. The function's primary side effect is writing a DOCX file to
+            the path specified by the `output_docx` context variable.
+
+        Raises:
+            Exception: If the underlying `run_step_async` call fails, which can
+                be caused by a non-zero exit code from the rendering script or by
+                missing input files (e.g., payload, template).
+        """
+        # The assembly and refinement stages are deprecated. The upstream Synthesizer service is now responsible for generating the final `payload_path`, which is directly consumable by the rendering stage.
+        #
+        #
         await run_step_async(
             [
                 python_bin,
@@ -292,6 +393,15 @@ async def run_pipeline():
         )
 
     async def run_blueprint_flow():
+        """Asynchronously executes the Tower Strategic Blueprint rendering process.
+
+        This coroutine checks for the existence of an input payload file specified by the global `blueprint_payload_path` variable. If the file is present, it spawns an asynchronous subprocess to execute the `render_tower_blueprint` script. The subprocess is invoked using the interpreter path from the global `python_bin` and the environment from the global `env`.
+
+        All exceptions encountered during the subprocess execution are caught and suppressed. A warning message is printed to standard output, ensuring that failures in this step do not interrupt the parent execution flow.
+
+        Returns:
+            None
+        """
         try:
             if blueprint_payload_path.exists():
                 await run_step_async(

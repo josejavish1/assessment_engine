@@ -6,6 +6,7 @@ from .common import BaseDraftModel
 
 
 class GapItem(BaseModel):
+    """Model a single item within a gap analysis."""
     pillar: str
     as_is_summary: str
     target_state: str
@@ -14,6 +15,7 @@ class GapItem(BaseModel):
 
 
 class GapDraft(BaseDraftModel):
+    """Return a static list of phrases forbidden in GAP analysis drafts."""
     section_id: str = "gap"
     status: str = "draft"
     tower_id: str
@@ -26,6 +28,7 @@ class GapDraft(BaseDraftModel):
 
     @classmethod
     def get_forbidden_phrases(cls) -> List[str]:
+        """Return the static list of forbidden phrases."""
         return [
             "quick wins",
             "roadmap",

@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección GAP.
-"""
+"""Provides the collection of prompts required for generating the Gap Analysis and Proposal (GAP) section."""
 
 
 def get_gap_writer_prompt(
@@ -12,6 +10,29 @@ def get_gap_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    """Constructs the prompt for the GAP analysis Writer agent.
+
+    This function populates a predefined Spanish-language template to generate a
+    prompt for a Large Language Model (LLM). The prompt directs the LLM to act
+    as a 'Writer' agent, synthesizing multiple inputs related to a technical
+    assessment. The goal is to produce a structured JSON object containing a
+    detailed GAP analysis for a specific assessment tower.
+
+    Args:
+        findings_pretty: String representation of the assessment's findings.
+        scoring_pretty: String representation of the scoring details for the tower.
+        asis_pretty: String representation of the current ('as-is') state.
+        tobe_pretty: String representation of the target ('to-be') state.
+        tower_definition_pretty: String representation of the tower's
+            methodological definition.
+        tower_label: The display name of the assessment tower (e.g., 'Security').
+        feedback_block: An optional string containing corrective feedback from prior
+            generation attempts to guide the LLM.
+
+    Returns:
+        The complete, formatted prompt string in Spanish, ready for use with an
+        LLM.
+    """
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -79,6 +100,7 @@ def get_gap_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    r"""{'docstring': "Constructs the prompt for an AI agent to review a GAP analysis section.\n\nGenerates a detailed prompt in Spanish that instructs an AI agent to review\nthe GAP analysis section of a technical assessment. The prompt assembles\ncontextual data from the assessment (findings, scoring, AS-IS/TO-BE states),\nthe official tower methodology, and a set of explicit review rules. It also\ndefines the exact JSON schema required for the agent's output.\n\nArgs:\n    draft_pretty: A string representation of the draft GAP section to be\n        reviewed.\n    findings_pretty: A string representation of the findings section, used for\n        contextual consistency validation.\n    scoring_pretty: A string representation of the scoring section, used for\n        contextual consistency validation.\n    asis_pretty: A string representation of the AS-IS state description.\n    tobe_pretty: A string representation of the TO-BE state description.\n    tower_definition_pretty: A string representation of the tower's\n        methodological definition, serving as the ground truth for the review.\n    tower_label: The label of the tower under review, used to scope the\n        agent's task.\n\nReturns:\n    A formatted string containing the complete prompt in Spanish for the AI\n    reviewer agent."}."""
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

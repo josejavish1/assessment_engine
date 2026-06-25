@@ -1,6 +1,6 @@
 import asyncio
 
-# --- START OF BUSINESS LOGIC ---
+#
 import json
 import logging
 import os
@@ -21,7 +21,7 @@ from infrastructure.ai_client import call_agent
 from infrastructure.apex_models import ApexDebateResponse
 from infrastructure.apex_sentinel import ApexSentinel
 
-# Configuración
+#
 console = Console()
 logging.basicConfig(level=logging.INFO, filename="working/apex/error.log")
 logger = logging.getLogger("APEX-Dispatcher")
@@ -36,6 +36,7 @@ SENTINEL = ApexSentinel(WORKING_DIR, budget_limit=25.0)
 
 
 class Task(TypedDict):
+    """Define the dictionary structure for a task object."""
     id: str
     priority: str
     title: str
@@ -45,6 +46,29 @@ class Task(TypedDict):
 
 
 class UiState(TypedDict):
+    """A TypedDict that specifies the data structure for the user interface state.
+
+    This class serves as a data transfer object (DTO) to encapsulate all
+    necessary information for rendering the UI at a given point in time.
+
+    Attributes:
+        all_tasks: A list of all `Task` objects managed by the system.
+        active_task: The `Task` object currently being processed, or `None` if no
+            task is active.
+        active_logs: A list of string log messages associated with the
+            `active_task`.
+        debate_transcript: A chronological record of a debate, represented as a
+            list of tuples, where each tuple contains a speaker's name (str)
+            and their message (Any).
+        total_cost: The cumulative computational or monetary cost incurred during
+            the session.
+        start_time: The UNIX timestamp (seconds since epoch) marking the start of
+            the process.
+        completed_count: The total number of tasks that have been successfully
+            completed.
+        last_event: A human-readable string describing the most recent
+            significant event.
+    """
     all_tasks: List[Task]
     active_task: Optional[Task]
     active_logs: List[str]
@@ -68,6 +92,25 @@ UI_STATE: UiState = {
 
 
 def load_apex_prompt(filename: str) -> dict:
+    """Load an Apex prompt configuration from a YAML file.
+
+    Locates and parses a prompt configuration file from the prompt registry. The
+    search path is resolved by first checking the `APEX_PROMPTS_DIR`
+    environment variable for a custom registry path. If the environment
+    variable is not set, the function falls back to the default
+    package-internal prompt registry.
+
+    Args:
+        filename: The basename of the YAML prompt file to load.
+
+    Returns:
+        A dictionary representing the parsed content of the YAML file.
+
+    Raises:
+        FileNotFoundError: If the prompt file cannot be found in the resolved
+            search path.
+        yaml.YAMLError: If the target file contains malformed YAML.
+    """
     import yaml  # type: ignore
 
     prompts_dir = os.environ.get("APEX_PROMPTS_DIR")
@@ -86,6 +129,7 @@ def load_apex_prompt(filename: str) -> dict:
 
 
 def make_layout() -> Layout:
+    """Define and return the primary Rich Layout for the application UI."""
     layout = Layout()
     layout.split_column(
         Layout(name="header", size=3),
@@ -99,8 +143,9 @@ def make_layout() -> Layout:
 
 
 def update_ui_components(layout: Layout) -> None:
+    r"""{'docstring': "Populates a Rich Layout with data from the global UI state.\n\n    This function renders a complete terminal UI frame by updating distinct\n    panels within the provided layout object. It sources all data from the\n    global `UI_STATE` dictionary, making it suitable for repeated calls in a\n    refresh loop.\n\n    The function updates the following layout panels:\n    - 'header': Displays cost, progress, and uptime statistics.\n    - 'active_mission': Shows the currently executing task.\n    - 'brain_stream': Renders the latest agent thought processes.\n    - 'terminal_mirror': Mirrors recent log output.\n    - 'registry': Lists the backlog of upcoming and completed tasks.\n    - 'footer': Shows the last logged event or UI error messages.\n\n    Any exceptions encountered during the rendering process are caught and their\n    message is displayed in the 'footer' panel to prevent UI crashes.\n\n    Args:\n        layout: The `rich.layout.Layout` object to be updated in-place."}."""
     try:
-        # Header
+        #
         elapsed = time.time() - UI_STATE["start_time"]
         m, s = divmod(int(elapsed), 60)
         h, m = divmod(m, 60)
@@ -115,7 +160,7 @@ def update_ui_components(layout: Layout) -> None:
         )
         layout["header"].update(Panel(header_text, style="blue"))
 
-        # Mission
+        #
         active_task = UI_STATE["active_task"]
         if active_task:
             status_color = "green" if "Running" in active_task["status"] else "yellow"
@@ -132,7 +177,7 @@ def update_ui_components(layout: Layout) -> None:
                 Panel("Esperando tareas...", title="MISSION")
             )
 
-        # Brain
+        #
         text = Text()
         for role, msg in UI_STATE["debate_transcript"][-6:]:
             color = "yellow" if "DOCTOR" in role else "magenta"
@@ -144,13 +189,13 @@ def update_ui_components(layout: Layout) -> None:
             Panel(text, title="[bold]BRAIN STREAM[/]", border_style="yellow")
         )
 
-        # Logs
+        #
         logs = "\n".join(UI_STATE["active_logs"][-6:])
         layout["terminal_mirror"].update(
             Panel(logs, title="[bold]TERMINAL MIRROR[/]", border_style="dim")
         )
 
-        # Registry
+        #
         table = Table(expand=True, box=None, show_header=True)
         table.add_column("ID", width=8)
         table.add_column("Status", width=15)
@@ -168,6 +213,7 @@ def update_ui_components(layout: Layout) -> None:
 
 
 async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
+    r"""{'docstring': "Asynchronously executes the 'po-run' orchestrator script with a task prompt.\n\n    The function sanitizes the input `task_prompt` by removing newlines and\n    escaping double quotes. It then launches the 'po-run' script as an\n    asynchronous subprocess, passing the sanitized prompt as a command-line\n    argument. Standard error is redirected to standard output, and the\n    `PYTHONUNBUFFERED` environment variable is set to facilitate real-time\n    output streaming.\n\n    Output from the subprocess is captured line-by-line. Each line is appended\n    to a persistent `session.log` file and simultaneously used to populate the\n    global `UI_STATE['active_logs']` list for real-time interface updates.\n    The function awaits the termination of the subprocess before returning.\n\n    Args:\n        task_prompt: The task description to be processed by the orchestrator.\n\n    Returns:\n        A tuple containing a boolean success flag (True if the process exit code\n        was 0) and the complete captured standard output as a single string,\n        with each line stripped of whitespace.\n\n    Raises:\n        FileNotFoundError: If the 'po-run' executable is not found.\n        PermissionError: If the script lacks permissions to execute 'po-run' or\n            write to the log file."}."""
     clean_prompt = task_prompt.replace("\n", " ").replace('"', '\\"')
     cmd = [str(REPO_ROOT / "bin/po-run"), clean_prompt]
 
@@ -207,6 +253,35 @@ async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
 async def perform_apex_debate(
     error_logs: str, previous_failures: str
 ) -> ApexDebateResponse:
+    """Orchestrates a simulated two-agent debate to determine an error recovery strategy.
+
+    This function simulates a multi-step reasoning process within a single large-
+    language model call to decide on a recovery strategy for a given error. A
+    prompt for an "Apex Doctor" persona is first generated, which analyzes the
+    error logs and previous failures to formulate a proposed fix. This proposal is
+    then embedded into a larger prompt for an "Apex Architect" persona. The
+    architect evaluates the doctor's proposal against high-level repository
+    invariants loaded from `GEMINI.md` to make a final, authoritative decision.
+
+    The function appends status updates to the global `UI_STATE` transcript and
+    logs the final decision and reasoning as a transaction.
+
+    Args:
+        error_logs: The raw error log output from the failed execution. This
+            input is truncated to the first 1500 characters within the prompt.
+        previous_failures: A textual description of previously attempted fixes
+            that were unsuccessful.
+
+    Returns:
+        An `ApexDebateResponse` object containing the final decision and the
+        supporting reasoning from the architect persona.
+
+    Raises:
+        FileNotFoundError: If `apex_doctor.yaml`, `apex_architect.yaml`, or the
+            repository invariants file (`GEMINI.md`) cannot be found.
+        pydantic.ValidationError: If the response from the language model does
+            not conform to the `ApexDebateResponse` schema.
+    """
     UI_STATE["debate_transcript"].append(("SENTINEL", "Iniciando debate..."))
     doctor_config = load_apex_prompt("apex_doctor.yaml")
     architect_config = load_apex_prompt("apex_architect.yaml")
@@ -237,6 +312,23 @@ async def perform_apex_debate(
 
 
 def parse_backlog() -> List[Task]:
+    """Parses a Markdown-formatted backlog file into a list of Task objects.
+
+    Reads and parses the backlog file specified by the global `BACKLOG_PATH`
+    constant. The file is expected to contain a Markdown table with columns for
+    priority, area, title, and description. A regular expression is used to
+    extract data from each row, skipping the table header and formatting lines.
+    Each valid entry is transformed into a `Task` dictionary with a generated ID
+    and a default "Pending" status.
+
+    Returns:
+        A list of `Task` dictionaries. An empty list is returned if the
+        backlog file does not exist or if no valid task entries are found.
+
+    Raises:
+        OSError: If the backlog file cannot be read due to filesystem errors,
+            such as insufficient permissions.
+    """
     if not BACKLOG_PATH.exists():
         return []
     content = BACKLOG_PATH.read_text()
@@ -262,6 +354,42 @@ def parse_backlog() -> List[Task]:
 
 
 async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
+    """Executes a task with an adaptive, multi-attempt failure-recovery loop.
+
+    This function attempts to execute a task using an external orchestrator.
+    Upon failure, it initiates a rescue protocol that runs for a maximum of
+    `max_rescue_rounds`. In each round, a 'debate' mechanism analyzes the
+    failure logs to determine a recovery strategy. The possible outcomes are:
+
+    1.  **Revise and Retry**: The task's instructions are revised based on the
+        analysis, and another execution attempt is made.
+    2.  **Inject Prerequisite**: New, high-priority 'Emergency' (EMG) tasks are
+        generated and inserted into the main `queue` at the specified `idx`.
+        The current task's status is updated to 'Waiting EMG' and execution is
+        deferred (returns False).
+    3.  **Hard Block**: The task is deemed unrecoverable, its status is set to
+        'HARD_BLOCK', and all further attempts are ceased.
+
+    The function has significant side effects, directly mutating the state of the
+    `task` object, the `queue` list, and the global `UI_STATE` dictionary.
+
+    Args:
+        task: The task object to process. Its 'status' and 'instruction'
+            attributes are mutated in-place during execution.
+        queue: The primary task queue (a list of tasks). This list is modified
+            in-place if prerequisite tasks need to be injected.
+        idx: The index in the `queue` at which new prerequisite tasks will be
+            inserted.
+
+    Returns:
+        True if the task completes successfully. False if the task is deferred,
+        fails after all retry attempts, or is marked as a 'HARD_BLOCK'.
+
+    Raises:
+        SystemExit: If a prerequisite task of 'EMG' priority fails and is
+            subsequently hard-blocked, indicating a critical failure that
+            necessitates immediate termination of the application.
+    """
     attempts = 0
     max_rescue_rounds = 3
     previous_failures: List[str] = []
@@ -291,7 +419,7 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
         previous_failures.append(f"Fallo {attempts}: {debate.reasoning}")
 
         if debate.decision == "INJECT_PREREQUISITE":
-            # Safeguard against infinite rescue loops
+            # A rescue counter is employed to prevent infinite loops during task recovery sequences.
             emg_tasks = [t for t in queue if t.get("id", "").startswith("EMG-")]
             if len(emg_tasks) > 5:
                 UI_STATE["debate_transcript"].append(
@@ -316,7 +444,7 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
                         "status": "Pending",
                         "instruction": p_task_data.get("instruction"),
                     }
-                    # FIX: Evitar inserción duplicada si queue e all_tasks son la misma lista
+                    # Prevents duplicate task insertion when the emergency queue and the main task list reference the same object instance.
                     queue.insert(idx, new_task)
                     if queue is not UI_STATE["all_tasks"]:
                         UI_STATE["all_tasks"].insert(idx, new_task)
@@ -348,6 +476,26 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
 
 
 async def monitor_mode(layout: Layout) -> None:
+    """Asynchronously polls a ledger file to update application state and refresh the UI.
+
+    Initializes the application's task list by parsing the backlog, then enters an
+    infinite loop to monitor for state changes.
+
+    The loop polls the ledger file specified by `SENTINEL.ledger_path` at one-second
+    intervals. The function reads the file line-by-line, parsing each line as a
+    JSON transaction. Malformed lines that raise an exception during parsing are
+    silently skipped. Based on the contents of valid transactions, this function
+    mutates the shared `UI_STATE` dictionary, updating task statuses, aggregate
+    costs, and debate transcripts. After each polling cycle, it triggers a refresh
+    of the user interface components.
+
+    Args:
+        layout (Layout): The main UI layout object to be refreshed with updated
+            state information.
+
+    Returns:
+        None: This function runs in an infinite loop and does not return.
+    """
     UI_STATE["all_tasks"] = parse_backlog()
     while True:
         if SENTINEL.ledger_path.exists():
@@ -377,6 +525,30 @@ async def monitor_mode(layout: Layout) -> None:
 
 
 async def main() -> None:
+    """Runs the main asynchronous event loop for the Apex dispatcher.
+
+    The application operates in one of two modes, selected via command-line
+    arguments:
+    - "monitor": Activated by the `--monitor` flag. This mode displays a
+      real-time terminal dashboard monitoring the state of the task
+      processing system.
+    - "worker": The default mode. This mode parses a task backlog file and
+      processes the tasks sequentially. The UI can be suppressed by passing
+      the `--headless` flag.
+
+    In worker mode, the function iterates through the list of tasks. It
+    skips tasks with a status of "success" or "hard_block". For each
+    pending task, it calls the `process_task` coroutine and updates the UI
+    with the current status and cumulative cost. If a task's status becomes
+    "Waiting EMG", the loop does not advance to the next task in the
+    subsequent iteration. This mechanism ensures that an emergency task,
+    which is injected into the queue at the current position, is processed
+    immediately.
+
+    Raises:
+        FileNotFoundError: If the backlog file cannot be found in worker mode.
+        ValueError: If the backlog file contains malformed data.
+    """
     mode = "monitor" if "--monitor" in sys.argv else "worker"
     layout = make_layout()
     if mode == "monitor":
@@ -398,8 +570,8 @@ async def main() -> None:
             if "--headless" not in sys.argv:
                 update_ui_components(layout)
 
-            # Si la tarea actual quedó en 'Waiting EMG', no incrementamos 'i'
-            # para procesar la tarea inyectada en el siguiente ciclo.
+            # The loop counter 'i' is not incremented upon a task's transition to the 'Waiting EMG' state to ensure the newly injected emergency task is processed in the immediately subsequent iteration.
+            #
             if task["status"] != "Waiting EMG":
                 i += 1
 

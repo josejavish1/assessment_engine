@@ -221,3 +221,15 @@ Cuando se solicite ejecutar una tarea o implementar cambios a través del orques
 1.  **Cero Interferencia Manual Previa:** **PROHIBIDO** editar archivos manualmente con herramientas de reemplazo de texto (`replace`, `write_file`) antes o durante la ejecución de `po-run`. Si el usuario pide que una tarea se haga con `po-run`, el orquestador debe ser el único encargado de invocar al agente *Worker* para realizar los cambios en la rama efímera.
 2.  **Confiar en el Bucle de Reconciliación (Auto-Heal):** Si la Pull Request generada por el orquestador falla en la integración continua (Quality Gates, Linting, Type Checking) o recibe comentarios de revisión (por ejemplo, del bot Codex), **PROHIBIDO** silenciar los bots o saltarse los checks usando la API de GitHub (`gh api`) o comandos forzados. El agente debe permitir que el orquestador detecte los fallos, despierte al `Agente Doctor` y haga un nuevo commit automático para sanar la rama.
 3.  **Prohibición Absoluta de Merges Forzados:** **ESTÁ TERMINANTEMENTE PROHIBIDO** el uso de comandos como `gh pr merge --admin` para forzar la integración a producción ignorando las reglas de protección de rama. El orquestador fusionará automáticamente cuando el estado sea estrictamente "MERGEABLE". Si el orquestador agota sus intentos (max rounds), el agente Gemini debe notificar al usuario y analizar los logs de fallo del orquestador, pero **nunca saltarse la barrera**.
+
+## 8. Directiva de Documentación y Comentarios (SOTA Tier 1)
+
+Para mantener la base de código libre de entropía y optimizada para el consumo de ingenieros L8 (Google/Anthropic) y agentes autónomos, todas las sesiones de IA y desarrolladores deben cumplir de manera nativa con las siguientes directrices de documentación:
+
+1.  **Idioma Único (Inglés Técnico):** Absolutamente todos los comentarios en línea, docstrings de módulos, clases, funciones y descripciones de esquemas Pydantic (`Field(description=...)`) deben redactarse exclusivamente en un inglés técnico formal, aséptico y preciso.
+2.  **Contratos de API Google-Style:** Toda firma pública de clase, método y función debe estar documentada utilizando el formato de Google estricto, detallando de manera asertiva las secciones:
+    -   `Args:` Cada parámetro de entrada con su tipo y descripción semántica.
+    -   `Returns:` El tipo de dato devuelto y su significado.
+    -   `Raises:` La matriz exhaustiva de excepciones lanzadas o propagadas por el cuerpo del código.
+3.  **Cero Redundancia (Signal-to-Noise Ratio):** Queda estrictamente prohibido escribir comentarios que describan el "qué" del código autodescriptivo. Los comentarios solo se permiten para describir el **"porqué"** (decisiones de diseño, anomalías de layouts, citas a estándares como ECMA-376).
+4.  **Cero Código Obsoleto (Eradicate):** Queda terminantemente prohibido dejar bloques de código comentados en desuso. Si una función o sentencia ya no es activa, se elimina de inmediato de la base de código útil. Git es el único historial válido.

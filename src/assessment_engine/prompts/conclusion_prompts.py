@@ -1,6 +1,4 @@
-"""
-Repositorio de prompts para la sección Conclusion.
-"""
+"""Specifies prompts for synthesizing the 'Conclusion' section of a generated report."""
 
 
 def get_conclusion_writer_prompt(
@@ -14,6 +12,7 @@ def get_conclusion_writer_prompt(
     tower_label: str,
     feedback_block: str,
 ) -> str:
+    r"""{'docstring': "Constructs the prompt for the LLM-based Conclusion Writer agent.\n\n    Assembles a prompt instructing a language model to generate the 'Conclusion'\n    section for a specific assessment tower. The function interpolates\n    pre-formatted strings representing various assessment sections (e.g., scoring,\n    as-is, risks) into a master template. The resulting prompt directs the model\n    to return a structured JSON object.\n\n    Args:\n        scoring_pretty: A string containing the pre-formatted scoring data.\n        asis_pretty: A string containing the pre-formatted 'As-Is' section data.\n        risks_pretty: A string containing the pre-formatted 'Risks' section data.\n        tobe_pretty: A string containing the pre-formatted 'To-Be' section data.\n        gap_pretty: A string containing the pre-formatted gap analysis data.\n        todo_pretty: A string containing the pre-formatted 'To-Do' section data.\n        tower_definition_pretty: A string containing the pre-formatted tower\n            definition.\n        tower_label: The name or label of the assessment tower being processed.\n        feedback_block: A string containing additional rules or feedback to be\n            injected into the prompt's instruction set.\n\n    Returns:\n        A fully-formed string prompt for the Conclusion Writer agent."}."""
     return f"""
 Actua como el agente Writer del Assessment Engine.
 
@@ -80,6 +79,40 @@ def get_conclusion_reviewer_prompt(
     tower_definition_pretty: str,
     tower_label: str,
 ) -> str:
+    """Constructs a prompt for an AI agent to review an assessment's conclusion.
+
+    This function assembles a multi-part prompt in Spanish that instructs a
+    large language model to act as a technical reviewer for the 'Conclusion'
+    section of an assessment report. It integrates various report sections as
+    context to ensure a comprehensive and coherent review. The resulting prompt
+    specifies the review criteria, required JSON output schema, and operational
+    rules for the AI agent.
+
+    Args:
+        draft_pretty: A formatted string representation of the draft conclusion
+            to be reviewed.
+        scoring_pretty: A formatted string representation of the report's
+            scoring section.
+        asis_pretty: A formatted string representation of the report's AS-IS
+            analysis section.
+        risks_pretty: A formatted string representation of the report's risks
+            section.
+        tobe_pretty: A formatted string representation of the report's TO-BE
+            state section.
+        gap_pretty: A formatted string representation of the report's GAP
+            analysis section.
+        todo_pretty: A formatted string representation of the report's TO-DO or
+            action plan section.
+        tower_definition_pretty: A formatted string representation of the tower's
+            methodological definition, which serves as the ground truth for the
+            review.
+        tower_label: The name or identifier for the assessment tower being
+            evaluated.
+
+    Returns:
+        A single string containing the complete, formatted prompt in Spanish,
+        ready for submission to the AI model.
+    """
     return f"""
 Actua como el agente Reviewer del Assessment Engine.
 

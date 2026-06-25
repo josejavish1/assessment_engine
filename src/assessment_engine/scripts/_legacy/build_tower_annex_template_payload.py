@@ -1,5 +1,4 @@
-"""
-Módulo legacy build_tower_annex_template_payload.py.
+"""Módulo legacy build_tower_annex_template_payload.py.
 Contiene la lógica histórica para transformar un annex refined legacy en template payload.
 """
 
