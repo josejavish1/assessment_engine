@@ -86,7 +86,9 @@ def markdown_link_target_path(current_path: Path, target: str) -> Path | None:
     return (current_path.parent / local_target).resolve()
 
 
-def validate_markdown_links(current_path: Path, entry_path: str, errors: list[str]) -> None:
+def validate_markdown_links(
+    current_path: Path, entry_path: str, errors: list[str]
+) -> None:
     text = current_path.read_text(encoding="utf-8")
     for match in MARKDOWN_LINK_RE.finditer(text):
         target_path = markdown_link_target_path(current_path, match.group(1))
@@ -151,7 +153,9 @@ def validate_documentation_coverage(
     exclude_patterns = coverage.get("exclude", DEFAULT_COVERAGE_EXCLUDE)
 
     if not isinstance(include_patterns, list) or not include_patterns:
-        errors.append("documentation-map.yaml coverage.include must be a non-empty list")
+        errors.append(
+            "documentation-map.yaml coverage.include must be a non-empty list"
+        )
         return
     if not isinstance(exclude_patterns, list):
         errors.append("documentation-map.yaml coverage.exclude must be a list")
@@ -160,7 +164,9 @@ def validate_documentation_coverage(
     governed_paths: set[str] = set()
     for pattern in include_patterns:
         if not isinstance(pattern, str) or not pattern:
-            errors.append("documentation-map.yaml coverage.include entries must be strings")
+            errors.append(
+                "documentation-map.yaml coverage.include entries must be strings"
+            )
             continue
         for discovered_path in repo_root.glob(pattern):
             if discovered_path.is_file():
@@ -173,8 +179,7 @@ def validate_documentation_coverage(
         if not any(
             is_path_covered_by_entry(governed_path, entry["path"], entry["kind"])
             for entry in entries
-            if isinstance(entry.get("path"), str)
-            and isinstance(entry.get("kind"), str)
+            if isinstance(entry.get("path"), str) and isinstance(entry.get("kind"), str)
         ):
             errors.append(
                 f"{governed_path}: markdown document is not covered by documentation-map"
