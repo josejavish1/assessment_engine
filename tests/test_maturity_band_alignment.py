@@ -1,9 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, cast
-import pytest
 
-from assessment_engine.scripts.lib.maturity_band import ANNEX_MATURITY_BANDS
 from assessment_engine.scripts.run_executive_annex_synthesizer import (
     derive_maturity_band,
 )
