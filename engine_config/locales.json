@@ -13,10 +13,17 @@
     "maturity_lbl": "NIVEL DE MADUREZ CUALITATIVO",
     "resilience_reading": "Lectura de Resiliencia de la Plataforma:",
     "radar_title": "Perfil Visual de Madurez Ponderada",
-    "justification_table_headers": ["Pilar / Capacidad Evaluada", "Score AS-IS", "Análisis de Brecha y Justificación de Nota"],
+    "justification_table_headers": [
+      "Pilar / Capacidad Evaluada",
+      "Score AS-IS",
+      "Análisis de Brecha y Justificación de Nota"
+    ],
     "platform_overview_title": "Descripción de la Plataforma de Infraestructura Actual",
     "swot_title": "Fortalezas y Brechas Clave",
-    "swot_headers": ["Fortalezas Clave de la Plataforma", "Brechas y Deudas Operativas Críticas"],
+    "swot_headers": [
+      "Fortalezas Clave de la Plataforma",
+      "Brechas y Deudas Operativas Críticas"
+    ],
     "transversal_title": "Análisis Transversal de Capacidades",
     "risk_matrix_title": "Matriz de Riesgo Cuantitativa (FAIR)",
     "risk_intro_1": "El análisis cuantitativo del estado actual establece que las deudas técnicas operativas y las vulnerabilidades detectadas exponen ",
@@ -24,23 +31,42 @@
     "risk_intro_3": " anuales bajo el estándar internacional FAIR. Esta matriz de mosaico consolida la distribución de esta exposición a partir de la frecuencia de amenazas (TEF) y magnitud de pérdidas (LM) de cada hallazgo forense:",
     "exposure_summary_title": "Resumen de Exposición y Mapa de Calor",
     "tef_title": "Criterios de Frecuencia de la Amenaza (TEF)",
-    "tef_headers": ["Nivel TEF", "Denominación", "Frecuencia Anualizada Estimada"],
+    "tef_headers": [
+      "Nivel TEF",
+      "Denominación",
+      "Frecuencia Anualizada Estimada"
+    ],
     "lm_title": "Criterios de Magnitud de Pérdida Directa/Indirecta (LM)",
-    "lm_headers": ["Nivel LM", "Clasificación de Impacto", "Límite de Pérdida Financiera"],
+    "lm_headers": [
+      "Nivel LM",
+      "Clasificación de Impacto",
+      "Límite de Pérdida Financiera"
+    ],
     "top_risks_title": "Top de Riesgos Prioritarios de la Torre",
     "top_risks_intro": "Top de riesgos priorizados por su impacto directo en la resiliencia del servicio y el coste de inacción (ALE):",
     "motivo_priorizacion": "Motivo de priorización: ",
     "detailed_risks_title": "Registro Detallado de Hallazgos Forenses por Pilar",
     "detailed_risks_pilar_title": "Análisis de Vulnerabilidades: ",
-    "detailed_risks_headers": ["ID", "Vulnerabilidad y Evidencias de Auditoría", "Exposición y Riesgo de Negocio"],
+    "detailed_risks_headers": [
+      "ID",
+      "Vulnerabilidad y Evidencias de Auditoría",
+      "Exposición y Riesgo de Negocio"
+    ],
     "next_steps_title": "Siguientes Pasos y Coste de Inacción",
     "appendix_a_title": "Apéndice A: Lista de Abreviaturas",
     "appendix_a_intro": "A continuación, se define el glosario de términos técnicos y acrónimos utilizados en este diagnóstico técnico actual:",
-    "appendix_a_headers": ["Abreviatura", "Significado / Descripción Técnica"],
+    "appendix_a_headers": [
+      "Abreviatura",
+      "Significado / Descripción Técnica"
+    ],
     "appendix_b_title": "Apéndice B: Cláusula de Limitación de Responsabilidad",
     "appendix_c_title": "Apéndice C: Registro de Custodia de Fuentes de Información",
     "appendix_c_intro": "Para garantizar la transparencia, veracidad e inmutabilidad de la información recopilada en este diagnóstico técnico, a continuación se listan y codifican las fuentes documentales utilizadas bajo custodia de auditoría:",
-    "appendix_c_headers": ["Código de Referencia", "Documento Fuente / Origen de Datos", "Descripción y Ámbito de Custodia"],
+    "appendix_c_headers": [
+      "Código de Referencia",
+      "Documento Fuente / Origen de Datos",
+      "Descripción y Ámbito de Custodia"
+    ],
     "vulnerability_lbl": "Vulnerabilidad Identificada:\n",
     "evidence_lbl": "Evidencia Forense Literal:\n",
     "impact_lbl": "Impacto Operativo:\n",
@@ -56,7 +82,17 @@
     "bib_contexto_desc": " que define la volumetría del patrimonio, centros de datos y criticidad operativa.",
     "bib_minutas": "Minutas y registros tomados durante las sesiones presenciales de contexto de arquitectura mantenidas entre los líderes técnicos de ",
     "bib_minutas_desc": " y el equipo consultor.",
-    "default_overview_text": "El inventario consolidado y la evaluación de la plataforma de "
+    "default_overview_text": "El inventario consolidado y la evaluación de la plataforma de ",
+    "conclusions_title": "Conclusiones, Brechas y Coste de Inacción",
+    "asis_consolidated_title": "Resumen de Situación (AS-IS Consolidado)",
+    "asis_consolidated_body": "El estado actual de la infraestructura de {tower_name}, subproducto de una evolución orgánica para dar servicio a una operación crítica, ha alcanzado un punto de inflexión. La plataforma se caracteriza por una fragmentación estructural, herramientas y operaciones en silos discretos para los entornos on-premise y cloud, y una dependencia sistémica de flujos de aprobación y procesos manuales para la provisión y el ciclo de vida.",
+    "quick_diagnosis_title": "Fortalezas y Brechas Clave (Diagnóstico Rápido)",
+    "quick_diagnosis_intro": "A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:",
+    "operational_implications_title": "Implicaciones Operativas Clave",
+    "bottlenecks_bullet": "**Cuellos de botella sistémicos:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
+    "delayed_faults_bullet": "**Detección tardía de fallas:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de incidentes críticos.",
+    "config_drift_bullet": "**Riesgo de configuration drift:** El mantenimiento manual de las configuraciones dificulta demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.",
+    "coi_title": "Coste de Inacción (Do Nothing) y Siguientes Pasos"
   },
   "en": {
     "thousands_sep": ",",
@@ -72,10 +108,17 @@
     "maturity_lbl": "QUALITATIVE MATURITY LEVEL",
     "resilience_reading": "Platform Resilience Reading:",
     "radar_title": "Weighted Maturity Visual Profile",
-    "justification_table_headers": ["Pillar / Evaluated Capability", "AS-IS Score", "Gap Analysis and Score Justification"],
+    "justification_table_headers": [
+      "Pillar / Evaluated Capability",
+      "AS-IS Score",
+      "Gap Analysis and Score Justification"
+    ],
     "platform_overview_title": "Current Infrastructure Platform Description",
     "swot_title": "Key Strengths and Gaps",
-    "swot_headers": ["Key Platform Strengths", "Critical Gaps and Operational Debts"],
+    "swot_headers": [
+      "Key Platform Strengths",
+      "Critical Gaps and Operational Debts"
+    ],
     "transversal_title": "Cross-Cutting Capabilities Analysis",
     "risk_matrix_title": "Quantitative Risk Matrix (FAIR)",
     "risk_intro_1": "The quantitative current state analysis establishes that the technical operational debts and identified vulnerabilities expose ",
@@ -83,23 +126,42 @@
     "risk_intro_3": " annually under the international FAIR standard. This mosaic matrix consolidates the distribution of this exposure based on the Threat Event Frequency (TEF) and Loss Magnitude (LM) of each forensic finding:",
     "exposure_summary_title": "Exposure Summary and Heatmap",
     "tef_title": "Threat Event Frequency Criteria (TEF)",
-    "tef_headers": ["TEF Level", "Denomination", "Estimated Annualized Frequency"],
+    "tef_headers": [
+      "TEF Level",
+      "Denomination",
+      "Estimated Annualized Frequency"
+    ],
     "lm_title": "Direct/Indirect Loss Magnitude Criteria (LM)",
-    "lm_headers": ["LM Level", "Impact Classification", "Financial Loss Limit"],
+    "lm_headers": [
+      "LM Level",
+      "Impact Classification",
+      "Financial Loss Limit"
+    ],
     "top_risks_title": "Top Prioritized Risks for the Tower",
     "top_risks_intro": "Top risks prioritized by their direct impact on service resilience and the cost of inaction (ALE):",
     "motivo_priorizacion": "Prioritization rationale: ",
     "detailed_risks_title": "Detailed Registry of Forensic Findings by Pillar",
     "detailed_risks_pilar_title": "Vulnerability Analysis: ",
-    "detailed_risks_headers": ["ID", "Vulnerability and Audit Evidence", "FAIR Exposure and Business Risk"],
+    "detailed_risks_headers": [
+      "ID",
+      "Vulnerability and Audit Evidence",
+      "FAIR Exposure and Business Risk"
+    ],
     "next_steps_title": "Next Steps and Cost of Inaction",
     "appendix_a_title": "Appendix A: List of Abbreviations",
     "appendix_a_intro": "The following defines the glossary of technical terms and acronyms used in this current technical diagnosis:",
-    "appendix_a_headers": ["Abbreviation", "Significado / Technical Description"],
+    "appendix_a_headers": [
+      "Abbreviation",
+      "Significado / Technical Description"
+    ],
     "appendix_b_title": "Appendix B: Limitation of Liability Disclaimer",
     "appendix_c_title": "Appendix C: Registry of Custody of Information Sources",
     "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
-    "appendix_c_headers": ["Reference Code", "Source Document / Data Origin", "Custody Scope and Description"],
+    "appendix_c_headers": [
+      "Reference Code",
+      "Source Document / Data Origin",
+      "Custody Scope and Description"
+    ],
     "vulnerability_lbl": "Identified Vulnerability:\n",
     "evidence_lbl": "Literal Forensic Evidence:\n",
     "impact_lbl": "Operational Impact:\n",
@@ -115,7 +177,17 @@
     "bib_contexto_desc": " defining inventory volumes, data centers, and operational criticality.",
     "bib_minutas": "Minutes and records taken during the on-site architecture sessions between the technical leaders of ",
     "bib_minutas_desc": " and the consulting team.",
-    "default_overview_text": "The consolidated inventory and evaluation of the "
+    "default_overview_text": "The consolidated inventory and evaluation of the ",
+    "conclusions_title": "Conclusions, Gaps and Cost of Inaction",
+    "asis_consolidated_title": "Situation Summary (Consolidated AS-IS)",
+    "asis_consolidated_body": "The current state of the {tower_name} infrastructure, a byproduct of organic evolution to support a critical operation, has reached an inflection point. The platform is characterized by structural fragmentation, tools and operations in discrete silos for on-premise and cloud environments, and a systemic dependence on approval flows and manual processes for provisioning and lifecycle.",
+    "quick_diagnosis_title": "Key Strengths and Gaps (Quick Diagnosis)",
+    "quick_diagnosis_intro": "The following is the comparative balance of the strengths found against the most critical operational debts:",
+    "operational_implications_title": "Key Operational Implications",
+    "bottlenecks_bullet": "**Systemic bottlenecks:** The manual infrastructure provisioning model limits the delivery speed of strategic business initiatives.",
+    "delayed_faults_bullet": "**Delayed fault detection:** The lack of correlated observability increases the Mean Time to Resolution (MTTR) of critical incidents.",
+    "config_drift_bullet": "**Configuration drift risk:** Manual configuration maintenance makes it difficult to demonstrate real-time regulatory compliance of {reg_frameworks}.",
+    "coi_title": "Cost of Inaction (Do Nothing) and Next Steps"
   },
   "pt": {
     "thousands_sep": ".",
@@ -131,10 +203,17 @@
     "maturity_lbl": "NÍVEL DE MATURIDADE QUALITATIVO",
     "resilience_reading": "Leitura de Resiliência da Plataforma:",
     "radar_title": "Perfil Visual de Maturidade Ponderada",
-    "justification_table_headers": ["Pilar / Capacidade Avaliada", "Score AS-IS", "Análise de Gap e Justificativa de Nota"],
+    "justification_table_headers": [
+      "Pilar / Capacidade Avaliada",
+      "Score AS-IS",
+      "Análise de Gap e Justificativa de Nota"
+    ],
     "platform_overview_title": "Descrição da Plataforma de Infraestrutura Atual",
     "swot_title": "Pontos Fortes e Gaps Principais",
-    "swot_headers": ["Pontos Fortes da Plataforma", "Gaps Críticos e Débitos Operacionais"],
+    "swot_headers": [
+      "Pontos Fortes da Plataforma",
+      "Gaps Críticos e Débitos Operacionais"
+    ],
     "transversal_title": "Análise de Capacidades Transversais",
     "risk_matrix_title": "Matriz de Risco Quantitativa (FAIR)",
     "risk_intro_1": "A análise quantitativa do estado atual estabelece que os débitos técnicos operacionais e vulnerabilidades expõem o ",
@@ -142,23 +221,42 @@
     "risk_intro_3": " anuais sob o padrão internacional FAIR. Esta matriz de mosaico consolida a distribuição desta exposição baseada na frequência de ameaças (TEF) e magnitude de perda (LM) de cada achado forense:",
     "exposure_summary_title": "Resumo de Exposição e Mapa de Calor",
     "tef_title": "Critérios de Frequência de Ameaças (TEF)",
-    "tef_headers": ["Nível TEF", "Denominação", "Frequência Anualizada Estimada"],
+    "tef_headers": [
+      "Nível TEF",
+      "Denominação",
+      "Frequência Anualizada Estimada"
+    ],
     "lm_title": "Critérios de Magnitude de Perda Direta/Indireta (LM)",
-    "lm_headers": ["Nivel LM", "Classificação de Impacto", "Limite de Perda Financeira"],
+    "lm_headers": [
+      "Nivel LM",
+      "Classificação de Impacto",
+      "Limite de Perda Financeira"
+    ],
     "top_risks_title": "Principais Riscos Priorizados da Torre",
     "top_risks_intro": "Principais riscos priorizados por seu impacto direto na resiliência do serviço e custo de inação (ALE):",
     "motivo_priorizacion": "Motivo de priorização: ",
     "detailed_risks_title": "Registro Detalhado de Achados Forenses por Pilar",
     "detailed_risks_pilar_title": "Análise de Vulnerabilidades: ",
-    "detailed_risks_headers": ["ID", "Vulnerabilidade e Evidências de Auditoria", "Exposição e Risco de Negócio"],
+    "detailed_risks_headers": [
+      "ID",
+      "Vulnerabilidade e Evidências de Auditoria",
+      "Exposição e Risco de Negócio"
+    ],
     "next_steps_title": "Próximos Passos e Custo de Inação",
     "appendix_a_title": "Apêndice A: Lista de Abreviaturas",
     "appendix_a_intro": "A seguir, define-se o glossário de termos técnicos e acrônimos utilizados neste diagnóstico técnico atual:",
-    "appendix_a_headers": ["Abreviatura", "Significado / Descrição Técnica"],
+    "appendix_a_headers": [
+      "Abreviatura",
+      "Significado / Descrição Técnica"
+    ],
     "appendix_b_title": "Apêndice B: Cláusula de Limitação de Responsabilidade",
     "appendix_c_title": "Apêndice C: Registro de Custódia de Fontes de Informação",
     "appendix_c_intro": "Para garantir a transparência, veracidade e imutabilidade das informações coletadas neste diagnóstico técnico, as fontes documentais utilizadas sob custódia de auditoria são listadas abaixo:",
-    "appendix_c_headers": ["Código de Referência", "Documento Fonte / Origem de Dados", "Escopo de Custódia e Descrição"],
+    "appendix_c_headers": [
+      "Código de Referência",
+      "Documento Fonte / Origem de Dados",
+      "Escopo de Custódia e Descrição"
+    ],
     "vulnerability_lbl": "Vulnerabilidade Identificada:\n",
     "evidence_lbl": "Evidência Forense Literal:\n",
     "impact_lbl": "Impacto Operacional:\n",
@@ -174,7 +272,17 @@
     "bib_contexto_desc": " que define volumes de patrimônio, data centers e criticidade operacional.",
     "bib_minutas": "Minutas e registros tomados durante as sessões de arquitetura entre os líderes técnicos da ",
     "bib_minutas_desc": " e a equipe de consultoria.",
-    "default_overview_text": "O inventario consolidado e a avaliação da plataforma de "
+    "default_overview_text": "O inventario consolidado e a avaliação da plataforma de ",
+    "conclusions_title": "Conclusões, Brechas e Custo de Inação",
+    "asis_consolidated_title": "Resumo da Situação (AS-IS Consolidado)",
+    "asis_consolidated_body": "O estado atual da infraestrutura de {tower_name}, subproduto de uma evolução orgânica para atender a uma operação crítica, atingiu um ponto de inflexão. A plataforma é caracterizada por fragmentação estrutural, ferramentas e operações em silos discretos para ambientes on-premise e em nuvem, e uma dependência sistêmica de fluxos de aprovação e processos manuais para provisionamento e ciclo de vida.",
+    "quick_diagnosis_title": "Principais Forças e Lacunas (Diagnóstico Rápido)",
+    "quick_diagnosis_intro": "Abaixo é apresentado o balanço comparativo das forças encontradas frente às deudas operacionais mais críticas:",
+    "operational_implications_title": "Principais Implicações Operacionais",
+    "bottlenecks_bullet": "**Gargalos sistêmicos:** O modelo manual de provisionamento de infraestrutura limita a velocidade de entrega das iniciativas estratégicas do negócio.",
+    "delayed_faults_bullet": "**Detecção tardia de falhas:** A falta de observabilidade correlacionada eleva o Tempo Médio de Resolução (MTTR) de incidentes críticos.",
+    "config_drift_bullet": "**Risco de configuration drift:** A manutenção manual das configurações dificulta demonstrar o cumprimento normativo em tempo real de {reg_frameworks}.",
+    "coi_title": "Custo de Inação (Do Nothing) e Próximos Passos"
   },
   "fr": {
     "thousands_sep": " ",
@@ -190,10 +298,17 @@
     "maturity_lbl": "NIVEAU DE MATURITÉ QUALITATIF",
     "resilience_reading": "Lecture de Résilience de la Plateforme:",
     "radar_title": "Profil Visuel de Maturité Pondérée",
-    "justification_table_headers": ["Pilier / Capacité Évaluée", "Score AS-IS", "Analyse d'Écart et Justification de Note"],
+    "justification_table_headers": [
+      "Pilier / Capacité Évaluée",
+      "Score AS-IS",
+      "Analyse d'Écart et Justification de Note"
+    ],
     "platform_overview_title": "Description de la Plateforme d'Infrastructure Actuelle",
     "swot_title": "Forces et Lacunes Clés",
-    "swot_headers": ["Forces Clés de la Plateforme", "Lacunes Critiques et Dettes Opérationnelles"],
+    "swot_headers": [
+      "Forces Clés de la Plateforme",
+      "Lacunes Critiques et Dettes Opérationnelles"
+    ],
     "transversal_title": "Analyse des Capacités Transverses",
     "risk_matrix_title": "Matrice des Risques Quantitative (FAIR)",
     "risk_intro_1": "L'analyse quantitative de l'état actuel établit que les dettes techniques opérationnelles et les vulnérabilités exposent le ",
@@ -201,23 +316,42 @@
     "risk_intro_3": " annuels sous la norme internationale FAIR. Cette matrice de mosaïque consolide la distribution de cette exposition basée sur la fréquence des menaces (TEF) et la magnitude de perte (LM) de chaque constat d'audit:",
     "exposure_summary_title": "Résumé de l'Exposition et Carte thermique",
     "tef_title": "Critères de Fréquence des Menaces (TEF)",
-    "tef_headers": ["Niveau TEF", "Dénomination", "Fréquence Annualisée Estimée"],
+    "tef_headers": [
+      "Niveau TEF",
+      "Dénomination",
+      "Fréquence Annualisée Estimée"
+    ],
     "lm_title": "Critères de Magnitude de Perte Directe/Indirecte (LM)",
-    "lm_headers": ["Niveau LM", "Classification d'Impact", "Limite de Perte Financière"],
+    "lm_headers": [
+      "Niveau LM",
+      "Classification d'Impact",
+      "Limite de Perte Financière"
+    ],
     "top_risks_title": "Top des Risques Priorisés de la Tour",
     "top_risks_intro": "Principaux risques priorisés par leur impact direct sur la résilience du service et le coût de l'inaction (ALE):",
     "motivo_priorizacion": "Motif de priorisation: ",
     "detailed_risks_title": "Registre Détaillé des Constats d'Audit par Pilier",
     "detailed_risks_pilar_title": "Analyse des Vulnérabilités: ",
-    "detailed_risks_headers": ["ID", "Vulnérabilité et Évidences d'Audit", "Exposition et Risque de Business"],
+    "detailed_risks_headers": [
+      "ID",
+      "Vulnérabilité et Évidences d'Audit",
+      "Exposition et Risque de Business"
+    ],
     "next_steps_title": "Prochaines Étapes et Coût de l'Inaction",
     "appendix_a_title": "Annexe A: Liste des Abréviations",
     "appendix_a_intro": "Ce qui suit définit le glossaire des termes techniques et acronymes utilisés dans ce diagnostic technique actuel:",
-    "appendix_a_headers": ["Abréviation", "Signification / Description Technique"],
+    "appendix_a_headers": [
+      "Abréviation",
+      "Signification / Description Technique"
+    ],
     "appendix_b_title": "Annexe B: Clause de Limitation de Responsabilité",
     "appendix_c_title": "Annexe C: Registre de Garde des Sources d'Information",
     "appendix_c_intro": "Pour garantir la transparence, la véracité et l'immutabilité des informations collectées dans ce diagnostic technique, les sources documentaires utilisées sous garde d'audit sont listées et codées ci-dessous:",
-    "appendix_c_headers": ["Code de Référence", "Document Source / Origine des Données", "Portée de Garde et Description"],
+    "appendix_c_headers": [
+      "Code de Référence",
+      "Document Source / Origine des Données",
+      "Portée de Garde et Description"
+    ],
     "vulnerability_lbl": "Vulnérabilité Identifiée:\n",
     "evidence_lbl": "Preuve Forensique Littérale:\n",
     "impact_lbl": "Impact Opérationnel:\n",
@@ -233,7 +367,17 @@
     "bib_contexto_desc": " définissant les volumes d'inventaire, les centres de données et la criticité opérationnelle.",
     "bib_minutas": "Minutes et comptes rendus pris lors des sessions d'architecture sur site entre les leaders techniques de ",
     "bib_minutas_desc": " et l'équipe de conseil.",
-    "default_overview_text": "L'inventaire consolidé et l'évaluation de la plateforme de "
+    "default_overview_text": "L'inventaire consolidé et l'évaluation de la plateforme de ",
+    "conclusions_title": "Conclusions, Écarts et Coût de l’Inaction",
+    "asis_consolidated_title": "Résumé de la Situation (AS-IS Consolidé)",
+    "asis_consolidated_body": "L’état actuel de l’infrastructure de {tower_name}, sous-produit d’une évolution organique pour servir une opération critique, a atteint un point d’inflexion. La plateforme se caractérise par une fragmentation structurelle, des outils et des opérations en silos discrets pour les environnements sur site et cloud, et une dépendance systémique vis-à-vis des flux d’approbations et des processus manuels pour l’approvisionnement et le cycle de vie.",
+    "quick_diagnosis_title": "Forces et Écarts Clés (Diagnostic Rapide)",
+    "quick_diagnosis_intro": "Voici le bilan comparatif des forces trouvées face aux dettes opérationnelles les plus critiques :",
+    "operational_implications_title": "Principales Implications Opérationnelles",
+    "bottlenecks_bullet": "**Goulots d’étranglement systémiques :** Le modèle manuel d’approvisionnement des infrastructures limite la vitesse de livraison des initiatives stratégiques de l’entreprise.",
+    "delayed_faults_bullet": "**Détection tardive des pannes :** Le manque d’observabilité corrélée augmente le temps moyen de résolution (MTTR) des incidents critiques.",
+    "config_drift_bullet": "**Risque de dérive de configuration :** La maintenance manuelle des configurations rend difficile la démonstration en temps réel de la conformité réglementaire de {reg_frameworks}.",
+    "coi_title": "Coût de l’Inaction (Do Nothing) et Prochaines Étapes"
   },
   "ja": {
     "thousands_sep": ",",
@@ -249,10 +393,17 @@
     "maturity_lbl": "定性的成熟度レベル",
     "resilience_reading": "プラットフォームの回復力評価:",
     "radar_title": "加重成熟度ビジュアルプロファイル",
-    "justification_table_headers": ["評価対象の柱/機能", "現状スコア", "ギャップ分析とスコアの正当化"],
+    "justification_table_headers": [
+      "評価対象の柱/機能",
+      "現状スコア",
+      "ギャップ分析とスコアの正当化"
+    ],
     "platform_overview_title": "現在のインフラプラットフォームの概要説明",
     "swot_title": "強みと重大なギャップ",
-    "swot_headers": ["プラットフォームの強み", "重大なギャップと運用上の負債"],
+    "swot_headers": [
+      "プラットフォームの強み",
+      "重大なギャップと運用上の負債"
+    ],
     "transversal_title": "横断的機能の分析",
     "risk_matrix_title": "定量的リスクマトリックス (FAIR)",
     "risk_intro_1": "現状の定量的分析により、技術的な運用上の負債と特定された脆弱性が、対象の",
@@ -260,23 +411,42 @@
     "risk_intro_3": "にさらしていることが明らかになりました。このモザイクマトリックスは、各監査結果の脅威イベント頻度（TEF）と損失規模（LM）に基づいて、この露出の分布を統合します:",
     "exposure_summary_title": "リスク露出概要およびヒートマップ",
     "tef_title": "脅威イベント頻度基準 (TEF)",
-    "tef_headers": ["TEF レベル", "呼称", "年間推定頻度"],
+    "tef_headers": [
+      "TEF レベル",
+      "呼称",
+      "年間推定頻度"
+    ],
     "lm_title": "直接・間接的損失規模基準 (LM)",
-    "lm_headers": ["LM レベル", "影響分類", "金銭的損失限度"],
+    "lm_headers": [
+      "LM レベル",
+      "影響分類",
+      "金銭的損失限度"
+    ],
     "top_risks_title": "タワーの優先リスク上位",
     "top_risks_intro": "サービス回復力と未対策コスト（ALE）への直接的影響度順に優先順位をつけた主要なリスク:",
     "motivo_priorizacion": "優先理由: ",
     "detailed_risks_title": "柱別の詳細な監査結果登録",
     "detailed_risks_pilar_title": "脆弱性分析: ",
-    "detailed_risks_headers": ["ID", "脆弱性と監査証拠", "FAIR露出とビジネスリスク"],
+    "detailed_risks_headers": [
+      "ID",
+      "脆弱性と監査証拠",
+      "FAIR露出とビジネスリスク"
+    ],
     "next_steps_title": "今後のステップと未対策コスト",
     "appendix_a_title": "付録A：略語一覧",
     "appendix_a_intro": "以下は、本レポートで使用されている技術用語および略語の定義です:",
-    "appendix_a_headers": ["略語", "定義 / 技術的な詳細説明"],
+    "appendix_a_headers": [
+      "略語",
+      "定義 / 技術的な詳細説明"
+    ],
     "appendix_b_title": "付録B：責任制限免責条項",
     "appendix_c_title": "付録C：情報ソースの保管登録",
     "appendix_c_intro": "本レポートで収集された情報の透明性、真実性、および不変性を担保するため、以下に監査保管の下で使用されたドキュメントソースを一覧化してコード化します:",
-    "appendix_c_headers": ["参照コード", "ソースドキュメント / データオリジン", "保管範囲と詳細説明"],
+    "appendix_c_headers": [
+      "参照コード",
+      "ソースドキュメント / データオリジン",
+      "保管範囲と詳細説明"
+    ],
     "vulnerability_lbl": "特定された脆弱性:\n",
     "evidence_lbl": "原文の監査証拠:\n",
     "impact_lbl": "ビジネスへの影響:\n",
@@ -290,6 +460,16 @@
     "bib_cues_desc": "のエンジニアリングチームからの公式回答を収集。",
     "bib_contexto": "の戦略的アーキテクチャコンテキスト文書、インベントリ容量、データセンター、および運用の重大度を定義。",
     "bib_minutas": "の技術リーダーとコンサルティングチームの間で行われたオンサイトセッション中の議事録および記録。",
-    "default_overview_text": "現在のインフラプラットフォームの概要説明： "
+    "default_overview_text": "現在のインフラプラットフォームの概要説明： ",
+    "conclusions_title": "結論、ギャップ、および未対策コスト",
+    "asis_consolidated_title": "状況サマリー (統合AS-IS)",
+    "asis_consolidated_body": "重要な業務をサポートするための有機的な進化の副産物である{tower_name}インフラストラクチャの現状は、転換点に達しています。プラットフォームは、構造的な断片化、オンプレミスとクラウド環境用の個別のサイロでのツールと運用、およびプロビジョニングとライフサイクルの承認フローと手動プロセスへのシステム的な依存を特徴としています。",
+    "quick_diagnosis_title": "主な強みとギャップ (クイック診断)",
+    "quick_diagnosis_intro": "以下は、検出された強みと最も重要な運用上の負債との比較バランスです:",
+    "operational_implications_title": "主な運用上の影響",
+    "bottlenecks_bullet": "物理的なボトルネック： 手動のインフラストラクチャプロビジョニングモデルは、戦略的なビジネスイニシアチブの提供スピードを制限します。",
+    "delayed_faults_bullet": "障害検出の遅れ： 相関的な可観測性の欠如により、重大なインシデントの平均解決時間（MTTR）が増加します。",
+    "config_drift_bullet": "構成ドリフトのリスク： 手動の構成管理により、{reg_frameworks}のリアルタイムな規制準拠を証明することが困難になります。",
+    "coi_title": "未対策コスト（何もしない場合）と次のステップ"
   }
 }
