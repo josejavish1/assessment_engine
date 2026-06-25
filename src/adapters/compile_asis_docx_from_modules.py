@@ -74,7 +74,7 @@ LANG_VOCAB = {
         },
         "detailed_risks_title": "Registro Detallado de Hallazgos Forenses por Pilar",
         "detailed_risks_pilar_title": "Análisis de Vulnerabilidades: ",
-        "detailed_risks_headers": ["ID", "Vulnerabilidad y Evidencias de Auditoría (Deep Dive)", "Exposición FAIR y Riesgo de Negocio (ALE)"],
+        "detailed_risks_headers": ["ID", "Vulnerabilidad y Evidencias de Auditoría", "Exposición y Riesgo de Negocio"],
         "next_steps_title": "Siguientes Pasos y Coste de Inacción",
         "appendix_a_title": "Apéndice A: Lista de Abreviaturas",
         "appendix_a_intro": "A continuación, se define el glosario de términos técnicos y acrónimos utilizados en este diagnóstico técnico actual:",
@@ -138,7 +138,7 @@ LANG_VOCAB = {
         },
         "detailed_risks_title": "Detailed Registry of Forensic Findings by Pillar",
         "detailed_risks_pilar_title": "Vulnerability Analysis: ",
-        "detailed_risks_headers": ["ID", "Vulnerability and Audit Evidence (Deep Dive)", "FAIR Exposure and Business Risk (ALE)"],
+        "detailed_risks_headers": ["ID", "Vulnerability and Audit Evidence", "FAIR Exposure and Business Risk"],
         "next_steps_title": "Next Steps and Cost of Inaction",
         "appendix_a_title": "Appendix A: List of Abbreviations",
         "appendix_a_intro": "The following defines the glossary of technical terms and acronyms used in this current technical diagnosis:",
@@ -420,6 +420,23 @@ def parse_and_append_markdown_section(doc, md_path: Path, p_color_rgb, text_colo
             add_body_paragraph(doc, cleaned[2:], italic=True, style='Intense Quote', text_color_rgb=text_color_rgb)
         else:
             add_body_paragraph(doc, cleaned, text_color_rgb=text_color_rgb)
+
+
+def add_appendix_heading(doc, text: str, primary_color_rgb: Any) -> Any:
+    """Agrega un título de apéndice estilo Century Gothic, 16 Pt, Negrita, sin numeración."""
+    p = doc.add_paragraph()
+    p.paragraph_format.space_before = Pt(18)
+    p.paragraph_format.space_after = Pt(6)
+    p.paragraph_format.keep_with_next = True
+    run = p.add_run(text)
+    run.font.name = "Century Gothic"
+    run.font.size = Pt(16)
+    run.font.bold = True
+    if isinstance(primary_color_rgb, tuple):
+        run.font.color.rgb = RGBColor(*primary_color_rgb)
+    else:
+        run.font.color.rgb = primary_color_rgb
+    return p
 
 
 def extract_key_bullets_from_md(md_path: Path, section_marker: str) -> list[str]:
@@ -1095,7 +1112,7 @@ def compile_docx(tower_dir: str, output_path: str):
     # ---------------------------------------------------------
     # APÉNDICE A: GLOSARIO / LISTA DE ABREVIATURAS (Estilo FNMT páginas 4-5 - ALINEADO A LA IZQUIERDA - Estirada a la ventana - Punto 1)
     # ---------------------------------------------------------
-    add_heading(doc, vocab["appendix_a_title"], level=1, primary_color_rgb=p_color_rgb)
+    add_appendix_heading(doc, vocab["appendix_a_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_a_intro"], text_color_rgb=text_color_rgb)
     
     glossary_path = Path("engine_config/abbreviations_glossary.json")
@@ -1133,7 +1150,7 @@ def compile_docx(tower_dir: str, output_path: str):
     # ---------------------------------------------------------
     # APÉNDICE B: CLÁUSULA DE LIMITACIÓN DE RESPONSABILIDAD (DISCLAIMER)
     # ---------------------------------------------------------
-    add_heading(doc, vocab["appendix_b_title"], level=1, primary_color_rgb=p_color_rgb)
+    add_appendix_heading(doc, vocab["appendix_b_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["disclaimer_text_1"], text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, vocab["disclaimer_text_2"], text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, vocab["disclaimer_text_3"], text_color_rgb=text_color_rgb)
@@ -1141,7 +1158,7 @@ def compile_docx(tower_dir: str, output_path: str):
     # ---------------------------------------------------------
     # APÉNDICE C: REGISTRO DE CUSTODIA DE FUENTES DE INFORMACIÓN (Audit Trail - Punto 3)
     # ---------------------------------------------------------
-    add_heading(doc, vocab["appendix_c_title"], level=1, primary_color_rgb=p_color_rgb)
+    add_appendix_heading(doc, vocab["appendix_c_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_c_intro"], text_color_rgb=text_color_rgb)
     
     source_table = doc.add_table(rows=1, cols=3)
