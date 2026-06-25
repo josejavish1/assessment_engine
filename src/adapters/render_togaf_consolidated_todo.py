@@ -12,6 +12,8 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
+from assessment_engine.scripts.lib.text_utils import format_currency_custom
+
 
 def shade_cell(cell, color_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -43,7 +45,7 @@ def extract_number(text):
         clean = match.group(1).replace(".", "").replace(",", ".")
         try:
             return float(clean)
-        except:
+        except Exception:
             return 0.0
     return 0.0
 
@@ -70,7 +72,7 @@ def render_consolidated_todo(working_dir: str, output_path: str):
         with open(brand_path, "r", encoding="utf-8") as bf:
             brand = json.load(bf)
     styling = brand.get("styling", {})
-    color_blue = styling.get("primary_color_hex", color_blue)
+    color_blue = styling.get("primary_color_hex", "0072BC")
     
     locales_path = Path("engine_config/locales.json")
     locales_data = {}
@@ -142,12 +144,12 @@ def render_consolidated_todo(working_dir: str, output_path: str):
     row = table.add_row()
     set_cell_text(row.cells[0], "OPEX de Implantación")
     set_cell_text(row.cells[1], "Servicios profesionales de ingeniería para el diseño, despliegue y estabilización.")
-    set_cell_text(row.cells[2], f"{total_opex:,.2f} €".replace(",", "X").replace(".", ",").replace("X", "."), bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    set_cell_text(row.cells[2], format_currency_custom(total_opex, vocab, meta_lang), bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT)
     
     row = table.add_row()
     set_cell_text(row.cells[0], "CAPEX Estimado")
     set_cell_text(row.cells[1], "Hardware, licencias perpetuas o suscripciones asociadas (Estimación Mínima).")
-    set_cell_text(row.cells[2], f"{total_capex:,.2f} €".replace(",", "X").replace(".", ",").replace("X", "."), bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    set_cell_text(row.cells[2], format_currency_custom(total_capex, vocab, meta_lang), bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT)
     
     doc.add_paragraph("\nNota: Las estimaciones financieras son paramétricas (Bottom-Up) basadas en Unit Economics y el Work Breakdown Structure.")
     doc.add_page_break()

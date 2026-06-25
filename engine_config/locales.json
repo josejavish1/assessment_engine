@@ -107,7 +107,15 @@
     "evaluacion_madurez_title": "Evaluación de Niveles de Madurez",
     "conclusiones_tobe_title": "Conclusiones y Brechas para el TO-BE",
     "fortalezas_identificadas_title": "Fortalezas de Infraestructura Identificadas",
-    "debilidades_criticas_title": "Debilidades y Desafíos Críticos"
+    "debilidades_criticas_title": "Debilidades y Desafíos Críticos",
+    "band_initial": "Inicial",
+    "band_standardized": "Estandarizado",
+    "band_managed": "Gestionado",
+    "band_optimized": "Optimizado",
+    "currency_symbol": "€",
+    "currency_format": "EU",
+    "version_label": "Versión",
+    "date_label": "Junio 2026"
   },
   "en": {
     "thousands_sep": ",",
@@ -217,7 +225,15 @@
     "evaluacion_madurez_title": "Maturity Levels Assessment",
     "conclusiones_tobe_title": "Conclusions and Gaps for the TO-BE",
     "fortalezas_identificadas_title": "Identified Infrastructure Strengths",
-    "debilidades_criticas_title": "Critical Weaknesses and Challenges"
+    "debilidades_criticas_title": "Critical Weaknesses and Challenges",
+    "band_initial": "Initial",
+    "band_standardized": "Standardized",
+    "band_managed": "Managed",
+    "band_optimized": "Optimized",
+    "currency_symbol": "$",
+    "currency_format": "US",
+    "version_label": "Version",
+    "date_label": "June 2026"
   },
   "pt": {
     "thousands_sep": ".",
@@ -327,7 +343,15 @@
     "evaluacion_madurez_title": "Avaliação dos Níveis de Maturidade",
     "conclusiones_tobe_title": "Conclusões e Lacunas para o TO-BE",
     "fortalezas_identificadas_title": "Forças de Infraestrutura Identificadas",
-    "debilidades_criticas_title": "Fraquezas e Desafios Críticos"
+    "debilidades_criticas_title": "Fraquezas e Desafios Críticos",
+    "band_initial": "Inicial",
+    "band_standardized": "Padronizado",
+    "band_managed": "Gerenciado",
+    "band_optimized": "Otimizado",
+    "currency_symbol": "R$",
+    "currency_format": "US",
+    "version_label": "Versão",
+    "date_label": "Junho 2026"
   },
   "fr": {
     "thousands_sep": " ",
@@ -437,7 +461,15 @@
     "evaluacion_madurez_title": "Évaluation des Niveaux de Maturité",
     "conclusiones_tobe_title": "Conclusions et Écarts pour le TO-BE",
     "fortalezas_identificadas_title": "Forces d’Infrastructure Identifiées",
-    "debilidades_criticas_title": "Faiblesses et Défis Critiques"
+    "debilidades_criticas_title": "Faiblesses et Défis Critiques",
+    "band_initial": "Initial",
+    "band_standardized": "Standardisé",
+    "band_managed": "Géré",
+    "band_optimized": "Optimisé",
+    "currency_symbol": "€",
+    "currency_format": "EU",
+    "version_label": "Version",
+    "date_label": "Juin 2026"
   },
   "ja": {
     "thousands_sep": ",",
@@ -545,6 +577,14 @@
     "evaluacion_madurez_title": "成熟度レベルの評価",
     "conclusiones_tobe_title": "結論とTO-BEへのギャップ",
     "fortalezas_identificadas_title": "特定された強み",
-    "debilidades_criticas_title": "重大な弱みと課題"
+    "debilidades_criticas_title": "重大な弱みと課題",
+    "band_initial": "初期",
+    "band_standardized": "標準化",
+    "band_managed": "管理済",
+    "band_optimized": "最適化",
+    "currency_symbol": "¥",
+    "currency_format": "US",
+    "version_label": "バージョン",
+    "date_label": "2026年6月"
   }
 }

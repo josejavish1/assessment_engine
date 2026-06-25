@@ -53,8 +53,16 @@ class _YamlModule(Protocol):
 
 
 # Helper functions (side-effect free)
-def derive_maturity_band(score: float) -> str:
-    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+def derive_maturity_band(score: float, vocab: Optional[dict[str, Any]] = None) -> str:
+    v = vocab or {}
+    if score < 2.0:
+        return v.get("band_initial", "Inicial")
+    elif score < 3.0:
+        return v.get("band_standardized", "Estandarizado")
+    elif score < 4.0:
+        return v.get("band_managed", "Gestionado")
+    else:
+        return v.get("band_optimized", "Optimizado")
 
 
 def infer_priority_from_size(sizing: str) -> str:
@@ -533,7 +541,7 @@ def enrich_annex_payload(
         {
             "pillar_label": pillar.pilar_name,
             "score_display": str(pillar.score),
-            "maturity_band": derive_maturity_band(pillar.score),
+            "maturity_band": derive_maturity_band(pillar.score, vocab),
             "executive_reading": derive_pillar_executive_reading(
                 pillar, case_input_data, doc_lang
             ),
@@ -546,7 +554,7 @@ def enrich_annex_payload(
         )
 
     result_payload.executive_summary.global_score = f"{avg_score} / 5.0"
-    result_payload.executive_summary.global_band = derive_maturity_band(avg_score)
+    result_payload.executive_summary.global_band = derive_maturity_band(avg_score, vocab)
     if str(avg_target_score) not in str(
         result_payload.executive_summary.target_maturity
     ):
