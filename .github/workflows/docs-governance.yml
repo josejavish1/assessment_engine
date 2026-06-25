@@ -32,4 +32,6 @@ jobs:
         run: |
           python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
             --repo-root . \
-            --documentation-map docs/documentation-map.yaml
+            --documentation-map docs/documentation-map.yaml \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA"

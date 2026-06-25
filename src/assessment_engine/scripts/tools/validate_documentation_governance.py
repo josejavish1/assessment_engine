@@ -7,7 +7,7 @@ import subprocess
 from datetime import date, datetime
 from pathlib import Path
 
-import yaml  # type: ignore
+import yaml  # type: ignore[import-untyped]
 
 VALID_STATUSES = {"Verified", "Needs Review", "Draft", "Deprecated"}
 VALID_DOC_TYPES = {"canonical", "operational", "reference_generated", "archived"}
@@ -21,6 +21,9 @@ FRONT_MATTER_REQUIRED = {
     "doc_type",
 }
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+DEFAULT_COVERAGE_INCLUDE = ["README.md", "AGENTS.md", "CHATGPT.md", "docs/**/*.md"]
+DEFAULT_COVERAGE_EXCLUDE = ["docs/reference/generated/legacy-gemini/**"]
 
 
 def load_yaml(path: Path) -> dict:
@@ -60,8 +63,137 @@ def is_subpath(changed_path: str, required_path: str) -> bool:
     return changed_path.startswith(required_path.rstrip("/") + "/")
 
 
+def normalize_repo_path(path: Path, repo_root: Path) -> str:
+    return path.resolve().relative_to(repo_root.resolve()).as_posix()
+
+
+def should_validate_markdown_target(target: str) -> bool:
+    stripped = target.strip()
+    if not stripped or stripped.startswith("#"):
+        return False
+    if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", stripped):
+        return False
+    return True
+
+
+def markdown_link_target_path(current_path: Path, target: str) -> Path | None:
+    if not should_validate_markdown_target(target):
+        return None
+
+    local_target = target.split("#", 1)[0].split("?", 1)[0]
+    if not local_target:
+        return None
+    return (current_path.parent / local_target).resolve()
+
+
+def validate_markdown_links(current_path: Path, entry_path: str, errors: list[str]) -> None:
+    text = current_path.read_text(encoding="utf-8")
+    for match in MARKDOWN_LINK_RE.finditer(text):
+        target_path = markdown_link_target_path(current_path, match.group(1))
+        if target_path is None:
+            continue
+        if not target_path.exists():
+            errors.append(
+                f"{entry_path}: markdown link target does not exist: {match.group(1)}"
+            )
+
+
+def is_path_covered_by_entry(path: str, entry_path: str, kind: str) -> bool:
+    if kind == "document":
+        return path == entry_path
+    if kind == "collection":
+        return is_subpath(path, entry_path)
+    return False
+
+
 def matches_any_pattern(path: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
+
+
+def validate_front_matter_fields(
+    front_matter: dict, entry_path: str, error_prefix: str, errors: list[str]
+) -> None:
+    missing_front_matter = sorted(FRONT_MATTER_REQUIRED - set(front_matter))
+    if missing_front_matter:
+        errors.append(
+            f"{entry_path}: {error_prefix} missing fields: "
+            + ", ".join(missing_front_matter)
+        )
+        return
+
+    if front_matter.get("status") not in VALID_STATUSES:
+        errors.append(f"{entry_path}: {error_prefix} has invalid status")
+    if front_matter.get("doc_type") not in VALID_DOC_TYPES:
+        errors.append(f"{entry_path}: {error_prefix} has invalid doc_type")
+    if not isinstance(
+        front_matter.get("source_of_truth"), list
+    ) or not front_matter.get("source_of_truth"):
+        errors.append(
+            f"{entry_path}: {error_prefix} source_of_truth must be a non-empty list"
+        )
+    if not isinstance(front_matter.get("applies_to"), list) or not front_matter.get(
+        "applies_to"
+    ):
+        errors.append(
+            f"{entry_path}: {error_prefix} applies_to must be a non-empty list"
+        )
+    if not is_valid_date_value(front_matter.get("last_verified_against", "")):
+        errors.append(
+            f"{entry_path}: {error_prefix} last_verified_against must use YYYY-MM-DD"
+        )
+
+
+def validate_documentation_coverage(
+    repo_root: Path, documentation_map: dict, entries: list[dict], errors: list[str]
+) -> None:
+    coverage = documentation_map.get("coverage", {})
+    include_patterns = coverage.get("include", DEFAULT_COVERAGE_INCLUDE)
+    exclude_patterns = coverage.get("exclude", DEFAULT_COVERAGE_EXCLUDE)
+
+    if not isinstance(include_patterns, list) or not include_patterns:
+        errors.append("documentation-map.yaml coverage.include must be a non-empty list")
+        return
+    if not isinstance(exclude_patterns, list):
+        errors.append("documentation-map.yaml coverage.exclude must be a list")
+        return
+
+    governed_paths: set[str] = set()
+    for pattern in include_patterns:
+        if not isinstance(pattern, str) or not pattern:
+            errors.append("documentation-map.yaml coverage.include entries must be strings")
+            continue
+        for discovered_path in repo_root.glob(pattern):
+            if discovered_path.is_file():
+                governed_paths.add(normalize_repo_path(discovered_path, repo_root))
+
+    for governed_path in sorted(governed_paths):
+        if matches_any_pattern(governed_path, exclude_patterns):
+            continue
+
+        if not any(
+            is_path_covered_by_entry(governed_path, entry["path"], entry["kind"])
+            for entry in entries
+            if isinstance(entry.get("path"), str)
+            and isinstance(entry.get("kind"), str)
+        ):
+            errors.append(
+                f"{governed_path}: markdown document is not covered by documentation-map"
+            )
+            continue
+
+        absolute_path = repo_root / governed_path
+        front_matter = read_front_matter(absolute_path)
+        if front_matter is None:
+            errors.append(
+                f"{governed_path}: covered markdown document is missing YAML front matter"
+            )
+            continue
+
+        validate_front_matter_fields(
+            front_matter, governed_path, "covered markdown front matter", errors
+        )
+        if front_matter.get("doc_type") in {"canonical", "operational"}:
+            validate_markdown_links(absolute_path, governed_path, errors)
 
 
 def validate_path_list_field(
@@ -203,33 +335,9 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
             )
             return
 
-        missing_front_matter = sorted(FRONT_MATTER_REQUIRED - set(front_matter))
-        if missing_front_matter:
-            errors.append(
-                f"{entry_path}: front matter missing fields: {', '.join(missing_front_matter)}"
-            )
-            return
-
-        if front_matter.get("status") not in VALID_STATUSES:
-            errors.append(f"{entry_path}: front matter has invalid status")
-        if front_matter.get("doc_type") not in VALID_DOC_TYPES:
-            errors.append(f"{entry_path}: front matter has invalid doc_type")
-        if not isinstance(
-            front_matter.get("source_of_truth"), list
-        ) or not front_matter.get("source_of_truth"):
-            errors.append(
-                f"{entry_path}: front matter source_of_truth must be a non-empty list"
-            )
-        if not isinstance(front_matter.get("applies_to"), list) or not front_matter.get(
-            "applies_to"
-        ):
-            errors.append(
-                f"{entry_path}: front matter applies_to must be a non-empty list"
-            )
-        if not is_valid_date_value(front_matter.get("last_verified_against", "")):
-            errors.append(
-                f"{entry_path}: front matter last_verified_against must use YYYY-MM-DD"
-            )
+        validate_front_matter_fields(front_matter, entry_path, "front matter", errors)
+        if doc_type in {"canonical", "operational"}:
+            validate_markdown_links(absolute_path, entry_path, errors)
 
 
 def validate_automation_rules(
@@ -364,6 +472,7 @@ def validate_documentation_governance(
         errors.append("documentation-map.yaml must define owners")
 
     seen_paths: set[str] = set()
+    valid_entries: list[dict] = []
     for entry in documentation_map["entries"]:
         if not isinstance(entry, dict):
             errors.append("documentation-map.yaml contains a non-object entry")
@@ -372,8 +481,14 @@ def validate_documentation_governance(
         if entry_path in seen_paths:
             errors.append(f"Duplicate documentation-map entry for path: {entry_path}")
             continue
-        seen_paths.add(entry_path)  # type: ignore
+        if not isinstance(entry_path, str):
+            errors.append("documentation-map entry path must be a string")
+            continue
+        seen_paths.add(entry_path)
         validate_entry(repo_root, entry, errors)
+        valid_entries.append(entry)
+
+    validate_documentation_coverage(repo_root, documentation_map, valid_entries, errors)
 
     changed_files = git_changed_files(repo_root, base_sha, head_sha)
     validate_automation_rules(
