@@ -5,9 +5,9 @@ on:
     - cron: '0 2 * * *' # Nightly
   pull_request:
     paths:
-      - 'src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py'
-      - 'src/assessment_engine/prompts/**'
-      - 'src/assessment_engine/schemas/**'
+      - 'src/application/tools/run_product_owner_orchestrator.py'
+      - 'src/domain/prompts/**'
+      - 'src/domain/schemas/**'
       - 'tests/agent_evals/**'
 
 jobs:

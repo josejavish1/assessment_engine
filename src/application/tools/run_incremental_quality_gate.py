@@ -6,7 +6,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-LIVE_PYTHON_PREFIXES = ("src/assessment_engine/", "tests/", "working/")
+LIVE_PYTHON_PREFIXES = (
+    "src/assessment_engine/",
+    "src/application/",
+    "src/infrastructure/",
+    "src/domain/",
+    "src/adapters/",
+    "src/ports/",
+    "tests/",
+    "working/"
+)
 ZERO_SHA_RE = re.compile(r"^0+$")
 
 
