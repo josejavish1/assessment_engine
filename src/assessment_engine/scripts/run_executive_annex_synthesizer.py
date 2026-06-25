@@ -32,6 +32,10 @@ from assessment_engine.scripts.lib.config_loader import (
     resolve_model_profile_for_role,
 )
 from assessment_engine.scripts.lib.contract_utils import robust_load_payload
+from assessment_engine.scripts.lib.maturity_band import (
+    ANNEX_MATURITY_BANDS,
+    resolve_maturity_band,
+)
 from assessment_engine.scripts.lib.runtime_paths import (
     resolve_annex_template_payload_path,
     resolve_blueprint_payload_path,
