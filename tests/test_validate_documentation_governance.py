@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yaml  # type: ignore
+import yaml  # type: ignore[import-untyped]
 
 from assessment_engine.scripts.tools import (
     validate_documentation_governance as validator,
 )
 
 
-def _write_markdown(path: Path, title: str = "Doc") -> None:
+def _write_markdown(path: Path, title: str = "Doc", body: str = "") -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "\n".join(
@@ -28,6 +28,7 @@ def _write_markdown(path: Path, title: str = "Doc") -> None:
                 "",
                 f"# {title}",
                 "",
+                body,
             ]
         ),
         encoding="utf-8",
@@ -182,3 +183,69 @@ def test_source_linked_review_configuration_must_reference_real_paths(
     assert errors == [
         "docs/example.md: review_when_source_changes path does not exist: src/missing.py"
     ]
+
+
+def test_markdown_link_targets_must_exist(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "src").mkdir()
+    (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
+    _write_markdown(repo_root / "docs/example.md", body="[missing](missing.md)")
+
+    doc_map = repo_root / "docs/documentation-map.yaml"
+    doc_map.parent.mkdir(parents=True, exist_ok=True)
+    _write_map(
+        doc_map,
+        [
+            {
+                "path": "docs/example.md",
+                "kind": "document",
+                "title": "Example doc",
+                "doc_type": "canonical",
+                "status": "Verified",
+                "owner": "docs-governance",
+                "applies_to": ["humans", "ai-agents"],
+                "source_of_truth": ["src/example.py"],
+                "last_verified_against": "2026-04-30",
+                "notes": "Example",
+            }
+        ],
+    )
+
+    errors = validator.validate_documentation_governance(repo_root, doc_map, None, None)
+
+    assert any("markdown link target does not exist: missing.md" in e for e in errors)
+
+
+def test_markdown_coverage_requires_map_entry_or_collection(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "src").mkdir()
+    (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
+    _write_markdown(repo_root / "docs/example.md")
+    _write_markdown(repo_root / "docs/unmapped.md")
+
+    doc_map = repo_root / "docs/documentation-map.yaml"
+    doc_map.parent.mkdir(parents=True, exist_ok=True)
+    _write_map(
+        doc_map,
+        [
+            {
+                "path": "docs/example.md",
+                "kind": "document",
+                "title": "Example doc",
+                "doc_type": "canonical",
+                "status": "Verified",
+                "owner": "docs-governance",
+                "applies_to": ["humans", "ai-agents"],
+                "source_of_truth": ["src/example.py"],
+                "last_verified_against": "2026-04-30",
+                "notes": "Example",
+            }
+        ],
+    )
+
+    errors = validator.validate_documentation_governance(repo_root, doc_map, None, None)
+
+    assert any(
+        "docs/unmapped.md: markdown document is not covered by documentation-map" in e
+        for e in errors
+    )

@@ -1,3 +1,15 @@
+---
+status: Needs Review
+owner: docs-governance
+source_of_truth:
+  - docs/
+  - src/assessment_engine/
+last_verified_against: 2026-06-25
+applies_to:
+  - humans
+doc_type: operational
+---
+
 # Auditoría de Documentación y Código - Resultados
 
 ## 1. Introducción
@@ -121,4 +133,3 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 *   **Hallazgos:**
     *   **(Claridad)**: El código es claro, bien estructurado y sigue el principio de responsabilidad única.
     *   **(Docstrings)**: Faltan docstrings en las funciones. Aunque los nombres de las funciones son descriptivos, las docstrings ayudarían a entender qué tipo de configuración carga cada una sin necesidad de leer el código.
-

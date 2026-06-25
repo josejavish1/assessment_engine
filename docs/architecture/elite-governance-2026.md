@@ -19,7 +19,7 @@ source_of_truth:
 
 Este documento define la arquitectura "The Apex", una capa de gobernanza y supervisión diseñada para garantizar la máxima calidad, fiabilidad y cumplimiento normativo de los artefactos generados por el `assessment-engine`. The Apex se compone de tres agentes especializados que operan en concierto para formar un sistema inmunitario digital que protege la integridad del pipeline.
 
-Esta arquitectura es la implementación de referencia para la operación en **Modo de Gobernanza**, como se describe en el [documento de arquitectura del sistema](./SYSTEM_ARCHITECTURE.md).
+Esta arquitectura es la implementación de referencia para la operación en **Modo de Gobernanza**, como se describe en el [documento de arquitectura del sistema](../SYSTEM_ARCHITECTURE.md).
 
 ## 2. Principios de Diseño
 

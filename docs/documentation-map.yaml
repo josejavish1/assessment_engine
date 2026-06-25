@@ -237,9 +237,9 @@ entries:
 
   - path: .github/workflows/orchestrator-pr-reconcile.yml
     kind: document
-    title: Orchestrator PR reconciliation watcher
+    title: Open PR branch reconciler
     doc_type: operational
-    status: Verified
+    status: Needs Review
     owner: docs-governance
     applies_to:
       - humans
@@ -247,25 +247,24 @@ entries:
     source_of_truth:
       - docs/operations/product-owner-orchestrator.md
       - docs/operations/engineering-quality-gates.md
-      - .github/scripts/orchestrator-gemini-executor.sh
-      - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
-    last_verified_against: 2026-05-01
-    notes: Workflow que reanuda automáticamente PRs gestionadas por el orquestador cuando llegan checks, comentarios o ejecuciones manuales.
+      - .github/scripts/reconcile_prs.sh
+    last_verified_against: 2026-06-25
+    notes: Workflow que rebasea ramas de PR abiertas no draft contra main tras cambios en main o ejecución manual; no reanuda resume-pr ni ejecuta agentes.
 
   - path: .github/scripts/orchestrator-gemini-executor.sh
     kind: document
-    title: GitHub Actions executor wrapper for the product owner orchestrator
+    title: Local Gemini executor wrapper for the product owner orchestrator
     doc_type: operational
-    status: Verified
+    status: Needs Review
     owner: docs-governance
     applies_to:
       - humans
       - ai-agents
     source_of_truth:
       - docs/operations/product-owner-orchestrator.md
-      - .github/workflows/orchestrator-pr-reconcile.yml
-    last_verified_against: 2026-05-01
-    notes: Wrapper del repo que autentica Copilot CLI en GitHub Actions y ejecuta el prompt de reconciliación contra la rama activa.
+      - .github/scripts/orchestrator-gemini-executor.sh
+    last_verified_against: 2026-06-25
+    notes: Wrapper de executor Gemini disponible en el repo; no está cableado por el reconciliador actual de PRs.
 
   - path: bin/po-run
     kind: document
@@ -1152,6 +1151,21 @@ entries:
       - src/assessment_engine/
     last_verified_against: 2026-04-30
     notes: Colección archivada en la capa neutral de referencia; puede consultarse, pero ya no debe competir con la documentación canónica.
+
+  - path: docs/audits
+    kind: collection
+    title: Documentation and code audits
+    doc_type: operational
+    status: Needs Review
+    owner: docs-governance
+    applies_to:
+      - humans
+      - ai-agents
+    source_of_truth:
+      - docs/
+      - src/assessment_engine/
+    last_verified_against: 2026-06-25
+    notes: Material de auditoría y backlog; útil para seguimiento, pero no debe leerse como verdad actual sin reverificación.
 
   - path: docs/documentation_audit.md
     kind: document
