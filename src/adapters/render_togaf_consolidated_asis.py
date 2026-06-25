@@ -27,12 +27,6 @@ COLOR_BLUE = "0072BC"
 COLOR_HEADER_BG = "D9EAF7"
 COLOR_ROW_ALT = "F2F2F2"
 
-def clean_text_for_word(text):
-    """Convert an object to a string, returning an empty string if the input is None."""
-    if text is None:
-        return ""
-    return str(text)
-
 def set_cell_text_custom(cell, text, bold=False, font_size=9, align=WD_ALIGN_PARAGRAPH.LEFT, color_rgb=None):
     r"""{'docstring': "Sets and formats the text content of a `docx` table cell.\n\nClears any existing content within the specified cell and applies new text\nwith custom formatting. The function manipulates the cell's first paragraph\nto set alignment, spacing, and line height. A new text run is then added,\nprocessing the input text via `clean_text_for_word`, and its font is styled\nwith the provided bold, size, and color attributes.\n\nArgs:\n    cell (docx.table._Cell): The `python-docx` cell object to modify.\n    text (str): The string content to insert into the cell. This text is\n        sanitized by the `clean_text_for_word` function before insertion.\n    bold (bool, optional): If True, formats the text as bold. Defaults to\n        False.\n    font_size (int, optional): The font size in points (Pt). Defaults to 9.\n    align (WD_ALIGN_PARAGRAPH, optional): An enum member from\n        `docx.enum.text.WD_ALIGN_PARAGRAPH` specifying horizontal\n        alignment. Defaults to `WD_ALIGN_PARAGRAPH.LEFT`.\n    color_rgb (docx.shared.RGBColor, optional): A `python-docx` `RGBColor`\n        object for the font color. If None, the document's default color\n        is used. Defaults to None.\n\nReturns:\n    None."}."""
     cell.text = ""
@@ -199,7 +193,7 @@ def generate_radar_chart(labels: list, actual_scores: list, target_scores: list,
     ax.set_theta_direction(-1)
     
     import textwrap
-    wrapped_labels = [textwrap.fill(l, 15) for l in labels]
+    wrapped_labels = [textwrap.fill(lbl, 15) for lbl in labels]
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(wrapped_labels, size=8)
     

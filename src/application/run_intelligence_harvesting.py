@@ -123,7 +123,8 @@ async def probe_ai(prompt: str, schema: Type[BaseModel] = None, model_name: str 
             data["_links"] = links
             return data
         return {"text": text or "", "_links": links}
-    except: return {"text": "", "_links": []}
+    except Exception:
+        return {"text": "", "_links": []}
 
 class SourceVault:
     """Extracts brand and metric intelligence 'atoms' from unstructured data.
