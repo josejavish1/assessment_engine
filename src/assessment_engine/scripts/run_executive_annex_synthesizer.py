@@ -68,7 +68,7 @@ def infer_priority_from_size(sizing: str) -> str:
     return "Media"
 
 
-def truncate_list(items, limit):
+def truncate_list(items: Any, limit: int) -> Any:
     return items[:limit] if isinstance(items, list) else items
 
 
@@ -333,9 +333,9 @@ def derive_pillar_executive_reading(
     language: str = "es",
 ) -> str:
     doc_lang = str(language or "es").lower()
-    
+
     # 1. Agrupar las respuestas del cuestionario por pilar ID
-    answers_by_pilar = {}
+    answers_by_pilar: dict[str, list[Any]] = {}
     if case_input_data and "answers" in case_input_data:
         for ans in case_input_data.get("answers", []):
             qid = ans.get("question_id", "")
@@ -343,27 +343,33 @@ def derive_pillar_executive_reading(
             if p_id not in answers_by_pilar:
                 answers_by_pilar[p_id] = []
             answers_by_pilar[p_id].append(ans)
-            
+
     # 2. Buscar el ID del pilar actual
     pilar_id = getattr(pillar, "pilar_id", getattr(pillar, "pilar_code", None))
     if not pilar_id and answers_by_pilar:
         pilar_name_clean = str(pillar.pilar_name).strip().lower()
         for pid, ans_list in answers_by_pilar.items():
-            if ans_list and str(ans_list[0].get("pillar_name")).strip().lower() == pilar_name_clean:
+            if (
+                ans_list
+                and str(ans_list[0].get("pillar_name")).strip().lower()
+                == pilar_name_clean
+            ):
                 pilar_id = pid
                 break
 
     # Comportamiento fallback si no hay datos de caso o mapeo
     if not pilar_id or pilar_id not in answers_by_pilar:
-        primary_finding = pillar.health_check_asis[0] if pillar.health_check_asis else None
+        primary_finding = (
+            pillar.health_check_asis[0] if pillar.health_check_asis else None
+        )
         if primary_finding:
             return take_complete_sentences(primary_finding.impact)
         if pillar.target_architecture_tobe.vision:
             return take_complete_sentences(pillar.target_architecture_tobe.vision)
         return take_complete_sentences(
             "La capacidad requiere priorización ejecutiva para cerrar la brecha de madurez observada."
-            if doc_lang == "es" else
-            "The capability requires executive prioritization to bridge the observed maturity gap."
+            if doc_lang == "es"
+            else "The capability requires executive prioritization to bridge the observed maturity gap."
         )
 
     # 3. Construcción del bloque SOTA explicable
@@ -374,28 +380,37 @@ def derive_pillar_executive_reading(
             k_name = ans.get("kpi_name", "KPI")
             val = float(ans.get("value", 3.0))
             qid = ans.get("question_id", "")
-            
+
             # Buscar el finding cualitativo real del pilar en health_check_asis
             finding_text = None
             if hasattr(pillar, "health_check_asis") and pillar.health_check_asis:
                 for hc in pillar.health_check_asis:
                     hc_cap = str(hc.capability).strip().lower()
-                    if k_name.strip().lower() in hc_cap or hc_cap in k_name.strip().lower() or qid.lower() in str(hc.node_id).lower():
+                    if (
+                        k_name.strip().lower() in hc_cap
+                        or hc_cap in k_name.strip().lower()
+                        or qid.lower() in str(hc.node_id).lower()
+                    ):
                         finding_text = hc.finding
                         break
-            
+
             if not finding_text:
                 if val <= 2.0:
-                    finding_text = "Dificultad material en la gestión de esta capacidad, requiriendo estandarización." if doc_lang == "es" else "Material difficulty in managing this capability, requiring standardization."
+                    finding_text = (
+                        "Dificultad material en la gestión de esta capacidad, requiriendo estandarización."
+                        if doc_lang == "es"
+                        else "Material difficulty in managing this capability, requiring standardization."
+                    )
                 else:
-                    finding_text = "Nivel de madurez adecuado, operando de forma estable." if doc_lang == "es" else "Adequate maturity level, operating in a stable manner."
-                    
-            kpis.append({
-                "name": k_name,
-                "score": val,
-                "finding": finding_text,
-                "qid": qid
-            })
+                    finding_text = (
+                        "Nivel de madurez adecuado, operando de forma estable."
+                        if doc_lang == "es"
+                        else "Adequate maturity level, operating in a stable manner."
+                    )
+
+            kpis.append(
+                {"name": k_name, "score": val, "finding": finding_text, "qid": qid}
+            )
         except Exception:
             pass
 
@@ -404,44 +419,60 @@ def derive_pillar_executive_reading(
         lines.append("• Situación y Diagnóstico de Capacidades:")
         gaps = []
         for k in kpis:
-            lines.append(f"   - {k['name']}: {k['finding']} [Ref: Cuestionario, {k['qid']}]")
-            if k['score'] <= 3.0:
-                gaps.append(k['name'])
-                
+            lines.append(
+                f"   - {k['name']}: {k['finding']} [Ref: Cuestionario, {k['qid']}]"
+            )
+            if k["score"] <= 3.0:
+                gaps.append(k["name"])
+
         if gaps:
-            lines.append("• Brechas y Consecuencias Operativas: Limitación en la madurez y automatización en: " + ", ".join(gaps) + ".")
+            lines.append(
+                "• Brechas y Consecuencias Operativas: Limitación en la madurez y automatización en: "
+                + ", ".join(gaps)
+                + "."
+            )
         else:
-            lines.append("• Brechas y Consecuencias Operativas: No se identifican desviaciones críticas de alta prioridad.")
+            lines.append(
+                "• Brechas y Consecuencias Operativas: No se identifican desviaciones críticas de alta prioridad."
+            )
     else:
         lines.append("• Capability Status and Diagnosis:")
         gaps = []
         for k in kpis:
-            lines.append(f"   - {k['name']}: {k['finding']} [Ref: Questionnaire, {k['qid']}]")
-            if k['score'] <= 3.0:
-                gaps.append(k['name'])
-                
+            lines.append(
+                f"   - {k['name']}: {k['finding']} [Ref: Questionnaire, {k['qid']}]"
+            )
+            if k["score"] <= 3.0:
+                gaps.append(k["name"])
+
         if gaps:
-            lines.append("• Operational Gaps and Consequences: Limited maturity and automation in: " + ", ".join(gaps) + ".")
+            lines.append(
+                "• Operational Gaps and Consequences: Limited maturity and automation in: "
+                + ", ".join(gaps)
+                + "."
+            )
         else:
-            lines.append("• Operational Gaps and Consequences: No high-priority critical deviations identified.")
+            lines.append(
+                "• Operational Gaps and Consequences: No high-priority critical deviations identified."
+            )
 
     # 4. Atribución Causal Matemática (Explicabilidad de Varianza)
     if kpis:
         p_exact_score = float(getattr(pillar, "score", 3.0))
         lowest_kpi = min(kpis, key=lambda x: x["score"])
         highest_kpi = max(kpis, key=lambda x: x["score"])
-        
+
         if doc_lang == "es":
             causal_justification = (
                 f"• Justificación de Nota ({p_exact_score:.2f}): La puntuación del pilar se encuentra principalmente lastrada por "
-                f"las brechas críticas en \"{lowest_kpi['name']}\" ({lowest_kpi['score']:.1f} / 5.0), a pesar de contar con un soporte robusto "
-                f"y mayor madurez en \"{highest_kpi['name']}\" ({highest_kpi['score']:.1f} / 5.0)."
+                f'las brechas críticas en "{lowest_kpi["name"]}" ({lowest_kpi["score"]:.1f} / 5.0), a pesar de contar con un soporte robusto '
+                f'y mayor madurez en "{highest_kpi["name"]}" ({highest_kpi["score"]:.1f} / 5.0).'
             )
         else:
             causal_justification = (
                 f"• Score Justification ({p_exact_score:.2f}): The pillar score is primarily penalized by "
-                f"critical gaps in \"{lowest_kpi['name']}\" ({lowest_kpi['score']:.1f} / 5.0), despite robust support "
-                f"and higher maturity in \"{highest_kpi['name']}\" ({highest_kpi['score']:.1f} / 5.0)."
+                f'critical gaps in "{lowest_kpi["name"]}" ({lowest_kpi["score"]:.1f} / 5.0), despite robust support '
+                f'and higher maturity in "{highest_kpi["name"]}" ({highest_kpi["score"]:.1f} / 5.0).'
             )
         lines.append(causal_justification)
 
@@ -548,13 +579,13 @@ def enrich_annex_payload(
     return result_payload
 
 
-def load_yaml_config(filename: str) -> dict:
+def load_yaml_config(filename: str) -> dict[str, Any]:
     yaml = cast(_YamlModule, import_module("yaml"))
     filepath = (
         Path(__file__).resolve().parent.parent / "prompts" / "registry" / filename
     )
     with filepath.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        return cast(dict[str, Any], yaml.safe_load(f))
 
 
 def build_synthesis_prompt(
@@ -646,7 +677,7 @@ async def generate_synthesis(
 
 
 # --- I/O Orchestrator Function ---
-async def synthesize_annex(client_name: str, tower_id: str):
+async def synthesize_annex(client_name: str, tower_id: str) -> None:
     """
     Orquesta el proceso de síntesis del anexo ejecutivo. Maneja I/O.
     """
