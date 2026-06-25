@@ -1,4 +1,5 @@
 import csv
+import html
 import json
 import sys
 from datetime import datetime
@@ -379,7 +380,7 @@ def parse_and_append_markdown_section(doc, md_path: Path, p_color_rgb, text_colo
         return
         
     with open(md_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+        lines = [html.unescape(line) for line in f.readlines()]
         
     recording = (start_header is None)
     for line in lines:
@@ -426,7 +427,7 @@ def extract_key_bullets_from_md(md_path: Path, section_marker: str) -> list[str]
     if not md_path.exists():
         return []
     with open(md_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+        lines = [html.unescape(line) for line in f.readlines()]
     bullets = []
     recording = False
     for line in lines:

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from infrastructure.epistemic_graph import EpistemicGraph
+from assessment_engine.scripts.lib.text_utils import deep_unescape
 
 
 class BaseSovereignPolicy(ABC):
@@ -514,6 +515,7 @@ class SovereignPolicyEngine:
 
     def compile(self, blueprint_payload: Dict[str, Any]) -> Dict[str, Any]:
         """Compiles the payload by passing it through all active policy filters."""
+        blueprint_payload = deep_unescape(blueprint_payload)
         for policy in self.policies:
             blueprint_payload = policy.evaluate_and_patch(self.graph, blueprint_payload)
         return blueprint_payload

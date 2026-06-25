@@ -4,8 +4,23 @@ Proporciona utilidades centralizadas para el saneamiento y normalización de tex
 especialmente para su uso en renderizadores de Word/XML.
 """
 
+import html
 import re
 import unicodedata
+
+
+def deep_unescape(obj):
+    """
+    Recorre de forma recursiva cualquier estructura de datos (dict, list, str)
+    y sanea/des-escapa entidades HTML de todos los strings.
+    """
+    if isinstance(obj, dict):
+        return {k: deep_unescape(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [deep_unescape(item) for item in obj]
+    elif isinstance(obj, str):
+        return html.unescape(obj)
+    return obj
 
 
 def normalize_spaces(value: str) -> str:
