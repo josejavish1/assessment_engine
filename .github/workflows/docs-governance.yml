@@ -39,7 +39,7 @@ jobs:
       - name: SOTA Google-Style & Language Gate
         run: |
           # 1. Validate docstrings, TODOs, and commented-out code using Ruff
-          ruff check . --select D,TD,ERA --pydocstyle-convention google
+          ruff check . --select D,TD,ERA
 
           # 2. Validate that 100% of source comments and descriptions are in Tier 1 English
           python scripts/enforce_english_comments.py $(find src/ -name "*.py" | grep -v "_legacy")
