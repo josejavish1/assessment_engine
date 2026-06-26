@@ -59,11 +59,11 @@ Si un documento narrativo contradice el comportamiento del código o de los cont
 
 ## 4. Estado de gobernanza actual
 
-La integridad y alineación del corpus se mantienen bajo un **bucle cibernético cerrado de conciliación automática**:
+La integridad y alineación del corpus se mantienen mediante un **sistema integrado de conciliación y validación continua**:
 
-*   **Sincronización de Esquemas:** Cada commit verifica que los esquemas de datos del código de Python coincidan de forma idéntica con las tablas Markdown de los contratos.
-*   **Autocorrección Pre-commit:** Al ejecutar `git commit` localmente, la suite re-escribe de forma desatendida las tablas Markdown desviadas antes de confirmar los cambios en el disco.
-*   **Sentinel Diario:** GitHub Actions ejecuta un flujo diario de auto-curación (`daily-auto-heal.yml`) a medianoche para formatear código, linterizar, compilar sitemaps de IA (`llms-full.txt`) y reconciliar el repositorio.
+*   **Sincronización de Esquemas:** Cada confirmación (commit) verifica que los esquemas de datos del código de Python coincidan de forma idéntica con las especificaciones técnicas en las tablas Markdown de los contratos.
+*   **Conciliación Pre-commit:** Al ejecutar `git commit` de forma local, el validador formatea y reescribe de manera automática las tablas Markdown que presenten desviaciones antes de consolidar el cambio.
+*   **Validación Diaria Continua:** GitHub Actions ejecuta un flujo automatizado diario a medianoche (`daily-auto-heal.yml`) para verificar la consistencia del código, ejecutar análisis estáticos, compilar el mapa maestro de sitemaps (`llms-full.txt`) y reconciliar el estado del repositorio.
 
 ---
 
