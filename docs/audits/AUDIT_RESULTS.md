@@ -25,7 +25,7 @@ El objetivo de esta auditoría es identificar las deficiencias en la documentaci
 La auditoría cubre:
 
 *   Todos los documentos dentro del directorio `docs/`.
-*   Módulos de código Python seleccionados del directorio `src/domain/`.
+*   Módulos de código Python seleccionados del directorio `src/assessment_engine/domain/`.
 
 ## 3. Hallazgos - Documentación (`docs/`)
 
@@ -74,13 +74,13 @@ A continuación se detallan los hallazgos de cada documento auditado en el direc
 
 ---
 
-## 4. Hallazgos - Código (`src/domain/`)
+## 4. Hallazgos - Código (`src/assessment_engine/domain/`)
 
 A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/domain/mcp_server.py`
+### `src/assessment_engine/domain/mcp_server.py`
 
 *   **Estado General:** Razonable.
 *   **Hallazgos:**
@@ -89,7 +89,7 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/application/run_tower_pipeline.py`
+### `src/assessment_engine/application/run_tower_pipeline.py`
 
 *   **Estado General:** Aceptable.
 *   **Hallazgos:**
@@ -101,7 +101,7 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/application/run_global_pipeline.py`
+### `src/assessment_engine/application/run_global_pipeline.py`
 
 *   **Estado General:** Aceptable.
 *   **Hallazgos:**
@@ -110,7 +110,7 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/application/run_commercial_pipeline.py`
+### `src/assessment_engine/application/run_commercial_pipeline.py`
 
 *   **Estado General:** Aceptable.
 *   **Hallazgos:**
@@ -119,7 +119,7 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/infrastructure/ai_client.py`
+### `src/assessment_engine/infrastructure/ai_client.py`
 
 *   **Estado General:** Bueno.
 *   **Hallazgos:**
@@ -129,7 +129,7 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/infrastructure/config_loader.py`
+### `src/assessment_engine/infrastructure/config_loader.py`
 
 *   **Estado General:** Bueno.
 *   **Hallazgos:**

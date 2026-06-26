@@ -1,18 +1,19 @@
 import tempfile
 from pathlib import Path
+
 from docx import Document
 
-from domain.schemas.ast import (
+from assessment_engine.adapters.compilers.docx_compiler import DocxCompiler
+from assessment_engine.domain.schemas.ast import (
+    CellNode,
     DocumentAST,
-    ParagraphNode,
     HeadingNode,
+    PageBreakNode,
+    ParagraphNode,
+    SpacerNode,
     TableNode,
     TableRowNode,
-    CellNode,
-    SpacerNode,
-    PageBreakNode,
 )
-from adapters.compilers.docx_compiler import DocxCompiler
 
 
 def test_docx_compiler_e2e() -> None:
@@ -25,7 +26,9 @@ def test_docx_compiler_e2e() -> None:
         title="Diagnostic Technical Report",
         metadata={"client": "Acme Corp", "version": "1.0"},
         nodes=[
-            HeadingNode(text="1. Executive Summary", level=1, primary_color_rgb=[0, 114, 188]),
+            HeadingNode(
+                text="1. Executive Summary", level=1, primary_color_rgb=[0, 114, 188]
+            ),
             ParagraphNode(
                 text="This is a fuzzed diagnostic paragraph to evaluate AST stability.",
                 bold=True,
@@ -37,15 +40,32 @@ def test_docx_compiler_e2e() -> None:
                 rows=[
                     TableRowNode(
                         cells=[
-                            CellNode(text="Pilar", bold=True, bg_color="D9EAF7", align="CENTER"),
-                            CellNode(text="Score", bold=False, bg_color="FFFFFF", align="RIGHT"),
+                            CellNode(
+                                text="Pilar",
+                                bold=True,
+                                bg_color="D9EAF7",
+                                align="CENTER",
+                            ),
+                            CellNode(
+                                text="Score",
+                                bold=False,
+                                bg_color="FFFFFF",
+                                align="RIGHT",
+                            ),
                         ],
                         is_header=True,
                     ),
                     TableRowNode(
                         cells=[
-                            CellNode(text="Compute", bold=False, bg_color="F2F2F2", align="LEFT"),
-                            CellNode(text="4.5", bold=True, bg_color="FFF3CD", align="RIGHT"),
+                            CellNode(
+                                text="Compute",
+                                bold=False,
+                                bg_color="F2F2F2",
+                                align="LEFT",
+                            ),
+                            CellNode(
+                                text="4.5", bold=True, bg_color="FFF3CD", align="RIGHT"
+                            ),
                         ]
                     ),
                 ]
@@ -63,7 +83,9 @@ def test_docx_compiler_e2e() -> None:
         compiler.compile(ast, str(output_file))
 
         # --- ASSERT ---
-        assert output_file.is_file(), "El archivo compilado debe haberse guardado físicamente."
+        assert output_file.is_file(), (
+            "El archivo compilado debe haberse guardado físicamente."
+        )
 
         # Cargar el documento generado para validar su estructura interna
         doc = Document(str(output_file))
@@ -71,7 +93,10 @@ def test_docx_compiler_e2e() -> None:
         # Verificar encabezados y párrafos
         paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
         assert "1. Executive Summary" in paragraphs
-        assert "This is a fuzzed diagnostic paragraph to evaluate AST stability." in paragraphs
+        assert (
+            "This is a fuzzed diagnostic paragraph to evaluate AST stability."
+            in paragraphs
+        )
 
         # Verificar formateo de párrafo en negrita
         bold_para = next(p for p in doc.paragraphs if "stability" in p.text)

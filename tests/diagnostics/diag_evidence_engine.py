@@ -1,8 +1,8 @@
 import sys
 from pathlib import Path
 
-from infrastructure.evidence_engine import EvidenceEngine
-from infrastructure.text_utils import slugify
+from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
+from assessment_engine.infrastructure.text_utils import slugify
 
 
 def test_evidence_engine(client_name: str, docx_path: str):

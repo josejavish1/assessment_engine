@@ -1,11 +1,13 @@
 import shutil
 from pathlib import Path
 
-from application.run_strategic_orchestrator import run_strategic_orchestration
-from domain.ontology_registry import OntologyRegistry
-from infrastructure.entity_resolution import EntityResolutionEngine
-from infrastructure.epistemic_graph import EpistemicGraph
-from infrastructure.text_utils import slugify
+from assessment_engine.application.run_strategic_orchestrator import (
+    run_strategic_orchestration,
+)
+from assessment_engine.domain.ontology_registry import OntologyRegistry
+from assessment_engine.infrastructure.entity_resolution import EntityResolutionEngine
+from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
+from assessment_engine.infrastructure.text_utils import slugify
 
 
 def test_sovereign_convergence_and_sort():

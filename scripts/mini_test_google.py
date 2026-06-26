@@ -5,7 +5,7 @@ from pathlib import Path
 # Asegurar que usamos el src de este proyecto específicamente
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from application.tools.context_tools import search_google_tier1
+from assessment_engine.application.tools.context_tools import search_google_tier1
 
 
 def mini_test_search():

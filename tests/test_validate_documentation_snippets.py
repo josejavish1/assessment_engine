@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from assessment_engine.scripts.tools import validate_documentation_snippets as v_snippets
+
+from assessment_engine.application.tools import (
+    validate_documentation_snippets as v_snippets,
+)
 
 
 def test_should_validate_repo_relative_path():
@@ -27,11 +30,15 @@ parser.parse_args()
     )
 
     # Test valid flags
-    errors = v_snippets.validate_command_flags(tmp_path, f"python mock_script.py --repo-root . --today 2026-06-26")
+    errors = v_snippets.validate_command_flags(
+        tmp_path, "python mock_script.py --repo-root . --today 2026-06-26"
+    )
     assert len(errors) == 0
 
     # Test invalid flag
-    errors = v_snippets.validate_command_flags(tmp_path, f"python mock_script.py --invalid-flag 123")
+    errors = v_snippets.validate_command_flags(
+        tmp_path, "python mock_script.py --invalid-flag 123"
+    )
     assert len(errors) == 1
     assert "references invalid or non-existent flag '--invalid-flag'" in errors[0]
 
@@ -57,7 +64,7 @@ entries:
 # Onboarding
 
 ```bash
-python src/assessment_engine/scripts/tools/validate_documentation_governance.py --repo-root . --today 2026-06-26
+python src/assessment_engine/application/tools/validate_documentation_governance.py --repo-root . --today 2026-06-26
 ```
         """,
         encoding="utf-8",
@@ -66,6 +73,8 @@ python src/assessment_engine/scripts/tools/validate_documentation_governance.py 
     # Let's verify that a valid local run passes
     # Wait, we need to pass the real repo root so it can find the real tools script
     real_repo_root = Path(__file__).resolve().parent.parent
-    errors = v_snippets.validate_documentation_snippets(real_repo_root, real_repo_root / "docs/documentation-map.yaml")
+    errors = v_snippets.validate_documentation_snippets(
+        real_repo_root, real_repo_root / "docs/documentation-map.yaml"
+    )
     # All snippets in the real repo should pass cleanly!
     assert len(errors) == 0

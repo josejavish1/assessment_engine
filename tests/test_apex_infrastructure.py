@@ -4,7 +4,7 @@ import shutil
 import unittest
 from pathlib import Path
 
-from assessment_engine.scripts.lib.apex_sentinel import ApexSentinel
+from assessment_engine.infrastructure.apex_sentinel import ApexSentinel
 
 
 class TestApexInfrastructure(unittest.TestCase):

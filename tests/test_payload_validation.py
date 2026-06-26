@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from domain.schemas.common import VersionedPayload
+from assessment_engine.domain.schemas.common import VersionedPayload
 
 
 def test_payload_versioning_integrity_tier1() -> None:

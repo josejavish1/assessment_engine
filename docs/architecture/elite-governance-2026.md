@@ -5,7 +5,7 @@ source_of_truth:
 - Code
 last_verified_against: '2026-05-02'
 applies_to:
-- src/assessment_engine/scripts/lib
+- src/assessment_engine/infrastructure
 doc_type: canonical
 diataxis: explanation
 verification_mode: mixed

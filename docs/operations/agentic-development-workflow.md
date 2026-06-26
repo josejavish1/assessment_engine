@@ -6,7 +6,7 @@ source_of_truth:
 - ../../.github/copilot-instructions.md
 - ../../.github/pull_request_template.md
 - ../../docs/operations/engineering-quality-gates.md
-- ../../src/domain/
+- ../../src/assessment_engine/domain/
 - ../../tests/
 - ../../.github/workflows/ci.yml
 - ../../.github/workflows/quality.yml

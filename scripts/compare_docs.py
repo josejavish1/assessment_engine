@@ -1,6 +1,7 @@
+import sys
 
 from docx import Document
-import sys
+
 
 def get_doc_info(path):
     try:
@@ -12,9 +13,10 @@ def get_doc_info(path):
         print("\nText Sample (First 2000 chars):")
         full_text = "\n".join([p.text for p in doc.paragraphs])
         print(full_text[:2000])
-        print("\n" + "="*50 + "\n")
+        print("\n" + "=" * 50 + "\n")
     except Exception as e:
         print(f"Error reading {path}: {e}")
+
 
 if __name__ == "__main__":
     for path in sys.argv[1:]:

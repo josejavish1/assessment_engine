@@ -10,9 +10,9 @@ source_of_truth:
 - ../../.github/pull_request_template.md
 - ../../AGENTS.md
 - ../../.github/copilot-instructions.md
-- ../../src/infrastructure/global_maturity_policy.py
-- ../../src/application/tools/run_incremental_quality_gate.py
-- ../../src/application/tools/run_incremental_typecheck.py
+- ../../src/assessment_engine/infrastructure/global_maturity_policy.py
+- ../../src/assessment_engine/application/tools/run_incremental_quality_gate.py
+- ../../src/assessment_engine/application/tools/run_incremental_typecheck.py
 - ../../tests/test_global_coherence.py
 last_verified_against: 2026-05-04
 applies_to:
@@ -31,7 +31,7 @@ Esta pieza define cómo `assessment-engine` obliga a que los cambios nuevos siga
 
 La puerta de calidad actual se aplica a la **superficie viva** del repo:
 
-- `src/domain/`
+- `src/assessment_engine/domain/`
 - `tests/`
 
 Queda fuera el material archivado o meramente histórico, como `_PROJECT_ARCHIVE_/` o `docs/reference/generated/legacy-gemini/`, para no bloquear la evolución del código activo por deuda no operativa.
@@ -53,12 +53,12 @@ Esta capa supone además que el cambio partió de una **spec mínima** y de un a
 
 ### Calidad incremental
 
-El workflow `.github/workflows/quality.yml` ejecuta `src/application/tools/run_incremental_quality_gate.py`.
+El workflow `.github/workflows/quality.yml` ejecuta `src/assessment_engine/application/tools/run_incremental_quality_gate.py`.
 
 Ese runner:
 
 1. calcula los ficheros Python cambiados entre `base_sha` y `head_sha`;
-2. filtra solo la superficie viva del proyecto (`src/domain/**` y `tests/**`) y descarta rutas ya borradas en el árbol de trabajo;
+2. filtra solo la superficie viva del proyecto (`src/assessment_engine/domain/**` y `tests/**`) y descarta rutas ya borradas en el árbol de trabajo;
 3. ejecuta `ruff check` sobre esos ficheros;
 4. ejecuta `ruff format --check` sobre esos mismos ficheros.
 
@@ -66,9 +66,9 @@ La adopción es **incremental**: el gate bloquea deuda nueva o modificada sin ex
 
 ### Tipado incremental
 
-El workflow `.github/workflows/typing.yml` ejecuta `src/application/tools/run_incremental_typecheck.py`.
+El workflow `.github/workflows/typing.yml` ejecuta `src/assessment_engine/application/tools/run_incremental_typecheck.py`.
 
-Ese runner reutiliza la misma selección incremental de ficheros vivos existentes y ejecuta `mypy` solo sobre los `.py` cambiados en `src/domain/**` y `tests/**`.
+Ese runner reutiliza la misma selección incremental de ficheros vivos existentes y ejecuta `mypy` solo sobre los `.py` cambiados en `src/assessment_engine/domain/**` y `tests/**`.
 
 El objetivo de esta capa no es exigir ahora un repo 100% tipado, sino impedir que la superficie viva siga creciendo sin verificación estática básica.
 
@@ -76,7 +76,7 @@ El objetivo de esta capa no es exigir ahora un repo 100% tipado, sino impedir qu
 
 Las reglas transversales de score, banda, color y target no deben quedar duplicadas entre builder, renderizadores y dashboard.
 
-La resolución compartida de bandas vive ahora en `src/infrastructure/maturity_band.py`. `run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y `render_web_presentation.py` consumen esa utilidad sin redefinir umbrales locales, mientras que `src/infrastructure/global_maturity_policy.py` la reutiliza para la política global. La suite incluye tests de coherencia (`tests/test_global_coherence.py`) para bloquear derivas entre:
+La resolución compartida de bandas vive ahora en `src/assessment_engine/infrastructure/maturity_band.py`. `run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y `render_web_presentation.py` consumen esa utilidad sin redefinir umbrales locales, mientras que `src/assessment_engine/infrastructure/global_maturity_policy.py` la reutiliza para la política global. La suite incluye tests de coherencia (`tests/test_global_coherence.py`) para bloquear derivas entre:
 
 - blueprints;
 - payload global;
@@ -108,14 +108,14 @@ La automatización no sustituye la revisión de PR:
 Para validar los ficheros tocados en una rama:
 
 ```bash
-./.venv/bin/python src/application/tools/run_incremental_quality_gate.py \
+./.venv/bin/python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --repo-root . \
-  --path src/application/tools/run_incremental_quality_gate.py \
+  --path src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --path tests/test_run_incremental_quality_gate.py
 
-./.venv/bin/python src/application/tools/run_incremental_typecheck.py \
+./.venv/bin/python src/assessment_engine/application/tools/run_incremental_typecheck.py \
   --repo-root . \
-  --path src/application/build_global_report_payload.py \
+  --path src/assessment_engine/application/build_global_report_payload.py \
   --path tests/test_global_coherence.py
 
 ./.venv/bin/python -m pytest \

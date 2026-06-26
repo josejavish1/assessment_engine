@@ -2,12 +2,12 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-- ../../src/application/run_tower_pipeline.py
-- ../../src/application/run_tower_blueprint_engine.py
-- ../../src/application/run_executive_annex_synthesizer.py
-- ../../src/infrastructure/pipeline_runtime.py
-- ../../src/domain/schemas/blueprint.py
-- ../../src/domain/schemas/annex_synthesis.py
+- ../../src/assessment_engine/application/run_tower_pipeline.py
+- ../../src/assessment_engine/application/run_tower_blueprint_engine.py
+- ../../src/assessment_engine/application/run_executive_annex_synthesizer.py
+- ../../src/assessment_engine/infrastructure/pipeline_runtime.py
+- ../../src/assessment_engine/domain/schemas/blueprint.py
+- ../../src/assessment_engine/domain/schemas/annex_synthesis.py
 last_verified_against: 2026-05-02
 applies_to:
 - humans
@@ -36,7 +36,7 @@ No es solo una secuencia técnica: es la unidad que transforma inputs de assessm
 
 El orquestador actual es:
 
-- `src/application/run_tower_pipeline.py`
+- `src/assessment_engine/application/run_tower_pipeline.py`
 
 Recibe:
 

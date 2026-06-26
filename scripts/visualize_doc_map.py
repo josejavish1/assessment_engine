@@ -11,9 +11,14 @@ import json
 import os
 import sys
 from pathlib import Path
+
 import yaml
 
-def generate_interactive_map(yaml_path_str: str = "docs/documentation-map.yaml", output_html_str: str = "working/documentation_map_visual.html") -> bool:
+
+def generate_interactive_map(
+    yaml_path_str: str = "docs/documentation-map.yaml",
+    output_html_str: str = "working/documentation_map_visual.html",
+) -> bool:
     """Parses documentation-map.yaml and exports a D3.js interactive HTML visualization.
 
     Args:
@@ -50,36 +55,38 @@ def generate_interactive_map(yaml_path_str: str = "docs/documentation-map.yaml",
         path = entry.get("path")
         if not path:
             continue
-        
+
         title = entry.get("title", path)
         doc_type = entry.get("doc_type", "unknown")
         status = entry.get("status", "Draft")
-        
+
         node_set.add(path)
-        nodes.append({
-            "id": path,
-            "title": title,
-            "type": doc_type,
-            "status": status,
-            "group": 1 if doc_type == "canonical" else (2 if doc_type == "operational" else 3)
-        })
+        nodes.append(
+            {
+                "id": path,
+                "title": title,
+                "type": doc_type,
+                "status": status,
+                "group": 1
+                if doc_type == "canonical"
+                else (2 if doc_type == "operational" else 3),
+            }
+        )
 
         # Parse source of truth dependencies
         for sot in entry.get("source_of_truth", []):
             if sot not in node_set:
                 node_set.add(sot)
-                nodes.append({
-                    "id": sot,
-                    "title": os.path.basename(sot),
-                    "type": "source",
-                    "status": "External/Code/Config",
-                    "group": 4
-                })
-            links.append({
-                "source": sot,
-                "target": path,
-                "value": 2
-            })
+                nodes.append(
+                    {
+                        "id": sot,
+                        "title": os.path.basename(sot),
+                        "type": "source",
+                        "status": "External/Code/Config",
+                        "group": 4,
+                    }
+                )
+            links.append({"source": sot, "target": path, "value": 2})
 
     # Embedded HTML with responsive D3.js force-directed graph representation
     html_content = f"""<!DOCTYPE html>
@@ -288,6 +295,7 @@ def generate_interactive_map(yaml_path_str: str = "docs/documentation-map.yaml",
     except Exception as e:
         print(f"[-] Failed to write HTML output: {e}", file=sys.stderr)
         return False
+
 
 if __name__ == "__main__":
     success = generate_interactive_map()

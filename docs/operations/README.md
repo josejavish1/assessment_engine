@@ -3,8 +3,8 @@ status: Needs Review
 owner: docs-governance
 source_of_truth:
 - ../../.github/workflows/
-- ../../src/application/
-- ../../src/assessment_engine/scripts/
+- ../../src/assessment_engine/application/
+- ../../src/assessment_engine/application/
 - ./
 last_verified_against: 2026-06-26
 applies_to:
@@ -65,7 +65,7 @@ Estas dos piezas son la base más fiable para trabajo asistido por agentes y par
 
 Si una operación concreta depende de comandos, rutas, variables de entorno o comportamiento de CI, usa esta carpeta solo como punto de entrada y valida el detalle contra:
 
-- `src/application/**`
-- `src/assessment_engine/scripts/**`
+- `src/assessment_engine/application/**`
+- `src/assessment_engine/application/**`
 - `.github/workflows/**`
 - tests o herramientas de validación relacionados

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from infrastructure.json_from_model import parse_json_from_text
+from assessment_engine.infrastructure.json_from_model import parse_json_from_text
 
 
 def test_parse_clean_json_tier1() -> None:

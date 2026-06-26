@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from infrastructure import runtime_paths
+from assessment_engine.infrastructure import runtime_paths
 
 
 def test_resolve_client_dir_uses_default_client(

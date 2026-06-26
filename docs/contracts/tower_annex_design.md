@@ -2,9 +2,9 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-- ../../src/domain/schemas/annex_synthesis.py
-- ../../src/application/run_executive_annex_synthesizer.py
-- ../../src/application/render_tower_annex_from_template.py
+- ../../src/assessment_engine/domain/schemas/annex_synthesis.py
+- ../../src/assessment_engine/application/run_executive_annex_synthesizer.py
+- ../../src/assessment_engine/adapters/render_tower_annex_from_template.py
 - ../../docs/contracts/payload-render-boundaries.md
 last_verified_against: 2026-06-26
 applies_to:

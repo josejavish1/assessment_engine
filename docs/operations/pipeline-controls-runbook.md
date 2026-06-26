@@ -2,12 +2,12 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- ../../src/application/run_tower_pipeline.py
-- ../../src/application/run_global_pipeline.py
-- ../../src/application/run_commercial_pipeline.py
-- ../../src/application/render_web_presentation.py
-- ../../src/application/tools/check_vertex_ai_access.py
-- ../../src/application/tools/regenerate_smoke_artifacts.py
+- ../../src/assessment_engine/application/run_tower_pipeline.py
+- ../../src/assessment_engine/application/run_global_pipeline.py
+- ../../src/assessment_engine/application/run_commercial_pipeline.py
+- ../../src/assessment_engine/adapters/render_web_presentation.py
+- ../../src/assessment_engine/application/tools/check_vertex_ai_access.py
+- ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
 - ./pipeline-execution.md
 - ./smoke-regeneration.md
 - ./troubleshooting-working.md
@@ -92,7 +92,7 @@ Piensa primero en:
 La acción correcta suele ser:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.check_vertex_ai_access
+./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ### 2. Falla una capa derivada pero la anterior existe

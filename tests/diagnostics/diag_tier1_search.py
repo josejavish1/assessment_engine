@@ -1,10 +1,10 @@
-
 import asyncio
-import os
+
 from google.adk.agents import Agent
-from vertexai.agent_engines import AdkApp
-from src.infrastructure.ai_client import run_agent
 from src.application.tools.context_tools import search_google_tier1
+from src.infrastructure.ai_client import run_agent
+from vertexai.agent_engines import AdkApp
+
 
 async def test_search():
     print("Testing search_google_tier1...")
@@ -19,7 +19,7 @@ async def test_search():
         instruction="Eres un investigador. Usa la herramienta search_google_tier1 para buscar en internet quién ganó la Eurocopa 2024.",
     )
     app = AdkApp(agent=agent)
-    
+
     try:
         result = await run_agent(
             app=app,
@@ -29,6 +29,7 @@ async def test_search():
         print("RESULTADO AGENTE:", result)
     except Exception as e:
         print("ERROR AGENTE:", e)
+
 
 if __name__ == "__main__":
     asyncio.run(test_search())

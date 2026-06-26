@@ -3,10 +3,10 @@ status: Draft
 owner: docs-governance
 source_of_truth:
 - ../../docs/contracts/tower_main_report_coverage_matrix.md
-- ../../src/domain/schemas/blueprint.py
-- ../../src/domain/schemas/annex_synthesis.py
-- ../../src/application/render_tower_blueprint.py
-- ../../src/application/render_tower_annex_from_template.py
+- ../../src/assessment_engine/domain/schemas/blueprint.py
+- ../../src/assessment_engine/domain/schemas/annex_synthesis.py
+- ../../src/assessment_engine/adapters/render_tower_blueprint.py
+- ../../src/assessment_engine/adapters/render_tower_annex_from_template.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans

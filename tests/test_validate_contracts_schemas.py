@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from assessment_engine.scripts.tools import validate_contracts_schemas as v_schema
+
+from assessment_engine.application.tools import validate_contracts_schemas as v_schema
 
 
 def test_normalize_type_annotation():
@@ -25,7 +26,10 @@ def test_check_type_compatibility():
 
     # Fallbacks and dicts
     assert v_schema.check_type_compatibility("dict", "dict") is True
-    assert v_schema.check_type_compatibility("list[BlueprintDocumentMeta]", "list[dict]") is True
+    assert (
+        v_schema.check_type_compatibility("list[BlueprintDocumentMeta]", "list[dict]")
+        is True
+    )
 
     # Incompatible types
     assert v_schema.check_type_compatibility("int", "str") is False
@@ -34,14 +38,18 @@ def test_check_type_compatibility():
 
 def test_parse_markdown_table_row():
     # Standard row (3 columns)
-    row = v_schema.parse_markdown_table_row("| `client_name` | `str` | Name of the client. |")
+    row = v_schema.parse_markdown_table_row(
+        "| `client_name` | `str` | Name of the client. |"
+    )
     assert row is not None
     assert row["field_name"] == "client_name"
     assert row["field_type"] == "str"
     assert row["alias"] is None
 
     # Aliased row (4 columns)
-    row = v_schema.parse_markdown_table_row("| `target_state` | `str` | `capability` | Capacidad evaluada. |")
+    row = v_schema.parse_markdown_table_row(
+        "| `target_state` | `str` | `capability` | Capacidad evaluada. |"
+    )
     assert row is not None
     assert row["field_name"] == "target_state"
     assert row["field_type"] == "str"

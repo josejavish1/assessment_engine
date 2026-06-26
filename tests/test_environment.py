@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from domain.schemas.blueprint import BlueprintPayload
+from assessment_engine.domain.schemas.blueprint import BlueprintPayload
 
 
 def test_pydantic_import() -> None:

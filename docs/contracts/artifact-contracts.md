@@ -2,20 +2,20 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/domain/schemas/blueprint.py
-- ../../src/domain/schemas/annex_synthesis.py
-- ../../src/domain/schemas/global_report.py
-- ../../src/domain/schemas/commercial.py
-- ../../src/application/run_tower_blueprint_engine.py
-- ../../src/application/run_executive_annex_synthesizer.py
-- ../../src/application/build_global_report_payload.py
-- ../../src/application/run_executive_refiner.py
-- ../../src/application/run_commercial_refiner.py
-- ../../src/application/render_tower_blueprint.py
-- ../../src/application/render_tower_annex_from_template.py
-- ../../src/application/render_global_report_from_template.py
-- ../../src/application/render_commercial_report.py
-- ../../src/application/render_web_presentation.py
+- ../../src/assessment_engine/domain/schemas/blueprint.py
+- ../../src/assessment_engine/domain/schemas/annex_synthesis.py
+- ../../src/assessment_engine/domain/schemas/global_report.py
+- ../../src/assessment_engine/domain/schemas/commercial.py
+- ../../src/assessment_engine/application/run_tower_blueprint_engine.py
+- ../../src/assessment_engine/application/run_executive_annex_synthesizer.py
+- ../../src/assessment_engine/application/build_global_report_payload.py
+- ../../src/assessment_engine/application/run_executive_refiner.py
+- ../../src/assessment_engine/application/run_commercial_refiner.py
+- ../../src/assessment_engine/adapters/render_tower_blueprint.py
+- ../../src/assessment_engine/adapters/render_tower_annex_from_template.py
+- ../../src/assessment_engine/adapters/render_global_report_from_template.py
+- ../../src/assessment_engine/adapters/render_commercial_report.py
+- ../../src/assessment_engine/adapters/render_web_presentation.py
 - ./payload-render-boundaries.md
 last_verified_against: 2026-05-03
 applies_to:

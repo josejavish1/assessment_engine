@@ -2,7 +2,7 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- src/domain/
+- src/assessment_engine/domain/
 - tests/
 - pyproject.toml
 - .github/workflows/ci.yml
@@ -74,8 +74,8 @@ Actualiza o reverifica documentación cuando cambie cualquiera de estas áreas:
 
 | Cambio en el repo | Revisión documental mínima |
 |---|---|
-| `src/application/**`, `src/domain/mcp_server.py` | arquitectura y operación |
-| `src/domain/schemas/**` | contratos y docs de payloads |
+| `src/assessment_engine/application/**`, `src/assessment_engine/domain/mcp_server.py` | arquitectura y operación |
+| `src/assessment_engine/domain/schemas/**` | contratos y docs de payloads |
 | `.github/workflows/**` | operación y CI |
 | `pyproject.toml`, `requirements.txt`, `pytest.ini` | onboarding, instalación y validación |
 | prompts o configuración de motor | operación y referencia técnica |

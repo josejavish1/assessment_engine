@@ -205,7 +205,7 @@ def build_tower_payload(
         RuntimeError: If the underlying script execution encounters an error.
     """
     out = _run_script(
-        "assessment_engine.scripts._legacy.build_tower_annex_template_payload",
+        "assessment_engine.application._legacy.build_tower_annex_template_payload",
         [approved_annex_json, output_json, client_name, profile],
     )
     return f"✅ Payload construido con éxito.\n{out}"
@@ -216,7 +216,7 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
     """Invokes an external script to populate a DOCX template using a structured JSON payload.
 
     This function serves as a high-level wrapper for the
-    `assessment_engine.scripts.render_tower_annex_from_template` script,
+    `assessment_engine.adapters.render_tower_annex_from_template` script,
     forwarding the provided file paths as command-line arguments.
 
     Args:
@@ -235,7 +235,7 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
             otherwise fails during execution.
     """
     out = _run_script(
-        "assessment_engine.scripts.render_tower_annex_from_template",
+        "assessment_engine.adapters.render_tower_annex_from_template",
         [payload_json, template_docx, output_docx],
     )
     return f"✅ Documento de Torre renderizado con éxito.\n{out}"
@@ -246,7 +246,7 @@ def generate_radar_chart(global_payload_json: str) -> str:
     """Generates a global radar chart by invoking a subordinate script.
 
     This function acts as a wrapper, passing the provided JSON payload as a
-    command-line argument to the `assessment_engine.scripts.generate_global_radar_chart`
+    command-line argument to the `assessment_engine.application.generate_global_radar_chart`
     script for processing. It captures the standard output from the script upon
     successful completion.
 
@@ -263,7 +263,8 @@ def generate_radar_chart(global_payload_json: str) -> str:
             script encounters an error during execution.
     """
     out = _run_script(
-        "assessment_engine.scripts.generate_global_radar_chart", [global_payload_json]
+        "assessment_engine.application.generate_global_radar_chart",
+        [global_payload_json],
     )
     return f"✅ Gráfico generado con éxito.\n{out}"
 
@@ -275,7 +276,7 @@ def render_commercial_docx(
     """Renders a commercial action plan into a DOCX document from a JSON payload.
 
     This function serves as a wrapper that invokes the external script
-    `assessment_engine.scripts.render_commercial_report` in a separate process.
+    `assessment_engine.adapters.render_commercial_report` in a separate process.
     It passes the source JSON, template, and output file paths as command-line
     arguments to the script.
 
@@ -297,7 +298,7 @@ def render_commercial_docx(
             document generation.
     """
     out = _run_script(
-        "assessment_engine.scripts.render_commercial_report",
+        "assessment_engine.adapters.render_commercial_report",
         [commercial_payload_json, template_docx, output_docx],
     )
     return f"✅ Reporte comercial renderizado.\n{out}"
@@ -329,7 +330,7 @@ async def _background_run_plan(job_id: str, request_text: str):
     def run_sync():
         """Synchronously execute the 'plan' command of the product owner orchestrator script."""
         return _run_script(
-            "assessment_engine.scripts.tools.run_product_owner_orchestrator",
+            "assessment_engine.application.tools.run_product_owner_orchestrator",
             ["plan", "--request", request_text],
         )
 
@@ -412,7 +413,7 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
         cmd = [
             PYTHON_BIN,
             "-m",
-            "assessment_engine.scripts.tools.run_product_owner_orchestrator",
+            "assessment_engine.application.tools.run_product_owner_orchestrator",
             "execute",
             "--request-dir",
             request_dir,

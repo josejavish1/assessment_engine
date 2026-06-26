@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/mcp_server.py
-- ../../src/assessment_engine/scripts/
+- ../../src/assessment_engine/application/
 last_verified_against: 2026-05-01
 applies_to:
 - humans
@@ -29,7 +29,7 @@ Usa:
 
 Y ejecuta scripts internos mediante:
 
-- `python -m assessment_engine.scripts.<module>`
+- `python -m assessment_engine.application.<module>`
 
 ## Rol arquitectónico
 

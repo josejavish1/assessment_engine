@@ -1,5 +1,5 @@
-from infrastructure.epistemic_graph import EpistemicGraph
-from infrastructure.policy_engine import SovereignPolicyEngine
+from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
+from assessment_engine.infrastructure.policy_engine import SovereignPolicyEngine
 
 
 def test_sovereign_policy_engine_compilation():

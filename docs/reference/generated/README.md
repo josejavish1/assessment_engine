@@ -2,7 +2,7 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-- src/domain/
+- src/assessment_engine/domain/
 - docs/documentation-map.yaml
 last_verified_against: 2026-04-30
 applies_to:

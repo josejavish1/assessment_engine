@@ -8,7 +8,9 @@ SRC_ROOT = Path(__file__).resolve().parents[1] / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from adapters.render_web_presentation import _render_html  # noqa: E402
+from assessment_engine.adapters.render_web_presentation import (
+    _render_html,  # noqa: E402
+)
 
 
 def test_strategic_terminal_is_self_contained_and_splits_dto_state() -> None:

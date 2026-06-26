@@ -3,9 +3,9 @@ status: Draft
 owner: docs-governance
 source_of_truth:
 - ../SYSTEM_ARCHITECTURE.md
-- ../../src/domain/
-- ../../src/application/
-- ../../src/domain/schemas/
+- ../../src/assessment_engine/domain/
+- ../../src/assessment_engine/application/
+- ../../src/assessment_engine/domain/schemas/
 - ../../tests/
 last_verified_against: 2026-04-30
 applies_to:
@@ -51,23 +51,23 @@ La referencia arquitectónica más completa sigue siendo [`../SYSTEM_ARCHITECTUR
 ### Modos de operación
 
 1. **Modo pipeline**
-   - Orquestado desde scripts bajo `src/application/`
+   - Orquestado desde scripts bajo `src/assessment_engine/application/`
    - Flujos principales:
      - `run_tower_pipeline.py`
      - `run_global_pipeline.py`
      - `run_commercial_pipeline.py`
 
 2. **Modo servidor de herramientas**
-   - Expuesto por `src/domain/mcp_server.py`
+   - Expuesto por `src/assessment_engine/domain/mcp_server.py`
    - Permite que un supervisor externo orqueste capacidades del motor
 
 ### Áreas estructurales del código
 
 | Área | Ruta principal | Rol |
 |---|---|---|
-| Orquestación | `src/application/` | Secuencia de pipelines, refinadores y renderizadores |
-| Contratos | `src/domain/schemas/` | Esquemas Pydantic de payloads entre etapas |
-| Presentación | `src/domain/templates/` y renderizadores | Salida HTML y DOCX |
+| Orquestación | `src/assessment_engine/application/` | Secuencia de pipelines, refinadores y renderizadores |
+| Contratos | `src/assessment_engine/domain/schemas/` | Esquemas Pydantic de payloads entre etapas |
+| Presentación | `src/assessment_engine/domain/templates/` y renderizadores | Salida HTML y DOCX |
 | Tests | `tests/` | Validación de entorno, contratos, render y lógica |
 
 ### Capacidades empresariales que emergen de esas áreas

@@ -5,8 +5,9 @@ parses YAML documentation-map inputs and outputs a valid interactive HTML file.
 """
 
 from pathlib import Path
-import pytest
+
 import yaml
+
 from scripts.visualize_doc_map import generate_interactive_map
 
 
@@ -27,19 +28,15 @@ def test_generate_interactive_map(tmp_path: Path) -> None:
                 "title": "Test Document 1",
                 "doc_type": "canonical",
                 "status": "Verified",
-                "source_of_truth": [
-                    "src/some_code.py"
-                ]
+                "source_of_truth": ["src/some_code.py"],
             },
             {
                 "path": "docs/test_doc_2.md",
                 "title": "Test Document 2",
                 "doc_type": "operational",
                 "status": "Draft",
-                "source_of_truth": [
-                    "docs/test_doc_1.md"
-                ]
-            }
+                "source_of_truth": ["docs/test_doc_1.md"],
+            },
         ]
     }
 
@@ -48,8 +45,7 @@ def test_generate_interactive_map(tmp_path: Path) -> None:
 
     # Generate the map
     result = generate_interactive_map(
-        yaml_path_str=str(mock_yaml),
-        output_html_str=str(mock_html)
+        yaml_path_str=str(mock_yaml), output_html_str=str(mock_html)
     )
 
     # Assertions
@@ -77,8 +73,7 @@ def test_generate_interactive_map_missing_file(tmp_path: Path) -> None:
     mock_html = tmp_path / "mock_output.html"
 
     result = generate_interactive_map(
-        yaml_path_str=str(missing_yaml),
-        output_html_str=str(mock_html)
+        yaml_path_str=str(missing_yaml), output_html_str=str(mock_html)
     )
 
     assert result is False

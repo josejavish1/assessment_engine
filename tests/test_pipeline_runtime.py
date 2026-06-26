@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from infrastructure.pipeline_runtime import build_runtime_env
+from assessment_engine.infrastructure.pipeline_runtime import build_runtime_env
 
 
 def test_runtime_env_generation_tier1() -> None:

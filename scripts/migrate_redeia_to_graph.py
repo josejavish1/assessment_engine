@@ -1,11 +1,13 @@
 import json
 from pathlib import Path
 
-from application.run_tower_blueprint_engine import sync_findings_to_graph
-from domain.ontology_registry import OntologyRegistry
-from infrastructure.entity_resolution import EntityResolutionEngine
-from infrastructure.epistemic_graph import EpistemicGraph
-from infrastructure.text_utils import slugify
+from assessment_engine.application.run_tower_blueprint_engine import (
+    sync_findings_to_graph,
+)
+from assessment_engine.domain.ontology_registry import OntologyRegistry
+from assessment_engine.infrastructure.entity_resolution import EntityResolutionEngine
+from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
+from assessment_engine.infrastructure.text_utils import slugify
 
 
 def migrate_redeia():

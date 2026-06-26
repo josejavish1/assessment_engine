@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from infrastructure.epistemic_graph import EpistemicGraph
+from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 
 
 def test_epistemic_graph_persistence_and_cqrs():

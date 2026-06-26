@@ -36,7 +36,7 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
-          python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
+          python src/assessment_engine/application/tools/validate_documentation_governance.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml \
             --today "$(date -u +%F)" \
@@ -46,7 +46,7 @@ jobs:
       - name: Validate external documentation links
         if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
         run: |
-          python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
+          python src/assessment_engine/application/tools/validate_documentation_governance.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml \
             --today "$(date -u +%F)" \
@@ -54,20 +54,20 @@ jobs:
 
       - name: Validate documentation snippets
         run: |
-          python src/assessment_engine/scripts/tools/validate_documentation_snippets.py \
+          python src/assessment_engine/application/tools/validate_documentation_snippets.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml
 
       - name: Lint documentation style
         run: |
-          python src/assessment_engine/scripts/tools/lint_documentation_style.py \
+          python src/assessment_engine/application/tools/lint_documentation_style.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml
 
       - name: Build documentation health report
         run: |
           mkdir -p .artifacts/docs
-          python src/assessment_engine/scripts/tools/build_documentation_health_report.py \
+          python src/assessment_engine/application/tools/build_documentation_health_report.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml \
             --today "$(date -u +%F)" \
@@ -75,7 +75,7 @@ jobs:
 
       - name: Build documentation preview
         run: |
-          python src/assessment_engine/scripts/tools/build_docs_site.py \
+          python src/assessment_engine/application/tools/build_docs_site.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml \
             --output-dir .artifacts/docs/site

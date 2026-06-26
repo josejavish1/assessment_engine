@@ -5,9 +5,9 @@ source_of_truth:
 - ../../pytest.ini
 - ../../tests/test_contract_handover.py
 - ../../tests/test_t5_golden.py
-- ../../src/application/run_tower_pipeline.py
-- ../../src/application/run_global_pipeline.py
-- ../../src/application/run_commercial_pipeline.py
+- ../../src/assessment_engine/application/run_tower_pipeline.py
+- ../../src/assessment_engine/application/run_global_pipeline.py
+- ../../src/assessment_engine/application/run_commercial_pipeline.py
 - ../architecture/working-artifacts.md
 last_verified_against: 2026-06-26
 applies_to:
@@ -66,7 +66,7 @@ find working/<client> -maxdepth 2 -type f | sort
 Ejecuta o reejecuta el pipeline por torre:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.run_tower_pipeline \
+./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
   --tower T5 \
   --client ivirma \
   --context-file /ruta/al/contexto.docx \
@@ -76,31 +76,31 @@ Ejecuta o reejecuta el pipeline por torre:
 Si lo que falta es específicamente el baseline de `smoke_ivirma/T5`, usa mejor el runner reproducible:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 
 Si el problema está en la parte global y quieres respetar el comportamiento canónico actual del repo, usa el smoke con global tal como está:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global
 ```
 
 Y si antes quieres separar si el bloqueo es local o de Vertex AI:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --local-only
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
 ```
 
 ### Faltan artefactos globales
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.run_global_pipeline <client_name>
+./.venv/bin/python -m assessment_engine.application.run_global_pipeline <client_name>
 ```
 
 ### Faltan artefactos comerciales
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.run_commercial_pipeline <client_name>
+./.venv/bin/python -m assessment_engine.application.run_commercial_pipeline <client_name>
 ```
 
 ## Qué tests dependen de artefactos

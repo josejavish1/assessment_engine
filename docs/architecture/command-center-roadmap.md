@@ -2,7 +2,7 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- src/business_command_center/README.md
+- src/assessment_engine/business_command_center/README.md
 last_verified_against: '2026-06-26'
 applies_to:
 - humans

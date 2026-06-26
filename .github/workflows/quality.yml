@@ -32,7 +32,7 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
-          python src/application/tools/run_incremental_quality_gate.py \
+          python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
             --repo-root . \
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA"
@@ -42,7 +42,7 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
-          python src/application/tools/run_golden_path_check.py \
+          python src/assessment_engine/application/tools/run_golden_path_check.py \
             --repo-root . \
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA"

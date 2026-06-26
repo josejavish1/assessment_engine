@@ -1,6 +1,6 @@
-from infrastructure.entity_resolution import EntityResolutionEngine
-from infrastructure.epistemic_graph import EpistemicGraph
-from infrastructure.text_utils import slugify
+from assessment_engine.infrastructure.entity_resolution import EntityResolutionEngine
+from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
+from assessment_engine.infrastructure.text_utils import slugify
 
 
 def inject_dependency():

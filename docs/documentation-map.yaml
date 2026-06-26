@@ -92,7 +92,7 @@ entries:
   - .github/pull_request_template.md
   - .github/CODEOWNERS
   - .github/workflows/docs-governance.yml
-  - src/assessment_engine/scripts/tools/validate_documentation_governance.py
+  - src/assessment_engine/application/tools/validate_documentation_governance.py
   - docs/documentation-map.yaml
   review_paths_on_source_change:
   - docs/ai/documentation-governance.md
@@ -204,7 +204,7 @@ entries:
   source_of_truth:
   - docs/documentation-map.yaml
   - docs/ai/documentation-governance.md
-  - src/assessment_engine/scripts/tools/validate_documentation_governance.py
+  - src/assessment_engine/application/tools/validate_documentation_governance.py
   last_verified_against: 2026-04-30
   notes: Workflow que valida metadata documental y reglas de trazabilidad.
   diataxis: reference
@@ -222,7 +222,7 @@ entries:
   - pyproject.toml
   - requirements.txt
   - docs/operations/engineering-quality-gates.md
-  - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+  - src/assessment_engine/application/tools/run_incremental_quality_gate.py
   last_verified_against: 2026-05-01
   notes: Workflow que ejecuta la puerta incremental de calidad sobre la superficie viva del proyecto.
   diataxis: reference
@@ -240,7 +240,7 @@ entries:
   - pyproject.toml
   - requirements.txt
   - docs/operations/engineering-quality-gates.md
-  - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+  - src/assessment_engine/application/tools/run_incremental_typecheck.py
   last_verified_against: 2026-05-01
   notes: Workflow que ejecuta el gate incremental de tipado sobre la superficie viva del proyecto.
   diataxis: reference
@@ -289,7 +289,7 @@ entries:
   - ai-agents
   source_of_truth:
   - docs/operations/product-owner-orchestrator.md
-  - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+  - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   - .github/scripts/orchestrator-gemini-executor.sh
   last_verified_against: 2026-05-01
   notes: Wrapper corto e interactivo para lanzar plan/run del orquestador local con defaults razonables de Python y executor.
@@ -306,7 +306,7 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/
-  - src/assessment_engine/scripts/
+  - src/assessment_engine/application/
   - src/assessment_engine/mcp_server.py
   - src/assessment_engine/schemas/
   last_verified_against: 2026-04-30
@@ -325,7 +325,7 @@ entries:
   source_of_truth:
   - docs/SYSTEM_ARCHITECTURE.md
   - src/assessment_engine/
-  - src/assessment_engine/scripts/
+  - src/assessment_engine/application/
   - src/assessment_engine/schemas/
   - tests/
   last_verified_against: 2026-04-30
@@ -343,8 +343,8 @@ entries:
   - ai-agents
   source_of_truth:
   - docs/SYSTEM_ARCHITECTURE.md
-  - src/application/
-  - src/domain/
+  - src/assessment_engine/application/
+  - src/assessment_engine/domain/
   - tests/
   last_verified_against: 2026-06-26
   notes: Punto de entrada de la carpeta architecture; util, pero todavia en consolidacion y migracion desde SYSTEM_ARCHITECTURE.md.
@@ -392,7 +392,7 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/business_command_center/
+  - src/assessment_engine/business_command_center/
   - docs/operations/product-owner-orchestrator.md
   last_verified_against: 2026-06-26
   notes: Roadmap de GUI y UX del orquestador; contiene direccion util, pero mezcla capacidad objetivo y estado implementado.
@@ -424,10 +424,10 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - src/assessment_engine/scripts/lib/pipeline_runtime.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/run_executive_annex_synthesizer.py
+  - src/assessment_engine/infrastructure/pipeline_runtime.py
   - src/assessment_engine/schemas/blueprint.py
   - src/assessment_engine/schemas/annex_synthesis.py
   enforce_on_source_changes: true
@@ -452,12 +452,12 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/build_global_report_payload.py
-  - src/assessment_engine/scripts/run_executive_refiner.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_refiner.py
-  - src/assessment_engine/scripts/lib/pipeline_runtime.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/build_global_report_payload.py
+  - src/assessment_engine/application/run_executive_refiner.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/application/run_commercial_refiner.py
+  - src/assessment_engine/infrastructure/pipeline_runtime.py
   - src/assessment_engine/schemas/global_report.py
   - src/assessment_engine/schemas/commercial.py
   enforce_on_source_changes: true
@@ -483,10 +483,10 @@ entries:
   - ai-agents
   source_of_truth:
   - docs/SYSTEM_ARCHITECTURE.md
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   - src/assessment_engine/schemas/
   - docs/architecture/tower-pipeline.md
   - docs/architecture/global-commercial-pipelines.md
@@ -506,13 +506,13 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/schemas/intelligence.py
-  - src/assessment_engine/scripts/lib/client_intelligence.py
-  - src/assessment_engine/scripts/run_intelligence_harvesting.py
-  - src/assessment_engine/scripts/build_case_input.py
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - src/assessment_engine/scripts/build_global_report_payload.py
-  - src/assessment_engine/scripts/run_executive_refiner.py
-  - src/assessment_engine/scripts/run_commercial_refiner.py
+  - src/assessment_engine/infrastructure/client_intelligence.py
+  - src/assessment_engine/application/run_intelligence_harvesting.py
+  - src/assessment_engine/application/build_case_input.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/build_global_report_payload.py
+  - src/assessment_engine/application/run_executive_refiner.py
+  - src/assessment_engine/application/run_commercial_refiner.py
   - src/assessment_engine/prompts/intelligence_prompts.py
   - src/assessment_engine/prompts/global_prompts.py
   - src/assessment_engine/prompts/commercial_prompts.py
@@ -530,19 +530,19 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - src/assessment_engine/scripts/render_tower_blueprint.py
-  - src/assessment_engine/scripts/render_tower_annex_from_template.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/build_global_report_payload.py
-  - src/assessment_engine/scripts/run_executive_refiner.py
-  - src/assessment_engine/scripts/render_global_report_from_template.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_refiner.py
-  - src/assessment_engine/scripts/render_commercial_report.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/run_executive_annex_synthesizer.py
+  - src/assessment_engine/adapters/render_tower_blueprint.py
+  - src/assessment_engine/adapters/render_tower_annex_from_template.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/build_global_report_payload.py
+  - src/assessment_engine/application/run_executive_refiner.py
+  - src/assessment_engine/adapters/render_global_report_from_template.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/application/run_commercial_refiner.py
+  - src/assessment_engine/adapters/render_commercial_report.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   last_verified_against: 2026-04-30
   notes: Mapa de responsabilidades, inputs/outputs y riesgos de los módulos críticos que sostienen el flujo principal.
   diataxis: explanation
@@ -561,16 +561,16 @@ entries:
   - src/assessment_engine/schemas/annex_synthesis.py
   - src/assessment_engine/schemas/global_report.py
   - src/assessment_engine/schemas/commercial.py
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - src/assessment_engine/scripts/build_global_report_payload.py
-  - src/assessment_engine/scripts/run_executive_refiner.py
-  - src/assessment_engine/scripts/run_commercial_refiner.py
-  - src/assessment_engine/scripts/render_tower_blueprint.py
-  - src/assessment_engine/scripts/render_tower_annex_from_template.py
-  - src/assessment_engine/scripts/render_global_report_from_template.py
-  - src/assessment_engine/scripts/render_commercial_report.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/run_executive_annex_synthesizer.py
+  - src/assessment_engine/application/build_global_report_payload.py
+  - src/assessment_engine/application/run_executive_refiner.py
+  - src/assessment_engine/application/run_commercial_refiner.py
+  - src/assessment_engine/adapters/render_tower_blueprint.py
+  - src/assessment_engine/adapters/render_tower_annex_from_template.py
+  - src/assessment_engine/adapters/render_global_report_from_template.py
+  - src/assessment_engine/adapters/render_commercial_report.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   - docs/contracts/payload-render-boundaries.md
   last_verified_against: 2026-04-30
   notes: Define los artefactos principales del sistema como contratos operativos y explica productores, consumidores, señales de salud y riesgos si derivan.
@@ -586,22 +586,22 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/render_web_presentation.py
-  - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
-  - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/adapters/render_web_presentation.py
+  - src/assessment_engine/application/tools/check_vertex_ai_access.py
+  - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
   - docs/operations/pipeline-execution.md
   - docs/operations/smoke-regeneration.md
   - docs/operations/troubleshooting-working.md
   review_when_source_changes:
-  - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
-  - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/tools/check_vertex_ai_access.py
+  - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   review_paths_on_source_change:
   - docs/operations/pipeline-controls-runbook.md
   - docs/operations/pipeline-execution.md
@@ -622,7 +622,7 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/mcp_server.py
-  - src/assessment_engine/scripts/
+  - src/assessment_engine/application/
   last_verified_against: 2026-05-01
   notes: Documenta el modo servidor, su inspección canónica basada en blueprint/annex y la compatibilidad legacy residual solo como diagnóstico secundario.
   diataxis: explanation
@@ -637,19 +637,19 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/build_case_input.py
-  - src/assessment_engine/scripts/build_evidence_ledger.py
-  - src/assessment_engine/scripts/run_scoring.py
-  - src/assessment_engine/scripts/run_evidence_analyst.py
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
-  - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/build_global_report_payload.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_refiner.py
-  - src/assessment_engine/scripts/run_intelligence_harvesting.py
-  - src/assessment_engine/scripts/generate_tower_radar_chart.py
+  - src/assessment_engine/application/build_case_input.py
+  - src/assessment_engine/application/build_evidence_ledger.py
+  - src/assessment_engine/application/run_scoring.py
+  - src/assessment_engine/application/run_evidence_analyst.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/run_executive_annex_synthesizer.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/build_global_report_payload.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/application/run_commercial_refiner.py
+  - src/assessment_engine/application/run_intelligence_harvesting.py
+  - src/assessment_engine/application/generate_tower_radar_chart.py
   last_verified_against: 2026-05-01
   notes: Mapa de artefactos en working/, su linaje y su papel canónico, derivado o legacy; la ruta principal ya queda claramente blueprint-first.
   diataxis: explanation
@@ -670,9 +670,9 @@ entries:
   - .github/workflows/ci.yml
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
-  - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
-  - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
-  - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+  - src/assessment_engine/application/tools/run_incremental_quality_gate.py
+  - src/assessment_engine/application/tools/run_incremental_typecheck.py
+  - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   - tests/
   last_verified_against: 2026-05-01
   notes: Base operativa ya consolidada para ejecución, smoke y troubleshooting; la instalación y la operación principal están contrastadas contra CI y validación local.
@@ -692,7 +692,7 @@ entries:
   - requirements.txt
   - tests/test_environment.py
   - .github/workflows/ci.yml
-  - src/assessment_engine/scripts/lib/runtime_env.py
+  - src/assessment_engine/infrastructure/runtime_env.py
   last_verified_against: 2026-05-01
   notes: Onboarding técnico del entorno local y sus dependencias, incluyendo la validación mínima del smoke canónico en seco.
   diataxis: how_to
@@ -715,9 +715,9 @@ entries:
   - .github/pull_request_template.md
   - AGENTS.md
   - .github/copilot-instructions.md
-  - src/assessment_engine/scripts/lib/global_maturity_policy.py
-  - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
-  - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+  - src/assessment_engine/infrastructure/global_maturity_policy.py
+  - src/assessment_engine/application/tools/run_incremental_quality_gate.py
+  - src/assessment_engine/application/tools/run_incremental_typecheck.py
   - tests/test_global_coherence.py
   review_when_source_changes:
   - docs/operations/agentic-development-workflow.md
@@ -728,9 +728,9 @@ entries:
   - .github/pull_request_template.md
   - AGENTS.md
   - .github/copilot-instructions.md
-  - src/assessment_engine/scripts/lib/global_maturity_policy.py
-  - src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
-  - src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+  - src/assessment_engine/infrastructure/global_maturity_policy.py
+  - src/assessment_engine/application/tools/run_incremental_quality_gate.py
+  - src/assessment_engine/application/tools/run_incremental_typecheck.py
   - tests/test_global_coherence.py
   review_paths_on_source_change:
   - docs/operations/engineering-quality-gates.md
@@ -791,8 +791,8 @@ entries:
   - bin/po-run
   - engine_config/policies/orchestrator_policy.json
   - engine_config/runtime_manifest.json
-  - src/assessment_engine/scripts/lib/product_owner_models.py
-  - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+  - src/assessment_engine/infrastructure/product_owner_models.py
+  - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   - src/assessment_engine/prompts/product_owner_prompts.py
   - .github/workflows/ci.yml
   - .github/workflows/quality.yml
@@ -801,8 +801,8 @@ entries:
   - bin/po-run
   - engine_config/policies/orchestrator_policy.json
   - engine_config/runtime_manifest.json
-  - src/assessment_engine/scripts/lib/product_owner_models.py
-  - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+  - src/assessment_engine/infrastructure/product_owner_models.py
+  - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   - src/assessment_engine/prompts/product_owner_prompts.py
   - .github/workflows/ci.yml
   - .github/workflows/quality.yml
@@ -860,7 +860,7 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
   - src/assessment_engine/schemas/blueprint.py
   last_verified_against: 2026-06-26
   notes: Politica y proceso utiles, pero mas normativos que verificados frente a un workflow mecanico concreto del repo.
@@ -877,8 +877,8 @@ entries:
   - ai-agents
   source_of_truth:
   - .github/workflows/
-  - src/application/
-  - src/assessment_engine/scripts/
+  - src/assessment_engine/application/
+  - src/assessment_engine/application/
   - docs/operations/
   last_verified_against: 2026-06-26
   notes: Indice operativo util, pero no debe interpretarse como validacion implicita de toda la carpeta operations.
@@ -894,12 +894,12 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/run_intelligence_harvesting.py
-  - src/assessment_engine/scripts/render_web_presentation.py
-  - src/assessment_engine/scripts/lib/pipeline_runtime.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/application/run_intelligence_harvesting.py
+  - src/assessment_engine/adapters/render_web_presentation.py
+  - src/assessment_engine/infrastructure/pipeline_runtime.py
   enforce_on_source_changes: true
   review_paths_on_source_change:
   - docs/operations/pipeline-execution.md
@@ -921,9 +921,9 @@ entries:
   - pytest.ini
   - tests/test_contract_handover.py
   - tests/test_t5_golden.py
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
   - docs/architecture/working-artifacts.md
   last_verified_against: 2026-06-26
   notes: Guia de troubleshooting util, pero muy dependiente del baseline presente y de artefactos que pueden cambiar entre sesiones.
@@ -939,24 +939,24 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/assessment_engine/scripts/tools/generate_smoke_data.py
-  - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
-  - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
-  - src/assessment_engine/scripts/lib/runtime_env.py
-  - src/assessment_engine/scripts/lib/ai_client.py
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_global_pipeline.py
-  - src/assessment_engine/scripts/run_commercial_pipeline.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/tools/generate_smoke_data.py
+  - src/assessment_engine/application/tools/check_vertex_ai_access.py
+  - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
+  - src/assessment_engine/infrastructure/runtime_env.py
+  - src/assessment_engine/infrastructure/ai_client.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_global_pipeline.py
+  - src/assessment_engine/application/run_commercial_pipeline.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   - tests/test_contract_handover.py
   - tests/test_t5_golden.py
   - tests/test_payload_validation.py
   review_when_source_changes:
-  - src/assessment_engine/scripts/tools/generate_smoke_data.py
-  - src/assessment_engine/scripts/tools/check_vertex_ai_access.py
-  - src/assessment_engine/scripts/tools/regenerate_smoke_artifacts.py
-  - src/assessment_engine/scripts/lib/runtime_env.py
-  - src/assessment_engine/scripts/lib/ai_client.py
+  - src/assessment_engine/application/tools/generate_smoke_data.py
+  - src/assessment_engine/application/tools/check_vertex_ai_access.py
+  - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
+  - src/assessment_engine/infrastructure/runtime_env.py
+  - src/assessment_engine/infrastructure/ai_client.py
   review_paths_on_source_change:
   - docs/operations/smoke-regeneration.md
   - docs/operations/pipeline-controls-runbook.md
@@ -995,12 +995,12 @@ entries:
   - src/assessment_engine/schemas/blueprint.py
   - src/assessment_engine/schemas/global_report.py
   - src/assessment_engine/schemas/commercial.py
-  - src/assessment_engine/scripts/lib/contract_utils.py
-  - src/assessment_engine/scripts/render_tower_annex_from_template.py
-  - src/assessment_engine/scripts/render_tower_blueprint.py
-  - src/assessment_engine/scripts/render_global_report_from_template.py
-  - src/assessment_engine/scripts/render_commercial_report.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/infrastructure/contract_utils.py
+  - src/assessment_engine/adapters/render_tower_annex_from_template.py
+  - src/assessment_engine/adapters/render_tower_blueprint.py
+  - src/assessment_engine/adapters/render_global_report_from_template.py
+  - src/assessment_engine/adapters/render_commercial_report.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   enforce_on_source_changes: true
   review_paths_on_source_change:
   - docs/contracts/payload-render-boundaries.md
@@ -1021,7 +1021,7 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/domain/schemas/blueprint.py
+  - src/assessment_engine/domain/schemas/blueprint.py
   last_verified_against: 2026-06-26
   notes: Contrato directo del payload blueprint por torre, alineado con el schema Pydantic vigente.
   diataxis: reference
@@ -1036,7 +1036,7 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/domain/schemas/annex_synthesis.py
+  - src/assessment_engine/domain/schemas/annex_synthesis.py
   last_verified_against: 2026-06-26
   notes: Contrato directo del payload annex por torre, alineado con el schema Pydantic vigente.
   diataxis: reference
@@ -1052,8 +1052,8 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/schemas/annex_synthesis.py
-  - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - src/assessment_engine/scripts/render_tower_annex_from_template.py
+  - src/assessment_engine/application/run_executive_annex_synthesizer.py
+  - src/assessment_engine/adapters/render_tower_annex_from_template.py
   - docs/contracts/payload-render-boundaries.md
   last_verified_against: 2026-06-26
   notes: Diseno objetivo del anexo de torre; util para evolucion editorial, pero no describe una implementacion cerrada extremo a extremo.
@@ -1071,8 +1071,8 @@ entries:
   source_of_truth:
   - src/assessment_engine/schemas/blueprint.py
   - src/assessment_engine/schemas/annex_synthesis.py
-  - src/assessment_engine/scripts/run_tower_pipeline.py
-  - src/assessment_engine/scripts/run_tower_blueprint_engine.py
+  - src/assessment_engine/application/run_tower_pipeline.py
+  - src/assessment_engine/application/run_tower_blueprint_engine.py
   - docs/architecture/working-artifacts.md
   last_verified_against: 2026-06-26
   notes: Analisis util de cobertura para un informe largo futuro, pero dependiente de artefactos observados y no de un contrato implementado.
@@ -1091,8 +1091,8 @@ entries:
   - docs/contracts/tower_main_report_coverage_matrix.md
   - src/assessment_engine/schemas/blueprint.py
   - src/assessment_engine/schemas/annex_synthesis.py
-  - src/assessment_engine/scripts/render_tower_blueprint.py
-  - src/assessment_engine/scripts/render_tower_annex_from_template.py
+  - src/assessment_engine/adapters/render_tower_blueprint.py
+  - src/assessment_engine/adapters/render_tower_annex_from_template.py
   last_verified_against: 2026-06-26
   notes: Plantilla editorial de un informe largo todavia no implementado con payload y renderer canonicos propios.
   diataxis: reference
@@ -1123,7 +1123,7 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - src/domain/
+  - src/assessment_engine/domain/
   - docs/documentation-map.yaml
   last_verified_against: 2026-04-30
   notes: Índice de la capa de referencia generada y derivada; no sustituye a la documentación canónica.
@@ -1145,7 +1145,7 @@ entries:
   notes: Inventario neutral de la colección heredada ya archivada en la capa de referencia.
   diataxis: reference
   verification_mode: observed_run
-- path: src/assessment_engine/scripts/tools/validate_documentation_governance.py
+- path: src/assessment_engine/application/tools/validate_documentation_governance.py
   kind: document
   title: Documentation governance validator
   doc_type: operational
@@ -1161,7 +1161,7 @@ entries:
   notes: Script de validación para metadata documental, rutas y reglas de automatización.
   diataxis: reference
   verification_mode: code
-- path: src/assessment_engine/scripts/tools/run_incremental_quality_gate.py
+- path: src/assessment_engine/application/tools/run_incremental_quality_gate.py
   kind: document
   title: Incremental quality gate runner
   doc_type: operational
@@ -1178,7 +1178,7 @@ entries:
   notes: Runner que calcula los ficheros Python cambiados en la superficie viva y les aplica ruff check y format-check.
   diataxis: reference
   verification_mode: code
-- path: src/assessment_engine/scripts/tools/run_incremental_typecheck.py
+- path: src/assessment_engine/application/tools/run_incremental_typecheck.py
   kind: document
   title: Incremental typecheck runner
   doc_type: operational
@@ -1196,7 +1196,7 @@ entries:
   notes: Runner que calcula los ficheros Python cambiados en la superficie viva y les aplica mypy de forma incremental.
   diataxis: reference
   verification_mode: code
-- path: src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+- path: src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   kind: document
   title: Product owner orchestrator runner
   doc_type: operational
@@ -1210,12 +1210,12 @@ entries:
   - engine_config/policies/orchestrator_policy.json
   - engine_config/runtime_manifest.json
   - src/assessment_engine/prompts/product_owner_prompts.py
-  - src/assessment_engine/scripts/lib/product_owner_models.py
+  - src/assessment_engine/infrastructure/product_owner_models.py
   last_verified_against: 2026-05-01
   notes: CLI local que planifica una petición de negocio, la ejecuta por tareas sobre un executor configurable y gobierna validación, PR y auto-merge.
   diataxis: reference
   verification_mode: code
-- path: src/assessment_engine/scripts/lib/product_owner_models.py
+- path: src/assessment_engine/infrastructure/product_owner_models.py
   kind: document
   title: Product owner orchestrator models
   doc_type: operational
@@ -1226,13 +1226,13 @@ entries:
   - ai-agents
   source_of_truth:
   - docs/operations/product-owner-orchestrator.md
-  - src/assessment_engine/scripts/tools/run_product_owner_orchestrator.py
+  - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   - src/assessment_engine/prompts/product_owner_prompts.py
   last_verified_against: 2026-05-01
   notes: Schemas estructurados para spec, tasks y planificación del orquestador local.
   diataxis: reference
   verification_mode: code
-- path: src/assessment_engine/scripts/lib/global_maturity_policy.py
+- path: src/assessment_engine/infrastructure/global_maturity_policy.py
   kind: document
   title: Global maturity policy helper
   doc_type: operational
@@ -1243,15 +1243,15 @@ entries:
   - ai-agents
   source_of_truth:
   - docs/operations/engineering-quality-gates.md
-  - src/assessment_engine/scripts/build_global_report_payload.py
-  - src/assessment_engine/scripts/render_global_report_from_template.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/build_global_report_payload.py
+  - src/assessment_engine/adapters/render_global_report_from_template.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   - tests/test_global_coherence.py
   last_verified_against: 2026-05-01
   notes: Helper compartido para score, banda, color y target del dominio global, usado para evitar duplicaciones semánticas entre builder y renderizadores; el builder global ya lo consume directamente para evitar reinterpretaciones locales de la banda.
   diataxis: reference
   verification_mode: code
-- path: src/assessment_engine/scripts/lib/maturity_band.py
+- path: src/assessment_engine/infrastructure/maturity_band.py
   kind: document
   title: Shared maturity band policy helper
   doc_type: operational
@@ -1262,10 +1262,10 @@ entries:
   - ai-agents
   source_of_truth:
   - docs/operations/engineering-quality-gates.md
-  - src/assessment_engine/scripts/run_scoring.py
-  - src/assessment_engine/scripts/run_executive_annex_synthesizer.py
-  - src/assessment_engine/scripts/render_tower_blueprint.py
-  - src/assessment_engine/scripts/render_web_presentation.py
+  - src/assessment_engine/application/run_scoring.py
+  - src/assessment_engine/application/run_executive_annex_synthesizer.py
+  - src/assessment_engine/adapters/render_tower_blueprint.py
+  - src/assessment_engine/adapters/render_web_presentation.py
   - tests/test_maturity_band.py
   - tests/test_maturity_band_characterization.py
   last_verified_against: 2026-05-01
@@ -1401,7 +1401,7 @@ entries:
 automation_rules:
 - name: architecture-changes
   when_changed:
-  - src/assessment_engine/scripts/**
+  - src/assessment_engine/application/**
   - src/assessment_engine/mcp_server.py
   require_review_of:
   - docs/SYSTEM_ARCHITECTURE.md
@@ -1433,7 +1433,7 @@ automation_rules:
   - .github/pull_request_template.md
   - .github/CODEOWNERS
   - .github/workflows/docs-governance.yml
-  - src/assessment_engine/scripts/tools/validate_documentation_governance.py
+  - src/assessment_engine/application/tools/validate_documentation_governance.py
   require_review_of:
   - docs/ai/documentation-governance.md
   - docs/README.md

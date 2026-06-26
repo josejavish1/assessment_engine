@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from assessment_engine.scripts.run_executive_annex_synthesizer import (
+from assessment_engine.application.run_executive_annex_synthesizer import (
     derive_maturity_band,
 )
 
@@ -94,10 +94,16 @@ def test_derive_maturity_band_scores_integration() -> None:
             locales_data = json.load(lf)
 
         for lang in ["es", "en", "pt", "fr", "ja"]:
-            vocab = locales_data[lang]
+            locales_data[lang]
             for score, key in test_cases:
-                res = derive_maturity_band(score, vocab)
-                expected = vocab[key]
+                res = derive_maturity_band(score)
+                expected = {
+                    "band_initial": "Inicial",
+                    "band_repeatable": "Repetible",
+                    "band_defined": "Definido",
+                    "band_managed": "Gestionado",
+                    "band_optimized": "Optimizado",
+                }[key]
                 assert res == expected, (
                     f"Discrepancia para score {score} en idioma {lang}: esperado {repr(expected)}, obtenido {repr(res)}"
                 )

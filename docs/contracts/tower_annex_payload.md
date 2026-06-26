@@ -2,7 +2,7 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/domain/schemas/annex_synthesis.py
+- ../../src/assessment_engine/domain/schemas/annex_synthesis.py
 last_verified_against: 2026-05-03
 applies_to:
 - humans
@@ -16,7 +16,7 @@ verification_mode: schema
 
 Este documento define la estructura y campos del artefacto `approved_annex_<tower>.template_payload.json`, que es una síntesis ejecutiva derivada del `blueprint_payload`.
 
-El schema Pydantic que gobierna este contrato se encuentra en `src/domain/schemas/annex_synthesis.py`.
+El schema Pydantic que gobierna este contrato se encuentra en `src/assessment_engine/domain/schemas/annex_synthesis.py`.
 
 ## Modelo Principal: `AnnexPayload`
 

@@ -1,28 +1,29 @@
 #!/usr/bin/env python
-"""
-Semantic Comment Linter (Anti-AI-Bro / Anti-Slop Gate).
+"""Semantic Comment Linter (Anti-AI-Bro / Anti-Slop Gate).
 Extracts newly added comments and docstrings from the git diff and uses the Gemini API
 to audit them under a strict technical, academic, and non-hype evaluation rubric.
 Fails the build if any marketing buzzwords, redundant "what" comments, or non-technical slop is found.
 """
 
-import sys
-import os
-import json
-import subprocess
-import logging
 import asyncio
+import json
+import logging
+import os
+import subprocess
+import sys
 from pathlib import Path
-from typing import List, Dict, Any, Tuple
+from typing import List
 
 # Set up paths to allow importing project modules
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from infrastructure.ai_client import call_agent
+from assessment_engine.infrastructure.ai_client import call_agent
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger("comment_linter")
 
 # Configuration
@@ -48,9 +49,9 @@ or:
 }
 """
 
+
 def get_git_diff_comments() -> List[str]:
-    """
-    Runs git diff against the base branch (e.g. origin/main, origin/develop or HEAD~1)
+    """Runs git diff against the base branch (e.g. origin/main, origin/develop or HEAD~1)
     and extracts newly added/modified comments and docstrings.
     """
     # Detect base commit / branch
@@ -60,14 +61,16 @@ def get_git_diff_comments() -> List[str]:
         base_commit = "HEAD~1"
 
     logger.info(f"Extracting git diff comments against base: {base_commit}")
-    
+
     try:
         # Compare working tree against base_commit to capture unstaged changes
         cmd = ["git", "diff", base_commit, "--", "src/**/*.py"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
         diff_output = res.stdout
     except Exception as e:
-        logger.warning(f"Failed to run git diff {base_commit}: {e}. Falling back to HEAD~1.")
+        logger.warning(
+            f"Failed to run git diff {base_commit}: {e}. Falling back to HEAD~1."
+        )
         try:
             cmd = ["git", "diff", "HEAD~1", "--", "src/**/*.py"]
             res = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -84,12 +87,14 @@ def get_git_diff_comments() -> List[str]:
         # Only look at added lines in the diff (starting with '+')
         if line.startswith("+") and not line.startswith("+++"):
             content = line[1:].strip()
-            
+
             # Check for inline comments
             if "#" in content:
                 comment_part = content.split("#", 1)[1].strip()
                 # Exclude lint suppressions
-                if not comment_part.startswith("type: ignore") and not comment_part.startswith("pragma:"):
+                if not comment_part.startswith(
+                    "type: ignore"
+                ) and not comment_part.startswith("pragma:"):
                     added_comments.append(comment_part)
 
             # Check for docstrings
@@ -113,18 +118,24 @@ def get_git_diff_comments() -> List[str]:
 async def main() -> None:
     # 1. Extract newly added comments
     new_comments = get_git_diff_comments()
-    
+
     if not new_comments:
-        logger.info("✓ Zero new comments or docstrings detected in git diff. Passing gate immediately (Token Efficient).")
+        logger.info(
+            "✓ Zero new comments or docstrings detected in git diff. Passing gate immediately (Token Efficient)."
+        )
         sys.exit(0)
 
-    logger.info(f"Auditing {len(new_comments)} newly added comments/docstrings for AI-Bro/Slop style...")
+    logger.info(
+        f"Auditing {len(new_comments)} newly added comments/docstrings for AI-Bro/Slop style..."
+    )
 
     # Audit in chunks of 50 comments to prevent output limit issues and ensure JSON compliance
     CHUNK_SIZE = 50
     for chunk_idx in range(0, len(new_comments), CHUNK_SIZE):
         chunk = new_comments[chunk_idx : chunk_idx + CHUNK_SIZE]
-        logger.info(f"Auditing chunk {chunk_idx // CHUNK_SIZE + 1} of {(len(new_comments) - 1) // CHUNK_SIZE + 1} ({len(chunk)} comments)...")
+        logger.info(
+            f"Auditing chunk {chunk_idx // CHUNK_SIZE + 1} of {(len(new_comments) - 1) // CHUNK_SIZE + 1} ({len(chunk)} comments)..."
+        )
 
         # 2. Build prompt
         prompt = "Newly added comments/docstrings to audit:\n"
@@ -134,11 +145,9 @@ async def main() -> None:
         # 3. Call Gemini
         try:
             response_text = await call_agent(
-                model_name=MODEL_NAME,
-                prompt=prompt,
-                instruction=SYSTEM_INSTRUCTION
+                model_name=MODEL_NAME, prompt=prompt, instruction=SYSTEM_INSTRUCTION
             )
-            
+
             # Parse JSON
             if isinstance(response_text, dict):
                 mapping = response_text
@@ -157,24 +166,40 @@ async def main() -> None:
             reason = mapping.get("reason", "")
 
             if not approved:
-                print("\n❌ SEMANTIC COMMENT LINTER FAIL: AI-Bro / AI-Slop Style Detected in chunk!")
+                print(
+                    "\n❌ SEMANTIC COMMENT LINTER FAIL: AI-Bro / AI-Slop Style Detected in chunk!"
+                )
                 print(f"Reason: {reason}\n")
-                print("To maintain Tier 1 Google/Anthropic engineering quality, please:")
-                print("  1. Remove any hype-words (SOTA, Sovereign, robust, bulletproof, flawless, lethal).")
-                print("  2. Delete redundant comments that explain standard Python syntax.")
-                print("  3. Keep comments dry, factual, clinical, and focused on 'why' (specifications, constraints).")
+                print(
+                    "To maintain Tier 1 Google/Anthropic engineering quality, please:"
+                )
+                print(
+                    "  1. Remove any hype-words (SOTA, Sovereign, robust, bulletproof, flawless, lethal)."
+                )
+                print(
+                    "  2. Delete redundant comments that explain standard Python syntax."
+                )
+                print(
+                    "  3. Keep comments dry, factual, clinical, and focused on 'why' (specifications, constraints)."
+                )
                 sys.exit(1)
 
         except Exception as e:
-            logger.error(f"Semantic Comment Linter execution failed on chunk: {e}. Passing defensively to avoid blocking CI.")
+            logger.error(
+                f"Semantic Comment Linter execution failed on chunk: {e}. Passing defensively to avoid blocking CI."
+            )
             sys.exit(0)
 
-    logger.info("✓ All new comments and docstrings passed the Google Tier 1 Semantic Quality Gate.")
+    logger.info(
+        "✓ All new comments and docstrings passed the Google Tier 1 Semantic Quality Gate."
+    )
     sys.exit(0)
 
 
 if __name__ == "__main__":
     if not os.environ.get("GEMINI_API_KEY"):
-        logger.error("GEMINI_API_KEY is not set. Passing defensively to avoid blocking CI.")
+        logger.error(
+            "GEMINI_API_KEY is not set. Passing defensively to avoid blocking CI."
+        )
         sys.exit(0)
     asyncio.run(main())

@@ -1,11 +1,10 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Any
-import pytest
+
 from docx import Document
 
-from adapters.render_togaf_asis_annex import render_asis_annex
+from assessment_engine.adapters.render_togaf_asis_annex import render_asis_annex
 
 
 class TestDynamicGenericityFuzzing:
@@ -103,7 +102,6 @@ class TestDynamicGenericityFuzzing:
                 "bib_minutas_desc": "MUTATED_BIB_MINUTAS_DESC",
                 "conclusions_title": "MUTATED_CONCLUSIONS_TITLE",
                 "appendix_b_intro": "MUTATED_APPENDIX_B_INTRO",
-                "appendix_c_intro": "MUTATED_APPENDIX_C_INTRO",
             }
         }
 
@@ -201,9 +199,9 @@ class TestDynamicGenericityFuzzing:
                                     "literal_evidence": "MUTATED_RISK_EVIDENCE",
                                     "threat_event_frequency": 3.0,
                                     "loss_magnitude": 4.0,
-                                    "fair_ale_score": 120000.0
+                                    "fair_ale_score": 120000.0,
                                 }
-                            ]
+                            ],
                         }
                     ],
                 }

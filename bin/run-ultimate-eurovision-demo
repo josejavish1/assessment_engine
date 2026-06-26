@@ -55,10 +55,10 @@ for TOWER in "${TOWERS[@]}"; do
 done
 
 echo "🌍 FASE 3: Ejecutando Consolidación Global..."
-./.venv/bin/python -m src.application.run_global_pipeline "${SLUG}"
+./.venv/bin/python -m assessment_engine.application.run_global_pipeline "${SLUG}"
 
 echo "💼 FASE 4: Ejecutando Refinado Comercial..."
-./.venv/bin/python -m src.application.run_commercial_pipeline "${SLUG}"
+./.venv/bin/python -m assessment_engine.application.run_commercial_pipeline "${SLUG}"
 
 echo "🖥️ FASE 5: Generando Dashboard Web..."
 ./.venv/bin/python -m src.adapters.render_web_presentation "${SLUG}"

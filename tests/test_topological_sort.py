@@ -1,4 +1,4 @@
-from infrastructure.networkx_analyzer import NetworkXAnalyzer
+from assessment_engine.infrastructure.networkx_analyzer import NetworkXAnalyzer
 
 
 def test_topological_sorting():

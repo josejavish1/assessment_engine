@@ -1,5 +1,7 @@
-import pypdf
 import sys
+
+import pypdf
+
 
 def read_pdf(file_path):
     try:
@@ -10,6 +12,7 @@ def read_pdf(file_path):
         print(text)
     except Exception as e:
         print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     read_pdf(sys.argv[1])

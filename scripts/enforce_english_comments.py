@@ -1,39 +1,122 @@
 #!/usr/bin/env python
-"""
-Pre-commit hook to statically enforce that all comments, docstrings,
+"""Pre-commit hook to statically enforce that all comments, docstrings,
 and field descriptions are written in English, rejecting localized Spanish comments.
 """
 
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Set, List
+from typing import List, Set
 
 import libcst as cst
 
 # Common Spanish stop words and highly characteristic stems/terms
 SPANISH_KEYWORDS = {
-    "de", "la", "el", "en", "para", "con", "por", "como", "esta", "este", "del",
-    "fichero", "archivo", "plantilla", "guardar", "limpiar", "metadatos", "leer", "claves",
-    "encabezado", "parrafo", "celda", "tabla", "viñeta", "ruta", "servidor",
-    "configuracion", "comentario", "codigo", "ejecutar", "pruebas", "error",
-    "exito", "siguiente", "anterior", "funcion", "clase", "metodo", "usuario",
-    "clave", "contraseña", "datos", "registro", "campo", "tipo", "retorno",
-    "vacio", "nulo", "verdadero", "falso"
+    "de",
+    "la",
+    "el",
+    "en",
+    "para",
+    "con",
+    "por",
+    "como",
+    "esta",
+    "este",
+    "del",
+    "fichero",
+    "archivo",
+    "plantilla",
+    "guardar",
+    "limpiar",
+    "metadatos",
+    "leer",
+    "claves",
+    "encabezado",
+    "parrafo",
+    "celda",
+    "tabla",
+    "viñeta",
+    "ruta",
+    "servidor",
+    "configuracion",
+    "comentario",
+    "codigo",
+    "ejecutar",
+    "pruebas",
+    "error",
+    "exito",
+    "siguiente",
+    "anterior",
+    "funcion",
+    "clase",
+    "metodo",
+    "usuario",
+    "clave",
+    "contraseña",
+    "datos",
+    "registro",
+    "campo",
+    "tipo",
+    "retorno",
+    "vacio",
+    "nulo",
+    "verdadero",
+    "falso",
 }
 
 # Common English stopwords to bypass validation and eliminate false positives for English sentences
 ENGLISH_STOPWORDS = {
-    "the", "and", "to", "is", "a", "of", "for", "in", "on", "with", "must",
-    "have", "be", "this", "that", "it", "any", "prevent", "cause", "fatal",
-    "will", "from", "as", "by", "an", "at", "are", "or", "which", "more", "such",
-    "under", "should", "does", "been", "was", "were", "into", "step", "normalize",
-    "removing", "possessive", "prepositions", "text"
+    "the",
+    "and",
+    "to",
+    "is",
+    "a",
+    "of",
+    "for",
+    "in",
+    "on",
+    "with",
+    "must",
+    "have",
+    "be",
+    "this",
+    "that",
+    "it",
+    "any",
+    "prevent",
+    "cause",
+    "fatal",
+    "will",
+    "from",
+    "as",
+    "by",
+    "an",
+    "at",
+    "are",
+    "or",
+    "which",
+    "more",
+    "such",
+    "under",
+    "should",
+    "does",
+    "been",
+    "was",
+    "were",
+    "into",
+    "step",
+    "normalize",
+    "removing",
+    "possessive",
+    "prepositions",
+    "text",
 }
+
 
 def remove_accents(text: str) -> str:
     normalized = unicodedata.normalize("NFKD", text)
     return "".join(c for c in normalized if not unicodedata.combining(c))
+
 
 def tokenize(text: str) -> Set[str]:
     cleaned = remove_accents(text.lower())
@@ -97,12 +180,12 @@ class DocLanguageValidator(cst.CSTVisitor):
 
     def _check_text(self, text: str, element_type: str) -> None:
         tokens = tokenize(text)
-        
+
         # English stopword bypass heuristic to eliminate false positives
         english_indicators = tokens.intersection(ENGLISH_STOPWORDS)
         if len(english_indicators) >= 2:
             return
-            
+
         matches = tokens.intersection(SPANISH_KEYWORDS)
         if matches:
             # We found Spanish keywords, flag a violation
@@ -139,11 +222,14 @@ def main() -> None:
             print(f"⚠️ Warning: Failed to parse {p.name}: {e}")
 
     if total_violations > 0:
-        print(f"\nTotal violations: {total_violations}. Tier 1 engineering standards require all comments and documentation to be strictly in English.")
+        print(
+            f"\nTotal violations: {total_violations}. Tier 1 engineering standards require all comments and documentation to be strictly in English."
+        )
         sys.exit(1)
-    
+
     print("✓ All comments and docstrings are compliant with Tier 1 English standards.")
     sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

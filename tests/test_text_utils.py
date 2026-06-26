@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from infrastructure.text_utils import clean_text_for_word, slugify
+from assessment_engine.infrastructure.text_utils import clean_text_for_word, slugify
 
 
 def test_slugify_tier1() -> None:

@@ -3,11 +3,11 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../SYSTEM_ARCHITECTURE.md
-- ../../src/application/run_tower_pipeline.py
-- ../../src/application/run_global_pipeline.py
-- ../../src/application/run_commercial_pipeline.py
-- ../../src/application/render_web_presentation.py
-- ../../src/domain/schemas/
+- ../../src/assessment_engine/application/run_tower_pipeline.py
+- ../../src/assessment_engine/application/run_global_pipeline.py
+- ../../src/assessment_engine/application/run_commercial_pipeline.py
+- ../../src/assessment_engine/adapters/render_web_presentation.py
+- ../../src/assessment_engine/domain/schemas/
 - ./tower-pipeline.md
 - ./global-commercial-pipelines.md
 - ./critical-modules.md

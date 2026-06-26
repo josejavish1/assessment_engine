@@ -2,14 +2,14 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-- ../../src/application/run_global_pipeline.py
-- ../../src/application/build_global_report_payload.py
-- ../../src/application/run_executive_refiner.py
-- ../../src/application/run_commercial_pipeline.py
-- ../../src/application/run_commercial_refiner.py
-- ../../src/infrastructure/pipeline_runtime.py
-- ../../src/domain/schemas/global_report.py
-- ../../src/domain/schemas/commercial.py
+- ../../src/assessment_engine/application/run_global_pipeline.py
+- ../../src/assessment_engine/application/build_global_report_payload.py
+- ../../src/assessment_engine/application/run_executive_refiner.py
+- ../../src/assessment_engine/application/run_commercial_pipeline.py
+- ../../src/assessment_engine/application/run_commercial_refiner.py
+- ../../src/assessment_engine/infrastructure/pipeline_runtime.py
+- ../../src/assessment_engine/domain/schemas/global_report.py
+- ../../src/assessment_engine/domain/schemas/commercial.py
 last_verified_against: 2026-05-02
 applies_to:
 - humans
@@ -36,7 +36,7 @@ Su objetivo no es descubrir una verdad nueva, sino **reagrupar y explotar** la v
 
 El orquestador principal es:
 
-- `src/application/run_global_pipeline.py`
+- `src/assessment_engine/application/run_global_pipeline.py`
 
 Trabaja sobre:
 
@@ -91,7 +91,7 @@ El builder:
 - extrae principios de arquitectura e implicaciones operativas si existen;
 - genera la consolidación global exclusivamente desde blueprints de torre disponibles.
 
-Además, la ruta activa ya debe reutilizar helpers compartidos para la semántica de madurez cuando necesita traducir score numérico a banda cualitativa. En la consolidación global, `build_global_report_payload.py` consume `src/infrastructure/global_maturity_policy.py` para score, target, color y banda, y esa política global sigue delegando los umbrales cualitativos en `src/infrastructure/maturity_band.py`. El builder global no debería volver a introducir una policy paralela escondida en la propia capa de consolidación ni depender directamente de dos capas de traducción distintas para la misma banda.
+Además, la ruta activa ya debe reutilizar helpers compartidos para la semántica de madurez cuando necesita traducir score numérico a banda cualitativa. En la consolidación global, `build_global_report_payload.py` consume `src/assessment_engine/infrastructure/global_maturity_policy.py` para score, target, color y banda, y esa política global sigue delegando los umbrales cualitativos en `src/assessment_engine/infrastructure/maturity_band.py`. El builder global no debería volver a introducir una policy paralela escondida en la propia capa de consolidación ni depender directamente de dos capas de traducción distintas para la misma banda.
 
 ### Decisión arquitectónica relevante
 
@@ -137,7 +137,7 @@ En paralelo, la consolidación global y las vistas derivadas siguen dependiendo 
 
 El orquestador principal es:
 
-- `src/application/run_commercial_pipeline.py`
+- `src/assessment_engine/application/run_commercial_pipeline.py`
 
 Parte de:
 

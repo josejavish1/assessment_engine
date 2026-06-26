@@ -6,7 +6,7 @@ source_of_truth:
 - ../../requirements.txt
 - ../../tests/test_environment.py
 - ../../.github/workflows/ci.yml
-- ../../src/infrastructure/runtime_env.py
+- ../../src/assessment_engine/infrastructure/runtime_env.py
 last_verified_against: 2026-05-01
 applies_to:
 - humans
@@ -73,7 +73,7 @@ Si tu entorno ya tiene esos valores, los scripts los reutilizan. Si no, el runti
 ### Smoke canónico en seco
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --dry-run
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
 ```
 
 Ese dry-run ya forma parte de la validación operativa del repo y comprueba que el entorno puede recorrer el tramo global canónico sin depender de fallback legacy.
@@ -90,5 +90,5 @@ Deberías poder:
 
 1. importar `assessment_engine`;
 2. ejecutar tests locales con `./.venv/bin/python`;
-3. lanzar scripts `python -m assessment_engine.scripts.<modulo>`;
+3. lanzar scripts `python -m assessment_engine.application.<modulo>`;
 4. renderizar plantillas incluidas en el paquete.

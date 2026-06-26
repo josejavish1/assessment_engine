@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from infrastructure.evidence_governance import EvidenceSnapshotter
-from infrastructure.runtime_paths import ROOT
+from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
+from assessment_engine.infrastructure.runtime_paths import ROOT
 
 logging.basicConfig(level=logging.INFO)
 

@@ -2,15 +2,15 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-- ../../src/application/tools/generate_smoke_data.py
-- ../../src/application/tools/check_vertex_ai_access.py
-- ../../src/application/tools/regenerate_smoke_artifacts.py
-- ../../src/infrastructure/runtime_env.py
-- ../../src/infrastructure/ai_client.py
-- ../../src/application/run_tower_pipeline.py
-- ../../src/application/run_global_pipeline.py
-- ../../src/application/run_commercial_pipeline.py
-- ../../src/application/render_web_presentation.py
+- ../../src/assessment_engine/application/tools/generate_smoke_data.py
+- ../../src/assessment_engine/application/tools/check_vertex_ai_access.py
+- ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
+- ../../src/assessment_engine/infrastructure/runtime_env.py
+- ../../src/assessment_engine/infrastructure/ai_client.py
+- ../../src/assessment_engine/application/run_tower_pipeline.py
+- ../../src/assessment_engine/application/run_global_pipeline.py
+- ../../src/assessment_engine/application/run_commercial_pipeline.py
+- ../../src/assessment_engine/adapters/render_web_presentation.py
 - ../../tests/test_contract_handover.py
 - ../../tests/test_t5_golden.py
 - ../../tests/test_payload_validation.py
@@ -80,7 +80,7 @@ Por tanto, para llegar al final del smoke necesitas credenciales operativas vál
 Antes de lanzar el tramo IA, puedes validar el acceso base con:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.check_vertex_ai_access
+./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ## Runner recomendado
@@ -88,7 +88,7 @@ Antes de lanzar el tramo IA, puedes validar el acceso base con:
 El repo incorpora el entrypoint:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 
 El runner ya no resuelve de forma dispersa el bootstrap del runtime ni las rutas principales del caso smoke. La preparación del entorno compartido, la resolución de `working/`, `client_dir`, `case_dir` y varias rutas de artefactos/payloads viven ahora en helpers comunes (`pipeline_runtime.py` y `runtime_paths.py`), lo que reduce divergencias entre el flujo de torre, los pipelines global/commercial y el dashboard web.
@@ -103,7 +103,7 @@ Por defecto trabaja sobre:
 Si quieres probar un modelo más rápido para el rol `writer_fast`, puedes usar:
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts \
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
   --writer-model gemini-2.5-flash
 ```
 
@@ -112,13 +112,13 @@ Si quieres probar un modelo más rápido para el rol `writer_fast`, puedes usar:
 ### 1. Ver el flujo exacto sin ejecutar nada
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --dry-run
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
 ```
 
 ### 1.b. Forzar diagnóstico rápido del tramo IA
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts \
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
   --writer-model gemini-2.5-flash \
   --vertex-query-timeout-seconds 30 \
   --ai-step-timeout-seconds 60
@@ -131,7 +131,7 @@ Esto no arregla Vertex AI, pero evita que un cuelgue se vea como silencio indefi
 No requiere Vertex AI.
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --local-only
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
 ```
 
 Esto deja preparados:
@@ -148,7 +148,7 @@ Esto deja preparados:
 Requiere Vertex AI operativo.
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 
 El runner genera primero la parte local y después reanuda `run_tower_pipeline.py` desde:
@@ -164,7 +164,7 @@ Este smoke también actúa como red de seguridad para la semántica compartida d
 ### 4. Extender el smoke a outputs globales, comerciales y web
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts \
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
   --with-global \
   --with-commercial \
   --with-web
@@ -175,7 +175,7 @@ El runner ya usa el tramo global directamente sobre el camino canónico. Cuando 
 ### 5. Simular un cliente tipo Vodafone con varias torres
 
 ```bash
-./.venv/bin/python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts \
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
   --client vodafone_demo \
   --scenario vodafone-public \
   --towers T2 T3 T5 \

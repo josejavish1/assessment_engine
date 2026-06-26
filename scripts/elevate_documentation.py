@@ -1,18 +1,17 @@
 #!/usr/bin/env python
-"""
-Elevate Documentation Script.
+"""Elevate Documentation Script.
 Uses LibCST to parse Python source files, extract comments/docstrings/field descriptions,
 translates and elevates them to Tier 1 English engineering standards using the Gemini API,
 and safely injects them back preserving all code logic and style.
 """
 
 import asyncio
-import os
-import sys
 import json
 import logging
+import os
+import sys
 from pathlib import Path
-from typing import Dict, List, Set, Any, Optional
+from typing import Dict, List, Set
 
 import libcst as cst
 
@@ -20,10 +19,12 @@ import libcst as cst
 project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from infrastructure.ai_client import call_agent
+from assessment_engine.infrastructure.ai_client import call_agent
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger("elevate_docs")
 
 # Configuration
@@ -32,8 +33,7 @@ MODEL_NAME = os.environ.get("MODEL_TIER_PRO", "gemini-2.5-pro")
 
 
 def get_raw_string_content(orig_str: str) -> str:
-    """
-    Strips raw/format/bytes prefixes and matching enclosing quotes from a Python string literal
+    """Strips raw/format/bytes prefixes and matching enclosing quotes from a Python string literal
     to isolate the raw text content.
     """
     for i, char in enumerate(orig_str):
@@ -55,8 +55,7 @@ def get_raw_string_content(orig_str: str) -> str:
 
 
 def preserve_quotes_and_prefix(orig_str: str, new_str: str) -> str:
-    """
-    Extracts the original string's prefix and matching enclosing quotes,
+    """Extracts the original string's prefix and matching enclosing quotes,
     cleans any accidentally generated prefixes/quotes in the new string,
     and returns the new string formatted exactly like the original.
     """
@@ -83,9 +82,11 @@ def preserve_quotes_and_prefix(orig_str: str, new_str: str) -> str:
     cleaned = new_str.strip()
     # Strip any accidental matching prefix returned by the LLM
     for p in ("f", "r", "b", "u", "F", "R", "B", "U"):
-        if cleaned.lower().startswith(p) and (cleaned[len(p):].startswith('"') or cleaned[len(p):].startswith("'")):
-            cleaned = cleaned[len(p):].strip()
-            
+        if cleaned.lower().startswith(p) and (
+            cleaned[len(p) :].startswith('"') or cleaned[len(p) :].startswith("'")
+        ):
+            cleaned = cleaned[len(p) :].strip()
+
     # Strip matching quotes returned by the LLM
     if cleaned.startswith('"""') and cleaned.endswith('"""'):
         cleaned = cleaned[3:-3]
@@ -95,7 +96,7 @@ def preserve_quotes_and_prefix(orig_str: str, new_str: str) -> str:
         cleaned = cleaned[1:-1]
     elif cleaned.startswith("'") and cleaned.endswith("'"):
         cleaned = cleaned[1:-1]
-        
+
     return f"{prefix}{quotes}{cleaned}{quotes}"
 
 
@@ -158,29 +159,39 @@ class DocElementTransformer(cst.CSTTransformer):
     def visit_Module(self, node: cst.Module) -> None:
         self._current_block_first_stmt.append(True)
 
-    def leave_Module(self, original_node: cst.Module, updated_node: cst.Module) -> cst.Module:
+    def leave_Module(
+        self, original_node: cst.Module, updated_node: cst.Module
+    ) -> cst.Module:
         self._current_block_first_stmt.pop()
         return updated_node
 
     def visit_ClassDef(self, node: cst.ClassDef) -> None:
         self._current_block_first_stmt.append(True)
 
-    def leave_ClassDef(self, original_node: cst.ClassDef, updated_node: cst.ClassDef) -> cst.ClassDef:
+    def leave_ClassDef(
+        self, original_node: cst.ClassDef, updated_node: cst.ClassDef
+    ) -> cst.ClassDef:
         self._current_block_first_stmt.pop()
         return updated_node
 
     def visit_FunctionDef(self, node: cst.FunctionDef) -> None:
         self._current_block_first_stmt.append(True)
 
-    def leave_FunctionDef(self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef) -> cst.FunctionDef:
+    def leave_FunctionDef(
+        self, original_node: cst.FunctionDef, updated_node: cst.FunctionDef
+    ) -> cst.FunctionDef:
         self._current_block_first_stmt.pop()
         return updated_node
 
     def leave_SimpleStatementLine(
-        self, original_node: cst.SimpleStatementLine, updated_node: cst.SimpleStatementLine
+        self,
+        original_node: cst.SimpleStatementLine,
+        updated_node: cst.SimpleStatementLine,
     ) -> cst.SimpleStatementLine:
         if self._current_block_first_stmt and self._current_block_first_stmt[-1]:
-            if len(original_node.body) == 1 and isinstance(original_node.body[0], cst.Expr):
+            if len(original_node.body) == 1 and isinstance(
+                original_node.body[0], cst.Expr
+            ):
                 expr = original_node.body[0]
                 if isinstance(expr.value, cst.SimpleString):
                     orig_val = expr.value.value
@@ -190,7 +201,9 @@ class DocElementTransformer(cst.CSTTransformer):
                         if not isinstance(new_raw_val, str):
                             new_raw_val = str(new_raw_val)
                         wrapped_val = preserve_quotes_and_prefix(orig_val, new_raw_val)
-                        new_expr = expr.with_changes(value=expr.value.with_changes(value=wrapped_val))
+                        new_expr = expr.with_changes(
+                            value=expr.value.with_changes(value=wrapped_val)
+                        )
                         updated_node = updated_node.with_changes(body=[new_expr])
             self._current_block_first_stmt[-1] = False
         else:
@@ -198,7 +211,9 @@ class DocElementTransformer(cst.CSTTransformer):
                 self._current_block_first_stmt[-1] = False
         return updated_node
 
-    def leave_Comment(self, original_node: cst.Comment, updated_node: cst.Comment) -> cst.Comment:
+    def leave_Comment(
+        self, original_node: cst.Comment, updated_node: cst.Comment
+    ) -> cst.Comment:
         orig_val = original_node.value
         raw_val = orig_val.lstrip("#").strip()
         if raw_val in self.mapping:
@@ -208,12 +223,14 @@ class DocElementTransformer(cst.CSTTransformer):
             if not new_raw_val:
                 # If mapped to empty, map to an empty comment node
                 return updated_node.with_changes(value="#")
-            
+
             # Clean possible leading '#' and outer quotes returned by the LLM
             cleaned = new_raw_val.lstrip("#").strip()
-            if (cleaned.startswith('"') and cleaned.endswith('"')) or (cleaned.startswith("'") and cleaned.endswith("'")):
+            if (cleaned.startswith('"') and cleaned.endswith('"')) or (
+                cleaned.startswith("'") and cleaned.endswith("'")
+            ):
                 cleaned = cleaned[1:-1].strip()
-                
+
             if not cleaned:
                 return updated_node.with_changes(value="#")
             return updated_node.with_changes(value=f"# {cleaned}")
@@ -255,16 +272,19 @@ Rules:
    }
 """
 
-async def translate_elements(elements_dict: Dict[str, List[str]], file_path: Path) -> Dict[str, str]:
-    """
-    Calls the Gemini API to elevate the collected comments/docstrings/descriptions in a single batch.
-    """
+
+async def translate_elements(
+    elements_dict: Dict[str, List[str]], file_path: Path
+) -> Dict[str, str]:
+    """Calls the Gemini API to elevate the collected comments/docstrings/descriptions in a single batch."""
     # Build prompt
     prompt = f"File: {file_path.relative_to(project_root)}\n\n"
     prompt += "Docstrings to translate and elevate:\n"
     for d in elements_dict["docstrings"]:
         prompt += f"- {repr(d)}\n"
-    prompt += "\nComments to translate and elevate (if redundant, map to empty string \"\"):\n"
+    prompt += (
+        '\nComments to translate and elevate (if redundant, map to empty string ""):\n'
+    )
     for c in elements_dict["comments"]:
         prompt += f"- {repr(c)}\n"
     prompt += "\nField Descriptions to translate and elevate:\n"
@@ -273,15 +293,13 @@ async def translate_elements(elements_dict: Dict[str, List[str]], file_path: Pat
 
     try:
         response_text = await call_agent(
-            model_name=MODEL_NAME,
-            prompt=prompt,
-            instruction=SYSTEM_INSTRUCTION
+            model_name=MODEL_NAME, prompt=prompt, instruction=SYSTEM_INSTRUCTION
         )
-        
+
         # Parse the JSON response
         if isinstance(response_text, dict):
             return response_text
-            
+
         # Clean response if wrapped in code blocks
         clean_text = str(response_text).strip()
         if clean_text.startswith("```"):
@@ -291,7 +309,7 @@ async def translate_elements(elements_dict: Dict[str, List[str]], file_path: Pat
             if lines[-1].startswith("```"):
                 lines = lines[:-1]
             clean_text = "\n".join(lines).strip()
-            
+
         mapping = json.loads(clean_text)
         return mapping
     except Exception as e:
@@ -303,19 +321,25 @@ async def process_file(file_path: Path, semaphore: asyncio.Semaphore) -> None:
     async with semaphore:
         try:
             code = file_path.read_text(encoding="utf-8")
-            
+
             # Parse using LibCST
             try:
                 module = cst.parse_module(code)
             except Exception as e:
-                logger.warning(f"Skipping {file_path} - Failed to parse with LibCST: {e}")
+                logger.warning(
+                    f"Skipping {file_path} - Failed to parse with LibCST: {e}"
+                )
                 return
 
             # Collect doc elements
             collector = DocElementCollector()
             module.visit(collector)
 
-            if not collector.docstrings and not collector.comments and not collector.descriptions:
+            if (
+                not collector.docstrings
+                and not collector.comments
+                and not collector.descriptions
+            ):
                 # Nothing to translate in this file
                 return
 
@@ -325,7 +349,9 @@ async def process_file(file_path: Path, semaphore: asyncio.Semaphore) -> None:
                 "descriptions": sorted(list(collector.descriptions)),
             }
 
-            logger.info(f"Processing {file_path.relative_to(project_root)}: {len(elements_dict['docstrings'])} docstrings, {len(elements_dict['comments'])} comments, {len(elements_dict['descriptions'])} descriptions.")
+            logger.info(
+                f"Processing {file_path.relative_to(project_root)}: {len(elements_dict['docstrings'])} docstrings, {len(elements_dict['comments'])} comments, {len(elements_dict['descriptions'])} descriptions."
+            )
 
             # Translate in batch
             mapping = await translate_elements(elements_dict, file_path)
@@ -342,12 +368,16 @@ async def process_file(file_path: Path, semaphore: asyncio.Semaphore) -> None:
             try:
                 compile(transformed_code, str(file_path), "exec")
             except Exception as syntax_err:
-                logger.error(f"CRITICAL: Refusing to save {file_path} - Transformed code has syntax error: {syntax_err}")
+                logger.error(
+                    f"CRITICAL: Refusing to save {file_path} - Transformed code has syntax error: {syntax_err}"
+                )
                 return
 
             # Save elevated code
             file_path.write_text(transformed_code, encoding="utf-8")
-            logger.info(f"✓ Successfully elevated documentation in {file_path.relative_to(project_root)}")
+            logger.info(
+                f"✓ Successfully elevated documentation in {file_path.relative_to(project_root)}"
+            )
 
         except Exception as e:
             logger.error(f"Error processing file {file_path}: {e}")
@@ -366,28 +396,29 @@ async def main() -> None:
         # Exclude ignored patterns
         ignored_patterns = ["_legacy", "node_modules", ".venv"]
         py_files = [
-            f for f in py_files 
-            if not any(pat in str(f) for pat in ignored_patterns)
+            f for f in py_files if not any(pat in str(f) for pat in ignored_patterns)
         ]
     else:
         # We only scan files in src/ domain, infrastructure, application, ports, adapters
         target_dir = project_root / "src"
         all_py_files = sorted(list(target_dir.glob("**/*.py")))
-        
+
         # Exclude legacy code or external node_modules if present
         ignored_patterns = ["_legacy", "node_modules", ".venv"]
         py_files = [
-            f for f in all_py_files 
+            f
+            for f in all_py_files
             if not any(pat in str(f) for pat in ignored_patterns)
         ]
 
     logger.info(f"Starting SOTA documentation elevation on {len(py_files)} files.")
-    
+
     semaphore = asyncio.Semaphore(CONCURRENCY_LIMIT)
     tasks = [process_file(f, semaphore) for f in py_files]
-    
+
     await asyncio.gather(*tasks)
     logger.info("Documentation elevation batch execution finished.")
+
 
 if __name__ == "__main__":
     if not os.environ.get("GEMINI_API_KEY"):

@@ -2,9 +2,9 @@ import asyncio
 import sys
 from pathlib import Path
 
-from infrastructure.evidence_engine import EvidenceEngine
-from infrastructure.raptor_engine import RaptorEngine
-from infrastructure.text_utils import slugify
+from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
+from assessment_engine.infrastructure.raptor_engine import RaptorEngine
+from assessment_engine.infrastructure.text_utils import slugify
 
 
 async def test_raptor(client_name: str, docx_path: str):
