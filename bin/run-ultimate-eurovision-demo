@@ -19,7 +19,6 @@ mkdir -p "working/$SLUG"
 
 source .env
 export GOOGLE_APPLICATION_CREDENTIALS=/home/jsanchhi/.secrets/sa-key.json
-export PYTHONPATH=src
 
 # --- FASE 0: INGESTA DE DOCUMENTOS (EVIDENCIAS Y RAPTOR) ---
 echo "📥 FASE 0: Ejecutando Ingesta de Documentos (Evidence & Raptor Engine)..."

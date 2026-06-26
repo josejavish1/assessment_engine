@@ -214,7 +214,9 @@ def main() -> int:
     api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
-        print("WARNING: GEMINI_API_KEY is not defined. Skipping semantic drift validation.")
+        print(
+            "WARNING: GEMINI_API_KEY is not defined. Skipping semantic drift validation."
+        )
         return 0
 
     repo_root = Path(args.repo_root).resolve()

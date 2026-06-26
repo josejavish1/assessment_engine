@@ -13,7 +13,6 @@ echo "=========================================================="
 
 # --- CONFIGURACIÓN DE AISLAMIENTO FÍSICO ---
 export ASSESSMENT_CLIENT_ID="redeia_v3"
-export PYTHONPATH=src
 
 # --- LIMPIEZA DE TORRES (Preservando el RAG de la Fase 0) ---
 echo "🧹 Limpiando resultados de ejecuciones anteriores de torres (Preservando RAG)..."

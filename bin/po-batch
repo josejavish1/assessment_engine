@@ -10,7 +10,6 @@ LOG_FILE="$REPO_ROOT/working/apex/session.log"
 # Asegurar entorno
 if [ ! -d "$REPO_ROOT/.venv" ]; then echo "Error: .venv no encontrado."; exit 1; fi
 source "$REPO_ROOT/.assessment_env.sh"
-export PYTHONPATH="$REPO_ROOT/src"
 
 # Función para ejecución en modo DAEMON (Background persistente)
 run_daemon() {
