@@ -10,18 +10,18 @@
     },
     {
       "level": 2,
-      "label": "Basico",
+      "label": "Básico",
       "operational_reading": "La capacidad existe de forma parcial o irregular y todavia no es consistente."
     },
     {
       "level": 3,
       "label": "Estandarizado",
-      "operational_reading": "La capacidad esta implantada y se aplica de forma consistente en el ambito relevante."
+      "operational_reading": "La capacidad está implantada y se aplica de forma consistente en el ámbito relevante."
     },
     {
       "level": 4,
       "label": "Optimizado",
-      "operational_reading": "La capacidad esta industrializada, gobernada y sostenida de forma predecible."
+      "operational_reading": "La capacidad está industrializada, gobernada y sostenida de forma predecible."
     },
     {
       "level": 5,
@@ -38,7 +38,7 @@
     {
       "min": 1.8,
       "max": 2.59,
-      "label": "Nivel 2 - Basico"
+      "label": "Nivel 2 - Básico"
     },
     {
       "min": 2.6,
