@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - src/assessment_engine/domain/
 - src/assessment_engine/application/
-- src/assessment_engine/domain/mcp_server.py
+- src/assessment_engine/mcp_server.py
 - src/assessment_engine/domain/schemas/
 last_verified_against: 2026-06-26
 applies_to:
