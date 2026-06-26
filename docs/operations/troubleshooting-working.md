@@ -2,7 +2,7 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- ../../pytest.ini
+- ../../pyproject.toml
 - ../../tests/test_contract_handover.py
 - ../../tests/test_t5_golden.py
 - ../../src/assessment_engine/application/run_tower_pipeline.py
@@ -128,9 +128,9 @@ Si falla una validación por ausencia de artefactos:
 
 Si el smoke global canónico (`--with-global`) falla, la lectura correcta ya no es “quizá faltó activar compatibilidad”: significa que hay una regresión o una dependencia real de artefactos legacy fuera del flujo principal.
 
-## Relación con `pytest.ini`
+## Relación con `pyproject.toml`
 
-`pytest.ini` excluye `working/` del descubrimiento de tests, pero no impide que los tests lean artefactos desde esa ruta cuando fueron diseñados para validar contratos o golden files.
+`pyproject.toml` (bajo `[tool.pytest.ini_options]`) excluye `working/` del descubrimiento de tests, pero no impide que los tests lean artefactos desde esa ruta cuando fueron diseñados para validar contratos o golden files.
 
 ## Recomendación de mantenimiento
 

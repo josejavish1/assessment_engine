@@ -713,7 +713,6 @@ entries:
   source_of_truth:
   - pyproject.toml
   - requirements.txt
-  - pytest.ini
   - .github/workflows/ci.yml
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
@@ -965,7 +964,7 @@ entries:
   - humans
   - ai-agents
   source_of_truth:
-  - pytest.ini
+  - pyproject.toml
   - tests/test_contract_handover.py
   - tests/test_t5_golden.py
   - src/assessment_engine/application/run_tower_pipeline.py
@@ -1468,7 +1467,6 @@ automation_rules:
   when_changed:
   - pyproject.toml
   - requirements.txt
-  - pytest.ini
   - .github/workflows/**
   require_review_of:
   - README.md

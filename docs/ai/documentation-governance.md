@@ -77,7 +77,7 @@ Actualiza o reverifica documentación cuando cambie cualquiera de estas áreas:
 | `src/assessment_engine/application/**`, `src/assessment_engine/domain/mcp_server.py` | arquitectura y operación |
 | `src/assessment_engine/domain/schemas/**` | contratos y docs de payloads |
 | `.github/workflows/**` | operación y CI |
-| `pyproject.toml`, `requirements.txt`, `pytest.ini` | onboarding, instalación y validación |
+| `pyproject.toml`, `requirements.txt` | onboarding, instalación y validación |
 | prompts o configuración de motor | operación y referencia técnica |
 
 ## Enforcement en GitHub
