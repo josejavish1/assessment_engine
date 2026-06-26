@@ -64,7 +64,7 @@ working/
 - contrato operativo actual:
   - compatibilidad legacy y `2.0`;
   - contrato pragmático `3.0` para profile, contexto de negocio, contexto tecnológico, tower overrides, claims y review;
-  - adaptadores de compatibilidad en `scripts/lib/client_intelligence.py`
+  - adaptadores de compatibilidad en `src/assessment_engine/infrastructure/client_intelligence.py`
 
 ### `global_report_payload.json`
 

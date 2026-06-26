@@ -1599,6 +1599,25 @@ entries:
     el inventario siga en revision.
   diataxis: explanation
   verification_mode: editorial
+- path: docs/architecture/rage-architecture.md
+  kind: document
+  title: RAGE Architecture Specification
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/infrastructure/agentic_benchmarker.py
+  - src/assessment_engine/domain/schemas/rubric.py
+  - engine_config/frameworks/
+  - tests/test_agentic_benchmarker.py
+  last_verified_against: '2026-06-26'
+  notes: Especificación técnica y diseño de la arquitectura asíncrona de evaluación
+    factual RAGE.
+  diataxis: explanation
+  verification_mode: code
 automation_rules:
 - name: architecture-changes
   when_changed:
