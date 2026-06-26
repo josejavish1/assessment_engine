@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   auto-heal:
-    name: Repository Sync & Format Auto-Heal
+    name: Repository Sync, Format & Schema Auto-Heal
     runs-on: ubuntu-latest
 
     steps:
@@ -32,15 +32,30 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
+      - name: Run Schema Table Auto-Healing (validate_contracts_schemas)
+        run: |
+          PYTHONPATH=src python src/assessment_engine/application/tools/validate_contracts_schemas.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --autofix
+
       - name: Run Context Compilation (llms-full.txt)
         run: |
-          python src/assessment_engine/application/tools/compile_llms_full.py
+          PYTHONPATH=src python src/assessment_engine/application/tools/compile_llms_full.py
 
       - name: Run Linter & Formatter Auto-Fixes (Ruff)
         run: |
           pip install ruff
           ruff check . --fix || echo "Some non-fixable warnings ignored."
           ruff format .
+
+      - name: Regenerate Documentation Health Report
+        run: |
+          PYTHONPATH=src python src/assessment_engine/application/tools/build_documentation_health_report.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --today "$(date -u +%F)" \
+            --output .artifacts/docs/health-report.json
 
       - name: Check for Code & Docs Drift
         id: git-diff
@@ -58,9 +73,9 @@ jobs:
           git config --global user.name "Sovereign Sentinel Bot"
           git config --global user.email "sentinel@sovereign-fabric.ai"
           git add .
-          git commit -m "style: [Sentinel Auto-Heal] Synchronise llms-full.txt and format code"
+          git commit -m "style: [Sentinel Auto-Heal] Synchronise docs, schemas, sitemaps, and format code"
           git push origin main
 
       - name: Validate System-wide Stability (pytest)
         run: |
-          python -m pytest
+          PYTHONPATH=src python -m pytest

@@ -101,3 +101,15 @@ module = [
     "ports.*"
 ]
 ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".git", "_PROJECT_ARCHIVE_", "_legacy", ".venv", "working"]
+addopts = "-ra -q"
+markers = [
+    "contract: marks tests that validate data contracts between pipeline stages"
+]
+filterwarnings = [
+    "ignore::UserWarning:google.adk.features._feature_decorator",
+    "ignore:This feature is deprecated as of June 24, 2025:UserWarning:vertexai.generative_models._generative_models"
+]
