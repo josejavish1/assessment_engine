@@ -79,3 +79,9 @@ repos:
         entry: /home/jsanchhi/assessment_enginev2/.venv/bin/python scripts/enforce_english_comments.py
         language: system
         files: \.py$
+
+      - id: docs-auto-healing
+        name: Documentation Contracts Auto-Healing
+        entry: .venv/bin/python src/assessment_engine/application/tools/validate_contracts_schemas.py --repo-root . --documentation-map docs/documentation-map.yaml --autofix
+        language: system
+        pass_filenames: false

@@ -94,3 +94,21 @@ def test_extract_markdown_models_and_tables(tmp_path: Path):
     assert len(models["MockSubModel"]) == 1
     assert models["MockSubModel"][0]["field_name"] == "target_state"
     assert models["MockSubModel"][0]["alias"] == "capability"
+
+
+def test_replace_table_in_markdown():
+    md_content = """# Title
+## Modelo Principal: `MockModel`
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `old_field` | `int` | Old description |
+"""
+    new_table_lines = [
+        "| Campo | Tipo | Descripción |",
+        "|---|---|---|",
+        "| `new_field` | `str` | New description |",
+    ]
+    result = v_schema.replace_table_in_markdown(md_content, "MockModel", new_table_lines)
+    assert "new_field" in result
+    assert "old_field" not in result
+

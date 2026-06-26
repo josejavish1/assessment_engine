@@ -1,0 +1,78 @@
+name: Nightly Documentation Auto-Healing
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every single day
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual one-click runs from the GitHub Actions UI
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  heal-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Auto-Fixes & Reconciliation
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          # 1. Automatically repair schema table drifts in Markdown contracts
+          PYTHONPATH=src python src/assessment_engine/application/tools/validate_contracts_schemas.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --autofix
+
+          # 2. Automatically regenerate the health report and site artifacts
+          PYTHONPATH=src python src/assessment_engine/application/tools/build_documentation_health_report.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --today "$(date -u +%F)" \
+            --output .artifacts/docs/health-report.json
+
+      - name: Check for Drift or Changes
+        id: check_changes
+        run: |
+          git status --porcelain
+          if [ -n "$(git status --porcelain docs/)" ]; then
+            echo "DRIFT_DETECTED=true" >> $GITHUB_ENV
+          else
+            echo "DRIFT_DETECTED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create Self-Healing Pull Request (Palantir/Google Style)
+        if: env.DRIFT_DETECTED == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "style(governance): nightly auto-heal documentation schemas"
+          branch: "chore/nightly-docs-reconciliation"
+          title: "🤖 [Docs-Bot] Nightly Documentation Auto-Healing & Reconciliation"
+          body: |
+            ## Reporte de Auto-Curación Diario
+
+            Este es un Pull Request automático generado por el motor de gobernanza nocturno. 
+            Se han detectado cambios en los esquemas de datos de Python (`BaseModel`) que no estaban sincronizados con las tablas de los contratos Markdown de la documentación.
+
+            ### Acciones Realizadas:
+            - Re-construcción automática de las tablas Markdown de contratos de payloads en `docs/contracts/`.
+            - Sincronización de esquemas y tipos de datos con la rama principal (`main`).
+            
+            *Por favor, revisa los cambios visuales y fusiona este PR para mantener el repositorio libre de entropía.*
+          base: main

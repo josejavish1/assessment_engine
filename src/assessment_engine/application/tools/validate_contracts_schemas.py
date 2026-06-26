@@ -17,7 +17,6 @@ def normalize_type_annotation(annotation) -> str:
         return "None"
     type_str = str(annotation)
     type_str = type_str.replace("typing.", "")
-    # Remove module prefixes, e.g. domain.schemas.blueprint.BlueprintPayload -> BlueprintPayload
     type_str = re.sub(r"[a-zA-Z0-9_]+\.(?=[a-zA-Z0-9_])", "", type_str)
     type_str = type_str.replace("List[", "list[").replace("Dict[", "dict[")
     type_str = type_str.replace("NoneType", "None")
@@ -31,20 +30,17 @@ def check_type_compatibility(pydantic_type: str, documented_type: str) -> bool:
     if p_type == d_type:
         return True
 
-    # Handle Optional wrappers
     if "optional[" in p_type:
         inner = p_type.split("optional[", 1)[1].rsplit("]", 1)[0]
         if d_type == inner:
             return True
 
-    # Handle Union wrappers
     if "union[" in p_type:
         inner_content = p_type.split("union[", 1)[1].rsplit("]", 1)[0]
         union_types = [t.strip() for t in inner_content.split(",")]
         if d_type in union_types:
             return True
 
-    # Allow dict <=> dict mapping or model list mappings
     if p_type == "dict" and d_type == "dict":
         return True
     if p_type.startswith("list[") and d_type == "list[dict]":
@@ -65,7 +61,6 @@ def parse_markdown_table_row(line: str) -> dict | None:
     if len(cols) < 2:
         return None
 
-    # Skip separators
     if all(re.match(r"^:?-+:?$", col) for col in cols):
         return None
 
@@ -80,14 +75,23 @@ def parse_markdown_table_row(line: str) -> dict | None:
     field_type = type_match.group(1) if type_match else type_raw
 
     alias = None
-    if len(cols) >= 4:
+    description = ""
+    if len(cols) == 3:
+        description = cols[2]
+    elif len(cols) >= 4:
         alias_raw = cols[2]
         alias_match = re.match(r"^`([a-zA-Z0-9_]+)`$", alias_raw)
         alias = alias_match.group(1) if alias_match else alias_raw
         if alias.lower() in {"alias json", "n/a", ""}:
             alias = None
+        description = cols[3]
 
-    return {"field_name": field_name, "field_type": field_type, "alias": alias}
+    return {
+        "field_name": field_name,
+        "field_type": field_type,
+        "alias": alias,
+        "description": description,
+    }
 
 
 def extract_markdown_models_and_tables(absolute_path: Path) -> dict[str, list[dict]]:
@@ -113,13 +117,92 @@ def extract_markdown_models_and_tables(absolute_path: Path) -> dict[str, list[di
     return models
 
 
+def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[str]:
+    # Map old field names (or aliases) to their human descriptions to prevent data loss
+    old_descriptions: dict[str, str] = {}
+    for f in old_fields:
+        old_descriptions[f["field_name"]] = f["description"]
+        if f["alias"]:
+            old_descriptions[f["alias"]] = f["description"]
+
+    has_aliases = any(f_def.alias is not None for f_def in model_class.model_fields.values())
+
+    table_lines = []
+    if has_aliases:
+        table_lines.append("| Campo | Tipo | Alias JSON | Descripción |")
+        table_lines.append("|---|---|---|---|")
+        for f_name, f_def in model_class.model_fields.items():
+            if f_name.startswith("_"):
+                continue
+            alias_str = f"`{f_def.alias}`" if f_def.alias else "N/A"
+            type_str = normalize_type_annotation(f_def.annotation)
+            # Retrieve description with robust fallback
+            desc = old_descriptions.get(f_name) or old_descriptions.get(f_def.alias or "")
+            if not desc:
+                desc = f_def.description or "Descripción del campo."
+            desc = desc.replace("\n", " ").strip()
+            table_lines.append(f"| `{f_name}` | `{type_str}` | {alias_str} | {desc} |")
+    else:
+        table_lines.append("| Campo | Tipo | Descripción |")
+        table_lines.append("|---|---|---|")
+        for f_name, f_def in model_class.model_fields.items():
+            if f_name.startswith("_"):
+                continue
+            type_str = normalize_type_annotation(f_def.annotation)
+            desc = old_descriptions.get(f_name)
+            if not desc:
+                desc = f_def.description or "Descripción del campo."
+            desc = desc.replace("\n", " ").strip()
+            table_lines.append(f"| `{f_name}` | `{type_str}` | {desc} |")
+
+    return table_lines
+
+
+def replace_table_in_markdown(
+    file_content: str, class_name: str, new_table_lines: list[str]
+) -> str:
+    lines = file_content.splitlines()
+    heading_re = re.compile(r"^(#{2,4})\s+.*?\`" + re.escape(class_name) + r"\`")
+
+    heading_idx = -1
+    for idx, line in enumerate(lines):
+        if heading_re.match(line):
+            heading_idx = idx
+            break
+
+    if heading_idx == -1:
+        return file_content
+
+    table_start_idx = -1
+    for idx in range(heading_idx + 1, len(lines)):
+        line = lines[idx].strip()
+        if line.startswith("#"):
+            break
+        if line.startswith("|"):
+            table_start_idx = idx
+            break
+
+    if table_start_idx == -1:
+        return file_content
+
+    table_end_idx = table_start_idx
+    for idx in range(table_start_idx, len(lines)):
+        line = lines[idx].strip()
+        if not line.startswith("|"):
+            break
+        table_end_idx = idx
+
+    before = lines[:table_start_idx]
+    after = lines[table_end_idx + 1 :]
+    return "\n".join(before + new_table_lines + after)
+
+
 def validate_contracts_schemas(
-    repo_root: Path, documentation_map_path: Path
+    repo_root: Path, documentation_map_path: Path, autofix: bool = False
 ) -> list[str]:
     documentation_map = governance.load_yaml(documentation_map_path)
     errors: list[str] = []
 
-    # Inject repo_root/src into path for imports
     src_dir = str(repo_root / "src")
     if src_dir not in sys.path:
         sys.path.insert(0, src_dir)
@@ -141,7 +224,6 @@ def validate_contracts_schemas(
         source_of_truth = entry.get("source_of_truth", [])
         python_source = None
         for source in source_of_truth:
-            # Resolve relative to markdown directory
             resolved = (absolute_path.parent / source).resolve()
             if resolved.exists() and resolved.suffix == ".py":
                 python_source = resolved
@@ -150,11 +232,12 @@ def validate_contracts_schemas(
         if not python_source:
             continue
 
-        # Convert python_source to modular import string
-        # e.g., /.../src/domain/schemas/blueprint.py -> domain.schemas.blueprint
         try:
             relative_py = python_source.relative_to(repo_root / "src")
             module_name = ".".join(relative_py.with_suffix("").parts)
+            # Reload module dynamically
+            if module_name in sys.modules:
+                del sys.modules[module_name]
             module = importlib.import_module(module_name)
         except Exception as err:
             errors.append(
@@ -163,26 +246,22 @@ def validate_contracts_schemas(
             continue
 
         extracted_models = extract_markdown_models_and_tables(absolute_path)
+        file_content = absolute_path.read_text(encoding="utf-8")
+        file_modified = False
+
         for class_name, fields in extracted_models.items():
             model_class = getattr(module, class_name, None)
-            if model_class is None:
-                # Class might be imported in another namespace, look wider or log warning/skip
-                continue
-
-            # Ensure it is a Pydantic model
-            if not hasattr(model_class, "model_fields"):
+            if model_class is None or not hasattr(model_class, "model_fields"):
                 continue
 
             pydantic_fields = model_class.model_fields
-            {f["field_name"] for f in fields}
+            model_has_drift = False
 
-            # Check for missing fields (present in Pydantic but not in MD)
-            # Skip private/internal pydantic fields or VersionedPayload inheritances depending on strictness
+            # Check missing fields
             for p_field_name, p_field_def in pydantic_fields.items():
                 if p_field_name.startswith("_"):
                     continue
 
-                # Check by field name or its designated alias
                 has_documented = False
                 for f in fields:
                     if f["field_name"] == p_field_name:
@@ -199,19 +278,19 @@ def validate_contracts_schemas(
                         break
 
                 if not has_documented:
-                    errors.append(
-                        f"{path}: model '{class_name}' is missing documentation for field '{p_field_name}'"
-                    )
+                    model_has_drift = True
+                    if not autofix:
+                        errors.append(
+                            f"{path}: model '{class_name}' is missing documentation for field '{p_field_name}'"
+                        )
 
-            # Check for obsolete fields and type matches
+            # Check obsolete and type mismatches
             for f in fields:
                 f_name = f["field_name"]
                 f_type = f["field_type"]
 
-                # Find the Pydantic definition
                 p_field_def = pydantic_fields.get(f_name)
                 if not p_field_def:
-                    # Check if matching by alias
                     for pf_name, pf_def in pydantic_fields.items():
                         if (
                             pf_def.alias == f_name
@@ -222,17 +301,29 @@ def validate_contracts_schemas(
                             break
 
                 if not p_field_def:
-                    errors.append(
-                        f"{path}: documentation lists obsolete or non-existent field '{f_name}' in model '{class_name}'"
-                    )
+                    model_has_drift = True
+                    if not autofix:
+                        errors.append(
+                            f"{path}: documentation lists obsolete or non-existent field '{f_name}' in model '{class_name}'"
+                        )
                     continue
 
-                # Type check
                 p_type_str = normalize_type_annotation(p_field_def.annotation)
                 if not check_type_compatibility(p_type_str, f_type):
-                    errors.append(
-                        f"{path}: field '{f_name}' type mismatch in model '{class_name}' (documented as '{f_type}', code is '{p_type_str}')"
-                    )
+                    model_has_drift = True
+                    if not autofix:
+                        errors.append(
+                            f"{path}: field '{f_name}' type mismatch in model '{class_name}' (documented as '{f_type}', code is '{p_type_str}')"
+                        )
+
+            if model_has_drift and autofix:
+                print(f"Auto-fixing schema table for '{class_name}' in '{path}'...")
+                new_table = generate_markdown_table_lines(model_class, fields)
+                file_content = replace_table_in_markdown(file_content, class_name, new_table)
+                file_modified = True
+
+        if file_modified and autofix:
+            absolute_path.write_text(file_content, encoding="utf-8")
 
     return errors
 
@@ -241,6 +332,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
+    parser.add_argument("--autofix", action="store_true", default=False)
     return parser.parse_args()
 
 
@@ -249,12 +341,16 @@ def main() -> int:
     errors = validate_contracts_schemas(
         repo_root=Path(args.repo_root).resolve(),
         documentation_map_path=Path(args.documentation_map).resolve(),
+        autofix=args.autofix,
     )
     if errors:
         for error in errors:
             print(f"ERROR: {error}")
         return 1
-    print("Contract schemas and models validation passed.")
+    if args.autofix:
+        print("Contract schemas auto-fixed and reconciled successfully.")
+    else:
+        print("Contract schemas and models validation passed.")
     return 0
 
 
