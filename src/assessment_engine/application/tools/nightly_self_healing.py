@@ -382,9 +382,8 @@ def discover_and_register_untracked_md(repo_root: Path, map_path: Path, tracked_
     exclude_patterns = [
         "docs/reference/generated/legacy-gemini/**",
         "docs/strategy/**",
-        "**/node_modules/**",
-        "**/.venv/**",
     ]
+    ignored_keywords = [".venv", "node_modules", ".mypy_cache", ".pytest_cache", ".ruff_cache", "working/"]
     
     untracked_found = []
     # Search for all .md files in the repo root and docs/
@@ -392,6 +391,10 @@ def discover_and_register_untracked_md(repo_root: Path, map_path: Path, tracked_
         # Normalize relative path
         rel_posix = md_p.resolve().relative_to(repo_root).as_posix()
         
+        # Check exclusion keywords
+        if any(kw in rel_posix for kw in ignored_keywords):
+            continue
+            
         # Check exclusion patterns
         is_excluded = False
         for pattern in exclude_patterns:
@@ -577,6 +580,40 @@ def main() -> int:
 
     documentation_map = governance.load_yaml(map_path)
     entries = documentation_map.get("entries", [])
+
+    # Blindaje 0: Sanitize documentation map and clean up obsolete local files/folders (Zero-Entropy)
+    import shutil
+    cleaned_entries = []
+    pollution_removed = 0
+    ignored_keywords = [".venv", "node_modules", ".mypy_cache", ".pytest_cache", ".ruff_cache", "working/"]
+    for entry in entries:
+        if isinstance(entry, dict) and "path" in entry:
+            path_val = entry["path"]
+            if any(kw in path_val for kw in ignored_keywords):
+                pollution_removed += 1
+                continue
+        cleaned_entries.append(entry)
+        
+    if pollution_removed > 0:
+        print(f"  [AUTO-HEAL] Purgadas {pollution_removed} entradas polucionadas de terceros del mapa de documentación!")
+        documentation_map["entries"] = cleaned_entries
+        with open(map_path, "w", encoding="utf-8") as f:
+            yaml.dump(documentation_map, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+        entries = cleaned_entries
+
+    # Saneamiento de basura local en working/
+    working_dir = repo_root / "working"
+    if working_dir.exists():
+        # Auto-delete test_client residue
+        test_client_dir = working_dir / "test_client"
+        if test_client_dir.exists():
+            shutil.rmtree(test_client_dir)
+            print("  [AUTO-HEAL] Eliminada carpeta residual de pruebas 'working/test_client' del disco.")
+        # Auto-delete stale compressed files
+        for p in working_dir.glob("*"):
+            if p.suffix in (".zip", ".gz", ".tar"):
+                p.unlink()
+                print(f"  [AUTO-HEAL] Eliminado archivo de respaldo obsoleto del disco: {p.name}")
 
     tracked_paths = set()
     for entry in entries:
