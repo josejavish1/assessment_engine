@@ -100,6 +100,7 @@ Para una descripción exhaustiva de los campos de los contratos principales, con
 
 - [`tower_blueprint_payload.md`](./tower_blueprint_payload.md): Define la estructura del artefacto `blueprint_payload`, la fuente de verdad de cada torre.
 - [`tower_annex_payload.md`](./tower_annex_payload.md): Define la estructura del `annex_payload`, la síntesis ejecutiva para los informes de anexo.
+- [`rage_rubric_payload.md`](./rage_rubric_payload.md): Define la estructura de la rúbrica declarativa reguladora usada por el motor RAGE.
 
 ## Reglas de interpretación si hay conflicto
 
