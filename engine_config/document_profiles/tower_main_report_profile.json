@@ -2,7 +2,7 @@
   "document_profile_id": "tower_main_report_profile",
   "artifact_type": "tower_main_report",
   "artifact_version": "1.0",
-  "visual_base_template": "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx",
+  "visual_base_template": "tower_annex_template.docx",
   "visual_style_policy": {
     "preserve_short_style": true,
     "same_heading_hierarchy": true,

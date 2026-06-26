@@ -1,0 +1,15 @@
+{
+  "tarifas_hora": {
+    "gerente_cuenta": 70,
+    "arquitecto": 65,
+    "experto": 58,
+    "project_manager": 45,
+    "tecnico_medio": 36,
+    "tecnico_junior": 28
+  },
+  "margenes": {
+    "consultoria": 0.45,
+    "proyectos": 0.35,
+    "servicios": 0.30
+  }
+}

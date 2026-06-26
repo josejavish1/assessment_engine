@@ -1,10 +1,19 @@
 {
   "industry": "Default / General Enterprise",
-  "elite_framework": {
-    "primary_regulation": "Local/International Data Protection Laws (e.g., GDPR, CCPA)",
-    "sovereignty_level": "Standard Cloud Compliance",
-    "risk_modeling": "Operational Continuity & Data Integrity",
-    "key_vendors_context": "Leading Hyperscalers (AWS/Azure/GCP)",
-    "strategic_priorities": "Digital Transformation, Efficiency, Scalability"
+  "methodology_baseline": "Gartner Enterprise Maturity Database 2025 (Standard baseline: 3.0)",
+  "benchmarks": {
+    "T1": 3.0,
+    "T2": 3.0,
+    "T3": 3.0,
+    "T4": 3.0,
+    "T5": 3.0,
+    "T6": 3.0,
+    "T7": 3.0,
+    "T8": 3.0,
+    "T9": 3.0,
+    "T10": 3.0
+  },
+  "justifications": {
+    "default": "The benchmark aligns with the general cross-industry baseline defined in the Gartner I&O Maturity Index (2025). Operational processes in these non-regulated domains are expected to operate at Level 3 (Defined), characterized by documented procedures and standardized execution across business units without specialized regulatory offsets."
   }
 }

@@ -10,8 +10,8 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[4]
-GLOBAL_REPORT_TEMPLATE_NAME = "11. Template Documento General Alpha v.05.docx"
-TOWER_ANNEX_TEMPLATE_NAME = "Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx"
+GLOBAL_REPORT_TEMPLATE_NAME = "global_report_template.docx"
+TOWER_ANNEX_TEMPLATE_NAME = "tower_annex_template.docx"
 WEB_DASHBOARD_TEMPLATE_NAME = "web_dashboard.html"
 
 

@@ -51,7 +51,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/home/jsanchhi/.secrets/sa-key.json
 echo "⏭️ FASE 0: Reutilizando árbol de conocimiento RAG previo (Aceleración de Coste Cero)..."
 if [ ! -f "working/redeia_v3/redeia/raptor_tree.json" ]; then
     echo "⚠️ RAG previo no encontrado. Ejecutando ingesta rápida..."
-    ./.venv/bin/python ingest_redeia.py
+    ./.venv/bin/python scripts/ingest_redeia.py
     if [ $? -ne 0 ]; then
         echo "❌ Fallo en la ingesta. Deteniendo el pipeline."
         exit 1

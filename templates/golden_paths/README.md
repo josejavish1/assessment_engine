@@ -2,11 +2,13 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../AGENTS.md
+- ../../AGENTS.md
 last_verified_against: 2026-05-02
 applies_to:
-  - ai-agents
+- ai-agents
 doc_type: operational
+diataxis: reference
+verification_mode: workflow
 ---
 
 # Golden Paths: Índice de Plantillas

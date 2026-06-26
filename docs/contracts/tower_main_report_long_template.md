@@ -41,7 +41,7 @@ Se prohíbe explícitamente el uso de artefactos legacy (`approved_asis/gap/tobe
 
 ## Directriz visual
 - Reutilizar la identidad visual de la version short.
-- Mantener tipografia, jerarquia de titulos, cajas de nota y tablas del template `Template_Documento_Anexos_Alpha_v06_Tower_Annex_v2_6.docx`.
+- Mantener tipografia, jerarquia de titulos, cajas de nota y tablas del template `tower_annex_template.docx`.
 - Mantener el grafico radial dentro del cuerpo principal.
 - Mantener tablas con cabecera azul claro y cuerpo blanco, con el mismo lenguaje visual del short.
 - Priorizar legibilidad tecnica y densidad informativa sobre decoracion.

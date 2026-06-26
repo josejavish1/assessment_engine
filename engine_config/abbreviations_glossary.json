@@ -1,0 +1,12 @@
+{
+  "AS-IS": "Situación actual encontrada durante la fase de auditoría técnica.",
+  "BIA": "Business Impact Analysis (Análisis de impacto en el negocio del cliente).",
+  "CPD": "Centro de Proceso de Datos (Sede física o técnica de los servidores).",
+  "DR": "Disaster Recovery (Recuperación ante Desastres y conmutaciones entre sedes).",
+  "ENS": "Esquema Nacional de Seguridad (España, categoría de cumplimiento Alto).",
+  "EoL": "End of Life (Sistemas descatalogados sin soporte oficial de fabricante).",
+  "FAIR": "Factor Analysis of Information Risk (Estándar internacional de gestión cuantitativa de riesgo).",
+  "TEF": "Threat Event Frequency (Frecuencia estimada anual de ocurrencia del riesgo).",
+  "LM": "Loss Magnitude (Estimación del coste económico de impacto por cada evento de pérdida).",
+  "ALE": "Annual Loss Exposure (La expectativa de coste anualizado resultante del riesgo: TEF x LM)."
+}

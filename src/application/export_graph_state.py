@@ -1,12 +1,13 @@
 import json
 import logging
 import sys
+from pathlib import Path
 from typing import Any, Dict, List
 
 from application.run_strategic_orchestrator import run_strategic_orchestration
 from infrastructure.epistemic_graph import EpistemicGraph
 from infrastructure.networkx_analyzer import NetworkXAnalyzer
-from infrastructure.runtime_paths import resolve_client_dir
+from infrastructure.runtime_paths import resolve_client_dir, resolve_case_dir
 from infrastructure.text_utils import slugify
 
 logger = logging.getLogger(__name__)
@@ -41,28 +42,127 @@ class DigitalTwinExporter:
             client_id (str): A slugified identifier derived from `client_name`.
             graph (EpistemicGraph): An `EpistemicGraph` instance for the client.
             analyzer (NetworkXAnalyzer): A graph analyzer instance.
+            industry_name (str): The resolved industry name for the client.
         """
         self.client_name = client_name
         self.client_id = slugify(client_name)
         self.graph = EpistemicGraph(client_id=self.client_id)
         self.analyzer = NetworkXAnalyzer()
+        self.industry_name = "Default / General Enterprise"
 
     def _load_industry_benchmark(self) -> Dict[str, float]:
-        """Retrieves industry-specific maturity benchmarks for the client's designated industrial sector."""
-        # TODO(jsanchhi): #81 Implement a production-ready solution for dynamic industry profile lookups to replace the current placeholder logic.
-        # A default benchmark score of 3.5 is hardcoded for the Energy sector as a temporary measure until dynamic, profile-based lookups are implemented.
-        return {
-            "T1": 3.2,
-            "T2": 3.8,
-            "T3": 3.5,
+        """Load and resolve industry-specific maturity benchmarks dynamically from the configuration profile.
+
+        Extracts the client's industry sector from their client_intelligence.json or any available
+        case_input.json, maps it to a canonical industry profile (e.g., critical_infrastructure, retail),
+        and retrieves the configured maturity benchmark curve from the corresponding JSON configuration.
+
+        Returns:
+            A dictionary mapping tower IDs (e.g., 'T1', 'T2') to their benchmark maturity scores.
+        """
+        fallback_benchmarks = {
+            "T1": 3.0,
+            "T2": 3.0,
+            "T3": 3.0,
             "T4": 3.0,
-            "T5": 3.4,
-            "T6": 4.0,
-            "T7": 3.1,
-            "T8": 2.8,
-            "T9": 3.6,
-            "T10": 2.5,
+            "T5": 3.0,
+            "T6": 3.0,
+            "T7": 3.0,
+            "T8": 3.0,
+            "T9": 3.0,
+            "T10": 3.0,
         }
+
+        # Resolve paths
+        client_dir = resolve_client_dir(self.client_name)
+        case_input_path = client_dir / "case_input.json"
+        
+        # Dual-source resolution: first check client_intelligence.json, then fall back to case_input.json
+        client_intel_path = client_dir / "client_intelligence.json"
+        
+        target_path = None
+        if client_intel_path.exists():
+            target_path = client_intel_path
+        elif case_input_path.exists():
+            target_path = case_input_path
+        else:
+            # Look for case_input.json in any tower subdirectories
+            for p in client_dir.glob("**/case_input.json"):
+                target_path = p
+                break
+
+        if not target_path or not target_path.exists():
+            logger.warning(f"No client intelligence or case input files found for {self.client_name} at {client_dir}. Utilizing fallback benchmarks.")
+            return fallback_benchmarks
+
+        # Step 1: Extract the raw industry sector name from the client's data using utf-8-sig to handle BOM
+        industry_name = ""
+        try:
+            with open(target_path, "r", encoding="utf-8-sig") as f:
+                data = json.load(f)
+                
+            # Support both v2 and v3 dossier formats
+            profile = data.get("profile", {})
+            if isinstance(profile, dict):
+                industry_name = profile.get("industry", "")
+            if not industry_name:
+                industry_name = data.get("industry", "")
+        except Exception as e:
+            logger.error(f"Failed to read or parse client data at {target_path}: {e}")
+            return fallback_benchmarks
+
+        if not industry_name:
+            logger.warning(f"No industry sector defined in client data for {self.client_name}. Utilizing default profile.")
+            industry_name = "default"
+
+        self.industry_name = industry_name
+
+        # Step 2: Map the raw industry name to its canonical profile key
+        mapping = {
+            "energía": "critical_infrastructure",
+            "eléctrico": "critical_infrastructure",
+            "infraestructura crítica": "critical_infrastructure",
+            "transporte": "critical_infrastructure",
+            "retail": "retail",
+            "comercio": "retail",
+            "banca": "banking",
+            "finanzas": "banking",
+            "seguros": "banking",
+            "salud": "healthcare",
+            "hospital": "healthcare",
+        }
+
+        industry_lower = industry_name.lower()
+        profile_key = "default"
+        for key, val in mapping.items():
+            if key in industry_lower:
+                profile_key = val
+                break
+
+        # Step 3: Load the benchmark curve from the resolved JSON profile
+        config_path = Path("engine_config/industry_profiles") / f"{profile_key}.json"
+
+        if not config_path.exists():
+            logger.warning(f"Resolved industry profile file {config_path} does not exist. Utilizing fallback benchmarks.")
+            return fallback_benchmarks
+
+        try:
+            with open(config_path, "r", encoding="utf-8") as f:
+                profile_data = json.load(f)
+            
+            benchmarks = profile_data.get("benchmarks")
+            if isinstance(benchmarks, dict):
+                cleaned_benchmarks = {}
+                for k, v in benchmarks.items():
+                    cleaned_benchmarks[str(k).upper()] = float(v)
+                logger.info(f"✓ Dynamically loaded {len(cleaned_benchmarks)} benchmarks from '{profile_key}' profile.")
+                return cleaned_benchmarks
+                
+            logger.warning(f"Profile '{profile_key}' does not contain a valid 'benchmarks' mapping. Utilizing fallback benchmarks.")
+        except Exception as e:
+            logger.error(f"Failed to load or parse benchmarks from industry profile {profile_key}: {e}")
+
+        return fallback_benchmarks
 
     def export_state(self) -> Dict[str, Any]:
         """Assembles a Data Transfer Object of the digital twin's canonical state.
@@ -114,7 +214,7 @@ class DigitalTwinExporter:
             },
             "topology": {"nodes": [], "edges": []},
             "benchmarks": {
-                "industry_name": "Energy & Infrastructure",
+                "industry_name": self.industry_name,
                 "data": benchmarks,
             },
             "roadmap": strategic_data["roadmap"],

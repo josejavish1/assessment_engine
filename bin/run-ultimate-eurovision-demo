@@ -23,7 +23,7 @@ export PYTHONPATH=src
 
 # --- FASE 0: INGESTA DE DOCUMENTOS (EVIDENCIAS Y RAPTOR) ---
 echo "📥 FASE 0: Ejecutando Ingesta de Documentos (Evidence & Raptor Engine)..."
-./.venv/bin/python ingest_eurovision.py
+./.venv/bin/python scripts/ingest_eurovision.py
 if [ $? -ne 0 ]; then
     echo "❌ Fallo en la ingesta. Deteniendo el pipeline."
     exit 1

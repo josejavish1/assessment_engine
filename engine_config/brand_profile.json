@@ -1,0 +1,11 @@
+{
+  "company_name": "NTT DATA",
+  "default_classification": "Confidencial (Tier-1 Assessment)",
+  "disclaimer_text": "Este documento constituye un informe técnico y de diagnóstico elaborado por NTT DATA basándose exclusivamente en los datos, entrevistas y configuraciones proporcionados por el cliente, los cuales no han sido sometidos a una auditoría formal externa por nuestra parte. NTT DATA no asume responsabilidad legal sobre decisiones de inversión o cambios de diseño que el cliente implemente basándose en este diagnóstico sin validaciones previas en entornos controlados.",
+  "styling": {
+    "primary_color_hex": "0072BC",
+    "header_bg_color_hex": "D9EAF7",
+    "alternate_row_color_hex": "F2F2F2",
+    "text_dark_color_rgb": [46, 64, 77]
+  }
+}
