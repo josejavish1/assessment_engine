@@ -47,6 +47,7 @@ Todo artefacto de datos catalogado dentro del motor no constituye un mero residu
 | `evidence_ledger.json` | módulos de preparación de torre | findings, auditoría, soporte | Deja trazabilidad de evidencias | Pérdida de trazabilidad de origen y vulnerabilidad en auditoría |
 | `scoring_output.json` | scoring por torre | blueprint, annex, soporte | Parámetros cuantitativos de evaluación | Desalineación entre el análisis prosa y los umbrales cualitativos |
 | `findings.json` | análisis por torre | blueprint y soporte editorial | Concentra hallazgos estructurados | Degradación del detalle en la especificación técnica |
+| `benchmarks_snapshot.json` | `agentic_benchmarker.py` (RAGE) | `run_tower_blueprint_engine.py`, web | Evidencias y benchmarks fácticos y reguladores verificados | Pérdida de fundamentación científica y retroceso a notas de reserva sin trazabilidad |
 | `blueprint_<tower>_payload.json` | `run_tower_blueprint_engine.py` | annex, global builder, render blueprint, web | Fuente única de verdad de la torre tecnológica | Inconsistencia lógica y contradicción narrativa en la síntesis consolidada |
 | `approved_annex_<tower>.template_payload.json` | `run_executive_annex_synthesizer.py` | render annex | Síntesis de negocio y recomendaciones operativas de la torre | Degradación en la comunicación técnica con la dirección del cliente |
 | `global_report_payload.json` | `build_global_report_payload.py` + `run_executive_refiner.py` | render global, comercial, web | Síntesis directiva estratégica consolidada | Disrupción en la gobernanza y pérdida de alineación estratégica |
@@ -64,6 +65,7 @@ Todo artefacto de datos catalogado dentro del motor no constituye un mero residu
 - `evidence_ledger.json`
 - `scoring_output.json`
 - `findings.json`
+- `benchmarks_snapshot.json`
 
 Constituyen el cimiento empírico del diagnóstico. Garantizan explicabilidad, trazabilidad estructural y defendibilidad técnica ante auditorías.
 

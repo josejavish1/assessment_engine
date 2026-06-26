@@ -6,6 +6,8 @@ source_of_truth:
 - ../../src/assessment_engine/domain/schemas/blueprint.py
 - ../../src/assessment_engine/domain/schemas/global_report.py
 - ../../src/assessment_engine/domain/schemas/commercial.py
+- ../../src/assessment_engine/domain/schemas/rubric.py
+- ../../src/assessment_engine/infrastructure/agentic_benchmarker.py
 - ../../src/assessment_engine/infrastructure/contract_utils.py
 - ../../src/assessment_engine/adapters/render_tower_annex_from_template.py
 - ../../src/assessment_engine/adapters/render_tower_blueprint.py
@@ -55,11 +57,12 @@ Por consiguiente, el esquema Pydantic representa la definición de interfaz téc
 
 | Capa | Payload | Esquema | Consumidor principal | Salida de presentación |
 |---|---|---|---|---|
+| Auditoría RAGE | `benchmarks_snapshot.json` | `RageBenchmarkSnapshot` | `run_tower_blueprint_engine.py`, web | Evidencias y marcas de madurez verificadas |
 | Torre ejecutiva | `approved_annex_<tower>.template_payload.json` | `AnnexPayload` | `render_tower_annex_from_template.py` | `annex_<tower>_<client>_final.docx` |
 | Torre estratégica | `blueprint_<tower>_payload.json` | `BlueprintPayload` | `render_tower_blueprint.py` | `Blueprint_Transformacion_<TOWER>_<client>.docx` |
 | Global ejecutiva | `global_report_payload.json` | `GlobalReportPayload` | `render_global_report_from_template.py` | `Informe_Ejecutivo_Consolidado_<client>.docx` |
 | Comercial interna | `commercial_report_payload.json` | `CommercialPayload` | `render_commercial_report.py` | `Account_Action_Plan_<client>.docx` |
-| Dashboard web | `global_report_payload.json` + blueprints de torres | Sin esquema único en capa de render | `render_web_presentation.py` | `presentation/index.html` |
+| Dashboard web | `global_report_payload.json` + `benchmarks_snapshot.json` + blueprints | Sin esquema único en capa de render | `render_web_presentation.py` | `presentation/index.html` |
 
 ## Contratos de interfaz por payload
 
