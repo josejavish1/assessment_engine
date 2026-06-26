@@ -172,7 +172,7 @@ En la ruta actual, `client_intelligence.json` ya no solo condiciona target matur
 
 Persisten referencias legacy en:
 
-- scripts `_legacy/` conservados por contexto histórico;
+- referencias heredadas en la documentación histórica o de estrategia;
 - algún tooling/adaptador que todavía puede exponer detalle legacy como diagnóstico secundario o transformar annex refined heredados;
 - tests o fixtures históricos que siguen comprobando artefactos concretos de `working/smoke_ivirma/T5/`.
 
