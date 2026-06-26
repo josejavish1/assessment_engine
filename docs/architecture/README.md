@@ -43,6 +43,8 @@ La referencia arquitectónica más completa sigue siendo [`../SYSTEM_ARCHITECTUR
 | el recorrido empresarial extremo a extremo | `../SYSTEM_ARCHITECTURE.md` | vista global del sistema y sus capas |
 | la generación de verdad por torre | `tower-pipeline.md` | cómo nace el activo canónico y qué controles lo sostienen |
 | la evaluación de precisión y benchmarks | `rage-architecture.md` | cómo se investigan y auditan evidencias contra regulaciones |
+| las reglas duras de seguridad y de-duplicación | `policy-engine-architecture.md` | cómo compila el motor las directivas y FAIR de riesgos |
+| la persistencia de aserciones y base de datos | `epistemic-graph-architecture.md` | cómo funciona el Event Sourcing y la base CQRS en SQLite |
 | la elevación a nivel dirección y ventas | `global-commercial-pipelines.md` | cómo se consolida la lectura ejecutiva y comercial |
 | la inteligencia estratégica reutilizable del cliente | `client-intelligence.md` | cómo se estructura, migra y consume el dossier compartido |
 | la superficie real de artefactos | `working-artifacts.md` | qué archivos mandan y cuáles son solo derivados |
@@ -115,6 +117,8 @@ Subdocumentos ya iniciados:
 - [`global-commercial-pipelines.md`](global-commercial-pipelines.md)
 - [`client-intelligence.md`](client-intelligence.md)
 - [`rage-architecture.md`](rage-architecture.md)
+- [`policy-engine-architecture.md`](policy-engine-architecture.md)
+- [`epistemic-graph-architecture.md`](epistemic-graph-architecture.md)
 - [`critical-modules.md`](critical-modules.md)
 - [`mcp-mode.md`](mcp-mode.md)
 - [`working-artifacts.md`](working-artifacts.md)

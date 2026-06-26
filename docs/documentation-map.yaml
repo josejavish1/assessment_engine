@@ -1618,6 +1618,41 @@ entries:
     factual RAGE.
   diataxis: explanation
   verification_mode: code
+- path: docs/architecture/policy-engine-architecture.md
+  kind: document
+  title: Sovereign Policy Engine Architecture
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/infrastructure/policy_engine.py
+  - engine_config/policies/
+  - tests/test_policy_engine.py
+  last_verified_against: '2026-06-26'
+  notes: Especificación técnica y diseño de las políticas de de-duplicación, secuenciación
+    y salvaguarda OT del Motor de Políticas.
+  diataxis: explanation
+  verification_mode: code
+- path: docs/architecture/epistemic-graph-architecture.md
+  kind: document
+  title: Epistemic Knowledge Graph Architecture
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/infrastructure/epistemic_graph.py
+  - src/assessment_engine/infrastructure/policy_engine.py
+  last_verified_against: '2026-06-26'
+  notes: Especificación técnica y diseño de la infraestructura Event Sourcing y base
+    de datos CQRS del Grafo de Conocimiento.
+  diataxis: explanation
+  verification_mode: code
 automation_rules:
 - name: architecture-changes
   when_changed:
