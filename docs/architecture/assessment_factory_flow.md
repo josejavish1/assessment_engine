@@ -181,6 +181,13 @@ Esto permite al `NetworkXAnalyzer` aplicar algoritmos de teoría de grafos para 
 Cruza el **Árbol RAPTOR** (visión global del Word) con el **Pre-Scoring** (visión técnica del Test).
 *   Si el Test tiene una nota baja en un área que el RAPTOR ha marcado como "Prioridad Estratégica", el sistema eleva automáticamente la **Gravedad del Riesgo** y la **Prioridad de la Iniciativa**.
 
+### 4. Runtime Agentic Grounding & Evaluation (RAGE - Fase 2.5) (¡Implementado!)
+El motor integra un bucle de evaluación factual asíncrono y adversario para calibrar las metas de madurez de forma objetiva basándose en internet en vivo:
+*   **Investigación Factual (Grounding):** Un agente de investigación dotado de herramientas de búsqueda de Google localiza las directivas y tasas de adopción vigentes específicas para el país y sector del cliente basándose en las rúbricas JSON de `engine_config/frameworks/`.
+*   **Bóveda de Evidencias (Anti Link-Rot):** El sistema descarga físicamente los documentos de referencia en PDF a la carpeta `working/{client}/evidence_cache/` de forma segura.
+*   **Juicio Adversario (Cross-Examination):** Un segundo agente forense independiente cruza las afirmaciones del investigador contra el PDF local descargado en la bóveda para certificar un 0% de alucinación.
+*   **Evaluador Matemático de Python (No-LLM):** Un motor de Python puro procesa la regla y condición del JSON (ej: `adoption >= 60.0`) sobre la métrica verificada, asigna la nota de benchmark y genera el `benchmarks_snapshot.json` con total determinismo (Cero *vibe-scoring*).
+
 ### 5. Atribución Jerárquica (Inheritance & Shadowing)
 En la Fase 2, el sistema no solo extrae datos, sino que los atribuye a la **Sociedad Legal** y **País** correspondientes.
 *   **Nodo Raíz (Global):** Tecnologías transversales (ej. AWS, Oracle) se declaran a nivel holding.
