@@ -167,7 +167,7 @@ entries:
     la ejecución con APIs.
   diataxis: how_to
   verification_mode: code
-- path: docs/architecture/roadmap_vision.md
+- path: docs/strategy/roadmap_vision.md
   kind: document
   title: Roadmap de Evolución Agentic
   doc_type: canonical
@@ -517,7 +517,7 @@ entries:
     del repo; no debe leerse como implementacion verificada.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/architecture/apex_maturity_model_roadmap.md
+- path: docs/strategy/apex_maturity_model_roadmap.md
   kind: document
   title: Apex maturity model roadmap
   doc_type: canonical
@@ -534,7 +534,7 @@ entries:
     fiable del sistema actual.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/architecture/command-center-roadmap.md
+- path: docs/strategy/command-center-roadmap.md
   kind: document
   title: Command Center Roadmap
   doc_type: canonical
@@ -551,7 +551,7 @@ entries:
     capacidad objetivo y estado implementado.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/architecture/enterprise-governance-2026.md
+- path: docs/strategy/enterprise-governance-2026.md
   kind: document
   title: Enterprise Governance 2026 "The Apex" Architecture
   doc_type: canonical
@@ -628,7 +628,7 @@ entries:
     antes de considerarla plenamente verificada.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/architecture/executive-project-guide.md
+- path: docs/strategy/executive-project-guide.md
   kind: document
   title: Executive project guide
   doc_type: canonical
