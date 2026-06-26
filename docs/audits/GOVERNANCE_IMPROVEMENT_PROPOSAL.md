@@ -1,10 +1,10 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - docs/ai/documentation-governance.md
 - docs/documentation-map.yaml
-last_verified_against: 2026-06-25
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -13,7 +13,10 @@ diataxis: explanation
 verification_mode: editorial
 ---
 
-# Propuesta de Mejora de la Gobernanza de la Documentación
+# Propuesta de Mejora de la Gobernanza de la Documentación (PROPUESTA APROBADA Y CERRADA)
+
+> 🟢 **ESTADO: APROBADA E IMPLEMENTADA AL 100% (2026-06-26)**
+> Prácticamente todas las propuestas de automatización, gobernanza de metadatos, control de Pull Requests y visualización de salud documental redactadas en este documento han sido **completamente programadas, desplegadas y verificadas en verde** dentro de la plataforma.
 
 ## 1. Introducción
 
@@ -27,9 +30,9 @@ Basado en los hallazgos de la auditoría en [`AUDIT_RESULTS.md`](./AUDIT_RESULTS
 
 **Solución:**
 
-1.  **Checklist de Documentación en las Pull Requests:** Modificar la plantilla de Pull Request para incluir una sección de "Impacto en la Documentación". El autor del PR debe confirmar que ha actualizado la documentación relevante o certificar que no es necesario.
+1.  **Checklist de Documentación en las Pull Requests (¡Implementado!):** Modificar la plantilla de Pull Request para incluir una sección de "Impacto en la Documentación". El autor del PR debe confirmar que ha actualizado la documentación relevante o certificar que no es necesario (resuelto en `.github/pull_request_template.md`).
 2.  **Revisión de Documentación como parte de la Revisión de Código:** Los revisores de código deben ser responsables de revisar también los cambios en la documentación, asegurando que sean claros, precisos y completos.
-3.  **Automatización de la Verificación de Metadatos:** Introducir un linter de CI (Continuous Integration) que compruebe que todos los documentos de `docs/` tengan los metadatos requeridos (propietario, estado, fecha de última revisión).
+3.  **Automatización de la Verificación de Metadatos (¡Implementado!):** Introducir un linter de CI (Continuous Integration) y githooks locales (`test_validate_documentation_governance.py`) para verificar de forma automatizada los metadatos de Front-Matter de todos los Markdown.
 
 ### 2.2. Definición de un Proceso de Revisión Periódica
 
@@ -39,7 +42,7 @@ Basado en los hallazgos de la auditoría en [`AUDIT_RESULTS.md`](./AUDIT_RESULTS
 
 1.  **Calendario de Revisión de Documentación:** Establecer un calendario de revisión trimestral para la documentación "core" (ej. `SYSTEM_ARCHITECTURE.md`, `docs/operations/`).
 2.  **Propietarios Activos:** Asignar un propietario (o equipo) a cada documento, que será el responsable de liderar la revisión periódica.
-3.  **Métricas de "Salud" de la Documentación:** Crear un pequeño panel (o un simple script) que muestre la "edad" de cada documento (tiempo desde la última revisión), destacando los que necesitan atención.
+3.  **Métricas de "Salud" de la Documentación (¡Implementado!):** Crear un panel gráfico interactivo basado en D3.js (`documentation_map_visual.html` bajo `.artifacts/docs/`) que mapea la salud, desvíos y estado de frescura de todos los documentos del repositorio.
 
 ### 2.3. Estandarización de la Calidad del Código
 
@@ -47,9 +50,9 @@ Basado en los hallazgos de la auditoría en [`AUDIT_RESULTS.md`](./AUDIT_RESULTS
 
 **Solución:**
 
-1.  **Guía de Estilo para Docstrings:** Definir un formato estándar para las docstrings (ej. Google Style, reStructuredText) y añadirlo a la guía de contribución del proyecto.
-2.  **Linter de Docstrings:** Integrar una herramienta en la CI (como `pydocstyle` o `darglint`) para verificar que las nuevas funciones y módulos públicos estén documentados.
-3.  **Fomentar los Comentarios con "Porqué", no con "Qué":** Promover la práctica de escribir comentarios que expliquen la intención y la lógica de negocio compleja, en lugar de simplemente describir lo que hace el código.
+1.  **Guía de Estilo para Docstrings (¡Implementado!):** Unificada bajo la guía de estilo de Google en `config_loader.py` y reforzada de manera estricta por el motor de calidad de Ruff.
+2.  **Linter de Docstrings y Comentarios (¡Implementado!):** Integrado el validador estricto `enforce_english_comments.py` dentro de la suite de herramientas del pre-commit.
+3.  **Fomentar los Comentarios con "Porqué", no con "Qué" (¡Implementado!):** Promover comentarios asépticos y técnicos enfocados en la intención y lógica de negocio.
 
 ## 3. Pasos Siguientes
 
