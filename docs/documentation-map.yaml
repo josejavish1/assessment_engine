@@ -1285,7 +1285,7 @@ entries:
   kind: collection
   title: Neutral generated reference layer
   doc_type: reference_generated
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -1293,7 +1293,7 @@ entries:
   source_of_truth:
   - src/assessment_engine/
   - docs/reference/generated/legacy-gemini/
-  last_verified_against: 2026-04-30
+  last_verified_against: '2026-06-26'
   notes: Destino neutral para absorber referencia heredada o derivada sin mezclarla
     con la capa canónica.
   diataxis: reference
@@ -1302,7 +1302,7 @@ entries:
   kind: document
   title: Generated reference index
   doc_type: reference_generated
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -1310,7 +1310,7 @@ entries:
   source_of_truth:
   - src/assessment_engine/domain/
   - docs/documentation-map.yaml
-  last_verified_against: 2026-04-30
+  last_verified_against: '2026-06-26'
   notes: Índice de la capa de referencia generada y derivada; no sustituye a la documentación
     canónica.
   diataxis: reference
@@ -1319,7 +1319,7 @@ entries:
   kind: document
   title: Legacy Gemini inventory index
   doc_type: reference_generated
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -1327,7 +1327,7 @@ entries:
   source_of_truth:
   - docs/reference/generated/legacy-gemini/
   - src/assessment_engine/
-  last_verified_against: 2026-04-30
+  last_verified_against: '2026-06-26'
   notes: Inventario neutral de la colección heredada ya archivada en la capa de referencia.
   diataxis: reference
   verification_mode: observed_run

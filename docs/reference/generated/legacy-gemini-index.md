@@ -1,10 +1,10 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ./legacy-gemini/
 - ../../../src/assessment_engine/domain/
-last_verified_against: 2026-04-30
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
