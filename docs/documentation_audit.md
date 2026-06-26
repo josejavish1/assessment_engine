@@ -27,6 +27,7 @@ A fecha de **2026-06-26**, la situación observable es de **integridad y alineac
 - **Saneamiento del Mapa Maestro:** Se identificó y purgó una polución masiva de 1,761 entradas de dependencias de terceros (`.venv`, `node_modules`, cachés) dentro del `docs/documentation-map.yaml`, reduciendo la deriva de datos en un 95% y dejando estrictamente los 81 archivos auténticos del software. Esto resolvió con éxito las fallas en las pruebas unitarias de snippets.
 - **Saneamiento de Lenguaje y Sobriedad:** Se revisó y purgó toda la prosa sensacionalista de los READMEs para cumplir con las directivas estrictas de asertividad técnica e institucional de `AGENTS.md`.
 - **Alineación Hexagonal:** Se unificó la carga de marca, glosario, locales y perfiles de industria en `config_loader.py`, eliminando las rutas hardcodeadas y duplicidades de disco en la capa de adaptadores y aplicación.
+- **Erradicación del Legado de Referencia (Zero-Entropy):** Se eliminó de forma física toda la carpeta obsoleta `docs/reference/` (liberando el repositorio de 46 archivos Markdown autogenerados del pasado), y se purgaron sus entradas del mapa maestro, eliminando el ruido y la alucinación de los agentes de IA al 100%.
 
 ## Evaluación resumida por zonas
 
@@ -39,7 +40,7 @@ A fecha de **2026-06-26**, la situación observable es de **integridad y alineac
 | `docs/architecture/` | guías técnicas detalladas de capas de software | `Verified` (revisión continua) |
 | `docs/audits/` | histórico y backlog de mejora de calidad | `reference_generated` |
 | `docs/strategy/` | visión estratégica y North Star (no operativa) | `Draft/Needs Review` |
-| `docs/reference/generated/` | legado documental auto-generado | `reference_generated` |
+| `docs/reference/` | legado documental auto-generado | **ELIMINADO (Zero-Entropy)** |
 
 ## Brechas de Gobernanza Documental Resueltas y Cerradas
 

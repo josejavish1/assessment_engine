@@ -1281,56 +1281,6 @@ entries:
     y renderer canonicos propios.
   diataxis: reference
   verification_mode: schema
-- path: docs/reference/generated
-  kind: collection
-  title: Neutral generated reference layer
-  doc_type: reference_generated
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - src/assessment_engine/
-  - docs/reference/generated/legacy-gemini/
-  last_verified_against: '2026-06-26'
-  notes: Destino neutral para absorber referencia heredada o derivada sin mezclarla
-    con la capa canónica.
-  diataxis: reference
-  verification_mode: observed_run
-- path: docs/reference/generated/README.md
-  kind: document
-  title: Generated reference index
-  doc_type: reference_generated
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - src/assessment_engine/domain/
-  - docs/documentation-map.yaml
-  last_verified_against: '2026-06-26'
-  notes: Índice de la capa de referencia generada y derivada; no sustituye a la documentación
-    canónica.
-  diataxis: reference
-  verification_mode: observed_run
-- path: docs/reference/generated/legacy-gemini-index.md
-  kind: document
-  title: Legacy Gemini inventory index
-  doc_type: reference_generated
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - docs/reference/generated/legacy-gemini/
-  - src/assessment_engine/
-  last_verified_against: '2026-06-26'
-  notes: Inventario neutral de la colección heredada ya archivada en la capa de referencia.
-  diataxis: reference
-  verification_mode: observed_run
 - path: src/assessment_engine/application/tools/validate_documentation_governance.py
   kind: document
   title: Documentation governance validator
