@@ -15,7 +15,11 @@ verification_mode: editorial
 
 # ChatGPT adapter
 
-Usa este archivo como adaptador breve para trabajar en `assessment-engine`.
+Usa este archivo como adaptador breve para trabajar con OpenAI / ChatGPT / Cursor en este repositorio.
+
+## Herencia de Gobernanza (Estricto)
+
+Como agente de OpenAI, **DEBES leer y someterte obligatoriamente a las Leyes de Ingeniería No Negociables y el Checklist de Disciplina de Cambio definidos en [AGENTS.md](AGENTS.md)**. Esas leyes de calidad son absolutas e inmutables para esta base de código.
 
 ## Orden de lectura
 

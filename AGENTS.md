@@ -39,6 +39,16 @@ Este fichero es la **puerta de entrada corta para cualquier agente de IA** que t
 - si una afirmación no puede verificarse, márcala como `Needs Review` en vez de inventarla;
 - **GOLDEN PATHS (Estricto):** Nunca crees un archivo desde cero para un nuevo servicio, worker o endpoint. DEBES usar las plantillas ubicadas en `templates/golden_paths/` como base y rellenar únicamente la lógica de negocio. No alteres la estructura de logging ni las validaciones base de la plantilla. Si el archivo que estás creando es un simple modelo Pydantic, un DTO o un helper puro sin estado, puedes usar un archivo en blanco pero DEBES incluir el comentario `# golden-path: ignore` en la cabecera para que el Validador de Arquitectura lo permita.
 
+## Leyes de Ingeniería No Negociables (Zero-Tolerance Rules)
+
+Todo agente (Gemini, ChatGPT, Cursor o Copilot) debe someterse a estas leyes soberanas del repositorio:
+
+1. **La Tiranía del Protocolo (Anti-Complacencia):** La calidad técnica es superior a la velocidad. Queda estrictamente prohibido forzar pases de CI/CD, ignorar advertencias, deshabilitar pruebas automáticas o forzar merges eludiendo las barreras de protección de rama.
+2. **Cero Parches (Zero Workarounds):** Ante cualquier fallo o error en tiempo de ejecución, de tipado o de linter, es obligatorio investigar la causa raíz y aplicar una solución definitiva y estructuralmente correcta. Nunca silencies warnings ni captures excepciones de manera genérica sin resolver la causa.
+3. **Arquitectura de Entropía Cero (Zero-Entropy):** No se permite dejar archivos comprimidos (`.zip`), duplicados de respaldo, scripts de prueba sueltos en la raíz ni directorios vacíos. Git es la única máquina del tiempo. Toda la base de código debe ser limpia y simétrica.
+4. **Idioma Único (Inglés Técnico):** Absolutamente todos los comentarios en línea de código, firmas de funciones, descripciones de campos Pydantic y docstrings de clases/métodos deben redactarse exclusivamente en un inglés técnico formal, preciso y aséptico.
+5. **Verificación Empírica Obligatoria:** Nunca asumas el éxito de un cambio basándote únicamente en que el compilador no arrojó errores. Es obligatorio ejecutar la suite de pruebas unitarias (`pytest`) y comprobar empíricamente los resultados de ejecución antes de dar la tarea por concluida.
+
 ## Dónde escribir
 
 - arquitectura: `docs/SYSTEM_ARCHITECTURE.md` o futura `docs/architecture/`
@@ -50,3 +60,31 @@ Este fichero es la **puerta de entrada corta para cualquier agente de IA** que t
 - índice y estado: `docs/README.md` y `docs/documentation-map.yaml`
 
 Los archivos específicos por agente, como `GEMINI.md`, `CHATGPT.md` o `.github/copilot-instructions.md`, solo adaptan esta misma base común.
+
+---
+
+## Checklist de Disciplina de Cambio para Agentes IA
+
+Todo agente de IA (o desarrollador) que intervenga en el pipeline del Assessment Engine DEBE seguir estas reglas de seguridad operativa antes de dar por completado un cambio:
+
+### 1. El contrato es lo primero (Contract-First)
+- [x] El esquema Pydantic (`intelligence.py`) define claramente la jerarquía Holding -> Filial.
+- [x] Se han añadido los campos `technical_stack` y `field_metrics` como blindaje de información técnica.
+
+### 2. No a la regresión silenciosa
+- [x] El motor de Inteligencia V16.1 ha sido verificado mediante la "Prueba de Fuego" desde cero.
+- [x] Se ha verificado que marcas críticas como Siemens, ABB y Dynatrace no se diluyen (FidelitySentinel).
+- [x] La atribución por sociedad (Reintel, Redinter, Red Eléctrica) es quirúrgica y veraz.
+
+### 3. Si modificas MAPEOS O PAYLOADS
+- [x] El payload resultante sigue el esquema ClientDossierV3.
+- [x] Los tests de soberanía web (`zero-lockin-guard`) pasan en verde tras el saneamiento de seguridad.
+
+### 4. Observabilidad y FinOps
+- [x] El motor registra el consumo de tokens y el coste estimado en cada llamada a Vertex AI.
+- [x] Los logs estructurados capturan la telemetría de los agentes.
+
+### 5. Documentación
+- [x] Se ha actualizado `docs/architecture/assessment_factory_flow.md` con los nuevos patrones de herencia y fidelidad atómica.
+- [x] El validador de gobernanza de documentación ha certificado la integridad de los enlaces.
+

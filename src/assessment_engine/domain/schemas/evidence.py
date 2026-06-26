@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class EvidenceFragment(BaseModel):
@@ -26,14 +26,32 @@ class EvidenceFragment(BaseModel):
             fragment instance was created.
     """
 
-    fragment_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    fragment_id: str = ""
     source_uri: str
     content: str
-    content_hash: str
+    content_hash: str = ""
     location_metadata: Dict[str, Any] = Field(default_factory=dict)
     timestamp: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def generate_content_addressable_id_and_hash(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            content = data.get("content", "")
+            # Auto-compute content_hash as SHA-256 of the content text
+            if not data.get("content_hash") and content:
+                import hashlib
+                data["content_hash"] = hashlib.sha256(content.encode("utf-8")).hexdigest()
+            
+            # Auto-compute fragment_id as SHA-256 of source_uri | content
+            if not data.get("fragment_id") and content:
+                import hashlib
+                source_uri = data.get("source_uri", "")
+                combined = f"{source_uri}|{content}"
+                data["fragment_id"] = hashlib.sha256(combined.encode("utf-8")).hexdigest()
+        return data
 
 
 class EvidenceLedger(BaseModel):

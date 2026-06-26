@@ -18,6 +18,10 @@ verification_mode: editorial
 
 Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentacion canonica del proyecto.
 
+## Herencia de Gobernanza (Estricto)
+
+Como agente de Google, **DEBES leer y someterte obligatoriamente a las Leyes de Ingeniería No Negociables y el Checklist de Disciplina de Cambio definidos en [AGENTS.md](AGENTS.md)**. Esas leyes de calidad son absolutas e inmutables para esta base de código.
+
 ## Orden de lectura
 
 1. [README.md](README.md)
