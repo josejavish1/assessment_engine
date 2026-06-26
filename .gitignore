@@ -55,6 +55,7 @@ working/
 ficheros/
 source_docs/
 examplefiles/
+.artifacts/
 
 # Backups y Archivos Antiguos
 _archive_*/
