@@ -793,11 +793,12 @@ class FairRiskPolicy(BaseSovereignPolicy):
         pillars = payload.get("pillars_analysis", [])
 
         # Load FAIR model parameters from the canonical governance repository.
-        profiles_path = Path("engine_config/policies/fair_risk_profiles.json")
-        profiles = {}
-        if profiles_path.exists():
-            with open(profiles_path, "r", encoding="utf-8") as pf:
-                profiles = json.load(pf)
+        from assessment_engine.infrastructure.config_loader import load_policy_file
+        try:
+            profiles = load_policy_file("fair_risk_profiles")
+        except Exception as e:
+            logger.error(f"Fallo cargando fair_risk_profiles de políticas: {e}")
+            profiles = {}
 
         # Load client metadata to ascertain the industry sector for sector-lock policy enforcement.
         client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")

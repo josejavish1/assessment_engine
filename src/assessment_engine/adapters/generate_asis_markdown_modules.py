@@ -94,16 +94,8 @@ def generate_modules(payload_path: str):
     tower_meta = data.get("document_meta", {})
     doc_lang = tower_meta.get("language", "es").lower()
 
-    #
-    locales_path = Path("engine_config/locales.json")
-    locales_data = {}
-    if locales_path.exists():
-        with open(locales_path, "r", encoding="utf-8-sig") as lf:
-            try:
-                locales_data = json.load(lf)
-            except Exception:
-                pass
-    vocab = locales_data.get(doc_lang, locales_data.get("es", {}))
+    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    vocab = resolve_localized_vocabulary(doc_lang)
 
     tower_name = tower_meta.get("tower_name", "Desconocida")
     tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
