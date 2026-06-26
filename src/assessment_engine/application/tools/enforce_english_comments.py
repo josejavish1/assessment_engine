@@ -15,16 +15,11 @@ import tokenize
 from pathlib import Path
 from pydantic import BaseModel, Field
 
-# Ensure project source is in path to allow imports of infrastructure modules
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+# Ensure project source is in path to allow absolute imports
+ROOT = Path(__file__).resolve().parents[4]
+sys.path.insert(0, str(ROOT))
 
-try:
-    from assessment_engine.infrastructure.ai_client import call_agent
-except ImportError:
-    # Fallback to direct import if running in nested path setups
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src/assessment_engine"))
-    from assessment_engine.infrastructure.ai_client import call_agent
-
+from assessment_engine.infrastructure.ai_client import call_agent
 
 # English stop words (high-frequency syntactical elements)
 ENGLISH_STOPWORDS = {
@@ -71,7 +66,7 @@ def is_spanish_text(text: str) -> bool:
 def load_sobriety_policy() -> str:
     """Load the engineering compliance laws and style guides from AGENTS.md dynamically."""
     try:
-        agents_path = Path(__file__).resolve().parent.parent / "AGENTS.md"
+        agents_path = ROOT / "AGENTS.md"
         if agents_path.exists():
             content = agents_path.read_text(encoding="utf-8")
             # Extract relevant sections or just return the whole file for context
@@ -276,7 +271,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
             except Exception as e:
                 print(f"❌ Failed to write updates to {filepath}: {e}", file=sys.stderr)
                 return False
-        return False # Return False because there were issues detected (and resolved or unresolved)
+        return False
     
     return True
 

@@ -108,7 +108,7 @@ jobs:
           ruff check src/
 
           # 2. Validate that 100% of source comments and descriptions are in Tier 1 English
-          python scripts/enforce_english_comments.py $(find src/ -name "*.py" | grep -v "_legacy")
+          python src/assessment_engine/application/tools/enforce_english_comments.py $(find src/ -name "*.py" | grep -v "_legacy")
 
       - name: Automated Comment Formatting & Style Linter
         env:

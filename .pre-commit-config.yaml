@@ -76,7 +76,7 @@ repos:
 
       - id: docs-language-guard
         name: Docs & Comments Language Guard (Technical English Only)
-        entry: .venv/bin/python scripts/enforce_english_comments.py
+        entry: .venv/bin/python src/assessment_engine/application/tools/enforce_english_comments.py
         language: system
         files: \.py$
 
