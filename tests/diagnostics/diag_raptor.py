@@ -35,6 +35,6 @@ if __name__ == "__main__":
         import os
 
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-            "/home/jsanchhi/.secrets/sa-key.json"
+            str(Path.home() / ".secrets" / "sa-key.json")
         )
         asyncio.run(test_raptor(sys.argv[1], sys.argv[2]))

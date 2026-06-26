@@ -15,7 +15,7 @@ source "$REPO_ROOT/.assessment_env.sh"
 run_daemon() {
     echo "Lanzando Apex Sentinel en segundo plano..."
     echo "Logs disponibles en: $LOG_FILE"
-    nohup "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_dispatcher.py" --headless >> "$LOG_FILE" 2>&1 &
+    nohup "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/application/tools/apex_dispatcher.py" --headless >> "$LOG_FILE" 2>&1 &
     echo $! > "$REPO_ROOT/working/apex/apex.pid"
     echo "Proceso lanzado con PID $(cat "$REPO_ROOT/working/apex/apex.pid")."
     echo "Puedes desconectarte tranquilamente. Para monitorizar, usa: ./bin/po-batch --monitor"
@@ -23,7 +23,7 @@ run_daemon() {
 
 # Función para monitorizar (TUI conectada al ledger)
 run_monitor() {
-    "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/scripts/tools/apex_dispatcher.py"
+    "$REPO_ROOT/.venv/bin/python3" "$REPO_ROOT/src/assessment_engine/application/tools/apex_dispatcher.py"
 }
 
 case "$1" in

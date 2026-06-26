@@ -87,7 +87,7 @@ entries:
   kind: document
   title: Project entry point
   doc_type: canonical
-  status: Draft
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
@@ -98,8 +98,8 @@ entries:
   - pyproject.toml
   - src/assessment_engine/
   - .github/workflows/ci.yml
-  last_verified_against: 2026-04-30
-  notes: Nueva entrada humana del proyecto; pendiente ampliar onboarding y operación.
+  last_verified_against: 2026-06-26
+  notes: Project entry point and onboarding index.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/README.md

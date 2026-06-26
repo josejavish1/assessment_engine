@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 
 from google import genai
@@ -7,7 +8,7 @@ from google.genai import types
 def test_grounding_direct():
     print("\n🚀 Probando Grounding Directo (Sin CSE/API Key)...")
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/jsanchhi/.secrets/sa-key.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path.home() / ".secrets" / "sa-key.json")
 
     client = genai.Client(
         vertexai=True, project="sub403o4u0q5", location="europe-west1"

@@ -1,0 +1,135 @@
+#!/bin/bash
+# bin/run-pipeline
+# Generic, portable assessment pipeline orchestrator.
+
+set -euo pipefail
+
+# Standard usage instructions
+usage() {
+  cat <<EOF
+Usage:
+  ./bin/run-pipeline --client "CLIENT" --slug "SLUG" --context "PATH" --responses "PATH" --towers "T1 T2 ..."
+
+Examples:
+  ./bin/run-pipeline --client "REDEIA" --slug "redeia" --context "working/redeia_v3/redeia/contexto_redeia_elite.docx" --responses "working/redeia_v3/redeia/preguntas_redeia_con_notas_v2.txt" --towers "T2"
+EOF
+  exit 1
+}
+
+# Default parameters
+CLIENT=""
+SLUG=""
+CONTEXT=""
+RESPONSES=""
+TOWERS_STR=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --client)
+      CLIENT="$2"
+      shift 2
+      ;;
+    --slug)
+      SLUG="$2"
+      shift 2
+      ;;
+    --context)
+      CONTEXT="$2"
+      shift 2
+      ;;
+    --responses)
+      RESPONSES="$2"
+      shift 2
+      ;;
+    --towers)
+      TOWERS_STR="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      usage
+      ;;
+  esac
+done
+
+if [[ -z "$CLIENT" || -z "$SLUG" || -z "$CONTEXT" || -z "$RESPONSES" || -z "$TOWERS_STR" ]]; then
+  echo "Error: Missing required arguments."
+  usage
+fi
+
+# Read towers string into an array
+IFS=' ' read -r -a TOWERS <<< "$TOWERS_STR"
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "========================================================"
+echo " INICIANDO PIPELINE DE ASSESSMENT - CLIENTE: $CLIENT"
+echo "========================================================"
+
+# --- LIMPIEZA PREVIA DE CONTROL ---
+echo "🧹 Limpiando ejecuciones previas de '$SLUG'..."
+rm -rf "$REPO_ROOT/working/$SLUG"
+mkdir -p "$REPO_ROOT/working/$SLUG"
+
+# Load environment variables
+if [ -f "$REPO_ROOT/.env" ]; then
+  source "$REPO_ROOT/.env"
+fi
+
+# Dynamic credentials fallback
+export GOOGLE_APPLICATION_CREDENTIALS="${GOOGLE_APPLICATION_CREDENTIALS:-$HOME/.secrets/sa-key.json}"
+
+# Verify credentials exist
+if [ ! -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+  echo "⚠️ Advertencia: No se encontró la llave de GCP en $GOOGLE_APPLICATION_CREDENTIALS."
+fi
+
+# --- FASE 0: INGESTA DE DOCUMENTOS ---
+# Only run ingestion if the script exists for the slug
+INGEST_SCRIPT="$REPO_ROOT/src/assessment_engine/application/tools/ingest_${SLUG}.py"
+if [ -f "$INGEST_SCRIPT" ]; then
+  echo "📥 FASE 0: Ejecutando Ingesta de Documentos (Evidence & Raptor Engine)..."
+  "$REPO_ROOT/.venv/bin/python" "$INGEST_SCRIPT"
+else
+  # If RAG tree already exists, skip ingestion gracefully
+  if [ -f "$REPO_ROOT/working/redeia_v3/redeia/raptor_tree.json" ] && [ "$SLUG" == "redeia" ]; then
+    echo "⏭️ FASE 0: Reutilizando árbol de conocimiento RAG previo..."
+  else
+    echo "⚠️ FASE 0: Omitiendo ingesta rápida (no se encontró script específico de ingesta para $SLUG)."
+  fi
+fi
+
+# --- FASE 1: COSECHA DE INTELIGENCIA DE MERCADO Y CLIENTE ---
+echo "🔍 FASE 1: Cosechando Inteligencia Estratégica (Market & Client Intelligence)..."
+"$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/src/assessment_engine/application/run_intelligence_harvesting.py" "${CLIENT}" "${CONTEXT}"
+
+# --- FASE 2: PIPELINE DE TORRES TÉCNICAS ---
+for TOWER in "${TOWERS[@]}"; do
+    echo ""
+    echo "▶️ PROCESANDO TORRE $TOWER"
+    echo "--------------------------------------------------------"
+    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/src/assessment_engine/application/run_tower_pipeline.py" \
+        --tower "$TOWER" \
+        --client "$CLIENT" \
+        --context-file "$CONTEXT" \
+        --responses-file "$RESPONSES"
+done
+
+# --- FASE 3 Y 4: AGREGACIÓN GLOBAL Y SÍNTESIS ESTRATÉGICA/COMERCIAL ---
+echo ""
+echo "🌐 PROCESANDO AGREGACIÓN GLOBAL Y REPORTES DE ENTREGABLES"
+echo "--------------------------------------------------------"
+echo "🎛️ FASE 3: Generando Reporte Consolidado Global..."
+"$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/src/assessment_engine/application/run_global_pipeline.py" "${CLIENT}"
+
+echo "📊 FASE 4: Ejecutando Refinamiento de Plan Comercial Interno..."
+"$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/src/assessment_engine/application/run_commercial_pipeline.py" "${CLIENT}"
+
+# --- FASE 5: DASHBOARD WEB PRESENTATION ---
+echo "🖥️ FASE 5: Generando Dashboard Web..."
+"$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/src/assessment_engine/adapters/render_web_presentation.py" "${SLUG}"
+
+echo ""
+echo "=========================================================="
+echo "✅ EJECUCIÓN DEL PIPELINE COMPLETADA CON ÉXITO PARA $CLIENT"
+echo "=========================================================="

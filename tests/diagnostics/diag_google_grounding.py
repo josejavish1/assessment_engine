@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 
 from google import genai
@@ -8,7 +9,7 @@ def test_vertex_search_grounding():
     print("\n🚀 Probando Búsqueda Nativa de Google (Vertex AI Grounding)...")
 
     # Usar la cuenta de servicio existente
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/jsanchhi/.secrets/sa-key.json"
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path.home() / ".secrets" / "sa-key.json")
 
     project_id = "sub403o4u0q5"  # El de tu assessment_env.sh
     location = "europe-west1"  # Tu región oficial
