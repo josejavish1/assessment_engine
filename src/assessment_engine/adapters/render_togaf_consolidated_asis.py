@@ -402,10 +402,11 @@ def render_consolidated_asis(working_dir: str, output_path: str):
         "summary", "No disponible."
     )
 
-    #
-    template_path = "templates/template_tobe_consolidated.docx"
-    if os.path.exists(template_path):
-        doc = Document(template_path)
+    # Ensure absolute path resolution to support execution from any directory context.
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    template_path = ROOT / "templates" / "docx" / "template_tobe_consolidated.docx"
+    if template_path.exists():
+        doc = Document(str(template_path))
         print("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
     else:
         doc = Document()

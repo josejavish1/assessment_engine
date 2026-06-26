@@ -22,7 +22,7 @@ from assessment_engine.infrastructure.runtime_paths import (
     resolve_global_report_payload_path,
 )
 
-TEMPLATE_PATH = ROOT / "templates" / "lineage_portal_template.html"
+TEMPLATE_PATH = ROOT / "templates" / "web" / "lineage_portal_template.html"
 
 
 def _load_json(path: Path) -> dict[str, Any]:

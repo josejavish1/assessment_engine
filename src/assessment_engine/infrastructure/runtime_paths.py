@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parents[3]
 GLOBAL_REPORT_TEMPLATE_NAME = "global_report_template.docx"
 TOWER_ANNEX_TEMPLATE_NAME = "tower_annex_template.docx"
-WEB_DASHBOARD_TEMPLATE_NAME = "web_dashboard.html"
 
 
 def resolve_working_dir() -> Path:
@@ -198,14 +197,9 @@ def resolve_tower_definition_file(default_tower: str = "T5") -> Path:
 
 def resolve_global_report_template_path() -> Path:
     """Resolve the absolute path to the global report template."""
-    return ROOT / "templates" / GLOBAL_REPORT_TEMPLATE_NAME
+    return ROOT / "templates" / "docx" / GLOBAL_REPORT_TEMPLATE_NAME
 
 
 def resolve_tower_annex_template_path() -> Path:
     """Resolve the absolute path to the Tower Annex template file."""
-    return ROOT / "templates" / TOWER_ANNEX_TEMPLATE_NAME
-
-
-def resolve_web_dashboard_template_path() -> Path:
-    """Resolve the absolute path to the web dashboard HTML template."""
-    return ROOT / "templates" / WEB_DASHBOARD_TEMPLATE_NAME
+    return ROOT / "templates" / "docx" / TOWER_ANNEX_TEMPLATE_NAME

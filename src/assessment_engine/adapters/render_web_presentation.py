@@ -32,10 +32,7 @@ from assessment_engine.infrastructure.runtime_paths import (
     resolve_blueprint_payload_candidates,
     resolve_client_dir,
     resolve_global_report_payload_path,
-    resolve_web_dashboard_template_path,
 )
-
-TEMPLATE_PATH = resolve_web_dashboard_template_path()
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -393,19 +390,11 @@ def _build_nexus_data(client_id: str) -> tuple[dict[str, Any], Path]:
     return nexus_data, client_dir
 
 
-def _load_template() -> jinja2.Template:
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(TEMPLATE_PATH.parent),
-        autoescape=jinja2.select_autoescape(["html", "xml"]),
-    )
-    return env.get_template(TEMPLATE_PATH.name)
-
-
 # Configuration parameters for the multi-annex sovereign portal template rendering.
 TEMPLATE_NAME = "strategic_terminal.html"
-STRATEGIC_TEMPLATE_PATH = ROOT / "templates" / TEMPLATE_NAME
-FOLIO_ASSETS = ROOT / "templates" / "folio_assets"
-SHARED_ASSETS = ROOT / "templates" / "terminal_assets"
+STRATEGIC_TEMPLATE_PATH = ROOT / "templates" / "web" / TEMPLATE_NAME
+FOLIO_ASSETS = ROOT / "templates" / "web" / "folio_assets"
+SHARED_ASSETS = ROOT / "templates" / "web" / "terminal_assets"
 
 
 def _json_for_script(payload: dict[str, Any]) -> str:
