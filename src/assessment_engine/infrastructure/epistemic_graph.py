@@ -159,10 +159,39 @@ class EpistemicGraph:
                 such as a permissions error or a full disk.
             FileNotFoundError: If the directory for the ledger file does not exist.
         """
+        # Strict Epistemic Graph Schema Constraints
+        normalized_predicate = predicate.upper().strip().replace(" ", "_")
+        
+        # System-injected triples must use registered predicates
+        if source.upper() in {"TOWER_PIPELINE", "TOWER_T1", "TOWER_T2", "TOWER_T3", "TOWER_T4", "TOWER_T5", "ORCHESTRATOR"}:
+            VALID_SYSTEM_PREDICATES = {
+                "BELONGS_TO_TOWER",
+                "IDENTIFIED_AS_GAP",
+                "IMPACTS_PILLAR",
+                "PROPOSES_INITIATIVE",
+                "ADDRESSES_PILLAR",
+                "REQUIRES_PREREQUISITE",
+                "SUPPORTED_BY",
+                "VIOLATES",
+                "COVERS"
+            }
+            if normalized_predicate not in VALID_SYSTEM_PREDICATES:
+                raise ValueError(
+                    f"Graph Schema Violation: System-injected predicate '{predicate}' is not registered. "
+                    f"Must be one of: {sorted(list(VALID_SYSTEM_PREDICATES))}"
+                )
+        else:
+            # AI-extracted or custom triples must use uppercase SNAKE_CASE
+            import re
+            if not re.match(r"^[A-Z0-9_]+$", normalized_predicate):
+                raise ValueError(
+                    f"Graph Schema Violation: Predicate '{predicate}' must be in uppercase SNAKE_CASE format."
+                )
+
         effective_ts = timestamp if timestamp is not None else time.time()
         event = GraphEvent(
             subject=subject,
-            predicate=predicate,
+            predicate=normalized_predicate,
             object_val=object_val,
             source=source,
             confidence=confidence,

@@ -1,0 +1,38 @@
+# llms.txt — Assessment Engine V4
+
+This file serves as the unified AI Sitemap index for Large Language Models (LLMs) and autonomous agents ingesting this repository (e.g. Cursor, Claude Code, Aider, Copilot). It outlines the canonical documentation structure of the codebase.
+
+## Core Directives
+
+- [AGENTS.md](AGENTS.md) — The **Single Source of Truth** for all AI Agent operational constraints, non-negotiable quality rules, and change discipline checklists.
+- [GEMINI.md](GEMINI.md) — Operational adapter specific to the Google Gemini CLI workflow.
+- [CHATGPT.md](CHATGPT.md) — Operational adapter specific to ChatGPT, Cursor, and OpenAI tools.
+- [README.md](README.md) — Canonical developer onboarding guide and repository overview.
+
+## Architecture & Data Flows
+
+- [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) — High-level technical overview of the Ports and Adapters (Hexagonal) architecture, AST stateless compilers, and data-flow pipeline stages (Phase 1 to 5).
+- [docs/architecture/roadmap_vision.md](docs/architecture/roadmap_vision.md) — Agentic long-term vision of the platform (Phase 1 to 4).
+- [docs/architecture/tower-pipeline.md](docs/architecture/tower-pipeline.md) — Deep-dive into the single-tower evaluation lifecycle (Phase 1 analysis).
+- [docs/architecture/global-commercial-pipelines.md](docs/architecture/global-commercial-pipelines.md) — Deep-dive into multi-tower aggregation, executive roadmapping, and commercial rendering pipelines (Phase 2).
+- [docs/architecture/mcp-mode.md](docs/architecture/mcp-mode.md) — Documentation detailing the Model Context Protocol (MCP) server execution.
+- [docs/architecture/working-artifacts.md](docs/architecture/working-artifacts.md) — Specifications of the temporal and cached artifacts stored under the `/working/` directory.
+
+## Contracts & Schemas
+
+- [docs/contracts/artifact-contracts.md](docs/contracts/artifact-contracts.md) — Data boundary contracts between the pipeline execution modules.
+- [docs/contracts/payload-render-boundaries.md](docs/contracts/payload-render-boundaries.md) — OpenXML rendering boundaries and visual styles policies.
+- [docs/contracts/tower_blueprint_payload.md](docs/contracts/tower_blueprint_payload.md) — Technical Pydantic model contracts for single-tower blueprint JSON objects.
+- [docs/contracts/tower_annex_payload.md](docs/contracts/tower_annex_payload.md) — Pydantic schema contracts for executive annex synthesis JSON objects.
+- [docs/contracts/tower_annex_design.md](docs/contracts/tower_annex_design.md) — Structure, rules, and layout constraints of Microsoft Word Tower Annex documents.
+- [docs/contracts/tower_main_report_long_template.md](docs/contracts/tower_main_report_long_template.md) — Strict visual guidelines for long-form Tower Main Reports.
+
+## Operations & DevOps
+
+- [docs/operations/installation.md](docs/operations/installation.md) — Setup guide for local virtual environments and Google Cloud credentials.
+- [docs/operations/pipeline-execution.md](docs/operations/pipeline-execution.md) — Manual and programmatic runbook for executing pipelines.
+- [docs/operations/pipeline-controls-runbook.md](docs/operations/pipeline-controls-runbook.md) — Telemetry, logs, and preflight controls runbook.
+- [docs/operations/smoke-regeneration.md](docs/operations/smoke-regeneration.md) — Smoke test execution and synthetic data regeneration guide.
+- [docs/operations/engineering-quality-gates.md](docs/operations/engineering-quality-gates.md) — Linter rules, typing assertions, and CI/CD quality gate enforcement.
+- [docs/operations/agentic-development-workflow.md](docs/operations/agentic-development-workflow.md) — Strict guidelines for AI-assisted workspace modifications and PR merges.
+- [docs/operations/product-owner-orchestrator.md](docs/operations/product-owner-orchestrator.md) — Multi-agent product owner workflow orchestration guide.

@@ -88,3 +88,23 @@ Todo agente de IA (o desarrollador) que intervenga en el pipeline del Assessment
 - [x] Se ha actualizado `docs/architecture/assessment_factory_flow.md` con los nuevos patrones de herencia y fidelidad atómica.
 - [x] El validador de gobernanza de documentación ha certificado la integridad de los enlaces.
 
+---
+
+## Restricciones Negativas Explícitas (Anti-patterns)
+
+Queda estrictamente prohibido que cualquier agente autónomo o desarrollador incurra en las siguientes prácticas:
+
+1. **No escribirás pruebas de integración o de unidad que dependan de red externa:** Las pruebas que dependan de llamadas a APIs externas (como DuckDuckGo, Kroki o Google Grounding) deben aislarse como playgrounds en `tests/diagnostics/` bajo el prefijo `diag_*.py`, nunca incluirse en la suite automática de `pytest`.
+2. **No silenciarás MyPy ni el linter mediante parches:** Prohibido el uso de `# type: ignore` o casts sintácticos (`Any`, `cast`) para silenciar errores de tipado sin una justificación de diseño comentada. Resuelve la causa raíz de forma tipada.
+3. **No alterarás rutas mediante `sys.path` de forma manual:** Todas las importaciones de módulos deben resolverse mediante el namespace nativo absoluto (ej., `from assessment_engine.application...`). Nunca uses `sys.path.append` o `PYTHONPATH` locales.
+4. **No dejarás código muerto comentado:** El código comentado en desuso debe ser eliminado físicamente de inmediato. Git es la única máquina del tiempo.
+
+## Modos de Fallo Comunes y Autocuración (Troubleshooting)
+
+Si la suite de pruebas o la ejecución fallan, sigue este protocolo de autocuración antes de solicitar intervención:
+
+- **Error: `TemplateNotFound` (Jinja2):** Verifica que la plantilla existe físicamente bajo la carpeta `/templates/` de la raíz del repositorio y que la constante de ruta en `runtime_paths.py` apunta correctamente a ella.
+- **Error: `TypeError: string indices must be integers`:** Ocurre si pasas traducciones en lugar de definiciones estructuradas de rango de madurez a la función de resolución. Asegura el mapeo del esquema.
+- **Error: `ModuleNotFoundError` o `ImportError`:** Ocurre si el linter o el movimiento de carpetas dejó importaciones relativas obsoletas. Usa el espacio de nombres absoluto calificado `assessment_engine.application...` o `assessment_engine.infrastructure...`.
+
+
