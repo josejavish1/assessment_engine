@@ -5,18 +5,72 @@ import os
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 ENGINE_CONFIG_DIR = ROOT / "engine_config"
 
 
-from typing import Any
+from typing import Any, Dict, TypedDict
+
+
+class ModelProfile(TypedDict):
+    model: str
+    temperature: float
+    top_p: float
+    seed: int
+    max_output_tokens: int
 
 
 def _load_json(path: Path) -> Any:
     if not path.exists():
         raise FileNotFoundError(f"No existe: {path}")
-    with path.open("r", encoding="utf-8") as f:
+    with path.open("r", encoding="utf-8-sig") as f:
         return json.load(f)
+
+
+def load_abbreviations_glossary() -> dict:
+    """Load and parse the dynamic localized abbreviations glossary.
+
+    Returns:
+        The deserialized glossary terms dictionary.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "abbreviations_glossary.json")
+
+
+def load_brand_profile() -> dict:
+    """Load, parse, and normalize the corporate brand profile.
+
+    Reads `brand_profile.json` and ensures color strings are normalized (removing
+    any potential '#' prefix) to guarantee rendering safety in down-stream compilers.
+
+    Returns:
+        The normalized brand profile configuration dictionary.
+    """
+    data = _load_json(ENGINE_CONFIG_DIR / "brand_profile.json")
+    styling = data.get("styling", {})
+    if "primary_color_hex" in styling:
+        styling["primary_color_hex"] = styling["primary_color_hex"].lstrip("#")
+    if "alternate_row_color_hex" in styling:
+        styling["alternate_row_color_hex"] = styling["alternate_row_color_hex"].lstrip("#")
+    return data
+
+
+def load_locales() -> dict:
+    """Load and parse the dynamic localization strings file.
+
+    Returns:
+        The deserialized locales dictionary.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "locales.json")
+
+
+def resolve_localized_vocabulary(lang: str) -> dict:
+    """Resolves and returns the localized vocabulary terms for a given language.
+
+    Falls back to Spanish ('es') if the requested language is not found.
+    """
+    locales = load_locales()
+    lang_key = lang.lower() if lang else "es"
+    return locales.get(lang_key, locales.get("es", {}))
 
 
 def load_runtime_manifest() -> Any:
@@ -54,7 +108,7 @@ def load_model_profiles() -> Any:
     return _load_json(ENGINE_CONFIG_DIR / "model_profiles.json")
 
 
-def load_model_profile(profile_name: str) -> Any:
+def load_model_profile(profile_name: str) -> ModelProfile:
     """Loads a model configuration profile by name, with environment override support.
 
     Retrieves a specified model configuration profile and returns a mutable copy.
@@ -112,7 +166,7 @@ def load_review_policy() -> dict:
     return load_policy_file("review_policy")
 
 
-def resolve_model_profile_for_role(role_name: str) -> dict:
+def resolve_model_profile_for_role(role_name: str) -> ModelProfile:
     """Resolve and load the model profile configuration for a specified role.
 
     Loads the runtime manifest to identify the model profile name associated
@@ -124,7 +178,7 @@ def resolve_model_profile_for_role(role_name: str) -> dict:
             resolved and loaded.
 
     Returns:
-        dict: The configuration dictionary loaded from the model profile file.
+        ModelProfile: The configuration dictionary loaded from the model profile file.
 
     Raises:
         KeyError: If the provided `role_name` does not map to a configured
@@ -192,3 +246,40 @@ def resolve_review_rules() -> dict:
     """{'docstring': "Extract the 'rules' dictionary from the main review policy configuration."}."""
     policy = load_review_policy()
     return policy.get("rules", {})
+
+
+def load_rate_card() -> dict:
+    """Load and parse the dynamic rate card parameters.
+
+    Returns:
+        The deserialized rate card dictionary.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "rate_card.json")
+
+
+def load_industry_profile(profile_key: str) -> dict:
+    """Load and parse an industry-specific configuration profile with automatic fallback to 'default'.
+
+    Guarantees absolute path resolution to support execution from any directory context.
+
+    Returns:
+        The deserialized industry profile dictionary.
+    """
+    key = str(profile_key or "default").replace(".json", "").strip().lower()
+    profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / f"{key}.json"
+    if not profile_file.exists():
+        profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
+    return _load_json(profile_file)
+
+
+def load_framework_rubric(framework_id: str) -> dict:
+    """Load and parse a dynamic RAGE framework evaluation rubric by its ID.
+
+    Guarantees absolute path resolution to support execution from any directory context.
+
+    Returns:
+        The deserialized framework rubric dictionary.
+    """
+    key = str(framework_id or "").strip().lower()
+    rubric_file = ENGINE_CONFIG_DIR / "frameworks" / f"{key}.json"
+    return _load_json(rubric_file)

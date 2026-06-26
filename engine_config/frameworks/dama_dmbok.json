@@ -1,0 +1,27 @@
+{
+  "framework_id": "dama_dmbok",
+  "framework_name": "DAMA-DMBOK v2 (Data Management Body of Knowledge)",
+  "description": "Estándar global de facto para la gobernanza, arquitectura, seguridad y calidad de la gestión de activos de datos empresariales.",
+  "rules": [
+    {
+      "tower_id": "T4",
+      "query_template": "porcentaje de utilities con gobierno de datos formalizado y catalogo de datos empresariales activo bajo estandares dama dmbok 2025 2026",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    }
+  ]
+}

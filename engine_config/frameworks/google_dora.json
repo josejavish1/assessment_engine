@@ -1,0 +1,27 @@
+{
+  "framework_id": "google_dora",
+  "framework_name": "Google DORA (DevOps Research and Assessment)",
+  "description": "Estándar de facto para medir la madurez del rendimiento de entrega de software y la estabilidad operativa en entornos ágiles y de ingeniería cloud.",
+  "rules": [
+    {
+      "tower_id": "T1",
+      "query_template": "porcentaje de empresas del sector utilities en europa que logran despliegues en producción semanales o continuos encuesta google dora 2025 2026",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 65.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 45.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 25.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    }
+  ]
+}

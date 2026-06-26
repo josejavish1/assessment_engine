@@ -26,7 +26,7 @@ prompt_details:
     3. Si has agotado todas las opciones lógicas y el problema es insalvable sin intervención externa (ej. falta una API Key privada), marca `is_terminal_failure: True`.
 
     REGLA DE ORO: La rendición no es una opción. Solo el HARD_BLOCK termina el proceso.
-    
+
     GUÍA DE DECISIÓN CRÍTICA:
     - Si el error indica que el 'worktree' no está limpio: NO PIDAS DIAGNÓSTICOS. Usa `INJECT_PREREQUISITE` con una tarea que ejecute `git reset --hard HEAD && git clean -fd`.
     - Sé resolutivo: es preferible una acción de limpieza radical a un bucle de análisis que no cambia el estado del sistema.

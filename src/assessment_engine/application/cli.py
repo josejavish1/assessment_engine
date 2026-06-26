@@ -3,7 +3,7 @@
 """Sovereign Assessment Engine CLI Control Panel.
 
 This module unifies all execution pipelines, background daemon management (APEX),
-autonomous AI-agent execution, and chaos-engineering lock-in verification
+autonomous AI-agent execution, and portability lock-in verification
 into a single, unified, and cross-platform Python-native console CLI script.
 """
 
@@ -19,7 +19,9 @@ import tempfile
 from pathlib import Path
 
 
-def run_pipeline(client: str, slug: str, context: str, responses: str, towers_str: str) -> int:
+def run_pipeline(
+    client: str, slug: str, context: str, responses: str, towers_str: str
+) -> int:
     """Executes the complete end-to-end assessment pipeline for a client.
 
     Args:
@@ -53,10 +55,14 @@ def run_pipeline(client: str, slug: str, context: str, responses: str, towers_st
         if fallback_credentials.exists():
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(fallback_credentials)
         else:
-            print(f"⚠️ Warning: No GCP credentials key found at default path {fallback_credentials}.")
+            print(
+                f"⚠️ Warning: No GCP credentials key found at default path {fallback_credentials}."
+            )
 
     # --- Phase 0: Ingestion ---
-    ingest_script = repo_root / "src/assessment_engine/application/tools" / f"ingest_{slug}.py"
+    ingest_script = (
+        repo_root / "src/assessment_engine/application/tools" / f"ingest_{slug}.py"
+    )
     if ingest_script.exists():
         print("📥 FASE 0: Running Document Ingestion (Raptor & Evidence Engine)...")
         res = subprocess.run([python_bin, str(ingest_script)], cwd=repo_root)
@@ -73,8 +79,12 @@ def run_pipeline(client: str, slug: str, context: str, responses: str, towers_st
 
     # --- Phase 1: Client Intelligence ---
     print("🔍 FASE 1: Harvesting Client & Market Strategic Intelligence...")
-    intel_script = repo_root / "src/assessment_engine/application/run_intelligence_harvesting.py"
-    res = subprocess.run([python_bin, str(intel_script), client, context], cwd=repo_root)
+    intel_script = (
+        repo_root / "src/assessment_engine/application/run_intelligence_harvesting.py"
+    )
+    res = subprocess.run(
+        [python_bin, str(intel_script), client, context], cwd=repo_root
+    )
     if res.returncode != 0:
         print("❌ Phase 1 Client Intelligence failed. Aborting pipeline.")
         return res.returncode
@@ -108,14 +118,18 @@ def run_pipeline(client: str, slug: str, context: str, responses: str, towers_st
     print("\n🌐 PROCESANDO AGREGACIÓN GLOBAL Y REPORTES DE ENTREGABLES")
     print("--------------------------------------------------------")
     print("🎛️ FASE 3: Generating Global Consolidated Report...")
-    global_script = repo_root / "src/assessment_engine/application/run_global_pipeline.py"
+    global_script = (
+        repo_root / "src/assessment_engine/application/run_global_pipeline.py"
+    )
     res = subprocess.run([python_bin, str(global_script), client], cwd=repo_root)
     if res.returncode != 0:
         print("❌ Phase 3 Global aggregation failed. Aborting pipeline.")
         return res.returncode
 
     print("📊 FASE 4: Executing Internal Commercial Plan Refiner...")
-    comm_script = repo_root / "src/assessment_engine/application/run_commercial_pipeline.py"
+    comm_script = (
+        repo_root / "src/assessment_engine/application/run_commercial_pipeline.py"
+    )
     res = subprocess.run([python_bin, str(comm_script), client], cwd=repo_root)
     if res.returncode != 0:
         print("❌ Phase 4 Commercial refining failed. Aborting pipeline.")
@@ -151,7 +165,9 @@ def manage_po_batch(daemon: bool, monitor: bool) -> int:
 
     log_file = apex_dir / "session.log"
     pid_file = apex_dir / "apex.pid"
-    dispatcher_script = repo_root / "src/assessment_engine/application/tools/apex_dispatcher.py"
+    dispatcher_script = (
+        repo_root / "src/assessment_engine/application/tools/apex_dispatcher.py"
+    )
 
     if not dispatcher_script.exists():
         print(f"[-] Dispatcher script not found: {dispatcher_script}", file=sys.stderr)
@@ -160,7 +176,7 @@ def manage_po_batch(daemon: bool, monitor: bool) -> int:
     if daemon:
         print("Lanzando Apex Sentinel en segundo plano...")
         print(f"Logs disponibles en: {log_file}")
-        
+
         # Open log file to redirect stdout/stderr
         try:
             with open(log_file, "a", encoding="utf-8") as log:
@@ -173,7 +189,9 @@ def manage_po_batch(daemon: bool, monitor: bool) -> int:
                 )
             pid_file.write_text(str(process.pid), encoding="utf-8")
             print(f"[+] Proceso lanzado con PID {process.pid}.")
-            print("Puedes desconectarte tranquilamente. Para monitorizar, usa: assessment-engine po-batch --monitor")
+            print(
+                "Puedes desconectarte tranquilamente. Para monitorizar, usa: assessment-engine po-batch --monitor"
+            )
             return 0
         except Exception as e:
             print(f"[-] Failed to launch daemon: {e}", file=sys.stderr)
@@ -188,13 +206,13 @@ def manage_po_batch(daemon: bool, monitor: bool) -> int:
 
 
 def run_lockin_test() -> int:
-    """Executes the zero-lockin chaos-engineering validation test.
+    """Executes the zero-lockin portability validation test.
 
     This copies the codebase to an isolated temporary sandbox, removes all
     adapter abstractions, forces the fake LLM provider, and runs the entire
     test suite.
     """
-    print("🔥 INICIANDO OPERACIÓN TIERRA QUEMADA (Chaos Engineering) 🔥")
+    print("[Audit] Initializing Portability Sandbox Verification (Tear-down Validation)...")
     repo_root = Path(__file__).resolve().parents[3]
 
     with tempfile.TemporaryDirectory() as chaos_dir:
@@ -203,28 +221,45 @@ def run_lockin_test() -> int:
 
         # Copy repository recursively excluding caches and environments
         shutil_ignore = shutil.ignore_patterns(
-            ".git", ".venv", "working", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".artifacts"
+            ".git",
+            ".venv",
+            "working",
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            ".artifacts",
         )
-        
+
         # Copy tree
         for item in repo_root.iterdir():
-            if item.name in (".git", ".venv", "working", ".artifacts", ".pytest_cache", ".mypy_cache", ".ruff_cache"):
+            if item.name in (
+                ".git",
+                ".venv",
+                "working",
+                ".artifacts",
+                ".pytest_cache",
+                ".mypy_cache",
+                ".ruff_cache",
+            ):
                 continue
             if item.is_dir():
-                shutil.copytree(item, chaos_path / item.name, symlinks=True, ignore=shutil_ignore)
+                shutil.copytree(
+                    item, chaos_path / item.name, symlinks=True, ignore=shutil_ignore
+                )
             else:
                 shutil.copy2(item, chaos_path / item.name)
 
         # Extirpate the adapter layers physically to simulate total vendor removal
         adapters_dir = chaos_path / "src/assessment_engine/adapters"
         if adapters_dir.exists():
-            print(f"🔥 Extirpating physical adapter layers at: {adapters_dir}")
+            print(f"[Audit] Simulating provider removal by deleting adapter layers at: {adapters_dir}")
             shutil.rmtree(adapters_dir)
 
         # Force the isolated environment variables
         custom_env = os.environ.copy()
         custom_env["SOVEREIGN_LLM_PROVIDER"] = "fake"
-        
+
         # Run pytest inside the sandboxed path
         print("[+] Running unit tests inside the sandbox...")
         res = subprocess.run(
@@ -241,37 +276,116 @@ def run_lockin_test() -> int:
             return 1
 
 
+def run_rage_command(client: str, industry: str) -> int:
+    """Executes the dynamic RAGE (Runtime Agentic Grounding & Evaluation) pipeline.
+
+    Loads the dynamic frameworks, runs the grounding search agent with Google search,
+    secures and downloads local PDF snapshots to the vault, cross-examines evidence,
+    and performs pure Python rubric evaluation.
+    """
+    import asyncio
+    from assessment_engine.infrastructure.text_utils import slugify
+    from assessment_engine.infrastructure.agentic_benchmarker import AgenticRageBenchmarker
+
+    print("========================================================")
+    print(f" INICIANDO PIPELINE DE RAGE - CLIENTE: {client} | INDUSTRIA: {industry}")
+    print("========================================================")
+
+    repo_root = Path(__file__).resolve().parents[3]
+    slug = slugify(client)
+    working_dir = repo_root / "working" / slug
+    working_dir.mkdir(parents=True, exist_ok=True)
+
+    benchmarker = AgenticRageBenchmarker(client_id=slug, working_dir=working_dir)
+
+    try:
+        # Run asynchronous RAGE engine inside synchronous CLI flow
+        snapshot = asyncio.run(benchmarker.run_rage_evaluation(industry))
+        print("\n========================================================")
+        print("✓ RAGE EXECUTION COMPLETED SUCCESSFULLY!")
+        print("--------------------------------------------------------")
+        print(f"Total Towers Evaluated: {len(snapshot.snapshots)}")
+        for t_id, t_snap in sorted(snapshot.snapshots.items()):
+            print(
+                f"- Tower {t_id} ({t_snap.framework_name}): Score {t_snap.dynamic_score:,.1f} ({t_snap.verification_status.upper()})"
+            )
+        print("========================================================")
+        return 0
+    except Exception as e:
+        print(f"[-] RAGE Execution failed: {e}", file=sys.stderr)
+        return 1
+
+
 def main() -> None:
     """Main CLI entrypoint parser."""
     parser = argparse.ArgumentParser(
         description="Sovereign Assessment Engine Unified CLI Control Panel.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    subparsers = parser.add_subparsers(dest="subcommand", required=True, help="Subcommands")
+    subparsers = parser.add_subparsers(
+        dest="subcommand", required=True, help="Subcommands"
+    )
 
     # Pipeline Run
-    run_parser = subparsers.add_parser("run", help="Run the full end-to-end assessment pipeline.")
-    run_parser.add_argument("--client", required=True, help="Formal client name (e.g. 'REDEIA')")
-    run_parser.add_argument("--slug", required=True, help="Lowercase client filesystem slug (e.g. 'redeia')")
+    run_parser = subparsers.add_parser(
+        "run", help="Run the full end-to-end assessment pipeline."
+    )
+    run_parser.add_argument(
+        "--client", required=True, help="Formal client name (e.g. 'REDEIA')"
+    )
+    run_parser.add_argument(
+        "--slug", required=True, help="Lowercase client filesystem slug (e.g. 'redeia')"
+    )
     run_parser.add_argument("--context", required=True, help="Path to context document")
-    run_parser.add_argument("--responses", required=True, help="Path to responses TXT file")
-    run_parser.add_argument("--towers", required=True, help="Space-separated list of tower codes (e.g. 'T2 T5')")
+    run_parser.add_argument(
+        "--responses", required=True, help="Path to responses TXT file"
+    )
+    run_parser.add_argument(
+        "--towers",
+        required=True,
+        help="Space-separated list of tower codes (e.g. 'T2 T5')",
+    )
 
     # APEX Daemon Manager
-    batch_parser = subparsers.add_parser("po-batch", help="Manage the background APEX Sentinel daemon.")
+    batch_parser = subparsers.add_parser(
+        "po-batch", help="Manage the background APEX Sentinel daemon."
+    )
     batch_group = batch_parser.add_mutually_exclusive_group()
-    batch_group.add_argument("--daemon", action="store_true", help="Launch Sentinel in headless daemon mode.")
-    batch_group.add_argument("--monitor", action="store_true", help="Connect TUI monitor to the ledger.")
+    batch_group.add_argument(
+        "--daemon", action="store_true", help="Launch Sentinel in headless daemon mode."
+    )
+    batch_group.add_argument(
+        "--monitor", action="store_true", help="Connect TUI monitor to the ledger."
+    )
 
-    # Zero Lockin Chaos Test
-    subparsers.add_parser("prove-lockin", help="Execute the zero vendor lock-in chaos-engineering test.")
+    # RAGE Evaluation Command
+    rage_parser = subparsers.add_parser(
+        "rage", help="Execute the dynamic RAGE (Runtime Agentic Grounding & Evaluation) benchmarks evaluation."
+    )
+    rage_parser.add_argument(
+        "--client", required=True, help="Formal client name (e.g. 'REDEIA')"
+    )
+    rage_parser.add_argument(
+        "--industry", required=True, help="Canonical industry profile key (e.g. 'critical_infrastructure')"
+    )
+
+    # Zero Lockin Portability Test
+    subparsers.add_parser(
+        "prove-lockin", help="Execute the zero vendor lock-in portability test."
+    )
 
     args = parser.parse_args()
 
     if args.subcommand == "run":
-        sys.exit(run_pipeline(args.client, args.slug, args.context, args.responses, args.towers))
+        sys.exit(
+            run_pipeline(
+                args.client, args.slug, args.context, args.responses, args.towers
+            )
+        )
     elif args.subcommand == "po-batch":
         sys.exit(manage_po_batch(args.daemon, args.monitor))
+    elif args.subcommand == "rage":
+        sys.exit(run_rage_command(args.client, args.industry))
     elif args.subcommand == "prove-lockin":
         sys.exit(run_lockin_test())
 

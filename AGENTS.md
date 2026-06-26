@@ -7,7 +7,7 @@ source_of_truth:
 - docs/documentation-map.yaml
 - docs/operations/agentic-development-workflow.md
 - docs/operations/engineering-quality-gates.md
-last_verified_against: 2026-05-01
+last_verified_against: 2026-06-26
 applies_to:
 - ai-agents
 doc_type: operational
@@ -106,5 +106,3 @@ Si la suite de pruebas o la ejecución fallan, sigue este protocolo de autocurac
 - **Error: `TemplateNotFound` (Jinja2):** Verifica que la plantilla existe físicamente bajo la carpeta `/templates/` de la raíz del repositorio y que la constante de ruta en `runtime_paths.py` apunta correctamente a ella.
 - **Error: `TypeError: string indices must be integers`:** Ocurre si pasas traducciones en lugar de definiciones estructuradas de rango de madurez a la función de resolución. Asegura el mapeo del esquema.
 - **Error: `ModuleNotFoundError` o `ImportError`:** Ocurre si el linter o el movimiento de carpetas dejó importaciones relativas obsoletas. Usa el espacio de nombres absoluto calificado `assessment_engine.application...` o `assessment_engine.infrastructure...`.
-
-

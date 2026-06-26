@@ -67,23 +67,7 @@ def normalize_dash(value: str) -> str:
 
 
 def comparable_text(value: str) -> str:
-    """Generates a canonical, alphanumeric representation of a string for comparison.
-
-    This function transforms a string into a simplified form suitable for tasks
-    like case-insensitive and diacritic-insensitive matching. The normalization
-    pipeline consists of several steps: applying NFKD Unicode normalization to
-    decompose composite characters, converting to a lowercase ASCII representation
-    by discarding non-ASCII characters, and finally removing all non-alphanumeric
-    characters.
-
-    For example, the input "Héllö-Wörld_123!" becomes "helloworld123".
-
-    Args:
-        value (str): The input string to be normalized.
-
-    Returns:
-        str: A normalized string containing only lowercase ASCII letters and digits.
-    """
+    """Generates a canonical, alphanumeric representation of a string for comparison. This function transforms a string into a simplified form suitable for tasks like case-insensitive and diacritic-insensitive matching. The normalization pipeline consists of several steps: applying NFKD Unicode normalization to decompose composite characters, converting to a lowercase ASCII representation by discarding non-ASCII characters, and finally removing all non-alphanumeric characters. For example, the input "Héllö-Wörld_123!" becomes "helloworld123". Args: value (str): The input string to be normalized. Returns: str: A normalized string containing only lowercase ASCII letters and digits."""
     normalized = unicodedata.normalize("NFKD", normalize_dash(value))
     ascii_value = normalized.encode("ascii", "ignore").decode("ascii")
     return re.sub(r"[^a-z0-9]+", "", ascii_value.lower())
@@ -128,26 +112,7 @@ def extract_tower_name(paragraphs: list[str], tower_id: str) -> str:
 
 
 def extract_purpose(paragraphs: list[str]) -> str:
-    """Extract the tower's purpose statement from a list of text paragraphs.
-
-    This function locates the "Definición de la torre" section header within
-    the provided list of paragraphs. It then searches the subsequent 11 paragraphs
-    for a sentence that begins with "la torre " and contains the substring
-    " cubre " (case-insensitive). The first matching paragraph found is considered
-    the purpose statement and is returned after normalization.
-
-    Args:
-        paragraphs (list[str]): A list of strings, where each string represents a
-            paragraph from the source document.
-
-    Returns:
-        str: The normalized text of the purpose statement.
-
-    Raises:
-        RuntimeError: If the "Definición de la torre" section header is not
-            found, or if a purpose statement matching the expected pattern cannot
-            be located within the 11 paragraphs following the header.
-    """
+    """Extract the tower's purpose statement from a list of text paragraphs. This function locates the "Definición de la torre" section header within the provided list of paragraphs. It then searches the subsequent 11 paragraphs for a sentence that begins with "la torre " and contains the substring " cubre " (case-insensitive). The first matching paragraph found is considered the purpose statement and is returned after normalization. Args: paragraphs (list[str]): A list of strings, where each string represents a paragraph from the source document. Returns: str: The normalized text of the purpose statement. Raises: RuntimeError: If the "Definición de la torre" section header is not found, or if a purpose statement matching the expected pattern cannot be located within the 11 paragraphs following the header."""
     try:
         start = paragraphs.index("Definición de la torre")
     except ValueError as exc:
@@ -163,21 +128,15 @@ def extract_purpose(paragraphs: list[str]) -> str:
 
 
 def clean_repeated_phrase(value: str) -> str:
-    """Corrects a specific, duplicated Spanish phrase within a string.
+    """Rectifies a specific, duplicated Spanish phrase found within an input string.
 
-    This function targets and replaces redundant variations of the phrase
-    "Seguridad Física y Control de Accesos y Control de Accesos" with the
-    corrected form "Seguridad Física y Control de Accesos". It handles
-    variations in accentuation (e.g., "Física" vs. "Fisica") and the case of
-    the final word. The input string is normalized before replacement, and the
-    result is normalized again before being returned.
+    This function identifies and replaces redundant variations of the phrase "Seguridad Física y Control de Accesos y Control de Accesos" with its corrected form, "Seguridad Física y Control de Accesos". It accounts for variations in accentuation (e.g., "Física" versus "Fisica") and the letter case of the final word. The input string undergoes normalization prior to replacement; the resulting string is subsequently normalized again before being returned.
 
     Args:
         value: The input string to be processed.
 
     Returns:
-        A cleaned and normalized string with the redundant phrase corrected.
-    """
+        A cleaned and normalized string with the redundant phrase corrected."""
     text = normalize_text(value)
     patterns = [
         (
@@ -488,8 +447,8 @@ def extract_scope_summary(paragraphs: list[str]) -> list[str]:
     """Extracts and standardizes scope summary labels from document paragraphs.
 
     Parses a list of document paragraphs to identify a section beginning with
-    "Alcance típico:". The function collects all subsequent list items until a
-    terminal title, "Por qué esta torre es fundamental en el modelo global de madurez",
+    "Typical Scope:". The function collects all subsequent list items until a
+    terminal title, "Why this tower is fundamental in the global maturity model",
     is encountered. For each collected item, the text preceding the first colon
     is isolated as the label. This label is then cleaned of repeated phrases and
     its casing is standardized (e.g., "facilities" becomes "Facilities").
@@ -500,8 +459,7 @@ def extract_scope_summary(paragraphs: list[str]) -> list[str]:
 
     Returns:
         list[str]: A list of the extracted, cleaned, and standardized scope
-            summary labels.
-    """
+            summary labels."""
     items = collect_section_items(
         paragraphs,
         section_title="Alcance típico:",
@@ -552,26 +510,7 @@ def extract_related_towers(paragraphs: list[str], tower_id: str) -> list[str]:
 
 
 def extract_boundary_notes(paragraphs: list[str]) -> list[str]:
-    """Extracts and formats boundary exclusion notes from a list of paragraphs.
-
-    Searches for the sentinel header "No incluye / se evalúa en otras torres:"
-    within the input paragraphs. Upon finding the header, this function processes
-    up to the next three subsequent paragraphs to identify exclusion notes.
-
-    The processing of these subsequent paragraphs terminates prematurely if a
-    normalized paragraph ends with a colon. Each identified note is normalized,
-    potentially split into clauses based on specific delimiters (e.g., ", la "),
-    and reconstructed into one or more complete sentences. Each resulting sentence
-    is cleaned of repeated phrases and formatted with a terminal period.
-
-    Args:
-        paragraphs: A list of strings, where each string represents a paragraph
-            of text to be analyzed.
-
-    Returns:
-        A list of cleaned and formatted boundary note sentences. Returns an empty
-        list if the sentinel header is not found.
-    """
+    """Extracts and formats boundary exclusion notes from a list of paragraphs. Searches for the sentinel header "No incluye / se evalúa en otras torres:" within the input paragraphs. Upon finding the header, this function processes up to the next three subsequent paragraphs to identify exclusion notes. The processing of these subsequent paragraphs terminates prematurely if a normalized paragraph ends with a colon. Each identified note is normalized, potentially split into clauses based on specific delimiters (e.g., ", la "), and reconstructed into one or more complete sentences. Each resulting sentence is cleaned of repeated phrases and formatted with a terminal period. Args: paragraphs: A list of strings, where each string represents a paragraph of text to be analyzed. Returns: A list of cleaned and formatted boundary note sentences. Returns an empty list if the sentinel header is not found."""
     notes = []
     for index, text in enumerate(paragraphs):
         if text == "No incluye / se evalúa en otras torres:":

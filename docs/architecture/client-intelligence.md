@@ -13,7 +13,7 @@ source_of_truth:
 - ../../src/assessment_engine/domain/prompts/intelligence_prompts.py
 - ../../src/assessment_engine/domain/prompts/global_prompts.py
 - ../../src/assessment_engine/domain/prompts/commercial_prompts.py
-last_verified_against: 2026-05-01
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -24,121 +24,96 @@ verification_mode: mixed
 
 # Client intelligence architecture
 
-`client_intelligence.json` es el **dossier estratégico compartido** del cliente. Su función ya no es solo aportar un bloque narrativo auxiliar, sino actuar como contexto reutilizable y trazable para:
+El archivo `client_intelligence.json` constituye el dossier de inteligencia estratégica de la organización del cliente. Su propósito principal es proveer un contexto semántico e histórico consistente y auditable, consumible y trazable de manera transversal por los siguientes módulos de la plataforma:
 
-- preparación por torre;
-- generación de blueprint;
-- consolidación global;
-- activación comercial.
+-   Preparación y delimitación de contexto por torre tecnológica;
+-   Generación y síntesis del blueprint canónico;
+-   Consolidación del reporte estratégico global;
+-   Activación comercial del plan de cuenta.
 
-## Rol actual en la arquitectura
+## Rol en la Arquitectura de Datos
 
-El dossier vive en `working/<client>/client_intelligence.json` y hoy se comporta como un input enriquecido transversal.
+El dossier reside en la ruta física determinista `working/<client>/client_intelligence.json`, comportándose como un input de enriquecimiento estratégico transversal para todo el pipeline de ejecución.
 
-La ruta activa ya soporta tres capas de compatibilidad:
+El cargador de configuración e infraestructura soporta la compatibilidad retroactiva a través de tres capas evolutivas de datos:
+-   **Esquema Plano Histórico:** Soporte para estructuras iniciales basadas en `industry`, `ceo_agenda` y `target_maturity_matrix`.
+-   **Esquema de Transición 2.0:** Enfocado en la estructuración básica del perfil de la organización y sobreescrituras por torre tecnológica (`tower_overrides`).
+-   **Esquema de Madurez 3.0:** Orientado a la declaración precisa del contexto operacional, aserciones cualitativas (*claims*) certificadas y consumo contextual estructurado en prompts.
 
-- legado plano (`industry`, `ceo_agenda`, `target_maturity_matrix`);
-- `2.0`, centrada en estructura básica y `tower_overrides`;
-- `3.0`, orientada a contexto operativo real, claims y reutilización en prompts.
+La lógica de normalización, compatibilidad de esquemas históricos y derivación de parámetros operativos reside en `src/assessment_engine/infrastructure/client_intelligence.py`.
 
-La lógica de compatibilidad y derivación vive en `scripts/lib/client_intelligence.py`.
+## Estructura Contractual v3
 
-## Contrato pragmático v3
+La especificación técnica del esquema `3.0` añade cinco bloques de propiedades estructurales en el modelo Pydantic:
 
-La versión `3.0` añade cinco bloques estructurales:
+1.  **`metadata`:**
+    -   Identidad digital y firma del dossier.
+    -   Marcas temporales de creación y última mutación.
+    -   Idioma de referencia del diagnóstico.
+    -   Metadatos de trazabilidad y rastro de generación.
+2.  **`profile`:**
+    -   Industria o sector de actividad.
+    -   Clasificación y perfil financiero (*tier*).
+    -   Modelo operativo de TI (p. ej., centralizado, federado).
+    -   Distribución geográfica y mercados prioritarios.
+    -   Líneas de negocio críticas.
+3.  **`business_context` & `technology_context`:**
+    -   Agenda ejecutiva y prioridades de dirección.
+    -   Programas de transformación activos en la organización.
+    -   Proveedores y fabricantes tecnológicos dominantes (*vendors*).
+    -   Restricciones presupuestarias u operativas de cumplimiento.
+    -   Señales de incidentes recientes e interrupciones operativas.
+    -   Horizonte temporal de planificación de la transformación.
+4.  **`tower_overrides`:**
+    -   Umbrales de madurez objetivo por torre.
+    -   Criticidad de negocio del dominio tecnológico.
+    -   Presión regulatoria y de cumplimiento asociada.
+    -   Urgencia de cambio operacional.
+    -   Restricciones físicas y lógicas específicas del dominio.
+5.  **`claims` & `review`:**
+    -   Clasificación epistémica de la información: Hechos objetivos, Inferencias deducidas y Supuestos teóricos.
+    -   Índice cuantitativo de confianza de la aserción.
+    -   Fuentes y traza de origen de la evidencia.
+    -   Estado de revisión e intervención humana en el dossier.
 
-1. `metadata`
-   - identidad del dossier;
-   - timestamps de creación y modificación;
-   - idioma;
-   - timeliness básica;
-   - rastro de generación.
+## Ingesta y Flujos de Consumo en los Pipelines
 
-2. `profile`
-   - industria;
-   - tier financiero;
-   - modelo operativo;
-   - regiones;
-   - mercados prioritarios;
-   - líneas de negocio.
+### 1. Fase de Análisis de Torre
+El módulo de preparación de telemetría de torre (`build_case_input.py`) incorpora dinámicamente:
+-   La meta de madurez global predeterminada (`target_maturity_default`) derivada de los overrides del dossier.
+-   Un resumen ejecutivo sintetizado del contexto del cliente.
+-   El paquete de datos de inteligencia filtrado para el dominio específico.
 
-3. `business_context` y `technology_context`
-   - agenda del CEO;
-   - prioridades estratégicas;
-   - transformaciones activas;
-   - vendors dominantes;
-   - restricciones operativas;
-   - señales de incidentes recientes;
-   - horizonte de transformación.
+Posteriormente, el motor de síntesis de la torre (`run_tower_blueprint_engine.py`) consume este paquete contextual para enriquecer las instrucciones y límites de aserción de los prompts del blueprint, consolidando esta información estratégica dentro del payload resultante de la torre.
 
-4. `tower_overrides`
-   - target maturity;
-   - criticidad de negocio;
-   - presión regulatoria;
-   - urgencia de cambio;
-   - restricciones por torre.
+### 2. Fase de Consolidación Global
+Por su parte, el agregador global (`build_global_report_payload.py`) valida la existencia del dossier en la ruta física determinista, incorporando una representación estructurada en el payload global consolidado.
 
-5. `claims` y `review`
-   - separación entre hecho, inferencia y supuesto;
-   - confianza numérica;
-   - fuentes;
-   - estado de revisión humana.
+Esta información es consumida por el refinador ejecutivo (`run_executive_refiner.py`), permitiendo que el análisis directivo herede de forma íntegra las restricciones regulatorias, la agenda de transformación del cliente y las aserciones certificadas.
 
-## Consumo real en los pipelines
+### 3. Fase de Refinamiento Comercial
+Finalmente, el refinador comercial (`run_commercial_refiner.py`) unifica de manera determinista tres capas contextuales:
+-   El payload global estratégico consolidado.
+-   El catálogo de iniciativas tácticas y proyectos derivados directamente de los blueprints de torre.
+-   El dossier resumido `client_intelligence` de la organización.
 
-### Torre
+Esta correlación multidimensional faculta al plan de cuenta comercial para mapear las oportunidades y propuestas técnicas de manera explícita contra la agenda directiva del cliente, la presión regulatoria del sector, los vendors dominantes y las restricciones físicas del entorno operativo.
 
-`build_case_input.py` ya incorpora:
+## Plan de Evolución de la Capa de Inteligencia
 
-- `target_maturity_default` derivado del dossier;
-- `context_summary` desde el contexto real;
-- `client_context`, un paquete resumido del dossier para la torre.
+La modernización del ciclo de vida de la inteligencia estratégica sigue los siguientes hitos técnicos:
+1.  **Ampliación Contractual:** Soportar de forma robusta la definición v3 manteniendo compatibilidad completa hacia atrás.
+2.  **Optimización de Cosecha (*Harvesting*):** Refinar la recolección automática en el script de smoke-test integrando esquemas ricos de datos.
+3.  **Trazabilidad Extensiva:** Asegurar el paso íntegro del dossier a través de `case_input`, blueprints, global y comercial.
+4.  **Inyección Contextual Directa:** Estructurar las señales operacionales y de negocio explícitamente en el andamiaje de prompts de la plataforma.
+5.  **Garantía de Cohesión:** Blindar la ingesta y transformación mediante tests unitarios de coerción de tipos y validación de payloads.
 
-`run_tower_blueprint_engine.py` reutiliza ese paquete para alimentar el prompt del blueprint y deja además el contexto del cliente embebido en el payload resultante cuando existe.
+## Fortalezas y Límites Operacionales
 
-### Global
+La arquitectura del dossier estratégico optimiza directamente:
+-   La trazabilidad de origen de las aserciones del assessment.
+-   La homogeneidad terminológica y de objetivos entre entregables de distinta naturaleza.
+-   La capacidad de inyectar contexto corporativo real en motores generativos de manera estructurada.
+-   El rigor en la priorización de iniciativas en los reportes comercial y global.
 
-`build_global_report_payload.py` ya carga el dossier si existe y añade un `intelligence_dossier` resumido al payload global.
-
-`run_executive_refiner.py` conserva esa pieza para que el refinado ejecutivo pueda usar agenda, regulación, restricciones y claims en la narrativa final.
-
-### Comercial
-
-`run_commercial_refiner.py` mezcla ya tres capas de contexto:
-
-- payload global estratégico;
-- catálogo táctico derivado de blueprints;
-- `client_intelligence` resumido.
-
-Esto permite que el Account Action Plan conecte mejor oportunidades con:
-
-- agenda del CEO;
-- presión regulatoria;
-- mercados prioritarios;
-- vendors dominantes;
-- restricciones operativas.
-
-## Hoja de ruta aplicada
-
-La evolución implementada en esta iteración queda así:
-
-1. ampliar el contrato y mantener compatibilidad hacia atrás;
-2. enriquecer harvesting y smoke con una estructura más rica;
-3. llevar el dossier a `case_input`, blueprint, global y commercial;
-4. exponer señales de negocio y operación de forma explícita en prompts;
-5. cubrir la migración con tests de coerción, consumo y payloads.
-
-## Qué mejora y qué no
-
-Esta arquitectura mejora de forma directa:
-
-- trazabilidad;
-- consistencia entre outputs;
-- capacidad de reutilizar contexto empresarial;
-- calidad de priorización en global y commercial.
-
-No garantiza por sí sola “más inteligencia” si las fuentes de entrada siguen siendo pobres. El siguiente tramo natural ya no es de contrato, sino de **ampliación de harvesting**:
-
-- más señales por geografía y línea de negocio;
-- más claims con fuentes diferenciadas;
-- mejor cobertura de programas activos, M&A, restricciones y eventos operativos.
+*Nota de Límitación Técnica: La existencia del contrato no sustituye la calidad de las fuentes primarias de entrada; un dossier con telemetría deficiente producirá downstream resúmenes de contexto de baja especificidad.* El roadmap tecnológico proyecta la ampliación de las capacidades de harvesting mediante la ingesta automática de memorias financieras, reportes de M&A y registros operacionales directos.

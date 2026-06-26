@@ -146,46 +146,19 @@ def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> 
 
 
 def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> str:
-    """Generates a structured prompt for an LLM to synthesize a CEO-level report.
-
-    This function assembles a detailed, multi-part prompt that instructs a
-    Large Language Model (LLM) to act as a Tier 1 consulting partner. The
-    primary task is to transform a raw, technical analysis into a polished,
-    strategic report suitable for a CEO audience.
-
-    The generated prompt includes several key components:
-    - A specific persona for the LLM to adopt.
-    - A mandatory "ÉLITE 2026" style guide that dictates tone, semantics,
-      and pragmatic constraints for recommendations.
-    - A strict JSON output structure mandate based on the `GlobalReportPayload`
-      schema, reinforced by an externally defined `JSON_MANDATE` constant.
-
-    Args:
-        findings_json: A JSON-formatted string containing the raw technical
-            analysis, metrics, and observations to be synthesized into the report.
-        grounding_json: An optional JSON-formatted string providing supplemental
-            context, such as market data or established facts, to ground the LLM's
-            response. Defaults to an empty JSON object string ("{}").
-
-    Returns:
-        A complete prompt string formatted for submission to a compatible LLM.
-
-    Raises:
-        NameError: If the required module-level constant `JSON_MANDATE` is not
-            defined in the scope where this function is called.
-    """
+    """Generates a structured prompt for an LLM to synthesize a CEO-level report. This function assembles a detailed, multi-part prompt that instructs a Large Language Model (LLM) to act as a Tier 1 consulting partner. The primary task is to transform a raw, technical analysis into a polished, strategic report suitable for a CEO audience. The generated prompt includes several key components: - A specific persona for the LLM to adopt. - A mandatory "ÉLITE 2026" style guide that dictates tone, semantics, and pragmatic constraints for recommendations. - A strict JSON output structure mandate based on the `GlobalReportPayload` schema, reinforced by an externally defined `JSON_MANDATE` constant. Args: findings_json: A JSON-formatted string containing the raw technical analysis, metrics, and observations to be synthesized into the report. grounding_json: An optional JSON-formatted string providing supplemental context, such as market data or established facts, to ground the LLM's response. Defaults to an empty JSON object string ("{}"). Returns: A complete prompt string formatted for submission to a compatible LLM. Raises: NameError: If the required module-level constant `JSON_MANDATE` is not defined in the scope where this function is called."""
     return f"""
     Eres un SOCIO (Partner) de una firma Tier 1. Refina este análisis técnico para un CEO.
     MATERIAL: {findings_json}
     GROUNDING: {grounding_json}
 
-    ### MANUAL DE ESTILO "ÉLITE 2026" (MANDATORIO):
+    ### MANUAL DE ESTILO DE GOBERNANZA (MANDATORIO):
     1. NEUTRALIDAD CONSTRUCTIVA: No juzgues. Describe la "Deuda Técnica Acumulada". Trata al cliente con respeto profesional. Cero auto-crítica.
     2. SANEAMIENTO DE REDUNDANCIAS: Asegura 'Unicidad de Mensaje'. No repitas el resumen ejecutivo en las implicaciones de negocio. Cada sección debe aportar un ángulo nuevo.
     3. FILTRO DE EMPODERAMIENTO: En lugar de pedir un "cambio cultural", pide un "Programa de Empoderamiento Técnico". Habla de liberar el talento actual de NTT DATA hacia la ingeniería de plataforma.
     4. PRAGMATISMO OPERATIVO (ANTI-TORRE DE MARFIL): En los roadmaps a corto plazo (Wave 1 / 0-6 meses), usa verbos como "Diseño", "PoC", "Definición de estándares" o "Piloto". PROHIBIDO proponer "Implantaciones masivas" en infraestructura crítica en menos de 6 meses.
     5. VARIEDAD SEMÁNTICA: Evita la fatiga de la palabra "industrialización". Usa sinónimos como "sistematización", "escalabilidad", "maduración".
-    6. REFERENCIAS EXACTAS: Si haces una afirmación sobre el mercado o una métrica, MANTÉN la URL o cita de Gartner/AWS proporcionada por el SOTA Researcher.
+    6. REFERENCIAS EXACTAS: Si haces una afirmación sobre el mercado o una métrica, MANTÉN la URL o cita de Gartner/AWS proporcionada por el Technical Researcher.
 
     ESTRUCTURA DE SALIDA (JSON):
     Debes devolver un objeto con las claves exactas de GlobalReportPayload:
@@ -200,18 +173,18 @@ def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}") ->
 def get_sota_researcher_prompt(
     pillar_name: str, gap_text: str, grounding_json: str = "{}"
 ) -> str:
-    """Constructs a language model prompt to identify a State-of-the-Art (SOTA) solution.
+    """Constructs a language model prompt to identify a recommended technical solution.
 
     This function generates a detailed prompt instructing a large language model to
     assume the persona of a staff researcher from a leading technology advisory
-    firm. The prompt is engineered to solicit a SOTA solution for a specified
+    firm. The prompt is engineered to solicit a standard solution for a specified
     technology pillar and problem description. The response is explicitly
     requested in a structured JSON format, detailing the solution name, its
     underlying architectural pattern, its strategic business benefit, and an
     optional, verifiable source reference.
 
     Args:
-        pillar_name: The technology or business domain requiring a SOTA solution.
+        pillar_name: The technology or business domain requiring a technical solution.
         gap_text: A description of the specific problem or capability gap to be
             addressed.
         grounding_json: An optional JSON string providing client-specific context
@@ -224,7 +197,7 @@ def get_sota_researcher_prompt(
     """
     return f"""
     Eres un INVESTIGADOR STAFF de Gartner/Forrester especializado en tecnología de vanguardia 2026.
-    Tu misión es encontrar la solución "Estado del Arte" (SOTA) y referencias de mercado para el pilar '{pillar_name}'.
+    Tu misión es encontrar la solución técnica recomendada y referencias de mercado para el pilar '{pillar_name}'.
 
     ### PROBLEMA DETECTADO:
     {gap_text}
@@ -394,7 +367,7 @@ def get_judge_harvester_prompt(dossier_json: str, objections_json: str) -> str:
     1. CITAS HUMANAS: Asegura que cada afirmación cite la fuente por su nombre [Título], no por su índice.
     2. IMPACTO: No permitas leyes sin su nivel de impacto (Crítico/Alto/Medio).
     3. INTEGRIDAD DE CLAIMS: MANTÉN la sección 'claims' con todos sus objetos y URLs reales. NO modifiques ni vacíes este campo bajo ninguna circunstancia.
-    4. MANDATO DE ENTIDADES (SOTA): Tienes prohibido generalizar nombres de software, vendors, cantidades financieras o nombres de proyectos. Si el material fuente menciona 'Dynatrace' o '689 M€', el informe final DEBE mencionar 'Dynatrace' o '689 M€', no 'herramienta de monitorización' o 'buenos resultados'. La precisión es sagrada.
+    4. MANDATO DE ENTIDADES (PRECISIÓN TÉCNICA): Tienes prohibido generalizar nombres de software, vendors, cantidades financieras o nombres de proyectos. Si el material fuente menciona 'Dynatrace' o '689 M€', el informe final DEBE mencionar 'Dynatrace' o '689 M€', no 'herramienta de monitorización' o 'buenos resultados'. La precisión es sagrada.
 
     Debes devolver ÚNICAMENTE el objeto JSON raíz con las claves de ClientDossierV3.
     {JSON_MANDATE}

@@ -26,7 +26,7 @@ async def test_snapshotter():
         print(f"  📍 Snapshot guardado en: {snapshot.get('local_snapshot')}")
         print(f"  🔑 Hash de contenido: {snapshot.get('content_hash')[:16]}...")
 
-        # Verificar que el archivo existe físicamente
+        # Verify that the file physically exists
         file_path = ROOT / snapshot.get("local_snapshot")
         if file_path.exists():
             print(

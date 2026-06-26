@@ -15,7 +15,7 @@ reviewers:
 last_updated: '2026-05-02'
 ---
 
-# Gobernanza de Élite 2026: Arquitectura "The Apex"
+# Gobernanza Corporativa 2026: Arquitectura "The Apex"
 
 ## 1. Resumen Ejecutivo
 

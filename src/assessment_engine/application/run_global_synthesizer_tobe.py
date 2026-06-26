@@ -312,21 +312,16 @@ class SynthesisAudit(BaseModel):
 async def synthesize_global_tobe(working_dir: str, industry: str):
     r"""{'docstring': "Synthesizes a global TO-BE executive summary from individual tower blueprints.\n\nThis asynchronous function orchestrates a multi-agent, iterative process to\ngenerate a cohesive, C-level strategic document. It begins by loading an\nindustry-specific profile to provide domain-aware context, such as sector-\nspecific regulations and strategic priorities. The function then aggregates\narchitectural data from multiple 'tower' payload files located within the\nspecified working directory.\n\nThe core logic is a multi-round reflection loop. In each round, a series\nof specialized AI agents generate distinct sections of the summary:\n1. Strategy and Vision\n2. Resilience and Modernization\n3. Benefits and Impact\n4. Risks and Assumptions\n5. High-Level Roadmap\n\nAfter each full synthesis round, a verifier agent audits the consolidated\ndocument for quality, coherence, and adherence to requirements. If the audit\nfails, the verifier's critique is used as feedback to guide the subsequent\nsynthesis round, promoting self-correction. The process concludes when the\ndocument passes the quality audit or the maximum number of rounds is reached.\nThe final, approved document is then saved to disk.\n\nArgs:\n    working_dir (str): The path to the main working directory containing\n        tower-specific subdirectories (e.g., 'T*'), each with its\n        respective 'blueprint_*_payload.json' file.\n    industry (str): The client's industry sector (e.g., 'finance', 'telco'),\n        used to load a corresponding configuration profile which guides the\n        synthesis with domain-specific constraints and priorities.\n\nReturns:\n    None. The function writes its final output to a file named\n    'global_tobe_executive_summary.json' within the `working_dir` and\n    does not return any value.\n\nRaises:\n    FileNotFoundError: If the specified industry profile does not exist and\n        the fallback 'default.json' profile is also not found in the\n        'engine_config/industry_profiles' directory.\n    json.JSONDecodeError: If any of the industry profile or tower payload\n        JSON files are malformed and cannot be parsed."}."""
     print(
-        "🚀 Iniciando Global TO-BE Executive Synthesizer (SOTA 2026 with Self-Healing)..."
+        "[System] Initializing Global Target-State Executive Synthesis (Standard 2026)..."
     )
     print(f"   ├─ Perfil de Industria: {industry}")
 
     # Load the industry-specific profile to provide dynamic, domain-aware context, ensuring the generated architecture is relevant and compliant with sector-specific constraints.
-    profile_path = Path("engine_config/industry_profiles") / f"{industry}.json"
-    if not profile_path.exists():
-        print(f"   ⚠️ Perfil {industry} no encontrado. Cargando 'default'...")
-        profile_path = Path("engine_config/industry_profiles/default.json")
-
-    with open(profile_path, "r", encoding="utf-8-sig") as f:
-        profile = json.load(f)
+    from assessment_engine.infrastructure.config_loader import load_industry_profile
+    profile = load_industry_profile(industry)
 
     industry_name = profile.get("industry", "Standard Sector")
-    frameworks = profile.get("elite_framework", {})
+    frameworks = profile.get("enterprise_framework", {})
     primary_reg = frameworks.get("primary_regulation", "General Security Standards")
     sovereignty = frameworks.get("sovereignty_level", "Standard Data Protection")
     risk_modeling = frameworks.get("risk_modeling", "Qualitative")
@@ -623,7 +618,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Defines the root schema for the Global TO-BE Executive Synthesizer, a State-of-the-Art (SOTA) 2026 architecture."
+        description="Defines the root schema for the Global TO-BE Executive Synthesizer, a standardized 2026 architecture."
     )
     parser.add_argument("working_dir", type=str, help="Directorio de trabajo")
     parser.add_argument(

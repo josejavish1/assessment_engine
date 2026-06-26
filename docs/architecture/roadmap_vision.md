@@ -31,7 +31,7 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
 *   Correlación nativa con el Ops Agent de Google Cloud (`logging.googleapis.com/trace`).
 *   Refactorización masiva de deuda técnica heredada (conversión de `print` a `logger.info`).
 
-### Fase 3: Agent Evals & Evaluation-Led Development (SOTA 2026) (Próximo paso)
+### Fase 3: Agent Evals & Evaluation-Led Development (Standard 2026) (Próximo paso)
 **Objetivo:** Medir la confiabilidad, coste y calidad arquitectónica de los agentes antes de enviarlos a producción, sin ralentizar el CI/CD diario.
 *   **Golden Dataset:** Creación de un entorno de pruebas con peticiones históricas reales (desde refactors complejos hasta intentos de inyección de código).
 *   **Telemetry-Driven Metrics:** Uso de la telemetría (Fase 2) para medir el *Zero-Shot Pass Rate* (¿pasa los Quality Gates a la primera?), el *Code Churn* (reescrituras inútiles) y el coste en dólares por PR.

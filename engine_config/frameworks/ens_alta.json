@@ -1,0 +1,47 @@
+{
+  "framework_id": "ens_alta",
+  "framework_name": "Esquema Nacional de Seguridad (ENS) - Categoría Alta",
+  "description": "Estándar de ciberseguridad nacional regulado por el Real Decreto 311/2022 aplicable a administraciones públicas y operadores de infraestructuras críticas en España.",
+  "rules": [
+    {
+      "tower_id": "T6",
+      "query_template": "porcentaje de operadores críticos o utilities con certificación oficial ENS Categoría Alta España 2025 2026",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T5",
+      "query_template": "porcentaje de cumplimiento controles de continuidad de negocio y recuperacion ante desastres en el ENS categoría alta sector utilities españa 2025 2026",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 70.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 50.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 30.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    }
+  ]
+}

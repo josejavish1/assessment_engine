@@ -235,7 +235,7 @@ def get_gravity_profiler_prompt(intel_str: str, client_name: str) -> str:
 def get_dependency_resolver_prompt(projects_json: str) -> str:
     """Embed a JSON string of projects into a Spanish-language prompt template for AI dependency resolution."""
     prompt = (
-        "Eres un Arquitecto de Dependencias Topológicas (SOTA 2026).\n"
+        "Eres un Arquitecto de Soluciones y Dependencias Topológicas.\n"
         "Tu única misión es mapear las dependencias técnicas entre esta lista cerrada de proyectos.\n"
         f"PROYECTOS APROBADOS:\n{projects_json}\n\n"
         "REGLAS ESTRICTAS:\n"
@@ -261,8 +261,8 @@ def get_bid_manager_prompt(
         f"OBJETIVO: {project_objective}\n"
         f"TALLA (Sizing): {project_sizing}\n"
         f"RIESGO A MITIGAR: {mitigated_risk_impact}\n\n"
-        "REGLAS ESTRICTAS (NTT DATA TIER-1 SOTA 2026):\n"
-        "1. commercial_name: Reescribe el nombre genérico del proyecto para que sea un título SOTA de alto impacto comercial.\n"
+        "REGLAS ESTRICTAS DE CUMPLIMIENTO:\n"
+        "1. commercial_name: Reescribe el nombre genérico del proyecto para que sea un título formal de alto impacto estratégico.\n"
         "2. project_description: Escribe una descripción ejecutiva en lenguaje llano de 3-4 líneas. Explica al CIO exactamente DE QUÉ TRATA el proyecto, sin usar acrónimos técnicos incomprensibles.\n"
         "3. smart_objectives: Escribe un objetivo SMART cuantificable.\n"
         "4. in_scope / out_of_scope: Define los límites estrictos de ingeniería. En out_of_scope, añade cláusulas defensivas para NTT DATA (ej. Licencias a cargo del cliente, migraciones legacy complejas excluidas).\n"

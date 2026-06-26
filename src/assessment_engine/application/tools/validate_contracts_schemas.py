@@ -125,7 +125,9 @@ def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[s
         if f["alias"]:
             old_descriptions[f["alias"]] = f["description"]
 
-    has_aliases = any(f_def.alias is not None for f_def in model_class.model_fields.values())
+    has_aliases = any(
+        f_def.alias is not None for f_def in model_class.model_fields.values()
+    )
 
     table_lines = []
     if has_aliases:
@@ -137,7 +139,9 @@ def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[s
             alias_str = f"`{f_def.alias}`" if f_def.alias else "N/A"
             type_str = normalize_type_annotation(f_def.annotation)
             # Retrieve description with robust fallback
-            desc = old_descriptions.get(f_name) or old_descriptions.get(f_def.alias or "")
+            desc = old_descriptions.get(f_name) or old_descriptions.get(
+                f_def.alias or ""
+            )
             if not desc:
                 desc = f_def.description or "Descripción del campo."
             desc = desc.replace("\n", " ").strip()
@@ -319,7 +323,9 @@ def validate_contracts_schemas(
             if model_has_drift and autofix:
                 print(f"Auto-fixing schema table for '{class_name}' in '{path}'...")
                 new_table = generate_markdown_table_lines(model_class, fields)
-                file_content = replace_table_in_markdown(file_content, class_name, new_table)
+                file_content = replace_table_in_markdown(
+                    file_content, class_name, new_table
+                )
                 file_modified = True
 
         if file_modified and autofix:

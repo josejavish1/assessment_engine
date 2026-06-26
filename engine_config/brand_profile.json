@@ -7,5 +7,27 @@
     "header_bg_color_hex": "D9EAF7",
     "alternate_row_color_hex": "F2F2F2",
     "text_dark_color_rgb": [46, 64, 77]
+  },
+  "locales": {
+    "es": {
+      "default_classification": "Confidencial (Tier-1 Assessment)",
+      "disclaimer_text": "Este documento constituye un informe técnico y de diagnóstico elaborado por NTT DATA basándose exclusivamente en los datos, entrevistas y configuraciones proporcionados por el cliente, los cuales no han sido sometidos a una auditoría formal externa por nuestra parte. NTT DATA no asume responsabilidad legal sobre decisiones de inversión o cambios de diseño que el cliente implemente basándose en este diagnóstico sin validaciones previas en entornos controlados."
+    },
+    "en": {
+      "default_classification": "Confidential (Tier-1 Assessment)",
+      "disclaimer_text": "This document constitutes a technical diagnostic report prepared by NTT DATA based solely on data, interviews, and configurations provided by the client, which have not been subjected to a formal external audit by our team. NTT DATA assumes no legal liability for investment decisions or design changes implemented by the client based on this diagnosis without prior validation in controlled environments."
+    },
+    "pt": {
+      "default_classification": "Confidencial (Tier-1 Assessment)",
+      "disclaimer_text": "Este documento constitui um relatório técnico e de diagnóstico elaborado pela NTT DATA baseando-se exclusivamente nos dados, entrevistas e configurações fornecidos pelo cliente, os quais não foram submetidos a uma auditoria formal externa por nossa parte. A NTT DATA não assume responsabilidade jurídica sobre decisões de investimento ou alterações de design que o cliente implemente baseado neste diagnóstico sem validações prévias em ambientes controlados."
+    },
+    "fr": {
+      "default_classification": "Confidentiel (Tier-1 Assessment)",
+      "disclaimer_text": "Ce document constitue un rapport technique et de diagnostic élaboré par NTT DATA basé exclusivement sur les données, entretiens et configurations fournis par le client, qui n'ont pas fait l'objet d'un audit externe formel de notre part. NTT DATA n'assume aucune responsabilité légale quant aux décisions d'investissement ou aux modifications de conception que le client mettrait en œuvre sur la base de ce diagnostic sans validation préalable dans des environnements contrôlés."
+    },
+    "ja": {
+      "default_classification": "極秘 (Tier-1 Assessment)",
+      "disclaimer_text": "本文書は、クライアントから提供されたデータ、インタビュー、および構成のみに基づいてNTT DATAが作成した技術的な診断レポートであり、当社による正式な外部監査の対象とはなっていません。NTT DATAは、クライアントが管理された環境での事前の検証なしに本診断に基づいて実施する投資決定または設計変更について、いかなる法的責任も負いません。"
+    }
   }
 }

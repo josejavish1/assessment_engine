@@ -892,35 +892,7 @@ def render_pillar_score_table(doc, placeholder: Any, rows: Any) -> Any:
 
 
 def render_risks_table(doc, placeholder: Any, rows: Any) -> Any:
-    """Render and insert a project risks and mitigations table into a document.
-
-    Locates the first paragraph containing the `placeholder` text and inserts a
-    formatted table immediately after it. The table is populated with data from
-    `rows` and features fixed Spanish headers for 'Riesgo', 'Impacto',
-    'Probabilidad', and 'Mitigación resumida'. The original paragraph
-    containing the placeholder is subsequently removed.
-
-    If the placeholder is not found, the document remains unmodified.
-
-    Args:
-        doc (docx.document.Document.Document): The `python-docx` Document object to
-            be modified.
-        placeholder (str): The text content of the paragraph that serves as the
-            insertion point for the table.
-        rows (List[Dict[str, str]]): A list of dictionaries, where each
-            dictionary represents a single risk and populates a table row. Each
-            dictionary is expected to contain the keys 'risk', 'impact',
-            'probability', and 'mitigation_summary'. Missing keys will result in
-            empty cells for that row.
-
-    Returns:
-        None: This function modifies the `doc` object in place and does not
-            return a value.
-
-    Raises:
-        AttributeError: If `doc` is not a valid `python-docx` Document object
-            and lacks the expected methods.
-    """
+    """Renders and inserts a project risks and mitigations table into a document. Locates the first paragraph containing the `placeholder` text and inserts a formatted table immediately after it. The table is populated with data from `rows` and features fixed Spanish headers for 'Riesgo', 'Impacto', 'Probabilidad', and 'Mitigación resumida'. The original paragraph containing the placeholder is subsequently removed. If the placeholder is not found, the document remains unmodified. Args: doc (docx.document.Document.Document): The `python-docx` Document object to be modified. placeholder (str): The text content of the paragraph that serves as the insertion point for the table. rows (List[Dict[str, str]]): A list of dictionaries, where each dictionary represents a single risk and populates a table row. Each dictionary is expected to contain the keys 'risk', 'impact', 'probability', and 'mitigation_summary'. Missing keys will result in empty cells for that row. Returns: None: This function modifies the `doc` object in place and does not return a value. Raises: AttributeError: If `doc` is not a valid `python-docx` Document object and lacks the expected methods."""
     paragraph = find_first_paragraph(doc, placeholder)
     if not paragraph:
         return

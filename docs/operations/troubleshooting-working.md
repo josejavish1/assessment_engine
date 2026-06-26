@@ -1,5 +1,5 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../pyproject.toml
@@ -20,51 +20,48 @@ verification_mode: workflow
 
 # Troubleshooting `working/` and artifact-dependent validation
 
-Esta guía explica qué hacer cuando faltan artefactos en `working/` o cuando los tests dependen de salidas todavía no generadas.
+Este manual de operaciones establece los protocolos de diagnóstico, resolución de fallos y recuperación del entorno de ejecución cuando se presentan inconsistencias, ausencias de datos de telemetría o fallas de validación de contratos en el directorio de trabajo `working/`.
 
-## Señal actual del baseline
+## Parámetros de Referencia del Entorno Virtual (*Baseline State*)
 
-En el estado actualmente validado del repositorio:
+Bajo el estado de conformidad certificado del repositorio, el árbol de trabajo debe verificar la presencia física de los siguientes artefactos basales:
 
-- `working/smoke_ivirma/T5/blueprint_t5_payload.json` existe;
-- `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json` existe;
-- `working/smoke_ivirma/global_report_payload.json` existe;
-- `working/smoke_ivirma/commercial_report_payload.json` existe;
-- `working/smoke_ivirma/presentation/index.html` existe;
-- la suite completa de `pytest` pasa.
+-   `working/smoke_ivirma/T5/blueprint_t5_payload.json` (disponible).
+-   `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json` (disponible).
+-   `working/smoke_ivirma/global_report_payload.json` (disponible).
+-   `working/smoke_ivirma/commercial_report_payload.json` (disponible).
+-   `working/smoke_ivirma/presentation/index.html` (disponible).
 
-Si en una sesión futura vuelven a faltar estos artefactos, entonces sí pueden reaparecer fallos de contrato o `skip` condicionados por ausencia de baseline.
+La suite completa de pruebas unitarias (`pytest`) se ejecuta con éxito cuando estos activos de referencia se encuentran estables en el entorno. La alteración, eliminación o inconsistencia en la generación de estos artefactos basales provocará fallas de validación contractual o aserciones ignoradas (*skipped tests*) debido a la desactualización del estado de referencia.
 
-## Qué significa esto
+## Naturaleza de las Pruebas de Telemetría
 
-Parte de la suite sigue actuando como validación sobre artefactos previamente generados, no como test completamente autosuficiente. Por eso, cuando el baseline smoke está presente, la suite pasa; cuando desaparece o queda incompleto, algunos tests fallan o se saltan sin que eso implique necesariamente un bug lógico nuevo.
+Ciertos componentes de la suite de pruebas unitarias implementan validaciones que consumen artefactos de datos previamente compilados en lugar de instanciar mocks puramente desacoplados. Por consiguiente, la presencia íntegra del baseline es una condición necesaria para el estado verde de la suite; su ausencia o fragmentación inducirá fallas de validación que no necesariamente constituyen un defecto funcional en el motor.
 
-## Diagnóstico rápido
+## Protocolo de Diagnóstico Expedito
 
-### 1. Verificar qué existe
-
+### 1. Inspección de Estructura de Trabajo General
+Para listar de forma recursiva los artefactos de datos activos en el entorno, ejecute:
 ```bash
 find working -maxdepth 3 -type f | sort
 ```
 
-### 2. Verificar una torre concreta
-
+### 2. Inspección de un Dominio Tecnológico Específico
+Para certificar el estado de los payloads de una torre aislada, ejecute:
 ```bash
 find working/<client>/<tower> -maxdepth 1 -type f | sort
 ```
 
-### 3. Verificar cliente completo
-
+### 3. Inspección del Perfil Completo del Cliente
+Para auditar la totalidad de los entregables y payloads de consolidación de una cuenta, ejecute:
 ```bash
 find working/<client> -maxdepth 2 -type f | sort
 ```
 
-## Cómo regenerar artefactos faltantes
+## Protocolos de Regeneración de Artefactos de Telemetría
 
-### Faltan artefactos de torre
-
-Ejecuta o reejecuta el pipeline por torre:
-
+### 1. Ausencia de Payloads de Torre Tecnológica
+Para regenerar el payload estructural e informes de un dominio tecnológico aislado, invoque el orquestador correspondiente:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
   --tower T5 \
@@ -73,69 +70,62 @@ Ejecuta o reejecuta el pipeline por torre:
   --responses-file /ruta/a/respuestas.txt
 ```
 
-Si lo que falta es específicamente el baseline de `smoke_ivirma/T5`, usa mejor el runner reproducible:
-
+En caso de que la inconsistencia resida específicamente en el baseline del cliente de referencia (`smoke_ivirma`), se debe ejecutar el regenerador reproducible de la plataforma:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 
-Si el problema está en la parte global y quieres respetar el comportamiento canónico actual del repo, usa el smoke con global tal como está:
-
+Para forzar la compilación incluyendo la fase global determinista, ejecute:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global
 ```
 
-Y si antes quieres separar si el bloqueo es local o de Vertex AI:
-
+Para aislar y descartar si el bloqueo operativo se debe a fallas de autenticación con el proveedor de IA o a restricciones de red, realice una ejecución en seco puramente local:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
 ```
 
-### Faltan artefactos globales
-
+### 2. Ausencia de Payload de Consolidación Global
+Para forzar la agregación y refinamiento estratégico global de un cliente, ejecute:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.run_global_pipeline <client_name>
 ```
 
-### Faltan artefactos comerciales
-
+### 3. Ausencia de Payload de Activación Comercial
+Para compilar el plan de cuenta comercial y pipeline de oportunidades del cliente, ejecute:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.run_commercial_pipeline <client_name>
 ```
 
-## Qué tests dependen de artefactos
+## Mapeo de Dependencias de Pruebas Unitarias
 
-### Dependencia fuerte
+### Módulos con Dependencia de Telemetría Directa (*Baseline Required*)
+-   `tests/test_contract_handover.py`
+-   `tests/test_t5_golden.py`
+-   Fracciones específicas de `tests/test_payload_validation.py`
 
-- `tests/test_contract_handover.py`
-- `tests/test_t5_golden.py`
-- parte de `tests/test_payload_validation.py`
+### Módulos Desacoplados (*Standalone Execution*)
+-   `tests/test_environment.py`
+-   Suites de validación sintáctica de esquemas de datos Pydantic.
+-   Módulos de formateo y renderización unitaria desacoplados que instancian sus propios mocks de prueba.
 
-### Dependencia menor o ninguna
+## Directrices Operativas de Resolución
 
-- `tests/test_environment.py`
-- tests de schemas;
-- tests de utilidades y render unitario que fabriquen sus propios datos.
+Si se registra una falla de validación o interrupción de prueba debido a la ausencia de activos en `working/`:
+1.  **Aislamiento:** No asuma de forma inmediata la presencia de una desviación lógica de código.
+2.  **Verificación:** Confirme mediante los comandos de diagnóstico si el payload JSON u OpenXML esperado reside físicamente en la ruta correspondiente de `working/`.
+3.  **Aprovisionamiento:** Si se constata su ausencia, re-ejecute la fase precedente de la tubería para aprovisionar el activo.
+4.  **Certificación:** Proceda a relanzar la validación o prueba para confirmar el estado verde.
 
-## Regla práctica
+Si el smoke global canónico (`--with-global`) falla, la interpretación técnica correcta indica que existe una regresión lógica o una dependencia indeseada de lógicas retrocompatibles fuera del flujo principal, debiendo depurarse de inmediato como desviación del motor.
 
-Si falla una validación por ausencia de artefactos:
+## Relación con la Configuración de pytest
 
-1. no asumas primero un bug lógico;
-2. confirma si el JSON o DOCX esperado existe en `working/`;
-3. si no existe, regenera la fase anterior del pipeline;
-4. solo después interpreta el fallo como problema funcional.
+La directriz en `pyproject.toml` (bajo la clave `[tool.pytest.ini_options]`) excluye el directorio `working/` de los procesos de descubrimiento de pruebas automáticos, previniendo que se interpreten los recursos JSON como scripts de prueba, si bien mantiene plenamente la facultad del entorno para consumir estos recursos físicos como dependencias de aserción.
 
-Si el smoke global canónico (`--with-global`) falla, la lectura correcta ya no es “quizá faltó activar compatibilidad”: significa que hay una regresión o una dependencia real de artefactos legacy fuera del flujo principal.
+## Estrategia de Mantenimiento y Documentación de Derivas
 
-## Relación con `pyproject.toml`
-
-`pyproject.toml` (bajo `[tool.pytest.ini_options]`) excluye `working/` del descubrimiento de tests, pero no impide que los tests lean artefactos desde esa ruta cuando fueron diseñados para validar contratos o golden files.
-
-## Recomendación de mantenimiento
-
-Mientras la suite siga dependiendo de artefactos externos al propio test, documenta siempre:
-
-- qué payload faltaba;
-- qué pipeline debía generarlo;
-- si el problema es ausencia de artefacto o invalidación real del contrato.
+Durante ciclos de modificación y evolución del motor que impacten los payloads basales, el equipo de ingeniería debe documentar de forma explícita en su reporte de integración:
+-   El identificador del payload o contrato modificado.
+-   La fase de la tubería responsable de su compilación.
+-   Si la anomalía detectada responde a una inconsistencia de datos del baseline local o a una rotura semántica real del contrato de interfaz de la plataforma.

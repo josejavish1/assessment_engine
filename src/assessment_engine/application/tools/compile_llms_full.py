@@ -17,7 +17,9 @@ import sys
 from pathlib import Path
 
 
-def compile_llms_full(repo_root_str: str = ".", output_path_str: str | None = None) -> bool:
+def compile_llms_full(
+    repo_root_str: str = ".", output_path_str: str | None = None
+) -> bool:
     """Parses llms.txt and compiles all linked docs into llms-full.txt.
 
     Args:
@@ -29,7 +31,11 @@ def compile_llms_full(repo_root_str: str = ".", output_path_str: str | None = No
     """
     repo_root = Path(repo_root_str).resolve()
     sitemap_path = repo_root / "llms.txt"
-    output_path = Path(output_path_str).resolve() if output_path_str else repo_root / "llms-full.txt"
+    output_path = (
+        Path(output_path_str).resolve()
+        if output_path_str
+        else repo_root / "llms-full.txt"
+    )
 
     if not sitemap_path.exists():
         print(f"[-] Sitemap not found: {sitemap_path}", file=sys.stderr)
@@ -59,7 +65,7 @@ def compile_llms_full(repo_root_str: str = ".", output_path_str: str | None = No
             ordered_paths.append(normalized_str)
 
     compiled_blocks = []
-    
+
     # Header block
     compiled_blocks.append(
         "# =========================================================================\n"
@@ -77,7 +83,10 @@ def compile_llms_full(repo_root_str: str = ".", output_path_str: str | None = No
         try:
             file_content = file_path.read_text(encoding="utf-8")
         except Exception as e:
-            print(f"[-] Failed to read reference document {rel_path_str}: {e}", file=sys.stderr)
+            print(
+                f"[-] Failed to read reference document {rel_path_str}: {e}",
+                file=sys.stderr,
+            )
             continue
 
         # Append structured document block
@@ -95,7 +104,9 @@ def compile_llms_full(repo_root_str: str = ".", output_path_str: str | None = No
 
     try:
         output_path.write_text("".join(compiled_blocks), encoding="utf-8")
-        print(f"[+] Successfully compiled {len(ordered_paths)} documents into: {output_path}")
+        print(
+            f"[+] Successfully compiled {len(ordered_paths)} documents into: {output_path}"
+        )
         return True
     except Exception as e:
         print(f"[-] Failed to write compiled output: {e}", file=sys.stderr)
@@ -103,7 +114,9 @@ def compile_llms_full(repo_root_str: str = ".", output_path_str: str | None = No
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Compile unified massive context sitemap.")
+    parser = argparse.ArgumentParser(
+        description="Compile unified massive context sitemap."
+    )
     parser.add_argument("--repo-root", default=".", help="Path to repository root")
     args = parser.parse_args()
 

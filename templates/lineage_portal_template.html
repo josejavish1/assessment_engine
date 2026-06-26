@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Inter & Playfair Display -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -33,14 +33,14 @@
             }
         }
     </script>
-    
+
     <style>
         body {
             background-color: #FBFBF9;
             color: #1A1A1A;
             overflow-x: hidden;
         }
-        
+
         /* Estilo editorial de scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
@@ -56,7 +56,7 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #D1D1CB;
         }
-        
+
         /* Micro-animaciones para hilos de conexión */
         .lineage-svg {
             pointer-events: none;
@@ -67,7 +67,7 @@
             height: 100%;
             z-index: 10;
         }
-        
+
         .lineage-path {
             stroke: #004B87;
             stroke-width: 2.5;
@@ -77,7 +77,7 @@
             opacity: 0.15;
             transition: opacity 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease;
         }
-        
+
         .lineage-path.active {
             stroke: #00D2FF;
             stroke-width: 4;
@@ -91,28 +91,28 @@
                 stroke-dashoffset: -100;
             }
         }
-        
+
         .card-node {
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             border: 1px solid #E8E8E4;
         }
-        
+
         .card-node.active-path {
             border-color: #00D2FF;
             box-shadow: 0 10px 30px -10px rgba(0, 75, 135, 0.08);
             transform: translateY(-2px);
         }
-        
+
         .card-node.dimmed {
             opacity: 0.3;
         }
-        
+
         /* Side Panel / Inspector slide-out */
         .inspector-panel {
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        
+
         .inspector-panel.open {
             transform: translateX(0);
         }
@@ -132,7 +132,7 @@
                     Explorador de Continuidad Estratégica &bull; <span class="font-semibold text-brand-text">{{ client_name }}</span>
                 </p>
             </div>
-            
+
             <!-- Global Metadata / KPIs -->
             <div class="flex items-center gap-6 bg-brand-bg p-4 rounded-xl border border-brand-border shadow-sm">
                 <div class="border-r border-brand-border pr-6">
@@ -154,7 +154,7 @@
     <!-- Barra de Filtros por Torre y Escenarios -->
     <section class="border-b border-brand-border px-8 py-4 bg-brand-bg shrink-0">
         <div class="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-            
+
             <!-- Selector de Torre / Dominio -->
             <div class="flex flex-wrap items-center gap-2">
                 <span class="text-xs font-bold text-brand-muted mr-2">Filtrar Dominio:</span>
@@ -165,7 +165,7 @@
                     <!-- Inyectados dinámicamente -->
                 </div>
             </div>
-            
+
             <!-- Selector de Escenario (Scenario Planning) -->
             <div class="flex items-center gap-3 bg-brand-card p-1.5 rounded-full border border-brand-border shadow-sm">
                 <span class="text-xs font-bold text-brand-muted pl-4">Escenario:</span>
@@ -179,23 +179,23 @@
                     Optimización TCO
                 </button>
             </div>
-            
+
         </div>
     </section>
 
     <!-- Área Principal de la Matriz (Scrollable) -->
     <main class="flex-1 overflow-hidden relative flex flex-col">
-        
+
         <!-- Matriz de Tres Columnas -->
         <div class="flex-1 overflow-y-auto px-8 py-8 relative max-w-[1600px] w-full mx-auto" id="matrix-scroll-container">
-            
+
             <!-- Lienzo SVG para Hilos de Conexión -->
             <svg class="lineage-svg" id="connections-svg">
                 <!-- Se inyectarán los <path> dinámicamente mediante JS -->
             </svg>
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-20">
-                
+
                 <!-- COLUMNA 1: AS-IS (Dolores, Riesgos, Gaps) -->
                 <div class="space-y-6">
                     <div class="border-b border-brand-border pb-4 mb-2">
@@ -209,7 +209,7 @@
                         <!-- Tarjetas inyectadas -->
                     </div>
                 </div>
-                
+
                 <!-- COLUMNA 2: TO-BE (Patrones de Diseño de Vanguardia) -->
                 <div class="space-y-6">
                     <div class="border-b border-brand-border pb-4 mb-2">
@@ -217,13 +217,13 @@
                         <h2 class="text-2xl font-serif font-semibold text-brand-text flex items-center gap-2">
                             <i class="fa-solid fa-compass text-brand-cobalt"></i> Arquitectura Objetivo
                         </h2>
-                        <p class="text-xs text-brand-muted mt-1">Patrones tecnológicos "Estado del Arte" (SOTA) propuestos para habilitar la madurez.</p>
+                        <p class="text-xs text-brand-muted mt-1">Patrones tecnológicos recomendados propuestos para habilitar la madurez.</p>
                     </div>
                     <div class="space-y-4" id="col-tobe-container">
                         <!-- Tarjetas inyectadas -->
                     </div>
                 </div>
-                
+
                 <!-- COLUMNA 3: TO-DO (Roadmap, Proyectos y Costes) -->
                 <div class="space-y-6">
                     <div class="border-b border-brand-border pb-4 mb-2">
@@ -237,10 +237,10 @@
                         <!-- Tarjetas inyectadas -->
                     </div>
                 </div>
-                
+
             </div>
         </div>
-        
+
         <!-- Dashboard Inferior de Impacto del Escenario Activo -->
         <footer class="border-t border-brand-border bg-brand-card p-6 px-8 shrink-0">
             <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
@@ -248,7 +248,7 @@
                     <h3 class="text-xs font-extrabold uppercase tracking-widest text-brand-cobalt mb-1">Análisis Financiero del Escenario</h3>
                     <p class="text-sm text-brand-muted font-medium">Línea base re-calculada dinámicamente mediante el resolvedor de restricciones del grafo.</p>
                 </div>
-                
+
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
                     <div class="bg-brand-bg border border-brand-border rounded-xl p-4 px-6 text-center shadow-sm">
                         <p class="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1">Presupuesto CapEx</p>
@@ -269,7 +269,7 @@
                 </div>
             </div>
         </footer>
-        
+
     </main>
 
     <!-- Panel de Inspección Lateral (Side-Panel / Inspector) -->
@@ -284,12 +284,12 @@
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
         </div>
-        
+
         <!-- Contenido Inspector -->
         <div class="flex-1 overflow-y-auto p-6 space-y-6" id="inspector-content-body">
             <!-- Rellenado dinámicamente -->
         </div>
-        
+
         <!-- Footer Inspector (Habilitadores e Impactos de Negocio) -->
         <div class="p-6 border-t border-brand-border bg-brand-bg flex flex-col gap-3" id="inspector-content-footer">
             <!-- Rellenado dinámicamente -->
@@ -330,12 +330,12 @@
                     this.towersDetail = towersDetail;
                     this.currentTower = "ALL";
                     this.currentScenario = "BASE";
-                    
+
                     this.asisNodes = [];
                     this.tobeNodes = [];
                     this.todoNodes = [];
                     this.connections = []; // List of {from_id, to_id}
-                    
+
                     this.init();
                 }
 
@@ -345,10 +345,10 @@
                     this.renderTowerFilters();
                     this.renderMatrix();
                     this.updateScenarioMetrics();
-                    
+
                     // Escuchar eventos de resize para redibujar SVG
                     window.addEventListener('resize', () => this.drawConnections());
-                    
+
                     // Escuchar scroll del contenedor de la matriz
                     const container = document.getElementById('matrix-scroll-container');
                     if (container) {
@@ -358,7 +358,7 @@
 
                 extractNodesAndConnections() {
                     const client = this.payload?.meta?.client || "Eurovision Services";
-                    
+
                     if (this.currentTower === "ALL") {
                         // VISTA GLOBAL EXECUTIVA (High-Level)
                         // 1. Extraer Nodos AS-IS de burning_platform
@@ -391,7 +391,7 @@
                         const horizons = this.payload?.execution_roadmap?.horizons || {};
                         const orderKeys = ["quick_wins_0_3_months", "year_1_3_12_months", "year_2_12_24_months", "year_3_24_36_months"];
                         const orderLabels = ["Horizonte 1 (0-3m)", "Horizonte 2 (4-12m)", "Horizonte 3 (13-24m)", "Horizonte 4 (25-36m)"];
-                        
+
                         this.todoNodes = [];
                         let todoIdx = 0;
                         orderKeys.forEach((key, oIdx) => {
@@ -428,23 +428,23 @@
                         // VISTA DE DRILL-DOWN POR CAPABILIDAD DE TORRE (Rigor Técnico)
                         const towerId = this.currentTower;
                         const towerData = this.towersDetail[towerId];
-                        
+
                         this.asisNodes = [];
                         this.tobeNodes = [];
                         this.todoNodes = [];
                         this.connections = [];
-                        
+
                         if (towerData && towerData.pillars_analysis) {
                             let asisIdx = 0;
                             let tobeIdx = 0;
                             let todoIdx = 0;
-                            
+
                             towerData.pillars_analysis.forEach((pilar, pIdx) => {
                                 const pilarId = pilar.pilar_id || `pilar-${pIdx}`;
                                 const pilarName = pilar.pilar_name || `Pilar ${pIdx + 1}`;
                                 const pilarScore = pilar.score || 1.0;
                                 const pilarTarget = pilar.target_score || 4.0;
-                                
+
                                 // A. AS-IS Capabilities for this pillar
                                 const healthCheck = pilar.health_check_asis || [];
                                 const pilarAsisNodeIds = [];
@@ -466,34 +466,34 @@
                                     });
                                     asisIdx++;
                                 });
-                                
+
                                 // B. TO-BE Architecture for this pillar
                                 const tobeId = `tobe-det-${tobeIdx}`;
                                 pilarAsisNodeIds.forEach(asisNodeId => {
                                     this.connections.push({ from_id: asisNodeId, to_id: tobeId });
                                 });
-                                
+
                                 const targetArch = pilar.target_architecture_tobe || {};
                                 const principles = targetArch.design_principles || [];
-                                
+
                                 this.tobeNodes.push({
                                     id: tobeId,
                                     title: `Arquitectura Objetivo: ${pilarName}`,
                                     bullet1: targetArch.vision || "Patrón de arquitectura objetivo.",
-                                    bullet2: principles.length > 0 ? `Principio clave: ${principles[0]}` : "Alineado con el SOTA 2026.",
+                                    bullet2: principles.length > 0 ? `Principio clave: ${principles[0]}` : "Alineado con el Standard 2026.",
                                     details: `Visión de Arquitectura Objetivo:\n${targetArch.vision || "Estandarización de infraestructura."}\n\nPrincipios Metodológicos de Diseño:\n${principles.map(pr => `- ${pr}`).join('\n')}`,
                                     citations: [],
                                     tower_id: towerId,
                                     program_code: pilarId
                                 });
                                 tobeIdx++;
-                                
+
                                 // C. TO-DO Projects for this pillar
                                 const projects = pilar.projects_todo || [];
                                 projects.forEach((proj, prIdx) => {
                                     const nid = `todo-det-${todoIdx}`;
                                     this.connections.push({ from_id: tobeId, to_id: nid });
-                                    
+
                                     this.todoNodes.push({
                                         id: nid,
                                         title: proj.initiative || proj.name || "Iniciativa de Ejecución",
@@ -521,7 +521,7 @@
                     if (t.includes("SEC") || t.includes("IAM") || t.includes("AUTENTIC") || t.includes("SEGURIDAD")) return "T6";
                     if (t.includes("ITSM") || t.includes("CMDB") || t.includes("OPERACION")) return "T7";
                     if (t.includes("FINOPS") || t.includes("COST") || t.includes("GOBIERNO") || t.includes("ESTRATEGIA")) return "T8";
-                    
+
                     const towers = ["T2", "T3", "T4", "T5", "T6", "T7", "T8"];
                     return towers[idx % towers.length];
                 }
@@ -566,7 +566,7 @@
 
                     // Set header fields
                     document.getElementById('meta-date').textContent = this.payload?.meta?.date || "14 de Junio de 2026";
-                    
+
                     // Calcular puntuación de madurez aproximada
                     const scores = this.payload?.tower_bottom_lines || [];
                     if (scores.length > 0) {
@@ -577,7 +577,7 @@
 
                 setTowerFilter(towerId) {
                     this.currentTower = towerId;
-                    
+
                     // Resetear clases activas de los filtros
                     const buttons = document.querySelectorAll('#tower-filters-container button, #btn-tower-ALL');
                     buttons.forEach(b => {
@@ -597,7 +597,7 @@
 
                 setScenario(scenario) {
                     this.currentScenario = scenario;
-                    
+
                     // Resetear clases de botones escenario
                     const scenButtons = document.querySelectorAll('[id^="btn-scen-"]');
                     scenButtons.forEach(b => {
@@ -661,7 +661,7 @@
 
                     const activeAsis = this.asisNodes.filter(filterFn);
                     const activeTobe = this.tobeNodes.filter(filterFn);
-                    
+
                     // El escenario muta la visualización del To-Do
                     let activeTodo = this.todoNodes.filter(filterFn);
                     if (this.currentScenario === "NIS2") {
@@ -703,7 +703,7 @@
                     const card = document.createElement('div');
                     card.id = node.id;
                     card.className = `card-node bg-brand-card p-5 rounded-2xl cursor-pointer relative shadow-sm border border-brand-border hover:border-brand-cobalt`;
-                    
+
                     // Colores temáticos discretos de programa
                     const progColors = {
                         "PROG-SEC": "border-l-4 border-l-sky-500",
@@ -722,7 +722,7 @@
                         <h4 class="text-xs font-bold text-brand-text mb-2 line-clamp-2">${node.title}</h4>
                         <p class="text-[10px] text-brand-muted leading-relaxed line-clamp-3">${node.bullet1}</p>
                     `;
-                    
+
                     if (node.bullet2) {
                         content += `<p class="text-[10px] text-brand-muted leading-relaxed line-clamp-3 mt-1.5 border-t border-brand-border pt-1.5 italic">${node.bullet2}</p>`;
                     }
@@ -732,7 +732,7 @@
                     // Eventos Hover para Iluminar Hilos de Linaje
                     card.addEventListener('mouseenter', () => this.highlightLineage(node.id));
                     card.addEventListener('mouseleave', () => this.resetLineage());
-                    
+
                     // Evento Clic para Inspección Lateral
                     card.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -751,7 +751,7 @@
                         if (conn.from_id === nodeId) {
                             pathsToHighlight.push(conn);
                             nodesToHighlight.add(conn.to_id);
-                            
+
                             // Propagar hacia adelante
                             this.connections.forEach(nextConn => {
                                 if (nextConn.from_id === conn.to_id) {
@@ -763,7 +763,7 @@
                         if (conn.to_id === nodeId) {
                             pathsToHighlight.push(conn);
                             nodesToHighlight.add(conn.from_id);
-                            
+
                             // Propagar hacia atrás
                             this.connections.forEach(prevConn => {
                                 if (prevConn.to_id === conn.from_id) {
@@ -791,7 +791,7 @@
                     paths.forEach(p => {
                         const from = p.getAttribute('data-from');
                         const to = p.getAttribute('data-to');
-                        
+
                         const isMatched = pathsToHighlight.some(h => h.from_id === from && h.to_id === to);
                         if (isMatched) {
                             p.classList.add('active');
@@ -870,7 +870,7 @@
                         'todo': { label: 'Dimensión TO-DO', style: 'bg-emerald-600' }
                     };
                     const tag = tags[dimension] || { label: 'Inspección', style: 'bg-brand-muted' };
-                    
+
                     const tagEl = document.getElementById('inspector-dimension-tag');
                     tagEl.textContent = tag.label;
                     tagEl.className = `text-[9px] font-black uppercase tracking-[0.3em] px-2.5 py-1 rounded text-white ${tag.style}`;
@@ -881,7 +881,7 @@
                             <span class="text-[9px] font-bold text-brand-muted uppercase">${node.tower_id} &bull; ${node.program_code}</span>
                             <h2 class="text-2xl font-serif font-bold text-brand-text mt-1 leading-snug">${node.title}</h2>
                         </div>
-                        
+
                         <div class="border-t border-brand-border pt-4">
                             <h4 class="text-xs font-extrabold uppercase tracking-wider text-brand-muted mb-2">Resumen Operativo</h4>
                             <p class="text-xs text-brand-text leading-relaxed font-medium text-justify">${node.details || node.bullet1}</p>
@@ -937,8 +937,8 @@
                         footerHtml = `
                             <div class="flex justify-between items-center bg-blue-50 p-4 rounded-xl border border-blue-100">
                                 <div>
-                                    <p class="text-[9px] font-bold text-blue-800 uppercase tracking-widest">Garantía Estado del Arte</p>
-                                    <p class="text-xs font-semibold text-blue-900 mt-0.5">Certificado por SOTA Researcher 2026</p>
+                                    <p class="text-[9px] font-bold text-blue-800 uppercase tracking-widest">Garantía de Solución Técnica</p>
+                                    <p class="text-xs font-semibold text-blue-900 mt-0.5">Certificado por Technical Researcher 2026</p>
                                 </div>
                                 <i class="fa-solid fa-certificate text-xl text-blue-600"></i>
                             </div>

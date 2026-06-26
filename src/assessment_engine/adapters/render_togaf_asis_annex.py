@@ -270,10 +270,8 @@ def render_asis_annex(payload_path: str, output_path: str):
     print(f"📄 Iniciando Renderizado de Anexo Técnico AS-IS para: {payload_path}")
 
     # Dynamically loads brand profiles and corporate glossaries from external configuration files to support document standardization.
-    brand_path = Path("engine_config/brand_profile.json")
-
-    with open(brand_path, "r", encoding="utf-8-sig") as bf:
-        brand = json.load(bf)
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    brand = load_brand_profile()
 
     company_name = brand.get("company_name", "NTT DATA")
     classification = brand.get("default_classification", "Confidencial")
@@ -319,12 +317,8 @@ def render_asis_annex(payload_path: str, output_path: str):
     meta_lang = tower_meta.get("language", "es").lower()
 
     #
-    locales_path = Path("engine_config/locales.json")
-    locales_data = {}
-    if locales_path.exists():
-        with open(locales_path, "r", encoding="utf-8-sig") as lf:
-            locales_data = json.load(lf)
-    vocab = locales_data.get(meta_lang, locales_data.get("es", {}))
+    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    vocab = resolve_localized_vocabulary(meta_lang)
 
     tower_name = tower_meta.get("tower_name", "Desconocida")
     tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
@@ -473,7 +467,7 @@ def render_asis_annex(payload_path: str, output_path: str):
     )
     set_cell_text_custom(
         hist_table.rows[2].cells[2],
-        "Refinado cuantitativo de riesgos FAIR e inyección SOTA.",
+        "Refinado cuantitativo de riesgos FAIR e inyección de contexto tecnológico.",
         font_size=8,
     )
     set_cell_text_custom(
@@ -487,7 +481,7 @@ def render_asis_annex(payload_path: str, output_path: str):
 
     add_heading(
         doc,
-        vocab.get("appendix_a_title", "Índice de Contenidos"),
+        vocab.get("table_of_contents_title", "Índice de Contenidos"),
         level=1,
         primary_color_rgb=p_color_rgb,
     )
@@ -949,7 +943,7 @@ def render_asis_annex(payload_path: str, output_path: str):
 
     add_body_paragraph(
         doc,
-        "Esta calificación sitúa a la infraestructura en un estadio operativo fundamental que requiere modernización y automatización urgente para alinearse con los estándares SOTA de continuidad y soberanía. El salto de madurez se sostendrá en la ejecución de las iniciativas recomendadas.",
+        "Esta calificación sitúa a la infraestructura en un estadio operativo fundamental que requiere modernización y automatización urgente para alinearse con los estándares recomendados de continuidad y soberanía. El salto de madurez se sostendrá en la ejecución de las iniciativas recomendadas.",
         text_color_rgb=text_color_rgb,
     )
 

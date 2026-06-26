@@ -203,6 +203,7 @@ async def run_pipeline():
                 "blueprint_t2_payload.json",
                 "case_input.json",
                 "scoring_output.json",
+                "benchmarks_snapshot.json",
                 f"approved_annex_{tower_id.lower()}.template_payload.json",
             ]:
                 path_to_del = case_dir / f
@@ -287,6 +288,66 @@ async def run_pipeline():
     else:
         print("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
 
+    # Resolve the client industry profile key
+    client_dir = Path("working") / client_slug
+    client_intel_path = client_dir / "client_intelligence.json"
+    industry_key = "default"
+    if client_intel_path.exists():
+        try:
+            import json
+            with open(client_intel_path, "r", encoding="utf-8-sig") as f:
+                intel_data = json.load(f)
+            profile_sec = intel_data.get("profile", {})
+            industry_name = ""
+            if isinstance(profile_sec, dict):
+                industry_name = profile_sec.get("industry", "")
+            if not industry_name:
+                industry_name = intel_data.get("industry", "default")
+            
+            # Map industry name to profile key
+            mapping = {
+                "energía": "critical_infrastructure",
+                "eléctrico": "critical_infrastructure",
+                "infraestructura crítica": "critical_infrastructure",
+                "transporte": "critical_infrastructure",
+                "retail": "retail",
+                "comercio": "retail",
+                "banca": "banking",
+                "finanzas": "banking",
+                "seguros": "banking",
+                "salud": "healthcare",
+                "hospital": "healthcare",
+            }
+            industry_lower = industry_name.lower()
+            for key, val in mapping.items():
+                if key in industry_lower:
+                    industry_key = val
+                    break
+        except Exception:
+            pass
+
+    #
+    # Stage 2.5: Execute dynamic RAGE evaluation to freeze the benchmarks snapshot.
+    #
+    snapshot_file = case_dir / "benchmarks_snapshot.json"
+    if args.force or not snapshot_file.exists() or snapshot_file.stat().st_size == 0:
+        await run_step_async(
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.application.cli",
+                "rage",
+                "--client",
+                args.client,
+                "--industry",
+                industry_key,
+            ],
+            env,
+            "Run RAGE Evaluation",
+        )
+    else:
+        print("⏭️  [Cache Bypass] Run RAGE Evaluation already generated. Skipping.")
+
     #
     # Stage 3: Execute quantitative scoring models using the `evidence_ledger`. This stage is cache-gated.
     #
@@ -338,7 +399,7 @@ async def run_pipeline():
                 args.client,
             ],
             env,
-            "Run SOTA researcher",
+            "Run technical researcher",
         )
 
         await run_step_async(
@@ -355,18 +416,18 @@ async def run_pipeline():
             "Run executive refiner",
         )
         print(
-            "⏳ [Sovereign QA] Esperando asentamiento físico del archivo findings.json en disco..."
+            "[System] Waiting for findings.json to be physically saved on disk..."
         )
         await asyncio.sleep(2.0)
     else:
         print(
-            "⏭️  [Cache Bypass] Findings and SOTA research already generated. Skipping Analyst Chain."
+            "[System] [Cache Bypass] Findings and technical research already generated. Skipping Analyst Chain."
         )
 
     #
     # Stage 5: Generate the Tower Strategic Blueprint payload. This stage is cache-gated.
     #
-    print("\n🚀 Iniciando Flujo Top-Down: Blueprint Estratégico...")
+    print("\n[System] Initializing Top-Down Flow: Strategic Blueprint...")
     if (
         args.force
         or not blueprint_payload_path.exists()

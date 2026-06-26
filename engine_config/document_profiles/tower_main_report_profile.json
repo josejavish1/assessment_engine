@@ -38,7 +38,7 @@
   "render_blueprint": [
     {
       "block_id": "executive_summary",
-      "title": "Resumen tecnico ejecutivo",
+      "title": "Resumen técnico ejecutivo",
       "source": "executive_summary"
     },
     {
@@ -48,7 +48,7 @@
     },
     {
       "block_id": "scope",
-      "title": "Alcance y limites del analisis",
+      "title": "Alcance y límites del análisis",
       "source": "sections.scope"
     },
     {
@@ -58,27 +58,27 @@
     },
     {
       "block_id": "methodology",
-      "title": "Metodologia de evaluacion",
+      "title": "Metodología de evaluación",
       "source": "sections.methodology"
     },
     {
       "block_id": "current_state_overview",
-      "title": "Vision global del estado de la torre",
+      "title": "Visión global del estado de la torre",
       "source": "sections.current_state_overview"
     },
     {
       "block_id": "pillar_score_profile",
-      "title": "Grafico radial de evaluacion",
+      "title": "Gráfico radial de evaluación",
       "source": "pillar_score_profile"
     },
     {
       "block_id": "dimension_analysis",
-      "title": "Analisis detallado por dimension",
+      "title": "Análisis detallado por dimensión",
       "source": "dimension_analysis"
     },
     {
       "block_id": "consolidated_diagnosis",
-      "title": "Diagnostico consolidado",
+      "title": "Diagnóstico consolidado",
       "source": "sections.consolidated_diagnosis"
     },
     {
@@ -93,12 +93,12 @@
     },
     {
       "block_id": "risk_analysis",
-      "title": "Riesgos tecnicos y de continuidad",
+      "title": "Riesgos técnicos y de continuidad",
       "source": "sections.risk_analysis"
     },
     {
       "block_id": "action_lines",
-      "title": "Lineas de actuacion",
+      "title": "Líneas de actuación",
       "source": "sections.action_lines"
     },
     {
@@ -108,17 +108,17 @@
     },
     {
       "block_id": "prioritization",
-      "title": "Priorizacion de iniciativas",
+      "title": "Priorización de iniciativas",
       "source": "sections.prioritization"
     },
     {
       "block_id": "roadmap",
-      "title": "Hoja de ruta de evolucion",
+      "title": "Hoja de ruta de evolución",
       "source": "sections.roadmap"
     },
     {
       "block_id": "final_recommendations",
-      "title": "Recomendaciones finales para el responsable tecnico",
+      "title": "Recomendaciones finales para el responsable técnico",
       "source": "sections.final_recommendations"
     },
     {

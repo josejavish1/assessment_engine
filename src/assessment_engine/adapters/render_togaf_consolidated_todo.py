@@ -153,20 +153,13 @@ def render_consolidated_todo(working_dir: str, output_path: str):
     meta_lang = payloads[0].get("document_meta", {}).get("language", "es").lower()
 
     # Load branding and localization settings from their respective configuration files.
-    brand_path = Path("engine_config/brand_profile.json")
-    brand = {}
-    if brand_path.exists():
-        with open(brand_path, "r", encoding="utf-8") as bf:
-            brand = json.load(bf)
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    brand = load_brand_profile()
     styling = brand.get("styling", {})
     color_blue = styling.get("primary_color_hex", "0072BC")
 
-    locales_path = Path("engine_config/locales.json")
-    locales_data = {}
-    if locales_path.exists():
-        with open(locales_path, "r", encoding="utf-8-sig") as lf:
-            locales_data = json.load(lf)
-    vocab = locales_data.get(meta_lang, locales_data.get("es", {}))
+    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    vocab = resolve_localized_vocabulary(meta_lang)
 
     # Stage 1: Consolidate all roadmap waves and their interdependencies into a unified data structure.
     merged_waves = {}  # Map a composite wave key (name and timeframe) to a list of its constituent project identifiers.

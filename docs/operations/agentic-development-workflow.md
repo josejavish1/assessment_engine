@@ -11,7 +11,7 @@ source_of_truth:
 - ../../.github/workflows/ci.yml
 - ../../.github/workflows/quality.yml
 - ../../.github/workflows/typing.yml
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -22,130 +22,112 @@ verification_mode: workflow
 
 # Agentic development workflow
 
-Esta guía define cómo debe desarrollarse software en `assessment-engine` cuando intervienen agentes de IA. El objetivo no es solo generar código más rápido, sino evitar deriva arquitectónica, duplicación semántica y cambios grandes mal especificados.
+Esta guía establece el protocolo operativo para el ciclo de desarrollo de software asistido por agentes de inteligencia artificial en `assessment-engine`. Su propósito es estructurar la interacción con los agentes autónomos para mitigar la deriva arquitectónica, prevenir la duplicidad lógica o semántica, y erradicar mutaciones de código deficientemente especificadas.
 
 ## Regla principal
 
-El agente no debe trabajar sobre instrucciones vagas. Debe trabajar sobre una **spec mínima verificable**, dentro de un **alcance acotado**, con **reglas ejecutables** y con **review humano centrado en semántica y arquitectura**.
+El agente autónomo tiene estrictamente prohibido operar sobre especificaciones ambiguas o imprecisas. Su intervención requiere una **Especificación Mínima Verificable (*Minimum Verifiable Specification*)**, un alcance rigurosamente delimitado, reglas de validación ejecutables y un proceso de revisión humana enfocado prioritariamente en la semántica del dominio y la cohesión de la arquitectura.
 
-## Flujo recomendado
+## Flujo de Trabajo Recomendado
 
-### 1. Especificar antes de implementar
+### 1. Especificación Previa a la Implementación
+Antes de iniciar cualquier modificación en la base de código, se debe declarar de forma determinista la siguiente información:
 
-Antes de tocar código, deja clara al menos esta información:
+-   **Definición del Problema:** Diagnóstico exacto de la desviación o capacidad ausente.
+-   **Alcance (*In-Scope*):** Delimitación quirúrgica de las modificaciones permitidas.
+-   **Exclusiones (*Out-of-Scope*):** Frontera explícita de componentes o archivos no modificables en esta iteración.
+-   **Impacto en Contratos:** Identificación de esquemas Pydantic o especificaciones canónicas afectadas.
+-   **Invariantes del Sistema:** Reglas de negocio y lógica estructural que deben permanecer inmutables tras el cambio.
+-   **Protocolo de Validación:** Criterios empíricos y suites de pruebas exigidas para certificar el cambio.
 
-- problema concreto;
-- alcance incluido;
-- alcance explícitamente fuera;
-- contratos o documentos canónicos afectados;
-- invariantes que no deben romperse;
-- validación esperada.
+Cualquier propuesta de Pull Request o sesión de desarrollo interactiva debe responder con exactitud a estas dimensiones para considerarse elegible para su ejecución.
 
-Una spec mínima válida para una PR o sesión debe responder a estas preguntas:
-
-1. ¿Qué cambio real se busca?
-2. ¿Qué no se debe tocar?
-3. ¿Qué fuente de verdad manda?
-4. ¿Qué reglas de dominio deben seguir intactas?
-5. ¿Cómo se detectará que el cambio degradó el sistema?
-
-## Plantilla mínima de spec
+## Plantilla Mínima de Especificación
 
 ```text
 Problema:
-- qué está mal o qué capacidad falta
+- Definición de la desviación observable o capacidad requerida.
 
 In scope:
-- cambios permitidos
+- Mutaciones permitidas y archivos objetivo.
 
 Out of scope:
-- cambios que no deben entrar en esta iteración
+- Límites de exclusión explícitos para esta iteración.
 
 Source of truth:
-- código, schemas, workflows o documentos canónicos que mandan
+- Código fuente, esquemas, flujos de CI o especificaciones canónicas que gobiernan la verdad.
 
 Invariantes:
-- reglas que deben seguir siendo ciertas tras el cambio
+- Comportamientos lógicos y estructurales que deben permanecer estables.
 
 Validación:
-- tests, checks o artefactos que deben pasar
+- Pruebas y aserciones de conformidad obligatorias.
 ```
 
-## Reglas de alcance
+## Reglas de Acotamiento de Alcance
 
-- prioriza cambios pequeños, reversibles y con frontera clara;
-- no mezcles refactor, feature nueva y rediseño semántico en una sola iteración si no es necesario;
-- si un cambio cruza varias capas, identifica primero qué helper o policy compartida debe absorber la lógica;
-- si una sesión necesita varias fases, mantén la spec y la trazabilidad vivas durante toda la ejecución.
+-   **Atomicidad:** Priorizar integraciones incrementales de cambios pequeños, totalmente reversibles y con interfaces claramente delimitadas.
+-   **No Mezcla de Tareas:** Evitar la coexistencia de refactorizaciones estructurales, adición de nuevas funcionalidades y rediseños semánticos en un único ciclo de integración.
+-   **Identificación de Abstracción:** Si las modificaciones impactan múltiples capas del sistema, definir o extender primero el helper o la política compartida correspondiente en el dominio.
+-   **Trazabilidad Multi-fase:** En desarrollos secuenciales complejos, mantener la especificación mínima y el registro de cambios actualizados durante todo el ciclo de vida del refinamiento.
 
-## Qué se considera best practice en este repo
+## Buenas Prácticas de Ingeniería en el Repositorio
 
-- **Uso estricto de Golden Paths:** Los agentes NUNCA deben crear nuevos componentes (endpoints, workers, scripts) desde cero. Siempre deben usar las plantillas de la carpeta `templates/golden_paths/` como andamiaje inicial para garantizar observabilidad, seguridad y logging consistentes.
-- una única fuente de verdad por semántica crítica;
-- lógica importante fuera de prompts y dentro de código, tests, schemas o workflows;
-- helpers o policies compartidas para reglas reutilizadas;
-- errores explícitos en zonas críticas en lugar de degradaciones silenciosas;
-- tests de coherencia cuando la semántica atraviesa varias capas;
-- cambios guiados por contratos y no por “texto que parece razonable”.
+-   **Uso Estricto de Golden Paths:** Los agentes de IA tienen estrictamente prohibido crear nuevos componentes o servicios (p. ej., endpoints, workers, scripts) desde cero. Deben utilizar obligatoriamente los andamiajes de andamiaje definidos en `templates/golden_paths/` para garantizar la homogeneidad de la telemetría, el registro estructurado de eventos y el control de accesos.
+-   **Centralización Semántica:** Mantener una única fuente de verdad lógica para cada regla de negocio.
+-   **Determinismo en Código:** Codificar toda lógica de negocio y de reporting en Python, absteniéndose de confinar reglas funcionales en prompts de LLMs.
+-   **Uso de Abstracciones de Dominio:** Apoyarse siempre en utilidades de infraestructura y políticas de dominio compartidas para reglas transversales.
+-   **Manejo de Errores Riguroso:** Implementar excepciones e interrupciones explícitas en rutas críticas en lugar de degradaciones silenciosas del estado.
+-   **Tests de Coherencia Transversal:** Certificar la consistencia conceptual mediante aserciones cruzadas cuando una regla afecte a múltiples capas de datos.
 
-## Qué se considera mala práctica
+## Prácticas Prohibidas (Anti-patrones)
 
-- dejar lógica de negocio solo en prompts;
-- duplicar score, target, band, color, severidad o prioridades en varios sitios;
-- meter defaults silenciosos en zonas críticas;
-- capturar errores amplios sin señal auditable;
-- cambiar más superficie de la necesaria;
-- introducir una segunda fuente de verdad “temporal” que luego se queda.
+-   Confinar lógica funcional o reglas de negocio dentro de prompts de modelos de lenguaje.
+-   Duplicar constantes o lógicas de asignación de scores, bandas de madurez, gradientes o severidades.
+-   Implementar defaults silenciosos en compuertas lógicas críticas.
+-   Capturar excepciones globales (`except Exception`) sin registrar una señal estructurada y auditable de error.
+-   Modificar archivos o componentes que excedan el alcance mínimo declarado.
+-   Introducir fuentes de verdad temporales o parches transitorios.
 
-## Review humano esperado
+## Criterios de Revisión Humana (*Code Review*)
 
-En PR review, el foco principal no debe ser estilo superficial, sino estas preguntas:
+Durante el proceso de revisión de pull requests, la evaluación técnica debe priorizar las siguientes aserciones antes que el estilo superficial:
 
-1. ¿La PR parte de una spec clara?
-2. ¿El alcance es razonable o intenta hacer demasiadas cosas?
-3. ¿Se ha duplicado lógica existente en vez de reutilizar helpers o policies?
-4. ¿Se ha introducido una nueva fuente de verdad?
-5. ¿Se han protegido las invariantes con tests o checks?
-6. ¿La documentación canónica y la trazabilidad siguen alineadas?
-7. ¿El agente pudo haber generado código correcto en apariencia pero semánticamente equivocado?
+1.  ¿La integración parte de una Especificación Mínima Verificable?
+2.  ¿El alcance es atómico y respeta los límites de exclusión declarados?
+3.  ¿Se reutilizan las abstracciones y helpers del dominio en lugar de duplicar lógica?
+4.  ¿Se previene rigurosamente la introducción de fuentes de verdad lógicas alternativas?
+5.  ¿Se han blindado las invariantes del sistema mediante aserciones en la suite de pruebas?
+6.  ¿La especificación en `docs/documentation-map.yaml` y la documentación canónica permanecen alineadas?
+7.  ¿Se ha verificado que la sintaxis generada por el agente no introduce alucinaciones semánticas en el dominio?
 
-Cuando la PR toque semántica cliente-facing o coherencia transversal, esa revisión debe quedar también materializada en la sección **Assessment coherence checks** de `.github/pull_request_template.md`, no solo en comentarios ad hoc.
+Cualquier PR que modifique la semántica orientada al cliente o la coherencia entre fases debe certificar de manera obligatoria la sección **Assessment coherence checks** en `.github/pull_request_template.md`.
 
-## Relación con los gates automáticos
+## Interacción con Compuertas Automáticas
 
-Los gates automáticos actuales (`pytest`, `quality`, `typing`, gobernanza documental) son necesarios, pero no suficientes por sí solos.
+Los validadores automatizados del repositorio representan compuertas necesarias pero no suficientes para la integración del cambio.
 
-El workflow correcto es:
+El ciclo de desarrollo recomendado sigue esta secuencia determinista:
+1.  **Declaración:** Confeccionar la Especificación Mínima Verificable.
+2.  **Acotamiento:** Limitar el entorno de trabajo al delta de cambios mínimo.
+3.  **Implementación:** Codificar la solución apoyándose en esquemas Pydantic y políticas de dominio.
+4.  **Certificación Local:** Ejecutar localmente la suite de pruebas unitarias y los validadores de calidad.
+5.  **Revisión:** Someter el PR a revisión humana orientada a arquitectura y semántica.
+6.  **Ciclo de Feedback:** Subsanar observaciones iterativamente sin evadir las compuertas automáticas.
+7.  **Fusión:** Completar el merge una vez que todos los checks automáticos de GitHub estén en verde.
 
-1. spec mínima;
-2. cambio acotado;
-3. implementación con helpers/policies/contratos;
-4. tests y checks;
-5. review humano orientado a arquitectura y semántica;
-6. si la PR recibe feedback automático o de review, nueva iteración de corrección sin saltarse los mismos gates;
-7. merge solo cuando GitHub deja la PR verde y sin conversaciones bloqueantes.
+Si se utiliza un agente autónomo para la reconciliación automatizada pos-PR, sus operaciones se rigen estrictamente bajo el siguiente mandato operativo:
+-   Analizar de forma exhaustiva los logs de error de las compuertas de GitHub y los comentarios de revisión.
+-   Sincronizar y re-integrar la rama de trabajo con la base `main` cuando GitHub indique desactualización.
+-   Resolver y depurar de forma quirúrgica las desviaciones en la rama.
+-   Verificar localmente la conformidad del cambio empleando las herramientas de calidad del repositorio.
+-   Realizar el push del delta correctivo.
+-   Monitorear pasivamente los checks oficiales de integración, deteniéndose inmediatamente ante bloqueos de gobernanza o restricciones de protección de rama que escapen a sus atribuciones de contexto.
 
-Si un agente automatiza el post-PR reconciliation, su mandato no es “forzar el merge”, sino exactamente esto:
+## Regla de Bloqueo Operativo
 
-- leer checks y review threads;
-- sincronizar la rama con la base cuando GitHub la marque como desactualizada;
-- corregir en la rama;
-- rerun de validaciones locales del repo;
-- push del follow-up;
-- esperar de nuevo los checks oficiales;
-- detenerse si la PR sigue bloqueada por reglas humanas o de protección que no puede satisfacer legítimamente.
+Si un ciclo de desarrollo interactivo asistido por agente no dispone de una definición inequívoca del problema, delimitación del alcance de cambio, identificación de la fuente de verdad gobernante y especificación de las invariantes a proteger, **la sesión carece de elegibilidad técnica para realizar modificaciones físicas sobre el repositorio.**
 
-## Regla operativa para agentes
+## Interacción con Requerimientos de Negocio
 
-Si una sesión con agente no puede responder con claridad qué cambia, qué no cambia, qué fuente de verdad manda y qué invariantes protege, la sesión todavía no está lista para implementar.
-
-## Traducción desde lenguaje product owner
-
-Cuando la petición venga desde negocio y no desde un programador, el flujo recomendado no es pedir directamente “haz el cambio”, sino usar el orquestador descrito en `product-owner-orchestrator.md`.
-
-Ese orquestador convierte la intención de negocio en:
-
-- spec mínima;
-- tareas pequeñas;
-- validación estándar;
-- PR con trazabilidad.
+Cuando una iniciativa provenga directamente de requerimientos funcionales o comerciales de negocio (*Product Owner*) en lugar de especificaciones técnicas directas, se debe invocar el orquestador descrito en [`product-owner-orchestrator.md`](product-owner-orchestrator.md) para traducir y estructurar la intención comercial en especificaciones atómicas, tareas lógicas acotadas y aserciones de conformidad automáticas antes de intervenir la base de código.

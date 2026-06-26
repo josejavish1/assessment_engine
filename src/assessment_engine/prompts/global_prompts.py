@@ -119,15 +119,15 @@ def get_executive_section_prompt(
     """
     return f"""
     ANALIZA ESTE PAYLOAD Y GENERA UN NUEVO JSON ESTRATÉGICO PARA UN COMITÉ DE DIRECCIÓN.
-    
+
     REGLA DE ORO DE REDACCIÓN (NTT DATA STANDARDS):
-    - ESTÁ PROHIBIDO el uso de la primera persona del plural ("nuestro", "nosotros", "hemos detectado"). 
-    - El tono debe ser puramente profesional, externo y objetivo. 
+    - ESTÁ PROHIBIDO el uso de la primera persona del plural ("nuestro", "nosotros", "hemos detectado").
+    - El tono debe ser puramente profesional, externo y objetivo.
     - Se debe referir a la infraestructura como "la infraestructura de {client_name}" o "la plataforma analizada".
     - NUNCA uses el término "The Burning Platform" en los textos; usa "Principales Amenazas Sistémicas".
 
     {instruction}
-    
+
     REGLA ESTRICTA DE ESTILO (NIVEL CIO/BOARD):
     - ESTÁ TERMINANTEMENTE PROHIBIDO usar códigos internos como T1, T2, T3, T6, etc. Habla de "Sistemas Legacy", "Ciberseguridad", "Redes", etc.
     - Céntrate en el impacto de negocio (Riesgo, P&L, Time-to-Market, Operaciones).

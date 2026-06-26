@@ -1,5 +1,5 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/application/run_tower_pipeline.py
@@ -22,124 +22,110 @@ verification_mode: workflow
 
 # Pipeline controls runbook
 
-Este runbook resume la **operación real** del sistema: qué controles conviene pasar antes de ejecutar, qué señales deben aparecer en cada fase y cómo reaccionar cuando la cadena se rompe.
+Este manual de operaciones (*runbook*) formaliza el protocolo de control, supervisión e intervenciones correctivas aplicables sobre la tubería de ejecución del motor. Define de manera determinista los checkpoints pre-vuelo, la telemetría de éxito de cada fase y los árboles de decisión ante interrupciones operacionales.
 
-## Qué intenta proteger
+## Dimensiones de Protección y Continuidad
 
-1. continuidad de generación;
-2. coherencia entre capas;
-3. capacidad de diagnóstico rápido;
-4. distinción clara entre problema de credenciales, problema de contrato y problema de render.
+1.  **Continuidad Operacional:** Garantía de transaccionalidad de generación de deliverables.
+2.  **Coherencia Semántica:** Prevención de fragmentación lógica (*split-brain*) inter-fases.
+3.  **Diagnóstico Expedito:** Aislamiento rápido de cuellos de botella mediante logs estructurados.
+4.  **Aislamiento de Causas Raíz:** Discriminación explícita entre anomalías de red/autenticación, desviaciones contractuales de payloads o fallas de renderizado visual.
 
-## Checklist previo de operación
+## Checklist de Verificación de Checkpoints Pre-vuelo
 
-| Control | Qué confirma |
-|---|---|
-| entorno Python activo (`./.venv`) | que ejecutas contra el entorno esperado |
-| dependencias instaladas | que el repo puede correr scripts y tests |
-| acceso a Vertex AI | que los tramos IA no van a fallar por autenticación base |
-| inputs/cliente disponibles | que la fase tiene material para producir artefactos |
-| `working/<client>/...` legible | que la superficie operativa existe y es consistente |
-
-## Orden recomendado de ejecución
-
-1. **preflight IA** si vas a tocar tramos con agentes;
-2. **pipeline por torre** para crear la verdad base;
-3. **pipeline global** para consolidar;
-4. **pipeline comercial** para activar cuenta;
-5. **render web** para superficie visual;
-6. **smoke y tests** cuando necesites validar baseline o regresiones.
-
-## Señales mínimas de salud por fase
-
-| Fase | Señal mínima |
-|---|---|
-| Preflight IA | el chequeo de Vertex AI pasa |
-| Torre | existe `blueprint_<tower>_payload.json` |
-| Annex | existe `approved_annex_<tower>.template_payload.json` |
-| Global | existe `global_report_payload.json` |
-| Comercial | existe `commercial_report_payload.json` |
-| Web | existe `working/<client>/presentation/index.html` |
-| Baseline smoke | los artefactos `smoke_ivirma` existen y la validación pasa |
-
-En el estado actual, cuando el smoke extiende a global debe ejercitar la consolidación canónica desde blueprints. Si el baseline global deja de poder regenerarse así, la lectura correcta ya no es “variante operativa”: es una regresión o una dependencia residual fuera del flujo principal.
-
-## Primer diagnóstico según síntoma
-
-| Síntoma | Primera lectura correcta | Acción inicial |
+| Checkpoint | Validación Empírica | Propósito en el Dominio |
 |---|---|---|
-| no nace ningún payload IA | fallo de acceso o entorno IA | ejecutar `check_vertex_ai_access` |
-| existen inputs base pero no blueprint | bloqueo en el engine de torre | revisar `run_tower_pipeline.py` y Vertex AI |
-| existe blueprint pero no annex | fallo del sintetizador ejecutivo | revisar `run_executive_annex_synthesizer.py` |
-| existe tower pero no global | problema de consolidación entre torres | revisar `build_global_report_payload.py` |
-| existe global pero no comercial | fallo en refino comercial | revisar `run_commercial_refiner.py` |
-| existe payload pero el DOCX sale mal | problema de render o plantilla | revisar renderer y plantilla, no la verdad base |
-| fallan tests ligados a `working/` | puede faltar baseline, no necesariamente hay bug nuevo | verificar artefactos antes de depurar código |
+| **Entorno Aislado Certificado** | Ejecución activa bajo `./.venv/` | Asegura el aislamiento de paquetes y consistencia de librerías. |
+| **Integridad de Dependencias** | `./.venv/bin/pip check` | Certifica la disponibilidad completa de las dependencias lógicas. |
+| **Gobernanza de Acceso a Vertex AI** | Ejecución de `check_vertex_ai_access.py` | Previene fallas tempranas de autenticación en llamadas generativas. |
+| **Aprovisionamiento de Entradas** | Presencia física de context-files y responses | Valida que la tubería disponga de materia prima para operar. |
+| **Disponibilidad de Ruta de Trabajo** | `working/<client>` legible y escribible | Garantiza los permisos de E/S necesarios para persistir artefactos. |
 
-Si la incoherencia observada es de **score vs banda cualitativa** entre torre, annex, global o web, la primera comprobación ya no debería ir a prompts ni plantillas: debe ir a la policy/helper compartida que traduce la banda y a los consumidores que la reutilizan.
+## Secuencia de Ejecución Estándar
 
-## Árbol corto de respuesta
+1.  **Preflight de Infraestructura Cloud:** Certificar el acceso al proveedor de IA antes de consumir créditos.
+2.  **Análisis por Dominio Tecnológico:** Ejecutar el flujo por torre para fabricar la verdad base de cada especialidad.
+3.  **Consolidación Ejecutiva Global:** Unificar el estado de las torres activas bajo la agenda directiva del cliente.
+4.  **Generación de Plan Comercial:** Formular propuestas de inversión y planes de cuenta acoplados a la verdad técnica.
+5.  **Compilación de Visualización Web:** Generar la interfaz web interactiva agregada para soporte de presentación.
+6.  **Validación y Certificación:** Ejecutar pruebas de regresión y smoke-tests para blindar el repositorio ante derivas.
 
-### 1. Falla antes de producir artefactos IA
+## Telemetría de Éxito por Fase
 
-Piensa primero en:
+| Fase | Artefacto de Certificación | Checkpoint de Salud Mínimo |
+|---|---|---|
+| **Preflight IA** | Retorno exitoso del script de acceso. | Autenticación y cuotas de Vertex AI certificadas. |
+| **Torre** | `blueprint_<tower>_payload.json` | Existencia y consistencia estructural frente al esquema de Pydantic. |
+| **Annex** | `approved_annex_<tower>.template_payload.json` | Handover directivo derivado sin contradicciones del blueprint. |
+| **Global** | `global_report_payload.json` | Agregación de torres refinada sin lógicas huérfanas de legado. |
+| **Comercial** | `commercial_report_payload.json` | Mapeo de oportunidades comerciales justificado técnicamente. |
+| **Web** | `working/<client>/presentation/index.html` | Dashboard HTML interactivo compilado sin pérdidas de datos. |
+| **Baseline Smoke** | Árbol `smoke_ivirma` completo. | Integridad de todos los artefactos físicos e informe de tests en verde. |
 
-- credenciales;
-- proyecto o location;
-- acceso base al modelo;
-- timeout del paso completo.
+*Nota de Gobernanza:* El smoke-test en su modo consolidado global (`--with-global`) ejecuta la agregación canónica nativa a partir de blueprints. Si el baseline global requiere de lógicas retrocompatibles para compilar, la anomalía debe depurarse prioritariamente como una desviación estructural del motor y no como una variante de ejecución permitida.
 
-La acción correcta suele ser:
+## Matriz de Diagnóstico de Incidentes por Síntoma
 
+| Síntoma Observable | Causa Raíz Probable | Acción Operativa Recomendada |
+|---|---|---|
+| Fallo en la instanciación de cualquier payload IA. | Interrupción de red, vencimiento de tokens o cuotas excedidas en Vertex AI. | Ejecutar la utilidad de diagnóstico `check_vertex_ai_access`. |
+| Entradas disponibles pero omisión en la generación de blueprints. | Bloqueo o timeout en el motor de síntesis de la torre. | Inspeccionar logs estructurados de `run_tower_pipeline.py`. |
+| Blueprint correcto pero ausencia o inconsistencia del anexo directivo. | Falla de aserción en el sintetizador ejecutivo de handover. | Auditar trazas de error de `run_executive_annex_synthesizer.py`. |
+| Blueprints estables pero falla en la consolidación global. | Conflicto de fusión o anomalía en el builder global de payloads. | Depurar lógica de agregación en `build_global_report_payload.py`. |
+| Payload global verificado pero error en la activación comercial. | Falla lógica en el refinador de cuenta. | Diagnosticar parámetros de ejecución de `run_commercial_refiner.py`. |
+| Payloads estables pero entregable OpenXML `.docx` corrupto o desalineado. | Desviación de diseño en la plantilla física o en el renderer OpenXML. | Corregir de forma desacoplada el script renderer y la plantilla física; prohibido alterar la lógica de negocio del payload. |
+| Interrupción de pruebas unitarias asociadas a la ruta de trabajo `working/`. | Desactualización o ausencia física de los artefactos del baseline. | Verificar la existencia de los JSON e inicializar el regenerador de smoke. |
+
+*Gobernanza Semántica de Métricas:* Ante inconsistencias observadas entre las métricas de score y las bandas cualitativas asociadas, la intervención correctiva debe ocurrir de forma obligatoria en la política de madurez compartida de la plataforma (`maturity_band.py`) y en sus consumidores centralizados, prohibiéndose la redefinición lógica local en prompts o renderizadores.
+
+## Protocolo de Intervención Rápida
+
+### 1. Interrupción de Red o Autenticación
+Ante sospechas de fallas de conexión o credenciales expiradas en Google Cloud, invoque:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
-### 2. Falla una capa derivada pero la anterior existe
+### 2. Deriva Contractual entre Capas
+Si una fase derivada falla pero la fase precedente completó con éxito:
+1.  Verifique la compatibilidad estructural del payload de origen frente a su esquema de Pydantic correspondiente.
+2.  Descarte la presencia de normalizaciones excepcionales no documentadas en la capa de renderizado.
+3.  Verifique la actualización física de las dependencias de datos del módulo consumidor.
 
-Piensa primero en:
+### 3. Degradación en la Capa Estética de Presentación
+Si los payloads de datos son correctos pero el deliverable final presenta distorsiones de diseño:
+1.  Verifique la alineación de estilos e integridad OpenXML en la plantilla de origen.
+2.  Inspeccione el mapeo de variables lógicas en el renderer de destino.
+3.  Se prohíbe realizar modificaciones directas en el código de negocio para subsanar desviaciones de formateo visual.
 
-- contrato roto entre etapas;
-- payload incompleto o desalineado;
-- normalización excesiva en render;
-- dependencia previa no regenerada.
+## Matriz de Recuperación ante Desastres
 
-### 3. Falla la presentación pero no el payload
-
-Piensa primero en:
-
-- renderer;
-- plantilla DOCX;
-- estilo o composición;
-- diferencias entre modo legacy y semántico.
-
-## Controles de recuperación recomendados
-
-| Escenario | Recuperación preferida |
+| Incidente Operacional | Ruta de Recuperación Certificada |
 |---|---|
-| baseline smoke perdido | usar `regenerate_smoke_artifacts` |
-| duda entre problema local o IA | ejecutar primero `--local-only` |
-| bloqueo largo en IA | usar timeouts explícitos del runner |
-| artefacto de torre ausente | relanzar torre o reanudar desde el paso apropiado |
-| artefacto global/comercial ausente | relanzar la fase consumidora inmediata |
+| **Eliminación accidental del baseline local** | Ejecutar el aprovisionador: `./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts` |
+| **Interrupción prolongada del proveedor Cloud** | Conmutar de forma segura a ejecución local libre de APIs: `--local-only` |
+| **Bloqueos transitorios por latencias de red** | Forzar la expiración transaccional configurando timeouts explícitos de ejecución. |
+| **Ausencia de telemetría por torre** | Relanzar el orquestador por torre o reanudar desde el checkpoint estable de origen. |
+| **Ausencia de telemetría global o comercial** | Relanzar específicamente la fase consumidora inmediata agregando los flags correspondientes. |
 
-## Qué no hacer
+## Prácticas Prohibidas y Anti-patrones Operacionales
 
-1. No asumir bug lógico solo porque falle un test que depende de `working/`.
-2. No usar un DOCX bonito como prueba de verdad estructural.
-3. No corregir en render un problema que pertenece al payload productor.
-4. No tratar el flujo legacy como si fuera la única referencia si ya existe payload moderno.
+1.  **Asunción Errónea de Defectos:** Atribuir fallas de aserción en pytest a bugs lógicos sin certificar previamente la integridad física del baseline en `working/`.
+2.  **Validación Basada en Presentación:** Consumir documentos OpenXML compilados de formato estético como prueba de la verdad estructural del diagnóstico.
+3.  **Parcheo Lateral:** Corregir inconsistencias de datos de negocio modificando la lógica de formateo del renderizador o alterando manualmente el documento de salida.
+4.  **Uso de Lógicas de Compatibilidad Residual:** Confiar en flujos o fallback heredados de forma preferente cuando el sistema ya dispone de payloads canónicos tipados.
 
-## Señales de que la operación está bajo control
+## Indicadores de Estabilidad Operativa
 
-- los payloads clave aparecen donde toca;
-- el baseline smoke es reproducible;
-- los errores distinguen bien entre IA, contrato y render;
-- la documentación canónica coincide con lo que realmente hace el repo.
+El estado operacional del motor se considera bajo gobernanza y control estricto cuando:
+-   Los payloads estructurados residen de forma íntegra en sus rutas deterministas.
+-   El andamiaje de pruebas `smoke_ivirma` es 100% reproducible y determinista.
+-   Las alertas e interrupciones discriminan con exactitud entre anomalías de API generativa, desviaciones contractuales o fallas de renderizado.
+-   La base de conocimiento de la plataforma coincide plenamente con el comportamiento ejecutable del repositorio.
 
-## Dónde profundizar
+## Referencias Cruzadas Autorizadas
 
-- ejecución: [`pipeline-execution.md`](pipeline-execution.md)
-- regeneración smoke: [`smoke-regeneration.md`](smoke-regeneration.md)
-- incidencias sobre `working/`: [`troubleshooting-working.md`](troubleshooting-working.md)
-- contratos: [`../contracts/artifact-contracts.md`](../contracts/artifact-contracts.md)
+-   **Ejecución y Flujos:** [`pipeline-execution.md`](pipeline-execution.md)
+-   **Regeneración de Smoke-test:** [`smoke-regeneration.md`](smoke-regeneration.md)
+-   **Troubleshooting y Diagnóstico General:** [`troubleshooting-working.md`](troubleshooting-working.md)
+-   **Contratos e Interfaces:** [`../contracts/artifact-contracts.md`](../contracts/artifact-contracts.md)

@@ -2,7 +2,7 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- ../../bin/po-run
+- ../../pyproject.toml
 - ../../engine_config/policies/orchestrator_policy.json
 - ../../engine_config/runtime_manifest.json
 - ../../src/assessment_engine/infrastructure/product_owner_models.py
@@ -61,14 +61,14 @@ python src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
 ```
 
-Para uso diario local existe además un wrapper más friendly:
+Para uso diario local existe además un comando CLI nativo `po-run`:
 
 ```bash
-./bin/po-run "Quiero que el informe global priorice los riesgos criticos de continuidad"
-./bin/po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
+po-run "Quiero que el informe global priorice los riesgos criticos de continuidad"
+po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
 ```
 
-Ese wrapper:
+Ese comando:
 
 - usa `./.venv/bin/python` cuando existe y, si no, cae a `python`/`python3`;
 - permite pasar la petición inline o con `--request-file`;
@@ -108,7 +108,7 @@ Para cada tarea:
 4. ejecuta validaciones estándar del repo;
 5. si falla, reintenta pasando feedback de validación a la siguiente iteración.
 
-El wrapper `./bin/po-run` exporta además `PYTHONDONTWRITEBYTECODE=1` por defecto para no ensuciar el worktree con `__pycache__/` durante la propia ejecución del orquestador.
+El comando CLI `po-run` exporta además `PYTHONDONTWRITEBYTECODE=1` por defecto para no ensuciar el worktree con `__pycache__/` durante la propia ejecución del orquestador.
 
 ### 3. Validación estándar
 

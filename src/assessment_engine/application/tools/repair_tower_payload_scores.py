@@ -58,26 +58,7 @@ from typing import Any
 
 
 def derive_band_from_score(score: Any) -> Any:
-    """Maps a numerical score to a predefined descriptive band.
-
-    The function converts the input score to a float and assigns it to one of
-    five categorical bands based on its value.
-
-    The score-to-band mapping is as follows:
-        - score < 2: "Nivel 1 - Inicial"
-        - 2 <= score < 3: "Nivel 2 - Básico"
-        - 3 <= score < 4: "Nivel 3 - Estandarizado"
-        - 4 <= score < 5: "Nivel 4 - Optimizado"
-        - score >= 5: "Nivel 5 - Avanzado"
-
-    Args:
-        score (Any): The input score to classify. It is internally converted
-            to a float for comparison.
-
-    Returns:
-        str: The descriptive band name corresponding to the score. Returns an
-            empty string if the input cannot be converted to a float.
-    """
+    """Maps a numerical score to a predefined descriptive band. The function converts the input score to a float and assigns it to one of five categorical bands based on its value. The score-to-band mapping is as follows: - score < 2: "Level 1 - Initial" - 2 <= score < 3: "Level 2 - Basic" - 3 <= score < 4: "Level 3 - Standardized" - 4 <= score < 5: "Level 4 - Optimized" - score >= 5: "Level 5 - Advanced" Args: score (Any): The input score to classify. It is internally converted to a float for comparison. Returns: str: The descriptive band name corresponding to the score. Returns an empty string if the input cannot be converted to a float."""
     value = safe_float(score)
     if value is None:
         return ""

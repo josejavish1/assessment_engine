@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/domain/schemas/annex_synthesis.py
-last_verified_against: 2026-05-03
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -103,6 +103,7 @@ Describe la visión y principios del estado futuro.
 
 | Campo | Tipo | Descripción |
 |---|---|---|
+| `gradient` | `str` | Gradiente visual o clave del estado futuro. |
 | `vision` | `str` | Descripción de la visión de futuro. |
 | `design_principles` | `list[str]` | Principios de diseño para la transformación. |
 

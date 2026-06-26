@@ -8,7 +8,9 @@ from pathlib import Path
 
 import yaml
 
-from assessment_engine.application.tools.visualize_doc_map import generate_interactive_map
+from assessment_engine.application.tools.visualize_doc_map import (
+    generate_interactive_map,
+)
 
 
 def test_generate_interactive_map(tmp_path: Path) -> None:

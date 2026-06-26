@@ -58,7 +58,7 @@ A continuación se detallan los hallazgos de cada documento auditado en el direc
 
 *   **Estado General:** Variable. Algunos documentos están actualizados, otros parecen obsoletos o incompletos.
 *   **Hallazgos:**
-    *   `elite-governance-2026.md`: **(Exactitud)** El título sugiere que es para 2026, pero el contenido describe una arquitectura futura ("The Apex") que no parece estar implementada. El `status` es `Draft`, lo cual es correcto, pero podría ser engañoso para un nuevo lector que busque entender el sistema actual.
+    *   `enterprise-governance-2026.md`: **(Exactitud)** El título sugiere que es para 2026, pero el contenido describe una arquitectura futura ("The Apex") que no parece estar implementada. El `status` es `Draft`, lo cual es correcto, pero podría ser engañoso para un nuevo lector que busque entender el sistema actual.
     *   `README.md`: **(Completitud)** El README de la arquitectura está casi vacío. Debería contener una descripción general de los documentos de la sección y cómo se relacionan entre sí para guiar al lector.
     *   **(General - Propiedad)**: Muchos documentos carecen de un propietario claro y de la fecha de última revisión, lo que dificulta saber si la información sigue siendo válida.
 

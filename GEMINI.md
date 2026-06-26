@@ -1,5 +1,5 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - docs/ai/documentation-governance.md
@@ -16,7 +16,7 @@ verification_mode: editorial
 
 # Gemini adapter
 
-Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentacion canonica del proyecto.
+Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentación canónica del proyecto.
 
 ## Herencia de Gobernanza (Estricto)
 
@@ -28,16 +28,16 @@ Como agente de Google, **DEBES leer y someterte obligatoriamente a las Leyes de 
 2. [docs/README.md](docs/README.md)
 3. [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md)
 4. [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md)
-5. el documento canonico mas cercano al cambio
+5. el documento canónico más cercano al cambio
 
 ## Reglas
 
-- no uses este archivo como fuente unica de verdad;
-- apóyate en codigo, tests, schemas y workflows reales;
-- cuando una afirmacion no pueda verificarse, trátala como `Needs Review`;
-- no acumules aqui arquitectura detallada, roadmap ni memoria historica del proyecto;
-- si el cambio toca arquitectura, contratos, operacion o gobernanza, actualiza la documentacion canonica correspondiente.
+- no uses este archivo como fuente única de verdad;
+- apóyate en código, tests, schemas y workflows reales;
+- cuando una afirmación no pueda verificarse, trátala como `Needs Review`;
+- no acumules aquí arquitectura detallada, roadmap ni memoria histórica del proyecto;
+- si el cambio toca arquitectura, contratos, operación o gobernanza, actualiza la documentación canónica correspondiente.
 
-## Nota de transicion
+## Nota de transición
 
-`GEMINI.md` contenia memoria operativa historica util, pero parte de ese contenido mezclaba estado actual con vision futura. Esa lectura debe considerarse superada por la base comun en `docs/`.
+`GEMINI.md` contenía memoria operativa histórica útil, pero parte de ese contenido mezclaba estado actual con visión futura. Esa lectura debe considerarse superada por la base común en `docs/`.

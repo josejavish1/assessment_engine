@@ -43,14 +43,20 @@ class EvidenceFragment(BaseModel):
             # Auto-compute content_hash as SHA-256 of the content text
             if not data.get("content_hash") and content:
                 import hashlib
-                data["content_hash"] = hashlib.sha256(content.encode("utf-8")).hexdigest()
-            
+
+                data["content_hash"] = hashlib.sha256(
+                    content.encode("utf-8")
+                ).hexdigest()
+
             # Auto-compute fragment_id as SHA-256 of source_uri | content
             if not data.get("fragment_id") and content:
                 import hashlib
+
                 source_uri = data.get("source_uri", "")
                 combined = f"{source_uri}|{content}"
-                data["fragment_id"] = hashlib.sha256(combined.encode("utf-8")).hexdigest()
+                data["fragment_id"] = hashlib.sha256(
+                    combined.encode("utf-8")
+                ).hexdigest()
         return data
 
 

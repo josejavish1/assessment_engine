@@ -5,32 +5,7 @@ from pathlib import Path
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
-    """Rephrases technical prose to remove speculative language and align it with formal compliance terminology.
-
-    This function applies two primary sets of transformations:
-    1.  It replaces speculative or conditional phrases (e.g., "posiblemente",
-        "potencialmente") with more declarative, assertive equivalents based on a
-        pre-defined mapping.
-    2.  It inspects the text for compliance-related keywords (e.g.,
-        "automatización", "runbooks", "compliance"). If found, it may replace the
-        entire input string with a standardized statement that frames the
-        subject within target-state regulatory frameworks like ENS and NIS2.
-        This transformation is language-dependent. If keywords are present but
-        no specific replacement rule matches, a suffix is appended to indicate
-        planned automation.
-
-    The function is designed to standardize descriptions in formal reports,
-    ensuring consistent, assertive, and compliance-oriented language.
-
-    Args:
-        text: The source prose to sanitize.
-        doc_lang: The language identifier (e.g., "es", "en") used to select the
-            appropriate set of transformation rules. Defaults to "es".
-
-    Returns:
-        The sanitized string, which may be a significant modification or a
-        complete replacement of the original input.
-    """
+    """Rephrases technical prose to remove speculative language and align it with formal compliance terminology. This function applies two primary sets of transformations: 1. It replaces speculative or conditional phrases (e.g., "posiblemente", "potencialmente") with more declarative, assertive equivalents based on a predefined mapping. 2. It inspects the text for compliance-related keywords (e.g., "automatización", "runbooks", "compliance"). If found, it may replace the entire input string with a standardized statement that frames the subject within target-state regulatory frameworks such as ENS and NIS2. This transformation is language-dependent. If keywords are present but no specific replacement rule matches, a suffix is appended to indicate planned automation. The function is designed to standardize descriptions in formal reports, ensuring consistent, assertive, and compliance-oriented language. Args: text: The source prose to sanitize. doc_lang: The language identifier (e.g., "es", "en") used to select the appropriate set of transformation rules. Defaults to "es". Returns: The sanitized string, which may be a significant modification or a complete replacement of the original input."""
     if not text:
         return text
 

@@ -24,7 +24,8 @@
     "currency_format": "EU",
     "version_label": "Versión",
     "date_label": "Junio 2026",
-    "appendix_a_title": "Índice de Contenidos",
+    "table_of_contents_title": "Índice de Contenidos",
+    "appendix_a_title": "Apéndice A: Lista de Abreviaturas",
     "conclusions_title": "Informe Consolidado de Situación Futura"
   },
   "en": {
@@ -52,7 +53,8 @@
     "currency_format": "US",
     "version_label": "Version",
     "date_label": "June 2026",
-    "appendix_a_title": "Table of Contents",
+    "table_of_contents_title": "Table of Contents",
+    "appendix_a_title": "Appendix A: List of Abbreviations",
     "conclusions_title": "Consolidated Future State Report"
   },
   "pt": {
@@ -80,7 +82,8 @@
     "currency_format": "US",
     "version_label": "Versão",
     "date_label": "Junho 2026",
-    "appendix_a_title": "Índice de Conteúdos",
+    "table_of_contents_title": "Índice de Conteúdos",
+    "appendix_a_title": "Apêndice A: Lista de Abreviaturas",
     "conclusions_title": "Relatório Consolidado do Estado Futuro"
   },
   "fr": {
@@ -108,7 +111,8 @@
     "currency_format": "EU",
     "version_label": "Version",
     "date_label": "Juin 2026",
-    "appendix_a_title": "Table des Matières",
+    "table_of_contents_title": "Table des Matières",
+    "appendix_a_title": "Annexe A: Liste des Abréviations",
     "conclusions_title": "Rapport Consolidé de l'État Futur"
   },
   "ja": {
@@ -136,7 +140,8 @@
     "currency_format": "US",
     "version_label": "バージョン",
     "date_label": "2026年6月",
-    "appendix_a_title": "目次",
+    "table_of_contents_title": "目次",
+    "appendix_a_title": "付録A: 略語一覧",
     "conclusions_title": "統合将来状態レポート"
   }
 }

@@ -14,7 +14,7 @@ source_of_truth:
 - ../../src/assessment_engine/application/tools/run_incremental_quality_gate.py
 - ../../src/assessment_engine/application/tools/run_incremental_typecheck.py
 - ../../tests/test_global_coherence.py
-last_verified_against: 2026-05-04
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -25,87 +25,71 @@ verification_mode: workflow
 
 # Engineering quality gates
 
-Esta pieza define cómo `assessment-engine` obliga a que los cambios nuevos sigan una disciplina de implementación coherente con el proyecto, más allá de que `pytest` pase o la documentación se haya tocado.
+Este documento establece y define las compuertas de calidad (*quality gates*) aplicadas de forma automatizada sobre el ciclo de vida del motor. Su propósito es asegurar que cualquier cambio de código se someta a análisis estáticos de calidad y tipado estricto, complementando las pruebas de comportamiento y verificaciones de coherencia documental.
 
-## Qué protege esta capa
+## Alcance de Validación (Superficie Activa)
 
-La puerta de calidad actual se aplica a la **superficie viva** del repo:
+Las compuertas automáticas restringen sus análisis estrictamente a la superficie de desarrollo activa del repositorio:
 
-- `src/assessment_engine/domain/`
-- `tests/`
+-   `src/assessment_engine/domain/`
+-   `tests/`
 
-Queda fuera el material archivado o meramente histórico, como `_PROJECT_ARCHIVE_/` o `docs/reference/generated/legacy-gemini/`, para no bloquear la evolución del código activo por deuda no operativa.
+Se excluyen deliberadamente las rutas históricas, obsoletas o generadas pasivamente (como la documentación técnica archivada en `docs/reference/generated/legacy-gemini/`), de modo que la deuda técnica heredada y no operativa no obstruya la agilidad en la integración de la base de código viva.
 
 ## Regla central
 
-Las reglas importantes del sistema no deben vivir solo en prompts, memoria del equipo o checklists manuales. Deben materializarse en una o más de estas capas ejecutables:
+Las invariantes lógicas y de negocio críticas del sistema no deben residir únicamente en prompts de LLMs, registros de memoria de equipo o listas de control manual. Es un requisito ineludible que cualquier regla transversal se materialice en uno o más de los siguientes mecanismos de validación deterministas:
 
-- helpers o políticas compartidas;
-- schemas y validaciones;
-- tests automáticos;
-- workflows y checks de CI.
+1.  **Políticas y Utilidades de Dominio Compartidas (Domain Policies):** Centralización de la lógica de negocio en helpers desacoplados.
+2.  **Esquemas de Datos Tipados y Validaciones de Restricción:** Modelamiento estricto mediante clases Pydantic.
+3.  **Pruebas Unitarias e Integración Automatizadas:** Cobertura de tests para bloquear regresiones.
+4.  **Flujos de Verificación Continua (CI/CD Quality Checkpoints):** Validación de integración mediante GitHub Actions.
 
-Si una decisión es importante para scoring, contratos, render, coherencia narrativa u operación, no puede depender solo de “acordarse”.
-
-Esta capa supone además que el cambio partió de una **spec mínima** y de un alcance explícito, tal como se describe en `agentic-development-workflow.md`.
+Cualquier decisión estructural asociada a la resolución cuantitativa, coherencia narrativa, contratos de interfaz o renderizado de deliverables no puede depender de supuestos o disciplina manual de codificación; debe estar respaldada por un guardarraíl ejecutable. El desarrollo de estas soluciones debe basarse en una especificación mínima aprobada, tal como se detalla en [`agentic-development-workflow.md`](agentic-development-workflow.md).
 
 ## Gates ejecutables actuales
 
-### Calidad incremental
+### 1. Calidad Estática Incremental
+El workflow `.github/workflows/quality.yml` orquesta la ejecución del script `src/assessment_engine/application/tools/run_incremental_quality_gate.py`.
 
-El workflow `.github/workflows/quality.yml` ejecuta `src/assessment_engine/application/tools/run_incremental_quality_gate.py`.
+El proceso de verificación realiza las siguientes operaciones secuenciales:
+1.  **Determinación de Delta de Cambios:** Identificación de archivos modificados empleando diffs de Git entre `base_sha` y `head_sha`.
+2.  **Filtrado de Ámbito Activo:** Selección exclusiva de rutas dentro de la superficie viva, descartando archivos eliminados en el árbol de trabajo actual.
+3.  **Análisis Estático (Linter):** Ejecución de `ruff check` sobre el delta de archivos modificados.
+4.  **Validación de Estilo (Formatter):** Inspección de formato empleando `ruff format --check`.
 
-Ese runner:
+Este enfoque incremental bloquea de manera proactiva la introducción de nueva deuda técnica sin requerir la refactorización inmediata de los componentes históricos del repositorio.
 
-1. calcula los ficheros Python cambiados entre `base_sha` y `head_sha`;
-2. filtra solo la superficie viva del proyecto (`src/assessment_engine/domain/**` y `tests/**`) y descarta rutas ya borradas en el árbol de trabajo;
-3. ejecuta `ruff check` sobre esos ficheros;
-4. ejecuta `ruff format --check` sobre esos mismos ficheros.
+### 2. Tipado Estático Incremental
+El workflow `.github/workflows/typing.yml` orquesta la ejecución del script `src/assessment_engine/application/tools/run_incremental_typecheck.py`.
 
-La adopción es **incremental**: el gate bloquea deuda nueva o modificada sin exigir sanear en esta misma iteración todo el histórico del repo.
+Este job reutiliza el mismo delta de cambios y ejecuta el análisis estático de tipos (`mypy`) exclusivamente sobre los archivos modificados dentro de `src/assessment_engine/domain/**` y `tests/**`. El objetivo de este checkpoint no es exigir la tipificación completa del código heredado de forma inmediata, sino blindar el crecimiento del sistema garantizando que cada nueva adición o modificación se adhiera al sistema de tipos estáticos.
 
-### Tipado incremental
+### 3. Coherencia de Dominio
+Para prevenir la duplicidad semántica de políticas y la fragmentación lógica (*split-brain*), los parámetros transversales de puntuación (*score*), bandas de madurez, gradientes cromáticos y metas cualitativas se encuentran consolidados.
 
-El workflow `.github/workflows/typing.yml` ejecuta `src/assessment_engine/application/tools/run_incremental_typecheck.py`.
-
-Ese runner reutiliza la misma selección incremental de ficheros vivos existentes y ejecuta `mypy` solo sobre los `.py` cambiados en `src/assessment_engine/domain/**` y `tests/**`.
-
-El objetivo de esta capa no es exigir ahora un repo 100% tipado, sino impedir que la superficie viva siga creciendo sin verificación estática básica.
-
-### Coherencia de dominio
-
-Las reglas transversales de score, banda, color y target no deben quedar duplicadas entre builder, renderizadores y dashboard.
-
-La resolución compartida de bandas vive ahora en `src/assessment_engine/infrastructure/maturity_band.py`. `run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y `render_web_presentation.py` consumen esa utilidad sin redefinir umbrales locales, mientras que `src/assessment_engine/infrastructure/global_maturity_policy.py` la reutiliza para la política global. La suite incluye tests de coherencia (`tests/test_global_coherence.py`) para bloquear derivas entre:
-
-- blueprints;
-- payload global;
-- render DOCX;
-- y dashboard web.
+El cálculo compartido de madurez reside de forma exclusiva en `src/assessment_engine/infrastructure/maturity_band.py`. Los componentes de ejecución (`run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y el compilador del dashboard web) consumen este servicio de forma centralizada sin implementar deducciones o umbrales locales. A su vez, `src/assessment_engine/infrastructure/global_maturity_policy.py` hereda esta misma política para mantener la equivalencia consolidada. La consistencia lógica transversal se blinda mediante aserciones dedicadas en `tests/test_global_coherence.py`.
 
 ## Reglas de implementación del proyecto
 
-- reutiliza helpers, schemas y utilidades compartidas antes de duplicar lógica;
-- no escondas lógica de negocio o de reporting importante solo en prompts;
-- si cambian contratos o payloads, alinea también tests y documentación canónica asociada;
-- si cambian score, banda, color, target o semántica cliente-facing, revisa también los tests de coherencia;
-- si una regla transversal no cabe en un linter genérico, conviértela en test de coherencia o en validación explícita;
-- no uses capas legacy o archivadas como nuevo source of truth.
+-   **Reutilización Imperativa:** Consumir siempre helpers, esquemas de datos y utilidades de dominio compartidas antes de duplicar lógicas de cálculo o formateo.
+-   **No Ocultación:** Toda lógica de negocio y de reporting técnico de alta relevancia debe codificarse de forma determinista en Python, prohibiéndose su ocultación exclusiva dentro de prompts de modelos de lenguaje.
+-   **Alineamiento Multidimensional:** Ante cambios en contratos o interfaces de payload, actualizar de forma obligatoria las suites de pruebas unitarias y la documentación canónica asociada.
+-   **Consistencia Directiva:** Si se modifican parámetros asociados al score, bandas de madurez, targets u otros elementos cliente-facing, es obligatorio sincronizar y certificar los tests en `tests/test_global_coherence.py`.
+-   **Aislamiento de Legado:** Prohibido emplear carpetas de compatibilidad heredada, archivos obsoletos o código muerto como fuente de verdad técnica para nuevas implementaciones.
 
 ## Relación con la revisión humana
 
-La automatización no sustituye la revisión de PR:
+Las compuertas automáticas constituyen condiciones necesarias pero no suficientes para la integración:
 
-- el checklist de `.github/pull_request_template.md` obliga a revisar impacto documental y de calidad;
-- ese mismo template incluye una sección específica de **assessment coherence checks** para PRs que tocan scoring, blueprint, annex, global, dashboard, prompts o `client_intelligence`;
-- `AGENTS.md` y `.github/copilot-instructions.md` remiten a esta política antes de programar con agentes;
-- la gobernanza documental sigue exigiendo actualizar la documentación canónica cuando cambian reglas, workflows o validadores.
-- el watcher `.github/workflows/orchestrator-pr-reconcile.yml`, cuando está habilitado para una PR gestionada, no sustituye estos gates: simplemente vuelve a invocar `resume-pr` en eventos directos de PR/review y deja que ese mismo run espere a que GitHub termine los checks antes de mergear o reparar.
-- la configuración operativa estable del watcher incluye un executor Gemini del repo para GitHub Actions y una credencial Gemini/Google válida; sin esa base, el watcher puede existir pero no se considera plenamente preparado para autoreparación fiable.
+-   El checklist de `.github/pull_request_template.md` exige la certificación explícita de impacto de calidad e integridad documental antes de la fusión.
+-   Dicho template incluye una sección dedicada de **assessment coherence checks** para Pull Requests que modifiquen componentes de scoring, payloads canónicos, prompts de LLM o el dossier estratégico `client_intelligence`.
+-   `AGENTS.md` y `.github/copilot-instructions.md` dirigen a las inteligencias artificiales a someterse a esta disciplina de calidad pre-vuelo antes de generar código.
+-   El orquestador de pull requests (`.github/workflows/orchestrator-pr-reconcile.yml`), cuando está operativo, actúa coordinando los reintentos de análisis estáticos y validaciones de estado, garantizando que el pipeline de fusión respete rigurosamente todas las compuertas del repositorio.
 
 ## Ejecución local recomendada
 
-Para validar los ficheros tocados en una rama:
+Para certificar localmente los archivos modificados en una rama de trabajo, ejecute:
 
 ```bash
 ./.venv/bin/python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
@@ -123,15 +107,14 @@ Para validar los ficheros tocados en una rama:
   tests/test_build_global_report_payload.py -q
 ```
 
-La suite completa de `pytest` sigue siendo obligatoria aparte.
+*Nota: La ejecución local de compuertas incrementales complementa, pero no sustituye, la obligación de ejecutar la suite de pruebas unitarias (`pytest`) del proyecto antes de confirmar los cambios.*
 
-## Próximo endurecimiento natural
+## Estrategia de Endurecimiento Futuro
 
-Cuando la superficie viva tenga menos deuda histórica, el siguiente salto natural es endurecer esta capa con:
-
-1. elevar el tipado incremental hacia módulos completos y no solo ficheros tocados;
-2. ampliar los tests de coherencia a scoring, severidad narrativa y dominios commercial/client-facing;
-3. reglas de arquitectura o dependencia más explícitas.
+Conforme la base de código viva avance en su consolidación, las compuertas de calidad se endurecerán bajo las siguientes directrices:
+1.  **Ampliación del Tipado:** Elevar el análisis de MyPy de nivel incremental (*fichero modificado*) a nivel de módulos y paquetes completos en `domain` y `application`.
+2.  **Endurecimiento de Coherencia:** Ampliar los tests de coherencia cruzada para englobar aserciones semánticas en la capa comercial, alineamiento térmico y correspondencia directa en payloads web.
+3.  **Validación Arquitectónica Estricta:** Incorporar análisis de dependencias de importación para blindar la estructura hexagonal, previniendo acoplamientos prohibidos entre adaptadores e infraestructura.
 
 ## Protección de Rama (`main`)
 

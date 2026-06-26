@@ -140,28 +140,7 @@ class DeduplicationPolicy(BaseSovereignPolicy):
     def evaluate_and_patch(
         self, graph: EpistemicGraph, payload: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Consolidates disparate platform engineering projects into a single strategic program for Tower 2 documents.
-
-        This policy operates on payloads where the `document_meta.tower_code` is 'T2'. It scans all pillars for projects with names containing "Platform Engineering" or its Spanish equivalent, "Ingeniería de Plataforma". Any such projects are removed from their original pillars.
-
-        If one or more platform engineering projects are found, the entire `projects_todo` list of the target pillar ('T2.P4') is overwritten with a single, newly generated canonical program. The content of this program is localized based on the `document_meta.language` and incorporates the `document_meta.cloud_provider`.
-
-        If the document is not for 'T2' or no relevant projects are found, the payload is returned unmodified.
-
-        Args:
-            graph: The epistemic graph context (currently unused).
-            payload: A dictionary containing document analysis results. Expected keys include:
-                `pillars_analysis` (list[dict]): A list of pillar structures, each
-                    containing a `projects_todo` list of project dictionaries.
-                `document_meta` (dict): Metadata including `tower_code`, `language`,
-                    and `cloud_provider`.
-
-        Returns:
-            The `payload` dictionary, which is modified in place. If consolidation
-            occurs, disparate projects are removed and the 'T2.P4' pillar is
-            updated with the unified program. Otherwise, the original payload is
-            returned.
-        """
+        """Consolidates disparate platform engineering projects into a single strategic program for Tower 2 documents. This policy operates on payloads where the `document_meta.tower_code` is 'T2'. It scans all pillars for projects with names containing "Platform Engineering" or its Spanish equivalent, "Ingeniería de Plataforma". Any such projects are removed from their original pillars. If one or more platform engineering projects are found, the entire `projects_todo` list of the target pillar ('T2.P4') is overwritten with a single, newly generated canonical program. The content of this program is localized based on the `document_meta.language` and incorporates the `document_meta.cloud_provider`. If the document is not for 'T2' or no relevant projects are found, the payload is returned unmodified. Args: graph: The epistemic graph context (currently unused). payload: A dictionary containing document analysis results. Expected keys include: `pillars_analysis` (list[dict]): A list of pillar structures, each containing a `projects_todo` list of project dictionaries. `document_meta` (dict): Metadata including `tower_code`, `language`, and `cloud_provider`. Returns: The `payload` dictionary, which is modified in place. If consolidation occurs, disparate projects are removed and the 'T2.P4' pillar is updated with the unified program. Otherwise, the original payload is returned."""
         pillars = payload.get("pillars_analysis", [])
         if not pillars:
             return payload
@@ -234,33 +213,7 @@ class DeduplicationPolicy(BaseSovereignPolicy):
 
 
 class SequencingPolicy(BaseSovereignPolicy):
-    """Modifies project `duration` and `tech_objective` fields in-place based on name keywords.
-
-    This method enforces a logical project timeline by iterating through all
-    projects within the `payload`. It identifies projects by matching specific
-    Spanish keywords in their 'name' field. Foundational work, such as adoption
-    strategies ('estrategia de adopción'), is assigned to an early time horizon
-    ('Horizonte 1'). Technical implementations, such as pilots or internal
-    development platforms ('piloto', 'kubernetes'), are assigned to a later
-    time horizon ('Horizonte 2').
-
-    Args:
-        graph: An `EpistemicGraph` for contextual analysis. Note: This argument
-            is currently unused in the function body.
-        payload: The data structure containing project information. It is expected
-            to have a 'pillars_analysis' key mapping to a list of pillar
-            dictionaries, each of which contains a 'projects_todo' key mapping
-            to a list of project dictionaries. This dictionary is modified
-            in-place.
-
-    Returns:
-        The mutated payload dictionary with updated project timelines and
-        objectives.
-
-    Raises:
-        TypeError: If 'pillars_analysis' or 'projects_todo' keys are present
-            but their corresponding values are not lists.
-    """
+    """Modifies project `duration` and `tech_objective` fields in-place based on name keywords. This method enforces a logical project timeline by iterating through all projects within the `payload`. It identifies projects by matching specific Spanish keywords in their 'name' field. Foundational work, such as adoption strategies ('estrategia de adopción'), is assigned to an early time horizon ('Horizonte 1'). Technical implementations, such as pilots or internal development platforms ('piloto', 'kubernetes'), are assigned to a later time horizon ('Horizonte 2'). Args: graph: An `EpistemicGraph` for contextual analysis. Note: This argument is currently unused in the function body. payload: The data structure containing project information. It is expected to have a 'pillars_analysis' key mapping to a list of pillar dictionaries, each of which contains a 'projects_todo' key mapping to a list of project dictionaries. This dictionary is modified in-place. Returns: The mutated payload dictionary with updated project timelines and objectives. Raises: TypeError: If 'pillars_analysis' or 'projects_todo' keys are present but their corresponding values are not lists."""
 
     def evaluate_and_patch(
         self, graph: EpistemicGraph, payload: Dict[str, Any]

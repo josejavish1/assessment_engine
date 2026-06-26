@@ -234,7 +234,7 @@ def main() -> int:
         print("\n=== SEMANTIC DRIFT WARNINGS ===")
         for warn in warnings:
             print(f"WARN: {warn}")
-        # Return 0 (non-blocking) or 1 (blocking). In SOTA workflows, we can treat this as non-blocking warnings
+        # Return 0 (non-blocking) or 1 (blocking). In standard workflows, we can treat this as non-blocking warnings
         # but output report is uploaded to review. Let's print warnings and pass.
         return 0
 

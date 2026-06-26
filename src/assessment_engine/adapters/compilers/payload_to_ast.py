@@ -37,37 +37,29 @@ class PayloadToASTBridge:
         self.primary_color_rgb = [0, 114, 188]  # Primary corporate brand color code.
         self.alt_row_hex = "F2F2F2"
 
-        if self.brand_profile_path.exists():
-            try:
-                with open(self.brand_profile_path, "r", encoding="utf-8-sig") as bf:
-                    brand = json.load(bf)
-                    self.company_name = brand.get("company_name", self.company_name)
-                    self.classification = brand.get(
-                        "default_classification", self.classification
-                    )
-                    self.disclaimer = brand.get("disclaimer_text", self.disclaimer)
-                    styling = brand.get("styling", {})
-                    p_hex = styling.get("primary_color_hex", "0072BC")
-                    self.alt_row_hex = styling.get(
-                        "alternate_row_color_hex", self.alt_row_hex
-                    )
+        self.brand_data = {}
+        from assessment_engine.infrastructure.config_loader import load_brand_profile
+        try:
+            brand = load_brand_profile()
+            self.brand_data = brand
+            self.company_name = brand.get("company_name", self.company_name)
+            self.classification = brand.get(
+                "default_classification", self.classification
+            )
+            self.disclaimer = brand.get("disclaimer_text", self.disclaimer)
+            styling = brand.get("styling", {})
+            p_hex = styling.get("primary_color_hex", "0072BC")
+            self.alt_row_hex = styling.get(
+                "alternate_row_color_hex", self.alt_row_hex
+            )
 
-                    #
-                    r = int(p_hex[0:2], 16)
-                    g = int(p_hex[2:4], 16)
-                    b = int(p_hex[4:6], 16)
-                    self.primary_color_rgb = [r, g, b]
-            except Exception:
-                pass
-
-        #
-        self.locales_data = {}
-        if self.locales_path.exists():
-            try:
-                with open(self.locales_path, "r", encoding="utf-8-sig") as lf:
-                    self.locales_data = json.load(lf)
-            except Exception:
-                pass
+            #
+            r = int(p_hex[0:2], 16)
+            g = int(p_hex[2:4], 16)
+            b = int(p_hex[4:6], 16)
+            self.primary_color_rgb = [r, g, b]
+        except Exception:
+            pass
 
     def convert(
         self, blueprint_payload_path: str, approved_annex_path: str
@@ -92,7 +84,18 @@ class PayloadToASTBridge:
 
         tower_meta = blueprint_data.get("document_meta", {})
         meta_lang = tower_meta.get("language", "es").lower()
-        vocab = self.locales_data.get(meta_lang, self.locales_data.get("es", {}))
+        from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+        vocab = resolve_localized_vocabulary(meta_lang)
+
+        # Resolve localized brand attributes
+        if hasattr(self, "brand_data") and "locales" in self.brand_data:
+            lang_brand = self.brand_data["locales"].get(
+                meta_lang, self.brand_data["locales"].get("es", {})
+            )
+            self.classification = lang_brand.get(
+                "default_classification", self.classification
+            )
+            self.disclaimer = lang_brand.get("disclaimer_text", self.disclaimer)
 
         tower_name = tower_meta.get("tower_name", "Desconocida")
         tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
@@ -332,6 +335,53 @@ class PayloadToASTBridge:
         if radar_path.exists():
             nodes.append(PictureNode(path=str(radar_path), width_inches=6.0))
             nodes.append(SpacerNode(points=15))
+
+        # RAGE Forensic Verification Injection
+        snapshot_file = case_dir / "benchmarks_snapshot.json"
+        if snapshot_file.exists():
+            try:
+                with open(snapshot_file, "r", encoding="utf-8-sig") as sf:
+                    snap_data = json.load(sf)
+                snapshots = snap_data.get("snapshots", {})
+                if snapshots:
+                    nodes.append(
+                        HeadingNode(
+                            text="Justificación de Estándares Sectoriales (Trazabilidad RAGE)",
+                            level=2,
+                            primary_color_rgb=self.primary_color_rgb,
+                        )
+                    )
+                    intro_text = (
+                        "Los estándares de mercado del gráfico radial anterior se han calibrado y verificado en tiempo "
+                        "de ejecución mediante el motor RAGE (Runtime Agentic Grounding & Evaluation). Cada benchmark "
+                        "está respaldado por evidencias factoperativas y copias de seguridad de documentos oficiales:"
+                    )
+                    nodes.append(ParagraphNode(text=intro_text))
+                    nodes.append(SpacerNode(points=10))
+
+                    for t_id, t_snap in sorted(snapshots.items()):
+                        framework_name = t_snap.get("framework_name", "Estándar Sectorial")
+                        score = t_snap.get("dynamic_score", 4.0)
+                        quote = t_snap.get("evidence_quote", "")
+                        url = t_snap.get("evidence_source_url", "")
+                        local_path = t_snap.get("local_snapshot_path", "")
+                        verif_status = t_snap.get("verification_status", "failed")
+
+                        status_emoji = "✓" if verif_status == "verified" else "⚠️"
+                        
+                        header_p = f"**Torre {t_id} ({framework_name}) — Estándar: {score:,.1f}**"
+                        nodes.append(ParagraphNode(text=header_p))
+                        
+                        quote_p = f"*{status_emoji} Evidencia extraída:* \"{quote}\""
+                        nodes.append(ParagraphNode(text=quote_p))
+                        
+                        source_p = f"*Referencia:* {url}"
+                        if local_path:
+                            source_p += f" | *Bóveda local:* `{local_path}`"
+                        nodes.append(ParagraphNode(text=source_p))
+                        nodes.append(SpacerNode(points=10))
+            except Exception as ex:
+                print(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
         # 3.3 Score Justification Matrix (from CSV) with fallback mechanism
         csv_mat_path = modules_dir / "04_matriz_madurez.csv"
@@ -867,12 +917,62 @@ class PayloadToASTBridge:
             )
         )
 
-        glossary_path = Path("engine_config/abbreviations_glossary.json")
-        if glossary_path.exists():
-            try:
-                with open(glossary_path, "r", encoding="utf-8-sig") as gf:
-                    glossary = json.load(gf)
+        from assessment_engine.infrastructure.config_loader import load_abbreviations_glossary
 
+        try:
+            full_glossary = load_abbreviations_glossary()
+
+            # Merge case-specific client abbreviations if they exist in the case directory
+            client_glossary_path = case_dir / "client_abbreviations_glossary.json"
+            if client_glossary_path.exists():
+                try:
+                    with open(
+                        client_glossary_path, "r", encoding="utf-8-sig"
+                    ) as cgf:
+                        client_glossary = json.load(cgf)
+                        for lang, terms in client_glossary.items():
+                            if lang in full_glossary:
+                                full_glossary[lang].update(terms)
+                            else:
+                                full_glossary[lang] = terms
+                except json.JSONDecodeError as ex:
+                    print(f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}")
+                except Exception as ex:
+                    print(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
+
+            # Get localized glossary dictionary
+            glossary = full_glossary.get(meta_lang, full_glossary.get("es", {}))
+
+            # Gather all text accumulated in nodes so far to detect used abbreviations
+            all_text_elements = []
+            for n in nodes:
+                if hasattr(n, "text") and n.text:
+                    all_text_elements.append(n.text)
+                elif hasattr(n, "rows") and n.rows:
+                    for row in n.rows:
+                        if hasattr(row, "cells") and row.cells:
+                            for cell in row.cells:
+                                if hasattr(cell, "text") and cell.text:
+                                    all_text_elements.append(cell.text)
+            text_corpus = " ".join(all_text_elements)
+
+            # Filter glossary keys that are actually present in the text corpus
+            used_glossary = {}
+            for term, desc in glossary.items():
+                escaped_term = re.escape(term)
+                pattern = rf"(?<![a-zA-Z0-9]){escaped_term}(?![a-zA-Z0-9])"
+                if re.search(pattern, text_corpus):
+                    used_glossary[term] = desc
+
+            # Quality Gate: First-Use Rule Verification
+            for term, desc in used_glossary.items():
+                long_form = desc.split("(")[0].strip()
+                if long_form.lower() not in text_corpus.lower():
+                    print(
+                        f"⚠️  [Glosario] Calidad: La sigla '{term}' se utiliza pero su definición extendida ('{long_form}') no aparece en el informe. Se recomienda expandirla en su primer uso."
+                    )
+
+            if used_glossary:
                 gloss_rows = [
                     TableRowNode(
                         cells=[
@@ -890,7 +990,7 @@ class PayloadToASTBridge:
                     )
                 ]
 
-                for g_idx, (term, desc) in enumerate(sorted(glossary.items())):
+                for g_idx, (term, desc) in enumerate(sorted(used_glossary.items())):
                     bg = self.alt_row_hex if g_idx % 2 == 1 else "FFFFFF"
                     gloss_rows.append(
                         TableRowNode(
@@ -902,8 +1002,8 @@ class PayloadToASTBridge:
                     )
 
                 nodes.append(TableNode(rows=gloss_rows))
-            except Exception:
-                pass
+        except Exception as ex:
+            print(f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}")
 
         # Appendix B: Limitation of Liability Clause
         # Omit the manual 'Appendix B' prefix to prevent numbering conflicts.
@@ -918,23 +1018,38 @@ class PayloadToASTBridge:
                 text=app_b_title, level=1, primary_color_rgb=self.primary_color_rgb
             )
         )
-        nodes.append(
-            ParagraphNode(
-                text=vocab.get("disclaimer_text_1", self.disclaimer),
-                italic=True,
-                space_after=12,
+
+        disclaimer_paragraphs = [
+            p.strip() for p in self.disclaimer.split("\n\n") if p.strip()
+        ]
+        if disclaimer_paragraphs:
+            for p_text in disclaimer_paragraphs:
+                nodes.append(
+                    ParagraphNode(
+                        text=p_text,
+                        italic=True,
+                        space_after=12,
+                    )
+                )
+        else:
+            # Fallback to vocabulary in case self.disclaimer is empty
+            nodes.append(
+                ParagraphNode(
+                    text=vocab.get("disclaimer_text_1", ""),
+                    italic=True,
+                    space_after=12,
+                )
             )
-        )
-        nodes.append(
-            ParagraphNode(
-                text=vocab.get("disclaimer_text_2", ""), italic=True, space_after=12
+            nodes.append(
+                ParagraphNode(
+                    text=vocab.get("disclaimer_text_2", ""), italic=True, space_after=12
+                )
             )
-        )
-        nodes.append(
-            ParagraphNode(
-                text=vocab.get("disclaimer_text_3", ""), italic=True, space_after=12
+            nodes.append(
+                ParagraphNode(
+                    text=vocab.get("disclaimer_text_3", ""), italic=True, space_after=12
+                )
             )
-        )
 
         # Appendix C: Information Sources Chain of Custody
         # Omit the manual 'Appendix C' prefix to prevent numbering conflicts.
@@ -980,7 +1095,7 @@ class PayloadToASTBridge:
                 ),
                 (
                     "[Dossier de Contexto]",
-                    f"contexto_{client_name.lower()}_elite.docx",
+                    f"context_{client_name.lower()}.docx",
                     f"{vocab.get('bib_contexto', '')}{client_name}{vocab.get('bib_contexto_desc', '')}",
                 ),
                 (

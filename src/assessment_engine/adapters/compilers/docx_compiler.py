@@ -453,7 +453,7 @@ class DocxCompiler(DocumentCompiler):
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(node.space_after)
 
-        # Mapear alineación string
+        # Map string alignment
         align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
         align_str = node.align.upper()
         if align_str == "CENTER":

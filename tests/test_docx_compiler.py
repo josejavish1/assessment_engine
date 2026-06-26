@@ -18,8 +18,8 @@ from assessment_engine.domain.schemas.ast import (
 
 def test_docx_compiler_e2e() -> None:
     """
-    Verifica de forma e2e que el DocxCompiler puede traducir un DocumentAST complejo
-    a un archivo .docx físico con preservación exacta de estilos y propiedades de celdas.
+    Verify e2e that the DocxCompiler can compile a complex DocumentAST
+    into a physical .docx file while accurately preserving styles and cell properties.
     """
     # --- ARRANGE ---
     ast = DocumentAST(
@@ -84,13 +84,13 @@ def test_docx_compiler_e2e() -> None:
 
         # --- ASSERT ---
         assert output_file.is_file(), (
-            "El archivo compilado debe haberse guardado físicamente."
+            "The compiled file must be physically saved on disk."
         )
 
-        # Cargar el documento generado para validar su estructura interna
+        # Load generated document to validate internal structure
         doc = Document(str(output_file))
 
-        # Verificar encabezados y párrafos
+        # Verify headings and paragraphs
         paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
         assert "1. Executive Summary" in paragraphs
         assert (
@@ -98,23 +98,23 @@ def test_docx_compiler_e2e() -> None:
             in paragraphs
         )
 
-        # Verificar formateo de párrafo en negrita
+        # Verify bold paragraph formatting
         bold_para = next(p for p in doc.paragraphs if "stability" in p.text)
         assert len(bold_para.runs) > 0
         assert bold_para.runs[0].bold is True
 
-        # Verificar tablas y celdas
-        assert len(doc.tables) == 1, "Debe existir exactamente una tabla compilada."
+        # Verify tables and cells
+        assert len(doc.tables) == 1, "Exactly one compiled table must exist."
         table = doc.tables[0]
-        assert len(table.rows) == 2, "La tabla debe tener exactamente 2 filas."
-        assert len(table.columns) == 2, "La tabla debe tener exactamente 2 columnas."
-        assert len(table.rows[0].cells) == 2, "La primera fila debe tener 2 celdas."
-        assert len(table.rows[1].cells) == 2, "La segunda fila debe tener 2 celdas."
+        assert len(table.rows) == 2, "The table must have exactly 2 rows."
+        assert len(table.columns) == 2, "The table must have exactly 2 columns."
+        assert len(table.rows[0].cells) == 2, "The first row must have 2 cells."
+        assert len(table.rows[1].cells) == 2, "The second row must have 2 cells."
 
-        # Fila 1 (Encabezado)
+        # Row 1 (Header)
         assert table.rows[0].cells[0].text == "Pilar"
         assert table.rows[0].cells[1].text == "Score"
 
-        # Fila 2 (Datos)
+        # Row 2 (Data)
         assert table.rows[1].cells[0].text == "Compute"
         assert table.rows[1].cells[1].text == "4.5"

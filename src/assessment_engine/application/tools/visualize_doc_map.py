@@ -152,7 +152,7 @@ def generate_interactive_map(
             <div class="legend-item"><div class="legend-color" style="background: #9467bd;"></div> Underlying Source of Truth</div>
         </div>
     </div>
-    
+
     <div id="tooltip"></div>
     <svg></svg>
 

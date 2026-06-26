@@ -38,7 +38,7 @@ def verify_text_content() -> None:
     shadow_paras = [p.text.strip() for p in doc_shadow.paragraphs if p.text.strip()]
 
     print("======================================================================")
-    print("      VERIFICACIÓN SOTA: ANÁLISIS DE FIDELIDAD TEXTUAL COMPLETA")
+    print("      AUDIT: COMPLETE VERBATIM TEXT FIDELITY ANALYSIS")
     print("======================================================================")
     print(f"Párrafos en Original (V3): {len(orig_paras)}")
     print(f"Párrafos en Sombra (V4):   {len(shadow_paras)}")
@@ -46,7 +46,7 @@ def verify_text_content() -> None:
 
     # Phase 1: Establishes a baseline of verbatim paragraph correspondence between the source and target documents.
     intersection = set(orig_paras) & set(shadow_paras)
-    print(f"✅ Párrafos idénticos en ambos documentos: {len(intersection)}")
+    print(f"[Audit] Identical paragraphs in both documents: {len(intersection)}")
     print(
         f"   Porcentaje de coincidencia textual de párrafos: {len(intersection) / len(orig_paras) * 100:.1f}%"
     )

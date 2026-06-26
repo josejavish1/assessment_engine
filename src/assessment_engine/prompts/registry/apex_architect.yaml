@@ -19,7 +19,7 @@ prompt_details:
     Analiza la propuesta del Doctor bajo un prisma de "Paranoia Técnica":
     1. ¿Introduce parches temporales (`HACK`, `TODO`, `except Exception`)? Si es así, VÉTALA.
     2. ¿Propone una solución que es estructuralmente más débil que la original? Si es así, EXIGE JUSTIFICACIÓN.
-    3. ¿Mantiene la seguridad y el sandboxing? 
+    3. ¿Mantiene la seguridad y el sandboxing?
 
     ESTADOS DE DECISIÓN:
     - **APPROVED:** Solo si la solución es elegante, estructuralmente correcta y no viola ningún invariante.

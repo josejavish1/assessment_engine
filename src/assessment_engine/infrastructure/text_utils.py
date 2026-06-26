@@ -91,21 +91,7 @@ def clean_text_for_word(value: str) -> str:
 
 
 def normalize_tower_name(value: str) -> str:
-    """Normalize a string by removing trailing, prompt-generated phrases.
-
-    The function first collapses all whitespace sequences into single spaces.
-    It then employs a case-insensitive regular expression to remove trailing
-    phrases that begin with a predefined set of Spanish verbs (e.g., 'evalúa',
-    'mide', 'cubre'). Finally, any leading or trailing spaces, commas,
-    semicolons, colons, or hyphens are stripped from the result.
-
-    Args:
-        value (str): The raw string to be normalized.
-
-    Returns:
-        str: The normalized string. An empty string is returned if the input,
-            after whitespace normalization, is empty.
-    """
+    """Normalize a string by removing trailing, prompt-generated phrases. The function first collapses all whitespace sequences into single spaces. It then employs a case-insensitive regular expression to remove trailing phrases that begin with a predefined set of Spanish verbs (e.g., 'evalúa', 'mide', 'cubre'). Finally, any leading or trailing spaces, commas, semicolons, colons, or hyphens are stripped from the result. Args: value (str): The raw string to be normalized. Returns: str: The normalized string. An empty string is returned if the input, after whitespace normalization, is empty."""
     text = normalize_spaces(value)
     if not text:
         return ""

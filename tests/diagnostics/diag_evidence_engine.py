@@ -27,7 +27,7 @@ def test_evidence_engine(client_name: str, docx_path: str):
     print(f"📊 Fragmentos totales generados: {len(engine.ledger.fragments)}")
     print(f"💾 Guardado en: {engine.ledger_path}")
 
-    # Mostrar una muestra de la jerarquía
+    # Display a sample of the hierarchy
     print("\n🔍 MUESTRA DE FRAGMENTOS JERÁRQUICOS:")
     sample_count = 0
     for frag in engine.ledger.fragments:

@@ -75,11 +75,11 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
             break
         except Exception as e:
             print(
-                f"        ⚠️ [Reintento {attempt}/{max_attempts}] Fallo temporal en consulta SOTA para {p_name}: {e}"
+                f"        ⚠️ [Reintento {attempt}/{max_attempts}] Fallo temporal en consulta de investigación para {p_name}: {e}"
             )
             if attempt == max_attempts:
                 print(
-                    f"        ❌ Fallo definitivo de API en SOTA para {p_name}. Aplicando fallback vacío."
+                    f"        ❌ Fallo definitivo de API en consulta de investigación para {p_name}. Aplicando fallback vacío."
                 )
                 return p_name, {}
             await asyncio.sleep(2)
@@ -102,7 +102,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
 async def inject_sota(client_name: str, findings: dict) -> dict:
     r"""{'docstring': "Asynchronously enriches strategic findings with state-of-the-art research.\n\n    This function orchestrates an asynchronous research task for each strategic\n    pillar defined in the `findings` dictionary. For each pillar's specified\n    gap, it queries the Gemini API to identify relevant solutions,\n    architectural patterns, and strategic benefits. Optional, pre-existing\n    client data, loaded based on `client_name`, can provide grounding context\n    for the queries. The results are integrated back into the `findings`\n    dictionary by modifying the 'candidate_initiatives' in-place with new\n    titles and detailed, evidence-supported rationales.\n\n    Args:\n        client_name (str): The client identifier used to locate and load\n            supplementary grounding data for the research queries.\n        findings (dict): A dictionary containing the initial analysis, which is\n            modified in-place. It is expected to contain a 'pillar_findings'\n            key mapping to a list of pillar dictionaries. Each pillar\n            dictionary should contain keys such as 'pillar_name', 'gaps', and\n            'candidate_initiatives'.\n\n    Returns:\n        dict: The original `findings` dictionary object, now augmented with the\n        research results.\n\n    Raises:\n        IndexError: If 'gaps' or 'candidate_initiatives' lists within a pillar\n            are empty where at least one element is expected.\n        FileNotFoundError: Propagated if the client intelligence file specified\n            by `client_name` does not exist.\n        google.api_core.exceptions.GoogleAPICallError: Propagated from the\n            `genai` client upon API errors, such as authentication failure,\n            invalid requests, or network connectivity issues."}."""
     print(
-        "    -> [Investigación SOTA] Lanzando investigación profunda 2026 con Internet..."
+        "    -> [Investigación Técnica] Lanzando investigación profunda 2026 con Internet..."
     )
 
     intel_path = resolve_client_intelligence_path(client_name)
@@ -154,7 +154,7 @@ async def inject_sota(client_name: str, findings: dict) -> dict:
 
 
 async def main():
-    """Orchestrates the SOTA research enrichment process from the command line.
+    """Orchestrates the technical research enrichment process from the command line.
 
     This asynchronous function serves as the main entry point for the script. It
     parses command-line arguments for an input findings JSON file and a client
@@ -182,13 +182,13 @@ async def main():
     findings_path = Path(args.findings_path)
     findings = load_json(findings_path)
 
-    print(f"🚀 Iniciando Investigación SOTA (Internet) para {args.client}...")
+    print(f"[System] Initializing Technical Research (Internet Grounding) for {args.client}...")
     enriched = await inject_sota(args.client, findings)
 
     findings_path.write_text(
         json.dumps(enriched, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ Conocimiento SOTA inyectado con éxito: {findings_path}")
+    print(f"[System] Technical research context injected successfully: {findings_path}")
 
 
 if __name__ == "__main__":

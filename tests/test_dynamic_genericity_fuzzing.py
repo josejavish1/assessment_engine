@@ -9,15 +9,15 @@ from assessment_engine.adapters.render_togaf_asis_annex import render_asis_annex
 
 class TestDynamicGenericityFuzzing:
     """
-    Suite de Pruebas SOTA - Dynamic Genericity Fuzzing:
-    Verifica que los compiladores actúen como funciones puras y sin fugas semánticas (Domain Leakage).
+    Test Suite - Dynamic Genericity Fuzzing:
+    Verify that compilers act as pure functions and do not leak domain semantics (Domain Leakage).
     """
 
     def test_compiler_zero_leakage_assertion(self) -> None:
         """
-        Inyecta variables 100% mutadas al azar y aserta que el documento final
-        no contiene rastros de marcas por defecto (REDEIA, NTT DATA, Junio 2026, €)
-        demostrando de forma matemática que el motor es 100% genérico.
+        Inject 100% randomly mutated variables and assert that the final document
+        contains no traces of default branding (REDEIA, NTT DATA, June 2026, €),
+        mathematically proving that the engine is 100% generic.
         """
         # --- ARRANGE ---
         fuzzed_client = "MUTATED_CLIENT_NAME_999"
@@ -28,7 +28,7 @@ class TestDynamicGenericityFuzzing:
         fuzzed_version = "MUTATED_VERSION_9_9_9"
         fuzzed_currency = "MUTATED_CURR_ZZZ"
 
-        # Configuración de locales fuzzeados mínimos
+        # Configuration of minimum fuzzed locales
         temp_locales = {
             "es": {
                 "title": "MUTATED_DOCUMENT_TITLE_111",
@@ -115,7 +115,7 @@ class TestDynamicGenericityFuzzing:
             },
         }
 
-        # Backup y escritura controlada para el test
+        # Backup and controlled write operations for the test
         locales_path = Path("engine_config/locales.json")
         brand_path = Path("engine_config/brand_profile.json")
 
@@ -127,7 +127,7 @@ class TestDynamicGenericityFuzzing:
         )
 
         try:
-            # Escribir perfiles de prueba mutados
+            # Write mutated test profiles
             locales_path.write_text(
                 json.dumps(temp_locales, ensure_ascii=False, indent=2), encoding="utf-8"
             )
@@ -139,7 +139,7 @@ class TestDynamicGenericityFuzzing:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 input_dir = Path(tmp_dir)
 
-                # Generar payload de entrada mínimo fuzzeado
+                # Generate minimum fuzzed input payload
                 mock_payload = {
                     "document_meta": {
                         "client_name": fuzzed_client,
@@ -207,22 +207,22 @@ class TestDynamicGenericityFuzzing:
                 }
 
                 payload_path = input_dir / "blueprint_t2_payload.json"
-                # Escribir payload fuzzeado a disco
+                # Write fuzzed payload to disk
                 with open(payload_path, "w", encoding="utf-8") as pf:
                     json.dump(mock_payload, pf)
 
                 output_docx = input_dir / "AS-IS_Anexo_Tecnico_T2.docx"
 
                 # --- ACT ---
-                # Compilar usando el payload fuzzeado
+                # Compile using the fuzzed payload
                 render_asis_annex(str(payload_path), str(output_docx))
 
                 # --- ASSERT ---
                 assert output_docx.is_file(), (
-                    "El archivo compilado fuzzeado debe haberse generado con éxito."
+                    "The compiled fuzzed file must be generated successfully."
                 )
 
-                # Cargar y extraer todo el texto del Word resultante
+                # Load and extract all text from the resulting Word document
                 doc = Document(output_docx)
                 full_text = "\n".join(p.text for p in doc.paragraphs)
                 for table in doc.tables:
@@ -230,16 +230,16 @@ class TestDynamicGenericityFuzzing:
                         for cell in row.cells:
                             full_text += f"\n{cell.text}"
 
-                # ASERCIÓN DE SEGURIDAD CONTRA FUGAS (Leakage Assertions)
-                # Ninguna marca o constante por defecto debe estar presente si fue sobreescrita
+                # LEAKAGE SECURITY ASSERTION
+                # No default branding or constants should be present if they were overwritten
                 default_denylist = ["REDEIA", "NTT DATA", "Junio 2026", "€"]
                 for forbidden in default_denylist:
                     assert forbidden not in full_text, (
-                        f"¡Fuga semántica detectada! La constante por defecto {repr(forbidden)} "
-                        f"se ha filtrado en el documento final a pesar de haber sido sobreescrita."
+                        f"Semantic leak detected! The default constant {repr(forbidden)} "
+                        f"leaked into the final document despite being overwritten."
                     )
 
-                # Confirmar presencia de los valores mutados (Pure-Function Proof)
+                # Confirm presence of mutated values (Pure-Function Proof)
                 assert fuzzed_company.upper() in full_text
                 assert fuzzed_client in full_text
                 assert fuzzed_project in full_text
@@ -249,7 +249,7 @@ class TestDynamicGenericityFuzzing:
                 assert fuzzed_currency in full_text
 
         finally:
-            # Restaurar el estado original del disco
+            # Restore the original state of the disk
             if locales_backup is not None:
                 locales_path.write_text(locales_backup, encoding="utf-8")
             else:

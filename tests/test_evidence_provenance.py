@@ -2,10 +2,9 @@
 from __future__ import annotations
 
 import hashlib
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-from tenacity import RetryError
 
 from assessment_engine.domain.schemas.evidence import EvidenceFragment
 from assessment_engine.infrastructure import ai_client
@@ -20,7 +19,9 @@ def test_evidence_fragment_content_addressable_hashing():
 
     # Calculate expected hashes
     expected_content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-    expected_fragment_id = hashlib.sha256(f"{source_uri}|{content}".encode("utf-8")).hexdigest()
+    expected_fragment_id = hashlib.sha256(
+        f"{source_uri}|{content}".encode("utf-8")
+    ).hexdigest()
 
     # Assert that hashes are populated automatically and match expectations
     assert frag1.content_hash == expected_content_hash
@@ -32,7 +33,9 @@ def test_evidence_fragment_content_addressable_hashing():
     assert frag1.content_hash == frag2.content_hash
 
     # 3. Assert that different content produces a completely different ID (Collision-free)
-    different_content = "El sistema de aire acondicionado del CPD secundario se encuentra obsoleto."
+    different_content = (
+        "El sistema de aire acondicionado del CPD secundario se encuentra obsoleto."
+    )
     frag3 = EvidenceFragment(source_uri=source_uri, content=different_content)
     assert frag3.fragment_id != frag1.fragment_id
     assert frag3.content_hash != frag1.content_hash
@@ -42,7 +45,7 @@ def test_evidence_fragment_content_addressable_hashing():
 async def test_ai_client_network_resilience_retry():
     # Setup mock AdkApp and stream query
     mock_app = MagicMock()
-    
+
     # We will simulate the model succeeding on the 4th attempt after 3 consecutive failures (like HTTP 429 Rate Limits)
     call_count = 0
 
@@ -58,8 +61,10 @@ async def test_ai_client_network_resilience_retry():
             nonlocal call_count
             if call_count < 3:
                 call_count += 1
-                raise RuntimeError("HTTP Error 429: Too Many Requests / Rate Limit Exceeded")
-            
+                raise RuntimeError(
+                    "HTTP Error 429: Too Many Requests / Rate Limit Exceeded"
+                )
+
             if self.index >= len(self.items):
                 raise StopAsyncIteration
             item = self.items[self.index]
@@ -69,7 +74,7 @@ async def test_ai_client_network_resilience_retry():
 
     # Valid event payload representing the successful response on the 4th run
     successful_events = [
-        {"content": {"parts": [{"text": "SOTA Compliance Audit Complete"}]}}
+        {"content": {"parts": [{"text": "Technical Compliance Audit Complete"}]}}
     ]
 
     def mock_query(user_id, message):
@@ -86,7 +91,7 @@ async def test_ai_client_network_resilience_retry():
         )
 
         # Assertions
-        assert result_text == "SOTA Compliance Audit Complete"
+        assert result_text == "Technical Compliance Audit Complete"
         assert len(lines) == 1
         # The function must have run 4 times (3 failures, 1 success)
         assert call_count == 4

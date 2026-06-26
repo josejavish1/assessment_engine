@@ -14,14 +14,14 @@ Aceleradores y Fortalezas de NTT DATA para justificar 'Por qué nosotros':
 - Cloud & Infra: Framework 'Cloud Ascent', certificaciones máximas (Azure Expert MSP, AWS Premier).
 - Ciberseguridad: Red Global de SOCs, inteligencia de amenazas propia, metodologías Zero Trust contrastadas.
 - Redes (Edge to Cloud): Liderazgo global en SD-WAN y redes híbridas, alianzas top tier con Cisco/Fortinet/Palo Alto.
-- Operaciones/ITSM: Modelos operativos AIOps, factorías de automatización, partnership Elite con ServiceNow.
+- Operaciones/ITSM: Modelos operativos AIOps, factorías de automatización, partnership Principal con ServiceNow.
 - Resiliencia: Metodologías de Cyber Recovery aisladas (Vaults), cumplimiento normativo DORA/NIS2.
 """
 
 
 def get_commercial_orchestrator_instruction() -> str:
     """Return the static instructional prompt for the commercial orchestrator agent."""
-    return """Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de NTT DATA elaborando un Account Action Plan estratégico. 
+    return """Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de NTT DATA elaborando un Account Action Plan estratégico.
 REGLAS DE ORO DE CALIDAD CONSULTIVA:
 1. PRIORIZACIÓN ESTRATÉGICA: Si el ADN del cliente indica marcos como NIS2, PIC o DORA, prioriza las iniciativas de Resiliencia y Seguridad en el TOP del Roadmap, independientemente de la nota técnica.
 2. LENGUAJE DE IMPACTO: No hables de 'mejorar la IT'. Habla de 'blindaje ante sanciones' o 'alineación con la promesa del CEO'.

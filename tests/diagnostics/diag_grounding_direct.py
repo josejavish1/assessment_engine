@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 from google import genai
 from google.genai import types
@@ -8,13 +8,15 @@ from google.genai import types
 def test_grounding_direct():
     print("\n🚀 Probando Grounding Directo (Sin CSE/API Key)...")
 
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path.home() / ".secrets" / "sa-key.json")
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
+        Path.home() / ".secrets" / "sa-key.json"
+    )
 
     client = genai.Client(
         vertexai=True, project="sub403o4u0q5", location="europe-west1"
     )
 
-    # Herramienta de búsqueda nativa de Google
+    # Google's native search tool
     search_tool = types.Tool(google_search=types.GoogleSearch())
 
     prompt = "Busca el PDF oficial del 'Plan Estrategico Redeia 2021-2025' o el 'Informe de Sostenibilidad 2023'. Dame el link directo al archivo .pdf"

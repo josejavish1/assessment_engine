@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pytest
+
 from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 
 

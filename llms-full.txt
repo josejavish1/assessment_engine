@@ -16,7 +16,7 @@ source_of_truth:
 - docs/documentation-map.yaml
 - docs/operations/agentic-development-workflow.md
 - docs/operations/engineering-quality-gates.md
-last_verified_against: 2026-05-01
+last_verified_against: 2026-06-26
 applies_to:
 - ai-agents
 doc_type: operational
@@ -117,8 +117,6 @@ Si la suite de pruebas o la ejecución fallan, sigue este protocolo de autocurac
 - **Error: `ModuleNotFoundError` o `ImportError`:** Ocurre si el linter o el movimiento de carpetas dejó importaciones relativas obsoletas. Usa el espacio de nombres absoluto calificado `assessment_engine.application...` o `assessment_engine.infrastructure...`.
 
 
-
-
 # =========================================================================
 # END OF FILE: AGENTS.md
 # =========================================================================
@@ -128,7 +126,7 @@ Si la suite de pruebas o la ejecución fallan, sigue este protocolo de autocurac
 # =========================================================================
 
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - docs/ai/documentation-governance.md
@@ -145,7 +143,7 @@ verification_mode: editorial
 
 # Gemini adapter
 
-Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentacion canonica del proyecto.
+Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentación canónica del proyecto.
 
 ## Herencia de Gobernanza (Estricto)
 
@@ -157,19 +155,19 @@ Como agente de Google, **DEBES leer y someterte obligatoriamente a las Leyes de 
 2. [docs/README.md](docs/README.md)
 3. [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md)
 4. [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md)
-5. el documento canonico mas cercano al cambio
+5. el documento canónico más cercano al cambio
 
 ## Reglas
 
-- no uses este archivo como fuente unica de verdad;
-- apóyate en codigo, tests, schemas y workflows reales;
-- cuando una afirmacion no pueda verificarse, trátala como `Needs Review`;
-- no acumules aqui arquitectura detallada, roadmap ni memoria historica del proyecto;
-- si el cambio toca arquitectura, contratos, operacion o gobernanza, actualiza la documentacion canonica correspondiente.
+- no uses este archivo como fuente única de verdad;
+- apóyate en código, tests, schemas y workflows reales;
+- cuando una afirmación no pueda verificarse, trátala como `Needs Review`;
+- no acumules aquí arquitectura detallada, roadmap ni memoria histórica del proyecto;
+- si el cambio toca arquitectura, contratos, operación o gobernanza, actualiza la documentación canónica correspondiente.
 
-## Nota de transicion
+## Nota de transición
 
-`GEMINI.md` contenia memoria operativa historica util, pero parte de ese contenido mezclaba estado actual con vision futura. Esa lectura debe considerarse superada por la base comun en `docs/`.
+`GEMINI.md` contenía memoria operativa histórica útil, pero parte de ese contenido mezclaba estado actual con visión futura. Esa lectura debe considerarse superada por la base común en `docs/`.
 
 
 # =========================================================================
@@ -187,7 +185,7 @@ source_of_truth:
 - AGENTS.md
 - docs/ai/documentation-governance.md
 - docs/README.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-06-26
 applies_to:
 - chatgpt
 doc_type: operational
@@ -342,7 +340,7 @@ source_of_truth:
 - src/assessment_engine/application/
 - src/assessment_engine/domain/mcp_server.py
 - src/assessment_engine/domain/schemas/
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -359,15 +357,15 @@ verification_mode: mixed
 
 ## 1. Vision & Core Principles
 
-The `assessment-engine` is a document generation factory designed to produce B2B technology assessment deliverables. It uses a Python-orchestrated, AI-assisted pipeline to transform raw evaluation data into a series of coherent, high-value reports, from deep technical analyses to strategic executive summaries.
+The `assessment-engine` is a document generation factory designed to produce structured technological assessment deliverables. The engine implements a Python-orchestrated, LLM-assisted execution pipeline to process raw evaluation telemetry and structured evidence into a series of coherent, consistent reports, spanning deep technical blueprints and executive-level consolidations.
 
 The system is governed by several key architectural principles:
 
--   **Top-Down Flow:** High-level documents (e.g., an executive summary) are exclusively derived from more detailed documents (e.g., a technical blueprint). This prevents "split-brain" inconsistency and ensures all artifacts are aligned.
--   **Contract-First:** All communication between pipeline stages is done through data artifacts (`payloads`) with a strictly defined structure (Pydantic Schemas). This makes the system predictable and robust.
--   **Python Orchestration, AI Operation:** The control flow, business logic, and pipeline decisions are explicitly handled by Python scripts. AI acts as a specialized "operator" that performs specific creative or analytical tasks within the boundaries of its data contract.
--   **Decoupled Rendering:** The logic that generates the content (the data) is completely separate from the logic that presents it (the generation of `.docx` or `.html` files).
--   **Service-Oriented / Dual-Mode Operation:** The engine can be run as a linear command-line pipeline or expose its capabilities as a tool server for external orchestration.
+-   **Top-Down Flow:** High-level documents (e.g., an executive summary) are exclusively derived from more detailed documents (e.g., a technical blueprint). This eliminates "split-brain" contradictions by ensuring all summary artifacts inherit data directly from their parent technical blueprints.
+-   **Contract-First:** Communication between pipeline stages is strictly governed by Pydantic schemas. This enforces explicit, typed data contracts at every transition point.
+-   **Python Orchestration, AI Operation:** Control flow, topological sorting, and execution boundaries are managed deterministically by Python. Large Language Models are employed as functional executors for textual synthesis and reasoning tasks, operating strictly within the schemas defined by their contracts.
+-   **Decoupled Rendering:** Content generation (semantic payload assembly) is decoupled from the presentation layers (compilation to `.docx` or `.html` files).
+-   **Service-Oriented / Dual-Mode Operation:** The system operates either as a linear batch CLI pipeline or as an asynchronous Model Context Protocol (MCP) server, exposing capabilities as typed tools.
 
 ---
 
@@ -450,9 +448,9 @@ For the current canonical breakdown, also see:
 - [`architecture/mcp-mode.md`](architecture/mcp-mode.md)
 - [`architecture/working-artifacts.md`](architecture/working-artifacts.md)
 
--   **Optional upstream enrichment: Client Intelligence.** `run_intelligence_harvesting.py` can create `working/<client>/client_intelligence.json`, a reusable strategic dossier that later steps may consume. The tower blueprint engine and some renderers can use it if present, but the main pipelines do not require it to exist for every run.
+-   **Optional Upstream Enrichment: Client Intelligence.** `run_intelligence_harvesting.py` generates `working/<client>/client_intelligence.json`. This dossier encapsulates organizational context, enabling downstream LLM prompts to align with client-specific terminology and structures if present, but the main pipelines do not require it to exist for every run.
 
--   **Phase 1: Tower Analysis.** This is the core engine. For each technology tower (for example, `T5`), the system first runs deterministic preparation (`case_input.json`, `evidence_ledger.json`, `scoring_output.json`, `findings.json`). Then `run_tower_blueprint_engine.py` creates `blueprint_<tower>_payload.json`, which is the tower's canonical source of truth. `run_executive_annex_synthesizer.py` derives `approved_annex_<tower>.template_payload.json` from that blueprint, and the renderers produce the final DOCX outputs.
+-   **Phase 1: Tower Analysis.** This is the core engine. For each technology domain (Tower), deterministic preparation modules generate `case_input.json`, `evidence_ledger.json`, `scoring_output.json`, and `findings.json`. Following this, `run_tower_blueprint_engine.py` aggregates these inputs to generate `blueprint_<tower>_payload.json` via LLM-guided synthesis. This file acts as the single source of truth for the tower. Subsequent steps, such as `run_executive_annex_synthesizer.py`, derive specialized payloads (e.g., `approved_annex_<tower>.template_payload.json`) directly from this blueprint before compilation to DOCX.
 
 -   **Phase 2: Global Consolidation.** Once one or more towers have produced blueprints, `build_global_report_payload.py` aggregates them into `global_report_payload.json` from those blueprints. The active path is now blueprint-first without legacy fallback in the global builder. `run_executive_refiner.py` then refines the same `global_report_payload.json` in place.
 
@@ -466,9 +464,9 @@ For the current canonical breakdown, also see:
 
 The system is designed to be used in two distinct modes:
 
--   **1. Pipeline Mode:** This is the primary mode of operation, executed via the command line. The orchestrators (`run_tower_pipeline.py`, `run_global_pipeline.py`) are called to run the entire, pre-defined sequence of steps in a batch process. This is ideal for standard, end-to-end report generation.
+-   **1. Pipeline Mode:** The primary batch execution path. The orchestrators (`run_tower_pipeline.py`, `run_global_pipeline.py`, and `run_commercial_pipeline.py`) execute the sequence of deterministic and LLM-assisted steps linearly, ensuring transactional consistency and artifact caching.
 
--   **2. Tool Server Mode:** The `mcp_server.py` script exposes selected capabilities as tools via FastMCP. This mode is useful for integrations and external supervisors, but it is not the main canonical path. Part of its surface still reflects the older section-based architecture, especially `get_tower_state`, which inspects legacy `approved_asis/generated` style artifacts rather than the current blueprint-first flow.
+-   **2. Model Context Protocol (MCP) Mode:** Exposes select pipeline tasks as tools. This mode facilitates integration with developer environments and agentic loops, although certain tool surfaces retain compatibility with legacy structures. (The `mcp_server.py` script exposes selected capabilities as tools via FastMCP, e.g., `get_tower_state` which inspects legacy `approved_asis/generated` style artifacts).
 
 ---
 
@@ -476,24 +474,41 @@ The system is designed to be used in two distinct modes:
 
 The project is organized into several key component types. The legacy per-file reference is now archived under `docs/reference/generated/legacy-gemini/`, but canonical narrative documentation should now live under `docs/architecture/`, `docs/operations/`, `docs/contracts/`, and related top-level docs.
 
--   **Orchestrators:** Python scripts that define and execute the sequence of a pipeline. (e.g., `run_tower_pipeline.py`).
--   **Logic & Preparation Scripts:** Deterministic Python scripts that prepare data, calculate metrics, or generate visual assets. (e.g., `run_scoring.py`, `generate_tower_radar_chart.py`).
--   **AI Engines & Refiners:** Python scripts that orchestrate AI agents to perform complex analysis or creative generation. (e.g., `run_tower_blueprint_engine.py`, `run_commercial_refiner.py`).
--   **Renderers:** Scripts responsible for the final presentation layer, converting data payloads into `.docx` or `.html` files. (e.g., `render_global_report_from_template.py`, `render_web_presentation.py`).
--   **Prompts:** The "source code" for the AI agents, defining their personality, rules, and tasks.
--   **Schemas:** Pydantic models that define the "data contracts" for all the `payloads` exchanged between scripts.
--   **Libraries (`lib/`):** Reusable Python utilities for common tasks like interacting with the AI, loading configuration, or cleaning text.
--   **Support & Testing (`tools/`, `bootstrap/`, `tests/`):** Scripts for preflight checks, smoke regeneration, initialization, validation, and quality control.
+-   **Orchestrators:** Scripts defining the execution sequence and managing task state (e.g., `run_tower_pipeline.py`).
+-   **Preparation & Computation:** Deterministic scripts calculating quantitative metrics, sorting topologies, and compiling input telemetry (e.g., `run_scoring.py`, `generate_tower_radar_chart.py`).
+-   **LLM-Assisted Synthesis & Refinement:** Scripts leveraging models for domain analysis, structural drafting, and stylistic consolidation under strict schema constraints (e.g., `run_tower_blueprint_engine.py`, `run_commercial_refiner.py`).
+-   **Renderers & Compilers:** Modules mapping Pydantic-validated JSON payloads into presentation formats such as OpenXML `.docx` or semantic `.html` (e.g., `render_global_report_from_template.py`).
+-   **Prompt Templates:** Versioned, structured text templates defining agent boundaries, execution instructions, and output schemas.
+-   **Data Contracts (Schemas):** Strict Pydantic models that validate and structure every intermediate payload exchanged between modules.
+-   **Core Utilities (`infrastructure/`):** Common modules for LLM API invocation, configuration parsing, logging, and string utilities.
+-   **Verification & Lifecycle:** Preflight verification scripts, automated smoke-test generators, and test suites.
 
 ---
 
-## 6. Historical Context: The "Legacy" Architecture
+## 6. Declarative Engine Configuration & Latent Infrastructure
+
+The behavior of the execution pipeline is driven declaratively via files inside the `engine_config/` directory. This allows fine-tuning and policy enforcement without code alterations.
+
+To preserve institutional knowledge and support upcoming roadmap phases, the system maintains several highly valuable **latent design artifacts** under this directory. These represent planned infrastructure that should not be deleted, as they outline the future path of the engine's capabilities:
+
+-   **OPA Rego Policy Validation (`engine_config/policies/ontology/vendor_constraints.rego`):**
+    -   **Status:** Planned / Latent Infrastructure.
+    -   **Description:** Implements strict Open Policy Agent (Rego) syntax to enforce semantic constraints on generated claims and technological drivers. It acts as a safety barrier to prevent competitor "hallucination collisions" (e.g., mixing exclusive market rivals or preventing false entities like "Microsoft AWS").
+    -   **Roadmap Integration:** Planned for integration into the core Policy Engine (`policy_engine.py`) to programmatically validate synthesized payloads before compilation.
+-   **Differentiated Content Rendering Modes (`engine_config/render_modes/tower_annex_modes.json`):**
+    -   **Status:** Planned / Latent Infrastructure.
+    -   **Description:** Specifies quantitative boundaries (e.g., maximum word counts, headlines, key message limits) for different deliverables depending on the requested target profile (such as `standard_high_value` or `executive_light`).
+    -   **Roadmap Integration:** Scheduled to be loaded dynamically by downstream generation and refinement engines to programmatically enforce narrative verbosity profiles based on the selected mode.
+
+---
+
+## 7. Historical Context: The "Legacy" Architecture
 
 The `_legacy` folders in the `scripts` and `docs` directories contain the previous version of the architecture.
 
--   **Old Model ("Bottom-Up"):** The original design generated each section of a report (`AS-IS`, `TO-BE`, `GAP`, etc.) in parallel, isolated processes. At the end, a script (`assemble_tower_annex.py`) would "assemble" these independent JSON files into a final report.
--   **The "Split-Brain" Problem:** This approach suffered from a critical flaw: since the `AS-IS` and `TO-BE` sections were created without knowledge of each other, the resulting `GAP` analysis could be inconsistent or illogical.
--   **The Solution ("Top-Down"):** The current architecture was created to solve this. By generating the most detailed document (the Blueprint) first and then deriving all other summaries from it, consistency is guaranteed by design.
+-   **Asynchronous Parallel Drafting (Bottom-Up):** The legacy architecture generated report sections (`AS-IS`, `TO-BE`, `GAP`) in isolated, parallel processes, merging them at compilation via `assemble_tower_annex.py`.
+-   **Logical Coherence Failure (Split-Brain):** Since sections were generated in isolation, they lacked contextual cohesion. The resulting gap analysis often diverged from the baseline state, producing contradictory narratives.
+-   **Deterministic Derivation (Top-Down):** The blueprint-first model generates a unified, detailed technical blueprint as the absolute source of truth. All summary sheets, roadmap items, and commercial deliverables are derived directly from this single payload, guaranteeing consistency by design.
 
 Understanding this evolution is key to understanding the rationale behind the current system's structure.
 
@@ -539,7 +554,7 @@ Este documento establece la hoja de ruta estratégica para evolucionar el Assess
 *   Correlación nativa con el Ops Agent de Google Cloud (`logging.googleapis.com/trace`).
 *   Refactorización masiva de deuda técnica heredada (conversión de `print` a `logger.info`).
 
-### Fase 3: Agent Evals & Evaluation-Led Development (SOTA 2026) (Próximo paso)
+### Fase 3: Agent Evals & Evaluation-Led Development (Standard 2026) (Próximo paso)
 **Objetivo:** Medir la confiabilidad, coste y calidad arquitectónica de los agentes antes de enviarlos a producción, sin ralentizar el CI/CD diario.
 *   **Golden Dataset:** Creación de un entorno de pruebas con peticiones históricas reales (desde refactors complejos hasta intentos de inyección de código).
 *   **Telemetry-Driven Metrics:** Uso de la telemetría (Fase 2) para medir el *Zero-Shot Pass Rate* (¿pasa los Quality Gates a la primera?), el *Code Churn* (reescrituras inútiles) y el coste en dólares por PR.
@@ -1375,7 +1390,7 @@ source_of_truth:
 - ../../src/assessment_engine/adapters/render_commercial_report.py
 - ../../src/assessment_engine/adapters/render_web_presentation.py
 - ./payload-render-boundaries.md
-last_verified_against: 2026-05-03
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -1386,72 +1401,69 @@ verification_mode: schema
 
 # Artifact contracts
 
-Este documento complementa [`payload-render-boundaries.md`](payload-render-boundaries.md). Allí se explica la frontera técnica entre payload, schema y render. Aquí se fija la lectura **operativa y empresarial** de los artefactos: quién los produce, quién depende de ellos y cuándo deben considerarse suficientemente válidos para dejar avanzar el sistema.
+Este documento complementa a [`payload-render-boundaries.md`](payload-render-boundaries.md) al definir la semántica operativa y de negocio de los artefactos de datos en el ciclo de vida del motor: trazabilidad de origen (producción), dependencias de consumo y criterios de validación de compuertas de calidad (*quality gates*).
 
-## Regla operativa
+## Criterio de Identificación de Artefactos Críticos
 
-Un artefacto importante no es solo “un archivo generado”. Debe poder responder a estas cuatro preguntas:
+Todo artefacto de datos catalogado dentro del motor no constituye un mero residuo de salida; debe caracterizarse determinísticamente bajo cuatro dimensiones:
 
-1. **quién lo produce**;
-2. **qué verdad contiene**;
-3. **qué etapa lo consume después**;
-4. **qué riesgo aparece si falta o deriva**.
+1.  **Origen (Productor):** Entidad o módulo que genera y firma el artefacto.
+2.  **Contenido Semántico (Verdad):** Datos y contratos estructurados que valida y encapsula.
+3.  **Destino (Consumidor):** Etapas subsecuentes de la tubería (*pipeline*) que dependen de su presencia.
+4.  **Impacto en el Negocio (Riesgo):** Vulnerabilidades operacionales o lógicas que emergen en caso de ausencia o deriva contractual.
 
 ## Mapa principal de contratos
 
 | Artefacto | Productor principal | Consumidor principal | Rol empresarial | Si falta o deriva |
 |---|---|---|---|---|
-| `case_input.json` | preparación por torre | scoring, findings, engine | fija el caso de trabajo | la torre nace con contexto pobre o ambiguo |
-| `evidence_ledger.json` | preparación por torre | findings, auditoría, soporte | deja trazabilidad de evidencias | baja defendibilidad del assessment |
-| `scoring_output.json` | scoring por torre | blueprint, annex, soporte | fija la base cuantitativa | se debilita la consistencia del diagnóstico |
-| `findings.json` | análisis por torre | blueprint y soporte editorial | concentra hallazgos estructurados | se empobrece la lectura por pilar |
-| `blueprint_<tower>_payload.json` | `run_tower_blueprint_engine.py` | annex, global builder, render blueprint, web | fuente de verdad por torre | aparece split-brain aguas abajo |
-| `approved_annex_<tower>.template_payload.json` | `run_executive_annex_synthesizer.py` | render annex | traducción ejecutiva por torre | cae la legibilidad ejecutiva de la torre |
-| `global_report_payload.json` | `build_global_report_payload.py` + `run_executive_refiner.py` | render global, comercial, web | agenda ejecutiva consolidada | la visión de dirección queda rota |
-| `commercial_report_payload.json` | `run_commercial_refiner.py` | render comercial | activación comercial del assessment | se pierde explotabilidad de cuenta |
-| `Blueprint_Transformacion_*.docx` | render blueprint | lector humano | entregable técnico visible | no debe usarse como fuente de verdad |
-| `annex_*.docx` | render annex | lector humano | entregable ejecutivo por torre | puede quedar bonito o feo, pero no debe redefinir contenido |
-| `Informe_Ejecutivo_Consolidado_*.docx` | render global | lector humano | entregable ejecutivo consolidado | degrada la comunicación con dirección |
-| `Account_Action_Plan_*.docx` | render comercial | lector humano | entregable comercial interno | baja utilidad para cuenta y preventa |
-| `presentation/index.html` | render web | lector humano | soporte visual y storytelling | la narrativa visual queda desalineada |
+| `case_input.json` | módulos de preparación de torre | scoring, findings, engine | Delimitación de contexto de la organización | La torre nace con contexto pobre o ambiguo |
+| `evidence_ledger.json` | módulos de preparación de torre | findings, auditoría, soporte | Deja trazabilidad de evidencias | Pérdida de trazabilidad de origen y vulnerabilidad en auditoría |
+| `scoring_output.json` | scoring por torre | blueprint, annex, soporte | Parámetros cuantitativos de evaluación | Desalineación entre el análisis prosa y los umbrales cualitativos |
+| `findings.json` | análisis por torre | blueprint y soporte editorial | Concentra hallazgos estructurados | Degradación del detalle en la especificación técnica |
+| `blueprint_<tower>_payload.json` | `run_tower_blueprint_engine.py` | annex, global builder, render blueprint, web | Fuente única de verdad de la torre tecnológica | Inconsistencia lógica y contradicción narrativa en la síntesis consolidada |
+| `approved_annex_<tower>.template_payload.json` | `run_executive_annex_synthesizer.py` | render annex | Síntesis de negocio y recomendaciones operativas de la torre | Degradación en la comunicación técnica con la dirección del cliente |
+| `global_report_payload.json` | `build_global_report_payload.py` + `run_executive_refiner.py` | render global, comercial, web | Síntesis directiva estratégica consolidada | Disrupción en la gobernanza y pérdida de alineación estratégica |
+| `commercial_report_payload.json` | `run_commercial_refiner.py` | render comercial | Definición de palancas y priorización de inversión comercial | Degradación en el alineamiento estratégico de la cuenta |
+| `Blueprint_Transformacion_*.docx` | render blueprint | operario de cuenta / cliente final | Documento técnico de transformación | Archivo de salida no modificable; prohibido su consumo por automatizaciones |
+| `annex_*.docx` | render annex | operario de cuenta / cliente final | Entregable ejecutivo por torre | Capa de presentación; no debe alterar el modelo de datos canónico |
+| `Informe_Ejecutivo_Consolidado_*.docx` | render global | operario de cuenta / cliente final | Entregable ejecutivo consolidado | Degrada la comunicación con dirección |
+| `Account_Action_Plan_*.docx` | render comercial | operario de cuenta / cliente final | Entregable comercial interno | Baja utilidad para cuenta y preventa |
+| `presentation/index.html` | render web | operario de cuenta / cliente final | Soporte visual y storytelling | La narrativa visual queda desalineada |
 
 ## Qué contratos mandan de verdad
 
-### Contratos de base
-
+### Contratos de Telemetría y Entrada
 - `case_input.json`
 - `evidence_ledger.json`
 - `scoring_output.json`
 - `findings.json`
 
-Son la base que permite que la torre sea explicable, trazable y defendible.
+Constituyen el cimiento empírico del diagnóstico. Garantizan explicabilidad, trazabilidad estructural y defendibilidad técnica ante auditorías.
 
-### Contratos canónicos de decisión
-
+### Contratos de Síntesis Canónica
 - `blueprint_<tower>_payload.json`
 - `global_report_payload.json`
 - `commercial_report_payload.json`
 
-Estos artefactos son los que más se acercan a la **verdad operativa del sistema**.
+Modelos definitivos que gobiernan el estado del diagnóstico. Representan la verdad de negocio consolidada.
 
-### Contratos de presentación derivada
-
+### Artefactos de Presentación Derivada
 - `approved_annex_<tower>.template_payload.json`
 - DOCX por torre/global/comercial
 - `presentation/index.html`
 
-Importan mucho para el lector final, pero su razón de ser es **traducir** una verdad previa, no sustituirla.
+Canales de transmisión de información estratégica. Su única función es proyectar el modelo de datos sin alterar la verdad del sistema.
 
 ## Qué debe comprobar cada capa antes de avanzar
 
 | Etapa | Señal mínima de salida sana |
 |---|---|
-| Torre base | existen `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json` |
-| Blueprint | existe `blueprint_<tower>_payload.json` y la torre ya tiene verdad estructurada |
-| Annex | existe `approved_annex_<tower>.template_payload.json` y no contradice el blueprint |
-| Global | existe `global_report_payload.json` y reutiliza información de torres disponibles |
-| Comercial | existe `commercial_report_payload.json` y se apoya en el global |
-| Web | existe `presentation/index.html` y refleja global + torres, no una historia inventada |
+| Torre base | Presencia de artefactos basales de preparación |
+| Blueprint | Presencia y consistencia de `blueprint_payload` |
+| Annex | Presencia de `approved_annex_payload` con herencia íntegra |
+| Global | Agregación sin pérdidas de blueprints de torre activos |
+| Comercial | Alineación de objetivos de cuenta con el payload de síntesis global |
+| Web | Presentación web congruente con el estado del mapa maestro |
 
 ## Contratos Detallados
 
@@ -1469,23 +1481,18 @@ Para una descripción exhaustiva de los campos de los contratos principales, con
 
 ## Riesgos contractuales visibles hoy
 
-1. **Tolerancia de algunos renders**
-   `robust_load_payload(...)` protege continuidad, pero puede ocultar desviaciones de contrato.
-
-2. **Capa web sin schema final explícito**
-   `render_web_presentation.py` compone una vista útil, pero su contrato está más implícito que en DOCX global/comercial.
-
-3. **Convivencia de activo moderno y fallback legacy**
-   especialmente en la consolidación global, útil para resiliencia pero sensible a híbridos.
+1.  **Flexibilidad excesiva de carga de payloads:** El uso de `robust_load_payload(...)` mitiga fallos en ejecución, pero corre el riesgo de enmascarar derivas frente a la definición estricta de esquemas Pydantic.
+2.  **Ausencia de validador de esquema explícito en capa web:** `render_web_presentation.py` procesa los datos basándose en contratos implícitos, careciendo de un esquema Pydantic de salida dedicado como en los reportes global y comercial.
+3.  **Convivencia de arquitecturas (Transición Top-Down / Bottom-Up):** La existencia de lógicas heredadas en coexistencia con el flujo moderno blueprint-first expone al sistema a combinaciones híbridas.
 
 ## Qué significa “contrato cumplido”
 
-Un contrato se puede considerar cumplido cuando:
+Un contrato se certifica como cumplido cuando:
 
-1. el artefacto correcto existe en la ubicación esperada;
-2. su estructura es compatible con el schema o el consumidor real;
-3. la siguiente etapa puede usarlo sin reinterpretar la verdad;
-4. la historia que cuenta sigue alineada con la capa anterior.
+1.  **Integridad Física:** Existencia verificada del artefacto en la ruta determinista especificada por el entorno.
+2.  **Compatibilidad Estructural:** Validación sintáctica y semántica exitosa frente al esquema de Pydantic correspondiente.
+3.  **Transparencia de Consumo:** El consumidor subsiguiente ingiere el payload directamente sin requerir normalizaciones excepcionales de datos.
+4.  **Coherencia Narrativa:** Alineación de contenido técnica y cualitativamente congruente con la etapa que le precede.
 
 ## Uso recomendado de este documento
 
@@ -1519,7 +1526,7 @@ source_of_truth:
 - ../../src/assessment_engine/adapters/render_global_report_from_template.py
 - ../../src/assessment_engine/adapters/render_commercial_report.py
 - ../../src/assessment_engine/adapters/render_web_presentation.py
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -1530,217 +1537,171 @@ verification_mode: schema
 
 # Payload, schema and renderer boundaries
 
-Este documento fija la frontera entre:
+Este documento establece y delimita formalmente las fronteras técnicas y de responsabilidad entre:
 
-1. **payloads JSON** que expresan la verdad estructurada;
-2. **schemas Pydantic** que gobiernan esa verdad;
-3. **renderizadores** que convierten esa verdad en DOCX o HTML.
+1.  **Payloads JSON** que expresan la verdad estructurada;
+2.  **Esquemas Pydantic** que gobiernan y tipan esa verdad;
+3.  **Renderizadores** que convierten esa verdad en archivos de presentación (DOCX o HTML).
 
 ## Regla principal
 
-Los renderizadores **no deben ser la fuente de verdad** del sistema. Su responsabilidad es:
+Los módulos de renderizado e interfaces de presentación no constituyen fuentes de verdad del sistema. Su alcance operacional se limita estrictamente a:
 
-- cargar un payload;
-- validarlo o normalizarlo;
-- presentarlo como entregable final.
+-   Cargar el payload estructurado;
+-   Validarlo, normalizarlo y asegurar su conformidad semántica;
+-   Compilar y formatear los datos bajo reglas de diseño estético para el entregable final.
 
-La lógica de negocio y el contrato deben vivir antes, en payloads y schemas.
+La lógica de negocio y la validación de interfaces deben vivir de forma desacoplada y precedente, en la definición de payloads y esquemas de validación.
 
-## Niveles reales de enforcement
+## Esquemas de Rigor de Validación (*Enforcement*)
 
-No todos los consumidores aplican el contrato con la misma dureza. A día de hoy existen tres niveles:
+El rigor en la validación de contratos varía según el canal de renderizado y el estado de transición del componente. Se definen tres niveles de tolerancia operativa:
 
-| Nivel | Comportamiento real | Casos |
+| Nivel | Comportamiento real | Casos de uso |
 |---|---|---|
-| Estricto | valida con `model_validate(...)` y aborta si el payload no cumple | `render_tower_blueprint.py`, `render_global_report_from_template.py` |
-| Tolerante | intenta validar, registra desviaciones y cae a `model_construct(...)` para seguir | rutas legacy o de compatibilidad explícita que aún no han sido endurecidas |
-| Implícito | consume JSON sin schema Pydantic final de entrada/salida en el propio render | `render_web_presentation.py` |
+| **Estricto** | Invocación obligatoria de `model_validate(...)` o similar; interrupción inmediata del flujo (*transaction abort*) ante inconsistencias sintácticas o de tipado. | `render_tower_blueprint.py`, `render_global_report_from_template.py` |
+| **Tolerante** | Validación parcial mediante `model_construct(...)` con registro de desviaciones (*warning logs*), permitiendo la continuidad transitoria para compatibilidad con datos heredados. | Rutas heredadas o de compatibilidad explícita aún no endurecidas. |
+| **Implícito** | Consumo y mapeo dinámico del payload JSON sin instanciación formal de esquemas Pydantic en la capa de presentación. | `render_web_presentation.py` |
 
-Por tanto, el schema sigue siendo el **contrato deseado**, pero no todos los renderizadores lo **enfuerzan** de forma estricta en ejecución.
+Por consiguiente, el esquema Pydantic representa la definición de interfaz técnica objetivo, si bien ciertos presentadores admiten estados intermedios por requerimientos de retrocompatibilidad.
 
-## Mapa principal
+## Mapa principal de acoplamiento
 
-| Capa | Payload | Schema | Consumidor principal | Salida |
+| Capa | Payload | Esquema | Consumidor principal | Salida de presentación |
 |---|---|---|---|---|
 | Torre ejecutiva | `approved_annex_<tower>.template_payload.json` | `AnnexPayload` | `render_tower_annex_from_template.py` | `annex_<tower>_<client>_final.docx` |
 | Torre estratégica | `blueprint_<tower>_payload.json` | `BlueprintPayload` | `render_tower_blueprint.py` | `Blueprint_Transformacion_<TOWER>_<client>.docx` |
 | Global ejecutiva | `global_report_payload.json` | `GlobalReportPayload` | `render_global_report_from_template.py` | `Informe_Ejecutivo_Consolidado_<client>.docx` |
 | Comercial interna | `commercial_report_payload.json` | `CommercialPayload` | `render_commercial_report.py` | `Account_Action_Plan_<client>.docx` |
-| Dashboard web | `global_report_payload.json` + blueprints de torres | sin schema único estricto en render | `render_web_presentation.py` | `presentation/index.html` |
+| Dashboard web | `global_report_payload.json` + blueprints de torres | Sin esquema único en capa de render | `render_web_presentation.py` | `presentation/index.html` |
 
-## Contratos por payload
+## Contratos de interfaz por payload
 
 ### 1. Annex payload
 
-- archivo: `approved_annex_<tower>.template_payload.json`
-- schema: `AnnexPayload`
-- render principal: `render_tower_annex_from_template.py`
+-   **Archivo:** `approved_annex_<tower>.template_payload.json`
+-   **Esquema:** `AnnexPayload`
+-   **Render principal:** `render_tower_annex_from_template.py`
 
 Características de la frontera:
-
-- el sintetizador del anexo parte de un `executive handover` derivado del blueprint con score, riesgos estructurales, decisiones e iniciativas;
-- score global, bandas, gaps, riesgos e iniciativas prioritarias se fijan de forma determinista desde el blueprint antes del render;
-- el render carga el JSON con `robust_load_payload(..., AnnexPayload, "Annex", mode="strict")`;
-- el render DOCX del anexo usa por defecto la variante visual nueva (`semantic`) y deja el modo legacy solo como compatibilidad opt-in;
-- después aplica `normalize_annex_payload(...)` para completar formas compatibles;
-- el contrato objetivo y efectivo en render ya es `AnnexPayload` estricto.
+-   El sintetizador del anexo consume un subconjunto estructurado (*handover*) derivado del blueprint, el cual incluye puntuaciones cuantitativas, riesgos, directrices de inversión e iniciativas clave.
+-   Métricas globales, alineaciones de madurez, brechas y propuestas críticas se computan determinísticamente a partir del blueprint antes del renderizado.
+-   El renderizador carga el JSON con `robust_load_payload(..., AnnexPayload, "Annex", mode="strict")`.
+-   La compilación OpenXML del anexo emplea por defecto la variante de diseño semántico, dejando el modo de diseño heredado solo como opción de compatibilidad manual.
+-   El linter interno aplica `normalize_annex_payload(...)` para uniformizar estructuras de datos.
 
 Conclusión:
-
-- el payload del anexo sigue siendo el contrato estructural esperado;
-- el LLM del anexo aporta framing y lenguaje ejecutivo, pero ya no debería redefinir los hechos no negociables heredados del blueprint;
-- el render puede adaptar detalles de forma tras validar, pero ya no acepta un payload inválido;
-- la frontera contrato/presentación queda más alineada con el diseño documentado.
+-   `AnnexPayload` rige el contrato estructural estricto de la etapa.
+-   La síntesis asistida por LLM aporta encuadre y lenguaje directivo, pero tiene estrictamente prohibido redefinir los hechos lógicos y técnicos heredados de la capa de blueprint.
+-   El renderizador rechaza de forma determinista payloads inválidos.
 
 ### 2. Blueprint payload
 
-- archivo: `blueprint_<tower>_payload.json`
-- schema: `BlueprintPayload`
-- render principal: `render_tower_blueprint.py`
+-   **Archivo:** `blueprint_<tower>_payload.json`
+-   **Esquema:** `BlueprintPayload`
+-   **Render principal:** `render_tower_blueprint.py`
 
 Características de la frontera:
-
-- el render carga el JSON y lo normaliza con `normalize_blueprint_payload_dict(...)`;
-- después valida con `BlueprintPayload.model_validate(...)`;
-- además puede enriquecer la presentación usando:
-  - `client_intelligence.json`
-  - `approved_annex_<tower>.template_payload.json`
+-   El renderizador carga el JSON y aplica la función `normalize_blueprint_payload_dict(...)`.
+-   Posteriormente, valida la integridad del payload contra el esquema `BlueprintPayload.model_validate(...)`.
+-   La presentación puede enriquecerse agregando datos de contexto desde `client_intelligence.json` y `approved_annex_<tower>.template_payload.json`.
 
 Conclusión:
-
-- la verdad principal sigue estando en el blueprint;
-- el render puede usar contexto adicional para presentación, pero no desplaza al blueprint como fuente principal de verdad por torre;
-- este es hoy uno de los contratos con enforcement más estricto en la capa de render.
+-   El modelo de datos del blueprint tecnológico se consolida como la fuente de verdad primaria.
+-   La agregación de contexto adicional asiste al formateo, pero en ningún caso altera la definición canónica del blueprint.
 
 ### 3. Global report payload
 
-- archivo: `global_report_payload.json`
-- schema: `GlobalReportPayload`
-- render principal: `render_global_report_from_template.py`
+-   **Archivo:** `global_report_payload.json`
+-   **Esquema:** `GlobalReportPayload`
+-   **Render principal:** `render_global_report_from_template.py`
 
 Características de la frontera:
-
-- el render valida directamente con `GlobalReportPayload.model_validate(...)`;
-- si falla la validación, termina con error;
-- consume secciones ejecutivas ya refinadas:
-  - `executive_summary`
-  - `burning_platform`
-  - `tower_bottom_lines`
-  - `target_vision`
-  - `execution_roadmap`
-  - `executive_decisions`
+-   Validación estricta sin tolerancia de fallos a través de `GlobalReportPayload.model_validate(...)`.
+-   Consumo de secciones de síntesis previamente consolidadas y refinadas (`executive_summary`, `burning_platform`, `tower_bottom_lines`, `target_vision`, `execution_roadmap`, `executive_decisions`).
 
 Conclusión:
-
-- aquí la frontera es más estricta;
-- el render global espera que el payload ya llegue con estructura ejecutiva coherente;
-- junto con blueprint, es la referencia más clara de contrato estricto antes de renderizar.
+-   Representa la compuerta de calidad de mayor rigidez del pipeline.
+-   El renderizador procesa el payload presumiendo coherencia directiva absoluta previa.
 
 ### 4. Commercial payload
 
-- archivo: `commercial_report_payload.json`
-- schema: `CommercialPayload`
-- render principal: `render_commercial_report.py`
+-   **Archivo:** `commercial_report_payload.json`
+-   **Esquema:** `CommercialPayload`
+-   **Render principal:** `render_commercial_report.py`
 
 Características de la frontera:
-
-- el render usa `robust_load_payload(..., CommercialPayload, "Commercial Account Plan", mode="strict")`;
-- consume:
-  - `commercial_summary`
-  - `gtm_strategy`
-  - `stakeholder_matrix`
-  - `opportunities_pipeline`
-  - `proactive_proposals`
-  - `intelligence_dossier`
+-   Carga estricta mediante `robust_load_payload(..., CommercialPayload, "Commercial Account Plan", mode="strict")`.
+-   Estructuración semántica del plan de cuenta (`commercial_summary`, `gtm_strategy`, `stakeholder_matrix`, `opportunities_pipeline`, `proactive_proposals`, `intelligence_dossier`).
 
 Conclusión:
-
-- el render comercial trabaja sobre un contrato explícito como diseño objetivo y ya lo exige en tiempo de render;
-- el entregable DOCX sigue siendo derivado de un payload comercial ya resuelto.
+-   El renderizador comercial opera bajo un contrato explícito e inmutable, limitándose a proyectar la estrategia de cuenta consolidada en el payload.
 
 ### 5. Dashboard web
 
-- entrada principal: `global_report_payload.json`
-- entrada secundaria: `blueprint_<tower>_payload.json` por torre
-- render principal: `render_web_presentation.py`
+-   **Entrada principal:** `global_report_payload.json`
+-   **Entrada secundaria:** `blueprint_<tower>_payload.json` por torre activa
+-   **Render principal:** `render_web_presentation.py`
 
 Características de la frontera:
-
-- no valida ni `global_report_payload.json` ni los blueprints con un schema Pydantic en el propio render;
-- no define un schema único de salida antes de renderizar;
-- construye un objeto intermedio `nexus_data`;
-- mezcla:
-  - estrategia global,
-  - heatmap,
-  - roadmap,
-  - detalles tácticos por torre desde blueprints.
+-   No realiza validación estructural de esquemas mediante Pydantic en tiempo de renderizado.
+-   Carece actualmente de una clase Pydantic de salida dedicada en la capa de renderizado.
+-   Compone dinámicamente un grafo de datos intermedio (`nexus_data`) que amalgama la estrategia global, el mapa térmico de madurez, el cronograma estratégico de ejecución y la telemetría táctica de las torres.
 
 Conclusión:
+-   La capa web constituye una vista derivada compuesta.
+-   Su interfaz técnica permanece implícita en la lógica de compilación del renderizador; debe considerarse estrictamente como capa de presentación agregada y no como origen de datos.
 
-- el dashboard web es una **vista derivada compuesta**;
-- su contrato efectivo está más implícito en el código del render que en un schema dedicado;
-- conviene tratarlo como capa de presentación agregada, no como fuente de verdad.
+## Matriz de Gobierno de Renders
 
-## Qué artefactos deben gobernar a qué render
-
-| Renderizador | Payload que manda | Comentario |
+| Renderizador | Payload rector | Directriz técnica |
 |---|---|---|
-| `render_tower_annex_from_template.py` | `AnnexPayload` | Presenta el anexo ejecutivo; admite normalización menor |
-| `render_tower_blueprint.py` | `BlueprintPayload` | Puede usar annex e inteligencia como apoyo de render |
-| `render_global_report_from_template.py` | `GlobalReportPayload` | Valida de forma estricta antes de renderizar |
-| `render_commercial_report.py` | `CommercialPayload` | Consume el contrato comercial ya cerrado |
-| `render_web_presentation.py` | vista compuesta desde global + blueprints | No define hoy un schema Pydantic final propio |
+| `render_tower_annex_from_template.py` | `AnnexPayload` | Formatea el anexo ejecutivo; admite normalizaciones semánticas no destructivas. |
+| `render_tower_blueprint.py` | `BlueprintPayload` | Proyecta el blueprint canónico; admite agregación pasiva de contexto. |
+| `render_global_report_from_template.py` | `GlobalReportPayload` | Validación de esquema al 100% libre de fallos (*strict parsing*). |
+| `render_commercial_report.py` | `CommercialPayload` | Consume la síntesis del plan de cuenta cerrado sin alteración lógica. |
+| `render_web_presentation.py` | Vista compuesta (Global + Blueprints) | Agregador dinámico de vistas; prohibido su uso como fuente de verdad. |
 
-## Fronteras que deben mantenerse
+## Reglas de Asignación de Responsabilidades
 
-### Lo que debe decidir el payload/schema
+### Competencias del Payload/Esquema
+-   Definición estructural del contenido y cardinalidad de datos.
+-   Tipado estricto y nombres de propiedades de transporte.
+-   Gobernanza de metadatos de linaje, firma y versión.
 
-- estructura del contenido;
-- nombres y tipos de campos;
-- relaciones entre secciones;
-- metadata de versión y linaje.
+### Competencias del Renderizador
+-   Diseño estético y de interfaz de usuario (*layout*, espaciados).
+-   Estructuración tipográfica (bloques, viñetas, tablas de datos).
+-   Ensamblado y compilación de binarios (OpenXML, HTML semántico).
 
-### Lo que debe decidir el render
+### Decisiones Prohibidas en el Renderizador
+-   Determinación de lógicas cuantitativas o algoritmos de puntuación (*scoring*).
+-   Resolución de políticas de madurez (`score -> band`).
+-   Significado conceptual de los campos o interfaces de dominio.
 
-- layout;
-- estilo visual;
-- tablas, bullets, bloques de texto;
-- composición final en DOCX o HTML.
+La resolución de métricas y traducción semántica (`score -> band`) debe ocurrir de forma determinista previa a la conformación del payload, consumiendo la política de madurez compartida de la plataforma. Si un renderizador detecta una propiedad faltante, debe resolverla invocando las utilidades compartidas del dominio, prohibiéndose la redefinición lógica local.
 
-### Lo que no debería decidir el render
+## Desviaciones y Desafíos de Alineación
 
-- reglas de scoring;
-- traducción de `score` a banda de madurez;
-- significado de los campos;
-- contrato entre etapas;
-- verdad de negocio o arquitectura.
+1.  **Persistencia de normalizaciones transitorias:** Ciertos consumidores finales aplican transformaciones estructurales para subsanar vacíos o inconsistencias de datos heredados.
+2.  **Ausencia de validador de esquema explícito en capa web:** `render_web_presentation.py` procesa los datos basándose en contratos implícitos, careciendo de un esquema de salida validado por un modelo formal.
+3.  **Transición de Arquitectura:** El soporte residual de rutas de compatibilidad tolerante convive con la arquitectura estrictamente tipada del motor modernizado.
 
-En la ruta activa, la traducción `score -> band` debe quedar resuelta antes o durante la construcción canónica del payload mediante helpers compartidos de dominio. Si un render necesita completar una banda ausente, debe hacerlo reutilizando esa misma policy compartida y no inventando una nueva semántica local.
+Estas tensiones no invalidan el diseño canónico, pero constituyen el backlog de refactorización necesario para blindar completamente la frontera frente a capas estéticas.
 
-## Tensiones actuales visibles
+## Conclusiones de Auditoría
 
-1. algunos consumidores todavía normalizan o rellenan campos para compatibilidad;
-2. el dashboard web no tiene aún un schema final explícito propio;
-3. `render_tower_blueprint.py` usa annex e inteligencia adicional para enriquecer presentación;
-4. persisten rastros legacy en parte del ecosistema documental y de artefactos;
-5. el sintetizador del anexo ya exige `BlueprintPayload` válido antes de construir el handover, pero otras rutas legacy aún pueden seguir siendo tolerantes.
+1.  Los esquemas `AnnexPayload`, `BlueprintPayload`, `GlobalReportPayload` y `CommercialPayload` se encuentran definidos y plenamente alineados con los payloads descritos.
+2.  La cobertura de pruebas unitarias (`tests/test_contract_handover.py` y `tests/test_payload_validation.py`) certifica la correspondencia estructural de las interfaces técnicas.
+3.  La suite de humo (*smoke-tests*) valida exitosamente la compilación y consistencia lógica de los artefactos.
 
-Estas tensiones no invalidan el diseño actual, pero deben permanecer visibles para que la evolución futura no mueva la verdad desde los contracts hacia la capa de presentación.
+## Protocolo ante Cambios en Interfaces
 
-## Observaciones de auditoría
-
-1. Los schemas `AnnexPayload`, `BlueprintPayload`, `GlobalReportPayload` y `CommercialPayload` existen y están alineados con los nombres de payload descritos aquí.
-2. Los tests de `tests/test_contract_handover.py` y `tests/test_payload_validation.py` validan los contratos principales a nivel de schema y el baseline smoke actual ya incluye artefactos reales para blueprint, annex, global y comercial.
-3. La mayor desviación restante entre diseño y enforcement ya no está en los renderizadores finales de annex/commercial ni en el sintetizador del anexo, sino en las rutas legacy o de compatibilidad que todavía usan carga tolerante de forma explícita.
-
-## Regla documental recomendada
-
-Cuando se modifique un payload o un renderizador:
-
-1. revisar primero el schema correspondiente;
-2. después revisar el payload productor;
-3. por último revisar el render consumidor;
-4. actualizar este documento y `docs/documentation-map.yaml` si cambia la frontera entre contrato y presentación.
+Ante cualquier modificación de contratos o interfaces estéticas:
+1.  **Esquema Primero (Contract-First):** Modificar y validar la clase Pydantic correspondiente en `src/assessment_engine/domain/schemas/`.
+2.  **Origen (Productor):** Actualizar el script de preparación u orquestador que produce el payload de datos.
+3.  **Destino (Consumidor):** Adaptar y certificar las rutinas de compilación en el renderizador.
+4.  **Consistencia de Gobierno:** Actualizar este documento y la traza correspondiente en `docs/documentation-map.yaml`.
 
 
 # =========================================================================
@@ -1756,7 +1717,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/domain/schemas/blueprint.py
-last_verified_against: 2026-05-03
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -1903,7 +1864,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/domain/schemas/annex_synthesis.py
-last_verified_against: 2026-05-03
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -2003,6 +1964,7 @@ Describe la visión y principios del estado futuro.
 
 | Campo | Tipo | Descripción |
 |---|---|---|
+| `gradient` | `str` | Gradiente visual o clave del estado futuro. |
 | `vision` | `str` | Descripción de la visión de futuro. |
 | `design_principles` | `list[str]` | Principios de diseño para la transformación. |
 
@@ -2680,7 +2642,7 @@ source_of_truth:
 - ../../tests/test_environment.py
 - ../../.github/workflows/ci.yml
 - ../../src/assessment_engine/infrastructure/runtime_env.py
-last_verified_against: 2026-05-01
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -2691,18 +2653,18 @@ verification_mode: workflow
 
 # Installation and environment setup
 
-Esta guía recoge el flujo de instalación más alineado con el estado actual del repo.
+Este documento describe y formaliza el protocolo estándar de instalación, configuración y aprovisionamiento del entorno local para el desarrollo y ejecución del motor.
 
-## Supuestos operativos actuales
+## Parámetros Operacionales de Referencia
 
-- la CI usa **Python 3.11**;
-- el proyecto es instalable como paquete Python desde `pyproject.toml`;
-- la validación local observada usa una virtualenv en `.venv/`;
-- los pipelines con IA necesitan `GOOGLE_CLOUD_PROJECT` y `GOOGLE_CLOUD_LOCATION`.
+-   **Entorno de Ejecución:** Python 3.11 constituido como la versión de referencia para la integración continua (CI).
+-   **Empaquetado:** El proyecto define su empaquetado y especificaciones de dependencias primarias a través de `pyproject.toml`.
+-   **Entorno Aislado:** El estándar operativo local requiere el aislamiento mediante un entorno virtual ubicado de forma determinista en `.venv/`.
+-   **Credenciales de Proveedor Cloud:** El pipeline asistido por inteligencia artificial exige las variables de entorno `GOOGLE_CLOUD_PROJECT` y `GOOGLE_CLOUD_LOCATION` para la conexión y firma de llamadas a Vertex AI.
 
-## Preparación recomendada
+## Protocolo de Aprovisionamiento
 
-El flujo práctico más alineado con el repo es trabajar con una virtualenv local en `.venv`.
+El procedimiento estándar para el aprovisionamiento y despliegue del entorno virtual local se ejecuta de la siguiente manera:
 
 ```bash
 python3.11 -m venv .venv
@@ -2711,60 +2673,57 @@ python3.11 -m venv .venv
 ./.venv/bin/pip install -e .
 ```
 
-## Por qué instalar en editable
+## Justificación del Modo de Instalación Editable (`-e .`)
 
-La suite incluye una comprobación explícita de que el paquete `assessment_engine` es importable sin hacks de `sys.path`. El modo editable encaja con ese modelo de trabajo y con el empaquetado actual del proyecto.
+La suite de pruebas unitarias implementa un control explícito de importación de paquetes independientes del entorno de ejecución, prohibiéndose terminantemente la manipulación dinámica de rutas mediante `sys.path`. La instalación en modo editable (`-e .`) garantiza que el módulo `assessment_engine` sea plenamente visible bajo el namespace nativo absoluto sin requerir configuraciones locales excepcionales.
 
-## Variables de entorno de Google Cloud
+## Gobernanza de Variables de Env de Google Cloud
 
-Los pipelines por torre validan:
+Los pipelines de evaluación por torre validan obligatoriamente la presencia de:
+-   `GOOGLE_CLOUD_PROJECT`
+-   `GOOGLE_CLOUD_LOCATION`
 
-- `GOOGLE_CLOUD_PROJECT`
-- `GOOGLE_CLOUD_LOCATION`
+El cargador de entorno de la plataforma (`runtime_env.py`) declara como valores pasivos por defecto:
+-   `GOOGLE_CLOUD_PROJECT=sub403o4u0q5`
+-   `GOOGLE_CLOUD_LOCATION=europe-west1`
 
-El repo define además defaults en `runtime_env.py`:
+En caso de que las variables ya se encuentren definidas en el entorno de la sub-shell, el cargador de configuración las respeta y asume como prioritarias; en su defecto, el runtime actual poblará de forma pasiva los valores por defecto especificados.
 
-- `GOOGLE_CLOUD_PROJECT=sub403o4u0q5`
-- `GOOGLE_CLOUD_LOCATION=europe-west1`
+## Protocolo de Certificación Pre-vuelo
 
-Si tu entorno ya tiene esos valores, los scripts los reutilizan. Si no, el runtime actual puede poblar esos defaults para el flujo por torre.
-
-## Validación mínima del entorno
-
-### Import y tests
-
+### 1. Pruebas de Entorno
+Para verificar que el aislamiento y el mapeo del paquete se completaron con éxito, ejecute:
 ```bash
 ./.venv/bin/python -m pytest tests/test_environment.py -q
 ```
 
-### Suite general
-
+### 2. Certificación de la Suite de Pruebas Unitarias
+Para certificar la integridad técnica de todos los componentes, ejecute:
 ```bash
 ./.venv/bin/python -m pytest tests/ -q
 ```
 
-### Smoke canónico en seco
-
+### 3. Simulacro en Seco del Smoke-test (*Dry-run*)
+Para validar la orquestación y regeneración de artefactos sin realizar llamadas externas a APIs, ejecute:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
 ```
+Este simulacro en seco (*dry-run*) forma parte de los controles de gobernanza activa del repositorio y certifica que el entorno es capaz de procesar y compilar el pipeline global canónico de forma íntegra, absteniéndose de requerir lógicas de retrocompatibilidad heredadas.
 
-Ese dry-run ya forma parte de la validación operativa del repo y comprueba que el entorno puede recorrer el tramo global canónico sin depender de fallback legacy.
+## Resolución de Dependencias: `pyproject.toml` vs `requirements.txt`
 
-## Diferencia entre `pyproject.toml` y `requirements.txt`
+1.  **`pyproject.toml`:** Especifica el metapaquete del motor y declara la firma de dependencias abstractas obligatorias para el empaquetado.
+2.  **`requirements.txt`:** Bloquea y congela un entorno de trabajo determinista de desarrollo y testing, alineado de manera idéntica con el entorno de ejecución de la integración continua (CI).
 
-- `pyproject.toml` describe el paquete y sus dependencias principales;
-- `requirements.txt` fija un entorno de trabajo más amplio, alineado con la CI actual;
-- hoy la CI se apoya en `requirements.txt`, no solo en `pyproject.toml`.
+El pipeline de CI se aprovisiona consumiendo `requirements.txt` para asegurar la reproducibilidad absoluta y mitigar la deriva de paquetes.
 
-## Resultado esperado tras instalar
+## Estado Final de Éxito de Aprovisionamiento
 
-Deberías poder:
-
-1. importar `assessment_engine`;
-2. ejecutar tests locales con `./.venv/bin/python`;
-3. lanzar scripts `python -m assessment_engine.application.<modulo>`;
-4. renderizar plantillas incluidas en el paquete.
+Tras completar el aprovisionamiento de manera exitosa, el sistema debe certificar la disponibilidad de las siguientes capacidades:
+1.  **Importación Absoluta:** Importación nativa de `assessment_engine` desde cualquier sub-shell del entorno virtual.
+2.  **Ejecución de Pruebas:** Ejecución sin errores de la suite de pruebas mediante `./.venv/bin/python -m pytest`.
+3.  **Ejecución de Módulos:** Lanzamiento directo de utilidades y orquestadores a través de `python -m assessment_engine.application.<modulo>`.
+4.  **Compilación de Recursos:** Resolución de rutas físicas y compilación exitosa de plantillas OpenXML `.docx` y plantillas de renderizado integradas en el paquete.
 
 
 # =========================================================================
@@ -2968,7 +2927,7 @@ Si necesitas validar Vertex AI antes de lanzar cualquier pipeline con agentes:
 # =========================================================================
 
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/application/run_tower_pipeline.py
@@ -2991,127 +2950,113 @@ verification_mode: workflow
 
 # Pipeline controls runbook
 
-Este runbook resume la **operación real** del sistema: qué controles conviene pasar antes de ejecutar, qué señales deben aparecer en cada fase y cómo reaccionar cuando la cadena se rompe.
+Este manual de operaciones (*runbook*) formaliza el protocolo de control, supervisión e intervenciones correctivas aplicables sobre la tubería de ejecución del motor. Define de manera determinista los checkpoints pre-vuelo, la telemetría de éxito de cada fase y los árboles de decisión ante interrupciones operacionales.
 
-## Qué intenta proteger
+## Dimensiones de Protección y Continuidad
 
-1. continuidad de generación;
-2. coherencia entre capas;
-3. capacidad de diagnóstico rápido;
-4. distinción clara entre problema de credenciales, problema de contrato y problema de render.
+1.  **Continuidad Operacional:** Garantía de transaccionalidad de generación de deliverables.
+2.  **Coherencia Semántica:** Prevención de fragmentación lógica (*split-brain*) inter-fases.
+3.  **Diagnóstico Expedito:** Aislamiento rápido de cuellos de botella mediante logs estructurados.
+4.  **Aislamiento de Causas Raíz:** Discriminación explícita entre anomalías de red/autenticación, desviaciones contractuales de payloads o fallas de renderizado visual.
 
-## Checklist previo de operación
+## Checklist de Verificación de Checkpoints Pre-vuelo
 
-| Control | Qué confirma |
-|---|---|
-| entorno Python activo (`./.venv`) | que ejecutas contra el entorno esperado |
-| dependencias instaladas | que el repo puede correr scripts y tests |
-| acceso a Vertex AI | que los tramos IA no van a fallar por autenticación base |
-| inputs/cliente disponibles | que la fase tiene material para producir artefactos |
-| `working/<client>/...` legible | que la superficie operativa existe y es consistente |
-
-## Orden recomendado de ejecución
-
-1. **preflight IA** si vas a tocar tramos con agentes;
-2. **pipeline por torre** para crear la verdad base;
-3. **pipeline global** para consolidar;
-4. **pipeline comercial** para activar cuenta;
-5. **render web** para superficie visual;
-6. **smoke y tests** cuando necesites validar baseline o regresiones.
-
-## Señales mínimas de salud por fase
-
-| Fase | Señal mínima |
-|---|---|
-| Preflight IA | el chequeo de Vertex AI pasa |
-| Torre | existe `blueprint_<tower>_payload.json` |
-| Annex | existe `approved_annex_<tower>.template_payload.json` |
-| Global | existe `global_report_payload.json` |
-| Comercial | existe `commercial_report_payload.json` |
-| Web | existe `working/<client>/presentation/index.html` |
-| Baseline smoke | los artefactos `smoke_ivirma` existen y la validación pasa |
-
-En el estado actual, cuando el smoke extiende a global debe ejercitar la consolidación canónica desde blueprints. Si el baseline global deja de poder regenerarse así, la lectura correcta ya no es “variante operativa”: es una regresión o una dependencia residual fuera del flujo principal.
-
-## Primer diagnóstico según síntoma
-
-| Síntoma | Primera lectura correcta | Acción inicial |
+| Checkpoint | Validación Empírica | Propósito en el Dominio |
 |---|---|---|
-| no nace ningún payload IA | fallo de acceso o entorno IA | ejecutar `check_vertex_ai_access` |
-| existen inputs base pero no blueprint | bloqueo en el engine de torre | revisar `run_tower_pipeline.py` y Vertex AI |
-| existe blueprint pero no annex | fallo del sintetizador ejecutivo | revisar `run_executive_annex_synthesizer.py` |
-| existe tower pero no global | problema de consolidación entre torres | revisar `build_global_report_payload.py` |
-| existe global pero no comercial | fallo en refino comercial | revisar `run_commercial_refiner.py` |
-| existe payload pero el DOCX sale mal | problema de render o plantilla | revisar renderer y plantilla, no la verdad base |
-| fallan tests ligados a `working/` | puede faltar baseline, no necesariamente hay bug nuevo | verificar artefactos antes de depurar código |
+| **Entorno Aislado Certificado** | Ejecución activa bajo `./.venv/` | Asegura el aislamiento de paquetes y consistencia de librerías. |
+| **Integridad de Dependencias** | `./.venv/bin/pip check` | Certifica la disponibilidad completa de las dependencias lógicas. |
+| **Gobernanza de Acceso a Vertex AI** | Ejecución de `check_vertex_ai_access.py` | Previene fallas tempranas de autenticación en llamadas generativas. |
+| **Aprovisionamiento de Entradas** | Presencia física de context-files y responses | Valida que la tubería disponga de materia prima para operar. |
+| **Disponibilidad de Ruta de Trabajo** | `working/<client>` legible y escribible | Garantiza los permisos de E/S necesarios para persistir artefactos. |
 
-Si la incoherencia observada es de **score vs banda cualitativa** entre torre, annex, global o web, la primera comprobación ya no debería ir a prompts ni plantillas: debe ir a la policy/helper compartida que traduce la banda y a los consumidores que la reutilizan.
+## Secuencia de Ejecución Estándar
 
-## Árbol corto de respuesta
+1.  **Preflight de Infraestructura Cloud:** Certificar el acceso al proveedor de IA antes de consumir créditos.
+2.  **Análisis por Dominio Tecnológico:** Ejecutar el flujo por torre para fabricar la verdad base de cada especialidad.
+3.  **Consolidación Ejecutiva Global:** Unificar el estado de las torres activas bajo la agenda directiva del cliente.
+4.  **Generación de Plan Comercial:** Formular propuestas de inversión y planes de cuenta acoplados a la verdad técnica.
+5.  **Compilación de Visualización Web:** Generar la interfaz web interactiva agregada para soporte de presentación.
+6.  **Validación y Certificación:** Ejecutar pruebas de regresión y smoke-tests para blindar el repositorio ante derivas.
 
-### 1. Falla antes de producir artefactos IA
+## Telemetría de Éxito por Fase
 
-Piensa primero en:
+| Fase | Artefacto de Certificación | Checkpoint de Salud Mínimo |
+|---|---|---|
+| **Preflight IA** | Retorno exitoso del script de acceso. | Autenticación y cuotas de Vertex AI certificadas. |
+| **Torre** | `blueprint_<tower>_payload.json` | Existencia y consistencia estructural frente al esquema de Pydantic. |
+| **Annex** | `approved_annex_<tower>.template_payload.json` | Handover directivo derivado sin contradicciones del blueprint. |
+| **Global** | `global_report_payload.json` | Agregación de torres refinada sin lógicas huérfanas de legado. |
+| **Comercial** | `commercial_report_payload.json` | Mapeo de oportunidades comerciales justificado técnicamente. |
+| **Web** | `working/<client>/presentation/index.html` | Dashboard HTML interactivo compilado sin pérdidas de datos. |
+| **Baseline Smoke** | Árbol `smoke_ivirma` completo. | Integridad de todos los artefactos físicos e informe de tests en verde. |
 
-- credenciales;
-- proyecto o location;
-- acceso base al modelo;
-- timeout del paso completo.
+*Nota de Gobernanza:* El smoke-test en su modo consolidado global (`--with-global`) ejecuta la agregación canónica nativa a partir de blueprints. Si el baseline global requiere de lógicas retrocompatibles para compilar, la anomalía debe depurarse prioritariamente como una desviación estructural del motor y no como una variante de ejecución permitida.
 
-La acción correcta suele ser:
+## Matriz de Diagnóstico de Incidentes por Síntoma
 
+| Síntoma Observable | Causa Raíz Probable | Acción Operativa Recomendada |
+|---|---|---|
+| Fallo en la instanciación de cualquier payload IA. | Interrupción de red, vencimiento de tokens o cuotas excedidas en Vertex AI. | Ejecutar la utilidad de diagnóstico `check_vertex_ai_access`. |
+| Entradas disponibles pero omisión en la generación de blueprints. | Bloqueo o timeout en el motor de síntesis de la torre. | Inspeccionar logs estructurados de `run_tower_pipeline.py`. |
+| Blueprint correcto pero ausencia o inconsistencia del anexo directivo. | Falla de aserción en el sintetizador ejecutivo de handover. | Auditar trazas de error de `run_executive_annex_synthesizer.py`. |
+| Blueprints estables pero falla en la consolidación global. | Conflicto de fusión o anomalía en el builder global de payloads. | Depurar lógica de agregación en `build_global_report_payload.py`. |
+| Payload global verificado pero error en la activación comercial. | Falla lógica en el refinador de cuenta. | Diagnosticar parámetros de ejecución de `run_commercial_refiner.py`. |
+| Payloads estables pero entregable OpenXML `.docx` corrupto o desalineado. | Desviación de diseño en la plantilla física o en el renderer OpenXML. | Corregir de forma desacoplada el script renderer y la plantilla física; prohibido alterar la lógica de negocio del payload. |
+| Interrupción de pruebas unitarias asociadas a la ruta de trabajo `working/`. | Desactualización o ausencia física de los artefactos del baseline. | Verificar la existencia de los JSON e inicializar el regenerador de smoke. |
+
+*Gobernanza Semántica de Métricas:* Ante inconsistencias observadas entre las métricas de score y las bandas cualitativas asociadas, la intervención correctiva debe ocurrir de forma obligatoria en la política de madurez compartida de la plataforma (`maturity_band.py`) y en sus consumidores centralizados, prohibiéndose la redefinición lógica local en prompts o renderizadores.
+
+## Protocolo de Intervención Rápida
+
+### 1. Interrupción de Red o Autenticación
+Ante sospechas de fallas de conexión o credenciales expiradas en Google Cloud, invoque:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
-### 2. Falla una capa derivada pero la anterior existe
+### 2. Deriva Contractual entre Capas
+Si una fase derivada falla pero la fase precedente completó con éxito:
+1.  Verifique la compatibilidad estructural del payload de origen frente a su esquema de Pydantic correspondiente.
+2.  Descarte la presencia de normalizaciones excepcionales no documentadas en la capa de renderizado.
+3.  Verifique la actualización física de las dependencias de datos del módulo consumidor.
 
-Piensa primero en:
+### 3. Degradación en la Capa Estética de Presentación
+Si los payloads de datos son correctos pero el deliverable final presenta distorsiones de diseño:
+1.  Verifique la alineación de estilos e integridad OpenXML en la plantilla de origen.
+2.  Inspeccione el mapeo de variables lógicas en el renderer de destino.
+3.  Se prohíbe realizar modificaciones directas en el código de negocio para subsanar desviaciones de formateo visual.
 
-- contrato roto entre etapas;
-- payload incompleto o desalineado;
-- normalización excesiva en render;
-- dependencia previa no regenerada.
+## Matriz de Recuperación ante Desastres
 
-### 3. Falla la presentación pero no el payload
-
-Piensa primero en:
-
-- renderer;
-- plantilla DOCX;
-- estilo o composición;
-- diferencias entre modo legacy y semántico.
-
-## Controles de recuperación recomendados
-
-| Escenario | Recuperación preferida |
+| Incidente Operacional | Ruta de Recuperación Certificada |
 |---|---|
-| baseline smoke perdido | usar `regenerate_smoke_artifacts` |
-| duda entre problema local o IA | ejecutar primero `--local-only` |
-| bloqueo largo en IA | usar timeouts explícitos del runner |
-| artefacto de torre ausente | relanzar torre o reanudar desde el paso apropiado |
-| artefacto global/comercial ausente | relanzar la fase consumidora inmediata |
+| **Eliminación accidental del baseline local** | Ejecutar el aprovisionador: `./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts` |
+| **Interrupción prolongada del proveedor Cloud** | Conmutar de forma segura a ejecución local libre de APIs: `--local-only` |
+| **Bloqueos transitorios por latencias de red** | Forzar la expiración transaccional configurando timeouts explícitos de ejecución. |
+| **Ausencia de telemetría por torre** | Relanzar el orquestador por torre o reanudar desde el checkpoint estable de origen. |
+| **Ausencia de telemetría global o comercial** | Relanzar específicamente la fase consumidora inmediata agregando los flags correspondientes. |
 
-## Qué no hacer
+## Prácticas Prohibidas y Anti-patrones Operacionales
 
-1. No asumir bug lógico solo porque falle un test que depende de `working/`.
-2. No usar un DOCX bonito como prueba de verdad estructural.
-3. No corregir en render un problema que pertenece al payload productor.
-4. No tratar el flujo legacy como si fuera la única referencia si ya existe payload moderno.
+1.  **Asunción Errónea de Defectos:** Atribuir fallas de aserción en pytest a bugs lógicos sin certificar previamente la integridad física del baseline en `working/`.
+2.  **Validación Basada en Presentación:** Consumir documentos OpenXML compilados de formato estético como prueba de la verdad estructural del diagnóstico.
+3.  **Parcheo Lateral:** Corregir inconsistencias de datos de negocio modificando la lógica de formateo del renderizador o alterando manualmente el documento de salida.
+4.  **Uso de Lógicas de Compatibilidad Residual:** Confiar en flujos o fallback heredados de forma preferente cuando el sistema ya dispone de payloads canónicos tipados.
 
-## Señales de que la operación está bajo control
+## Indicadores de Estabilidad Operativa
 
-- los payloads clave aparecen donde toca;
-- el baseline smoke es reproducible;
-- los errores distinguen bien entre IA, contrato y render;
-- la documentación canónica coincide con lo que realmente hace el repo.
+El estado operacional del motor se considera bajo gobernanza y control estricto cuando:
+-   Los payloads estructurados residen de forma íntegra en sus rutas deterministas.
+-   El andamiaje de pruebas `smoke_ivirma` es 100% reproducible y determinista.
+-   Las alertas e interrupciones discriminan con exactitud entre anomalías de API generativa, desviaciones contractuales o fallas de renderizado.
+-   La base de conocimiento de la plataforma coincide plenamente con el comportamiento ejecutable del repositorio.
 
-## Dónde profundizar
+## Referencias Cruzadas Autorizadas
 
-- ejecución: [`pipeline-execution.md`](pipeline-execution.md)
-- regeneración smoke: [`smoke-regeneration.md`](smoke-regeneration.md)
-- incidencias sobre `working/`: [`troubleshooting-working.md`](troubleshooting-working.md)
-- contratos: [`../contracts/artifact-contracts.md`](../contracts/artifact-contracts.md)
+-   **Ejecución y Flujos:** [`pipeline-execution.md`](pipeline-execution.md)
+-   **Regeneración de Smoke-test:** [`smoke-regeneration.md`](smoke-regeneration.md)
+-   **Troubleshooting y Diagnóstico General:** [`troubleshooting-working.md`](troubleshooting-working.md)
+-   **Contratos e Interfaces:** [`../contracts/artifact-contracts.md`](../contracts/artifact-contracts.md)
 
 
 # =========================================================================
@@ -3392,7 +3337,7 @@ source_of_truth:
 - ../../src/assessment_engine/application/tools/run_incremental_quality_gate.py
 - ../../src/assessment_engine/application/tools/run_incremental_typecheck.py
 - ../../tests/test_global_coherence.py
-last_verified_against: 2026-05-04
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -3403,87 +3348,71 @@ verification_mode: workflow
 
 # Engineering quality gates
 
-Esta pieza define cómo `assessment-engine` obliga a que los cambios nuevos sigan una disciplina de implementación coherente con el proyecto, más allá de que `pytest` pase o la documentación se haya tocado.
+Este documento establece y define las compuertas de calidad (*quality gates*) aplicadas de forma automatizada sobre el ciclo de vida del motor. Su propósito es asegurar que cualquier cambio de código se someta a análisis estáticos de calidad y tipado estricto, complementando las pruebas de comportamiento y verificaciones de coherencia documental.
 
-## Qué protege esta capa
+## Alcance de Validación (Superficie Activa)
 
-La puerta de calidad actual se aplica a la **superficie viva** del repo:
+Las compuertas automáticas restringen sus análisis estrictamente a la superficie de desarrollo activa del repositorio:
 
-- `src/assessment_engine/domain/`
-- `tests/`
+-   `src/assessment_engine/domain/`
+-   `tests/`
 
-Queda fuera el material archivado o meramente histórico, como `_PROJECT_ARCHIVE_/` o `docs/reference/generated/legacy-gemini/`, para no bloquear la evolución del código activo por deuda no operativa.
+Se excluyen deliberadamente las rutas históricas, obsoletas o generadas pasivamente (como la documentación técnica archivada en `docs/reference/generated/legacy-gemini/`), de modo que la deuda técnica heredada y no operativa no obstruya la agilidad en la integración de la base de código viva.
 
 ## Regla central
 
-Las reglas importantes del sistema no deben vivir solo en prompts, memoria del equipo o checklists manuales. Deben materializarse en una o más de estas capas ejecutables:
+Las invariantes lógicas y de negocio críticas del sistema no deben residir únicamente en prompts de LLMs, registros de memoria de equipo o listas de control manual. Es un requisito ineludible que cualquier regla transversal se materialice en uno o más de los siguientes mecanismos de validación deterministas:
 
-- helpers o políticas compartidas;
-- schemas y validaciones;
-- tests automáticos;
-- workflows y checks de CI.
+1.  **Políticas y Utilidades de Dominio Compartidas (Domain Policies):** Centralización de la lógica de negocio en helpers desacoplados.
+2.  **Esquemas de Datos Tipados y Validaciones de Restricción:** Modelamiento estricto mediante clases Pydantic.
+3.  **Pruebas Unitarias e Integración Automatizadas:** Cobertura de tests para bloquear regresiones.
+4.  **Flujos de Verificación Continua (CI/CD Quality Checkpoints):** Validación de integración mediante GitHub Actions.
 
-Si una decisión es importante para scoring, contratos, render, coherencia narrativa u operación, no puede depender solo de “acordarse”.
-
-Esta capa supone además que el cambio partió de una **spec mínima** y de un alcance explícito, tal como se describe en `agentic-development-workflow.md`.
+Cualquier decisión estructural asociada a la resolución cuantitativa, coherencia narrativa, contratos de interfaz o renderizado de deliverables no puede depender de supuestos o disciplina manual de codificación; debe estar respaldada por un guardarraíl ejecutable. El desarrollo de estas soluciones debe basarse en una especificación mínima aprobada, tal como se detalla en [`agentic-development-workflow.md`](agentic-development-workflow.md).
 
 ## Gates ejecutables actuales
 
-### Calidad incremental
+### 1. Calidad Estática Incremental
+El workflow `.github/workflows/quality.yml` orquesta la ejecución del script `src/assessment_engine/application/tools/run_incremental_quality_gate.py`.
 
-El workflow `.github/workflows/quality.yml` ejecuta `src/assessment_engine/application/tools/run_incremental_quality_gate.py`.
+El proceso de verificación realiza las siguientes operaciones secuenciales:
+1.  **Determinación de Delta de Cambios:** Identificación de archivos modificados empleando diffs de Git entre `base_sha` y `head_sha`.
+2.  **Filtrado de Ámbito Activo:** Selección exclusiva de rutas dentro de la superficie viva, descartando archivos eliminados en el árbol de trabajo actual.
+3.  **Análisis Estático (Linter):** Ejecución de `ruff check` sobre el delta de archivos modificados.
+4.  **Validación de Estilo (Formatter):** Inspección de formato empleando `ruff format --check`.
 
-Ese runner:
+Este enfoque incremental bloquea de manera proactiva la introducción de nueva deuda técnica sin requerir la refactorización inmediata de los componentes históricos del repositorio.
 
-1. calcula los ficheros Python cambiados entre `base_sha` y `head_sha`;
-2. filtra solo la superficie viva del proyecto (`src/assessment_engine/domain/**` y `tests/**`) y descarta rutas ya borradas en el árbol de trabajo;
-3. ejecuta `ruff check` sobre esos ficheros;
-4. ejecuta `ruff format --check` sobre esos mismos ficheros.
+### 2. Tipado Estático Incremental
+El workflow `.github/workflows/typing.yml` orquesta la ejecución del script `src/assessment_engine/application/tools/run_incremental_typecheck.py`.
 
-La adopción es **incremental**: el gate bloquea deuda nueva o modificada sin exigir sanear en esta misma iteración todo el histórico del repo.
+Este job reutiliza el mismo delta de cambios y ejecuta el análisis estático de tipos (`mypy`) exclusivamente sobre los archivos modificados dentro de `src/assessment_engine/domain/**` y `tests/**`. El objetivo de este checkpoint no es exigir la tipificación completa del código heredado de forma inmediata, sino blindar el crecimiento del sistema garantizando que cada nueva adición o modificación se adhiera al sistema de tipos estáticos.
 
-### Tipado incremental
+### 3. Coherencia de Dominio
+Para prevenir la duplicidad semántica de políticas y la fragmentación lógica (*split-brain*), los parámetros transversales de puntuación (*score*), bandas de madurez, gradientes cromáticos y metas cualitativas se encuentran consolidados.
 
-El workflow `.github/workflows/typing.yml` ejecuta `src/assessment_engine/application/tools/run_incremental_typecheck.py`.
-
-Ese runner reutiliza la misma selección incremental de ficheros vivos existentes y ejecuta `mypy` solo sobre los `.py` cambiados en `src/assessment_engine/domain/**` y `tests/**`.
-
-El objetivo de esta capa no es exigir ahora un repo 100% tipado, sino impedir que la superficie viva siga creciendo sin verificación estática básica.
-
-### Coherencia de dominio
-
-Las reglas transversales de score, banda, color y target no deben quedar duplicadas entre builder, renderizadores y dashboard.
-
-La resolución compartida de bandas vive ahora en `src/assessment_engine/infrastructure/maturity_band.py`. `run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y `render_web_presentation.py` consumen esa utilidad sin redefinir umbrales locales, mientras que `src/assessment_engine/infrastructure/global_maturity_policy.py` la reutiliza para la política global. La suite incluye tests de coherencia (`tests/test_global_coherence.py`) para bloquear derivas entre:
-
-- blueprints;
-- payload global;
-- render DOCX;
-- y dashboard web.
+El cálculo compartido de madurez reside de forma exclusiva en `src/assessment_engine/infrastructure/maturity_band.py`. Los componentes de ejecución (`run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y el compilador del dashboard web) consumen este servicio de forma centralizada sin implementar deducciones o umbrales locales. A su vez, `src/assessment_engine/infrastructure/global_maturity_policy.py` hereda esta misma política para mantener la equivalencia consolidada. La consistencia lógica transversal se blinda mediante aserciones dedicadas en `tests/test_global_coherence.py`.
 
 ## Reglas de implementación del proyecto
 
-- reutiliza helpers, schemas y utilidades compartidas antes de duplicar lógica;
-- no escondas lógica de negocio o de reporting importante solo en prompts;
-- si cambian contratos o payloads, alinea también tests y documentación canónica asociada;
-- si cambian score, banda, color, target o semántica cliente-facing, revisa también los tests de coherencia;
-- si una regla transversal no cabe en un linter genérico, conviértela en test de coherencia o en validación explícita;
-- no uses capas legacy o archivadas como nuevo source of truth.
+-   **Reutilización Imperativa:** Consumir siempre helpers, esquemas de datos y utilidades de dominio compartidas antes de duplicar lógicas de cálculo o formateo.
+-   **No Ocultación:** Toda lógica de negocio y de reporting técnico de alta relevancia debe codificarse de forma determinista en Python, prohibiéndose su ocultación exclusiva dentro de prompts de modelos de lenguaje.
+-   **Alineamiento Multidimensional:** Ante cambios en contratos o interfaces de payload, actualizar de forma obligatoria las suites de pruebas unitarias y la documentación canónica asociada.
+-   **Consistencia Directiva:** Si se modifican parámetros asociados al score, bandas de madurez, targets u otros elementos cliente-facing, es obligatorio sincronizar y certificar los tests en `tests/test_global_coherence.py`.
+-   **Aislamiento de Legado:** Prohibido emplear carpetas de compatibilidad heredada, archivos obsoletos o código muerto como fuente de verdad técnica para nuevas implementaciones.
 
 ## Relación con la revisión humana
 
-La automatización no sustituye la revisión de PR:
+Las compuertas automáticas constituyen condiciones necesarias pero no suficientes para la integración:
 
-- el checklist de `.github/pull_request_template.md` obliga a revisar impacto documental y de calidad;
-- ese mismo template incluye una sección específica de **assessment coherence checks** para PRs que tocan scoring, blueprint, annex, global, dashboard, prompts o `client_intelligence`;
-- `AGENTS.md` y `.github/copilot-instructions.md` remiten a esta política antes de programar con agentes;
-- la gobernanza documental sigue exigiendo actualizar la documentación canónica cuando cambian reglas, workflows o validadores.
-- el watcher `.github/workflows/orchestrator-pr-reconcile.yml`, cuando está habilitado para una PR gestionada, no sustituye estos gates: simplemente vuelve a invocar `resume-pr` en eventos directos de PR/review y deja que ese mismo run espere a que GitHub termine los checks antes de mergear o reparar.
-- la configuración operativa estable del watcher incluye un executor Gemini del repo para GitHub Actions y una credencial Gemini/Google válida; sin esa base, el watcher puede existir pero no se considera plenamente preparado para autoreparación fiable.
+-   El checklist de `.github/pull_request_template.md` exige la certificación explícita de impacto de calidad e integridad documental antes de la fusión.
+-   Dicho template incluye una sección dedicada de **assessment coherence checks** para Pull Requests que modifiquen componentes de scoring, payloads canónicos, prompts de LLM o el dossier estratégico `client_intelligence`.
+-   `AGENTS.md` y `.github/copilot-instructions.md` dirigen a las inteligencias artificiales a someterse a esta disciplina de calidad pre-vuelo antes de generar código.
+-   El orquestador de pull requests (`.github/workflows/orchestrator-pr-reconcile.yml`), cuando está operativo, actúa coordinando los reintentos de análisis estáticos y validaciones de estado, garantizando que el pipeline de fusión respete rigurosamente todas las compuertas del repositorio.
 
 ## Ejecución local recomendada
 
-Para validar los ficheros tocados en una rama:
+Para certificar localmente los archivos modificados en una rama de trabajo, ejecute:
 
 ```bash
 ./.venv/bin/python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
@@ -3501,15 +3430,14 @@ Para validar los ficheros tocados en una rama:
   tests/test_build_global_report_payload.py -q
 ```
 
-La suite completa de `pytest` sigue siendo obligatoria aparte.
+*Nota: La ejecución local de compuertas incrementales complementa, pero no sustituye, la obligación de ejecutar la suite de pruebas unitarias (`pytest`) del proyecto antes de confirmar los cambios.*
 
-## Próximo endurecimiento natural
+## Estrategia de Endurecimiento Futuro
 
-Cuando la superficie viva tenga menos deuda histórica, el siguiente salto natural es endurecer esta capa con:
-
-1. elevar el tipado incremental hacia módulos completos y no solo ficheros tocados;
-2. ampliar los tests de coherencia a scoring, severidad narrativa y dominios commercial/client-facing;
-3. reglas de arquitectura o dependencia más explícitas.
+Conforme la base de código viva avance en su consolidación, las compuertas de calidad se endurecerán bajo las siguientes directrices:
+1.  **Ampliación del Tipado:** Elevar el análisis de MyPy de nivel incremental (*fichero modificado*) a nivel de módulos y paquetes completos en `domain` y `application`.
+2.  **Endurecimiento de Coherencia:** Ampliar los tests de coherencia cruzada para englobar aserciones semánticas en la capa comercial, alineamiento térmico y correspondencia directa en payloads web.
+3.  **Validación Arquitectónica Estricta:** Incorporar análisis de dependencias de importación para blindar la estructura hexagonal, previniendo acoplamientos prohibidos entre adaptadores e infraestructura.
 
 ## Protección de Rama (`main`)
 
@@ -3541,7 +3469,7 @@ source_of_truth:
 - ../../.github/workflows/ci.yml
 - ../../.github/workflows/quality.yml
 - ../../.github/workflows/typing.yml
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -3552,133 +3480,115 @@ verification_mode: workflow
 
 # Agentic development workflow
 
-Esta guía define cómo debe desarrollarse software en `assessment-engine` cuando intervienen agentes de IA. El objetivo no es solo generar código más rápido, sino evitar deriva arquitectónica, duplicación semántica y cambios grandes mal especificados.
+Esta guía establece el protocolo operativo para el ciclo de desarrollo de software asistido por agentes de inteligencia artificial en `assessment-engine`. Su propósito es estructurar la interacción con los agentes autónomos para mitigar la deriva arquitectónica, prevenir la duplicidad lógica o semántica, y erradicar mutaciones de código deficientemente especificadas.
 
 ## Regla principal
 
-El agente no debe trabajar sobre instrucciones vagas. Debe trabajar sobre una **spec mínima verificable**, dentro de un **alcance acotado**, con **reglas ejecutables** y con **review humano centrado en semántica y arquitectura**.
+El agente autónomo tiene estrictamente prohibido operar sobre especificaciones ambiguas o imprecisas. Su intervención requiere una **Especificación Mínima Verificable (*Minimum Verifiable Specification*)**, un alcance rigurosamente delimitado, reglas de validación ejecutables y un proceso de revisión humana enfocado prioritariamente en la semántica del dominio y la cohesión de la arquitectura.
 
-## Flujo recomendado
+## Flujo de Trabajo Recomendado
 
-### 1. Especificar antes de implementar
+### 1. Especificación Previa a la Implementación
+Antes de iniciar cualquier modificación en la base de código, se debe declarar de forma determinista la siguiente información:
 
-Antes de tocar código, deja clara al menos esta información:
+-   **Definición del Problema:** Diagnóstico exacto de la desviación o capacidad ausente.
+-   **Alcance (*In-Scope*):** Delimitación quirúrgica de las modificaciones permitidas.
+-   **Exclusiones (*Out-of-Scope*):** Frontera explícita de componentes o archivos no modificables en esta iteración.
+-   **Impacto en Contratos:** Identificación de esquemas Pydantic o especificaciones canónicas afectadas.
+-   **Invariantes del Sistema:** Reglas de negocio y lógica estructural que deben permanecer inmutables tras el cambio.
+-   **Protocolo de Validación:** Criterios empíricos y suites de pruebas exigidas para certificar el cambio.
 
-- problema concreto;
-- alcance incluido;
-- alcance explícitamente fuera;
-- contratos o documentos canónicos afectados;
-- invariantes que no deben romperse;
-- validación esperada.
+Cualquier propuesta de Pull Request o sesión de desarrollo interactiva debe responder con exactitud a estas dimensiones para considerarse elegible para su ejecución.
 
-Una spec mínima válida para una PR o sesión debe responder a estas preguntas:
-
-1. ¿Qué cambio real se busca?
-2. ¿Qué no se debe tocar?
-3. ¿Qué fuente de verdad manda?
-4. ¿Qué reglas de dominio deben seguir intactas?
-5. ¿Cómo se detectará que el cambio degradó el sistema?
-
-## Plantilla mínima de spec
+## Plantilla Mínima de Especificación
 
 ```text
 Problema:
-- qué está mal o qué capacidad falta
+- Definición de la desviación observable o capacidad requerida.
 
 In scope:
-- cambios permitidos
+- Mutaciones permitidas y archivos objetivo.
 
 Out of scope:
-- cambios que no deben entrar en esta iteración
+- Límites de exclusión explícitos para esta iteración.
 
 Source of truth:
-- código, schemas, workflows o documentos canónicos que mandan
+- Código fuente, esquemas, flujos de CI o especificaciones canónicas que gobiernan la verdad.
 
 Invariantes:
-- reglas que deben seguir siendo ciertas tras el cambio
+- Comportamientos lógicos y estructurales que deben permanecer estables.
 
 Validación:
-- tests, checks o artefactos que deben pasar
+- Pruebas y aserciones de conformidad obligatorias.
 ```
 
-## Reglas de alcance
+## Reglas de Acotamiento de Alcance
 
-- prioriza cambios pequeños, reversibles y con frontera clara;
-- no mezcles refactor, feature nueva y rediseño semántico en una sola iteración si no es necesario;
-- si un cambio cruza varias capas, identifica primero qué helper o policy compartida debe absorber la lógica;
-- si una sesión necesita varias fases, mantén la spec y la trazabilidad vivas durante toda la ejecución.
+-   **Atomicidad:** Priorizar integraciones incrementales de cambios pequeños, totalmente reversibles y con interfaces claramente delimitadas.
+-   **No Mezcla de Tareas:** Evitar la coexistencia de refactorizaciones estructurales, adición de nuevas funcionalidades y rediseños semánticos en un único ciclo de integración.
+-   **Identificación de Abstracción:** Si las modificaciones impactan múltiples capas del sistema, definir o extender primero el helper o la política compartida correspondiente en el dominio.
+-   **Trazabilidad Multi-fase:** En desarrollos secuenciales complejos, mantener la especificación mínima y el registro de cambios actualizados durante todo el ciclo de vida del refinamiento.
 
-## Qué se considera best practice en este repo
+## Buenas Prácticas de Ingeniería en el Repositorio
 
-- **Uso estricto de Golden Paths:** Los agentes NUNCA deben crear nuevos componentes (endpoints, workers, scripts) desde cero. Siempre deben usar las plantillas de la carpeta `templates/golden_paths/` como andamiaje inicial para garantizar observabilidad, seguridad y logging consistentes.
-- una única fuente de verdad por semántica crítica;
-- lógica importante fuera de prompts y dentro de código, tests, schemas o workflows;
-- helpers o policies compartidas para reglas reutilizadas;
-- errores explícitos en zonas críticas en lugar de degradaciones silenciosas;
-- tests de coherencia cuando la semántica atraviesa varias capas;
-- cambios guiados por contratos y no por “texto que parece razonable”.
+-   **Uso Estricto de Golden Paths:** Los agentes de IA tienen estrictamente prohibido crear nuevos componentes o servicios (p. ej., endpoints, workers, scripts) desde cero. Deben utilizar obligatoriamente los andamiajes de andamiaje definidos en `templates/golden_paths/` para garantizar la homogeneidad de la telemetría, el registro estructurado de eventos y el control de accesos.
+-   **Centralización Semántica:** Mantener una única fuente de verdad lógica para cada regla de negocio.
+-   **Determinismo en Código:** Codificar toda lógica de negocio y de reporting en Python, absteniéndose de confinar reglas funcionales en prompts de LLMs.
+-   **Uso de Abstracciones de Dominio:** Apoyarse siempre en utilidades de infraestructura y políticas de dominio compartidas para reglas transversales.
+-   **Manejo de Errores Riguroso:** Implementar excepciones e interrupciones explícitas en rutas críticas en lugar de degradaciones silenciosas del estado.
+-   **Tests de Coherencia Transversal:** Certificar la consistencia conceptual mediante aserciones cruzadas cuando una regla afecte a múltiples capas de datos.
 
-## Qué se considera mala práctica
+## Prácticas Prohibidas (Anti-patrones)
 
-- dejar lógica de negocio solo en prompts;
-- duplicar score, target, band, color, severidad o prioridades en varios sitios;
-- meter defaults silenciosos en zonas críticas;
-- capturar errores amplios sin señal auditable;
-- cambiar más superficie de la necesaria;
-- introducir una segunda fuente de verdad “temporal” que luego se queda.
+-   Confinar lógica funcional o reglas de negocio dentro de prompts de modelos de lenguaje.
+-   Duplicar constantes o lógicas de asignación de scores, bandas de madurez, gradientes o severidades.
+-   Implementar defaults silenciosos en compuertas lógicas críticas.
+-   Capturar excepciones globales (`except Exception`) sin registrar una señal estructurada y auditable de error.
+-   Modificar archivos o componentes que excedan el alcance mínimo declarado.
+-   Introducir fuentes de verdad temporales o parches transitorios.
 
-## Review humano esperado
+## Criterios de Revisión Humana (*Code Review*)
 
-En PR review, el foco principal no debe ser estilo superficial, sino estas preguntas:
+Durante el proceso de revisión de pull requests, la evaluación técnica debe priorizar las siguientes aserciones antes que el estilo superficial:
 
-1. ¿La PR parte de una spec clara?
-2. ¿El alcance es razonable o intenta hacer demasiadas cosas?
-3. ¿Se ha duplicado lógica existente en vez de reutilizar helpers o policies?
-4. ¿Se ha introducido una nueva fuente de verdad?
-5. ¿Se han protegido las invariantes con tests o checks?
-6. ¿La documentación canónica y la trazabilidad siguen alineadas?
-7. ¿El agente pudo haber generado código correcto en apariencia pero semánticamente equivocado?
+1.  ¿La integración parte de una Especificación Mínima Verificable?
+2.  ¿El alcance es atómico y respeta los límites de exclusión declarados?
+3.  ¿Se reutilizan las abstracciones y helpers del dominio en lugar de duplicar lógica?
+4.  ¿Se previene rigurosamente la introducción de fuentes de verdad lógicas alternativas?
+5.  ¿Se han blindado las invariantes del sistema mediante aserciones en la suite de pruebas?
+6.  ¿La especificación en `docs/documentation-map.yaml` y la documentación canónica permanecen alineadas?
+7.  ¿Se ha verificado que la sintaxis generada por el agente no introduce alucinaciones semánticas en el dominio?
 
-Cuando la PR toque semántica cliente-facing o coherencia transversal, esa revisión debe quedar también materializada en la sección **Assessment coherence checks** de `.github/pull_request_template.md`, no solo en comentarios ad hoc.
+Cualquier PR que modifique la semántica orientada al cliente o la coherencia entre fases debe certificar de manera obligatoria la sección **Assessment coherence checks** en `.github/pull_request_template.md`.
 
-## Relación con los gates automáticos
+## Interacción con Compuertas Automáticas
 
-Los gates automáticos actuales (`pytest`, `quality`, `typing`, gobernanza documental) son necesarios, pero no suficientes por sí solos.
+Los validadores automatizados del repositorio representan compuertas necesarias pero no suficientes para la integración del cambio.
 
-El workflow correcto es:
+El ciclo de desarrollo recomendado sigue esta secuencia determinista:
+1.  **Declaración:** Confeccionar la Especificación Mínima Verificable.
+2.  **Acotamiento:** Limitar el entorno de trabajo al delta de cambios mínimo.
+3.  **Implementación:** Codificar la solución apoyándose en esquemas Pydantic y políticas de dominio.
+4.  **Certificación Local:** Ejecutar localmente la suite de pruebas unitarias y los validadores de calidad.
+5.  **Revisión:** Someter el PR a revisión humana orientada a arquitectura y semántica.
+6.  **Ciclo de Feedback:** Subsanar observaciones iterativamente sin evadir las compuertas automáticas.
+7.  **Fusión:** Completar el merge una vez que todos los checks automáticos de GitHub estén en verde.
 
-1. spec mínima;
-2. cambio acotado;
-3. implementación con helpers/policies/contratos;
-4. tests y checks;
-5. review humano orientado a arquitectura y semántica;
-6. si la PR recibe feedback automático o de review, nueva iteración de corrección sin saltarse los mismos gates;
-7. merge solo cuando GitHub deja la PR verde y sin conversaciones bloqueantes.
+Si se utiliza un agente autónomo para la reconciliación automatizada pos-PR, sus operaciones se rigen estrictamente bajo el siguiente mandato operativo:
+-   Analizar de forma exhaustiva los logs de error de las compuertas de GitHub y los comentarios de revisión.
+-   Sincronizar y re-integrar la rama de trabajo con la base `main` cuando GitHub indique desactualización.
+-   Resolver y depurar de forma quirúrgica las desviaciones en la rama.
+-   Verificar localmente la conformidad del cambio empleando las herramientas de calidad del repositorio.
+-   Realizar el push del delta correctivo.
+-   Monitorear pasivamente los checks oficiales de integración, deteniéndose inmediatamente ante bloqueos de gobernanza o restricciones de protección de rama que escapen a sus atribuciones de contexto.
 
-Si un agente automatiza el post-PR reconciliation, su mandato no es “forzar el merge”, sino exactamente esto:
+## Regla de Bloqueo Operativo
 
-- leer checks y review threads;
-- sincronizar la rama con la base cuando GitHub la marque como desactualizada;
-- corregir en la rama;
-- rerun de validaciones locales del repo;
-- push del follow-up;
-- esperar de nuevo los checks oficiales;
-- detenerse si la PR sigue bloqueada por reglas humanas o de protección que no puede satisfacer legítimamente.
+Si un ciclo de desarrollo interactivo asistido por agente no dispone de una definición inequívoca del problema, delimitación del alcance de cambio, identificación de la fuente de verdad gobernante y especificación de las invariantes a proteger, **la sesión carece de elegibilidad técnica para realizar modificaciones físicas sobre el repositorio.**
 
-## Regla operativa para agentes
+## Interacción con Requerimientos de Negocio
 
-Si una sesión con agente no puede responder con claridad qué cambia, qué no cambia, qué fuente de verdad manda y qué invariantes protege, la sesión todavía no está lista para implementar.
-
-## Traducción desde lenguaje product owner
-
-Cuando la petición venga desde negocio y no desde un programador, el flujo recomendado no es pedir directamente “haz el cambio”, sino usar el orquestador descrito en `product-owner-orchestrator.md`.
-
-Ese orquestador convierte la intención de negocio en:
-
-- spec mínima;
-- tareas pequeñas;
-- validación estándar;
-- PR con trazabilidad.
+Cuando una iniciativa provenga directamente de requerimientos funcionales o comerciales de negocio (*Product Owner*) en lugar de especificaciones técnicas directas, se debe invocar el orquestador descrito en [`product-owner-orchestrator.md`](product-owner-orchestrator.md) para traducir y estructurar la intención comercial en especificaciones atómicas, tareas lógicas acotadas y aserciones de conformidad automáticas antes de intervenir la base de código.
 
 
 # =========================================================================
@@ -3693,7 +3603,7 @@ Ese orquestador convierte la intención de negocio en:
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- ../../bin/po-run
+- ../../pyproject.toml
 - ../../engine_config/policies/orchestrator_policy.json
 - ../../engine_config/runtime_manifest.json
 - ../../src/assessment_engine/infrastructure/product_owner_models.py
@@ -3752,14 +3662,14 @@ python src/assessment_engine/application/tools/run_product_owner_orchestrator.py
   --executor-command "mi-agente-coder --repo {repo_root} --task-file {task_prompt_file}"
 ```
 
-Para uso diario local existe además un wrapper más friendly:
+Para uso diario local existe además un comando CLI nativo `po-run`:
 
 ```bash
-./bin/po-run "Quiero que el informe global priorice los riesgos criticos de continuidad"
-./bin/po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
+po-run "Quiero que el informe global priorice los riesgos criticos de continuidad"
+po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
 ```
 
-Ese wrapper:
+Ese comando:
 
 - usa `./.venv/bin/python` cuando existe y, si no, cae a `python`/`python3`;
 - permite pasar la petición inline o con `--request-file`;
@@ -3799,7 +3709,7 @@ Para cada tarea:
 4. ejecuta validaciones estándar del repo;
 5. si falla, reintenta pasando feedback de validación a la siguiente iteración.
 
-El wrapper `./bin/po-run` exporta además `PYTHONDONTWRITEBYTECODE=1` por defecto para no ensuciar el worktree con `__pycache__/` durante la propia ejecución del orquestador.
+El comando CLI `po-run` exporta además `PYTHONDONTWRITEBYTECODE=1` por defecto para no ensuciar el worktree con `__pycache__/` durante la propia ejecución del orquestador.
 
 ### 3. Validación estándar
 

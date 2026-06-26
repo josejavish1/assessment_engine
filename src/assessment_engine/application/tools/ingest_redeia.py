@@ -12,11 +12,11 @@ async def ingest_documents():
     # Asegurar que el directorio de almacenamiento existe
     storage_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Fragmentación (Evidence Engine)
+    # 1. Fragmentation (Evidence Engine)
     print("Iniciando Evidence Engine...")
     evidence_engine = EvidenceEngine(client_id=client_id, storage_dir=storage_dir)
 
-    context_file = storage_dir / "contexto_redeia_elite.docx"
+    context_file = storage_dir / "context_redeia.docx"
     responses_file = storage_dir / "preguntas_redeia_con_notas.txt"
 
     print(f"Ingestando {context_file}...")
@@ -27,7 +27,7 @@ async def ingest_documents():
 
     print(f"Total fragmentos: {len(evidence_engine.ledger.fragments)}")
 
-    # 2. Árbol RAG (Raptor Engine)
+    # 2. RAG Tree (Raptor Engine)
     print("Iniciando Raptor Engine (esto puede tardar unos minutos)...")
     raptor = RaptorEngine(client_id=client_id, storage_dir=storage_dir)
     await raptor.build_tree(evidence_engine.ledger.fragments)

@@ -28,7 +28,7 @@
             "name": "docs-governance",
             "command": [
                 "python",
-                "src/assessment_engine/scripts/tools/validate_documentation_governance.py",
+                "src/assessment_engine/application/tools/validate_documentation_governance.py",
                 "--repo-root",
                 ".",
                 "--documentation-map",

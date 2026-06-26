@@ -810,6 +810,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     # Enrich initiative charters with budgetary and resource estimates.
     print("💼 [Bid Manager] Enriqueciendo proyectos con WBS, TCO, y ROI...")
     try:
+        from assessment_engine.infrastructure.config_loader import load_rate_card
+        rate_data = load_rate_card()
+
         from assessment_engine.domain.prompts.blueprint_prompts import (
             get_bid_manager_prompt,
         )
@@ -894,44 +897,38 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 schema=ProjectCharterEnrichment,
             )
             if enrichment_data:
-                #
-                rate_card_path = Path("engine_config/rate_card.json")
-                if rate_card_path.exists():
-                    try:
-                        rate_data = json.loads(
-                            rate_card_path.read_text(encoding="utf-8-sig")
+                try:
+                    rates = rate_data.get("tarifas_hora", {})
+                    margin = rate_data.get("margenes", {}).get("consultoria", 0.45)
+
+                    total_cost = 0.0
+                    for task in enrichment_data.get("wbs_breakdown", []):
+                        profile = task.get("required_profile", "experto")
+                        hours = task.get("estimated_hours", 0)
+                        rate = rates.get(
+                            profile, 58
+                        )  # If the primary model fails, reroute the request to the 'experto' model configuration as a fallback.
+                        total_cost += hours * rate
+
+                    sell_price = total_cost / (1 - margin)
+                    enrichment_data["opex_estimate"] = (
+                        f"{sell_price:,.2f} €".replace(",", "X")
+                        .replace(".", ",")
+                        .replace("X", ".")
+                    )
+
+                    sizing = proj.get("sizing", "M").upper()
+                    if sizing in ["L", "XL"]:
+                        enrichment_data["capex_estimate"] = (
+                            "~150.000,00 € (Estimación paramétrica de licenciamiento Enterprise / Nodos físicos)"
                         )
-                        rates = rate_data.get("tarifas_hora", {})
-                        margin = rate_data.get("margenes", {}).get("consultoria", 0.45)
-
-                        total_cost = 0.0
-                        for task in enrichment_data.get("wbs_breakdown", []):
-                            profile = task.get("required_profile", "experto")
-                            hours = task.get("estimated_hours", 0)
-                            rate = rates.get(
-                                profile, 58
-                            )  # If the primary model fails, reroute the request to the 'experto' model configuration as a fallback.
-                            total_cost += hours * rate
-
-                        sell_price = total_cost / (1 - margin)
-                        enrichment_data["opex_estimate"] = (
-                            f"{sell_price:,.2f} €".replace(",", "X")
-                            .replace(".", ",")
-                            .replace("X", ".")
+                    else:
+                        enrichment_data["capex_estimate"] = (
+                            "Bajo / Nulo (Suscripciones cloud menores a 20.000€)"
                         )
 
-                        sizing = proj.get("sizing", "M").upper()
-                        if sizing in ["L", "XL"]:
-                            enrichment_data["capex_estimate"] = (
-                                "~150.000,00 € (Estimación paramétrica de licenciamiento Enterprise / Nodos físicos)"
-                            )
-                        else:
-                            enrichment_data["capex_estimate"] = (
-                                "Bajo / Nulo (Suscripciones cloud menores a 20.000€)"
-                            )
-
-                    except Exception as finops_err:
-                        print(f"⚠️ Error calculando FinOps matemático: {finops_err}")
+                except Exception as finops_err:
+                    print(f"⚠️ Error calculando FinOps matemático: {finops_err}")
 
                 if (
                     "commercial_name" in enrichment_data

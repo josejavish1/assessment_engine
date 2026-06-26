@@ -29,6 +29,10 @@ dependencies = [
     "libcst"
 ]
 
+[project.scripts]
+assessment-engine = "assessment_engine.application.cli:main"
+po-run = "assessment_engine.application.tools.run_product_owner_orchestrator:main"
+
 [tool.ruff]
 line-length = 88
 target-version = "py311"

@@ -6,7 +6,7 @@ source_of_truth:
 - src/assessment_engine/application/
 - src/assessment_engine/domain/mcp_server.py
 - src/assessment_engine/domain/schemas/
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -23,15 +23,15 @@ verification_mode: mixed
 
 ## 1. Vision & Core Principles
 
-The `assessment-engine` is a document generation factory designed to produce B2B technology assessment deliverables. It uses a Python-orchestrated, AI-assisted pipeline to transform raw evaluation data into a series of coherent, high-value reports, from deep technical analyses to strategic executive summaries.
+The `assessment-engine` is a document generation factory designed to produce structured technological assessment deliverables. The engine implements a Python-orchestrated, LLM-assisted execution pipeline to process raw evaluation telemetry and structured evidence into a series of coherent, consistent reports, spanning deep technical blueprints and executive-level consolidations.
 
 The system is governed by several key architectural principles:
 
--   **Top-Down Flow:** High-level documents (e.g., an executive summary) are exclusively derived from more detailed documents (e.g., a technical blueprint). This prevents "split-brain" inconsistency and ensures all artifacts are aligned.
--   **Contract-First:** All communication between pipeline stages is done through data artifacts (`payloads`) with a strictly defined structure (Pydantic Schemas). This makes the system predictable and robust.
--   **Python Orchestration, AI Operation:** The control flow, business logic, and pipeline decisions are explicitly handled by Python scripts. AI acts as a specialized "operator" that performs specific creative or analytical tasks within the boundaries of its data contract.
--   **Decoupled Rendering:** The logic that generates the content (the data) is completely separate from the logic that presents it (the generation of `.docx` or `.html` files).
--   **Service-Oriented / Dual-Mode Operation:** The engine can be run as a linear command-line pipeline or expose its capabilities as a tool server for external orchestration.
+-   **Top-Down Flow:** High-level documents (e.g., an executive summary) are exclusively derived from more detailed documents (e.g., a technical blueprint). This eliminates "split-brain" contradictions by ensuring all summary artifacts inherit data directly from their parent technical blueprints.
+-   **Contract-First:** Communication between pipeline stages is strictly governed by Pydantic schemas. This enforces explicit, typed data contracts at every transition point.
+-   **Python Orchestration, AI Operation:** Control flow, topological sorting, and execution boundaries are managed deterministically by Python. Large Language Models are employed as functional executors for textual synthesis and reasoning tasks, operating strictly within the schemas defined by their contracts.
+-   **Decoupled Rendering:** Content generation (semantic payload assembly) is decoupled from the presentation layers (compilation to `.docx` or `.html` files).
+-   **Service-Oriented / Dual-Mode Operation:** The system operates either as a linear batch CLI pipeline or as an asynchronous Model Context Protocol (MCP) server, exposing capabilities as typed tools.
 
 ---
 
@@ -114,9 +114,9 @@ For the current canonical breakdown, also see:
 - [`architecture/mcp-mode.md`](architecture/mcp-mode.md)
 - [`architecture/working-artifacts.md`](architecture/working-artifacts.md)
 
--   **Optional upstream enrichment: Client Intelligence.** `run_intelligence_harvesting.py` can create `working/<client>/client_intelligence.json`, a reusable strategic dossier that later steps may consume. The tower blueprint engine and some renderers can use it if present, but the main pipelines do not require it to exist for every run.
+-   **Optional Upstream Enrichment: Client Intelligence.** `run_intelligence_harvesting.py` generates `working/<client>/client_intelligence.json`. This dossier encapsulates organizational context, enabling downstream LLM prompts to align with client-specific terminology and structures if present, but the main pipelines do not require it to exist for every run.
 
--   **Phase 1: Tower Analysis.** This is the core engine. For each technology tower (for example, `T5`), the system first runs deterministic preparation (`case_input.json`, `evidence_ledger.json`, `scoring_output.json`, `findings.json`). Then `run_tower_blueprint_engine.py` creates `blueprint_<tower>_payload.json`, which is the tower's canonical source of truth. `run_executive_annex_synthesizer.py` derives `approved_annex_<tower>.template_payload.json` from that blueprint, and the renderers produce the final DOCX outputs.
+-   **Phase 1: Tower Analysis.** This is the core engine. For each technology domain (Tower), deterministic preparation modules generate `case_input.json`, `evidence_ledger.json`, `scoring_output.json`, and `findings.json`. Following this, `run_tower_blueprint_engine.py` aggregates these inputs to generate `blueprint_<tower>_payload.json` via LLM-guided synthesis. This file acts as the single source of truth for the tower. Subsequent steps, such as `run_executive_annex_synthesizer.py`, derive specialized payloads (e.g., `approved_annex_<tower>.template_payload.json`) directly from this blueprint before compilation to DOCX.
 
 -   **Phase 2: Global Consolidation.** Once one or more towers have produced blueprints, `build_global_report_payload.py` aggregates them into `global_report_payload.json` from those blueprints. The active path is now blueprint-first without legacy fallback in the global builder. `run_executive_refiner.py` then refines the same `global_report_payload.json` in place.
 
@@ -130,9 +130,9 @@ For the current canonical breakdown, also see:
 
 The system is designed to be used in two distinct modes:
 
--   **1. Pipeline Mode:** This is the primary mode of operation, executed via the command line. The orchestrators (`run_tower_pipeline.py`, `run_global_pipeline.py`) are called to run the entire, pre-defined sequence of steps in a batch process. This is ideal for standard, end-to-end report generation.
+-   **1. Pipeline Mode:** The primary batch execution path. The orchestrators (`run_tower_pipeline.py`, `run_global_pipeline.py`, and `run_commercial_pipeline.py`) execute the sequence of deterministic and LLM-assisted steps linearly, ensuring transactional consistency and artifact caching.
 
--   **2. Tool Server Mode:** The `mcp_server.py` script exposes selected capabilities as tools via FastMCP. This mode is useful for integrations and external supervisors, but it is not the main canonical path. Part of its surface still reflects the older section-based architecture, especially `get_tower_state`, which inspects legacy `approved_asis/generated` style artifacts rather than the current blueprint-first flow.
+-   **2. Model Context Protocol (MCP) Mode:** Exposes select pipeline tasks as tools. This mode facilitates integration with developer environments and agentic loops, although certain tool surfaces retain compatibility with legacy structures. (The `mcp_server.py` script exposes selected capabilities as tools via FastMCP, e.g., `get_tower_state` which inspects legacy `approved_asis/generated` style artifacts).
 
 ---
 
@@ -140,23 +140,40 @@ The system is designed to be used in two distinct modes:
 
 The project is organized into several key component types. The legacy per-file reference is now archived under `docs/reference/generated/legacy-gemini/`, but canonical narrative documentation should now live under `docs/architecture/`, `docs/operations/`, `docs/contracts/`, and related top-level docs.
 
--   **Orchestrators:** Python scripts that define and execute the sequence of a pipeline. (e.g., `run_tower_pipeline.py`).
--   **Logic & Preparation Scripts:** Deterministic Python scripts that prepare data, calculate metrics, or generate visual assets. (e.g., `run_scoring.py`, `generate_tower_radar_chart.py`).
--   **AI Engines & Refiners:** Python scripts that orchestrate AI agents to perform complex analysis or creative generation. (e.g., `run_tower_blueprint_engine.py`, `run_commercial_refiner.py`).
--   **Renderers:** Scripts responsible for the final presentation layer, converting data payloads into `.docx` or `.html` files. (e.g., `render_global_report_from_template.py`, `render_web_presentation.py`).
--   **Prompts:** The "source code" for the AI agents, defining their personality, rules, and tasks.
--   **Schemas:** Pydantic models that define the "data contracts" for all the `payloads` exchanged between scripts.
--   **Libraries (`lib/`):** Reusable Python utilities for common tasks like interacting with the AI, loading configuration, or cleaning text.
--   **Support & Testing (`tools/`, `bootstrap/`, `tests/`):** Scripts for preflight checks, smoke regeneration, initialization, validation, and quality control.
+-   **Orchestrators:** Scripts defining the execution sequence and managing task state (e.g., `run_tower_pipeline.py`).
+-   **Preparation & Computation:** Deterministic scripts calculating quantitative metrics, sorting topologies, and compiling input telemetry (e.g., `run_scoring.py`, `generate_tower_radar_chart.py`).
+-   **LLM-Assisted Synthesis & Refinement:** Scripts leveraging models for domain analysis, structural drafting, and stylistic consolidation under strict schema constraints (e.g., `run_tower_blueprint_engine.py`, `run_commercial_refiner.py`).
+-   **Renderers & Compilers:** Modules mapping Pydantic-validated JSON payloads into presentation formats such as OpenXML `.docx` or semantic `.html` (e.g., `render_global_report_from_template.py`).
+-   **Prompt Templates:** Versioned, structured text templates defining agent boundaries, execution instructions, and output schemas.
+-   **Data Contracts (Schemas):** Strict Pydantic models that validate and structure every intermediate payload exchanged between modules.
+-   **Core Utilities (`infrastructure/`):** Common modules for LLM API invocation, configuration parsing, logging, and string utilities.
+-   **Verification & Lifecycle:** Preflight verification scripts, automated smoke-test generators, and test suites.
 
 ---
 
-## 6. Historical Context: The "Legacy" Architecture
+## 6. Declarative Engine Configuration & Latent Infrastructure
+
+The behavior of the execution pipeline is driven declaratively via files inside the `engine_config/` directory. This allows fine-tuning and policy enforcement without code alterations.
+
+To preserve institutional knowledge and support upcoming roadmap phases, the system maintains several highly valuable **latent design artifacts** under this directory. These represent planned infrastructure that should not be deleted, as they outline the future path of the engine's capabilities:
+
+-   **OPA Rego Policy Validation (`engine_config/policies/ontology/vendor_constraints.rego`):**
+    -   **Status:** Planned / Latent Infrastructure.
+    -   **Description:** Implements strict Open Policy Agent (Rego) syntax to enforce semantic constraints on generated claims and technological drivers. It acts as a safety barrier to prevent competitor "hallucination collisions" (e.g., mixing exclusive market rivals or preventing false entities like "Microsoft AWS").
+    -   **Roadmap Integration:** Planned for integration into the core Policy Engine (`policy_engine.py`) to programmatically validate synthesized payloads before compilation.
+-   **Differentiated Content Rendering Modes (`engine_config/render_modes/tower_annex_modes.json`):**
+    -   **Status:** Planned / Latent Infrastructure.
+    -   **Description:** Specifies quantitative boundaries (e.g., maximum word counts, headlines, key message limits) for different deliverables depending on the requested target profile (such as `standard_high_value` or `executive_light`).
+    -   **Roadmap Integration:** Scheduled to be loaded dynamically by downstream generation and refinement engines to programmatically enforce narrative verbosity profiles based on the selected mode.
+
+---
+
+## 7. Historical Context: The "Legacy" Architecture
 
 The `_legacy` folders in the `scripts` and `docs` directories contain the previous version of the architecture.
 
--   **Old Model ("Bottom-Up"):** The original design generated each section of a report (`AS-IS`, `TO-BE`, `GAP`, etc.) in parallel, isolated processes. At the end, a script (`assemble_tower_annex.py`) would "assemble" these independent JSON files into a final report.
--   **The "Split-Brain" Problem:** This approach suffered from a critical flaw: since the `AS-IS` and `TO-BE` sections were created without knowledge of each other, the resulting `GAP` analysis could be inconsistent or illogical.
--   **The Solution ("Top-Down"):** The current architecture was created to solve this. By generating the most detailed document (the Blueprint) first and then deriving all other summaries from it, consistency is guaranteed by design.
+-   **Asynchronous Parallel Drafting (Bottom-Up):** The legacy architecture generated report sections (`AS-IS`, `TO-BE`, `GAP`) in isolated, parallel processes, merging them at compilation via `assemble_tower_annex.py`.
+-   **Logical Coherence Failure (Split-Brain):** Since sections were generated in isolation, they lacked contextual cohesion. The resulting gap analysis often diverged from the baseline state, producing contradictory narratives.
+-   **Deterministic Derivation (Top-Down):** The blueprint-first model generates a unified, detailed technical blueprint as the absolute source of truth. All summary sheets, roadmap items, and commercial deliverables are derived directly from this single payload, guaranteeing consistency by design.
 
 Understanding this evolution is key to understanding the rationale behind the current system's structure.

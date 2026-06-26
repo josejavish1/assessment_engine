@@ -740,20 +740,13 @@ def compile_docx(tower_dir: str, output_path: str):
 
     print(f"📦 Compilando Anexo Técnico AS-IS Word desde módulos en: {modules_dir}")
 
-    # Internationalization (i18n) settings are loaded from a central configuration file to support multiple regions.
-    locales_path = Path("engine_config/locales.json")
-    locales = {}
-    if locales_path.exists():
-        with open(locales_path, "r", encoding="utf-8-sig") as lf:
-            locales = json.load(lf)
-
     # Dynamically load corporate brand profiles based on the operational context.
-    brand_path = Path("engine_config/brand_profile.json")
-    with open(brand_path, "r", encoding="utf-8-sig") as bf:
-        brand = json.load(bf)
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    brand = load_brand_profile()
 
     company_name = brand.get("company_name", "NTT DATA")
     classification = brand.get("default_classification", "Confidencial")
+    disclaimer_text = brand.get("disclaimer_text", "")
 
     styling = brand.get("styling", {})
     p_color_hex = styling.get("primary_color_hex", "0072BC")
@@ -825,6 +818,16 @@ def compile_docx(tower_dir: str, output_path: str):
             doc_version = tower_meta.get("version", doc_version)
             currency = tower_meta.get("currency", currency)
 
+            # Resolve localized brand attributes
+            if "locales" in brand:
+                lang_brand = brand["locales"].get(
+                    doc_lang, brand["locales"].get("es", {})
+                )
+                classification = lang_brand.get(
+                    "default_classification", classification
+                )
+                disclaimer_text = lang_brand.get("disclaimer_text", disclaimer_text)
+
     if scoring_path.exists():
         with open(scoring_path, "r", encoding="utf-8-sig") as f:
             s_data = json.load(f)
@@ -838,7 +841,8 @@ def compile_docx(tower_dir: str, output_path: str):
 
     # Resolve the translation dictionary for the current session. This implementation is designed to be tenant-agnostic.
     vocab_fallback = LANG_VOCAB.get(doc_lang, LANG_VOCAB.get("es", {}))
-    vocab_loaded = locales.get(doc_lang, locales.get("es", {}))
+    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    vocab_loaded = resolve_localized_vocabulary(doc_lang)
     vocab = {**vocab_fallback, **vocab_loaded}
     org_label = (
         "holding" if client_group else ("group" if doc_lang == "en" else "organización")
@@ -1682,42 +1686,93 @@ def compile_docx(tower_dir: str, output_path: str):
     add_appendix_heading(doc, vocab["appendix_a_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_a_intro"], text_color_rgb=text_color_rgb)
 
-    glossary_path = Path("engine_config/abbreviations_glossary.json")
-    if glossary_path.exists():
-        with open(glossary_path, "r", encoding="utf-8-sig") as gf:
-            glossary = json.load(gf)
+    from assessment_engine.infrastructure.config_loader import load_abbreviations_glossary
+    import re
 
-        gloss_table = doc.add_table(rows=1, cols=2)
-        gloss_table.alignment = WD_TABLE_ALIGNMENT.LEFT
-        finalize_table(gloss_table)
+    try:
+        full_glossary = load_abbreviations_glossary()
 
-        for i, h_txt in enumerate(vocab["appendix_a_headers"]):
-            set_cell_text_custom(
-                gloss_table.rows[0].cells[i],
-                h_txt,
-                bold=True,
-                font_size=9,
-                color_rgb=RGBColor(255, 255, 255),
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-            )
-            shade_cell(gloss_table.rows[0].cells[i], p_color_hex)
+        # Merge case-specific client abbreviations if they exist in the case directory
+        client_glossary_path = tower_dir_obj / "client_abbreviations_glossary.json"
+        if client_glossary_path.exists():
+            try:
+                with open(client_glossary_path, "r", encoding="utf-8-sig") as cgf:
+                    client_glossary = json.load(cgf)
+                    for lang, terms in client_glossary.items():
+                        if lang in full_glossary:
+                            full_glossary[lang].update(terms)
+                        else:
+                            full_glossary[lang] = terms
+            except json.JSONDecodeError as ex:
+                print(f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}")
+            except Exception as ex:
+                print(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
-        #
-        gloss_table.rows[0].cells[0].width = Inches(1.5)
-        gloss_table.rows[0].cells[1].width = Inches(5.0)  #
+        # Get localized glossary dictionary
+        glossary = full_glossary.get(doc_lang, full_glossary.get("es", {}))
 
-        for g_idx, (term, desc) in enumerate(sorted(glossary.items())):
-            row = gloss_table.add_row()
-            set_cell_text_custom(row.cells[0], term, bold=True, font_size=8.5)
-            set_cell_text_custom(row.cells[1], desc, font_size=8)
+        # Gather all text accumulated in paragraphs and tables so far
+        all_text_elements = []
+        for p in doc.paragraphs:
+            if p.text:
+                all_text_elements.append(p.text)
+        for t in doc.tables:
+            for row in t.rows:
+                for cell in row.cells:
+                    if cell.text:
+                        all_text_elements.append(cell.text)
+        text_corpus = " ".join(all_text_elements)
+
+        # Filter glossary keys that are actually present in the text corpus
+        used_glossary = {}
+        for term, desc in glossary.items():
+            escaped_term = re.escape(term)
+            pattern = rf"(?<![a-zA-Z0-9]){escaped_term}(?![a-zA-Z0-9])"
+            if re.search(pattern, text_corpus):
+                used_glossary[term] = desc
+
+        # Quality Gate: First-Use Rule Verification
+        for term, desc in used_glossary.items():
+            long_form = desc.split("(")[0].strip()
+            if long_form.lower() not in text_corpus.lower():
+                print(
+                    f"⚠️  [Glosario] Calidad: La sigla '{term}' se utiliza pero su definición extendida ('{long_form}') no aparece en el informe. Se recomienda expandirla en su primer uso."
+                )
+
+        if used_glossary:
+            gloss_table = doc.add_table(rows=1, cols=2)
+            gloss_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+            finalize_table(gloss_table)
+
+            for i, h_txt in enumerate(vocab["appendix_a_headers"]):
+                set_cell_text_custom(
+                    gloss_table.rows[0].cells[i],
+                    h_txt,
+                    bold=True,
+                    font_size=9,
+                    color_rgb=RGBColor(255, 255, 255),
+                    align=WD_ALIGN_PARAGRAPH.CENTER,
+                )
+                shade_cell(gloss_table.rows[0].cells[i], p_color_hex)
 
             #
-            row.cells[0].width = Inches(1.5)
-            row.cells[1].width = Inches(5.0)
+            gloss_table.rows[0].cells[0].width = Inches(1.5)
+            gloss_table.rows[0].cells[1].width = Inches(5.0)  #
 
-            if g_idx % 2 == 1:
-                shade_cell(row.cells[0], alt_row_hex)
-                shade_cell(row.cells[1], alt_row_hex)
+            for g_idx, (term, desc) in enumerate(sorted(used_glossary.items())):
+                row = gloss_table.add_row()
+                set_cell_text_custom(row.cells[0], term, bold=True, font_size=8.5)
+                set_cell_text_custom(row.cells[1], desc, font_size=8)
+
+                #
+                row.cells[0].width = Inches(1.5)
+                row.cells[1].width = Inches(5.0)
+
+                if g_idx % 2 == 1:
+                    shade_cell(row.cells[0], alt_row_hex)
+                    shade_cell(row.cells[1], alt_row_hex)
+    except Exception as ex:
+        print(f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}")
 
         # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
 
@@ -1725,9 +1780,23 @@ def compile_docx(tower_dir: str, output_path: str):
     # Assemble and render Appendix B: Limitation of Liability.
     #
     add_appendix_heading(doc, vocab["appendix_b_title"], primary_color_rgb=p_color_rgb)
-    add_body_paragraph(doc, vocab["disclaimer_text_1"], text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, vocab["disclaimer_text_2"], text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, vocab["disclaimer_text_3"], text_color_rgb=text_color_rgb)
+    disclaimer_paragraphs = [
+        p.strip() for p in disclaimer_text.split("\n\n") if p.strip()
+    ]
+    if disclaimer_paragraphs:
+        for p_text in disclaimer_paragraphs:
+            add_body_paragraph(doc, p_text, text_color_rgb=text_color_rgb)
+    else:
+        # Fallback to vocabulary in case disclaimer_text is empty
+        add_body_paragraph(
+            doc, vocab.get("disclaimer_text_1", ""), text_color_rgb=text_color_rgb
+        )
+        add_body_paragraph(
+            doc, vocab.get("disclaimer_text_2", ""), text_color_rgb=text_color_rgb
+        )
+        add_body_paragraph(
+            doc, vocab.get("disclaimer_text_3", ""), text_color_rgb=text_color_rgb
+        )
 
     #
     # Assemble and render Appendix C: Information Source Custody Record.
@@ -1778,7 +1847,7 @@ def compile_docx(tower_dir: str, output_path: str):
             ),
             (
                 "[Dossier de Contexto]",
-                f"contexto_{client_name.lower()}_elite.docx",
+                f"context_{client_name.lower()}.docx",
                 f"{vocab['bib_contexto']}{client_name}{vocab['bib_contexto_desc']}",
             ),
             (

@@ -17,7 +17,7 @@ source_of_truth:
 - ../../src/assessment_engine/adapters/render_commercial_report.py
 - ../../src/assessment_engine/adapters/render_web_presentation.py
 - ./payload-render-boundaries.md
-last_verified_against: 2026-05-03
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -28,72 +28,69 @@ verification_mode: schema
 
 # Artifact contracts
 
-Este documento complementa [`payload-render-boundaries.md`](payload-render-boundaries.md). Allí se explica la frontera técnica entre payload, schema y render. Aquí se fija la lectura **operativa y empresarial** de los artefactos: quién los produce, quién depende de ellos y cuándo deben considerarse suficientemente válidos para dejar avanzar el sistema.
+Este documento complementa a [`payload-render-boundaries.md`](payload-render-boundaries.md) al definir la semántica operativa y de negocio de los artefactos de datos en el ciclo de vida del motor: trazabilidad de origen (producción), dependencias de consumo y criterios de validación de compuertas de calidad (*quality gates*).
 
-## Regla operativa
+## Criterio de Identificación de Artefactos Críticos
 
-Un artefacto importante no es solo “un archivo generado”. Debe poder responder a estas cuatro preguntas:
+Todo artefacto de datos catalogado dentro del motor no constituye un mero residuo de salida; debe caracterizarse determinísticamente bajo cuatro dimensiones:
 
-1. **quién lo produce**;
-2. **qué verdad contiene**;
-3. **qué etapa lo consume después**;
-4. **qué riesgo aparece si falta o deriva**.
+1.  **Origen (Productor):** Entidad o módulo que genera y firma el artefacto.
+2.  **Contenido Semántico (Verdad):** Datos y contratos estructurados que valida y encapsula.
+3.  **Destino (Consumidor):** Etapas subsecuentes de la tubería (*pipeline*) que dependen de su presencia.
+4.  **Impacto en el Negocio (Riesgo):** Vulnerabilidades operacionales o lógicas que emergen en caso de ausencia o deriva contractual.
 
 ## Mapa principal de contratos
 
 | Artefacto | Productor principal | Consumidor principal | Rol empresarial | Si falta o deriva |
 |---|---|---|---|---|
-| `case_input.json` | preparación por torre | scoring, findings, engine | fija el caso de trabajo | la torre nace con contexto pobre o ambiguo |
-| `evidence_ledger.json` | preparación por torre | findings, auditoría, soporte | deja trazabilidad de evidencias | baja defendibilidad del assessment |
-| `scoring_output.json` | scoring por torre | blueprint, annex, soporte | fija la base cuantitativa | se debilita la consistencia del diagnóstico |
-| `findings.json` | análisis por torre | blueprint y soporte editorial | concentra hallazgos estructurados | se empobrece la lectura por pilar |
-| `blueprint_<tower>_payload.json` | `run_tower_blueprint_engine.py` | annex, global builder, render blueprint, web | fuente de verdad por torre | aparece split-brain aguas abajo |
-| `approved_annex_<tower>.template_payload.json` | `run_executive_annex_synthesizer.py` | render annex | traducción ejecutiva por torre | cae la legibilidad ejecutiva de la torre |
-| `global_report_payload.json` | `build_global_report_payload.py` + `run_executive_refiner.py` | render global, comercial, web | agenda ejecutiva consolidada | la visión de dirección queda rota |
-| `commercial_report_payload.json` | `run_commercial_refiner.py` | render comercial | activación comercial del assessment | se pierde explotabilidad de cuenta |
-| `Blueprint_Transformacion_*.docx` | render blueprint | lector humano | entregable técnico visible | no debe usarse como fuente de verdad |
-| `annex_*.docx` | render annex | lector humano | entregable ejecutivo por torre | puede quedar bonito o feo, pero no debe redefinir contenido |
-| `Informe_Ejecutivo_Consolidado_*.docx` | render global | lector humano | entregable ejecutivo consolidado | degrada la comunicación con dirección |
-| `Account_Action_Plan_*.docx` | render comercial | lector humano | entregable comercial interno | baja utilidad para cuenta y preventa |
-| `presentation/index.html` | render web | lector humano | soporte visual y storytelling | la narrativa visual queda desalineada |
+| `case_input.json` | módulos de preparación de torre | scoring, findings, engine | Delimitación de contexto de la organización | La torre nace con contexto pobre o ambiguo |
+| `evidence_ledger.json` | módulos de preparación de torre | findings, auditoría, soporte | Deja trazabilidad de evidencias | Pérdida de trazabilidad de origen y vulnerabilidad en auditoría |
+| `scoring_output.json` | scoring por torre | blueprint, annex, soporte | Parámetros cuantitativos de evaluación | Desalineación entre el análisis prosa y los umbrales cualitativos |
+| `findings.json` | análisis por torre | blueprint y soporte editorial | Concentra hallazgos estructurados | Degradación del detalle en la especificación técnica |
+| `blueprint_<tower>_payload.json` | `run_tower_blueprint_engine.py` | annex, global builder, render blueprint, web | Fuente única de verdad de la torre tecnológica | Inconsistencia lógica y contradicción narrativa en la síntesis consolidada |
+| `approved_annex_<tower>.template_payload.json` | `run_executive_annex_synthesizer.py` | render annex | Síntesis de negocio y recomendaciones operativas de la torre | Degradación en la comunicación técnica con la dirección del cliente |
+| `global_report_payload.json` | `build_global_report_payload.py` + `run_executive_refiner.py` | render global, comercial, web | Síntesis directiva estratégica consolidada | Disrupción en la gobernanza y pérdida de alineación estratégica |
+| `commercial_report_payload.json` | `run_commercial_refiner.py` | render comercial | Definición de palancas y priorización de inversión comercial | Degradación en el alineamiento estratégico de la cuenta |
+| `Blueprint_Transformacion_*.docx` | render blueprint | operario de cuenta / cliente final | Documento técnico de transformación | Archivo de salida no modificable; prohibido su consumo por automatizaciones |
+| `annex_*.docx` | render annex | operario de cuenta / cliente final | Entregable ejecutivo por torre | Capa de presentación; no debe alterar el modelo de datos canónico |
+| `Informe_Ejecutivo_Consolidado_*.docx` | render global | operario de cuenta / cliente final | Entregable ejecutivo consolidado | Degrada la comunicación con dirección |
+| `Account_Action_Plan_*.docx` | render comercial | operario de cuenta / cliente final | Entregable comercial interno | Baja utilidad para cuenta y preventa |
+| `presentation/index.html` | render web | operario de cuenta / cliente final | Soporte visual y storytelling | La narrativa visual queda desalineada |
 
 ## Qué contratos mandan de verdad
 
-### Contratos de base
-
+### Contratos de Telemetría y Entrada
 - `case_input.json`
 - `evidence_ledger.json`
 - `scoring_output.json`
 - `findings.json`
 
-Son la base que permite que la torre sea explicable, trazable y defendible.
+Constituyen el cimiento empírico del diagnóstico. Garantizan explicabilidad, trazabilidad estructural y defendibilidad técnica ante auditorías.
 
-### Contratos canónicos de decisión
-
+### Contratos de Síntesis Canónica
 - `blueprint_<tower>_payload.json`
 - `global_report_payload.json`
 - `commercial_report_payload.json`
 
-Estos artefactos son los que más se acercan a la **verdad operativa del sistema**.
+Modelos definitivos que gobiernan el estado del diagnóstico. Representan la verdad de negocio consolidada.
 
-### Contratos de presentación derivada
-
+### Artefactos de Presentación Derivada
 - `approved_annex_<tower>.template_payload.json`
 - DOCX por torre/global/comercial
 - `presentation/index.html`
 
-Importan mucho para el lector final, pero su razón de ser es **traducir** una verdad previa, no sustituirla.
+Canales de transmisión de información estratégica. Su única función es proyectar el modelo de datos sin alterar la verdad del sistema.
 
 ## Qué debe comprobar cada capa antes de avanzar
 
 | Etapa | Señal mínima de salida sana |
 |---|---|
-| Torre base | existen `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json` |
-| Blueprint | existe `blueprint_<tower>_payload.json` y la torre ya tiene verdad estructurada |
-| Annex | existe `approved_annex_<tower>.template_payload.json` y no contradice el blueprint |
-| Global | existe `global_report_payload.json` y reutiliza información de torres disponibles |
-| Comercial | existe `commercial_report_payload.json` y se apoya en el global |
-| Web | existe `presentation/index.html` y refleja global + torres, no una historia inventada |
+| Torre base | Presencia de artefactos basales de preparación |
+| Blueprint | Presencia y consistencia de `blueprint_payload` |
+| Annex | Presencia de `approved_annex_payload` con herencia íntegra |
+| Global | Agregación sin pérdidas de blueprints de torre activos |
+| Comercial | Alineación de objetivos de cuenta con el payload de síntesis global |
+| Web | Presentación web congruente con el estado del mapa maestro |
 
 ## Contratos Detallados
 
@@ -111,23 +108,18 @@ Para una descripción exhaustiva de los campos de los contratos principales, con
 
 ## Riesgos contractuales visibles hoy
 
-1. **Tolerancia de algunos renders**
-   `robust_load_payload(...)` protege continuidad, pero puede ocultar desviaciones de contrato.
-
-2. **Capa web sin schema final explícito**
-   `render_web_presentation.py` compone una vista útil, pero su contrato está más implícito que en DOCX global/comercial.
-
-3. **Convivencia de activo moderno y fallback legacy**
-   especialmente en la consolidación global, útil para resiliencia pero sensible a híbridos.
+1.  **Flexibilidad excesiva de carga de payloads:** El uso de `robust_load_payload(...)` mitiga fallos en ejecución, pero corre el riesgo de enmascarar derivas frente a la definición estricta de esquemas Pydantic.
+2.  **Ausencia de validador de esquema explícito en capa web:** `render_web_presentation.py` procesa los datos basándose en contratos implícitos, careciendo de un esquema Pydantic de salida dedicado como en los reportes global y comercial.
+3.  **Convivencia de arquitecturas (Transición Top-Down / Bottom-Up):** La existencia de lógicas heredadas en coexistencia con el flujo moderno blueprint-first expone al sistema a combinaciones híbridas.
 
 ## Qué significa “contrato cumplido”
 
-Un contrato se puede considerar cumplido cuando:
+Un contrato se certifica como cumplido cuando:
 
-1. el artefacto correcto existe en la ubicación esperada;
-2. su estructura es compatible con el schema o el consumidor real;
-3. la siguiente etapa puede usarlo sin reinterpretar la verdad;
-4. la historia que cuenta sigue alineada con la capa anterior.
+1.  **Integridad Física:** Existencia verificada del artefacto en la ruta determinista especificada por el entorno.
+2.  **Compatibilidad Estructural:** Validación sintáctica y semántica exitosa frente al esquema de Pydantic correspondiente.
+3.  **Transparencia de Consumo:** El consumidor subsiguiente ingiere el payload directamente sin requerir normalizaciones excepcionales de datos.
+4.  **Coherencia Narrativa:** Alineación de contenido técnica y cualitativamente congruente con la etapa que le precede.
 
 ## Uso recomendado de este documento
 

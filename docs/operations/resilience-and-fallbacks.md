@@ -61,7 +61,7 @@ Para probar la consistencia del pipeline sin consumir tokens de la API de Vertex
 
 ### Escenario A: Excepciones de Autenticación de Google Cloud
 *   **Error Común:** `GoogleDefaultCredentialsError` / `PermissionDenied`.
-*   **Solución:** 
+*   **Solución:**
     1.  Verificar que las credenciales de la cuenta de servicio local estén activas:
         ```bash
         gcloud auth application-default login

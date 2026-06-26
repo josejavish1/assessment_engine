@@ -58,6 +58,14 @@ jobs:
             --repo-root . \
             --documentation-map docs/documentation-map.yaml
 
+      - name: Run Nightly Self-Healing & Decay Engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python src/assessment_engine/application/tools/nightly_self_healing.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml
+
       - name: Lint documentation style
         run: |
           python src/assessment_engine/application/tools/lint_documentation_style.py \
@@ -94,7 +102,7 @@ jobs:
           name: documentation-preview
           path: .artifacts/docs/site
 
-      - name: SOTA Google-Style & Language Gate
+      - name: Language Compliance & Quality Gate
         run: |
           # 1. Validate docstrings, TODOs, and commented-out code using Ruff (respects pyproject.toml)
           ruff check src/
@@ -102,9 +110,20 @@ jobs:
           # 2. Validate that 100% of source comments and descriptions are in Tier 1 English
           python scripts/enforce_english_comments.py $(find src/ -name "*.py" | grep -v "_legacy")
 
-      - name: Semantic Comment Linter (Anti-AI-Bro/Slop Guard)
+      - name: Automated Comment Formatting & Style Linter
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
         run: |
           python scripts/semantic_comment_linter.py
+
+      - name: Commit and Push Autocurado (Self-Healing Push-Back)
+        if: github.event_name == 'schedule' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
+        run: |
+          git config --global user.name "Apex Documentation Bot"
+          git config --global user.email "doc-bot@assessment-engine.local"
+          git add docs/ docs/documentation-map.yaml AGENTS.md CHATGPT.md GEMINI.md README.md .github/copilot-instructions.md
+          if ! git diff --staged --quiet; then
+            git commit -m "docs(chore): automated nightly self-healing and documentation decay [skip ci]"
+            git push origin HEAD:${{ github.ref }}
+          fi

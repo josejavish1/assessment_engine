@@ -39,44 +39,44 @@ repos:
   - repo: local
     hooks:
       - id: zero-lockin-guard
-        name: Prove Zero Vendor Lock-in (Chaos Engineering)
-        entry: bash -c "/home/jsanchhi/assessment_engine/bin/prove-zero-lockin"
+        name: Prove Zero Vendor Lock-in (Portability Audit)
+        entry: bash -c "bin/prove-zero-lockin"
         language: system
         pass_filenames: false
 
       - id: ast-shield
         name: AST Architecture Topology Guard
-        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/architecture_topology_validator.py --repo-root ."
+        entry: bash -c "SOV_PATH=\"$HOME/sovereign_fabric\"; [ ! -d \"$SOV_PATH\" ] && SOV_PATH=\"../sovereign_fabric\"; source \"$SOV_PATH/.venv/bin/activate\" && PYTHONPATH=\"$SOV_PATH/src\" python \"$SOV_PATH/src/core/governance/architecture_topology_validator.py\" --repo-root ."
         language: system
         pass_filenames: false
 
       - id: golden-path
         name: Golden Path Checker
-        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/agents/product_owner/golden_path_radar_agent.py --repo-root . --report-only"
+        entry: bash -c "SOV_PATH=\"$HOME/sovereign_fabric\"; [ ! -d \"$SOV_PATH\" ] && SOV_PATH=\"../sovereign_fabric\"; source \"$SOV_PATH/.venv/bin/activate\" && PYTHONPATH=\"$SOV_PATH/src\" python \"$SOV_PATH/src/core/agents/product_owner/golden_path_radar_agent.py\" --repo-root . --report-only"
         language: system
         pass_filenames: false
 
       - id: security-posture
         name: Security Posture Guard
-        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/security_posture_validator.py --repo-root ."
+        entry: bash -c "SOV_PATH=\"$HOME/sovereign_fabric\"; [ ! -d \"$SOV_PATH\" ] && SOV_PATH=\"../sovereign_fabric\"; source \"$SOV_PATH/.venv/bin/activate\" && PYTHONPATH=\"$SOV_PATH/src\" python \"$SOV_PATH/src/core/governance/security_posture_validator.py\" --repo-root ."
         language: system
         pass_filenames: false
 
       - id: docs-governance
         name: Documentation Governance Link Checker
-        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/documentation_governance_validator.py --repo-root . --documentation-map /home/jsanchhi/assessment_engine/docs/documentation-map.yaml"
+        entry: bash -c "SOV_PATH=\"$HOME/sovereign_fabric\"; [ ! -d \"$SOV_PATH\" ] && SOV_PATH=\"../sovereign_fabric\"; source \"$SOV_PATH/.venv/bin/activate\" && PYTHONPATH=\"$SOV_PATH/src\" python \"$SOV_PATH/src/core/governance/documentation_governance_validator.py\" --repo-root . --documentation-map docs/documentation-map.yaml"
         language: system
         pass_filenames: false
 
       - id: change-discipline
         name: Change Discipline & Blast Radius Guard
-        entry: bash -c "source /home/jsanchhi/sovereign_fabric/.venv/bin/activate && PYTHONPATH=/home/jsanchhi/sovereign_fabric/src python /home/jsanchhi/sovereign_fabric/src/core/governance/change_discipline_validator.py --repo-root . --request-dir .github/change-plan"
+        entry: bash -c "SOV_PATH=\"$HOME/sovereign_fabric\"; [ ! -d \"$SOV_PATH\" ] && SOV_PATH=\"../sovereign_fabric\"; source \"$SOV_PATH/.venv/bin/activate\" && PYTHONPATH=\"$SOV_PATH/src\" python \"$SOV_PATH/src/core/governance/change_discipline_validator.py\" --repo-root . --request-dir .github/change-plan"
         language: system
         pass_filenames: false
 
       - id: docs-language-guard
-        name: Docs & Comments Language Guard (SOTA English Only)
-        entry: /home/jsanchhi/assessment_enginev2/.venv/bin/python scripts/enforce_english_comments.py
+        name: Docs & Comments Language Guard (Technical English Only)
+        entry: .venv/bin/python scripts/enforce_english_comments.py
         language: system
         files: \.py$
 

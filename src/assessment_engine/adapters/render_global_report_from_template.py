@@ -72,33 +72,7 @@ def clean_t_codes(text) -> Any:
 
 
 def sanitize_client_name(text, client_name) -> Any:
-    """Replaces a specific client's name in a string with a generic term.
-
-    This function performs a series of case-insensitive regular expression
-    substitutions to render a given text client-agnostic. It operates on two
-    variations of the client name: the original string and a version with
-    underscores converted to spaces.
-
-    The sanitization process involves two main stages:
-    1.  Removal of associated Spanish possessive prepositions (`de` or `del`)
-        preceding the client's name to avoid dangling phrases after
-        replacement (e.g., "informe de [Client]" becomes "informe").
-    2.  Replacement of all standalone occurrences of the client's name with
-        the generic Spanish phrase "la organización".
-
-    If the input `text` is not a string, or if `client_name` is empty or None,
-    the function returns the original `text` object without modification.
-
-    Args:
-        text (Any): The input text to process. If not a string, it is returned
-            unmodified.
-        client_name (str): The name of the client to find and replace. If an
-            empty string or None, the original text is returned.
-
-    Returns:
-        Any: A new string with the client's name sanitized, or the original
-            `text` object if no sanitization is performed.
-    """
+    """Replaces a specific client's name in a string with a generic term. This function performs a series of case-insensitive regular expression substitutions to render a given text client-agnostic. It operates on two variations of the client name: the original string and a version with underscores converted to spaces. The sanitization process involves two main stages: 1. Removal of associated Spanish possessive prepositions (`de` or `del`) preceding the client's name to avoid dangling phrases after replacement (e.g., "informe de [Client]" becomes "informe"). 2. Replacement of all standalone occurrences of the client's name with the generic Spanish phrase "la organización". If the input `text` is not a string, or if `client_name` is empty or None, the function returns the original `text` object without modification. Args: text (Any): The input text to process. If not a string, it is returned unmodified. client_name (str): The name of the client to find and replace. If an empty string or None, the original text is returned. Returns: Any: A new string with the client's name sanitized, or the original `text` object if no sanitization is performed."""
     if not isinstance(text, str) or not client_name:
         return text
 
@@ -575,39 +549,7 @@ def render_burning_platform(
 def render_tower_bottom_lines(
     doc, heatmap: list, tower_texts: list[TowerBottomLineItem], client_name=""
 ):
-    """Populates a Word document with a technology area diagnosis table.
-
-    This function appends a new section titled '3. Diagnóstico por Área Tecnológica'
-    to the document. The section contains a three-column table summarizing the
-    assessment for each technology area ('tower') from the heatmap data. For each
-    area, the table displays its name, a maturity score with a corresponding
-    descriptive band, and an executive diagnosis. The maturity cell is color-coded
-    based on its score.
-
-    The executive diagnosis text is sourced preferentially from a matching item in
-    `tower_texts` based on the technology area ID. If no match is found, the
-    function falls back to using the `executive_message` from the `heatmap` data.
-
-    Args:
-        doc (docx.document.Document): The `python-docx` Document object to be
-            modified in-place.
-        heatmap (list[dict]): A list of dictionaries representing technology areas.
-            Each dictionary is expected to contain 'id', 'name', 'score', 'band',
-            and 'executive_message' keys.
-        tower_texts (list[TowerBottomLineItem]): A list of data objects providing
-            high-priority diagnostic text. Each object must have an 'id'
-            attribute for matching and a 'bottom_line' attribute for the text.
-        client_name (str): The client's name, used to replace a placeholder token
-            within the final diagnostic text. Defaults to an empty string.
-
-    Returns:
-        None. The function modifies the `doc` object in-place.
-
-    Raises:
-        AttributeError: If an object within `tower_texts` lacks the required `id` or
-            `bottom_line` attributes.
-        TypeError: If `heatmap` or `tower_texts` are not iterable (e.g., not a list).
-    """
+    """Populates a Word document with a technology area diagnosis table. This function appends a new section titled '3. Diagnóstico por Área Tecnológica' to the document. The section contains a three-column table summarizing the assessment for each technology area ('tower') from the heatmap data. For each area, the table displays its name, a maturity score with a corresponding descriptive band, and an executive diagnosis. The maturity cell is color-coded based on its score. The executive diagnosis text is sourced preferentially from a matching item in `tower_texts` based on the technology area ID. If no match is found, the function falls back to using the `executive_message` from the `heatmap` data. Args: doc (docx.document.Document): The `python-docx` Document object to be modified in-place. heatmap (list[dict]): A list of dictionaries representing technology areas. Each dictionary is expected to contain 'id', 'name', 'score', 'band', and 'executive_message' keys. tower_texts (list[TowerBottomLineItem]): A list of data objects providing high-priority diagnostic text. Each object must have an 'id' attribute for matching and a 'bottom_line' attribute for the text. client_name (str): The client's name, used to replace a placeholder token within the final diagnostic text. Defaults to an empty string. Returns: None. The function modifies the `doc` object in-place. Raises: AttributeError: If an object within `tower_texts` lacks the required `id` or `bottom_line` attributes. TypeError: If `heatmap` or `tower_texts` are not iterable (e.g., not a list)."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
     add_heading_paragraph(doc, "3. Diagnóstico por Área Tecnológica", level=1)
     table = doc.add_table(rows=1, cols=3)
@@ -751,30 +693,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
 def render_execution_roadmap(
     doc, roadmap: ExecutionRoadmapDraft, visuals: dict, client_dir, client_name=""
 ):
-    """Renders the execution roadmap section into a Word document.
-
-    This function constructs the "Plan de Implementación y Horizontes Temporales"
-    section of the report. It first generates a table listing the defined
-    transversal programs and their descriptions. It then iterates through the
-    time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1").
-    For each horizon that contains initiatives, a detailed table is created,
-    listing each initiative's associated program, title, business case,
-    start month, and duration.
-
-    Args:
-        doc (docx.document.Document): The python-docx Document object to be
-            modified.
-        roadmap (ExecutionRoadmapDraft): A data object containing the structured
-            roadmap information, including programs and initiatives per time
-            horizon.
-        visuals (dict): This parameter is currently unused.
-        client_dir (str): This parameter is currently unused.
-        client_name (str): The client's name, used for placeholder substitution
-            in text content. Defaults to an empty string.
-
-    Returns:
-        None: The function modifies the `doc` object in place.
-    """
+    """Renders the execution roadmap section into a Word document. This function constructs the "Plan de Implementación y Horizontes Temporales" section of the report. It first generates a table listing the defined transversal programs and their descriptions. It then iterates through the time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1"). For each horizon that contains initiatives, a detailed table is created, listing each initiative's associated program, title, business case, start month, and duration. Args: doc (docx.document.Document): The python-docx Document object to be modified. roadmap (ExecutionRoadmapDraft): A data object containing the structured roadmap information, including programs and initiatives per time horizon. visuals (dict): This parameter is currently unused. client_dir (str): This parameter is currently unused. client_name (str): The client's name, used for placeholder substitution in text content. Defaults to an empty string. Returns: None: The function modifies the `doc` object in place."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
     add_heading_paragraph(
         doc, "5. Plan de Implementación y Horizontes Temporales", level=1
@@ -961,32 +880,7 @@ def render_executive_decisions(
 
 
 def create_page_number_footer(section) -> Any:
-    """Adds a 'Page X of Y' footer to a document section, clearing the first page's footer.
-
-    This function configures a document section to have a distinct footer for its
-    first page, which is typically a cover page. It sets the
-    `different_first_page_header_footer` property to True and clears all content
-    from the first page's footer.
-
-    For all subsequent pages within the section, a centered footer is added with
-    the format "Página {PAGE} de {NUMPAGES}". The implementation directly
-    manipulates the underlying Office Open XML (OOXML) structure to insert the
-    dynamic `PAGE` and `NUMPAGES` fields. The footer text is styled as 9pt
-    grey Arial.
-
-    Args:
-        section (docx.section.Section): The `python-docx` Section object to be
-            modified in-place.
-
-    Returns:
-        None. The section object is modified directly.
-
-    Raises:
-        AttributeError: If the section object lacks expected attributes like
-            `first_page_footer` or `footer`.
-        IndexError: If the section's default footer does not contain at least one
-            paragraph to modify.
-    """
+    """Adds a 'Page X of Y' footer to a document section, clearing the first page's footer.    This function configures a document section to have a distinct footer for its    first page, which is typically a cover page. It sets the    `different_first_page_header_footer` property to True and clears all content    from the first page's footer.    For all subsequent pages within the section, a centered footer is added with    the format "Page {PAGE} of {NUMPAGES}". The implementation directly    manipulates the underlying Office Open XML (OOXML) structure to insert the    dynamic `PAGE` and `NUMPAGES` fields. The footer text is styled as 9pt    grey Arial.    Args:        section (docx.section.Section): The `python-docx` Section object to be            modified in-place.    Returns:        None. The section object is modified directly.    Raises:        AttributeError: If the section object lacks expected attributes like            `first_page_footer` or `footer`.        IndexError: If the section's default footer does not contain at least one            paragraph to modify."""
     # Enables a distinct footer for the first page. This setting is required to treat the cover page layout independently from subsequent pages.
     section.different_first_page_header_footer = True
 

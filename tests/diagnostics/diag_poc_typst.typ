@@ -18,7 +18,7 @@ Score Global: *4.5 / 5.0* (Sovereign Hybrid Edge)
   == Dominio: #pilar.pilar_name
 
   #let risks = pilar.health_check_asis.filter(r => r.keys().contains("threat_event_frequency") and r.threat_event_frequency > 0)
-  
+
   #if risks.len() > 0 [
     #table(
       columns: (1fr, 3fr, 2fr, 2fr),

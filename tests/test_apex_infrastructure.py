@@ -15,12 +15,12 @@ class TestApexInfrastructure(unittest.TestCase):
         self.test_dir.mkdir(parents=True)
 
     def test_ledger_persistence_and_recovery(self):
-        """Verifica que el Sentinel guarda transacciones y recupera el estado tras un reinicio."""
+        """Verify that the Sentinel logs transactions and recovers state after a restart."""
         sentinel = ApexSentinel(self.test_dir, budget_limit=10.0)
         sentinel.log_transaction("TASK-1", "started", {"info": "test"})
         sentinel.log_transaction("TASK-1", "success", {}, cost=1.50)
 
-        # Simular reinicio del sistema creando un nuevo Sentinel sobre el mismo directorio
+        # Simulate system restart by creating a new Sentinel over the same directory
         new_sentinel = ApexSentinel(self.test_dir, budget_limit=10.0)
 
         self.assertEqual(new_sentinel.total_cost, 1.50)
@@ -28,13 +28,13 @@ class TestApexInfrastructure(unittest.TestCase):
         self.assertIsNone(new_sentinel.get_task_status("TASK-NON-EXISTENT"))
 
     def test_circuit_breaker(self):
-        """Verifica que el Sentinel detiene la ejecución si se supera el presupuesto."""
+        """Verify that the Sentinel halts execution if the budget is exceeded."""
         sentinel = ApexSentinel(self.test_dir, budget_limit=1.0)
 
-        # Transacción dentro del límite
+        # Transaction within the budget limit
         sentinel.log_transaction("T1", "event", {}, cost=0.5)
 
-        # Esta transacción debe disparar el Circuit Breaker
+        # This transaction must trigger the Circuit Breaker
         with self.assertRaises(RuntimeError) as cm:
             sentinel.log_transaction("T2", "event", {}, cost=0.6)
 

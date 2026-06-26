@@ -1,7 +1,6 @@
 import json
 import logging
 import sys
-from pathlib import Path
 from typing import Any, Dict, List
 
 from assessment_engine.application.run_strategic_orchestrator import (
@@ -147,18 +146,36 @@ class DigitalTwinExporter:
                 profile_key = val
                 break
 
-        # Step 3: Load the benchmark curve from the resolved JSON profile
-        config_path = Path("engine_config/industry_profiles") / f"{profile_key}.json"
+        # Step 3: Try to load dynamic benchmarks from RAGE benchmarks_snapshot.json
+        snapshot_path = client_dir / "benchmarks_snapshot.json"
+        if snapshot_path.exists():
+            try:
+                with open(snapshot_path, "r", encoding="utf-8-sig") as f:
+                    snap_data = json.load(f)
+                snapshots = snap_data.get("snapshots", {})
+                if snapshots:
+                    cleaned_benchmarks = {}
+                    for t_id, t_snap in snapshots.items():
+                        score = t_snap.get("dynamic_score")
+                        if score is not None:
+                            cleaned_benchmarks[str(t_id).upper()] = float(score)
 
-        if not config_path.exists():
-            logger.warning(
-                f"Resolved industry profile file {config_path} does not exist. Utilizing fallback benchmarks."
-            )
-            return fallback_benchmarks
+                    # Fill missing towers from standard fallbacks
+                    for k, v in fallback_benchmarks.items():
+                        if k not in cleaned_benchmarks:
+                            cleaned_benchmarks[k] = v
 
+                    logger.info(
+                        f"✓ [RAGE] Dynamically loaded {len(cleaned_benchmarks)} benchmarks from local RAGE snapshot."
+                    )
+                    return cleaned_benchmarks
+            except Exception as ex:
+                logger.error(f"[RAGE] Failed to read benchmarks snapshot at {snapshot_path}: {ex}. Falling back.")
+
+        # Fallback: Load the static benchmark curve from the resolved JSON profile
+        from assessment_engine.infrastructure.config_loader import load_industry_profile
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
-                profile_data = json.load(f)
+            profile_data = load_industry_profile(profile_key)
 
             benchmarks = profile_data.get("benchmarks")
             if isinstance(benchmarks, dict):
@@ -166,7 +183,7 @@ class DigitalTwinExporter:
                 for k, v in benchmarks.items():
                     cleaned_benchmarks[str(k).upper()] = float(v)
                 logger.info(
-                    f"✓ Dynamically loaded {len(cleaned_benchmarks)} benchmarks from '{profile_key}' profile."
+                    f"✓ Dynamically loaded {len(cleaned_benchmarks)} fallback benchmarks from '{profile_key}' profile."
                 )
                 return cleaned_benchmarks
 

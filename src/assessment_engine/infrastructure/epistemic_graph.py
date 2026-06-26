@@ -161,9 +161,17 @@ class EpistemicGraph:
         """
         # Strict Epistemic Graph Schema Constraints
         normalized_predicate = predicate.upper().strip().replace(" ", "_")
-        
+
         # System-injected triples must use registered predicates
-        if source.upper() in {"TOWER_PIPELINE", "TOWER_T1", "TOWER_T2", "TOWER_T3", "TOWER_T4", "TOWER_T5", "ORCHESTRATOR"}:
+        if source.upper() in {
+            "TOWER_PIPELINE",
+            "TOWER_T1",
+            "TOWER_T2",
+            "TOWER_T3",
+            "TOWER_T4",
+            "TOWER_T5",
+            "ORCHESTRATOR",
+        }:
             VALID_SYSTEM_PREDICATES = {
                 "BELONGS_TO_TOWER",
                 "IDENTIFIED_AS_GAP",
@@ -173,7 +181,7 @@ class EpistemicGraph:
                 "REQUIRES_PREREQUISITE",
                 "SUPPORTED_BY",
                 "VIOLATES",
-                "COVERS"
+                "COVERS",
             }
             if normalized_predicate not in VALID_SYSTEM_PREDICATES:
                 raise ValueError(
@@ -183,6 +191,7 @@ class EpistemicGraph:
         else:
             # AI-extracted or custom triples must use uppercase SNAKE_CASE
             import re
+
             if not re.match(r"^[A-Z0-9_]+$", normalized_predicate):
                 raise ValueError(
                     f"Graph Schema Violation: Predicate '{predicate}' must be in uppercase SNAKE_CASE format."

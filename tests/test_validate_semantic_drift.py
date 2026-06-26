@@ -22,7 +22,9 @@ def test_get_modified_py_files_mocked(tmp_path: Path):
 
 def test_get_git_diff_mocked(tmp_path: Path):
     with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(stdout=" - class BlueprintPayload:\n+  # updated", returncode=0)
+        mock_run.return_value = MagicMock(
+            stdout=" - class BlueprintPayload:\n+  # updated", returncode=0
+        )
         diff = v_drift.get_git_diff(tmp_path, "src/domain/schemas/blueprint.py")
         assert "class BlueprintPayload" in diff
 

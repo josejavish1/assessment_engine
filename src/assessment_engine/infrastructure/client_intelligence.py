@@ -544,9 +544,6 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
 
 def _load_industry_profile(industry_name: str) -> dict[str, Any]:
     """Loads the configuration profile and analytical framework corresponding to the specified industry vertical."""
-    config_dir = (
-        Path(__file__).resolve().parents[2] / "engine_config" / "industry_profiles"
-    )
     # Maps industry verticals to their respective configuration profiles, defining the analytical frameworks to be applied.
     mapping = {
         "energía": "critical_infrastructure",
@@ -569,16 +566,12 @@ def _load_industry_profile(industry_name: str) -> dict[str, Any]:
             profile_key = val
             break
 
-    profile_path = config_dir / f"{profile_key}.json"
-    if profile_path.exists():
-        try:
-            return cast(
-                dict[str, Any], json.loads(profile_path.read_text(encoding="utf-8"))
-            )
-        except Exception as e:
-            logger.warning(f"Error cargando perfil de industria {profile_key}: {e}")
-            return {}
-    return {}
+    from assessment_engine.infrastructure.config_loader import load_industry_profile
+    try:
+        return load_industry_profile(profile_key)
+    except Exception as e:
+        logger.warning(f"Error cargando perfil de industria {profile_key}: {e}")
+        return {}
 
 
 def build_client_context_packet(
@@ -625,7 +618,7 @@ def build_client_context_packet(
     # Injects the loaded industry-specific analytical framework into the data structure.
     industry_profile = _load_industry_profile(industry_name)
     if industry_profile:
-        packet["industry_elite_framework"] = industry_profile.get("elite_framework", {})
+        packet["industry_enterprise_framework"] = industry_profile.get("enterprise_framework", {})
 
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})

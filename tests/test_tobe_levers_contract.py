@@ -4,18 +4,18 @@ from assessment_engine.domain.schemas.blueprint import TargetArchitectureToBe
 
 
 def test_target_architecture_tobe_levers_contract() -> None:
-    """Verifica que el esquema TargetArchitectureToBe contiene los campos de palancas estructurados y hereda valores por defecto correctos."""
-    # Instanciamos con solo el campo requerido 'vision'
+    """Verify that the TargetArchitectureToBe schema contains the structured levers fields and inherits correct default values."""
+    # Instantiate with only the required 'vision' field
     tobe = TargetArchitectureToBe(
         vision="Visión de infraestructura moderna e inmutable"
     )
 
-    # Validamos que los tres campos de palancas existen y se inicializan como listas vacías por defecto
+    # Validate that the three levers fields exist and initialize as empty lists by default
     assert isinstance(tobe.levers_technology, list)
     assert isinstance(tobe.levers_process, list)
     assert isinstance(tobe.levers_operation, list)
 
-    # Validamos que podemos poblar datos estructurados de palancas
+    # Validate that we can populate structured levers data
     tobe_populated = TargetArchitectureToBe(
         vision="Visión de nube híbrida soberana",
         levers_technology=["AWS Resilience Hub", "EC2 Auto Scaling"],

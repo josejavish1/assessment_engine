@@ -5,7 +5,7 @@ source_of_truth:
 - AGENTS.md
 - docs/ai/documentation-governance.md
 - docs/README.md
-last_verified_against: 2026-04-30
+last_verified_against: 2026-06-26
 applies_to:
 - chatgpt
 doc_type: operational

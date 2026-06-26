@@ -1,10 +1,10 @@
 ---
-status: Needs Review
+status: Verified
 owner: product-engineering
 source_of_truth:
 - src/assessment_engine/application/run_tower_blueprint_engine.py
 - src/assessment_engine/domain/schemas/blueprint.py
-last_verified_against: '2026-06-26'
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -15,64 +15,58 @@ verification_mode: workflow
 
 # Proceso de Remediación de Coherencia en Assessments
 
-Este documento describe la política y el proceso para identificar y corregir las incoherencias en los documentos generados por el motor de assessment.
+Este documento describe la política, el protocolo y los procedimientos operativos requeridos para identificar, aislar y subsanar inconsistencias lógicas o semánticas transversales en los artefactos del assessment generados por el motor.
 
-## 1. Política de Coherencia
+## 1. Política de Coherencia Semántica
 
-**La coherencia entre todos los artefactos de un assessment es un requisito no negociable.**
+**La coherencia semántica y consistencia lógica transversal entre todos los artefactos generados en un ciclo de evaluación constituye un requerimiento estructural no negociable del motor.**
 
-Cualquier discrepancia, contradicción o falta de alineamiento entre los distintos documentos generados (ej. `Annex`, `Blueprint`, `CIO Report`) se considera un **defecto de alta prioridad (`P0`)**, ya que impacta directamente en la credibilidad y el valor del producto.
+Cualquier discrepancia, divergencia métrica o fragmentación narrativa (*split-brain*) entre los entregables de distinta audiencia (p. ej., `Annex_Txx.docx`, `Blueprint_Txx.docx`, `Account_Action_Plan_<client>.docx`) se clasifica de forma inmediata como un **defecto de criticidad máxima (`P0`)**, dado que compromete de manera directa la integridad del diagnóstico estratégico y la defendibilidad del sistema.
 
-La arquitectura del sistema, basada en el principio "Top-Down", está diseñada para prevenir este tipo de errores. La única fuente de verdad es el `blueprint_Txx_payload.json`. Todos los demás artefactos se derivan de él.
+La arquitectura del sistema, gobernada por principios de flujo determinista *Top-Down*, está diseñada para anular la aparición de estas derivas. La interfaz `blueprint_<tower>_payload.json` constituye la única fuente de verdad canónica del sistema. Los artefactos ulteriores representan proyecciones o derivaciones directas y estrictamente acopladas a este payload de origen.
 
-## 2. Proceso de Detección y Remediación
+## 2. Protocolo de Detección, Aislamiento y Remediación
 
-### Paso 1: Detección
+### Paso 1: Detección e Identificación
+La presencia de derivas lógicas o inconsistencias semánticas puede ser identificada a través de:
+-   Los controles automatizados de las compuertas de calidad (*Quality Gates* o CI).
+-   El proceso de validación técnica del Product Owner.
+-   La revisión y control de calidad editorial de los entregables de cuenta.
 
-La incoherencia puede ser detectada durante:
--   Las revisiones de calidad internas (Quality Gates).
--   La validación por parte del Product Owner.
--   El feedback del cliente final.
-
-**Ejemplos de incoherencia:**
--   Una puntuación numérica en una tabla no se corresponde con la descripción cualitativa en el texto.
--   Un gráfico (`radar_chart.png`) muestra un resultado que contradice el análisis del `CIO_Ready_Report.docx`.
--   Un `finding` clave mencionado en el anexo no aparece en el informe global.
+**Desviaciones Típicas Catalogadas:**
+-   **Incoherencia Cualitativa-Cuantitativa:** Puntuaciones numéricas calculadas en las tablas de scoring que no se corresponden con el rango cualitativo o la banda de madurez expresada en la narrativa directiva.
+-   **Deriva Visual:** Gráficos radar u otros recursos visuales generados automáticamente que contradicen la volumetría o aserciones técnicas del reporte consolidado.
+-   **Fragmentación de Iniciativas:** Iniciativas prioritarias detalladas en el anexo que omiten su correspondencia lógica o difieren en alcance dentro del plan de transformación global o comercial.
 
 ### Paso 2: Análisis de Causa Raíz
+Una vez detectada una desviación, se debe ejecutar un análisis determinista sobre la tubería de datos (*data pipeline*) para identificar la capa de origen del defecto:
 
-Una vez detectada una incoherencia, el objetivo es encontrar su origen en el pipeline de generación.
+1.  **Auditoría de la Fuente de Verdad:** Inspeccionar el payload canónico `blueprint_<tower>_payload.json` de la torre correspondiente:
+    -   **Causa Estética (Presentación):** Si el payload es correcto, el defecto reside exclusivamente en el script compilador o renderizador (p. ej., `render_tower_annex_from_template.py`, `render_global_report_from_template.py`), el cual está proyectando incorrectamente el modelo de datos.
+    -   **Causa de Dominio (Cómputo/Lógica):** Si el payload es incorrecto, el defecto se origina en el motor de análisis y síntesis (`run_tower_blueprint_engine.py`) o en sus módulos preparatorios deterministas (`run_scoring.py`, `build_case_input.py`, etc.).
 
-1.  **Verificar la Fuente de Verdad:** Inspeccionar el `blueprint_Txx_payload.json` relevante.
-    -   **Si el payload es correcto:** El error reside en uno de los scripts de *renderizado* (ej. `render_tower_annex.py`, `render_global_report.py`). El script está interpretando o proyectando mal los datos del payload.
-    -   **Si el payload es incorrecto:** El error reside en el núcleo del motor de análisis (`run_tower_blueprint_engine.py`) o en un script *preparatorio* (`run_scoring.py`, `build_case_input.py`, etc.).
+### Paso 3: Remediación en Caliente
 
-### Paso 3: Corrección
+**Queda terminantemente prohibida la manipulación manual directa sobre los documentos y entregables físicos de salida (`.docx`, `.html` u otros).**
 
-**La corrección NUNCA debe realizarse manualmente sobre los documentos de salida (`.docx`, `.html`).**
+La subsanación debe aplicarse de forma permanente sobre las abstracciones de código o de datos del motor:
 
-La solución debe aplicarse en el código fuente del script que ha originado el error.
+1.  **Codificación de Caso de Prueba de Regresión:** Antes de corregir el defecto, se debe codificar un caso de prueba unitaria o aserción en `tests/` que replique la inconsistencia exacta. El test debe fallar inicialmente (*Red State*).
+2.  **Modificación Quirúrgica del Código:** Refactorizar el componente del motor o renderer responsable de la desviación, de modo que se resuelva la causa raíz de forma tipada y determinista.
+3.  **Certificación y Cierre:** Ejecutar la suite de pruebas unitarias para certificar la transición exitosa del test de regresión a verde (*Green State*). Regenerar el andamiaje completo de los artefactos del assessment y verificar la homogeneidad de los datos.
 
-1.  **Crear un Test de Regresión:** Antes de corregir, se debe crear un test que replique la incoherencia. Este test debe fallar inicialmente.
-2.  **Corregir el Código:** Modificar el script erróneo para que la lógica de generación sea la correcta.
-3.  **Verificar la Solución:** Ejecutar el test de regresión, que ahora debe pasar. Regenerar el assessment completo y verificar que la incoherencia ha desaparecido en todos los artefactos.
+## 3. Justificación Operativa de la Inmutabilidad del Flujo
 
-## 3. Racional: ¿Por qué este proceso es innegociable?
+Este proceso formal de remediación no representa una carga administrativa; constituye el mecanismo de protección estructural de la calidad, valor y reproducibilidad de los diagnósticos tecnológicos de la plataforma.
 
-Este riguroso proceso de remediación no es burocrático; es el sistema inmunitario que protege el valor y la credibilidad de nuestro producto. Un assessment es una herramienta para la toma de decisiones estratégicas, y la coherencia interna de los datos es la base de su fiabilidad.
+### Mitigación de Riesgos Críticos
 
-### Riesgos que Mitiga
+1.  **Vulneración de la Credibilidad Estratégica:** Informes contradictorios (p. ej., un gráfico radar indicando un estado crítico "Inicial" junto a un bloque de texto que describe un estado "Alineado") destruyen la confiabilidad del assessment, inhabilitándolo como herramienta sólida para la toma de decisiones del cliente.
+2.  **Inducción a Inversiones Erróneas:** El cliente podría guiar sus planes de inversión técnica o adquisiciones sobre datos inconsistentes, exponiendo a la organización a derivas financieras o responsabilidades de cumplimiento regulatorio indeseadas.
+3.  **Entropía de Parcheo (*Hot-Fixing Drift*):** Subsanar manualmente un error sobre un documento OpenXML compilado constituye un parche transitorio. En la siguiente ejecución del motor, la inconsistencia resurgirá, arrastrando ciclos infinitos de correcciones manuales no reproducibles.
 
-1.  **Pérdida de Confianza del Cliente:** Un informe con datos contradictorios (ej. un gráfico que dice "riesgo alto" y un texto que dice "riesgo bajo") destruye la credibilidad del assessment y de nuestra marca. El cliente no puede confiar en los resultados para tomar decisiones.
+### Atribuciones de Valor de Ingeniería
 
-2.  **Toma de Decisiones Erróneas:** El cliente podría basar decisiones de negocio o de inversión en una pieza de información incorrecta, creyendo que es la correcta. Esto puede tener consecuencias financieras o estratégicas negativas, generando un riesgo de responsabilidad para nosotros.
-
-3.  **Deuda Técnica por "Hot-Fixing":** Corregir manualmente un error en un documento `.docx` es un parche de corto plazo que genera una deuda técnica masiva. En la siguiente ejecución del motor, el error volverá a aparecer, creando un ciclo de revisiones manuales insostenible y propenso a errores.
-
-### Valor Estratégico
-
-*   **Producto de Calidad Industrial:** Un proceso formal y automatizado para garantizar la coherencia nos permite escalar la producción de assessments manteniendo un nivel de calidad constante y predecible.
-
-*   **Defensa del Diseño "Single Source of Truth":** Este proceso refuerza la arquitectura "Top-Down", que es nuestra ventaja competitiva. Al forzar que las correcciones se hagan en la fuente (`blueprint`) o en la lógica de renderizado, protegemos el núcleo del sistema contra la entropía y la inconsistencia.
-
-*   **Eficiencia y Escalabilidad:** Arreglar la causa raíz es una inversión. Aunque el coste inicial es mayor que un parche manual, el retorno es un sistema más robusto que no requiere intervención manual en cada ejecución, liberando al equipo para trabajar en mejoras de mayor valor.
+*   **Calidad de Escala Industrial:** Un flujo estricto de remediación garantiza que el motor mantenga un estándar de calidad homogéneo, permitiendo automatizar de manera confiable la generación masiva de assessment deliverables.
+*   **Blindaje del Principio "Single Source of Truth":** La observancia del flujo *Top-Down* asegura que el sistema permanezca robusto y libre de entropías. Al forzar que cada corrección ocurra en la fuente canónica o en la lógica estricta de renderizado, se protege la cohesión semántica global del repositorio.
+*   **Eficiencia en el Retorno de Inversión:** Depurar la causa raíz e incorporar el caso de prueba de regresión representa una inversión en estabilidad. Mitiga costos futuros de mantenimiento y dota al equipo de un entorno seguro para evolucionar las capacidades del motor.

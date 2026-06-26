@@ -1,19 +1,31 @@
 {
   "industry": "Default / General Enterprise",
-  "methodology_baseline": "Gartner Enterprise Maturity Database 2025 (Standard baseline: 3.0)",
+  "methodology_baseline": "Gartner Enterprise Maturity Database 2026 (RAGE Grounded)",
+  "active_frameworks_by_tower": {
+    "T1": ["google_dora"],
+    "T2": ["google_dora"],
+    "T3": ["microsoft_dwg"],
+    "T4": ["dama_dmbok"],
+    "T5": ["itil_v4"],
+    "T6": ["itil_v4"],
+    "T7": ["itil_v4"],
+    "T8": ["finops_foundation"],
+    "T9": ["microsoft_dwg"],
+    "T10": ["google_dora"]
+  },
   "benchmarks": {
-    "T1": 3.0,
-    "T2": 3.0,
-    "T3": 3.0,
-    "T4": 3.0,
-    "T5": 3.0,
-    "T6": 3.0,
-    "T7": 3.0,
-    "T8": 3.0,
-    "T9": 3.0,
-    "T10": 3.0
+    "T1": 4.0,
+    "T2": 4.0,
+    "T3": 4.0,
+    "T4": 4.0,
+    "T5": 4.0,
+    "T6": 4.0,
+    "T7": 4.0,
+    "T8": 4.0,
+    "T9": 4.0,
+    "T10": 4.0
   },
   "justifications": {
-    "default": "The benchmark aligns with the general cross-industry baseline defined in the Gartner I&O Maturity Index (2025). Operational processes in these non-regulated domains are expected to operate at Level 3 (Defined), characterized by documented procedures and standardized execution across business units without specialized regulatory offsets."
+    "default": "The benchmark is aligned with the modern cross-industry advanced baseline defined in the Gartner I&O Maturity Index (2026). In response to widespread cloud-native scaling and modern operational demands, even non-regulated corporate environments are expected to achieve Level 4 (Managed and Sustainable), characterized by automated telemetry, quantitatively measured execution metrics, and continuous compliance feedback loops."
   }
 }

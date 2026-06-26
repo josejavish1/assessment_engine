@@ -4,10 +4,10 @@
 def get_regulatory_harvester_prompt(client_name: str) -> str:
     """Construct a Spanish-language prompt to identify cybersecurity regulations for a client."""
     return f"""
-    Analiza a la empresa '{client_name}'. Identifica a qué sector pertenece. 
-    Basado estrictamente en su sector operando en Europa/España, dime cuáles son los marcos normativos de ciberseguridad o resiliencia que le aplican obligatoriamente por ley. 
+    Analiza a la empresa '{client_name}'. Identifica a qué sector pertenece.
+    Basado estrictamente en su sector operando en Europa/España, dime cuáles son los marcos normativos de ciberseguridad o resiliencia que le aplican obligatoriamente por ley.
     (Ej: DORA para finanzas, NIS2/PIC para operadores esenciales o energía, ENS para sector público).
-    
+
     Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:
     {{
       "sector": "Sector en texto plano",
@@ -21,10 +21,10 @@ def get_regulatory_harvester_prompt(client_name: str) -> str:
 def get_business_harvester_prompt(client_name: str) -> str:
     """Generate a Spanish-language prompt for harvesting business intelligence on a client."""
     return f"""
-    Busca noticias recientes o resúmenes de informes de resultados/estrategia de la empresa '{client_name}'. 
-    1. ¿Cuáles son los objetivos corporativos declarados por su dirección general? 
+    Busca noticias recientes o resúmenes de informes de resultados/estrategia de la empresa '{client_name}'.
+    1. ¿Cuáles son los objetivos corporativos declarados por su dirección general?
     2. Estima su tamaño de facturación anual y clasifícalo en un 'financial_tier' (Tier 1: >1.000M€, Tier 2: 100M€-1.000M€, Tier 3: <100M€).
-    
+
     Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:
     {{
       "ceo_agenda": "Resumen de la agenda del CEO",
@@ -42,9 +42,9 @@ def get_business_harvester_prompt(client_name: str) -> str:
 def get_tech_harvester_prompt(client_name: str) -> str:
     """Generate a technology footprint harvesting prompt for a given client name."""
     return f"""
-    Basado en ofertas de empleo públicas, noticias de alianzas tecnológicas o footprint digital conocido de '{client_name}', ¿qué tecnología clave utilizan o hacia dónde van? 
+    Basado en ofertas de empleo públicas, noticias de alianzas tecnológicas o footprint digital conocido de '{client_name}', ¿qué tecnología clave utilizan o hacia dónde van?
     (Ej: ¿Están migrando a Azure? ¿Usan fuertemente SAP? ¿Servicios industriales OT/IT?).
-    
+
     Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:
     {{
       "tech_footprint": "Resumen del ecosistema tecnológico",

@@ -381,20 +381,13 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     meta_lang = ast.get("metadata", {}).get("language", "es").lower()
 
     # Loads configurations for branding and i18n to decouple presentation from logic.
-    brand_path = Path("engine_config/brand_profile.json")
-    brand = {}
-    if brand_path.exists():
-        with open(brand_path, "r", encoding="utf-8") as bf:
-            brand = json.load(bf)
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    brand = load_brand_profile()
     styling = brand.get("styling", {})
     color_blue = styling.get("primary_color_hex", "0072BC")
 
-    locales_path = Path("engine_config/locales.json")
-    locales_data = {}
-    if locales_path.exists():
-        with open(locales_path, "r", encoding="utf-8-sig") as lf:
-            locales_data = json.load(lf)
-    vocab = locales_data.get(meta_lang, locales_data.get("es", {}))
+    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    vocab = resolve_localized_vocabulary(meta_lang)
     global_sum = ast.get("global_summary", {})
     towers = ast.get("towers", [])
 
@@ -562,7 +555,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     #
     add_heading(
         doc,
-        vocab.get("appendix_a_title", "Índice de Contenidos"),
+        vocab.get("table_of_contents_title", "Índice de Contenidos"),
         level=1,
         primary_color_rgb=p_color_rgb,
     )
@@ -686,7 +679,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     )
     add_body_paragraph(
         doc,
-        "**Soberanía y Evidencia:** Todo salto de madurez debe ser auditable y sustentado por pruebas continuas basadas en evidencias empíricas (Chaos Engineering).",
+        "**Soberanía y Evidencia:** Todo salto de madurez debe ser auditable y sustentado por pruebas continuas basadas en evidencias empíricas (Pruebas de Resiliencia).",
         style="List Bullet",
     )
 

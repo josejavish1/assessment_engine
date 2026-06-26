@@ -108,7 +108,8 @@ def test_replace_table_in_markdown():
         "|---|---|---|",
         "| `new_field` | `str` | New description |",
     ]
-    result = v_schema.replace_table_in_markdown(md_content, "MockModel", new_table_lines)
+    result = v_schema.replace_table_in_markdown(
+        md_content, "MockModel", new_table_lines
+    )
     assert "new_field" in result
     assert "old_field" not in result
-

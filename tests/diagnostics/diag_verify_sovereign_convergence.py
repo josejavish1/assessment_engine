@@ -12,7 +12,7 @@ from assessment_engine.infrastructure.text_utils import slugify
 
 def test_sovereign_convergence_and_sort():
     # --- ARRANGE ---
-    client_name = "NTT_DATA_ELITE_TEST"
+    client_name = "NTT_DATA_COMPLIANCE_TEST"
     client_id = slugify(client_name)
     working_dir = Path(f"working/{client_id}")
 
@@ -20,15 +20,15 @@ def test_sovereign_convergence_and_sort():
     if working_dir.exists():
         shutil.rmtree(working_dir)
 
-    print(f"🚀 Iniciando Prueba de Convergencia Soberana para: {client_name}")
+    print(f"[Audit] Initializing Sovereign Convergence Verification for: {client_name}")
 
     graph = EpistemicGraph(client_id=client_id)
     resolver = EntityResolutionEngine()
     OntologyRegistry()
 
-    # --- SIMULACIÓN TORRE 1 (INFRA) ---
+    # --- TOWER 1 SIMULATION (INFRA) ---
     # Proyecto A: "Despliegue de Landing Zone en AWS"
-    print("\n📦 Torre 1: Inyectando 'Despliegue de Landing Zone en AWS'...")
+    print("\n[System] Domain 1: Injecting 'Despliegue de Landing Zone en AWS'...")
     id_infra = resolver.get_semantic_id(
         "Despliegue de Landing Zone en AWS", context="INITIATIVE"
     )
@@ -40,25 +40,25 @@ def test_sovereign_convergence_and_sort():
         confidence=1.0,
     )
 
-    # --- SIMULACIÓN TORRE 6 (SEGURIDAD) ---
-    # Proyecto B: "Configuración Segura de AWS Landing" (SINÓNIMO)
-    # Proyecto C: "Implementación de SIEM" (DEPENDIENTE)
-    print("🛡️ Torre 6: Inyectando 'Configuración Segura de AWS Landing' (Sinónimo)...")
+    # --- TOWER 6 SIMULATION (SECURITY) ---
+    # Project B: "Secure AWS Landing Configuration" (SYNONYM)
+    # Project C: "SIEM Implementation" (DEPENDENT)
+    print("[System] Domain 6: Injecting 'Configuración Segura de AWS Landing' (Sinónimo)...")
     id_sec = resolver.get_semantic_id(
         "Configuración Segura de AWS Landing", context="INITIATIVE"
     )
 
-    # Verificamos si los IDs convergen (deberían ser iguales por el motor semántico)
+    # We verify whether the IDs converge (they should be equal due to the semantic engine).
     if id_infra == id_sec:
         print(
-            "✅ CONVERGENCIA SEMÁNTICA DETECTADA: Torre 1 y Torre 6 apuntan al mismo NodeID."
+            "[Audit] Semantic convergence detected: Domain 1 and Domain 6 point to the same NodeID."
         )
     else:
-        print("❌ FALLO DE CONVERGENCIA: Los IDs son diferentes.")
+        print("[-] Convergence failure: Different NodeIDs found.")
 
     id_siem = resolver.get_semantic_id("Implementación de SIEM", context="INITIATIVE")
     print(
-        "🛡️ Torre 6: Inyectando 'Implementación de SIEM' que depende de la Landing Zone..."
+        "[System] Domain 6: Injecting 'Implementación de SIEM' dependent on the Landing Zone..."
     )
 
     graph.inject_triple(
@@ -77,8 +77,8 @@ def test_sovereign_convergence_and_sort():
         confidence=1.0,
     )
 
-    # --- ORQUESTACIÓN GLOBAL ---
-    print("\n🧠 Ejecutando Orquestador Estratégico (Topological Sort)...")
+    # --- GLOBAL ORCHESTRATION ---
+    print("\n[System] Executing Strategic Orchestrator (Topological Sort)...")
     # --- ACT ---
     results = run_strategic_orchestration(client_name)
 
@@ -111,11 +111,11 @@ def test_sovereign_convergence_and_sort():
         "SIEM debería estar en Wave 1 (dependiente)"
     )
 
-    print("\n✅ PRUEBA DE CONVERGENCIA SOBERANA EXITOSA.")
+    print("\n[Audit] Sovereign convergence test successful.")
 
-    print("\n✅ PRUEBA DE SOBERANÍA COMPLETADA CON ÉXITO.")
+    print("\n[Audit] Sovereignty verification completed successfully.")
     print(
-        "La convergencia y el ordenamiento topológico funcionan según el estándar Tier 1."
+        "Convergence and topological sorting function according to the system specifications."
     )
 
 

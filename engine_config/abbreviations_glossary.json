@@ -1,12 +1,62 @@
 {
-  "AS-IS": "Situación actual encontrada durante la fase de auditoría técnica.",
-  "BIA": "Business Impact Analysis (Análisis de impacto en el negocio del cliente).",
-  "CPD": "Centro de Proceso de Datos (Sede física o técnica de los servidores).",
-  "DR": "Disaster Recovery (Recuperación ante Desastres y conmutaciones entre sedes).",
-  "ENS": "Esquema Nacional de Seguridad (España, categoría de cumplimiento Alto).",
-  "EoL": "End of Life (Sistemas descatalogados sin soporte oficial de fabricante).",
-  "FAIR": "Factor Analysis of Information Risk (Estándar internacional de gestión cuantitativa de riesgo).",
-  "TEF": "Threat Event Frequency (Frecuencia estimada anual de ocurrencia del riesgo).",
-  "LM": "Loss Magnitude (Estimación del coste económico de impacto por cada evento de pérdida).",
-  "ALE": "Annual Loss Exposure (La expectativa de coste anualizado resultante del riesgo: TEF x LM)."
+  "es": {
+    "AS-IS": "Situación actual encontrada durante la fase de auditoría técnica.",
+    "BIA": "Business Impact Analysis (Análisis de impacto en el negocio del cliente).",
+    "CPD": "Centro de Proceso de Datos (Sede física o técnica de los servidores).",
+    "DR": "Disaster Recovery (Recuperación ante Desastres y conmutaciones entre sedes).",
+    "ENS": "Esquema Nacional de Seguridad (España, categoría de cumplimiento Alto).",
+    "EoL": "End of Life (Sistemas descatalogados sin soporte oficial de fabricante).",
+    "FAIR": "Factor Analysis of Information Risk (Estándar internacional de gestión cuantitativa de riesgo).",
+    "TEF": "Threat Event Frequency (Frecuencia estimada anual de ocurrencia del riesgo).",
+    "LM": "Loss Magnitude (Estimación del coste económico de impacto por cada evento de pérdida).",
+    "ALE": "Annual Loss Exposure (La expectativa de coste anualizado resultante del riesgo: TEF x LM)."
+  },
+  "en": {
+    "AS-IS": "Current situation found during the technical audit phase.",
+    "BIA": "Business Impact Analysis (Assessment of the client's business impact).",
+    "CPD": "Data Center (Physical or technical hosting facility for servers).",
+    "DR": "Disaster Recovery (Procedures and failover mechanisms between sites).",
+    "ENS": "National Security Framework (Spain, high-category compliance standard).",
+    "EoL": "End of Life (Discontinued systems without official vendor support).",
+    "FAIR": "Factor Analysis of Information Risk (International quantitative risk management standard).",
+    "TEF": "Threat Event Frequency (Estimated annual frequency of risk occurrence).",
+    "LM": "Loss Magnitude (Estimated financial impact cost per loss event).",
+    "ALE": "Annual Loss Exposure (Expected annualized cost resulting from risk: TEF x LM)."
+  },
+  "pt": {
+    "AS-IS": "Situação atual encontrada durante a fase de auditoria técnica.",
+    "BIA": "Business Impact Analysis (Análise de impacto no negócio do cliente).",
+    "CPD": "Centro de Processamento de Dados (Sede física ou técnica dos servidores).",
+    "DR": "Disaster Recovery (Recuperação de Desastres e failover entre sites).",
+    "ENS": "Esquema Nacional de Segurança (Espanha, categoria de conformidade alta).",
+    "EoL": "End of Life (Sistemas descontinuados sem suporte oficial do fabricante).",
+    "FAIR": "Factor Analysis of Information Risk (Padrão internacional de gestão quantitativa de risco).",
+    "TEF": "Threat Event Frequency (Frequência anual estimada de ocorrência de risco).",
+    "LM": "Loss Magnitude (Custo de impacto financeiro estimado por evento de perda).",
+    "ALE": "Annual Loss Exposure (Expectativa de custo anualizado resultante do risco: TEF x LM)."
+  },
+  "fr": {
+    "AS-IS": "Situation actuelle constatée lors de la phase d'audit technique.",
+    "BIA": "Business Impact Analysis (Analyse de l'impact sur l'activité du client).",
+    "CPD": "Centre de Données (Installation physique ou technique d'hébergement des serveurs).",
+    "DR": "Disaster Recovery (Procédures de reprise d'activité et basculement entre sites).",
+    "ENS": "Cadre National de Sécurité (Espagne, norme de conformité de catégorie élevée).",
+    "EoL": "End of Life (Systèmes abandonnés sans support officiel du fournisseur).",
+    "FAIR": "Factor Analysis of Information Risk (Norme internationale de gestion quantitative des risques).",
+    "TEF": "Threat Event Frequency (Fréquence annuelle estimée de survenue du risque).",
+    "LM": "Loss Magnitude (Coût estimé de l'impact financier par événement de perte).",
+    "ALE": "Annual Loss Exposure (Coût annualisé attendu résultant du risque : TEF x LM)."
+  },
+  "ja": {
+    "AS-IS": "技術監査フェーズ中に検出された現在の状況。",
+    "BIA": "ビジネスインパクト分析（クライアントのビジネスへの影響評価）。",
+    "CPD": "データセンター（サーバーの物理的または技術的なホスティング施設）。",
+    "DR": "災害復旧（サイト間のフェイルオーバー手順およびメカニズム）。",
+    "ENS": "国家安全保障フレームワーク（スペイン、高カテゴリーコンプライアンス基準）。",
+    "EoL": "サポート終了（公式ベンダーサポートのない廃止されたシステム）。",
+    "FAIR": "情報リスクの要因分析（国際的な定量的リスク管理基準）。",
+    "TEF": "脅威イベント頻度（リスク発生の推定年間頻度）。",
+    "LM": "損失規模（損失イベントごとの推定財務影響コスト）。",
+    "ALE": "年間損失予測（リスクから生じる予想年間コスト：TEF x LM）。"
+  }
 }

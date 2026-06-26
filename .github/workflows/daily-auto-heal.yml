@@ -1,4 +1,4 @@
-name: Daily Sentinel Auto-Heal
+name: Daily Repository Maintenance & Auto-Heal
 
 on:
   schedule:
@@ -70,10 +70,10 @@ jobs:
       - name: Commit & Push Auto-Heal Modifications
         if: steps.git-diff.outputs.drift == 'true'
         run: |
-          git config --global user.name "Sovereign Sentinel Bot"
-          git config --global user.email "sentinel@sovereign-fabric.ai"
+          git config --global user.name "Sovereign Maintenance Bot"
+          git config --global user.email "maintenance@sovereign-fabric.ai"
           git add .
-          git commit -m "style: [Sentinel Auto-Heal] Synchronise docs, schemas, sitemaps, and format code"
+          git commit -m "style: [Auto-Heal] Synchronise docs, schemas, sitemaps, and format code"
           git push origin main
 
       - name: Validate System-wide Stability (pytest)

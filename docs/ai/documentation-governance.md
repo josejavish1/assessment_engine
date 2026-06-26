@@ -22,15 +22,15 @@ Esta política define cómo se lee, verifica y actualiza la documentación de `a
 
 ## Objetivo
 
-Mantener una documentación única, auditable y reutilizable, sin duplicar la verdad entre humanos, Gemini, ChatGPT, Copilot u otros agentes.
+Mantener una documentación única, auditable y reusable, evitando la duplicidad de fuentes de verdad entre operarios humanos y agentes de inteligencia artificial (Gemini, ChatGPT, Copilot, etc.).
 
 ## Principios
 
-1. **Una sola base documental.** No existen dos documentaciones paralelas, una para humanos y otra para IAs.
-2. **El repo ejecutable manda.** Código, tests, workflows, schemas y configuración real prevalecen sobre cualquier narrativa.
-3. **Los adaptadores por agente no redefinen la verdad.** `GEMINI.md`, `AGENTS.md`, `CHATGPT.md` o `.github/copilot-instructions.md` solo explican cómo consumir y actualizar la base común.
-4. **Sin invenciones.** Si algo no puede verificarse, debe marcarse como duda o `Needs Review`.
-5. **Trazabilidad obligatoria.** Todo cambio relevante debe tener una ruta documental obvia.
+1. **Base documental unificada:** No existen bases de conocimiento paralelas. Humanos y agentes consumen y mantienen exactamente el mismo corpus técnico.
+2. **Supremacía del repositorio ejecutable:** El código fuente, las suites de pruebas, las automatizaciones de CI/CD, los esquemas de validación y la configuración física constituyen la única fuente de verdad definitiva y prevalecen sobre cualquier descripción prosa.
+3. **Inmutabilidad por adaptadores:** Los archivos específicos por agente (`GEMINI.md`, `AGENTS.md`, `CHATGPT.md`, `.github/copilot-instructions.md`) actúan únicamente como adaptadores operativos de contexto. No redefinen, extienden ni modifican las especificaciones declaradas en la documentación canónica.
+4. **Verificación empírica rigurosa:** Queda estrictamente prohibida la asunción de capacidades no implementadas. Cualquier componente o flujo cuya coincidencia empírica no pueda certificarse debe clasificarse de inmediato como `Needs Review` o `Draft`.
+5. **Trazabilidad determinista:** Cualquier cambio estructural o de comportamiento en el sistema debe verse reflejado de forma explícita en su correspondiente ruta de documentación técnica.
 
 ## Tipos documentales oficiales
 
@@ -116,7 +116,7 @@ Esto permite endurecer reglas distintas para contratos, runbooks, arquitectura, 
 `docs/documentation-map.yaml` debe declarar:
 
 - `coverage.include` y `coverage.exclude` para definir el corpus gobernado;
-- `freshness.verified_max_age_days` para limitar cuánto tiempo puede vivir un `Verified` sin reverificación explícita.
+- `freshness.verified_max_age_days` para limitar cuánto tiempo puede vivir un `Verified` sin reverificación explícitamente.
 
 La pipeline documental debe producir al menos estos artefactos:
 

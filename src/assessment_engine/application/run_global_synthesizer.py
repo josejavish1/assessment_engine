@@ -116,7 +116,7 @@ async def synthesize_global_asis(working_dir: str):
     Returns:
         None. The function's output is persisted to a file as a side effect.
     """
-    print("🚀 Iniciando Global Executive Synthesizer (SOTA 2026)...")
+    print("[System] Initializing Global Executive Synthesis (Standard Compliance)...")
 
     payloads = []
     total_ale_global = 0.0
@@ -165,7 +165,7 @@ async def synthesize_global_asis(working_dir: str):
         f"RESÚMENES TÉCNICOS POR TORRE:\n{''.join(tower_summaries)}\n\n"
         f"LISTADO BRUTO DE PROYECTOS PROPUESTOS (Talla S/M/L):\n{chr(10).join(all_projects)}\n\n"
         f"MANDATO MATEMÁTICO (COI): El sumatorio total de la exposición financiera al riesgo (FAIR ALE) es de {total_ale_global:,.2f} € anuales.\n\n"
-        "INSTRUCCIONES (PATRÓN SOTA PLANNER-EXECUTOR):\n"
+        "INSTRUCCIONES (PATRÓN PLANNER-EXECUTOR):\n"
         "1. No hagas un 'copia-pega' de las torres. Busca patrones transversales.\n"
         "2. Redacta el 'executive_context' anclando al directivo en su realidad de negocio (apagones, regulaciones).\n"
         "3. Redacta las viñetas de 'cross_tower_synthesis' explicando los problemas sistémicos (ej. silos, procesos manuales).\n"

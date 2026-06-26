@@ -159,13 +159,6 @@
       "quick wins"
     ]
   },
-  "canonical_pillar_labels": {
-    "T5.P1": "Estrategia BC/DR",
-    "T5.P2": "Backup & Restore",
-    "T5.P3": "Disaster Recovery",
-    "T5.P4": "Cyber Recovery",
-    "T5.P5": "Alta Disponibilidad"
-  },
   "charting": {
     "pillar_radar_chart": {
       "enabled": true,

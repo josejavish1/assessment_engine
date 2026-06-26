@@ -1,4 +1,4 @@
-# Vision Architecture: The Epistemic Knowledge Graph & Dynamic Assessments (SOTA 2026)
+# Vision Architecture: The Epistemic Knowledge Graph & Dynamic Assessments (Standard 2026)
 
 ## 1. El Problema Actual: Arquitectura Basada en "Silos de Torres"
 
@@ -11,9 +11,9 @@ Actualmente, el motor de evaluación (*Assessment Engine*) opera bajo un paradig
 
 ---
 
-## 2. El Salto a la Élite (Nivel 5): "Epistemic Knowledge Graph Retrieval"
+## 2. Transición Arquitectónica: "Epistemic Knowledge Graph Retrieval"
 
-Para alcanzar el estado del arte mundial (SOTA 2026) empleado por firmas Tier-1, la arquitectura debe evolucionar de "Cuestionarios Aislados" a un **Gemelo Digital Arquitectónico**.
+Para alinearse con las mejores prácticas de la industria y los estándares empresariales consolidados, la arquitectura debe evolucionar de "Cuestionarios Aislados" a un **Gemelo Digital Arquitectónico**.
 
 El corazón de este sistema ya no son archivos JSON planos, sino una **Ontología en un Grafo de Conocimiento (Knowledge Graph)**.
 

@@ -1,11 +1,11 @@
-"""Tests for the SOTA massive context compiler tool.
+"""Tests for the unified context compiler tool.
 
 This test file verifies that compile_llms_full correctly parses llms.txt,
 concatenates all valid reference files, and handles missing sitemaps or empty paths.
 """
 
 from pathlib import Path
-import pytest
+
 from src.assessment_engine.application.tools.compile_llms_full import compile_llms_full
 
 
@@ -21,7 +21,7 @@ def test_compile_llms_full_success(tmp_path: Path) -> None:
     # Create mock sitemap links
     mock_sitemap.write_text(
         "# Index\n\n- [AGENTS.md](AGENTS.md)\n- [docs/arch.md](docs/arch.md)\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     # Create referenced files
@@ -69,7 +69,9 @@ def test_real_llms_full_is_synchronized(tmp_path: Path) -> None:
     real_output = repo_root / "llms-full.txt"
 
     assert real_sitemap.exists(), "Repository's 'llms.txt' is missing!"
-    assert real_output.exists(), "Repository's 'llms-full.txt' is missing! Run compile_llms_full.py first."
+    assert real_output.exists(), (
+        "Repository's 'llms-full.txt' is missing! Run compile_llms_full.py first."
+    )
 
     temp_output = tmp_path / "llms-full.txt.tmp"
 
@@ -88,4 +90,3 @@ def test_real_llms_full_is_synchronized(tmp_path: Path) -> None:
         "  /.venv/bin/python src/assessment_engine/application/tools/compile_llms_full.py\n"
         "And commit the updated 'llms-full.txt' file."
     )
-

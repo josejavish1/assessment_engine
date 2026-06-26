@@ -287,7 +287,7 @@ async def refine_commercial_payload(
     pipeline = await call_commercial_agent(
         model_name,
         "ENTERPRISE PRESALES ARCHITECT",
-        "Analiza el Roadmap Global y CRÚZALO con el catálogo 'tactical_tower_blueprints'. Genera un pipeline de oportunidades combinando las grandes iniciativas con los Quick Wins técnicos detectados en las torres (como Chaos Engineering, automatizaciones, BIA, etc.). Evalúa: vendor, revenue type, TCV y Manejo de Objeciones.",
+        "Analiza el Roadmap Global y CRÚZALO con el catálogo 'tactical_tower_blueprints'. Genera un pipeline de oportunidades combinando las grandes iniciativas con los Quick Wins técnicos detectados en las torres (como pruebas de resiliencia, automatizaciones, análisis BIA, etc.). Evalúa: vendor, revenue type, TCV y Manejo de Objeciones.",
         payload_str,
         PresalesArchitectOutput,
         client_name,

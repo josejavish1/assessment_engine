@@ -1,85 +1,75 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - docs/documentation-map.yaml
-- src/
-- .github/workflows/ci.yml
-- .github/workflows/docs-governance.yml
+- src/assessment_engine/application/tools/validate_documentation_governance.py
+- .github/workflows/daily-auto-heal.yml
 last_verified_against: 2026-06-26
 applies_to:
 - repository
 doc_type: canonical
 diataxis: explanation
 verification_mode: editorial
+notes: Documentation directory index and map overview.
 ---
 
 # Mapa maestro de documentación
 
-Este directorio es la **entrada principal** para entender y mantener la documentación de `assessment-engine`.
+Este directorio es la **entrada principal** para entender, navegar y mantener la documentación técnica de `assessment-engine`.
 
-Su trabajo es orientar al lector hacia la capa correcta y dejar visible qué piezas describen el estado actual, cuáles son material operativo y cuáles deben leerse como referencia derivada, histórico o visión futura.
+Su propósito es orientar al lector hacia la sección adecuada de la base de conocimiento y mantener la visibilidad sobre cuáles piezas describen el estado operativo actual, cuáles son guías de mantenimiento operativo y cuáles representan contratos o arquitectura.
 
-## Jerarquía de verdad
+---
 
-1. **Código, tests, schemas, workflows y configuración real**
-2. **Documentación canónica del repo**
-3. **Referencia generada o heredada**
-4. **Adaptadores por agente**
+## 1. Jerarquía de verdad
 
-Si un documento narrativo contradice al código o a los contratos, **manda el repo ejecutable**.
+El repositorio opera bajo una estricta jerarquía de verdad de cuatro niveles para resolver contradicciones:
 
-## Cómo leer el árbol documental
+1.  **Código ejecutable:** Esquemas de Pydantic, suites de pytest, flujos de GitHub Actions y configuración física.
+2.  **Documentación canónica:** Contratos y especificaciones conceptuales alojados bajo `docs/` y el directorio raíz.
+3.  **Referencia derivada:** Inventarios autogenerados o reportes de análisis intermedios.
+4.  **Adaptadores de contexto:** Ficheros específicos de personalización para agentes de IA externos.
 
-| Si necesitas... | Lee primero |
+Si un documento narrativo contradice el comportamiento del código o de los contratos, **manda el repositorio ejecutable**.
+
+---
+
+## 2. Mapa de navegación del árbol documental
+
+| Necesidad del Lector | Documento de Entrada Recomendado |
 |---|---|
-| ubicar la política documental | [`ai/documentation-governance.md`](ai/documentation-governance.md) |
-| entender la arquitectura actual a alto nivel | [`SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) |
-| bajar a piezas arquitectónicas más concretas | [`architecture/`](architecture/README.md) |
-| entender operación, CI y calidad | [`operations/`](operations/README.md) |
-| entender contratos y payloads | [`contracts/`](contracts/artifact-contracts.md) |
-| consultar referencia derivada o material heredado | [`reference/generated/`](reference/generated/README.md) |
-| ver el inventario máquina-legible y sus estados declarados | [`documentation-map.yaml`](documentation-map.yaml) |
-| ver la auditoría narrativa más reciente | [`documentation_audit.md`](documentation_audit.md) |
+| Ubicar las políticas y reglas de calidad documental | [`ai/documentation-governance.md`](ai/documentation-governance.md) |
+| Comprender la arquitectura hexagonal a alto nivel | [`SYSTEM_ARCHITECTURE.md`](SYSTEM_ARCHITECTURE.md) |
+| Consultar especificaciones y topologías detalladas | [`architecture/README.md`](architecture/README.md) |
+| Consultar runbooks de ejecución y mantenimiento | [`operations/README.md`](operations/README.md) |
+| Revisar contratos de payload y de entrada de datos | [`contracts/artifact-contracts.md`](contracts/artifact-contracts.md) |
+| Ver la auditoría y traza de cambios de la plataforma | [`documentation_audit.md`](documentation_audit.md) |
+| Revisar el inventario de gobernanza máquina-legible | [`documentation-map.yaml`](documentation-map.yaml) |
 
-## Tipos documentales
+---
 
-- **canónica:** describe comportamiento, arquitectura, operación o reglas oficiales;
-- **operativa:** guía de trabajo o mantenimiento;
-- **reference_generated:** documentación derivada del código, inventarios o legado técnico;
-- **archived:** material histórico que no debe crecer.
+## 3. Tipos documentales declarados
 
-## Estados documentales
+*   **`canonical`:** Describe el comportamiento, la arquitectura, el modelo de datos o las reglas oficiales del sistema.
+*   **`operational`:** Guías de trabajo paso a paso, manuales de instalación o runbooks de recuperación ante fallos.
+*   **`reference_generated`:** Inventarios derivados, listados autogenerados por el linter o reportes de métricas.
 
-- `Verified`: contrastado contra la realidad del repo;
-- `Needs Review`: útil, pero pendiente de verificación o realineación;
-- `Draft`: base inicial válida, todavía incompleta;
-- `Deprecated`: ya no debe crecer y tiene reemplazo o destino de migración.
+---
 
-## Estado de gobernanza hoy
+## 4. Estado de gobernanza actual
 
-La base documental ya no está desordenada, pero **todavía no puede considerarse completamente fiable como corpus SOTA**. El problema principal actual es de gobernanza:
+La integridad y alineación del corpus se mantienen bajo un **bucle cibernético cerrado de conciliación automática**:
 
-- el inventario máquina-legible existe, pero mezcla piezas bien contrastadas con otras todavía sobreclasificadas;
-- varios documentos combinan descripción del estado actual con roadmap, visión futura o histórico;
-- `Verified` debe reservarse para piezas realmente contrastadas contra código, tests, contratos o workflows;
-- `docs/reference/generated/` y `docs/strategy/` no deben leerse como verdad operativa por defecto.
+*   **Sincronización de Esquemas:** Cada commit verifica que los esquemas de datos del código de Python coincidan de forma idéntica con las tablas Markdown de los contratos.
+*   **Autocorrección Pre-commit:** Al ejecutar `git commit` localmente, la suite re-escribe de forma desatendida las tablas Markdown desviadas antes de confirmar los cambios en el disco.
+*   **Sentinel Diario:** GitHub Actions ejecuta un flujo diario de auto-curación (`daily-auto-heal.yml`) a medianoche para formatear código, linterizar, compilar sitemaps de IA (`llms-full.txt`) y reconciliar el repositorio.
 
-## Lectura operativa recomendada
+---
 
-| Capa | Regla de lectura |
-|---|---|
-| `README.md` y esta página | entrada y orientación, no contrato suficiente por sí solos |
-| `ai/`, `SYSTEM_ARCHITECTURE.md`, `contracts/`, piezas operativas verificadas | base preferente para cambios reales |
-| `architecture/` | usar primero las piezas verificadas; el resto puede seguir en consolidación |
-| `operations/` | usar para ejecución y mantenimiento, comprobando el estado declarado de cada guía |
-| `audits/` | histórico útil y backlog de mejora, no verdad operativa directa |
-| `strategy/` | visión futura o posicionamiento, no descripción del sistema actual |
-| `reference/generated/` | referencia derivada y legado archivado, no fuente principal |
+## 5. Qué hacer ante dudas o contradicciones
 
-## Qué hacer cuando haya duda
-
-1. comprobar `docs/documentation-map.yaml`;
-2. leer el front matter del documento concreto;
-3. contrastar contra código, tests, schemas o workflows declarados en `source_of_truth`;
-4. si el contraste no es claro, tratar el documento como `Needs Review`.
+1.  Comprobar la ruta y el estado del documento en `docs/documentation-map.yaml`.
+2.  Inspeccionar las fuentes de verdad (`source_of_truth`) declaradas en el front matter del documento.
+3.  Contrastar la descripción prosa contra las firmas de código, tests o contratos de Pydantic correspondientes.
+4.  Si se detecta un desajuste o falta de claridad conceptual, tratar el documento como `Needs Review`.

@@ -217,7 +217,14 @@ def update_ui_components(layout: Layout) -> None:
 async def run_po_orchestrator(task_prompt: str) -> tuple[bool, str]:
     r"""{'docstring': "Asynchronously executes the 'po-run' orchestrator script with a task prompt.\n\n    The function sanitizes the input `task_prompt` by removing newlines and\n    escaping double quotes. It then launches the 'po-run' script as an\n    asynchronous subprocess, passing the sanitized prompt as a command-line\n    argument. Standard error is redirected to standard output, and the\n    `PYTHONUNBUFFERED` environment variable is set to facilitate real-time\n    output streaming.\n\n    Output from the subprocess is captured line-by-line. Each line is appended\n    to a persistent `session.log` file and simultaneously used to populate the\n    global `UI_STATE['active_logs']` list for real-time interface updates.\n    The function awaits the termination of the subprocess before returning.\n\n    Args:\n        task_prompt: The task description to be processed by the orchestrator.\n\n    Returns:\n        A tuple containing a boolean success flag (True if the process exit code\n        was 0) and the complete captured standard output as a single string,\n        with each line stripped of whitespace.\n\n    Raises:\n        FileNotFoundError: If the 'po-run' executable is not found.\n        PermissionError: If the script lacks permissions to execute 'po-run' or\n            write to the log file."}."""
     clean_prompt = task_prompt.replace("\n", " ").replace('"', '\\"')
-    cmd = [str(REPO_ROOT / "bin/po-run"), clean_prompt]
+    cmd = [
+        sys.executable,
+        str(
+            REPO_ROOT
+            / "src/assessment_engine/application/tools/run_product_owner_orchestrator.py"
+        ),
+        clean_prompt,
+    ]
 
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
