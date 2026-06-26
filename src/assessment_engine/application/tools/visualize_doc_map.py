@@ -4,7 +4,7 @@
 
 This script parses the documentation-map.yaml configuration and generates a
 high-fidelity, interactive, dynamic 2D Force-Directed Graph using D3.js.
-The output is written as a self-contained HTML file in working/documentation_map_visual.html.
+The output is written as a self-contained HTML file in .artifacts/docs/documentation_map_visual.html.
 """
 
 import json
@@ -17,7 +17,7 @@ import yaml
 
 def generate_interactive_map(
     yaml_path_str: str = "docs/documentation-map.yaml",
-    output_html_str: str = "working/documentation_map_visual.html",
+    output_html_str: str = ".artifacts/docs/documentation_map_visual.html",
 ) -> bool:
     """Parses documentation-map.yaml and exports a D3.js interactive HTML visualization.
 
