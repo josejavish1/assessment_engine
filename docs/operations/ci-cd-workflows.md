@@ -1,18 +1,20 @@
 ---
-status: "Verified"
-owner: "platform-team"
-last_verified_against: "2026-05-03"
-applies_to:
-  - humans
-  - ai-agents
+status: Needs Review
+owner: platform-team
 source_of_truth:
-  - .github/workflows/agent-evals.yml
-  - .github/workflows/ci.yml
-  - .github/workflows/docs-governance.yml
-  - .github/workflows/orchestrator-pr-reconcile.yml
-  - .github/workflows/quality.yml
-  - .github/workflows/typing.yml
-doc_type: "operational"
+- .github/workflows/agent-evals.yml
+- .github/workflows/ci.yml
+- .github/workflows/docs-governance.yml
+- .github/workflows/orchestrator-pr-reconcile.yml
+- .github/workflows/quality.yml
+- .github/workflows/typing.yml
+last_verified_against: '2026-06-26'
+applies_to:
+- humans
+- ai-agents
+doc_type: operational
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # CI/CD Workflows

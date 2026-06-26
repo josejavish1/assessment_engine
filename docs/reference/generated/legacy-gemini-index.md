@@ -2,13 +2,15 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ./legacy-gemini/
-  - ../../../src/domain/
+- ./legacy-gemini/
+- ../../../src/domain/
 last_verified_against: 2026-04-30
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: reference_generated
+diataxis: reference
+verification_mode: observed_run
 ---
 
 # Legacy Gemini reference index

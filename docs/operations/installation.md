@@ -2,16 +2,18 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../pyproject.toml
-  - ../../requirements.txt
-  - ../../tests/test_environment.py
-  - ../../.github/workflows/ci.yml
-  - ../../src/infrastructure/runtime_env.py
+- ../../pyproject.toml
+- ../../requirements.txt
+- ../../tests/test_environment.py
+- ../../.github/workflows/ci.yml
+- ../../src/infrastructure/runtime_env.py
 last_verified_against: 2026-05-01
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Installation and environment setup

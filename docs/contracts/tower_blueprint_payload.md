@@ -2,12 +2,14 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/domain/schemas/blueprint.py
+- ../../src/domain/schemas/blueprint.py
 last_verified_against: 2026-05-03
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: reference
+verification_mode: schema
 ---
 
 # Tower Blueprint Payload Contract

@@ -1,19 +1,21 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - ../../pytest.ini
-  - ../../tests/test_contract_handover.py
-  - ../../tests/test_t5_golden.py
-  - ../../src/application/run_tower_pipeline.py
-  - ../../src/application/run_global_pipeline.py
-  - ../../src/application/run_commercial_pipeline.py
-  - ../architecture/working-artifacts.md
-last_verified_against: 2026-05-01
+- ../../pytest.ini
+- ../../tests/test_contract_handover.py
+- ../../tests/test_t5_golden.py
+- ../../src/application/run_tower_pipeline.py
+- ../../src/application/run_global_pipeline.py
+- ../../src/application/run_commercial_pipeline.py
+- ../architecture/working-artifacts.md
+last_verified_against: 2026-06-26
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Troubleshooting `working/` and artifact-dependent validation

@@ -2,26 +2,28 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/domain/schemas/blueprint.py
-  - ../../src/domain/schemas/annex_synthesis.py
-  - ../../src/domain/schemas/global_report.py
-  - ../../src/domain/schemas/commercial.py
-  - ../../src/application/run_tower_blueprint_engine.py
-  - ../../src/application/run_executive_annex_synthesizer.py
-  - ../../src/application/build_global_report_payload.py
-  - ../../src/application/run_executive_refiner.py
-  - ../../src/application/run_commercial_refiner.py
-  - ../../src/application/render_tower_blueprint.py
-  - ../../src/application/render_tower_annex_from_template.py
-  - ../../src/application/render_global_report_from_template.py
-  - ../../src/application/render_commercial_report.py
-  - ../../src/application/render_web_presentation.py
-  - ./payload-render-boundaries.md
+- ../../src/domain/schemas/blueprint.py
+- ../../src/domain/schemas/annex_synthesis.py
+- ../../src/domain/schemas/global_report.py
+- ../../src/domain/schemas/commercial.py
+- ../../src/application/run_tower_blueprint_engine.py
+- ../../src/application/run_executive_annex_synthesizer.py
+- ../../src/application/build_global_report_payload.py
+- ../../src/application/run_executive_refiner.py
+- ../../src/application/run_commercial_refiner.py
+- ../../src/application/render_tower_blueprint.py
+- ../../src/application/render_tower_annex_from_template.py
+- ../../src/application/render_global_report_from_template.py
+- ../../src/application/render_commercial_report.py
+- ../../src/application/render_web_presentation.py
+- ./payload-render-boundaries.md
 last_verified_against: 2026-05-03
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: reference
+verification_mode: schema
 ---
 
 # Artifact contracts

@@ -2,22 +2,24 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - ../../bin/po-run
-  - ../../engine_config/policies/orchestrator_policy.json
-  - ../../engine_config/runtime_manifest.json
-  - ../../src/infrastructure/product_owner_models.py
-  - ../../src/application/tools/run_product_owner_orchestrator.py
-  - ../../src/domain/prompts/product_owner_prompts.py
-  - ../../.github/workflows/ci.yml
-  - ../../.github/workflows/quality.yml
-  - ../../.github/workflows/typing.yml
-  - ../../.github/workflows/orchestrator-pr-reconcile.yml
-  - ../../.github/scripts/reconcile_prs.sh
+- ../../bin/po-run
+- ../../engine_config/policies/orchestrator_policy.json
+- ../../engine_config/runtime_manifest.json
+- ../../src/infrastructure/product_owner_models.py
+- ../../src/application/tools/run_product_owner_orchestrator.py
+- ../../src/domain/prompts/product_owner_prompts.py
+- ../../.github/workflows/ci.yml
+- ../../.github/workflows/quality.yml
+- ../../.github/workflows/typing.yml
+- ../../.github/workflows/orchestrator-pr-reconcile.yml
+- ../../.github/scripts/reconcile_prs.sh
 last_verified_against: 2026-06-25
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Product owner orchestrator

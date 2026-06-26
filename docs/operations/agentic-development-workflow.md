@@ -2,20 +2,22 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../AGENTS.md
-  - ../../.github/copilot-instructions.md
-  - ../../.github/pull_request_template.md
-  - ../../docs/operations/engineering-quality-gates.md
-  - ../../src/domain/
-  - ../../tests/
-  - ../../.github/workflows/ci.yml
-  - ../../.github/workflows/quality.yml
-  - ../../.github/workflows/typing.yml
+- ../../AGENTS.md
+- ../../.github/copilot-instructions.md
+- ../../.github/pull_request_template.md
+- ../../docs/operations/engineering-quality-gates.md
+- ../../src/domain/
+- ../../tests/
+- ../../.github/workflows/ci.yml
+- ../../.github/workflows/quality.yml
+- ../../.github/workflows/typing.yml
 last_verified_against: 2026-05-02
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Agentic development workflow

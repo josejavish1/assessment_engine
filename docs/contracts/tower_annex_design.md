@@ -1,16 +1,18 @@
 ---
-status: Verified
+status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../../src/domain/schemas/annex_synthesis.py
-  - ../../src/application/run_executive_annex_synthesizer.py
-  - ../../src/application/render_tower_annex_from_template.py
-  - ../../docs/contracts/payload-render-boundaries.md
-last_verified_against: 2026-05-03
+- ../../src/domain/schemas/annex_synthesis.py
+- ../../src/application/run_executive_annex_synthesizer.py
+- ../../src/application/render_tower_annex_from_template.py
+- ../../docs/contracts/payload-render-boundaries.md
+last_verified_against: 2026-06-26
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: reference
+verification_mode: schema
 ---
 
 # Tower Annex v2 - Diseño objetivo

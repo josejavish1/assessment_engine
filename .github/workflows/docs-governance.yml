@@ -5,6 +5,8 @@ on:
     branches: ["main", "develop"]
   pull_request:
     branches: ["main", "develop"]
+  schedule:
+    - cron: "23 4 * * *"
 
 jobs:
   docs-governance:
@@ -25,6 +27,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt libcst ruff
 
+      - name: Run documentation governance tests
+        run: |
+          python -m pytest tests/test_validate_documentation_governance.py -q
+
       - name: Validate documentation governance
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
@@ -33,8 +39,60 @@ jobs:
           python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
             --repo-root . \
             --documentation-map docs/documentation-map.yaml \
+            --today "$(date -u +%F)" \
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA"
+
+      - name: Validate external documentation links
+        if: github.event_name == 'schedule' || github.ref == 'refs/heads/main'
+        run: |
+          python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --today "$(date -u +%F)" \
+            --check-external-links
+
+      - name: Validate documentation snippets
+        run: |
+          python src/assessment_engine/scripts/tools/validate_documentation_snippets.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml
+
+      - name: Lint documentation style
+        run: |
+          python src/assessment_engine/scripts/tools/lint_documentation_style.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml
+
+      - name: Build documentation health report
+        run: |
+          mkdir -p .artifacts/docs
+          python src/assessment_engine/scripts/tools/build_documentation_health_report.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --today "$(date -u +%F)" \
+            --output .artifacts/docs/health-report.json
+
+      - name: Build documentation preview
+        run: |
+          python src/assessment_engine/scripts/tools/build_docs_site.py \
+            --repo-root . \
+            --documentation-map docs/documentation-map.yaml \
+            --output-dir .artifacts/docs/site
+
+      - name: Upload documentation health report
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-health-report
+          path: |
+            .artifacts/docs/health-report.json
+            .artifacts/docs/health-report.md
+
+      - name: Upload documentation preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-preview
+          path: .artifacts/docs/site
 
       - name: SOTA Google-Style & Language Gate
         run: |

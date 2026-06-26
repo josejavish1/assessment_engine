@@ -1,235 +1,39 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - docs/ai/documentation-governance.md
-  - docs/README.md
-  - docs/SYSTEM_ARCHITECTURE.md
-  - src/domain/
-last_verified_against: 2026-05-02
+- docs/ai/documentation-governance.md
+- docs/README.md
+- docs/SYSTEM_ARCHITECTURE.md
+- src/
+last_verified_against: 2026-06-26
 applies_to:
-  - gemini
+- gemini
 doc_type: operational
+diataxis: how_to
+verification_mode: editorial
 ---
 
-# Directiva de Agente: Memoria Operativa del Proyecto
+# Gemini adapter
 
-> **Estado documental:** `Verified`
->
-> **Rol actual:** este fichero pasa a ser un **adaptador operativo para Gemini** y una memoria útil en transición. La política documental central vive en [`docs/ai/documentation-governance.md`](docs/ai/documentation-governance.md) y el mapa maestro en [`docs/README.md`](docs/README.md).
->
-> Este archivo **ya no debe tratarse como fuente única de verdad**. Si hay conflicto entre esta narrativa y el código, tests, workflows, schemas o documentación canónica, manda el repo ejecutable y la documentación central.
+Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentacion canonica del proyecto.
 
-Este documento recoge contexto operativo y arquitectónico útil para Gemini, pero debe mantenerse alineado con la base documental común del proyecto.
+## Orden de lectura
 
----
+1. [README.md](README.md)
+2. [docs/README.md](docs/README.md)
+3. [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md)
+4. [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md)
+5. el documento canonico mas cercano al cambio
 
-## 1. Visión y Propósito del Sistema
+## Reglas
 
-El `assessment-engine` es una **fábrica de generación de documentos** diseñada para producir entregables de assessment tecnológico de nivel B2B. Utiliza un pipeline orquestado por Python y asistido por agentes de IA para transformar datos brutos de evaluaciones en una serie de informes coherentes y de alto valor.
+- no uses este archivo como fuente unica de verdad;
+- apóyate en codigo, tests, schemas y workflows reales;
+- cuando una afirmacion no pueda verificarse, trátala como `Needs Review`;
+- no acumules aqui arquitectura detallada, roadmap ni memoria historica del proyecto;
+- si el cambio toca arquitectura, contratos, operacion o gobernanza, actualiza la documentacion canonica correspondiente.
 
----
+## Nota de transicion
 
-## 2. Arquitectura y Flujo de Datos (Modelo "Top-Down")
-
-La arquitectura actual se basa en el principio "Top-Down" para garantizar la consistencia. El sistema se compone de dos fases principales que procesan los datos desde el nivel más detallado hasta el más estratégico.
-
-> **Lectura canónica recomendada:** usa esta sección como resumen rápido, pero apóyate en `docs/architecture/` para la versión más mantenible y precisa del flujo actual.
-
-### 2.1. Diagrama de Flujo de Datos
-
-```
-========================================================================================================================
-| INPUTS                                                                                                               |
-========================================================================================================================
-|                                                                                                                      |
-|   [ Customer Files: .docx, .txt ]  (desde /ficheros o /source_docs)                                                  |
-|   (Respuestas, Contexto de Negocio, etc.)                                                                            |
-|                                                                                                                      |
-|   [ Methodological Config: .json ] (desde /engine_config)                                                            |
-|                                                                                                                      |
-`----------------------------------------------------------------------------------------------------------------------'
-                                                     |
-                                                     V
-========================================================================================================================
-| FASE 1: PIPELINE DE ANÁLISIS POR TORRE (Orquestador: run_tower_pipeline.py)                                           |
-========================================================================================================================
-|                                                                                                                      |
-|   1. Preparación de Datos (Determinista):                                                                            |
-|      - build_case_input.py         --> [ case_input.json ]                                                           |
-|      - build_evidence_ledger.py    --> [ evidence_ledger.json ]                                                      |
-|      - run_scoring.py              --> [ scoring_output.json ]                                                       |
-|      - run_evidence_analyst.py     --> [ findings.json ]                                                             |
-|                                                                                                                      |
-|   2. Análisis Nuclear por IA (Creación de la Fuente de Verdad):                                                      |
-|      - run_tower_blueprint_engine.py --> [ blueprint_Txx_payload.json ]  <--- (LA ÚNICA FUENTE DE VERDAD)             |
-|                                                                                                                      |
-|   3. Síntesis y Renderizado (Derivación desde la Fuente de Verdad):                                                  |
-|      - run_executive_annex_synthesizer.py --> [ approved_annex_txx.template_payload.json ]                           |
-|      - render_tower_blueprint.py          --> [ Blueprint_Txx.docx ]                                                 |
-|      - render_tower_annex_from_template.py --> [ Annex_Txx.docx ]                                                    |
-|      - generate_tower_radar_chart.py      --> [ radar_chart.png ]                                                    |
-|                                                                                                                      |
-`----------------------------------------------------------------------------------------------------------------------'
-                                                     |
-                                                     V (Agrega los `blueprint_payload.json` de varias torres)
-========================================================================================================================
-| FASE 2: PIPELINES GLOBALES Y COMERCIALES (Orquestadores: run_global_pipeline.py, run_commercial_pipeline.py)          |
-========================================================================================================================
-|                                                                                                                      |
-|   1. Agregación Global:                                                                                              |
-|      - build_global_report_payload.py --> [ global_report_payload.json ]                                             |
-|                                                                                                                      |
-|   2. Refinamiento Estratégico y Comercial por IA:                                                                    |
-|      - run_executive_refiner.py    --> [ global_report_payload.json refinado ]                                       |
-|      - run_commercial_refiner.py   --> [ commercial_report_payload.json ]                                            |
-|                                                                                                                      |
-|   3. Renderizado de Entregables Finales:                                                                             |
-|      - render_global_report_from_template.py --> [ CIO_Ready_Report.docx ]                                           |
-|      - render_commercial_report.py --> [ Internal_Commercial_Plan.docx ]                                           |
-|      - render_web_presentation.py  --> [ Interactive_Dashboard.html ]                                                |
-|                                                                                                                      |
-`----------------------------------------------------------------------------------------------------------------------'
-
-```
-
-### 2.2. Modos de Operación
--   **1. Modo Pipeline:** Ejecución por línea de comandos de los orquestadores para generar informes de forma completa y desatendida.
--   **2. Modo Servidor de Herramientas:** El script `mcp_server.py` expone las capacidades del motor como un servicio, permitiendo que un agente de IA supervisor externo orqueste el proceso de forma dinámica.
--   **3. Modo de Gobernanza (Arquitectura "The Apex"):** El sistema opera bajo la supervisión de agentes especializados (`Doctor`, `Verification`, `Liability Signer`) que garantizan la calidad, el cumplimiento normativo y la trazabilidad de cada artefacto generado.
--   **4. Modo "Sovereign Graph" (Estrategia Basada en Grafos):** El motor ahora construye un Grafo Acíclico Dirigido (DAG) en memoria para resolver dependencias estratégicas y convergencia semántica de iniciativas, generando un Roadmap matemático orquestado en Waves. El entregable incluye un "Digital Twin State Object" (JSON) que alimenta un Dashboard Ejecutivo Interactivo.
-
-### 2.3. Arquitectura "Legacy" (Archivada)
-En `src/application/_legacy` se encuentra la arquitectura anterior, que generaba cada sección del informe en paralelo. Fue abandonada por el problema de "split-brain" (inconsistencia entre secciones).
-
----
-
-## 3. Análisis de Calidad de Código (Memoria de evaluación)
-
-### 3.1. Resumen Ejecutivo
-El `assessment-engine` es un prototipo avanzado con una base arquitectónica muy sólida y sofisticada. Sin embargo, su rápida evolución ha generado una deuda técnica notable. El concepto es de nivel "enterprise", pero el código necesita una fase de consolidación para ser verdaderamente robusto y mantenible.
-
-### 3.2. Evaluación por Áreas
--   **Arquitectura y Diseño (4/5):**
-    -   **Fortalezas:** Principios de diseño (Top-Down, Contract-First) excelentes. Arquitectura dual (pipeline/servidor) muy avanzada.
-    -   **Debilidades:** Scripts monolíticos que mezclan responsabilidades (especialmente los `render_*.py`).
--   **Calidad de Código y Mantenibilidad (3/5):**
-    -   **Fortalezas:** Buena nomenclatura, uso excelente de Pydantic y centralización de utilidades en `lib/`.
-    -   **Debilidades:** Persisten scripts monolíticos y partes del sistema con alto acoplamiento. El problema estructural de `PYTHONPATH` ha quedado resuelto, pero todavía queda deuda de modularización en varios renderizadores.
--   **Robustez y Fiabilidad (4/5):**
-    -   **Fortalezas:** Gestión de la interacción con IA (`ai_client.py`) y manejo de datos (`robust_load_payload`) de nivel de producción.
-    -   **Debilidades:** Gestión de errores inconsistente fuera de la capa de IA.
--   **Pruebas y Verificación (3.5/5):**
-    -   **Fortalezas:** Uso de patrones de testing maduros (Tests de Contrato, Golden File Tests).
-    -   **Debilidades:** Cobertura de tests unitarios baja para la lógica determinista.
-
----
-
-## 4. Roadmap Estratégico de Endurecimiento (Memoria histórica de trabajo)
-
-Este es el plan de acción para elevar la calidad del proyecto. La priorización busca maximizar el retorno de la inversión en cada fase, donde el "retorno" es una combinación de **reducción de riesgo** y **aumento de la velocidad de desarrollo futura**.
-
-### **Prioridad 1: "Dejar de Sangrar" - Habilitación de la Velocidad y Reducción de Riesgo**
-*(ROI: Muy Alto)*
-Esta fase tiene el ROI más inmediato. No añade funcionalidades, pero arregla los problemas fundamentales que hacen que cualquier cambio sea lento y peligroso.
-
-1.  **Empaquetar el Proyecto:**
-    *   **Acción:** Crear un `setup.py` o configurar `pyproject.toml` para que el proyecto sea instalable con `pip install -e .`.
-    *   **Retorno:** Resuelve todos los problemas de `PYTHONPATH` de forma definitiva. Reduce la fricción de desarrollo y elimina errores de entorno. Es la base de todo lo demás.
-
-2.  **Ampliar Cobertura de Tests Unitarios:**
-    *   **Acción:** Añadir tests (`pytest`) para la lógica determinista: `lib/text_utils.py`, `run_scoring.py`, `bootstrap_tower_from_matrix.py`.
-    *   **Retorno:** Es la **póliza de seguros** del proyecto. Permite refactorizar con la confianza de que no se está rompiendo la lógica fundamental. Habilita directamente la siguiente fase de forma segura.
-
-**Estado actual (2026-04-30):** Prioridad 1 completada a nivel operativo.
--   El proyecto ya se instala en modo editable desde `pyproject.toml` usando `setuptools`, sin depender de `hatchling`.
--   La suite de tests ya no necesita `PYTHONPATH=src` ni inyección manual de `sys.path` desde `tests/conftest.py`.
--   Existen tests específicos para `text_utils`, `run_scoring`, `bootstrap_tower_from_matrix` y `render_web_presentation`, que actúan como red de seguridad mínima para refactors.
--   Se ha validado la instalación editable y la ejecución de tests clave directamente con `./.venv/bin/python -m pytest ...`.
-
-### **Prioridad 2: "Pagar la Deuda Principal" - Aumento de Velocidad a Largo Plazo**
-*(ROI: Alto)*
-Una vez que tenemos la red de seguridad de los tests, podemos atacar la deuda técnica que más ralentiza la evolución del proyecto.
-
-1.  **Externalizar el Contenido Web:**
-    *   **Acción:** Mover el HTML/CSS/JS de `render_web_presentation.py` a sus propios ficheros. Usar un motor de plantillas (ej. Jinja2) para inyectar los datos.
-    *   **Retorno:** Desbloquea la capacidad de mejorar el entregable más vistoso del proyecto de forma rápida y segura. Permite que un desarrollador frontend pueda trabajar en el dashboard sin tocar el motor de Python.
-
-2.  **Refactorizar los Renderizadores Monolíticos:**
-    *   **Acción:** Dividir los scripts `render_*.py` en módulos con responsabilidades claras: una capa para la lógica de negocio/mapeo de datos y otra puramente para el renderizado.
-    *   **Retorno:** Reduce drásticamente la complejidad. Un cambio en una tabla de un Word ya no requerirá entender toda la lógica de negocio, haciendo las modificaciones más rápidas y menos arriesgadas.
-
-### **Prioridad 3: "Pulir y Optimizar" - Mejora de la Calidad de Vida y Operatividad**
-*(ROI: Medio)*
-Estas acciones tienen un retorno tangible en la calidad y la experiencia de uso y mantenimiento del sistema.
-
-1.  **Introducir Observabilidad (`run_id` y Telemetría):**
-    *   **Acción:** Implementar un identificador de ejecución único (`run_id`) que se propague a todos los artefactos y logs. Ampliar `ai_client.py` para que registre el coste estimado por llamada.
-    *   **Retorno:** Capacidad de depurar problemas de producción y controlar costes ("FinOps"). Inversión en la estabilidad y control futuros.
-
-2.  **Unificar la Configuración:**
-    *   **Acción:** Mover todos los ficheros de configuración, incluyendo los YAML de los prompts, a subdirectorios dentro de `engine_config/`.
-    *   **Retorno:** Mejora la "calidad de vida" del desarrollador. Un único punto de verdad para toda la configuración hace el sistema más fácil de entender y modificar.
-
-### **Prioridad 4: "Apex Enterprise Roadmap" - Hacia la Madurez Nivel 4 (CNCF)**
-*(ROI: Máximo - Eficiencia, Blindaje y Gobernanza Autónoma)*
-Esta fase eleva el proyecto a una plataforma de grado industrial, optimizando costes, seguridad y observabilidad.
-
-1.  **Blindaje Táctico y FinOps (Fase 1):**
-    *   **Acción:** Implementar **Context Caching** (Vertex AI) y **Token Throttling**. Migrar el ejecutor a **Docker Sandboxing**.
-    *   **Retorno:** Ahorro de hasta el 70% en tokens y neutralización de ataques de inyección de prompt (RCE).
-
-2.  **Observabilidad Viva y Calidad Semántica (Fase 2):**
-    *   **Acción:** Implementar **JSON Structured Logging** y **Golden Datasets**. Migrar la UI del Command Center a **SSE/WebSockets**.
-    *   **Retorno:** Trazabilidad quirúrgica y garantía de no regresión en la inteligencia del motor.
-
----
-
-## 5. Base de Conocimiento y Documentación
-
-La base documental canónica del proyecto reside en el directorio `docs/`. La ruta de lectura recomendada es:
-1. `README.md` (raíz del proyecto)
-2. `docs/README.md`
-3. `docs/ai/documentation-governance.md`
-4. El resto de la documentación canónica en `docs/architecture/`, `docs/operations/` y `docs/contracts/`.
-
-Este fichero (`GEMINI.md`) debe mantenerse breve, operativo y alineado con la documentación canónica.
-
----
-
-## 6. Integración y DevOps (GitHub)
-
-Para garantizar una integración nativa, estable y segura con el repositorio de GitHub, este proyecto utiliza **GitHub CLI (`gh`)** como herramienta central de autenticación y "credential helper" para Git.
-
-**Políticas operativas:**
--   **Nunca se deben usar tokens en texto plano** en comandos de git ni embebidos en las URLs de los remotos (ej. evitar `https://<token>@github.com/...`).
--   Las operaciones de control de versiones (`push`, `pull`, `fetch`) se ejecutan a través de HTTPS utilizando la sesión viva gestionada por `gh`.
--   El sistema está configurado mediante `gh auth setup-git`.
--   Para verificar el estado de la conexión en cualquier momento, usar: `gh auth status`.
-
----
-
-Para probar o validar cualquier cambio en Python (tanto scripts como tests), **NO** uses comandos globales como `python` o `pytest`.
-Debes usar SIEMPRE el entorno virtual local ubicado en `/home/jsanchhi/assessment_engine/.venv`.
-- Para ejecutar tests: `/home/jsanchhi/assessment_engine/.venv/bin/pytest`
-- Para ejecutar scripts Python: `/home/jsanchhi/assessment_engine/.venv/bin/python`
-
-## 7. Protocolo de Ejecución Estricta para `po-run` (Orquestador Autónomo)
-
-Cuando se solicite ejecutar una tarea o implementar cambios a través del orquestador autónomo (`bin/po-run`), el agente IA (Gemini) **DEBE CUMPLIR ESTRICTAMENTE** las siguientes directrices sin excepciones, bajo pena de corromper la gobernanza del repositorio:
-
-1.  **Cero Interferencia Manual Previa:** **PROHIBIDO** editar archivos manualmente con herramientas de reemplazo de texto (`replace`, `write_file`) antes o durante la ejecución de `po-run`. Si el usuario pide que una tarea se haga con `po-run`, el orquestador debe ser el único encargado de invocar al agente *Worker* para realizar los cambios en la rama efímera.
-2.  **Confiar en el Bucle de Reconciliación (Auto-Heal):** Si la Pull Request generada por el orquestador falla en la integración continua (Quality Gates, Linting, Type Checking) o recibe comentarios de revisión (por ejemplo, del bot Codex), **PROHIBIDO** silenciar los bots o saltarse los checks usando la API de GitHub (`gh api`) o comandos forzados. El agente debe permitir que el orquestador detecte los fallos, despierte al `Agente Doctor` y haga un nuevo commit automático para sanar la rama.
-3.  **Prohibición Absoluta de Merges Forzados:** **ESTÁ TERMINANTEMENTE PROHIBIDO** el uso de comandos como `gh pr merge --admin` para forzar la integración a producción ignorando las reglas de protección de rama. El orquestador fusionará automáticamente cuando el estado sea estrictamente "MERGEABLE". Si el orquestador agota sus intentos (max rounds), el agente Gemini debe notificar al usuario y analizar los logs de fallo del orquestador, pero **nunca saltarse la barrera**.
-
-## 8. Directiva de Documentación y Comentarios (SOTA Tier 1)
-
-Para mantener la base de código libre de entropía y optimizada para el consumo de ingenieros L8 (Google/Anthropic) y agentes autónomos, todas las sesiones de IA y desarrolladores deben cumplir de manera nativa con las siguientes directrices de documentación:
-
-1.  **Idioma Único (Inglés Técnico):** Absolutamente todos los comentarios en línea, docstrings de módulos, clases, funciones y descripciones de esquemas Pydantic (`Field(description=...)`) deben redactarse exclusivamente en un inglés técnico formal, aséptico y preciso.
-2.  **Contratos de API Google-Style:** Toda firma pública de clase, método y función debe estar documentada utilizando el formato de Google estricto, detallando de manera asertiva las secciones:
-    -   `Args:` Cada parámetro de entrada con su tipo y descripción semántica.
-    -   `Returns:` El tipo de dato devuelto y su significado.
-    -   `Raises:` La matriz exhaustiva de excepciones lanzadas o propagadas por el cuerpo del código.
-3.  **Cero Redundancia (Signal-to-Noise Ratio):** Queda estrictamente prohibido escribir comentarios que describan el "qué" del código autodescriptivo. Los comentarios solo se permiten para describir el **"porqué"** (decisiones de diseño, anomalías de layouts, citas a estándares como ECMA-376).
-4.  **Cero Código Obsoleto (Eradicate):** Queda terminantemente prohibido dejar bloques de código comentados en desuso. Si una función o sentencia ya no es activa, se elimina de inmediato de la base de código útil. Git es el único historial válido.
+`GEMINI.md` contenia memoria operativa historica util, pero parte de ese contenido mezclaba estado actual con vision futura. Esa lectura debe considerarse superada por la base comun en `docs/`.

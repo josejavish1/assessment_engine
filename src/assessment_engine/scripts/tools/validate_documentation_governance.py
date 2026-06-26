@@ -4,6 +4,9 @@ import argparse
 import fnmatch
 import re
 import subprocess
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import date, datetime
 from pathlib import Path
 
@@ -12,6 +15,15 @@ import yaml  # type: ignore[import-untyped]
 VALID_STATUSES = {"Verified", "Needs Review", "Draft", "Deprecated"}
 VALID_DOC_TYPES = {"canonical", "operational", "reference_generated", "archived"}
 VALID_KINDS = {"document", "collection"}
+VALID_DIATAXIS = {"tutorial", "how_to", "reference", "explanation"}
+VALID_VERIFICATION_MODES = {
+    "schema",
+    "code",
+    "workflow",
+    "observed_run",
+    "editorial",
+    "mixed",
+}
 FRONT_MATTER_REQUIRED = {
     "status",
     "owner",
@@ -19,14 +31,25 @@ FRONT_MATTER_REQUIRED = {
     "last_verified_against",
     "applies_to",
     "doc_type",
+    "diataxis",
+    "verification_mode",
 }
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+MARKDOWN_IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
+MARKDOWN_HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$", re.MULTILINE)
 DEFAULT_COVERAGE_INCLUDE = ["README.md", "AGENTS.md", "CHATGPT.md", "docs/**/*.md"]
 DEFAULT_COVERAGE_EXCLUDE = [
     "docs/reference/generated/legacy-gemini/**",
     "docs/strategy/**",
 ]
+DEFAULT_VERIFIED_MAX_AGE_DAYS = 120
+AGENT_ADAPTER_PATHS = {
+    "AGENTS.md",
+    "CHATGPT.md",
+    "GEMINI.md",
+    ".github/copilot-instructions.md",
+}
 
 
 def load_yaml(path: Path) -> dict:
@@ -79,28 +102,127 @@ def should_validate_markdown_target(target: str) -> bool:
     return True
 
 
+def split_markdown_target(target: str) -> tuple[str, str]:
+    stripped = target.strip()
+    path_part, fragment = stripped, ""
+    if "#" in stripped:
+        path_part, fragment = stripped.split("#", 1)
+    return path_part, fragment
+
+
+def github_anchor_slug(text: str) -> str:
+    slug = text.strip().lower()
+    slug = re.sub(r"[^\w\s-]", "", slug)
+    slug = re.sub(r"\s+", "-", slug)
+    slug = re.sub(r"-{2,}", "-", slug)
+    return slug.strip("-")
+
+
+def markdown_heading_anchors(markdown_text: str) -> set[str]:
+    anchors: set[str] = set()
+    counts: dict[str, int] = {}
+    for match in MARKDOWN_HEADING_RE.finditer(markdown_text):
+        base = github_anchor_slug(match.group(2))
+        if not base:
+            continue
+        occurrence = counts.get(base, 0)
+        counts[base] = occurrence + 1
+        anchor = base if occurrence == 0 else f"{base}-{occurrence}"
+        anchors.add(anchor)
+    return anchors
+
+
 def markdown_link_target_path(current_path: Path, target: str) -> Path | None:
     if not should_validate_markdown_target(target):
         return None
 
-    local_target = target.split("#", 1)[0].split("?", 1)[0]
+    local_target = split_markdown_target(target)[0].split("?", 1)[0]
     if not local_target:
-        return None
+        return current_path.resolve()
     return (current_path.parent / local_target).resolve()
 
 
 def validate_markdown_links(
-    current_path: Path, entry_path: str, errors: list[str]
+    current_path: Path,
+    entry_path: str,
+    errors: list[str],
+    *,
+    check_external_links: bool = False,
+    external_timeout_seconds: float = 5.0,
+    external_link_cache: dict[str, str] | None = None,
 ) -> None:
     text = current_path.read_text(encoding="utf-8")
-    for match in MARKDOWN_LINK_RE.finditer(text):
-        target_path = markdown_link_target_path(current_path, match.group(1))
-        if target_path is None:
-            continue
-        if not target_path.exists():
-            errors.append(
-                f"{entry_path}: markdown link target does not exist: {match.group(1)}"
+    anchors_by_file: dict[Path, set[str]] = {current_path.resolve(): markdown_heading_anchors(text)}
+    for regex in (MARKDOWN_LINK_RE, MARKDOWN_IMAGE_RE):
+        for match in regex.finditer(text):
+            raw_target = match.group(1).strip()
+            if raw_target.startswith(("http://", "https://")):
+                if check_external_links:
+                    cache = external_link_cache if external_link_cache is not None else {}
+                    cached_error = cache.get(raw_target)
+                    if cached_error is None:
+                        cached_error = check_external_link(raw_target, external_timeout_seconds)
+                        cache[raw_target] = cached_error
+                    if cached_error:
+                        errors.append(
+                            f"{entry_path}: external link check failed for {raw_target}: {cached_error}"
+                        )
+                continue
+
+            target_path = markdown_link_target_path(current_path, raw_target)
+            if target_path is None:
+                continue
+            if not target_path.exists():
+                errors.append(
+                    f"{entry_path}: markdown link target does not exist: {raw_target}"
+                )
+                continue
+
+            _, fragment = split_markdown_target(raw_target)
+            if not fragment:
+                continue
+
+            if target_path.suffix != ".md":
+                continue
+
+            if target_path not in anchors_by_file:
+                anchors_by_file[target_path] = markdown_heading_anchors(
+                    target_path.read_text(encoding="utf-8")
+                )
+            if fragment not in anchors_by_file[target_path]:
+                errors.append(
+                    f"{entry_path}: markdown anchor target does not exist: {raw_target}"
+                )
+
+
+def check_external_link(url: str, timeout_seconds: float) -> str | None:
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": "assessment-engine-docs-governance/1.0"},
+        method="HEAD",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            if response.status >= 400:
+                return f"HTTP {response.status}"
+        return None
+    except urllib.error.HTTPError as error:
+        if error.code in {405, 403}:
+            follow_up = urllib.request.Request(
+                url,
+                headers={"User-Agent": "assessment-engine-docs-governance/1.0"},
+                method="GET",
             )
+            try:
+                with urllib.request.urlopen(follow_up, timeout=timeout_seconds) as response:
+                    if response.status >= 400:
+                        return f"HTTP {response.status}"
+                return None
+            except Exception as follow_up_error:  # pragma: no cover - network variability
+                return str(follow_up_error)
+        return f"HTTP {error.code}"
+    except Exception as error:  # pragma: no cover - network variability
+        return str(error)
 
 
 def is_path_covered_by_entry(path: str, entry_path: str, kind: str) -> bool:
@@ -130,6 +252,10 @@ def validate_front_matter_fields(
         errors.append(f"{entry_path}: {error_prefix} has invalid status")
     if front_matter.get("doc_type") not in VALID_DOC_TYPES:
         errors.append(f"{entry_path}: {error_prefix} has invalid doc_type")
+    if front_matter.get("diataxis") not in VALID_DIATAXIS:
+        errors.append(f"{entry_path}: {error_prefix} has invalid diataxis")
+    if front_matter.get("verification_mode") not in VALID_VERIFICATION_MODES:
+        errors.append(f"{entry_path}: {error_prefix} has invalid verification_mode")
     if not isinstance(
         front_matter.get("source_of_truth"), list
     ) or not front_matter.get("source_of_truth"):
@@ -149,7 +275,12 @@ def validate_front_matter_fields(
 
 
 def validate_documentation_coverage(
-    repo_root: Path, documentation_map: dict, entries: list[dict], errors: list[str]
+    repo_root: Path,
+    documentation_map: dict,
+    entries: list[dict],
+    errors: list[str],
+    *,
+    check_external_links: bool = False,
 ) -> None:
     coverage = documentation_map.get("coverage", {})
     include_patterns = coverage.get("include", DEFAULT_COVERAGE_INCLUDE)
@@ -201,7 +332,12 @@ def validate_documentation_coverage(
             front_matter, governed_path, "covered markdown front matter", errors
         )
         if front_matter.get("doc_type") in {"canonical", "operational"}:
-            validate_markdown_links(absolute_path, governed_path, errors)
+            validate_markdown_links(
+                absolute_path,
+                governed_path,
+                errors,
+                check_external_links=check_external_links,
+            )
 
 
 def validate_path_list_field(
@@ -256,11 +392,13 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
         "kind",
         "title",
         "doc_type",
+        "diataxis",
         "status",
         "owner",
         "applies_to",
         "source_of_truth",
         "last_verified_against",
+        "verification_mode",
         "notes",
     }
     missing = sorted(required - set(entry))
@@ -274,9 +412,11 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
     kind = entry["kind"]
     status = entry["status"]
     doc_type = entry["doc_type"]
+    diataxis = entry["diataxis"]
     applies_to = entry["applies_to"]
     source_of_truth = entry["source_of_truth"]
     last_verified_against = entry["last_verified_against"]
+    verification_mode = entry["verification_mode"]
 
     if kind not in VALID_KINDS:
         errors.append(f"{entry_path}: invalid kind '{kind}'")
@@ -284,6 +424,12 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
         errors.append(f"{entry_path}: invalid status '{status}'")
     if doc_type not in VALID_DOC_TYPES:
         errors.append(f"{entry_path}: invalid doc_type '{doc_type}'")
+    if diataxis not in VALID_DIATAXIS:
+        errors.append(f"{entry_path}: invalid diataxis '{diataxis}'")
+    if verification_mode not in VALID_VERIFICATION_MODES:
+        errors.append(
+            f"{entry_path}: invalid verification_mode '{verification_mode}'"
+        )
     if not isinstance(applies_to, list) or not applies_to:
         errors.append(f"{entry_path}: applies_to must be a non-empty list")
     if not isinstance(source_of_truth, list) or not source_of_truth:
@@ -344,8 +490,69 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
             return
 
         validate_front_matter_fields(front_matter, entry_path, "front matter", errors)
+        for aligned_field in (
+            "status",
+            "doc_type",
+            "owner",
+            "diataxis",
+            "verification_mode",
+        ):
+            if front_matter.get(aligned_field) != entry.get(aligned_field):
+                errors.append(
+                    f"{entry_path}: front matter {aligned_field} does not match documentation-map"
+                )
+
+        if entry_path.startswith("docs/strategy/") and status == "Verified":
+            errors.append(
+                f"{entry_path}: docs/strategy documents cannot be marked Verified"
+            )
+
+        if entry_path.startswith("docs/reference/generated/") and doc_type not in {
+            "reference_generated",
+            "archived",
+        }:
+            errors.append(
+                f"{entry_path}: docs/reference/generated documents must use reference_generated or archived doc_type"
+            )
+
+        if entry_path in AGENT_ADAPTER_PATHS and doc_type != "operational":
+            errors.append(
+                f"{entry_path}: agent adapter documents must use operational doc_type"
+            )
+
         if doc_type in {"canonical", "operational"}:
             validate_markdown_links(absolute_path, entry_path, errors)
+
+
+def validate_freshness(
+    documentation_map: dict, entries: list[dict], today: date, errors: list[str]
+) -> None:
+    freshness = documentation_map.get("freshness", {})
+    verified_max_age_days = freshness.get(
+        "verified_max_age_days", DEFAULT_VERIFIED_MAX_AGE_DAYS
+    )
+    if not isinstance(verified_max_age_days, int) or verified_max_age_days <= 0:
+        errors.append("documentation-map.yaml freshness.verified_max_age_days must be a positive integer")
+        return
+
+    for entry in entries:
+        if entry.get("status") != "Verified":
+            continue
+        value = entry.get("last_verified_against")
+        if isinstance(value, str):
+            verified_date = date.fromisoformat(value)
+        elif isinstance(value, datetime):
+            verified_date = value.date()
+        elif isinstance(value, date):
+            verified_date = value
+        else:
+            continue
+
+        age_days = (today - verified_date).days
+        if age_days > verified_max_age_days:
+            errors.append(
+                f"{entry.get('path')}: Verified document is stale ({age_days} days old; max {verified_max_age_days})"
+            )
 
 
 def validate_automation_rules(
@@ -465,6 +672,9 @@ def validate_documentation_governance(
     documentation_map_path: Path,
     base_sha: str | None,
     head_sha: str | None,
+    *,
+    check_external_links: bool = False,
+    today: date | None = None,
 ) -> list[str]:
     errors: list[str] = []
     documentation_map = load_yaml(documentation_map_path)
@@ -496,7 +706,14 @@ def validate_documentation_governance(
         validate_entry(repo_root, entry, errors)
         valid_entries.append(entry)
 
-    validate_documentation_coverage(repo_root, documentation_map, valid_entries, errors)
+    validate_documentation_coverage(
+        repo_root,
+        documentation_map,
+        valid_entries,
+        errors,
+        check_external_links=check_external_links,
+    )
+    validate_freshness(documentation_map, valid_entries, today or date.today(), errors)
 
     changed_files = git_changed_files(repo_root, base_sha, head_sha)
     validate_automation_rules(
@@ -516,6 +733,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--documentation-map", required=True)
     parser.add_argument("--base-sha")
     parser.add_argument("--head-sha")
+    parser.add_argument(
+        "--check-external-links",
+        action="store_true",
+        help="Validate outbound http(s) links in governed canonical/operational markdown.",
+    )
+    parser.add_argument(
+        "--today",
+        help="Reference date for freshness validation in YYYY-MM-DD format.",
+    )
     return parser.parse_args()
 
 
@@ -529,6 +755,8 @@ def main() -> int:
         documentation_map_path=documentation_map_path,
         base_sha=args.base_sha,
         head_sha=args.head_sha,
+        check_external_links=args.check_external_links,
+        today=date.fromisoformat(args.today) if args.today else None,
     )
 
     if errors:

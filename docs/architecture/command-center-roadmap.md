@@ -1,12 +1,14 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - src/business_command_center/README.md
-last_verified_against: '2026-05-03'
+- src/business_command_center/README.md
+last_verified_against: '2026-06-26'
 applies_to:
-  - humans
+- humans
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 # Assessment Engine Command Center: SOTA Orchestrator (Edición 2026)
 

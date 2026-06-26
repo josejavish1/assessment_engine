@@ -2,13 +2,15 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - AGENTS.md
-  - docs/ai/documentation-governance.md
-  - docs/README.md
+- AGENTS.md
+- docs/ai/documentation-governance.md
+- docs/README.md
 last_verified_against: 2026-04-30
 applies_to:
-  - chatgpt
+- chatgpt
 doc_type: operational
+diataxis: how_to
+verification_mode: editorial
 ---
 
 # ChatGPT adapter

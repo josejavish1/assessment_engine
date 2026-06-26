@@ -1,12 +1,14 @@
 ---
-status: "Verified"
-owner: "engineering-governance"
-last_verified_against: "2026-05-03"
-applies_to:
-  - humans
+status: Needs Review
+owner: engineering-governance
 source_of_truth:
-  - https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification
-doc_type: "canonical"
+- https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification
+last_verified_against: '2026-06-26'
+applies_to:
+- humans
+doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Política de Firma de Commits

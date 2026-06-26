@@ -2,20 +2,22 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../SYSTEM_ARCHITECTURE.md
-  - ../../src/application/run_tower_pipeline.py
-  - ../../src/application/run_global_pipeline.py
-  - ../../src/application/run_commercial_pipeline.py
-  - ../../src/application/render_web_presentation.py
-  - ../../src/domain/schemas/
-  - ./tower-pipeline.md
-  - ./global-commercial-pipelines.md
-  - ./critical-modules.md
+- ../SYSTEM_ARCHITECTURE.md
+- ../../src/application/run_tower_pipeline.py
+- ../../src/application/run_global_pipeline.py
+- ../../src/application/run_commercial_pipeline.py
+- ../../src/application/render_web_presentation.py
+- ../../src/domain/schemas/
+- ./tower-pipeline.md
+- ./global-commercial-pipelines.md
+- ./critical-modules.md
 last_verified_against: 2026-04-30
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # Executive project guide

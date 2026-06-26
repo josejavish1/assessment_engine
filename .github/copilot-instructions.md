@@ -2,15 +2,17 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - AGENTS.md
-  - docs/ai/documentation-governance.md
-  - docs/README.md
-  - docs/operations/agentic-development-workflow.md
-  - docs/operations/engineering-quality-gates.md
+- AGENTS.md
+- docs/ai/documentation-governance.md
+- docs/README.md
+- docs/operations/agentic-development-workflow.md
+- docs/operations/engineering-quality-gates.md
 last_verified_against: 2026-05-01
 applies_to:
-  - copilot
+- copilot
 doc_type: operational
+diataxis: how_to
+verification_mode: editorial
 ---
 
 # Copilot instructions

@@ -1,17 +1,19 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - ../../src/domain/schemas/blueprint.py
-  - ../../src/domain/schemas/annex_synthesis.py
-  - ../../src/application/run_tower_pipeline.py
-  - ../../src/application/run_tower_blueprint_engine.py
-  - ../architecture/working-artifacts.md
-last_verified_against: 2026-05-03
+- ../../src/domain/schemas/blueprint.py
+- ../../src/domain/schemas/annex_synthesis.py
+- ../../src/application/run_tower_pipeline.py
+- ../../src/application/run_tower_blueprint_engine.py
+- ../architecture/working-artifacts.md
+last_verified_against: 2026-06-26
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: reference
+verification_mode: schema
 ---
 
 # Matriz de Cobertura - Plantilla Larga de Torre

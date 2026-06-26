@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 import yaml  # type: ignore[import-untyped]
@@ -24,6 +25,8 @@ def _write_markdown(path: Path, title: str = "Doc", body: str = "") -> None:
                 "  - humans",
                 "  - ai-agents",
                 "doc_type: canonical",
+                "diataxis: explanation",
+                "verification_mode: code",
                 "---",
                 "",
                 f"# {title}",
@@ -36,13 +39,23 @@ def _write_markdown(path: Path, title: str = "Doc", body: str = "") -> None:
 
 
 def _write_map(path: Path, entries: list[dict]) -> None:
+    normalized_entries: list[dict] = []
+    for entry in entries:
+        normalized = {
+            "diataxis": "explanation",
+            "verification_mode": "code",
+            **entry,
+        }
+        normalized_entries.append(normalized)
+
     path.write_text(
         yaml.safe_dump(
             {
                 "schema_version": 1,
                 "last_reviewed": "2026-04-30",
+                "freshness": {"verified_max_age_days": 120},
                 "owners": {"docs-governance": {"scope": ["docs/"]}},
-                "entries": entries,
+                "entries": normalized_entries,
                 "automation_rules": [],
             },
             sort_keys=False,
@@ -214,6 +227,91 @@ def test_markdown_link_targets_must_exist(tmp_path: Path) -> None:
     errors = validator.validate_documentation_governance(repo_root, doc_map, None, None)
 
     assert any("markdown link target does not exist: missing.md" in e for e in errors)
+
+
+def test_markdown_anchor_targets_must_exist(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "src").mkdir()
+    (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
+    _write_markdown(
+        repo_root / "docs/example.md", body="[missing anchor](target.md#nope)"
+    )
+    _write_markdown(repo_root / "docs/target.md", title="Target", body="## Present")
+
+    doc_map = repo_root / "docs/documentation-map.yaml"
+    doc_map.parent.mkdir(parents=True, exist_ok=True)
+    _write_map(
+        doc_map,
+        [
+            {
+                "path": "docs/example.md",
+                "kind": "document",
+                "title": "Example doc",
+                "doc_type": "canonical",
+                "status": "Verified",
+                "owner": "docs-governance",
+                "applies_to": ["humans", "ai-agents"],
+                "source_of_truth": ["src/example.py"],
+                "last_verified_against": "2026-04-30",
+                "notes": "Example",
+            },
+            {
+                "path": "docs/target.md",
+                "kind": "document",
+                "title": "Target doc",
+                "doc_type": "canonical",
+                "status": "Verified",
+                "owner": "docs-governance",
+                "applies_to": ["humans", "ai-agents"],
+                "source_of_truth": ["src/example.py"],
+                "last_verified_against": "2026-04-30",
+                "notes": "Target",
+            },
+        ],
+    )
+
+    errors = validator.validate_documentation_governance(repo_root, doc_map, None, None)
+
+    assert any(
+        "markdown anchor target does not exist: target.md#nope" in e for e in errors
+    )
+
+
+def test_verified_documents_become_stale_after_threshold(tmp_path: Path) -> None:
+    repo_root = tmp_path
+    (repo_root / "src").mkdir()
+    (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
+    _write_markdown(repo_root / "docs/example.md")
+
+    doc_map = repo_root / "docs/documentation-map.yaml"
+    doc_map.parent.mkdir(parents=True, exist_ok=True)
+    _write_map(
+        doc_map,
+        [
+            {
+                "path": "docs/example.md",
+                "kind": "document",
+                "title": "Example doc",
+                "doc_type": "canonical",
+                "status": "Verified",
+                "owner": "docs-governance",
+                "applies_to": ["humans", "ai-agents"],
+                "source_of_truth": ["src/example.py"],
+                "last_verified_against": "2026-01-01",
+                "notes": "Example",
+            }
+        ],
+    )
+
+    errors = validator.validate_documentation_governance(
+        repo_root,
+        doc_map,
+        None,
+        None,
+        today=date(2026, 6, 26),
+    )
+
+    assert any("Verified document is stale" in e for e in errors)
 
 
 def test_markdown_coverage_requires_map_entry_or_collection(tmp_path: Path) -> None:

@@ -2,13 +2,15 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - docs/SYSTEM_ARCHITECTURE.md
-  - src/assessment_engine/
+- docs/SYSTEM_ARCHITECTURE.md
+- src/assessment_engine/
 last_verified_against: 2026-06-25
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # Apex Enterprise Roadmap: Hacia la Madurez Nivel 4 (CNCF)

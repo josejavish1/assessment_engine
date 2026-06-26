@@ -2,22 +2,24 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../src/domain/schemas/intelligence.py
-  - ../../src/infrastructure/client_intelligence.py
-  - ../../src/application/run_intelligence_harvesting.py
-  - ../../src/application/build_case_input.py
-  - ../../src/application/run_tower_blueprint_engine.py
-  - ../../src/application/build_global_report_payload.py
-  - ../../src/application/run_executive_refiner.py
-  - ../../src/application/run_commercial_refiner.py
-  - ../../src/domain/prompts/intelligence_prompts.py
-  - ../../src/domain/prompts/global_prompts.py
-  - ../../src/domain/prompts/commercial_prompts.py
+- ../../src/domain/schemas/intelligence.py
+- ../../src/infrastructure/client_intelligence.py
+- ../../src/application/run_intelligence_harvesting.py
+- ../../src/application/build_case_input.py
+- ../../src/application/run_tower_blueprint_engine.py
+- ../../src/application/build_global_report_payload.py
+- ../../src/application/run_executive_refiner.py
+- ../../src/application/run_commercial_refiner.py
+- ../../src/domain/prompts/intelligence_prompts.py
+- ../../src/domain/prompts/global_prompts.py
+- ../../src/domain/prompts/commercial_prompts.py
 last_verified_against: 2026-05-01
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # Client intelligence architecture

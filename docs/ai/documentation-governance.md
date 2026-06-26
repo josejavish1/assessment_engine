@@ -2,16 +2,18 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - src/domain/
-  - tests/
-  - pyproject.toml
-  - .github/workflows/ci.yml
-  - docs/documentation-map.yaml
-last_verified_against: 2026-05-02
+- src/domain/
+- tests/
+- pyproject.toml
+- .github/workflows/ci.yml
+- docs/documentation-map.yaml
+last_verified_against: 2026-06-26
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # Política de gobernanza documental
@@ -62,6 +64,8 @@ applies_to:
   - humans
   - ai-agents
 doc_type: canonical|operational|reference_generated|archived
+diataxis: tutorial|how_to|reference|explanation
+verification_mode: schema|code|workflow|observed_run|editorial|mixed
 ```
 
 ## Reglas de actualización
@@ -85,6 +89,40 @@ La gobernanza documental ya cuenta con tres guardarraíles explícitos en el rep
 - `.github/workflows/docs-governance.yml` para validar `docs/documentation-map.yaml`, la metadata documental básica y la trazabilidad declarada por reglas.
 
 Además, el validador ya admite **source-linked review** para documentos concretos: cuando un documento declara revisión estricta frente a ciertos ficheros fuente, un cambio en esos ficheros debe venir acompañado por la revisión de **ese documento canónico** o de una ruta documental permitida explícitamente.
+
+El validador también debe bloquear al menos estas derivas mecánicas:
+
+- una entrada del `documentation-map` cuyo `status`, `doc_type` u `owner` ya no coincidan con el front matter real del archivo;
+- una entrada del `documentation-map` cuyo `diataxis` o `verification_mode` ya no coincidan con el front matter real del archivo;
+- documentos bajo `docs/strategy/` marcados como `Verified`;
+- documentos bajo `docs/reference/generated/` clasificados como `canonical` u `operational`;
+- adaptadores por agente clasificados fuera de `operational`;
+- anchors Markdown rotos, imágenes locales inexistentes y enlaces externos inválidos cuando la comprobación de red esté activada;
+- documentos `Verified` cuya fecha de reverificación haya caducado según el umbral de frescura declarado en `documentation-map.yaml`;
+- snippets de shell que apunten a módulos Python o rutas del repo que ya no existen;
+- documentos `Verified` con lenguaje aspiracional o hype impropio de una capa canónica.
+
+## Taxonomía operativa
+
+La gobernanza no distingue solo por `doc_type` y `status`. También clasifica cada pieza por:
+
+- `diataxis`: forma principal del documento (`tutorial`, `how_to`, `reference`, `explanation`);
+- `verification_mode`: cómo se mantiene alineado (`schema`, `code`, `workflow`, `observed_run`, `editorial`, `mixed`).
+
+Esto permite endurecer reglas distintas para contratos, runbooks, arquitectura, material derivado y adaptadores por agente.
+
+## Cobertura y observabilidad
+
+`docs/documentation-map.yaml` debe declarar:
+
+- `coverage.include` y `coverage.exclude` para definir el corpus gobernado;
+- `freshness.verified_max_age_days` para limitar cuánto tiempo puede vivir un `Verified` sin reverificación explícita.
+
+La pipeline documental debe producir al menos estos artefactos:
+
+- un `health report` máquina-legible con conteos, piezas stale y documentos cubiertos solo por colecciones;
+- una previsualización HTML ligera del corpus gobernado;
+- validación de snippets y lint editorial de la capa `Verified`.
 
 ## Cómo deben trabajar los agentes de IA
 

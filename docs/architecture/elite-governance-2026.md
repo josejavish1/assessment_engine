@@ -1,16 +1,18 @@
 ---
-status: "Draft"
-owner: "architecture-board"
+status: Draft
+owner: docs-governance
+source_of_truth:
+- Code
+last_verified_against: '2026-05-02'
+applies_to:
+- src/assessment_engine/scripts/lib
+doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 reviewers:
-  - "principal-architect"
-  - "compliance-lead"
-last_updated: "2026-05-02"
-doc_type: "canonical"
-applies_to: 
-  - "src/assessment_engine/scripts/lib"
-last_verified_against: "2026-05-02"
-source_of_truth: 
-  - "Code"
+- principal-architect
+- compliance-lead
+last_updated: '2026-05-02'
 ---
 
 # Gobernanza de Élite 2026: Arquitectura "The Apex"

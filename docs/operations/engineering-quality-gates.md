@@ -2,23 +2,25 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - ../../docs/operations/agentic-development-workflow.md
-  - ../../pyproject.toml
-  - ../../requirements.txt
-  - ../../.github/workflows/quality.yml
-  - ../../.github/workflows/typing.yml
-  - ../../.github/pull_request_template.md
-  - ../../AGENTS.md
-  - ../../.github/copilot-instructions.md
-  - ../../src/infrastructure/global_maturity_policy.py
-  - ../../src/application/tools/run_incremental_quality_gate.py
-  - ../../src/application/tools/run_incremental_typecheck.py
-  - ../../tests/test_global_coherence.py
+- ../../docs/operations/agentic-development-workflow.md
+- ../../pyproject.toml
+- ../../requirements.txt
+- ../../.github/workflows/quality.yml
+- ../../.github/workflows/typing.yml
+- ../../.github/pull_request_template.md
+- ../../AGENTS.md
+- ../../.github/copilot-instructions.md
+- ../../src/infrastructure/global_maturity_policy.py
+- ../../src/application/tools/run_incremental_quality_gate.py
+- ../../src/application/tools/run_incremental_typecheck.py
+- ../../tests/test_global_coherence.py
 last_verified_against: 2026-05-04
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Engineering quality gates

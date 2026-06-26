@@ -2,23 +2,25 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../../src/application/tools/generate_smoke_data.py
-  - ../../src/application/tools/check_vertex_ai_access.py
-  - ../../src/application/tools/regenerate_smoke_artifacts.py
-  - ../../src/infrastructure/runtime_env.py
-  - ../../src/infrastructure/ai_client.py
-  - ../../src/application/run_tower_pipeline.py
-  - ../../src/application/run_global_pipeline.py
-  - ../../src/application/run_commercial_pipeline.py
-  - ../../src/application/render_web_presentation.py
-  - ../../tests/test_contract_handover.py
-  - ../../tests/test_t5_golden.py
-  - ../../tests/test_payload_validation.py
+- ../../src/application/tools/generate_smoke_data.py
+- ../../src/application/tools/check_vertex_ai_access.py
+- ../../src/application/tools/regenerate_smoke_artifacts.py
+- ../../src/infrastructure/runtime_env.py
+- ../../src/infrastructure/ai_client.py
+- ../../src/application/run_tower_pipeline.py
+- ../../src/application/run_global_pipeline.py
+- ../../src/application/run_commercial_pipeline.py
+- ../../src/application/render_web_presentation.py
+- ../../tests/test_contract_handover.py
+- ../../tests/test_t5_golden.py
+- ../../tests/test_payload_validation.py
 last_verified_against: 2026-05-02
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Smoke artifact regeneration

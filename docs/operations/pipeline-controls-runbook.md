@@ -1,21 +1,23 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
-  - ../../src/application/run_tower_pipeline.py
-  - ../../src/application/run_global_pipeline.py
-  - ../../src/application/run_commercial_pipeline.py
-  - ../../src/application/render_web_presentation.py
-  - ../../src/application/tools/check_vertex_ai_access.py
-  - ../../src/application/tools/regenerate_smoke_artifacts.py
-  - ./pipeline-execution.md
-  - ./smoke-regeneration.md
-  - ./troubleshooting-working.md
-last_verified_against: 2026-05-02
+- ../../src/application/run_tower_pipeline.py
+- ../../src/application/run_global_pipeline.py
+- ../../src/application/run_commercial_pipeline.py
+- ../../src/application/render_web_presentation.py
+- ../../src/application/tools/check_vertex_ai_access.py
+- ../../src/application/tools/regenerate_smoke_artifacts.py
+- ./pipeline-execution.md
+- ./smoke-regeneration.md
+- ./troubleshooting-working.md
+last_verified_against: 2026-06-26
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Pipeline controls runbook

@@ -2,19 +2,21 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../../src/application/run_global_pipeline.py
-  - ../../src/application/build_global_report_payload.py
-  - ../../src/application/run_executive_refiner.py
-  - ../../src/application/run_commercial_pipeline.py
-  - ../../src/application/run_commercial_refiner.py
-  - ../../src/infrastructure/pipeline_runtime.py
-  - ../../src/domain/schemas/global_report.py
-  - ../../src/domain/schemas/commercial.py
+- ../../src/application/run_global_pipeline.py
+- ../../src/application/build_global_report_payload.py
+- ../../src/application/run_executive_refiner.py
+- ../../src/application/run_commercial_pipeline.py
+- ../../src/application/run_commercial_refiner.py
+- ../../src/infrastructure/pipeline_runtime.py
+- ../../src/domain/schemas/global_report.py
+- ../../src/domain/schemas/commercial.py
 last_verified_against: 2026-05-02
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # Global and commercial pipelines

@@ -2,16 +2,18 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../SYSTEM_ARCHITECTURE.md
-  - ../../src/domain/
-  - ../../src/application/
-  - ../../src/domain/schemas/
-  - ../../tests/
+- ../SYSTEM_ARCHITECTURE.md
+- ../../src/domain/
+- ../../src/application/
+- ../../src/domain/schemas/
+- ../../tests/
 last_verified_against: 2026-04-30
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # Architecture

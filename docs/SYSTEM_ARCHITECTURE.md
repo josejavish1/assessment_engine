@@ -2,15 +2,17 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-  - src/domain/
-  - src/application/
-  - src/domain/mcp_server.py
-  - src/domain/schemas/
+- src/domain/
+- src/application/
+- src/domain/mcp_server.py
+- src/domain/schemas/
 last_verified_against: 2026-05-02
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: explanation
+verification_mode: mixed
 ---
 
 # System Architecture: Assessment Engine

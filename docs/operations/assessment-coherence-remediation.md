@@ -1,14 +1,16 @@
 ---
-status: "Verified"
-owner: "product-engineering"
-last_verified_against: "2026-05-03"
-applies_to:
-  - humans
-  - ai-agents
+status: Needs Review
+owner: product-engineering
 source_of_truth:
-  - src/application/run_tower_blueprint_engine.py
-  - src/domain/schemas/blueprint.py
-doc_type: "operational"
+- src/application/run_tower_blueprint_engine.py
+- src/domain/schemas/blueprint.py
+last_verified_against: '2026-06-26'
+applies_to:
+- humans
+- ai-agents
+doc_type: operational
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Proceso de Remediación de Coherencia en Assessments

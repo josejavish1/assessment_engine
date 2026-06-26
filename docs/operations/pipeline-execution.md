@@ -2,19 +2,21 @@
 status: Draft
 owner: docs-governance
 source_of_truth:
-  - ../../src/application/run_tower_pipeline.py
-  - ../../src/application/run_global_pipeline.py
-  - ../../src/application/run_commercial_pipeline.py
-  - ../../src/application/run_intelligence_harvesting.py
-  - ../../src/application/render_web_presentation.py
-  - ../../src/infrastructure/pipeline_runtime.py
-  - ../architecture/tower-pipeline.md
-  - ../architecture/global-commercial-pipelines.md
+- ../../src/application/run_tower_pipeline.py
+- ../../src/application/run_global_pipeline.py
+- ../../src/application/run_commercial_pipeline.py
+- ../../src/application/run_intelligence_harvesting.py
+- ../../src/application/render_web_presentation.py
+- ../../src/infrastructure/pipeline_runtime.py
+- ../architecture/tower-pipeline.md
+- ../architecture/global-commercial-pipelines.md
 last_verified_against: 2026-05-02
 applies_to:
-  - humans
-  - ai-agents
+- humans
+- ai-agents
 doc_type: canonical
+diataxis: how_to
+verification_mode: workflow
 ---
 
 # Pipeline execution guide
