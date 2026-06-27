@@ -64,7 +64,7 @@ Si constatas la ausencia, alteración o desactualización del baseline, utiliza 
 
 ### Comando Base (Aprovisionamiento Estándar):
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 *Por defecto, este comando regenera el cliente `smoke_ivirma`, torre `T5` y escenario `baseline` usando la semilla determinista `42`.*
 
@@ -75,27 +75,27 @@ Si constatas la ausencia, alteración o desactualización del baseline, utiliza 
 #### A. Simulación Rápida en Seco (*Dry-run*):
 Para validar la orquestación y regeneración de artefactos sin realizar llamadas costosas ni consumir tokens de la API de Vertex AI:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
 ```
 *Este modo sustituye las salidas de la IA por estructuras sintácticamente perfectas vacías para validar que el pipeline de compilación no tenga roturas lógicas.*
 
 #### B. Ejecución Fuera de Línea (*Air-gapped / Local-only*):
 Si no dispones de conexión a internet o el proveedor de Cloud sufre una interrupción temporal del servicio, puedes regenerar el baseline local desactivando por completo las llamadas a LLMs:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
 ```
 *Este modo utiliza un caché de respuestas y plantillas almacenado de forma segura en `templates/` para simular la ejecución de forma 100% offline.*
 
 #### C. Regeneración con Consolidación Global, Comercial y Web:
 Para ejecutar una prueba de humo de integración de extremo a extremo que valide la cascada de compilación completa:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
 ```
 
 #### D. Pruebas Multi-Torre en Escenarios Personalizados:
 Para validar el comportamiento del motor bajo una topología compleja con múltiples especialidades tecnológicas:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
   --client vodafone_demo \
   --scenario vodafone-public \
   --towers T2 T3 T5 \
@@ -109,7 +109,7 @@ Para validar el comportamiento del motor bajo una topología compleja con múlti
 Si deseas validar las cuotas, credenciales y conexión con Vertex AI antes de lanzar una regeneración con IA:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ### Resolución de Errores Comunes de Acceso Cloud:
@@ -126,6 +126,6 @@ Si deseas validar las cuotas, credenciales y conexión con Vertex AI antes de la
 ## 5. Directrices de Mantenimiento ante Cambios en Código
 
 Cuando realices modificaciones en el motor (como alterar la lógica de scoring o expandir Pydantic schemas) que rompan de forma legítima el baseline antiguo:
-1.  **Regenera el Baseline:** Lanza `./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web` para compilar los nuevos payloads conformes.
+1.  **Regenera el Baseline:** Lanza `python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web` para compilar los nuevos payloads conformes.
 2.  **Verifica en Verde:** Corre la suite de tests (`pytest tests/`) para asegurar que el rastro de aserciones transicione con éxito al estado verde brillante.
 3.  **Garantiza la Coherencia Transversal:** Verifica que no se hayan introducido divergencias métricas entre el scoring de Python y el storytelling de los Word compilados en la carpeta temporal.

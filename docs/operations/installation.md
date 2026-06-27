@@ -32,9 +32,9 @@ El procedimiento estándar para el aprovisionamiento y despliegue del entorno vi
 
 ```bash
 python3.11 -m venv .venv
-./.venv/bin/python -m pip install --upgrade pip
-./.venv/bin/pip install -r requirements.txt
-./.venv/bin/pip install -e .
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Justificación del Modo de Instalación Editable (`-e .`)
@@ -58,19 +58,19 @@ En caso de que las variables ya se encuentren definidas en el entorno de la sub-
 ### 1. Pruebas de Entorno
 Para verificar que el aislamiento y el mapeo del paquete se completaron con éxito, ejecute:
 ```bash
-./.venv/bin/python -m pytest tests/test_environment.py -q
+python -m pytest tests/test_environment.py -q
 ```
 
 ### 2. Certificación de la Suite de Pruebas Unitarias
 Para certificar la integridad técnica de todos los componentes, ejecute:
 ```bash
-./.venv/bin/python -m pytest tests/ -q
+python -m pytest tests/ -q
 ```
 
 ### 3. Simulacro en Seco del Smoke-test (*Dry-run*)
 Para validar la orquestación y regeneración de artefactos sin realizar llamadas externas a APIs, ejecute:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
 ```
 Este simulacro en seco (*dry-run*) forma parte de los controles de gobernanza activa del repositorio y certifica que el entorno es capaz de procesar y compilar el pipeline global canónico de forma íntegra, absteniéndose de requerir lógicas de retrocompatibilidad heredadas.
 
@@ -85,6 +85,6 @@ El pipeline de CI se aprovisiona consumiendo `requirements.txt` para asegurar la
 
 Tras completar el aprovisionamiento de manera exitosa, el sistema debe certificar la disponibilidad de las siguientes capacidades:
 1.  **Importación Absoluta:** Importación nativa de `assessment_engine` desde cualquier sub-shell del entorno virtual.
-2.  **Ejecución de Pruebas:** Ejecución sin errores de la suite de pruebas mediante `./.venv/bin/python -m pytest`.
+2.  **Ejecución de Pruebas:** Ejecución sin errores de la suite de pruebas mediante `python -m pytest`.
 3.  **Ejecución de Módulos:** Lanzamiento directo de utilidades y orquestadores a través de `python -m assessment_engine.application.<modulo>`.
 4.  **Compilación de Recursos:** Resolución de rutas físicas y compilación exitosa de plantillas OpenXML `.docx` y plantillas de renderizado integradas en el paquete.

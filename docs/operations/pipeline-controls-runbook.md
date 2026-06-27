@@ -34,7 +34,7 @@ Este manual de operaciones (*runbook*) formaliza el protocolo de control, superv
 | Checkpoint | Validación Empírica | Propósito en el Dominio |
 |---|---|---|
 | **Entorno Aislado Certificado** | Ejecución activa bajo `./.venv/` | Asegura el aislamiento de paquetes y consistencia de librerías. |
-| **Integridad de Dependencias** | `./.venv/bin/pip check` | Certifica la disponibilidad completa de las dependencias lógicas. |
+| **Integridad de Dependencias** | `pip check` | Certifica la disponibilidad completa de las dependencias lógicas. |
 | **Gobernanza de Acceso a Vertex AI** | Ejecución de `check_vertex_ai_access.py` | Previene fallas tempranas de autenticación en llamadas generativas. |
 | **Aprovisionamiento de Entradas** | Presencia física de context-files y responses | Valida que la tubería disponga de materia prima para operar. |
 | **Disponibilidad de Ruta de Trabajo** | `working/<client>` legible y escribible | Garantiza los permisos de E/S necesarios para persistir artefactos. |
@@ -81,7 +81,7 @@ Este manual de operaciones (*runbook*) formaliza el protocolo de control, superv
 ### 1. Interrupción de Red o Autenticación
 Ante sospechas de fallas de conexión o credenciales expiradas en Google Cloud, invoque:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ### 2. Deriva Contractual entre Capas
@@ -100,7 +100,7 @@ Si los payloads de datos son correctos pero el deliverable final presenta distor
 
 | Incidente Operacional | Ruta de Recuperación Certificada |
 |---|---|
-| **Eliminación accidental del baseline local** | Ejecutar el aprovisionador: `./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts` |
+| **Eliminación accidental del baseline local** | Ejecutar el aprovisionador: `python -m assessment_engine.application.tools.regenerate_smoke_artifacts` |
 | **Interrupción prolongada del proveedor Cloud** | Conmutar de forma segura a ejecución local libre de APIs: `--local-only` |
 | **Bloqueos transitorios por latencias de red** | Forzar la expiración transaccional configurando timeouts explícitos de ejecución. |
 | **Ausencia de telemetría por torre** | Relanzar el orquestador por torre o reanudar desde el checkpoint estable de origen. |

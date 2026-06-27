@@ -69,7 +69,7 @@ po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
 
 Ese comando:
 
-- usa `./.venv/bin/python` cuando existe y, si no, cae a `python`/`python3`;
+- usa `python` cuando existe y, si no, cae a `python`/`python3`;
 - permite pasar la petición inline o con `--request-file`;
 - pide confirmación interactiva antes de un `run` cuando se ejecuta en TTY;
 - y, si no se le pasa `--executor-command`, intenta reutilizar `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` o el wrapper local `./.github/scripts/orchestrator-gemini-executor.sh`.

@@ -31,7 +31,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_intelligence_harvesting <client_name>
+python -m assessment_engine.application.run_intelligence_harvesting <client_name>
 ```
 
 Úsalo cuando quieras enriquecer el contexto estratégico antes del análisis por torre.
@@ -53,7 +53,7 @@ Genera la cadena principal por torre:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
+python -m assessment_engine.application.run_tower_pipeline \
   --tower T5 \
   --client ivirma \
   --context-file /ruta/al/contexto.docx \
@@ -73,7 +73,7 @@ La lectura cualitativa de madurez asociada al score de torre debe mantenerse ali
 Reanudación opcional:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
+python -m assessment_engine.application.run_tower_pipeline \
   --tower T5 \
   --client ivirma \
   --context-file /ruta/al/contexto.docx \
@@ -93,7 +93,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.cli rage \
+python -m assessment_engine.application.cli rage \
   --client ivirma \
   --industry utility
 ```
@@ -112,7 +112,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_global_pipeline <client_name>
+python -m assessment_engine.application.run_global_pipeline <client_name>
 ```
 
 El entrypoint global ya ejecuta la consolidación canónica desde blueprints disponibles. No necesita un flag adicional para desactivar fallback legacy porque esa compatibilidad ya no forma parte de la ruta activa.
@@ -137,7 +137,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_commercial_pipeline <client_name>
+python -m assessment_engine.application.run_commercial_pipeline <client_name>
 ```
 
 ## 5. Dashboard web
@@ -154,7 +154,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.adapters.render_web_presentation <client_name>
+python -m assessment_engine.adapters.render_web_presentation <client_name>
 ```
 
 ## 6. Smoke reproducible para `smoke_ivirma`
@@ -162,16 +162,16 @@ Comando:
 Para regenerar el caso que usan los tests de contratos y golden files, usa el runner dedicado:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 
 Variantes útiles:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --client vodafone_demo --scenario vodafone-public --towers T2 T3 T5 --with-global --with-commercial --with-web
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --client vodafone_demo --scenario vodafone-public --towers T2 T3 T5 --with-global --with-commercial --with-web
 ```
 
 Ahora `--with-global` ya ejercita directamente la consolidación canónica desde blueprints.
@@ -181,7 +181,7 @@ La guía detallada está en [`troubleshooting-working.md`](troubleshooting-worki
 Si necesitas validar Vertex AI antes de lanzar cualquier pipeline con agentes:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ## Orden operativo recomendado

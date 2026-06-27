@@ -91,17 +91,17 @@ Las compuertas automáticas constituyen condiciones necesarias pero no suficient
 Para certificar localmente los archivos modificados en una rama de trabajo, ejecute:
 
 ```bash
-./.venv/bin/python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
+python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --repo-root . \
   --path src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --path tests/test_run_incremental_quality_gate.py
 
-./.venv/bin/python src/assessment_engine/application/tools/run_incremental_typecheck.py \
+python src/assessment_engine/application/tools/run_incremental_typecheck.py \
   --repo-root . \
   --path src/assessment_engine/application/build_global_report_payload.py \
   --path tests/test_global_coherence.py
 
-./.venv/bin/python -m pytest \
+python -m pytest \
   tests/test_global_coherence.py \
   tests/test_build_global_report_payload.py -q
 ```
