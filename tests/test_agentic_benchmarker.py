@@ -1,6 +1,6 @@
-import pytest
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from assessment_engine.infrastructure.agentic_benchmarker import (
     AgenticRageBenchmarker,
@@ -47,7 +47,7 @@ async def test_rage_benchmarker_full_flow(tmp_path):
         patch(
             "assessment_engine.infrastructure.agentic_benchmarker.AdkApp",
             return_value=MagicMock(),
-        ) as mock_app,
+        ),
     ):
         # Configure mock_run to return the extraction and verification for each of the 4 evaluated towers (T1, T4, T5, T6)
         mock_run.side_effect = [
