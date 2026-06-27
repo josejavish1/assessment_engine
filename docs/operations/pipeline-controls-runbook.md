@@ -9,7 +9,6 @@ source_of_truth:
 - ../../src/assessment_engine/application/tools/check_vertex_ai_access.py
 - ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
 - ./pipeline-execution.md
-- ./smoke-regeneration.md
 - ./troubleshooting-working.md
 last_verified_against: 2026-06-26
 applies_to:
@@ -126,6 +125,5 @@ El estado operacional del motor se considera bajo gobernanza y control estricto 
 ## Referencias Cruzadas Autorizadas
 
 -   **Ejecución y Flujos:** [`pipeline-execution.md`](pipeline-execution.md)
--   **Regeneración de Smoke-test:** [`smoke-regeneration.md`](smoke-regeneration.md)
--   **Troubleshooting y Diagnóstico General:** [`troubleshooting-working.md`](troubleshooting-working.md)
+-   **Troubleshooting y Regeneración de Smoke-test:** [`troubleshooting-working.md`](troubleshooting-working.md)
 -   **Contratos e Interfaces:** [`../contracts/artifact-contracts.md`](../contracts/artifact-contracts.md)

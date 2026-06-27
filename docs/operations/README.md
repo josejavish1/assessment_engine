@@ -42,24 +42,27 @@ Estas dos piezas son la base más fiable para trabajo asistido por agentes y par
 ## Piezas que requieren lectura más cuidadosa
 
 - [`product-owner-orchestrator.md`](./product-owner-orchestrator.md): útil, pero aún mezclada con capacidad objetivo y capacidad realmente verificada.
-- [`pipeline-execution.md`](./pipeline-execution.md), [`smoke-regeneration.md`](./smoke-regeneration.md) y otras guías de ejecución: deben contrastarse con entrypoints, helpers y validadores actuales si se van a usar como base de cambio.
+- [`pipeline-execution.md`](./pipeline-execution.md) y otras guías de ejecución: deben contrastarse con entrypoints, helpers y validadores actuales si se van a usar como base de cambio.
 
-## Índice operativo
+## Índice de Documentos Operativos
 
-| Área | Documento |
-|---|---|
-| entorno | [`installation.md`](./installation.md) |
-| CI/CD | [`ci-cd-workflows.md`](./ci-cd-workflows.md) |
-| workflow con agentes | [`agentic-development-workflow.md`](./agentic-development-workflow.md) |
-| calidad y tipado | [`engineering-quality-gates.md`](./engineering-quality-gates.md) |
-| ejecución de pipelines | [`pipeline-execution.md`](./pipeline-execution.md) |
-| runbook operativo | [`pipeline-controls-runbook.md`](./pipeline-controls-runbook.md) |
-| orquestación PO-to-PR | [`product-owner-orchestrator.md`](./product-owner-orchestrator.md) |
-| resiliencia y fallbacks | [`resilience-and-fallbacks.md`](./resilience-and-fallbacks.md) |
-| troubleshooting | [`troubleshooting-working.md`](./troubleshooting-working.md) |
-| smoke | [`smoke-regeneration.md`](./smoke-regeneration.md) |
-| coherencia | [`assessment-coherence-remediation.md`](./assessment-coherence-remediation.md) |
-| firma de commits | [`signing-commits-policy.md`](./signing-commits-policy.md) |
+### 1. Entorno y Configuración
+-   **[`installation.md`](./installation.md):** Guía completa para configurar el entorno de desarrollo local desde cero.
+-   **[`ci-cd-workflows.md`](./ci-cd-workflows.md):** Descripción técnica detallada de los workflows de GitHub Actions.
+
+### 2. Ciclo de Vida del Desarrollo
+-   **[`agentic-development-workflow.md`](./agentic-development-workflow.md):** Proceso de desarrollo asistido por agentes, desde la especificación hasta el Pull Request.
+-   **[`engineering-quality-gates.md`](./engineering-quality-gates.md):** Define los controles de calidad incrementales (Ruff, Mypy) que se aplican en el pipeline.
+-   **[`signing-commits-policy.md`](./signing-commits-policy.md):** Política y guía para la firma de commits.
+
+### 3. Ejecución y Orquestación
+-   **[`pipeline-execution.md`](./pipeline-execution.md):** Instrucciones para ejecutar los pipelines de generación de artefactos.
+-   **[`pipeline-controls-runbook.md`](./pipeline-controls-runbook.md):** Runbook para gestionar y monitorizar la ejecución de los pipelines.
+-   **[`product-owner-orchestrator.md`](./product-owner-orchestrator.md):** Cómo utilizar el orquestador de alto nivel para automatizar tareas complejas.
+
+### 4. Mantenimiento y Resolución de Problemas
+-   **[`troubleshooting-working.md`](./troubleshooting-working.md):** Manual para diagnosticar, resolver problemas comunes en `working/` y playbook para la regeneración reproducible de pruebas de humo.
+-   **[`assessment-coherence-remediation.md`](./assessment-coherence-remediation.md):** Guía para reparar problemas de coherencia en los datos generados.
 
 ## Regla de uso
 

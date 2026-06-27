@@ -18,6 +18,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: .artifacts/docs/health-report.md
   kind: document
   title: Health Report
@@ -29,6 +32,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: .artifacts/docs/semantic_drift_report.md
   kind: document
   title: Semantic Drift Report
@@ -40,6 +46,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: source_docs/eurovision/discovery/discovery_executive_summary.md
   kind: document
   title: Discovery Executive Summary
@@ -51,6 +60,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: source_docs/eurovision/discovery/tower_responses_T2.md
   kind: document
   title: Tower Responses T2
@@ -62,6 +74,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: src/assessment_engine/domain/prompts/PROMPT_REGISTRY.md
   kind: document
   title: Prompt Registry
@@ -73,6 +88,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: src/assessment_engine/prompts/PROMPT_REGISTRY.md
   kind: document
   title: Prompt Registry
@@ -84,6 +102,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: src/assessment_engine/business_command_center/README.md
   kind: document
   title: Readme
@@ -95,6 +116,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: src/assessment_engine/business_command_center/AGENTS.md
   kind: document
   title: Agents
@@ -106,6 +130,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: src/assessment_engine/business_command_center/CLAUDE.md
   kind: document
   title: Claude
@@ -117,6 +144,9 @@ entries:
   - ai-agents
   source_of_truth: []
   last_verified_against: 2026-06-26
+  diataxis: reference
+  notes: Archivo auxiliar o de reporte de métricas.
+  verification_mode: editorial
 - path: docs/architecture/data-provenance-ontology.md
   kind: document
   title: Data Provenance Ontology & Extraction Heuristics

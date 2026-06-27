@@ -177,7 +177,7 @@ Variantes útiles:
 
 Ahora `--with-global` ya ejercita directamente la consolidación canónica desde blueprints.
 
-La guía detallada está en [`smoke-regeneration.md`](smoke-regeneration.md).
+La guía detallada está en [`troubleshooting-working.md`](troubleshooting-working.md).
 
 Si necesitas validar Vertex AI antes de lanzar cualquier pipeline con agentes:
 
