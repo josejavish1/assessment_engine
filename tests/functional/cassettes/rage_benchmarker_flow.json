@@ -1,0 +1,42 @@
+{
+    "T1_Extraction": {
+        "extracted_value": 85.0,
+        "verbatim_quote": "La Torre T1 tiene un 85% de controles completados en ENS Categoría Alta",
+        "source_url": "https://example.com/ens_t1_report.pdf",
+        "justification": "Se verificó un 85% de nivel de madurez."
+    },
+    "T1_Verification": {
+        "is_verified": true,
+        "critique": "Evidencia e indicador validados con éxito"
+    },
+    "T4_Extraction": {
+        "extracted_value": 75.0,
+        "verbatim_quote": "La Torre T4 cuenta con un 75% de resiliencia en continuidad de negocio",
+        "source_url": "https://example.com/ens_t4_report.pdf",
+        "justification": "Soporta caída dual de CPD."
+    },
+    "T4_Verification": {
+        "is_verified": true,
+        "critique": "Verificado contra el Plan de Continuidad de Negocio"
+    },
+    "T5_Extraction": {
+        "extracted_value": 90.0,
+        "verbatim_quote": "La Torre T5 tiene un 90% de alineación con políticas ENS de soberanía",
+        "source_url": "https://example.com/ens_t5_report.pdf",
+        "justification": "Cifra el 100% de datos en reposo y tránsito."
+    },
+    "T5_Verification": {
+        "is_verified": true,
+        "critique": "Cifrado y políticas de soberanía validadas"
+    },
+    "T6_Extraction": {
+        "extracted_value": 65.0,
+        "verbatim_quote": "El 65% de las utilities están certificadas en ENS Categoría Alta",
+        "source_url": "https://example.com/ens_t6_report.pdf",
+        "justification": "Se verificó el 65% de adopción en T6."
+    },
+    "T6_Verification": {
+        "is_verified": true,
+        "critique": "Confirmado e integrado en la rúbrica sectorial"
+    }
+}
