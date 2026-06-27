@@ -169,3 +169,27 @@ def test_config_loader_edge_cases() -> None:
         mock_manifest.return_value = {}
         with pytest.raises(KeyError):
             resolve_document_profile()
+
+
+def test_load_industry_profile_corrupted_fallback() -> None:
+    """Verify that load_industry_profile falls back to default.json when the custom profile is corrupt/malformed."""
+    from assessment_engine.infrastructure.config_loader import load_industry_profile
+    from unittest.mock import patch
+    import json
+
+    # We patch _load_json to raise JSONDecodeError specifically for the custom profile
+    def mock_load_json(path):
+        if "custom_corrupted_profile" in str(path):
+            raise json.JSONDecodeError("Expecting value", "doc", 0)
+        # Call the original JSON loader by opening the file
+        with path.open("r", encoding="utf-8-sig") as f:
+            return json.load(f)
+
+    with patch("assessment_engine.infrastructure.config_loader._load_json", side_effect=mock_load_json):
+        # --- ACT ---
+        profile = load_industry_profile("custom_corrupted_profile")
+        
+        # --- ASSERT ---
+        # It must successfully fallback to default.json
+        assert "industry" in profile
+        assert profile["industry"] == "Default / General Enterprise"

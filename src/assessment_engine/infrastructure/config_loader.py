@@ -271,9 +271,19 @@ def load_industry_profile(profile_key: str) -> dict:
     """
     key = str(profile_key or "default").replace(".json", "").strip().lower()
     profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / f"{key}.json"
-    if not profile_file.exists():
-        profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
-    return _load_json(profile_file)
+    
+    # Robust fallback handling (Technical Debt / Backward Compatibility)
+    try:
+        if not profile_file.exists():
+            profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
+        return _load_json(profile_file)
+    except Exception:
+        # Fallback to default.json if the custom profile is corrupt/malformed on disk
+        default_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
+        try:
+            return _load_json(default_file)
+        except Exception:
+            raise KeyError("No se pudo cargar el perfil de industria por defecto o se encuentra corrupto.")
 
 
 def load_framework_rubric(framework_id: str) -> dict:
