@@ -898,7 +898,7 @@ entries:
   - engine_config/runtime_manifest.json
   - src/assessment_engine/infrastructure/product_owner_models.py
   - src/assessment_engine/application/tools/run_product_owner_orchestrator.py
-  - src/assessment_engine/prompts/product_owner_prompts.py
+  - src/assessment_engine/domain/prompts/product_owner_prompts.py
   - .github/workflows/ci.yml
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml
@@ -1243,7 +1243,7 @@ entries:
   - docs/operations/product-owner-orchestrator.md
   - engine_config/policies/orchestrator_policy.json
   - engine_config/runtime_manifest.json
-  - src/assessment_engine/prompts/product_owner_prompts.py
+  - src/assessment_engine/domain/prompts/product_owner_prompts.py
   - src/assessment_engine/infrastructure/product_owner_models.py
   last_verified_against: 2026-05-01
   notes: CLI local que planifica una petición de negocio, la ejecuta por tareas sobre

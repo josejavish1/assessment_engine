@@ -16,8 +16,8 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
 
-from assessment_engine.schemas.annex_synthesis import AnnexPayload
-from assessment_engine.schemas.blueprint import BlueprintPayload
+from assessment_engine.domain.schemas.annex_synthesis import AnnexPayload
+from assessment_engine.domain.schemas.blueprint import BlueprintPayload
 
 #
 mcp = FastMCP("Assessment Engine Core")

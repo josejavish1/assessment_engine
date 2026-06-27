@@ -13,7 +13,7 @@ from assessment_engine.infrastructure.text_utils import (
     clean_text_for_word,
     normalize_tower_name,
 )
-from assessment_engine.schemas.annex_synthesis import AnnexPayload
+from assessment_engine.domain.schemas.annex_synthesis import AnnexPayload
 
 logger = logging.getLogger(__name__)
 
