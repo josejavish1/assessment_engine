@@ -26,7 +26,7 @@ Esta plataforma web está diseñada para ser utilizada por Consultores y Negocio
 Para arrancar el servidor de desarrollo local:
 
 ```bash
-cd src/business_command_center
+cd business_command_center
 npm run dev
 ```
 
