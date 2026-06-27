@@ -96,12 +96,6 @@ class EvidenceSnapshotter:
         r"""{'docstring': "Asynchronously captures a snapshot of a web resource from a given URL.\n\nThis method employs a hybrid strategy for robust content retrieval. It\nfirst resolves redirects via an HTTP HEAD request to identify the final\ncanonical URL. Based on the URL's file extension, it follows one of two\npaths:\n1.  Binary Files (e.g., .pdf, .docx): Performs a direct download using\n    an HTTP client (`httpx`).\n2.  Web Pages: Uses a headless Chromium browser (via Playwright) to\n    render dynamic content and JavaScript before capturing the page source.\n\nThe captured content is stored as a local file, and metadata about the\noperation is returned.\n\nArgs:\n    url (str): The URL of the web resource to capture.\n\nReturns:\n    Optional[Dict[str, Any]]: A dictionary containing metadata about the\n        snapshot operation, or `None` if the `playwright` dependency is not\n        installed. The dictionary structure varies based on the outcome:\n          - On success: Contains `status: 'verified'`, `url` (the final\n            resolved URL), `local_snapshot` (relative path to the saved\n            file), `content_hash` (SHA-256 of the content), and other\n            metadata.\n          - On failure: Contains `status: 'broken'` for non-2xx HTTP\n            responses or `status: 'error'` for network exceptions (e.g.,\n            timeouts), along with an `error` key with a descriptive\n            message."}."""
         import httpx
 
-        try:
-            from playwright.async_api import async_playwright
-        except ImportError:
-            logger.error("Playwright no está instalado.")
-            return None
-
         #
         url = url.strip().rstrip(".").rstrip(")").rstrip("]")
         original_input_url = url
@@ -163,10 +157,25 @@ class EvidenceSnapshotter:
                             "status": "verified",
                             "content_hash": hashlib.sha256(content_bytes).hexdigest(),
                         }
+                    else:
+                        logger.warning(f"Fallo descarga directa de {final_human_url} (HTTP {r_bin.status_code})")
+                        return None
             except Exception as e:
                 logger.warning(f"Fallo descarga directa de {final_human_url}: {e}")
+                return None
 
         # 3. PATH A: For standard web pages, utilize Playwright to render dynamic content and handle interactive elements.
+        try:
+            from playwright.async_api import async_playwright
+        except ImportError:
+            logger.error("Playwright no está instalado. No se puede renderizar la página HTML.")
+            return {
+                "source_type": "EXTERNAL_DOCUMENT",
+                "url": final_human_url,
+                "status": "broken",
+                "error": "Playwright is not installed in the environment."
+            }
+
         try:
             async with async_playwright() as p:
                 browser = await p.chromium.launch(headless=True)
