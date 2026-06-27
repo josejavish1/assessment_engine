@@ -7,76 +7,6 @@ owners:
     - docs/
     - GEMINI.md
 entries:
-- path: docs/reference/generated/legacy-gemini/_legacy/run_section_pipeline.md
-  kind: document
-  title: Run Section Pipeline
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: .artifacts/docs/health-report.md
-  kind: document
-  title: Health Report
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: .artifacts/docs/semantic_drift_report.md
-  kind: document
-  title: Semantic Drift Report
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: source_docs/eurovision/discovery/discovery_executive_summary.md
-  kind: document
-  title: Discovery Executive Summary
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: source_docs/eurovision/discovery/tower_responses_T2.md
-  kind: document
-  title: Tower Responses T2
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
 - path: src/assessment_engine/domain/prompts/PROMPT_REGISTRY.md
   kind: document
   title: Prompt Registry
@@ -94,48 +24,6 @@ entries:
 - path: src/assessment_engine/prompts/PROMPT_REGISTRY.md
   kind: document
   title: Prompt Registry
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: src/assessment_engine/business_command_center/README.md
-  kind: document
-  title: Readme
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: src/assessment_engine/business_command_center/AGENTS.md
-  kind: document
-  title: Agents
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth: []
-  last_verified_against: 2026-06-26
-  diataxis: reference
-  notes: Archivo auxiliar o de reporte de métricas.
-  verification_mode: editorial
-- path: src/assessment_engine/business_command_center/CLAUDE.md
-  kind: document
-  title: Claude
   doc_type: canonical
   status: Draft
   owner: docs-governance
@@ -1492,22 +1380,6 @@ entries:
   notes: Backlog histórico de mejoras documentales; no debe leerse como plan comprometido.
   diataxis: explanation
   verification_mode: editorial
-- path: docs/reference/generated/legacy-gemini
-  kind: collection
-  title: Archived legacy Gemini documentation collection
-  doc_type: reference_generated
-  status: Deprecated
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - src/assessment_engine/
-  last_verified_against: 2026-04-30
-  notes: Colección archivada en la capa neutral de referencia; puede consultarse,
-    pero ya no debe competir con la documentación canónica.
-  diataxis: reference
-  verification_mode: observed_run
 - path: docs/audits
   kind: collection
   title: Documentation and code audits
