@@ -26,13 +26,13 @@ notes: Project entry point and onboarding index.
 
 La base de código está encapsulada bajo el espacio de nombres unificado de Python `src/assessment_engine/` y sigue un patrón de diseño hexagonal desacoplado:
 
-*   **`src/assessment_engine/domain/`:** Contiene las clases de negocio, las invariantes lógicas y los esquemas de datos estructurados de Pydantic (`schemas/ast.py`, `schemas/blueprint.py`, etc.).
+*   **`src/assessment_engine/domain/`:** Contiene las clases de negocio, las invariantes lógicas y los esquemas de datos estructurados de Pydantic (`schemas/ast.py`, `schemas/blueprint.py`, etc.) y las plantillas declarativas de prompts (`domain/prompts/`).
 *   **`src/assessment_engine/ports/`:** Define las interfaces de puerto abstractas (ej., `document_compiler.py`) que desacoplan el dominio de la tecnología física de renderizado.
-*   **`src/assessment_engine/application/`:** Implementa los compiladores y renderizadores físicos (ej., `compilers/docx_compiler.py` para Word y HTML).
+*   **`src/assessment_engine/adapters/`:** Implementa los adaptadores de entrada/salida físicos, compiladores OpenXML y renderizadores (`adapters/compilers/docx_compiler.py` para Word, y maquetadores de HTML).
 *   **`src/assessment_engine/application/`:** Contiene los entrypoints lógicos de los pipelines de procesamiento de torre, consolidación global y comercial (`run_tower_pipeline.py`).
 *   **`src/assessment_engine/application/tools/`:** Aloja las utilidades operativas y la suite de validación continua de calidad documental.
 *   **`src/assessment_engine/infrastructure/`:** Implementa la persistencia del grafo, clientes de APIs efímeros de Vertex AI/Gemini (`ai_client.py`) y utilidades comunes.
-*   **`src/prompts/`:** Almacena el registro declarativo de plantillas YAML de prompts utilizadas por los agentes.
+*   **`src/assessment_engine/prompts/`:** Almacena el registro de prompts de soporte de los agentes.
 
 ---
 
@@ -73,7 +73,7 @@ Para garantizar la estabilidad del motor tras realizar cualquier modificación, 
 PYTHONPATH=src .venv/bin/pytest
 ```
 
-La suite de pruebas contiene 89 tests y está configurada en `pyproject.toml` para ignorar advertencias cruzadas y evitar el descubrimiento de directorios de trabajo efímeros (`working/`).
+La suite de pruebas contiene 105 tests y está configurada en `pyproject.toml` para ignorar advertencias cruzadas y evitar el descubrimiento de directorios de trabajo efímeros (`working/`).
 
 ---
 

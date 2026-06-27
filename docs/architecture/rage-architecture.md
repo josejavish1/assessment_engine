@@ -62,7 +62,7 @@ La arquitectura RAGE está desacoplada en tres capas lógicas bajo el patrón he
 *   **Rol:** Define las clases de datos que estructuran las rúbricas matemáticas:
     *   `FrameworkRubric`: El contenedor raíz de la norma regulatoria (ej: DORA, ENS, DAMA).
     *   `RubricRule`: Las reglas de evaluación, incluyendo umbrales numéricos de aprobación (`ThresholdMapping`).
-    *   `RageBenchmarkSnapshot`: El estado final e inmutable de la evaluación de todas las torres, con URL de origen, rastro de evidencia local y estado de validación forense.
+    *   `IndustryBenchmarksSnapshot`: El estado final e inmutable de la evaluación de todas las torres, con URL de origen, rastro de evidencia local y estado de validación forense.
 
 ### B. Capa de Infraestructura (Ejecutor Asíncrono)
 *   **Fichero:** `src/assessment_engine/infrastructure/agentic_benchmarker.py`
