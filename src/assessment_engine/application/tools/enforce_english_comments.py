@@ -8,11 +8,11 @@ import argparse
 import ast
 import asyncio
 import io
-import os
 import re
 import sys
 import tokenize
 from pathlib import Path
+
 from pydantic import BaseModel, Field
 
 # Ensure project source is in path to allow absolute imports
@@ -45,6 +45,7 @@ SPANISH_KEYWORDS = {
 
 
 class TranslationResult(BaseModel):
+    """Pydantic model representing the output of a comment translation request."""
     translated_text: str = Field(description="The precise technical English translation of the input text.")
 
 

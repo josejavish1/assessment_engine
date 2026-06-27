@@ -2,20 +2,17 @@ import json
 import tempfile
 from pathlib import Path
 
-from docx import Document
-
 from assessment_engine.adapters.render_togaf_asis_annex import render_asis_annex
+from docx import Document
 
 
 class TestDynamicGenericityFuzzing:
-    """
-    Test Suite - Dynamic Genericity Fuzzing:
+    """Test Suite - Dynamic Genericity Fuzzing:
     Verify that compilers act as pure functions and do not leak domain semantics (Domain Leakage).
     """
 
     def test_compiler_zero_leakage_assertion(self) -> None:
-        """
-        Inject 100% randomly mutated variables and assert that the final document
+        """Inject 100% randomly mutated variables and assert that the final document
         contains no traces of default branding (REDEIA, NTT DATA, June 2026, €),
         mathematically proving that the engine is 100% generic.
         """

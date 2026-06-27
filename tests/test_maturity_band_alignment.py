@@ -27,8 +27,7 @@ def test_locales_contains_all_languages() -> None:
 
 
 def test_canonical_5_level_localization_mapping() -> None:
-    """
-    Verify that the 5 official project maturity bands map identically
+    """Verify that the 5 official project maturity bands map identically
     and in an internationalized manner against locales.json keys.
     This prevents any structural regression or discrepancy (split-brain).
     """
@@ -71,8 +70,7 @@ def test_canonical_5_level_localization_mapping() -> None:
 
 
 def test_derive_maturity_band_scores_integration() -> None:
-    """
-    Verify that the derive_maturity_band logic correctly resolves the
+    """Verify that the derive_maturity_band logic correctly resolves the
     5 official maturity levels for real scores across the 5 languages.
     """
     # --- ARRANGE ---

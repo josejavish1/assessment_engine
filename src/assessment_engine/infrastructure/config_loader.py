@@ -9,10 +9,11 @@ ROOT = Path(__file__).resolve().parents[3]
 ENGINE_CONFIG_DIR = ROOT / "engine_config"
 
 
-from typing import Any, Dict, TypedDict
+from typing import Any, TypedDict
 
 
 class ModelProfile(TypedDict):
+    """TypedDict defining model configuration parameters like temperature and seed."""
     model: str
     temperature: float
     top_p: float

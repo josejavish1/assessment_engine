@@ -841,7 +841,9 @@ def compile_docx(tower_dir: str, output_path: str):
 
     # Resolve the translation dictionary for the current session. This implementation is designed to be tenant-agnostic.
     vocab_fallback = LANG_VOCAB.get(doc_lang, LANG_VOCAB.get("es", {}))
-    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_localized_vocabulary,
+    )
     vocab_loaded = resolve_localized_vocabulary(doc_lang)
     vocab = {**vocab_fallback, **vocab_loaded}
     org_label = (
@@ -1686,8 +1688,11 @@ def compile_docx(tower_dir: str, output_path: str):
     add_appendix_heading(doc, vocab["appendix_a_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_a_intro"], text_color_rgb=text_color_rgb)
 
-    from assessment_engine.infrastructure.config_loader import load_abbreviations_glossary
     import re
+
+    from assessment_engine.infrastructure.config_loader import (
+        load_abbreviations_glossary,
+    )
 
     try:
         full_glossary = load_abbreviations_glossary()

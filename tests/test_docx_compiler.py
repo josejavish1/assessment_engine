@@ -1,8 +1,6 @@
 import tempfile
 from pathlib import Path
 
-from docx import Document
-
 from assessment_engine.adapters.compilers.docx_compiler import DocxCompiler
 from assessment_engine.domain.schemas.ast import (
     CellNode,
@@ -14,11 +12,11 @@ from assessment_engine.domain.schemas.ast import (
     TableNode,
     TableRowNode,
 )
+from docx import Document
 
 
 def test_docx_compiler_e2e() -> None:
-    """
-    Verify e2e that the DocxCompiler can compile a complex DocumentAST
+    """Verify e2e that the DocxCompiler can compile a complex DocumentAST
     into a physical .docx file while accurately preserving styles and cell properties.
     """
     # --- ARRANGE ---

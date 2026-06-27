@@ -1,9 +1,7 @@
-import asyncio
 import logging
-import os
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from google.adk.agents import Agent
 from pydantic import BaseModel, Field
@@ -223,10 +221,10 @@ class AgenticRageBenchmarker:
             name="rage_research_agent",
             model=self.model_name,
             instruction=(
-                f"Eres un analista de ciberseguridad y auditor de élite. Tu misión es buscar "
-                f"en internet utilizando Google Search para resolver de manera 100% real y objetiva "
-                f"la pregunta planteada. Extrae estrictamente un valor numérico porcentaje (0 a 100), "
-                f"la cita textual de donde lo leíste, y el link oficial."
+                "Eres un analista de ciberseguridad y auditor de élite. Tu misión es buscar "
+                "en internet utilizando Google Search para resolver de manera 100% real y objetiva "
+                "la pregunta planteada. Extrae estrictamente un valor numérico porcentaje (0 a 100), "
+                "la cita textual de donde lo leíste, y el link oficial."
             ),
             output_schema=FactExtractionOutput,
         )

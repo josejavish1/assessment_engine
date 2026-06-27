@@ -38,6 +38,7 @@ class EvidenceFragment(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def generate_content_addressable_id_and_hash(cls, data: Any) -> Any:
+        """Auto-compute ID and SHA-256 hash from content prior to validation."""
         if isinstance(data, dict):
             content = data.get("content", "")
             # Auto-compute content_hash as SHA-256 of the content text

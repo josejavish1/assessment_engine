@@ -1,7 +1,6 @@
-import pytest
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
+import pytest
 from assessment_engine.infrastructure.agentic_benchmarker import (
     AgenticRageBenchmarker,
     FactExtractionOutput,

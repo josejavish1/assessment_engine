@@ -158,7 +158,9 @@ def render_consolidated_todo(working_dir: str, output_path: str):
     styling = brand.get("styling", {})
     color_blue = styling.get("primary_color_hex", "0072BC")
 
-    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_localized_vocabulary,
+    )
     vocab = resolve_localized_vocabulary(meta_lang)
 
     # Stage 1: Consolidate all roadmap waves and their interdependencies into a unified data structure.

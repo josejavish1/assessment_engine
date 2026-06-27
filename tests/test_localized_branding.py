@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+
 from assessment_engine.adapters.compilers.payload_to_ast import PayloadToASTBridge
+
 
 def test_brand_profile_localization_structure() -> None:
     """Verify the structure and multi-language support of brand_profile.json."""

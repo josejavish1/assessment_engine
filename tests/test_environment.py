@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from assessment_engine.domain.schemas.blueprint import BlueprintPayload
 
 

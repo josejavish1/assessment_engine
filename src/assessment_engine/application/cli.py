@@ -284,8 +284,11 @@ def run_rage_command(client: str, industry: str) -> int:
     and performs pure Python rubric evaluation.
     """
     import asyncio
+
+    from assessment_engine.infrastructure.agentic_benchmarker import (
+        AgenticRageBenchmarker,
+    )
     from assessment_engine.infrastructure.text_utils import slugify
-    from assessment_engine.infrastructure.agentic_benchmarker import AgenticRageBenchmarker
 
     print("========================================================")
     print(f" INICIANDO PIPELINE DE RAGE - CLIENTE: {client} | INDUSTRIA: {industry}")

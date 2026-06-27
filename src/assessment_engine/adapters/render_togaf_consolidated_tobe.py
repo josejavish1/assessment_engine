@@ -386,7 +386,9 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     styling = brand.get("styling", {})
     color_blue = styling.get("primary_color_hex", "0072BC")
 
-    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_localized_vocabulary,
+    )
     vocab = resolve_localized_vocabulary(meta_lang)
     global_sum = ast.get("global_summary", {})
     towers = ast.get("towers", [])

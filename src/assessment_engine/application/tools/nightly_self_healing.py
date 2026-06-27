@@ -7,12 +7,12 @@ import os
 import re
 import subprocess
 import sys
-import urllib.request
 import urllib.error
+import urllib.request
 from datetime import date, datetime
 from pathlib import Path
 
-import yaml # type: ignore[import-untyped]
+import yaml  # type: ignore[import-untyped]
 
 from assessment_engine.application.tools import (
     validate_documentation_governance as governance,
@@ -151,7 +151,7 @@ def repair_stale_command_in_file(file_path: Path, old_cmd: str, repo_root: Path)
             if old_cmd in text:
                 text = text.replace(old_cmd, new_cmd)
                 file_path.write_text(text, encoding="utf-8")
-                print(f"  [REPARADO] Se corrigió automáticamente la ruta en el Markdown!")
+                print("  [REPARADO] Se corrigió automáticamente la ruta en el Markdown!")
                 print(f"    Antes: {stale_path}")
                 print(f"    Ahora: {correct_path}")
                 return new_cmd
@@ -250,10 +250,10 @@ def run_runnable_docs_validation(repo_root: Path, map_path: Path, doc_path: str,
                         code_retry, output_retry = run_command_safely(new_cmd, repo_root)
                         last_cmd_output = output_retry
                         if code_retry == 0:
-                            print(f"  [ÉXITO] Autocuración de comando exitosa!")
+                            print("  [ÉXITO] Autocuración de comando exitosa!")
                             continue
                     
-                    print(f"  [FALLO] No se pudo autocurar el comando.")
+                    print("  [FALLO] No se pudo autocurar el comando.")
                     print(f"    Comando: {line_stripped}")
                     print(f"    Output:\n{output}")
                     passed = False
@@ -290,7 +290,7 @@ def run_ai_semantic_auditor_validation(repo_root: Path, map_path: Path, doc_path
             schemas_content_list.append(f"--- SOURCE: {s_path} ---\n{resolved_s.read_text(encoding='utf-8')}")
 
     if not schemas_content_list:
-        print(f"  [IGNORADO] No hay archivos de esquema de origen para auditar semánticamente.")
+        print("  [IGNORADO] No hay archivos de esquema de origen para auditar semánticamente.")
         return True
 
     markdown_content = file_path.read_text(encoding="utf-8")
@@ -336,7 +336,7 @@ Your response must be in strict JSON format:
             file_path.write_text(corrected_content, encoding="utf-8")
             return True
         else:
-            print(f"  [ALARMA] Intento de autocuración por IA falló (contenido vacío o inválido).")
+            print("  [ALARMA] Intento de autocuración por IA falló (contenido vacío o inválido).")
             update_front_matter_status_to_needs_review(file_path)
             update_map_status_to_needs_review(map_path, doc_path)
             return False
@@ -356,7 +356,7 @@ Your response must be in strict JSON format:
 def run_automated_stale_decay_validation(map_path: Path, doc_path: str, file_path: Path, last_verified: date | None) -> bool:
     print(f"=== [EVOLUCIÓN 3: AUTOMATED STALE DECAY] Evaluando frescura de {doc_path} ===")
     if not last_verified:
-        print(f"  [FALLO] No se pudo determinar la fecha de última verificación.")
+        print("  [FALLO] No se pudo determinar la fecha de última verificación.")
         update_front_matter_status_to_needs_review(file_path)
         update_map_status_to_needs_review(map_path, doc_path)
         return False
@@ -366,7 +366,7 @@ def run_automated_stale_decay_validation(map_path: Path, doc_path: str, file_pat
     print(f"  Última verificación: {last_verified} ({age_days} días de antigüedad)")
 
     if age_days > 120:
-        print(f"  [DEGRADADO] El documento ha superado el límite de frescura de 120 días.")
+        print("  [DEGRADADO] El documento ha superado el límite de frescura de 120 días.")
         update_front_matter_status_to_needs_review(file_path)
         update_map_status_to_needs_review(map_path, doc_path)
         return False

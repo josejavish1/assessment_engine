@@ -10,8 +10,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import jinja2
-
 logger = logging.getLogger(__name__)
 
 SRC_ROOT = Path(__file__).resolve().parents[2]
@@ -469,7 +467,7 @@ def generate_web_dashboard(client_id: str) -> Path:
     presentation_dir.mkdir(parents=True, exist_ok=True)
 
     # The compiled static asset directory (`dist`) is copied to the final output destination to enable serving.
-    template_parent_dir = TEMPLATE_PATH.parent
+    template_parent_dir = STRATEGIC_TEMPLATE_PATH.parent
     source_dist_dir = template_parent_dir / "dist"
     if source_dist_dir.is_dir():
         import shutil

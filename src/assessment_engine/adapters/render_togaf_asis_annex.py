@@ -317,7 +317,9 @@ def render_asis_annex(payload_path: str, output_path: str):
     meta_lang = tower_meta.get("language", "es").lower()
 
     #
-    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_localized_vocabulary,
+    )
     vocab = resolve_localized_vocabulary(meta_lang)
 
     tower_name = tower_meta.get("tower_name", "Desconocida")

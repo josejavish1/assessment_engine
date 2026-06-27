@@ -32,7 +32,7 @@ def test_get_git_diff_mocked(tmp_path: Path):
 def test_query_gemini_api_mocked():
     with patch("urllib.request.urlopen") as mock_urlopen:
         mock_response = MagicMock()
-        mock_response.read.return_value = json_payload = b"""{
+        mock_response.read.return_value = b"""{
             "candidates": [
                 {
                     "content": {

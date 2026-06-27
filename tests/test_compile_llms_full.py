@@ -6,7 +6,7 @@ concatenates all valid reference files, and handles missing sitemaps or empty pa
 
 from pathlib import Path
 
-from src.assessment_engine.application.tools.compile_llms_full import compile_llms_full
+from assessment_engine.application.tools.compile_llms_full import compile_llms_full
 
 
 def test_compile_llms_full_success(tmp_path: Path) -> None:

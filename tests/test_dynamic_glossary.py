@@ -1,8 +1,15 @@
 import json
 import re
-import tempfile
 from pathlib import Path
-from assessment_engine.domain.schemas.ast import HeadingNode, ParagraphNode, TableNode, TableRowNode, CellNode
+
+from assessment_engine.domain.schemas.ast import (
+    CellNode,
+    HeadingNode,
+    ParagraphNode,
+    TableNode,
+    TableRowNode,
+)
+
 
 def test_abbreviations_glossary_localization_structure() -> None:
     """Verify that the abbreviations_glossary.json file has correct multi-language support."""

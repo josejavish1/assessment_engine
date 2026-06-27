@@ -84,7 +84,9 @@ class PayloadToASTBridge:
 
         tower_meta = blueprint_data.get("document_meta", {})
         meta_lang = tower_meta.get("language", "es").lower()
-        from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+        from assessment_engine.infrastructure.config_loader import (
+            resolve_localized_vocabulary,
+        )
         vocab = resolve_localized_vocabulary(meta_lang)
 
         # Resolve localized brand attributes
@@ -917,7 +919,9 @@ class PayloadToASTBridge:
             )
         )
 
-        from assessment_engine.infrastructure.config_loader import load_abbreviations_glossary
+        from assessment_engine.infrastructure.config_loader import (
+            load_abbreviations_glossary,
+        )
 
         try:
             full_glossary = load_abbreviations_glossary()
