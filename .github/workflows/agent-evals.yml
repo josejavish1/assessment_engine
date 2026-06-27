@@ -43,3 +43,11 @@ jobs:
           GOOGLE_CLOUD_LOCATION: "europe-west1"
         run: |
           python tests/agent_evals/run_evals.py
+
+      - name: Run Live Model-Drift Integration Test (pytest)
+        env:
+          GOOGLE_CLOUD_PROJECT: "sub403o4u0q5"
+          GOOGLE_CLOUD_LOCATION: "europe-west1"
+          LIVE_TEST: "true"
+        run: |
+          python -m pytest tests/functional/test_agentic_benchmarker.py

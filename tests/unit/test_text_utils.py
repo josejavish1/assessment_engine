@@ -75,3 +75,31 @@ def test_format_currency_custom() -> None:
     
     # Japanese formatting (rounded to nearest integer, JPY symbol at end)
     assert format_currency_custom(1234.56, {"currency_symbol": "¥"}, "ja") == "1,235¥"
+
+
+from hypothesis import given, strategies as st
+import re
+
+@given(st.text())
+def test_slugify_property_based(val: str) -> None:
+    """Property-based fuzz test for slugify.
+    
+    Asserts that no matter what garbage, Unicode, or control character input is passed,
+    slugify never crashes and always maintains its formal architectural invariants.
+    """
+    # --- ACT ---
+    result = slugify(val)
+    
+    # --- ASSERT ---
+    # 1. Invariant: Must contain only lowercase letters, digits, or single underscores
+    assert re.match(r"^[a-z0-9_]+$", result) is not None, f"Slug contains illegal characters: {result}"
+    
+    # 2. Invariant: Must not have double underscores
+    assert "__" not in result
+    
+    # 3. Invariant: Must not have leading or trailing underscores
+    assert not result.startswith("_"), f"Slug has leading underscore: {result}"
+    assert not result.endswith("_"), f"Slug has trailing underscore: {result}"
+    
+    # 4. Invariant: Must never be empty
+    assert len(result) > 0, "Slug cannot be empty"

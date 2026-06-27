@@ -90,22 +90,41 @@ async def test_rage_benchmarker_full_flow(tmp_path: Path):
         return {}
 
     # 2. --- ACT ---
-    # Run the benchmarker within our mocked environment
-    with (
-        patch("assessment_engine.infrastructure.agentic_benchmarker.run_agent", new_callable=AsyncMock) as mock_run,
-        patch("assessment_engine.infrastructure.agentic_benchmarker.EvidenceSnapshotter.capture_snapshot", new_callable=AsyncMock) as mock_capture,
-        patch("assessment_engine.infrastructure.agentic_benchmarker.AdkApp")
-    ):
-        mock_run.side_effect = mock_run_agent_impl
-        mock_capture.side_effect = mock_capture_snapshot_impl
+    # Run the benchmarker within our mocked environment or real cloud environment
+    import os
+    is_live = os.environ.get("LIVE_TEST") == "true"
 
-        benchmarker = AgenticRageBenchmarker(
-            client_id="test_client",
-            working_dir=working_dir,
-            model_name="gemini-2.5-pro"
-        )
+    if is_live:
+        # Run real Vertex AI calls in the cloud, only mocking snapshot capture for stability
+        with (
+            patch("assessment_engine.infrastructure.agentic_benchmarker.EvidenceSnapshotter.capture_snapshot", new_callable=AsyncMock) as mock_capture
+        ):
+            mock_capture.side_effect = mock_capture_snapshot_impl
 
-        snapshot = await benchmarker.run_rage_evaluation("critical_infrastructure")
+            benchmarker = AgenticRageBenchmarker(
+                client_id="test_client",
+                working_dir=working_dir,
+                model_name="gemini-2.5-pro"
+            )
+
+            snapshot = await benchmarker.run_rage_evaluation("critical_infrastructure")
+    else:
+        # Play back offline using our Semantic VCR cassette
+        with (
+            patch("assessment_engine.infrastructure.agentic_benchmarker.run_agent", new_callable=AsyncMock) as mock_run,
+            patch("assessment_engine.infrastructure.agentic_benchmarker.EvidenceSnapshotter.capture_snapshot", new_callable=AsyncMock) as mock_capture,
+            patch("assessment_engine.infrastructure.agentic_benchmarker.AdkApp")
+        ):
+            mock_run.side_effect = mock_run_agent_impl
+            mock_capture.side_effect = mock_capture_snapshot_impl
+
+            benchmarker = AgenticRageBenchmarker(
+                client_id="test_client",
+                working_dir=working_dir,
+                model_name="gemini-2.5-pro"
+            )
+
+            snapshot = await benchmarker.run_rage_evaluation("critical_infrastructure")
 
     # 3. --- ASSERT ---
     # Validate the final RAGE snapshot output integrity and score metrics
