@@ -1,6 +1,6 @@
 ---
-status: Needs Review
-owner: engineering-governance
+status: Verified
+owner: docs-governance
 source_of_truth:
 - https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification
 last_verified_against: '2026-06-26'

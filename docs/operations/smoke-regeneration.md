@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/application/tools/generate_smoke_data.py
@@ -14,7 +14,7 @@ source_of_truth:
 - ../../tests/test_contract_handover.py
 - ../../tests/test_t5_golden.py
 - ../../tests/test_payload_validation.py
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents

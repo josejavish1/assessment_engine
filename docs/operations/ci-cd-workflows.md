@@ -1,6 +1,6 @@
 ---
-status: Needs Review
-owner: platform-team
+status: Verified
+owner: docs-governance
 source_of_truth:
 - .github/workflows/agent-evals.yml
 - .github/workflows/ci.yml

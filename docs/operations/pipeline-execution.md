@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/application/run_tower_pipeline.py
@@ -10,7 +10,7 @@ source_of_truth:
 - ../../src/assessment_engine/infrastructure/pipeline_runtime.py
 - ../architecture/tower-pipeline.md
 - ../architecture/global-commercial-pipelines.md
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents

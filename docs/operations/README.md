@@ -1,9 +1,8 @@
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../.github/workflows/
-- ../../src/assessment_engine/application/
 - ../../src/assessment_engine/application/
 - ./
 last_verified_against: 2026-06-26
@@ -19,7 +18,7 @@ verification_mode: workflow
 
 Este directorio centraliza la documentación de instalación, operación y mantenimiento de `assessment-engine`.
 
-Su valor principal es servir como **índice operativo**. No todas las guías aquí tienen el mismo nivel de verificación; el lector debe usar siempre el estado declarado de cada documento y contrastar con entrypoints reales, workflows y validadores.
+Su valor principal es servir como **índice operativo**. No todas las guías aquí tienen el mismo nivel de verificación; el lector debe usar siempre el estado de gobernanza de cada documento y contrastar con entrypoints reales, workflows y validadores.
 
 ## Alcance
 
@@ -56,6 +55,7 @@ Estas dos piezas son la base más fiable para trabajo asistido por agentes y par
 | ejecución de pipelines | [`pipeline-execution.md`](./pipeline-execution.md) |
 | runbook operativo | [`pipeline-controls-runbook.md`](./pipeline-controls-runbook.md) |
 | orquestación PO-to-PR | [`product-owner-orchestrator.md`](./product-owner-orchestrator.md) |
+| resiliencia y fallbacks | [`resilience-and-fallbacks.md`](./resilience-and-fallbacks.md) |
 | troubleshooting | [`troubleshooting-working.md`](./troubleshooting-working.md) |
 | smoke | [`smoke-regeneration.md`](./smoke-regeneration.md) |
 | coherencia | [`assessment-coherence-remediation.md`](./assessment-coherence-remediation.md) |
@@ -65,7 +65,6 @@ Estas dos piezas son la base más fiable para trabajo asistido por agentes y par
 
 Si una operación concreta depende de comandos, rutas, variables de entorno o comportamiento de CI, usa esta carpeta solo como punto de entrada y valida el detalle contra:
 
-- `src/assessment_engine/application/**`
 - `src/assessment_engine/application/**`
 - `.github/workflows/**`
 - tests o herramientas de validación relacionados
