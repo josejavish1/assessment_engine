@@ -28,14 +28,14 @@ entries:
   kind: document
   title: Sovereign Isolation & Access Control Boundaries
   doc_type: canonical
-  status: Verified
+  status: Needs Review
   owner: docs-governance
   applies_to:
   - humans
   - ai-agents
   source_of_truth:
   - src/assessment_engine/mcp_server.py
-  last_verified_against: '2026-06-26'
+  last_verified_against: '2026-06-27'
   notes: Fronteras de seguridad y aislamiento soberano para la ejecución efímera del
     motor.
   diataxis: explanation
