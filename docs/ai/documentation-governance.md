@@ -2,11 +2,11 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- src/assessment_engine/domain/
-- tests/
-- pyproject.toml
-- .github/workflows/ci.yml
-- docs/documentation-map.yaml
+- ../../src/assessment_engine/domain/
+- ../../tests/
+- ../../pyproject.toml
+- ../../.github/workflows/ci.yml
+- ../../docs/documentation-map.yaml
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -15,7 +15,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Política de gobernanza documental
 
 Esta política define cómo se lee, verifica y actualiza la documentación de `assessment-engine`. Es la **política central neutral** del proyecto para humanos y para cualquier IA que trabaje en el repo.

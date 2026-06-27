@@ -10,7 +10,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Business Command Center
 
 Esta es la interfaz gráfica de usuario (GUI) para el Assessment Engine, construida como parte de la Fase 4 de la arquitectura (El *Business Command Center*).

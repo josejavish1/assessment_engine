@@ -23,7 +23,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Working artifacts map
 
 El árbol `working/` es la **superficie de artefactos de ejecución** de `assessment-engine`. Aquí se acumulan inputs enriquecidos, payloads intermedios, salidas canónicas de cada pipeline y entregables renderizados.

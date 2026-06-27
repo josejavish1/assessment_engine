@@ -2,8 +2,8 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- docs/
-- src/assessment_engine/
+- ../../docs/
+- ../../src/assessment_engine/
 last_verified_against: 2026-06-25
 applies_to:
 - humans
@@ -11,7 +11,6 @@ doc_type: operational
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Framework de Auditoría de Documentación
 
 ## 1. Introducción

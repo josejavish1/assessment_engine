@@ -15,7 +15,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Installation and environment setup
 
 Este documento describe y formaliza el protocolo estándar de instalación, configuración y aprovisionamiento del entorno local para el desarrollo y ejecución del motor.

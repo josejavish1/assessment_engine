@@ -11,11 +11,11 @@ applies_to:
 source_of_truth:
 - ../../src/assessment_engine/mcp_server.py
 last_verified_against: 2026-06-26
-notes: Fronteras de seguridad y aislamiento soberano para la ejecución efímera del motor.
+notes: Fronteras de seguridad y aislamiento soberano para la ejecución efímera del
+  motor.
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Sovereign Isolation & Access Control Boundaries
 
 Este documento detalla la filosofía de seguridad, aislamiento soberano y control de accesos del motor de evaluación. Garantiza que la confidencialidad de los datos de los clientes esté protegida por diseño físico y lógico durante todo el ciclo de vida del pipeline.

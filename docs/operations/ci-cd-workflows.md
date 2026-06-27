@@ -2,13 +2,13 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- .github/workflows/agent-evals.yml
-- .github/workflows/ci.yml
-- .github/workflows/docs-governance.yml
-- .github/workflows/daily-auto-heal.yml
-- .github/workflows/orchestrator-pr-reconcile.yml
-- .github/workflows/quality.yml
-- .github/workflows/typing.yml
+- ../../.github/workflows/agent-evals.yml
+- ../../.github/workflows/ci.yml
+- ../../.github/workflows/docs-governance.yml
+- ../../.github/workflows/daily-auto-heal.yml
+- ../../.github/workflows/orchestrator-pr-reconcile.yml
+- ../../.github/workflows/quality.yml
+- ../../.github/workflows/typing.yml
 last_verified_against: '2026-06-26'
 applies_to:
 - humans
@@ -17,7 +17,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # CI/CD Workflows
 
 This document provides a high-level overview of the CI/CD pipelines, nightly schedules, and quality gates implemented in this repository using GitHub Actions. The primary goal of our automated infrastructure is to ensure code quality, stability, and adherence to architectural guidelines through a series of automated checks that run on every pull request.

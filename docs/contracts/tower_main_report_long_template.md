@@ -15,7 +15,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Plantilla Base - Informe Tecnico Extendido de Torre
 
 ## Objetivo

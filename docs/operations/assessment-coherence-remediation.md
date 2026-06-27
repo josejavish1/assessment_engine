@@ -2,8 +2,8 @@
 status: Verified
 owner: product-engineering
 source_of_truth:
-- src/assessment_engine/application/run_tower_blueprint_engine.py
-- src/assessment_engine/domain/schemas/blueprint.py
+- ../../src/assessment_engine/application/run_tower_blueprint_engine.py
+- ../../src/assessment_engine/domain/schemas/blueprint.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -12,7 +12,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Proceso de Remediación de Coherencia en Assessments
 
 Este documento describe la política, el protocolo y los procedimientos operativos requeridos para identificar, aislar y subsanar inconsistencias lógicas o semánticas transversales en los artefactos del assessment generados por el motor.

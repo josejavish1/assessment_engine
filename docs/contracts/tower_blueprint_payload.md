@@ -11,7 +11,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Tower Blueprint Payload Contract
 
 Este documento define la estructura y campos del artefacto `blueprint_<tower>_payload.json`, que actúa como la **fuente de verdad** para el análisis de una torre tecnológica.

@@ -10,7 +10,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: editorial
 ---
-
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 

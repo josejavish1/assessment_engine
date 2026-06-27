@@ -2,8 +2,8 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- docs/ai/documentation-governance.md
-- docs/documentation-map.yaml
+- ../../docs/ai/documentation-governance.md
+- ../../docs/documentation-map.yaml
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -12,7 +12,6 @@ doc_type: operational
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Propuesta de Mejora de la Gobernanza de la Documentación (PROPUESTA APROBADA Y CERRADA)
 
 > 🟢 **ESTADO: APROBADA E IMPLEMENTADA AL 100% (2026-06-26)**

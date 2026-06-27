@@ -2,8 +2,8 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- src/assessment_engine/infrastructure/epistemic_graph.py
-- src/assessment_engine/infrastructure/policy_engine.py
+- ../../src/assessment_engine/infrastructure/epistemic_graph.py
+- ../../src/assessment_engine/infrastructure/policy_engine.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -12,7 +12,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: code
 ---
-
 # Epistemic Knowledge Graph Architecture
 
 Este documento detalla la especificación técnica de la infraestructura del **Epistemic Knowledge Graph (Grafo de Conocimiento Epistémico)** del sistema.

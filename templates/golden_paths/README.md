@@ -10,7 +10,6 @@ doc_type: operational
 diataxis: reference
 verification_mode: workflow
 ---
-
 # Golden Paths: Índice de Plantillas
 
 Este archivo actúa como un índice ("scaffolding registry") para que los agentes de IA sepan exactamente qué plantilla utilizar en cada situación, reduciendo la ambigüedad y el riesgo de alucinaciones arquitectónicas.

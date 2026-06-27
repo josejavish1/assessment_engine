@@ -2,7 +2,7 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- Code
+- docs/strategy/VISION.md
 last_verified_against: '2026-05-02'
 applies_to:
 - src/assessment_engine/infrastructure

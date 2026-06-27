@@ -22,7 +22,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Payload, schema and renderer boundaries
 
 Este documento establece y delimita formalmente las fronteras técnicas y de responsabilidad entre:

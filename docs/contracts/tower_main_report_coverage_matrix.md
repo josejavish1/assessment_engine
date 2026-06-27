@@ -15,7 +15,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Matriz de Cobertura - Plantilla Larga de Torre
 
 ## Objetivo

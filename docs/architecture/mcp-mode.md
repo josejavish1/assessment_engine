@@ -12,7 +12,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # MCP mode
 
 Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP para que un agente supervisor externo invoque capacidades del motor bajo demanda.
@@ -21,7 +20,7 @@ Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP
 
 El servidor vive en:
 
-- `src/assessment_engine/mcp_server.py`
+- `src/assessment_engine/application/mcp_server.py`
 
 Usa:
 

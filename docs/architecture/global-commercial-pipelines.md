@@ -18,7 +18,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Global and commercial pipelines
 
 Tras completar una o varias torres, `assessment-engine` eleva el análisis hacia una vista ejecutiva global y luego hacia una explotación comercial interna.

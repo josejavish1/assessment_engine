@@ -2,8 +2,8 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- docs/
-- src/assessment_engine/
+- ../../docs/
+- ../../src/assessment_engine/
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -11,7 +11,6 @@ doc_type: operational
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Auditoría de Documentación y Código - Resultados (CASO CERRADO)
 
 > 🟢 **ESTADO: COMPLETADO Y CERRADO (2026-06-26)**
@@ -83,7 +82,7 @@ A continuación se detallan los hallazgos de cada módulo de código auditado.
 
 ---
 
-### `src/assessment_engine/mcp_server.py`
+### `src/assessment_engine/application/mcp_server.py`
 
 *   **Estado General:** Razonable.
 *   **Hallazgos:**

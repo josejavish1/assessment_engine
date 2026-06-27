@@ -2,9 +2,9 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- src/assessment_engine/infrastructure/policy_engine.py
-- engine_config/policies/
-- tests/test_policy_engine.py
+- ../../src/assessment_engine/infrastructure/policy_engine.py
+- ../../engine_config/policies/
+- ../../tests/test_policy_engine.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -13,7 +13,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: code
 ---
-
 # Sovereign Policy Engine Architecture
 
 Este documento detalla la especificación técnica de la arquitectura del **Sovereign Policy Engine (Motor de Políticas Soberano)** de la plataforma.

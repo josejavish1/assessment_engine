@@ -18,7 +18,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Pipeline execution guide
 
 Esta guía resume cómo lanzar los flujos principales del proyecto usando los entrypoints reales del repo.

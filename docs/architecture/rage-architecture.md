@@ -2,10 +2,10 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- src/assessment_engine/infrastructure/agentic_benchmarker.py
-- src/assessment_engine/domain/schemas/rubric.py
-- engine_config/frameworks/
-- tests/test_agentic_benchmarker.py
+- ../../src/assessment_engine/infrastructure/agentic_benchmarker.py
+- ../../src/assessment_engine/domain/schemas/rubric.py
+- ../../engine_config/frameworks/
+- ../../tests/test_agentic_benchmarker.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -14,7 +14,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: code
 ---
-
 # RAGE (Runtime Agentic Grounding & Evaluation) Architecture
 
 Este documento detalla la especificación técnica de la arquitectura de evaluación de precisión **RAGE (Runtime Agentic Grounding & Evaluation)** implementada en el motor.

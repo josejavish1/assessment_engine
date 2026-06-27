@@ -2,9 +2,9 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- docs/documentation-map.yaml
-- src/assessment_engine/application/tools/validate_documentation_governance.py
-- .github/workflows/daily-auto-heal.yml
+- ../docs/documentation-map.yaml
+- ../src/assessment_engine/application/tools/validate_documentation_governance.py
+- ../.github/workflows/daily-auto-heal.yml
 last_verified_against: 2026-06-26
 applies_to:
 - repository
@@ -13,7 +13,6 @@ diataxis: explanation
 verification_mode: editorial
 notes: Documentation directory index and map overview.
 ---
-
 # Mapa maestro de documentación
 
 Este directorio es la **entrada principal** para entender, navegar y mantener la documentación técnica de `assessment-engine`.

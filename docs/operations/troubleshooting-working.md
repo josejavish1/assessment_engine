@@ -18,7 +18,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Troubleshooting `working/` and Smoke Artifacts Playbook
 
 Este manual de operaciones unifica el diagnóstico, la resolución de fallos y el **playbook de regeneración reproducible de artefactos de humo (`smoke_ivirma`)** para restaurar el entorno cuando se presentan inconsistencias lógicas o fallas de validación en el directorio temporal `working/`.

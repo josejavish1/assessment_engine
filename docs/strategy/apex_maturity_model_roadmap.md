@@ -2,8 +2,8 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- docs/SYSTEM_ARCHITECTURE.md
-- src/assessment_engine/
+- ../../docs/SYSTEM_ARCHITECTURE.md
+- ../../src/assessment_engine/
 last_verified_against: 2026-06-25
 applies_to:
 - humans

@@ -23,7 +23,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Critical modules map
 
 Este documento establece y cataloga el mapa de responsabilidades, flujos de datos e interrupciones operativas de los módulos de software críticos del motor. Su propósito es definir con precisión técnica:

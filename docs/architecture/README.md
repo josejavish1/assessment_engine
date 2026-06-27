@@ -2,7 +2,7 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- ../SYSTEM_ARCHITECTURE.md
+- ../../docs/SYSTEM_ARCHITECTURE.md
 - ../../src/assessment_engine/domain/
 - ../../src/assessment_engine/application/
 - ../../src/assessment_engine/mcp_server.py
@@ -16,7 +16,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Architecture
 
 Esta carpeta inicia la **descomposición canónica** de la arquitectura de `assessment-engine`. Su objetivo es sustituir gradualmente la dependencia de un único documento narrativo y repartir la arquitectura en piezas más mantenibles.
@@ -62,7 +61,7 @@ La referencia arquitectónica más completa sigue siendo [`../SYSTEM_ARCHITECTUR
      - `run_commercial_pipeline.py`
 
 2. **Modo servidor de herramientas**
-   - Expuesto por `src/assessment_engine/mcp_server.py`
+   - Expuesto por `src/assessment_engine/application/mcp_server.py`
    - Permite que un supervisor externo orqueste capacidades del motor
 
 ### Áreas estructurales del código

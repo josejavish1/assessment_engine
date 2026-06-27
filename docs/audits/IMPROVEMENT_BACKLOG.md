@@ -2,8 +2,8 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- docs/
-- src/assessment_engine/
+- ../../docs/
+- ../../src/assessment_engine/
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -11,7 +11,6 @@ doc_type: operational
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Backlog de Mejoras de Documentación y Código
 
 ## 1. Introducción
@@ -44,7 +43,7 @@ La priorización se basa en el impacto y el esfuerzo estimado:
 | **P2** | Clean Code | Erradicación de "Swallowed Exceptions" | Reemplazar bloques `except Exception` vacíos por excepciones tipadas e integradas con Structured Logging JSON. | Análisis de Deuda Técnica |
 | **P2** | DevSecOps | Auto-Curación de Vulnerabilidades SAST | Integrar Bandit en `VerificationAgent` y conectar alertas al `Agente Doctor` para auto-reparación en `Shadow Workspace`. | Estrategia DevSecOps 2026 |
 | **P2** | DevSecOps | Bloqueo Estricto de Secretos | Integrar TruffleHog en el validador del orquestador para bloquear commits que filtren credenciales. | Estrategia DevSecOps 2026 |
-| **P2** | Documentación | Completar el README en `docs/architecture/README.md` | **[RESOLVED & CLOSED]** Rediseñado por completo el README para indexar la arquitectura actual con el formato SOTA/Diataxis y mapas de lectura. | `AUDIT_RESULTS.md` |
+| **P2** | Documentación | Completar el README en `docs/architecture/README.md` | **[RESOLVED & CLOSED]** Rediseñado por completo el README para indexar la arquitectura actual con el formato estructurado Diataxis y mapas de lectura. | `AUDIT_RESULTS.md` |
 | **P2** | Documentación | Validar y anotar el diagrama en `docs/SYSTEM_ARCHITECTURE.md` | **[RESOLVED & CLOSED]** Actualizada la cabecera Front-Matter, anotado el diagrama con RAGE e infraestructuras latentes de forma aséptica. | `AUDIT_RESULTS.md` |
 | **P2** | Código | Mejorar el Manejo de Errores en los Pipelines | Implementar manejo de errores robusto en los scripts de pipelines ante falta de artefactos de entrada. | `AUDIT_RESULTS.md` |
 | **P3** | DevSecOps | Escudo Anti-Inyección (Prompt Shield) | Añadir middleware de sanitización (NeMo Guardrails ligero) en la carga de documentos para prevenir Jailbreaks. | Estrategia DevSecOps 2026 |

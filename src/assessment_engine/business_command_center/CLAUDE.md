@@ -10,5 +10,4 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: editorial
 ---
-
 @AGENTS.md

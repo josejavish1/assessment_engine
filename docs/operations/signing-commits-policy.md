@@ -2,7 +2,7 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification
+- README.md
 last_verified_against: '2026-06-26'
 applies_to:
 - humans
@@ -10,7 +10,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Política de Firma de Commits
 
 Esta política establece el requisito de firmar criptográficamente los commits para garantizar la autenticidad e integridad del historial de cambios del repositorio.

@@ -2,9 +2,9 @@
 status: Verified
 owner: docs-governance
 source_of_truth:
-- docs/documentation-map.yaml
-- docs/README.md
-- docs/ai/documentation-governance.md
+- ../docs/documentation-map.yaml
+- ../docs/README.md
+- ../docs/ai/documentation-governance.md
 last_verified_against: 2026-06-26
 applies_to:
 - docs
@@ -15,7 +15,6 @@ diataxis: explanation
 verification_mode: editorial
 last_updated: 2026-06-26
 ---
-
 # Auditoría de documentación del proyecto
 
 Este documento registra la **lectura narrativa más reciente** del estado de la documentación. No sustituye a `docs/documentation-map.yaml`, y sirve como el log forense de cierre de deudas de gobernanza documental.

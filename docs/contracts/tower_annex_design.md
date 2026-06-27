@@ -14,7 +14,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Tower Annex v2 - Diseño objetivo
 
 ## Objetivo

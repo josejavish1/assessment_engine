@@ -11,7 +11,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Tower Annex Payload Contract
 
 Este documento define la estructura y campos del artefacto `approved_annex_<tower>.template_payload.json`, que es una síntesis ejecutiva derivada del `blueprint_payload`.

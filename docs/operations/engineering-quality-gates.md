@@ -22,7 +22,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Engineering quality gates
 
 Este documento establece y define las compuertas de calidad (*quality gates*) aplicadas de forma automatizada sobre el ciclo de vida del motor. Su propósito es asegurar que cualquier cambio de código se someta a análisis estáticos de calidad y tipado estricto, complementando las pruebas de comportamiento y verificaciones de coherencia documental.

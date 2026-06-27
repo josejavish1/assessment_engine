@@ -16,7 +16,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Tower pipeline
 
 El pipeline por torre es el **núcleo operativo** de `assessment-engine`. Ejecuta preparación determinista, análisis top-down con IA y renderizado final para una torre tecnológica concreta.

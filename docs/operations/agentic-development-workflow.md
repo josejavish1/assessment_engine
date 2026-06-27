@@ -19,7 +19,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Agentic development workflow
 
 Esta guía establece el protocolo operativo para el ciclo de desarrollo de software asistido por agentes de inteligencia artificial en `assessment-engine`. Su propósito es estructurar la interacción con los agentes autónomos para mitigar la deriva arquitectónica, prevenir la duplicidad lógica o semántica, y erradicar mutaciones de código deficientemente especificadas.

@@ -2,8 +2,8 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- docs/README.md
-- docs/documentation-map.yaml
+- ../../docs/README.md
+- ../../docs/documentation-map.yaml
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -12,7 +12,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Especificación Técnica de Ingeniería: Sovereign Assessment Factory v2026
 
 Este documento detalla la arquitectura interna del motor de orquestación, exponiendo la complejidad real de la gestión de evidencias, el consenso adversario y la resolución topológica de la estrategia.

@@ -2,15 +2,15 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- ../SYSTEM_ARCHITECTURE.md
+- ../../docs/SYSTEM_ARCHITECTURE.md
 - ../../src/assessment_engine/application/run_tower_pipeline.py
 - ../../src/assessment_engine/application/run_global_pipeline.py
 - ../../src/assessment_engine/application/run_commercial_pipeline.py
 - ../../src/assessment_engine/adapters/render_web_presentation.py
 - ../../src/assessment_engine/domain/schemas/
-- ./tower-pipeline.md
-- ./global-commercial-pipelines.md
-- ./critical-modules.md
+- ../../docs/architecture/tower-pipeline.md
+- ../../docs/architecture/global-commercial-pipelines.md
+- ../../docs/architecture/critical-modules.md
 last_verified_against: 2026-04-30
 applies_to:
 - humans
@@ -91,7 +91,7 @@ Eso significa, por ejemplo, que:
 | Refiners | traducen una verdad previa a otra audiencia sin romper su base |
 | Renderers | convierten payloads en entregables consumibles |
 
-La pieza detallada está en [`critical-modules.md`](critical-modules.md).
+La pieza detallada está en [`critical-modules.md`](../architecture/critical-modules.md).
 
 ## Qué dependencias externas sí importan de verdad
 
@@ -139,7 +139,7 @@ La pieza detallada está en [`critical-modules.md`](critical-modules.md).
 | Audiencia | Documento recomendado |
 |---|---|
 | Dirección / sponsor interno | este documento + `global-commercial-pipelines.md` |
-| Delivery / arquitectura | `tower-pipeline.md` + `critical-modules.md` |
+| Delivery / arquitectura | `../architecture/tower-pipeline.md` + `../architecture/critical-modules.md` |
 | Gobierno técnico / contratos | `../contracts/payload-render-boundaries.md` |
 | Operación / soporte | `../operations/pipeline-controls-runbook.md` |
 

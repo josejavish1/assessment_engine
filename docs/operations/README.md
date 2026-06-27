@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - ../../.github/workflows/
 - ../../src/assessment_engine/application/
-- ./
+- ../../
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -13,7 +13,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Manual de operaciones
 
 Este directorio centraliza la documentación de instalación, operación y mantenimiento de `assessment-engine`.

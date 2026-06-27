@@ -13,7 +13,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-
 # Gemini adapter
 
 Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentación canónica del proyecto.

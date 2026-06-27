@@ -14,7 +14,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-
 # AGENTS
 
 Este fichero es la **puerta de entrada corta para cualquier agente de IA** que trabaje en `assessment-engine`.

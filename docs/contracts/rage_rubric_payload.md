@@ -12,7 +12,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # RAGE Framework Rubric JSON Contract
 
 Este documento establece la especificación técnica del contrato de datos JSON para las rúbricas declarativas del motor **RAGE (Runtime Agentic Grounding & Evaluation)**.

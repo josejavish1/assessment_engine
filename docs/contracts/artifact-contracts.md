@@ -25,7 +25,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Artifact contracts
 
 Este documento complementa a [`payload-render-boundaries.md`](payload-render-boundaries.md) al definir la semántica operativa y de negocio de los artefactos de datos en el ciclo de vida del motor: trazabilidad de origen (producción), dependencias de consumo y criterios de validación de compuertas de calidad (*quality gates*).

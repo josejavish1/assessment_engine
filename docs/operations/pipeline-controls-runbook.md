@@ -18,7 +18,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Pipeline controls runbook
 
 Este manual de operaciones (*runbook*) formaliza el protocolo de control, supervisión e intervenciones correctivas aplicables sobre la tubería de ejecución del motor. Define de manera determinista los checkpoints pre-vuelo, la telemetría de éxito de cada fase y los árboles de decisión ante interrupciones operacionales.

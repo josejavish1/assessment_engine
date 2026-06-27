@@ -12,7 +12,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-
 # ChatGPT adapter
 
 Usa este archivo como adaptador breve para trabajar con OpenAI / ChatGPT / Cursor en este repositorio.

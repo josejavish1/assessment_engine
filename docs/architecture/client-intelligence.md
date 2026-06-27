@@ -21,7 +21,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Client intelligence architecture
 
 El archivo `client_intelligence.json` constituye el dossier de inteligencia estratégica de la organización del cliente. Su propósito principal es proveer un contexto semántico e histórico consistente y auditable, consumible y trazable de manera transversal por los siguientes módulos de la plataforma:

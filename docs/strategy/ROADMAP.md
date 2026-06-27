@@ -2,8 +2,8 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- docs/operations/engineering-quality-gates.md
-- src/assessment_engine/mcp_server.py
+- ../../docs/operations/engineering-quality-gates.md
+- ../../src/assessment_engine/mcp_server.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans

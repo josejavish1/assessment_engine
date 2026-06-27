@@ -12,11 +12,11 @@ source_of_truth:
 - ../../src/assessment_engine/infrastructure/epistemic_graph.py
 - ../../src/assessment_engine/infrastructure/evidence_engine.py
 last_verified_against: 2026-06-26
-notes: Ontología de extracción y linaje de evidencias documentales a partir de PDFs de origen.
+notes: Ontología de extracción y linaje de evidencias documentales a partir de PDFs
+  de origen.
 diataxis: explanation
 verification_mode: editorial
 ---
-
 # Data Provenance Ontology & Extraction Heuristics
 
 Este documento define de manera formal la ontología de extracción de datos, linaje de procedencia (*data provenance*) y modelado de incertidumbre que utiliza el motor para estructurar evidencias a partir de fuentes documentales no estructuradas (como informes técnicos, inventarios de sistemas y auditorías en formato PDF).

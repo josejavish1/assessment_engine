@@ -16,7 +16,6 @@ diataxis: explanation
 verification_mode: editorial
 notes: Project entry point and onboarding index.
 ---
-
 # Assessment Engine
 
 `assessment-engine` es un motor de procesamiento de datos y compilación de informes técnicos de evaluación. Su pipeline asíncrono transforma el contexto de un cliente, las evidencias documentales y las respuestas de auditoría en un grafo de relaciones semánticas (Grafo Epistémico), resolviendo niveles de madurez técnica y compilando entregables ejecutivos en formato OpenXML (.docx) y HTML.
@@ -29,11 +28,11 @@ La base de código está encapsulada bajo el espacio de nombres unificado de Pyt
 
 *   **`src/assessment_engine/domain/`:** Contiene las clases de negocio, las invariantes lógicas y los esquemas de datos estructurados de Pydantic (`schemas/ast.py`, `schemas/blueprint.py`, etc.).
 *   **`src/assessment_engine/ports/`:** Define las interfaces de puerto abstractas (ej., `document_compiler.py`) que desacoplan el dominio de la tecnología física de renderizado.
-*   **`src/assessment_engine/adapters/`:** Implementa los compiladores y renderizadores físicos (ej., `compilers/docx_compiler.py` para Word y HTML).
+*   **`src/assessment_engine/application/`:** Implementa los compiladores y renderizadores físicos (ej., `compilers/docx_compiler.py` para Word y HTML).
 *   **`src/assessment_engine/application/`:** Contiene los entrypoints lógicos de los pipelines de procesamiento de torre, consolidación global y comercial (`run_tower_pipeline.py`).
 *   **`src/assessment_engine/application/tools/`:** Aloja las utilidades operativas y la suite de validación continua de calidad documental.
 *   **`src/assessment_engine/infrastructure/`:** Implementa la persistencia del grafo, clientes de APIs efímeros de Vertex AI/Gemini (`ai_client.py`) y utilidades comunes.
-*   **`src/assessment_engine/prompts/`:** Almacena el registro declarativo de plantillas YAML de prompts utilizadas por los agentes.
+*   **`src/prompts/`:** Almacena el registro declarativo de plantillas YAML de prompts utilizadas por los agentes.
 
 ---
 
@@ -95,4 +94,4 @@ Para asimilar el funcionamiento de la plataforma en profundidad:
 1.  **Gobernanza:** [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md) (Reglas de calidad documental).
 2.  **Arquitectura:** [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) (Diagrama de capas y flujos de datos).
 3.  **Contratos:** [docs/contracts/payload-render-boundaries.md](docs/contracts/payload-render-boundaries.md) (Límites de payloads).
-4.  **Operaciones:** [docs/operations/smoke-regeneration.md](docs/operations/smoke-regeneration.md) (Manual de regeneración de humo).
+4.  **Operaciones:** [docs/operations/troubleshooting-working.md](docs/operations/troubleshooting-working.md) (Manual de resolución de incidencias y regeneración de humo).
