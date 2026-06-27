@@ -14,6 +14,10 @@ class TestApexInfrastructure(unittest.TestCase):
             shutil.rmtree(self.test_dir)
         self.test_dir.mkdir(parents=True)
 
+    def tearDown(self):
+        if hasattr(self, "test_dir") and self.test_dir.exists():
+            shutil.rmtree(self.test_dir)
+
     def test_ledger_persistence_and_recovery(self):
         """Verify that the Sentinel logs transactions and recovers state after a restart."""
         sentinel = ApexSentinel(self.test_dir, budget_limit=10.0)
