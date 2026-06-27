@@ -23,7 +23,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-
 # AGENTS
 
 Este fichero es la **puerta de entrada corta para cualquier agente de IA** que trabaje en `assessment-engine`.
@@ -140,7 +139,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-
 # Gemini adapter
 
 Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como documentación canónica del proyecto.
@@ -192,7 +190,6 @@ doc_type: operational
 diataxis: how_to
 verification_mode: editorial
 ---
-
 # ChatGPT adapter
 
 Usa este archivo como adaptador breve para trabajar con OpenAI / ChatGPT / Cursor en este repositorio.
@@ -242,7 +239,6 @@ diataxis: explanation
 verification_mode: editorial
 notes: Project entry point and onboarding index.
 ---
-
 # Assessment Engine
 
 `assessment-engine` es un motor de procesamiento de datos y compilación de informes técnicos de evaluación. Su pipeline asíncrono transforma el contexto de un cliente, las evidencias documentales y las respuestas de auditoría en un grafo de relaciones semánticas (Grafo Epistémico), resolviendo niveles de madurez técnica y compilando entregables ejecutivos en formato OpenXML (.docx) y HTML.
@@ -255,11 +251,11 @@ La base de código está encapsulada bajo el espacio de nombres unificado de Pyt
 
 *   **`src/assessment_engine/domain/`:** Contiene las clases de negocio, las invariantes lógicas y los esquemas de datos estructurados de Pydantic (`schemas/ast.py`, `schemas/blueprint.py`, etc.).
 *   **`src/assessment_engine/ports/`:** Define las interfaces de puerto abstractas (ej., `document_compiler.py`) que desacoplan el dominio de la tecnología física de renderizado.
-*   **`src/assessment_engine/adapters/`:** Implementa los compiladores y renderizadores físicos (ej., `compilers/docx_compiler.py` para Word y HTML).
+*   **`src/assessment_engine/application/`:** Implementa los compiladores y renderizadores físicos (ej., `compilers/docx_compiler.py` para Word y HTML).
 *   **`src/assessment_engine/application/`:** Contiene los entrypoints lógicos de los pipelines de procesamiento de torre, consolidación global y comercial (`run_tower_pipeline.py`).
 *   **`src/assessment_engine/application/tools/`:** Aloja las utilidades operativas y la suite de validación continua de calidad documental.
 *   **`src/assessment_engine/infrastructure/`:** Implementa la persistencia del grafo, clientes de APIs efímeros de Vertex AI/Gemini (`ai_client.py`) y utilidades comunes.
-*   **`src/assessment_engine/prompts/`:** Almacena el registro declarativo de plantillas YAML de prompts utilizadas por los agentes.
+*   **`src/prompts/`:** Almacena el registro declarativo de plantillas YAML de prompts utilizadas por los agentes.
 
 ---
 
@@ -321,7 +317,7 @@ Para asimilar el funcionamiento de la plataforma en profundidad:
 1.  **Gobernanza:** [docs/ai/documentation-governance.md](docs/ai/documentation-governance.md) (Reglas de calidad documental).
 2.  **Arquitectura:** [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) (Diagrama de capas y flujos de datos).
 3.  **Contratos:** [docs/contracts/payload-render-boundaries.md](docs/contracts/payload-render-boundaries.md) (Límites de payloads).
-4.  **Operaciones:** [docs/operations/smoke-regeneration.md](docs/operations/smoke-regeneration.md) (Manual de regeneración de humo).
+4.  **Operaciones:** [docs/operations/troubleshooting-working.md](docs/operations/troubleshooting-working.md) (Manual de resolución de incidencias y regeneración de humo).
 
 
 # =========================================================================
@@ -336,10 +332,10 @@ Para asimilar el funcionamiento de la plataforma en profundidad:
 status: Verified
 owner: docs-governance
 source_of_truth:
-- src/assessment_engine/domain/
-- src/assessment_engine/application/
-- src/assessment_engine/domain/mcp_server.py
-- src/assessment_engine/domain/schemas/
+- ../src/assessment_engine/domain/
+- ../src/assessment_engine/application/
+- ../src/assessment_engine/mcp_server.py
+- ../src/assessment_engine/domain/schemas/
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -348,7 +344,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # System Architecture: Assessment Engine
 
 > **Status:** verified high-level canonical overview.
@@ -518,14 +513,15 @@ Understanding this evolution is key to understanding the rationale behind the cu
 # =========================================================================
 
 # =========================================================================
-# START OF FILE: docs/architecture/roadmap_vision.md
+# START OF FILE: docs/strategy/ROADMAP.md
 # =========================================================================
 
 ---
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- ../../AGENTS.md
+- ../../docs/operations/engineering-quality-gates.md
+- ../../src/assessment_engine/mcp_server.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -534,60 +530,59 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
+# Product & Infrastructure Roadmap: The Sovereign Engine
 
-# Visión Arquitectónica: Hacia el Sistema Operativo Agentic
-
-Este documento establece la hoja de ruta estratégica para evolucionar el Assessment Engine desde un orquestador CLI avanzado hacia una plataforma de ingeniería agentic "Top Mundial" (estándar 2026).
-
-## Roadmap de Evolución de la Plataforma
-
-### Fase 1: Golden Paths & Architectural Fitness Functions (Completado)
-**Objetivo:** Eliminar la improvisación de los agentes y asegurar consistencia estructural.
-*   Implementación de plantillas estándar (`templates/golden_paths/`) para APIs, workers y tests.
-*   Gobernanza mediante `AGENTS.md`.
-*   Verificación automática (Policy-as-Code) en CI/CD mediante `run_golden_path_check.py` para evitar que se creen archivos fuera del estándar.
-
-### Fase 2: Observabilidad Zero-Code en VMs (Completado)
-**Objetivo:** Visibilidad 100% 360 del código de negocio y del orquestador, sin acoplamiento.
-*   Adopción de *Structured JSON Logging* en todo el código base (Assessment + Orquestador).
-*   Eliminación de decoradores intrusivos en favor de auto-instrumentación (`opentelemetry-instrument`).
-*   Correlación nativa con el Ops Agent de Google Cloud (`logging.googleapis.com/trace`).
-*   Refactorización masiva de deuda técnica heredada (conversión de `print` a `logger.info`).
-
-### Fase 3: Agent Evals & Evaluation-Led Development (Standard 2026) (Próximo paso)
-**Objetivo:** Medir la confiabilidad, coste y calidad arquitectónica de los agentes antes de enviarlos a producción, sin ralentizar el CI/CD diario.
-*   **Golden Dataset:** Creación de un entorno de pruebas con peticiones históricas reales (desde refactors complejos hasta intentos de inyección de código).
-*   **Telemetry-Driven Metrics:** Uso de la telemetría (Fase 2) para medir el *Zero-Shot Pass Rate* (¿pasa los Quality Gates a la primera?), el *Code Churn* (reescrituras inútiles) y el coste en dólares por PR.
-*   **Shadow PR Review (Maintainer Mergeability):** Uso de un LLM hiper-especializado en un pipeline nocturno para evaluar exclusivamente si el código generado respeta los Golden Paths y las invariantes (Mergeability), evitando el uso de jueces de IA lentos en el flujo diario.
-
-### Fase 4: Arquitectura Dual de Control (Visión Futura)
-**Objetivo:** Desacoplar la experiencia de usuario (UX) resolviendo el debate "Build vs Buy", separando la plataforma de Ingeniería de la plataforma de Negocio.
-
-#### 4A: Developer Control Plane (El Motor para Ingeniería)
-*   **Usuarios:** Tech Leads y AI Engineers.
-*   **Propósito:** Desarrollar nuevas funcionalidades, afinar los agentes y mantener el orquestador (`po-run`).
-*   **Enfoque (IDE-First):** Integración nativa del servidor MCP (`mcp_server.py`) directamente en IDEs avanzados (Cursor / VS Code). Cero mantenimiento de frontend. El ingeniero interactúa con los agentes de código directamente sobre los archivos, aprovechando las interfaces *Multi-file Diff* nativas del editor.
-
-#### 4B: Business Command Center (La Interfaz para Clientes/Consultores)
-*   **Usuarios:** Consultores, Product Owners y Clientes finales.
-*   **Propósito:** Ejecutar los Assessments, visualizar resultados, GAPs y Blueprints.
-*   **Enfoque (Custom Web Platform):**
-    *   **Frontend:** Aplicación web dedicada (Next.js + Vercel AI SDK / React Flow) construida de forma acelerada *por* el equipo de agentes de IA usando componentes base (Shadcn/v0).
-    *   **UX (Generative UI):** Interfaz limpia y espacial. El consultor no ve código ni JSONs. Ve los "Towers" y "Pillars" del Assessment renderizados dinámicamente como gráficas interactivas, alimentados por el mismo servidor MCP en background.
-
-### Fase 5: The Stigmergic Enterprise Fabric (Plataforma a Nivel Mundial)
-**Objetivo:** Transformar el motor de ejecución en un sistema descentralizado, neuro-simbólico y legalmente inexpugnable, diseñado para escalar en el mercado corporativo global (Big Four, Multinacionales IT).
-*   **Cumplimiento Legal (EU AI Act):** Aislamiento nativo en *Shadow Workspaces* con mecanismos "Pause & Approve" (Art. 14) y un Sistema Inmune *Out-of-Band* (Agentes Macrófagos) que previene vulnerabilidades o filtraciones de PII antes de que el código toque producción.
-*   **Estigmergia Digital (Coordinación sin Cuellos de Botella):** Sustitución del paso de mensajes jerárquico por coordinación a través del entorno. Miles de agentes pueden colaborar simultáneamente dejando "rastros digitales" (marcadores JSON) en un *Shared Knowledge Graph*, permitiendo un escalado infinito sin que el orquestador colapse.
-*   **Inferencia Activa y FEP (Free Energy Principle):** Erradicación matemática del riesgo de alucinación corporativa. Los agentes operan bajo una capa cognitiva que minimiza la "Sorpresa" (Variational Free Energy). Si un agente encuentra alta entropía (datos financieros que no cuadran), está matemáticamente forzado a buscar información (Information Gain) en lugar de inventar respuestas.
-*   **Economía Cognitiva Interna:** El motor funciona como un mercado dinámico. Las tareas se subastan internamente, asegurando matemáticamente que siempre interviene la combinación más eficiente de agentes (Routing inteligente multi-proveedor) para maximizar el margen de beneficio sin perder la calidad estricta garantizada por contratos Pydantic.
+Este documento define la hoja de ruta de desarrollo de producto e infraestructura de la plataforma, organizada bajo el estándar de ingeniería **"Now, Next, Later"** (Thematic Horizons) para garantizar la agilidad y predictibilidad del software.
 
 ---
-*Nota: Este documento sirve como "North Star" para guiar el desarrollo de los agentes internos del equipo. La construcción de la Fase 4B y la Fase 5 deben delegarse como una serie de Epics a los agentes del Developer Control Plane.*
+
+## 1. El Paradigma de Aislamiento: "Platform vs Application"
+
+Para garantizar que el motor sea universal y reutilizable por cualquier cuenta, se establece una frontera de diseño estricta:
+
+*   **Sovereign Engine (La Plataforma):** Infraestructura agnóstica de bajo nivel. Carece de contexto de negocio. Gestiona el aislamiento, la orquestación asíncrona, el checkpointing y la telemetría.
+*   **Business Applications (La Aplicación):** Lógicas de negocio construidas *sobre* la plataforma. Define las metodologías, los esquemas de datos Pydantic, las políticas de scoring de las torres y los renderizadores de entregables OpenXML (.docx).
+
+---
+
+## 2. Horizontes de Desarrollo Semántico (Thematic Horizons)
+
+```
+===================================================================================================
+|  NOW (Fase 0 y 1 - En Desarrollo) ➔  NEXT (Fase 2 y 3 - Planificado) ➔  LATER (Fase 4 - Futuro) |
+===================================================================================================
+```
+
+### 🟢 NOW: Robustez local, FinOps y RAGE Basales
+*Objetivo de Negocio: Consolidar la fiabilidad local de los agentes, blindar la seguridad de datos del cliente y optimizar el consumo de APIs.*
+
+-   **[F-GOB] Quality Gate Compliance (¡Implementado!):** Compuertas locales e internacionales que bloquean el commit o merge si el sitemap global o las firmas de tipado se desvían de los "Golden Paths".
+-   **[F-MOT] Token Throttling & Caching (¡Implementado!):** Configuración de `max_output_tokens` en `model_profiles.json` por rol de agente y caché de Vertex AI para disminuir costes un 70%.
+-   **[F-MOT] El Motor Factual RAGE v3 (¡Implementado!):** Compilación asíncrona de benchmarks y rastro de evidencias físicas mediante búsquedas Google Search y bóveda de PDFs locales para erradicar el *vibe-scoring*.
+-   **[F-ARQ] Aislamiento de Ejecución (Shadow Workspaces):** Implementación de la primitiva de mutación de código aislada en un `git worktree` oculto y efímero. **Blast Radius Cero**: las alucinaciones de la IA jamás corrompen el espacio de trabajo local del desarrollador.
+
+---
+
+### 🟡 NEXT: Automatización y Interfaces (MCP / HITL)
+*Objetivo de Negocio: Exponer la potencia de los orquestadores locales hacia IDEs y mallas de colaboración interactiva.*
+
+-   **[F-CAB] Developer Control Plane (FastMCP):** Exposición de la totalidad de las herramientas de la fábrica (`cli.py` y orquestadores) a través del protocolo MCP para inyección directa en editores (Cursor / VS Code), eliminando el costo de mantener frontends para ingeniería.
+-   **[F-INT] El Bucle del Agente Doctor:** Desacoplamiento del manejo de errores en el Shadow Workspace. Si un test de pytest falla, el log de error no se inyecta al agente programador (evitando su ceguera de taller), sino al agente **Doctor** (Diagnosticador Puro), el cual emite un veredicto de seguridad y le proporciona el plano de reparación exacto al programador.
+-   **[F-CAB] Human-in-the-Loop (HITL) Dinámico:** Integración de la directiva `elicitInput()` de MCP. Ante ambigüedades arquitectónicas críticas, la ejecución se detiene, enviando una alerta al canal corporativo (Teams/WhatsApp) para que un arquitecto humano tome la decisión antes de continuar.
+-   **[F-INT] Memoria Vectorial y Smart Ingest:** Integración de `pgvector` sobre la base de datos de checkpoints para habilitar RAG semántico y almacenamiento del historial de aserciones.
+
+---
+
+### 🔵 LATER: Autonomía y Gobernanza Avanzada B2B (The Stigmergic Fabric)
+*Objetivo de Negocio: Escalar el motor a un sistema descentralizado, neuro-simbólico y legalmente inexpugnable para multinacionales.*
+
+-   **[F-GOB] Firmas Criptográficas de Consentimiento (EU AI Act):** Integración de agentes especializados de cumplimiento y responsabilidad civil (`Liability Signer` y `VerificationAgent`). El sistema genera hashes SHA-256 inmutables de aprobación por cada nodo de decisión de la IA, garantizando que el software cumple con el Artículo 14 de la Ley de Inteligencia Artificial de la Unión Europea.
+-   **[F-GOB] Estigmergia Digital (Shared Knowledge Graph):** Eliminación del paso de mensajes jerárquicos tradicionales (que colapsan el orquestador). Los agentes se coordinan dejando marcas semánticas en un Grafo de Conocimiento compartido, permitiendo la colaboración simultánea de miles de agentes con costo lineal de concurrencia.
+-   **[F-GOB] Memoria Episódica Temporal:** Sustitución de la base de datos vectorial por Grafos Temporales (Zep/Graphiti) para recordar la causalidad del tiempo ("Quién/Cuándo/Qué") en las cuentas.
 
 
 # =========================================================================
-# END OF FILE: docs/architecture/roadmap_vision.md
+# END OF FILE: docs/strategy/ROADMAP.md
 # =========================================================================
 
 # =========================================================================
@@ -612,7 +607,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Tower pipeline
 
 El pipeline por torre es el **núcleo operativo** de `assessment-engine`. Ejecuta preparación determinista, análisis top-down con IA y renderizado final para una torre tecnológica concreta.
@@ -851,7 +845,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Global and commercial pipelines
 
 Tras completar una o varias torres, `assessment-engine` eleva el análisis hacia una vista ejecutiva global y luego hacia una explotación comercial interna.
@@ -1091,7 +1084,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # MCP mode
 
 Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP para que un agente supervisor externo invoque capacidades del motor bajo demanda.
@@ -1100,7 +1092,7 @@ Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP
 
 El servidor vive en:
 
-- `src/assessment_engine/mcp_server.py`
+- `src/assessment_engine/application/mcp_server.py`
 
 Usa:
 
@@ -1199,7 +1191,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Working artifacts map
 
 El árbol `working/` es la **superficie de artefactos de ejecución** de `assessment-engine`. Aquí se acumulan inputs enriquecidos, payloads intermedios, salidas canónicas de cada pipeline y entregables renderizados.
@@ -1240,7 +1231,7 @@ working/
 - contrato operativo actual:
   - compatibilidad legacy y `2.0`;
   - contrato pragmático `3.0` para profile, contexto de negocio, contexto tecnológico, tower overrides, claims y review;
-  - adaptadores de compatibilidad en `scripts/lib/client_intelligence.py`
+  - adaptadores de compatibilidad en `src/assessment_engine/infrastructure/client_intelligence.py`
 
 ### `global_report_payload.json`
 
@@ -1348,7 +1339,7 @@ En la ruta actual, `client_intelligence.json` ya no solo condiciona target matur
 
 Persisten referencias legacy en:
 
-- scripts `_legacy/` conservados por contexto histórico;
+- referencias heredadas en la documentación histórica o de estrategia;
 - algún tooling/adaptador que todavía puede exponer detalle legacy como diagnóstico secundario o transformar annex refined heredados;
 - tests o fixtures históricos que siguen comprobando artefactos concretos de `working/smoke_ivirma/T5/`.
 
@@ -1398,7 +1389,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Artifact contracts
 
 Este documento complementa a [`payload-render-boundaries.md`](payload-render-boundaries.md) al definir la semántica operativa y de negocio de los artefactos de datos en el ciclo de vida del motor: trazabilidad de origen (producción), dependencias de consumo y criterios de validación de compuertas de calidad (*quality gates*).
@@ -1420,6 +1410,7 @@ Todo artefacto de datos catalogado dentro del motor no constituye un mero residu
 | `evidence_ledger.json` | módulos de preparación de torre | findings, auditoría, soporte | Deja trazabilidad de evidencias | Pérdida de trazabilidad de origen y vulnerabilidad en auditoría |
 | `scoring_output.json` | scoring por torre | blueprint, annex, soporte | Parámetros cuantitativos de evaluación | Desalineación entre el análisis prosa y los umbrales cualitativos |
 | `findings.json` | análisis por torre | blueprint y soporte editorial | Concentra hallazgos estructurados | Degradación del detalle en la especificación técnica |
+| `benchmarks_snapshot.json` | `agentic_benchmarker.py` (RAGE) | `run_tower_blueprint_engine.py`, web | Evidencias y benchmarks fácticos y reguladores verificados | Pérdida de fundamentación científica y retroceso a notas de reserva sin trazabilidad |
 | `blueprint_<tower>_payload.json` | `run_tower_blueprint_engine.py` | annex, global builder, render blueprint, web | Fuente única de verdad de la torre tecnológica | Inconsistencia lógica y contradicción narrativa en la síntesis consolidada |
 | `approved_annex_<tower>.template_payload.json` | `run_executive_annex_synthesizer.py` | render annex | Síntesis de negocio y recomendaciones operativas de la torre | Degradación en la comunicación técnica con la dirección del cliente |
 | `global_report_payload.json` | `build_global_report_payload.py` + `run_executive_refiner.py` | render global, comercial, web | Síntesis directiva estratégica consolidada | Disrupción en la gobernanza y pérdida de alineación estratégica |
@@ -1437,6 +1428,7 @@ Todo artefacto de datos catalogado dentro del motor no constituye un mero residu
 - `evidence_ledger.json`
 - `scoring_output.json`
 - `findings.json`
+- `benchmarks_snapshot.json`
 
 Constituyen el cimiento empírico del diagnóstico. Garantizan explicabilidad, trazabilidad estructural y defendibilidad técnica ante auditorías.
 
@@ -1471,6 +1463,7 @@ Para una descripción exhaustiva de los campos de los contratos principales, con
 
 - [`tower_blueprint_payload.md`](./tower_blueprint_payload.md): Define la estructura del artefacto `blueprint_payload`, la fuente de verdad de cada torre.
 - [`tower_annex_payload.md`](./tower_annex_payload.md): Define la estructura del `annex_payload`, la síntesis ejecutiva para los informes de anexo.
+- [`rage_rubric_payload.md`](./rage_rubric_payload.md): Define la estructura de la rúbrica declarativa reguladora usada por el motor RAGE.
 
 ## Reglas de interpretación si hay conflicto
 
@@ -1520,6 +1513,8 @@ source_of_truth:
 - ../../src/assessment_engine/domain/schemas/blueprint.py
 - ../../src/assessment_engine/domain/schemas/global_report.py
 - ../../src/assessment_engine/domain/schemas/commercial.py
+- ../../src/assessment_engine/domain/schemas/rubric.py
+- ../../src/assessment_engine/infrastructure/agentic_benchmarker.py
 - ../../src/assessment_engine/infrastructure/contract_utils.py
 - ../../src/assessment_engine/adapters/render_tower_annex_from_template.py
 - ../../src/assessment_engine/adapters/render_tower_blueprint.py
@@ -1534,7 +1529,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Payload, schema and renderer boundaries
 
 Este documento establece y delimita formalmente las fronteras técnicas y de responsabilidad entre:
@@ -1569,11 +1563,12 @@ Por consiguiente, el esquema Pydantic representa la definición de interfaz téc
 
 | Capa | Payload | Esquema | Consumidor principal | Salida de presentación |
 |---|---|---|---|---|
+| Auditoría RAGE | `benchmarks_snapshot.json` | `RageBenchmarkSnapshot` | `run_tower_blueprint_engine.py`, web | Evidencias y marcas de madurez verificadas |
 | Torre ejecutiva | `approved_annex_<tower>.template_payload.json` | `AnnexPayload` | `render_tower_annex_from_template.py` | `annex_<tower>_<client>_final.docx` |
 | Torre estratégica | `blueprint_<tower>_payload.json` | `BlueprintPayload` | `render_tower_blueprint.py` | `Blueprint_Transformacion_<TOWER>_<client>.docx` |
 | Global ejecutiva | `global_report_payload.json` | `GlobalReportPayload` | `render_global_report_from_template.py` | `Informe_Ejecutivo_Consolidado_<client>.docx` |
 | Comercial interna | `commercial_report_payload.json` | `CommercialPayload` | `render_commercial_report.py` | `Account_Action_Plan_<client>.docx` |
-| Dashboard web | `global_report_payload.json` + blueprints de torres | Sin esquema único en capa de render | `render_web_presentation.py` | `presentation/index.html` |
+| Dashboard web | `global_report_payload.json` + `benchmarks_snapshot.json` + blueprints | Sin esquema único en capa de render | `render_web_presentation.py` | `presentation/index.html` |
 
 ## Contratos de interfaz por payload
 
@@ -1725,7 +1720,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Tower Blueprint Payload Contract
 
 Este documento define la estructura y campos del artefacto `blueprint_<tower>_payload.json`, que actúa como la **fuente de verdad** para el análisis de una torre tecnológica.
@@ -1872,7 +1866,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Tower Annex Payload Contract
 
 Este documento define la estructura y campos del artefacto `approved_annex_<tower>.template_payload.json`, que es una síntesis ejecutiva derivada del `blueprint_payload`.
@@ -2070,7 +2063,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Tower Annex v2 - Diseño objetivo
 
 ## Objetivo
@@ -2235,7 +2227,6 @@ doc_type: canonical
 diataxis: reference
 verification_mode: schema
 ---
-
 # Plantilla Base - Informe Tecnico Extendido de Torre
 
 ## Objetivo
@@ -2650,7 +2641,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Installation and environment setup
 
 Este documento describe y formaliza el protocolo estándar de instalación, configuración y aprovisionamiento del entorno local para el desarrollo y ejecución del motor.
@@ -2668,9 +2658,9 @@ El procedimiento estándar para el aprovisionamiento y despliegue del entorno vi
 
 ```bash
 python3.11 -m venv .venv
-./.venv/bin/python -m pip install --upgrade pip
-./.venv/bin/pip install -r requirements.txt
-./.venv/bin/pip install -e .
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Justificación del Modo de Instalación Editable (`-e .`)
@@ -2694,19 +2684,19 @@ En caso de que las variables ya se encuentren definidas en el entorno de la sub-
 ### 1. Pruebas de Entorno
 Para verificar que el aislamiento y el mapeo del paquete se completaron con éxito, ejecute:
 ```bash
-./.venv/bin/python -m pytest tests/test_environment.py -q
+python -m pytest tests/test_environment.py -q
 ```
 
 ### 2. Certificación de la Suite de Pruebas Unitarias
 Para certificar la integridad técnica de todos los componentes, ejecute:
 ```bash
-./.venv/bin/python -m pytest tests/ -q
+python -m pytest tests/ -q
 ```
 
 ### 3. Simulacro en Seco del Smoke-test (*Dry-run*)
 Para validar la orquestación y regeneración de artefactos sin realizar llamadas externas a APIs, ejecute:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
 ```
 Este simulacro en seco (*dry-run*) forma parte de los controles de gobernanza activa del repositorio y certifica que el entorno es capaz de procesar y compilar el pipeline global canónico de forma íntegra, absteniéndose de requerir lógicas de retrocompatibilidad heredadas.
 
@@ -2721,7 +2711,7 @@ El pipeline de CI se aprovisiona consumiendo `requirements.txt` para asegurar la
 
 Tras completar el aprovisionamiento de manera exitosa, el sistema debe certificar la disponibilidad de las siguientes capacidades:
 1.  **Importación Absoluta:** Importación nativa de `assessment_engine` desde cualquier sub-shell del entorno virtual.
-2.  **Ejecución de Pruebas:** Ejecución sin errores de la suite de pruebas mediante `./.venv/bin/python -m pytest`.
+2.  **Ejecución de Pruebas:** Ejecución sin errores de la suite de pruebas mediante `python -m pytest`.
 3.  **Ejecución de Módulos:** Lanzamiento directo de utilidades y orquestadores a través de `python -m assessment_engine.application.<modulo>`.
 4.  **Compilación de Recursos:** Resolución de rutas físicas y compilación exitosa de plantillas OpenXML `.docx` y plantillas de renderizado integradas en el paquete.
 
@@ -2735,7 +2725,7 @@ Tras completar el aprovisionamiento de manera exitosa, el sistema debe certifica
 # =========================================================================
 
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../src/assessment_engine/application/run_tower_pipeline.py
@@ -2746,7 +2736,7 @@ source_of_truth:
 - ../../src/assessment_engine/infrastructure/pipeline_runtime.py
 - ../architecture/tower-pipeline.md
 - ../architecture/global-commercial-pipelines.md
-last_verified_against: 2026-05-02
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -2754,7 +2744,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Pipeline execution guide
 
 Esta guía resume cómo lanzar los flujos principales del proyecto usando los entrypoints reales del repo.
@@ -2768,7 +2757,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_intelligence_harvesting <client_name>
+python -m assessment_engine.application.run_intelligence_harvesting <client_name>
 ```
 
 Úsalo cuando quieras enriquecer el contexto estratégico antes del análisis por torre.
@@ -2790,7 +2779,7 @@ Genera la cadena principal por torre:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
+python -m assessment_engine.application.run_tower_pipeline \
   --tower T5 \
   --client ivirma \
   --context-file /ruta/al/contexto.docx \
@@ -2810,13 +2799,32 @@ La lectura cualitativa de madurez asociada al score de torre debe mantenerse ali
 Reanudación opcional:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
+python -m assessment_engine.application.run_tower_pipeline \
   --tower T5 \
   --client ivirma \
   --context-file /ruta/al/contexto.docx \
   --responses-file /ruta/a/respuestas.txt \
   --start-from "Engine: Executive Annex Synthesizer"
 ```
+
+## 2.5. Evaluación de Benchmarks Fácticos RAGE (¡Novedad 2026!)
+
+Permite ejecutar de forma independiente y asíncrona el motor de auditoría y evaluación fáctica RAGE contra una industria y país específicos.
+
+Genera:
+
+- `working/<client>/benchmarks_snapshot.json`
+- Bóveda física de evidencias local en `working/<client>/evidence_cache/*.pdf`
+
+Comando:
+
+```bash
+python -m assessment_engine.application.cli rage \
+  --client ivirma \
+  --industry utility
+```
+
+El motor RAGE utiliza búsqueda OSINT en Vertex AI, descarga evidencias en local para prevenir link-rot, realiza una verificación forense adversarial contra alucinaciones y evalúa de forma matemática en Python los umbrales de las rúbricas declarativas.
 
 ## 3. Pipeline global ejecutivo
 
@@ -2830,7 +2838,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_global_pipeline <client_name>
+python -m assessment_engine.application.run_global_pipeline <client_name>
 ```
 
 El entrypoint global ya ejecuta la consolidación canónica desde blueprints disponibles. No necesita un flag adicional para desactivar fallback legacy porque esa compatibilidad ya no forma parte de la ruta activa.
@@ -2855,7 +2863,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_commercial_pipeline <client_name>
+python -m assessment_engine.application.run_commercial_pipeline <client_name>
 ```
 
 ## 5. Dashboard web
@@ -2872,7 +2880,7 @@ Genera:
 Comando:
 
 ```bash
-./.venv/bin/python -m assessment_engine.adapters.render_web_presentation <client_name>
+python -m assessment_engine.adapters.render_web_presentation <client_name>
 ```
 
 ## 6. Smoke reproducible para `smoke_ivirma`
@@ -2880,26 +2888,26 @@ Comando:
 Para regenerar el caso que usan los tests de contratos y golden files, usa el runner dedicado:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
 
 Variantes útiles:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --client vodafone_demo --scenario vodafone-public --towers T2 T3 T5 --with-global --with-commercial --with-web
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --client vodafone_demo --scenario vodafone-public --towers T2 T3 T5 --with-global --with-commercial --with-web
 ```
 
 Ahora `--with-global` ya ejercita directamente la consolidación canónica desde blueprints.
 
-La guía detallada está en [`smoke-regeneration.md`](smoke-regeneration.md).
+La guía detallada está en [`troubleshooting-working.md`](troubleshooting-working.md).
 
 Si necesitas validar Vertex AI antes de lanzar cualquier pipeline con agentes:
 
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ## Orden operativo recomendado
@@ -2937,7 +2945,6 @@ source_of_truth:
 - ../../src/assessment_engine/application/tools/check_vertex_ai_access.py
 - ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
 - ./pipeline-execution.md
-- ./smoke-regeneration.md
 - ./troubleshooting-working.md
 last_verified_against: 2026-06-26
 applies_to:
@@ -2947,7 +2954,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Pipeline controls runbook
 
 Este manual de operaciones (*runbook*) formaliza el protocolo de control, supervisión e intervenciones correctivas aplicables sobre la tubería de ejecución del motor. Define de manera determinista los checkpoints pre-vuelo, la telemetría de éxito de cada fase y los árboles de decisión ante interrupciones operacionales.
@@ -2964,7 +2970,7 @@ Este manual de operaciones (*runbook*) formaliza el protocolo de control, superv
 | Checkpoint | Validación Empírica | Propósito en el Dominio |
 |---|---|---|
 | **Entorno Aislado Certificado** | Ejecución activa bajo `./.venv/` | Asegura el aislamiento de paquetes y consistencia de librerías. |
-| **Integridad de Dependencias** | `./.venv/bin/pip check` | Certifica la disponibilidad completa de las dependencias lógicas. |
+| **Integridad de Dependencias** | `pip check` | Certifica la disponibilidad completa de las dependencias lógicas. |
 | **Gobernanza de Acceso a Vertex AI** | Ejecución de `check_vertex_ai_access.py` | Previene fallas tempranas de autenticación en llamadas generativas. |
 | **Aprovisionamiento de Entradas** | Presencia física de context-files y responses | Valida que la tubería disponga de materia prima para operar. |
 | **Disponibilidad de Ruta de Trabajo** | `working/<client>` legible y escribible | Garantiza los permisos de E/S necesarios para persistir artefactos. |
@@ -3011,7 +3017,7 @@ Este manual de operaciones (*runbook*) formaliza el protocolo de control, superv
 ### 1. Interrupción de Red o Autenticación
 Ante sospechas de fallas de conexión o credenciales expiradas en Google Cloud, invoque:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+python -m assessment_engine.application.tools.check_vertex_ai_access
 ```
 
 ### 2. Deriva Contractual entre Capas
@@ -3030,7 +3036,7 @@ Si los payloads de datos son correctos pero el deliverable final presenta distor
 
 | Incidente Operacional | Ruta de Recuperación Certificada |
 |---|---|
-| **Eliminación accidental del baseline local** | Ejecutar el aprovisionador: `./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts` |
+| **Eliminación accidental del baseline local** | Ejecutar el aprovisionador: `python -m assessment_engine.application.tools.regenerate_smoke_artifacts` |
 | **Interrupción prolongada del proveedor Cloud** | Conmutar de forma segura a ejecución local libre de APIs: `--local-only` |
 | **Bloqueos transitorios por latencias de red** | Forzar la expiración transaccional configurando timeouts explícitos de ejecución. |
 | **Ausencia de telemetría por torre** | Relanzar el orquestador por torre o reanudar desde el checkpoint estable de origen. |
@@ -3054,8 +3060,7 @@ El estado operacional del motor se considera bajo gobernanza y control estricto 
 ## Referencias Cruzadas Autorizadas
 
 -   **Ejecución y Flujos:** [`pipeline-execution.md`](pipeline-execution.md)
--   **Regeneración de Smoke-test:** [`smoke-regeneration.md`](smoke-regeneration.md)
--   **Troubleshooting y Diagnóstico General:** [`troubleshooting-working.md`](troubleshooting-working.md)
+-   **Troubleshooting y Regeneración de Smoke-test:** [`troubleshooting-working.md`](troubleshooting-working.md)
 -   **Contratos e Interfaces:** [`../contracts/artifact-contracts.md`](../contracts/artifact-contracts.md)
 
 
@@ -3064,26 +3069,22 @@ El estado operacional del motor se considera bajo gobernanza y control estricto 
 # =========================================================================
 
 # =========================================================================
-# START OF FILE: docs/operations/smoke-regeneration.md
+# START OF FILE: docs/operations/troubleshooting-working.md
 # =========================================================================
 
 ---
-status: Draft
+status: Verified
 owner: docs-governance
 source_of_truth:
-- ../../src/assessment_engine/application/tools/generate_smoke_data.py
-- ../../src/assessment_engine/application/tools/check_vertex_ai_access.py
-- ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
-- ../../src/assessment_engine/infrastructure/runtime_env.py
-- ../../src/assessment_engine/infrastructure/ai_client.py
+- ../../pyproject.toml
+- ../../tests/test_contract_handover.py
+- ../../tests/test_t5_golden.py
 - ../../src/assessment_engine/application/run_tower_pipeline.py
 - ../../src/assessment_engine/application/run_global_pipeline.py
 - ../../src/assessment_engine/application/run_commercial_pipeline.py
-- ../../src/assessment_engine/adapters/render_web_presentation.py
-- ../../tests/test_contract_handover.py
-- ../../tests/test_t5_golden.py
-- ../../tests/test_payload_validation.py
-last_verified_against: 2026-05-02
+- ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
+- ../architecture/working-artifacts.md
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -3091,230 +3092,121 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
+# Troubleshooting `working/` and Smoke Artifacts Playbook
 
-# Smoke artifact regeneration
+Este manual de operaciones unifica el diagnóstico, la resolución de fallos y el **playbook de regeneración reproducible de artefactos de humo (`smoke_ivirma`)** para restaurar el entorno cuando se presentan inconsistencias lógicas o fallas de validación en el directorio temporal `working/`.
 
-Este playbook deja reproducible la regeneración del caso `smoke_ivirma`, que es la referencia usada por varios tests de contratos, payloads y golden DOCX.
+---
 
-## Estado de referencia actual
+## 1. El Estado de Conformidad (*Baseline State*)
 
-En la validación más reciente del repositorio ya quedaron regenerados y validados:
+La suite de pruebas unitarias de contratos y entregables (`test_contract_handover.py`, `test_t5_golden.py` y `test_payload_validation.py`) consume artefactos de datos reales de prueba previamente compilados en lugar de instanciar mocks puramente desacoplados.
 
-- `working/smoke_ivirma/T5/blueprint_t5_payload.json`
-- `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json`
-- `working/smoke_ivirma/T5/Blueprint_Transformacion_T5_smoke_ivirma.docx`
-- `working/smoke_ivirma/T5/annex_t5_smoke_ivirma_final.docx`
-- `working/smoke_ivirma/global_report_payload.json`
-- `working/smoke_ivirma/commercial_report_payload.json`
-- `working/smoke_ivirma/presentation/index.html`
+Para el verde absoluto de la suite, se exige la presencia física de los siguientes artefactos en tu disco local:
 
-Además, la suite completa de `pytest` quedó en verde tras regenerar esos artefactos.
+*   `working/smoke_ivirma/T5/blueprint_t5_payload.json`
+*   `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json`
+*   `working/smoke_ivirma/T5/Blueprint_Transformacion_T5_smoke_ivirma.docx`
+*   `working/smoke_ivirma/T5/annex_t5_smoke_ivirma_final.docx`
+*   `working/smoke_ivirma/global_report_payload.json`
+*   `working/smoke_ivirma/commercial_report_payload.json`
+*   `working/smoke_ivirma/presentation/index.html`
 
-El siguiente tramo recomendado al retomar ya no es volver a depurar T5/global/commercial/web, sino mantener alineada la documentación operativa y seguir promoviendo documentos desde `Draft` hacia `Verified` cuando estén contrastados contra código y artefactos reales.
+Si estos archivos son eliminados, alterados o sufren derivas contractuales, los tests del sistema fallarán o se ignorarán.
 
-## Qué resuelve
+---
 
-Permite regenerar de forma trazable:
+## 2. Protocolo de Diagnóstico Rápido
 
-- inputs sintéticos locales en `working/smoke_ivirma/`;
-- artefactos deterministas de preparación (`case_input.json`, `evidence_ledger.json`, `scoring_output.json`, `findings.json`);
-- y, si hay acceso operativo a Vertex AI, los payloads y DOCX finales de T5, además de los outputs global/comercial/web.
+Si registras un fallo en pytest, ejecuta estas aserciones de diagnóstico físico:
 
-## Prerrequisitos
-
-### Entorno local
-
+### A. Inspección de Estructura de Trabajo General
 ```bash
-./.venv/bin/python -m pip install -r requirements.txt
-./.venv/bin/python -m pip install -e .
+find working -maxdepth 3 -type f | sort
 ```
 
-### Para el tramo con IA
-
-El tramo que genera:
-
-- `blueprint_t5_payload.json`
-- `approved_annex_t5.template_payload.json`
-- DOCX de blueprint y annex
-
-depende de los agentes de Vertex AI usados por:
-
-- `run_tower_blueprint_engine.py`
-- `run_executive_annex_synthesizer.py`
-- `run_executive_refiner.py`
-- `run_commercial_refiner.py`
-
-Por tanto, para llegar al final del smoke necesitas credenciales operativas válidas para Vertex AI mediante el mecanismo de autenticación que use tu entorno.
-
-Antes de lanzar el tramo IA, puedes validar el acceso base con:
-
+### B. Inspección del Perfil de Cliente
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+find working/smoke_ivirma -maxdepth 2 -type f | sort
 ```
 
-## Runner recomendado
+---
 
-El repo incorpora el entrypoint:
+## 3. Playbook de Regeneración de Artefactos de Humo
 
+Si constatas la ausencia, alteración o desactualización del baseline, utiliza el runner dedicado de la plataforma para regenerarlo de forma idéntica y trazable.
+
+### Comando Base (Aprovisionamiento Estándar):
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts
+```
+*Por defecto, este comando regenera el cliente `smoke_ivirma`, torre `T5` y escenario `baseline` usando la semilla determinista `42`.*
+
+---
+
+### Variantes Operativas y Casos de Uso Avanzados:
+
+#### A. Simulación Rápida en Seco (*Dry-run*):
+Para validar la orquestación y regeneración de artefactos sin realizar llamadas costosas ni consumir tokens de la API de Vertex AI:
+```bash
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
+```
+*Este modo sustituye las salidas de la IA por estructuras sintácticamente perfectas vacías para validar que el pipeline de compilación no tenga roturas lógicas.*
+
+#### B. Ejecución Fuera de Línea (*Air-gapped / Local-only*):
+Si no dispones de conexión a internet o el proveedor de Cloud sufre una interrupción temporal del servicio, puedes regenerar el baseline local desactivando por completo las llamadas a LLMs:
+```bash
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
+```
+*Este modo utiliza un caché de respuestas y plantillas almacenado de forma segura en `templates/` para simular la ejecución de forma 100% offline.*
+
+#### C. Regeneración con Consolidación Global, Comercial y Web:
+Para ejecutar una prueba de humo de integración de extremo a extremo que valide la cascada de compilación completa:
+```bash
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
 ```
 
-El runner ya no resuelve de forma dispersa el bootstrap del runtime ni las rutas principales del caso smoke. La preparación del entorno compartido, la resolución de `working/`, `client_dir`, `case_dir` y varias rutas de artefactos/payloads viven ahora en helpers comunes (`pipeline_runtime.py` y `runtime_paths.py`), lo que reduce divergencias entre el flujo de torre, los pipelines global/commercial y el dashboard web.
-
-Por defecto trabaja sobre:
-
-- cliente: `smoke_ivirma`
-- torre: `T5`
-- escenario sintético: `baseline`
-- seed: `42`
-
-Si quieres probar un modelo más rápido para el rol `writer_fast`, puedes usar:
-
+#### D. Pruebas Multi-Torre en Escenarios Personalizados:
+Para validar el comportamiento del motor bajo una topología compleja con múltiples especialidades tecnológicas:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
-  --writer-model gemini-2.5-flash
-```
-
-## Modos útiles
-
-### 1. Ver el flujo exacto sin ejecutar nada
-
-```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
-```
-
-### 1.b. Forzar diagnóstico rápido del tramo IA
-
-```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
-  --writer-model gemini-2.5-flash \
-  --vertex-query-timeout-seconds 30 \
-  --ai-step-timeout-seconds 60
-```
-
-Esto no arregla Vertex AI, pero evita que un cuelgue se vea como silencio indefinido.
-
-### 2. Regenerar solo la parte local y determinista
-
-No requiere Vertex AI.
-
-```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
-```
-
-Esto deja preparados:
-
-- `working/smoke_ivirma/context.txt`
-- `working/smoke_ivirma/responses.txt`
-- `working/smoke_ivirma/T5/case_input.json`
-- `working/smoke_ivirma/T5/evidence_ledger.json`
-- `working/smoke_ivirma/T5/scoring_output.json`
-- `working/smoke_ivirma/T5/findings.json`
-
-### 3. Regenerar la torre T5 completa
-
-Requiere Vertex AI operativo.
-
-```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
-```
-
-El runner genera primero la parte local y después reanuda `run_tower_pipeline.py` desde:
-
-- `Engine: Tower Strategic Blueprint`
-
-Así evita repetir las fases deterministas y deja explícita la frontera entre preparación local y síntesis asistida por IA.
-
-Además, el smoke conserva compatibilidad con la resolución legacy de `working/` cuando algún consumidor aún arranca desde rutas antiguas, pero la ruta preferida y documentada pasa a ser la capa común de helpers de runtime/path.
-
-Este smoke también actúa como red de seguridad para la semántica compartida de madurez: cuando se regeneran torre, global, comercial y web sobre el mismo caso, cualquier deriva entre `score` y `band` debería aparecer como inconsistencia transversal y no quedar escondida en un único artefacto.
-
-### 4. Extender el smoke a outputs globales, comerciales y web
-
-```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
-  --with-global \
-  --with-commercial \
-  --with-web
-```
-
-El runner ya usa el tramo global directamente sobre el camino canónico. Cuando ejecutas `--with-global`, el builder global consolida solo desde blueprints disponibles y deja fuera el fallback legacy del flujo operativo actual.
-
-### 5. Simular un cliente tipo Vodafone con varias torres
-
-```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
+python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
   --client vodafone_demo \
   --scenario vodafone-public \
   --towers T2 T3 T5 \
-  --with-global \
-  --with-commercial \
-  --with-web
+  --with-global --with-commercial --with-web
 ```
 
-Este escenario genera:
+---
 
-- `context.txt` con narrativa sintética inspirada en un gran operador telco paneuropeo;
-- `responses.txt` con madurez media/alta para `T2`, `T3` y `T5`;
-- `client_intelligence.json` sintético para que blueprint, anexos y renders finales trabajen con señales más cercanas a un cliente real.
+## 4. Validación de Acceso a Google Cloud / Vertex AI
 
-## Artefactos esperados
+Si deseas validar las cuotas, credenciales y conexión con Vertex AI antes de lanzar una regeneración con IA:
 
-### Torre T5
+```bash
+python -m assessment_engine.application.tools.check_vertex_ai_access
+```
 
-- `working/smoke_ivirma/T5/blueprint_t5_payload.json`
-- `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json`
-- `working/smoke_ivirma/T5/Blueprint_Transformacion_T5_smoke_ivirma.docx`
-- `working/smoke_ivirma/T5/annex_t5_smoke_ivirma_final.docx`
+### Resolución de Errores Comunes de Acceso Cloud:
+*   **Error:** `GoogleDefaultCredentialsError` / `PermissionDenied` en la llamada generativa.
+*   **Solución:** 
+    1.  Verificar que las credenciales locales estén inicializadas de forma activa en la sub-shell actual:
+        ```bash
+        gcloud auth application-default login
+        ```
+    2.  Si tu red local restringe la conexión con los servidores de Google, conmutar la ejecución utilizando el flag `--local-only`.
 
-### Cliente completo
+---
 
-- `working/smoke_ivirma/global_report_payload.json`
-- `working/smoke_ivirma/commercial_report_payload.json`
-- `working/smoke_ivirma/presentation/index.html`
+## 5. Directrices de Mantenimiento ante Cambios en Código
 
-## Relación con la suite
-
-Cuando faltan artefactos del baseline smoke, hoy fallan o se saltan principalmente:
-
-- `tests/test_contract_handover.py`
-- `tests/test_t5_golden.py`
-- `tests/test_payload_validation.py`
-
-Este playbook es la ruta preferida para distinguir entre:
-
-1. ausencia de artefacto;
-2. fallo real de contrato;
-3. problema de credenciales o ejecución IA.
-
-En la última regeneración validada, esos tests ya quedaron resueltos para `smoke_ivirma` porque el baseline T5 + global + comercial existe y el dashboard web final también está renderizado.
-
-## Señal práctica de bloqueo
-
-Si el runner:
-
-- deja `case_input.json`, `evidence_ledger.json`, `scoring_output.json` y `findings.json`;
-- pero no llega a crear `blueprint_t5_payload.json` ni `approved_annex_t5.template_payload.json`;
-
-entonces el problema ya no está en la preparación local del smoke. El siguiente punto a revisar es la ejecución de Vertex AI en:
-
-- `Engine: Tower Strategic Blueprint`
-- `Engine: Executive Annex Synthesizer`
-
-Con el preflight nuevo, primero deberías ver un fallo corto si hay problema de:
-
-- autenticación;
-- proyecto/location;
-- acceso base al modelo publicado.
-
-Y con `ASSESSMENT_VERTEX_QUERY_TIMEOUT_SECONDS` o `--vertex-query-timeout-seconds`, un cuelgue en consulta se convierte en timeout explícito.
-
-Si el atasco ocurre antes incluso de que el agente empiece a responder, usa `ASSESSMENT_AI_STEP_TIMEOUT_SECONDS` o `--ai-step-timeout-seconds` para cortar el paso completo con un error visible.
+Cuando realices modificaciones en el motor (como alterar la lógica de scoring o expandir Pydantic schemas) que rompan de forma legítima el baseline antiguo:
+1.  **Regenera el Baseline:** Lanza `python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web` para compilar los nuevos payloads conformes.
+2.  **Verifica en Verde:** Corre la suite de tests (`pytest tests/`) para asegurar que el rastro de aserciones transicione con éxito al estado verde brillante.
+3.  **Garantiza la Coherencia Transversal:** Verifica que no se hayan introducido divergencias métricas entre el scoring de Python y el storytelling de los Word compilados en la carpeta temporal.
 
 
 # =========================================================================
-# END OF FILE: docs/operations/smoke-regeneration.md
+# END OF FILE: docs/operations/troubleshooting-working.md
 # =========================================================================
 
 # =========================================================================
@@ -3345,7 +3237,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Engineering quality gates
 
 Este documento establece y define las compuertas de calidad (*quality gates*) aplicadas de forma automatizada sobre el ciclo de vida del motor. Su propósito es asegurar que cualquier cambio de código se someta a análisis estáticos de calidad y tipado estricto, complementando las pruebas de comportamiento y verificaciones de coherencia documental.
@@ -3415,17 +3306,17 @@ Las compuertas automáticas constituyen condiciones necesarias pero no suficient
 Para certificar localmente los archivos modificados en una rama de trabajo, ejecute:
 
 ```bash
-./.venv/bin/python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
+python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --repo-root . \
   --path src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --path tests/test_run_incremental_quality_gate.py
 
-./.venv/bin/python src/assessment_engine/application/tools/run_incremental_typecheck.py \
+python src/assessment_engine/application/tools/run_incremental_typecheck.py \
   --repo-root . \
   --path src/assessment_engine/application/build_global_report_payload.py \
   --path tests/test_global_coherence.py
 
-./.venv/bin/python -m pytest \
+python -m pytest \
   tests/test_global_coherence.py \
   tests/test_build_global_report_payload.py -q
 ```
@@ -3477,7 +3368,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Agentic development workflow
 
 Esta guía establece el protocolo operativo para el ciclo de desarrollo de software asistido por agentes de inteligencia artificial en `assessment-engine`. Su propósito es estructurar la interacción con los agentes autónomos para mitigar la deriva arquitectónica, prevenir la duplicidad lógica o semántica, y erradicar mutaciones de código deficientemente especificadas.
@@ -3600,7 +3490,7 @@ Cuando una iniciativa provenga directamente de requerimientos funcionales o come
 # =========================================================================
 
 ---
-status: Needs Review
+status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../pyproject.toml
@@ -3614,7 +3504,7 @@ source_of_truth:
 - ../../.github/workflows/typing.yml
 - ../../.github/workflows/orchestrator-pr-reconcile.yml
 - ../../.github/scripts/reconcile_prs.sh
-last_verified_against: 2026-06-25
+last_verified_against: 2026-06-26
 applies_to:
 - humans
 - ai-agents
@@ -3622,7 +3512,6 @@ doc_type: canonical
 diataxis: how_to
 verification_mode: workflow
 ---
-
 # Product owner orchestrator
 
 Esta pieza describe el MVP del **orquestador local PO-to-PR** del repo. Su objetivo es permitir que un product owner exprese una necesidad de negocio en lenguaje natural y que el sistema haga detrás el trabajo técnico repetible:
@@ -3671,7 +3560,7 @@ po-run --plan "Quiero endurecer la reconciliacion automatica de PRs"
 
 Ese comando:
 
-- usa `./.venv/bin/python` cuando existe y, si no, cae a `python`/`python3`;
+- usa `python` cuando existe y, si no, cae a `python`/`python3`;
 - permite pasar la petición inline o con `--request-file`;
 - pide confirmación interactiva antes de un `run` cuando se ejecuta en TTY;
 - y, si no se le pasa `--executor-command`, intenta reutilizar `ASSESSMENT_ORCHESTRATOR_EXECUTOR_CMD` o el wrapper local `./.github/scripts/orchestrator-gemini-executor.sh`.

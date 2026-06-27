@@ -12,7 +12,7 @@ This file serves as the unified AI Sitemap index for Large Language Models (LLMs
 ## Architecture & Data Flows
 
 - [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) — High-level technical overview of the Ports and Adapters (Hexagonal) architecture, AST stateless compilers, and data-flow pipeline stages (Phase 1 to 5).
-- [docs/architecture/roadmap_vision.md](docs/architecture/roadmap_vision.md) — Agentic long-term vision of the platform (Phase 1 to 4).
+- [docs/strategy/ROADMAP.md](docs/strategy/ROADMAP.md) — Product & Infrastructure Roadmap.
 - [docs/architecture/tower-pipeline.md](docs/architecture/tower-pipeline.md) — Deep-dive into the single-tower evaluation lifecycle (Phase 1 analysis).
 - [docs/architecture/global-commercial-pipelines.md](docs/architecture/global-commercial-pipelines.md) — Deep-dive into multi-tower aggregation, executive roadmapping, and commercial rendering pipelines (Phase 2).
 - [docs/architecture/mcp-mode.md](docs/architecture/mcp-mode.md) — Documentation detailing the Model Context Protocol (MCP) server execution.
@@ -32,7 +32,7 @@ This file serves as the unified AI Sitemap index for Large Language Models (LLMs
 - [docs/operations/installation.md](docs/operations/installation.md) — Setup guide for local virtual environments and Google Cloud credentials.
 - [docs/operations/pipeline-execution.md](docs/operations/pipeline-execution.md) — Manual and programmatic runbook for executing pipelines.
 - [docs/operations/pipeline-controls-runbook.md](docs/operations/pipeline-controls-runbook.md) — Telemetry, logs, and preflight controls runbook.
-- [docs/operations/smoke-regeneration.md](docs/operations/smoke-regeneration.md) — Smoke test execution and synthetic data regeneration guide.
+- [docs/operations/troubleshooting-working.md](docs/operations/troubleshooting-working.md) — Manual de resolución de incidencias y regeneración de humo.
 - [docs/operations/engineering-quality-gates.md](docs/operations/engineering-quality-gates.md) — Linter rules, typing assertions, and CI/CD quality gate enforcement.
 - [docs/operations/agentic-development-workflow.md](docs/operations/agentic-development-workflow.md) — Strict guidelines for AI-assisted workspace modifications and PR merges.
 - [docs/operations/product-owner-orchestrator.md](docs/operations/product-owner-orchestrator.md) — Multi-agent product owner workflow orchestration guide.
