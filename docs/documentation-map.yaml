@@ -476,7 +476,7 @@ entries:
   applies_to:
   - humans
   source_of_truth:
-  - src/assessment_engine/business_command_center/README.md
+  - business_command_center/README.md
   last_verified_against: '2026-06-26'
   notes: Roadmap de GUI y UX del orquestador; contiene direccion util, pero mezcla
     capacidad objetivo y estado implementado.

@@ -1,4 +1,4 @@
-exclude: "^mutants/|^working/|^.venv/|^src/business_command_center/node_modules/|^_PROJECT_ARCHIVE_/"
+exclude: "^mutants/|^working/|^.venv/|^business_command_center/node_modules/|^_PROJECT_ARCHIVE_/"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
