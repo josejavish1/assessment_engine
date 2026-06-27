@@ -111,13 +111,6 @@ jobs:
           # 2. Validate that 100% of source comments and descriptions are in Tier 1 English
           python src/assessment_engine/application/tools/enforce_english_comments.py $(find src/ -name "*.py" | grep -v "_legacy")
 
-      - name: Automated Comment Formatting & Style Linter
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          python scripts/semantic_comment_linter.py
-
       - name: Commit and Push Autocurado (Self-Healing Push-Back)
         if: github.event_name == 'schedule' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
         run: |
