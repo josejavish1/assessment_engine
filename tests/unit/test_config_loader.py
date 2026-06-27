@@ -1,0 +1,143 @@
+# golden-path: ignore
+from __future__ import annotations
+
+import os
+import pytest
+
+from assessment_engine.infrastructure.config_loader import (
+    load_abbreviations_glossary,
+    load_brand_profile,
+    load_locales,
+    resolve_localized_vocabulary,
+    load_runtime_manifest,
+    load_model_profiles,
+    load_model_profile,
+    load_document_profile,
+    load_policy_file,
+    load_target_maturity_policy,
+    load_review_policy,
+    resolve_model_profile_for_role,
+    resolve_document_profile,
+    resolve_target_maturity_defaults,
+    resolve_review_rules,
+    load_rate_card,
+    load_industry_profile,
+    load_framework_rubric,
+)
+
+
+def test_load_abbreviations_glossary() -> None:
+    glossary = load_abbreviations_glossary()
+    assert isinstance(glossary, dict)
+    assert len(glossary) > 0
+
+
+def test_load_brand_profile() -> None:
+    brand = load_brand_profile()
+    assert isinstance(brand, dict)
+    assert "styling" in brand
+    # Hex codes should be stripped of "#"
+    assert not brand["styling"]["primary_color_hex"].startswith("#")
+
+
+def test_resolve_localized_vocabulary() -> None:
+    # Test valid Spanish
+    vocab_es = resolve_localized_vocabulary("es")
+    assert "control_documental_title" in vocab_es
+    
+    # Test English
+    vocab_en = resolve_localized_vocabulary("en")
+    assert "control_documental_title" in vocab_en
+    
+    # Test fallback to Spanish
+    vocab_fallback = resolve_localized_vocabulary("invalid_lang")
+    assert "control_documental_title" in vocab_fallback
+
+
+def test_load_runtime_manifest() -> None:
+    manifest = load_runtime_manifest()
+    assert "document_profile" in manifest
+
+
+def test_load_model_profile_and_overrides() -> None:
+    # Test standard profile load
+    profile = load_model_profile("writer_fast")
+    assert profile["model"] == "gemini-2.5-pro"
+    
+    # Test environment variable override
+    os.environ["ASSESSMENT_MODEL_OVERRIDE_WRITER_FAST"] = "my-custom-model"
+    try:
+        profile_override = load_model_profile("writer_fast")
+        assert profile_override["model"] == "my-custom-model"
+    except Exception as e:
+        pytest.fail(f"Overridden load_model_profile threw exception: {e}")
+    finally:
+        del os.environ["ASSESSMENT_MODEL_OVERRIDE_WRITER_FAST"]
+
+    # Test error handling for missing profile name
+    with pytest.raises(KeyError):
+        load_model_profile("non_existent_profile_name")
+
+
+def test_resolve_model_profile_for_role() -> None:
+    profile = resolve_model_profile_for_role("section_writer")
+    assert isinstance(profile, dict)
+
+
+def test_resolve_document_profile() -> None:
+    doc_profile = resolve_document_profile()
+    assert isinstance(doc_profile, dict)
+
+
+def test_resolve_target_maturity_defaults() -> None:
+    defaults = resolve_target_maturity_defaults("tower_annex_profile")
+    assert isinstance(defaults, dict)
+    
+    with pytest.raises(KeyError):
+        resolve_target_maturity_defaults("non_existent_profile")
+
+
+def test_resolve_review_rules() -> None:
+    rules = resolve_review_rules()
+    assert isinstance(rules, dict)
+
+
+def test_load_rate_card() -> None:
+    rate_card = load_rate_card()
+    assert isinstance(rate_card, dict)
+
+
+def test_load_industry_profile_fallback() -> None:
+    # Test loading real profile
+    profile = load_industry_profile("critical_infrastructure")
+    assert "industry" in profile
+    
+    # Test fallback to default
+    fallback_profile = load_industry_profile("non_existent_industry_profile_fuzzing")
+    assert "industry" in fallback_profile
+
+
+def test_load_framework_rubric() -> None:
+    rubric = load_framework_rubric("ens_alta")
+    assert rubric["framework_name"] == "Esquema Nacional de Seguridad (ENS) - Categoría Alta"
+
+
+def test_config_loader_edge_cases() -> None:
+    """Verify that config_loader raises appropriate exceptions under error conditions."""
+    from assessment_engine.infrastructure.config_loader import _load_json
+    from pathlib import Path
+    from unittest.mock import patch
+
+    # 1. Test missing file raises FileNotFoundError
+    with pytest.raises(FileNotFoundError):
+        _load_json(Path("non_existent_json_file"))
+
+    # 2. Test missing role name raises KeyError
+    with pytest.raises(KeyError):
+        resolve_model_profile_for_role("non_existent_role_under_test")
+
+    # 3. Test missing document_profile key in manifest raises KeyError
+    with patch("assessment_engine.infrastructure.config_loader.load_runtime_manifest") as mock_manifest:
+        mock_manifest.return_value = {}
+        with pytest.raises(KeyError):
+            resolve_document_profile()

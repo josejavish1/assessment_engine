@@ -138,3 +138,34 @@ def test_sovereign_policy_engine_compilation():
         test_client_path = Path("working/test_client")
         if test_client_path.exists():
             shutil.rmtree(test_client_path)
+
+
+def test_sovereign_policy_engine_fallback_recovery():
+    """Verify that SovereignPolicyEngine degrades gracefully if configuration loading fails."""
+    from unittest.mock import patch
+    
+    # Arrange - Patch load_policy_file to raise an Exception
+    with patch("assessment_engine.infrastructure.config_loader.load_policy_file") as mock_load:
+        mock_load.side_effect = Exception("Malformed risk profiles JSON")
+        
+        graph = EpistemicGraph(client_id="test_client_fallback")
+        engine = SovereignPolicyEngine(graph)
+        
+        payload = {
+            "document_meta": {
+                "client_name": "REDEIA",
+                "tower_code": "T2",
+                "tower_name": "Hybrid Compute & Platforms",
+            },
+            "pillars_analysis": []
+        }
+        
+        # Act - This call should NOT crash and should degrade gracefully to empty profiles
+        try:
+            compiled = engine.compile(payload)
+            # Assert - The compilation completes successfully
+            assert "document_meta" in compiled
+        finally:
+            fallback_client_path = Path("working/test_client_fallback")
+            if fallback_client_path.exists():
+                shutil.rmtree(fallback_client_path)

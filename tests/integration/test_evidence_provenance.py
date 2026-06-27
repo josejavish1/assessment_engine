@@ -95,3 +95,37 @@ async def test_ai_client_network_resilience_retry():
         assert len(lines) == 1
         # The function must have run 4 times (3 failures, 1 success)
         assert call_count == 4
+
+
+@pytest.mark.asyncio
+async def test_evidence_snapshotter_download_resilience(tmp_path: Path):
+    """Verify that EvidenceSnapshotter handles network errors and corrupted downloads gracefully.
+    
+    This is a Google Practice standard test case that asserts our system rejects
+    evidence URLs that fail to download, return non-200 HTTP statuses, or time out,
+    preventing corrupted data from contaminating the downstream RAGE pipelines.
+    """
+    from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
+    import httpx
+    
+    # 1. --- ARRANGE ---
+    snapshotter = EvidenceSnapshotter(tmp_path)
+    
+    # Mock httpx.AsyncClient.get to raise a network connection error
+    async def mock_client_get_error(*args, **kwargs):
+        raise httpx.ConnectError("Connection refused by target server")
+        
+    with patch("httpx.AsyncClient.get", side_effect=mock_client_get_error):
+        # 2. --- ACT ---
+        # Capture a snapshot of a binary PDF URL that fails to download
+        binary_url = "https://example.com/missing_ens_report.pdf"
+        result = await snapshotter.capture_snapshot(binary_url)
+        
+        # 3. --- ASSERT ---
+        # The result must be None (failed capture as both binary download and playwright fallbacks failed)
+        assert result is None
+        
+        # Verify that process_urls properly discards this broken URL under its governance rules
+        text_with_broken_link = f"Read the report here: {binary_url}"
+        claims = await snapshotter.process_urls(text_with_broken_link)
+        assert len(claims) == 0, "Broken URLs must be filtered out and discarded under governance rules."

@@ -38,3 +38,18 @@ async def test_mcp_server_tools_registration() -> None:
     # --- ASSERT ---
     for tool_name in expected_tools:
         assert tool_name in registered_names, f"Mandatory MCP tool '{tool_name}' is not registered on the server."
+
+
+@pytest.mark.asyncio
+async def test_mcp_get_tower_state_robustness() -> None:
+    """Verify that get_tower_state handles invalid directories gracefully without crashing."""
+    # 3. --- ARRANGE & ACT ---
+    result_content, result_meta = await mcp.call_tool("get_tower_state", {"case_dir": "non_existent_mcp_test_path"})
+    
+    # --- ASSERT ---
+    assert isinstance(result_content, list), "Expected TextContent list from MCP."
+    assert len(result_content) > 0
+    
+    first_msg = result_content[0]
+    assert first_msg.type == "text"
+    assert "no encontrado" in first_msg.text or "Error:" in first_msg.text
