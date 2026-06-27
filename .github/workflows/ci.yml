@@ -32,10 +32,10 @@ jobs:
 
     - name: Run canonical smoke dry-run
       run: |
-        python -m assessment_engine.scripts.tools.regenerate_smoke_artifacts --with-global --dry-run
+        python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --dry-run
 
     - name: Validate documentation governance
       run: |
-        python src/assessment_engine/scripts/tools/validate_documentation_governance.py \
+        python src/assessment_engine/application/tools/validate_documentation_governance.py \
           --repo-root . \
           --documentation-map docs/documentation-map.yaml
