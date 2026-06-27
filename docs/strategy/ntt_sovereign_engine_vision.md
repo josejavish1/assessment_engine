@@ -1,3 +1,15 @@
+---
+status: Needs Review
+owner: docs-governance
+applies_to:
+- humans
+doc_type: canonical
+last_verified_against: 2026-06-27
+source_of_truth:
+- README.md
+diataxis: explanation
+verification_mode: editorial
+---
 # Standard Enterprise Architecture Engine (2026)
 
 The architectural vision for the Sovereign Assessment Engine requires bridging the gap between Data-as-Code (GitOps JSON definitions) and advanced Knowledge Graph topologies without compromising the Single Source of Truth (SSOT).

@@ -1,3 +1,15 @@
+---
+status: Needs Review
+owner: docs-governance
+applies_to:
+- humans
+doc_type: canonical
+last_verified_against: 2026-06-27
+source_of_truth:
+- README.md
+diataxis: explanation
+verification_mode: editorial
+---
 # PROYECTO APEX: Ingeniería de la Decisión Estratégica
 ## Memorándum de Industrialización Cognitiva y Captura de Valor B2B
 

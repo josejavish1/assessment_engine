@@ -1,3 +1,15 @@
+---
+status: Needs Review
+owner: docs-governance
+applies_to:
+- humans
+doc_type: canonical
+last_verified_against: 2026-06-27
+source_of_truth:
+- README.md
+diataxis: explanation
+verification_mode: editorial
+---
 # Plan de Implementación Técnica: Sovereign AI Engine
 
 Este documento detalla la hoja de ruta técnica exhaustiva para construir el **NTT Sovereign AI Engine**, el Meta-Framework de grado empresarial diseñado para orquestar agentes de IA bajo estrictas normativas B2B.

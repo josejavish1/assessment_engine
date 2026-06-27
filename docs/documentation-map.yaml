@@ -73,6 +73,62 @@ entries:
     operativo verificado.
   diataxis: explanation
   verification_mode: mixed
+- path: docs/strategy/PRESENTATION_ELITE_MANAGEMENT.md
+  kind: document
+  title: Memorándum de Industrialización Cognitiva y Captura de Valor B2B
+  doc_type: canonical
+  status: Needs Review
+  owner: docs-governance
+  applies_to:
+  - humans
+  source_of_truth:
+  - README.md
+  last_verified_against: '2026-06-27'
+  notes: Presentación estratégica sobre optimización y escala en consultoría tecnológica.
+  diataxis: explanation
+  verification_mode: editorial
+- path: docs/strategy/epistemic_graph_and_dynamic_assessments.md
+  kind: document
+  title: Vision Architecture - The Epistemic Knowledge Graph & Dynamic Assessments
+  doc_type: canonical
+  status: Needs Review
+  owner: docs-governance
+  applies_to:
+  - humans
+  source_of_truth:
+  - README.md
+  last_verified_against: '2026-06-27'
+  notes: Visión de migración del paradigma estático de torres hacia topologías de grafos dinámicos.
+  diataxis: explanation
+  verification_mode: editorial
+- path: docs/strategy/ntt_sovereign_engine_vision.md
+  kind: document
+  title: Standard Enterprise Architecture Engine Vision
+  doc_type: canonical
+  status: Needs Review
+  owner: docs-governance
+  applies_to:
+  - humans
+  source_of_truth:
+  - README.md
+  last_verified_against: '2026-06-27'
+  notes: Visión técnica para conciliar GitOps headless CMS con estructuras de grafos.
+  diataxis: explanation
+  verification_mode: editorial
+- path: docs/strategy/technical_implementation_superplan.md
+  kind: document
+  title: Plan de Implementación Técnica - Sovereign AI Engine
+  doc_type: canonical
+  status: Needs Review
+  owner: docs-governance
+  applies_to:
+  - humans
+  source_of_truth:
+  - README.md
+  last_verified_against: '2026-06-27'
+  notes: Hoja de ruta exhaustiva de industrialización de la plataforma agéntica empresarial.
+  diataxis: explanation
+  verification_mode: editorial
 - path: README.md
   kind: document
   title: Project entry point
