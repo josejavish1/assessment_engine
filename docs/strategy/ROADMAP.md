@@ -1,5 +1,5 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
 - docs/operations/engineering-quality-gates.md
@@ -12,7 +12,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Product & Infrastructure Roadmap: The Sovereign Engine
 
 Este documento define la hoja de ruta de desarrollo de producto e infraestructura de la plataforma, organizada bajo el estándar de ingeniería **"Now, Next, Later"** (Thematic Horizons) para garantizar la agilidad y predictibilidad del software.

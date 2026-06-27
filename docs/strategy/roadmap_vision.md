@@ -11,7 +11,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Visión Arquitectónica: Hacia el Sistema Operativo Agentic
 
 Este documento establece la hoja de ruta estratégica para evolucionar el Assessment Engine desde un orquestador CLI avanzado hacia una plataforma de ingeniería agentic "Top Mundial" (estándar 2026).

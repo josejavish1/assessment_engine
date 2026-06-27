@@ -1,5 +1,5 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
 - src/assessment_engine/infrastructure/epistemic_graph.py
@@ -11,7 +11,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Architectural Vision: The Sovereign Agentic OS
 
 Este documento establece la "Estrella del Norte" conceptual y estratégica a largo plazo (3-5 años) del motor. Define el porqué de la evolución hacia un sistema operativo de agentes y los principios cognitivos que neutralizan los riesgos de alucinación e inconsistencia en entornos corporativos B2B.

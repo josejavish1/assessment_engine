@@ -1,5 +1,5 @@
 ---
-status: Verified
+status: Needs Review
 owner: docs-governance
 source_of_truth:
 - ../SYSTEM_ARCHITECTURE.md
@@ -19,7 +19,6 @@ doc_type: canonical
 diataxis: explanation
 verification_mode: mixed
 ---
-
 # Executive project guide
 
 Este documento explica `assessment-engine` como lo leería una dirección de delivery, preventa o transformación: **qué fabrica, qué verdad gobierna el sistema, qué piezas son críticas y cómo entender el proyecto sin recorrer todo el código**.
