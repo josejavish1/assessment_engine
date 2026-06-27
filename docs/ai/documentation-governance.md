@@ -73,7 +73,7 @@ Actualiza o reverifica documentación cuando cambie cualquiera de estas áreas:
 
 | Cambio en el repo | Revisión documental mínima |
 |---|---|
-| `src/assessment_engine/application/**`, `src/assessment_engine/domain/mcp_server.py` | arquitectura y operación |
+| `src/assessment_engine/application/**`, `src/assessment_engine/mcp_server.py` | arquitectura y operación |
 | `src/assessment_engine/domain/schemas/**` | contratos y docs de payloads |
 | `.github/workflows/**` | operación y CI |
 | `pyproject.toml`, `requirements.txt` | onboarding, instalación y validación |

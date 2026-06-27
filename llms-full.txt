@@ -1092,7 +1092,7 @@ Además del modo pipeline, `assessment-engine` puede exponerse como servidor MCP
 
 El servidor vive en:
 
-- `src/assessment_engine/application/mcp_server.py`
+- `src/assessment_engine/mcp_server.py`
 
 Usa:
 
@@ -1119,6 +1119,13 @@ El modo MCP no sustituye al pipeline completo. Su papel es:
 | `generate_radar_chart` | Genera el radar global desde payload global |
 | `render_commercial_docx` | Renderiza el documento comercial final |
 | `get_tower_state` | Inspecciona artefactos de una torre y resume su estado |
+| `start_plan_generation` | Inicia la generación asíncrona de planes agénticos |
+| `check_plan_status` | Comprueba el estado de un trabajo de planificación agéntica |
+| `start_plan_execution` | Inicia la ejecución del plan agéntico de forma asíncrona |
+| `check_execution_status` | Comprueba el estado del trabajo de ejecución del plan |
+| `check_action_gate` | Evalúa si existe alguna compuerta de aprobación de seguridad activa |
+| `authorize_action_gate` | Autoriza la ejecución de un paso en la compuerta de seguridad |
+| `abort_and_revert` | Comando destructivo que aborta la sesión y revierte el espacio a un estado limpio |
 
 ## Modelo de ejecución
 
