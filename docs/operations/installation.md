@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - ../../pyproject.toml
 - ../../requirements.txt
-- ../../tests/test_environment.py
+- ../../tests/unit/test_environment.py
 - ../../.github/workflows/ci.yml
 - ../../src/assessment_engine/infrastructure/runtime_env.py
 last_verified_against: 2026-06-26
@@ -58,7 +58,7 @@ En caso de que las variables ya se encuentren definidas en el entorno de la sub-
 ### 1. Pruebas de Entorno
 Para verificar que el aislamiento y el mapeo del paquete se completaron con éxito, ejecute:
 ```bash
-python -m pytest tests/test_environment.py -q
+python -m pytest tests/unit/test_environment.py -q
 ```
 
 ### 2. Certificación de la Suite de Pruebas Unitarias

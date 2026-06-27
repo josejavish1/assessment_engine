@@ -725,7 +725,7 @@ entries:
   source_of_truth:
   - pyproject.toml
   - requirements.txt
-  - tests/test_environment.py
+  - tests/unit/test_environment.py
   - .github/workflows/ci.yml
   - src/assessment_engine/infrastructure/runtime_env.py
   last_verified_against: '2026-06-26'
@@ -754,7 +754,7 @@ entries:
   - src/assessment_engine/infrastructure/global_maturity_policy.py
   - src/assessment_engine/application/tools/run_incremental_quality_gate.py
   - src/assessment_engine/application/tools/run_incremental_typecheck.py
-  - tests/test_policy_engine.py
+  - tests/integration/test_policy_engine.py
   review_when_source_changes:
   - docs/operations/agentic-development-workflow.md
   - pyproject.toml
@@ -767,7 +767,7 @@ entries:
   - src/assessment_engine/infrastructure/global_maturity_policy.py
   - src/assessment_engine/application/tools/run_incremental_quality_gate.py
   - src/assessment_engine/application/tools/run_incremental_typecheck.py
-  - tests/test_policy_engine.py
+  - tests/integration/test_policy_engine.py
   review_paths_on_source_change:
   - docs/operations/engineering-quality-gates.md
   - docs/operations/README.md
@@ -966,7 +966,7 @@ entries:
   - ai-agents
   source_of_truth:
   - pyproject.toml
-  - tests/test_validate_contracts_schemas.py
+  - tests/integration/test_validate_contracts_schemas.py
   - src/assessment_engine/application/run_tower_pipeline.py
   - src/assessment_engine/application/run_global_pipeline.py
   - src/assessment_engine/application/run_commercial_pipeline.py
@@ -988,7 +988,7 @@ entries:
   - ai-agents
   source_of_truth:
   - src/assessment_engine/domain/schemas/
-  - tests/test_validate_contracts_schemas.py
+  - tests/integration/test_validate_contracts_schemas.py
   - docs/architecture/working-artifacts.md
   last_verified_against: 2026-04-30
   notes: 'Colección mixta: incluye un documento de fronteras ya verificado y varias
@@ -1325,7 +1325,7 @@ entries:
   - src/assessment_engine/infrastructure/agentic_benchmarker.py
   - src/assessment_engine/domain/schemas/rubric.py
   - engine_config/frameworks
-  - tests/test_agentic_benchmarker.py
+  - tests/functional/test_agentic_benchmarker.py
   last_verified_against: '2026-06-26'
   notes: Especificación técnica y diseño de la arquitectura asíncrona de evaluación
     factual RAGE.
@@ -1343,7 +1343,7 @@ entries:
   source_of_truth:
   - src/assessment_engine/infrastructure/policy_engine.py
   - engine_config/policies
-  - tests/test_policy_engine.py
+  - tests/integration/test_policy_engine.py
   last_verified_against: '2026-06-26'
   notes: Especificación técnica y diseño de las políticas de de-duplicación, secuenciación
     y salvaguarda OT del Motor de Políticas.
@@ -1429,7 +1429,7 @@ automation_rules:
 - name: schema-contract-changes
   when_changed:
   - src/assessment_engine/domain/schemas/**
-  - tests/test_validate_contracts_schemas.py
+  - tests/integration/test_validate_contracts_schemas.py
   require_review_of:
   - docs/contracts
   - docs/README.md

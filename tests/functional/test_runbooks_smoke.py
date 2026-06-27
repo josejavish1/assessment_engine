@@ -8,7 +8,7 @@ from pathlib import Path
 
 def test_runbook_commands_dry_runs(tmp_path: Path):
     # Retrieve the absolute repo root
-    repo_root = Path(__file__).resolve().parent.parent
+    repo_root = Path(__file__).resolve().parents[2]
 
     # We will run these documented, safe operational commands in our isolated sandbox
     commands = [

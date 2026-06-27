@@ -64,7 +64,7 @@ def test_real_llms_full_is_synchronized(tmp_path: Path) -> None:
     or the sitemap has been modified, this test will fail during pytest,
     blocking the gate until 'python src/assessment_engine/application/tools/compile_llms_full.py' is run.
     """
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     real_sitemap = repo_root / "llms.txt"
     real_output = repo_root / "llms-full.txt"
 

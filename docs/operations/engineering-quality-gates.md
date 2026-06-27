@@ -13,7 +13,7 @@ source_of_truth:
 - ../../src/assessment_engine/infrastructure/global_maturity_policy.py
 - ../../src/assessment_engine/application/tools/run_incremental_quality_gate.py
 - ../../src/assessment_engine/application/tools/run_incremental_typecheck.py
-- ../../tests/test_policy_engine.py
+- ../../tests/integration/test_policy_engine.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -67,14 +67,14 @@ Este job reutiliza el mismo delta de cambios y ejecuta el análisis estático de
 ### 3. Coherencia de Dominio
 Para prevenir la duplicidad semántica de políticas y la fragmentación lógica (*split-brain*), los parámetros transversales de puntuación (*score*), bandas de madurez, gradientes cromáticos y metas cualitativas se encuentran consolidados.
 
-El cálculo compartido de madurez reside de forma exclusiva en `src/assessment_engine/infrastructure/maturity_band.py`. Los componentes de ejecución (`run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y el compilador del dashboard web) consumen este servicio de forma centralizada sin implementar deducciones o umbrales locales. A su vez, `src/assessment_engine/infrastructure/global_maturity_policy.py` hereda esta misma política para mantener la equivalencia consolidada. La consistencia lógica transversal se blinda mediante aserciones dedicadas en `tests/test_policy_engine.py`.
+El cálculo compartido de madurez reside de forma exclusiva en `src/assessment_engine/infrastructure/maturity_band.py`. Los componentes de ejecución (`run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y el compilador del dashboard web) consumen este servicio de forma centralizada sin implementar deducciones o umbrales locales. A su vez, `src/assessment_engine/infrastructure/global_maturity_policy.py` hereda esta misma política para mantener la equivalencia consolidada. La consistencia lógica transversal se blinda mediante aserciones dedicadas en `tests/integration/test_policy_engine.py`.
 
 ## Reglas de implementación del proyecto
 
 -   **Reutilización Imperativa:** Consumir siempre helpers, esquemas de datos y utilidades de dominio compartidas antes de duplicar lógicas de cálculo o formateo.
 -   **No Ocultación:** Toda lógica de negocio y de reporting técnico de alta relevancia debe codificarse de forma determinista en Python, prohibiéndose su ocultación exclusiva dentro de prompts de modelos de lenguaje.
 -   **Alineamiento Multidimensional:** Ante cambios en contratos o interfaces de payload, actualizar de forma obligatoria las suites de pruebas unitarias y la documentación canónica asociada.
--   **Consistencia Directiva:** Si se modifican parámetros asociados al score, bandas de madurez, targets u otros elementos cliente-facing, es obligatorio sincronizar y certificar los tests en `tests/test_policy_engine.py`.
+-   **Consistencia Directiva:** Si se modifican parámetros asociados al score, bandas de madurez, targets u otros elementos cliente-facing, es obligatorio sincronizar y certificar los tests en `tests/integration/test_policy_engine.py`.
 -   **Aislamiento de Legado:** Prohibido emplear carpetas de compatibilidad heredada, archivos obsoletos o código muerto como fuente de verdad técnica para nuevas implementaciones.
 
 ## Relación con la revisión humana
@@ -94,16 +94,16 @@ Para certificar localmente los archivos modificados en una rama de trabajo, ejec
 python src/assessment_engine/application/tools/run_incremental_quality_gate.py \
   --repo-root . \
   --path src/assessment_engine/application/tools/run_incremental_quality_gate.py \
-  --path tests/test_validate_contracts_schemas.py
+  --path tests/integration/test_validate_contracts_schemas.py
 
 python src/assessment_engine/application/tools/run_incremental_typecheck.py \
   --repo-root . \
   --path src/assessment_engine/application/build_global_report_payload.py \
-  --path tests/test_policy_engine.py
+  --path tests/integration/test_policy_engine.py
 
 python -m pytest \
-  tests/test_policy_engine.py \
-  tests/test_validate_contracts_schemas.py -q
+  tests/integration/test_policy_engine.py \
+  tests/integration/test_validate_contracts_schemas.py -q
 ```
 
 *Nota: La ejecución local de compuertas incrementales complementa, pero no sustituye, la obligación de ejecutar la suite de pruebas unitarias (`pytest`) del proyecto antes de confirmar los cambios.*

@@ -72,7 +72,7 @@ python src/assessment_engine/application/tools/validate_documentation_governance
 
     # Let's verify that a valid local run passes
     # Wait, we need to pass the real repo root so it can find the real tools script
-    real_repo_root = Path(__file__).resolve().parent.parent
+    real_repo_root = Path(__file__).resolve().parents[2]
     errors = v_snippets.validate_documentation_snippets(
         real_repo_root, real_repo_root / "docs/documentation-map.yaml"
     )

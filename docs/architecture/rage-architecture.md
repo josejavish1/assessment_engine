@@ -5,7 +5,7 @@ source_of_truth:
 - ../../src/assessment_engine/infrastructure/agentic_benchmarker.py
 - ../../src/assessment_engine/domain/schemas/rubric.py
 - ../../engine_config/frameworks/
-- ../../tests/test_agentic_benchmarker.py
+- ../../tests/functional/test_agentic_benchmarker.py
 last_verified_against: 2026-06-26
 applies_to:
 - humans

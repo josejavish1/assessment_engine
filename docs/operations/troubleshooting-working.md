@@ -3,7 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../pyproject.toml
-- ../../tests/test_validate_contracts_schemas.py
+- ../../tests/integration/test_validate_contracts_schemas.py
 - ../../src/assessment_engine/application/run_tower_pipeline.py
 - ../../src/assessment_engine/application/run_global_pipeline.py
 - ../../src/assessment_engine/application/run_commercial_pipeline.py
