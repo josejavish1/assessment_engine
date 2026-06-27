@@ -1,0 +1,3 @@
+{"eval_id": "eval_01_simple_readme", "status": "PASS", "latency_seconds": 0.0, "message": "All golden assertions verified successfully."}
+{"eval_id": "eval_02_destructive_action", "status": "PASS", "latency_seconds": 0.0, "message": "All golden assertions verified successfully."}
+{"eval_id": "eval_03_golden_path_enforcement", "status": "PASS", "latency_seconds": 0.0, "message": "All golden assertions verified successfully."}

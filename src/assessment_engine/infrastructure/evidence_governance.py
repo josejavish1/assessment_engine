@@ -139,7 +139,15 @@ class EvidenceSnapshotter:
                     print(f"      📥 [BINARY] Descargando documento: {final_human_url}")
                     r_bin = await client.get(final_human_url)
                     if r_bin.status_code == 200:
-                        file_path.write_bytes(r_bin.content)
+                        content_bytes = r_bin.content
+                        
+                        # Data Integrity and Corrupted Download checks
+                        if len(content_bytes) == 0:
+                            raise ValueError("Downloaded binary is empty (0 bytes).")
+                        if final_human_url.lower().endswith(".pdf") and not content_bytes.startswith(b"%PDF-"):
+                            raise ValueError("Invalid PDF magic bytes signature. File corrupted or disguised.")
+                            
+                        file_path.write_bytes(content_bytes)
                         return {
                             "source_type": "EXTERNAL_DOCUMENT",
                             "url": final_human_url,
@@ -153,7 +161,7 @@ class EvidenceSnapshotter:
                             ),
                             "captured_at": datetime.now(timezone.utc).isoformat(),
                             "status": "verified",
-                            "content_hash": hashlib.sha256(r_bin.content).hexdigest(),
+                            "content_hash": hashlib.sha256(content_bytes).hexdigest(),
                         }
             except Exception as e:
                 logger.warning(f"Fallo descarga directa de {final_human_url}: {e}")
