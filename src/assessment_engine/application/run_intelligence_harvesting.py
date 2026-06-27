@@ -236,8 +236,21 @@ class SourceVault:
             "SAP",
             "Microsoft",
         ]
+        # Get client-specific brands declaratively from config loaders or brand profile if available
+        from assessment_engine.infrastructure.config_loader import load_brand_profile
+        try:
+            brand_profile = load_brand_profile()
+            custom_brands = brand_profile.get("custom_brands", [])
+            for cb in custom_brands:
+                if cb not in brands:
+                    brands.append(cb)
+        except Exception:
+            pass
+
+        # Legacy fallback
         if self.client_name and "eurovision" in self.client_name.lower():
-            brands.append("EBU")
+            if "EBU" not in brands:
+                brands.append("EBU")
 
         for b in brands:
             if b.lower() in raw.lower():
@@ -396,28 +409,43 @@ async def run_market_intelligence(
         "  -> [FASE 4.5] Evaluando Criterios de Madurez por Torre (Conjoint Multi-Criteria Matrix)..."
     )
 
-    if "redeia" in client_name.lower():
-        client_context_str = (
-            "footprint de transporte eléctrico y telecomunicaciones críticas, "
-            "cumplimiento con Directiva PIC y NIS2, y la necesidad de ciberresiliencia, "
-            "convergencia operacional IT/OT y digitalización bajo el Plan Estratégico de REDEIA."
-        )
-        compliance_example_str = "ej: NIS2, Directiva PIC, protección de infraestructura crítica, soberanía IT/OT como T6, T5 o T3, ~90. T1 u otras, ~40"
-        feasibility_example_str = "ej: T2 es compleja debido a migración e integración de sistemas legados de subestaciones, ~50. T10 DTO es de soporte estratégico, ~70"
-    elif "eurovision" in client_name.lower():
-        client_context_str = (
-            "footprint de 50 PoPs, adquisición por DUBAG Group, "
-            "e independencia tecnológica de la EBU ('Project Independence & Resilience') bajo eventos en directo críticos (UEFA, NBA)."
-        )
-        compliance_example_str = "ej: NIS2, DORA, Directiva PIC, o soberanía existencial de identidades post-EBU como T6 y T5, ~90. T1 u otras, ~40"
-        feasibility_example_str = "ej: T2 es compleja debido a VMware legacy, ~50. T10 DTO es de soporte estratégico, ~70"
-    else:
-        client_context_str = (
-            "footprint global, cumplimiento normativo general de sector crítico, "
-            "y la necesidad de modernización de su arquitectura, resiliencia operativa e independencia tecnológica."
-        )
-        compliance_example_str = "ej: NIS2, DORA o regulaciones específicas del sector para seguridad e identidad, ~85. T1 u otras, ~40"
-        feasibility_example_str = "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70"
+    # Load declarative custom narratives from brand_profile.json first (elite approach)
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    brand_data_narratives = {}
+    try:
+        brand_data_narratives = load_brand_profile()
+    except Exception:
+        pass
+
+    custom_narratives = brand_data_narratives.get("custom_narratives", {})
+    client_context_str = custom_narratives.get("client_context")
+    compliance_example_str = custom_narratives.get("compliance_example")
+    feasibility_example_str = custom_narratives.get("feasibility_example")
+
+    # Fallback to legacy hardcoded text if not declaratively configured
+    if not client_context_str or not compliance_example_str or not feasibility_example_str:
+        if "redeia" in client_name.lower():
+            client_context_str = (
+                "footprint de transporte eléctrico y telecomunicaciones críticas, "
+                "cumplimiento con Directiva PIC y NIS2, y la necesidad de ciberresiliencia, "
+                "convergencia operacional IT/OT y digitalización bajo el Plan Estratégico de REDEIA."
+            )
+            compliance_example_str = "ej: NIS2, Directiva PIC, protección de infraestructura crítica, soberanía IT/OT como T6, T5 o T3, ~90. T1 u otras, ~40"
+            feasibility_example_str = "ej: T2 es compleja debido a migración e integración de sistemas legados de subestaciones, ~50. T10 DTO es de soporte estratégico, ~70"
+        elif "eurovision" in client_name.lower():
+            client_context_str = (
+                "footprint de 50 PoPs, adquisición por DUBAG Group, "
+                "e independencia tecnológica de la EBU ('Project Independence & Resilience') bajo eventos en directo críticos (UEFA, NBA)."
+            )
+            compliance_example_str = "ej: NIS2, DORA, Directiva PIC, o soberanía existencial de identidades post-EBU como T6 y T5, ~90. T1 u otras, ~40"
+            feasibility_example_str = "ej: T2 es compleja debido a VMware legacy, ~50. T10 DTO es de soporte estratégico, ~70"
+        else:
+            client_context_str = (
+                "footprint global, cumplimiento normativo general de sector crítico, "
+                "y la necesidad de modernización de su arquitectura, resiliencia operativa e independencia tecnológica."
+            )
+            compliance_example_str = "ej: NIS2, DORA o regulaciones específicas del sector para seguridad e identidad, ~85. T1 u otras, ~40"
+            feasibility_example_str = "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70"
 
     overrides_prompt = (
         f"Actúa como un Consultor de Estrategia Tecnológica Principal de Gartner.\n"
@@ -539,13 +567,17 @@ async def run_market_intelligence(
             "rationale": "Fallback estándar.",
         }
 
-    # Decouples industry-vertical-specific logic from the core processing pipeline. This design enables dynamic, pluggable data source integration as specified in the system architecture.
-    if "redeia" in client_name.lower():
-        industry_str = "Energy & Critical Infrastructure"
-    elif "eurovision" in client_name.lower():
-        industry_str = "Broadcast Infrastructure"
-    else:
-        industry_str = "Enterprise & Infrastructure Technology"
+    # Decouples industry-vertical-specific logic from the core processing pipeline.
+    # Reads declaratively from brand profile first (elite approach)
+    industry_str = brand_data_narratives.get("industry_profile_name")
+    if not industry_str:
+        # Fallback to legacy string check
+        if "redeia" in client_name.lower():
+            industry_str = "Energy & Critical Infrastructure"
+        elif "eurovision" in client_name.lower():
+            industry_str = "Broadcast Infrastructure"
+        else:
+            industry_str = "Enterprise & Infrastructure Technology"
 
     final_json = {
         "version": "3.0",

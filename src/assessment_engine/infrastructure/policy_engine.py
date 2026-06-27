@@ -272,12 +272,16 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
             except Exception:
                 pass
         else:
-            # Implements a security fallback to prevent execution failure in CI/CD environments where the full governance repository may be unavailable.
-            client_name = (
-                payload.get("document_meta", {}).get("client_name", "").upper()
-            )
-            if "REDEIA" in client_name:
-                industry = "Critical Infrastructure"
+            # Implements a security fallback to prevent execution failure in CI/CD environments.
+            # Reads from brand profile configuration first (declarative, elite approach)
+            try:
+                from assessment_engine.infrastructure.config_loader import load_brand_profile
+                brand_profile = load_brand_profile()
+                is_critical = brand_profile.get("styling", {}).get("is_critical", False)
+                if is_critical:
+                    industry = "Critical Infrastructure"
+            except Exception:
+                pass
 
         # SECTOR-LOCK ENFORCEMENT: Halts policy execution if the client's industry sector is not 'Critical Infrastructure' or 'Energy'.
         if "Critical Infrastructure" not in industry and "Energy" not in industry:
