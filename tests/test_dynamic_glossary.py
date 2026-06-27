@@ -190,3 +190,8 @@ def test_locales_toc_glossary_separation() -> None:
         assert toc != glossary_title, (
             f"Semantic collision detected in {lang}: {toc} == {glossary_title}"
         )
+
+
+# --- ARRANGE ---
+# --- ACT ---
+# --- ASSERT ---

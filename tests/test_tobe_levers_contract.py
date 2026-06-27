@@ -27,3 +27,8 @@ def test_target_architecture_tobe_levers_contract() -> None:
     assert "AWS Resilience Hub" in tobe_populated.levers_technology
     assert "ITIL v4 Change Management" in tobe_populated.levers_process
     assert "Formación en AWS SysOps" in tobe_populated.levers_operation
+
+
+# --- ARRANGE ---
+# --- ACT ---
+# --- ASSERT ---

@@ -381,3 +381,7 @@ class AgenticRageBenchmarker:
                 )
 
         return rule.default_score
+
+
+# --- START OF BUSINESS LOGIC ---
+# --- END OF BUSINESS LOGIC ---

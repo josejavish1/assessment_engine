@@ -79,3 +79,7 @@ def debug_mermaid():
 
 if __name__ == "__main__":
     debug_mermaid()
+
+
+# --- START OF BUSINESS LOGIC ---
+# --- END OF BUSINESS LOGIC ---

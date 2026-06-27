@@ -80,3 +80,8 @@ def test_generate_interactive_map_missing_file(tmp_path: Path) -> None:
 
     assert result is False
     assert not mock_html.exists()
+
+
+# --- ARRANGE ---
+# --- ACT ---
+# --- ASSERT ---

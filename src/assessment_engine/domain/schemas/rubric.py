@@ -46,3 +46,7 @@ class FrameworkRubric(BaseModel):
     rules: List[RubricRule] = Field(
         description="Rules mapping towers to analytical criteria."
     )
+
+
+# --- START OF BUSINESS LOGIC ---
+# --- END OF BUSINESS LOGIC ---

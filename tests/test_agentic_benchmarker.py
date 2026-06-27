@@ -82,3 +82,8 @@ async def test_rage_benchmarker_full_flow(tmp_path):
         assert t6_snap.verification_status == "verified"
         assert t6_snap.evidence_source_url == "https://example.com/ens_report.pdf"
         assert "mock_ens_report.pdf" in t6_snap.local_snapshot_path
+
+
+# --- ARRANGE ---
+# --- ACT ---
+# --- ASSERT ---

@@ -46,3 +46,8 @@ def test_payload_to_ast_bridge_branding_localization_and_robust_colors() -> None
     lang_brand_en = bridge.brand_data["locales"]["en"]
     assert "Confidential" in lang_brand_en["default_classification"]
     assert "This document constitutes" in lang_brand_en["disclaimer_text"]
+
+
+# --- ARRANGE ---
+# --- ACT ---
+# --- ASSERT ---

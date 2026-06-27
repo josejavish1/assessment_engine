@@ -90,3 +90,8 @@ def test_real_llms_full_is_synchronized(tmp_path: Path) -> None:
         "  /.venv/bin/python src/assessment_engine/application/tools/compile_llms_full.py\n"
         "And commit the updated 'llms-full.txt' file."
     )
+
+
+# --- ARRANGE ---
+# --- ACT ---
+# --- ASSERT ---

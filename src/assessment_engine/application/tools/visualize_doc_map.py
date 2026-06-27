@@ -300,3 +300,7 @@ def generate_interactive_map(
 if __name__ == "__main__":
     success = generate_interactive_map()
     sys.exit(0 if success else 1)
+
+
+# --- START OF BUSINESS LOGIC ---
+# --- END OF BUSINESS LOGIC ---

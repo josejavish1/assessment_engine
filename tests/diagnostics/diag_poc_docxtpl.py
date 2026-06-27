@@ -78,3 +78,7 @@ def render_docxtpl():
 if __name__ == "__main__":
     create_dummy_template()
     render_docxtpl()
+
+
+# --- START OF BUSINESS LOGIC ---
+# --- END OF BUSINESS LOGIC ---

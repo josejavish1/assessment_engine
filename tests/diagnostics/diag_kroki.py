@@ -94,3 +94,7 @@ def test_kroki():
 
 if __name__ == "__main__":
     test_kroki()
+
+
+# --- START OF BUSINESS LOGIC ---
+# --- END OF BUSINESS LOGIC ---
