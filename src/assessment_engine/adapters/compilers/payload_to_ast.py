@@ -1282,9 +1282,9 @@ class PayloadToASTBridge:
             # Fallback to legacy string matching (Technical Debt / Backward Compatibility)
             client_name_lower = client_name.lower()
             is_critical = (
-                "redeia" in client_name_lower
-                or "eléctrica" in client_name_lower
-                or "eurovision" in client_name_lower
+                "redeia" in client_name_lower  # legacy check
+                or "eléctrica" in client_name_lower  # legacy check
+                or "eurovision" in client_name_lower  # legacy check
             )
         formatted_max_lm = "1.500.000 €" if is_critical else "500.000 €"
 
