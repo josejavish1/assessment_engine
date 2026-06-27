@@ -1584,6 +1584,38 @@ entries:
     del motor RAGE.
   diataxis: reference
   verification_mode: schema
+- path: docs/strategy/VISION.md
+  kind: document
+  title: 'Architectural Vision: The Sovereign Agentic OS'
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - src/assessment_engine/infrastructure/epistemic_graph.py
+  last_verified_against: '2026-06-26'
+  notes: Estrella del Norte y visión de largo plazo del motor de agentes y el Grafo
+    Epistémico.
+  diataxis: explanation
+  verification_mode: mixed
+- path: docs/strategy/ROADMAP.md
+  kind: document
+  title: 'Product & Infrastructure Roadmap: The Sovereign Engine'
+  doc_type: canonical
+  status: Verified
+  owner: docs-governance
+  applies_to:
+  - humans
+  - ai-agents
+  source_of_truth:
+  - docs/operations/engineering-quality-gates.md
+  - src/assessment_engine/mcp_server.py
+  last_verified_against: '2026-06-26'
+  notes: Hoja de ruta unificada del producto bajo el estándar Now, Next, Later.
+  diataxis: explanation
+  verification_mode: mixed
 automation_rules:
 - name: architecture-changes
   when_changed:
