@@ -1103,42 +1103,6 @@ entries:
     y de artefactos que pueden cambiar entre sesiones.
   diataxis: how_to
   verification_mode: workflow
-- path: docs/operations/smoke-regeneration.md
-  kind: document
-  title: Smoke artifact regeneration
-  doc_type: canonical
-  status: Draft
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - src/assessment_engine/application/tools/generate_smoke_data.py
-  - src/assessment_engine/application/tools/check_vertex_ai_access.py
-  - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
-  - src/assessment_engine/infrastructure/runtime_env.py
-  - src/assessment_engine/infrastructure/ai_client.py
-  - src/assessment_engine/application/run_tower_pipeline.py
-  - src/assessment_engine/application/run_global_pipeline.py
-  - src/assessment_engine/application/run_commercial_pipeline.py
-  - src/assessment_engine/adapters/render_web_presentation.py
-  - tests/test_contract_handover.py
-  - tests/test_t5_golden.py
-  - tests/test_payload_validation.py
-  review_when_source_changes:
-  - src/assessment_engine/application/tools/generate_smoke_data.py
-  - src/assessment_engine/application/tools/check_vertex_ai_access.py
-  - src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
-  - src/assessment_engine/infrastructure/runtime_env.py
-  - src/assessment_engine/infrastructure/ai_client.py
-  review_paths_on_source_change:
-  - docs/operations/smoke-regeneration.md
-  - docs/operations/pipeline-controls-runbook.md
-  last_verified_against: 2026-06-26
-  notes: Playbook util para regenerar baseline smoke, pero muy sujeto a entorno, credenciales
-    y estado operativo concreto.
-  diataxis: how_to
-  verification_mode: workflow
 - path: docs/contracts
   kind: collection
   title: Contracts documentation

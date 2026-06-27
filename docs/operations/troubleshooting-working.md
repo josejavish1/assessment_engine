@@ -8,6 +8,7 @@ source_of_truth:
 - ../../src/assessment_engine/application/run_tower_pipeline.py
 - ../../src/assessment_engine/application/run_global_pipeline.py
 - ../../src/assessment_engine/application/run_commercial_pipeline.py
+- ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
 - ../architecture/working-artifacts.md
 last_verified_against: 2026-06-26
 applies_to:
@@ -18,114 +19,114 @@ diataxis: how_to
 verification_mode: workflow
 ---
 
-# Troubleshooting `working/` and artifact-dependent validation
+# Troubleshooting `working/` and Smoke Artifacts Playbook
 
-Este manual de operaciones establece los protocolos de diagnóstico, resolución de fallos y recuperación del entorno de ejecución cuando se presentan inconsistencias, ausencias de datos de telemetría o fallas de validación de contratos en el directorio de trabajo `working/`.
+Este manual de operaciones unifica el diagnóstico, la resolución de fallos y el **playbook de regeneración reproducible de artefactos de humo (`smoke_ivirma`)** para restaurar el entorno cuando se presentan inconsistencias lógicas o fallas de validación en el directorio temporal `working/`.
 
-## Parámetros de Referencia del Entorno Virtual (*Baseline State*)
+---
 
-Bajo el estado de conformidad certificado del repositorio, el árbol de trabajo debe verificar la presencia física de los siguientes artefactos basales:
+## 1. El Estado de Conformidad (*Baseline State*)
 
--   `working/smoke_ivirma/T5/blueprint_t5_payload.json` (disponible).
--   `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json` (disponible).
--   `working/smoke_ivirma/global_report_payload.json` (disponible).
--   `working/smoke_ivirma/commercial_report_payload.json` (disponible).
--   `working/smoke_ivirma/presentation/index.html` (disponible).
+La suite de pruebas unitarias de contratos y entregables (`test_contract_handover.py`, `test_t5_golden.py` y `test_payload_validation.py`) consume artefactos de datos reales de prueba previamente compilados en lugar de instanciar mocks puramente desacoplados.
 
-La suite completa de pruebas unitarias (`pytest`) se ejecuta con éxito cuando estos activos de referencia se encuentran estables en el entorno. La alteración, eliminación o inconsistencia en la generación de estos artefactos basales provocará fallas de validación contractual o aserciones ignoradas (*skipped tests*) debido a la desactualización del estado de referencia.
+Para el verde absoluto de la suite, se exige la presencia física de los siguientes artefactos en tu disco local:
 
-## Naturaleza de las Pruebas de Telemetría
+*   `working/smoke_ivirma/T5/blueprint_t5_payload.json`
+*   `working/smoke_ivirma/T5/approved_annex_t5.template_payload.json`
+*   `working/smoke_ivirma/T5/Blueprint_Transformacion_T5_smoke_ivirma.docx`
+*   `working/smoke_ivirma/T5/annex_t5_smoke_ivirma_final.docx`
+*   `working/smoke_ivirma/global_report_payload.json`
+*   `working/smoke_ivirma/commercial_report_payload.json`
+*   `working/smoke_ivirma/presentation/index.html`
 
-Ciertos componentes de la suite de pruebas unitarias implementan validaciones que consumen artefactos de datos previamente compilados en lugar de instanciar mocks puramente desacoplados. Por consiguiente, la presencia íntegra del baseline es una condición necesaria para el estado verde de la suite; su ausencia o fragmentación inducirá fallas de validación que no necesariamente constituyen un defecto funcional en el motor.
+Si estos archivos son eliminados, alterados o sufren derivas contractuales, los tests del sistema fallarán o se ignorarán.
 
-## Protocolo de Diagnóstico Expedito
+---
 
-### 1. Inspección de Estructura de Trabajo General
-Para listar de forma recursiva los artefactos de datos activos en el entorno, ejecute:
+## 2. Protocolo de Diagnóstico Rápido
+
+Si registras un fallo en pytest, ejecuta estas aserciones de diagnóstico físico:
+
+### A. Inspección de Estructura de Trabajo General
 ```bash
 find working -maxdepth 3 -type f | sort
 ```
 
-### 2. Inspección de un Dominio Tecnológico Específico
-Para certificar el estado de los payloads de una torre aislada, ejecute:
+### B. Inspección del Perfil de Cliente
 ```bash
-find working/<client>/<tower> -maxdepth 1 -type f | sort
+find working/smoke_ivirma -maxdepth 2 -type f | sort
 ```
 
-### 3. Inspección del Perfil Completo del Cliente
-Para auditar la totalidad de los entregables y payloads de consolidación de una cuenta, ejecute:
-```bash
-find working/<client> -maxdepth 2 -type f | sort
-```
+---
 
-## Protocolos de Regeneración de Artefactos de Telemetría
+## 3. Playbook de Regeneración de Artefactos de Humo
 
-### 1. Ausencia de Payloads de Torre Tecnológica
-Para regenerar el payload estructural e informes de un dominio tecnológico aislado, invoque el orquestador correspondiente:
-```bash
-./.venv/bin/python -m assessment_engine.application.run_tower_pipeline \
-  --tower T5 \
-  --client ivirma \
-  --context-file /ruta/al/contexto.docx \
-  --responses-file /ruta/a/respuestas.txt
-```
+Si constatas la ausencia, alteración o desactualización del baseline, utiliza el runner dedicado de la plataforma para regenerarlo de forma idéntica y trazable.
 
-En caso de que la inconsistencia resida específicamente en el baseline del cliente de referencia (`smoke_ivirma`), se debe ejecutar el regenerador reproducible de la plataforma:
+### Comando Base (Aprovisionamiento Estándar):
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts
 ```
+*Por defecto, este comando regenera el cliente `smoke_ivirma`, torre `T5` y escenario `baseline` usando la semilla determinista `42`.*
 
-Para forzar la compilación incluyendo la fase global determinista, ejecute:
+---
+
+### Variantes Operativas y Casos de Uso Avanzados:
+
+#### A. Simulación Rápida en Seco (*Dry-run*):
+Para validar la orquestación y regeneración de artefactos sin realizar llamadas costosas ni consumir tokens de la API de Vertex AI:
 ```bash
-./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --dry-run
 ```
+*Este modo sustituye las salidas de la IA por estructuras sintácticamente perfectas vacías para validar que el pipeline de compilación no tenga roturas lógicas.*
 
-Para aislar y descartar si el bloqueo operativo se debe a fallas de autenticación con el proveedor de IA o a restricciones de red, realice una ejecución en seco puramente local:
+#### B. Ejecución Fuera de Línea (*Air-gapped / Local-only*):
+Si no dispones de conexión a internet o el proveedor de Cloud sufre una interrupción temporal del servicio, puedes regenerar el baseline local desactivando por completo las llamadas a LLMs:
 ```bash
 ./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --local-only
 ```
+*Este modo utiliza un caché de respuestas y plantillas almacenado de forma segura en `templates/` para simular la ejecución de forma 100% offline.*
 
-### 2. Ausencia de Payload de Consolidación Global
-Para forzar la agregación y refinamiento estratégico global de un cliente, ejecute:
+#### C. Regeneración con Consolidación Global, Comercial y Web:
+Para ejecutar una prueba de humo de integración de extremo a extremo que valide la cascada de compilación completa:
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_global_pipeline <client_name>
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web
 ```
 
-### 3. Ausencia de Payload de Activación Comercial
-Para compilar el plan de cuenta comercial y pipeline de oportunidades del cliente, ejecute:
+#### D. Pruebas Multi-Torre en Escenarios Personalizados:
+Para validar el comportamiento del motor bajo una topología compleja con múltiples especialidades tecnológicas:
 ```bash
-./.venv/bin/python -m assessment_engine.application.run_commercial_pipeline <client_name>
+./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts \
+  --client vodafone_demo \
+  --scenario vodafone-public \
+  --towers T2 T3 T5 \
+  --with-global --with-commercial --with-web
 ```
 
-## Mapeo de Dependencias de Pruebas Unitarias
+---
 
-### Módulos con Dependencia de Telemetría Directa (*Baseline Required*)
--   `tests/test_contract_handover.py`
--   `tests/test_t5_golden.py`
--   Fracciones específicas de `tests/test_payload_validation.py`
+## 4. Validación de Acceso a Google Cloud / Vertex AI
 
-### Módulos Desacoplados (*Standalone Execution*)
--   `tests/test_environment.py`
--   Suites de validación sintáctica de esquemas de datos Pydantic.
--   Módulos de formateo y renderización unitaria desacoplados que instancian sus propios mocks de prueba.
+Si deseas validar las cuotas, credenciales y conexión con Vertex AI antes de lanzar una regeneración con IA:
 
-## Directrices Operativas de Resolución
+```bash
+./.venv/bin/python -m assessment_engine.application.tools.check_vertex_ai_access
+```
 
-Si se registra una falla de validación o interrupción de prueba debido a la ausencia de activos en `working/`:
-1.  **Aislamiento:** No asuma de forma inmediata la presencia de una desviación lógica de código.
-2.  **Verificación:** Confirme mediante los comandos de diagnóstico si el payload JSON u OpenXML esperado reside físicamente en la ruta correspondiente de `working/`.
-3.  **Aprovisionamiento:** Si se constata su ausencia, re-ejecute la fase precedente de la tubería para aprovisionar el activo.
-4.  **Certificación:** Proceda a relanzar la validación o prueba para confirmar el estado verde.
+### Resolución de Errores Comunes de Acceso Cloud:
+*   **Error:** `GoogleDefaultCredentialsError` / `PermissionDenied` en la llamada generativa.
+*   **Solución:** 
+    1.  Verificar que las credenciales locales estén inicializadas de forma activa en la sub-shell actual:
+        ```bash
+        gcloud auth application-default login
+        ```
+    2.  Si tu red local restringe la conexión con los servidores de Google, conmutar la ejecución utilizando el flag `--local-only`.
 
-Si el smoke global canónico (`--with-global`) falla, la interpretación técnica correcta indica que existe una regresión lógica o una dependencia indeseada de lógicas retrocompatibles fuera del flujo principal, debiendo depurarse de inmediato como desviación del motor.
+---
 
-## Relación con la Configuración de pytest
+## 5. Directrices de Mantenimiento ante Cambios en Código
 
-La directriz en `pyproject.toml` (bajo la clave `[tool.pytest.ini_options]`) excluye el directorio `working/` de los procesos de descubrimiento de pruebas automáticos, previniendo que se interpreten los recursos JSON como scripts de prueba, si bien mantiene plenamente la facultad del entorno para consumir estos recursos físicos como dependencias de aserción.
-
-## Estrategia de Mantenimiento y Documentación de Derivas
-
-Durante ciclos de modificación y evolución del motor que impacten los payloads basales, el equipo de ingeniería debe documentar de forma explícita en su reporte de integración:
--   El identificador del payload o contrato modificado.
--   La fase de la tubería responsable de su compilación.
--   Si la anomalía detectada responde a una inconsistencia de datos del baseline local o a una rotura semántica real del contrato de interfaz de la plataforma.
+Cuando realices modificaciones en el motor (como alterar la lógica de scoring o expandir Pydantic schemas) que rompan de forma legítima el baseline antiguo:
+1.  **Regenera el Baseline:** Lanza `./.venv/bin/python -m assessment_engine.application.tools.regenerate_smoke_artifacts --with-global --with-commercial --with-web` para compilar los nuevos payloads conformes.
+2.  **Verifica en Verde:** Corre la suite de tests (`pytest tests/`) para asegurar que el rastro de aserciones transicione con éxito al estado verde brillante.
+3.  **Garantiza la Coherencia Transversal:** Verifica que no se hayan introducido divergencias métricas entre el scoring de Python y el storytelling de los Word compilados en la carpeta temporal.
