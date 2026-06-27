@@ -6,16 +6,38 @@ from pathlib import Path
 import pytest
 
 from assessment_engine.adapters.compilers.payload_to_ast import PayloadToASTBridge
-from assessment_engine.domain.schemas.ast import DocumentAST
+from assessment_engine.domain.schemas.ast import DocumentAST, TableNode, ParagraphNode, HeadingNode
 
 
 def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     """Verify that PayloadToASTBridge successfully parses payloads and builds a valid DocumentAST.
     
     This integration test ensures that our technical document compiler generates
-    the correct corporate cover layout nodes, preventing regressions during document compilation.
+    the correct corporate cover layout nodes, parses CSV matrices, translates Markdown,
+    and calculates risk values, preventing regressions during document compilation.
     """
     # 1. --- ARRANGE ---
+    # Create the modular sandbox folder structure
+    modules_dir = tmp_path / "asis_modules"
+    modules_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write dummy Markdown platform overview module
+    desc_file = modules_dir / "03_descripcion_plataforma.md"
+    desc_file.write_text("# 4. Descripción\nEsta es la descripción detallada de la plataforma actual.", encoding="utf-8")
+
+    # Write dummy Markdown cross-functional module
+    trans_file = modules_dir / "05_transversal.md"
+    trans_file.write_text("# 5. Transversal\nAnálisis transversal de capacidades operativas.", encoding="utf-8")
+
+    # Write dummy O-FAIR CSV Quantitative Risk Matrix
+    risks_file = modules_dir / "06_matriz_riesgos_fair.csv"
+    csv_content = (
+        "Capability_Header;Finding;Business_Risk;TEF;LM;ALE\n"
+        "Security - Cifrado;Falta cifrado en reposo;Fuga de datos;2.5;50000;100000\n"
+        "Operations - Monitoreo;Falta observabilidad;Retraso respuesta;4.0;20000;80000\n"
+    )
+    risks_file.write_text(csv_content, encoding="utf-8-sig")
+
     # Create valid minimal payloads for both blueprint and annex templates
     blueprint_payload = {
         "document_meta": {
@@ -27,7 +49,7 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
             "date": "Junio 2026",
             "currency": "€"
         },
-        "total_fair_ale": 150000.00,
+        "total_fair_ale": 180000.00,
         "executive_summary": {
             "global_score": "4,50 / 5,00",
             "global_band": "Optimizado"
@@ -84,3 +106,17 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     # Verify client is correctly embedded
     client_paragraph = ast.nodes[5]
     assert "NTT DATA CLIENT" in client_paragraph.text
+
+    # Verify that the Markdown platform overview was compiled and merged into the AST
+    has_platform_desc = any(
+        isinstance(node, ParagraphNode) and "descripción detallada" in node.text
+        for node in ast.nodes
+    )
+    assert has_platform_desc, "Platform description Markdown module was not compiled into AST."
+
+    # Verify that the CSV Risk Matrix was parsed into a native TableNode
+    has_risk_tables = any(
+        isinstance(node, TableNode)
+        for node in ast.nodes
+    )
+    assert has_risk_tables, "FAIR CSV risk matrix was not compiled into TableNode in AST."
