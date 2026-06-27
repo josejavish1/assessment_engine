@@ -180,7 +180,7 @@ Estas tensiones no invalidan el diseño canónico, pero constituyen el backlog d
 ## Conclusiones de Auditoría
 
 1.  Los esquemas `AnnexPayload`, `BlueprintPayload`, `GlobalReportPayload` y `CommercialPayload` se encuentran definidos y plenamente alineados con los payloads descritos.
-2.  La cobertura de pruebas unitarias (`tests/test_contract_handover.py` y `tests/test_payload_validation.py`) certifica la correspondencia estructural de las interfaces técnicas.
+2.  La cobertura de pruebas unitarias (`tests/test_validate_contracts_schemas.py` y `tests/test_payload_validation.py`) certifica la correspondencia estructural de las interfaces técnicas.
 3.  La suite de humo (*smoke-tests*) valida exitosamente la compilación y consistencia lógica de los artefactos.
 
 ## Protocolo ante Cambios en Interfaces

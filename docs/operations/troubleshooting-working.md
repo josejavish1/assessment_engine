@@ -3,8 +3,7 @@ status: Verified
 owner: docs-governance
 source_of_truth:
 - ../../pyproject.toml
-- ../../tests/test_contract_handover.py
-- ../../tests/test_t5_golden.py
+- ../../tests/test_validate_contracts_schemas.py
 - ../../src/assessment_engine/application/run_tower_pipeline.py
 - ../../src/assessment_engine/application/run_global_pipeline.py
 - ../../src/assessment_engine/application/run_commercial_pipeline.py
@@ -26,7 +25,7 @@ Este manual de operaciones unifica el diagnóstico, la resolución de fallos y e
 
 ## 1. El Estado de Conformidad (*Baseline State*)
 
-La suite de pruebas unitarias de contratos y entregables (`test_contract_handover.py`, `test_t5_golden.py` y `test_payload_validation.py`) consume artefactos de datos reales de prueba previamente compilados en lugar de instanciar mocks puramente desacoplados.
+La suite de pruebas unitarias de contratos y entregables (`test_validate_contracts_schemas.py` y `test_payload_validation.py`) consume artefactos de datos reales de prueba previamente compilados en lugar de instanciar mocks puramente desacoplados.
 
 Para el verde absoluto de la suite, se exige la presencia física de los siguientes artefactos en tu disco local:
 
