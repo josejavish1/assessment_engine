@@ -82,6 +82,25 @@ Reanudación opcional:
   --start-from "Engine: Executive Annex Synthesizer"
 ```
 
+## 2.5. Evaluación de Benchmarks Fácticos RAGE (¡Novedad 2026!)
+
+Permite ejecutar de forma independiente y asíncrona el motor de auditoría y evaluación fáctica RAGE contra una industria y país específicos.
+
+Genera:
+
+- `working/<client>/benchmarks_snapshot.json`
+- Bóveda física de evidencias local en `working/<client>/evidence_cache/*.pdf`
+
+Comando:
+
+```bash
+./.venv/bin/python -m assessment_engine.application.cli rage \
+  --client ivirma \
+  --industry utility
+```
+
+El motor RAGE utiliza búsqueda OSINT en Vertex AI, descarga evidencias en local para prevenir link-rot, realiza una verificación forense adversarial contra alucinaciones y evalúa de forma matemática en Python los umbrales de las rúbricas declarativas.
+
 ## 3. Pipeline global ejecutivo
 
 Parte de los blueprints y/o artefactos de torre disponibles en `working/<client>/`.

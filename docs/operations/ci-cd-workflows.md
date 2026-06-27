@@ -5,6 +5,7 @@ source_of_truth:
 - .github/workflows/agent-evals.yml
 - .github/workflows/ci.yml
 - .github/workflows/docs-governance.yml
+- .github/workflows/daily-auto-heal.yml
 - .github/workflows/orchestrator-pr-reconcile.yml
 - .github/workflows/quality.yml
 - .github/workflows/typing.yml
@@ -19,7 +20,7 @@ verification_mode: workflow
 
 # CI/CD Workflows
 
-This document provides a high-level overview of the CI/CD pipelines and quality gates implemented in this repository using GitHub Actions. The primary goal of our CI/CD system is to ensure code quality, stability, and adherence to architectural guidelines through a series of automated checks that run on every pull request.
+This document provides a high-level overview of the CI/CD pipelines, nightly schedules, and quality gates implemented in this repository using GitHub Actions. The primary goal of our automated infrastructure is to ensure code quality, stability, and adherence to architectural guidelines through a series of automated checks that run on every pull request.
 
 ## High-Level Flow Diagram
 
@@ -40,8 +41,9 @@ graph TD
     end
 
     subgraph "Other Triggers"
-        G[Nightly Schedule] --> F;
-        H[Merge to main] --> I[Auto-reconcile open PRs];
+        G[Nightly Schedule] --> H[Daily Auto-Heal];
+        G --> F;
+        I[Merge to main] --> J[Auto-reconcile open PRs];
     end
 
     B --> Z{PR Status};
@@ -62,5 +64,7 @@ graph TD
 -   **Docs Governance (`docs-governance.yml`):** A dedicated check to ensure that all documentation files (`.md`) have valid YAML front matter and adhere to the project's documentation standards.
 
 -   **Agent Evals (`agent-evals.yml`):** A specialized and longer-running workflow that evaluates the performance of the AI agents. It runs conditionally on PRs that modify core agent logic and also runs nightly to monitor for regressions.
+
+-   **Daily Auto-Heal (`daily-auto-heal.yml`):** Triggers automatically on a nightly cron schedule at midnight. It runs the central self-healing script (`nightly_self_healing.py`) which automatically purges any third-party folder pollution (like `.venv` or `node_modules` leak) from the documentation map, cleans up leftover physical test directories (`test_client`) and compressed residues, and runs automated stale decay checks to preserve total Zero-Entropy repository purity.
 
 -   **PR Auto-Reconciler (`orchestrator-pr-reconcile.yml`):** This workflow is not a quality gate. It triggers after a merge to `main` and automatically updates all other open pull requests with the latest changes from `main` to prevent merge conflicts and ensure PRs are tested against the most recent codebase.
