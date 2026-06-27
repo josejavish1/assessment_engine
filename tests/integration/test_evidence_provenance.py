@@ -129,3 +129,26 @@ async def test_evidence_snapshotter_download_resilience(tmp_path: Path):
         text_with_broken_link = f"Read the report here: {binary_url}"
         claims = await snapshotter.process_urls(text_with_broken_link)
         assert len(claims) == 0, "Broken URLs must be filtered out and discarded under governance rules."
+
+
+@pytest.mark.asyncio
+async def test_evidence_snapshotter_empty_and_corrupt_pdf_validation(tmp_path: Path):
+    """Verify that EvidenceSnapshotter throws ValueError / returns None when getting empty files or files without %PDF- magic bytes."""
+    from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
+    import httpx
+    
+    # 1. --- ARRANGE ---
+    snapshotter = EvidenceSnapshotter(tmp_path)
+    
+    # --- ACT & ASSERT ---
+    # Case A: Server returns HTTP 200 but content is empty (0 bytes)
+    mock_empty_resp = httpx.Response(200, content=b"")
+    with patch("httpx.AsyncClient.get", return_value=mock_empty_resp):
+        result_empty = await snapshotter.capture_snapshot("https://example.com/empty_report.pdf")
+        assert result_empty is None, "Empty downloads must be rejected and return None."
+        
+    # Case B: Server returns HTTP 200 but content is HTML camouflaged as a PDF (missing PDF signature)
+    mock_corrupt_resp = httpx.Response(200, content=b"<html>This is disguised HTML, not a PDF document!</html>")
+    with patch("httpx.AsyncClient.get", return_value=mock_corrupt_resp):
+        result_corrupt = await snapshotter.capture_snapshot("https://example.com/disguised_report.pdf")
+        assert result_corrupt is None, "Corrupted/disguised PDFs must be rejected and return None."
