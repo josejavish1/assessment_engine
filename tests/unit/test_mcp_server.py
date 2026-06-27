@@ -53,3 +53,47 @@ async def test_mcp_get_tower_state_robustness() -> None:
     first_msg = result_content[0]
     assert first_msg.type == "text"
     assert "no encontrado" in first_msg.text or "Error:" in first_msg.text
+
+
+@pytest.mark.asyncio
+async def test_mcp_abort_and_revert_execution() -> None:
+    """Verify that abort_and_revert tool executes Git reset and clean commands and handles failures gracefully."""
+    from unittest.mock import patch, MagicMock
+    import json
+
+    # 1. Test Case A: Happy-path successful Git reset and clean execution
+    with patch("assessment_engine.mcp_server.subprocess.run") as mock_run:
+        # Mock successful run (returns completed process)
+        from unittest.mock import ANY
+        mock_run.return_value = MagicMock()
+        
+        # --- ACT ---
+        result_content, result_meta = await mcp.call_tool("abort_and_revert", {})
+        
+        # --- ASSERT ---
+        assert isinstance(result_content, list)
+        first_msg = result_content[0]
+        data = json.loads(first_msg.text)
+        assert data["success"] is True
+        assert "Abortado y código revertido" in data["message"]
+        
+        # Ensure subprocess.run was called twice with Git parameters
+        assert mock_run.call_count == 2
+        mock_run.assert_any_call(["git", "reset", "--hard"], cwd=ANY, check=True, capture_output=True)
+        mock_run.assert_any_call(["git", "clean", "-fd"], cwd=ANY, check=True, capture_output=True)
+
+    # 2. Test Case B: Error handling when Git command fails
+    with patch("assessment_engine.mcp_server.subprocess.run") as mock_run:
+        # Force the first Git command to fail raising an exception
+        mock_run.side_effect = RuntimeError("Git repository locked or corrupted")
+        
+        # --- ACT ---
+        result_content, result_meta = await mcp.call_tool("abort_and_revert", {})
+        
+        # --- ASSERT ---
+        assert isinstance(result_content, list)
+        first_msg = result_content[0]
+        data = json.loads(first_msg.text)
+        assert data["success"] is False
+        assert "Error al revertir" in data["message"]
+        assert "Git repository locked" in data["message"]
