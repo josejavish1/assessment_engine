@@ -108,7 +108,7 @@ ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-norecursedirs = [".git", "_PROJECT_ARCHIVE_", "_legacy", ".venv", "working"]
+norecursedirs = [".git", "_PROJECT_ARCHIVE_", "_legacy", ".venv", "working", "diagnostics", "node_modules", ".hypothesis", "templates", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
 addopts = "-ra -q"
 markers = [
     "contract: marks tests that validate data contracts between pipeline stages"
