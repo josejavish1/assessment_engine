@@ -226,3 +226,37 @@ async def test_rage_benchmarker_prompt_injection_containment(tmp_path: Path):
     t1_snap = snapshot.snapshots["T1"]
     assert t1_snap.verification_status == "failed", "Prompt injection succeeded! Verification status must be failed."
 
+
+def test_rage_benchmark_adversarial_pydantic_validation():
+    """Verify that TowerBenchmarkSnapshot strictly rejects corrupted or invalid data types from Gemini."""
+    from pydantic import ValidationError
+    from assessment_engine.infrastructure.agentic_benchmarker import TowerBenchmarkSnapshot
+    
+    # 1. --- ARRANGE ---
+    # Setup correct baseline metadata dictionary
+    valid_kwargs = {
+        "tower_id": "T1",
+        "framework_id": "ens_alta",
+        "framework_name": "Esquema Nacional de Seguridad",
+        "dynamic_score": 4.5,
+        "extracted_metric_value": 85.0,
+        "evidence_quote": "85% de adopción",
+        "evidence_source_url": "https://example.com/ens_report.pdf",
+        "verification_status": "verified",
+        "justification_text": "Cita y justificación validadas con éxito."
+    }
+
+    # 2. --- ACT & ASSERT ---
+    # Case A: Fuzzing with a completely invalid type for dynamic_score (raises ValidationError)
+    corrupted_score = dict(valid_kwargs)
+    corrupted_score["dynamic_score"] = "corrupted_non_float_string_by_llm"
+    with pytest.raises(ValidationError):
+        TowerBenchmarkSnapshot(**corrupted_score)
+
+    # Case B: Fuzzing with an invalid type for extracted_metric_value
+    corrupted_metric = dict(valid_kwargs)
+    corrupted_metric["extracted_metric_value"] = ["invalid", "list", "type"]
+    with pytest.raises(ValidationError):
+        TowerBenchmarkSnapshot(**corrupted_metric)
+
+

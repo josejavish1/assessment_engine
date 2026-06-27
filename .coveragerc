@@ -8,6 +8,7 @@ omit =
     */node_modules/*
 
 [report]
+fail_under = 20
 exclude_lines =
     pragma: no cover
     def __repr__
