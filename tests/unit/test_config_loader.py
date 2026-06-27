@@ -27,13 +27,19 @@ from assessment_engine.infrastructure.config_loader import (
 
 
 def test_load_abbreviations_glossary() -> None:
+    # --- ARRANGE & ACT ---
     glossary = load_abbreviations_glossary()
+    
+    # --- ASSERT ---
     assert isinstance(glossary, dict)
     assert len(glossary) > 0
 
 
 def test_load_brand_profile() -> None:
+    # --- ARRANGE & ACT ---
     brand = load_brand_profile()
+    
+    # --- ASSERT ---
     assert isinstance(brand, dict)
     assert "styling" in brand
     # Hex codes should be stripped of "#"
@@ -41,6 +47,7 @@ def test_load_brand_profile() -> None:
 
 
 def test_resolve_localized_vocabulary() -> None:
+    # --- ARRANGE, ACT & ASSERT ---
     # Test valid Spanish
     vocab_es = resolve_localized_vocabulary("es")
     assert "control_documental_title" in vocab_es
@@ -55,11 +62,15 @@ def test_resolve_localized_vocabulary() -> None:
 
 
 def test_load_runtime_manifest() -> None:
+    # --- ARRANGE & ACT ---
     manifest = load_runtime_manifest()
+    
+    # --- ASSERT ---
     assert "document_profile" in manifest
 
 
 def test_load_model_profile_and_overrides() -> None:
+    # --- ARRANGE & ACT ---
     # Test standard profile load
     profile = load_model_profile("writer_fast")
     assert profile["model"] == "gemini-2.5-pro"
@@ -80,16 +91,23 @@ def test_load_model_profile_and_overrides() -> None:
 
 
 def test_resolve_model_profile_for_role() -> None:
+    # --- ARRANGE & ACT ---
     profile = resolve_model_profile_for_role("section_writer")
+    
+    # --- ASSERT ---
     assert isinstance(profile, dict)
 
 
 def test_resolve_document_profile() -> None:
+    # --- ARRANGE & ACT ---
     doc_profile = resolve_document_profile()
+    
+    # --- ASSERT ---
     assert isinstance(doc_profile, dict)
 
 
 def test_resolve_target_maturity_defaults() -> None:
+    # --- ARRANGE, ACT & ASSERT ---
     defaults = resolve_target_maturity_defaults("tower_annex_profile")
     assert isinstance(defaults, dict)
     
@@ -98,16 +116,23 @@ def test_resolve_target_maturity_defaults() -> None:
 
 
 def test_resolve_review_rules() -> None:
+    # --- ARRANGE & ACT ---
     rules = resolve_review_rules()
+    
+    # --- ASSERT ---
     assert isinstance(rules, dict)
 
 
 def test_load_rate_card() -> None:
+    # --- ARRANGE & ACT ---
     rate_card = load_rate_card()
+    
+    # --- ASSERT ---
     assert isinstance(rate_card, dict)
 
 
 def test_load_industry_profile_fallback() -> None:
+    # --- ARRANGE, ACT & ASSERT ---
     # Test loading real profile
     profile = load_industry_profile("critical_infrastructure")
     assert "industry" in profile
@@ -118,7 +143,10 @@ def test_load_industry_profile_fallback() -> None:
 
 
 def test_load_framework_rubric() -> None:
+    # --- ARRANGE & ACT ---
     rubric = load_framework_rubric("ens_alta")
+    
+    # --- ASSERT ---
     assert rubric["framework_name"] == "Esquema Nacional de Seguridad (ENS) - Categoría Alta"
 
 
