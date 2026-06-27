@@ -567,6 +567,7 @@ def _load_industry_profile(industry_name: str) -> dict[str, Any]:
             break
 
     from assessment_engine.infrastructure.config_loader import load_industry_profile
+
     try:
         return load_industry_profile(profile_key)
     except Exception as e:
@@ -618,7 +619,9 @@ def build_client_context_packet(
     # Injects the loaded industry-specific analytical framework into the data structure.
     industry_profile = _load_industry_profile(industry_name)
     if industry_profile:
-        packet["industry_enterprise_framework"] = industry_profile.get("enterprise_framework", {})
+        packet["industry_enterprise_framework"] = industry_profile.get(
+            "enterprise_framework", {}
+        )
 
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})

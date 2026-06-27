@@ -14,6 +14,7 @@ from typing import Any, TypedDict
 
 class ModelProfile(TypedDict):
     """TypedDict defining model configuration parameters like temperature and seed."""
+
     model: str
     temperature: float
     top_p: float
@@ -51,7 +52,9 @@ def load_brand_profile() -> dict:
     if "primary_color_hex" in styling:
         styling["primary_color_hex"] = styling["primary_color_hex"].lstrip("#")
     if "alternate_row_color_hex" in styling:
-        styling["alternate_row_color_hex"] = styling["alternate_row_color_hex"].lstrip("#")
+        styling["alternate_row_color_hex"] = styling["alternate_row_color_hex"].lstrip(
+            "#"
+        )
     return data
 
 

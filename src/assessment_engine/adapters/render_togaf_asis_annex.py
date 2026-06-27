@@ -271,6 +271,7 @@ def render_asis_annex(payload_path: str, output_path: str):
 
     # Dynamically loads brand profiles and corporate glossaries from external configuration files to support document standardization.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
+
     brand = load_brand_profile()
 
     company_name = brand.get("company_name", "NTT DATA")
@@ -320,6 +321,7 @@ def render_asis_annex(payload_path: str, output_path: str):
     from assessment_engine.infrastructure.config_loader import (
         resolve_localized_vocabulary,
     )
+
     vocab = resolve_localized_vocabulary(meta_lang)
 
     tower_name = tower_meta.get("tower_name", "Desconocida")

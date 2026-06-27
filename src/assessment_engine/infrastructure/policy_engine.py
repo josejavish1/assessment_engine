@@ -798,6 +798,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
 
         # Load FAIR model parameters from the canonical governance repository.
         from assessment_engine.infrastructure.config_loader import load_policy_file
+
         try:
             profiles = load_policy_file("fair_risk_profiles")
         except Exception as e:

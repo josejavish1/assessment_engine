@@ -170,10 +170,13 @@ class DigitalTwinExporter:
                     )
                     return cleaned_benchmarks
             except Exception as ex:
-                logger.error(f"[RAGE] Failed to read benchmarks snapshot at {snapshot_path}: {ex}. Falling back.")
+                logger.error(
+                    f"[RAGE] Failed to read benchmarks snapshot at {snapshot_path}: {ex}. Falling back."
+                )
 
         # Fallback: Load the static benchmark curve from the resolved JSON profile
         from assessment_engine.infrastructure.config_loader import load_industry_profile
+
         try:
             profile_data = load_industry_profile(profile_key)
 

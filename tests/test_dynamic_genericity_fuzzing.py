@@ -2,8 +2,9 @@ import json
 import tempfile
 from pathlib import Path
 
-from assessment_engine.adapters.render_togaf_asis_annex import render_asis_annex
 from docx import Document
+
+from assessment_engine.adapters.render_togaf_asis_annex import render_asis_annex
 
 
 class TestDynamicGenericityFuzzing:

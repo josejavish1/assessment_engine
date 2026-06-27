@@ -5,6 +5,7 @@ import hashlib
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from assessment_engine.domain.schemas.evidence import EvidenceFragment
 from assessment_engine.infrastructure import ai_client
 

@@ -182,7 +182,9 @@ async def main():
     findings_path = Path(args.findings_path)
     findings = load_json(findings_path)
 
-    print(f"[System] Initializing Technical Research (Internet Grounding) for {args.client}...")
+    print(
+        f"[System] Initializing Technical Research (Internet Grounding) for {args.client}..."
+    )
     enriched = await inject_sota(args.client, findings)
 
     findings_path.write_text(

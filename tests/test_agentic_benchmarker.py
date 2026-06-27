@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
 from assessment_engine.infrastructure.agentic_benchmarker import (
     AgenticRageBenchmarker,
     FactExtractionOutput,
@@ -30,25 +31,34 @@ async def test_rage_benchmarker_full_flow(tmp_path):
     snapshots_dir = tmp_path / "evidence_snapshots"
     snapshots_dir.mkdir(parents=True, exist_ok=True)
     snapshot_file = snapshots_dir / "mock_ens_report.pdf"
-    snapshot_file.write_text("El 65% de las utilities están certificadas en ENS Categoría Alta", encoding="utf-8")
+    snapshot_file.write_text(
+        "El 65% de las utilities están certificadas en ENS Categoría Alta",
+        encoding="utf-8",
+    )
 
-    with patch(
-        "assessment_engine.infrastructure.agentic_benchmarker.run_agent"
-    ) as mock_run, patch(
-        "assessment_engine.infrastructure.agentic_benchmarker.EvidenceSnapshotter.capture_snapshot",
-        new_callable=AsyncMock,
-    ) as mock_capture:
-
+    with (
+        patch(
+            "assessment_engine.infrastructure.agentic_benchmarker.run_agent"
+        ) as mock_run,
+        patch(
+            "assessment_engine.infrastructure.agentic_benchmarker.EvidenceSnapshotter.capture_snapshot",
+            new_callable=AsyncMock,
+        ) as mock_capture,
+    ):
         # Configure mock_run to return the extraction and verification for each of the 4 evaluated towers (T1, T4, T5, T6)
         mock_run.side_effect = [
             # T1
-            mock_extraction, mock_verification,
+            mock_extraction,
+            mock_verification,
             # T4
-            mock_extraction, mock_verification,
+            mock_extraction,
+            mock_verification,
             # T5
-            mock_extraction, mock_verification,
+            mock_extraction,
+            mock_verification,
             # T6
-            mock_extraction, mock_verification,
+            mock_extraction,
+            mock_verification,
         ]
         mock_capture.return_value = mock_snapshot_meta
 

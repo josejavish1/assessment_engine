@@ -742,6 +742,7 @@ def compile_docx(tower_dir: str, output_path: str):
 
     # Dynamically load corporate brand profiles based on the operational context.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
+
     brand = load_brand_profile()
 
     company_name = brand.get("company_name", "NTT DATA")
@@ -844,6 +845,7 @@ def compile_docx(tower_dir: str, output_path: str):
     from assessment_engine.infrastructure.config_loader import (
         resolve_localized_vocabulary,
     )
+
     vocab_loaded = resolve_localized_vocabulary(doc_lang)
     vocab = {**vocab_fallback, **vocab_loaded}
     org_label = (
@@ -1709,7 +1711,9 @@ def compile_docx(tower_dir: str, output_path: str):
                         else:
                             full_glossary[lang] = terms
             except json.JSONDecodeError as ex:
-                print(f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}")
+                print(
+                    f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}"
+                )
             except Exception as ex:
                 print(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 

@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 
 import yaml  # type: ignore[import-untyped]
+
 from assessment_engine.application.tools import (
     validate_documentation_governance as validator,
 )

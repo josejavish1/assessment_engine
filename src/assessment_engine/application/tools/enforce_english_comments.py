@@ -23,30 +23,109 @@ from assessment_engine.infrastructure.ai_client import call_agent
 
 # English stop words (high-frequency syntactical elements)
 ENGLISH_STOPWORDS = {
-    "the", "and", "with", "for", "this", "that", "from", "which", "each",
-    "have", "has", "been", "will", "should", "would", "can", "could", "not",
-    "but", "they", "them", "their", "are", "was", "were", "first", "second"
+    "the",
+    "and",
+    "with",
+    "for",
+    "this",
+    "that",
+    "from",
+    "which",
+    "each",
+    "have",
+    "has",
+    "been",
+    "will",
+    "should",
+    "would",
+    "can",
+    "could",
+    "not",
+    "but",
+    "they",
+    "them",
+    "their",
+    "are",
+    "was",
+    "were",
+    "first",
+    "second",
 }
 
 
 # Spanish stop words and common indicators (zero English collisions)
 SPANISH_KEYWORDS = {
-    "para", "con", "como", "pero", "este", "esta", "todos", "todas", 
-    "verificar", "comprobar", "función", "método", "clase", "archivo", 
-    "prueba", "ejecución", "reinicio", "guardar", "recuperar", "dentro", 
-    "fuera", "sobre", "entre", "desde", "hasta", "cuando", "donde", 
-    "quien", "porque", "aunque", "entonces", "luego", "después", "antes", 
-    "también", "además", "mientras", "durante", "etiqueta", "idioma",
-    "comentario", "línea", "falla", "comprobación", "debe",
-    "esperado", "obtenido", "discrepancia", "estructura", "reinicio",
-    "sistema", "creando", "nuevo", "sobreescrita", "simulación", "apertura",
-    "guardado", "físicamente", "vacía", "básica", "modificación", "respeto"
+    "para",
+    "con",
+    "como",
+    "pero",
+    "este",
+    "esta",
+    "todos",
+    "todas",
+    "verificar",
+    "comprobar",
+    "función",
+    "método",
+    "clase",
+    "archivo",
+    "prueba",
+    "ejecución",
+    "reinicio",
+    "guardar",
+    "recuperar",
+    "dentro",
+    "fuera",
+    "sobre",
+    "entre",
+    "desde",
+    "hasta",
+    "cuando",
+    "donde",
+    "quien",
+    "porque",
+    "aunque",
+    "entonces",
+    "luego",
+    "después",
+    "antes",
+    "también",
+    "además",
+    "mientras",
+    "durante",
+    "etiqueta",
+    "idioma",
+    "comentario",
+    "línea",
+    "falla",
+    "comprobación",
+    "debe",
+    "esperado",
+    "obtenido",
+    "discrepancia",
+    "estructura",
+    "reinicio",
+    "sistema",
+    "creando",
+    "nuevo",
+    "sobreescrita",
+    "simulación",
+    "apertura",
+    "guardado",
+    "físicamente",
+    "vacía",
+    "básica",
+    "modificación",
+    "respeto",
 }
 
 
 class TranslationResult(BaseModel):
     """Pydantic model representing the output of a comment translation request."""
-    translated_text: str = Field(description="The precise technical English translation of the input text.")
+
+    translated_text: str = Field(
+        description="The precise technical English translation of the input text."
+    )
 
 
 def is_spanish_text(text: str) -> bool:
@@ -71,7 +150,7 @@ def load_sobriety_policy() -> str:
         if agents_path.exists():
             content = agents_path.read_text(encoding="utf-8")
             # Extract relevant sections or just return the whole file for context
-            return content[:3000] # Return the first 3000 chars for core context
+            return content[:3000]  # Return the first 3000 chars for core context
     except Exception:
         pass
     return (
@@ -84,7 +163,7 @@ def load_sobriety_policy() -> str:
 async def translate_text(text: str) -> str:
     """Translate and sanitize Spanish or informal text to formal, aseptic, technical English using the cognitive linter."""
     policy = load_sobriety_policy()
-    
+
     prompt = (
         f"You are a Cognitive Compliance Linter Agent. Your job is to translate and sanitize the following code comment or docstring "
         f"so that it complies strictly with the project's engineering policies and sobriety guidelines.\n\n"
@@ -96,7 +175,7 @@ async def translate_text(text: str) -> str:
         f"3. Keep all code identifiers, variables, or system-critical terms intact.\n"
         f"4. Return ONLY the raw sanitized English text, with no additional explanations, markdown wrappers, or notes."
     )
-    
+
     try:
         # Use cheap and fast model (gemini-2.5-flash)
         result = await call_agent(
@@ -109,7 +188,10 @@ async def translate_text(text: str) -> str:
             return result.get("translated_text", text).strip()
         return result.translated_text.strip()
     except Exception as e:
-        print(f"⚠️ Warning: LLM translation failed, keeping original. Error: {e}", file=sys.stderr)
+        print(
+            f"⚠️ Warning: LLM translation failed, keeping original. Error: {e}",
+            file=sys.stderr,
+        )
         return text
 
 
@@ -130,7 +212,12 @@ def get_docstring_spans(content: str) -> list[tuple[int, int, int, int]]:
                 # AST line numbers are 1-based, columns are 0-based
                 # end_lineno and end_col_offset are available in Python 3.8+
                 if hasattr(val, "end_lineno") and val.end_lineno is not None:
-                    return (val.lineno, val.col_offset, val.end_lineno, val.end_col_offset)
+                    return (
+                        val.lineno,
+                        val.col_offset,
+                        val.end_lineno,
+                        val.end_col_offset,
+                    )
         return None
 
     # Module level docstring
@@ -138,7 +225,9 @@ def get_docstring_spans(content: str) -> list[tuple[int, int, int, int]]:
         val = tree.body[0].value
         if isinstance(val, (ast.Constant, ast.Str)):
             if hasattr(val, "end_lineno") and val.end_lineno is not None:
-                spans.append((val.lineno, val.col_offset, val.end_lineno, val.end_col_offset))
+                spans.append(
+                    (val.lineno, val.col_offset, val.end_lineno, val.end_col_offset)
+                )
 
     # Walk functions and classes
     for node in ast.walk(tree):
@@ -150,7 +239,9 @@ def get_docstring_spans(content: str) -> list[tuple[int, int, int, int]]:
     return spans
 
 
-def is_in_docstring_spans(line: int, col: int, doc_spans: list[tuple[int, int, int, int]]) -> bool:
+def is_in_docstring_spans(
+    line: int, col: int, doc_spans: list[tuple[int, int, int, int]]
+) -> bool:
     """Verify if a given token position is located within any of the detected docstring spans."""
     for s_line, s_col, e_line, e_col in doc_spans:
         if s_line <= line <= e_line:
@@ -183,7 +274,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
         return False
 
     docstring_spans = get_docstring_spans(content)
-    
+
     replacements = []
     issues_found = 0
 
@@ -191,9 +282,13 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
         # Ignore comments like type ignores or golden paths
         if token.type == tokenize.COMMENT:
             comment_text = token.string
-            if "type:" in comment_text or "golden-path:" in comment_text or "pragma:" in comment_text:
+            if (
+                "type:" in comment_text
+                or "golden-path:" in comment_text
+                or "pragma:" in comment_text
+            ):
                 continue
-            
+
             # Extract raw comment content
             match = re.match(r"^(#\s*)(.*)$", comment_text)
             if match:
@@ -201,63 +296,75 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
                 raw_comment = match.group(2).strip()
                 if raw_comment and is_spanish_text(raw_comment):
                     issues_found += 1
-                    print(f"🚨 Found Spanish Comment in {filepath}:{token.start[0]}: {token.string}")
-                    
+                    print(
+                        f"🚨 Found Spanish Comment in {filepath}:{token.start[0]}: {token.string}"
+                    )
+
                     if autofix:
                         translated = await translate_text(raw_comment)
                         new_comment_string = prefix + translated
-                        replacements.append({
-                            "start_line": token.start[0],
-                            "start_col": token.start[1],
-                            "end_line": token.end[0],
-                            "end_col": token.end[1],
-                            "new_text": new_comment_string
-                        })
+                        replacements.append(
+                            {
+                                "start_line": token.start[0],
+                                "start_col": token.start[1],
+                                "end_line": token.end[0],
+                                "end_col": token.end[1],
+                                "new_text": new_comment_string,
+                            }
+                        )
 
         # Check docstrings (only string tokens matching AST docstring spans)
         elif token.type == tokenize.STRING:
             if is_in_docstring_spans(token.start[0], token.start[1], docstring_spans):
                 # Triple-quoted strings
-                if (token.string.startswith('"""') and token.string.endswith('"""')) or \
-                   (token.string.startswith("'''") and token.string.endswith("'''")):
-                    
+                if (
+                    token.string.startswith('"""') and token.string.endswith('"""')
+                ) or (token.string.startswith("'''") and token.string.endswith("'''")):
                     quote_style = '"""' if token.string.startswith('"""') else "'''"
                     raw_doc = token.string[3:-3].strip()
-                    
+
                     if raw_doc and is_spanish_text(raw_doc):
                         issues_found += 1
                         first_line = raw_doc.splitlines()[0] if raw_doc else ""
-                        print(f"🚨 Found Spanish Docstring in {filepath}:{token.start[0]}: {quote_style}{first_line}...")
-                        
+                        print(
+                            f"🚨 Found Spanish Docstring in {filepath}:{token.start[0]}: {quote_style}{first_line}..."
+                        )
+
                         if autofix:
                             translated = await translate_text(raw_doc)
                             new_doc_string = f"{quote_style}{translated}{quote_style}"
-                            replacements.append({
-                                "start_line": token.start[0],
-                                "start_col": token.start[1],
-                                "end_line": token.end[0],
-                                "end_col": token.end[1],
-                                "new_text": new_doc_string
-                            })
+                            replacements.append(
+                                {
+                                    "start_line": token.start[0],
+                                    "start_col": token.start[1],
+                                    "end_line": token.end[0],
+                                    "end_col": token.end[1],
+                                    "new_text": new_doc_string,
+                                }
+                            )
 
     if issues_found > 0:
         if autofix and replacements:
             print(f"✨ Auto-healing {filepath} ({len(replacements)} translations)...")
-            
+
             # Apply replacements descending to avoid offset drift
-            replacements.sort(key=lambda r: (r['start_line'], r['start_col']), reverse=True)
+            replacements.sort(
+                key=lambda r: (r["start_line"], r["start_col"]), reverse=True
+            )
             lines = content.splitlines(keepends=True)
-            
+
             for rep in replacements:
-                s_line = rep['start_line'] - 1
-                s_col = rep['start_col']
-                e_line = rep['end_line'] - 1
-                e_col = rep['end_col']
-                new_text = rep['new_text']
-                
+                s_line = rep["start_line"] - 1
+                s_col = rep["start_col"]
+                e_line = rep["end_line"] - 1
+                e_col = rep["end_col"]
+                new_text = rep["new_text"]
+
                 if s_line == e_line:
                     original_line = lines[s_line]
-                    lines[s_line] = original_line[:s_col] + new_text + original_line[e_col:]
+                    lines[s_line] = (
+                        original_line[:s_col] + new_text + original_line[e_col:]
+                    )
                 else:
                     first_line = lines[s_line]
                     last_line = lines[e_line]
@@ -265,7 +372,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
                     for i in range(s_line + 1, e_line):
                         lines[i] = ""
                     lines[e_line] = last_line[e_col:]
-            
+
             try:
                 filepath.write_text("".join(lines), encoding="utf-8")
                 print(f"✅ Successfully auto-healed {filepath}.")
@@ -273,17 +380,23 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
                 print(f"❌ Failed to write updates to {filepath}: {e}", file=sys.stderr)
                 return False
         return False
-    
+
     return True
 
 
 async def main() -> int:
-    parser = argparse.ArgumentParser(description="Enforce English on all code comments and docstrings.")
+    parser = argparse.ArgumentParser(
+        description="Enforce English on all code comments and docstrings."
+    )
     parser.add_argument("files", nargs="*", help="List of files to scan.")
-    parser.add_argument("--autofix", action="store_true", help="Auto-heal and translate Spanish comments/docstrings using Gemini LLM.")
-    
+    parser.add_argument(
+        "--autofix",
+        action="store_true",
+        help="Auto-heal and translate Spanish comments/docstrings using Gemini LLM.",
+    )
+
     args = parser.parse_args()
-    
+
     target_files = []
     if args.files:
         target_files = [Path(f) for f in args.files if f.endswith(".py")]
@@ -291,33 +404,42 @@ async def main() -> int:
         # Recursive scan of src/ and tests/ if no files specified
         for folder in ["src", "tests"]:
             target_files.extend(list(Path(folder).rglob("*.py")))
-            
+
     # Filter out _legacy and local environments
     target_files = [
-        f for f in target_files 
-        if "_legacy" not in f.as_posix() 
+        f
+        for f in target_files
+        if "_legacy" not in f.as_posix()
         and "node_modules" not in f.as_posix()
         and ".venv" not in f.as_posix()
     ]
-    
+
     if not target_files:
         print("No files to scan.")
         return 0
-        
-    print(f"🔍 Scanning {len(target_files)} files for Spanish comments and docstrings...")
-    
-    results = await asyncio.gather(*(process_file(f, args.autofix) for f in target_files))
-    
+
+    print(
+        f"🔍 Scanning {len(target_files)} files for Spanish comments and docstrings..."
+    )
+
+    results = await asyncio.gather(
+        *(process_file(f, args.autofix) for f in target_files)
+    )
+
     success = all(results)
     if not success:
         if args.autofix:
-            print("\n✨ Auto-healing cycle complete. Please review the translated files and run again to verify.")
+            print(
+                "\n✨ Auto-healing cycle complete. Please review the translated files and run again to verify."
+            )
             return 0
         else:
             print("\n❌ Language Guard failed: Non-English comments/docstrings found.")
             return 1
-            
-    print("\n✅ Language Guard passed: All comments and docstrings are in compliant Technical English.")
+
+    print(
+        "\n✅ Language Guard passed: All comments and docstrings are in compliant Technical English."
+    )
     return 0
 
 

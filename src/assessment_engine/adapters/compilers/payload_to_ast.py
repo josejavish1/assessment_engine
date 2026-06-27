@@ -39,6 +39,7 @@ class PayloadToASTBridge:
 
         self.brand_data = {}
         from assessment_engine.infrastructure.config_loader import load_brand_profile
+
         try:
             brand = load_brand_profile()
             self.brand_data = brand
@@ -49,9 +50,7 @@ class PayloadToASTBridge:
             self.disclaimer = brand.get("disclaimer_text", self.disclaimer)
             styling = brand.get("styling", {})
             p_hex = styling.get("primary_color_hex", "0072BC")
-            self.alt_row_hex = styling.get(
-                "alternate_row_color_hex", self.alt_row_hex
-            )
+            self.alt_row_hex = styling.get("alternate_row_color_hex", self.alt_row_hex)
 
             #
             r = int(p_hex[0:2], 16)
@@ -87,6 +86,7 @@ class PayloadToASTBridge:
         from assessment_engine.infrastructure.config_loader import (
             resolve_localized_vocabulary,
         )
+
         vocab = resolve_localized_vocabulary(meta_lang)
 
         # Resolve localized brand attributes
@@ -362,7 +362,9 @@ class PayloadToASTBridge:
                     nodes.append(SpacerNode(points=10))
 
                     for t_id, t_snap in sorted(snapshots.items()):
-                        framework_name = t_snap.get("framework_name", "Estándar Sectorial")
+                        framework_name = t_snap.get(
+                            "framework_name", "Estándar Sectorial"
+                        )
                         score = t_snap.get("dynamic_score", 4.0)
                         quote = t_snap.get("evidence_quote", "")
                         url = t_snap.get("evidence_source_url", "")
@@ -370,13 +372,13 @@ class PayloadToASTBridge:
                         verif_status = t_snap.get("verification_status", "failed")
 
                         status_emoji = "✓" if verif_status == "verified" else "⚠️"
-                        
+
                         header_p = f"**Torre {t_id} ({framework_name}) — Estándar: {score:,.1f}**"
                         nodes.append(ParagraphNode(text=header_p))
-                        
-                        quote_p = f"*{status_emoji} Evidencia extraída:* \"{quote}\""
+
+                        quote_p = f'*{status_emoji} Evidencia extraída:* "{quote}"'
                         nodes.append(ParagraphNode(text=quote_p))
-                        
+
                         source_p = f"*Referencia:* {url}"
                         if local_path:
                             source_p += f" | *Bóveda local:* `{local_path}`"
@@ -930,9 +932,7 @@ class PayloadToASTBridge:
             client_glossary_path = case_dir / "client_abbreviations_glossary.json"
             if client_glossary_path.exists():
                 try:
-                    with open(
-                        client_glossary_path, "r", encoding="utf-8-sig"
-                    ) as cgf:
+                    with open(client_glossary_path, "r", encoding="utf-8-sig") as cgf:
                         client_glossary = json.load(cgf)
                         for lang, terms in client_glossary.items():
                             if lang in full_glossary:
@@ -940,7 +940,9 @@ class PayloadToASTBridge:
                             else:
                                 full_glossary[lang] = terms
                 except json.JSONDecodeError as ex:
-                    print(f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}")
+                    print(
+                        f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}"
+                    )
                 except Exception as ex:
                     print(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
@@ -1007,7 +1009,9 @@ class PayloadToASTBridge:
 
                 nodes.append(TableNode(rows=gloss_rows))
         except Exception as ex:
-            print(f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}")
+            print(
+                f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}"
+            )
 
         # Appendix B: Limitation of Liability Clause
         # Omit the manual 'Appendix B' prefix to prevent numbering conflicts.

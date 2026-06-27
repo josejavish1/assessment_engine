@@ -3,6 +3,13 @@ import re
 from pathlib import Path
 from typing import Any
 
+from docx import Document
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Inches, Pt, RGBColor
+
 from assessment_engine.domain.schemas.ast import (
     CellNode,
     DocumentAST,
@@ -19,12 +26,6 @@ from assessment_engine.infrastructure.docx_render_utils import (
     finalize_table,
 )
 from assessment_engine.ports.document_compiler import DocumentCompiler
-from docx import Document
-from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, RGBColor
 
 
 def safe_shade_cell(cell: Any, fill: str) -> None:

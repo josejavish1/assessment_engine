@@ -25,7 +25,9 @@ class TowerBenchmarkSnapshot(BaseModel):
 
     tower_id: str = Field(description="The tower code, e.g., 'T6'")
     framework_id: str = Field(description="The active framework ID, e.g., 'ens_alta'")
-    framework_name: str = Field(description="Official name of the standard or regulation.")
+    framework_name: str = Field(
+        description="Official name of the standard or regulation."
+    )
     dynamic_score: float = Field(
         description="The final computed maturity score from Python evaluation."
     )
@@ -89,7 +91,9 @@ class VerificationOutput(BaseModel):
 class AgenticRageBenchmarker:
     """The core engine orchestrating Runtime Agentic Grounding & Evaluation (RAGE)."""
 
-    def __init__(self, client_id: str, working_dir: Path, model_name: str = "gemini-2.5-pro"):
+    def __init__(
+        self, client_id: str, working_dir: Path, model_name: str = "gemini-2.5-pro"
+    ):
         self.client_id = client_id
         self.working_dir = working_dir
         self.model_name = model_name
@@ -99,7 +103,9 @@ class AgenticRageBenchmarker:
         self.evidence_dir.mkdir(parents=True, exist_ok=True)
         self.snapshotter = EvidenceSnapshotter(self.working_dir)
 
-    async def run_rage_evaluation(self, industry_key: str) -> IndustryBenchmarksSnapshot:
+    async def run_rage_evaluation(
+        self, industry_key: str
+    ) -> IndustryBenchmarksSnapshot:
         """Orchestrates the entire 5-step RAGE pipeline for all active towers under the industry.
 
         1. Read the active frameworks from the industry profile.
@@ -108,7 +114,9 @@ class AgenticRageBenchmarker:
         4. Cross-examine the evidence via an adversarial verification agent.
         5. Evaluate the thresholds mathematically in Python and generate the master snapshot.
         """
-        logger.info(f"🚀 [RAGE] Starting Runtime Grounding & Evaluation for client: {self.client_id}")
+        logger.info(
+            f"🚀 [RAGE] Starting Runtime Grounding & Evaluation for client: {self.client_id}"
+        )
 
         # Step 1: Load industry profile and its active frameworks mapping
         profile_data = load_industry_profile(industry_key)
@@ -118,7 +126,9 @@ class AgenticRageBenchmarker:
                 f"[RAGE] No active frameworks defined for industry '{industry_key}'. "
                 "Utilizing standard baseline default fallbacks."
             )
-            return IndustryBenchmarksSnapshot(client_id=self.client_id, industry=industry_key)
+            return IndustryBenchmarksSnapshot(
+                client_id=self.client_id, industry=industry_key
+            )
 
         master_snapshot = IndustryBenchmarksSnapshot(
             client_id=self.client_id, industry=industry_key
@@ -146,16 +156,24 @@ class AgenticRageBenchmarker:
                 logger.info(f"[RAGE] Evaluating {tower_id} against {framework_id}...")
 
                 # Step 3: Run Grounding Agent with Google Search
-                extraction = await self._run_grounding_search(rule, rubric.framework_name)
+                extraction = await self._run_grounding_search(
+                    rule, rubric.framework_name
+                )
                 if not extraction:
-                    logger.warning(f"❌ [RAGE] Grounding search failed for tower {tower_id}.")
+                    logger.warning(
+                        f"❌ [RAGE] Grounding search failed for tower {tower_id}."
+                    )
                     continue
 
                 # Step 4: Download the evidence locally (The Vault)
                 local_snapshot_path = None
                 if extraction.source_url:
-                    logger.info(f"[RAGE] Downloading evidence locally from: {extraction.source_url}")
-                    snapshot_meta = await self.snapshotter.capture_snapshot(extraction.source_url)
+                    logger.info(
+                        f"[RAGE] Downloading evidence locally from: {extraction.source_url}"
+                    )
+                    snapshot_meta = await self.snapshotter.capture_snapshot(
+                        extraction.source_url
+                    )
                     if snapshot_meta and snapshot_meta.get("status") == "verified":
                         # Convert to relative path from workspace root for portability
                         abs_path = Path(snapshot_meta["local_snapshot"])
@@ -163,24 +181,34 @@ class AgenticRageBenchmarker:
                             local_snapshot_path = str(abs_path.relative_to(Path.cwd()))
                         except ValueError:
                             local_snapshot_path = str(abs_path)
-                        logger.info(f"✓ [RAGE] Evidence saved in vault: {local_snapshot_path}")
+                        logger.info(
+                            f"✓ [RAGE] Evidence saved in vault: {local_snapshot_path}"
+                        )
                     else:
-                        logger.warning(f"⚠️ [RAGE] Could not capture secure snapshot for: {extraction.source_url}")
+                        logger.warning(
+                            f"⚠️ [RAGE] Could not capture secure snapshot for: {extraction.source_url}"
+                        )
 
                 # Step 5: Adversarial Cross-Examination (Verification)
-                is_verified = await self._cross_examine_evidence(extraction, local_snapshot_path)
+                is_verified = await self._cross_examine_evidence(
+                    extraction, local_snapshot_path
+                )
                 verif_status = "verified" if is_verified else "failed"
 
                 # Step 6: Mathematical Threshold Evaluation (Python Pure Engine)
-                score = self._evaluate_mathematical_rubric(rule, extraction.extracted_value)
-                logger.info(f"✓ [RAGE] Computed mathematical score for {tower_id}: {score}")
+                score = self._evaluate_mathematical_rubric(
+                    rule, extraction.extracted_value
+                )
+                logger.info(
+                    f"✓ [RAGE] Computed mathematical score for {tower_id}: {score}"
+                )
 
                 # Step 7: Build justification text
                 justification = (
                     f"El estándar de mercado está fijado dinámicamente en {score:,.1f}. "
                     f"Esta capacidad crítica se evalúa bajo las exigencias de {rubric.framework_name}. "
                     f"La investigación de cumplimiento sectorial en tiempo de ejecución confirma que: "
-                    f"\"{extraction.verbatim_quote}\" "
+                    f'"{extraction.verbatim_quote}" '
                     f"Cita Oficial Online: {extraction.source_url}. "
                 )
                 if local_snapshot_path:
@@ -201,21 +229,28 @@ class AgenticRageBenchmarker:
                 )
 
             except Exception as e:
-                logger.error(f"❌ [RAGE] Unexpected error evaluating tower {tower_id}: {e}")
+                logger.error(
+                    f"❌ [RAGE] Unexpected error evaluating tower {tower_id}: {e}"
+                )
 
         # Save the master benchmarks snapshot to disk
         snapshot_file = self.working_dir / "benchmarks_snapshot.json"
         try:
             snapshot_file.write_text(
-                master_snapshot.model_dump_json(indent=2, by_alias=True), encoding="utf-8"
+                master_snapshot.model_dump_json(indent=2, by_alias=True),
+                encoding="utf-8",
             )
-            logger.info(f"✓ [RAGE] Completed and froze master snapshot at: {snapshot_file}")
+            logger.info(
+                f"✓ [RAGE] Completed and froze master snapshot at: {snapshot_file}"
+            )
         except Exception as e:
             logger.error(f"❌ [RAGE] Failed to write benchmarks snapshot file: {e}")
 
         return master_snapshot
 
-    async def _run_grounding_search(self, rule: Any, framework_name: str) -> Optional[FactExtractionOutput]:
+    async def _run_grounding_search(
+        self, rule: Any, framework_name: str
+    ) -> Optional[FactExtractionOutput]:
         """Queries Google search via Gemini grounding and extracts factual metrics matching the query template."""
         research_agent = Agent(
             name="rage_research_agent",
@@ -236,7 +271,7 @@ class AgenticRageBenchmarker:
         prompt = (
             f"Por favor realiza una investigación en internet sobre el estándar {framework_name}. "
             f"Resuelve la siguiente query de investigación técnica:\n"
-            f"\"{rule.query_template}\"\n\n"
+            f'"{rule.query_template}"\n\n'
             f"Devuelve la respuesta estrictamente estructurada según el esquema JSON FactExtractionOutput."
         )
 
@@ -268,7 +303,9 @@ class AgenticRageBenchmarker:
 
         # Read first 5000 characters of local snapshot as safe text context
         try:
-            source_text = snapshot_file.read_text(encoding="utf-8", errors="ignore")[:5000]
+            source_text = snapshot_file.read_text(encoding="utf-8", errors="ignore")[
+                :5000
+            ]
         except Exception:
             return False
 
@@ -288,7 +325,7 @@ class AgenticRageBenchmarker:
             f"DOCUMENTO FUENTE DESCARGADO (Primeros 5000 caracteres):\n"
             f"-------------------\n{source_text}\n-------------------\n\n"
             f"AFIRMACIÓN A VERIFICAR:\n"
-            f"- Cita literal: \"{extraction.verbatim_quote}\"\n"
+            f'- Cita literal: "{extraction.verbatim_quote}"\n'
             f"- Valor numérico: {extraction.extracted_value}%\n"
             f"- URL de origen: {extraction.source_url}\n\n"
             f"Evalúa críticamente si el documento fuente confirma esta afirmación y responde según el esquema VerificationOutput."
@@ -306,12 +343,16 @@ class AgenticRageBenchmarker:
                 is_verif = bool(result.get("is_verified", False))
             elif isinstance(result, VerificationOutput):
                 is_verif = result.is_verified
-            
+
             if is_verif:
-                logger.info("✓ [RAGE] Evidencia verificada con éxito por el auditor adversario.")
+                logger.info(
+                    "✓ [RAGE] Evidencia verificada con éxito por el auditor adversario."
+                )
                 return True
             else:
-                logger.warning("⚠️ [RAGE] El auditor adversario rechazó la veracidad de la evidencia.")
+                logger.warning(
+                    "⚠️ [RAGE] El auditor adversario rechazó la veracidad de la evidencia."
+                )
                 return False
         except Exception as e:
             logger.error(f"[RAGE] Error in cross-examination verifier: {e}")
@@ -335,6 +376,8 @@ class AgenticRageBenchmarker:
                     if eval(clean_cond):
                         return thresh.score
             except Exception as e:
-                logger.error(f"[RAGE] Failed to evaluate mathematical threshold condition '{cond}': {e}")
+                logger.error(
+                    f"[RAGE] Failed to evaluate mathematical threshold condition '{cond}': {e}"
+                )
 
         return rule.default_score

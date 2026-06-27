@@ -21,9 +21,12 @@ def test_brand_profile_localization_structure() -> None:
 
     # Verify that the local schema contains the corresponding languages
     for lang in ["es", "en", "pt", "fr", "ja"]:
-        assert lang in brand["locales"], f"El locale '{lang}' debe estar en el perfil de marca"
+        assert lang in brand["locales"], (
+            f"El locale '{lang}' debe estar en el perfil de marca"
+        )
         assert "default_classification" in brand["locales"][lang]
         assert "disclaimer_text" in brand["locales"][lang]
+
 
 def test_payload_to_ast_bridge_branding_localization_and_robust_colors() -> None:
     """Validate dynamic injection of classification and localized disclaimer in the AST compiler."""

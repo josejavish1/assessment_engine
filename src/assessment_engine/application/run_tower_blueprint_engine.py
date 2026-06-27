@@ -810,6 +810,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     print("💼 [Bid Manager] Enriqueciendo proyectos con WBS, TCO, y ROI...")
     try:
         from assessment_engine.infrastructure.config_loader import load_rate_card
+
         rate_data = load_rate_card()
 
         from assessment_engine.domain.prompts.blueprint_prompts import (

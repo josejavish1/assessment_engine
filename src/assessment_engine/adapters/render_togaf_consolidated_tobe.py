@@ -382,6 +382,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
 
     # Loads configurations for branding and i18n to decouple presentation from logic.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
+
     brand = load_brand_profile()
     styling = brand.get("styling", {})
     color_blue = styling.get("primary_color_hex", "0072BC")
@@ -389,6 +390,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     from assessment_engine.infrastructure.config_loader import (
         resolve_localized_vocabulary,
     )
+
     vocab = resolve_localized_vocabulary(meta_lang)
     global_sum = ast.get("global_summary", {})
     towers = ast.get("towers", [])
@@ -414,6 +416,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
 
     # Ensure absolute path resolution to support execution from any directory context.
     from assessment_engine.infrastructure.runtime_paths import ROOT
+
     template_path = ROOT / "templates" / "docx" / "template_tobe_consolidated.docx"
     if template_path.exists():
         doc = Document(str(template_path))

@@ -154,6 +154,7 @@ def render_consolidated_todo(working_dir: str, output_path: str):
 
     # Load branding and localization settings from their respective configuration files.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
+
     brand = load_brand_profile()
     styling = brand.get("styling", {})
     color_blue = styling.get("primary_color_hex", "0072BC")
@@ -161,6 +162,7 @@ def render_consolidated_todo(working_dir: str, output_path: str):
     from assessment_engine.infrastructure.config_loader import (
         resolve_localized_vocabulary,
     )
+
     vocab = resolve_localized_vocabulary(meta_lang)
 
     # Stage 1: Consolidate all roadmap waves and their interdependencies into a unified data structure.

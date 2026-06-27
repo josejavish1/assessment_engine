@@ -295,6 +295,7 @@ async def run_pipeline():
     if client_intel_path.exists():
         try:
             import json
+
             with open(client_intel_path, "r", encoding="utf-8-sig") as f:
                 intel_data = json.load(f)
             profile_sec = intel_data.get("profile", {})
@@ -303,7 +304,7 @@ async def run_pipeline():
                 industry_name = profile_sec.get("industry", "")
             if not industry_name:
                 industry_name = intel_data.get("industry", "default")
-            
+
             # Map industry name to profile key
             mapping = {
                 "energía": "critical_infrastructure",
@@ -415,9 +416,7 @@ async def run_pipeline():
             env,
             "Run executive refiner",
         )
-        print(
-            "[System] Waiting for findings.json to be physically saved on disk..."
-        )
+        print("[System] Waiting for findings.json to be physically saved on disk...")
         await asyncio.sleep(2.0)
     else:
         print(

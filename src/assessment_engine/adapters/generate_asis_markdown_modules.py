@@ -97,6 +97,7 @@ def generate_modules(payload_path: str):
     from assessment_engine.infrastructure.config_loader import (
         resolve_localized_vocabulary,
     )
+
     vocab = resolve_localized_vocabulary(doc_lang)
 
     tower_name = tower_meta.get("tower_name", "Desconocida")

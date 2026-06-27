@@ -7,6 +7,7 @@ parses YAML documentation-map inputs and outputs a valid interactive HTML file.
 from pathlib import Path
 
 import yaml
+
 from assessment_engine.application.tools.visualize_doc_map import (
     generate_interactive_map,
 )

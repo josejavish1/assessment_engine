@@ -318,6 +318,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
 
     # Load the industry-specific profile to provide dynamic, domain-aware context, ensuring the generated architecture is relevant and compliant with sector-specific constraints.
     from assessment_engine.infrastructure.config_loader import load_industry_profile
+
     profile = load_industry_profile(industry)
 
     industry_name = profile.get("industry", "Standard Sector")

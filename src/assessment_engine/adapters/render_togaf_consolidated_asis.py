@@ -404,6 +404,7 @@ def render_consolidated_asis(working_dir: str, output_path: str):
 
     # Ensure absolute path resolution to support execution from any directory context.
     from assessment_engine.infrastructure.runtime_paths import ROOT
+
     template_path = ROOT / "templates" / "docx" / "template_tobe_consolidated.docx"
     if template_path.exists():
         doc = Document(str(template_path))

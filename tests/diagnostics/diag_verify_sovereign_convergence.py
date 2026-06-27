@@ -43,7 +43,9 @@ def test_sovereign_convergence_and_sort():
     # --- TOWER 6 SIMULATION (SECURITY) ---
     # Project B: "Secure AWS Landing Configuration" (SYNONYM)
     # Project C: "SIEM Implementation" (DEPENDENT)
-    print("[System] Domain 6: Injecting 'Configuración Segura de AWS Landing' (Sinónimo)...")
+    print(
+        "[System] Domain 6: Injecting 'Configuración Segura de AWS Landing' (Sinónimo)..."
+    )
     id_sec = resolver.get_semantic_id(
         "Configuración Segura de AWS Landing", context="INITIATIVE"
     )

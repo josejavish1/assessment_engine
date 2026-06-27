@@ -212,7 +212,9 @@ def run_lockin_test() -> int:
     adapter abstractions, forces the fake LLM provider, and runs the entire
     test suite.
     """
-    print("[Audit] Initializing Portability Sandbox Verification (Tear-down Validation)...")
+    print(
+        "[Audit] Initializing Portability Sandbox Verification (Tear-down Validation)..."
+    )
     repo_root = Path(__file__).resolve().parents[3]
 
     with tempfile.TemporaryDirectory() as chaos_dir:
@@ -253,7 +255,9 @@ def run_lockin_test() -> int:
         # Extirpate the adapter layers physically to simulate total vendor removal
         adapters_dir = chaos_path / "src/assessment_engine/adapters"
         if adapters_dir.exists():
-            print(f"[Audit] Simulating provider removal by deleting adapter layers at: {adapters_dir}")
+            print(
+                f"[Audit] Simulating provider removal by deleting adapter layers at: {adapters_dir}"
+            )
             shutil.rmtree(adapters_dir)
 
         # Force the isolated environment variables
@@ -363,13 +367,16 @@ def main() -> None:
 
     # RAGE Evaluation Command
     rage_parser = subparsers.add_parser(
-        "rage", help="Execute the dynamic RAGE (Runtime Agentic Grounding & Evaluation) benchmarks evaluation."
+        "rage",
+        help="Execute the dynamic RAGE (Runtime Agentic Grounding & Evaluation) benchmarks evaluation.",
     )
     rage_parser.add_argument(
         "--client", required=True, help="Formal client name (e.g. 'REDEIA')"
     )
     rage_parser.add_argument(
-        "--industry", required=True, help="Canonical industry profile key (e.g. 'critical_infrastructure')"
+        "--industry",
+        required=True,
+        help="Canonical industry profile key (e.g. 'critical_infrastructure')",
     )
 
     # Zero Lockin Portability Test

@@ -8,7 +8,7 @@ from assessment_engine.infrastructure.policy_engine import SovereignPolicyEngine
 
 def test_sovereign_policy_engine_compilation():
     os.environ["ASSESSMENT_CLIENT_ID"] = "redeia_v3"
-    
+
     # 1. Initialize a temporary graph in memory
     # --- ARRANGE ---
     try:
@@ -108,9 +108,13 @@ def test_sovereign_policy_engine_compilation():
             p for p in compiled_payload["pillars_analysis"] if p["pilar_id"] == "T2.P2"
         )
         adoption_plan = next(
-            proj for proj in p2["projects_todo"] if "Adopción de Plataforma" in proj["name"]
+            proj
+            for proj in p2["projects_todo"]
+            if "Adopción de Plataforma" in proj["name"]
         )
-        k8s_pilot = next(proj for proj in p2["projects_todo"] if "Piloto" in proj["name"])
+        k8s_pilot = next(
+            proj for proj in p2["projects_todo"] if "Piloto" in proj["name"]
+        )
 
         assert "Fase de Arranque (Mes 1-2)" in adoption_plan["duration"]
         assert "Horizonte 2" in k8s_pilot["duration"]
