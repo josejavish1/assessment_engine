@@ -1276,12 +1276,16 @@ class PayloadToASTBridge:
         )
 
         # Dynamically detect organizational scale to apply customized calibration.
-        client_name_lower = client_name.lower()
-        is_critical = (
-            "redeia" in client_name_lower
-            or "eléctrica" in client_name_lower
-            or "eurovision" in client_name_lower
-        )
+        # Get from brand profile configuration first (declarative, elite approach)
+        is_critical = self.brand_data.get("styling", {}).get("is_critical", None)
+        if is_critical is None:
+            # Fallback to legacy string matching (Technical Debt / Backward Compatibility)
+            client_name_lower = client_name.lower()
+            is_critical = (
+                "redeia" in client_name_lower
+                or "eléctrica" in client_name_lower
+                or "eurovision" in client_name_lower
+            )
         formatted_max_lm = "1.500.000 €" if is_critical else "500.000 €"
 
         nodes.append(

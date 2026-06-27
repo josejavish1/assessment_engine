@@ -3,10 +3,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from unittest.mock import patch
 import pytest
 
 from assessment_engine.adapters.compilers.payload_to_ast import PayloadToASTBridge
-from assessment_engine.domain.schemas.ast import DocumentAST, TableNode, ParagraphNode, HeadingNode
+from assessment_engine.domain.schemas.ast import DocumentAST, TableNode, ParagraphNode
 
 
 def test_payload_to_ast_bridge_conversion(tmp_path: Path):
@@ -44,7 +45,7 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
             "language": "es",
             "tower_name": "Seguridad de Red",
             "tower_code": "T5",
-            "client_name": "NTT DATA Client",
+            "client_name": "Generic Corporate Client",
             "version": "1.0",
             "date": "Junio 2026",
             "currency": "€"
@@ -86,9 +87,22 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     blueprint_path.write_text(json.dumps(blueprint_payload), encoding="utf-8")
     annex_path.write_text(json.dumps(annex_payload), encoding="utf-8")
     
+    # Mock load_brand_profile to return styling with is_critical=True declaratively!
+    # This prevents coupling our tests to hardcoded client name strings!
+    mock_brand_data = {
+        "company_name": "NTT DATA",
+        "default_classification": "Confidencial",
+        "styling": {
+            "is_critical": True,
+            "primary_color_hex": "0072BC",
+            "alternate_row_color_hex": "F2F2F2"
+        }
+    }
+
     # 2. --- ACT ---
-    bridge = PayloadToASTBridge()
-    ast = bridge.convert(str(blueprint_path), str(annex_path))
+    with patch("assessment_engine.infrastructure.config_loader.load_brand_profile", return_value=mock_brand_data):
+        bridge = PayloadToASTBridge()
+        ast = bridge.convert(str(blueprint_path), str(annex_path))
     
     # 3. --- ASSERT ---
     # Check that the returned object is a valid DocumentAST
@@ -105,7 +119,7 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     
     # Verify client is correctly embedded
     client_paragraph = ast.nodes[5]
-    assert "NTT DATA CLIENT" in client_paragraph.text
+    assert "GENERIC CORPORATE CLIENT" in client_paragraph.text
 
     # Verify that the Markdown platform overview was compiled and merged into the AST
     has_platform_desc = any(
