@@ -1,7 +1,7 @@
 {
   "engine_name": "assessment_engine",
   "engine_version": "1.0",
-  "document_profile": "tower_annex_profile",
+  "document_profile": "tower_annex_v2_profile",
   "model_profiles": {
     "section_writer": "writer_fast",
     "section_reviewer": "review_strict",
