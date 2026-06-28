@@ -234,10 +234,12 @@ def run_command_safely(cmd: str, repo_root: Path) -> tuple[int, str]:
     cmd_run = cmd_run.replace("python ", f"{sys.executable} ")
 
     print(f"    Ejecutando: {cmd_run}")
+    import shlex
+
     try:
         res = subprocess.run(
-            cmd_run,
-            shell=True,
+            shlex.split(cmd_run),
+            shell=False,
             cwd=repo_root,
             capture_output=True,
             text=True,

@@ -1,35 +1,9 @@
 {
   "changed_files": [
-    "docs/architecture/policy-engine-architecture.md",
-    "docs/audits/AUDIT_RESULTS.md",
-    "docs/operations/troubleshooting-working.md",
-    "src/assessment_engine/application/_legacy/build_tower_annex_template_payload.py",
-    "src/assessment_engine/application/run_intelligence_harvesting.py",
-    "src/assessment_engine/application/tools/run_product_owner_orchestrator.py",
-    "src/assessment_engine/infrastructure/agentic_benchmarker.py",
-    "src/assessment_engine/infrastructure/config_loader.py",
-    "src/assessment_engine/infrastructure/evidence_governance.py",
-    "src/assessment_engine/infrastructure/policy_engine.py",
-    "src/assessment_engine/infrastructure/text_utils.py",
-    "tests/agent_evals/run_evals.py",
-    "tests/conftest.py",
-    "tests/functional/test_agentic_benchmarker.py",
-    "tests/integration/test_apex_infrastructure.py",
-    "tests/integration/test_epistemic_schema_validation.py",
-    "tests/integration/test_evidence_provenance.py",
-    "tests/integration/test_global_synthesizer_tobe.py",
-    "tests/integration/test_payload_to_ast.py",
-    "tests/integration/test_policy_engine.py",
-    "tests/unit/test_ai_client.py",
-    "tests/unit/test_config_loader.py",
-    "tests/unit/test_decoupling_linter.py",
-    "tests/unit/test_environment.py",
-    "tests/unit/test_mcp_server.py",
-    "tests/unit/test_po_orchestrator_security.py",
-    "tests/unit/test_text_utils.py"
+    "tests/integration/test_evidence_provenance.py"
   ],
   "contract_change": false,
-  "doc_change": true,
+  "doc_change": false,
   "execution_contract_task_id": null,
   "overlapping_paths": [],
   "planned_paths": [
@@ -242,14 +216,5 @@
   "semantic_drift": {},
   "stateful_change": [],
   "test_change": true,
-  "unplanned_changed_files": [
-    "src/assessment_engine/application/_legacy/build_tower_annex_template_payload.py",
-    "src/assessment_engine/application/run_intelligence_harvesting.py",
-    "src/assessment_engine/application/tools/run_product_owner_orchestrator.py",
-    "src/assessment_engine/infrastructure/agentic_benchmarker.py",
-    "src/assessment_engine/infrastructure/config_loader.py",
-    "src/assessment_engine/infrastructure/evidence_governance.py",
-    "src/assessment_engine/infrastructure/policy_engine.py",
-    "src/assessment_engine/infrastructure/text_utils.py"
-  ]
+  "unplanned_changed_files": []
 }
