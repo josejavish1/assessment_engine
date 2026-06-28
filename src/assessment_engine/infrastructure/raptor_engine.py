@@ -173,7 +173,15 @@ class RaptorEngine:
             return "Resumen no disponible debido a un error de procesamiento."
 
     def _save_tree(self) -> None:
-        self.tree_path.write_text(self.tree.model_dump_json(indent=2), encoding="utf-8")
+        import uuid
+        tmp_path = self.tree_path.with_name(f"{self.tree_path.name}.{uuid.uuid4().hex[:8]}.tmp")
+        try:
+            tmp_path.write_text(self.tree.model_dump_json(indent=2), encoding="utf-8")
+            tmp_path.replace(self.tree_path)
+        except Exception:
+            if tmp_path.exists():
+                tmp_path.unlink()
+            raise
 
     def get_context_at_level(self, level: int) -> str:
         """Return a formatted string of all node content at a specified hierarchical level."""

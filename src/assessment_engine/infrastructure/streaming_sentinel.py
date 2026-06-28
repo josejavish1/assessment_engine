@@ -268,7 +268,16 @@ class StreamingSentinel:
                     streaming_dir = storage_dir / "streaming"
                     streaming_dir.mkdir(parents=True, exist_ok=True)
                     evidence_file = streaming_dir / f"stream_{content_hash[:16]}.txt"
-                    evidence_file.write_text(content, encoding="utf-8")
+                    
+                    import uuid
+                    tmp_evidence = streaming_dir / f"stream_{content_hash[:16]}.{uuid.uuid4().hex[:8]}.tmp"
+                    try:
+                        tmp_evidence.write_text(content, encoding="utf-8")
+                        tmp_evidence.replace(evidence_file)
+                    except Exception:
+                        if tmp_evidence.exists():
+                            tmp_evidence.unlink()
+                        raise
 
                     # Ingest file directly into the Evidence Vault (incremental indexing)
                     evidence_engine.ingest_file(evidence_file)

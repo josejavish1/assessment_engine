@@ -399,7 +399,17 @@ class EpistemicGraphService:
                     })
                 
                 policy_data["industry_topologies"][target_profile] = updated_list
-                policy_file.write_text(json.dumps(policy_data, indent=2, ensure_ascii=False), encoding="utf-8-sig")
+                
+                import uuid
+                tmp_policy = policy_file.with_name(f"{policy_file.name}.{uuid.uuid4().hex[:8]}.tmp")
+                try:
+                    tmp_policy.write_text(json.dumps(policy_data, indent=2, ensure_ascii=False), encoding="utf-8-sig")
+                    tmp_policy.replace(policy_file)
+                except Exception:
+                    if tmp_policy.exists():
+                        tmp_policy.unlink()
+                    raise
+                
                 logger.info(f"Causal Backpropagation: Learned weights persisted to profile '{target_profile}'.")
         except Exception as e:
             logger.error(f"Failed to persist learned weights to policy file: {e}")
