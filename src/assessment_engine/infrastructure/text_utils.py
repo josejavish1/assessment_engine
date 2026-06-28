@@ -166,3 +166,26 @@ def format_currency_custom(
         return f"{symbol}{formatted_num}"
     else:
         return f"{formatted_num} {symbol}"
+
+
+def detect_prompt_injection(text: str) -> bool:
+    """Scan input text for adversarial prompt injection payloads.
+
+    This acts as a deterministic pre-flight security guardrail before passing
+    any untrusted natural language user request to generative models in Vertex AI.
+
+    Returns:
+        True if an injection attempt is detected, False otherwise.
+    """
+    import re
+    if not text:
+        return False
+    patterns = [
+        r"ignore\s+previous\s+instructions",
+        r"system\s+override",
+        r"set\s+is_verified\s+to",
+        r"set\s+system\s+score\s+to",
+        r"ignore\s+all\s+constraints",
+    ]
+    text_lower = text.lower()
+    return any(re.search(pat, text_lower) for pat in patterns)

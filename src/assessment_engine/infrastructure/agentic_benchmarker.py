@@ -296,18 +296,9 @@ class AgenticRageBenchmarker:
         """Runs an adversarial cross-examination agent to verify the facts against local snapshot source text."""
         # SECURE PROMPT INJECTION GUARD (Deterministic Filter)
         # Prevents adversarial payloads in the verbatim quote or snapshot text from reaching the LLM
-        def is_injection(text: str) -> bool:
-            import re
-            patterns = [
-                r"ignore\s+previous\s+instructions",
-                r"system\s+override",
-                r"set\s+is_verified\s+to",
-                r"set\s+system\s+score\s+to"
-            ]
-            text_lower = text.lower()
-            return any(re.search(pat, text_lower) for pat in patterns)
+        from assessment_engine.infrastructure.text_utils import detect_prompt_injection
 
-        if is_injection(extraction.verbatim_quote) or (local_snapshot_path and is_injection(Path(local_snapshot_path).read_text(encoding="utf-8", errors="ignore")[:5000])):
+        if detect_prompt_injection(extraction.verbatim_quote) or (local_snapshot_path and detect_prompt_injection(Path(local_snapshot_path).read_text(encoding="utf-8", errors="ignore")[:5000])):
             logger.warning("⚠️ [SECURITY ALERT] Prompt injection detected and blocked deterministically.")
             return False
 

@@ -2534,6 +2534,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     request_text = load_request_text(args)
+    
+    # Pre-flight Prompt Guard deterministic filter
+    from assessment_engine.infrastructure.text_utils import detect_prompt_injection
+    if detect_prompt_injection(request_text):
+        logger.error("❌ [SECURITY ALERT] Prompt injection detected and blocked deterministically.")
+        raise RuntimeError("Prompt injection detected and blocked deterministically.")
+
     if args.command == "run":
         ensure_clean_worktree(allow_dirty=args.allow_dirty, request_text=request_text)
 
