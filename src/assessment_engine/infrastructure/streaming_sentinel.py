@@ -20,8 +20,8 @@ logger = logging.getLogger(__name__)
 # Webhook payload schema if FastAPI is used
 if FASTAPI_AVAILABLE:
     class EvidencePayload(BaseModel):
-        source_url: str = Field(..., description="The source URL or identifier of the streamed evidence.")
-        content: str = Field(..., description="The raw text content of the evidence to index.")
+        source_url: str = Field(..., max_length=2048, description="The source URL or identifier of the streamed evidence.")
+        content: str = Field(..., max_length=5_000_000, description="The raw text content of the evidence to index (Max 5MB).")
 
 class StreamingSentinel:
     """A high-performance real-time Streaming RAG Daemon and Dual-Tier Graph Ingestor.
@@ -268,7 +268,14 @@ class StreamingSentinel:
                     # Write the text to a physical .txt file under the client's streaming directory
                     streaming_dir = storage_dir / "streaming"
                     streaming_dir.mkdir(parents=True, exist_ok=True)
+                    
+                    # Construct file path
                     evidence_file = streaming_dir / f"stream_{content_hash[:16]}.txt"
+                    
+                    # Defense-in-Depth: Path Traversal (Local File Inclusion) Guardrail
+                    # Ensures mathematically that the resolved absolute path never escapes the designated sandbox directory.
+                    if not evidence_file.resolve().is_relative_to(streaming_dir.resolve()):
+                        raise ValueError(f"Critical Security Alert: Path traversal blocked. Resolved path {evidence_file} escapes sandbox bounds.")
                     
                     import uuid
                     tmp_evidence = streaming_dir / f"stream_{content_hash[:16]}.{uuid.uuid4().hex[:8]}.tmp"
