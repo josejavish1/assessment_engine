@@ -298,8 +298,17 @@ class AgenticRageBenchmarker:
         # Prevents adversarial payloads in the verbatim quote or snapshot text from reaching the LLM
         from assessment_engine.infrastructure.text_utils import detect_prompt_injection
 
-        if detect_prompt_injection(extraction.verbatim_quote) or (local_snapshot_path and detect_prompt_injection(Path(local_snapshot_path).read_text(encoding="utf-8", errors="ignore")[:5000])):
-            logger.warning("⚠️ [SECURITY ALERT] Prompt injection detected and blocked deterministically.")
+        if detect_prompt_injection(extraction.verbatim_quote) or (
+            local_snapshot_path
+            and detect_prompt_injection(
+                Path(local_snapshot_path).read_text(encoding="utf-8", errors="ignore")[
+                    :5000
+                ]
+            )
+        ):
+            logger.warning(
+                "⚠️ [SECURITY ALERT] Prompt injection detected and blocked deterministically."
+            )
             return False
 
         if not local_snapshot_path:

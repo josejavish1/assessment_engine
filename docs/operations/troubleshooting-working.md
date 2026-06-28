@@ -113,7 +113,7 @@ python -m assessment_engine.application.tools.check_vertex_ai_access
 
 ### Resolución de Errores Comunes de Acceso Cloud:
 *   **Error:** `GoogleDefaultCredentialsError` / `PermissionDenied` en la llamada generativa.
-*   **Solución:** 
+*   **Solución:**
     1.  Verificar que las credenciales locales estén inicializadas de forma activa en la sub-shell actual:
         ```bash
         gcloud auth application-default login

@@ -271,7 +271,7 @@ def load_industry_profile(profile_key: str) -> dict:
     """
     key = str(profile_key or "default").replace(".json", "").strip().lower()
     profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / f"{key}.json"
-    
+
     # Robust fallback handling (Technical Debt / Backward Compatibility)
     try:
         if not profile_file.exists():
@@ -283,7 +283,9 @@ def load_industry_profile(profile_key: str) -> dict:
         try:
             return _load_json(default_file)
         except Exception:
-            raise KeyError("No se pudo cargar el perfil de industria por defecto o se encuentra corrupto.")
+            raise KeyError(
+                "No se pudo cargar el perfil de industria por defecto o se encuentra corrupto."
+            )
 
 
 def load_framework_rubric(framework_id: str) -> dict:

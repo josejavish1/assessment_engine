@@ -1,6 +1,7 @@
 # golden-path: ignore
 from __future__ import annotations
 
+from pathlib import Path
 import hashlib
 from unittest.mock import MagicMock, patch
 
@@ -100,55 +101,67 @@ async def test_ai_client_network_resilience_retry():
 @pytest.mark.asyncio
 async def test_evidence_snapshotter_download_resilience(tmp_path: Path):
     """Verify that EvidenceSnapshotter handles network errors and corrupted downloads gracefully.
-    
+
     This is a Google Practice standard test case that asserts our system rejects
     evidence URLs that fail to download, return non-200 HTTP statuses, or time out,
     preventing corrupted data from contaminating the downstream RAGE pipelines.
     """
-    from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
     import httpx
-    
+
+    from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
+
     # 1. --- ARRANGE ---
     snapshotter = EvidenceSnapshotter(tmp_path)
-    
+
     # Mock httpx.AsyncClient.get to raise a network connection error
     async def mock_client_get_error(*args, **kwargs):
         raise httpx.ConnectError("Connection refused by target server")
-        
+
     with patch("httpx.AsyncClient.get", side_effect=mock_client_get_error):
         # 2. --- ACT ---
         # Capture a snapshot of a binary PDF URL that fails to download
         binary_url = "https://example.com/missing_ens_report.pdf"
         result = await snapshotter.capture_snapshot(binary_url)
-        
+
         # 3. --- ASSERT ---
         # The result must be None (failed capture as both binary download and playwright fallbacks failed)
         assert result is None
-        
+
         # Verify that process_urls properly discards this broken URL under its governance rules
         text_with_broken_link = f"Read the report here: {binary_url}"
         claims = await snapshotter.process_urls(text_with_broken_link)
-        assert len(claims) == 0, "Broken URLs must be filtered out and discarded under governance rules."
+        assert len(claims) == 0, (
+            "Broken URLs must be filtered out and discarded under governance rules."
+        )
 
 
 @pytest.mark.asyncio
 async def test_evidence_snapshotter_empty_and_corrupt_pdf_validation(tmp_path: Path):
     """Verify that EvidenceSnapshotter throws ValueError / returns None when getting empty files or files without %PDF- magic bytes."""
-    from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
     import httpx
-    
+
+    from assessment_engine.infrastructure.evidence_governance import EvidenceSnapshotter
+
     # 1. --- ARRANGE ---
     snapshotter = EvidenceSnapshotter(tmp_path)
-    
+
     # --- ACT & ASSERT ---
     # Case A: Server returns HTTP 200 but content is empty (0 bytes)
     mock_empty_resp = httpx.Response(200, content=b"")
     with patch("httpx.AsyncClient.get", return_value=mock_empty_resp):
-        result_empty = await snapshotter.capture_snapshot("https://example.com/empty_report.pdf")
+        result_empty = await snapshotter.capture_snapshot(
+            "https://example.com/empty_report.pdf"
+        )
         assert result_empty is None, "Empty downloads must be rejected and return None."
-        
+
     # Case B: Server returns HTTP 200 but content is HTML camouflaged as a PDF (missing PDF signature)
-    mock_corrupt_resp = httpx.Response(200, content=b"<html>This is disguised HTML, not a PDF document!</html>")
+    mock_corrupt_resp = httpx.Response(
+        200, content=b"<html>This is disguised HTML, not a PDF document!</html>"
+    )
     with patch("httpx.AsyncClient.get", return_value=mock_corrupt_resp):
-        result_corrupt = await snapshotter.capture_snapshot("https://example.com/disguised_report.pdf")
-        assert result_corrupt is None, "Corrupted/disguised PDFs must be rejected and return None."
+        result_corrupt = await snapshotter.capture_snapshot(
+            "https://example.com/disguised_report.pdf"
+        )
+        assert result_corrupt is None, (
+            "Corrupted/disguised PDFs must be rejected and return None."
+        )

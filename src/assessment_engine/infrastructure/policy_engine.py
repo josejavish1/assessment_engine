@@ -275,7 +275,10 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
             # Implements a security fallback to prevent execution failure in CI/CD environments.
             # Reads from brand profile configuration first (declarative, elite approach)
             try:
-                from assessment_engine.infrastructure.config_loader import load_brand_profile
+                from assessment_engine.infrastructure.config_loader import (
+                    load_brand_profile,
+                )
+
                 brand_profile = load_brand_profile()
                 is_critical = brand_profile.get("styling", {}).get("is_critical", False)
                 if is_critical:

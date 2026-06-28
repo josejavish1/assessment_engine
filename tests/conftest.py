@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import socket
 from typing import Any, Dict
+
 import pytest
 
 
@@ -9,7 +10,7 @@ import pytest
 def block_external_network(monkeypatch):
     """Disable all external network connections during tests to ensure complete hermeticity."""
     original_connect = socket.socket.connect
-    
+
     def mocked_connect(self, address):
         host = address[0]
         # Allow localhost / loopback for local service mock/mem bindings
@@ -22,7 +23,7 @@ def block_external_network(monkeypatch):
             f"❌ [SECURITY BLOCK] External network connection attempt blocked to host: {host}. "
             f"All integration and unit tests must be 100% hermetic (using VCR/Semantic cassettes or local mocks)."
         )
-        
+
     monkeypatch.setattr(socket.socket, "connect", mocked_connect)
 
 

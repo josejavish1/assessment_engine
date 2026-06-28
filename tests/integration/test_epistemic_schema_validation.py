@@ -37,6 +37,7 @@ def test_epistemic_graph_system_schema_validation(tmp_path):
     finally:
         import shutil
         from pathlib import Path
+
         p = Path("working") / client_id
         if p.exists():
             shutil.rmtree(p)
@@ -72,6 +73,7 @@ def test_epistemic_graph_dynamic_schema_validation():
     finally:
         import shutil
         from pathlib import Path
+
         p = Path("working") / client_id
         if p.exists():
             shutil.rmtree(p)

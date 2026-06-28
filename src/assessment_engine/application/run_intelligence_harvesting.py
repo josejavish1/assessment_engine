@@ -238,6 +238,7 @@ class SourceVault:
         ]
         # Get client-specific brands declaratively from config loaders or brand profile if available
         from assessment_engine.infrastructure.config_loader import load_brand_profile
+
         try:
             brand_profile = load_brand_profile()
             custom_brands = brand_profile.get("custom_brands", [])
@@ -411,6 +412,7 @@ async def run_market_intelligence(
 
     # Load declarative custom narratives from brand_profile.json first (elite approach)
     from assessment_engine.infrastructure.config_loader import load_brand_profile
+
     brand_data_narratives = {}
     try:
         brand_data_narratives = load_brand_profile()
@@ -423,7 +425,11 @@ async def run_market_intelligence(
     feasibility_example_str = custom_narratives.get("feasibility_example")
 
     # Fallback to legacy hardcoded text if not declaratively configured
-    if not client_context_str or not compliance_example_str or not feasibility_example_str:
+    if (
+        not client_context_str
+        or not compliance_example_str
+        or not feasibility_example_str
+    ):
         if "redeia" in client_name.lower():
             client_context_str = (
                 "footprint de transporte eléctrico y telecomunicaciones críticas, "

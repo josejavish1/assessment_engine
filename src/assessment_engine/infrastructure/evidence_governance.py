@@ -134,13 +134,17 @@ class EvidenceSnapshotter:
                     r_bin = await client.get(final_human_url)
                     if r_bin.status_code == 200:
                         content_bytes = r_bin.content
-                        
+
                         # Data Integrity and Corrupted Download checks
                         if len(content_bytes) == 0:
                             raise ValueError("Downloaded binary is empty (0 bytes).")
-                        if final_human_url.lower().endswith(".pdf") and not content_bytes.startswith(b"%PDF-"):
-                            raise ValueError("Invalid PDF magic bytes signature. File corrupted or disguised.")
-                            
+                        if final_human_url.lower().endswith(
+                            ".pdf"
+                        ) and not content_bytes.startswith(b"%PDF-"):
+                            raise ValueError(
+                                "Invalid PDF magic bytes signature. File corrupted or disguised."
+                            )
+
                         file_path.write_bytes(content_bytes)
                         return {
                             "source_type": "EXTERNAL_DOCUMENT",
@@ -158,7 +162,9 @@ class EvidenceSnapshotter:
                             "content_hash": hashlib.sha256(content_bytes).hexdigest(),
                         }
                     else:
-                        logger.warning(f"Fallo descarga directa de {final_human_url} (HTTP {r_bin.status_code})")
+                        logger.warning(
+                            f"Fallo descarga directa de {final_human_url} (HTTP {r_bin.status_code})"
+                        )
                         return None
             except Exception as e:
                 logger.warning(f"Fallo descarga directa de {final_human_url}: {e}")
@@ -168,12 +174,14 @@ class EvidenceSnapshotter:
         try:
             from playwright.async_api import async_playwright
         except ImportError:
-            logger.error("Playwright no está instalado. No se puede renderizar la página HTML.")
+            logger.error(
+                "Playwright no está instalado. No se puede renderizar la página HTML."
+            )
             return {
                 "source_type": "EXTERNAL_DOCUMENT",
                 "url": final_human_url,
                 "status": "broken",
-                "error": "Playwright is not installed in the environment."
+                "error": "Playwright is not installed in the environment.",
             }
 
         try:

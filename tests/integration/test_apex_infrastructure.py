@@ -55,12 +55,12 @@ class TestApexInfrastructure(unittest.TestCase):
         """Verify that the Sentinel successfully loads state even if the ledger is corrupted."""
         sentinel = ApexSentinel(self.test_dir, budget_limit=10.0)
         sentinel.log_transaction("TASK-1", "started", {}, cost=1.0)
-        
+
         # Corrupt the ledger by appending a malformed line
         with sentinel.ledger_path.open("a", encoding="utf-8") as f:
             f.write("{\n")  # Unclosed JSON
             f.write('{"task_id": "TASK-2", "event": "success", "cost_usd": 2.5}\n')
-            
+
         # Re-initialize sentinel to load the corrupted ledger
         new_sentinel = ApexSentinel(self.test_dir, budget_limit=10.0)
         self.assertEqual(new_sentinel.total_cost, 3.5)
@@ -69,13 +69,13 @@ class TestApexInfrastructure(unittest.TestCase):
         """Verify that get_task_status ignores malformed JSON or keys-missing lines."""
         sentinel = ApexSentinel(self.test_dir, budget_limit=10.0)
         sentinel.log_transaction("TASK-1", "started", {}, cost=1.0)
-        
+
         # Append malformed JSON and missing-key JSON lines
         with sentinel.ledger_path.open("a", encoding="utf-8") as f:
             f.write("MALFORMED_JSON_LINE\n")
             f.write('{"something_else": "test"}\n')  # Missing task_id
             f.write('{"task_id": "TASK-1", "event": "completed", "cost_usd": 2.0}\n')
-            
+
         status = sentinel.get_task_status("TASK-1")
         self.assertEqual(status, "completed")
 

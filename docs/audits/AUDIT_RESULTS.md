@@ -163,4 +163,3 @@ Este anexo actúa como el registro de auditoría en vivo que documenta la erradi
 ### E. 📐 Hallazgo de Desorganización en `docs/architecture/`
 *   **Hallazgo:** La carpeta de arquitectura técnica mezclaba visiones de futuro y guías de preventa con especificaciones de código real. Además, carecía de planos para el motor de políticas, el grafo epistémico y la nueva arquitectura RAGE.
 *   **Saneamiento:** Se segregaron los 5 archivos futuros hacia `docs/strategy/`, dejando la carpeta de arquitectura enfocada exclusivamente en el código real actual. Se redactaron las especificaciones técnicas `rage-architecture.md`, `policy-engine-architecture.md` y `epistemic-graph-architecture.md` de nivel Staff, cerrando de forma absoluta el backlog de documentación técnica del proyecto.
-

@@ -31,7 +31,7 @@ def test_no_hardcoded_client_names_in_core() -> None:
         for root, dirs, files in os.walk(target_dir):
             if any(h in root for h in [".venv", "node_modules", "__pycache__"]):
                 continue
-                
+
             for file in files:
                 if file.endswith(".py") and file not in allowed_exceptions:
                     file_path = Path(root) / file
@@ -40,22 +40,25 @@ def test_no_hardcoded_client_names_in_core() -> None:
                             stripped = line.strip()
                             # Skip comment lines, docstrings, or lines explicitly annotated as legacy/fallback
                             if (
-                                stripped.startswith("#") 
+                                stripped.startswith("#")
                                 or stripped.startswith('"""')
-                                or stripped.startswith('shell_command')
-                                or "legacy" in line.lower() 
+                                or stripped.startswith("shell_command")
+                                or "legacy" in line.lower()
                                 or "fallback" in line.lower()
                                 or "backward compatibility" in line.lower()
                                 or "plan estratégico" in line.lower()
                                 or "entity independent" in line.lower()
                                 or "defaults to 'redeia'" in line.lower()
                                 or "default value of 'redeia'" in line.lower()
-                                or "client_name = payload" in line.lower()  # line 91 fallback assignment
-                                or "assessment_client_id" in line.lower()  # fallback environment defaults
-                                or "description=" in line.lower()  # Pydantic field docstring description
+                                or "client_name = payload"
+                                in line.lower()  # line 91 fallback assignment
+                                or "assessment_client_id"
+                                in line.lower()  # fallback environment defaults
+                                or "description="
+                                in line.lower()  # Pydantic field docstring description
                             ):
                                 continue
-                            
+
                             line_lower = line.lower()
                             for word in forbidden_words:
                                 if word in line_lower:
@@ -65,7 +68,8 @@ def test_no_hardcoded_client_names_in_core() -> None:
                                     )
 
     assert len(violations) == 0, (
-        f"[-] ARCHITECTURAL COUPLING DETECTED IN CORE ENGINE!\n"
-        f"The following core engine files contain hardcoded client names in Python. "
-        f"Move these configurations to brand_profile.json instead:\n" + "\n".join(violations)
+        "[-] ARCHITECTURAL COUPLING DETECTED IN CORE ENGINE!\n"
+        "The following core engine files contain hardcoded client names in Python. "
+        "Move these configurations to brand_profile.json instead:\n"
+        + "\n".join(violations)
     )

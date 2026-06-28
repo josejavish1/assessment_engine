@@ -143,23 +143,25 @@ def test_sovereign_policy_engine_compilation():
 def test_sovereign_policy_engine_fallback_recovery():
     """Verify that SovereignPolicyEngine degrades gracefully if configuration loading fails."""
     from unittest.mock import patch
-    
+
     # Arrange - Patch load_policy_file to raise an Exception
-    with patch("assessment_engine.infrastructure.config_loader.load_policy_file") as mock_load:
+    with patch(
+        "assessment_engine.infrastructure.config_loader.load_policy_file"
+    ) as mock_load:
         mock_load.side_effect = Exception("Malformed risk profiles JSON")
-        
+
         graph = EpistemicGraph(client_id="test_client_fallback")
         engine = SovereignPolicyEngine(graph)
-        
+
         payload = {
             "document_meta": {
                 "client_name": "REDEIA",
                 "tower_code": "T2",
                 "tower_name": "Hybrid Compute & Platforms",
             },
-            "pillars_analysis": []
+            "pillars_analysis": [],
         }
-        
+
         # Act - This call should NOT crash and should degrade gracefully to empty profiles
         try:
             compiled = engine.compile(payload)
@@ -177,7 +179,7 @@ def test_sovereign_policy_engine_ofair_heuristics():
     # Setup graph and payload with specific qualitative threat & vulnerability text
     graph = EpistemicGraph(client_id="test_client_ofair")
     engine = SovereignPolicyEngine(graph)
-    
+
     payload = {
         "document_meta": {
             "client_name": "REDEIA",
@@ -192,29 +194,39 @@ def test_sovereign_policy_engine_ofair_heuristics():
                 "health_check_asis": [
                     {
                         "finding": "Infiltración por Ransomware en la red pública de internet",
-                        "impact": "Vulnerabilidad crítica sin parchear expone los perfiles de control ante sanción de directiva NIS2"
+                        "impact": "Vulnerabilidad crítica sin parchear expone los perfiles de control ante sanción de directiva NIS2",
                     }
-                ]
+                ],
             }
-        ]
+        ],
     }
-    
+
     # 2. --- ACT ---
     try:
         compiled = engine.compile(payload)
-        
+
         # 3. --- ASSERT ---
         pillar = compiled["pillars_analysis"][0]
         finding = pillar["health_check_asis"][0]
-        
+
         # Assert that the O-FAIR heuristics correctly elevated TEF and Vuln scores
-        assert finding["threat_event_frequency"] == 5, "Expected elevated TEF due to 'ransomware/internet' keyword."
-        assert finding["loss_magnitude"] == 4, "Expected high loss magnitude mapping for critical findings."
-        
+        assert finding["threat_event_frequency"] == 5, (
+            "Expected elevated TEF due to 'ransomware/internet' keyword."
+        )
+        assert finding["loss_magnitude"] == 4, (
+            "Expected high loss magnitude mapping for critical findings."
+        )
+
         # Verify that the Monte Carlo simulation generated statistical convergence values
-        assert finding["fair_ale_score"] > 0.0, "Expected computed annualized loss exposure value."
-        assert finding["fair_p90_score"] >= finding["fair_ale_score"], "P90 maximum exposure must be greater than or equal to the mean ALE."
-        assert finding["fair_max_score"] > finding["fair_min_score"], "Max exposure range must exceed min exposure."
+        assert finding["fair_ale_score"] > 0.0, (
+            "Expected computed annualized loss exposure value."
+        )
+        assert finding["fair_p90_score"] >= finding["fair_ale_score"], (
+            "P90 maximum exposure must be greater than or equal to the mean ALE."
+        )
+        assert finding["fair_max_score"] > finding["fair_min_score"], (
+            "Max exposure range must exceed min exposure."
+        )
     finally:
         test_client_path = Path("working/test_client_ofair")
         if test_client_path.exists():

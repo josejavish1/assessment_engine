@@ -72,6 +72,6 @@ Toma como entrada el payload JSON de la torre generado por el modelo de lenguaje
 
 ## 3. Integración con el Análisis FAIR (Factor Analysis of Information Risk)
 
-El Motor de Políticas se alimenta de los perfiles de riesgo FAIR declarados de forma estructurada en `engine_config/policies/fair_risk_profiles.json`. 
+El Motor de Políticas se alimenta de los perfiles de riesgo FAIR declarados de forma estructurada en `engine_config/policies/fair_risk_profiles.json`.
 
 Cruza las variables deterministas de **Frecuencia de Eventos de Amenaza (TEF)** y **Magnitud de Pérdida (LM)** para calcular la **Pérdida Anual Estimada (ALE)** de cada pilar técnico. Si el ALE supera el umbral de tolerancia financiera configurado, el motor de políticas eleva la prioridad de mitigación de la iniciativa y restringe las libertades del agente generador.

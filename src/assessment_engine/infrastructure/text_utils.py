@@ -178,6 +178,7 @@ def detect_prompt_injection(text: str) -> bool:
         True if an injection attempt is detected, False otherwise.
     """
     import re
+
     if not text:
         return False
     patterns = [
