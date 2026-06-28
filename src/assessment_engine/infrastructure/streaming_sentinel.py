@@ -173,18 +173,19 @@ class StreamingSentinel:
             self.initialize_queue()
 
         # 1. Fetch pending items
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            SELECT id, source_url, content, content_hash 
-            FROM streaming_queue 
-            WHERE status = 'pending' AND client_id = ?
-            ORDER BY created_at ASC
-            LIMIT ?
-            """,
-            (self.client_id, batch_size)
-        )
-        rows = cursor.fetchall()
+        with self.db_lock:
+            cursor = self.conn.cursor()
+            cursor.execute(
+                """
+                SELECT id, source_url, content, content_hash 
+                FROM streaming_queue 
+                WHERE status = 'pending' AND client_id = ?
+                ORDER BY created_at ASC
+                LIMIT ?
+                """,
+                (self.client_id, batch_size)
+            )
+            rows = cursor.fetchall()
 
         if not rows:
             return 0
@@ -285,11 +286,9 @@ class StreamingSentinel:
             raptor = RaptorEngine(client_id=self.client_id, storage_dir=storage_dir)
 
             try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    asyncio.create_task(raptor.build_tree(evidence_engine.ledger.fragments))
-                else:
-                    asyncio.run(raptor.build_tree(evidence_engine.ledger.fragments))
+                # Since this is executed inside a background thread pool (via asyncio.to_thread), 
+                # there is no running event loop. We use asyncio.run to safely spawn and execute the coroutine.
+                asyncio.run(raptor.build_tree(evidence_engine.ledger.fragments))
                 logger.info("🌲 [RAPTOR] Dynamic Knowledge Tree updated successfully.")
             except Exception as e:
                 logger.error(f"Failed to update Raptor Tree dynamically: {e}")
