@@ -57,22 +57,6 @@ entries:
     la ejecución con APIs.
   diataxis: how_to
   verification_mode: code
-- path: docs/strategy/roadmap_vision.md
-  kind: document
-  title: Roadmap de Evolución Agentic
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - AGENTS.md
-  last_verified_against: '2026-06-26'
-  notes: Vision de evolucion de plataforma; debe leerse como north star, no como estado
-    operativo verificado.
-  diataxis: explanation
-  verification_mode: mixed
 - path: docs/strategy/PRESENTATION_ELITE_MANAGEMENT.md
   kind: document
   title: Memorándum de Industrialización Cognitiva y Captura de Valor B2B
@@ -85,48 +69,6 @@ entries:
   - README.md
   last_verified_against: '2026-06-27'
   notes: Presentación estratégica sobre optimización y escala en consultoría tecnológica.
-  diataxis: explanation
-  verification_mode: editorial
-- path: docs/strategy/epistemic_graph_and_dynamic_assessments.md
-  kind: document
-  title: Vision Architecture - The Epistemic Knowledge Graph & Dynamic Assessments
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  source_of_truth:
-  - README.md
-  last_verified_against: '2026-06-27'
-  notes: Visión de migración del paradigma estático de torres hacia topologías de grafos dinámicos.
-  diataxis: explanation
-  verification_mode: editorial
-- path: docs/strategy/ntt_sovereign_engine_vision.md
-  kind: document
-  title: Standard Enterprise Architecture Engine Vision
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  source_of_truth:
-  - README.md
-  last_verified_against: '2026-06-27'
-  notes: Visión técnica para conciliar GitOps headless CMS con estructuras de grafos.
-  diataxis: explanation
-  verification_mode: editorial
-- path: docs/strategy/technical_implementation_superplan.md
-  kind: document
-  title: Plan de Implementación Técnica - Sovereign AI Engine
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  source_of_truth:
-  - README.md
-  last_verified_against: '2026-06-27'
-  notes: Hoja de ruta exhaustiva de industrialización de la plataforma agéntica empresarial.
   diataxis: explanation
   verification_mode: editorial
 - path: README.md
@@ -450,38 +392,6 @@ entries:
     del repo; no debe leerse como implementacion verificada.
   diataxis: explanation
   verification_mode: mixed
-- path: docs/strategy/apex_maturity_model_roadmap.md
-  kind: document
-  title: Apex maturity model roadmap
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - docs/SYSTEM_ARCHITECTURE.md
-  - src/assessment_engine
-  last_verified_against: '2026-06-25'
-  notes: Roadmap de madurez y endurecimiento; util como direccion, pero no como descripcion
-    fiable del sistema actual.
-  diataxis: explanation
-  verification_mode: mixed
-- path: docs/strategy/command-center-roadmap.md
-  kind: document
-  title: Command Center Roadmap
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  source_of_truth:
-  - business_command_center/README.md
-  last_verified_against: '2026-06-26'
-  notes: Roadmap de GUI y UX del orquestador; contiene direccion util, pero mezcla
-    capacidad objetivo y estado implementado.
-  diataxis: explanation
-  verification_mode: mixed
 - path: docs/strategy/enterprise-governance-2026.md
   kind: document
   title: Enterprise Governance 2026 "The Apex" Architecture
@@ -555,30 +465,6 @@ entries:
   last_verified_against: '2026-05-02'
   notes: Pieza util para entender la elevacion global/comercial, pero todavia en consolidacion
     antes de considerarla plenamente verificada.
-  diataxis: explanation
-  verification_mode: mixed
-- path: docs/strategy/executive-project-guide.md
-  kind: document
-  title: Executive project guide
-  doc_type: canonical
-  status: Needs Review
-  owner: docs-governance
-  applies_to:
-  - humans
-  - ai-agents
-  source_of_truth:
-  - docs/SYSTEM_ARCHITECTURE.md
-  - src/assessment_engine/application/run_tower_pipeline.py
-  - src/assessment_engine/application/run_global_pipeline.py
-  - src/assessment_engine/application/run_commercial_pipeline.py
-  - src/assessment_engine/adapters/render_web_presentation.py
-  - src/assessment_engine/domain/schemas
-  - docs/architecture/tower-pipeline.md
-  - docs/architecture/global-commercial-pipelines.md
-  - docs/architecture/critical-modules.md
-  last_verified_against: '2026-04-30'
-  notes: Puerta de entrada ejecutiva para entender el valor del proyecto, la jerarquía
-    de verdad y los riesgos empresariales del sistema.
   diataxis: explanation
   verification_mode: mixed
 - path: docs/architecture/client-intelligence.md
