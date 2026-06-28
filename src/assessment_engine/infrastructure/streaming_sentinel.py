@@ -63,7 +63,7 @@ class StreamingSentinel:
         WAL (Write-Ahead Logging) mode allows simultaneous readers and writers, achieving
         extremely high-throughput, low-latency concurrent E/S operations.
         """
-        self.conn = sqlite3.connect(self.db_path)
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
         
         # Enforce WAL mode
         self.conn.execute("PRAGMA journal_mode=WAL;")
@@ -298,12 +298,13 @@ class StreamingSentinel:
         
         while stop_event is None or not stop_event.is_set():
             try:
-                processed = self.process_next_batch()
+                # Run the blocking process_next_batch in a background thread to keep event loop free!
+                processed = await asyncio.to_thread(self.process_next_batch)
                 if processed > 0:
                     logger.info(f"Sentinel Loop: Ingested {processed} new items.")
                 
-                # Check and run Dampened Scheduler
-                self.check_and_trigger_dampened_rebuild()
+                # Run the blocking check_and_trigger_dampened_rebuild in a background thread!
+                await asyncio.to_thread(self.check_and_trigger_dampened_rebuild)
             except Exception as e:
                 logger.error(f"Error in Sentinel daemon polling iteration: {e}")
             
@@ -325,7 +326,8 @@ class StreamingSentinel:
         @app.post("/webhook/evidence")
         async def receive_evidence(payload: EvidencePayload):
             try:
-                item_id = self.enqueue_evidence(payload.source_url, payload.content)
+                # Delegate blocking database write to a background thread to prevent server freezes!
+                item_id = await asyncio.to_thread(self.enqueue_evidence, payload.source_url, payload.content)
                 return {
                     "status": "success",
                     "item_id": item_id,
