@@ -278,22 +278,30 @@ class EpistemicGraphService:
         sources = [n for n, d in self.graph.in_degree() if d == 0]
         sinks = [n for n, d in self.graph.out_degree() if d == 0]
         
+        # Robustness fallback for fully cyclic/sourceless/sinkless graphs:
+        # If there are no nodes with in-degree/out-degree 0 due to cycles, use all nodes as candidates.
+        if not sources:
+            sources = list(self.graph.nodes)
+        if not sinks:
+            sinks = list(self.graph.nodes)
+        
         paths = []
         for src in sources:
             for sink in sinks:
                 # Find all simple paths (avoids circular loops natively to avoid infinite paths)
-                for path in nx.all_simple_paths(self.graph, src, sink):
-                    # Calculate cumulative risk transfer multiplier along the path
-                    cumulative_weight = 1.0
-                    for k in range(len(path) - 1):
-                        cumulative_weight *= self.graph[path[k]][path[k+1]]["weight"]
-                    
-                    paths.append({
-                        "path": " -> ".join(path),
-                        "source": src,
-                        "sink": sink,
-                        "cumulative_risk_transfer": round(cumulative_weight, 4)
-                    })
+                if src != sink and self.graph.has_node(src) and self.graph.has_node(sink):
+                    for path in nx.all_simple_paths(self.graph, src, sink):
+                        # Calculate cumulative risk transfer multiplier along the path
+                        cumulative_weight = 1.0
+                        for k in range(len(path) - 1):
+                            cumulative_weight *= self.graph[path[k]][path[k+1]]["weight"]
+                        
+                        paths.append({
+                            "path": " -> ".join(path),
+                            "source": src,
+                            "sink": sink,
+                            "cumulative_risk_transfer": round(cumulative_weight, 4)
+                        })
                     
         # Sort paths by their cumulative risk transfer (highest risk propagation potential first)
         return sorted(paths, key=lambda x: x["cumulative_risk_transfer"], reverse=True)
