@@ -100,6 +100,40 @@ class StreamingSentinel:
             self.conn.close()
             self.conn = None
 
+    import contextlib
+    import time
+    import os
+
+    @contextlib.contextmanager
+    def _acquire_process_lock(self):
+        """OS-Level Distributed Mutex for Multi-Worker concurrency safety.
+        Uses an atomic directory creation to ensure only one worker across the entire
+        operating system can execute RAG file I/O operations simultaneously.
+        """
+        import time
+        lock_dir = self.client_dir / ".sentinel_lock"
+        has_lock = False
+        try:
+            lock_dir.mkdir(exist_ok=False)
+            has_lock = True
+        except FileExistsError:
+            # Check for stale locks (e.g., if a worker crashed mid-operation > 5 mins ago)
+            try:
+                if lock_dir.stat().st_mtime < time.time() - 300:
+                    lock_dir.rmdir()
+                    lock_dir.mkdir(exist_ok=False)
+                    has_lock = True
+            except Exception:
+                has_lock = False
+
+        yield has_lock
+
+        if has_lock:
+            try:
+                lock_dir.rmdir()
+            except Exception:
+                pass
+
     @staticmethod
     def _tokenize_text(text: str) -> Set[str]:
         """Tokenizes and normalizes text for Jaccard semantic overlap calculations."""
@@ -196,63 +230,71 @@ class StreamingSentinel:
         from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
         from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
-        # Instanciar EvidenceEngine para la capa "Cold"
-        storage_dir = self.client_dir / "redeia"  # defaults to 'redeia' for backward compatibility
-        storage_dir.mkdir(parents=True, exist_ok=True)
-        evidence_engine = EvidenceEngine(client_id=self.client_id, storage_dir=storage_dir)
+        with self._acquire_process_lock() as has_lock:
+            if not has_lock:
+                logger.info("Another worker process holds the OS sentinel lock. Skipping this polling interval.")
+                return 0
 
-        processed_count = 0
-        for item_id, source_url, content, content_hash in rows:
-            try:
-                # Mark as processing
-                with self.db_lock:
-                    self.conn.execute(
-                        "UPDATE streaming_queue SET status = 'processing' WHERE id = ?",
-                        (item_id,)
-                    )
-                    self.conn.commit()
+            # Instanciar EvidenceEngine para la capa "Cold"
+            storage_dir = self.client_dir / "redeia"  # defaults to 'redeia' for backward compatibility
+            storage_dir.mkdir(parents=True, exist_ok=True)
+            evidence_engine = EvidenceEngine(client_id=self.client_id, storage_dir=storage_dir)
 
-                # Jaccard Semantic Deduplication check against the cold storage ledger
-                if self._is_semantic_duplicate(content, evidence_engine.ledger.fragments, threshold=0.80):
+            processed_count = 0
+            for item_id, source_url, content, content_hash in rows:
+                try:
+                    # Atomic Multi-Worker Claiming: Verify the status is still 'pending' before updating
                     with self.db_lock:
-                        self.conn.execute(
-                            "UPDATE streaming_queue SET status = 'processed', error_message = 'Skipped: Semantic duplicate' WHERE id = ?",
+                        cursor = self.conn.execute(
+                            "UPDATE streaming_queue SET status = 'processing' WHERE id = ? AND status = 'pending'",
                             (item_id,)
                         )
                         self.conn.commit()
-                    continue
+                        if cursor.rowcount == 0:
+                            # Another fast worker on a different process already claimed this exact item in the millisecond window
+                            continue
 
-                # Write the text to a physical .txt file under the client's streaming directory
-                streaming_dir = storage_dir / "streaming"
-                streaming_dir.mkdir(parents=True, exist_ok=True)
-                evidence_file = streaming_dir / f"stream_{content_hash[:16]}.txt"
-                evidence_file.write_text(content, encoding="utf-8")
+                    # Jaccard Semantic Deduplication check against the cold storage ledger
+                    if self._is_semantic_duplicate(content, evidence_engine.ledger.fragments, threshold=0.80):
+                        with self.db_lock:
+                            self.conn.execute(
+                                "UPDATE streaming_queue SET status = 'processed', error_message = 'Skipped: Semantic duplicate' WHERE id = ?",
+                                (item_id,)
+                            )
+                            self.conn.commit()
+                        continue
 
-                # Ingest file directly into the Evidence Vault (incremental indexing)
-                evidence_engine.ingest_file(evidence_file)
-                
-                # Mark as processed in database
-                with self.db_lock:
-                    self.conn.execute(
-                        """
-                        UPDATE streaming_queue 
-                        SET status = 'processed', processed_at = ? 
-                        WHERE id = ?
-                        """,
-                        (datetime.now(timezone.utc).isoformat(), item_id)
-                    )
-                    self.conn.commit()
-                processed_count += 1
-                self.dampening_buffer.append(item_id)
-                logger.info(f"Successfully processed and indexed evidence item {item_id}.")
-            except Exception as e:
-                logger.error(f"Error processing evidence item {item_id}: {e}")
-                with self.db_lock:
-                    self.conn.execute(
-                        "UPDATE streaming_queue SET status = 'failed', error_message = ? WHERE id = ?",
-                        (str(e), item_id)
-                    )
-                    self.conn.commit()
+                    # Write the text to a physical .txt file under the client's streaming directory
+                    streaming_dir = storage_dir / "streaming"
+                    streaming_dir.mkdir(parents=True, exist_ok=True)
+                    evidence_file = streaming_dir / f"stream_{content_hash[:16]}.txt"
+                    evidence_file.write_text(content, encoding="utf-8")
+
+                    # Ingest file directly into the Evidence Vault (incremental indexing)
+                    evidence_engine.ingest_file(evidence_file)
+                    
+                    # Mark as processed in database
+                    with self.db_lock:
+                        self.conn.execute(
+                            """
+                            UPDATE streaming_queue 
+                            SET status = 'processed', processed_at = ? 
+                            WHERE id = ?
+                            """,
+                            (datetime.now(timezone.utc).isoformat(), item_id)
+                        )
+                        self.conn.commit()
+                    processed_count += 1
+                    self.dampening_buffer.append(item_id)
+                    logger.info(f"Successfully processed and indexed evidence item {item_id}.")
+                except Exception as e:
+                    logger.error(f"Error processing evidence item {item_id}: {e}")
+                    with self.db_lock:
+                        self.conn.execute(
+                            "UPDATE streaming_queue SET status = 'failed', error_message = ? WHERE id = ?",
+                            (str(e), item_id)
+                        )
+                        self.conn.commit()
 
         # 2. Dampened Batching Scheduler for Raptor RAG Tree rebuild
         # We only rebuild the tree when we exceed 5 items or when we hit a silent quiet period.
