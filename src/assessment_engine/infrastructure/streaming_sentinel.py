@@ -147,16 +147,16 @@ class StreamingSentinel:
 
         try:
             with self.db_lock:
-                with self.conn:
-                    self.conn.execute(
-                        """
-                        INSERT INTO streaming_queue (id, client_id, source_url, content, content_hash)
-                        VALUES (?, ?, ?, ?, ?)
-                        ON CONFLICT(id) DO UPDATE SET
-                        status = CASE WHEN status = 'failed' THEN 'pending' ELSE status END
-                        """,
-                        (item_id, self.client_id, source_url, content, content_hash)
-                    )
+                self.conn.execute(
+                    """
+                    INSERT INTO streaming_queue (id, client_id, source_url, content, content_hash)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                    status = CASE WHEN status = 'failed' THEN 'pending' ELSE status END
+                    """,
+                    (item_id, self.client_id, source_url, content, content_hash)
+                )
+                self.conn.commit()
             logger.info(f"Enqueued evidence item {item_id} from {source_url} (Delta-Checked).")
             return item_id
         except Exception as e:
@@ -205,20 +205,20 @@ class StreamingSentinel:
             try:
                 # Mark as processing
                 with self.db_lock:
-                    with self.conn:
-                        self.conn.execute(
-                            "UPDATE streaming_queue SET status = 'processing' WHERE id = ?",
-                            (item_id,)
-                        )
+                    self.conn.execute(
+                        "UPDATE streaming_queue SET status = 'processing' WHERE id = ?",
+                        (item_id,)
+                    )
+                    self.conn.commit()
 
                 # Jaccard Semantic Deduplication check against the cold storage ledger
                 if self._is_semantic_duplicate(content, evidence_engine.ledger.fragments, threshold=0.80):
                     with self.db_lock:
-                        with self.conn:
-                            self.conn.execute(
-                                "UPDATE streaming_queue SET status = 'processed', error_message = 'Skipped: Semantic duplicate' WHERE id = ?",
-                                (item_id,)
-                            )
+                        self.conn.execute(
+                            "UPDATE streaming_queue SET status = 'processed', error_message = 'Skipped: Semantic duplicate' WHERE id = ?",
+                            (item_id,)
+                        )
+                        self.conn.commit()
                     continue
 
                 # Write the text to a physical .txt file under the client's streaming directory
@@ -232,26 +232,26 @@ class StreamingSentinel:
                 
                 # Mark as processed in database
                 with self.db_lock:
-                    with self.conn:
-                        self.conn.execute(
-                            """
-                            UPDATE streaming_queue 
-                            SET status = 'processed', processed_at = ? 
-                            WHERE id = ?
-                            """,
-                            (datetime.now(timezone.utc).isoformat(), item_id)
-                        )
+                    self.conn.execute(
+                        """
+                        UPDATE streaming_queue 
+                        SET status = 'processed', processed_at = ? 
+                        WHERE id = ?
+                        """,
+                        (datetime.now(timezone.utc).isoformat(), item_id)
+                    )
+                    self.conn.commit()
                 processed_count += 1
                 self.dampening_buffer.append(item_id)
                 logger.info(f"Successfully processed and indexed evidence item {item_id}.")
             except Exception as e:
                 logger.error(f"Error processing evidence item {item_id}: {e}")
                 with self.db_lock:
-                    with self.conn:
-                        self.conn.execute(
-                            "UPDATE streaming_queue SET status = 'failed', error_message = ? WHERE id = ?",
-                            (str(e), item_id)
-                        )
+                    self.conn.execute(
+                        "UPDATE streaming_queue SET status = 'failed', error_message = ? WHERE id = ?",
+                        (str(e), item_id)
+                    )
+                    self.conn.commit()
 
         # 2. Dampened Batching Scheduler for Raptor RAG Tree rebuild
         # We only rebuild the tree when we exceed 5 items or when we hit a silent quiet period.
