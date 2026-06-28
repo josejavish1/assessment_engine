@@ -325,11 +325,29 @@ class StreamingSentinel:
         """Returns a configured FastAPI application instance exposing the REST Webhook Endpoint.
 
         Allows external systems to stream evidence directly via POST /webhook/evidence.
+        The FastAPI application automatically manages the lifecycle of the background daemon loop.
         """
         if not FASTAPI_AVAILABLE:
             raise RuntimeError("FastAPI and Pydantic are required to run the Webhook Server.")
 
-        app = FastAPI(title=f"Streaming Sentinel Webhook - {self.client_id}")
+        from contextlib import asynccontextmanager
+
+        @asynccontextmanager
+        async def lifespan(app: FastAPI):
+            # Startup: Launch the background daemon loop
+            stop_event = asyncio.Event()
+            daemon_task = asyncio.create_task(self.start_daemon_loop(poll_interval_sec=2.0, stop_event=stop_event))
+            logger.info("FastAPI Lifespan: Streaming Sentinel background daemon started.")
+            
+            yield  # Server is running
+            
+            # Shutdown: Gracefully stop the daemon loop
+            logger.info("FastAPI Lifespan: Shutting down background daemon...")
+            stop_event.set()
+            await daemon_task
+            logger.info("FastAPI Lifespan: Background daemon stopped safely.")
+
+        app = FastAPI(title=f"Streaming Sentinel Webhook - {self.client_id}", lifespan=lifespan)
 
         @app.post("/webhook/evidence")
         async def receive_evidence(payload: EvidencePayload):
