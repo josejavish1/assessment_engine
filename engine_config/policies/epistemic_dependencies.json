@@ -1,0 +1,30 @@
+﻿{
+  "version": "1.0",
+  "industry_topologies": {
+    "default": [
+      {"parent": "T6", "child": "T5", "weight": 0.60},
+      {"parent": "T5", "child": "T2", "weight": 0.50},
+      {"parent": "T3", "child": "T8", "weight": 0.65},
+      {"parent": "T8", "child": "T4", "weight": 0.70},
+      {"parent": "T6", "child": "T1", "weight": 0.50}
+    ],
+    "critical_infrastructure": [
+      {"parent": "T6", "child": "T5", "weight": 0.75},
+      {"parent": "T5", "child": "T2", "weight": 0.85},
+      {"parent": "T3", "child": "T2", "weight": 0.70},
+      {"parent": "T3", "child": "T8", "weight": 0.65},
+      {"parent": "T8", "child": "T4", "weight": 0.80},
+      {"parent": "T9", "child": "T1", "weight": 0.55},
+      {"parent": "T4", "child": "T10", "weight": 0.60},
+      {"parent": "T6", "child": "T1", "weight": 0.50},
+      {"parent": "T5", "child": "T3", "weight": 0.50},
+      {"parent": "T8", "child": "T6", "weight": 0.45}
+    ],
+    "retail": [
+      {"parent": "T6", "child": "T5", "weight": 0.50},
+      {"parent": "T3", "child": "T8", "weight": 0.70},
+      {"parent": "T8", "child": "T4", "weight": 0.85},
+      {"parent": "T6", "child": "T1", "weight": 0.60}
+    ]
+  }
+}

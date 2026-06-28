@@ -1,13 +1,14 @@
 import asyncio
 from pathlib import Path
 
-from src.infrastructure.evidence_engine import EvidenceEngine
-from src.infrastructure.raptor_engine import RaptorEngine
+from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
+from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
 
 async def ingest_documents():
-    storage_dir = Path("working/redeia_v3/redeia")
-    client_id = "redeia"
+    import os
+    client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
+    storage_dir = Path("working") / client_id / "redeia"
 
     # Asegurar que el directorio de almacenamiento existe
     storage_dir.mkdir(parents=True, exist_ok=True)

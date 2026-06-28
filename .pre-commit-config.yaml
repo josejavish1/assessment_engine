@@ -38,11 +38,17 @@ repos:
 
   - repo: local
     hooks:
-#      - id: zero-lockin-guard
-#        name: Prove Zero Vendor Lock-in (Portability Audit)
-#        entry: bash -c "bin/prove-zero-lockin"
-#        language: system
-#        pass_filenames: false
+      - id: zero-lockin-guard
+        name: Prove Zero Vendor Lock-in (Portability Audit)
+        entry: .venv/bin/assessment-engine prove-lockin
+        language: system
+        pass_filenames: false
+
+      - id: compile-llms-full
+        name: Auto-Compile LLM Context Sitemap (llms-full.txt)
+        entry: .venv/bin/python src/assessment_engine/application/tools/compile_llms_full.py
+        language: system
+        pass_filenames: false
 
       - id: ast-shield
         name: AST Architecture Topology Guard
@@ -62,11 +68,11 @@ repos:
         language: system
         pass_filenames: false
 
-#      - id: docs-governance
-#        name: Documentation Governance Link Checker
-#        entry: bash -c "SOV_PATH=\"$HOME/sovereign_fabric\"; [ ! -d \"$SOV_PATH\" ] && SOV_PATH=\"../sovereign_fabric\"; source \"$SOV_PATH/.venv/bin/activate\" && PYTHONPATH=\"$SOV_PATH/src\" python \"$SOV_PATH/src/core/governance/documentation_governance_validator.py\" --repo-root . --documentation-map docs/documentation-map.yaml"
-#        language: system
-#        pass_filenames: false
+      - id: docs-governance
+        name: Documentation Governance Link Checker
+        entry: .venv/bin/python src/assessment_engine/application/tools/validate_documentation_governance.py --repo-root . --documentation-map docs/documentation-map.yaml
+        language: system
+        pass_filenames: false
 
 #      - id: change-discipline
 #        name: Change Discipline & Blast Radius Guard

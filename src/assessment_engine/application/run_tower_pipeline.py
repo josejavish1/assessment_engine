@@ -114,6 +114,13 @@ async def run_step_async(
         while not out_task.done() or not err_task.done() or proc.returncode is None:
             if timeout_sec is not None and (time.time() - start_time) > timeout_sec:
                 proc.kill()
+                out_task.cancel()
+                err_task.cancel()
+                # Await them to let them release the stream read locks
+                try:
+                    await asyncio.gather(out_task, err_task, return_exceptions=True)
+                except Exception:
+                    pass
                 raise asyncio.TimeoutError()
             if time.time() - last_heartbeat > 30:
                 print(
