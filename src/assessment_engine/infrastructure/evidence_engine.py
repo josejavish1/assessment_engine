@@ -331,9 +331,18 @@ class EvidenceEngine:
         )
 
     def _save_ledger(self) -> None:
-        self.ledger_path.write_text(
-            self.ledger.model_dump_json(indent=2), encoding="utf-8"
-        )
+        import uuid
+        tmp_path = self.ledger_path.with_name(f"{self.ledger_path.name}.{uuid.uuid4().hex[:8]}.tmp")
+        try:
+            tmp_path.write_text(
+                self.ledger.model_dump_json(indent=2), encoding="utf-8"
+            )
+            # POSIX Atomic Rename: replaces the old file atomically, preventing partial corruption
+            tmp_path.replace(self.ledger_path)
+        except Exception:
+            if tmp_path.exists():
+                tmp_path.unlink()
+            raise
 
     def get_grounding_context(self) -> str:
         """Serialize registered evidence fragments into a numbered context string."""

@@ -715,9 +715,20 @@ async def run_market_intelligence(
     }
 
     final_json = sign_dossier(final_json)
-    output_path.write_text(
-        json.dumps(final_json, indent=2, ensure_ascii=False), encoding="utf-8-sig"
-    )
+    
+    import uuid
+    tmp_path = output_path.with_name(f"{output_path.name}.{uuid.uuid4().hex[:8]}.tmp")
+    try:
+        tmp_path.write_text(
+            json.dumps(final_json, indent=2, ensure_ascii=False), encoding="utf-8-sig"
+        )
+        # POSIX Atomic Rename: replaces the old file atomically, preventing partial corruption
+        tmp_path.replace(output_path)
+    except Exception:
+        if tmp_path.exists():
+            tmp_path.unlink()
+        raise
+        
     print(f"✅ BLUEPRINT SANEADO Y COMPLETADO: {output_path}")
 
 
