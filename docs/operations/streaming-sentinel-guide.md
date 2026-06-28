@@ -28,30 +28,46 @@ El sistema separa el flujo de información en dos capas de almacenamiento:
 
 ---
 
-## 2. Los Tres "Escudos" de Protección Financiera (Anti-Token Exhaustion)
+## 2. Los Cuatro "Escudos" de Ciberseguridad y Protección Financiera
 
-Para garantizar que el sistema nunca consuma tokens innecesarios, el Sentinel implementa tres filtros locales automáticos en la CPU antes de llamar a cualquier API de Google Cloud:
+Para garantizar que el sistema nunca colapse bajo ataques de red (OOM/Path Traversal) ni consuma tokens innecesarios de Vertex AI, el Sentinel implementa cuatro filtros automáticos en la CPU antes de proceder a la ingesta:
 
 ```
                             [ NUEVA EVIDENCIA ENTRANTE ]
                                          │
                                          ▼
-                 [ ESCUDO 1: Hash Sintáctico SHA-256 ] ──► (Duplicado) ──► [ DESCARTE (0 Tokens) ]
+                 [ ESCUDO 1: Límite OOM de Payload Pydantic ] ──► (Excede 5MB) ──► [ HTTP 422 REJECT ]
                                          │
                                          ▼
-                 [ ESCUDO 2: Filtro Semántico Jaccard ] ──► (Overlap > 75%) ──► [ DESCARTE (0 Tokens) ]
+                 [ ESCUDO 2: Hash Sintáctico SHA-256 ] ──► (Duplicado) ──► [ DESCARTE (0 Tokens) ]
                                          │
                                          ▼
-                 [ ESCUDO 3: Programador Amortiguado ] ──► (Espera silencio) ──► [ PROCESADO SEGURO ]
+                 [ ESCUDO 3: Filtro Semántico Jaccard ] ──► (Overlap > 75%) ──► [ DESCARTE (0 Tokens) ]
+                                         │
+                                         ▼
+                 [ ESCUDO 4: Programador Amortiguado ] ──► (Espera silencio) ──► [ PROCESADO SEGURO ]
 ```
 
-*   **Escudo 1 (SHA-256 Hashing):** Si entra un documento con el mismo contenido sintáctico exacto, se bloquea y se ignora al instante.
-*   **Escudo 2 (Semantic Jaccard Filter):** Si un documento está ligeramente reescrito pero comparte más del **$75\%$** de sus palabras con fragmentos existentes, el motor lo clasifica como duplicado semántico y lo descarta de inmediato.
-*   **Escudo 3 (Dampened Batching Scheduler):** Incluso al procesar evidencias válidas, el motor no realiza llamadas a Vertex por cada ítem. Las acumula y solo reconstruye el árbol RAG de forma asíncrona cuando se acumula un lote de 5 elementos nuevos o tras un periodo de silencio de 10 segundos.
+*   **Escudo 1 (Anti-OOM Payload Guardrail):** Los esquemas de Pydantic bloquean de forma tajante `content` > 5MB y `source_url` > 2048 caracteres, previniendo inyecciones de *Out-Of-Memory* que tumbarían el servidor.
+*   **Escudo 2 (SHA-256 Hashing):** Si entra un documento con el mismo contenido sintáctico exacto, se bloquea y se ignora al instante.
+*   **Escudo 3 (Semantic Jaccard Filter):** Si un documento está ligeramente reescrito pero comparte más del **$75\%$** de sus tokens con fragmentos existentes, el motor lo clasifica como duplicado semántico y lo descarta de inmediato.
+*   **Escudo 4 (Dampened Batching Scheduler):** El motor acumula peticiones y solo reconstruye el árbol RAG de forma asíncrona (con `asyncio.run()`) en un hilo de fondo cuando se acumula un lote de 5 elementos nuevos o tras 10 segundos de silencio, protegiendo tu API key.
+*   *(Extra) Defense-in-Depth:* Una validación estricta de rutas (`is_relative_to`) evita ataques de **Local File Inclusion (Path Traversal)**, garantizando que el streaming jamás sobrescriba archivos fuera del directorio sandbox del cliente.
 
 ---
 
-## 3. Manual de Operación y Comandos
+## 3. Resiliencia de Nivel Principal (Concurrencia Multi-Worker y Hardware)
+
+El Sentinel está diseñado para resistir las peores condiciones de hardware y despliegues en red:
+
+1.  **Distributed OS Mutex (Multi-Worker Safe):** En despliegues con Gunicorn o múltiples workers de Uvicorn, el Sentinel implementa un candado atómico de sistema de archivos (`.sentinel_lock`) basado en la creación de directorios. Garantiza que solo un worker escriba en el archivo RAG `evidence_vault.json` a la vez. Las colisiones en SQLite están prevenidas mediante `threading.Lock()` y `cursor.rowcount`.
+2.  **I/O Atómico POSIX:** Todo archivo físico (incluyendo `evidence_vault.json` y los chunks de streaming) se escribe primero en un archivo `.tmp` efímero. Solo cuando el *flush* en disco es exitoso, se ejecuta un reemplazo atómico a nivel de sistema operativo (`os.replace()`), erradicando la posibilidad de que un corte de luz repentino corrompa la base de datos (Power-Loss Corruption).
+3.  **Saneamiento a Largo Plazo (WAL Bloat):** El daemon aplica explícitamente `contextlib.closing` a los cursores para evitar fugas de memoria, y lanza operaciones `PRAGMA wal_checkpoint(PASSIVE)` durante periodos inactivos, truncando el archivo de transacciones SQLite `.db-wal` para evitar que el disco se llene tras meses de ejecución 24/7.
+4.  **Integración de Ciclo de Vida FastAPI:** El loop del daemon asíncrono está directamente atado al evento de `lifespan` (Context Manager) de FastAPI. Se inicia y detiene con gracia a la vez que el servidor web.
+
+---
+
+## 4. Manual de Operación y Comandos
 
 ### Paso 1: Alimentar la Cola de Ingesta (Modo Pasivo - Gratis)
 Puedes seguir enviando noticias, alertas regulatorias de NIS2 o informes de Redeia a la cola local en cualquier momento. Puedes hacerlo mediante el script Python desde tu consola:
