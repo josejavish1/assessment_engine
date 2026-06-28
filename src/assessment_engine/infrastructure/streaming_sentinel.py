@@ -207,19 +207,20 @@ class StreamingSentinel:
             self.initialize_queue()
 
         # 1. Fetch pending items
+        import contextlib
         with self.db_lock:
-            cursor = self.conn.cursor()
-            cursor.execute(
-                """
-                SELECT id, source_url, content, content_hash 
-                FROM streaming_queue 
-                WHERE status = 'pending' AND client_id = ?
-                ORDER BY created_at ASC
-                LIMIT ?
-                """,
-                (self.client_id, batch_size)
-            )
-            rows = cursor.fetchall()
+            with contextlib.closing(self.conn.cursor()) as cursor:
+                cursor.execute(
+                    """
+                    SELECT id, source_url, content, content_hash 
+                    FROM streaming_queue 
+                    WHERE status = 'pending' AND client_id = ?
+                    ORDER BY created_at ASC
+                    LIMIT ?
+                    """,
+                    (self.client_id, batch_size)
+                )
+                rows = cursor.fetchall()
 
         if not rows:
             return 0
@@ -346,6 +347,17 @@ class StreamingSentinel:
 
             # Clear the buffer after successful rebuild trigger
             self.dampening_buffer.clear()
+            
+            # Execute Long-Term Degradation Saneamiento (WAL Checkpoint) during the quiet period
+            # to prevent the SQLite -wal file from unbounded disk bloat over months of 24/7 uptime.
+            try:
+                if self.conn:
+                    with self.db_lock:
+                        self.conn.execute("PRAGMA wal_checkpoint(PASSIVE);")
+                        logger.info("Streaming Sentinel: Executed PRAGMA wal_checkpoint(PASSIVE) to prevent disk bloat.")
+            except Exception as e:
+                logger.warning(f"Failed to execute WAL checkpoint: {e}")
+                
             return True
 
         return False
