@@ -29,6 +29,9 @@ class MCDASensitivityEngine:
         Maintains the expert base estimate as the exact mode and mean of the distribution,
         ruling out the asymmetric truncation bias near boundaries.
         """
+        # Enforce strict safety clipping to prevent infinite loops on out-of-bounds expert means (e.g. >100 due to hallucinations)
+        mean = float(np.clip(mean, low, high))
+
         # Protect against degenerate zero-width std deviations
         if std <= 0.0 or low >= high:
             return np.full(size, mean)
