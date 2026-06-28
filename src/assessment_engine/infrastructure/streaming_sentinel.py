@@ -1,16 +1,17 @@
 import asyncio
 import hashlib
-import sqlite3
 import logging
 import re
+import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, List, Optional, Set
 
 # Attempt to import FastAPI to expose the live REST Webhook server
 try:
     from fastapi import FastAPI, HTTPException
     from pydantic import BaseModel, Field
+
     FASTAPI_AVAILABLE = True
 except ImportError:
     FASTAPI_AVAILABLE = False
@@ -19,9 +20,19 @@ logger = logging.getLogger(__name__)
 
 # Webhook payload schema if FastAPI is used
 if FASTAPI_AVAILABLE:
+
     class EvidencePayload(BaseModel):
-        source_url: str = Field(..., max_length=2048, description="The source URL or identifier of the streamed evidence.")
-        content: str = Field(..., max_length=5_000_000, description="The raw text content of the evidence to index (Max 5MB).")
+        source_url: str = Field(
+            ...,
+            max_length=2048,
+            description="The source URL or identifier of the streamed evidence.",
+        )
+        content: str = Field(
+            ...,
+            max_length=5_000_000,
+            description="The raw text content of the evidence to index (Max 5MB).",
+        )
+
 
 class StreamingSentinel:
     """A high-performance real-time Streaming RAG Daemon and Dual-Tier Graph Ingestor.
@@ -37,26 +48,33 @@ class StreamingSentinel:
     - Native integrated asynchronous FastAPI Webhook Server for push-based ingestion.
     """
 
-    def __init__(self, client_id: str = "redeia_v3", db_path: Optional[Path] = None) -> None:  # defaults to 'redeia' for backward compatibility
+    def __init__(
+        self, client_id: str = "generic_client", db_path: Optional[Path] = None
+    ) -> None:
         """Initializes the Streaming Sentinel for a specific client."""
+        import os
+
+        if client_id == "generic_client":
+            client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
         self.client_id = client_id
-        
+
         # Determine paths relative to repository root
         repo_root = Path(__file__).resolve().parent.parent.parent.parent
         self.client_dir = repo_root / "working" / client_id
         self.client_dir.mkdir(parents=True, exist_ok=True)
-        
+
         if db_path is None:
             self.db_path = self.client_dir / "streaming_queue.db"
         else:
             self.db_path = db_path
 
         self.conn: Optional[sqlite3.Connection] = None
-        
+
         # Concurrency safety lock for multi-threaded SQLite WAL writes
         import threading
+
         self.db_lock = threading.Lock()
-        
+
         # Dampening queue and state variables
         self.dampening_buffer: List[str] = []
         self.last_ingest_time: float = 0.0
@@ -68,7 +86,7 @@ class StreamingSentinel:
         extremely high-throughput, low-latency concurrent E/S operations.
         """
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        
+
         # Enforce WAL mode
         self.conn.execute("PRAGMA journal_mode=WAL;")
         self.conn.execute("PRAGMA synchronous=NORMAL;")
@@ -90,7 +108,7 @@ class StreamingSentinel:
             """)
             # Index for fast priority polling
             self.conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_status_created 
+                CREATE INDEX IF NOT EXISTS idx_status_created
                 ON streaming_queue(status, created_at);
             """)
 
@@ -101,8 +119,8 @@ class StreamingSentinel:
             self.conn = None
 
     import contextlib
-    import time
     import os
+    import time
 
     @contextlib.contextmanager
     def _acquire_process_lock(self):
@@ -111,6 +129,7 @@ class StreamingSentinel:
         operating system can execute RAG file I/O operations simultaneously.
         """
         import time
+
         lock_dir = self.client_dir / ".sentinel_lock"
         has_lock = False
         try:
@@ -141,14 +160,18 @@ class StreamingSentinel:
         words = re.findall(r"\w+", text.lower())
         return set(words)
 
-    def _is_semantic_duplicate(self, content: str, existing_fragments: List[Any], threshold: float = 0.80) -> bool:
+    def _is_semantic_duplicate(
+        self, content: str, existing_fragments: List[Any], threshold: float = 0.80
+    ) -> bool:
         """Calculates Jaccard similarity against existing fragments to prevent semantic duplicates."""
         new_tokens = self._tokenize_text(content)
         if not new_tokens:
             return False
 
         for frag in existing_fragments:
-            frag_text = getattr(frag, "content", "") if hasattr(frag, "content") else str(frag)
+            frag_text = (
+                getattr(frag, "content", "") if hasattr(frag, "content") else str(frag)
+            )
             frag_tokens = self._tokenize_text(frag_text)
             if not frag_tokens:
                 continue
@@ -158,7 +181,9 @@ class StreamingSentinel:
             jaccard_sim = len(intersection) / len(union)
 
             if jaccard_sim > threshold:
-                logger.warning(f"Semantic duplicate detected (Jaccard={jaccard_sim:.4f}). Skipping ingestion.")
+                logger.warning(
+                    f"Semantic duplicate detected (Jaccard={jaccard_sim:.4f}). Skipping ingestion."
+                )
                 return True
         return False
 
@@ -175,9 +200,11 @@ class StreamingSentinel:
         hasher = hashlib.sha256()
         hasher.update(content.encode("utf-8"))
         content_hash = hasher.hexdigest()
-        
+
         # Unique identifier based on hash and client
-        item_id = hashlib.sha256(f"{self.client_id}:{content_hash}".encode("utf-8")).hexdigest()
+        item_id = hashlib.sha256(
+            f"{self.client_id}:{content_hash}".encode("utf-8")
+        ).hexdigest()
 
         try:
             with self.db_lock:
@@ -188,10 +215,12 @@ class StreamingSentinel:
                     ON CONFLICT(id) DO UPDATE SET
                     status = CASE WHEN status = 'failed' THEN 'pending' ELSE status END
                     """,
-                    (item_id, self.client_id, source_url, content, content_hash)
+                    (item_id, self.client_id, source_url, content, content_hash),
                 )
                 self.conn.commit()
-            logger.info(f"Enqueued evidence item {item_id} from {source_url} (Delta-Checked).")
+            logger.info(
+                f"Enqueued evidence item {item_id} from {source_url} (Delta-Checked)."
+            )
             return item_id
         except Exception as e:
             logger.error(f"Failed to enqueue evidence {item_id}: {e}")
@@ -208,38 +237,47 @@ class StreamingSentinel:
 
         # 1. Fetch pending items
         import contextlib
+
         with self.db_lock:
             with contextlib.closing(self.conn.cursor()) as cursor:
                 cursor.execute(
                     """
-                    SELECT id, source_url, content, content_hash 
-                    FROM streaming_queue 
+                    SELECT id, source_url, content, content_hash
+                    FROM streaming_queue
                     WHERE status = 'pending' AND client_id = ?
                     ORDER BY created_at ASC
                     LIMIT ?
                     """,
-                    (self.client_id, batch_size)
+                    (self.client_id, batch_size),
                 )
                 rows = cursor.fetchall()
 
         if not rows:
             return 0
 
-        logger.info(f"Streaming Sentinel: Processing a delta batch of {len(rows)} elements.")
+        logger.info(
+            f"Streaming Sentinel: Processing a delta batch of {len(rows)} elements."
+        )
 
         # Import RAG and Graph services dynamically to maintain hexagonal isolation
         from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
-        from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
         with self._acquire_process_lock() as has_lock:
             if not has_lock:
-                logger.info("Another worker process holds the OS sentinel lock. Skipping this polling interval.")
+                logger.info(
+                    "Another worker process holds the OS sentinel lock. Skipping this polling interval."
+                )
                 return 0
 
             # Instanciar EvidenceEngine para la capa "Cold"
-            storage_dir = self.client_dir / "redeia"  # defaults to 'redeia' for backward compatibility
+            import os
+
+            storage_dir_name = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+            storage_dir = self.client_dir / storage_dir_name
             storage_dir.mkdir(parents=True, exist_ok=True)
-            evidence_engine = EvidenceEngine(client_id=self.client_id, storage_dir=storage_dir)
+            evidence_engine = EvidenceEngine(
+                client_id=self.client_id, storage_dir=storage_dir
+            )
 
             processed_count = 0
             for item_id, source_url, content, content_hash in rows:
@@ -248,7 +286,7 @@ class StreamingSentinel:
                     with self.db_lock:
                         cursor = self.conn.execute(
                             "UPDATE streaming_queue SET status = 'processing' WHERE id = ? AND status = 'pending'",
-                            (item_id,)
+                            (item_id,),
                         )
                         self.conn.commit()
                         if cursor.rowcount == 0:
@@ -256,11 +294,13 @@ class StreamingSentinel:
                             continue
 
                     # Jaccard Semantic Deduplication check against the cold storage ledger
-                    if self._is_semantic_duplicate(content, evidence_engine.ledger.fragments, threshold=0.80):
+                    if self._is_semantic_duplicate(
+                        content, evidence_engine.ledger.fragments, threshold=0.80
+                    ):
                         with self.db_lock:
                             self.conn.execute(
                                 "UPDATE streaming_queue SET status = 'processed', error_message = 'Skipped: Semantic duplicate' WHERE id = ?",
-                                (item_id,)
+                                (item_id,),
                             )
                             self.conn.commit()
                         continue
@@ -268,17 +308,25 @@ class StreamingSentinel:
                     # Write the text to a physical .txt file under the client's streaming directory
                     streaming_dir = storage_dir / "streaming"
                     streaming_dir.mkdir(parents=True, exist_ok=True)
-                    
+
                     # Construct file path
                     evidence_file = streaming_dir / f"stream_{content_hash[:16]}.txt"
-                    
+
                     # Defense-in-Depth: Path Traversal (Local File Inclusion) Guardrail
                     # Ensures mathematically that the resolved absolute path never escapes the designated sandbox directory.
-                    if not evidence_file.resolve().is_relative_to(streaming_dir.resolve()):
-                        raise ValueError(f"Critical Security Alert: Path traversal blocked. Resolved path {evidence_file} escapes sandbox bounds.")
-                    
+                    if not evidence_file.resolve().is_relative_to(
+                        streaming_dir.resolve()
+                    ):
+                        raise ValueError(
+                            f"Critical Security Alert: Path traversal blocked. Resolved path {evidence_file} escapes sandbox bounds."
+                        )
+
                     import uuid
-                    tmp_evidence = streaming_dir / f"stream_{content_hash[:16]}.{uuid.uuid4().hex[:8]}.tmp"
+
+                    tmp_evidence = (
+                        streaming_dir
+                        / f"stream_{content_hash[:16]}.{uuid.uuid4().hex[:8]}.tmp"
+                    )
                     try:
                         tmp_evidence.write_text(content, encoding="utf-8")
                         tmp_evidence.replace(evidence_file)
@@ -289,27 +337,29 @@ class StreamingSentinel:
 
                     # Ingest file directly into the Evidence Vault (incremental indexing)
                     evidence_engine.ingest_file(evidence_file)
-                    
+
                     # Mark as processed in database
                     with self.db_lock:
                         self.conn.execute(
                             """
-                            UPDATE streaming_queue 
-                            SET status = 'processed', processed_at = ? 
+                            UPDATE streaming_queue
+                            SET status = 'processed', processed_at = ?
                             WHERE id = ?
                             """,
-                            (datetime.now(timezone.utc).isoformat(), item_id)
+                            (datetime.now(timezone.utc).isoformat(), item_id),
                         )
                         self.conn.commit()
                     processed_count += 1
                     self.dampening_buffer.append(item_id)
-                    logger.info(f"Successfully processed and indexed evidence item {item_id}.")
+                    logger.info(
+                        f"Successfully processed and indexed evidence item {item_id}."
+                    )
                 except Exception as e:
                     logger.error(f"Error processing evidence item {item_id}: {e}")
                     with self.db_lock:
                         self.conn.execute(
                             "UPDATE streaming_queue SET status = 'failed', error_message = ? WHERE id = ?",
-                            (str(e), item_id)
+                            (str(e), item_id),
                         )
                         self.conn.commit()
 
@@ -330,22 +380,29 @@ class StreamingSentinel:
 
         now = datetime.now(timezone.utc).timestamp()
         time_since_last_ingest = now - self.last_ingest_time
-        
+
         # Trigger rebuild if:
         # - Buffer has more than 5 accumulated new items (Batch threshold).
         # - Or, 10 seconds of silence have passed since the last ingestion (Quiet period threshold).
         if len(self.dampening_buffer) >= 5 or time_since_last_ingest >= 10.0:
-            logger.info(f"Dampened Scheduler: Triggering Raptor RAG Tree rebuild for {len(self.dampening_buffer)} items.")
-            
+            logger.info(
+                f"Dampened Scheduler: Triggering Raptor RAG Tree rebuild for {len(self.dampening_buffer)} items."
+            )
+
+            import os
+
             from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
             from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
-            storage_dir = self.client_dir / "redeia"  # defaults to 'redeia' for backward compatibility
-            evidence_engine = EvidenceEngine(client_id=self.client_id, storage_dir=storage_dir)
+            storage_dir_name = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+            storage_dir = self.client_dir / storage_dir_name
+            evidence_engine = EvidenceEngine(
+                client_id=self.client_id, storage_dir=storage_dir
+            )
             raptor = RaptorEngine(client_id=self.client_id, storage_dir=storage_dir)
 
             try:
-                # Since this is executed inside a background thread pool (via asyncio.to_thread), 
+                # Since this is executed inside a background thread pool (via asyncio.to_thread),
                 # there is no running event loop. We use asyncio.run to safely spawn and execute the coroutine.
                 asyncio.run(raptor.build_tree(evidence_engine.ledger.fragments))
                 logger.info("🌲 [RAPTOR] Dynamic Knowledge Tree updated successfully.")
@@ -354,40 +411,46 @@ class StreamingSentinel:
 
             # Clear the buffer after successful rebuild trigger
             self.dampening_buffer.clear()
-            
+
             # Execute Long-Term Degradation Saneamiento (WAL Checkpoint) during the quiet period
             # to prevent the SQLite -wal file from unbounded disk bloat over months of 24/7 uptime.
             try:
                 if self.conn:
                     with self.db_lock:
                         self.conn.execute("PRAGMA wal_checkpoint(PASSIVE);")
-                        logger.info("Streaming Sentinel: Executed PRAGMA wal_checkpoint(PASSIVE) to prevent disk bloat.")
+                        logger.info(
+                            "Streaming Sentinel: Executed PRAGMA wal_checkpoint(PASSIVE) to prevent disk bloat."
+                        )
             except Exception as e:
                 logger.warning(f"Failed to execute WAL checkpoint: {e}")
-                
+
             return True
 
         return False
 
-    async def start_daemon_loop(self, poll_interval_sec: float = 1.0, stop_event: Optional[asyncio.Event] = None) -> None:
+    async def start_daemon_loop(
+        self, poll_interval_sec: float = 1.0, stop_event: Optional[asyncio.Event] = None
+    ) -> None:
         """Starts the infinite asynchronous daemon polling loop with the Dampened Scheduler."""
-        logger.info(f"Starting Streaming Sentinel daemon for client {self.client_id}...")
+        logger.info(
+            f"Starting Streaming Sentinel daemon for client {self.client_id}..."
+        )
         self.initialize_queue()
-        
+
         while stop_event is None or not stop_event.is_set():
             try:
                 # Run the blocking process_next_batch in a background thread to keep event loop free!
                 processed = await asyncio.to_thread(self.process_next_batch)
                 if processed > 0:
                     logger.info(f"Sentinel Loop: Ingested {processed} new items.")
-                
+
                 # Run the blocking check_and_trigger_dampened_rebuild in a background thread!
                 await asyncio.to_thread(self.check_and_trigger_dampened_rebuild)
             except Exception as e:
                 logger.error(f"Error in Sentinel daemon polling iteration: {e}")
-            
+
             await asyncio.sleep(poll_interval_sec)
-        
+
         logger.info("Streaming Sentinel daemon loop stopped gracefully.")
         self.close()
 
@@ -398,7 +461,9 @@ class StreamingSentinel:
         The FastAPI application automatically manages the lifecycle of the background daemon loop.
         """
         if not FASTAPI_AVAILABLE:
-            raise RuntimeError("FastAPI and Pydantic are required to run the Webhook Server.")
+            raise RuntimeError(
+                "FastAPI and Pydantic are required to run the Webhook Server."
+            )
 
         from contextlib import asynccontextmanager
 
@@ -406,30 +471,40 @@ class StreamingSentinel:
         async def lifespan(app: FastAPI):
             # Startup: Launch the background daemon loop
             stop_event = asyncio.Event()
-            daemon_task = asyncio.create_task(self.start_daemon_loop(poll_interval_sec=2.0, stop_event=stop_event))
-            logger.info("FastAPI Lifespan: Streaming Sentinel background daemon started.")
-            
+            daemon_task = asyncio.create_task(
+                self.start_daemon_loop(poll_interval_sec=2.0, stop_event=stop_event)
+            )
+            logger.info(
+                "FastAPI Lifespan: Streaming Sentinel background daemon started."
+            )
+
             yield  # Server is running
-            
+
             # Shutdown: Gracefully stop the daemon loop
             logger.info("FastAPI Lifespan: Shutting down background daemon...")
             stop_event.set()
             await daemon_task
             logger.info("FastAPI Lifespan: Background daemon stopped safely.")
 
-        app = FastAPI(title=f"Streaming Sentinel Webhook - {self.client_id}", lifespan=lifespan)
+        app = FastAPI(
+            title=f"Streaming Sentinel Webhook - {self.client_id}", lifespan=lifespan
+        )
 
         @app.post("/webhook/evidence")
         async def receive_evidence(payload: EvidencePayload):
             try:
                 # Delegate blocking database write to a background thread to prevent server freezes!
-                item_id = await asyncio.to_thread(self.enqueue_evidence, payload.source_url, payload.content)
+                item_id = await asyncio.to_thread(
+                    self.enqueue_evidence, payload.source_url, payload.content
+                )
                 return {
                     "status": "success",
                     "item_id": item_id,
-                    "message": "Evidence successfully enqueued for continuous ingestion."
+                    "message": "Evidence successfully enqueued for continuous ingestion.",
                 }
             except Exception as e:
-                raise HTTPException(status_code=500, detail=f"Failed to enqueue evidence: {e}")
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to enqueue evidence: {e}"
+                )
 
         return app

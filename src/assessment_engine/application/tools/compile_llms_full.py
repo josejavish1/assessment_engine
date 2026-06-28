@@ -103,7 +103,8 @@ def compile_llms_full(
         compiled_blocks.append(separator_start + file_content + separator_end)
 
     try:
-        output_path.write_text("".join(compiled_blocks) + "\n", encoding="utf-8")
+        final_content = "".join(compiled_blocks).rstrip() + "\n"
+        output_path.write_text(final_content, encoding="utf-8")
         print(
             f"[+] Successfully compiled {len(ordered_paths)} documents into: {output_path}"
         )

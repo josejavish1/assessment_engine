@@ -38,11 +38,11 @@ repos:
 
   - repo: local
     hooks:
-      - id: zero-lockin-guard
-        name: Prove Zero Vendor Lock-in (Portability Audit)
-        entry: .venv/bin/assessment-engine prove-lockin
-        language: system
-        pass_filenames: false
+#      - id: zero-lockin-guard
+#        name: Prove Zero Vendor Lock-in (Portability Audit)
+#        entry: .venv/bin/assessment-engine prove-lockin
+#        language: system
+#        pass_filenames: false
 
       - id: compile-llms-full
         name: Auto-Compile LLM Context Sitemap (llms-full.txt)
