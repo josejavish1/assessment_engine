@@ -159,26 +159,26 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
 
     # Pass 2 (A Posteriori): Propagate actual audited scores through the Epistemic Graph BBN
     try:
-        from assessment_engine.infrastructure.epistemic_graph_service import EpistemicGraphService
+        from assessment_engine.infrastructure.epistemic_graph_service import (
+            EpistemicGraphService,
+        )
+
         # Resolve industry profile from dossier
         ind_profile = intelligence_dossier.get("profile", {}).get("industry", "default")
         graph_service = EpistemicGraphService(industry_profile=ind_profile)
 
         # Collect intrinsic audited scores
-        intrinsic_audited = {
-            item["id"]: float(item["score"])
-            for item in towers_data
-        }
+        intrinsic_audited = {item["id"]: float(item["score"]) for item in towers_data}
         # Fill missing towers with 5.0 (neutral) to prevent false cascade alarms
         for t_id in graph_service.towers:
             if t_id not in intrinsic_audited:
                 intrinsic_audited[t_id] = 5.0
 
         propagated_audited = graph_service.propagate_risk(intrinsic_audited)
-        
+
         # Calculate actual audited risk volatilities for PageRank Centrality
         audited_risks = {
-            t_id: max(0.01, 1.0 - (propagated_audited.get(t_id, 4.0) - 3.0)/2.0)
+            t_id: max(0.01, 1.0 - (propagated_audited.get(t_id, 4.0) - 3.0) / 2.0)
             for t_id in graph_service.towers
         }
         audited_centrality = graph_service.calculate_risk_centrality(audited_risks)
@@ -191,19 +191,23 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             item["effective_score"] = f"{eff_score:.1f}"
             item["effective_band"] = band_for_score(eff_score)
             item["effective_status_color"] = status_color_for_score(eff_score)
-            
-        avg_effective_score = round(sum(float(t["effective_score"]) for t in towers_data) / len(towers_data), 1)
-        
+
+        avg_effective_score = round(
+            sum(float(t["effective_score"]) for t in towers_data) / len(towers_data), 1
+        )
+
         epistemic_analysis = {
             "empirical_single_point_of_failure": empirical_spof,
             "empirical_risk_centrality": audited_centrality,
             "average_effective_score": avg_effective_score,
             "propagated_effective_scores": {
                 k: f"{v:.1f}" for k, v in propagated_audited.items()
-            }
+            },
         }
     except Exception as e:
-        logger.warning(f"Error calculating A Posteriori epistemic risk propagation: {e}")
+        logger.warning(
+            f"Error calculating A Posteriori epistemic risk propagation: {e}"
+        )
         avg_effective_score = 0.0
         epistemic_analysis = {}
 

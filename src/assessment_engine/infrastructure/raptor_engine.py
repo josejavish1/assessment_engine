@@ -174,7 +174,10 @@ class RaptorEngine:
 
     def _save_tree(self) -> None:
         import uuid
-        tmp_path = self.tree_path.with_name(f"{self.tree_path.name}.{uuid.uuid4().hex[:8]}.tmp")
+
+        tmp_path = self.tree_path.with_name(
+            f"{self.tree_path.name}.{uuid.uuid4().hex[:8]}.tmp"
+        )
         try:
             tmp_path.write_text(self.tree.model_dump_json(indent=2), encoding="utf-8")
             tmp_path.replace(self.tree_path)

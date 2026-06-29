@@ -503,14 +503,17 @@ async def run_market_intelligence(
                 target_score = round(raw_target, 1)
 
                 # Run advanced Global Sensitivity Analysis (Sobol Indices & Monte Carlo Fuzzing)
-                from assessment_engine.infrastructure.mcda_sensitivity_engine import MCDASensitivityEngine
+                from assessment_engine.infrastructure.mcda_sensitivity_engine import (
+                    MCDASensitivityEngine,
+                )
+
                 sensitivity_engine = MCDASensitivityEngine()
                 gsa_report = sensitivity_engine.run_sensitivity_analysis(
                     base_criticality=crit,
                     base_compliance=comp,
                     base_feasibility=feas,
                     N=10000,
-                    uncertainty_range=20.0
+                    uncertainty_range=20.0,
                 )
 
                 calculated_overrides[tower_id] = {
@@ -523,16 +526,21 @@ async def run_market_intelligence(
                     "justification": metrics.get(
                         "justification", "Alineación multicriterio calculada."
                     ),
-                    "sensitivity_analysis": gsa_report
+                    "sensitivity_analysis": gsa_report,
                 }
                 just_str = metrics.get("justification", "")[:60]
                 print(
                     f"       * {tower_id}: Score Calculado = {target_score} (Justificación: {just_str}...)"
                 )
             except Exception as e:
-                from assessment_engine.infrastructure.mcda_sensitivity_engine import MCDASensitivityEngine
+                from assessment_engine.infrastructure.mcda_sensitivity_engine import (
+                    MCDASensitivityEngine,
+                )
+
                 fallback_engine = MCDASensitivityEngine()
-                fallback_gsa = fallback_engine.run_sensitivity_analysis(50.0, 50.0, 50.0, N=10000, uncertainty_range=20.0)
+                fallback_gsa = fallback_engine.run_sensitivity_analysis(
+                    50.0, 50.0, 50.0, N=10000, uncertainty_range=20.0
+                )
                 calculated_overrides[tower_id] = {
                     "target_maturity": 4.0,
                     "metrics": {
@@ -541,7 +549,7 @@ async def run_market_intelligence(
                         "implementation_feasibility": 50.0,
                     },
                     "justification": f"Fallback estándar por fallo en cálculo de torre: {e}",
-                    "sensitivity_analysis": fallback_gsa
+                    "sensitivity_analysis": fallback_gsa,
                 }
     else:
         # Provides a fallback mechanism to ensure system stability and graceful degradation in the event of a malformed or non-compliant JSON response from the large language model.
@@ -549,22 +557,25 @@ async def run_market_intelligence(
             "  ⚠️ Fallo en el retorno de matriz de madurez. Aplicando fallbacks estocásticos estándar de robustez..."
         )
         calculated_overrides = {}
-        from assessment_engine.infrastructure.mcda_sensitivity_engine import MCDASensitivityEngine
+        from assessment_engine.infrastructure.mcda_sensitivity_engine import (
+            MCDASensitivityEngine,
+        )
+
         sensitivity_engine = MCDASensitivityEngine()
-        
+
         for i in range(1, 11):
             tower_id = f"T{i}"
             crit, comp, feas = 50.0, 50.0, 50.0
-            
+
             # Compute a mathematically valid default GSA report for structural consistency
             gsa_report = sensitivity_engine.run_sensitivity_analysis(
                 base_criticality=crit,
                 base_compliance=comp,
                 base_feasibility=feas,
                 N=10000,
-                uncertainty_range=20.0
+                uncertainty_range=20.0,
             )
-            
+
             calculated_overrides[tower_id] = {
                 "target_maturity": 4.0,
                 "metrics": {
@@ -573,7 +584,7 @@ async def run_market_intelligence(
                     "implementation_feasibility": feas,
                 },
                 "justification": "Estándar por defecto debido a indisponibilidad de API.",
-                "sensitivity_analysis": gsa_report
+                "sensitivity_analysis": gsa_report,
             }
 
     # Stage 5: Final Assembly. Executes dynamic just-in-time (JIT) data extraction and enforces schema integrity through Pydantic model validation.
@@ -630,7 +641,10 @@ async def run_market_intelligence(
             industry_str = "Enterprise & Infrastructure Technology"
 
     # Instantiate the Epistemic Graph Bayesian Belief Network (BBN) Service
-    from assessment_engine.infrastructure.epistemic_graph_service import EpistemicGraphService
+    from assessment_engine.infrastructure.epistemic_graph_service import (
+        EpistemicGraphService,
+    )
+
     graph_service = EpistemicGraphService()
 
     # Collect intrinsic target maturities from the calculated overrides
@@ -646,11 +660,17 @@ async def run_market_intelligence(
 
     # Propagate risks and find Single Point of Failure (SPOF)
     propagated_maturities = graph_service.propagate_risk(intrinsic_maturities)
-    spof_tower, spof_impact = graph_service.get_single_point_of_failure(intrinsic_maturities)
+    spof_tower, spof_impact = graph_service.get_single_point_of_failure(
+        intrinsic_maturities
+    )
 
     # Gather standard deviations from Phase 1 Monte Carlo sensitivity analysis
     std_devs = {
-        t_id: float(t_data.get("sensitivity_analysis", {}).get("statistics", {}).get("std_deviation", 0.05))
+        t_id: float(
+            t_data.get("sensitivity_analysis", {})
+            .get("statistics", {})
+            .get("std_deviation", 0.05)
+        )
         for t_id, t_data in calculated_overrides.items()
     }
     # Ensure all 10 towers are present in the std dev map
@@ -697,15 +717,15 @@ async def run_market_intelligence(
                 "edges": [
                     {"source": u, "target": v, "weight": d["weight"]}
                     for u, v, d in graph_service.graph.edges(data=True)
-                ]
+                ],
             },
             "audits": {
                 "single_point_of_failure_by_cascade": spof_tower,
                 "cascading_impact_index": spof_impact,
                 "single_point_of_failure_by_centrality": spof_by_centrality,
                 "eigenvector_risk_centrality": risk_centrality,
-                "propagated_maturities": propagated_maturities
-            }
+                "propagated_maturities": propagated_maturities,
+            },
         },
         "review": {
             "summary": "Certificación Purist V35.0 (Aislamiento de Contexto)",
@@ -715,8 +735,9 @@ async def run_market_intelligence(
     }
 
     final_json = sign_dossier(final_json)
-    
+
     import uuid
+
     tmp_path = output_path.with_name(f"{output_path.name}.{uuid.uuid4().hex[:8]}.tmp")
     try:
         tmp_path.write_text(
@@ -728,7 +749,7 @@ async def run_market_intelligence(
         if tmp_path.exists():
             tmp_path.unlink()
         raise
-        
+
     print(f"✅ BLUEPRINT SANEADO Y COMPLETADO: {output_path}")
 
 

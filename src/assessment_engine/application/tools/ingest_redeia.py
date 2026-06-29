@@ -7,6 +7,7 @@ from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
 async def ingest_documents():
     import os
+
     client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
     storage_dir = Path("working") / client_id / "redeia"
 

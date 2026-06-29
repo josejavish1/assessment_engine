@@ -1,6 +1,9 @@
-import pytest
 import numpy as np
-from assessment_engine.infrastructure.mcda_sensitivity_engine import MCDASensitivityEngine
+
+from assessment_engine.infrastructure.mcda_sensitivity_engine import (
+    MCDASensitivityEngine,
+)
+
 
 def test_mcda_utility_function_bounds():
     # Test lower bound clipping
@@ -25,6 +28,7 @@ def test_mcda_utility_function_bounds():
     res = MCDASensitivityEngine.mcda_utility_function(crit, comp, feas)
     assert round(res[0], 2) == 4.0
 
+
 def test_generate_truncated_normal():
     # Verify that Truncated Normal strictly obeys bounds and preserves mean
     mean = 95.0
@@ -33,12 +37,15 @@ def test_generate_truncated_normal():
     high = 100.0
     size = 10000
 
-    samples = MCDASensitivityEngine._generate_truncated_normal(mean, std, low, high, size)
+    samples = MCDASensitivityEngine._generate_truncated_normal(
+        mean, std, low, high, size
+    )
     assert len(samples) == size
     assert np.all(samples >= low)
     assert np.all(samples <= high)
     # The mean of truncated normal at 95 with std 15 should be around 88-92
     assert 80.0 <= np.mean(samples) <= 97.0
+
 
 def test_run_sensitivity_analysis_convergence():
     engine = MCDASensitivityEngine()
@@ -47,7 +54,7 @@ def test_run_sensitivity_analysis_convergence():
         base_compliance=50.0,
         base_feasibility=70.0,
         N=10000,
-        uncertainty_range=10.0
+        uncertainty_range=10.0,
     )
 
     # 1. Structural Assertions
@@ -64,7 +71,7 @@ def test_run_sensitivity_analysis_convergence():
 
     assert 3.0 <= stats["mean_target_score"] <= 5.0
     assert stats["std_deviation"] >= 0.0
-    
+
     ci_lower, ci_upper = stats["confidence_interval_95"]
     assert ci_lower <= ci_upper
     assert 3.0 <= ci_lower <= 5.0
@@ -80,7 +87,11 @@ def test_run_sensitivity_analysis_convergence():
 
     # 3. Sensitivity Indices Assertions (Sobol Indices boundaries)
     indices = result["sobol_indices"]
-    for param in ["business_criticality", "regulatory_compliance", "implementation_feasibility"]:
+    for param in [
+        "business_criticality",
+        "regulatory_compliance",
+        "implementation_feasibility",
+    ]:
         assert param in indices
         assert 0.0 <= indices[param]["first_order"] <= 1.0
         assert 0.0 <= indices[param]["total_order"] <= 1.0
@@ -88,7 +99,15 @@ def test_run_sensitivity_analysis_convergence():
 
     # 4. Audits Assertions
     audits = result["audits"]
-    assert audits["stability_status"] in ["Stable / Robust", "Highly Sensitive", "Unstable / Volatile"]
-    assert audits["dominant_parameter"] in ["business_criticality", "regulatory_compliance", "implementation_feasibility"]
+    assert audits["stability_status"] in [
+        "Stable / Robust",
+        "Highly Sensitive",
+        "Unstable / Volatile",
+    ]
+    assert audits["dominant_parameter"] in [
+        "business_criticality",
+        "regulatory_compliance",
+        "implementation_feasibility",
+    ]
     assert 0.0 <= audits["dominant_influence_pct"] <= 100.0
     assert audits["fuzzing_iterations"] == 10000

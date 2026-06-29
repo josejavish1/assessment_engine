@@ -1,5 +1,7 @@
+from typing import Any, Dict
+
 import numpy as np
-from typing import Any, Dict, Tuple, List
+
 
 class MCDASensitivityEngine:
     """Provides high-performance Global Sensitivity Analysis (GSA) and Monte Carlo Fuzzing
@@ -7,13 +9,15 @@ class MCDASensitivityEngine:
 
     This engine utilizes Saltelli's formulation of the Monte Carlo method combined with Jansen's
     total-order estimator to compute Sobol sensitivity indices (first-order and total-order).
-    Uncertainty is modeled using a mathematically rigorous Truncated Normal (Gaussian) 
+    Uncertainty is modeled using a mathematically rigorous Truncated Normal (Gaussian)
     distribution centered exactly on expert base values, preventing asymmetric truncation bias.
     Additionally, it computes the Decision Instability Index (DII) to audit decision fragility.
     """
 
     @staticmethod
-    def mcda_utility_function(crit: np.ndarray, comp: np.ndarray, feas: np.ndarray) -> np.ndarray:
+    def mcda_utility_function(
+        crit: np.ndarray, comp: np.ndarray, feas: np.ndarray
+    ) -> np.ndarray:
         """The core deterministic utility function mapping multi-criteria scores to target maturity.
 
         Formula: Target = 3.0 + 2.0 * ((Crit * 0.4 + Comp * 0.4 + Feas * 0.2) / 100.0)
@@ -23,7 +27,9 @@ class MCDASensitivityEngine:
         return np.clip(raw, 3.0, 5.0)
 
     @staticmethod
-    def _generate_truncated_normal(mean: float, std: float, low: float, high: float, size: int) -> np.ndarray:
+    def _generate_truncated_normal(
+        mean: float, std: float, low: float, high: float, size: int
+    ) -> np.ndarray:
         """Generates high-performance vectorized Truncated Normal samples using pure NumPy.
 
         Maintains the expert base estimate as the exact mode and mean of the distribution,
@@ -46,12 +52,12 @@ class MCDASensitivityEngine:
         return samples
 
     def run_sensitivity_analysis(
-        self, 
-        base_criticality: float, 
-        base_compliance: float, 
-        base_feasibility: float, 
+        self,
+        base_criticality: float,
+        base_compliance: float,
+        base_feasibility: float,
         N: int = 10000,
-        uncertainty_range: float = 10.0 # Standard deviation for Truncated Normal modeling
+        uncertainty_range: float = 10.0,  # Standard deviation for Truncated Normal modeling
     ) -> Dict[str, Any]:
         """Runs Sobol Global Sensitivity Analysis and Monte Carlo Fuzzing on the MCDA utility function.
 
@@ -74,15 +80,30 @@ class MCDASensitivityEngine:
         means = [base_criticality, base_compliance, base_feasibility]
 
         for d in range(D):
-            A[:, d] = self._generate_truncated_normal(means[d], uncertainty_range, 0.0, 100.0, N)
-            B[:, d] = self._generate_truncated_normal(means[d], uncertainty_range, 0.0, 100.0, N)
+            A[:, d] = self._generate_truncated_normal(
+                means[d], uncertainty_range, 0.0, 100.0, N
+            )
+            B[:, d] = self._generate_truncated_normal(
+                means[d], uncertainty_range, 0.0, 100.0, N
+            )
 
         # 2. Evaluate model on A and B
         Y_A = self.mcda_utility_function(A[:, 0], A[:, 1], A[:, 2])
         Y_B = self.mcda_utility_function(B[:, 0], B[:, 1], B[:, 2])
 
         # Base score calculation (analytical baseline)
-        Y_base = float(3.0 + 2.0 * ((base_criticality * 0.4 + base_compliance * 0.4 + base_feasibility * 0.2) / 100.0))
+        Y_base = float(
+            3.0
+            + 2.0
+            * (
+                (
+                    base_criticality * 0.4
+                    + base_compliance * 0.4
+                    + base_feasibility * 0.2
+                )
+                / 100.0
+            )
+        )
         Y_base = float(np.clip(Y_base, 3.0, 5.0))
 
         # Compute total sample variance
@@ -122,7 +143,7 @@ class MCDASensitivityEngine:
         # Normalize indices (clip to [0.0, 1.0] to handle small sample fluctuations)
         S_first = np.clip(S_first, 0.0, 1.0)
         S_total = np.clip(S_total, 0.0, 1.0)
-        
+
         # Mathematical safeguard: first-order (main effect) cannot physically exceed total-order (main + interaction)
         S_first = np.minimum(S_first, S_total)
 
@@ -132,12 +153,16 @@ class MCDASensitivityEngine:
         std_dev = float(np.std(Y_A, ddof=1))
 
         # Generate a descriptive fragility report
-        inputs = ["business_criticality", "regulatory_compliance", "implementation_feasibility"]
+        inputs = [
+            "business_criticality",
+            "regulatory_compliance",
+            "implementation_feasibility",
+        ]
         sobol_map = {}
         for d in range(D):
             sobol_map[inputs[d]] = {
                 "first_order": round(float(S_first[d]), 4),
-                "total_order": round(float(S_total[d]), 4)
+                "total_order": round(float(S_total[d]), 4),
             }
 
         # Analyze which parameter drives the variance most (highest total order index)
@@ -158,18 +183,21 @@ class MCDASensitivityEngine:
             "statistics": {
                 "mean_target_score": round(float(mean_Y), 2),
                 "std_deviation": round(std_dev, 3),
-                "confidence_interval_95": (round(lower_bound, 2), round(upper_bound, 2)),
-                "sample_variance": round(float(var_Y), 5)
+                "confidence_interval_95": (
+                    round(lower_bound, 2),
+                    round(upper_bound, 2),
+                ),
+                "sample_variance": round(float(var_Y), 5),
             },
             "decision_instability_indices": {
                 "dii_threshold_03_pct": round(dii_03 * 100.0, 2),
-                "dii_threshold_05_pct": round(dii_05 * 100.0, 2)
+                "dii_threshold_05_pct": round(dii_05 * 100.0, 2),
             },
             "sobol_indices": sobol_map,
             "audits": {
                 "stability_status": stability_status,
                 "dominant_parameter": dominant_param,
                 "dominant_influence_pct": round(float(dominant_influence) * 100.0, 2),
-                "fuzzing_iterations": N
-            }
+                "fuzzing_iterations": N,
+            },
         }
