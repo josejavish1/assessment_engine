@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Dict, List
 
 from google.adk.agents import Agent
+from pydantic import ValidationError
 from vertexai.agent_engines import AdkApp
 
 from assessment_engine.domain.schemas.evidence import (
@@ -29,7 +30,7 @@ class RaptorEngine:
         self.agent = Agent(
             name="raptor_summarizer",
             model="gemini-2.5-flash",
-            instruction="Eres un experto en síntesis estratégica NTT DATA. Tu tarea es resumir fragmentos técnicos manteniendo nombres propios, marcas y cifras exactas.",
+            instruction="Eres un experto en síntesis estratégica y arquitectura empresarial. Tu tarea es resumir fragmentos técnicos manteniendo nombres propios, marcas y cifras exactas.",
         )
         self.app = AdkApp(agent=self.agent)
 
@@ -39,8 +40,8 @@ class RaptorEngine:
                 return RaptorTree.model_validate_json(
                     self.tree_path.read_text(encoding="utf-8")
                 )
-            except Exception:
-                pass
+            except (ValidationError, OSError, ValueError) as ex:
+                logger.debug(f"[RaptorEngine] Fallo al cargar árbol existente: {ex}")
         return RaptorTree(client_id=self.client_id)
 
     async def build_tree(self, fragments: List[EvidenceFragment]) -> None:
@@ -61,7 +62,7 @@ class RaptorEngine:
                 summarization tasks, which may include network, API, or data
                 processing failures.
         """
-        print(
+        logger.info(
             f"🌲 [RAPTOR] Construyendo Árbol de Conocimiento para {self.client_id}..."
         )
 
@@ -83,7 +84,7 @@ class RaptorEngine:
             len(current_level_nodes) > 1 and level < 3
         ):  # To manage computational complexity in the prototype implementation, the summarization hierarchy is constrained to a maximum of three levels.
             level += 1
-            print(f"   -> [RAPTOR] Generando Nivel {level} (Resúmenes en Paralelo)...")
+            logger.info(f"   -> [RAPTOR] Generando Nivel {level} (Resúmenes en Paralelo)...")
 
             #
             groups = self._group_nodes_by_hierarchy(current_level_nodes)
@@ -118,7 +119,7 @@ class RaptorEngine:
             self.tree.root_id = current_level_nodes[0].node_id
 
         self._save_tree()
-        print(f"✅ [RAPTOR] Árbol finalizado con {len(self.tree.nodes)} nodos.")
+        logger.info(f"✅ [RAPTOR] Árbol finalizado con {len(self.tree.nodes)} nodos.")
 
     def _group_nodes_by_hierarchy(
         self, nodes: List[RaptorNode]
@@ -139,18 +140,20 @@ class RaptorEngine:
         """Generates a concise, abstractive summary for a specified cluster of text nodes by invoking the configured Language Model."""
         context = "\n".join([f"- {n.content}" for n in nodes])
         prompt = f"""
-        RESUME LOS SIGUIENTES FRAGMENTOS EN UN PÁRRAFO ESTRATÉGICO.
+        RESUME LOS SIGUIENTES FRAGMENTOS EN UN PÁRRAFO ESTRATÉGICO DE ALTA DENSIDAD TÉCNICA.
 
-        ### REGLA DE ORO: Mantén nombres de empresas, filiales, proyectos y cifras.
+        ### INVARIANTE DE PRESERVACIÓN DE ENTIDADES Y MÉTRICAS DURAS (HARD METRIC RETENTION):
+        1. PRESERVACIÓN CUANTITATIVA: Todo número, porcentaje, latencia (ms), ancho de banda (Gbps), capacidad (TB, PB), coste (€, $) y versión de software DEBE transferirse textualmente al resumen sin redondeos ni generalizaciones.
+        2. ENTIDADES TÉCNICAS DURAS: Mantén exactamente los nombres de fabricantes, modelos de hardware (ej. Cisco 9300, Fortinet), servicios cloud (ej. S3, BigQuery, AKS), normativas (NIS2, ENS, DORA) y sistemas internos.
+        3. CERO VAPORWARE: Prohibido sustituir datos concretos por adjetivos cualitativos vacíos ("robusto", "moderno", "adecuado").
 
-        ### FRAGMENTOS:
+        ### FRAGMENTOS ORIGINALES:
         {context}
 
-        Reglas:
-        1. Sé conciso y profesional.
-        2. Mantén datos técnicos críticos (nombres de productos, versiones, porcentajes).
-        3. No inventes información fuera del contexto proporcionado.
-        4. Devuelve ÚNICAMENTE el texto del resumen en texto plano, sin JSON ni etiquetas.
+        Reglas de Formato:
+        1. Sé conciso y de alta densidad informacional.
+        2. No inventes información fuera del contexto proporcionado.
+        3. Devuelve ÚNICAMENTE el texto del resumen en texto plano, sin JSON ni etiquetas.
         """
 
         try:
@@ -164,7 +167,7 @@ class RaptorEngine:
                 model="gemini-2.5-flash",
                 contents=prompt,
                 config={
-                    "system_instruction": "Eres un experto en síntesis estratégica NTT DATA."
+                    "system_instruction": "Eres un arquitecto de datos y auditor forense de sistemas. Tu misión es generar resúmenes jerárquicos de máxima densidad de información, reteniendo estrictamente todas las métricas cuantitativas, nombres propios de infraestructura, versiones y acrónimos normativos sin diluirlos."
                 },
             )
             return str(response.text).strip()
