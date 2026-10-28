@@ -180,16 +180,17 @@ def build_evidence_entries(
         p_id = pillar["pillar_id"]
         keywords = pillar_keywords(pillar)
 
-        # Conducts high-level, thematic evidence alignment by applying RAPTOR Level 1 clustering. This aggregates individual evidence points into broader thematic groups, providing a macroscopic structural overview.
-        # Selects the most semantically aligned summary for the current pillar being processed. This ensures that subsequent evidence evaluation is contextualized by the most relevant high-level narrative.
+        # Conducts high-level, thematic evidence alignment by applying RAPTOR Level 1 clustering.
+        # Selects the summary with the highest semantic keyword overlap rather than picking the first FIFO match.
         best_summary = None
+        best_summary_score = 0
         for node in raptor_nodes.values():
-            if node["level"] == 1:
-                # Excludes evidence groups based on a predefined set of keywords found in the group key or content. This filtering step is designed to remove administrative, non-substantive, or otherwise irrelevant entries from the evidence ledger.
-                tokens = tokenize(node["content"])
-                if tokens & keywords:
+            if node.get("level") == 1:
+                tokens = tokenize(node.get("content", ""))
+                overlap_score = len(tokens & keywords)
+                if overlap_score > best_summary_score:
+                    best_summary_score = overlap_score
                     best_summary = node
-                    break
 
         if best_summary:
             evidences.append(
@@ -204,17 +205,27 @@ def build_evidence_entries(
                 }
             )
 
-        # Performs fine-grained evidence alignment by processing individual fragments. This stage maps low-level data points to their corresponding evidential statements.
-        matched_fragments = []
+        # Performs fine-grained evidence alignment by ranking all fragments by keyword overlap density,
+        # selecting the top-10 highest-ranked fragments across the entire knowledge base.
+        scored_fragments = []
         for frag in fragments:
-            tokens = tokenize(frag["content"])
-            if tokens & keywords:
-                matched_fragments.append(frag)
-            if len(matched_fragments) >= 5:
-                break
+            frag_tokens = tokenize(frag.get("content", ""))
+            overlap = frag_tokens & keywords
+            if overlap:
+                score = len(overlap)
+                scored_fragments.append((score, frag))
+
+        scored_fragments.sort(key=lambda x: x[0], reverse=True)
+        matched_fragments = [frag for _, frag in scored_fragments[:10]]
 
         for frag in matched_fragments:
-            related_kpis = [kpi["kpi_id"] for kpi in pillar.get("kpis", [])]
+            frag_tokens = tokenize(frag.get("content", ""))
+            specific_kpis = [
+                kpi["kpi_id"]
+                for kpi in pillar.get("kpis", [])
+                if tokenize(kpi.get("kpi_name", "")) & frag_tokens
+            ]
+            related_kpis = specific_kpis if specific_kpis else [kpi["kpi_id"] for kpi in pillar.get("kpis", [])]
             evidences.append(
                 {
                     "evidence_id": f"FRAG-{frag['fragment_id'][:8]}",
