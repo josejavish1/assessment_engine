@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 import sys
+from pathlib import Path
 from typing import Any
 
 from google.adk.agents import Agent
@@ -258,7 +259,9 @@ async def process_pilar_blueprint(
 
     context_enhanced = f"{context_str}\n\n### ANÁLISIS REFINADO Y EVIDENCIAS DISPONIBLES:\n{refined_str}"
 
-    answers_json = json.dumps(pilar_data["answers"], indent=2, ensure_ascii=False)
+    answers_json = json.dumps(
+        pilar_data["answers"], indent=2, ensure_ascii=False
+    )
     prompt = get_pilar_architect_prompt(
         tower_name=tower_name,
         pilar_label=pilar_label,
@@ -267,6 +270,7 @@ async def process_pilar_blueprint(
         intel_str=intel_str,
         answers_json=answers_json,
         pilar_id=pilar_id,
+        target_language=target_language,
     )
     
     # Inject Single-Turn Self-Reflection directive (standard 2026) directly into the prompt to halve API roundtrips
@@ -961,7 +965,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     p_obj = proj.get("tech_objective", "")
                     p_sz = proj.get("sizing", "M")
                     curr_sym = blueprint_payload.get("document_meta", {}).get("currency", "€") or "€"
-                    custom_prof_path = Path(working_dir) / "custom_risk_profile.json"
+                    custom_prof_path = resolve_blueprint_payload_path(client_name, tower_id).parent / "custom_risk_profile.json"
                     country_mult = 1.0
                     if custom_prof_path.exists():
                         try:

@@ -78,6 +78,7 @@ def get_pilar_architect_prompt(
     intel_str: str = "",
     answers_json: str = "[]",
     pilar_id: str = "",
+    target_language: str = "Spanish",
 ) -> Any:
     """Constructs a structured prompt for a generative model from various inputs.
 
@@ -95,6 +96,7 @@ def get_pilar_architect_prompt(
         answers_json: A JSON-formatted string of client responses to technical
             questions.
         pilar_id: The unique identifier for the pilar.
+        target_language: The target output language for generated narratives.
 
     Returns:
         A single string containing the fully formatted prompt, ready for use with a
@@ -129,7 +131,22 @@ def get_pilar_architect_prompt(
 
     prompt += "REGLAS DE ORO:\n"
     for idx, rule in enumerate(config["golden_rules"], 1):
-        prompt += f"{idx}. {rule}\n"
+        rule_formatted = (
+            rule.format(target_language=target_language)
+            if "{target_language}" in rule
+            else rule
+        )
+        prompt += f"{idx}. {rule_formatted}\n"
+
+    if "golden_exemplar" in config:
+        prompt += "\nEJEMPLAR DE ORO DE REFERENCIA (ESTÁNDAR TIER-1 / MISIÓN CRÍTICA - FNMT CERES):\n"
+        prompt += (
+            "Este es el estándar exacto de profundidad técnica, rigor regulatorio y nivel de detalle esperado:\n"
+        )
+        prompt += (
+            json.dumps(config["golden_exemplar"], indent=2, ensure_ascii=False)
+            + "\n\n"
+        )
 
     prompt += f"\n{config.get('handover', '')}\n"
     prompt += "Devuelve la informacion en formato JSON estructurado.\n"
