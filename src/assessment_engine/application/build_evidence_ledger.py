@@ -4,7 +4,6 @@ import logging
 import re
 from pathlib import Path
 from typing import Any, cast
-from zipfile import ZipFile
 
 from assessment_engine.infrastructure.runtime_paths import ROOT
 
@@ -19,92 +18,6 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 def load_json(path: Path) -> dict[str, Any]:
     """Parse a JSON file from a specified path into a Python dictionary."""
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
-
-
-def read_docx_text(path: Path) -> str:
-    """Extracts plain text from a Microsoft Word (.docx) document.
-
-    This function operates by treating the .docx file as a ZIP archive and
-    directly parsing the `word/document.xml` member. It uses regular expressions
-    to strip all XML tags and normalize whitespace, yielding a raw text
-    representation of the document's content.
-
-    Note: This is a lightweight implementation that does not correctly process
-    complex structures such as tables, headers, footers, or embedded objects.
-
-    Args:
-        path: The file system path to the .docx file.
-
-    Returns:
-        The extracted and normalized plain text content as a single string.
-
-    Raises:
-        FileNotFoundError: If the file at the specified path does not exist.
-        zipfile.BadZipFile: If the specified file is not a valid ZIP archive.
-        KeyError: If `word/document.xml` is not found within the archive,
-            indicating a corrupted or non-standard .docx file.
-    """
-    with ZipFile(path) as archive:
-        xml = archive.read("word/document.xml").decode("utf-8", errors="ignore")
-    text = re.sub(r"<[^>]+>", " ", xml)
-    return re.sub(r"\s+", " ", text).strip()
-
-
-def read_rtf_text(path: Path) -> str:
-    r"""Extracts plain text from a Rich Text Format (RTF) file.
-
-    This function performs a best-effort extraction by applying a series of
-    regular expressions to remove common RTF control words (e.g., `\par`),
-    hex-encoded characters (e.g., `\'e9`), and formatting groups denoted by
-    braces. The final step collapses all whitespace sequences into single
-    spaces and removes leading/trailing whitespace.
-
-    This implementation is not a comprehensive RTF parser and may produce
-    imperfect output for documents with complex structures.
-
-    Args:
-        path (pathlib.Path): The path to the RTF file to be read.
-
-    Returns:
-        str: The extracted plain text content with RTF markup removed and
-            whitespace condensed.
-
-    Raises:
-        FileNotFoundError: If the file at the specified path does not exist.
-        IsADirectoryError: If the specified path points to a directory.
-    """
-    raw = path.read_text(encoding="utf-8", errors="ignore")
-    raw = re.sub(r"\\par[d]?|\\line", "\n", raw)
-    raw = re.sub(r"\\'[0-9a-fA-F]{2}", " ", raw)
-    raw = re.sub(r"\\[a-zA-Z]+-?\d* ?", " ", raw)
-    raw = raw.replace("{", " ").replace("}", " ")
-    return re.sub(r"\s+", " ", raw).strip()
-
-
-def read_text(path: Path) -> str:
-    """Reads text content from a file by dispatching to a format-specific parser.
-
-    This function inspects the file's suffix to determine the appropriate reading
-    method. It delegates to specialized readers for `.docx` and `.rtf` files,
-    performing a case-insensitive check. For all other file types, it defaults
-    to a standard text read using UTF-8 encoding and ignores decoding errors.
-
-    Args:
-        path: The `pathlib.Path` object for the file to be read.
-
-    Returns:
-        A string containing the textual content of the file.
-
-    Raises:
-        FileNotFoundError: If the file at the specified path does not exist.
-        IsADirectoryError: If the specified path points to a directory.
-        PermissionError: If read permissions are denied for the file.
-    """
-    if path.suffix.lower() == ".docx":
-        return read_docx_text(path)
-    if path.suffix.lower() == ".rtf":
-        return read_rtf_text(path)
-    return path.read_text(encoding="utf-8", errors="ignore")
 
 
 def split_sentences(text: str) -> list[str]:

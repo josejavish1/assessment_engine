@@ -79,3 +79,5 @@ async def test_evidence_analyst_rescues_hallucinated_fragment_ids():
 
         # Initiative with e_lm=5 and p_score=1.8 must receive "Crítica" priority
         assert p1_findings["candidate_initiatives"][0]["priority"] == "Crítica"
+        # Risk with e_lm=5 and p_score=1.8 must receive "Critical" severity
+        assert p1_findings["risks"][0]["severity"] == "Critical"

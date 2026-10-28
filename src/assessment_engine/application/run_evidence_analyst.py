@@ -264,6 +264,16 @@ async def build_findings(
                 }
             )
 
+        # Coherence Gate: Map severity deterministically crossing mathematical score and loss magnitude
+        if p_score >= 4.0 and e_lm <= 2:
+            calibrated_severity = "Low"
+        elif p_score < 2.0 or e_lm >= 5:
+            calibrated_severity = "Critical"
+        elif p_score < 3.0 or e_lm >= 4:
+            calibrated_severity = "High"
+        else:
+            calibrated_severity = "Medium"
+
         pillar_findings.append(
             {
                 "pillar_id": p_id,
@@ -278,7 +288,7 @@ async def build_findings(
                 "risks": [
                     {
                         "title": r_title, 
-                        "severity": "High" if p_score < 3 else "Medium",
+                        "severity": calibrated_severity,
                         "_elicited_tef": e_tef,
                         "_elicited_lm": e_lm
                     }
