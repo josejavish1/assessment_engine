@@ -434,6 +434,16 @@ def load_strategic_programs() -> dict[str, Any]:
     return {"programs": []}
 
 
+def _strip_diacritics(text: str) -> str:
+    import unicodedata
+
+    return "".join(
+        c
+        for c in unicodedata.normalize("NFD", text)
+        if unicodedata.category(c) != "Mn"
+    )
+
+
 def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
     """Resolves an initiative title or raw identifier to a canonical strategic program ID."""
     if not raw_name_or_id:
@@ -449,12 +459,14 @@ def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
         if pid.upper() == normalized.upper():
             return pid
 
-    # Semantic keyword and alias match
-    norm_lower = normalized.lower()
+    # Semantic keyword and alias match with diacritic normalization
+    norm_lower = _strip_diacritics(normalized.lower())
     for p in programs:
         pid = p.get("id", "")
         aliases = p.get("aliases", [])
-        if any(alias.lower() in norm_lower for alias in aliases):
+        if any(
+            _strip_diacritics(alias.lower()) in norm_lower for alias in aliases
+        ):
             return pid
 
     return None
