@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793220770,
+  "timestamp": 1793221064,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -10,8 +10,8 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 401,
-        "clean_files": 401,
+        "scanned_files": 403,
+        "clean_files": 403,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -35,16 +35,16 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 45346,
-        "test_sloc": 15918,
+        "prod_sloc": 45400,
+        "test_sloc": 16031,
         "test_to_code_ratio": 0.35,
         "maintainability_index_sei": 32.3,
-        "typed_functions_pct": 88.4,
-        "docstring_coverage_pct": 81.1,
+        "typed_functions_pct": 88.7,
+        "docstring_coverage_pct": 81.0,
         "max_cognitive_complexity": 246,
         "rango_d_functions_count": 0,
         "god_modules_count": 0,
-        "high_cognitive_funcs_count": 59,
+        "high_cognitive_funcs_count": 58,
         "deep_nesting_funcs_count": 29
       },
       "findings": [
@@ -253,15 +253,6 @@
           "line_number": 12,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'generate_mermaid_gantt': CoC = 45 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/application/run_tower_pipeline.py",
-          "line_number": 171,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'run_pipeline': CoC = 58 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -951,7 +942,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 307,
+        "scanned_files": 309,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -965,7 +956,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 307,
+        "scanned_files": 309,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -984,10 +975,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.41,
-        "p95_latency_ms": 55.14,
-        "p99_latency_ms": 231.79,
-        "tail_amplification_ratio": 164.39,
+        "p50_latency_ms": 1.49,
+        "p95_latency_ms": 87.94,
+        "p99_latency_ms": 132.15,
+        "tail_amplification_ratio": 88.69,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -1028,7 +1019,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 341,
+        "scanned_files": 343,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -1038,7 +1029,7 @@
       "score_pct": 99.9,
       "passed": true,
       "metrics": {
-        "files_scanned": 336,
+        "files_scanned": 338,
         "inline_rationale_score": 99.8,
         "contract_coverage_score": 99.8,
         "linguistic_sovereignty_score": 100.0,

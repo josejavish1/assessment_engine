@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """Provides the core orchestration logic for the Assessment Engine pipeline. The module defines a Directed Acyclic Graph (DAG) of stages, where each stage is executed in an isolated subprocess to prevent state interference and resource contention between steps."""
 
@@ -85,11 +86,10 @@ async def run_step_async(
         import time
 
         start_time = time.time()
-        
+
         # Launch the native, deadlock-free communicate method in an asynchronous task
         communicate_task = asyncio.create_task(proc.communicate())
 
-        last_heartbeat = time.time()
         while not communicate_task.done():
             # Calculate remaining timeout if any
             current_timeout = 30.0
@@ -104,20 +104,21 @@ async def run_step_async(
 
             try:
                 # Wait for completion or for the heartbeat timeout (30 seconds)
-                await asyncio.wait_for(asyncio.shield(communicate_task), timeout=current_timeout)
+                await asyncio.wait_for(
+                    asyncio.shield(communicate_task), timeout=current_timeout
+                )
             except asyncio.TimeoutError:
                 # If global timeout has been exceeded during the wait, kill and fail
                 if timeout_sec is not None and (time.time() - start_time) > timeout_sec:
                     proc.kill()
                     communicate_task.cancel()
                     raise asyncio.TimeoutError()
-                
+
                 # Print progress heartbeat and keep waiting
                 print(
                     "⏳ [Heartbeat] El motor sigue trabajando en segundo plano...",
                     flush=True,
                 )
-                last_heartbeat = time.time()
 
         stdout, stderr = await communicate_task
         return stdout, stderr
@@ -168,8 +169,32 @@ async def run_step_async(
         raise RuntimeError(f"Error crítico lanzando {step_name}: {e}")
 
 
-async def run_pipeline():
-    r"""{'docstring': "Orchestrates the end-to-end execution of the assessment pipeline.\n\n    This asynchronous function serves as the primary entry point for the\n    assessment process. It parses command-line arguments and executes a\n    sequence of idempotent, cache-gated stages as isolated subprocesses.\n\n    Each stage generates a deterministic, intermediate artifact (e.g.,\n    `case_input.json`, `findings.json`). If an artifact for a stage already\n    exists in the case-specific output directory and the cache has not been\n    invalidated, the stage is skipped. This mechanism allows for resumable\n    and incremental pipeline executions.\n\n    The pipeline consists of the following stages:\n    1.  Case Input Construction: Builds the initial `case_input.json`.\n    2.  Evidence Ledger Assembly: Consolidates data into `evidence_ledger.json`.\n    3.  Quantitative Scoring: Produces `scoring_output.json`.\n    4.  Qualitative Analysis: Runs language models to generate `findings.json`.\n    5.  Blueprint Payload Generation: Synthesizes the strategic blueprint payload.\n    6.  Annex Payload Synthesis: Creates the executive annex payload.\n    7.  DOCX Rendering: Renders final Microsoft Word (.docx) reports in parallel.\n\n    Command-line Args:\n        --tower (str): The specific assessment tower ID (e.g., 'DATA_AI').\n        --client (str): The name of the client being assessed.\n        --context-file (str): Path to the JSON file with assessment context.\n        --responses-file (str): Path to the JSON file with client responses.\n        --start-from (str, optional): The stage name to start from, skipping\n            all preceding stages. Defaults to starting from the beginning.\n        --force (bool, optional): If present, invalidates the cache by deleting\n            existing intermediate artifacts, forcing re-computation.\n\n    Returns:\n        None. The function's primary side effect is writing artifacts to a\n        case-specific output directory on the file system.\n\n    Raises:\n        FileNotFoundError: If paths from `--context-file` or `--responses-file`\n            are invalid.\n        subprocess.CalledProcessError: If any pipeline stage subprocess exits\n            with a non-zero status code.\n        Exception: Propagates exceptions from runtime environment validation."}."""
+from dataclasses import dataclass
+
+
+@dataclass
+class PipelineConfig:
+    """Holds parsed pipeline configuration, runtime environment, and resolved file paths."""
+
+    args: argparse.Namespace
+    tower_id: str
+    client_slug: str
+    python_bin: str
+    env: dict[str, str]
+    case_dir: Path
+    context_path: str
+    responses_path: str
+    payload_path: Path
+    output_docx: Path
+    output_asis_docx: Path
+    blueprint_payload_path: Path
+    output_blueprint_docx: Path
+    force: bool
+
+
+def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig:
+    """Parse CLI arguments and initialize runtime environment and output paths."""
+    global SKIP_MODE, START_FROM
     parser = argparse.ArgumentParser()
     parser.add_argument("--tower", required=True)
     parser.add_argument("--client", required=True)
@@ -179,9 +204,8 @@ async def run_pipeline():
     parser.add_argument(
         "--force", action="store_true", help="Force rebuild everything and purge cache"
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    global SKIP_MODE, START_FROM
     if args.start_from:
         SKIP_MODE = True
         START_FROM = args.start_from
@@ -194,8 +218,6 @@ async def run_pipeline():
     env["ASSESSMENT_CLIENT_ID"] = client_slug
     case_dir = prepare_case_runtime(env, client_id=client_slug, tower_id=tower_id)
 
-    # Defines the sequence of pipeline stages. Each stage is cache-gated and designed to be idempotent, producing a deterministic output artifact that allows subsequent runs to skip re-computation.
-    # Cache invalidation is triggered by the `--force` command-line argument.
     if args.force:
         print(f"🔄 [Cognitive Reset] Purgando razonamiento previo para {tower_id}...")
         if case_dir.exists():
@@ -222,7 +244,6 @@ async def run_pipeline():
     import time
 
     env["AI_EXECUTION_SEED"] = str(time.time())
-
     validate_runtime_environment(env)
 
     context_path = str(Path(args.context_file).resolve())
@@ -238,83 +259,95 @@ async def run_pipeline():
         case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
     )
 
-    #
-    # Stage 1: Construct the `case_input` data structure. This stage is cache-gated.
-    #
-    case_input_file = case_dir / "case_input.json"
-    if (
-        args.force
-        or not case_input_file.exists()
-        or case_input_file.stat().st_size == 0
-    ):
+    return PipelineConfig(
+        args=args,
+        tower_id=tower_id,
+        client_slug=client_slug,
+        python_bin=python_bin,
+        env=env,
+        case_dir=case_dir,
+        context_path=context_path,
+        responses_path=responses_path,
+        payload_path=payload_path,
+        output_docx=output_docx,
+        output_asis_docx=output_asis_docx,
+        blueprint_payload_path=blueprint_payload_path,
+        output_blueprint_docx=output_blueprint_docx,
+        force=args.force,
+    )
+
+
+async def _stage_case_input_and_short_circuit(cfg: PipelineConfig) -> bool:
+    """Construct case_input.json and short-circuit early if tower contains no survey answers."""
+    case_input_file = cfg.case_dir / "case_input.json"
+    if cfg.force or not case_input_file.exists() or case_input_file.stat().st_size == 0:
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.build_case_input",
                 "--client",
-                args.client,
+                cfg.args.client,
                 "--tower",
-                tower_id,
+                cfg.tower_id,
                 "--context-file",
-                context_path,
+                cfg.context_path,
                 "--responses-file",
-                responses_path,
+                cfg.responses_path,
             ],
-            env,
+            cfg.env,
             "Build case_input",
         )
     else:
         print("⏭️  [Cache Bypass] Build case_input already generated. Skipping.")
 
-    # Zero-Data Short-Circuit for unassessed towers:
-    # If the case input contains no actual survey answers, this tower has no scope in the current audit.
-    # We exit cleanly immediately, avoiding wasteful API calls, rate limits, and token expenses.
     if case_input_file.exists():
         try:
             import json
+
             with open(case_input_file, "r", encoding="utf-8-sig") as f:
                 case_input_data = json.load(f)
             answers_count = len(case_input_data.get("answers", []))
             if answers_count == 0:
                 print(
-                    f"\n⏭️  [Short-Circuit] No se detectaron respuestas o notas para la torre '{tower_id}' en {responses_path}.\n"
+                    f"\n⏭️  [Short-Circuit] No se detectaron respuestas o notas para la torre '{cfg.tower_id}' en {cfg.responses_path}.\n"
                     f"   Esta torre no forma parte del alcance de la evaluación y será omitida de forma segura.\n"
                     f"   Saliendo de la ejecución de manera limpia (Exit 0)..."
                 )
-                return
+                return True
         except Exception as e:
             print(f"⚠️ Alerta analizando case_input para validación de alcance: {e}")
 
-    #
-    # Stage 2: Assemble the `evidence_ledger` containing all data required for scoring. This stage is cache-gated.
-    #
-    evidence_ledger_file = case_dir / "evidence_ledger.json"
+    return False
+
+
+async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
+    """Assemble evidence ledger, freeze RAGE benchmarks, and calibrate financial scale."""
+    evidence_ledger_file = cfg.case_dir / "evidence_ledger.json"
     if (
-        args.force
+        cfg.force
         or not evidence_ledger_file.exists()
         or evidence_ledger_file.stat().st_size == 0
     ):
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.build_evidence_ledger",
                 "--case-input",
-                str(case_dir / "case_input.json"),
+                str(cfg.case_dir / "case_input.json"),
                 "--context-file",
-                context_path,
+                cfg.context_path,
                 "--responses-file",
-                responses_path,
+                cfg.responses_path,
             ],
-            env,
+            cfg.env,
             "Build evidence_ledger",
         )
     else:
         print("⏭️  [Cache Bypass] Build evidence_ledger already generated. Skipping.")
 
-    # Resolve the client industry profile key
-    client_dir = Path("working") / client_slug
+    client_dir = Path("working") / cfg.client_slug
     client_intel_path = client_dir / "client_intelligence.json"
     industry_key = "default"
     if client_intel_path.exists():
@@ -330,120 +363,128 @@ async def run_pipeline():
             if not industry_name:
                 industry_name = intel_data.get("industry", "default")
 
-            from assessment_engine.infrastructure.config_loader import map_industry_to_profile
+            from assessment_engine.infrastructure.config_loader import (
+                map_industry_to_profile,
+            )
+
             industry_key = map_industry_to_profile(industry_name)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
-    #
-    # Stage 2.5: Execute dynamic RAGE evaluation to freeze the benchmarks snapshot.
-    #
-    snapshot_file = case_dir.parent / "benchmarks_snapshot.json"
-    if args.force or not snapshot_file.exists() or snapshot_file.stat().st_size == 0:
+    snapshot_file = cfg.case_dir.parent / "benchmarks_snapshot.json"
+    if cfg.force or not snapshot_file.exists() or snapshot_file.stat().st_size == 0:
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.cli",
                 "rage",
                 "--client",
-                args.client,
+                cfg.args.client,
                 "--industry",
                 industry_key,
                 "--tower",
-                tower_id,
+                cfg.tower_id,
             ],
-            env,
+            cfg.env,
             "Run RAGE Evaluation",
         )
     else:
         print("⏭️  [Cache Bypass] Run RAGE Evaluation already generated. Skipping.")
 
-    #
-    # Stage 2.5: Run dynamic financial scale calibrator (FAIR-MAM). This stage is cache-gated.
-    #
-    custom_profile_path = case_dir / "custom_risk_profile.json"
-    if args.force or not custom_profile_path.exists() or custom_profile_path.stat().st_size == 0:
-        print("\n🌐 [System] Inicializando Calibrador Dinámico de Escala Financiera (FAIR-MAM)...")
+    custom_profile_path = cfg.case_dir / "custom_risk_profile.json"
+    if (
+        cfg.force
+        or not custom_profile_path.exists()
+        or custom_profile_path.stat().st_size == 0
+    ):
+        print(
+            "\n🌐 [System] Inicializando Calibrador Dinámico de Escala Financiera (FAIR-MAM)..."
+        )
         try:
-            from assessment_engine.application.tools.financial_scale_calibrator import FinancialScaleCalibrator
-            calibrator = FinancialScaleCalibrator(env=env)
-            await calibrator.calibrate_client_scale(args.client, tower_id, industry_key)
+            from assessment_engine.application.tools.financial_scale_calibrator import (
+                FinancialScaleCalibrator,
+            )
+
+            calibrator = FinancialScaleCalibrator(env=cfg.env)
+            await calibrator.calibrate_client_scale(
+                cfg.args.client, cfg.tower_id, industry_key
+            )
         except Exception as e:
             print(f"⚠️ [Financial Calibrator] Fallo en calibración de escala: {e}")
     else:
-        print("⏭️  [Cache Bypass] Engine: Financial Scale Calibrator already generated. Skipping.")
+        print(
+            "⏭️  [Cache Bypass] Engine: Financial Scale Calibrator already generated. Skipping."
+        )
 
-    #
-    # Stage 3: Execute quantitative scoring models using the `evidence_ledger`. This stage is cache-gated.
-    #
-    scoring_file = case_dir / "scoring_output.json"
-    if args.force or not scoring_file.exists() or scoring_file.stat().st_size == 0:
+
+async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
+    """Execute quantitative scoring followed by qualitative research and executive refinement chain."""
+    scoring_file = cfg.case_dir / "scoring_output.json"
+    if cfg.force or not scoring_file.exists() or scoring_file.stat().st_size == 0:
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.run_scoring",
                 "--case-input",
-                str(case_dir / "case_input.json"),
+                str(cfg.case_dir / "case_input.json"),
             ],
-            env,
+            cfg.env,
             "Run scoring",
         )
     else:
         print("⏭️  [Cache Bypass] Run scoring already generated. Skipping.")
 
-    #
-    # Stage 4: Execute the qualitative analysis chain, a sequence of language models (e.g., analyst, refiner). This stage is cache-gated.
-    #
-    findings_file = case_dir / "findings.json"
-    if args.force or not findings_file.exists() or findings_file.stat().st_size == 0:
+    findings_file = cfg.case_dir / "findings.json"
+    if cfg.force or not findings_file.exists() or findings_file.stat().st_size == 0:
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.run_evidence_analyst",
                 "--case-input",
-                str(case_dir / "case_input.json"),
+                str(cfg.case_dir / "case_input.json"),
                 "--evidence-ledger",
-                str(case_dir / "evidence_ledger.json"),
+                str(cfg.case_dir / "evidence_ledger.json"),
                 "--scoring-output",
-                str(case_dir / "scoring_output.json"),
+                str(cfg.case_dir / "scoring_output.json"),
             ],
-            env,
+            cfg.env,
             "Run evidence analyst",
         )
 
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.run_sota_researcher",
                 "--findings-path",
-                str(case_dir / "findings.json"),
+                str(cfg.case_dir / "findings.json"),
                 "--client",
-                args.client,
+                cfg.args.client,
             ],
-            env,
+            cfg.env,
             "Run technical researcher",
         )
 
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.run_executive_refiner",
                 "--findings-path",
-                str(case_dir / "findings.json"),
+                str(cfg.case_dir / "findings.json"),
                 "--client",
-                args.client,
+                cfg.args.client,
             ],
-            env,
+            cfg.env,
             "Run executive refiner",
         )
-        # Verify findings.json is physically written and valid JSON on disk before proceeding
-        findings_target = case_dir / "findings.json"
+
+        findings_target = cfg.case_dir / "findings.json"
+        import json
+
         for _ in range(10):
             if findings_target.exists() and findings_target.stat().st_size > 0:
                 try:
@@ -451,25 +492,27 @@ async def run_pipeline():
                         json.load(vf)
                     break
                 except (OSError, json.JSONDecodeError, ValueError) as ex:
-                    logger.debug(f"[Pipeline] Polling de findings_target en curso: {ex}")
+                    logger.debug(
+                        f"[Pipeline] Polling de findings_target en curso: {ex}"
+                    )
             await asyncio.sleep(0.5)
     else:
         print(
             "[System] [Cache Bypass] Findings and technical research already generated. Skipping Analyst Chain."
         )
 
-    #
-    # Stage 5: Generate the Tower Strategic Blueprint payload. This stage is cache-gated.
-    #
+
+async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
+    """Synthesize the Tower Strategic Blueprint payload and Executive Annex payload."""
     print("\n[System] Initializing Top-Down Flow: Strategic Blueprint...")
     if (
-        args.force
-        or not blueprint_payload_path.exists()
-        or blueprint_payload_path.stat().st_size == 0
+        cfg.force
+        or not cfg.blueprint_payload_path.exists()
+        or cfg.blueprint_payload_path.stat().st_size == 0
     ):
-        if env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
+        if cfg.env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
             print("🔎 Ejecutando preflight de Vertex AI...")
-            preflight = run_vertex_ai_preflight(env=env)
+            preflight = run_vertex_ai_preflight(env=cfg.env)
             print(
                 f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
             )
@@ -477,13 +520,13 @@ async def run_pipeline():
         try:
             await run_step_async(
                 [
-                    python_bin,
+                    cfg.python_bin,
                     "-m",
                     "assessment_engine.application.run_tower_blueprint_engine",
-                    args.client,
-                    tower_id,
+                    cfg.args.client,
+                    cfg.tower_id,
                 ],
-                env,
+                cfg.env,
                 "Engine: Tower Strategic Blueprint",
             )
         except Exception as e:
@@ -494,21 +537,22 @@ async def run_pipeline():
             "⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call."
         )
 
-    #
-    # Stage 6: Synthesize the Executive Annex payload. This stage is cache-gated.
-    #
     print("\n🚀 Iniciando Síntesis Ejecutiva...")
-    if args.force or not payload_path.exists() or payload_path.stat().st_size == 0:
+    if (
+        cfg.force
+        or not cfg.payload_path.exists()
+        or cfg.payload_path.stat().st_size == 0
+    ):
         try:
             await run_step_async(
                 [
-                    python_bin,
+                    cfg.python_bin,
                     "-m",
                     "assessment_engine.application.run_executive_annex_synthesizer",
-                    args.client,
-                    tower_id,
+                    cfg.args.client,
+                    cfg.tower_id,
                 ],
-                env,
+                cfg.env,
                 "Engine: Executive Annex Synthesizer",
             )
         except Exception as e:
@@ -519,128 +563,104 @@ async def run_pipeline():
             "⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call."
         )
 
-    #
-    # Stage 7: Render the final DOCX artifacts. This stage is not cached, as the rendering execution time is negligible, making cache overhead non-beneficial.
-    #
-    async def render_standard_report():
-        """Orchestrates the multi-stage rendering of the final report and associated artifacts.
 
-        This asynchronous function executes a sequence of subprocesses to construct the
-        final report deliverables. The rendering pipeline consists of the following
-        stages:
+async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
+    """Concurrently compile final AS-IS diagnostic report, radar charts, and Blueprint Word DOCX documents."""
 
-        1.  **Intermediate Artifact Generation**: Generates Markdown and CSV modules
-            from the main blueprint payload.
-        2.  **Data Visualization**: Creates a PNG radar chart from quantitative
-            summary data.
-        3.  **Final Document Compilation**: Compiles the intermediate artifacts into
-            the primary Microsoft Word (DOCX) document.
-        4.  **Canary Build**: Performs a parallel Abstract Syntax Tree (AST) 'shadow
-            compilation' to produce a canary version of the report for validation.
-
-        The function's execution is not cached, as the rendering time is negligible,
-        rendering caching overhead counterproductive.
-
-        Raises:
-            Exception: If any underlying rendering subprocess encounters an error.
-        """
-        # Phase 1: Generate intermediate Markdown and CSV artifacts from the `blueprint_payload_path` to enable offline review before final compilation.
+    async def render_standard_report() -> None:
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.adapters.generate_asis_markdown_modules",
-                str(blueprint_payload_path),
+                str(cfg.blueprint_payload_path),
             ],
-            env,
+            cfg.env,
             "Generate AS-IS Markdown Modules",
         )
 
-        # Generate radar chart visualization for quantitative summary.
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.generate_tower_radar_chart",
-                str(payload_path),
-                str(payload_path.with_name("pillar_radar_chart.generated.png")),
+                str(cfg.payload_path),
+                str(cfg.payload_path.with_name("pillar_radar_chart.generated.png")),
             ],
-            env,
+            cfg.env,
             "Generate short radar",
         )
 
-        # Phase 2: Compile the final DOCX report from the intermediate module artifacts.
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.adapters.compile_asis_docx_from_modules",
-                str(case_dir),
-                str(output_asis_docx),
+                str(cfg.case_dir),
+                str(cfg.output_asis_docx),
             ],
-            env,
+            cfg.env,
             "Compile AS-IS DOCX from Modules",
         )
         import shutil
-        shutil.copyfile(output_asis_docx, case_dir / f"AS-IS_Anexo_Tecnico_{tower_id}.docx")
 
-        # Perform an Abstract Syntax Tree (AST) shadow compilation. This generates a canary artifact for non-production analysis of alternative logic paths.
+        shutil.copyfile(
+            cfg.output_asis_docx,
+            cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.docx",
+        )
+
         await run_step_async(
             [
-                python_bin,
+                cfg.python_bin,
                 "-m",
                 "assessment_engine.application.tools.run_shadow_compilation",
                 "--blueprint-payload",
-                str(blueprint_payload_path),
+                str(cfg.blueprint_payload_path),
                 "--approved-annex",
-                str(payload_path),
+                str(cfg.payload_path),
                 "--output",
-                str(case_dir / f"AS-IS_Anexo_Tecnico_{tower_id}.shadow.docx"),
+                str(cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.shadow.docx"),
             ],
-            env,
+            cfg.env,
             "V4 AST Shadow Compilation (Canary)",
         )
 
-    async def run_blueprint_flow():
-        """Asynchronously executes the blueprint DOCX rendering subprocess.
-
-        This coroutine conditionally invokes a subprocess to render the Tower Strategic
-        Blueprint DOCX document. The operation is contingent upon the existence of the
-        payload file specified by the module-level `blueprint_payload_path` variable.
-
-        The rendering logic is encapsulated within the `assessment_engine.adapters.render_tower_blueprint`
-        module, which is executed using the interpreter at `python_bin`. The input
-        payload path and the `output_blueprint_docx` path are passed as command-line
-        arguments. The subprocess executes within the environment defined by `env`.
-
-        Returns:
-            None.
-
-        Raises:
-            Exception: Propagates an exception from the underlying `run_step_async`
-                call if the rendering subprocess fails (e.g., returns a non-zero
-                exit code).
-        """
-        if blueprint_payload_path.exists():
+    async def run_blueprint_flow() -> None:
+        if cfg.blueprint_payload_path.exists():
             await run_step_async(
                 [
-                    python_bin,
+                    cfg.python_bin,
                     "-m",
                     "assessment_engine.adapters.render_tower_blueprint",
-                    str(blueprint_payload_path),
-                    str(output_blueprint_docx),
+                    str(cfg.blueprint_payload_path),
+                    str(cfg.output_blueprint_docx),
                 ],
-                env,
+                cfg.env,
                 "Render: Tower Strategic Blueprint DOCX",
             )
 
     print("\n🚀 Finalizando: Renderizado Estándar + Blueprint en paralelo...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
-    print(f"\n✅ Pipeline {tower_id} completado con éxito (Modelo Dual Canónico):")
-    print(f"  📄 Entregable 1 (Diagnóstico AS-IS): {output_asis_docx}")
-    print(f"  🚀 Entregable 2 (Blueprint TO-BE):   {output_blueprint_docx}")
-    print(f"  📊 Expediente Actuarial (SR 11-7):   {case_dir / f'Expediente_Auditoria_Riesgos_{tower_id}.md'}")
+    print(f"\n✅ Pipeline {cfg.tower_id} completado con éxito (Modelo Dual Canónico):")
+    print(f"  📄 Entregable 1 (Diagnóstico AS-IS): {cfg.output_asis_docx}")
+    print(f"  🚀 Entregable 2 (Blueprint TO-BE):   {cfg.output_blueprint_docx}")
+    print(
+        f"  📊 Expediente Actuarial (SR 11-7):   {cfg.case_dir / f'Expediente_Auditoria_Riesgos_{cfg.tower_id}.md'}"
+    )
+
+
+async def run_pipeline(argv: list[str] | None = None) -> None:
+    """Orchestrates the end-to-end execution of the assessment pipeline."""
+    cfg = _parse_and_prepare_pipeline(argv)
+    should_stop = await _stage_case_input_and_short_circuit(cfg)
+    if should_stop:
+        return
+
+    await _stage_evidence_and_benchmarks(cfg)
+    await _stage_scoring_and_qualitative_chain(cfg)
+    await _stage_blueprint_and_annex(cfg)
+    await _stage_render_deliverables(cfg)
 
 
 if __name__ == "__main__":
