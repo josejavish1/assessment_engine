@@ -64,6 +64,7 @@ _archive_*/
 *.zip
 *.bak
 *.swp
+*.pptx
 
 # Archivos Específicos del Proyecto que no van al repo
 commercial_report_payload.json

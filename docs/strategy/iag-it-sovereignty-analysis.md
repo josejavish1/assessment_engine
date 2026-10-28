@@ -2,7 +2,8 @@
 status: Needs Review
 owner: docs-governance
 source_of_truth:
-- iag/IAG_IT_Sovereignty_Proposal_20260624 1.pptx
+- docs/strategy/VISION.md
+- docs/strategy/ROADMAP.md
 last_verified_against: '2026-07-08'
 applies_to:
 - src/assessment_engine/infrastructure
