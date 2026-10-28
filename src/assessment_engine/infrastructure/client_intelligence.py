@@ -880,14 +880,20 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
     sources = [{"source": value} for value in evidence_values]
 
     payload = {
+        "version": "2.0",
         "client_name": client_name,
+        "metadata": {
+            "created_at": _now_iso(),
+            "updated_at": _now_iso(),
+            "source": "legacy_coercion",
+        },
         "profile": {
             "industry": str(data.get("industry", "")),
             "financial_tier": str(data.get("financial_tier", "Tier 2")),
             "operating_model": data.get("operating_model"),
             "regions": _as_list_of_strings(data.get("regions", [])),
         },
-        "regulatory_frameworks": [
+        "regulatory_context": [
             {
                 "name": framework,
                 "applicability": "medium",
@@ -924,6 +930,19 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             },
             "constraints": _as_list_of_strings(data.get("constraints", [])),
         },
+        "technology_context": {
+            "technology_drivers": [
+                {
+                    "name": driver,
+                    "confidence": "medium",
+                    "sources": sources,
+                }
+                for driver in _as_list_of_strings(data.get("technological_drivers", []))
+            ],
+            "technical_stack": [],
+            "field_metrics": [],
+            "hard_tech_specs": [],
+        },
         "tower_overrides": {
             tower_id.upper(): {
                 "target_maturity": score,
@@ -934,16 +953,11 @@ def _coerce_legacy_to_v2(client_name: str, data: dict[str, Any]) -> dict[str, An
             }
             for tower_id, score in extract_target_maturity_map(data).items()
         },
-        "evidence_register": [
-            {
-                "claim_id": f"claim_{index + 1}",
-                "claim": value,
-                "claim_type": "inference",
-                "confidence": "medium",
-                "sources": [{"source": value}],
-            }
-            for index, value in enumerate(evidence_values)
-        ],
+        "claims": [],
+        "review": {
+            "status": "auto_coerced",
+            "reviewed_by": "system",
+        },
     }
     return ClientDossierV2.model_validate(payload).model_dump(mode="json")
 

@@ -360,14 +360,14 @@ def build_case_input(args: argparse.Namespace) -> dict:
     }
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     r"""{'docstring': "Parses command-line arguments to generate and serialize a case input JSON file.\n\nServes as the script's main entry point. This function orchestrates the\ngeneration of a case-specific input file by parsing command-line arguments\nfor a client, tower, and associated data source files. It creates a\nstandardized output directory derived from the client and tower names, then\ndelegates the core data payload construction to the `build_case_input`\nfunction. The resulting data is serialized as a UTF-8 encoded, indented\nJSON file named `case_input.json` within the output directory.\n\nThe primary side effect of this function is the creation of the aforementioned\nfile on the local filesystem.\n\nReturns:\n    None\n\nRaises:\n    SystemExit: If required command-line arguments are missing or invalid, as\n        handled by the `argparse` module.\n    FileNotFoundError: If the files specified by `--context-file` or\n        `--responses-file` do not exist. This exception is expected to\n        propagate from downstream functions that consume these file paths."}."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--client", required=True)
     parser.add_argument("--tower", required=True)
     parser.add_argument("--context-file", required=True)
     parser.add_argument("--responses-file", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     client_slug = slugify(args.client)
     case_dir = resolve_case_dir(client_slug, args.tower)
