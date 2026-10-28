@@ -897,9 +897,15 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: st
             color = "FFFF00"  # Defines the RGB value for the Yellow color state.
 
         ale_val = detail["ale"]
+        from assessment_engine.infrastructure.localization import (
+            format_currency,
+        )
+
         set_cell_text(
             row.cells[4],
-            f"{ale_val:,.2f} {currency_symbol}".replace(",", "X").replace(".", ",").replace("X", "."),
+            format_currency(
+                ale_val, currency_symbol=currency_symbol, locale="es"
+            ),
             font_size=8,
             align=WD_ALIGN_PARAGRAPH.RIGHT,
         )

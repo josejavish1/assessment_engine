@@ -81,7 +81,7 @@ def sanitize_client_name(text, client_name) -> Any:
     # Sanitizes the client name to create a valid, filesystem-safe filename by replacing spaces and special characters with underscores.
     clean_name = client_name.replace("_", " ")
 
-    # Removes client-specific possessive prepositions (e.g., 'de [Client]', 'del [Client]') from the narrative as the first step in text generalization.
+    # Removes client-specific possessive prepositions (e.g., 'of [Client]', 'by [Client]') from the narrative as the first step in text generalization.
     text = re.sub(
         rf"\s+del?\s+{re.escape(client_name)}\b", "", text, flags=re.IGNORECASE
     )
@@ -97,25 +97,11 @@ def sanitize_client_name(text, client_name) -> Any:
         rf"\b{re.escape(clean_name)}\b", "la organización", text, flags=re.IGNORECASE
     )
 
-    # Localization: Replace non-recommended Spanish terms with recommended Spain terms
-    text = text.replace("sistémicas", "estructurales")
-    text = text.replace("sistémicos", "estructurales")
-    text = text.replace("Sistémicas", "Estructurales")
-    text = text.replace("Sistémicos", "Estructurales")
-    text = text.replace("sistémica", "estructural")
-    text = text.replace("sistémico", "estructural")
-    text = text.replace("Sistémica", "Estructural")
-    text = text.replace("Sistémico", "Estructural")
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
 
-    # Spelling corrections for 'múltiples'
-    text = text.replace("mùltiples", "múltiples")
-    text = text.replace("Mùltiples", "Múltiples")
-    text = text.replace("móltiples", "múltiples")
-    text = text.replace("Móltiples", "Múltiples")
-    text = text.replace("multiples", "múltiples")
-    text = text.replace("Multiples", "Múltiples")
-
-    return text
+    return apply_vocabulary_substitutions(text, locale="es")
 
 
 def clear_document_body(doc) -> Any:
@@ -300,7 +286,11 @@ def render_cover(doc, payload: GlobalReportPayload) -> Any:
     if disclaimer_raw:
         paragraphs = [p.strip() for p in disclaimer_raw.split("\n\n") if p.strip()]
         for idx, p_text in enumerate(paragraphs):
-            p_text_fmt = p_text.replace("NTT DATA", company)
+            p_text_fmt = (
+                p_text.format(company_name=company)
+                if "{company_name}" in p_text
+                else p_text.replace("NTT DATA", company)
+            )
             if idx == 0:
                 r = disclaimer_p1.add_run(p_text_fmt)
             else:

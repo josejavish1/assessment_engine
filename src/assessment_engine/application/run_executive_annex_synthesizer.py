@@ -383,7 +383,7 @@ def derive_pillar_executive_reading(pillar: Any, idx: int = 0) -> str:
     # Deterministic variation index based on index
     v_idx = idx % 3
     
-    # 1. Situación de Capacidades
+    # 1. Capabilities Situation
     prose_caps = []
     
     if v_idx == 0:
@@ -443,7 +443,7 @@ def derive_pillar_executive_reading(pillar: Any, idx: int = 0) -> str:
     else:
         gaps_text = f"Se constata una carencia material en {gaps_str_joined} lo cual expone a la organización a consecuencias de negocio como {risks_str_joined}"
     
-    # 3. Justificación de la Nota
+    # 3. Score Justification
     worst_cap = gaps_caps[0] if gaps_caps else "las capacidades críticas"
     
     if v_idx == 0:
@@ -553,13 +553,35 @@ def enrich_annex_payload(
     ale_p10 = round(global_fair_ale * 0.70, -3)
     ale_p90 = round(global_fair_ale * 1.30, -3)
 
-    str_ale = f"{ale_rounded:,.0f}".replace(",", ".")
-    str_p10 = f"{ale_p10:,.0f}".replace(",", ".")
-    str_p90 = f"{ale_p90:,.0f}".replace(",", ".")
-    fmt_ale = f"~{str_ale} €/año (Rango habitual: {str_p10} € a {str_p90} €)"
+    from assessment_engine.infrastructure.localization import (
+        format_currency,
+        format_number,
+    )
 
-    formatted_3y_ord = f"~{(global_fair_ale * 3):,.0f} € en 3 años".replace(",", "X").replace(".", ",").replace("X", ".")
-    formatted_3y_ext = f"~{coi_extreme_3y:,.0f} € (peor caso en 3 años)".replace(",", "X").replace(".", ",").replace("X", ".")
+    str_ale = format_number(ale_rounded, locale=doc_lang, decimals=0)
+    str_p10 = format_number(ale_p10, locale=doc_lang, decimals=0)
+    str_p90 = format_number(ale_p90, locale=doc_lang, decimals=0)
+    currency_sym = (
+        getattr(blueprint.document_meta, "currency_symbol", None)
+        or getattr(blueprint.document_meta, "currency", None)
+        or "€"
+    )
+    fmt_ale = f"~{str_ale} {currency_sym}/año (Rango habitual: {str_p10} {currency_sym} a {str_p90} {currency_sym})"
+
+    cost_3y_ord = format_currency(
+        global_fair_ale * 3,
+        currency_symbol=currency_sym,
+        locale=doc_lang,
+        decimals=0,
+    )
+    cost_3y_ext = format_currency(
+        coi_extreme_3y,
+        currency_symbol=currency_sym,
+        locale=doc_lang,
+        decimals=0,
+    )
+    formatted_3y_ord = f"~{cost_3y_ord} en 3 años"
+    formatted_3y_ext = f"~{cost_3y_ext} (peor caso en 3 años)"
 
     from assessment_engine.domain.schemas.annex_synthesis import FinancialCOIProfile
     result_payload.executive_summary.financial_coi = FinancialCOIProfile(
@@ -787,24 +809,12 @@ async def synthesize_annex(client_name: str, tower_id: str):
 
     if final_payload:
         content = final_payload.model_dump_json(indent=2, by_alias=True)
-        
-        # European Spanish localization: Replace 'sistémico/sistémica' with 'estructural'
-        content = content.replace("sistémicas", "estructurales")
-        content = content.replace("sistémicos", "estructurales")
-        content = content.replace("Sistémicas", "Estructurales")
-        content = content.replace("Sistémicos", "Estructurales")
-        content = content.replace("sistémica", "estructural")
-        content = content.replace("sistémico", "estructural")
-        content = content.replace("Sistémica", "Estructural")
-        content = content.replace("Sistémico", "Estructural")
 
-        # Spelling corrections for 'múltiples'
-        content = content.replace("mùltiples", "múltiples")
-        content = content.replace("Mùltiples", "Múltiples")
-        content = content.replace("móltiples", "múltiples")
-        content = content.replace("Móltiples", "Múltiples")
-        content = content.replace("multiples", "múltiples")
-        content = content.replace("Multiples", "Múltiples")
+        from assessment_engine.infrastructure.localization import (
+            apply_vocabulary_substitutions,
+        )
+
+        content = apply_vocabulary_substitutions(content, locale=doc_lang)
 
         tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
         try:

@@ -815,15 +815,15 @@ def render_asis_annex(payload_path: str, output_path: str):
             ale = hc.get("fair_ale_score", 0.0)
 
             if ale and ale > 0:
-                # Threat Event Frequency (TEF) and Loss Magnitude (LM) are formatted as qualitative scores on a 1-to-5 scale. Currency symbols are omitted to prevent misinterpreting these abstract risk factors as direct financial values.
-                currency = tower_meta.get("currency", "€")
-                calc_txt = (
-                    f"TEF: {tef:.1f} / 5,0\nLM: {lm:.1f} / 5,0\n\nALE: {ale:,.0f} {currency}".replace(
-                        ",", "X"
-                    )
-                    .replace(".", ",")
-                    .replace("X", ".")
+                from assessment_engine.infrastructure.localization import (
+                    format_number,
                 )
+
+                currency = tower_meta.get("currency", "€")
+                formatted_ale_str = format_number(
+                    ale, locale=meta_lang, decimals=0
+                )
+                calc_txt = f"TEF: {tef:.1f} / 5,0\nLM: {lm:.1f} / 5,0\n\nALE: {formatted_ale_str} {currency}"
                 set_cell_text_custom(
                     row.cells[2],
                     calc_txt,

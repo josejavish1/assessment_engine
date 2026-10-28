@@ -760,13 +760,12 @@ def render_consolidated_asis(working_dir: str, output_path: str):
         ale = hc.get("fair_ale_score", 0.0)
 
         if ale and ale > 0:
-            calc_txt = (
-                f"TEF: {tef:.1f} / 5,0\nLM: {lm:.1f} / 5,0\n\nALE: {ale:,.0f} €".replace(
-                    ",", "X"
-                )
-                .replace(".", ",")
-                .replace("X", ".")
+            from assessment_engine.infrastructure.localization import (
+                format_number,
             )
+
+            formatted_ale_str = format_number(ale, locale="es", decimals=0)
+            calc_txt = f"TEF: {tef:.1f} / 5,0\nLM: {lm:.1f} / 5,0\n\nALE: {formatted_ale_str} €"
             set_cell_text_custom(
                 row.cells[3],
                 calc_txt,
