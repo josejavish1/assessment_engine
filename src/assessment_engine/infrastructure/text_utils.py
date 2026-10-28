@@ -224,19 +224,19 @@ class ExecutiveStyleCompressor:
     ]
 
     BUZZWORD_REPLACEMENTS = {
-        r"\bcaptura de sinergias fabriles\b": "reducción de costes duplicados en plantas",
-        r"\bsinergias fabriles\b": "ahorros operativos y unificación de plantas",
-        r"\bcaptura de sinergias\b": "reducción de costes e integración operativa",
+        r"\bcaptura de sinergias fabriles\b": "reducción de costes e integración de operaciones",
+        r"\bsinergias fabriles\b": "ahorros operativos e integración de operaciones",
+        r"\bcaptura de sinergias corporativas\b": "reducción de costes e integración de operaciones",
+        r"\bsinergias corporativas\b": "ahorros operativos e integración de operaciones",
+        r"\bcaptura de sinergias\b": "reducción de costes e integración de operaciones",
         r"\bsinergias\b": "ahorros e integraciones operativas",
         r"\bparadigma\b": "modelo",
-        r"\buna palanca de valor\b": "un beneficio directo",
         r"\bpalancas de valor\b": "beneficios directos",
         r"\bpalanca de valor\b": "beneficio directo",
         r"\bholístico\b": "integral",
         r"\bholística\b": "integral",
         r"\bapalancar\b": "aprovechar",
         r"\bapalancando\b": "aprovechando",
-        r"\bla inercia de gasto\b": "el gasto descontrolado",
         r"\binercia de gasto\b": "gasto descontrolado",
     }
 

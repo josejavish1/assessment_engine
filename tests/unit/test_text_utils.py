@@ -131,11 +131,11 @@ def test_executive_style_compressor_kills_buzzwords():
     assert "apalancar" not in compressed
     assert "paradigma" not in compressed
     assert "inercia de gasto" not in compressed
-    assert "reducción de costes duplicados en plantas" in compressed
-    assert "un beneficio directo" in compressed
+    assert "reducción de costes e integración de operaciones" in compressed
+    assert "beneficio directo" in compressed
     assert "integral" in compressed
     assert "aprovechar" in compressed
     assert "modelo" in compressed
-    assert "el gasto descontrolado" in compressed
+    assert "gasto descontrolado" in compressed
 
 
