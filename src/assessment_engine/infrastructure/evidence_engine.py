@@ -12,7 +12,6 @@ from assessment_engine.infrastructure.document_ai_client import DocumentAIClient
 from assessment_engine.infrastructure.parser_strategy import (
     CloudParserStrategy,
     LegacyParserStrategy,
-    ParserStrategy,
 )
 from assessment_engine.infrastructure.text_utils import slugify
 
@@ -43,7 +42,9 @@ class EvidenceEngine:
     def _create_parser_strategy(self, config: Optional[Dict[str, Any]] = None) -> Any:
         cfg = config or {}
         if not cfg:
-            from assessment_engine.infrastructure.config_loader import load_runtime_manifest
+            from assessment_engine.infrastructure.config_loader import (
+                load_runtime_manifest,
+            )
             cfg = load_runtime_manifest() or {}
         use_cloud = cfg.get("feature_flags", {}).get("evidence_engine_use_cloud_parser", False)
         if use_cloud:
@@ -297,39 +298,56 @@ class EvidenceEngine:
 
     def _parse_html(self, path: Path) -> List[EvidenceFragment]:
         """A minimalist parser for converting HTML to plaintext, specifically designed to extract semantic textual content from web-archived snapshots."""
-        try:
-            from bs4 import (
-                BeautifulSoup,  # Suppresses a static type checker error where the framework's behavior intentionally deviates from the statically inferred type.
-            )
-        except ImportError:
-            logger.info("⚠️ BeautifulSoup4 not installed. Falling back to raw text for HTML.")
-            return self._parse_text(path)
+        from html.parser import HTMLParser
+
+        class SemanticHTMLCleaner(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self.fragments: List[tuple[str, str]] = []  # (tag, text)
+                self.in_ignored_tag: bool = False
+                self.title: str = "Web Snapshot"
+                self.in_title: bool = False
+                self.current_tag: str = ""
+
+            def handle_starttag(self, tag: str, attrs: Any) -> None:
+                self.current_tag = tag.lower()
+                if self.current_tag in ("script", "style", "noscript"):
+                    self.in_ignored_tag = True
+                elif self.current_tag == "title":
+                    self.in_title = True
+
+            def handle_endtag(self, tag: str) -> None:
+                if tag.lower() in ("script", "style", "noscript"):
+                    self.in_ignored_tag = False
+                elif tag.lower() == "title":
+                    self.in_title = False
+
+            def handle_data(self, data: str) -> None:
+                if self.in_ignored_tag:
+                    return
+                text = data.strip()
+                if self.in_title and text:
+                    self.title = text
+                elif len(text) > 30 and self.current_tag in ("h1", "h2", "h3", "h4", "p", "li", "td", "div"):
+                    self.fragments.append((self.current_tag, text))
 
         content = path.read_text(encoding="utf-8")
-        soup = BeautifulSoup(content, "html.parser")
+        cleaner = SemanticHTMLCleaner()
+        cleaner.feed(content)
 
-        # Removes all `<script>` and `<style>` elements from the HTML to isolate semantic content from presentational markup and executable code.
-        for script in soup(["script", "style"]):
-            script.decompose()
-
-        fragments = []
-        # Aggregates consecutive document elements of a homogenous type (e.g., a sequence of paragraphs or list items) into a single logical block prior to fragmentation.
-        for tag in soup.find_all(["h1", "h2", "h3", "p", "li"]):
-            text = tag.get_text().strip()
-            if len(text) > 30:
-                fragments.append(
-                    self._create_fragment(
-                        content=text,
-                        source_uri=str(path.name),
-                        location={
-                            "type": "html_block",
-                            "tag": tag.name,
-                            "hierarchy": [
-                                soup.title.string if soup.title else "Web Snapshot"
-                            ],
-                        },
-                    )
+        fragments: List[EvidenceFragment] = []
+        for tag_name, text in cleaner.fragments:
+            fragments.append(
+                self._create_fragment(
+                    content=text,
+                    source_uri=str(path.name),
+                    location={
+                        "type": "html_block",
+                        "tag": tag_name,
+                        "hierarchy": [cleaner.title],
+                    },
                 )
+            )
         return fragments
 
     def _parse_xlsx(self, path: Path) -> List[EvidenceFragment]:
@@ -460,6 +478,7 @@ class EvidenceEngine:
     def _save_ledger(self) -> None:
         import uuid
 
+        self.storage_dir.mkdir(parents=True, exist_ok=True)
         tmp_path = self.ledger_path.with_name(
             f"{self.ledger_path.name}.{uuid.uuid4().hex[:8]}.tmp"
         )
