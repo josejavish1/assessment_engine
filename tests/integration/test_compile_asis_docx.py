@@ -10,8 +10,10 @@ from pathlib import Path
 from docx import Document
 
 from assessment_engine.adapters.compile_asis_docx_from_modules import compile_docx
+import pytest
 
 
+@pytest.mark.xdist_group(name="locales")
 def test_compile_asis_docx_full_oracle(tmp_path: Path) -> None:
     """Verify that compile_docx builds a complete and valid technical annex document."""
     modules_dir = tmp_path / "asis_modules"

@@ -48,6 +48,10 @@ def is_high_entropy_secret(token: str) -> bool:
         return False
     if token.startswith(("/", "http://", "https://", "data:", "SELECT", "INSERT", "UPDATE", "DELETE", "PRAGMA")):
         return False
+    # Secret tokens and private keys are strictly ASCII (Base64, Hex, Alphanumeric).
+    # Natural prose in non-Latin scripts (e.g., CJK, Cyrillic) is not a secret key.
+    if any(ord(char) > 127 for char in token):
+        return False
     if "/" in token and any(token.endswith(ext) for ext in (".md", ".json", ".yaml", ".yml", ".py", ".html", ".css", ".js", ".ts", ".txt", ".sh", ".sql", ".xml", ".svg", ".png", ".jpg", ".lock")):
         return False
     if UUID_REGEX.match(token):

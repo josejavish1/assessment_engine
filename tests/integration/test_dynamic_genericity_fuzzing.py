@@ -5,8 +5,10 @@ from pathlib import Path
 from docx import Document
 
 from assessment_engine.adapters.compile_asis_docx_from_modules import compile_docx
+import pytest
 
 
+@pytest.mark.xdist_group(name="locales")
 class TestDynamicGenericityFuzzing:
     """Test Suite - Dynamic Genericity Fuzzing:
     Verify that compilers act as pure functions and do not leak domain semantics (Domain Leakage).
@@ -31,6 +33,7 @@ class TestDynamicGenericityFuzzing:
             "es": {
                 "title": "MUTATED_DOCUMENT_TITLE_111",
                 "project": fuzzed_project,
+                "default_classification": fuzzed_classification,
                 "client_lbl": "MUTATED_CLIENT_LABEL:\n",
                 "proj_lbl": "\nMUTATED_PROJECT_LABEL:\n",
                 "v_lbl": "MUTATED_V_LBL_ ",
@@ -129,12 +132,19 @@ class TestDynamicGenericityFuzzing:
         )
 
         try:
-            # Write mutated test profiles
+            # Write mutated test profiles merging with original keys to avoid cross-worker starvation
+            orig_dict = json.loads(locales_backup) if locales_backup else {}
+            orig_es = orig_dict.get("es", {})
+            merged_locales = {
+                **orig_dict,
+                "es": {**orig_es, **temp_locales["es"]},
+            }
+
             locales_path.write_text(
-                json.dumps(temp_locales, ensure_ascii=False, indent=2), encoding="utf-8"
+                json.dumps(merged_locales, ensure_ascii=False, indent=2), encoding="utf-8"
             )
             locales_asis_path.write_text(
-                json.dumps(temp_locales, ensure_ascii=False, indent=2), encoding="utf-8"
+                json.dumps(merged_locales, ensure_ascii=False, indent=2), encoding="utf-8"
             )
             brand_path.write_text(
                 json.dumps(temp_brand_profile, ensure_ascii=False, indent=2),
