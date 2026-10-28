@@ -303,7 +303,7 @@ def main(argv: list[str] | None = None) -> None:
             [
                 python_bin,
                 "-m",
-                "adapters.render_web_presentation",
+                "assessment_engine.adapters.render_web_presentation",
                 client_id,
             ],
             "Render web dashboard",

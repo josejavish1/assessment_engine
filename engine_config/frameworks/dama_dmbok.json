@@ -5,7 +5,7 @@
   "rules": [
     {
       "tower_id": "T4",
-      "query_template": "porcentaje de utilities con gobierno de datos formalizado y catalogo de datos empresariales activo bajo estandares dama dmbok 2025 2026",
+      "query_template": "percentage of utilities with active data governance DAMA DMBOK",
       "evaluation_variable": "adoption",
       "thresholds": [
         {

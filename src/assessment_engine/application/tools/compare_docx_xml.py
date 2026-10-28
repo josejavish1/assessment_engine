@@ -36,8 +36,10 @@ def compare_tables():
         FileNotFoundError: Propagated from `extract_tables_xml` if either of
             the hardcoded DOCX file paths does not exist.
     """
-    working_path = "working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.docx"
-    shadow_path = "working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx"
+    import os
+    client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+    working_path = f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.docx"
+    shadow_path = f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx"
 
     print("🔍 Cargando tablas del archivo que funciona (V3)...")
     working_tbls = extract_tables_xml(working_path)

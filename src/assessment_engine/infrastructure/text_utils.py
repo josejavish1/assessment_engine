@@ -190,3 +190,31 @@ def detect_prompt_injection(text: str) -> bool:
     ]
     text_lower = text.lower()
     return any(re.search(pat, text_lower) for pat in patterns)
+
+
+def format_date_spanish(date_val: str = None) -> str:
+    """Formats a date string or ISO date into Spanish 'Month Year' (e.g. 'Julio 2026').
+    If date_val is None or empty, falls back to the current operating system date.
+    If it is a non-empty custom string (e.g., in testing/fuzzing or already formatted), preserves it.
+    """
+    from datetime import datetime
+    SPANISH_MONTHS = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+    }
+    
+    if not date_val or not str(date_val).strip():
+        now = datetime.now()
+        return f"{SPANISH_MONTHS[now.month]} {now.year}"
+        
+    cleaned = str(date_val).strip()
+    # Try parsing as ISO format YYYY-MM-DD
+    try:
+        dt = datetime.fromisoformat(cleaned)
+        return f"{SPANISH_MONTHS[dt.month]} {dt.year}"
+    except Exception:
+        pass
+        
+    # Return custom non-empty strings (already formatted or test values) as is
+    return cleaned

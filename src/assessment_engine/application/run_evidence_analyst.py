@@ -199,6 +199,8 @@ async def build_findings(
         gap_frag = analysis.get("gap_fragment_id")
 
         r_title = analysis.get("risk_title", f"Riesgo en {p_name}")
+        e_tef = int(analysis.get("elicited_tef_score", 3) or 3)
+        e_lm = int(analysis.get("elicited_lm_score", 3) or 3)
 
         inits_data = analysis.get("initiatives", [])
         candidate_initiatives = []
@@ -229,7 +231,12 @@ async def build_findings(
                 ],
                 "gaps": [{"statement": gap_text, "fragment_id": gap_frag}],
                 "risks": [
-                    {"title": r_title, "severity": "High" if p_score < 3 else "Medium"}
+                    {
+                        "title": r_title, 
+                        "severity": "High" if p_score < 3 else "Medium",
+                        "_elicited_tef": e_tef,
+                        "_elicited_lm": e_lm
+                    }
                 ],
                 "candidate_initiatives": candidate_initiatives,
             }

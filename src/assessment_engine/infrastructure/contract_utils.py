@@ -112,5 +112,18 @@ def save_versioned_payload(path: Path, payload: BaseModel, artifact_type: str) -
         )
 
     data = payload.model_dump(by_alias=True, exclude_none=False)
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    content = json.dumps(data, indent=2, ensure_ascii=False)
+    
+    # Atomic write to prevent file corruption during crashes
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    try:
+        tmp_path.write_text(content, encoding="utf-8")
+        tmp_path.replace(path)
+    finally:
+        if tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except Exception:
+                pass
+                
     logger.info(f"✅ Artefacto {artifact_type} guardado en: {path}")

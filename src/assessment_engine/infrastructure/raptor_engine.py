@@ -141,7 +141,7 @@ class RaptorEngine:
         prompt = f"""
         RESUME LOS SIGUIENTES FRAGMENTOS EN UN PÁRRAFO ESTRATÉGICO.
 
-        ### REGLA DE ORO: Mantén nombres de empresas (Hispasat, Reintel, etc.), proyectos y cifras.
+        ### REGLA DE ORO: Mantén nombres de empresas, filiales, proyectos y cifras.
 
         ### FRAGMENTOS:
         {context}

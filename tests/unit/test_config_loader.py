@@ -198,3 +198,37 @@ def test_load_industry_profile_corrupted_fallback() -> None:
         # It must successfully fallback to default.json
         assert "industry" in profile
         assert profile["industry"] == "Default / General Enterprise"
+
+
+def test_map_industry_to_profile() -> None:
+    """Verify that map_industry_to_profile maps multilingual and accented industry vertical names
+    correctly to their standardized profile keys and falls back safely to 'default'.
+    """
+    from assessment_engine.infrastructure.config_loader import map_industry_to_profile
+
+    # Test exact Spanish accented matches
+    assert map_industry_to_profile("energía") == "critical_infrastructure"
+    assert map_industry_to_profile("infraestructura crítica") == "critical_infrastructure"
+    assert map_industry_to_profile("eléctrico") == "critical_infrastructure"
+
+    # Test English and multilingual variations
+    assert map_industry_to_profile("Energy & Critical Infrastructure") == "critical_infrastructure"
+    assert map_industry_to_profile("utilities") == "critical_infrastructure"
+    assert map_industry_to_profile("Power utilities") == "critical_infrastructure"
+
+    # Test retail variations
+    assert map_industry_to_profile("Comercio y Retail") == "retail"
+    assert map_industry_to_profile("e-Commerce platform") == "retail"
+
+    # Test banking variations
+    assert map_industry_to_profile("Servicios de Banca y Finanzas") == "banking"
+    assert map_industry_to_profile("Global Investment Banking") == "banking"
+
+    # Test healthcare variations
+    assert map_industry_to_profile("Salud y Hospitales") == "healthcare"
+    assert map_industry_to_profile("Public Healthcare Systems") == "healthcare"
+
+    # Test fallbacks
+    assert map_industry_to_profile("") == "default"
+    assert map_industry_to_profile(None) == "default"
+    assert map_industry_to_profile("Agriculture & Fishing") == "default"

@@ -13,7 +13,7 @@ from assessment_engine.infrastructure import ai_client
 
 def test_evidence_fragment_content_addressable_hashing():
     source_uri = "source_docs/reference_reports/anexos_as_is/anexo_a_cpd_v1.2.pdf"
-    content = "El Centro de Datos principal cuenta con dos acometidas de energía independientes."
+    content = "El Centro de Datos principal cuenta con dos acometidas de alimentación independientes."
 
     # 1. Instantiate with bare minimum fields (content and source_uri only)
     frag1 = EvidenceFragment(source_uri=source_uri, content=content)

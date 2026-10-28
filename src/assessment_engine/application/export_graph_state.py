@@ -125,26 +125,8 @@ class DigitalTwinExporter:
         self.industry_name = industry_name
 
         # Step 2: Map the raw industry name to its canonical profile key
-        mapping = {
-            "energía": "critical_infrastructure",
-            "eléctrico": "critical_infrastructure",
-            "infraestructura crítica": "critical_infrastructure",
-            "transporte": "critical_infrastructure",
-            "retail": "retail",
-            "comercio": "retail",
-            "banca": "banking",
-            "finanzas": "banking",
-            "seguros": "banking",
-            "salud": "healthcare",
-            "hospital": "healthcare",
-        }
-
-        industry_lower = industry_name.lower()
-        profile_key = "default"
-        for key, val in mapping.items():
-            if key in industry_lower:
-                profile_key = val
-                break
+        from assessment_engine.infrastructure.config_loader import map_industry_to_profile
+        profile_key = map_industry_to_profile(industry_name)
 
         # Step 3: Try to load dynamic benchmarks from RAGE benchmarks_snapshot.json
         snapshot_path = client_dir / "benchmarks_snapshot.json"

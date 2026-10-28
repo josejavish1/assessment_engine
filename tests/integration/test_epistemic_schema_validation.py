@@ -60,11 +60,11 @@ def test_epistemic_graph_dynamic_schema_validation():
         assert "DATABASE_SRV" in truth
         assert truth["DATABASE_SRV"]["RUNS_ON_HARDWARE"]["value"] == "BLADE_01"
 
-        # 2. Invalid dynamic predicate (lowercase or containing spaces/hyphens) should raise ValueError
+        # 2. Invalid dynamic predicate (lowercase or containing spaces/hyphens is now robustly sanitized, but other symbols like @ should raise ValueError)
         with pytest.raises(ValueError) as exc:
             graph.inject_triple(
                 subject="DATABASE_SRV",
-                predicate="runs-on-hardware",
+                predicate="runs@hardware",
                 object_val="BLADE_01",
                 source="OSINT",
                 confidence=0.5,

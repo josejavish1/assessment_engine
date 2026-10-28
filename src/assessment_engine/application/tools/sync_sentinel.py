@@ -11,7 +11,7 @@ def main() -> None:
     """Manually triggers the on-demand synchronization of the Streaming Sentinel queue,
     ingesting all pending items and updating the Raptor RAG Tree.
     """
-    client_id = sys.argv[1] if len(sys.argv) > 1 else "redeia_v3"
+    client_id = sys.argv[1] if len(sys.argv) > 1 else "generic_client"
 
     logger.info(f"🔄 Starting On-Demand Sentinel Sync for client: {client_id}")
 

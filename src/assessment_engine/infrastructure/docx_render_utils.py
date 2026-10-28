@@ -673,6 +673,17 @@ def set_cell_text(
         ValueError: If `align` or `vertical` are not valid `docx` alignment
             enum members.
     """
+    # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
+    if isinstance(text, str):
+        text = text.replace("sistémica", "estructural")
+        text = text.replace("sistémico", "estructural")
+        text = text.replace("sistémicas", "estructurales")
+        text = text.replace("sistémicos", "estructurales")
+        text = text.replace("Sistémica", "Estructural")
+        text = text.replace("Sistémico", "Estructural")
+        text = text.replace("Sistémicas", "Estructurales")
+        text = text.replace("Sistémicos", "Estructurales")
+
     cell.text = ""
     paragraph = cell.paragraphs[0]
     paragraph.alignment = align

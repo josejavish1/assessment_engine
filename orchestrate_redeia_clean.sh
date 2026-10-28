@@ -44,8 +44,8 @@ if [ -z "${GOOGLE_APPLICATION_CREDENTIALS}" ]; then
 fi
 
 # Configure larger timeout for deep AI analysis steps on complex documents
-export ASSESSMENT_AI_STEP_TIMEOUT_SECONDS=600
-echo -e "${GREEN}[+] Configured ASSESSMENT_AI_STEP_TIMEOUT_SECONDS=600 for deep qualitative analysis.${NC}"
+export ASSESSMENT_AI_STEP_TIMEOUT_SECONDS=1800
+echo -e "${GREEN}[+] Configured ASSESSMENT_AI_STEP_TIMEOUT_SECONDS=1800 for deep qualitative analysis.${NC}"
 
 # Step 0.2: Resolve Python Interpreter (prefer local .venv)
 if [ -d ".venv" ]; then
@@ -68,14 +68,29 @@ CLIENT_DIR="${REPO_ROOT}/working/redeia_v3"
 BACKUP_DIR="${REPO_ROOT}/working/redeia_v3_backup"
 SOURCE_DIR="${CLIENT_DIR}/redeia"
 
-# Step 0.4: Check and move existing v3 aside
+# Step 0.4: Safe Check of Existing Workspace (Fail-Safe Protection)
+FORCE_PURGE=false
+for arg in "$@"; do
+    if [ "$arg" = "--force-purge" ]; then
+        FORCE_PURGE=true
+    fi
+done
+
 if [ -d "${CLIENT_DIR}" ]; then
+    if [ "$FORCE_PURGE" = "false" ]; then
+        echo -e "${RED}[-] ERROR CRÍTICO DE SEGURIDAD: El directorio activo '${CLIENT_DIR}' ya existe.${NC}"
+        echo -e "${RED}[-] Para evitar pérdida accidental de datos o de caché, se ha abortado la ejecución.${NC}"
+        echo -e "${YELLOW}[!] Si realmente deseas borrar el caché y arrancar de cero, ejecuta con: --force-purge${NC}"
+        exit 1
+    fi
+
+    # Only run the destructive purge if --force-purge was explicitly authorized
     if [ -f "${CLIENT_DIR}/redeia/context_redeia.docx" ] && [ -f "${CLIENT_DIR}/redeia/preguntas_redeia_con_notas.txt" ]; then
         if [ ! -d "${BACKUP_DIR}" ]; then
             echo -e "${GREEN}[+] Leaving old v3 folder aside at: ${BACKUP_DIR}${NC}"
             mv "${CLIENT_DIR}" "${BACKUP_DIR}"
         else
-            echo -e "${YELLOW}[!] Backup directory already exists. We will reuse it and purge current sparse working directory.${NC}"
+            echo -e "${YELLOW}[!] Backup directory already exists. Purging current active sparse directory under explicit --force-purge...${NC}"
             rm -rf "${CLIENT_DIR}"
         fi
     else
@@ -88,15 +103,17 @@ else
         echo -e "${RED}[-] Critical Error: No working/redeia_v3 nor working/redeia_v3_backup found to extract sources.${NC}"
         exit 1
     fi
-    echo -e "${GREEN}[+] Previous backup folder found. We will use its sources.${NC}"
+    echo -e "${GREEN}[+] Previous backup folder found. We will use its sources to initialize.${NC}"
 fi
 
-# Step 0.5: Create clean new v3 workspace and restore source documents
-echo -e "${GREEN}[+] Initializing fresh working/redeia_v3 directory...${NC}"
-mkdir -p "${SOURCE_DIR}"
-cp "${BACKUP_DIR}/redeia/context_redeia.docx" "${SOURCE_DIR}/"
-cp "${BACKUP_DIR}/redeia/preguntas_redeia_con_notas.txt" "${SOURCE_DIR}/"
-echo -e "${GREEN}[✓] Raw source files restored to pristine workspace: ${SOURCE_DIR}${NC}"
+# Step 0.5: Create clean new v3 workspace and restore source documents (Only if clean slate was executed)
+if [ ! -d "${CLIENT_DIR}" ]; then
+    echo -e "${GREEN}[+] Initializing fresh working/redeia_v3 directory...${NC}"
+    mkdir -p "${SOURCE_DIR}"
+    cp "${BACKUP_DIR}/redeia/context_redeia.docx" "${SOURCE_DIR}/"
+    cp "${BACKUP_DIR}/redeia/preguntas_redeia_con_notas.txt" "${SOURCE_DIR}/"
+    echo -e "${GREEN}[✓] Raw source files restored to pristine workspace: ${SOURCE_DIR}${NC}"
+fi
 
 
 # ==============================================================================
@@ -124,7 +141,7 @@ echo -e "\n${BLUE}==============================================================
 echo -e "${BLUE}  PHASE 2: Client Intelligence Harvesting                             ${NC}"
 echo -e "${BLUE}======================================================================${NC}"
 
-"${PYTHON_BIN}" -m assessment_engine.application.run_intelligence_harvesting redeia_v3
+"${PYTHON_BIN}" -m assessment_engine.application.run_intelligence_harvesting redeia_v3 "${SOURCE_DIR}/context_redeia.docx"
 
 # Quick verification of Phase 2 outputs
 if [ -f "${CLIENT_DIR}/client_intelligence.json" ]; then
@@ -142,25 +159,49 @@ echo -e "\n${BLUE}==============================================================
 echo -e "${BLUE}  PHASE 3: Running Technical Towers Diagnostic Pipelines              ${NC}"
 echo -e "${BLUE}======================================================================${NC}"
 
-TOWERS=("T1" "T2" "T4" "T5" "T6" "T7" "T8" "T10")
+TOWERS=("T2")
 
 for tower in "${TOWERS[@]}"; do
     echo -e "\n${YELLOW}▶ Processing Tower ${tower}...${NC}"
     echo "--------------------------------------------------------"
-    
-    "${PYTHON_BIN}" -m assessment_engine.application.run_tower_pipeline \
-        --tower "${tower}" \
-        --client "redeia_v3" \
-        --context-file "${SOURCE_DIR}/context_redeia.docx" \
-        --responses-file "${SOURCE_DIR}/preguntas_redeia_con_notas.txt"
+
+    MAX_RETRIES=3
+    RETRY_DELAY=15
+    SUCCESS=0
+
+    for (( i=1; i<=MAX_RETRIES; i++ )); do
+        echo -e "${BLUE}[INFO] Intentando ejecutar torre ${tower} (Intento $i de $MAX_RETRIES)...${NC}"
         
-    # Quick verification of Tower output
-    BLUEPRINT_FILE="${CLIENT_DIR}/${tower}/blueprint_$(echo "${tower}" | tr '[:upper:]' '[:lower:]')_payload.json"
-    if [ -f "${BLUEPRINT_FILE}" ]; then
-        echo -e "${GREEN}[✓] Tower ${tower} completed successfully. Blueprint generated.${NC}"
-    else
-        echo -e "${RED}[-] Error: Tower ${tower} pipeline did not generate expected blueprint payload.${NC}"
-        exit 1
+        # Turn off exit-on-error temporarily for the command
+        set +e
+        "${PYTHON_BIN}" -m assessment_engine.application.run_tower_pipeline \
+            --tower "${tower}" \
+            --client "redeia_v3" \
+            --context-file "${SOURCE_DIR}/context_redeia.docx" \
+            --responses-file "${SOURCE_DIR}/preguntas_redeia_con_notas.txt"
+        CMD_EXIT_CODE=$?
+        set -e
+        
+        # Quick verification of Tower output
+        BLUEPRINT_FILE="${CLIENT_DIR}/${tower}/blueprint_$(echo "${tower}" | tr '[:upper:]' '[:lower:]')_payload.json"
+        
+        if [ $CMD_EXIT_CODE -eq 0 ] && [ -f "${BLUEPRINT_FILE}" ]; then
+            echo -e "${GREEN}[✓] Tower ${tower} completed successfully. Blueprint generated.${NC}"
+            SUCCESS=1
+            break
+        else
+            echo -e "${RED}[-] Warning: Tower ${tower} pipeline attempt $i failed or did not generate expected payload.${NC}"
+            if [ $i -lt $MAX_RETRIES ]; then
+                echo -e "${YELLOW}[!] Autoremediación activada: Esperando ${RETRY_DELAY}s antes de reintentar...${NC}"
+                sleep $RETRY_DELAY
+                RETRY_DELAY=$((RETRY_DELAY * 2)) # Exponential backoff
+            fi
+        fi
+    done
+
+    if [ $SUCCESS -eq 0 ]; then
+        echo -e "${RED}[-] ERROR CRÍTICO: La torre ${tower} ha fallado tras $MAX_RETRIES intentos. Saltando a la siguiente para no bloquear la ejecución desatendida.${NC}"
+        # We don't exit 1 here anymore, we let the process continue to the next tower
     fi
 done
 
@@ -218,6 +259,20 @@ else
     exit 1
 fi
 
+
+# ==============================================================================
+# PHASE 7: Package Final Deliverables
+# ==============================================================================
+echo -e "\n${BLUE}======================================================================${NC}"
+echo -e "${BLUE}  PHASE 7: Packaging Final Deliverables to tar.gz                     ${NC}"
+echo -e "${BLUE}======================================================================${NC}"
+
+tar -czf "${REPO_ROOT}/working/redeia_v3_entregables.tar.gz" -C "${REPO_ROOT}/working/" redeia_v3
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}[✓] Phase 7 Completed. Archive created at working/redeia_v3_entregables.tar.gz${NC}"
+else
+    echo -e "${RED}[-] Error: Failed to create tar.gz archive.${NC}"
+fi
 
 # ==============================================================================
 # SUMMARY

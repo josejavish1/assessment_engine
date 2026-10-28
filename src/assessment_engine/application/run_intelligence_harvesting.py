@@ -58,12 +58,26 @@ from assessment_engine.infrastructure.text_utils import slugify
 
 """
 Módulo run_intelligence_harvesting.py (MASTER EDITION V35.0 - THE PURIST).
-Arquitectura Anti-Contaminación: Bloqueo estricto de nombres de otros clientes.
-Garantiza que Eurovision Services sea 100% independiente de Redeia.
+Arquitectura Anti-Contaminación: Bloqueo estricto de cruces de datos entre clientes.
+Garantiza el aislamiento absoluto de los contextos empresariales.
 """
 
-MODEL_FAST = os.environ.get("MODEL_TIER_FAST", "gemini-2.5-flash")
-MODEL_PRO = os.environ.get("MODEL_TIER_PRO", "gemini-2.5-pro")
+from assessment_engine.infrastructure.config_loader import resolve_model_for_role
+
+MODEL_FAST = os.environ.get("MODEL_TIER_FAST", "").strip() or resolve_model_for_role("section_writer", "gemini-2.5-flash")
+MODEL_PRO = os.environ.get("MODEL_TIER_PRO", "").strip() or resolve_model_for_role("section_reviewer", "gemini-2.5-pro")
+
+
+def _get_genai_client():
+    """Dynamically resolves Google Cloud project ID and location, and initializes the GenAI Client."""
+    from google import genai
+
+    from assessment_engine.infrastructure.runtime_env import (
+        get_google_cloud_project_location,
+    )
+
+    project_id, location = get_google_cloud_project_location()
+    return genai.Client(vertexai=True, project=project_id, location=location)
 
 
 async def probe_ai(
@@ -111,12 +125,13 @@ async def probe_ai(
         calls or response processing are suppressed, and a default value is
         returned instead.
     """
-    from google import genai
+    if client_name:
+        import re
+        client_name = re.sub(r"_v\d+$", "", client_name, flags=re.IGNORECASE).upper()
+
     from google.genai import types
 
-    client = genai.Client(
-        vertexai=True, project="sub403o4u0q5", location="europe-west1"
-    )
+    client = _get_genai_client()
     tools = [types.Tool(google_search=types.GoogleSearch())]
 
     # Enforces strict, context-agnostic data isolation between client datasets. This rule is critical for maintaining data confidentiality and preventing cross-contamination.
@@ -157,6 +172,36 @@ async def probe_ai(
         return {"text": "", "_links": []}
 
 
+def load_pdf_cache(cache_path: Path) -> dict[str, str]:
+    """Loads the SHA-256 PDF text extraction cache from the specified path."""
+    if cache_path.exists():
+        try:
+            return json.loads(cache_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Failed to load PDF extraction cache ({e}). Initializing new cache.")
+    return {}
+
+
+def save_pdf_cache(cache_path: Path, cache_data: dict[str, str]) -> None:
+    """Saves the SHA-256 PDF text extraction cache atomically to disk."""
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = cache_path.with_name(f"{cache_path.name}.tmp")
+    try:
+        tmp_path.write_text(json.dumps(cache_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp_path.replace(cache_path)
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Failed to save PDF extraction cache ({e}).")
+        if tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except Exception:
+                pass
+
+
 class SourceVault:
     """Extracts brand and metric intelligence 'atoms' from unstructured data.
 
@@ -191,6 +236,7 @@ class SourceVault:
         """Initialize the instance with a client name."""
         self.atoms = []
         self.client_name = client_name
+        self.custom_discovered_brands = []
 
     def ingest(self, data: Any, source_uri: str, source_type: str):
         """Extracts brand and metric intelligence atoms from raw data.
@@ -230,12 +276,21 @@ class SourceVault:
             "GE",
             "AWS",
             "Google",
+            "Azure",
+            "GCP",
+            "VMware",
+            "Okta",
             "Dynatrace",
             "Splunk",
             "Oracle",
             "SAP",
             "Microsoft",
         ]
+        # Include custom discovered brands dynamically
+        for cb in getattr(self, "custom_discovered_brands", []):
+            if cb and cb not in brands:
+                brands.append(cb)
+
         # Get client-specific brands declaratively from config loaders or brand profile if available
         from assessment_engine.infrastructure.config_loader import load_brand_profile
 
@@ -247,11 +302,6 @@ class SourceVault:
                     brands.append(cb)
         except Exception:
             pass
-
-        # Legacy fallback
-        if self.client_name and "eurovision" in self.client_name.lower():
-            if "EBU" not in brands:
-                brands.append("EBU")
 
         for b in brands:
             if b.lower() in raw.lower():
@@ -268,7 +318,7 @@ class SourceVault:
 
         # Stage 2: Metric Derivation. Computes quantitative metrics from raw, unstructured intelligence data.
         hits = re.findall(
-            r"(\d+[\.,]\d+|\d+)\s*(km|MW|ms|Gbps|CHF|%)", raw, re.IGNORECASE
+            r"(\d+[\.,]\d+|\d+)\s*(km|MW|kW|GW|kV|MVA|ms|Gbps|Tbps|vCPUs|cores|GB|TB|CHF|EUR|€|USD|%)", raw, re.IGNORECASE
         )
         for val, unit in hits:
             idx = raw.find(val)
@@ -328,6 +378,7 @@ async def run_market_intelligence(
     vault = SourceVault(client_name)
 
     # Stage 0: Internal Ingestion. Establishes the canonical data source for subsequent executive insight generation.
+    discovered_brands = []
     if context_file and context_file.exists():
         from docx import Document
 
@@ -337,6 +388,34 @@ async def run_market_intelligence(
             source_uri=str(context_file),
             source_type="Internal Document",
         )
+
+        # Discover brands dynamically from the context file using the fast LLM!
+        print("  -> [FASE 0] Descubriendo marcas tecnológicas dinámicamente desde el documento de contexto...")
+        try:
+            discovery_prompt = f"""
+            Analiza el siguiente texto de contexto técnico e identifica todas las marcas tecnológicas, proveedores de nube, fabricantes de hardware, soluciones de software corporativas y bases de datos que utiliza esta organización de forma activa (por ejemplo, AWS, Alibaba Cloud, GCP, IBM, Proxmox, Oracle, SAP, VMware, Cohesity, Centreon, Okta, Dynatrace).
+            
+            TEXTO DE CONTEXTO:
+            {doc_text[:8000]}
+            
+            REGLA DE ORO: Devuelve ÚNICAMENTE una lista JSON de strings con los nombres exactos de las marcas detectadas (ej. ["AWS", "Alibaba", "IBM", "VMware"]). No devuelvas explicaciones ni texto adicional.
+            """
+            res_brand = await probe_ai(discovery_prompt, client_name=client_name, model_name=MODEL_FAST)
+            if isinstance(res_brand, dict) and "text" in res_brand:
+                txt = res_brand["text"].strip()
+                if "[" in txt and "]" in txt:
+                    start, end = txt.find("["), txt.rfind("]") + 1
+                    try:
+                        brands_list = json.loads(txt[start:end])
+                        if isinstance(brands_list, list):
+                            discovered_brands = [str(b).strip() for b in brands_list if b]
+                            print(f"     ✓ Marcas descubiertas por IA: {discovered_brands}")
+                    except Exception:
+                        pass
+        except Exception as e:
+            print(f"  ⚠️ Error en descubrimiento dinámico de marcas: {e}")
+
+    vault.custom_discovered_brands = discovered_brands
 
     # Stage 1: Web Intelligence Probing. Executes targeted scans of public web sources to acquire relevant client-specific intelligence.
     print("  -> [FASE 1] Cosechando Huellas Técnicas Reales...")
@@ -363,6 +442,10 @@ async def run_market_intelligence(
         " ".join(pdf_search.get("_links", [])[:5])
     )
 
+    cache_path = Path("working") / ".pdf_cache.json"
+    pdf_cache = load_pdf_cache(cache_path)
+    cache_updated = False
+
     for snap in [
         c
         for c in captured
@@ -370,27 +453,49 @@ async def run_market_intelligence(
     ]:
         local_p = output_path.parent.parent.parent / snap["local_snapshot"]
         if local_p.exists():
-            print(f"       📖 Minería PDF: {snap['url']}")
-            from google import genai
-            from google.genai import types
+            import hashlib
+            try:
+                pdf_bytes = Path(local_p).read_bytes()
+                pdf_hash = hashlib.sha256(pdf_bytes).hexdigest()
+            except Exception as e:
+                print(f"       ⚠️ Error al calcular hash de PDF {local_p}: {e}")
+                pdf_hash = None
 
-            client = genai.Client(
-                vertexai=True, project="sub403o4u0q5", location="europe-west1"
-            )
-            res = client.models.generate_content(
-                model=MODEL_PRO,
-                contents=[
-                    "Extrae marcas y métricas en texto denso.",
-                    types.Part.from_bytes(
-                        data=Path(local_p).read_bytes(), mime_type="application/pdf"
-                    ),
-                ],
-            )
+            if pdf_hash and pdf_hash in pdf_cache:
+                print(f"       📖 Minería PDF (Caché): {snap['url']}")
+                extracted_text = pdf_cache[pdf_hash]
+            else:
+                print(f"       📖 Minería PDF (API): {snap['url']}")
+                from google.genai import types
+
+                try:
+                    client = _get_genai_client()
+                    res = client.models.generate_content(
+                        model=MODEL_PRO,
+                        contents=[
+                            "Extrae marcas y métricas en texto denso.",
+                            types.Part.from_bytes(
+                                data=pdf_bytes, mime_type="application/pdf"
+                            ),
+                        ],
+                    )
+                    extracted_text = res.text or ""
+                    if pdf_hash:
+                        pdf_cache[pdf_hash] = extracted_text
+                        cache_updated = True
+                except Exception as e:
+                    print(f"       ❌ Error fatal en API de Vertex AI para PDF {snap['url']}: {e}")
+                    print("       ⚠️ Saltando este documento para no bloquear el pipeline de inteligencia.")
+                    extracted_text = ""
+
             vault.ingest(
-                {"text": res.text or ""},
+                {"text": extracted_text},
                 source_uri=snap["url"],
                 source_type="PDF Document",
             )
+
+    if cache_updated:
+        save_pdf_cache(cache_path, pdf_cache)
 
     # Stage 3: Semantic Labeling and Classification. Applies semantic tags to and classifies synthesized data against a predefined, structured ontology.
     print("  -> [FASE 3] Etiquetado y Citación de Bóveda...")
@@ -424,34 +529,16 @@ async def run_market_intelligence(
     compliance_example_str = custom_narratives.get("compliance_example")
     feasibility_example_str = custom_narratives.get("feasibility_example")
 
-    # Fallback to legacy hardcoded text if not declaratively configured
-    if (
-        not client_context_str
-        or not compliance_example_str
-        or not feasibility_example_str
-    ):
-        if "redeia" in client_name.lower():
-            client_context_str = (
-                "footprint de transporte eléctrico y telecomunicaciones críticas, "
-                "cumplimiento con Directiva PIC y NIS2, y la necesidad de ciberresiliencia, "
-                "convergencia operacional IT/OT y digitalización bajo el Plan Estratégico de REDEIA."
-            )
-            compliance_example_str = "ej: NIS2, Directiva PIC, protección de infraestructura crítica, soberanía IT/OT como T6, T5 o T3, ~90. T1 u otras, ~40"
-            feasibility_example_str = "ej: T2 es compleja debido a migración e integración de sistemas legados de subestaciones, ~50. T10 DTO es de soporte estratégico, ~70"
-        elif "eurovision" in client_name.lower():
-            client_context_str = (
-                "footprint de 50 PoPs, adquisición por DUBAG Group, "
-                "e independencia tecnológica de la EBU ('Project Independence & Resilience') bajo eventos en directo críticos (UEFA, NBA)."
-            )
-            compliance_example_str = "ej: NIS2, DORA, Directiva PIC, o soberanía existencial de identidades post-EBU como T6 y T5, ~90. T1 u otras, ~40"
-            feasibility_example_str = "ej: T2 es compleja debido a VMware legacy, ~50. T10 DTO es de soporte estratégico, ~70"
-        else:
-            client_context_str = (
-                "footprint global, cumplimiento normativo general de sector crítico, "
-                "y la necesidad de modernización de su arquitectura, resiliencia operativa e independencia tecnológica."
-            )
-            compliance_example_str = "ej: NIS2, DORA o regulaciones específicas del sector para seguridad e identidad, ~85. T1 u otras, ~40"
-            feasibility_example_str = "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70"
+    # Fallback to decoupled generic default text if not declaratively configured in brand_profile.json
+    if not client_context_str:
+        client_context_str = (
+            "footprint global, cumplimiento normativo general de sector crítico, "
+            "y la necesidad de ciberresiliencia, resiliencia operativa y modernización de su arquitectura."
+        )
+    if not compliance_example_str:
+        compliance_example_str = "ej: NIS2, DORA, Directiva PIC o regulaciones específicas de seguridad de la información, ~85. T1 u otras, ~40"
+    if not feasibility_example_str:
+        feasibility_example_str = "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70"
 
     overrides_prompt = (
         f"Actúa como un Consultor de Estrategia Tecnológica Principal de Gartner.\n"
@@ -507,13 +594,16 @@ async def run_market_intelligence(
                     MCDASensitivityEngine,
                 )
 
+                gsa_samples = int(os.environ.get("ASSESSMENT_GSA_MONTE_CARLO_SAMPLES", "10000"))
+                gsa_uncertainty = float(os.environ.get("ASSESSMENT_GSA_UNCERTAINTY_RANGE", "20.0"))
+
                 sensitivity_engine = MCDASensitivityEngine()
                 gsa_report = sensitivity_engine.run_sensitivity_analysis(
                     base_criticality=crit,
                     base_compliance=comp,
                     base_feasibility=feas,
-                    N=10000,
-                    uncertainty_range=20.0,
+                    N=gsa_samples,
+                    uncertainty_range=gsa_uncertainty,
                 )
 
                 calculated_overrides[tower_id] = {
@@ -537,9 +627,12 @@ async def run_market_intelligence(
                     MCDASensitivityEngine,
                 )
 
+                gsa_samples = int(os.environ.get("ASSESSMENT_GSA_MONTE_CARLO_SAMPLES", "10000"))
+                gsa_uncertainty = float(os.environ.get("ASSESSMENT_GSA_UNCERTAINTY_RANGE", "20.0"))
+
                 fallback_engine = MCDASensitivityEngine()
                 fallback_gsa = fallback_engine.run_sensitivity_analysis(
-                    50.0, 50.0, 50.0, N=10000, uncertainty_range=20.0
+                    50.0, 50.0, 50.0, N=gsa_samples, uncertainty_range=gsa_uncertainty
                 )
                 calculated_overrides[tower_id] = {
                     "target_maturity": 4.0,
@@ -597,12 +690,9 @@ async def run_market_intelligence(
         f"2. Stack Técnico: {json.dumps(organized.get('stack', []), ensure_ascii=False)}\n\n"
         f"Deduce el proveedor cloud dominante ('dominant_hyperscaler') y la fase de horizonte de transformación óptimo."
     )
-    from google import genai
     from google.genai import types
 
-    client_gen = genai.Client(
-        vertexai=True, project="sub403o4u0q5", location="europe-west1"
-    )
+    client_gen = _get_genai_client()
 
     try:
         res_meta = client_gen.models.generate_content(
@@ -632,13 +722,7 @@ async def run_market_intelligence(
     # Reads declaratively from brand profile first (elite approach)
     industry_str = brand_data_narratives.get("industry_profile_name")
     if not industry_str:
-        # Fallback to legacy string check
-        if "redeia" in client_name.lower():
-            industry_str = "Energy & Critical Infrastructure"
-        elif "eurovision" in client_name.lower():
-            industry_str = "Broadcast Infrastructure"
-        else:
-            industry_str = "Enterprise & Infrastructure Technology"
+        industry_str = "Enterprise & Infrastructure Technology"
 
     # Instantiate the Epistemic Graph Bayesian Belief Network (BBN) Service
     from assessment_engine.infrastructure.epistemic_graph_service import (

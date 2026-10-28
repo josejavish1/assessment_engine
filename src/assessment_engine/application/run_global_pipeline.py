@@ -134,7 +134,7 @@ def main(argv: list[str] | None = None) -> None:
         [
             python_bin,
             "-m",
-            "adapters.render_global_report_from_template",
+            "assessment_engine.adapters.render_global_report_from_template",
             str(payload_path),
             str(template_path),
             str(output_path),
@@ -148,7 +148,7 @@ def main(argv: list[str] | None = None) -> None:
         [
             python_bin,
             "-m",
-            "adapters.render_lineage_portal",
+            "assessment_engine.adapters.render_lineage_portal",
             client_name,
         ],
         "Render Lineage Matrix Explorer Portal",

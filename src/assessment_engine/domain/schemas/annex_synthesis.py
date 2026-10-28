@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,6 +16,20 @@ class MaturityScoreProfile(BaseModel):
     )  # Pillar attributes are programmatically mapped from the corresponding Blueprint definition.
 
 
+class FinancialCOIProfile(BaseModel):
+    """Encapsulates the structured quantitative Cost of Inaction (COI) metrics."""
+
+    annual_loss_exposure: str = Field(
+        description="Annual Loss Exposure (ALE) under O-FAIR standard."
+    )
+    coi_3y_ordinary: str = Field(
+        description="3-Year ordinary cumulative Cost of Inaction."
+    )
+    coi_3y_extreme: str = Field(
+        description="3-Year extreme cumulative Cost of Inaction (Expected Shortfall + 2 ordinary years)."
+    )
+
+
 class ExecutiveSummaryAnnex(BaseModel):
     """A data model for an executive summary annex.
 
@@ -29,6 +43,7 @@ class ExecutiveSummaryAnnex(BaseModel):
         target_maturity (str): The desired or target maturity level.
         headline (str): The main headline for the executive summary.
         summary_body (str): The main narrative content of the summary.
+        financial_coi (Optional[FinancialCOIProfile]): Structured financial metrics representing the Cost of Inaction (COI).
         message_strength (str): The introductory message for the strengths section.
         message_gap (str): The introductory message for the improvement areas section.
         message_bottleneck (str): The introductory message for the bottlenecks section.
@@ -40,10 +55,16 @@ class ExecutiveSummaryAnnex(BaseModel):
     target_maturity: str
     headline: str
     summary_body: str
+    financial_coi: Optional[FinancialCOIProfile] = Field(
+        default=None,
+        description="Structured financial metrics representing the Cost of Inaction (COI)."
+    )
     message_strength: str = "Fortalezas clave identificadas en el entorno."
     message_gap: str = "Principales áreas de mejora y deuda técnica."
     message_bottleneck: str = "Cuellos de botella operativos que limitan el negocio."
-    key_business_impacts: List[str]
+    key_business_impacts: List[str] = Field(
+        description="Lista de los principales impactos de negocio de las deficiencias actuales. Cada elemento debe redactarse estrictamente en términos del impacto operativo o riesgo real del estado actual (AS-IS) sobre el negocio (ej. 'La fragmentación de controles limita la velocidad...', 'La falta de automatización perpetúa altos costes...'), en lugar de describirlo como objetivos, metas o beneficios futuros de una transformación."
+    )
 
 
 class AsIsAnnex(BaseModel):

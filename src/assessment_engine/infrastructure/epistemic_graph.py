@@ -160,7 +160,13 @@ class EpistemicGraph:
             FileNotFoundError: If the directory for the ledger file does not exist.
         """
         # Strict Epistemic Graph Schema Constraints
-        normalized_predicate = predicate.upper().strip().replace(" ", "_")
+        import unicodedata
+        normalized_predicate = (
+            unicodedata.normalize("NFKD", predicate)
+            .encode("ascii", "ignore")
+            .decode("ascii")
+        )
+        normalized_predicate = normalized_predicate.upper().strip().replace(" ", "_").replace("-", "_")
 
         # System-injected triples must use registered predicates
         if source.upper() in {

@@ -65,6 +65,7 @@ golden_rules:
 - 'ESTRUCTURA DE DESGLOSE DE TRABAJO (WBS): Para cada proyecto, genera obligatoriamente el ''wbs_breakdown'' con 3 a 5 tareas técnicas atómicas (LLD), indicando el perfil de ingeniería requerido y una estimación realista de horas de esfuerzo.'
 - 'DISEÑO TO-BE: En la sección ''target_architecture_tobe'', debes detallar: 1) La visión a 3 años (Nivel 5 Básico). 2) La visión a 5 años (Consolidación/AIOps). 3) Las palancas de evolución categorizadas explícitamente en: ''levers_technology'', ''levers_process'', y ''levers_operation''. 4) Los beneficios esperados. 5) Los riesgos de inacción (Cost of Inaction) por dominio.'
 - 'NO PRECIOS: Está prohibido poner € o TCV.'
+- 'IDIOMA DE GENERACIÓN: DEBES escribir obligatoriamente todas las narrativas, descripciones (como ''asis_architecture_description'', ''asis_description'') e iniciativas de este pilar en ESPAÑOL. Está terminantemente prohibido generar respuestas o explicaciones en inglés.'
 - 'FORMATO DE TEXTO: ESTRICTAMENTE PROHIBIDO usar formato Markdown con asteriscos (**texto**) para las negritas. No uses asteriscos.'
 - 'PRECEDENCIA ESTRICTA DE LA VERDAD: El bloque ''CONTEXTO DEL NEGOCIO'' es la verdad absoluta. Si existe CUALQUIER contradicción entre el ''CONTEXTO DEL NEGOCIO'' y el ''ADN ESTRATÉGICO (Minuto Cero)'', IGNORA la información del ''ADN ESTRATÉGICO'' y asume como cierta la del ''CONTEXTO DEL NEGOCIO''.'
 handover: Prepara los datos en la estructura exacta solicitada para que la validación Pydantic los apruebe sin ambigüedad.

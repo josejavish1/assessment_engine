@@ -15,6 +15,11 @@ from assessment_engine.infrastructure.runtime_paths import ROOT, resolve_client_
 
 logger = logging.getLogger(__name__)
 
+# Automatically resolve and configure the robust GCP Service Account credentials from the .secrets folder in the user's home directory to prevent OAuth expiration issues dynamically.
+SA_KEY_PATH = Path.home() / ".secrets" / "sa-key.json"
+if SA_KEY_PATH.exists():
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(SA_KEY_PATH)
+
 AI_STEP_TIMEOUT_ENV = "ASSESSMENT_AI_STEP_TIMEOUT_SECONDS"
 
 
@@ -155,7 +160,7 @@ def resolve_ai_step_timeout_seconds(
 
     raw_value = str(env.get(AI_STEP_TIMEOUT_ENV, "")).strip()
     if not raw_value:
-        return 120.0  # A default timeout is set for Google Cloud API calls to prevent indefinite hangs on unresponsive network requests.
+        return 900.0  # Increased back to 900 seconds (15 minutes) as the 14-agent sequential chain requires this time to complete under normal Vertex AI latency.
 
     try:
         timeout_seconds = float(raw_value)

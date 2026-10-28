@@ -53,7 +53,15 @@ def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Pa
         ValueError: If the `pillars` list is empty or contains no extractable
             labels or valid scores, preventing chart generation.
     """
-    labels = [p.get("pillar_label", "") for p in pillars]
+    import textwrap
+    
+    labels = []
+    for p in pillars:
+        lbl = p.get("pillar_label", "")
+        # Wrap long labels to prevent overlapping at the bottom of the chart
+        wrapped_lbl = "\n".join(textwrap.wrap(lbl, width=22))
+        labels.append(wrapped_lbl)
+
     values = [safe_float(p.get("score_display")) for p in pillars]
 
     if not labels or not any(v is not None for v in values):
@@ -76,12 +84,29 @@ def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Pa
     ax.set_xticklabels(labels, fontsize=10)
 
     ax.set_rlabel_position(0)  # type: ignore
-    ax.set_ylim(0, 5)
-    ax.set_yticks([1, 2, 3, 4, 5])
-    ax.set_yticklabels(["1", "2", "3", "4", "5"], fontsize=9)
+    ax.set_ylim(1, 5)
+    ax.set_yticks([2, 3, 4, 5])
+    ax.set_yticklabels(["2", "3", "4", "5"], fontsize=9)
 
-    ax.plot(angles, values, linewidth=2)
-    ax.fill(angles, values, alpha=0.15)
+    # Plot the radar line and filled polygon using a professional corporate blue with circle markers
+    ax.plot(angles, values, linewidth=2, color="#0072BC", marker="o", markersize=6)
+    ax.fill(angles, values, color="#0072BC", alpha=0.15)
+
+    # Annotate each data point directly on the plot with its score bubble to avoid cluttering outer labels
+    for angle, val in zip(angles[:-1], values[:-1]):
+        offset = 0.30 if val < 4.8 else -0.45
+        score_text = f"{val:.1f}".replace(".", ",")
+        ax.text(
+            angle,
+            val + offset,
+            score_text,
+            color="#2E404D",
+            fontweight="bold",
+            fontsize=9.5,
+            ha="center",
+            va="center",
+            bbox=dict(boxstyle="round,pad=0.25", facecolor="#FFFFFF", edgecolor="#D5D9DC", alpha=0.9, linewidth=0.5)
+        )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     plt.tight_layout()

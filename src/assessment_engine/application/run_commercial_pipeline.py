@@ -56,7 +56,7 @@ def main(argv: list[str] | None = None) -> None:
         [
             python_bin,
             "-m",
-            "adapters.render_commercial_report",
+            "assessment_engine.adapters.render_commercial_report",
             str(commercial_payload_path),
             str(template_path),
             str(output_path),

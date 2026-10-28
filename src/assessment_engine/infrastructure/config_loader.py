@@ -198,6 +198,19 @@ def resolve_model_profile_for_role(role_name: str) -> ModelProfile:
     return load_model_profile(profile_name)
 
 
+def resolve_model_for_role(role_name: str, default_model: str = "gemini-2.5-pro") -> str:
+    """Resolves and returns the canonical model name for a given role from active profiles.
+
+    Bypasses any in-code hardcoding, falling back cleanly to a robust standard model if the
+    profile loader fails or if the role isn't mapped.
+    """
+    try:
+        profile = resolve_model_profile_for_role(role_name)
+        return str(profile.get("model", default_model)).strip()
+    except Exception:
+        return default_model
+
+
 def resolve_document_profile() -> dict:
     """Loads the document profile specified in the runtime manifest.
 
@@ -299,3 +312,50 @@ def load_framework_rubric(framework_id: str) -> dict:
     key = str(framework_id or "").strip().lower()
     rubric_file = ENGINE_CONFIG_DIR / "frameworks" / f"{key}.json"
     return _load_json(rubric_file)
+
+
+def map_industry_to_profile(raw_industry_name: str) -> str:
+    """Canonical multilingual mapper that translates and normalizes an industry vertical
+    name to its standardized profile key, bypassing accent and casing discrepancies.
+    """
+    if not raw_industry_name:
+        return "default"
+
+    import unicodedata
+
+    normalized = unicodedata.normalize("NFKD", str(raw_industry_name))
+    industry_clean = normalized.encode("ascii", "ignore").decode("ascii").lower()
+
+    mapping = {
+        # Español
+        "energia": "critical_infrastructure",
+        "electrico": "critical_infrastructure",
+        "infraestructura critica": "critical_infrastructure",
+        "transporte": "critical_infrastructure",
+        "retail": "retail",
+        "comercio": "retail",
+        "banca": "banking",
+        "finanzas": "banking",
+        "seguros": "banking",
+        "salud": "healthcare",
+        "hospital": "healthcare",
+        # English
+        "energy": "critical_infrastructure",
+        "electricity": "critical_infrastructure",
+        "power": "critical_infrastructure",
+        "utility": "critical_infrastructure",
+        "utilities": "critical_infrastructure",
+        "critical infrastructure": "critical_infrastructure",
+        "transport": "critical_infrastructure",
+        "commerce": "retail",
+        "banking": "banking",
+        "finance": "banking",
+        "insurance": "banking",
+        "healthcare": "healthcare",
+        "health": "healthcare",
+    }
+
+    for key, val in mapping.items():
+        if key in industry_clean:
+            return val
+    return "default"

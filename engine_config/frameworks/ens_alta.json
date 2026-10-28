@@ -4,8 +4,8 @@
   "description": "Estándar de ciberseguridad nacional regulado por el Real Decreto 311/2022 aplicable a administraciones públicas y operadores de infraestructuras críticas en España.",
   "rules": [
     {
-      "tower_id": "T6",
-      "query_template": "porcentaje de operadores críticos o utilities con certificación oficial ENS Categoría Alta España 2025 2026",
+      "tower_id": "T2",
+      "query_template": "porcentaje de operadores criticos con virtualizacion y computo homologado ENS España",
       "evaluation_variable": "adoption",
       "thresholds": [
         {
@@ -18,6 +18,26 @@
         },
         {
           "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T3",
+      "query_template": "porcentaje de operadores criticos con landing zone estructurada y controles de acceso ENS",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 65.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 45.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 25.0",
           "score": 3.5
         }
       ],
@@ -38,6 +58,106 @@
         },
         {
           "condition": "adoption >= 30.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T6",
+      "query_template": "porcentaje de operadores críticos o utilities con certificación oficial ENS Categoría Alta España 2025 2026",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T7",
+      "query_template": "porcentaje de operadores criticos con procesos de gestion de incidentes y niveles de servicio homologados ENS",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 70.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 50.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 30.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T8",
+      "query_template": "porcentaje de utilities con gobierno de costes cloud finops y tagging de recursos",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 50.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 30.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 15.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T9",
+      "query_template": "porcentaje de operadores criticos con monitorizacion 24 7 y SOC integrado ENS Categoría Alta",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T10",
+      "query_template": "porcentaje de operadores criticos con arquitectura cloud certificada ENS Categoría Alta",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
           "score": 3.5
         }
       ],

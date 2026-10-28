@@ -143,14 +143,23 @@ def build_scoring(case_input: dict, tower_definition: dict) -> dict:
         "tower_score_display_1d": round_display(tower_score),
         "maturity_band_from_exact": {
             "label": band["label"],
-            "reading": next(
+            "reading": (lambda b_label: next(
                 (
-                    level["operational_reading"]
-                    for level in tower_definition.get("maturity_scale", [])
-                    if level["label"] in band["label"]
-                ),
-                "",
-            ),
+                    "Las prácticas operativas del dominio son ad-hoc, inestables o dependientes de esfuerzos individuales."
+                    if "inicial" in b_label.lower()
+                    else "Las capacidades operativas del dominio se aplican de forma parcial o irregular en silos, sin consistencia transversal."
+                    if "básico" in b_label.lower()
+                    else "Los procesos y controles de la plataforma están formalizados, documentados e implantados de manera coherente."
+                    if "estandarizado" in b_label.lower() or "definido" in b_label.lower()
+                    else "Las operaciones y capacidades del dominio se encuentran industrializadas, gobernadas de forma predictiva y sustentadas en métricas."
+                    if "optimizado" in b_label.lower() or "gestionado" in b_label.lower()
+                    else "El dominio tecnológico se rige por un estado de optimización y evolución continua, impulsado por automatización inteligente."
+                    if "avanzado" in b_label.lower()
+                    else level["operational_reading"]
+                )
+                for level in tower_definition.get("maturity_scale", [])
+                if level["label"].lower() in b_label.lower()
+            ))(band["label"]),
         },
         "proposed_reporting_note": (
             "El score mostrado se redondea a una decimal, pero la banda cualitativa se determina "

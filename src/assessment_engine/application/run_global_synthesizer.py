@@ -149,7 +149,7 @@ async def synthesize_global_asis(working_dir: str):
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
 
     # Establishes the foundational business context from client intelligence data, which is a prerequisite for all subsequent synthesis and analytical operations.
-    intel_str = "Operador de infraestructura crítica."
+    intel_str = "Organización corporativa estándar."
     intel_path = Path(working_dir) / "client_intelligence.json"
     if intel_path.exists():
         try:

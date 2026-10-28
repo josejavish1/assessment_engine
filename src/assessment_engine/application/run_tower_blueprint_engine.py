@@ -259,6 +259,15 @@ async def process_pilar_blueprint(
         answers_json=answers_json,
         pilar_id=pilar_id,
     )
+    
+    # Inject Single-Turn Self-Reflection directive (SOTA 2026) directly into the prompt to halve API roundtrips
+    prompt += (
+        "\n\n### DIRECTIVA DE AUTO-REFLEXIÓN Y CALIDAD (SINGLE-TURN SELF-REFLECTION):\n"
+        "Antes de emitir el esquema JSON final, debes realizar un análisis crítico e interno de consistencia en tu campo "
+        "'thought_process' (Chain-of-Thought). Evalúa si tus iniciativas contradicen el peso On-Premise exigido o si hay alucinaciones "
+        "en las citas de evidencias frente al corpus. Corrige cualquier desviación de manera autónoma y genera únicamente el "
+        "resultado consolidado y pulido de nivel Socio Consultor."
+    )
 
     # Phase 1: Generate the initial set of findings from the source context.
     try:
@@ -276,30 +285,7 @@ async def process_pilar_blueprint(
             message=prompt,
             schema=PillarBlueprintDraft,
         )
-
-        # Phase 2: Refine and validate the initial findings.
-        if raw_output:
-            agent_critic = Agent(
-                name="blueprint_critic",
-                model=model_name,
-                instruction=get_blueprint_architect_instruction(),
-                output_schema=PillarBlueprintDraft,
-            )
-            app_critic = AdkApp(agent=agent_critic)
-
-            raw_output_json = json.dumps(raw_output)
-            critic_prompt = get_critic_prompt(
-                pilar_label=pilar_label,
-                client_name=client_name,
-                raw_output_json=raw_output_json,
-            )
-            final_output = await run_agent(
-                app_critic,
-                user_id=f"critic_{pilar_id}",
-                message=critic_prompt,
-                schema=PillarBlueprintDraft,
-            )
-            return final_output or raw_output
+        return raw_output
     except Exception as e:
         print(f"Error procesando pilar {pilar_label}: {e}")
     return None
@@ -483,27 +469,22 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         blueprint_payload["client_context"] = intel_packet
     failed_pillars = []
 
-    # Pillars are processed serially to prevent resource contention and to ensure the analysis of each pillar remains independent.
-    for p_id in sorted(pillars_map.keys()):
-        # Append the technical standard reference and the refined finding to the context string for use in subsequent processing stages.
-        # Remove temporary string artifacts that were previously required for prompt formatting.
-        enhanced_intel_str = intel_str
-
+    # Dynamic async helper to process a single pillar concurrent under the SOTA 2026 MapReduce framework
+    async def process_single_pillar_async(p_id):
+        # We pass resolved_truth (Semantic Graph RAG) instead of raw, noisy intel_str!
         p_result = await process_pilar_blueprint(
             model_name,
             client_name,
             tower_name,
             pillars_map[p_id],
             context_str,
-            enhanced_intel_str,
+            resolved_truth,
         )
         if p_result:
             p_result["score"] = pillars_map[p_id]["score"]
-            # The `target_score` from the client intelligence data must be preserved, overriding any model-generated values.
             from assessment_engine.infrastructure.client_intelligence import (
                 get_target_maturity,
             )
-
             p_result["target_score"] = get_target_maturity(intel_data, tower_id, 4.0)
 
             blueprint_analysis = p_result.get("pillar_analysis", p_result)
@@ -513,7 +494,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             corpus = (
                 context_str
                 + " "
-                + enhanced_intel_str
+                + resolved_truth
                 + " "
                 + json.dumps(pillars_map[p_id]["answers"])
             ).lower()
@@ -563,9 +544,17 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         }
                     )
                 blueprint_analysis["projects_todo"] = sota_projects
-            #
+            return blueprint_analysis
+        return None
 
-            blueprint_payload["pillars_analysis"].append(blueprint_analysis)
+    # Pillars are processed concurrently using SOTA asyncio.gather MapReduce optimization, controlling concurrency via the ADK API semaphore
+    print("🚀 Iniciando procesamiento paralelo de pilares bajo el SOTA 2026...")
+    tasks = [process_single_pillar_async(p_id) for p_id in sorted(pillars_map.keys())]
+    results = await asyncio.gather(*tasks)
+
+    for p_id, p_analysis in zip(sorted(pillars_map.keys()), results):
+        if p_analysis:
+            blueprint_payload["pillars_analysis"].append(p_analysis)
         else:
             failed_pillars.append(pillars_map[p_id]["label"])
 
@@ -628,14 +617,30 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         tower_id=tower_id,
     )
 
+    # SOTA Actuarial Practice: Adversarial Consensus (AI vs AI)
+    # Before running the mathematical Monte Carlo models, we subject the findings to a deep, 
+    # multi-turn debate between a skeptical CFO and a Tier-1 Actuary to refine and attenuate operational friction.
+    print("🥊 [Adversarial Consensus] Ejecutando debate de atenuación de riesgos (CFO vs Actuario)...")
+    try:
+        from assessment_engine.application.tools.adversarial_consensus_engine import AdversarialConsensusEngine
+        
+        consensus_engine = AdversarialConsensusEngine(env={})
+        blueprint_payload = await consensus_engine.process_payload(tower_id, blueprint_payload)
+    except Exception as consensus_err:
+        print(f"⚠️ Error ejecutando Consenso Adversarial (fallback to standard modeling): {consensus_err}")
+
     # Apply registered policies to the final payload to enforce architectural and business constraints.
     # Traverse the finding and initiative graph to resolve logical and dependency inconsistencies.
-    print("🛡️ [Sovereign QA] Ejecutando el Motor de Políticas Arquitectónicas...")
+    print("🛡️ [Sovereign QA] Ejecutando el Motor de Políticas Arquitectónicas y Simulación FAIR...")
     try:
         from assessment_engine.infrastructure.policy_engine import SovereignPolicyEngine
 
         engine = SovereignPolicyEngine(graph)
         blueprint_payload = engine.compile(blueprint_payload)
+        
+        # SOTA Actuarial Practice: Generate SR 11-7 Model Validation Ledger
+        from assessment_engine.application.tools.actuarial_ledger_generator import generate_actuarial_ledger
+        generate_actuarial_ledger(tower_id, blueprint_payload)
     except Exception as policy_err:
         print(f"⚠️ Error ejecutando Sovereign Policy Engine: {policy_err}")
 
@@ -1010,8 +1015,28 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     #
     output_path = resolve_blueprint_payload_path(client_name, tower_id)
+    content = json.dumps(final_payload_dict, indent=2, ensure_ascii=False)
+    
+    # European Spanish localization: Replace 'sistémico/sistémica' with 'estructural'
+    content = content.replace("sistémicas", "estructurales")
+    content = content.replace("sistémicos", "estructurales")
+    content = content.replace("Sistémicas", "Estructurales")
+    content = content.replace("Sistémicos", "Estructurales")
+    content = content.replace("sistémica", "estructural")
+    content = content.replace("sistémico", "estructural")
+    content = content.replace("Sistémica", "Estructural")
+    content = content.replace("Sistémico", "Estructural")
+
+    # Spelling corrections for 'múltiples'
+    content = content.replace("mùltiples", "múltiples")
+    content = content.replace("Mùltiples", "Múltiples")
+    content = content.replace("móltiples", "múltiples")
+    content = content.replace("Móltiples", "Múltiples")
+    content = content.replace("multiples", "múltiples")
+    content = content.replace("Multiples", "Múltiples")
+
     output_path.write_text(
-        json.dumps(final_payload_dict, indent=2, ensure_ascii=False),
+        content,
         encoding="utf-8-sig",
     )
     print(f"✅ Payload del Blueprint generado y validado: {output_path}")

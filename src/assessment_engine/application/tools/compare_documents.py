@@ -116,8 +116,10 @@ def compare():
         FileNotFoundError: If either the legacy or shadow document file is not
             found at its hardcoded path.
     """
-    legacy_path = "working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.docx"
-    shadow_path = "working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx"
+    import os
+    client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+    legacy_path = f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.docx"
+    shadow_path = f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx"
 
     print("🔍 Inspeccionando reporte original (Legacy V3)...")
     legacy_stats = inspect_doc(legacy_path)

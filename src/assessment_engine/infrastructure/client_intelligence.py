@@ -544,29 +544,12 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
 
 def _load_industry_profile(industry_name: str) -> dict[str, Any]:
     """Loads the configuration profile and analytical framework corresponding to the specified industry vertical."""
-    # Maps industry verticals to their respective configuration profiles, defining the analytical frameworks to be applied.
-    mapping = {
-        "energía": "critical_infrastructure",
-        "eléctrico": "critical_infrastructure",
-        "infraestructura crítica": "critical_infrastructure",
-        "transporte": "critical_infrastructure",
-        "retail": "retail",
-        "comercio": "retail",
-        "banca": "banking",
-        "finanzas": "banking",
-        "seguros": "banking",
-        "salud": "healthcare",
-        "hospital": "healthcare",
-    }
+    from assessment_engine.infrastructure.config_loader import (
+        load_industry_profile,
+        map_industry_to_profile,
+    )
 
-    industry_lower = industry_name.lower()
-    profile_key = "default"
-    for key, val in mapping.items():
-        if key in industry_lower:
-            profile_key = val
-            break
-
-    from assessment_engine.infrastructure.config_loader import load_industry_profile
+    profile_key = map_industry_to_profile(industry_name)
 
     try:
         return load_industry_profile(profile_key)

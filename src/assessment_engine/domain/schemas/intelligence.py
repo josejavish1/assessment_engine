@@ -252,7 +252,7 @@ class TechHarvest(BaseModel):
             Oracle).
         entity_specific_overrides: An inventory of technology components deployed
             exclusively within a specific subsidiary that are not part of the
-            standard corporate technology stack (e.g., 400GE at Reintel).
+            standard corporate technology stack (e.g., specialized legacy systems or local regional network equipment).
         technical_debt_and_eol: A list of identified software components,
             including their versions and End-of-Life (EoL) risk assessment.
         architecture_and_topology: Analysis of network diagrams, detailing topology
@@ -275,7 +275,7 @@ class TechHarvest(BaseModel):
     )
     entity_specific_overrides: List[Dict[str, Any]] = Field(
         default_factory=list,
-        description="An inventory of technology components deployed exclusively within a specific subsidiary that are not part of the standard corporate technology stack (e.g., 400GE at Reintel).",
+        description="An inventory of technology components deployed exclusively within a specific subsidiary that are not part of the standard corporate technology stack (e.g., specialized legacy systems or local regional network equipment).",
     )
 
     # Identifies indicators of technical debt and software versioning anomalies to assess system maturity.

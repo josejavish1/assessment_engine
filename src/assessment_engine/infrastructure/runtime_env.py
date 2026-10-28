@@ -36,6 +36,21 @@ def ensure_google_cloud_env_defaults(
     target = os.environ if env is None else env
     target.setdefault("GOOGLE_CLOUD_PROJECT", DEFAULT_GOOGLE_CLOUD_PROJECT)
     target.setdefault("GOOGLE_CLOUD_LOCATION", DEFAULT_GOOGLE_CLOUD_LOCATION)
+
+    # Portable automatic discovery of secure permanent Service Account credentials to prevent broken ADC fallbacks
+    if not target.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        from pathlib import Path
+        well_known_paths = [
+            Path.home() / ".secrets" / "sa-key.json",
+            Path.home() / "sa-key.json",
+            Path(".secrets") / "sa-key.json",
+            Path("sa-key.json")
+        ]
+        for p in well_known_paths:
+            if p.exists():
+                target["GOOGLE_APPLICATION_CREDENTIALS"] = str(p.resolve())
+                break
+
     return env
 
 

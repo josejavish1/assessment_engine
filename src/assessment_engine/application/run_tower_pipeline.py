@@ -83,59 +83,42 @@ async def run_step_async(
         import time
 
         start_time = time.time()
-        stdout_chunks = []
-        stderr_chunks = []
-
-        async def read_stream(stream, chunks):
-            """Asynchronously reads all lines from a stream and appends them to a list.
-
-            This coroutine consumes the provided stream until an End-Of-File (EOF) is
-            detected. The function mutates the `chunks` list argument in-place.
-
-            Args:
-                stream (Optional[asyncio.StreamReader]): The asynchronous stream to read
-                    from, such as a process's stdout or stderr. If `None`, the function
-                    returns immediately.
-                chunks (List[bytes]): A list to which the lines read from the stream,
-                    as bytes, are appended.
-            """
-            if stream is None:
-                return
-            while True:
-                line = await stream.readline()
-                if not line:
-                    break
-                chunks.append(line)
-
-        out_task = asyncio.create_task(read_stream(proc.stdout, stdout_chunks))
-        err_task = asyncio.create_task(read_stream(proc.stderr, stderr_chunks))
+        
+        # Launch the native, deadlock-free communicate method in an asynchronous task
+        communicate_task = asyncio.create_task(proc.communicate())
 
         last_heartbeat = time.time()
-        while not out_task.done() or not err_task.done() or proc.returncode is None:
-            if timeout_sec is not None and (time.time() - start_time) > timeout_sec:
-                proc.kill()
-                out_task.cancel()
-                err_task.cancel()
-                # Await them to let them release the stream read locks
-                try:
-                    await asyncio.gather(out_task, err_task, return_exceptions=True)
-                except Exception:
-                    pass
-                raise asyncio.TimeoutError()
-            if time.time() - last_heartbeat > 30:
+        while not communicate_task.done():
+            # Calculate remaining timeout if any
+            current_timeout = 30.0
+            if timeout_sec is not None:
+                elapsed = time.time() - start_time
+                remaining = timeout_sec - elapsed
+                if remaining <= 0:
+                    proc.kill()
+                    communicate_task.cancel()
+                    raise asyncio.TimeoutError()
+                current_timeout = min(30.0, remaining)
+
+            try:
+                # Wait for completion or for the heartbeat timeout (30 seconds)
+                await asyncio.wait_for(asyncio.shield(communicate_task), timeout=current_timeout)
+            except asyncio.TimeoutError:
+                # If global timeout has been exceeded during the wait, kill and fail
+                if timeout_sec is not None and (time.time() - start_time) > timeout_sec:
+                    proc.kill()
+                    communicate_task.cancel()
+                    raise asyncio.TimeoutError()
+                
+                # Print progress heartbeat and keep waiting
                 print(
                     "⏳ [Heartbeat] El motor sigue trabajando en segundo plano...",
                     flush=True,
                 )
                 last_heartbeat = time.time()
-            try:
-                await asyncio.wait_for(asyncio.shield(proc.wait()), timeout=1.0)
-            except asyncio.TimeoutError:
-                pass
 
-        await out_task
-        await err_task
-        return b"".join(stdout_chunks), b"".join(stderr_chunks)
+        stdout, stderr = await communicate_task
+        return stdout, stderr
 
     try:
         process = await asyncio.create_subprocess_exec(
@@ -153,6 +136,12 @@ async def run_step_async(
             except asyncio.TimeoutError as exc:
                 process.kill()
                 stdout, stderr = await process.communicate()
+                out_msg = stdout.decode("utf-8").strip() if stdout else ""
+                err_msg = stderr.decode("utf-8").strip() if stderr else ""
+                if out_msg:
+                    print(f"\n📢 [STDOUT antes del Timeout en {step_name}]:\n{out_msg}")
+                if err_msg:
+                    print(f"\n📢 [STDERR antes del Timeout en {step_name}]:\n{err_msg}")
                 raise RuntimeError(
                     f"Timeout en {step_name} tras {timeout_seconds:.0f}s."
                 ) from exc
@@ -163,7 +152,10 @@ async def run_step_async(
             print(stdout.decode("utf-8").strip())
 
         if process.returncode != 0:
-            err_msg = stderr.decode("utf-8").strip()
+            out_msg = stdout.decode("utf-8").strip() if stdout else ""
+            err_msg = stderr.decode("utf-8").strip() if stderr else ""
+            if out_msg and not stdout:
+                print(f"\n📢 [STDOUT antes del Error en {step_name}]:\n{out_msg}")
             raise RuntimeError(
                 f"Fallo nativo en {step_name} (Exit {process.returncode}):\n{err_msg}"
             )
@@ -211,6 +203,8 @@ async def run_pipeline():
                 "case_input.json",
                 "scoring_output.json",
                 "benchmarks_snapshot.json",
+                "custom_risk_profile.json",
+                "loss_exceedance_curve.png",
                 f"approved_annex_{tower_id.lower()}.template_payload.json",
             ]:
                 path_to_del = case_dir / f
@@ -268,6 +262,25 @@ async def run_pipeline():
     else:
         print("⏭️  [Cache Bypass] Build case_input already generated. Skipping.")
 
+    # Zero-Data Short-Circuit for unassessed towers:
+    # If the case input contains no actual survey answers, this tower has no scope in the current audit.
+    # We exit cleanly immediately, avoiding wasteful API calls, rate limits, and token expenses.
+    if case_input_file.exists():
+        try:
+            import json
+            with open(case_input_file, "r", encoding="utf-8-sig") as f:
+                case_input_data = json.load(f)
+            answers_count = len(case_input_data.get("answers", []))
+            if answers_count == 0:
+                print(
+                    f"\n⏭️  [Short-Circuit] No se detectaron respuestas o notas para la torre '{tower_id}' en {responses_path}.\n"
+                    f"   Esta torre no forma parte del alcance de la evaluación y será omitida de forma segura.\n"
+                    f"   Saliendo de la ejecución de manera limpia (Exit 0)..."
+                )
+                return
+        except Exception as e:
+            print(f"⚠️ Alerta analizando case_input para validación de alcance: {e}")
+
     #
     # Stage 2: Assemble the `evidence_ledger` containing all data required for scoring. This stage is cache-gated.
     #
@@ -313,31 +326,15 @@ async def run_pipeline():
                 industry_name = intel_data.get("industry", "default")
 
             # Map industry name to profile key
-            mapping = {
-                "energía": "critical_infrastructure",
-                "eléctrico": "critical_infrastructure",
-                "infraestructura crítica": "critical_infrastructure",
-                "transporte": "critical_infrastructure",
-                "retail": "retail",
-                "comercio": "retail",
-                "banca": "banking",
-                "finanzas": "banking",
-                "seguros": "banking",
-                "salud": "healthcare",
-                "hospital": "healthcare",
-            }
-            industry_lower = industry_name.lower()
-            for key, val in mapping.items():
-                if key in industry_lower:
-                    industry_key = val
-                    break
+            from assessment_engine.infrastructure.config_loader import map_industry_to_profile
+            industry_key = map_industry_to_profile(industry_name)
         except Exception:
             pass
 
     #
     # Stage 2.5: Execute dynamic RAGE evaluation to freeze the benchmarks snapshot.
     #
-    snapshot_file = case_dir / "benchmarks_snapshot.json"
+    snapshot_file = case_dir.parent / "benchmarks_snapshot.json"
     if args.force or not snapshot_file.exists() or snapshot_file.stat().st_size == 0:
         await run_step_async(
             [
@@ -349,12 +346,29 @@ async def run_pipeline():
                 args.client,
                 "--industry",
                 industry_key,
+                "--tower",
+                tower_id,
             ],
             env,
             "Run RAGE Evaluation",
         )
     else:
         print("⏭️  [Cache Bypass] Run RAGE Evaluation already generated. Skipping.")
+
+    #
+    # Stage 2.5: Run dynamic financial scale calibrator (FAIR-MAM). This stage is cache-gated.
+    #
+    custom_profile_path = case_dir / "custom_risk_profile.json"
+    if args.force or not custom_profile_path.exists() or custom_profile_path.stat().st_size == 0:
+        print("\n🌐 [System] Inicializando Calibrador Dinámico de Escala Financiera (FAIR-MAM)...")
+        try:
+            from assessment_engine.application.tools.financial_scale_calibrator import FinancialScaleCalibrator
+            calibrator = FinancialScaleCalibrator(env=env)
+            await calibrator.calibrate_client_scale(args.client, tower_id, industry_key)
+        except Exception as e:
+            print(f"⚠️ [Financial Calibrator] Fallo en calibración de escala: {e}")
+    else:
+        print("⏭️  [Cache Bypass] Engine: Financial Scale Calibrator already generated. Skipping.")
 
     #
     # Stage 3: Execute quantitative scoring models using the `evidence_ledger`. This stage is cache-gated.
@@ -484,7 +498,8 @@ async def run_pipeline():
                 "Engine: Executive Annex Synthesizer",
             )
         except Exception as e:
-            print(f"⚠️ Fallo en síntesis del anexo: {e}")
+            print(f"⚠️ Fallo crítico en síntesis del anexo: {e}")
+            raise RuntimeError(f"Fallo crítico en síntesis del anexo: {e}")
     else:
         print(
             "⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call."
@@ -520,7 +535,7 @@ async def run_pipeline():
             [
                 python_bin,
                 "-m",
-                "adapters.generate_asis_markdown_modules",
+                "assessment_engine.adapters.generate_asis_markdown_modules",
                 str(blueprint_payload_path),
             ],
             env,
@@ -545,7 +560,7 @@ async def run_pipeline():
             [
                 python_bin,
                 "-m",
-                "adapters.compile_asis_docx_from_modules",
+                "assessment_engine.adapters.compile_asis_docx_from_modules",
                 str(case_dir),
                 str(case_dir / f"AS-IS_Anexo_Tecnico_{tower_id}.docx"),
             ],
@@ -577,7 +592,7 @@ async def run_pipeline():
         Blueprint DOCX document. The operation is contingent upon the existence of the
         payload file specified by the module-level `blueprint_payload_path` variable.
 
-        The rendering logic is encapsulated within the `adapters.render_tower_blueprint`
+        The rendering logic is encapsulated within the `assessment_engine.adapters.render_tower_blueprint`
         module, which is executed using the interpreter at `python_bin`. The input
         payload path and the `output_blueprint_docx` path are passed as command-line
         arguments. The subprocess executes within the environment defined by `env`.
@@ -595,7 +610,7 @@ async def run_pipeline():
                 [
                     python_bin,
                     "-m",
-                    "adapters.render_tower_blueprint",
+                    "assessment_engine.adapters.render_tower_blueprint",
                     str(blueprint_payload_path),
                     str(output_blueprint_docx),
                 ],

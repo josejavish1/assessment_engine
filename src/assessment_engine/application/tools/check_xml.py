@@ -39,6 +39,8 @@ def check_docx_zip(path: str):
 
 
 if __name__ == "__main__":
-    check_docx_zip("working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.docx")
-    print()
-    check_docx_zip("working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx")
+    import os
+    client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+    check_docx_zip(f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.docx")
+    print("\n")
+    check_docx_zip(f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx")

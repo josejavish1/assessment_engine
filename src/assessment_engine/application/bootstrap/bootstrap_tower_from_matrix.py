@@ -590,19 +590,9 @@ def extract_questions(
                 continue
             if re.match(rf"^{re.escape(tower_id)}\.P\d+\.K\d+\.PR\d+$", candidate):
                 break
-            if candidate == clean_repeated_phrase(candidate) and candidate in {
-                clean_repeated_phrase("Energía y Continuidad Eléctrica"),
-                clean_repeated_phrase(
-                    "Climatización, Refrigeración y Control Ambiental"
-                ),
-                clean_repeated_phrase("Seguridad Física y Control de Accesos"),
-                clean_repeated_phrase(
-                    "Protección Contra Incendios y Seguridad Ambiental"
-                ),
-                clean_repeated_phrase(
-                    "Operación de Facilities, Monitorización y Mantenimiento"
-                ),
-            }:
+            # Generic heuristic: skip short title-like lines that lack punctuation (like question marks or periods)
+            # which are typical of section headers rather than actual question text.
+            if len(candidate) < 60 and not any(p in candidate for p in ['?', '.', ':']):
                 continue
             question_text = clean_repeated_phrase(candidate)
             break

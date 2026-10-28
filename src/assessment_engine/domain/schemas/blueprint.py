@@ -83,6 +83,18 @@ class HealthCheckAsIs(BaseModel):
         None,
         description="The calculated Annualized Loss Expectancy (ALE) in the designated currency.",
     )
+    fair_p90_score: Optional[float] = Field(
+        None,
+        description="The calculated worst-case 90th percentile loss in the designated currency.",
+    )
+    fair_min_score: Optional[float] = Field(
+        None,
+        description="The calculated minimum loss in the designated currency.",
+    )
+    fair_max_score: Optional[float] = Field(
+        None,
+        description="The calculated maximum loss in the designated currency.",
+    )
 
 
 class ArchitecturalGravityProfile(BaseModel):

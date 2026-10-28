@@ -25,8 +25,16 @@
     "version_label": "Versión",
     "date_label": "Junio 2026",
     "table_of_contents_title": "Índice de Contenidos",
-    "appendix_a_title": "Apéndice A: Lista de Abreviaturas",
-    "conclusions_title": "Informe Consolidado de Situación Futura"
+    "appendix_a_title": "Lista de Abreviaturas",
+    "conclusions_title": "Informe Consolidado de Situación Futura",
+    "bottlenecks_bullet": "**Cuellos de botella estructurales:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
+    "delayed_faults_bullet": "**Detección tardía de incidentes técnicos:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de fallos críticos.",
+    "config_drift_bullet": "**Desalineación y Desviación de Configuraciones:** El mantenimiento manual de las configuraciones dificulta demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.",
+    "desc_band_inicial": "lo cual evidencia un modelo operativo ad-hoc, reactivo e informal con una alta dependencia del esfuerzo humano individual",
+    "desc_band_repetible": "lo cual evidencia procesos establecidos localmente de forma básica pero de carácter meramente táctico e inconsistente",
+    "desc_band_definido": "lo cual evidencia procesos formalizados y documentados de manera coherente pero con margen de consolidación integrada a nivel de plataforma",
+    "desc_band_gestionado": "lo cual evidencia un modelo operativo maduro, medido cuantitativamente y alineado sistemáticamente con la gobernanza de TI",
+    "desc_band_optimizado": "lo cual evidencia un modelo operativo de excelencia, altamente automatizado y en constante mejora continua"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -54,8 +62,16 @@
     "version_label": "Version",
     "date_label": "June 2026",
     "table_of_contents_title": "Table of Contents",
-    "appendix_a_title": "Appendix A: List of Abbreviations",
-    "conclusions_title": "Consolidated Future State Report"
+    "appendix_a_title": "List of Abbreviations",
+    "conclusions_title": "Consolidated Future State Report",
+    "bottlenecks_bullet": "**Structural Bottlenecks:** The manual infrastructure provisioning model severely limits the delivery speed of strategic business initiatives.",
+    "delayed_faults_bullet": "**Late Technical Incident Detection:** The lack of correlated observability increases the Mean Time To Resolution (MTTR) for critical system failures.",
+    "config_drift_bullet": "**Configuration Drift Risk:** Manual configuration maintenance impairs the ability to demonstrate real-time regulatory compliance with {reg_frameworks}.",
+    "desc_band_inicial": "highlighting ad-hoc, reactive, and informal operations with a high dependency on individual human effort",
+    "desc_band_repetible": "highlighting basic localized processes but with a tactical and inconsistent nature",
+    "desc_band_definido": "highlighting formalized and consistently documented processes but with room for integrated platform consolidation",
+    "desc_band_gestionado": "highlighting a mature, quantitatively measured operational model systematically aligned with IT governance",
+    "desc_band_optimizado": "highlighting an operational model of excellence, highly automated and in constant continuous improvement"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -83,7 +99,7 @@
     "version_label": "Versão",
     "date_label": "Junho 2026",
     "table_of_contents_title": "Índice de Conteúdos",
-    "appendix_a_title": "Apêndice A: Lista de Abreviaturas",
+    "appendix_a_title": "Lista de Abreviaturas",
     "conclusions_title": "Relatório Consolidado do Estado Futuro"
   },
   "fr": {
@@ -112,7 +128,7 @@
     "version_label": "Version",
     "date_label": "Juin 2026",
     "table_of_contents_title": "Table des Matières",
-    "appendix_a_title": "Annexe A: Liste des Abréviations",
+    "appendix_a_title": "Liste des Abréviations",
     "conclusions_title": "Rapport Consolidé de l'État Futur"
   },
   "ja": {

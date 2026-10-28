@@ -33,7 +33,7 @@ from assessment_engine.infrastructure.client_intelligence import (
     load_client_intelligence_legacy_view,
 )
 from assessment_engine.infrastructure.config_loader import (
-    resolve_model_profile_for_role,
+    resolve_model_for_role,
 )
 from assessment_engine.infrastructure.contract_utils import robust_load_payload
 from assessment_engine.infrastructure.runtime_paths import (
@@ -159,7 +159,6 @@ def summarize_project_name(name: str) -> str:
 
 def build_executive_handover(blueprint: BlueprintPayload) -> dict[str, Any]:
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
-    target_scores = [pillar.target_score for pillar in blueprint.pillars_analysis]
     project_names = [
         summarize_project_name(project.initiative)
         for pillar in blueprint.pillars_analysis
@@ -170,7 +169,6 @@ def build_executive_handover(blueprint: BlueprintPayload) -> dict[str, Any]:
         "tower_name": blueprint.document_meta.tower_name,
         "global_score": average(scores),
         "global_band": derive_maturity_band(average(scores)),
-        "target_score": average(target_scores, default=4.0),
         "bottom_line": blueprint.executive_snapshot.bottom_line,
         "cost_of_inaction": blueprint.executive_snapshot.cost_of_inaction,
         "business_impact": blueprint.executive_snapshot.business_impact,
@@ -327,15 +325,132 @@ def derive_focus_areas(blueprint: BlueprintPayload) -> list[str]:
     return unique_list(blueprint.executive_snapshot.decisions, limit=3)
 
 
-def derive_pillar_executive_reading(pillar: Any) -> str:
-    primary_finding = pillar.health_check_asis[0] if pillar.health_check_asis else None
-    if primary_finding:
-        return take_complete_sentences(primary_finding.impact)
-    if pillar.target_architecture_tobe.vision:
-        return take_complete_sentences(pillar.target_architecture_tobe.vision)
-    return take_complete_sentences(
-        "La capacidad requiere priorización ejecutiva para cerrar la brecha de madurez observada.",
+def derive_pillar_executive_reading(pillar: Any, idx: int = 0) -> str:
+    score = pillar.score
+    band = derive_maturity_band(score)
+    formatted_score = f"{score:.2f}".replace(".", ",")
+    
+    findings = pillar.health_check_asis or []
+    if not findings:
+        return (
+            f"**Situación de Capacidades (KPIs):**\n"
+            f"La capacidad presenta un nivel de madurez '{band}' ({formatted_score} / 5,00). "
+            f"No se han registrado hallazgos ni brechas críticas específicas en el perímetro de evaluación.\n\n"
+            f"**Brechas y Consecuencias Operativas:**\n"
+            f"La plataforma opera de forma estable, sin identificarse limitaciones de continuidad de negocio o cuellos de botella de infraestructura materiales.\n\n"
+            f"**Justificación de la Nota:**\n"
+            f"La puntuación refleja un estado consistente de operaciones, recomendado para sostener el catálogo de servicios actual."
+        )
+    
+    # Sort findings by vulnerability_level (descending) or fair_ale_score (descending)
+    def get_ale(f):
+        return getattr(f, "fair_ale_score", 0.0) or 0.0
+    def get_vuln(f):
+        return getattr(f, "vulnerability_level", 3) or 3
+        
+    sorted_findings = sorted(findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True)
+    
+    # Gaps (worst findings: vuln >= 4 or first 2)
+    gaps_findings = [f for f in sorted_findings if get_vuln(f) >= 4]
+    if not gaps_findings:
+        gaps_findings = sorted_findings[:1]
+        
+    # Stable (vulnerability < 4 or remaining findings)
+    stable_findings = [f for f in sorted_findings if f not in gaps_findings]
+    
+    # Extract capability names
+    gaps_caps = [f.target_state for f in gaps_findings if f.target_state]
+    stable_caps = [f.target_state for f in stable_findings if f.target_state]
+    
+    # Deterministic variation index based on index
+    v_idx = idx % 3
+    
+    # 1. Situación de Capacidades
+    prose_caps = []
+    
+    if v_idx == 0:
+        prose_caps.append(f"El diagnóstico para el dominio de {pillar.pilar_name} sitúa su nivel de madurez en un rango '{band}' ({formatted_score} / 5,00), evidenciando margen de consolidación.")
+    elif v_idx == 1:
+        prose_caps.append(f"La evaluación de capacidades en el perímetro de {pillar.pilar_name} refleja un nivel de control '{band}' ({formatted_score} / 5,00).")
+    else:
+        prose_caps.append(f"Con una puntuación de {formatted_score} sobre 5,00, el pilar {pillar.pilar_name} se clasifica cualitativamente en la banda de '{band}', mostrando un comportamiento heterogéneo.")
+    
+    if stable_caps:
+        caps_str = ", ".join(stable_caps[:3])
+        if v_idx == 0:
+            prose_caps.append(f"Este resultado se apoya en un desempeño sólido y consistente en capacidades clave como {caps_str}.")
+        elif v_idx == 1:
+            prose_caps.append(f"En este ámbito, se detectan fortalezas funcionales y prácticas estables en {caps_str}.")
+        else:
+            prose_caps.append(f"La plataforma demuestra solvencia operativa y control adecuado en {caps_str}.")
+    else:
+        prose_caps.append("Se identifican necesidades de consolidación generalizada en las capacidades evaluadas.")
+        
+    if gaps_caps:
+        caps_str = ", ".join(gaps_caps[:3])
+        if v_idx == 0:
+            prose_caps.append(f"No obstante, se identifican brechas de madurez relevantes en {caps_str}.")
+        elif v_idx == 1:
+            prose_caps.append(f"Sin embargo, existen debilidades y áreas de mejora prioritarias en {caps_str}.")
+        else:
+            prose_caps.append(f"En contraposición, el entorno presenta desafíos operativos materiales en {caps_str}.")
+        
+    situacion_text = " ".join(prose_caps)
+    
+    # 2. Brechas y Consecuencias Operativas
+    main_gaps = []
+    main_risks = []
+    for f in gaps_findings[:2]:
+        fd = (f.risk_observed or f.finding or "").strip()
+        br = (f.impact or f.business_risk or "").strip()
+        if fd:
+            fd_sent = fd.split(".")[0] + "."
+            main_gaps.append(fd_sent)
+        if br:
+            br_sent = br.split(".")[0] + "."
+            main_risks.append(br_sent)
+            
+    if not main_gaps:
+        main_gaps = ["Se registran carencias en la automatización y predictibilidad de las operaciones de infraestructura."]
+    if not main_risks:
+        main_risks = ["Esto eleva el riesgo de incidentes operativos y limita la agilidad frente al crecimiento de la demanda."]
+        
+    gaps_str_joined = " ".join(main_gaps)
+    risks_str_joined = " ".join(main_risks)
+    
+    if v_idx == 0:
+        gaps_text = f"La limitación principal reside en que {gaps_str_joined} Esto deriva en un impacto directo de negocio, destacando {risks_str_joined}"
+    elif v_idx == 1:
+        gaps_text = f"El análisis técnico identifica un cuello de botella relevante en {gaps_str_joined} En consecuencia, esto genera una exposición operativa directa caracterizada por {risks_str_joined}"
+    else:
+        gaps_text = f"Se constata una carencia material en {gaps_str_joined} lo cual expone a la organización a consecuencias de negocio como {risks_str_joined}"
+    
+    # 3. Justificación de la Nota
+    worst_cap = gaps_caps[0] if gaps_caps else "las capacidades críticas"
+    
+    if v_idx == 0:
+        justificacion_text = (
+            f"La calificación final del pilar ({formatted_score}) se encuentra sustentada por el nivel de madurez base, "
+            f"pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', "
+            f"que actúa como el factor limitante para el desarrollo global de esta plataforma."
+        )
+    elif v_idx == 1:
+        justificacion_text = (
+            f"La puntuación de {formatted_score} refleja un equilibrio entre las fortalezas de la plataforma y el lastre "
+            f"que suponen las brechas en '{worst_cap}', las cuales restan resiliencia y limitan la escalabilidad operativa."
+        )
+    else:
+        justificacion_text = (
+            f"El score consolidado del pilar ({formatted_score}) se ve severamente condicionado por la inmadurez de la capacidad "
+            f"de '{worst_cap}', la cual penaliza el resultado global y actúa como el principal obstáculo para consolidar un nivel de control estructural robusto en la operación actual."
+        )
+    
+    full_narrative = (
+        f"**Situación de Capacidades (KPIs):**\n{situacion_text}\n\n"
+        f"**Brechas y Consecuencias Operativas:**\n{gaps_text}\n\n"
+        f"**Justificación de la Nota:**\n{justificacion_text}"
     )
+    return full_narrative
 
 
 def enrich_annex_payload(
@@ -382,9 +497,9 @@ def enrich_annex_payload(
             "pillar_label": pillar.pilar_name,
             "score_display": str(pillar.score),
             "maturity_band": derive_maturity_band(pillar.score),
-            "executive_reading": derive_pillar_executive_reading(pillar),
+            "executive_reading": derive_pillar_executive_reading(pillar, idx),
         }
-        for pillar in blueprint.pillars_analysis
+        for idx, pillar in enumerate(blueprint.pillars_analysis)
     ]
     if radar_chart_path.exists():
         result_payload.pillar_score_profile.radar_chart = str(
@@ -397,6 +512,26 @@ def enrich_annex_payload(
         result_payload.executive_summary.target_maturity
     ):
         result_payload.executive_summary.target_maturity = f"{avg_target_score:.1f}"
+
+    # Calculate and inject financial Cost of Inaction (COI) deterministically
+    global_fair_ale = blueprint.total_fair_ale or 0.0
+    global_fair_p90 = 0.0
+    for p in blueprint.pillars_analysis:
+        for hc in p.health_check_asis:
+            global_fair_p90 += hc.fair_p90_score or 0.0
+
+    coi_extreme_3y = global_fair_p90 + (global_fair_ale * 2)
+
+    formatted_ale = f"{global_fair_ale:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    formatted_3y_ord = f"{(global_fair_ale * 3):,.0f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    formatted_3y_ext = f"{coi_extreme_3y:,.0f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    from assessment_engine.domain.schemas.annex_synthesis import FinancialCOIProfile
+    result_payload.executive_summary.financial_coi = FinancialCOIProfile(
+        annual_loss_exposure=f"{formatted_ale} €",
+        coi_3y_ordinary=f"{formatted_3y_ord} €",
+        coi_3y_extreme=f"{formatted_3y_ext} €"
+    )
 
     result_payload.domain_introduction.technological_domain = (
         result_payload.domain_introduction.technological_domain
@@ -448,6 +583,17 @@ def build_synthesis_prompt(
     tower_name = blueprint_data.get("document_meta", {}).get(
         "tower_name", "la torre evaluada"
     )
+    
+    # Calculate dynamic temporal values based on current actual system year (timeless engineering)
+    import datetime
+    now = datetime.datetime.now()
+    current_year = now.year
+    
+    current_date_str = f"JULIO DE {current_year}" # Standard uppercase month and year
+    active_strategic_range = f"{current_year - 1}-{current_year + 3}"  # e.g., 2026-2030
+    future_investment_horizon_range = f"{current_year + 1}-{current_year + 3}/{current_year + 4}" # e.g., 2028-2030/2031
+    obsolete_strategic_range = f"{current_year - 6}-{current_year - 2}" # e.g., 2021-2025
+
     prompt = (
         f"Eres un {config['role']} con expertise en {config['expertise']}.\n"
         f"{config['context_description'].format(tower_name=tower_name)}\n\n"
@@ -463,10 +609,24 @@ def build_synthesis_prompt(
         f"{config['specific_instructions_header']}\n"
     )
     for idx, instruction in enumerate(config.get("instructions", []), start=1):
+        if isinstance(instruction, str):
+            instruction = instruction.format(
+                current_date_str=current_date_str,
+                active_strategic_range=active_strategic_range,
+                future_investment_horizon_range=future_investment_horizon_range,
+                obsolete_strategic_range=obsolete_strategic_range,
+            )
         prompt += f"{idx}. {instruction}\n"
 
     prompt += f"\n{config['tone_rules_header']}\n"
     for idx, rule in enumerate(config.get("tone_rules", []), start=1):
+        if isinstance(rule, str):
+            rule = rule.format(
+                current_date_str=current_date_str,
+                active_strategic_range=active_strategic_range,
+                future_investment_horizon_range=future_investment_horizon_range,
+                obsolete_strategic_range=obsolete_strategic_range,
+            )
         prompt += f"{idx}. {rule}\n"
 
     prompt += f"\n{config.get('handover', '')}\n"
@@ -494,10 +654,7 @@ async def generate_synthesis(
         config=config,
     )
 
-    try:
-        model_name = resolve_model_profile_for_role("section_writer")["model"]
-    except Exception:
-        model_name = "gemini-1.5-pro"
+    model_name = resolve_model_for_role("section_writer", default_model="gemini-2.5-pro")
 
     agent = Agent(
         name="executive_synthesizer",
@@ -593,9 +750,36 @@ async def synthesize_annex(client_name: str, tower_id: str):
     )
 
     if final_payload:
-        output_path.write_text(
-            final_payload.model_dump_json(indent=2, by_alias=True), encoding="utf-8"
-        )
+        content = final_payload.model_dump_json(indent=2, by_alias=True)
+        
+        # European Spanish localization: Replace 'sistémico/sistémica' with 'estructural'
+        content = content.replace("sistémicas", "estructurales")
+        content = content.replace("sistémicos", "estructurales")
+        content = content.replace("Sistémicas", "Estructurales")
+        content = content.replace("Sistémicos", "Estructurales")
+        content = content.replace("sistémica", "estructural")
+        content = content.replace("sistémico", "estructural")
+        content = content.replace("Sistémica", "Estructural")
+        content = content.replace("Sistémico", "Estructural")
+
+        # Spelling corrections for 'múltiples'
+        content = content.replace("mùltiples", "múltiples")
+        content = content.replace("Mùltiples", "Múltiples")
+        content = content.replace("móltiples", "múltiples")
+        content = content.replace("Móltiples", "Múltiples")
+        content = content.replace("multiples", "múltiples")
+        content = content.replace("Multiples", "Múltiples")
+
+        tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
+        try:
+            tmp_path.write_text(content, encoding="utf-8")
+            tmp_path.replace(output_path)
+        finally:
+            if tmp_path.exists():
+                try:
+                    tmp_path.unlink()
+                except Exception:
+                    pass
         print(f"✅ Anexo Ejecutivo sintetizado con éxito: {output_path}")
     else:
         print("❌ Error al generar el anexo.")

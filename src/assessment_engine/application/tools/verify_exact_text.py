@@ -24,8 +24,12 @@ def verify_text_content() -> None:
         docx.opc.exceptions.PackageNotFoundError: If either of the hardcoded paths
             does not reference a valid DOCX file.
     """
-    original_path = Path("working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.docx")
-    shadow_path = Path("working/redeia_v3/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx")
+    import os
+    client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+    client_name = os.environ.get("ASSESSMENT_CLIENT_NAME", "Cliente")
+    
+    original_path = Path(f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.docx")
+    shadow_path = Path(f"working/{client_id}/T2/AS-IS_Anexo_Tecnico_T2.shadow.docx")
 
     if not original_path.exists() or not shadow_path.exists():
         print("❌ Uno o ambos archivos no existen.")
@@ -58,7 +62,7 @@ def verify_text_content() -> None:
     #
     p_orig_count = 0
     for p in doc_orig.paragraphs:
-        if "Redeia" in p.text and len(p.text) > 50:
+        if client_name in p.text and len(p.text) > 50:
             print(f"   * {p.text[:120]}...")
             p_orig_count += 1
             if p_orig_count >= 3:
@@ -67,7 +71,7 @@ def verify_text_content() -> None:
     print("\n--- [Shadow V4] Primeros 3 párrafos del Resumen Ejecutivo:")
     p_shadow_count = 0
     for p in doc_shadow.paragraphs:
-        if "Redeia" in p.text and len(p.text) > 50:
+        if client_name in p.text and len(p.text) > 50:
             print(f"   * {p.text[:120]}...")
             p_shadow_count += 1
             if p_shadow_count >= 3:
