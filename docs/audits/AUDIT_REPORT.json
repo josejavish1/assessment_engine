@@ -1,17 +1,17 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793197042,
+  "timestamp": 1793197374,
   "global_grade": "A",
-  "global_score": 93.7,
+  "global_score": 94.0,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 405,
-        "clean_files": 405,
+        "scanned_files": 406,
+        "clean_files": 406,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -35,8 +35,8 @@
       "score_pct": 51.4,
       "passed": false,
       "metrics": {
-        "prod_sloc": 55839,
-        "test_sloc": 6746,
+        "prod_sloc": 55915,
+        "test_sloc": 6774,
         "test_to_code_ratio": 0.12,
         "maintainability_index_sei": 30.3,
         "typed_functions_pct": 84.9,
@@ -450,7 +450,7 @@
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'render_tower_blueprint.py' tiene 1248 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'render_tower_blueprint.py' tiene 1257 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -2111,11 +2111,11 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
+          "severity": "CRITICAL",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'docx_render_utils.py' tiene 1168 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'docx_render_utils.py' tiene 1220 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -2149,7 +2149,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1363,
+          "line_number": 1420,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'remove_page_break_only_paragraphs': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -2689,7 +2689,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 313,
+        "scanned_files": 314,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -2703,7 +2703,7 @@
       "score_pct": 80.0,
       "passed": false,
       "metrics": {
-        "scanned_files": 313,
+        "scanned_files": 314,
         "entropy_violations_count": 1,
         "long_parameter_funcs_count": 13,
         "god_classes_count": 0,
@@ -2849,17 +2849,17 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.39,
-        "p95_latency_ms": 80.02,
-        "p99_latency_ms": 130.74,
-        "tail_amplification_ratio": 94.06,
+        "p50_latency_ms": 1.48,
+        "p95_latency_ms": 105.25,
+        "p99_latency_ms": 182.04,
+        "tail_amplification_ratio": 123.0,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
     },
     "documentation_quality": {
       "probe_name": "Documentation Quality & Architectural Traceability (ISO 26514 / Google)",
-      "score_pct": 90.0,
+      "score_pct": 100.0,
       "passed": true,
       "metrics": {
         "markdown_files_scanned": 62,
@@ -2867,113 +2867,13 @@
         "dead_links_count": 0,
         "architectural_references_evaluated": 0,
         "architectural_drift_count": 0,
-        "bare_code_fences_count": 11,
+        "bare_code_fences_count": 0,
         "openapi_endpoints_evaluated": 0,
         "openapi_documented_endpoints": 0,
         "openapi_documentation_coverage_pct": 0.0,
         "documentation_status": "Certificada y Sincronizada"
       },
-      "findings": [
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/SYSTEM_ARCHITECTURE.md",
-          "line_number": 45,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/data-provenance-ontology.md",
-          "line_number": 30,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/data-provenance-ontology.md",
-          "line_number": 71,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/critical-modules.md",
-          "line_number": 112,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/security-boundaries.md",
-          "line_number": 29,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/policy-engine-architecture.md",
-          "line_number": 30,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/rage-architecture.md",
-          "line_number": 29,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/strategy/ROADMAP.md",
-          "line_number": 32,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/strategy/iag-it-sovereignty-analysis.md",
-          "line_number": 48,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/contracts/rage_rubric_payload.md",
-          "line_number": 27,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/operations/streaming-sentinel-guide.md",
-          "line_number": 35,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        }
-      ]
+      "findings": []
     },
     "sre_observability": {
       "probe_name": "SRE, Observability & W3C Tracing (RFC-016)",
@@ -2993,7 +2893,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 347,
+        "scanned_files": 348,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -3003,8 +2903,8 @@
       "score_pct": 73.6,
       "passed": false,
       "metrics": {
-        "files_scanned": 342,
-        "inline_rationale_score": 77.6,
+        "files_scanned": 343,
+        "inline_rationale_score": 77.7,
         "contract_coverage_score": 48.4,
         "linguistic_sovereignty_score": 98.2,
         "comment_smells_count": 1334,
@@ -4863,7 +4763,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 1455,
+          "line_number": 1466,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -5070,7 +4970,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 1355,
+          "line_number": 1366,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_conclusion' claims 'Raises: AttributeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -5079,7 +4979,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 1355,
+          "line_number": 1366,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_conclusion' claims 'Raises: lacking', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -5088,7 +4988,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 1355,
+          "line_number": 1366,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_conclusion' claims 'Raises: TypeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -5097,7 +4997,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 1355,
+          "line_number": 1366,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_conclusion' claims 'Raises: conclusion', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12666,7 +12566,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1044,
+          "line_number": 1082,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_initiative_cards' claims 'Raises: AttributeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12675,7 +12575,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1044,
+          "line_number": 1082,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_initiative_cards' claims 'Raises: or', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12684,7 +12584,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1134,
+          "line_number": 1172,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_radar_chart' claims 'Raises: FileNotFoundError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12693,7 +12593,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1134,
+          "line_number": 1172,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_radar_chart' claims 'Raises: ValueError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12702,7 +12602,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1134,
+          "line_number": 1172,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_radar_chart' claims 'Raises: supported', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12711,7 +12611,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1134,
+          "line_number": 1172,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'render_radar_chart' claims 'Raises: TypeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12720,7 +12620,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1178,
+          "line_number": 1216,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'add_heading_paragraph' claims 'Raises: AttributeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12729,7 +12629,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1178,
+          "line_number": 1216,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'add_heading_paragraph' claims 'Raises: method', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12738,7 +12638,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1258,
+          "line_number": 1296,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'add_label_value_paragraph' claims 'Raises: AttributeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12747,7 +12647,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1258,
+          "line_number": 1296,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'add_label_value_paragraph' claims 'Raises: the', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12756,7 +12656,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1298,
+          "line_number": 1336,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'add_long_detail_table' claims 'Raises: ValueError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -12765,7 +12665,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1298,
+          "line_number": 1336,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'add_long_detail_table' claims 'Raises: AttributeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -15491,5 +15391,5 @@
       ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A (93.7%). Sondas pasadas: 14/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (94.0%). Sondas pasadas: 14/18."
 }

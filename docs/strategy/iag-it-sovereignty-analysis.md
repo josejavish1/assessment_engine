@@ -45,7 +45,7 @@ El proyecto tiene como objetivo establecer un **Sovereignty Baseline (Línea Bas
 
 La arquitectura hexagonal, el motor de políticas y el pipeline asíncronos del `assessment-engine` son 100% reutilizables y permiten industrializar este análisis de 3 meses, reduciendo los tiempos de ejecución mediante aceleración por IA controlada (Human-in-the-loop).
 
-```
+```text
 ===================================================================================================
 | EVIDENCIAS RAW (IAG) ➔ [ INGEST / RAPTOR ] ➔ EVIDENCE VAULT ➔ [ INTEL HARVEST ] ➔ CLIENT INTEL |
 ===================================================================================================

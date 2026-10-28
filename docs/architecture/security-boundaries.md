@@ -26,7 +26,7 @@ Este documento detalla la filosofía de seguridad, aislamiento soberano y contro
 
 A diferencia de las arquitecturas SaaS multi-inquilino estándar, donde los datos de múltiples clientes coexisten en la misma base de datos lógica (lo que introduce riesgos latentes de fugas por fallos en cláusulas SQL o fugas de memoria), este motor adopta una filosofía **Single-Tenant Sovereign Local Engine** (CLI Soberano).
 
-```
+```text
   [ Entorno del Cliente / Infraestructura Soberana ]
 ┌─────────────────────────────────────────────────────┐
 │  ┌──────────────────┐     ┌──────────────────────┐  │

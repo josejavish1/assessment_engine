@@ -32,7 +32,7 @@ El sistema separa el flujo de información en dos capas de almacenamiento:
 
 Para garantizar que el sistema nunca colapse bajo ataques de red (OOM/Path Traversal) ni consuma tokens innecesarios de Vertex AI, el Sentinel implementa cuatro filtros automáticos en la CPU antes de proceder a la ingesta:
 
-```
+```text
                             [ NUEVA EVIDENCIA ENTRANTE ]
                                          │
                                          ▼

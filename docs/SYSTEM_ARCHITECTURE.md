@@ -42,7 +42,7 @@ The dominant production flow is **top-down**: tower blueprints act as the main s
 - **Primary pipeline mode** runs tower, global, commercial, and web generation from the command line.
 - **Secondary MCP mode** exposes selected operations as tools, but still reflects part of the legacy section-based model.
 
-```
+```text
 ========================================================================================================================
 | INPUTS + OPTIONAL ENRICHMENT                                                                                        |
 ========================================================================================================================

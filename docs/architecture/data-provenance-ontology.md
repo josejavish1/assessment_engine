@@ -27,7 +27,7 @@ Este documento define de manera formal la ontología de extracción de datos, li
 
 El motor de evaluación fundamenta su capacidad de auditoría en un **Grafo Epistémico** (`epistemic_graph.py`). A diferencia de una base de datos documental plana, un grafo epistémico representa los hallazgos técnicos como relaciones semánticas interconectadas que conectan la observación con la norma.
 
-```
+```text
        [ Fuente PDF ]  <--- (Linaje / Provenance)
              │
              ▼
@@ -68,7 +68,7 @@ Definimos formalmente las entidades (*nodes*) y relaciones (*edges*) que estruct
 
 La transformación de un reporte de PDF crudo a nodos epistémicos fuertemente tipados sigue un pipeline determinista en la capa de infraestructura:
 
-```
+```text
 [ PDF de Origen ] ──(PyPDF/OCR)──> [ Bloques de Texto ] ──(Regex & AST Parsing)──> [Evidencias] ──(Pydantic)──> [Grafo Epistémico]
 ```
 

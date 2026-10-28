@@ -26,7 +26,7 @@ Su objetivo de diseño es erradicar de raíz el "vibe-scoring" (puntuación prob
 
 El motor opera de forma asíncrona y está estructurado en cuatro fases robustas e independientes:
 
-```
+```text
 ===================================================================================================
 | 1. OSINT SEARCH (Investigador) ➔ 2. EVIDENCE VAULT (Failsafe) ➔ 3. CROSS-EXAM (Forense) ➔ 4. SCORING |
 ===================================================================================================

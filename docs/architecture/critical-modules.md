@@ -109,7 +109,7 @@ Este componente actúa de forma desacoplada de la jerarquía estándar: no consu
 
 La estabilidad semántica del motor exige la observancia estricta del flujo de herencia y trazabilidad entre las siguientes interfaces técnicas:
 
-```
+```text
 [ blueprint_payload.json ] (Verdad Primaria por Torre)
     ├──> [ approved_annex_payload.json ] (Handover Directivo) ──> [ render_annex ]
     └──> [ global_report_payload.json ] (Agregador Estratégico)

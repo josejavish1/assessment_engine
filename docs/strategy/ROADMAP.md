@@ -29,7 +29,7 @@ Para garantizar que el motor sea universal y reutilizable por cualquier cuenta, 
 
 ## 2. Horizontes de Desarrollo Semántico (Thematic Horizons)
 
-```
+```text
 ===================================================================================================
 |  NOW (Fase 0 y 1 - En Desarrollo) ➔  NEXT (Fase 2 y 3 - Planificado) ➔  LATER (Fase 4 - Futuro) |
 ===================================================================================================

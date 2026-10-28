@@ -27,7 +27,7 @@ El Motor de Políticas no realiza sugerencias; es un **compilador determinista**
 
 Toma como entrada el payload JSON de la torre generado por el modelo de lenguaje, ejecuta de forma secuencial una suite de clases de políticas registradas, y devuelve el payload saneado, reestructurado e inyectado con controles obligatorios:
 
-```
+```text
 ===================================================================================================
 | AI BLUEPRINT PAYLOAD ➔ [ POLICY ENGINE COMPILER ] ➔ SANITIZED SECURE PAYLOAD ➔ DOCX RENDERER    |
 ===================================================================================================

@@ -24,7 +24,7 @@ Cualquier archivo de norma regulatoria inyectado bajo `engine_config/frameworks/
 
 El payload de la rúbrica está estructurado en tres niveles de datos:
 
-```
+```text
 ===================================================================================================
 | FRAMEWORK_RUBRIC (Raíz) ➔ 1. METADATA (framework, version) ➔ 2. RULES (List of RubricRule)     |
 ===================================================================================================
