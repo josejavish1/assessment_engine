@@ -517,6 +517,72 @@ def render_cover(doc, payload: BlueprintPayload) -> Any:
     doc.add_page_break()
 
 
+def _render_snapshot_scores_table(
+    doc, global_score_val: str, global_band_val: str, target_score_val: str
+) -> None:
+    """Render the 3-column scores and maturity summary table."""
+    table = doc.add_table(rows=2, cols=3)
+    finalize_table(table)
+    headers = ["SCORE ACTUAL", "NIVEL DE MADUREZ", "MADUREZ OBJETIVO"]
+    values = [global_score_val, global_band_val or "N/A", target_score_val]
+
+    for i, header in enumerate(headers):
+        set_cell_text(
+            table.rows[0].cells[i],
+            header,
+            bold=True,
+            font_size=10,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+        shade_cell(table.rows[0].cells[i], "0072BC")
+        for run in table.rows[0].cells[i].paragraphs[0].runs:
+            run.font.color.rgb = RGBColor(255, 255, 255)
+        set_cell_text(
+            table.rows[1].cells[i],
+            values[i],
+            font_size=14,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+
+    table.autofit = False
+    tbl_pr = table._tbl.tblPr
+    if tbl_pr is not None:
+        widths = tbl_pr.xpath("w:tblW")
+        tbl_w = widths[0] if widths else OxmlElement("w:tblW")
+        if not widths:
+            tbl_pr.append(tbl_w)
+        tbl_w.set(ns.qn("w:type"), "pct")
+        tbl_w.set(ns.qn("w:w"), "5000")
+
+
+
+def _resolve_snapshot_business_angles(client_intelligence: dict) -> list[str]:
+    """Extract relevant business driver bullets from client intelligence."""
+    business_angles = []
+    ceo_agenda = clean_text_for_render(client_intelligence.get("ceo_agenda", ""))
+    if ceo_agenda:
+        business_angles.append("Agenda de negocio prioritaria: " + ceo_agenda)
+    regulatory = client_intelligence.get("regulatory_frameworks", []) or []
+    if regulatory:
+        business_angles.append(
+            "Presión regulatoria material: " + ", ".join(str(x) for x in regulatory)
+        )
+    drivers = client_intelligence.get("technological_drivers", []) or []
+    for text in drivers:
+        lowered = str(text).lower()
+        if any(
+            token in lowered
+            for token in ["adquis", "m&a", "expansi", "ia", "pacient", "eficien"]
+        ):
+            business_angles.append(clean_text_for_render(text))
+
+    if not business_angles:
+        business_angles.append(
+            "La transformación tecnológica propuesta asegura la competitividad, fortalece la resiliencia operativa y garantiza el cumplimiento normativo."
+        )
+    return business_angles
+
+
 def render_snapshot_page(
     doc,
     payload: BlueprintPayload,
@@ -560,65 +626,11 @@ def render_snapshot_page(
 
     add_heading_paragraph(doc, "1. Executive Snapshot (Resumen ejecutivo)", level=1)
 
-    table = doc.add_table(rows=2, cols=3)
-    finalize_table(table)
-    headers = ["SCORE ACTUAL", "NIVEL DE MADUREZ", "MADUREZ OBJETIVO"]
-    values = [global_score_val, global_band_val or "N/A", target_score_val]
-
-    for i, header in enumerate(headers):
-        set_cell_text(
-            table.rows[0].cells[i],
-            header,
-            bold=True,
-            font_size=10,
-            align=WD_ALIGN_PARAGRAPH.CENTER,
-        )
-        shade_cell(table.rows[0].cells[i], "0072BC")
-        for run in table.rows[0].cells[i].paragraphs[0].runs:
-            run.font.color.rgb = RGBColor(255, 255, 255)
-        set_cell_text(
-            table.rows[1].cells[i],
-            values[i],
-            font_size=14,
-            align=WD_ALIGN_PARAGRAPH.CENTER,
-        )
-
-    table.autofit = False
-    tbl_pr = table._tbl.tblPr
-    if tbl_pr is not None:
-        widths = tbl_pr.xpath("w:tblW")
-        tbl_w = widths[0] if widths else OxmlElement("w:tblW")
-        if not widths:
-            tbl_pr.append(tbl_w)
-        tbl_w.set(ns.qn("w:type"), "pct")
-        tbl_w.set(ns.qn("w:w"), "5000")
-
+    _render_snapshot_scores_table(doc, str(global_score_val), str(global_band_val or "N/A"), str(target_score_val))
     add_spacer(doc, 15)
     add_body_paragraph(doc, snap.bottom_line, color_rgb=BASE_TEXT_COLOR)
 
-    business_angles = []
-    ceo_agenda = clean_text_for_render(client_intelligence.get("ceo_agenda", ""))
-    if ceo_agenda:
-        business_angles.append("Agenda de negocio prioritaria: " + ceo_agenda)
-    regulatory = client_intelligence.get("regulatory_frameworks", []) or []
-    if regulatory:
-        business_angles.append(
-            "Presión regulatoria material: " + ", ".join(str(x) for x in regulatory)
-        )
-    drivers = client_intelligence.get("technological_drivers", []) or []
-    for text in drivers:
-        lowered = str(text).lower()
-        if any(
-            token in lowered
-            for token in ["adquis", "m&a", "expansi", "ia", "pacient", "eficien"]
-        ):
-            business_angles.append(clean_text_for_render(text))
-
-    if not business_angles:
-        business_angles.append(
-            "La transformación tecnológica propuesta asegura la competitividad, fortalece la resiliencia operativa y garantiza el cumplimiento normativo."
-        )
-
+    business_angles = _resolve_snapshot_business_angles(client_intelligence)
     add_heading_paragraph(doc, "Por qué importa al negocio", level=2)
     for item in business_angles[:4]:
         add_bullet_p(doc, item)
@@ -731,55 +743,8 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
         add_spacer(doc, 10)
 
 
-def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: str = "€") -> Any:
-    r"""{'docstring': 'Renders a FAIR quantitative risk heatmap and details table into a document.\n\n    This function processes Factor Analysis of Information Risk (FAIR) data from\n    the provided payload to generate two primary components within the given\n    Word document: a risk matrix and a detailed risk register.\n\n    First, a 5x5 heatmap is constructed where rows represent Threat Event\n    Frequency (TEF) and columns represent Loss Magnitude (LM). Each cell is\n    color-coded based on the calculated risk score (TEF * LM), mapping to a\n    severity scale from low (green) to critical (dark red). Cells are\n    populated with unique identifiers (e.g., "R01", "R02") for each risk that\n    falls within that specific TEF/LM coordinate.\n\n    Second, a detailed table is generated that lists each identified risk. This\n    table includes the risk\'s identifier, its domain, a description of the\n    finding, its coordinates on the heatmap, and its calculated Annualized Loss\n    Expectancy (ALE). The risks in this table are sorted in descending order of\n    their ALE to prioritize the most significant financial exposures.\n\n    If the payload contains no findings with valid FAIR data (where both TEF > 0\n    and LM > 0), the function appends a notification message to the document\n    instead of the heatmap and table.\n\n    Args:\n        doc (docx.document.Document): The python-docx Document object to which\n            the generated content will be appended.\n        payload (BlueprintPayload): A data object containing analysis results. It is\n            expected to have a `pillars_analysis` attribute, which is an\n            iterable of objects each containing a `health_check_asis` list of\n            findings. Each finding may have `threat_event_frequency`,\n            `loss_magnitude`, and `fair_ale_score` attributes.\n\n    Returns:\n        None: The function modifies the input `doc` object in place.'}."""
-    add_heading_paragraph(doc, "Coste Estimado del Riesgo de No Actuar", level=1)
-    add_body_paragraph(
-        doc,
-        "Esta sección analiza cuánto le costaría a la empresa NO resolver los fallos detectados en caso de avería, parada o problemas operativos. "
-        "En lugar de una cifra contable cerrada, calculamos el coste económico potencial considerando la probabilidad de fallo y el entorno afectado (operaciones críticas de negocio, plataformas centrales de gestión o soporte interno). "
-        "Su objetivo es permitir que la Dirección compare el coste de ejecutar los proyectos propuestos frente al riesgo económico de no hacer nada.",
-        color_rgb=BASE_TEXT_COLOR,
-    )
-
-    # Initializes a 5x5 matrix for risk assessment. Rows represent TEF (Frequency) on a scale of 5 to 1, and columns represent LM (Magnitude) on a scale of 1 to 5.
-    matrix = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
-
-    has_fair_data = False
-    risk_details = []
-    risk_counter = 1
-
-    for pilar in payload.pillars_analysis:
-        for finding in pilar.health_check_asis:
-            tef = getattr(finding, "threat_event_frequency", 0)
-            lm = getattr(finding, "loss_magnitude", 0)
-            ale = getattr(finding, "fair_ale_score", 0.0)
-            if tef > 0 and lm > 0:
-                has_fair_data = True
-                r_id = f"R{risk_counter:02d}"
-                risk_counter += 1
-                matrix[tef][lm].append(r_id)
-                risk_details.append(
-                    {
-                        "id": r_id,
-                        "pilar": pilar.pilar_name,
-                        "finding": finding.risk_observed,
-                        "target_state": finding.target_state,
-                        "tef": tef,
-                        "lm": lm,
-                        "ale": ale,
-                        "risk_score": tef * lm,
-                    }
-                )
-
-    if not has_fair_data:
-        add_body_paragraph(
-            doc,
-            "No hay datos cuantitativos FAIR suficientes para renderizar el mapa de calor.",
-            color_rgb=BASE_TEXT_COLOR,
-        )
-        return
-
+def _render_fair_5x5_table(doc, matrix: dict) -> None:
+    """Render the 5x5 FAIR risk heatmap grid table."""
     table = doc.add_table(rows=6, cols=6)
     finalize_table(table)
 
@@ -847,6 +812,12 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: st
     add_spacer(doc, 15)
 
     #
+
+
+def _render_fair_details_table(
+    doc, risk_details: list[dict], currency_symbol: str
+) -> None:
+    """Render the detailed FAIR risk register table."""
     # Sorts risks in descending order by Annualized Loss Expectancy (ALE) to prioritize the most significant threats.
     risk_details.sort(key=lambda x: x["ale"], reverse=True)
 
@@ -921,6 +892,61 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: st
     add_spacer(doc, 15)
 
 
+
+
+def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: str = "€") -> Any:
+    r"""{'docstring': 'Renders a FAIR quantitative risk heatmap and details table into a document.\n\n    This function processes Factor Analysis of Information Risk (FAIR) data from\n    the provided payload to generate two primary components within the given\n    Word document: a risk matrix and a detailed risk register.\n\n    First, a 5x5 heatmap is constructed where rows represent Threat Event\n    Frequency (TEF) and columns represent Loss Magnitude (LM). Each cell is\n    color-coded based on the calculated risk score (TEF * LM), mapping to a\n    severity scale from low (green) to critical (dark red). Cells are\n    populated with unique identifiers (e.g., "R01", "R02") for each risk that\n    falls within that specific TEF/LM coordinate.\n\n    Second, a detailed table is generated that lists each identified risk. This\n    table includes the risk\'s identifier, its domain, a description of the\n    finding, its coordinates on the heatmap, and its calculated Annualized Loss\n    Expectancy (ALE). The risks in this table are sorted in descending order of\n    their ALE to prioritize the most significant financial exposures.\n\n    If the payload contains no findings with valid FAIR data (where both TEF > 0\n    and LM > 0), the function appends a notification message to the document\n    instead of the heatmap and table.\n\n    Args:\n        doc (docx.document.Document): The python-docx Document object to which\n            the generated content will be appended.\n        payload (BlueprintPayload): A data object containing analysis results. It is\n            expected to have a `pillars_analysis` attribute, which is an\n            iterable of objects each containing a `health_check_asis` list of\n            findings. Each finding may have `threat_event_frequency`,\n            `loss_magnitude`, and `fair_ale_score` attributes.\n\n    Returns:\n        None: The function modifies the input `doc` object in place.'}."""
+    add_heading_paragraph(doc, "Coste Estimado del Riesgo de No Actuar", level=1)
+    add_body_paragraph(
+        doc,
+        "Esta sección analiza cuánto le costaría a la empresa NO resolver los fallos detectados en caso de avería, parada o problemas operativos. "
+        "En lugar de una cifra contable cerrada, calculamos el coste económico potencial considerando la probabilidad de fallo y el entorno afectado (operaciones críticas de negocio, plataformas centrales de gestión o soporte interno). "
+        "Su objetivo es permitir que la Dirección compare el coste de ejecutar los proyectos propuestos frente al riesgo económico de no hacer nada.",
+        color_rgb=BASE_TEXT_COLOR,
+    )
+
+    # Initializes a 5x5 matrix for risk assessment. Rows represent TEF (Frequency) on a scale of 5 to 1, and columns represent LM (Magnitude) on a scale of 1 to 5.
+    matrix = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
+
+    has_fair_data = False
+    risk_details = []
+    risk_counter = 1
+
+    for pilar in payload.pillars_analysis:
+        for finding in pilar.health_check_asis:
+            tef = getattr(finding, "threat_event_frequency", 0)
+            lm = getattr(finding, "loss_magnitude", 0)
+            ale = getattr(finding, "fair_ale_score", 0.0)
+            if tef > 0 and lm > 0:
+                has_fair_data = True
+                r_id = f"R{risk_counter:02d}"
+                risk_counter += 1
+                matrix[tef][lm].append(r_id)
+                risk_details.append(
+                    {
+                        "id": r_id,
+                        "pilar": pilar.pilar_name,
+                        "finding": finding.risk_observed,
+                        "target_state": finding.target_state,
+                        "tef": tef,
+                        "lm": lm,
+                        "ale": ale,
+                        "risk_score": tef * lm,
+                    }
+                )
+
+    if not has_fair_data:
+        add_body_paragraph(
+            doc,
+            "No hay datos cuantitativos FAIR suficientes para renderizar el mapa de calor.",
+            color_rgb=BASE_TEXT_COLOR,
+        )
+        return
+
+    _render_fair_5x5_table(doc, matrix)
+    _render_fair_details_table(doc, risk_details, currency_symbol)
+
+
 def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
     """Populates a document object with the 'TO-BE' architecture section.
 
@@ -969,6 +995,171 @@ def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
             add_bullet_p(doc, principle)
 
 
+def _find_mitigated_risk_text(project: Any, payload: BlueprintPayload) -> str:
+    """Find the risk observed description mitigated by this project."""
+    risk_id = getattr(project, "mitigates_risk_id", None)
+    if not risk_id:
+        return "N/A"
+    for p_ana in payload.pillars_analysis:
+        for hc in p_ana.health_check_asis:
+            if hc.node_id == risk_id:
+                return f"[{hc.target_state}] {hc.risk_observed}"
+    return "N/A"
+
+
+def _format_wbs_breakdown(wbs_items: Any) -> str:
+    """Format Work Breakdown Structure items into bulleted list."""
+    if not wbs_items:
+        return "Desglose no disponible."
+    try:
+        return "\n".join(
+            [f"• {w.task_name} (Perfil: {w.required_profile})" for w in wbs_items]
+        )
+    except Exception:
+        return "\n".join(
+            [
+                f"• {w.get('task_name')} (Perfil: {w.get('required_profile')})"
+                for w in wbs_items
+                if isinstance(w, dict)
+            ]
+        )
+
+
+def _resolve_project_charter_data(
+    project: Any, payload: BlueprintPayload
+) -> dict[str, str]:
+    """Extract and sanitize all textual fields and financial estimates for a project charter."""
+    deps = [
+        d.depends_on
+        for d in payload.external_dependencies
+        if d.project == project.initiative
+    ]
+    deps_text = (
+        " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+    )
+
+    #
+    mitigated_risk_text = _find_mitigated_risk_text(project, payload)
+    # Performs FinOps resolution by sanitizing financial data to exclude internal cost margins from client-facing documents.
+    capex = getattr(project, "capex_estimate", "N/A") or "N/A"
+    opex = getattr(project, "opex_estimate", "N/A") or "N/A"
+
+    # The OPEX value is sanitized to strip any internal margin calculations, ensuring only the client-facing cost is presented.
+    # The financial data is filtered to retain only the final selling price for this context.
+    clean_opex = opex
+    if isinstance(opex, str) and "(Margen" in opex:
+        clean_opex = opex.split("(Margen")[0].strip()
+
+    finops_text = f"Inversión de Implantación: {clean_opex}\nInversión de Licencias/Hardware: {capex}"
+
+    #
+    wbs_text = _format_wbs_breakdown(getattr(project, "wbs_breakdown", []))
+    proj_desc = getattr(project, "project_description", "N/A") or "N/A"
+    smart_obj = getattr(project, "smart_objectives", "N/A") or "N/A"
+    in_scope_list = getattr(project, "in_scope", []) or []
+    out_scope_list = getattr(project, "out_of_scope", []) or []
+    gov_roles_list = getattr(project, "governance_roles", []) or []
+    crit_risks_list = getattr(project, "critical_risks", []) or []
+
+    in_scope = "\n".join([f"• {item}" for item in in_scope_list]) or "N/A"
+    out_scope = "\n".join([f"• {item}" for item in out_scope_list]) or "N/A"
+    gov_roles = "\n".join([f"• {item}" for item in gov_roles_list]) or "N/A"
+    crit_risks = "\n".join([f"• {item}" for item in crit_risks_list]) or "N/A"
+    roi_just = getattr(project, "roi_justification", "N/A") or "N/A"
+
+    return {
+        "deps_text": deps_text,
+        "mitigated_risk_text": mitigated_risk_text,
+        "finops_text": finops_text,
+        "wbs_text": wbs_text,
+        "proj_desc": proj_desc,
+        "smart_obj": smart_obj,
+        "in_scope": in_scope,
+        "out_scope": out_scope,
+        "gov_roles": gov_roles,
+        "crit_risks": crit_risks,
+        "roi_just": roi_just,
+    }
+
+
+def _render_single_project_charter(
+    doc,
+    project_idx: int,
+    pilar_name: str,
+    project: Any,
+    payload: BlueprintPayload,
+) -> None:
+    """Render a formatted engineering charter table for a single project."""
+    add_heading_paragraph(
+        doc, f"Iniciativa {project_idx}: {project.initiative}", level=3
+    )
+
+    data = _resolve_project_charter_data(project, payload)
+    deps_text = data["deps_text"]
+    mitigated_risk_text = data["mitigated_risk_text"]
+    finops_text = data["finops_text"]
+    wbs_text = data["wbs_text"]
+    proj_desc = data["proj_desc"]
+    smart_obj = data["smart_obj"]
+    in_scope = data["in_scope"]
+    out_scope = data["out_scope"]
+    gov_roles = data["gov_roles"]
+    crit_risks = data["crit_risks"]
+    roi_just = data["roi_just"]
+    rows = [
+        ("Dominio Arquitectónico", pilar_name),
+        ("Descripción Ejecutiva", proj_desc),
+        ("Objetivo SMART", smart_obj),
+        ("Riesgo AS-IS Mitigado (Trazabilidad)", mitigated_risk_text),
+        ("Alcance (In-Scope)", in_scope),
+        ("Fuera de Alcance (Out-of-Scope)", out_scope),
+        ("Dependencias Técnicas (Predecesores)", deps_text),
+        (
+            "Entregables Técnicos Duros (DoD)",
+            "\n".join([f"• {item}" for item in project.deliverables]),
+        ),
+        ("Work Breakdown Structure (LLD Fases)", wbs_text),
+        (
+            "Sizing & Cronograma",
+            f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
+        ),
+        ("Estimación FinOps & TCO (3 Años)", finops_text),
+        ("Justificación de ROI & Valor", roi_just),
+        ("Perfiles y Gobernanza (RACI)", gov_roles),
+        ("Riesgos de Ejecución y Mitigación", crit_risks),
+    ]
+
+    project_table = doc.add_table(rows=len(rows) + 1, cols=2)
+    finalize_table(project_table)
+
+    merged = (
+        project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
+    )
+    set_cell_text(
+        merged,
+        "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA",
+        bold=True,
+        font_size=11,
+    )
+    shade_cell(merged, "0072BC")
+    for run in merged.paragraphs[0].runs:
+        run.font.color.rgb = RGBColor(255, 255, 255)
+
+    for idx, (label, value) in enumerate(rows, 1):
+        set_cell_text(
+            project_table.rows[idx].cells[0], label, bold=True, font_size=9
+        )
+        shade_cell(project_table.rows[idx].cells[0], "F2F2F2")
+        set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
+        for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
+            run.font.color.rgb = BASE_TEXT_COLOR
+
+    autofit_table_to_contents(project_table)
+    add_spacer(doc, 15)
+    project_idx += 1
+
+
+
 def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
     r"""{'docstring': 'Renders a technical appendix of detailed project charters into a document.\n\n    Generates and appends a series of formatted tables, representing detailed\n    project charters, to a document object. The function processes projects\n    from the input payload, first grouping them by their `transformation_typology`.\n    For each project, it aggregates comprehensive details including an executive\n    summary, S.M.A.R.T. objectives, scope definitions, technical dependencies,\n    financial estimates, Work Breakdown Structure (WBS), and risk analysis.\n\n    Financial data (OPEX) is sanitized to remove internal margin calculations\n    before rendering. The function is robust to variations in the payload\n    structure, using default values for missing attributes and handling potential\n    type inconsistencies in WBS data.\n\n    Args:\n        doc: A document object, typically from a library like `python-docx`, to\n            which the appendix is added. This object is modified in-place.\n        payload (BlueprintPayload): A data object containing the project blueprint,\n            including architectural pillars, project definitions, dependencies,\n            and financial data.\n\n    Returns:\n        None. The function modifies the `doc` object directly.\n\n    Raises:\n        AttributeError: If the `payload` object or its nested structures do not\n            conform to the expected schema (e.g., missing `pillars_analysis`).'}."""
     doc.add_page_break()
@@ -993,129 +1184,10 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
         add_spacer(doc, 10)
 
         for pilar_name, project in projects_in_group:
-            add_heading_paragraph(
-                doc, f"Iniciativa {project_idx}: {project.initiative}", level=3
+            _render_single_project_charter(
+                doc, project_idx, pilar_name, project, payload
             )
-
-            deps = [
-                d.depends_on
-                for d in payload.external_dependencies
-                if d.project == project.initiative
-            ]
-            deps_text = (
-                " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
-            )
-
-            #
-            mitigated_risk_text = "N/A"
-            if getattr(project, "mitigates_risk_id", None):
-                for p_ana in payload.pillars_analysis:
-                    for hc in p_ana.health_check_asis:
-                        if hc.node_id == project.mitigates_risk_id:
-                            mitigated_risk_text = (
-                                f"[{hc.target_state}] {hc.risk_observed}"
-                            )
-                            break
-
-            # Performs FinOps resolution by sanitizing financial data to exclude internal cost margins from client-facing documents.
-            capex = getattr(project, "capex_estimate", "N/A") or "N/A"
-            opex = getattr(project, "opex_estimate", "N/A") or "N/A"
-
-            # The OPEX value is sanitized to strip any internal margin calculations, ensuring only the client-facing cost is presented.
-            # The financial data is filtered to retain only the final selling price for this context.
-            clean_opex = opex
-            if isinstance(opex, str) and "(Margen" in opex:
-                clean_opex = opex.split("(Margen")[0].strip()
-
-            finops_text = f"Inversión de Implantación: {clean_opex}\nInversión de Licencias/Hardware: {capex}"
-
-            #
-            wbs_items = getattr(project, "wbs_breakdown", [])
-            wbs_text = "Desglose no disponible."
-            if wbs_items:
-                try:
-                    wbs_text = "\n".join(
-                        [
-                            f"• {w.task_name} (Perfil: {w.required_profile})"
-                            for w in wbs_items
-                        ]
-                    )
-                except Exception:
-                    # Handles potential inconsistencies in data types (dict vs. object) during payload parsing to ensure robust attribute access.
-                    wbs_text = "\n".join(
-                        [
-                            f"• {w.get('task_name')} (Perfil: {w.get('required_profile')})"
-                            for w in wbs_items
-                            if isinstance(w, dict)
-                        ]
-                    )
-
-            #
-            proj_desc = getattr(project, "project_description", "N/A") or "N/A"
-            smart_obj = getattr(project, "smart_objectives", "N/A") or "N/A"
-            in_scope_list = getattr(project, "in_scope", []) or []
-            out_scope_list = getattr(project, "out_of_scope", []) or []
-            gov_roles_list = getattr(project, "governance_roles", []) or []
-            crit_risks_list = getattr(project, "critical_risks", []) or []
-
-            in_scope = "\n".join([f"• {item}" for item in in_scope_list]) or "N/A"
-            out_scope = "\n".join([f"• {item}" for item in out_scope_list]) or "N/A"
-            gov_roles = "\n".join([f"• {item}" for item in gov_roles_list]) or "N/A"
-            crit_risks = "\n".join([f"• {item}" for item in crit_risks_list]) or "N/A"
-            roi_just = getattr(project, "roi_justification", "N/A") or "N/A"
-
-            rows = [
-                ("Dominio Arquitectónico", pilar_name),
-                ("Descripción Ejecutiva", proj_desc),
-                ("Objetivo SMART", smart_obj),
-                ("Riesgo AS-IS Mitigado (Trazabilidad)", mitigated_risk_text),
-                ("Alcance (In-Scope)", in_scope),
-                ("Fuera de Alcance (Out-of-Scope)", out_scope),
-                ("Dependencias Técnicas (Predecesores)", deps_text),
-                (
-                    "Entregables Técnicos Duros (DoD)",
-                    "\n".join([f"• {item}" for item in project.deliverables]),
-                ),
-                ("Work Breakdown Structure (LLD Fases)", wbs_text),
-                (
-                    "Sizing & Cronograma",
-                    f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
-                ),
-                ("Estimación FinOps & TCO (3 Años)", finops_text),
-                ("Justificación de ROI & Valor", roi_just),
-                ("Perfiles y Gobernanza (RACI)", gov_roles),
-                ("Riesgos de Ejecución y Mitigación", crit_risks),
-            ]
-
-            project_table = doc.add_table(rows=len(rows) + 1, cols=2)
-            finalize_table(project_table)
-
-            merged = (
-                project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
-            )
-            set_cell_text(
-                merged,
-                "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA",
-                bold=True,
-                font_size=11,
-            )
-            shade_cell(merged, "0072BC")
-            for run in merged.paragraphs[0].runs:
-                run.font.color.rgb = RGBColor(255, 255, 255)
-
-            for idx, (label, value) in enumerate(rows, 1):
-                set_cell_text(
-                    project_table.rows[idx].cells[0], label, bold=True, font_size=9
-                )
-                shade_cell(project_table.rows[idx].cells[0], "F2F2F2")
-                set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
-                for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
-                    run.font.color.rgb = BASE_TEXT_COLOR
-
-            autofit_table_to_contents(project_table)
-            add_spacer(doc, 15)
             project_idx += 1
-
 
 def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> Any:
     """Constructs and appends a strategic roadmap page to a document object.
@@ -1237,48 +1309,8 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
     add_spacer(doc, 15)
 
 
-def render_maturity_profile(doc, annex_data: dict) -> Any:
-    r"""{'docstring': "Renders a detailed maturity profile section into a `docx.document.Document`.\n\nConstructs and appends a formatted maturity profile to the provided document. The profile consists of an introductory text, an optional radar chart image, a table detailing pillar scores and executive summaries, and an AS-IS analysis including strengths, gaps, and operational impacts. If `annex_data` is empty, a placeholder message is added instead.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to be modified in-place.\n    annex_data (dict): Data for the maturity profile. An empty dictionary results in a placeholder message. Expected structure includes top-level keys 'pillar_score_profile' and 'sections'. The 'pillar_score_profile' dictionary should contain textual introductions and a list of 'pillars' dictionaries. The 'sections' dictionary should contain an 'asis' dictionary with lists of 'strengths', 'gaps', and 'operational_impacts'.\n\nReturns:\n    None. The function modifies the `doc` object directly.\n\nRaises:\n    ValueError: If the image file path provided under the 'radar_chart' key within `annex_data` is invalid or refers to an unsupported image format."}."""
-    add_heading_paragraph(doc, "Perfil de madurez por pilar", level=1)
-
-    if not annex_data:
-        add_body_paragraph(
-            doc,
-            "No se ha encontrado el perfil de madurez detallado para esta torre.",
-            color_rgb=BASE_TEXT_COLOR,
-        )
-        return
-
-    profile = annex_data.get("pillar_score_profile", {})
-    asis = annex_data.get("sections", {}).get("asis", {})
-
-    add_body_paragraph(doc, profile.get("profile_intro", ""), color_rgb=BASE_TEXT_COLOR)
-    note = add_body_paragraph(
-        doc,
-        profile.get("scoring_method_note", ""),
-        color_rgb=BASE_TEXT_COLOR,
-    )
-    if note:
-        for run in note.runs:
-            run.font.size = Pt(9.5)
-            run.font.color.rgb = RGBColor(127, 127, 127)
-
-    radar_path = profile.get("radar_chart", "")
-    from assessment_engine.infrastructure.localization import get_localized_string
-    doc_lang = str(annex_data.get("document_meta", {}).get("language", "es")).lower()
-
-    radar_heading = get_localized_string("radar_chart_heading", locale=doc_lang, default="Gráfico radial")
-    compact_heading = get_localized_string("compact_pillar_detail_heading", locale=doc_lang, default="Detalle compacto por pilar")
-
-    if radar_path and Path(radar_path).exists():
-        add_heading_paragraph(doc, radar_heading, level=2)
-        image_paragraph = doc.add_paragraph()
-        image_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        image_paragraph.add_run().add_picture(radar_path, width=Inches(4.35))
-        add_spacer(doc, 10)
-
-    pillars = profile.get("pillars", [])
-    add_heading_paragraph(doc, compact_heading, level=2)
+def _render_maturity_pillars_table(doc, pillars: list[dict], doc_lang: str) -> None:
+    """Render the compact pillar details table in the maturity profile."""
     if pillars:
         table = doc.add_table(rows=1, cols=4)
         finalize_table(table)
@@ -1317,6 +1349,10 @@ def render_maturity_profile(doc, annex_data: dict) -> Any:
         autofit_table_to_contents(table)
         add_spacer(doc, 10)
 
+
+
+def _render_maturity_asis_table(doc, asis: dict) -> None:
+    """Render the AS-IS strengths, gaps, and operational impacts in maturity profile."""
     add_heading_paragraph(doc, "AS-IS resumido", level=2)
     add_body_paragraph(doc, asis.get("narrative", ""), color_rgb=BASE_TEXT_COLOR)
 
@@ -1368,6 +1404,54 @@ def render_maturity_profile(doc, annex_data: dict) -> Any:
             p.paragraph_format.first_line_indent = Pt(-10)
             for run in p.runs:
                 run.font.color.rgb = BASE_TEXT_COLOR
+
+
+
+
+def render_maturity_profile(doc, annex_data: dict) -> Any:
+    r"""{'docstring': "Renders a detailed maturity profile section into a `docx.document.Document`.\n\nConstructs and appends a formatted maturity profile to the provided document. The profile consists of an introductory text, an optional radar chart image, a table detailing pillar scores and executive summaries, and an AS-IS analysis including strengths, gaps, and operational impacts. If `annex_data` is empty, a placeholder message is added instead.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to be modified in-place.\n    annex_data (dict): Data for the maturity profile. An empty dictionary results in a placeholder message. Expected structure includes top-level keys 'pillar_score_profile' and 'sections'. The 'pillar_score_profile' dictionary should contain textual introductions and a list of 'pillars' dictionaries. The 'sections' dictionary should contain an 'asis' dictionary with lists of 'strengths', 'gaps', and 'operational_impacts'.\n\nReturns:\n    None. The function modifies the `doc` object directly.\n\nRaises:\n    ValueError: If the image file path provided under the 'radar_chart' key within `annex_data` is invalid or refers to an unsupported image format."}."""
+    add_heading_paragraph(doc, "Perfil de madurez por pilar", level=1)
+
+    if not annex_data:
+        add_body_paragraph(
+            doc,
+            "No se ha encontrado el perfil de madurez detallado para esta torre.",
+            color_rgb=BASE_TEXT_COLOR,
+        )
+        return
+
+    profile = annex_data.get("pillar_score_profile", {})
+    asis = annex_data.get("sections", {}).get("asis", {})
+
+    add_body_paragraph(doc, profile.get("profile_intro", ""), color_rgb=BASE_TEXT_COLOR)
+    note = add_body_paragraph(
+        doc,
+        profile.get("scoring_method_note", ""),
+        color_rgb=BASE_TEXT_COLOR,
+    )
+    if note:
+        for run in note.runs:
+            run.font.size = Pt(9.5)
+            run.font.color.rgb = RGBColor(127, 127, 127)
+
+    radar_path = profile.get("radar_chart", "")
+    from assessment_engine.infrastructure.localization import get_localized_string
+    doc_lang = str(annex_data.get("document_meta", {}).get("language", "es")).lower()
+
+    radar_heading = get_localized_string("radar_chart_heading", locale=doc_lang, default="Gráfico radial")
+    compact_heading = get_localized_string("compact_pillar_detail_heading", locale=doc_lang, default="Detalle compacto por pilar")
+
+    if radar_path and Path(radar_path).exists():
+        add_heading_paragraph(doc, radar_heading, level=2)
+        image_paragraph = doc.add_paragraph()
+        image_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        image_paragraph.add_run().add_picture(radar_path, width=Inches(4.35))
+        add_spacer(doc, 10)
+
+    pillars = profile.get("pillars", [])
+    add_heading_paragraph(doc, compact_heading, level=2)
+    _render_maturity_pillars_table(doc, pillars, doc_lang)
+    _render_maturity_asis_table(doc, asis)
 
 
 def render_conclusion(doc, annex_data: dict) -> Any:
