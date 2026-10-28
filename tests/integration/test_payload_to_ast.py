@@ -150,14 +150,30 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
         "FAIR CSV risk matrix was not compiled into TableNode in AST."
     )
 
-    # Invariante de aislamiento: is_critical por defecto es False (Aniquilador de mutante COR línea 195)
+    # Invariante de calibración sectorial: cuando is_critical=True, inyecta la nota regulatoria
     has_critical_note = any(
         isinstance(node, ParagraphNode) and "Nota de Calibración de Sector" in node.text
         for node in ast.nodes
     )
-    assert not has_critical_note, (
-        "Compilación por defecto no debe inyectar la nota de sector crítico cuando is_critical es False."
+    assert has_critical_note, (
+        "Compilación con is_critical=True debe inyectar la nota de sector crítico."
     )
+
+    # Invariante de aislamiento: cuando is_critical=False o ausente (None), no debe inyectar la nota (Aniquilador COR)
+    mock_default_styling = dict(mock_brand_data)
+    mock_default_styling["styling"] = {}  # styling sin la clave is_critical
+    with patch(
+        "assessment_engine.infrastructure.config_loader.load_brand_profile",
+        return_value=mock_default_styling,
+    ):
+        ast_default = PayloadToASTBridge().convert(str(blueprint_path), str(annex_path))
+        has_crit_default = any(
+            isinstance(node, ParagraphNode) and "Nota de Calibración de Sector" in node.text
+            for node in ast_default.nodes
+        )
+        assert not has_crit_default, (
+            "Cuando is_critical no está especificado (None), el valor por defecto debe ser False."
+        )
 
 
 def test_systemic_risk_bullets_mutation_gate() -> None:

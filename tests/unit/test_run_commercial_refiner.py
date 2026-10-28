@@ -65,14 +65,14 @@ async def test_build_proactive_proposal_mock():
         assert "scope_and_how" in proposal
 
 
-def test_extract_towers_catalog_lcr_killer(tmp_path: Path):
-    """Verify that extract_towers_catalog extracts initiatives with fallback objective and name fields."""
+def test_aggregate_blueprint_catalogs_lcr_killer(tmp_path: Path):
+    """Verify that aggregate_blueprint_catalogs extracts initiatives with fallback objective and name fields."""
     import json
-    from assessment_engine.application.run_commercial_refiner import extract_towers_catalog
+    from assessment_engine.application.run_commercial_refiner import aggregate_blueprint_catalogs
 
-    t1_dir = tmp_path / "T1"
-    t1_dir.mkdir(parents=True)
+    bp_path = tmp_path / "blueprint_t1_payload.json"
     bp_data = {
+        "document_meta": {"tower_code": "T1", "tower_name": "Torre 1"},
         "pillars_analysis": [
             {
                 "projects_todo": [
@@ -80,11 +80,11 @@ def test_extract_towers_catalog_lcr_killer(tmp_path: Path):
                     {"initiative": "Proj2", "objective": "Objetivo Directo Solo"},
                 ]
             }
-        ]
+        ],
     }
-    (t1_dir / "blueprint_t1_payload.json").write_text(json.dumps(bp_data), encoding="utf-8")
+    bp_path.write_text(json.dumps(bp_data), encoding="utf-8")
 
-    catalog = extract_towers_catalog(tmp_path)
+    catalog = aggregate_blueprint_catalogs([bp_path])
     inits = catalog["T1"]["initiatives"]
     assert inits[0]["name"] == "Proj1"
     assert inits[0]["objective"] == "Objetivo Tecnológico Solo"
