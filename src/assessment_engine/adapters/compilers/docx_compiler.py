@@ -30,6 +30,25 @@ from assessment_engine.infrastructure.docx_render_utils import (
 from assessment_engine.ports.document_compiler import DocumentCompiler
 
 
+def set_run_font_comprehensive(
+    run: Any,
+    font_name: str = "Arial",
+    east_asia_fallback: str = "Meiryo",
+    cs_fallback: str = "Arial",
+) -> None:
+    """Sets comprehensive multi-script fonts (ASCII, High-ANSI, Complex Script, East Asia) per ISO/IEC 29500 to prevent tofu boxes."""
+    run.font.name = font_name
+    rPr = run._r.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = OxmlElement("w:rFonts")
+        rPr.insert(0, rFonts)
+    rFonts.set(qn("w:ascii"), font_name)
+    rFonts.set(qn("w:hAnsi"), font_name)
+    rFonts.set(qn("w:cs"), cs_fallback)
+    rFonts.set(qn("w:eastAsia"), east_asia_fallback)
+
+
 def safe_shade_cell(cell: Any, fill: str) -> None:
     """Apply a solid color shading to a table cell, ensuring XML schema validity.
 
@@ -107,8 +126,8 @@ def safe_autofit_table_to_contents(table: Any) -> None:
             tblPr.remove(child)
 
     tblW = OxmlElement("w:tblW")
-    tblW.set(qn("w:type"), "auto")
-    tblW.set(qn("w:w"), "0")
+    tblW.set(qn("w:type"), "pct")
+    tblW.set(qn("w:w"), "5000")
     tblPr.append(tblW)
 
     tblLayout = OxmlElement("w:tblLayout")
@@ -219,7 +238,7 @@ def add_markdown_runs(
             run.bold = default_bold
             run.italic = default_italic
 
-        run.font.name = font_name
+        set_run_font_comprehensive(run, font_name=font_name)
         run.font.size = Pt(font_size)
         if color_rgb:
             run.font.color.rgb = RGBColor(*color_rgb)
@@ -313,7 +332,7 @@ def safe_set_cell_text(
                 #
                 run_lbl = p.add_run(f"{bullet_prefix}{label.strip()}: ")
                 run_lbl.bold = True
-                run_lbl.font.name = "Arial"
+                set_run_font_comprehensive(run_lbl, font_name="Arial")
                 run_lbl.font.size = Pt(font_size)
                 if color_rgb:
                     run_lbl.font.color.rgb = RGBColor(*color_rgb)
@@ -347,7 +366,7 @@ def safe_set_cell_text(
             label, desc = clean_txt.split(":", 1)
             run_lbl = p.add_run(f"{label.strip()}: ")
             run_lbl.bold = True
-            run_lbl.font.name = "Arial"
+            set_run_font_comprehensive(run_lbl, font_name="Arial")
             run_lbl.font.size = Pt(font_size)
             if color_rgb:
                 run_lbl.font.color.rgb = RGBColor(*color_rgb)
@@ -512,6 +531,11 @@ class DocxCompiler(DocumentCompiler):
         p = add_heading_paragraph(doc, node.text, level=node.level)
 
         if p:
+            # C-Level Typography Hygiene: Prevent orphaned headings at page bottom
+            pPr = p._p.get_or_add_pPr()
+            pPr.append(OxmlElement("w:keepNext"))
+            pPr.append(OxmlElement("w:keepLines"))
+
             try:
                 if is_appendix_main:
                     p.style = "Appendix Heading 1"
@@ -558,6 +582,12 @@ class DocxCompiler(DocumentCompiler):
 
         #
         for r_idx, row_node in enumerate(node.rows):
+            # C-Level Presentation Hygiene: Prevent rows from splitting across page breaks and repeat headers
+            trPr = table.rows[r_idx]._tr.get_or_add_trPr()
+            trPr.append(OxmlElement("w:cantSplit"))
+            if r_idx == 0:
+                trPr.append(OxmlElement("w:tblHeader"))
+
             for c_idx in range(num_cols):
                 cell = table.rows[r_idx].cells[c_idx]
 

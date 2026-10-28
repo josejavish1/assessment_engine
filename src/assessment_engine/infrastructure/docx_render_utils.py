@@ -153,7 +153,45 @@ def set_paragraph_numbering(paragraph: Any, num_id: Any, ilvl: Any = 0) -> Any:
     num_id_el = OxmlElement("w:numId")
     num_id_el.set(qn("w:val"), str(num_id))
     numPr.append(num_id_el)
-    pPr.append(numPr)
+
+    # OpenXML CT_PPr Schema: w:numPr must be inserted before spacing, ind, jc, rPr, etc.
+    after_tags = {
+        "pBdr",
+        "shd",
+        "tabs",
+        "suppressAutoHyphens",
+        "kinsoku",
+        "wordWrap",
+        "overflowPunct",
+        "topLinePunct",
+        "autoSpaceDE",
+        "autoSpaceDN",
+        "bidi",
+        "adjustRightInd",
+        "snapToGrid",
+        "spacing",
+        "ind",
+        "contextualSpacing",
+        "mirrorIndents",
+        "suppressOverlap",
+        "jc",
+        "textDirection",
+        "textAlignment",
+        "textboxTightWrap",
+        "outlineLvl",
+        "divId",
+        "cnfStyle",
+        "rPr",
+        "sectPr",
+    }
+    insert_idx = len(pPr)
+    for idx, child in enumerate(pPr):
+        tag_name = child.tag.split("}")[-1]
+        if tag_name in after_tags:
+            insert_idx = idx
+            break
+
+    pPr.insert(insert_idx, numPr)
     return True
 
 
