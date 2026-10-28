@@ -115,24 +115,33 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     assert len(ast.nodes) > 0, "The DocumentAST should contain generated layout nodes."
 
     # Verify cover page elements are present in the AST
-    first_node_text = ast.nodes[1].text  # ParagraphNode for corporate name (NTT DATA)
-    assert "NTT DATA" in first_node_text
+    title_node_text = ast.nodes[1].text
+    assert "Informe de Situación Actual" in title_node_text
 
     # Verify technical title contains our tower name
-    title_heading = ast.nodes[3]  # HeadingNode for tech annex
+    title_heading = ast.nodes[2]  # HeadingNode for tech annex
     assert "Seguridad de Red" in title_heading.text
 
     # Verify client is correctly embedded
-    client_paragraph = ast.nodes[5]
+    client_paragraph = ast.nodes[4]
     assert "GENERIC CORPORATE CLIENT" in client_paragraph.text
 
-    # Verify that the Markdown platform overview was compiled and merged into the AST
-    has_platform_desc = any(
-        isinstance(node, ParagraphNode) and "descripción detallada" in node.text
+    # Verify that the new direct Chapter 3 introduction is present
+    has_chapter_intro = any(
+        isinstance(node, ParagraphNode) and "hallazgos operativos" in node.text
         for node in ast.nodes
     )
-    assert has_platform_desc, (
-        "Platform description Markdown module was not compiled into AST."
+    assert has_chapter_intro, (
+        "New strategic Chapter 3 introduction was not compiled into AST."
+    )
+
+    # Verify that the transversal Markdown module was compiled and merged into the AST
+    has_transversal_desc = any(
+        isinstance(node, ParagraphNode) and "Análisis transversal" in node.text
+        for node in ast.nodes
+    )
+    assert has_transversal_desc, (
+        "Transversal Markdown module was not compiled into AST."
     )
 
     # Verify that the CSV Risk Matrix was parsed into a native TableNode

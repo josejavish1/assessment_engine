@@ -85,7 +85,7 @@ def build_master_ast(working_dir: str, output_path: str):
         "metadata": {
             "client_name": client_name,
             "document_type": "TO-BE_Master_Report",
-            "version": "1.2.0",
+            "version": "1.0.0",
             "compiled_at_utc": Path(working_dir).name,
         },
         "global_summary": global_summary,

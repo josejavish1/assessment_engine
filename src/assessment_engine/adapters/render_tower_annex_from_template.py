@@ -802,6 +802,28 @@ def main(argv: list[str] | None = None) -> None:
     render_multi_paragraph_block(
         doc, "{{EXEC_SUMMARY_BODY}}", exec_summary.get("summary_body", "")
     )
+
+    coi_data = exec_summary.get("financial_coi") or {}
+    replace_simple_placeholder(
+        doc,
+        "{{COI_ANNUAL}}",
+        coi_data.get("annual_loss_exposure", ""),
+        font_size=10.5,
+    )
+    replace_simple_placeholder(
+        doc,
+        "{{COI_3Y_ORD}}",
+        coi_data.get("coi_3y_ordinary", ""),
+        font_size=10.5,
+    )
+    replace_simple_placeholder(
+        doc,
+        "{{COI_3Y_EXT}}",
+        coi_data.get("coi_3y_extreme", ""),
+        font_size=10.5,
+        bold=True,
+    )
+
     replace_simple_placeholder(
         doc,
         "{{MSG_STRENGTH_VALUE}}",
@@ -828,6 +850,21 @@ def main(argv: list[str] | None = None) -> None:
         doc, "{{SCORING_METHOD_NOTE}}", profile.get("scoring_method_note", "")
     )
     render_radar_chart(doc, "{{RADAR_CHART_BLOCK}}", profile.get("radar_chart", ""))
+
+    # Render the Loss Exceedance Curve (LEC) Chart (Gap 2)
+    lec_chart_path = Path(f"working/{client_id}/{tower_id}/loss_exceedance_curve.png")
+    if not lec_chart_path.exists():
+        client_base = client_id.split('_')[0]
+        lec_chart_path = Path(f"working/{client_id}/{client_base}/loss_exceedance_curve.png")
+        
+    if lec_chart_path.exists():
+        render_radar_chart(doc, "{{LOSS_EXCEEDANCE_CHART}}", str(lec_chart_path))
+    else:
+        # If the chart image is not physically present, remove the placeholder to avoid draft leakage
+        paragraph = find_first_paragraph(doc, "{{LOSS_EXCEEDANCE_CHART}}")
+        if paragraph:
+            remove_paragraph(paragraph)
+
     render_pillar_score_table(doc, "{{PILLAR_SCORE_TABLE}}", profile.get("pillars", []))
 
     replace_simple_placeholder(

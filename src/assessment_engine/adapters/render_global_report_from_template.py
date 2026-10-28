@@ -95,6 +95,24 @@ def sanitize_client_name(text, client_name) -> Any:
         rf"\b{re.escape(clean_name)}\b", "la organización", text, flags=re.IGNORECASE
     )
 
+    # Localization: Replace non-recommended Spanish terms with recommended Spain terms
+    text = text.replace("sistémicas", "estructurales")
+    text = text.replace("sistémicos", "estructurales")
+    text = text.replace("Sistémicas", "Estructurales")
+    text = text.replace("Sistémicos", "Estructurales")
+    text = text.replace("sistémica", "estructural")
+    text = text.replace("sistémico", "estructural")
+    text = text.replace("Sistémica", "Estructural")
+    text = text.replace("Sistémico", "Estructural")
+
+    # Spelling corrections for 'múltiples'
+    text = text.replace("mùltiples", "múltiples")
+    text = text.replace("Mùltiples", "Múltiples")
+    text = text.replace("móltiples", "múltiples")
+    text = text.replace("Móltiples", "Múltiples")
+    text = text.replace("multiples", "múltiples")
+    text = text.replace("Multiples", "Múltiples")
+
     return text
 
 

@@ -232,7 +232,7 @@ def clear_document_body(doc) -> None:
 
 def resolve_client_dir(payload_path: Path, payload_data: dict) -> Path:
     """Resolve the client directory as the grandparent directory of the payload path."""
-    # The physical directory structure is the source of truth for determining the tower identifier, as the payload_path contains the canonical location (e.g., working/redeia_v3/T2/payload.json).
+    # The physical directory structure is the source of truth for determining the tower identifier, as the payload_path contains the canonical location (e.g., working/generic_client/T2/payload.json).
     return payload_path.parents[1]
 
 
@@ -679,7 +679,7 @@ def render_cross_capabilities_analysis(doc, payload: BlueprintPayload) -> Any:
     add_heading_paragraph(doc, "Deuda Técnica Crítica", level=2)
     add_body_paragraph(doc, cca.critical_technical_debt, color_rgb=BASE_TEXT_COLOR)
 
-    add_heading_paragraph(doc, "Patrones Comunes de Deficiencia", level=2)
+    add_heading_paragraph(doc, "Patrones Transversales de Ineficiencia y Deuda Estructural", level=2)
     for item in cca.common_deficiency_patterns:
         add_bullet_p(doc, item)
 
@@ -727,7 +727,7 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
         add_spacer(doc, 10)
 
 
-def render_fair_risk_heatmap(doc, payload: BlueprintPayload) -> Any:
+def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: str = "€") -> Any:
     r"""{'docstring': 'Renders a FAIR quantitative risk heatmap and details table into a document.\n\n    This function processes Factor Analysis of Information Risk (FAIR) data from\n    the provided payload to generate two primary components within the given\n    Word document: a risk matrix and a detailed risk register.\n\n    First, a 5x5 heatmap is constructed where rows represent Threat Event\n    Frequency (TEF) and columns represent Loss Magnitude (LM). Each cell is\n    color-coded based on the calculated risk score (TEF * LM), mapping to a\n    severity scale from low (green) to critical (dark red). Cells are\n    populated with unique identifiers (e.g., "R01", "R02") for each risk that\n    falls within that specific TEF/LM coordinate.\n\n    Second, a detailed table is generated that lists each identified risk. This\n    table includes the risk\'s identifier, its domain, a description of the\n    finding, its coordinates on the heatmap, and its calculated Annualized Loss\n    Expectancy (ALE). The risks in this table are sorted in descending order of\n    their ALE to prioritize the most significant financial exposures.\n\n    If the payload contains no findings with valid FAIR data (where both TEF > 0\n    and LM > 0), the function appends a notification message to the document\n    instead of the heatmap and table.\n\n    Args:\n        doc (docx.document.Document): The python-docx Document object to which\n            the generated content will be appended.\n        payload (BlueprintPayload): A data object containing analysis results. It is\n            expected to have a `pillars_analysis` attribute, which is an\n            iterable of objects each containing a `health_check_asis` list of\n            findings. Each finding may have `threat_event_frequency`,\n            `loss_magnitude`, and `fair_ale_score` attributes.\n\n    Returns:\n        None: The function modifies the input `doc` object in place.'}."""
     add_heading_paragraph(doc, "Matriz de Riesgo Cuantitativa (FAIR)", level=1)
     add_body_paragraph(
@@ -894,7 +894,7 @@ def render_fair_risk_heatmap(doc, payload: BlueprintPayload) -> Any:
         ale_val = detail["ale"]
         set_cell_text(
             row.cells[4],
-            f"{ale_val:,.2f} €".replace(",", "X").replace(".", ",").replace("X", "."),
+            f"{ale_val:,.2f} {currency_symbol}".replace(",", "X").replace(".", ",").replace("X", "."),
             font_size=8,
             align=WD_ALIGN_PARAGRAPH.RIGHT,
         )
@@ -1447,7 +1447,18 @@ def render_blueprint(
     render_cross_capabilities_analysis(doc, payload)
 
     render_consolidated_asis(doc, payload)
-    render_fair_risk_heatmap(doc, payload)
+    
+    # Load currency symbol dynamically from custom_risk_profile.json if available (FAIR-MAM)
+    currency_symbol = "€"
+    custom_profile_path = client_dir / payload.document_meta.tower_code / "custom_risk_profile.json"
+    if custom_profile_path.exists():
+        try:
+            with open(custom_profile_path, "r", encoding="utf-8") as cpf:
+                currency_symbol = json.load(cpf).get("currency_symbol", "€")
+        except Exception:
+            pass
+
+    render_fair_risk_heatmap(doc, payload, currency_symbol=currency_symbol)
     render_consolidated_tobe(doc, payload)
     render_roadmap_page(doc, payload, output_path)
     render_deep_project_charters(doc, payload)

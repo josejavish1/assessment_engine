@@ -424,6 +424,17 @@ class DocxCompiler(DocumentCompiler):
         for node in ast.nodes:
             self._compile_node(doc, node)
 
+        # Force Word to update fields (including TOC) on open
+        try:
+            from docx.oxml import OxmlElement
+            from docx.oxml.ns import qn
+            settings = doc.settings.element
+            updateFields = OxmlElement('w:updateFields')
+            updateFields.set(qn('w:val'), 'true')
+            settings.append(updateFields)
+        except Exception as e:
+            print(f"⚠️ Failed to force updateFields on open: {e}")
+
         #
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -450,6 +461,17 @@ class DocxCompiler(DocumentCompiler):
             pass
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
+        if "índice de contenidos" in node.text.lower() or "[índice de contenidos" in node.text.lower():
+            # Inyectar un campo TOC nativo de Word (simple field xml)
+            from docx.oxml import OxmlElement
+            from docx.oxml.ns import qn
+            p = doc.add_paragraph()
+            p.paragraph_format.space_after = Pt(20)
+            fldSimple = OxmlElement('w:fldSimple')
+            fldSimple.set(qn('w:instr'), 'TOC \\o "1-2" \\h \\z \\u')
+            p._p.append(fldSimple)
+            return
+
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(node.space_after)
 
@@ -481,12 +503,18 @@ class DocxCompiler(DocumentCompiler):
         )
 
     def _compile_heading(self, doc: Document, node: HeadingNode) -> None:
-        is_appendix = node.text.startswith("Apéndice")
+        is_appendix_main = node.text.startswith("Apéndice") or node.text.startswith("Appendix")
+        import re
+        is_appendix_sub = bool(re.match(r"^[A-Z]\.\d+\s", node.text))
+        
         p = add_heading_paragraph(doc, node.text, level=node.level)
 
-        if is_appendix and p:
+        if p:
             try:
-                p.style = "Appendix Heading 1"
+                if is_appendix_main:
+                    p.style = "Appendix Heading 1"
+                elif is_appendix_sub:
+                    p.style = "Appendix Heading 2"
             except Exception:
                 pass
 

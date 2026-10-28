@@ -20,7 +20,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     finalize_table,
     shade_cell,
 )
-from assessment_engine.infrastructure.text_utils import clean_text_for_word
+from assessment_engine.infrastructure.text_utils import clean_text_for_word, format_date_spanish
 
 # Define corporate styling parameters for document generation.
 COLOR_BLUE = "0072BC"
@@ -131,14 +131,14 @@ def add_spacer(doc, points=12):
 
 
 def add_toc(doc):
-    r"""{'docstring': 'Injects an Office Open XML (OOXML) field code for a Table of Contents.\n\nThis function directly manipulates the underlying OOXML by creating and\nappending a series of `w:fldChar` elements and a `w:instrText` element\nto a new paragraph at the end of the document. The instruction text,\n`TOC \\o "1-3" \\h \\z \\u`, directs a client application (e.g., Microsoft Word)\nto generate a hyperlinked Table of Contents (TOC) from paragraphs formatted\nwith heading styles 1 through 3.\n\nThe TOC itself is not rendered by this function; it is a field code that is\nevaluated and populated by the word processing application when the document\nis opened and its fields are updated.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` document object to which\n        the TOC field code will be added. The object is modified in-place.\n\nReturns:\n    None.'}."""
+    r"""{'docstring': 'Injects an Office Open XML (OOXML) field code for a Table of Contents.\n\nThis function directly manipulates the underlying OOXML by creating and\nappending a series of `w:fldChar` elements and a `w:instrText` element\nto a new paragraph at the end of the document. The instruction text,\n`TOC \\o "1-2" \\h \\z \\u`, directs a client application (e.g., Microsoft Word)\nto generate a hyperlinked Table of Contents (TOC) from paragraphs formatted\nwith heading styles 1 through 2.\n\nThe TOC itself is not rendered by this function; it is a field code that is\nevaluated and populated by the word processing application when the document\nis opened and its fields are updated.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` document object to which\n        the TOC field code will be added. The object is modified in-place.\n\nReturns:\n    None.'}."""
     p = doc.add_paragraph()
     run = p.add_run()
     fldChar = OxmlElement("w:fldChar")
     fldChar.set(qn("w:fldCharType"), "begin")
     instrText = OxmlElement("w:instrText")
     instrText.set(qn("xml:space"), "preserve")
-    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
+    instrText.text = 'TOC \\o "1-2" \\h \\z \\u'
     fldChar2 = OxmlElement("w:fldChar")
     fldChar2.set(qn("w:fldCharType"), "separate")
     fldChar3 = OxmlElement("w:fldChar")
@@ -430,7 +430,7 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     b_color = int(p_color_hex[4:6], 16)
     p_color_rgb = (r_color, g_color, b_color)
 
-    for _ in range(5):
+    for _ in range(8):
         doc.add_paragraph()
 
     p_title = doc.add_paragraph()
@@ -438,7 +438,7 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     run_title = p_title.add_run(
         "Informe Consolidado de Situación Actual\n(AS-IS) de la Plataforma"
     )
-    run_title.font.size = Pt(28)
+    run_title.font.size = Pt(36)
     run_title.font.bold = True
     run_title.font.color.rgb = RGBColor(*p_color_rgb)
 
@@ -455,9 +455,15 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     run_client.font.size = Pt(12)
     run_client.font.bold = True
 
+    version_global = doc_meta_global.get("version", "1.0")
+    date_global = format_date_spanish(doc_meta_global.get("date"))
+
+    for _ in range(11):
+        doc.add_paragraph()
+
     p_meta = doc.add_paragraph()
     run_meta = p_meta.add_run(
-        "NTT DATA Corporation | Confidencial\nVersión 1.2 | Junio 2026"
+        f"NTT DATA Corporation | Confidencial\nVersión {version_global} | {date_global}"
     )
     run_meta.font.size = Pt(10)
     run_meta.font.italic = True
@@ -549,7 +555,7 @@ def render_consolidated_asis(working_dir: str, output_path: str):
         f"El estado actual de la plataforma tecnológica de {client_name}, aunque operativo en sus pilares tradicionales, se encuentra en un punto crítico de obsolescencia operativa y fragmentación estructural. La coexistencia de tecnologías on-premise ({on_prem_pct}) y cloud ({cloud_pct}) operadas en silos independientes limita severamente la agilidad de entrega y la capacidad de resiliencia ante contingencias críticas.",
     )
 
-    # Inject strategic content derived from the Leadership Agenda and Redeia Investment Plan into the document.
+    # Inject strategic content derived from the Leadership Agenda and Client Investment Plan into the document.
     if ceo_agenda_raw and ceo_agenda_raw != "No disponible.":
         add_heading(
             doc,

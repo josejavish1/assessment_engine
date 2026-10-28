@@ -233,14 +233,15 @@ def add_heading(doc, text, level, primary_color_rgb=(0, 114, 188)):
 
 
 def add_toc(doc):
-    r"""{'docstring': 'Inserts an OOXML field code for a Table of Contents into a document.\n\nThis function directly manipulates the underlying Office Open XML (OOXML)\nby injecting the elements that constitute a Word field code. The specific\ninstruction text inserted is `TOC \\o "1-3" \\h \\z \\u`, which directs a\nword processor to generate a Table of Contents from headings of levels 1\nthrough 3, with entries formatted as hyperlinks.\n\nNote:\n    The TOC is not populated by this function. A word processing\n    application, such as Microsoft Word, must open the document and update\n    its fields to render the final Table of Contents.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to which\n        the TOC field will be added.\n\nReturns:\n    None: The function modifies the `doc` object in-place.\n\nRaises:\n    AttributeError: If `doc` is not a valid `python-docx` Document object\n        and lacks the required methods.'}."""
+    r"""{'docstring': 'Inserts an OOXML field code for a Table of Contents into a document.\n\nThis function directly manipulates the underlying Office Open XML (OOXML)\nby injecting the elements that constitute a Word field code. The specific\ninstruction text inserted is `TOC \\o "1-2" \\h \\z \\u`, which directs a\nword processor to generate a Table of Contents from headings of levels 1\nthrough 2, with entries formatted as hyperlinks.\n\nNote:\n    The TOC is not populated by this function. A word processing\n    application, such as Microsoft Word, must open the document and update\n    its fields to render the final Table of Contents.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to which\n        the TOC field will be added.\n\nReturns:
+    None: The function modifies the `doc` object in-place.\n\nRaises:\n    AttributeError: If `doc` is not a valid `python-docx` Document object\n        and lacks the required methods.'}."""
     p = doc.add_paragraph()
     run = p.add_run()
     fldChar = OxmlElement("w:fldChar")
     fldChar.set(qn("w:fldCharType"), "begin")
     instrText = OxmlElement("w:instrText")
     instrText.set(qn("xml:space"), "preserve")
-    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
+    instrText.text = 'TOC \\o "1-2" \\h \\z \\u'
     fldChar2 = OxmlElement("w:fldChar")
     fldChar2.set(qn("w:fldCharType"), "separate")
     fldChar3 = OxmlElement("w:fldChar")
@@ -443,7 +444,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     b_color = int(p_color_hex[4:6], 16)
     p_color_rgb = (r_color, g_color, b_color)
 
-    for _ in range(5):
+    for _ in range(8):
         doc.add_paragraph()
 
     p_title = doc.add_paragraph()
@@ -451,7 +452,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     run_title = p_title.add_run(
         vocab.get("conclusions_title", "Informe Consolidado de Situación Futura")
     )
-    run_title.font.size = Pt(28)
+    run_title.font.size = Pt(36)
     run_title.font.bold = True
     run_title.font.color.rgb = RGBColor(*p_color_rgb)
 
@@ -549,6 +550,9 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
         else:
             doc_date = f"{months_en[now.month - 1]} {now.year}"
 
+    for _ in range(11):
+        doc.add_paragraph()
+
     p_meta = doc.add_paragraph()
     run_meta = p_meta.add_run(
         f"{company} | {classification}\n{vocab.get('version_label', 'Versión')} {doc_version} | {doc_date}"
@@ -599,7 +603,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     )
     add_body_paragraph(doc, global_sum.get("transformation_strategy", "No definida."))
 
-    # Integrates content from the Redeia Leadership Agenda and Investment Plan for contextual enrichment.
+    # Integrates content from the Client Leadership Agenda and Investment Plan for contextual enrichment.
     if ceo_agenda_raw and ceo_agenda_raw != "No disponible.":
         add_heading(
             doc,

@@ -15,7 +15,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
-from assessment_engine.infrastructure.text_utils import clean_text_for_word
+from assessment_engine.infrastructure.text_utils import clean_text_for_word, format_date_spanish
 
 #
 COLOR_BLUE = "0072BC"
@@ -213,7 +213,7 @@ def add_toc(doc):
     """Adds a Table of Contents (TOC) field to a python-docx Document.
 
     This function programmatically inserts the necessary XML field codes to
-    generate a table of contents that includes heading levels 1 through 3.
+    generate a table of contents that includes heading levels 1 through 2.
     The TOC itself must be updated by the user within Microsoft Word or a
     compatible application to be populated.
 
@@ -227,7 +227,7 @@ def add_toc(doc):
     fldChar.set(qn("w:fldCharType"), "begin")
     instrText = OxmlElement("w:instrText")
     instrText.set(qn("xml:space"), "preserve")
-    instrText.text = 'TOC \\o "1-3" \\h \\z \\u'
+    instrText.text = 'TOC \\o "1-2" \\h \\z \\u'
     fldChar2 = OxmlElement("w:fldChar")
     fldChar2.set(qn("w:fldCharType"), "separate")
     fldChar3 = OxmlElement("w:fldChar")
@@ -369,7 +369,7 @@ def render_asis_annex(payload_path: str, output_path: str):
     #
     #
     #
-    for _ in range(5):
+    for _ in range(8):
         doc.add_paragraph()
 
     p_title = doc.add_paragraph()
@@ -377,7 +377,7 @@ def render_asis_annex(payload_path: str, output_path: str):
     run_title = p_title.add_run(
         f"Informe de Situación Actual (AS-IS)\nAnexo Técnico: {tower_name}"
     )
-    run_title.font.size = Pt(26)
+    run_title.font.size = Pt(36)
     run_title.font.bold = True
     run_title.font.color.rgb = RGBColor(*p_color_rgb)
 
@@ -387,7 +387,7 @@ def render_asis_annex(payload_path: str, output_path: str):
         "project", "Consultoría de Diagnóstico de Infraestructura Crítica y Resiliencia"
     )
     run_sub = p_sub.add_run(project_name)
-    run_sub.font.size = Pt(13)
+    run_sub.font.size = Pt(14)
     run_sub.font.color.rgb = RGBColor(128, 128, 128)
 
     p_client = doc.add_paragraph()
@@ -395,8 +395,11 @@ def render_asis_annex(payload_path: str, output_path: str):
     run_client.font.size = Pt(12)
     run_client.font.bold = True
 
-    version = tower_meta.get("version", "1.2")
-    date_str = tower_meta.get("date", "Junio 2026")
+    version = tower_meta.get("version", "1.0")
+    date_str = format_date_spanish(tower_meta.get("date"))
+
+    for _ in range(11):
+        doc.add_paragraph()
 
     p_meta = doc.add_paragraph()
     run_meta = p_meta.add_run(
@@ -869,10 +872,10 @@ def render_asis_annex(payload_path: str, output_path: str):
     mat_table.style = "Table Grid"
 
     headers_mat = [
-        "Pilar / Capacidad Evaluada",
+        "Pilar / Capacidad Tecnológica Evaluada",
         "Score AS-IS",
         "Meta TO-BE",
-        "Análisis de Brecha y Justificación de Nota",
+        "Análisis de Brechas y Calibración del Diagnóstico",
     ]
     for i, h_txt in enumerate(headers_mat):
         set_cell_text_custom(
