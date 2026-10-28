@@ -330,6 +330,21 @@ def run_rage_command(client: str, industry: str, tower_filter: Optional[str] = N
         return 1
 
 
+def run_audit_command(target: Optional[str] = None, output_dir: str = "docs/audits") -> int:
+    """Execute the multi-dimensional Soverik Quality Engine audit on the target project."""
+    from assessment_engine.infrastructure.auditor.scanner import SoverikQualityEngine
+
+    target_path = Path(target).resolve() if target else Path.cwd().resolve()
+    engine = SoverikQualityEngine(output_subdir=output_dir)
+    print(f"🚀 Iniciando auditoría multidimensional en: {target_path}")
+    report = engine.audit_project(target_path)
+    print(f"\n{report.summary}")
+    print(f"Puntuación Global: {report.global_score}% | Grado: {report.global_grade}")
+    print(f"Reporte JSON: {target_path / output_dir / 'AUDIT_REPORT.json'}")
+    print(f"Certificado HTML: {target_path / output_dir / 'AUDIT_CERTIFICATE.html'}")
+    return 0 if report.global_grade in ("A+", "A", "B") else 1
+
+
 def main() -> None:
     """Main CLI entrypoint parser."""
     parser = argparse.ArgumentParser(
@@ -396,6 +411,21 @@ def main() -> None:
         "prove-lockin", help="Execute the zero vendor lock-in portability test."
     )
 
+    # Multi-dimensional Quality Engine Audit
+    audit_parser = subparsers.add_parser(
+        "audit", help="Run the multi-dimensional Soverik Quality Engine audit."
+    )
+    audit_parser.add_argument(
+        "--target",
+        default=None,
+        help="Optional target directory to audit (defaults to workspace root).",
+    )
+    audit_parser.add_argument(
+        "--output-dir",
+        default="docs/audits",
+        help="Output directory relative to target (defaults to 'docs/audits').",
+    )
+
     args = parser.parse_args()
 
     if args.subcommand == "run":
@@ -410,6 +440,8 @@ def main() -> None:
         sys.exit(run_rage_command(args.client, args.industry, args.tower))
     elif args.subcommand == "prove-lockin":
         sys.exit(run_lockin_test())
+    elif args.subcommand == "audit":
+        sys.exit(run_audit_command(args.target, args.output_dir))
 
 
 if __name__ == "__main__":

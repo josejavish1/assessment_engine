@@ -1,0 +1,25 @@
+
+<!-- Universal Legal & Privacy Modal (RGPD / LSSI Compliance & WCAG AAA) -->
+<div id="legal-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="legal-modal-title" class="fixed inset-0 bg-stone-950/70 backdrop-blur-md z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white text-stone-900 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-stone-200 overflow-hidden transform transition-all duration-200">
+    <div class="p-5 sm:p-6 border-b border-stone-200 flex justify-between items-center bg-stone-50">
+      <div class="flex items-center gap-2.5">
+        <span class="p-2 rounded-lg bg-stone-200 text-stone-700">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+        </span>
+        <h3 id="legal-modal-title" class="text-lg sm:text-xl font-bold font-serif text-stone-900">Aviso Legal</h3>
+      </div>
+      <button onclick="closeLegalModal()" aria-label="Cerrar aviso legal" class="text-stone-400 hover:text-stone-700 p-2 rounded-lg transition" title="Cerrar">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div id="legal-modal-content" class="p-6 overflow-y-auto text-sm text-stone-600 space-y-4 leading-relaxed font-sans">
+      <!-- Legal Text Injected Dynamically -->
+    </div>
+    <div class="p-4 border-t border-stone-200 flex justify-end bg-stone-50">
+      <button onclick="closeLegalModal()" class="px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white font-medium text-sm rounded-xl transition shadow">
+        Entendido y Aceptar
+      </button>
+    </div>
+  </div>
+</div>

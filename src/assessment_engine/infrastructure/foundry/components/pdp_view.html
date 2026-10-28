@@ -1,0 +1,136 @@
+
+<!-- Universal Product & Service Detail Page (PDP) -->
+<style>
+  body[class*="bg-slate-950"] #view-item-detail,
+  body[class*="bg-stone-950"] #view-item-detail {
+    color: #f8fafc !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail h1,
+  body[class*="bg-stone-950"] #view-item-detail h1 {
+    color: #ffffff !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail #pdp-price,
+  body[class*="bg-stone-950"] #view-item-detail #pdp-price {
+    color: #38bdf8 !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail p,
+  body[class*="bg-stone-950"] #view-item-detail p {
+    color: #94a3b8 !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail details,
+  body[class*="bg-stone-950"] #view-item-detail details {
+    background-color: #0f172a !important;
+    border-color: #1e293b !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail summary,
+  body[class*="bg-stone-950"] #view-item-detail summary {
+    color: #f1f5f9 !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail #pdp-add-to-cart-btn,
+  body[class*="bg-stone-950"] #view-item-detail #pdp-add-to-cart-btn {
+    background-color: #4f46e5 !important;
+    color: #ffffff !important;
+  }
+  body[class*="bg-slate-950"] #view-item-detail button[onclick*="navigateRoute"],
+  body[class*="bg-stone-950"] #view-item-detail button[onclick*="navigateRoute"] {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+  }
+</style>
+<section id="view-item-detail" class="app-view hidden max-w-6xl mx-auto px-4 lg:px-8 py-8 flex-1 w-full">
+  <!-- Top Navigation & Breadcrumb -->
+  <div class="flex items-center justify-between pb-4 mb-6 border-b border-stone-200/80">
+    <button onclick="navigateRoute('#/app')" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 transition shadow-xs">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      <span>Volver al Catálogo</span>
+    </button>
+    <div class="text-xs text-stone-500 font-medium">
+      <a href="#/" onclick="navigateRoute('#/')" class="hover:text-stone-900">Inicio</a>
+      <span class="mx-1.5 text-stone-400">/</span>
+      <a href="#/app" onclick="navigateRoute('#/app')" class="hover:text-stone-900">Catálogo</a>
+      <span class="mx-1.5 text-stone-400">/</span>
+      <span id="pdp-breadcrumb-title" class="text-stone-900 font-semibold truncate max-w-xs inline-block align-bottom">Detalle</span>
+    </div>
+  </div>
+
+  <!-- 2-Column Product Detail Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+    <!-- Left: Gallery & Badges -->
+    <div class="lg:col-span-6 space-y-5">
+      <div class="relative rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-stone-100 aspect-square">
+        <img id="pdp-main-image" src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80" alt="Detalle" class="w-full h-full object-cover transition duration-300">
+        <span id="pdp-badge" class="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-stone-900 font-semibold text-xs px-3 py-1.5 rounded-full border border-stone-200 shadow-sm">
+          Edición de Autor
+        </span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 text-center">
+        <div class="p-3 bg-stone-100/70 rounded-2xl border border-stone-200/60">
+          <i data-lucide="shield-check" class="w-5 h-5 mx-auto text-emerald-600 mb-1"></i>
+          <p class="text-[11px] font-bold text-stone-800">Calidad Oficial</p>
+          <p class="text-[10px] text-stone-500">100% Verificado</p>
+        </div>
+        <div class="p-3 bg-stone-100/70 rounded-2xl border border-stone-200/60">
+          <i data-lucide="truck" class="w-5 h-5 mx-auto text-amber-600 mb-1"></i>
+          <p class="text-[11px] font-bold text-stone-800">Entrega Inmediata</p>
+          <p class="text-[10px] text-stone-500">Envío Climatizado</p>
+        </div>
+        <div class="p-3 bg-stone-100/70 rounded-2xl border border-stone-200/60">
+          <i data-lucide="refresh-cw" class="w-5 h-5 mx-auto text-stone-700 mb-1"></i>
+          <p class="text-[11px] font-bold text-stone-800">Garantía Total</p>
+          <p class="text-[10px] text-stone-500">Soporte Directo</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Title, Price, Description, Buy CTA & Accordions -->
+    <div class="lg:col-span-6 space-y-5">
+      <div>
+        <span id="pdp-category" class="text-xs font-bold uppercase tracking-widest text-emerald-800 block mb-1">Selección Exclusiva</span>
+        <h1 id="pdp-title" class="text-3xl font-extrabold text-stone-900 tracking-tight leading-tight">Nombre del Producto</h1>
+      </div>
+
+      <!-- Price & Social Proof -->
+      <div class="flex items-center gap-4 py-3 border-y border-stone-200/80">
+        <span id="pdp-price" class="text-3xl font-extrabold font-mono text-stone-900">0.00€</span>
+        <div class="flex items-center gap-1.5 text-xs text-amber-600 font-semibold bg-amber-50 px-3 py-1 rounded-full border border-amber-200/60">
+          <span>★★★★★</span>
+          <span class="text-stone-600 font-normal">(4.9/5 · 64 reseñas verificadas)</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <p id="pdp-description" class="text-stone-600 text-sm leading-relaxed">
+        Descripción detallada de la elaboración artesanal y sus características específicas.
+      </p>
+
+      <!-- Purchase CTA -->
+      <div class="pt-2 space-y-3">
+        <div class="flex items-center gap-3">
+          <button id="pdp-add-to-cart-btn" onclick="addPdpItemToCart()" class="flex-1 py-3.5 px-6 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs sm:text-sm shadow-xl hover:shadow-2xl transition flex items-center justify-center gap-2">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <span>Añadir a la Cesta / Reservar</span>
+          </button>
+          <button onclick="shareCurrentItem()" title="Compartir Enlace" class="p-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-300 transition">
+            <i data-lucide="share-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Accordion Specifications & Guarantees -->
+      <div class="pt-4 border-t border-stone-200/80 space-y-2 text-xs">
+        <details class="p-3 bg-stone-50 rounded-xl border border-stone-200 cursor-pointer" open>
+          <summary class="font-bold text-stone-800 select-none">Ficha Técnica & Composición</summary>
+          <p id="pdp-specs" class="text-stone-600 mt-2 leading-relaxed">
+            Ingredientes de alta concentración biológica, trazabilidad auditada de origen y elaboración en micro-lotes para máxima pureza.
+          </p>
+        </details>
+        <details class="p-3 bg-stone-50 rounded-xl border border-stone-200 cursor-pointer">
+          <summary class="font-bold text-stone-800 select-none">Envíos, Devoluciones y Garantías</summary>
+          <p class="text-stone-600 mt-2 leading-relaxed">
+            Preparación y envío urgente climatizado. Garantía de satisfacción o reembolso inmediato sin preguntas.
+          </p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>

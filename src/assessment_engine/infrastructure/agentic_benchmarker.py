@@ -1,4 +1,6 @@
+import ast
 import logging
+import operator as op
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -391,6 +393,40 @@ class AgenticRageBenchmarker:
             logger.error(f"[RAGE] Error in cross-examination verifier: {e}")
         return False
 
+    @staticmethod
+    def _safe_evaluate_numeric_condition(condition_str: str) -> bool:
+        """Safely evaluate numeric comparison expressions without eval (CWE-94 mitigation)."""
+        cmp_ops = {
+            ast.Gt: op.gt,
+            ast.Lt: op.lt,
+            ast.GtE: op.ge,
+            ast.LtE: op.le,
+            ast.Eq: op.eq,
+            ast.NotEq: op.ne,
+        }
+        try:
+            tree = ast.parse(condition_str.strip(), mode="eval")
+            if not isinstance(tree.body, ast.Compare):
+                return False
+
+            def eval_val(node: ast.AST) -> float:
+                if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+                    return float(node.value)
+                if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub) and isinstance(node.operand, ast.Constant):
+                    return -float(node.operand.value)
+                raise ValueError("Unsupported AST node")
+
+            left = eval_val(tree.body.left)
+            for op_node, comparator in zip(tree.body.ops, tree.body.comparators):
+                right = eval_val(comparator)
+                op_func = cmp_ops.get(type(op_node))
+                if not op_func or not op_func(left, right):
+                    return False
+                left = right
+            return True
+        except Exception:
+            return False
+
     def _evaluate_mathematical_rubric(self, rule: Any, fact_value: float) -> float:
         """The pure Python mathematical evaluation engine.
 
@@ -406,7 +442,7 @@ class AgenticRageBenchmarker:
             try:
                 # Sanitize condition string for safety (only allow comparisons and numbers)
                 if re.match(r"^[0-9\.\s><=\!]+$", clean_cond):
-                    if eval(clean_cond):
+                    if self._safe_evaluate_numeric_condition(clean_cond):
                         return thresh.score
             except Exception as e:
                 logger.error(

@@ -1,5 +1,5 @@
 aiohappyeyeballs==2.6.1
-aiohttp==3.13.5
+aiohttp==3.14.5
 aiosignal==1.4.0
 aiosqlite==0.22.1
 alembic==1.18.4
@@ -44,7 +44,7 @@ google-cloud-secret-manager==2.27.0
 google-cloud-spanner==3.64.0
 google-cloud-speech==2.38.0
 google-cloud-storage==3.10.1
-google-cloud-documentai
+google-cloud-documentai==3.16.0
 google-cloud-trace==1.19.0
 google-crc32c==1.8.0
 google-genai==1.72.0
@@ -130,13 +130,13 @@ urllib3==2.6.3
 uvicorn==0.44.0
 watchdog==6.0.0
 websockets==15.0.1
-yarl==1.23.0
+yarl==1.25.1
 zipp==3.23.0
 duckduckgo-search==8.1.1
-jinja2
+jinja2==3.1.6
 vcrpy==8.2.1
 hypothesis==6.155.7
 sortedcontainers==2.4.0
 scipy==1.17.1
-playwright
-pytest
+playwright==1.61.0
+pytest==9.1.1

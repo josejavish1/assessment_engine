@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from pathlib import Path
@@ -7,6 +8,8 @@ from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt, RGBColor
+
+logger = logging.getLogger("assessment_engine.adapters.render_tower_annex")
 
 """Render the tower annex DOCX from a validated payload and template."""
 
@@ -530,9 +533,11 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
 
     for p in paragraphs_to_remove:
         try:
-            p._element.getparent().remove(p._element)
-        except Exception:
-            pass
+            parent = p._element.getparent()
+            if parent is not None:
+                parent.remove(p._element)
+        except (AttributeError, TypeError, ValueError) as ex:
+            logger.debug(f"[DocxRender] Error eliminando parágrafo XML: {ex}")
 
     # Step 3: Purge placeholder rows from all tables. Rows are identified for removal if they contain markers, typically denoted by bracket notation (e.g., "[EXAMPLE]"), which are used in the template for illustrative purposes only.
     for table in doc.tables:
@@ -557,8 +562,8 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
         for row in rows_to_remove:
             try:
                 table._tbl.remove(row._tr)
-            except Exception:
-                pass
+            except (AttributeError, TypeError, ValueError) as ex:
+                logger.debug(f"[DocxRender] Error eliminando fila XML de tabla: {ex}")
 
 
 def render_extended_variant(doc, payload) -> Any:

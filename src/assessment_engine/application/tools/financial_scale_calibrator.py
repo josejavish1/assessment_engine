@@ -125,14 +125,26 @@ class FinancialScaleCalibrator:
                         for k, v in case_data.items():
                             if isinstance(v, list):
                                 questions_list.extend(v)
+                    scores_list = []
                     for q in questions_list:
                         if isinstance(q, dict):
-                            q_id = q.get("question_id")
+                            q_id = str(q.get("question_id", ""))
                             val = q.get("value")
-                            if q_id == "T2.P1.K4.PR1" and val is not None:
-                                ha_score = float(val)
-                            elif q_id == "T2.P5.K1.PR1" and val is not None:
-                                ops_score = float(val)
+                            if val is not None:
+                                try:
+                                    score_val = float(val)
+                                    scores_list.append(score_val)
+                                    if f"{tower_id}.P1" in q_id or "K1" in q_id or "K4" in q_id:
+                                        ha_score = score_val
+                                    if f"{tower_id}.P5" in q_id or f"{tower_id}.P2" in q_id:
+                                        ops_score = score_val
+                                except Exception:
+                                    pass
+                    if scores_list:
+                        if ha_score == 3.0:
+                            ha_score = round(sum(scores_list[:max(1, len(scores_list)//2)]) / max(1, len(scores_list)//2), 1)
+                        if ops_score == 3.0:
+                            ops_score = round(sum(scores_list[len(scores_list)//2:]) / max(1, len(scores_list) - len(scores_list)//2), 1)
                 except Exception as ex:
                     logger.warning(f"Error crawling local case input for resilience and scores: {ex}")
             
@@ -140,7 +152,7 @@ class FinancialScaleCalibrator:
             research_prompt = f"""
             Investiga con internet (Google Search) de forma rigurosa los siguientes datos financieros y de costes laborales para la empresa "{client_name}" (sector: "{raw_industry}") en {client_country}:
             1. Su facturación anual consolidada más reciente (en Euros).
-            2. El coste por hora estimado de inactividad de su plataforma corporativa de cómputo y virtualización (el cual debe ser proporcional al tamaño e ingresos de la organización y reflejar el coste de parada operativa de sus servidores y servicios informáticos internos, no el coste catastrófico o de apagón físico de la red de transporte eléctrico nacional).
+            2. El coste por hora estimado de inactividad de su plataforma corporativa de TI, centros de datos y operaciones digitales (el cual debe ser proporcional al tamaño e ingresos de la organización y reflejar el coste de parada operativa de sus servidores y servicios informáticos y de negocio internos).
             3. El límite máximo de multa reguladora aplicable bajo la directiva NIS2 (el cual ronda hasta 10.000.000 € o el 2% de su facturación global, lo que sea mayor).
             4. El tipo de cambio oficial del Euro (EUR) a la divisa preferida "{target_currency}" publicado por el Banco Central Europeo (BCE) al día de hoy, detallando su justificación citada con fecha.
             5. La tarifa horaria promedio en Euros de un consultor senior de DevOps / SRE en {client_country} en 2026.
@@ -173,19 +185,19 @@ class FinancialScaleCalibrator:
             \"\"\"{local_context_str}\"\"\"
             
             Métricas de Madurez Técnica Auditadas en Local para este Cliente:
-            - Nivel de Alta Disponibilidad de Cómputo (T2.P1.K4.PR1): {ha_score}/5.0
-            - Nivel de Cobertura de Observabilidad y SRE (T2.P5.K1.PR1): {ops_score}/5.0
+            - Nivel de Resiliencia / Continuidad ({tower_id}): {ha_score}/5.0
+            - Nivel de Operaciones / Monitorización ({tower_id}): {ops_score}/5.0
             
             Extrae de forma exacta y calcula:
             - annual_revenue_eur: La facturación consolidada de {client_name} en Euros.
             - reg_max_fine_eur: El límite máximo de multa reguladora aplicable bajo la directiva NIS2.
             - hourly_rate_sre_eur: La tarifa horaria de consultoría senior de DevOps / SRE para {client_country} en Euros.
             
-            - hourly_downtime_cost_eur: El coste por hora de inactividad de su plataforma de cómputo y virtualización. 
+            - hourly_downtime_cost_eur: El coste por hora de inactividad de su plataforma de TI, centros de datos y operaciones. 
               Para calibrar esta cifra de forma realista, realiza un razonamiento cruzado:
               1. Toma como límite de escala general proporcional una fracción de entre el 0.001% y el 0.01% de su facturación anual consolidada.
               2. CRUCE CON MADUREZ TÉCNICA LOCAL: Analiza las 'Métricas de Madurez Técnica' y el 'Contexto de Arquitectura' del cliente:
-                 - Si la madurez de Alta Disponibilidad es >= 3.0 (clustering distribuido, failover geográfico) y/o el nivel de Observabilidad es >= 3.0, significa que cuentan con alta tolerancia a fallos. Sitúa el coste de inactividad efectiva en el extremo inferior del rango proporcional (ej. hacia el 0.001% de su facturación anual).
+                 - Si la madurez de Resiliencia es >= 3.0 (clustering distribuido, failover geográfico, redundancia) y/o el nivel de Monitorización es >= 3.0, significa que cuentan con alta tolerancia a fallos. Sitúa el coste de inactividad efectiva en el extremo inferior del rango proporcional (ej. hacia el 0.001% de su facturación anual).
                  - Si la madurez es baja (< 3.0), significa que sufren de puntos únicos de fallo (SPOF) o falta de monitorización. Sitúa el coste en el extremo superior (ej. hacia el 0.01% de su facturación anual).
             
             Establece obligatoriamente de forma constante:
@@ -193,7 +205,7 @@ class FinancialScaleCalibrator:
             - currency_symbol: "{target_symbol}"
             - exchange_rate: El tipo de cambio oficial de EUR a {target_currency} extraído del texto de investigación (por ejemplo, 1.0925).
             - currency_justification: Una justificación formal citando la tasa y la fuente del BCE del texto de investigación.
-            - calibration_justification: La justificación de validación citando los ingresos del ejercicio, las fuentes de internet, y el análisis cruzado de resiliencia (basado en las respuestas reales de madurez del cuestionario local de la T2 de este cliente) de la arquitectura privada del cliente.
+            - calibration_justification: La justificación de validación citando los ingresos del ejercicio, las fuentes de internet, y el análisis cruzado de resiliencia (basado en las respuestas reales de madurez del cuestionario local de la torre {tower_id} de este cliente) de la arquitectura privada del cliente.
             """
             
             logger.info(f"🌐 [Financial Calibrator] [Paso 2: Estructurado] Parseando datos de investigación en el esquema Pydantic...")

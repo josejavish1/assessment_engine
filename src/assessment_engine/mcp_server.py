@@ -5,6 +5,7 @@ This module provides an API that exposes core assessment, rendering, and plan ex
 
 import asyncio
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -18,6 +19,8 @@ from pydantic import ValidationError
 
 from assessment_engine.domain.schemas.annex_synthesis import AnnexPayload
 from assessment_engine.domain.schemas.blueprint import BlueprintPayload
+
+logger = logging.getLogger("assessment_engine.mcp_server")
 
 #
 mcp = FastMCP("Assessment Engine Core")
@@ -351,7 +354,8 @@ async def _background_run_plan(job_id: str, request_text: str):
                         )
                         found_plan = True
                         break
-            except Exception:
+            except (json.JSONDecodeError, IndexError, OSError) as ex:
+                logger.debug(f"[PO-Orchestrator] Línea de log no analizable como plan: {ex}")
                 continue
         if not found_plan:
             job_results[job_id] = (

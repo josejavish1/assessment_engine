@@ -51,7 +51,7 @@ def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
         return "ERROR DE GOBERNANZA: GOOGLE_CSE_ID no configurado."
 
     try:
-        import requests
+        from assessment_engine.infrastructure.http_client import http_client
 
         url = "https://www.googleapis.com/customsearch/v1"
 
@@ -69,7 +69,7 @@ def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
         else:
             return "ERROR: No hay API Key para Google Search."
 
-        res = requests.get(url, params=params, headers=headers)
+        res = http_client.get(url, params=params, headers=headers, timeout=10.0)
         res.raise_for_status()
         results = res.json().get("items", [])
 

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado de Calidad y Seguridad — assessment_engine</title>
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: rgba(255, 255, 255, 0.03);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+        }
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: var(--bg);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        .cert-container {
+            max-width: 960px;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--surface-border);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 32px;
+            margin-bottom: 36px;
+        }
+        .brand {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 6px;
+        }
+        .grade-badge {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            font-weight: 900;
+            color: #fff;
+            background: #f59e0b;
+            box-shadow: 0 0 30px #f59e0b66;
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .stat-val {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+        .probe-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 18px 24px;
+            margin-bottom: 14px;
+        }
+        .probe-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .probe-bar-bg {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .probe-bar-fill {
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+        .probe-metrics {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .finding-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+            border-left: 3px solid #64748b;
+            margin-bottom: 8px;
+        }
+        .sev-critical { border-left-color: #ef4444; }
+        .sev-high { border-left-color: #f97316; }
+        .sev-medium { border-left-color: #f59e0b; }
+        .sev-tag {
+            font-weight: 700;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.1);
+        }
+        .rule-tag { color: var(--accent); font-family: monospace; font-size: 12px; }
+        .finding-msg { flex: 1; }
+        .finding-path { color: var(--text-muted); font-size: 11px; }
+        .seal-footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--surface-border);
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="cert-container">
+        <div class="header">
+            <div>
+                <div class="brand">Soverik Quality Engine • Tier-1 Certification</div>
+                <div class="title">assessment_engine</div>
+                <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Ruta: /home/jsanchhi/assessment_engine</div>
+            </div>
+            <div class="grade-badge">C</div>
+        </div>
+
+        <div class="summary-stats">
+            <div class="stat-card">
+                <div class="stat-val">67.7%</div>
+                <div class="stat-label">Puntuación Global</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">18</div>
+                <div class="stat-label">Sondas Ejecutadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">2659</div>
+                <div class="stat-label">Desviaciones Detectadas</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 16px;">Resultados por Dimensión de Calidad</h3>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Security SAST & Secret Scanner (OWASP ASVS 5.0)</span>
+                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>scanned_files:</strong> 709, <strong>clean_files:</strong> 709, <strong>findings_count:</strong> 0, <strong>critical_count:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Dynamic Red Team DAST (OWASP ASVS 5.0)</span>
+                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>status:</strong> STATIC_NO_BACKEND, <strong>attacks_executed:</strong> 0, <strong>attacks_repelled:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Architecture & Complexity (ISO 25010 / Cognitive)</span>
+                <span class="probe-score" style="color: #ef4444;">66.9% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 66.9%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>prod_sloc:</strong> 88924, <strong>test_sloc:</strong> 5576, <strong>test_to_code_ratio:</strong> 0.06, <strong>maintainability_index_sei:</strong> 31.0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Mutation Testing Score (ISO/IEC/IEEE 29119 & GEMA 54)</span>
+                <span class="probe-score" style="color: #ef4444;">40.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 40.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>mutants_tested:</strong> 5, <strong>mutants_killed:</strong> 2, <strong>mutation_score_pct:</strong> 40.0, <strong>paired_modules_count:</strong> 26
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Supply Chain, OSV.dev & SBOM (CycloneDX 1.6 / CRA)</span>
+                <span class="probe-score" style="color: #ef4444;">0.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 0.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>total_dependencies:</strong> 142, <strong>pinned_dependencies:</strong> 142, <strong>pinning_ratio:</strong> 1.0, <strong>known_cves_detected:</strong> 128
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Legal Compliance & GDPR (SPDX / AEPD / CRA)</span>
+                <span class="probe-score" style="color: #10b981;">95.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 95.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>copyleft_violations_count:</strong> 0, <strong>copyleft_packages:</strong> [], <strong>has_root_license:</strong> False, <strong>has_pii_entities:</strong> True
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Performance, SRE & FinOps (N+1 / WAL / Leaks)</span>
+                <span class="probe-score" style="color: #ef4444;">80.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 80.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>n_plus_one_queries_detected:</strong> 1, <strong>sqlite_databases_audited:</strong> 1, <strong>wal_compliance:</strong> Conforme
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Accessibility & UI Standards (WCAG 2.2 AA / EAA)</span>
+                <span class="probe-score" style="color: #ef4444;">49.8% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 49.8%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>ui_files_scanned:</strong> 88, <strong>findings_count:</strong> 6, <strong>high_severity_a11y_count:</strong> 5, <strong>wcag_compliance_level:</strong> No Conforme
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Contract Integrity & Schema Drift (OpenAPI 3.1 / Pydantic)</span>
+                <span class="probe-score" style="color: #ef4444;">0.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 0.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>ddl_tables_indexed:</strong> 49, <strong>pydantic_models_audited:</strong> 150, <strong>drift_violations_count:</strong> 8, <strong>has_versioned_contract:</strong> False
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Resilience, Timeouts & Chaos (Netflix / SRE)</span>
+                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>network_calls_audited:</strong> 28, <strong>unbounded_timeouts_count:</strong> 0, <strong>has_circuit_breaker:</strong> True, <strong>has_exponential_backoff:</strong> True
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">AI Safety & LLM Guardrails (OWASP for LLM 2026)</span>
+                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>llm_calls_audited:</strong> 54, <strong>has_bwrap_sandbox:</strong> True, <strong>has_execution_guard:</strong> True, <strong>has_finops_budget:</strong> True
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Code Hygiene & Anti-Vibe Governance (SATD / CWE-391)</span>
+                <span class="probe-score" style="color: #ef4444;">70.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 70.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>scanned_files:</strong> 494, <strong>silent_exceptions_count:</strong> 56, <strong>static_defects_count:</strong> 0, <strong>unprofessional_comments_count:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Structural Smells & Zero-Entropy (SWEBOK v4 / Clean Code)</span>
+                <span class="probe-score" style="color: #ef4444;">80.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 80.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>scanned_files:</strong> 494, <strong>entropy_violations_count:</strong> 1, <strong>long_parameter_funcs_count:</strong> 30, <strong>god_classes_count:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Stress & Tail Latency Contention (Dean & Barroso / Google SRE)</span>
+                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>runner_engine:</strong> Native Async ASGI & SQLite WAL (Google SRE), <strong>k6_binary_detected:</strong> False, <strong>sqlite_concurrent_transactions:</strong> 100, <strong>sqlite_lock_contention_errors:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Documentation Quality & Architectural Traceability (ISO 26514 / Google)</span>
+                <span class="probe-score" style="color: #10b981;">90.0% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 90.0%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>markdown_files_scanned:</strong> 62, <strong>internal_links_evaluated:</strong> 84, <strong>dead_links_count:</strong> 0, <strong>architectural_references_evaluated:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">SRE, Observability & W3C Tracing (RFC-016)</span>
+                <span class="probe-score" style="color: #ef4444;">53.7% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 53.7%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>files_scanned:</strong> 408, <strong>total_findings:</strong> 569, <strong>critical_violations:</strong> 0, <strong>high_violations:</strong> 569
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Hardcoded Artifacts & Secrets (CWE-798 / 12-Factor)</span>
+                <span class="probe-score" style="color: #ef4444;">0.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 0.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>scanned_files:</strong> 617, <strong>hardcoded_issues:</strong> 20
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Comment Quality & Semantic Contracts (3-Dimensional CQI)</span>
+                <span class="probe-score" style="color: #10b981;">82.6% • ✓ PASADO</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 82.6%; background-color: #10b981;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>files_scanned:</strong> 526, <strong>inline_rationale_score:</strong> 80.9, <strong>contract_coverage_score:</strong> 71.0, <strong>linguistic_sovereignty_score:</strong> 98.0
+            </div>
+        </div>
+        
+
+        <h3 style="margin-top: 36px; margin-bottom: 16px;">Registro Forense de Desviaciones</h3>
+        
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Sobrecarga cognitiva en 'authorize_action_gate': CoC = 16 (límite cognitivo <= 15)</span>
+                <span class="finding-path">src/assessment_engine/mcp_server.py:512</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-GOD-MODULE</span>
+                <span class="finding-msg">Archivo monolito detectado: 'render_tower_annex_from_template.py' tiene 843 SLOC (límite recomendado <= 600)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:1</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-DEEP-NESTING</span>
+                <span class="finding-msg">Anidamiento excesivo en 'polish_semantic_tables': 6 niveles de profundidad (límite <= 3)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:240</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Sobrecarga cognitiva en 'polish_semantic_tables': CoC = 33 (límite cognitivo <= 15)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:240</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Sobrecarga cognitiva en 'apply_semantic_annex_styles': CoC = 18 (límite cognitivo <= 15)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:282</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">MCCABE-RANGE-D</span>
+                <span class="finding-msg">Función 'clean_brackets_and_consultant_notes' excede límite ciclomático: V(G) = 32 (Rango D > 20)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:433</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-DEEP-NESTING</span>
+                <span class="finding-msg">Anidamiento excesivo en 'clean_brackets_and_consultant_notes': 6 niveles de profundidad (límite <= 3)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:433</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Sobrecarga cognitiva en 'clean_brackets_and_consultant_notes': CoC = 61 (límite cognitivo <= 15)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:433</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-GOD-MODULE</span>
+                <span class="finding-msg">Archivo monolito detectado: 'render_togaf_consolidated_tobe.py' tiene 917 SLOC (límite recomendado <= 600)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_consolidated_tobe.py:1</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">MCCABE-RANGE-D</span>
+                <span class="finding-msg">Función 'render_consolidated_tobe' excede límite ciclomático: V(G) = 57 (Rango D > 20)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_consolidated_tobe.py:344</span>
+            </div>
+            
+            <div class="finding-row sev-medium">
+                <span class="sev-tag">MEDIUM</span>
+                <span class="rule-tag">ARCH-DEEP-NESTING</span>
+                <span class="finding-msg">Anidamiento excesivo en 'render_consolidated_tobe': 4 niveles de profundidad (límite <= 3)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_consolidated_tobe.py:344</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Sobrecarga cognitiva en 'render_consolidated_tobe': CoC = 93 (límite cognitivo <= 15)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_consolidated_tobe.py:344</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-GOD-MODULE</span>
+                <span class="finding-msg">Archivo monolito detectado: 'render_togaf_asis_annex.py' tiene 891 SLOC (límite recomendado <= 600)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_asis_annex.py:1</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">MCCABE-RANGE-D</span>
+                <span class="finding-msg">Función 'render_asis_annex' excede límite ciclomático: V(G) = 54 (Rango D > 20)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_asis_annex.py:242</span>
+            </div>
+            
+            <div class="finding-row sev-medium">
+                <span class="sev-tag">MEDIUM</span>
+                <span class="rule-tag">ARCH-DEEP-NESTING</span>
+                <span class="finding-msg">Anidamiento excesivo en 'render_asis_annex': 4 niveles de profundidad (límite <= 3)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_togaf_asis_annex.py:242</span>
+            </div>
+            
+
+        <div class="seal-footer">
+            <span>SELLO CRIPTOGRÁFICO SHA-256: f232c5b04b2f94e6cd2b4df9b0bb9f32...</span>
+            <span>AUDITADO BAJO NORMA ISO/IEC 25010 & IEEE 29119</span>
+        </div>
+    </div>
+</body>
+</html>
