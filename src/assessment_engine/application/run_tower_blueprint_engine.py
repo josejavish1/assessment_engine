@@ -916,6 +916,10 @@ async def _enrich_projects_finops(
                 blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][
                     proj_idx
                 ]["name"] = new_name
+                if enrichment_data.get("deliverables"):
+                    blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][
+                        proj_idx
+                    ]["deliverables"] = enrichment_data["deliverables"]
 
         enrichment_tasks = []
         for p_idx, p_analysis in enumerate(

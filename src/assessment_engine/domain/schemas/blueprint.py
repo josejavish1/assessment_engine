@@ -388,6 +388,10 @@ class ProjectCharterEnrichment(BaseModel):
         ...,
         description="The Return on Investment (ROI) justification, including detailed calculations for both hard and soft savings.",
     )
+    deliverables: Optional[list[str]] = Field(
+        None,
+        description="Concrete, tangible, technical or governance deliverables (3-4 items) defining the Definition of Done (DoD) tailored to this specific initiative.",
+    )
     capex_estimate: Optional[str] = Field(
         None,
         description="Estimated upfront Capital Expenditure (CAPEX) in Euros with brief rationale, customized to the project scope.",

@@ -127,6 +127,51 @@
         "Políticas de Retención",
         "Bóveda Inmutable",
         "Pruebas de Restauración Automatizadas"
+      ],
+      "finops": [
+        "Modelo de Imputación de Costes (Showback/Chargeback)",
+        "Taxonomía de Tagging Cloud y Políticas de Rightsizing",
+        "Dashboard de FinOps Unit Economics y Eficiencia"
+      ],
+      "costes": [
+        "Modelo de Imputación de Costes (Showback/Chargeback)",
+        "Taxonomía de Tagging Cloud y Políticas de Rightsizing",
+        "Dashboard de FinOps Unit Economics y Eficiencia"
+      ],
+      "arb": [
+        "Estatutos y Reglamento del Comité de Arquitectura (ARB Charter)",
+        "Matriz de Criterios de Homologación Tecnológica",
+        "Catálogo de Estándares de Arquitectura Corporativa"
+      ],
+      "arquitectura": [
+        "Estatutos y Reglamento del Comité de Arquitectura (ARB Charter)",
+        "Matriz de Criterios de Homologación Tecnológica",
+        "Catálogo de Estándares de Arquitectura Corporativa"
+      ],
+      "demanda": [
+        "Marco de Priorización y Evaluación de Demanda TI",
+        "Procedimiento de Aprobación de Inversiones y Scoring Multicriterio",
+        "Cuadro de Mando de Capacidad y Portfolio Tecnológico"
+      ],
+      "suministro": [
+        "Matriz de Evaluación de Riesgos de Proveedores Críticos (NIS2)",
+        "Acuerdos de Nivel de Servicio (SLA) con Terceros Homologados",
+        "Cuadro de Mando de Concentración de Proveedores"
+      ],
+      "retorno": [
+        "Modelo Paramétrico de Medición de Valor y Retorno de Inversión (ROI)",
+        "Cuadro de Mando de Indicadores Clave de Desempeño (KPIs) TI",
+        "Matriz de Ahorros Tangibles e Intangibles de Infraestructura"
+      ],
+      "inversión": [
+        "Modelo Paramétrico de Medición de Valor y Retorno de Inversión (ROI)",
+        "Cuadro de Mando de Indicadores Clave de Desempeño (KPIs) TI",
+        "Matriz de Ahorros Tangibles e Intangibles de Infraestructura"
+      ],
+      "gobernanza": [
+        "Marco de Gobierno y Cuadro de Mando Corporativo",
+        "Estatutos y Matriz de Roles de Decisión Tecnológica RACI",
+        "Procedimiento Operativo de Auditoría y Control"
       ]
     },
     "default_capability_label": "Infraestructura",
@@ -382,6 +427,51 @@
         "Retention Policies",
         "Immutable Backup Vault",
         "Automated Restoration Testing Suite"
+      ],
+      "finops": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "costes": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "arb": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "arquitectura": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "demanda": [
+        "IT Demand Prioritization and Evaluation Framework",
+        "Investment Approval and Multi-Criteria Scoring Procedure",
+        "Technology Portfolio and Capacity Dashboard"
+      ],
+      "suministro": [
+        "Critical Third-Party Risk Assessment Matrix (NIS2)",
+        "Service Level Agreements (SLAs) for Approved Vendors",
+        "Vendor Concentration and Exposure Dashboard"
+      ],
+      "retorno": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "inversión": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "gobernanza": [
+        "Governance Framework and Corporate Scorecard",
+        "Technology Decision Rights Charter and RACI Matrix",
+        "Operational Audit and Control Procedure"
       ]
     },
     "default_capability_label": "Infrastructure",
@@ -620,6 +710,51 @@
         "Políticas de Retención",
         "Bóveda Inmutable",
         "Pruebas de Restauración Automatizadas"
+      ],
+      "finops": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "costes": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "arb": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "arquitectura": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "demanda": [
+        "IT Demand Prioritization and Evaluation Framework",
+        "Investment Approval and Multi-Criteria Scoring Procedure",
+        "Technology Portfolio and Capacity Dashboard"
+      ],
+      "suministro": [
+        "Critical Third-Party Risk Assessment Matrix (NIS2)",
+        "Service Level Agreements (SLAs) for Approved Vendors",
+        "Vendor Concentration and Exposure Dashboard"
+      ],
+      "retorno": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "inversión": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "gobernanza": [
+        "Governance Framework and Corporate Scorecard",
+        "Technology Decision Rights Charter and RACI Matrix",
+        "Operational Audit and Control Procedure"
       ]
     },
     "bottlenecks_bullet": "**Gargalos Estruturais:** O modelo manual de provisionamento limita a velocidade de entrega.",
@@ -866,6 +1001,51 @@
         "Retention Policies",
         "Immutable Backup Vault",
         "Automated Restoration Testing Suite"
+      ],
+      "finops": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "costes": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "arb": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "arquitectura": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "demanda": [
+        "IT Demand Prioritization and Evaluation Framework",
+        "Investment Approval and Multi-Criteria Scoring Procedure",
+        "Technology Portfolio and Capacity Dashboard"
+      ],
+      "suministro": [
+        "Critical Third-Party Risk Assessment Matrix (NIS2)",
+        "Service Level Agreements (SLAs) for Approved Vendors",
+        "Vendor Concentration and Exposure Dashboard"
+      ],
+      "retorno": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "inversión": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "gobernanza": [
+        "Governance Framework and Corporate Scorecard",
+        "Technology Decision Rights Charter and RACI Matrix",
+        "Operational Audit and Control Procedure"
       ]
     },
     "bottlenecks_bullet": "**Goulots d'étranglement:** Le provisionnement manuel limite la vitesse.",
@@ -1112,6 +1292,51 @@
         "Retention Policies",
         "Immutable Backup Vault",
         "Automated Restoration Testing Suite"
+      ],
+      "finops": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "costes": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "arb": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "arquitectura": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "demanda": [
+        "IT Demand Prioritization and Evaluation Framework",
+        "Investment Approval and Multi-Criteria Scoring Procedure",
+        "Technology Portfolio and Capacity Dashboard"
+      ],
+      "suministro": [
+        "Critical Third-Party Risk Assessment Matrix (NIS2)",
+        "Service Level Agreements (SLAs) for Approved Vendors",
+        "Vendor Concentration and Exposure Dashboard"
+      ],
+      "retorno": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "inversión": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "gobernanza": [
+        "Governance Framework and Corporate Scorecard",
+        "Technology Decision Rights Charter and RACI Matrix",
+        "Operational Audit and Control Procedure"
       ]
     },
     "bottlenecks_bullet": "**構造的ボトルネック:** 手動プロビジョニングが提供速度を制限します。",
@@ -1366,6 +1591,51 @@
         "Retention Policies",
         "Immutable Backup Vault",
         "Automated Restoration Testing Suite"
+      ],
+      "finops": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "costes": [
+        "Cost Allocation Model (Showback/Chargeback)",
+        "Cloud Tagging Taxonomy and Rightsizing Policies",
+        "FinOps Unit Economics and Efficiency Dashboard"
+      ],
+      "arb": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "arquitectura": [
+        "Architecture Review Board (ARB) Charter and Bylaws",
+        "Technology Standards Homologation Matrix",
+        "Corporate Architecture Standards Catalog"
+      ],
+      "demanda": [
+        "IT Demand Prioritization and Evaluation Framework",
+        "Investment Approval and Multi-Criteria Scoring Procedure",
+        "Technology Portfolio and Capacity Dashboard"
+      ],
+      "suministro": [
+        "Critical Third-Party Risk Assessment Matrix (NIS2)",
+        "Service Level Agreements (SLAs) for Approved Vendors",
+        "Vendor Concentration and Exposure Dashboard"
+      ],
+      "retorno": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "inversión": [
+        "Parametric Value and Return on Investment (ROI) Measurement Model",
+        "IT Key Performance Indicators (KPIs) Dashboard",
+        "Tangible and Intangible Infrastructure Savings Matrix"
+      ],
+      "gobernanza": [
+        "Governance Framework and Corporate Scorecard",
+        "Technology Decision Rights Charter and RACI Matrix",
+        "Operational Audit and Control Procedure"
       ]
     },
     "default_capability_label": "Infrastruktur",
