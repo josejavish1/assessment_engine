@@ -1,17 +1,17 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793208758,
+  "timestamp": 1793209412,
   "global_grade": "A",
-  "global_score": 95.9,
+  "global_score": 96.0,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 415,
-        "clean_files": 415,
+        "scanned_files": 417,
+        "clean_files": 417,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -32,20 +32,20 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 51.1,
+      "score_pct": 51.4,
       "passed": false,
       "metrics": {
-        "prod_sloc": 56978,
-        "test_sloc": 7189,
+        "prod_sloc": 56994,
+        "test_sloc": 7268,
         "test_to_code_ratio": 0.13,
-        "maintainability_index_sei": 30.4,
-        "typed_functions_pct": 84.8,
-        "docstring_coverage_pct": 82.0,
+        "maintainability_index_sei": 30.5,
+        "typed_functions_pct": 84.9,
+        "docstring_coverage_pct": 82.2,
         "max_cognitive_complexity": 276,
-        "rango_d_functions_count": 51,
+        "rango_d_functions_count": 50,
         "god_modules_count": 22,
-        "high_cognitive_funcs_count": 139,
-        "deep_nesting_funcs_count": 81
+        "high_cognitive_funcs_count": 142,
+        "deep_nesting_funcs_count": 82
       },
       "findings": [
         {
@@ -360,7 +360,7 @@
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'render_global_report_from_template.py' tiene 1266 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'render_global_report_from_template.py' tiene 1272 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -419,29 +419,56 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "CRITICAL",
+          "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 975,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'load_payload' excede límite ciclomático: V(G) = 123 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
+          "line_number": 1041,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Anidamiento excesivo en '_normalize_roadmap_section': 4 niveles de profundidad (límite <= 3)",
+          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 975,
+          "line_number": 1041,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_normalize_roadmap_section': CoC = 25 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
+          "line_number": 1086,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_normalize_target_vision': CoC = 16 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
+          "line_number": 1201,
           "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en 'load_payload': 8 niveles de profundidad (límite <= 3)",
+          "message": "Anidamiento excesivo en '_construct_fallback_roadmap': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
+          "line_number": 1201,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_construct_fallback_roadmap': CoC = 22 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 975,
+          "line_number": 1269,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'load_payload': CoC = 273 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en '_construct_fallback_payload': CoC = 29 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -2293,7 +2320,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 103,
+          "line_number": 119,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_robust_unwrap_and_validate': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -2302,7 +2329,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 103,
+          "line_number": 119,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_robust_unwrap_and_validate': CoC = 24 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -2806,7 +2833,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 322,
+        "scanned_files": 324,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -2820,7 +2847,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 322,
+        "scanned_files": 324,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -2839,10 +2866,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.47,
-        "p95_latency_ms": 80.58,
-        "p99_latency_ms": 182.29,
-        "tail_amplification_ratio": 124.01,
+        "p50_latency_ms": 1.5,
+        "p95_latency_ms": 80.09,
+        "p99_latency_ms": 130.5,
+        "tail_amplification_ratio": 87.0,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -2883,7 +2910,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 356,
+        "scanned_files": 358,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -2893,11 +2920,11 @@
       "score_pct": 99.9,
       "passed": true,
       "metrics": {
-        "files_scanned": 351,
-        "inline_rationale_score": 99.9,
+        "files_scanned": 353,
+        "inline_rationale_score": 99.8,
         "contract_coverage_score": 99.8,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 5,
+        "comment_smells_count": 6,
         "missing_docstrings_count": 2,
         "cqi_score": 99.9,
         "grade": "A+",
@@ -2957,9 +2984,18 @@
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'get_supported_vendor_ids' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/ai_client.py",
+          "line_number": 142,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'Tier-1'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
         }
       ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A (95.9%). Sondas pasadas: 17/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (96.0%). Sondas pasadas: 17/18."
 }

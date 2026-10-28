@@ -972,172 +972,175 @@ def create_page_number_footer(section) -> Any:
     add_field(paragraph, "NUMPAGES")
 
 
-def load_payload(payload_path: Path) -> GlobalReportPayload:
-    r"""{'docstring': 'Loads, normalizes, and validates a global report payload from a JSON file.\n\n    Reads a JSON document from the specified path and performs extensive\n    pre-validation data normalization to handle schema variations and legacy\n    formats. Transformations include type coercion (e.g., string to list for\n    `root_causes`), injection of default values (e.g., `score`, `band` in\n    `tower_bottom_lines`), field name mapping (e.g., `title` to `pillar` in\n    `target_vision`), data restructuring (e.g., wrapping `executive_decisions`\n    list into a dictionary), and coalescing multiple potential source fields into a\n    single destination field (e.g., for `business_case` in `execution_roadmap`).\n\n    After normalization, the function attempts to validate the data using\n    `GlobalReportPayload.model_validate`. If validation fails, a warning is\n    logged and a fallback mechanism is engaged. This fallback uses\n    `model_construct` to create the Pydantic object without strict validation,\n    recursively constructing nested data structures and populating missing fields\n    with sensible defaults. This approach guarantees the return of a structurally\n    complete object, preventing potential downstream processing errors.\n\n    Args:\n        payload_path: The file system path to the JSON payload.\n\n    Returns:\n        An instance of `GlobalReportPayload`. If validation succeeds, the model is\n        fully validated. If validation fails, the model is constructed without\n        validation, with missing or malformed fields populated by default values\n        to ensure structural integrity.\n\n    Raises:\n        FileNotFoundError: If the file at `payload_path` does not exist.\n        json.JSONDecodeError: If the file at `payload_path` is not a valid JSON\n            document.'}."""
-    payload_dict = load_json(payload_path)
+HORIZON_DEFAULTS = {
+    "quick_wins_0_3_months": (1, 3),
+    "year_1_3_12_months": (3, 9),
+    "year_2_12_24_months": (12, 12),
+    "year_3_24_36_months": (24, 12),
+}
 
+
+def _normalize_single_horizon_item(item: dict, h_key: str) -> dict:
+    """Normalize fallback fields for a single initiative in a roadmap horizon."""
+    item_copy = item.copy()
+
+    # Maps the `program_id` and `program_name` source fields into the `program` composite destination field.
+    if "program" not in item_copy or not item_copy["program"]:
+        p_val = (
+            item_copy.get("program_id")
+            or item_copy.get("program_name")
+            or item_copy.get("program_title")
+            or item_copy.get("program")
+            or ""
+        )
+        item_copy["program"] = p_val
+
+    # Maps the `objective`, `description`, `business_impact`, and `impact` source fields into the `business_case` composite destination field.
+    if (
+        "business_case" not in item_copy
+        or not item_copy["business_case"]
+    ):
+        bc_val = (
+            item_copy.get("objective")
+            or item_copy.get("description")
+            or item_copy.get("business_impact")
+            or item_copy.get("impact")
+            or "Mitigación de deuda técnica."
+        )
+        item_copy["business_case"] = bc_val
+
+    def_start, def_duration = HORIZON_DEFAULTS.get(h_key, (1, 6))
+
+    if "start_month" not in item_copy or item_copy["start_month"] == 0:
+        item_copy["start_month"] = def_start
+
+    if "duration_months" not in item_copy or item_copy["duration_months"] == 0:
+        item_copy["duration_months"] = def_duration
+
+    return item_copy
+
+
+def _normalize_programs_list(programs: list) -> list:
+    """Ensure each program in programs list has a valid description."""
+    normalized_programs = []
+    for p in programs:
+        if isinstance(p, dict):
+            p_copy = p.copy()
+            if "description" not in p_copy or not p_copy["description"]:
+                p_copy["description"] = (
+                    p_copy.get("name")
+                    or p_copy.get("id")
+                    or "Programa de transformación tecnológica."
+                )
+            normalized_programs.append(p_copy)
+        else:
+            normalized_programs.append(p)
+    return normalized_programs
+
+
+def _normalize_roadmap_section(roadmap: dict) -> None:
+    """Normalize programs and horizons inside the execution_roadmap dictionary."""
+
+    # Coalesces a null or missing program description to an empty string to ensure type consistency and prevent downstream processing errors.
+    if "programs" in roadmap and isinstance(roadmap["programs"], list):
+        roadmap["programs"] = _normalize_programs_list(roadmap["programs"])
+
+    # Validates the presence and structural integrity of the `horizons` field, asserting that it is a list before proceeding with iteration.
+    if "horizons" not in roadmap or not roadmap["horizons"]:
+        roadmap["horizons"] = {
+            "quick_wins_0_3_months": [],
+            "year_1_3_12_months": [],
+            "year_2_12_24_months": [],
+            "year_3_24_36_months": [],
+        }
+
+    if "horizons" in roadmap and isinstance(roadmap["horizons"], dict):
+        h_dict = roadmap["horizons"]
+        if (
+            "quick_wins_0_6_months" in h_dict
+            and "quick_wins_0_3_months" not in h_dict
+        ):
+            h_dict["quick_wins_0_3_months"] = h_dict["quick_wins_0_6_months"]
+        if "year_1_6_12_months" in h_dict and "year_1_3_12_months" not in h_dict:
+            h_dict["year_1_3_12_months"] = h_dict["year_1_6_12_months"]
+
+        for h_key in [
+            "quick_wins_0_3_months",
+            "year_1_3_12_months",
+            "year_2_12_24_months",
+            "year_3_24_36_months",
+        ]:
+            if h_key not in h_dict or h_dict[h_key] is None:
+                h_dict[h_key] = []
+
+            if isinstance(h_dict[h_key], list):
+                h_dict[h_key] = [
+                    _normalize_single_horizon_item(item, h_key)
+                    if isinstance(item, dict)
+                    else item
+                    for item in h_dict[h_key]
+                ]
+
+
+
+def _normalize_target_vision(target_v: dict) -> None:
+    """Ensure evolution principles and strategic pillars have required field names."""
+    if "evolution_principles" in target_v and isinstance(
+        target_v["evolution_principles"], list
+    ):
+        for item in target_v["evolution_principles"]:
+            if (
+                isinstance(item, dict)
+                and "title" in item
+                and "principle" not in item
+            ):
+                item["principle"] = item["title"]
+    if "strategic_pillars" in target_v and isinstance(
+        target_v["strategic_pillars"], list
+    ):
+        for item in target_v["strategic_pillars"]:
+            if isinstance(item, dict) and "title" in item and "pillar" not in item:
+                item["pillar"] = item["title"]
+
+
+def _normalize_burning_platform(bp_list: list) -> None:
+    """Ensure root_causes is a list for every burning platform item."""
+    for item in bp_list:
+        if isinstance(item, dict) and "root_causes" in item and isinstance(item["root_causes"], str):
+            item["root_causes"] = [item["root_causes"]]
+
+
+def _normalize_tower_bottom_lines(tbl_list: list) -> None:
+    """Ensure default score, band, and status_color in tower bottom lines."""
+    for item in tbl_list:
+        if isinstance(item, dict):
+            item.setdefault("score", 4.0)
+            item.setdefault("band", "Managed")
+            item.setdefault("status_color", "green")
+
+
+def _normalize_global_report_dict(payload_dict: dict) -> None:
+    """Pre-emptively normalize and adjust legacy JSON fields before Pydantic validation."""
     # Sovereign Data Normalization: Pre-emptive schema adjustments are performed to ensure data consistency and validity prior to rendering.
     if "burning_platform" in payload_dict and isinstance(
         payload_dict["burning_platform"], list
     ):
-        for item in payload_dict["burning_platform"]:
-            if (
-                isinstance(item, dict)
-                and "root_causes" in item
-                and isinstance(item["root_causes"], str)
-            ):
-                item["root_causes"] = [item["root_causes"]]
+        _normalize_burning_platform(payload_dict["burning_platform"])
 
     if "tower_bottom_lines" in payload_dict and isinstance(
         payload_dict["tower_bottom_lines"], list
     ):
-        for item in payload_dict["tower_bottom_lines"]:
-            if isinstance(item, dict):
-                if "score" not in item:
-                    item["score"] = 4.0
-                if "band" not in item:
-                    item["band"] = "Managed"
-                if "status_color" not in item:
-                    item["status_color"] = "green"
+        _normalize_tower_bottom_lines(payload_dict["tower_bottom_lines"])
 
     if "target_vision" in payload_dict and isinstance(
         payload_dict["target_vision"], dict
     ):
-        target_v = payload_dict["target_vision"]
-        if "evolution_principles" in target_v and isinstance(
-            target_v["evolution_principles"], list
-        ):
-            for item in target_v["evolution_principles"]:
-                if (
-                    isinstance(item, dict)
-                    and "title" in item
-                    and "principle" not in item
-                ):
-                    item["principle"] = item["title"]
-        if "strategic_pillars" in target_v and isinstance(
-            target_v["strategic_pillars"], list
-        ):
-            for item in target_v["strategic_pillars"]:
-                if isinstance(item, dict) and "title" in item and "pillar" not in item:
-                    item["pillar"] = item["title"]
+        _normalize_target_vision(payload_dict["target_vision"])
 
     if "execution_roadmap" in payload_dict and isinstance(
         payload_dict["execution_roadmap"], dict
     ):
-        roadmap = payload_dict["execution_roadmap"]
-
-        # Coalesces a null or missing program description to an empty string to ensure type consistency and prevent downstream processing errors.
-        if "programs" in roadmap and isinstance(roadmap["programs"], list):
-            normalized_programs = []
-            for p in roadmap["programs"]:
-                if isinstance(p, dict):
-                    p_copy = p.copy()
-                    if "description" not in p_copy or not p_copy["description"]:
-                        p_copy["description"] = (
-                            p_copy.get("name")
-                            or p_copy.get("id")
-                            or "Programa de transformación tecnológica."
-                        )
-                    normalized_programs.append(p_copy)
-                else:
-                    normalized_programs.append(p)
-            roadmap["programs"] = normalized_programs
-
-        # Validates the presence and structural integrity of the `horizons` field, asserting that it is a list before proceeding with iteration.
-        if "horizons" not in roadmap or not roadmap["horizons"]:
-            roadmap["horizons"] = {
-                "quick_wins_0_3_months": [],
-                "year_1_3_12_months": [],
-                "year_2_12_24_months": [],
-                "year_3_24_36_months": [],
-            }
-
-        if "horizons" in roadmap and isinstance(roadmap["horizons"], dict):
-            h_dict = roadmap["horizons"]
-            if (
-                "quick_wins_0_6_months" in h_dict
-                and "quick_wins_0_3_months" not in h_dict
-            ):
-                h_dict["quick_wins_0_3_months"] = h_dict["quick_wins_0_6_months"]
-            if "year_1_6_12_months" in h_dict and "year_1_3_12_months" not in h_dict:
-                h_dict["year_1_3_12_months"] = h_dict["year_1_6_12_months"]
-
-            for h_key in [
-                "quick_wins_0_3_months",
-                "year_1_3_12_months",
-                "year_2_12_24_months",
-                "year_3_24_36_months",
-            ]:
-                if h_key not in h_dict or h_dict[h_key] is None:
-                    h_dict[h_key] = []
-
-                if isinstance(h_dict[h_key], list):
-                    normalized_list = []
-                    for item in h_dict[h_key]:
-                        if isinstance(item, dict):
-                            item_copy = item.copy()
-
-                            # Maps the `program_id` and `program_name` source fields into the `program` composite destination field.
-                            if "program" not in item_copy or not item_copy["program"]:
-                                p_val = (
-                                    item_copy.get("program_id")
-                                    or item_copy.get("program_name")
-                                    or item_copy.get("program_title")
-                                    or item_copy.get("program")
-                                    or ""
-                                )
-                                item_copy["program"] = p_val
-
-                            # Maps the `objective`, `description`, `business_impact`, and `impact` source fields into the `business_case` composite destination field.
-                            if (
-                                "business_case" not in item_copy
-                                or not item_copy["business_case"]
-                            ):
-                                bc_val = (
-                                    item_copy.get("objective")
-                                    or item_copy.get("description")
-                                    or item_copy.get("business_impact")
-                                    or item_copy.get("impact")
-                                    or "Mitigación de deuda técnica."
-                                )
-                                item_copy["business_case"] = bc_val
-
-                            # Coalesces `start_month` to a default value if the source field is null, missing, or zero.
-                            if (
-                                "start_month" not in item_copy
-                                or item_copy["start_month"] == 0
-                            ):
-                                if h_key == "quick_wins_0_3_months":
-                                    item_copy["start_month"] = 1
-                                elif h_key == "year_1_3_12_months":
-                                    item_copy["start_month"] = 3
-                                elif h_key == "year_2_12_24_months":
-                                    item_copy["start_month"] = 12
-                                elif h_key == "year_3_24_36_months":
-                                    item_copy["start_month"] = 24
-                                else:
-                                    item_copy["start_month"] = 1
-
-                            # Coalesces `duration_months` to a default value if the source field is null, missing, or zero.
-                            if (
-                                "duration_months" not in item_copy
-                                or item_copy["duration_months"] == 0
-                            ):
-                                if h_key == "quick_wins_0_3_months":
-                                    item_copy["duration_months"] = 3
-                                elif h_key == "year_1_3_12_months":
-                                    item_copy["duration_months"] = 9
-                                elif h_key == "year_2_12_24_months":
-                                    item_copy["duration_months"] = 12
-                                elif h_key == "year_3_24_36_months":
-                                    item_copy["duration_months"] = 12
-                                else:
-                                    item_copy["duration_months"] = 6
-
-                            normalized_list.append(item_copy)
-                        else:
-                            normalized_list.append(item)
-                    h_dict[h_key] = normalized_list
+        _normalize_roadmap_section(payload_dict["execution_roadmap"])
 
     if "executive_decisions" in payload_dict and isinstance(
         payload_dict["executive_decisions"], list
@@ -1151,232 +1154,259 @@ def load_payload(payload_path: Path) -> GlobalReportPayload:
         if "immediate_decisions" not in payload_dict["executive_decisions"]:
             payload_dict["executive_decisions"]["immediate_decisions"] = []
 
+
+
+def _safe_construct(model_cls, data, default_fields):
+    """Constructs a model instance from input data using defaults and fallback logic.
+
+    This function creates a model instance by merging default fields with provided
+    data. It initializes the model's fields from `default_fields`, then
+    overrides these with any non-`None` values from the `data` dictionary.
+    A specific fallback logic is applied: if 'principle', 'pillar', or 'program'
+    are specified in `default_fields` but absent in the input `data`, their values
+    are populated from the 'title' field of the merged data.
+
+    The function utilizes `model_cls.model_construct` for instantiation, which
+    bypasses data validation for performance. This assumes the input data is
+    pre-validated and trusted.
+
+    Args:
+        model_cls: The model class to instantiate, which must expose a
+            `model_construct` class method (e.g., a Pydantic BaseModel).
+        data: The input data payload. If this value is not a dictionary, it is
+            returned immediately without modification.
+        default_fields: A mapping of field names to their default values.
+
+    Returns:
+        An instance of `model_cls` populated with the merged data if `data` is a
+        dictionary; otherwise, the original `data` object.
+    """
+    if not isinstance(data, dict):
+        return data
+    data_copy = default_fields.copy()
+    for k, v in data.items():
+        if v is not None:
+            data_copy[k] = v
+    if "title" in data_copy:
+        if "principle" in default_fields and "principle" not in data:
+            data_copy["principle"] = data_copy["title"]
+        if "pillar" in default_fields and "pillar" not in data:
+            data_copy["pillar"] = data_copy["title"]
+        if "program" in default_fields and "program" not in data:
+            data_copy["program"] = data_copy["title"]
+    return model_cls.model_construct(**data_copy)
+
+
+
+def _construct_fallback_roadmap(er_dict: dict) -> Any:
+    """Construct ExecutionRoadmapDraft with safe nested models."""
+    from assessment_engine.domain.schemas.global_report import (
+        ExecutionRoadmapDraft,
+        HorizonsDef,
+        InitiativeDef,
+        ProgramDef,
+    )
+    er_dict = payload.execution_roadmap.copy()
+    if "programs" in er_dict and isinstance(er_dict["programs"], list):
+        er_dict["programs"] = [
+            _safe_construct(ProgramDef, p, {"name": "", "description": ""})
+            if isinstance(p, dict)
+            else p
+            for p in er_dict["programs"]
+        ]
+    if "horizons" in er_dict and isinstance(er_dict["horizons"], dict):
+        h_dict = er_dict["horizons"].copy()
+        if (
+            "quick_wins_0_6_months" in h_dict
+            and "quick_wins_0_3_months" not in h_dict
+        ):
+            h_dict["quick_wins_0_3_months"] = h_dict["quick_wins_0_6_months"]
+        if (
+            "year_1_6_12_months" in h_dict
+            and "year_1_3_12_months" not in h_dict
+        ):
+            h_dict["year_1_3_12_months"] = h_dict["year_1_6_12_months"]
+
+        for h_key in [
+            "quick_wins_0_3_months",
+            "year_1_3_12_months",
+            "year_2_12_24_months",
+            "year_3_24_36_months",
+        ]:
+            if h_key in h_dict and isinstance(h_dict[h_key], list):
+                h_dict[h_key] = [
+                    _safe_construct(
+                        InitiativeDef,
+                        init,
+                        {
+                            "program": "",
+                            "title": "",
+                            "business_case": "",
+                            "start_month": 0,
+                            "duration_months": 0,
+                        },
+                    )
+                    if isinstance(init, dict)
+                    else init
+                    for init in h_dict[h_key]
+                ]
+        er_dict["horizons"] = _safe_construct(
+            HorizonsDef,
+            h_dict,
+            {
+                "quick_wins_0_3_months": [],
+                "year_1_3_12_months": [],
+                "year_2_12_24_months": [],
+                "year_3_24_36_months": [],
+            },
+        )
+    return _safe_construct(
+        ExecutionRoadmapDraft, er_dict, {"programs": [], "horizons": None}
+    )
+
+
+
+def _construct_fallback_payload(payload_dict: dict) -> GlobalReportPayload:
+    """Construct a GlobalReportPayload with recursive safe defaults when validation fails."""
+    from assessment_engine.domain.schemas.global_report import (
+        BurningPlatformItem,
+        EvolutionPrinciple,
+        ExecutionRoadmapDraft,
+        ExecutiveDecisionItem,
+        ExecutiveDecisionsDraft,
+        ExecutiveSummaryDraft,
+        GlobalReportDocumentMeta,
+        HorizonsDef,
+        InitiativeDef,
+        ProgramDef,
+        StrategicPillar,
+        TargetVisionDraft,
+        TowerBottomLineItem,
+    )
+
+    payload = GlobalReportPayload.model_construct(**payload_dict)
+
+    payload.meta = _safe_construct(
+        GlobalReportDocumentMeta,
+        payload.meta if isinstance(payload.meta, dict) else {},
+        {"client": "", "date": "", "version": ""},
+    )
+
+    payload.executive_summary = _safe_construct(
+        ExecutiveSummaryDraft,
+        payload.executive_summary
+        if isinstance(payload.executive_summary, dict)
+        else {},
+        {"headline": "", "narrative": "", "key_business_impacts": []},
+    )
+
+    if isinstance(payload.burning_platform, list):
+        payload.burning_platform = [
+            _safe_construct(
+                BurningPlatformItem,
+                item,
+                {"theme": "", "business_risk": "", "root_causes": []},
+            )
+            if isinstance(item, dict)
+            else item
+            for item in payload.burning_platform
+        ]
+
+    if isinstance(payload.tower_bottom_lines, list):
+        payload.tower_bottom_lines = [
+            _safe_construct(
+                TowerBottomLineItem,
+                item,
+                {
+                    "id": "",
+                    "name": "",
+                    "score": "",
+                    "band": "",
+                    "status_color": "",
+                    "bottom_line": "",
+                },
+            )
+            if isinstance(item, dict)
+            else item
+            for item in payload.tower_bottom_lines
+        ]
+
+    if isinstance(payload.target_vision, dict):
+        tv_dict = payload.target_vision.copy()
+        if "evolution_principles" in tv_dict and isinstance(
+            tv_dict["evolution_principles"], list
+        ):
+            tv_dict["evolution_principles"] = [
+                _safe_construct(
+                    EvolutionPrinciple, ep, {"principle": "", "description": ""}
+                )
+                if isinstance(ep, dict)
+                else ep
+                for ep in tv_dict["evolution_principles"]
+            ]
+        if "strategic_pillars" in tv_dict and isinstance(
+            tv_dict["strategic_pillars"], list
+        ):
+            tv_dict["strategic_pillars"] = [
+                _safe_construct(
+                    StrategicPillar, sp, {"pillar": "", "description": ""}
+                )
+                if isinstance(sp, dict)
+                else sp
+                for sp in tv_dict["strategic_pillars"]
+            ]
+        payload.target_vision = _safe_construct(
+            TargetVisionDraft,
+            tv_dict,
+            {
+                "value_proposition": "",
+                "evolution_principles": [],
+                "strategic_pillars": [],
+            },
+        )
+
+    if isinstance(payload.execution_roadmap, dict):
+        payload.execution_roadmap = _construct_fallback_roadmap(payload.execution_roadmap.copy())
+
+    if isinstance(payload.executive_decisions, dict):
+        ed_dict = payload.executive_decisions.copy()
+        if "immediate_decisions" in ed_dict and isinstance(
+            ed_dict["immediate_decisions"], list
+        ):
+            ed_dict["immediate_decisions"] = [
+                _safe_construct(
+                    ExecutiveDecisionItem,
+                    item,
+                    {
+                        "decision_type": "",
+                        "action_required": "",
+                        "impact_if_delayed": "",
+                    },
+                )
+                if isinstance(item, dict)
+                else item
+                for item in ed_dict["immediate_decisions"]
+            ]
+        payload.executive_decisions = _safe_construct(
+            ExecutiveDecisionsDraft, ed_dict, {"immediate_decisions": []}
+        )
+
+    return payload
+
+
+
+def load_payload(payload_path: Path) -> GlobalReportPayload:
+    """Loads, normalizes, and validates a global report payload from a JSON file."""
+    payload_dict = load_json(payload_path)
+    _normalize_global_report_dict(payload_dict)
+
     try:
         return GlobalReportPayload.model_validate(payload_dict)
     except ValidationError as e:
         logger.info(
             f"⚠️ Warning: Error de validación de Pydantic en {payload_path} (procediendo con fallback model_construct robustecido): {e}"
         )
-        from assessment_engine.domain.schemas.global_report import (
-            BurningPlatformItem,
-            EvolutionPrinciple,
-            ExecutionRoadmapDraft,
-            ExecutiveDecisionItem,
-            ExecutiveDecisionsDraft,
-            ExecutiveSummaryDraft,
-            GlobalReportDocumentMeta,
-            HorizonsDef,
-            InitiativeDef,
-            ProgramDef,
-            StrategicPillar,
-            TargetVisionDraft,
-            TowerBottomLineItem,
-        )
-
-        def safe_construct(model_cls, data, default_fields):
-            """Constructs a model instance from input data using defaults and fallback logic.
-
-            This function creates a model instance by merging default fields with provided
-            data. It initializes the model's fields from `default_fields`, then
-            overrides these with any non-`None` values from the `data` dictionary.
-            A specific fallback logic is applied: if 'principle', 'pillar', or 'program'
-            are specified in `default_fields` but absent in the input `data`, their values
-            are populated from the 'title' field of the merged data.
-
-            The function utilizes `model_cls.model_construct` for instantiation, which
-            bypasses data validation for performance. This assumes the input data is
-            pre-validated and trusted.
-
-            Args:
-                model_cls: The model class to instantiate, which must expose a
-                    `model_construct` class method (e.g., a Pydantic BaseModel).
-                data: The input data payload. If this value is not a dictionary, it is
-                    returned immediately without modification.
-                default_fields: A mapping of field names to their default values.
-
-            Returns:
-                An instance of `model_cls` populated with the merged data if `data` is a
-                dictionary; otherwise, the original `data` object.
-            """
-            if not isinstance(data, dict):
-                return data
-            data_copy = default_fields.copy()
-            for k, v in data.items():
-                if v is not None:
-                    data_copy[k] = v
-            if "title" in data_copy:
-                if "principle" in default_fields and "principle" not in data:
-                    data_copy["principle"] = data_copy["title"]
-                if "pillar" in default_fields and "pillar" not in data:
-                    data_copy["pillar"] = data_copy["title"]
-                if "program" in default_fields and "program" not in data:
-                    data_copy["program"] = data_copy["title"]
-            return model_cls.model_construct(**data_copy)
-
-        payload = GlobalReportPayload.model_construct(**payload_dict)
-
-        payload.meta = safe_construct(
-            GlobalReportDocumentMeta,
-            payload.meta if isinstance(payload.meta, dict) else {},
-            {"client": "", "date": "", "version": ""},
-        )
-
-        payload.executive_summary = safe_construct(
-            ExecutiveSummaryDraft,
-            payload.executive_summary
-            if isinstance(payload.executive_summary, dict)
-            else {},
-            {"headline": "", "narrative": "", "key_business_impacts": []},
-        )
-
-        if isinstance(payload.burning_platform, list):
-            payload.burning_platform = [
-                safe_construct(
-                    BurningPlatformItem,
-                    item,
-                    {"theme": "", "business_risk": "", "root_causes": []},
-                )
-                if isinstance(item, dict)
-                else item
-                for item in payload.burning_platform
-            ]
-
-        if isinstance(payload.tower_bottom_lines, list):
-            payload.tower_bottom_lines = [
-                safe_construct(
-                    TowerBottomLineItem,
-                    item,
-                    {
-                        "id": "",
-                        "name": "",
-                        "score": "",
-                        "band": "",
-                        "status_color": "",
-                        "bottom_line": "",
-                    },
-                )
-                if isinstance(item, dict)
-                else item
-                for item in payload.tower_bottom_lines
-            ]
-
-        if isinstance(payload.target_vision, dict):
-            tv_dict = payload.target_vision.copy()
-            if "evolution_principles" in tv_dict and isinstance(
-                tv_dict["evolution_principles"], list
-            ):
-                tv_dict["evolution_principles"] = [
-                    safe_construct(
-                        EvolutionPrinciple, ep, {"principle": "", "description": ""}
-                    )
-                    if isinstance(ep, dict)
-                    else ep
-                    for ep in tv_dict["evolution_principles"]
-                ]
-            if "strategic_pillars" in tv_dict and isinstance(
-                tv_dict["strategic_pillars"], list
-            ):
-                tv_dict["strategic_pillars"] = [
-                    safe_construct(
-                        StrategicPillar, sp, {"pillar": "", "description": ""}
-                    )
-                    if isinstance(sp, dict)
-                    else sp
-                    for sp in tv_dict["strategic_pillars"]
-                ]
-            payload.target_vision = safe_construct(
-                TargetVisionDraft,
-                tv_dict,
-                {
-                    "value_proposition": "",
-                    "evolution_principles": [],
-                    "strategic_pillars": [],
-                },
-            )
-
-        if isinstance(payload.execution_roadmap, dict):
-            er_dict = payload.execution_roadmap.copy()
-            if "programs" in er_dict and isinstance(er_dict["programs"], list):
-                er_dict["programs"] = [
-                    safe_construct(ProgramDef, p, {"name": "", "description": ""})
-                    if isinstance(p, dict)
-                    else p
-                    for p in er_dict["programs"]
-                ]
-            if "horizons" in er_dict and isinstance(er_dict["horizons"], dict):
-                h_dict = er_dict["horizons"].copy()
-                if (
-                    "quick_wins_0_6_months" in h_dict
-                    and "quick_wins_0_3_months" not in h_dict
-                ):
-                    h_dict["quick_wins_0_3_months"] = h_dict["quick_wins_0_6_months"]
-                if (
-                    "year_1_6_12_months" in h_dict
-                    and "year_1_3_12_months" not in h_dict
-                ):
-                    h_dict["year_1_3_12_months"] = h_dict["year_1_6_12_months"]
-
-                for h_key in [
-                    "quick_wins_0_3_months",
-                    "year_1_3_12_months",
-                    "year_2_12_24_months",
-                    "year_3_24_36_months",
-                ]:
-                    if h_key in h_dict and isinstance(h_dict[h_key], list):
-                        h_dict[h_key] = [
-                            safe_construct(
-                                InitiativeDef,
-                                init,
-                                {
-                                    "program": "",
-                                    "title": "",
-                                    "business_case": "",
-                                    "start_month": 0,
-                                    "duration_months": 0,
-                                },
-                            )
-                            if isinstance(init, dict)
-                            else init
-                            for init in h_dict[h_key]
-                        ]
-                er_dict["horizons"] = safe_construct(
-                    HorizonsDef,
-                    h_dict,
-                    {
-                        "quick_wins_0_3_months": [],
-                        "year_1_3_12_months": [],
-                        "year_2_12_24_months": [],
-                        "year_3_24_36_months": [],
-                    },
-                )
-            payload.execution_roadmap = safe_construct(
-                ExecutionRoadmapDraft, er_dict, {"programs": [], "horizons": None}
-            )
-
-        if isinstance(payload.executive_decisions, dict):
-            ed_dict = payload.executive_decisions.copy()
-            if "immediate_decisions" in ed_dict and isinstance(
-                ed_dict["immediate_decisions"], list
-            ):
-                ed_dict["immediate_decisions"] = [
-                    safe_construct(
-                        ExecutiveDecisionItem,
-                        item,
-                        {
-                            "decision_type": "",
-                            "action_required": "",
-                            "impact_if_delayed": "",
-                        },
-                    )
-                    if isinstance(item, dict)
-                    else item
-                    for item in ed_dict["immediate_decisions"]
-                ]
-            payload.executive_decisions = safe_construct(
-                ExecutiveDecisionsDraft, ed_dict, {"immediate_decisions": []}
-            )
-
-        return payload
+        return _construct_fallback_payload(payload_dict)
 
 
 def render_global_report(
