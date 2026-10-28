@@ -1,23 +1,33 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793184246,
+  "timestamp": 1793185110,
   "global_grade": "C",
-  "global_score": 67.7,
+  "global_score": 66.4,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
-      "score_pct": 100.0,
-      "passed": true,
+      "score_pct": 75.0,
+      "passed": false,
       "metrics": {
-        "scanned_files": 709,
-        "clean_files": 709,
-        "findings_count": 0,
-        "critical_count": 0,
+        "scanned_files": 505,
+        "clean_files": 504,
+        "findings_count": 1,
+        "critical_count": 1,
         "high_count": 0,
         "entropy_secrets_found": 0
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "SECURITY",
+          "severity": "CRITICAL",
+          "file_path": "tests/unit/test_auditor.py",
+          "line_number": 132,
+          "rule_id": "CWE-89-SQLI-FSTRING",
+          "message": "Inyección SQL (CWE-89): Consulta SQL construida mediante f-string dinámico sin parámetros '?'",
+          "recommendation": "Usar consultas SQL parametrizadas con '?' y tupla de parámetros."
+        }
+      ]
     },
     "security_dast": {
       "probe_name": "Dynamic Red Team DAST (OWASP ASVS 5.0)",
@@ -32,19 +42,19 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 66.9,
+      "score_pct": 49.5,
       "passed": false,
       "metrics": {
-        "prod_sloc": 88924,
-        "test_sloc": 5576,
-        "test_to_code_ratio": 0.06,
-        "maintainability_index_sei": 31.0,
-        "typed_functions_pct": 91.8,
-        "docstring_coverage_pct": 80.1,
+        "prod_sloc": 55818,
+        "test_sloc": 5669,
+        "test_to_code_ratio": 0.1,
+        "maintainability_index_sei": 29.6,
+        "typed_functions_pct": 84.4,
+        "docstring_coverage_pct": 76.8,
         "max_cognitive_complexity": 559,
         "rango_d_functions_count": 46,
-        "god_modules_count": 28,
-        "high_cognitive_funcs_count": 127,
+        "god_modules_count": 23,
+        "high_cognitive_funcs_count": 128,
         "deep_nesting_funcs_count": 79
       },
       "findings": [
@@ -63,7 +73,7 @@
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'render_tower_annex_from_template.py' tiene 843 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'render_tower_annex_from_template.py' tiene 845 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -972,14 +982,23 @@
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 678 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 690 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 82,
+          "line_number": 60,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'infer_initiative_priority': CoC = 18 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
+          "line_number": 98,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'take_complete_sentences': CoC = 17 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -988,7 +1007,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 328,
+          "line_number": 344,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'derive_pillar_executive_reading' excede límite ciclomático: V(G) = 28 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -997,7 +1016,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 328,
+          "line_number": 344,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'derive_pillar_executive_reading': CoC = 29 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1107,14 +1126,14 @@
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 868 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 872 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 294,
+          "line_number": 295,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'run_tower_blueprint' excede límite ciclomático: V(G) = 103 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1123,7 +1142,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 294,
+          "line_number": 295,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'run_tower_blueprint': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1132,7 +1151,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 294,
+          "line_number": 295,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'run_tower_blueprint': CoC = 219 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1141,7 +1160,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 473,
+          "line_number": 474,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_single_pillar_async': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1150,7 +1169,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 473,
+          "line_number": 474,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_single_pillar_async': CoC = 25 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1159,7 +1178,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 834,
+          "line_number": 835,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'enrich_project': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1168,7 +1187,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 834,
+          "line_number": 835,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'enrich_project': CoC = 39 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -2435,56 +2454,11 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'competitor_miner.py' tiene 1507 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/db.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'db.py' tiene 685 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/autonomous_product_director.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'autonomous_product_director.py' tiene 742 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/evolution/epistemic_distiller.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'epistemic_distiller.py' tiene 881 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/orthogonal_gates.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'orthogonal_gates.py' tiene 683 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/socratic_calibrator.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'socratic_calibrator.py' tiene 728 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'epistemic_distiller.py' tiene 884 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -3805,31 +3779,21 @@
     },
     "performance_finops": {
       "probe_name": "Performance, SRE & FinOps (N+1 / WAL / Leaks)",
-      "score_pct": 80.0,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
-        "n_plus_one_queries_detected": 1,
+        "n_plus_one_queries_detected": 0,
         "sqlite_databases_audited": 1,
         "wal_compliance": "Conforme"
       },
-      "findings": [
-        {
-          "category": "PERFORMANCE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 302,
-          "rule_id": "PERF-N-PLUS-ONE",
-          "message": "Antipatrón N+1 detectado: Consulta SELECT 'execute()' invocada dentro de bucle repetitivo",
-          "recommendation": "Extraer la consulta fuera del bucle usando cláusula 'IN (?, ...)' o un JOIN relacional optimizado."
-        }
-      ]
+      "findings": []
     },
     "browser_accessibility": {
       "probe_name": "Accessibility & UI Standards (WCAG 2.2 AA / EAA)",
       "score_pct": 49.8,
       "passed": false,
       "metrics": {
-        "ui_files_scanned": 88,
+        "ui_files_scanned": 81,
         "findings_count": 6,
         "high_severity_a11y_count": 5,
         "wcag_compliance_level": "No Conforme"
@@ -3893,12 +3857,12 @@
     },
     "contract_drift": {
       "probe_name": "Contract Integrity & Schema Drift (OpenAPI 3.1 / Pydantic)",
-      "score_pct": 0.0,
-      "passed": false,
+      "score_pct": 90.0,
+      "passed": true,
       "metrics": {
-        "ddl_tables_indexed": 49,
-        "pydantic_models_audited": 150,
-        "drift_violations_count": 8,
+        "ddl_tables_indexed": 6,
+        "pydantic_models_audited": 131,
+        "drift_violations_count": 0,
         "has_versioned_contract": false
       },
       "findings": [
@@ -3910,78 +3874,6 @@
           "rule_id": "DRIFT-LOOSE-TYPE-ANY",
           "message": "Modelo Pydantic 'GlobalEdit' declara campo 'value: Any' sin tipado estricto",
           "recommendation": "Definir tipo primitivo estricto (str, int, float, bool) o submodelo para OpenAPI 3.1."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'sector' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'sector' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'brand_name' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'brand_name' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'target_url' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'target_url' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'pricing_summary' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'pricing_summary' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'customer_pain_points' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'customer_pain_points' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'counter_positioning' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'counter_positioning' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'ux_best_practices' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'ux_best_practices' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
-        },
-        {
-          "category": "CONTRACT_DRIFT",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 1211,
-          "rule_id": "DRIFT-COLUMN-MISMATCH",
-          "message": "Deriva de Esquema: Columna 'dossier_json' referenciada en INSERT pero no existe en tabla 'competitor_knowledge'",
-          "recommendation": "Añadir 'dossier_json' a la tabla 'competitor_knowledge' en SQLite o corregir la sentencia SQL."
         },
         {
           "category": "CONTRACT_DRIFT",
@@ -3999,7 +3891,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "network_calls_audited": 28,
+        "network_calls_audited": 15,
         "unbounded_timeouts_count": 0,
         "has_circuit_breaker": true,
         "has_exponential_backoff": true,
@@ -4013,7 +3905,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "llm_calls_audited": 54,
+        "llm_calls_audited": 17,
         "has_bwrap_sandbox": true,
         "has_execution_guard": true,
         "has_finops_budget": true,
@@ -4026,8 +3918,8 @@
       "score_pct": 70.0,
       "passed": false,
       "metrics": {
-        "scanned_files": 494,
-        "silent_exceptions_count": 56,
+        "scanned_files": 292,
+        "silent_exceptions_count": 55,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
         "suppression_abuses_count": 0,
@@ -4272,7 +4164,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 782,
+          "line_number": 798,
           "rule_id": "HYGIENE-CWE391-SILENT-PASS",
           "message": "Captura de excepción genérica 'Exception' silenciada con 'pass' ciego: enmascara errores silenciosos (CWE-391)",
           "recommendation": "Registrar el fallo con 'logger.warning/debug' o relanzar la excepción ('raise')."
@@ -4523,15 +4415,6 @@
         {
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 88,
-          "rule_id": "HYGIENE-CWE391-SILENT-PASS",
-          "message": "Captura de excepción genérica 'Exception' silenciada con 'pass' ciego: enmascara errores silenciosos (CWE-391)",
-          "recommendation": "Registrar el fallo con 'logger.warning/debug' o relanzar la excepción ('raise')."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
           "file_path": "scripts/run_cognitive_orchestrator.py",
           "line_number": 185,
           "rule_id": "HYGIENE-CWE391-SILENT-PASS",
@@ -4545,9 +4428,9 @@
       "score_pct": 80.0,
       "passed": false,
       "metrics": {
-        "scanned_files": 494,
+        "scanned_files": 292,
         "entropy_violations_count": 1,
-        "long_parameter_funcs_count": 30,
+        "long_parameter_funcs_count": 14,
         "god_classes_count": 0,
         "zombie_code_blocks_count": 0
       },
@@ -4574,7 +4457,7 @@
           "category": "STRUCTURAL_SMELL",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 639,
+          "line_number": 655,
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Función pública 'generate_synthesis' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
           "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
@@ -4583,7 +4466,7 @@
           "category": "STRUCTURAL_SMELL",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 207,
+          "line_number": 208,
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Función pública 'process_pilar_blueprint' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
           "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
@@ -4686,150 +4569,6 @@
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Función pública 'get_todo_reviewer_prompt' declara 8 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
           "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/domain_synthesis_director.py",
-          "line_number": 292,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'acto_2_compile_domain_contract' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/domain_synthesis_director.py",
-          "line_number": 582,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'acto_4_populate_asset_catalog' declara 7 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/domain_synthesis_director.py",
-          "line_number": 645,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'phase_2_domain_contract_and_sqlite' declara 7 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/telecom/meta_whatsapp.py",
-          "line_number": 118,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'record_meta_dispatch' declara 9 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/telecom/twilio_sms.py",
-          "line_number": 51,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'execute_twilio_dispatch' declara 7 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/telecom/twilio_sms.py",
-          "line_number": 112,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'record_sms_dispatch' declara 8 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/communications_bus.py",
-          "line_number": 453,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'dispatch_multichannel' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/variant_fork_engine.py",
-          "line_number": 110,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'commit_variant' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/socratic_recorder.py",
-          "line_number": 58,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'record_case' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/director_planner.py",
-          "line_number": 103,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'plan_and_apply_yagni' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/director_synthesizer.py",
-          "line_number": 230,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'generate_and_parse_candidate' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/director_synthesizer.py",
-          "line_number": 267,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'synthesize_file_best_of_n' declara 8 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/eval_runner.py",
-          "line_number": 303,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'compile_and_validate_tsx' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/daemon_supervisor.py",
-          "line_number": 262,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'enrich_contract_and_synthesize_views' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/daemon_supervisor.py",
-          "line_number": 359,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'execute_backlog_milestone_cycle' declara 13 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/daemon_supervisor.py",
-          "line_number": 450,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'finalize_mission_report' declara 9 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
         }
       ]
     },
@@ -4844,10 +4583,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.32,
-        "p95_latency_ms": 79.83,
-        "p99_latency_ms": 132.18,
-        "tail_amplification_ratio": 100.14,
+        "p50_latency_ms": 1.38,
+        "p95_latency_ms": 83.24,
+        "p99_latency_ms": 182.15,
+        "tail_amplification_ratio": 131.99,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -4972,14 +4711,14 @@
     },
     "sre_observability": {
       "probe_name": "SRE, Observability & W3C Tracing (RFC-016)",
-      "score_pct": 53.7,
+      "score_pct": 8.5,
       "passed": false,
       "metrics": {
-        "files_scanned": 408,
-        "total_findings": 569,
+        "files_scanned": 205,
+        "total_findings": 568,
         "critical_violations": 0,
-        "high_violations": 569,
-        "sre_grade_10": 5.4
+        "high_violations": 568,
+        "sre_grade_10": 0.8
       },
       "findings": [
         {
@@ -5085,7 +4824,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 968,
+          "line_number": 970,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7245,7 +6984,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 691,
+          "line_number": 707,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7254,7 +6993,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 696,
+          "line_number": 712,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7263,7 +7002,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 711,
+          "line_number": 727,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7272,7 +7011,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 724,
+          "line_number": 740,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7281,7 +7020,7 @@
           "category": "RESILIENCE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 782,
+          "line_number": 798,
           "rule_id": "REL-001-SILENT-EXCEPTION",
           "message": "Captura ciega silenciosa (except Exception: pass/continue) detectada.",
           "recommendation": "Capturar excepciones específicas o registrar el fallo con logger.error() antes de continuar."
@@ -7290,7 +7029,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 784,
+          "line_number": 800,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7299,7 +7038,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 786,
+          "line_number": 802,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7308,7 +7047,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 791,
+          "line_number": 807,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7659,7 +7398,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 240,
+          "line_number": 241,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7668,7 +7407,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 290,
+          "line_number": 291,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7677,7 +7416,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 302,
+          "line_number": 303,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7686,7 +7425,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 322,
+          "line_number": 323,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7695,7 +7434,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 384,
+          "line_number": 385,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7704,7 +7443,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 422,
+          "line_number": 423,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7713,7 +7452,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 426,
+          "line_number": 427,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7722,7 +7461,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 462,
+          "line_number": 463,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7731,7 +7470,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 551,
+          "line_number": 552,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7740,7 +7479,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 562,
+          "line_number": 563,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7749,7 +7488,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 576,
+          "line_number": 577,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7758,7 +7497,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 611,
+          "line_number": 612,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7767,7 +7506,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 623,
+          "line_number": 624,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7776,7 +7515,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 630,
+          "line_number": 631,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7785,7 +7524,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 634,
+          "line_number": 635,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7794,7 +7533,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 645,
+          "line_number": 646,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7803,7 +7542,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 655,
+          "line_number": 656,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7812,7 +7551,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 768,
+          "line_number": 769,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7821,7 +7560,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 772,
+          "line_number": 773,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7830,7 +7569,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 815,
+          "line_number": 816,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7839,7 +7578,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 936,
+          "line_number": 937,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7848,7 +7587,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 973,
+          "line_number": 974,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7857,7 +7596,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 975,
+          "line_number": 976,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7866,7 +7605,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1042,
+          "line_number": 1043,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -7875,7 +7614,7 @@
           "category": "OBSERVABILITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1048,
+          "line_number": 1049,
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
@@ -10093,15 +9832,6 @@
           "rule_id": "OBS-001-ZERO-PRINT",
           "message": "Uso de print() detectado en código de producción.",
           "recommendation": "Reemplazar por get_structured_logger(...) con active trace_id."
-        },
-        {
-          "category": "RESILIENCE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 88,
-          "rule_id": "REL-001-SILENT-EXCEPTION",
-          "message": "Captura ciega silenciosa (except Exception: pass/continue) detectada.",
-          "recommendation": "Capturar excepciones específicas o registrar el fallo con logger.error() antes de continuar."
         }
       ]
     },
@@ -10110,7 +9840,7 @@
       "score_pct": 0.0,
       "passed": false,
       "metrics": {
-        "scanned_files": 617,
+        "scanned_files": 415,
         "hardcoded_issues": 20
       },
       "findings": [
@@ -10298,18 +10028,18 @@
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 82.6,
-      "passed": true,
+      "score_pct": 72.5,
+      "passed": false,
       "metrics": {
-        "files_scanned": 526,
-        "inline_rationale_score": 80.9,
-        "contract_coverage_score": 71.0,
-        "linguistic_sovereignty_score": 98.0,
-        "comment_smells_count": 1486,
-        "missing_docstrings_count": 137,
-        "cqi_score": 82.6,
+        "files_scanned": 324,
+        "inline_rationale_score": 77.0,
+        "contract_coverage_score": 46.0,
+        "linguistic_sovereignty_score": 98.1,
+        "comment_smells_count": 1387,
+        "missing_docstrings_count": 125,
+        "cqi_score": 72.5,
         "grade": "B",
-        "status": "Tier-1 Certified"
+        "status": "Degradation Detected"
       },
       "findings": [
         {
@@ -14843,7 +14573,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 353,
+          "line_number": 369,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -14852,7 +14582,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 358,
+          "line_number": 374,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -14861,7 +14591,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 368,
+          "line_number": 384,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -14870,25 +14600,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 428,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 756,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 756,
+          "line_number": 444,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -14897,7 +14609,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 766,
+          "line_number": 772,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -14906,7 +14618,25 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 766,
+          "line_number": 772,
+          "rule_id": "NON-ENGLISH-COMMENT",
+          "message": "Non-English comment detected in production source code",
+          "recommendation": "Translate comment to concise technical English or delete if self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
+          "line_number": 782,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
+          "line_number": 782,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -14933,16 +14663,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 60,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'infer_priority_from_size' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 71,
+          "line_number": 87,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'truncate_list' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -14951,7 +14672,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 75,
+          "line_number": 91,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'truncate_text' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -14960,7 +14681,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 82,
+          "line_number": 98,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'take_complete_sentences' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -14969,7 +14690,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 130,
+          "line_number": 146,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'average' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -14978,7 +14699,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 134,
+          "line_number": 150,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'unique_list' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -14987,7 +14708,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 151,
+          "line_number": 167,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'summarize_project_name' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -14996,7 +14717,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 160,
+          "line_number": 176,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'build_executive_handover' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15005,7 +14726,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 184,
+          "line_number": 200,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'lookup_dependency_display' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15014,7 +14735,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 198,
+          "line_number": 214,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'derive_gap_rows' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15023,7 +14744,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 237,
+          "line_number": 253,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'derive_risks' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15032,7 +14753,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 275,
+          "line_number": 291,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'derive_priority_initiatives' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15041,7 +14762,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 317,
+          "line_number": 333,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'derive_focus_areas' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15050,7 +14771,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 328,
+          "line_number": 344,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'derive_pillar_executive_reading' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15059,7 +14780,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 456,
+          "line_number": 472,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'enrich_annex_payload' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15068,7 +14789,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 563,
+          "line_number": 579,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'load_yaml_config' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15077,7 +14798,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 576,
+          "line_number": 592,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'build_synthesis_prompt' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -15932,7 +15653,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 246,
+          "line_number": 247,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15941,7 +15662,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 263,
+          "line_number": 264,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -15950,7 +15671,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 263,
+          "line_number": 264,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15959,7 +15680,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 456,
+          "line_number": 457,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15968,7 +15689,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 472,
+          "line_number": 473,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -15977,16 +15698,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 472,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 492,
+          "line_number": 473,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16004,7 +15716,16 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 509,
+          "line_number": 494,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 510,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16013,7 +15734,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 550,
+          "line_number": 551,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16022,7 +15743,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 620,
+          "line_number": 621,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16031,7 +15752,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 620,
+          "line_number": 621,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16040,7 +15761,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 622,
+          "line_number": 623,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'Tier-1'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16049,7 +15770,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 622,
+          "line_number": 623,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16058,7 +15779,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 641,
+          "line_number": 642,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16067,7 +15788,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 641,
+          "line_number": 642,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16076,7 +15797,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 654,
+          "line_number": 655,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16085,16 +15806,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 757,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 977,
+          "line_number": 758,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16112,7 +15824,16 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1020,
+          "line_number": 979,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1021,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16121,7 +15842,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1020,
+          "line_number": 1021,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -16130,7 +15851,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1030,
+          "line_number": 1031,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16139,7 +15860,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1030,
+          "line_number": 1031,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -23310,600 +23031,6 @@
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/foundry/domain_synthesis_director.py",
-          "line_number": 360,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/domain_synthesis_director.py",
-          "line_number": 664,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/foundry/domain_synthesis_director.py",
-          "line_number": 667,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/foundry/closed_loop_evals.py",
-          "line_number": 71,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 9,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 11,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 36,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 38,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 515,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 516,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 516,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 517,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 614,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 615,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "LOW",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 616,
-          "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
-          "message": "Unnecessary cosmetic section separator in comments",
-          "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 20,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'to_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 75,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_sanitize_column_name' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 85,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'infer_sql_column_type' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 569,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'map_dossier' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_to_soverik_mapper.py",
-          "line_number": 618,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'generate_relational_schema' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 782,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_api_endpoint' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/competitor_miner.py",
-          "line_number": 793,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_javascript_asset' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/taste_engine.py",
-          "line_number": 338,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/legal_jurisdiction_matrix.py",
-          "line_number": 258,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/legal_jurisdiction_matrix.py",
-          "line_number": 264,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/legal_jurisdiction_matrix.py",
-          "line_number": 270,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/primitives/legal_jurisdiction_matrix.py",
-          "line_number": 277,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/sisp_action_bridge.py",
-          "line_number": 23,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/sisp_action_bridge.py",
-          "line_number": 25,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/primitives/sisp_action_bridge.py",
-          "line_number": 38,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 30,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 32,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 35,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 38,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 41,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 44,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 47,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 50,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 53,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 146,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 146,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 151,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 151,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 158,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 207,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 210,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 26,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'to_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 78,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_extract_canonical_slugs' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 94,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_match_route_by_label_or_path' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 115,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_find_best_slug_match' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 131,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_resolve_intent' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 144,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_resolve_best_slug' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 172,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'heal_broken_link' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 196,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'heal_inert_button' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_self_healer.py",
-          "line_number": 226,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'heal_layout' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_contract_sealer.py",
-          "line_number": 8,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_contract_sealer.py",
-          "line_number": 30,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'to_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_contract_sealer.py",
-          "line_number": 100,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'seal_navbar_links' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_contract_sealer.py",
-          "line_number": 105,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'seal_footer_columns' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_contract_sealer.py",
-          "line_number": 166,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'apply_sealer_to_workspace' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/multistage_canary_verifier.py",
-          "line_number": 105,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/multistage_canary_verifier.py",
-          "line_number": 115,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/multistage_canary_verifier.py",
-          "line_number": 123,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/multistage_canary_verifier.py",
-          "line_number": 131,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/multistage_canary_verifier.py",
-          "line_number": 27,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'to_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/multistage_canary_verifier.py",
-          "line_number": 93,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'verify_portal_e2e' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
           "line_number": 387,
@@ -23928,279 +23055,9 @@
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 48,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'label' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 53,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'from_dict' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 66,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'to_dict' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 73,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_temporal_component' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 80,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_showcase_inventory_component' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 91,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_pricing_component' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 99,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_form_component' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 105,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_portal_component' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 115,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'extract_domain_tables' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 130,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_extract_table_metadata' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 139,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'infer_slug_and_label' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 155,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'assign_primitive_component' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 183,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_collect_table_routes' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 209,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_build_standard_routes' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/ontology_router_engine.py",
-          "line_number": 233,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'build_routes_manifest' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/react_router_compiler.py",
-          "line_number": 333,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/react_router_compiler.py",
-          "line_number": 339,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/react_router_compiler.py",
-          "line_number": 345,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/react_router_compiler.py",
-          "line_number": 351,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/react_router_compiler.py",
-          "line_number": 110,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_derive_view_for_route' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 160,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 163,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 166,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 178,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 182,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 16,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'to_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 28,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'to_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/navigation_spider.py",
-          "line_number": 32,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in '_is_404_view_text' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_composition_orchestrator.py",
-          "line_number": 77,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'compute_sha256_hash' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/layout_composition_orchestrator.py",
-          "line_number": 81,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Docstring in 'validate_slot_manifest' is written in Spanish instead of technical English",
-          "recommendation": "Translate docstring to concise technical English in imperative mood."
         }
       ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado C (67.7%). Sondas pasadas: 8/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado C (66.4%). Sondas pasadas: 8/18."
 }

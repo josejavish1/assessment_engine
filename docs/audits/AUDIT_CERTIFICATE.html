@@ -167,7 +167,7 @@
 
         <div class="summary-stats">
             <div class="stat-card">
-                <div class="stat-val">67.7%</div>
+                <div class="stat-val">66.4%</div>
                 <div class="stat-label">Puntuación Global</div>
             </div>
             <div class="stat-card">
@@ -175,7 +175,7 @@
                 <div class="stat-label">Sondas Ejecutadas</div>
             </div>
             <div class="stat-card">
-                <div class="stat-val">2659</div>
+                <div class="stat-val">2532</div>
                 <div class="stat-label">Desviaciones Detectadas</div>
             </div>
         </div>
@@ -185,13 +185,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Security SAST & Secret Scanner (OWASP ASVS 5.0)</span>
-                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #ef4444;">75.0% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 75.0%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 709, <strong>clean_files:</strong> 709, <strong>findings_count:</strong> 0, <strong>critical_count:</strong> 0
+                <strong>scanned_files:</strong> 505, <strong>clean_files:</strong> 504, <strong>findings_count:</strong> 1, <strong>critical_count:</strong> 1
             </div>
         </div>
         
@@ -211,13 +211,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Architecture & Complexity (ISO 25010 / Cognitive)</span>
-                <span class="probe-score" style="color: #ef4444;">66.9% • ✗ REVISAR</span>
+                <span class="probe-score" style="color: #ef4444;">49.5% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 66.9%; background-color: #ef4444;"></div>
+                <div class="probe-bar-fill" style="width: 49.5%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>prod_sloc:</strong> 88924, <strong>test_sloc:</strong> 5576, <strong>test_to_code_ratio:</strong> 0.06, <strong>maintainability_index_sei:</strong> 31.0
+                <strong>prod_sloc:</strong> 55818, <strong>test_sloc:</strong> 5669, <strong>test_to_code_ratio:</strong> 0.1, <strong>maintainability_index_sei:</strong> 29.6
             </div>
         </div>
         
@@ -263,13 +263,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Performance, SRE & FinOps (N+1 / WAL / Leaks)</span>
-                <span class="probe-score" style="color: #ef4444;">80.0% • ✗ REVISAR</span>
+                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 80.0%; background-color: #ef4444;"></div>
+                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>n_plus_one_queries_detected:</strong> 1, <strong>sqlite_databases_audited:</strong> 1, <strong>wal_compliance:</strong> Conforme
+                <strong>n_plus_one_queries_detected:</strong> 0, <strong>sqlite_databases_audited:</strong> 1, <strong>wal_compliance:</strong> Conforme
             </div>
         </div>
         
@@ -282,20 +282,20 @@
                 <div class="probe-bar-fill" style="width: 49.8%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>ui_files_scanned:</strong> 88, <strong>findings_count:</strong> 6, <strong>high_severity_a11y_count:</strong> 5, <strong>wcag_compliance_level:</strong> No Conforme
+                <strong>ui_files_scanned:</strong> 81, <strong>findings_count:</strong> 6, <strong>high_severity_a11y_count:</strong> 5, <strong>wcag_compliance_level:</strong> No Conforme
             </div>
         </div>
         
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Contract Integrity & Schema Drift (OpenAPI 3.1 / Pydantic)</span>
-                <span class="probe-score" style="color: #ef4444;">0.0% • ✗ REVISAR</span>
+                <span class="probe-score" style="color: #10b981;">90.0% • ✓ PASADO</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 0.0%; background-color: #ef4444;"></div>
+                <div class="probe-bar-fill" style="width: 90.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>ddl_tables_indexed:</strong> 49, <strong>pydantic_models_audited:</strong> 150, <strong>drift_violations_count:</strong> 8, <strong>has_versioned_contract:</strong> False
+                <strong>ddl_tables_indexed:</strong> 6, <strong>pydantic_models_audited:</strong> 131, <strong>drift_violations_count:</strong> 0, <strong>has_versioned_contract:</strong> False
             </div>
         </div>
         
@@ -308,7 +308,7 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>network_calls_audited:</strong> 28, <strong>unbounded_timeouts_count:</strong> 0, <strong>has_circuit_breaker:</strong> True, <strong>has_exponential_backoff:</strong> True
+                <strong>network_calls_audited:</strong> 15, <strong>unbounded_timeouts_count:</strong> 0, <strong>has_circuit_breaker:</strong> True, <strong>has_exponential_backoff:</strong> True
             </div>
         </div>
         
@@ -321,7 +321,7 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>llm_calls_audited:</strong> 54, <strong>has_bwrap_sandbox:</strong> True, <strong>has_execution_guard:</strong> True, <strong>has_finops_budget:</strong> True
+                <strong>llm_calls_audited:</strong> 17, <strong>has_bwrap_sandbox:</strong> True, <strong>has_execution_guard:</strong> True, <strong>has_finops_budget:</strong> True
             </div>
         </div>
         
@@ -334,7 +334,7 @@
                 <div class="probe-bar-fill" style="width: 70.0%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 494, <strong>silent_exceptions_count:</strong> 56, <strong>static_defects_count:</strong> 0, <strong>unprofessional_comments_count:</strong> 0
+                <strong>scanned_files:</strong> 292, <strong>silent_exceptions_count:</strong> 55, <strong>static_defects_count:</strong> 0, <strong>unprofessional_comments_count:</strong> 0
             </div>
         </div>
         
@@ -347,7 +347,7 @@
                 <div class="probe-bar-fill" style="width: 80.0%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 494, <strong>entropy_violations_count:</strong> 1, <strong>long_parameter_funcs_count:</strong> 30, <strong>god_classes_count:</strong> 0
+                <strong>scanned_files:</strong> 292, <strong>entropy_violations_count:</strong> 1, <strong>long_parameter_funcs_count:</strong> 14, <strong>god_classes_count:</strong> 0
             </div>
         </div>
         
@@ -380,13 +380,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">SRE, Observability & W3C Tracing (RFC-016)</span>
-                <span class="probe-score" style="color: #ef4444;">53.7% • ✗ REVISAR</span>
+                <span class="probe-score" style="color: #ef4444;">8.5% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 53.7%; background-color: #ef4444;"></div>
+                <div class="probe-bar-fill" style="width: 8.5%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>files_scanned:</strong> 408, <strong>total_findings:</strong> 569, <strong>critical_violations:</strong> 0, <strong>high_violations:</strong> 569
+                <strong>files_scanned:</strong> 205, <strong>total_findings:</strong> 568, <strong>critical_violations:</strong> 0, <strong>high_violations:</strong> 568
             </div>
         </div>
         
@@ -399,26 +399,33 @@
                 <div class="probe-bar-fill" style="width: 0.0%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 617, <strong>hardcoded_issues:</strong> 20
+                <strong>scanned_files:</strong> 415, <strong>hardcoded_issues:</strong> 20
             </div>
         </div>
         
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Comment Quality & Semantic Contracts (3-Dimensional CQI)</span>
-                <span class="probe-score" style="color: #10b981;">82.6% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #ef4444;">72.5% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 82.6%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 72.5%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>files_scanned:</strong> 526, <strong>inline_rationale_score:</strong> 80.9, <strong>contract_coverage_score:</strong> 71.0, <strong>linguistic_sovereignty_score:</strong> 98.0
+                <strong>files_scanned:</strong> 324, <strong>inline_rationale_score:</strong> 77.0, <strong>contract_coverage_score:</strong> 46.0, <strong>linguistic_sovereignty_score:</strong> 98.1
             </div>
         </div>
         
 
         <h3 style="margin-top: 36px; margin-bottom: 16px;">Registro Forense de Desviaciones</h3>
         
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">CWE-89-SQLI-FSTRING</span>
+                <span class="finding-msg">Inyección SQL (CWE-89): Consulta SQL construida mediante f-string dinámico sin parámetros '?'</span>
+                <span class="finding-path">tests/unit/test_auditor.py:132</span>
+            </div>
+            
             <div class="finding-row sev-high">
                 <span class="sev-tag">HIGH</span>
                 <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
@@ -429,7 +436,7 @@
             <div class="finding-row sev-high">
                 <span class="sev-tag">HIGH</span>
                 <span class="rule-tag">ARCH-GOD-MODULE</span>
-                <span class="finding-msg">Archivo monolito detectado: 'render_tower_annex_from_template.py' tiene 843 SLOC (límite recomendado <= 600)</span>
+                <span class="finding-msg">Archivo monolito detectado: 'render_tower_annex_from_template.py' tiene 845 SLOC (límite recomendado <= 600)</span>
                 <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:1</span>
             </div>
             
@@ -517,16 +524,9 @@
                 <span class="finding-path">src/assessment_engine/adapters/render_togaf_asis_annex.py:242</span>
             </div>
             
-            <div class="finding-row sev-medium">
-                <span class="sev-tag">MEDIUM</span>
-                <span class="rule-tag">ARCH-DEEP-NESTING</span>
-                <span class="finding-msg">Anidamiento excesivo en 'render_asis_annex': 4 niveles de profundidad (límite <= 3)</span>
-                <span class="finding-path">src/assessment_engine/adapters/render_togaf_asis_annex.py:242</span>
-            </div>
-            
 
         <div class="seal-footer">
-            <span>SELLO CRIPTOGRÁFICO SHA-256: f232c5b04b2f94e6cd2b4df9b0bb9f32...</span>
+            <span>SELLO CRIPTOGRÁFICO SHA-256: 1b2d5211e414e9dd113a569c53416797...</span>
             <span>AUDITADO BAJO NORMA ISO/IEC 25010 & IEEE 29119</span>
         </div>
     </div>

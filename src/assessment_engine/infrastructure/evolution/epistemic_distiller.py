@@ -972,9 +972,11 @@ def _get_fallback_domain_pillars(
     task: str, sector: str, archetype: str | None, seed: dict[str, Any] | None
 ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
     """Generate 3 deterministic domain pillars based on formal operational archetypes (A1-A11)."""
-    from assessment_engine.infrastructure.evolution.orthogonal_archetypes import detect_operational_archetypes
-
-    all_archs = [archetype] if archetype else detect_operational_archetypes(f"{task} {sector}")
+    try:
+        from assessment_engine.infrastructure.evolution.orthogonal_archetypes import detect_operational_archetypes
+        all_archs = [archetype] if archetype else detect_operational_archetypes(f"{task} {sector}")
+    except ImportError:
+        all_archs = [archetype] if archetype else ["SaaS Infrastructure"]
 
     if _matches_archetypes_list(all_archs, ("A10", "ASYMMETRIC")):
         return (
