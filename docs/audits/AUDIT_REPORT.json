@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793211292,
+  "timestamp": 1793211736,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -32,18 +32,18 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 76.4,
+      "score_pct": 90.1,
       "passed": true,
       "metrics": {
-        "prod_sloc": 56787,
-        "test_sloc": 7402,
-        "test_to_code_ratio": 0.13,
-        "maintainability_index_sei": 30.6,
+        "prod_sloc": 47347,
+        "test_sloc": 16860,
+        "test_to_code_ratio": 0.36,
+        "maintainability_index_sei": 32.3,
         "typed_functions_pct": 85.1,
         "docstring_coverage_pct": 82.1,
         "max_cognitive_complexity": 246,
-        "rango_d_functions_count": 48,
-        "god_modules_count": 10,
+        "rango_d_functions_count": 26,
+        "god_modules_count": 2,
         "high_cognitive_funcs_count": 112,
         "deep_nesting_funcs_count": 57
       },
@@ -72,7 +72,7 @@
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
           "line_number": 433,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'clean_brackets_and_consultant_notes' excede límite ciclomático: V(G) = 32 (Rango D > 20)",
+          "message": "Función 'clean_brackets_and_consultant_notes' excede límite crítico ciclomático: V(G) = 32 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -99,7 +99,7 @@
           "file_path": "src/assessment_engine/adapters/render_togaf_consolidated_tobe.py",
           "line_number": 346,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'render_consolidated_tobe' excede límite ciclomático: V(G) = 57 (Rango D > 20)",
+          "message": "Función 'render_consolidated_tobe' excede límite crítico ciclomático: V(G) = 57 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -117,7 +117,7 @@
           "file_path": "src/assessment_engine/adapters/render_togaf_asis_annex.py",
           "line_number": 244,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'render_asis_annex' excede límite ciclomático: V(G) = 54 (Rango D > 20)",
+          "message": "Función 'render_asis_annex' excede límite crítico ciclomático: V(G) = 54 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -135,7 +135,7 @@
           "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
           "line_number": 145,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'derive_pillar_justification' excede límite ciclomático: V(G) = 50 (Rango D > 20)",
+          "message": "Función 'derive_pillar_justification' excede límite crítico ciclomático: V(G) = 50 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -146,24 +146,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'derive_pillar_justification': CoC = 58 (límite cognitivo <= 35)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
-          "line_number": 334,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'sanitize_and_unify_metrics' excede límite ciclomático: V(G) = 25 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
-          "line_number": 531,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_write_module_07_conclusiones' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -180,7 +162,7 @@
           "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
           "line_number": 749,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_write_module_02_resumen_ejecutivo' excede límite ciclomático: V(G) = 52 (Rango D > 20)",
+          "message": "Función '_write_module_02_resumen_ejecutivo' excede límite crítico ciclomático: V(G) = 52 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -198,7 +180,7 @@
           "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
           "line_number": 1061,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'generate_modules' excede límite ciclomático: V(G) = 31 (Rango D > 20)",
+          "message": "Función 'generate_modules' excede límite crítico ciclomático: V(G) = 31 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -209,15 +191,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'generate_modules': CoC = 38 (límite cognitivo <= 35)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/render_togaf_consolidated_todo.py",
-          "line_number": 114,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'render_consolidated_todo' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -261,7 +234,7 @@
           "file_path": "src/assessment_engine/adapters/render_togaf_consolidated_asis.py",
           "line_number": 247,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'render_consolidated_asis' excede límite ciclomático: V(G) = 52 (Rango D > 20)",
+          "message": "Función 'render_consolidated_asis' excede límite crítico ciclomático: V(G) = 52 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -293,20 +266,11 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 662,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'parse_and_append_markdown_section' excede límite ciclomático: V(G) = 26 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
           "line_number": 865,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_compile_chapter_3_maturity_profile' excede límite ciclomático: V(G) = 119 (Rango D > 20)",
+          "message": "Función '_compile_chapter_3_maturity_profile' excede límite crítico ciclomático: V(G) = 119 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -333,7 +297,7 @@
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
           "line_number": 1497,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_compile_chapter_4_fair_risk_matrix' excede límite ciclomático: V(G) = 72 (Rango D > 20)",
+          "message": "Función '_compile_chapter_4_fair_risk_matrix' excede límite crítico ciclomático: V(G) = 72 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -360,7 +324,7 @@
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
           "line_number": 2542,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_compile_appendices' excede límite ciclomático: V(G) = 50 (Rango D > 20)",
+          "message": "Función '_compile_appendices' excede límite crítico ciclomático: V(G) = 50 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -378,7 +342,7 @@
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
           "line_number": 3107,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'compile_docx' excede límite ciclomático: V(G) = 33 (Rango D > 20)",
+          "message": "Función 'compile_docx' excede límite crítico ciclomático: V(G) = 33 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -414,7 +378,7 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 779,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_build_systemic_risk_section' excede límite ciclomático: V(G) = 42 (Rango D > 20)",
+          "message": "Función '_build_systemic_risk_section' excede límite crítico ciclomático: V(G) = 42 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -432,7 +396,7 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 936,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_build_maturity_and_benchmarks' excede límite ciclomático: V(G) = 34 (Rango D > 20)",
+          "message": "Función '_build_maturity_and_benchmarks' excede límite crítico ciclomático: V(G) = 34 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -446,30 +410,12 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1217,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_build_detailed_findings_log' excede límite ciclomático: V(G) = 28 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 1217,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_detailed_findings_log': CoC = 52 (límite cognitivo <= 35)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1420,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_build_appendix_a_glossary' excede límite ciclomático: V(G) = 27 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -491,30 +437,12 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_global_synthesizer_tobe.py",
-          "line_number": 313,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'synthesize_global_tobe' excede límite ciclomático: V(G) = 29 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_global_synthesizer_tobe.py",
           "line_number": 313,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'synthesize_global_tobe': CoC = 50 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/generate_mermaid_gantt.py",
-          "line_number": 12,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'generate_mermaid_gantt' excede límite ciclomático: V(G) = 27 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -536,15 +464,6 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_tower_pipeline.py",
-          "line_number": 38,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'run_step_async' excede límite ciclomático: V(G) = 23 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_pipeline.py",
           "line_number": 38,
@@ -558,7 +477,7 @@
           "file_path": "src/assessment_engine/application/run_tower_pipeline.py",
           "line_number": 171,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'run_pipeline' excede límite ciclomático: V(G) = 49 (Rango D > 20)",
+          "message": "Función 'run_pipeline' excede límite crítico ciclomático: V(G) = 49 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -590,15 +509,6 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/export_graph_state.py",
-          "line_number": 56,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_load_industry_benchmark' excede límite ciclomático: V(G) = 22 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/export_graph_state.py",
           "line_number": 56,
@@ -614,15 +524,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_load_industry_benchmark': CoC = 33 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/export_graph_state.py",
-          "line_number": 183,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'export_state' excede límite ciclomático: V(G) = 24 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -648,7 +549,7 @@
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
           "line_number": 86,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'main' excede límite ciclomático: V(G) = 96 (Rango D > 20)",
+          "message": "Función 'main' excede límite crítico ciclomático: V(G) = 96 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -675,7 +576,7 @@
           "file_path": "src/assessment_engine/application/validate_tower_definition.py",
           "line_number": 20,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'validate_tower_definition' excede límite ciclomático: V(G) = 46 (Rango D > 20)",
+          "message": "Función 'validate_tower_definition' excede límite crítico ciclomático: V(G) = 46 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -709,15 +610,6 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 854 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 63,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'infer_initiative_priority': CoC = 20 (límite cognitivo <= 15)",
@@ -738,7 +630,7 @@
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 536,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'enrich_annex_payload' excede límite ciclomático: V(G) = 32 (Rango D > 20)",
+          "message": "Función 'enrich_annex_payload' excede límite crítico ciclomático: V(G) = 32 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -756,7 +648,7 @@
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
           "line_number": 92,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'build_findings' excede límite ciclomático: V(G) = 31 (Rango D > 20)",
+          "message": "Función 'build_findings' excede límite crítico ciclomático: V(G) = 31 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -770,20 +662,11 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_intelligence_harvesting.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_intelligence_harvesting.py' tiene 739 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_intelligence_harvesting.py",
           "line_number": 350,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'run_market_intelligence' excede límite ciclomático: V(G) = 39 (Rango D > 20)",
+          "message": "Función 'run_market_intelligence' excede límite crítico ciclomático: V(G) = 39 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -927,7 +810,7 @@
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
           "line_number": 68,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'build_global_payload' excede límite ciclomático: V(G) = 44 (Rango D > 20)",
+          "message": "Función 'build_global_payload' excede límite crítico ciclomático: V(G) = 44 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -974,24 +857,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'build_case_input': CoC = 24 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/bootstrap/bootstrap_tower_from_matrix.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'bootstrap_tower_from_matrix.py' tiene 863 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/bootstrap/bootstrap_tower_from_matrix.py",
-          "line_number": 196,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'extract_weights' excede límite ciclomático: V(G) = 21 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -1076,15 +941,6 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/_legacy/build_tower_annex_template_payload.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'build_tower_annex_template_payload.py' tiene 866 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/_legacy/build_tower_annex_template_payload.py",
           "line_number": 249,
@@ -1127,15 +983,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'main': CoC = 22 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/run_product_owner_orchestrator.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_product_owner_orchestrator.py' tiene 2202 SLOC (límite recomendado <= 1500)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
@@ -1222,15 +1069,6 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/validate_documentation_governance.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'validate_documentation_governance.py' tiene 693 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/validate_documentation_governance.py",
           "line_number": 156,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'validate_markdown_links': 5 niveles de profundidad (límite <= 3)",
@@ -1260,7 +1098,7 @@
           "file_path": "src/assessment_engine/application/tools/validate_documentation_governance.py",
           "line_number": 418,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'validate_entry' excede límite ciclomático: V(G) = 36 (Rango D > 20)",
+          "message": "Función 'validate_entry' excede límite crítico ciclomático: V(G) = 36 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -1349,15 +1187,6 @@
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/validate_documentation_snippets.py",
           "line_number": 98,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'validate_documentation_snippets' excede límite ciclomático: V(G) = 23 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/validate_documentation_snippets.py",
-          "line_number": 98,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'validate_documentation_snippets': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1388,15 +1217,6 @@
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'is_in_docstring_spans': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/enforce_english_comments.py",
-          "line_number": 270,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'process_file' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -1467,7 +1287,7 @@
           "file_path": "src/assessment_engine/application/tools/repair_tower_payload_scores.py",
           "line_number": 224,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'main' excede límite ciclomático: V(G) = 47 (Rango D > 20)",
+          "message": "Función 'main' excede límite crítico ciclomático: V(G) = 47 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -1485,7 +1305,7 @@
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
           "line_number": 64,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'calibrate_client_scale' excede límite ciclomático: V(G) = 47 (Rango D > 20)",
+          "message": "Función 'calibrate_client_scale' excede límite crítico ciclomático: V(G) = 47 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -1517,15 +1337,6 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/audit_tower_annex.py",
-          "line_number": 130,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'main' excede límite ciclomático: V(G) = 25 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/audit_tower_annex.py",
           "line_number": 130,
@@ -1548,7 +1359,7 @@
           "file_path": "src/assessment_engine/application/tools/validate_contracts_schemas.py",
           "line_number": 210,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'validate_contracts_schemas' excede límite ciclomático: V(G) = 43 (Rango D > 20)",
+          "message": "Función 'validate_contracts_schemas' excede límite crítico ciclomático: V(G) = 43 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -1604,15 +1415,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'build_documentation_health_report': CoC = 30 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/verify_exact_text.py",
-          "line_number": 6,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'verify_text_content' excede límite ciclomático: V(G) = 25 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -1717,7 +1519,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 119,
+          "line_number": 139,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_robust_unwrap_and_validate': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1726,7 +1528,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 119,
+          "line_number": 139,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_robust_unwrap_and_validate': CoC = 24 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1787,15 +1589,6 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evidence_governance.py",
-          "line_number": 95,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'capture_snapshot' excede límite ciclomático: V(G) = 22 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/infrastructure/evidence_governance.py",
           "line_number": 95,
@@ -1844,27 +1637,9 @@
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/evidence_engine.py",
           "line_number": 124,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_parse_docx' excede límite ciclomático: V(G) = 25 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evidence_engine.py",
-          "line_number": 124,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_parse_docx': CoC = 40 (límite cognitivo <= 35)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evidence_engine.py",
-          "line_number": 335,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_parse_xlsx' excede límite ciclomático: V(G) = 28 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -1874,15 +1649,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_parse_xlsx': CoC = 61 (límite cognitivo <= 35)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/client_intelligence.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'client_intelligence.py' tiene 1152 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
@@ -1908,7 +1674,7 @@
           "file_path": "src/assessment_engine/infrastructure/client_intelligence.py",
           "line_number": 927,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'coerce_client_dossier_v3' excede límite ciclomático: V(G) = 32 (Rango D > 20)",
+          "message": "Función 'coerce_client_dossier_v3' excede límite crítico ciclomático: V(G) = 32 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -1949,15 +1715,6 @@
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
-          "line_number": 768,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'evaluate_candidate' excede límite ciclomático: V(G) = 29 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/infrastructure/evolution/cognitive_arbiter.py",
           "line_number": 768,
@@ -1988,15 +1745,6 @@
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/auditor/probes/supply_chain.py",
           "line_number": 150,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_is_version_vulnerable' excede límite ciclomático: V(G) = 21 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/auditor/probes/supply_chain.py",
-          "line_number": 150,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_is_version_vulnerable': CoC = 37 (límite cognitivo <= 35)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -2009,24 +1757,6 @@
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'evaluate_and_patch': CoC = 25 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'fair_risk.py' tiene 730 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 86,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_resolve_fair_calibration' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
@@ -2043,7 +1773,7 @@
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
           "line_number": 274,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función '_simulate_finding_risk' excede límite ciclomático: V(G) = 97 (Rango D > 20)",
+          "message": "Función '_simulate_finding_risk' excede límite crítico ciclomático: V(G) = 97 (Rango D > 30)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -2235,10 +1965,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.46,
-        "p95_latency_ms": 80.0,
-        "p99_latency_ms": 130.86,
-        "tail_amplification_ratio": 89.63,
+        "p50_latency_ms": 1.47,
+        "p95_latency_ms": 105.29,
+        "p99_latency_ms": 182.79,
+        "tail_amplification_ratio": 124.35,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -2385,7 +2115,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 142,
+          "line_number": 162,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'Tier-1'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."

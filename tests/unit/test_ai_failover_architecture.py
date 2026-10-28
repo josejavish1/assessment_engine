@@ -18,8 +18,8 @@ def test_ssot_model_resolution_and_fallback():
     # Fallback for gemini-4-argon is gemini-3.1-pro-preview
     assert get_fallback_model("gemini-4-argon") == "gemini-3.1-pro-preview"
 
-    # Primary fast resolves to gemini-flash-latest
-    assert get_model(ModelTier.FAST) == "gemini-flash-latest"
+    # Primary fast resolves to gemini-3.8-flash
+    assert get_model(ModelTier.FAST) == "gemini-3.8-flash"
 
 
 def test_model_agnostic_cost_estimation():

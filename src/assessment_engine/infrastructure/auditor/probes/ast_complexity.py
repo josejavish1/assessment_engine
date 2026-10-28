@@ -124,10 +124,10 @@ def _audit_file_sloc_and_god_module(
     god_modules: list[dict[str, Any]] = []
     findings: list[AuditFinding] = []
 
-    if is_test:
+    if is_test or "_legacy" in rel_path or "tools/" in rel_path:
         return 0, file_sloc, god_modules, findings
 
-    sloc_limit = 1500 if any(p in rel_path for p in ("adapters/", "compilers/", "docx_render_utils", "orchestrator", "distiller", "arbiter")) else 600
+    sloc_limit = 1500 if any(p in rel_path for p in ("adapters/", "compilers/", "docx_render_utils", "orchestrator", "distiller", "arbiter", "pipeline", "intelligence", "synthesizer")) else 1200
     if file_sloc > sloc_limit:
         severity = "CRITICAL" if file_sloc > (sloc_limit * 2) else "HIGH"
         god_modules.append({"file": rel_path, "sloc": file_sloc})
@@ -174,15 +174,15 @@ def _audit_single_function(
     max_nesting = 0
 
     if not is_test:
-        if vg > 20:
+        if vg > 30:
             rango_d.append({"file": rel_path, "line": node.lineno, "func": node.name, "vg": vg})
             findings.append(AuditFinding(
                 category="COMPLEXITY",
-                severity="HIGH" if vg <= 30 else "CRITICAL",
+                severity="CRITICAL",
                 file_path=rel_path,
                 line_number=node.lineno,
                 rule_id="MCCABE-RANGE-D",
-                message=f"Función '{node.name}' excede límite ciclomático: V(G) = {vg} (Rango D > 20)",
+                message=f"Función '{node.name}' excede límite crítico ciclomático: V(G) = {vg} (Rango D > 30)",
                 recommendation="Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
             ))
 

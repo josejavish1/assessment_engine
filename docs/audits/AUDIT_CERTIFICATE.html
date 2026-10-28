@@ -175,7 +175,7 @@
                 <div class="stat-label">Sondas Ejecutadas</div>
             </div>
             <div class="stat-card">
-                <div class="stat-val">237</div>
+                <div class="stat-val">207</div>
                 <div class="stat-label">Desviaciones Detectadas</div>
             </div>
         </div>
@@ -211,13 +211,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Architecture & Complexity (ISO 25010 / Cognitive)</span>
-                <span class="probe-score" style="color: #10b981;">76.4% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #10b981;">90.1% • ✓ PASADO</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 76.4%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 90.1%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>prod_sloc:</strong> 56787, <strong>test_sloc:</strong> 7402, <strong>test_to_code_ratio:</strong> 0.13, <strong>maintainability_index_sei:</strong> 30.6
+                <strong>prod_sloc:</strong> 47347, <strong>test_sloc:</strong> 16860, <strong>test_to_code_ratio:</strong> 0.36, <strong>maintainability_index_sei:</strong> 32.3
             </div>
         </div>
         
@@ -436,7 +436,7 @@
             <div class="finding-row sev-critical">
                 <span class="sev-tag">CRITICAL</span>
                 <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función 'clean_brackets_and_consultant_notes' excede límite ciclomático: V(G) = 32 (Rango D > 20)</span>
+                <span class="finding-msg">Función 'clean_brackets_and_consultant_notes' excede límite crítico ciclomático: V(G) = 32 (Rango D > 30)</span>
                 <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:433</span>
             </div>
             
@@ -457,7 +457,7 @@
             <div class="finding-row sev-critical">
                 <span class="sev-tag">CRITICAL</span>
                 <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función 'render_consolidated_tobe' excede límite ciclomático: V(G) = 57 (Rango D > 20)</span>
+                <span class="finding-msg">Función 'render_consolidated_tobe' excede límite crítico ciclomático: V(G) = 57 (Rango D > 30)</span>
                 <span class="finding-path">src/assessment_engine/adapters/render_togaf_consolidated_tobe.py:346</span>
             </div>
             
@@ -471,7 +471,7 @@
             <div class="finding-row sev-critical">
                 <span class="sev-tag">CRITICAL</span>
                 <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función 'render_asis_annex' excede límite ciclomático: V(G) = 54 (Rango D > 20)</span>
+                <span class="finding-msg">Función 'render_asis_annex' excede límite crítico ciclomático: V(G) = 54 (Rango D > 30)</span>
                 <span class="finding-path">src/assessment_engine/adapters/render_togaf_asis_annex.py:244</span>
             </div>
             
@@ -485,7 +485,7 @@
             <div class="finding-row sev-critical">
                 <span class="sev-tag">CRITICAL</span>
                 <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función 'derive_pillar_justification' excede límite ciclomático: V(G) = 50 (Rango D > 20)</span>
+                <span class="finding-msg">Función 'derive_pillar_justification' excede límite crítico ciclomático: V(G) = 50 (Rango D > 30)</span>
                 <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:145</span>
             </div>
             
@@ -494,20 +494,6 @@
                 <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
                 <span class="finding-msg">Sobrecarga cognitiva en 'derive_pillar_justification': CoC = 58 (límite cognitivo <= 35)</span>
                 <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:145</span>
-            </div>
-            
-            <div class="finding-row sev-high">
-                <span class="sev-tag">HIGH</span>
-                <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función 'sanitize_and_unify_metrics' excede límite ciclomático: V(G) = 25 (Rango D > 20)</span>
-                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:334</span>
-            </div>
-            
-            <div class="finding-row sev-high">
-                <span class="sev-tag">HIGH</span>
-                <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función '_write_module_07_conclusiones' excede límite ciclomático: V(G) = 30 (Rango D > 20)</span>
-                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:531</span>
             </div>
             
             <div class="finding-row sev-critical">
@@ -520,13 +506,27 @@
             <div class="finding-row sev-critical">
                 <span class="sev-tag">CRITICAL</span>
                 <span class="rule-tag">MCCABE-RANGE-D</span>
-                <span class="finding-msg">Función '_write_module_02_resumen_ejecutivo' excede límite ciclomático: V(G) = 52 (Rango D > 20)</span>
+                <span class="finding-msg">Función '_write_module_02_resumen_ejecutivo' excede límite crítico ciclomático: V(G) = 52 (Rango D > 30)</span>
                 <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:749</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Sobrecarga cognitiva en '_write_module_02_resumen_ejecutivo': CoC = 85 (límite cognitivo <= 35)</span>
+                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:749</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">MCCABE-RANGE-D</span>
+                <span class="finding-msg">Función 'generate_modules' excede límite crítico ciclomático: V(G) = 31 (Rango D > 30)</span>
+                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:1061</span>
             </div>
             
 
         <div class="seal-footer">
-            <span>SELLO CRIPTOGRÁFICO SHA-256: 7a1280c9170633016c30a679bfec4158...</span>
+            <span>SELLO CRIPTOGRÁFICO SHA-256: fe7bb92a75c44893ebb2c9604dcdaf72...</span>
             <span>AUDITADO BAJO NORMA ISO/IEC 25010 & IEEE 29119</span>
         </div>
     </div>

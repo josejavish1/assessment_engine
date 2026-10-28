@@ -31,6 +31,25 @@ VERTEX_CONCURRENCY_LIMIT = 5
 _vertex_semaphore = asyncio.Semaphore(VERTEX_CONCURRENCY_LIMIT)
 
 
+def ensure_vertexai_initialized() -> None:
+    """Ensures Vertex AI is initialized in the global region with valid credentials."""
+    import os
+    import vertexai
+    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        sa_path = os.path.expanduser("~/.secrets/sa-key.json")
+        if os.path.exists(sa_path):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = sa_path
+    os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "sub403o4u0q5")
+    os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "global")
+    try:
+        vertexai.init(
+            project=os.environ["GOOGLE_CLOUD_PROJECT"],
+            location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"),
+        )
+    except Exception as e:
+        logger.debug("vertexai.init fallback exception: %s", e)
+
+
 class VertexQueryTimeoutError(RuntimeError):
     """{'docstring': 'Error raised when a request to a Vertex AI service times out.'}."""
 
@@ -75,6 +94,7 @@ async def _execute_query_with_retry(
     app: AdkApp, user_id: str, message: str
 ) -> Tuple[str, List[str]]:
     """Executes a query against the specified agent, incorporating retry logic to handle transient failures."""
+    ensure_vertexai_initialized()
     async with _vertex_semaphore:
         lines = []
         last_text = None
@@ -94,7 +114,7 @@ async def _execute_query_with_retry(
                 get_fallback_model,
             )
 
-            agent_obj = getattr(app, "_agent", None)
+            agent_obj = getattr(app, "_agent", None) or getattr(app, "_tmpl_attrs", {}).get("agent")
             current_model = getattr(agent_obj, "model", None)
             fallback = get_fallback_model(current_model)
             if fallback and fallback != current_model:
