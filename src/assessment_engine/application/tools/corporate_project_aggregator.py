@@ -12,36 +12,26 @@ _NUMBER_TOKEN_PATTERN = re.compile(
 _MULTIPLIERS = {"k": 1e3, "m": 1e6, "b": 1e9}
 
 
-def _resolve_loader() -> Callable[[str], str | None]:
-    candidate_modules = (
-        "assessment_engine.config_loader",
-        "assessment_engine.infrastructure.config_loader",
-        "assessment_engine.infrastructure.config.config_loader",
-        "assessment_engine.domain.config_loader",
-        "assessment_engine.application.config_loader",
-        "config_loader",
-    )
-    for mod_name in candidate_modules:
-        try:
-            mod = importlib.import_module(mod_name)
-            fn = getattr(mod, "resolve_canonical_program_id", None)
-            if callable(fn):
-                return fn
-        except ImportError:
-            continue
-    return _fallback_resolve_canonical_program_id
+from pydantic import BaseModel, ConfigDict, Field
+
+from assessment_engine.infrastructure.config_loader import (
+    resolve_canonical_program_id,
+)
 
 
-def _fallback_resolve_canonical_program_id(text: str) -> str | None:
-    lowered = text.lower()
-    if any(k in lowered for k in ("observabilidad", "siem", "telemetría", "telemetria", "snmp", "monitorización", "monitorizacion")):
-        return "PROG_OBSERVABILITY"
-    if any(k in lowered for k in ("zero trust", "iam", "mfa", "identidades")):
-        return "PROG_ZERO_TRUST"
-    return None
+class StrategicInitiative(BaseModel):
+    """Strongly-typed domain model for individual initiatives before aggregation."""
 
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
 
-resolve_canonical_program_id: Callable[[str], str | None] = _resolve_loader()
+    id: str
+    tower: str
+    title: str
+    objective: str = ""
+    priority: str = "Alta"
+    expected_outcome: str = ""
+    capex_estimate: str = "0"
+    raw_data: dict[str, Any] = Field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -125,10 +115,15 @@ def _parse_capex_estimate(raw_capex: Any) -> float:
         return 0.0
 
 
-def _build_work_package(initiative: dict[str, Any]) -> WorkPackage:
-    capex_raw = initiative.get("capex_estimate", "")
+def _build_work_package(initiative: StrategicInitiative | dict[str, Any]) -> WorkPackage:
+    if isinstance(initiative, StrategicInitiative):
+        init_dict = initiative.model_dump()
+    else:
+        init_dict = dict(initiative)
+
+    capex_raw = init_dict.get("capex_estimate", "")
     capex_str = str(capex_raw) if capex_raw is not None else ""
-    raw_num = initiative.get("capex_numeric")
+    raw_num = init_dict.get("capex_numeric")
     capex_val = (
         raw_num
         if raw_num is not None
@@ -136,19 +131,21 @@ def _build_work_package(initiative: dict[str, Any]) -> WorkPackage:
     )
     capex_num = _parse_capex_estimate(capex_val)
     return WorkPackage(
-        id=str(initiative.get("id", "")),
-        tower=str(initiative.get("tower", "UNKNOWN")),
-        title=str(initiative.get("title", "")),
-        objective=str(initiative.get("objective", "")),
-        priority=str(initiative.get("priority", "")),
-        expected_outcome=str(initiative.get("expected_outcome", "")),
+        id=str(init_dict.get("id", "")),
+        tower=str(init_dict.get("tower", "UNKNOWN")),
+        title=str(init_dict.get("title", "")),
+        objective=str(init_dict.get("objective", "")),
+        priority=str(init_dict.get("priority", "")),
+        expected_outcome=str(init_dict.get("expected_outcome", "")),
         capex_estimate=capex_str,
         capex_numeric=capex_num,
-        raw_data=dict(initiative),
+        raw_data=init_dict,
     )
 
 
-def _extract_initiative_search_text(initiative: dict[str, Any]) -> str:
+def _extract_initiative_search_text(initiative: StrategicInitiative | dict[str, Any]) -> str:
+    if isinstance(initiative, StrategicInitiative):
+        return f"{initiative.title} {initiative.objective} {initiative.expected_outcome}".strip()
     title = str(initiative.get("title", ""))
     objective = str(initiative.get("objective", ""))
     outcome = str(initiative.get("expected_outcome", ""))
@@ -176,7 +173,7 @@ def _create_corporate_program(
 
 
 def aggregate_corporate_projects(
-    initiatives: list[dict[str, Any]],
+    initiatives: list[StrategicInitiative | dict[str, Any]],
     program_resolver: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
     if not initiatives:
@@ -187,8 +184,13 @@ def aggregate_corporate_projects(
     standalone_initiatives: list[dict[str, Any]] = []
 
     for initiative in initiatives:
+        init_dict = (
+            initiative.model_dump()
+            if isinstance(initiative, StrategicInitiative)
+            else dict(initiative)
+        )
         search_text = _extract_initiative_search_text(initiative)
-        explicit_pid = initiative.get("program_id")
+        explicit_pid = init_dict.get("program_id")
         program_id = (
             str(explicit_pid).strip()
             if explicit_pid
@@ -196,7 +198,7 @@ def aggregate_corporate_projects(
         )
 
         if not program_id:
-            standalone_initiatives.append(dict(initiative))
+            standalone_initiatives.append(init_dict)
             continue
 
         work_package = _build_work_package(initiative)

@@ -479,7 +479,7 @@ def _get_compiled_programs_index() -> tuple[
 
 
 def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
-    """Resolves an initiative title or raw identifier to a canonical strategic program ID."""
+    """Resolves an initiative title or raw identifier to a canonical strategic program ID with boundary matching."""
     if not raw_name_or_id:
         return None
 
@@ -491,7 +491,9 @@ def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
 
     norm_lower = _strip_diacritics(normalized.lower())
     for pid, aliases in alias_index:
-        if any(alias in norm_lower for alias in aliases):
-            return pid
+        for alias in aliases:
+            pattern = r"(?:^|\W)" + re.escape(alias) + r"(?:$|\W)"
+            if re.search(pattern, norm_lower):
+                return pid
 
     return None

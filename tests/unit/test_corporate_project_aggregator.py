@@ -150,3 +150,40 @@ def test_custom_program_resolver_injection():
     assert len(result["programs"]) == 1
     assert result["programs"][0].program_id == "PROG_CUSTOM"
     assert set(result["programs"][0].participating_towers) == {"T1", "T2"}
+
+
+def test_typed_initiatives_and_boundary_token_matching():
+    """Verify that aggregate_corporate_projects supports StrategicInitiative Pydantic models
+    and that token boundary matching prevents false positives (e.g. 'equipamiento' vs 'pam')."""
+    from assessment_engine.application.tools.corporate_project_aggregator import (
+        StrategicInitiative,
+    )
+
+    # 'equipamiento' contains substring 'pam', but should NOT match PROG_ZERO_TRUST_IAM
+    false_positive_candidate = StrategicInitiative(
+        id="FP-01",
+        tower="T1",
+        title="Sustitución de equipamiento físico en CPD",
+        objective="Mantenimiento de racks",
+        capex_estimate="15.000 €",
+    )
+    # Real PAM project
+    true_positive = StrategicInitiative(
+        id="TP-01",
+        tower="T6",
+        title="Implantación de solución PAM y gestión de identidades",
+        objective="Control de accesos privilegiados",
+        capex_estimate="80.000 €",
+    )
+
+    result = aggregate_corporate_projects([false_positive_candidate, true_positive])
+
+    # Only the true positive should map to PROG_ZERO_TRUST_IAM
+    assert len(result["programs"]) == 1
+    prog = result["programs"][0]
+    assert prog.program_id == "PROG_ZERO_TRUST_IAM"
+    assert prog.participating_towers == ["T6"]
+
+    # The false positive must remain as a standalone initiative
+    assert len(result["standalone_initiatives"]) == 1
+    assert result["standalone_initiatives"][0]["id"] == "FP-01"
