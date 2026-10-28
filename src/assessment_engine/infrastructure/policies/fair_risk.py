@@ -461,31 +461,26 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 k_failures = 0
                 
                 if n_trials > 0:
-                    for ev in pillar_evidences:
-                        supports = ev.get("supports", [])
-                        if "risk" in supports or "gap" in supports:
-                            k_failures += 1
-                        else:
-                            ev_text = ev.get("excerpt", "").lower()
-                            has_negation = any(
-                                neg in ev_text
-                                for neg in [
-                                    "ausencia de incidentes",
-                                    "ausencia de vulnerabilidades",
-                                    "sin incidencias",
-                                    "protegido contra",
-                                    "mitigado",
-                                ]
-                            )
-                            if not has_negation and any(
-                                keyword in ev_text
-                                for k_list in [
-                                    ["deficiencia", "vulnerabilidad crítica", "riesgo alto", "incumplimiento"],
-                                    ["fragmenta", "silo", "heterogeneidad", "coexistencia", "duplic", "legacy", "obsoleto"]
-                                ]
-                                for keyword in k_list
-                            ):
-                                k_failures += 1
+                    pillar_gaps = len(p.get("gaps", []))
+                    pillar_strengths = len(p.get("strengths", []))
+                    ledger_gaps = sum(
+                        1
+                        for ev in pillar_evidences
+                        if "gap" in ev.get("supports", [])
+                        or "risk" in ev.get("supports", [])
+                    )
+                    ledger_strengths = sum(
+                        1
+                        for ev in pillar_evidences
+                        if "asis" in ev.get("supports", [])
+                        and "gap" not in ev.get("supports", [])
+                    )
+                    k_failures = max(pillar_gaps, ledger_gaps)
+                    n_trials = max(
+                        1,
+                        k_failures
+                        + max(pillar_strengths, ledger_strengths, len(pillar_evidences)),
+                    )
                             
                     # Prior Gamma(alpha, beta) parameters
                     alpha_prior = 4.0
@@ -578,29 +573,14 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     lm_ml = hourly * 2.5
                     lm_max = hourly * 12.0
 
-                # 2. Tipificación declarativa (con fallback heurístico para retrocompatibilidad al 100%)
-                is_friction_risk = (typology == "OPERATIONAL_FRICTION") or any(
-                    k in text
-                    for k in [
-                        "finops",
-                        "itsm",
-                        "manual",
-                        "provisión",
-                        "solicitud",  # Match solicitud, solicitudes
-                        "excel",
-                        "ticket",
-                        "retraso",
-                        "aprobación",
-                        "heterogeneidad",
-                        "coexistencia",
-                        "licencia",     # Match licencia, licencias, licenciamiento
-                        "fragmenta",    # Match fragmentación, fragmentado, fragmentados
-                        "silo",         # Match silo, silos
-                        "duplic",       # Match duplicidad, duplicación, duplicado, duplicados
-                        "tco",
-                    ]
+                # SOTA Tier-1 Actuarial Practice: Ontology & Structure-Driven Typology (Zero-Keywords)
+                finding_typology = finding.get("typology") or cap_calibration.get("typology")
+                is_friction_risk = (
+                    typology == "OPERATIONAL_FRICTION"
+                    or finding_typology == "OPERATIONAL_FRICTION"
+                    or finding.get("is_operational_friction") is True
                 )
-                finding["typology"] = typology
+                finding["typology"] = "OPERATIONAL_FRICTION" if is_friction_risk else typology
                 finding["is_operational_friction"] = is_friction_risk
                 finding["p_vuln"] = p_vuln
                 if is_friction_risk:
@@ -898,6 +878,33 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 finding["fair_p90_score"] = round(p90_ale, 2)
                 finding["fair_min_score"] = round(min_ale, 2)
                 finding["fair_max_score"] = round(max_ale, 2)
+
+                # SOTA Tier-1 Actuarial Auditing: Attach Physical Accounting Breakdown to finding
+                hourly_val = float(hourly_cost) if hourly_cost is not None else 500.0
+                hourly_sre_rate = (
+                    float(custom_calibration.get("hourly_rate_sre_eur", 36.0))
+                    if custom_calibration
+                    else 36.0
+                )
+                downtime_h = {1: 0.5, 2: 2.0, 3: 6.0, 4: 12.0, 5: 24.0}.get(lm, 6.0)
+                downtime_cost = downtime_h * hourly_val
+                sre_h = max(1.0, 12.0 / (1.5 ** max(0.5, p_score - 1.0)))
+                sre_cost = sre_h * hourly_sre_rate * 2.0
+
+                finding["physical_loss_breakdown"] = {
+                    "downtime_hours": round(downtime_h, 1),
+                    "hourly_downtime_cost_eur": round(hourly_val, 2),
+                    "lucro_cesante_eur": round(downtime_cost, 2),
+                    "sre_recovery_hours": round(sre_h, 1),
+                    "sre_hourly_rate_eur": round(hourly_sre_rate, 2),
+                    "sre_cost_eur": round(sre_cost, 2),
+                    "direct_incident_cost_eur": round(downtime_cost + sre_cost, 2),
+                }
+                finding["audit_justification"] = (
+                    f"Pérdida primaria contable estimada en evento base: {downtime_h:.1f}h de parada operativa a {hourly_val:,.2f} €/h "
+                    f"({downtime_cost:,.2f} €) + {sre_cost:,.2f} € de intervención técnica SRE "
+                    f"({sre_h:.1f}h a {hourly_sre_rate:,.2f} €/h)."
+                )
 
                 # Sum vectorially to compile the corporate-wide annual loss distribution (Gap 2)
                 total_annual_losses += truncated_losses
