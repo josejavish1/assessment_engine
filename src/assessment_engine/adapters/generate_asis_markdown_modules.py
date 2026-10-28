@@ -4,6 +4,7 @@ import csv
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from assessment_engine.infrastructure.localization import format_number
 
@@ -29,6 +30,116 @@ def clean_client_name(client_name: str) -> str:
     if cleaned.islower():
         return cleaned.title()
     return cleaned
+
+
+CAPABILITY_KEYWORD_MAP_ES = (
+    (("lifecycle", "patch"), "Gestión de Ciclo de Vida Automatizada (Parcheado y Actualizaciones)"),
+    (("governance", "configur"), "Gobernanza y Estandarización de la Configuración"),
+    (("high availability", "availability"), "Validación Continua de la Alta Disponibilidad"),
+    (("observability", "monitoring"), "Observabilidad Centralizada y Telemetría"),
+    (("provision", "self-service"), "Autoservicio de Provisión y Automatización de Despliegue"),
+    (("identity", "access"), "Seguridad de Identidad y Gobierno de Accesos"),
+    (("backup", "recovery"), "Respaldo Automatizado y Recuperación ante Desastres"),
+    (("hybrid cloud", "cloud"), "Gobernanza de Nube Híbrida y Consistencia Operativa"),
+)
+
+
+def _clean_cap_name(cap_name: str, doc_lang: str) -> str:
+    """Clean and translate capability name to canonical Spanish label if needed."""
+    if not cap_name or doc_lang != "es":
+        return cap_name or ""
+    c_lower = cap_name.lower()
+    for keywords, label in CAPABILITY_KEYWORD_MAP_ES:
+        if any(kw in c_lower for kw in keywords):
+            return label
+    return cap_name
+
+
+def _get_high_maturity_prose(doc_lang: str, stable_caps: list[str]) -> tuple[str, str, str, str, str, str]:
+    """Return labels and paragraphs for high maturity posture."""
+    # HIGH MATURITY CASE: No gaps, focus on Excellence and Optimization
+    if doc_lang == "es":
+        label_1 = "Liderazgo Tecnológico y Estabilidad"
+        label_2 = "Oportunidades de Optimización Continua"
+        label_3 = "Calibración Analítica de Excelencia"
+        
+        p1_text = f"La plataforma demuestra un liderazgo tecnológico sobresaliente en este dominio, sustentado por procesos optimizados y mejores prácticas en capacidades clave como {', '.join(stable_caps[:3])}." if stable_caps else "Las capacidades evaluadas reflejan una madurez operativa excelente y consistente en todo el perímetro."
+        p2_text = "No se han detectado brechas de madurez ni vulnerabilidades críticas. Las oportunidades se centran exclusivamente en el mantenimiento proactivo y la innovación tecnológica continua."
+        p3_text = f"La calificación excelente refleja un comportamiento maduro y homogéneo, posicionando a este pilar como un habilitador estratégico de resiliencia y escalabilidad."
+    else:
+        label_1 = "Technological Leadership and Stability"
+        label_2 = "Continuous Optimization Opportunities"
+        label_3 = "Analytical Excellence Calibration"
+        
+        p1_text = f"The platform demonstrates outstanding technological leadership in this domain, supported by optimized processes and best practices in key capabilities like {', '.join(stable_caps[:3])}." if stable_caps else "The evaluated capabilities reflect excellent and consistent operational maturity across the perimeter."
+        p2_text = "No maturity gaps or critical vulnerabilities have been detected. Opportunities focus exclusively on proactive maintenance and continuous technological innovation."
+        p3_text = f"The excellent score reflects a mature and homogeneous posture, positioning this pillar as a strategic enabler of resilience and scalability."
+
+    return label_1, p1_text, label_2, p2_text, label_3, p3_text
+
+
+def _get_balanced_maturity_prose(doc_lang: str, v_idx: int, stable_caps: list[str], gaps_caps: list[str], gaps_str_joined: str, risks_str_joined: str, worst_cap: str) -> tuple[str, str, str, str, str, str]:
+    """Return labels and paragraphs for balanced maturity posture."""
+    # BALANCED CASE (MEDIUM-HIGH): Both strengths and gaps exist
+    if doc_lang == "es":
+        label_1 = "Fortalezas Operativas y Estabilidad"
+        label_2 = "Brechas de Control y Vulnerabilidades"
+        label_3 = "Calibración Analítica del Diagnóstico"
+        
+        if v_idx == 0:
+            p1_text = f"La plataforma demuestra solvencia operativa y un desempeño sólido en capacidades clave como {', '.join(stable_caps[:3])}, lo que proporciona una base de control funcional y estabilidad en los dominios más maduros de la torre." if stable_caps else "Se identifican oportunidades de consolidación generalizadas en las capacidades de este pilar."
+            p2_text = f"En contraposición, se identifican brechas de madurez relevantes en {', '.join(gaps_caps[:3])}. El análisis técnico revela que {gaps_str_joined}. Esta limitación expone de forma directa al negocio a consecuencias operativas caracterizadas por {risks_str_joined}."
+            p3_text = f"La calificación final del pilar se encuentra sustentada por las capacidades de soporte estables, pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', que actúa como el factor de riesgo principal que limita la resiliencia estructural y la robustez actual de la plataforma."
+        elif v_idx == 1:
+            p1_text = f"El diagnóstico técnico identifica fortalezas funcionales y prácticas estables en {', '.join(stable_caps[:3])}, sirviendo como pilar operativo para el sostenimiento de los servicios actuales." if stable_caps else "Se requiere un esfuerzo de estandarización estructural en todo el perímetro de capacidades de este pilar."
+            p2_text = f"Sin embargo, existen áreas de mejora prioritarias en {', '.join(gaps_caps[:3])}. El análisis de control revela que {gaps_str_joined}. En consecuencia, esto genera una exposición operativa directa caracterizada por {risks_str_joined}."
+            p3_text = f"La puntuación refleja un equilibrio entre las fortalezas de la plataforma y el lastre que suponen las brechas en '{worst_cap}', las cuales restan resiliencia y limitan la escalabilidad operativa global."
+        else:
+            p1_text = f"Se constata un nivel de control adecuado y procesos consistentes en capacidades como {', '.join(stable_caps[:3])}, aportando resiliencia a la operación diaria de la infraestructura." if stable_caps else "Las capacidades actuales muestran un comportamiento elemental con necesidad de redefinición de procesos."
+            p2_text = f"En contraposición, el entorno presenta desafíos operativos materiales en {', '.join(gaps_caps[:3])}. Se constata que {gaps_str_joined}, lo cual expone a la organización a consecuencias de negocio como {risks_str_joined}."
+            p3_text = f"El score consolidado del pilar se ve severamente condicionado por la inmadurez de la capacidad de '{worst_cap}', la cual actúa como el principal obstáculo para consolidar una postura de seguridad y fiabilidad adecuada en la operación actual."
+    else:
+        label_1 = "Operational Strengths and Stability"
+        label_2 = "Control Gaps and Vulnerabilities"
+        label_3 = "Analytical Diagnostic Calibration"
+        
+        if v_idx == 0:
+            p1_text = f"The platform demonstrates operational solvency and solid performance in key capabilities like {', '.join(stable_caps[:3])}, providing a functional control baseline and stability in the mature domains of the tower." if stable_caps else "Generalized consolidation needs are identified in the capabilities of this pillar."
+            p2_text = f"In contrast, relevant maturity gaps are identified in {', '.join(gaps_caps[:3])}. Specifically, {gaps_str_joined}. This structural limitation directly exposes the business to operational consequences characterized by {risks_str_joined}."
+            p3_text = f"The final pillar score is supported by the baseline capabilities, but is directly penalized by the critical deficiencies detected in '{worst_cap}', which acts as the limiting factor for the global evolution of this domain."
+        elif v_idx == 1:
+            p1_text = f"The technical diagnosis identifies functional strengths and stable practices in {', '.join(stable_caps[:3])}, serving as an operational foundation to sustain current services." if stable_caps else "Structural standardization efforts are required across the entire scope of this pillar."
+            p2_text = f"Nonetheless, there are key weaknesses and priority areas for improvement in {', '.join(gaps_caps[:3])}. The analysis reveals that {gaps_str_joined}. Consequently, this generates direct operational exposure characterized by {risks_str_joined}."
+            p3_text = f"The score reflects a balance between the strengths of the platform and the burden of the gaps in '{worst_cap}', which reduce resilience and limit global operational scalability."
+        else:
+            p1_text = f"An adequate control level and consistent processes are noted in capabilities such as {', '.join(stable_caps[:3])}, adding resilience to daily infrastructure operations." if stable_caps else "Current capabilities show basic behavior with a clear need for process redefinition."
+            p2_text = f"In contrast, the environment presents material operational challenges in {', '.join(gaps_caps[:3])}. A material gap is noted in {gaps_str_joined}, which exposes the organization to business consequences such as {risks_str_joined}."
+            p3_text = f"The consolidated pillar score is severely conditioned by the immaturity of the '{worst_cap}' capability, which acts as the main obstacle to reach the target control state."
+
+    return label_1, p1_text, label_2, p2_text, label_3, p3_text
+
+
+def _get_low_maturity_prose(doc_lang: str, v_idx: int, gaps_caps: list[str], gaps_str_joined: str, risks_str_joined: str, worst_cap: str) -> tuple[str, str, str, str, str, str]:
+    """Return labels and paragraphs for critical or low maturity posture."""
+    # CRITICAL/LOW MATURITY CASE (Score < 2.60): No real strengths, focus on State of Deficiency and Remediation Path
+    if doc_lang == "es":
+        label_1 = "Diagnóstico de Deficiencias y Estado Crítico"
+        label_2 = "Exposición al Riesgo e Impacto Operativo"
+        label_3 = "Calibración Analítica de Penalización"
+        
+        p1_text = f"El diagnóstico revela un estado de inmadurez estructural crítico y generalizado, caracterizado por la ausencia de estandarización y control formal en capacidades esenciales como {', '.join(gaps_caps[:3])}." if gaps_caps else "El dominio muestra una postura operativa elemental o no documentada, requiriendo una intervención prioritaria."
+        p2_text = f"El análisis técnico revela que {gaps_str_joined}. La carencia de automatizaciones avanzadas y la alta dependencia de procesos manuales exponen de forma inmediata a la organización a {risks_str_joined}."
+        p3_text = f"La puntuación crítica asignada se encuentra severamente lastrada por la debilidad estructural detectada en '{worst_cap}', que representa el cuello de botella principal de la torre y anula la efectividad de cualquier control adyacente."
+    else:
+        label_1 = "Deficiency Diagnosis and Critical State"
+        label_2 = "Risk Exposure and Operational Impact"
+        label_3 = "Analytical Penalty Calibration"
+        
+        p1_text = f"The diagnosis reveals a critical and widespread structural immaturity, characterized by the absence of standardization and formal control in essential capabilities such as {', '.join(gaps_caps[:3])}." if gaps_caps else "The domain shows a basic or undocumented operational posture, requiring priority intervention."
+        p2_text = f"Technical analysis reveals that {gaps_str_joined}. The lack of advanced automation and high dependence on manual processes directly exposes the organization to {risks_str_joined}."
+        p3_text = f"The assigned critical score is severely burdened by the systemic weakness detected in '{worst_cap}', which represents the main bottleneck of the tower and negates the effectiveness of any adjacent control."
+
+    return label_1, p1_text, label_2, p2_text, label_3, p3_text
 
 
 def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
@@ -89,29 +200,8 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
         
     stable_findings = [f for f in sorted_findings if f not in gaps_findings]
     
-    # Extract capability names (translate/sanitize them to Spanish if needed!)
-    def clean_cap_name(cap_name):
-        if not cap_name:
-            return ""
-        if doc_lang == "es":
-            c_lower = cap_name.lower()
-            if "lifecycle" in c_lower or "patch" in c_lower:
-                return "Gestión de Ciclo de Vida Automatizada (Parcheado y Actualizaciones)"
-            if "governance" in c_lower or "configur" in c_lower:
-                return "Gobernanza y Estandarización de la Configuración"
-            if "availability" in c_lower or "high availability" in c_lower:
-                return "Validación Continua de la Alta Disponibilidad"
-            if "observability" in c_lower or "monitoring" in c_lower:
-                return "Observabilidad Centralizada y Telemetría"
-            if "provision" in c_lower or "self-service" in c_lower:
-                return "Autoservicio de Provisión y Automatización de Despliegue"
-            if "identity" in c_lower or "access" in c_lower:
-                return "Seguridad de Identidad y Gobierno de Accesos"
-            if "backup" in c_lower or "recovery" in c_lower:
-                return "Respaldo Automatizado y Recuperación ante Desastres"
-            if "hybrid cloud" in c_lower or "cloud" in c_lower:
-                return "Gobernanza de Nube Híbrida y Consistencia Operativa"
-        return cap_name
+    def clean_cap_name(name):
+        return _clean_cap_name(name, doc_lang)
 
     gaps_caps = [clean_cap_name(f.get("target_state", f.get("capability", ""))) for f in gaps_findings if f.get("target_state", f.get("capability"))]
     stable_caps = [clean_cap_name(f.get("target_state", f.get("capability", ""))) for f in stable_findings if f.get("target_state", f.get("capability"))]
@@ -172,92 +262,17 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
     p_score = float(p.get("score", 3.0))
 
     if p_score >= 4.20:
-        # HIGH MATURITY CASE: No gaps, focus on Excellence and Optimization
-        if doc_lang == "es":
-            label_1 = "Liderazgo Tecnológico y Estabilidad"
-            label_2 = "Oportunidades de Optimización Continua"
-            label_3 = "Calibración Analítica de Excelencia"
-            
-            p1_text = f"La plataforma demuestra un liderazgo tecnológico sobresaliente en este dominio, sustentado por procesos optimizados y mejores prácticas en capacidades clave como {', '.join(stable_caps[:3])}." if stable_caps else "Las capacidades evaluadas reflejan una madurez operativa excelente y consistente en todo el perímetro."
-            p2_text = "No se han detectado brechas de madurez ni vulnerabilidades críticas. Las oportunidades se centran exclusivamente en el mantenimiento proactivo y la innovación tecnológica continua."
-            p3_text = f"La calificación excelente refleja un comportamiento maduro y homogéneo, posicionando a este pilar como un habilitador estratégico de resiliencia y escalabilidad."
-        else:
-            label_1 = "Technological Leadership and Stability"
-            label_2 = "Continuous Optimization Opportunities"
-            label_3 = "Analytical Excellence Calibration"
-            
-            p1_text = f"The platform demonstrates outstanding technological leadership in this domain, supported by optimized processes and best practices in key capabilities like {', '.join(stable_caps[:3])}." if stable_caps else "The evaluated capabilities reflect excellent and consistent operational maturity across the perimeter."
-            p2_text = "No maturity gaps or critical vulnerabilities have been detected. Opportunities focus exclusively on proactive maintenance and continuous technological innovation."
-            p3_text = f"The excellent score reflects a mature and homogeneous posture, positioning this pillar as a strategic enabler of resilience and scalability."
-
+        label_1, p1_text, label_2, p2_text, label_3, p3_text = _get_high_maturity_prose(doc_lang, stable_caps)
     elif p_score >= 2.60:
-        # BALANCED CASE (MEDIUM-HIGH): Both strengths and gaps exist
-        if doc_lang == "es":
-            label_1 = "Fortalezas Operativas y Estabilidad"
-            label_2 = "Brechas de Control y Vulnerabilidades"
-            label_3 = "Calibración Analítica del Diagnóstico"
-            
-            if v_idx == 0:
-                p1_text = f"La plataforma demuestra solvencia operativa y un desempeño sólido en capacidades clave como {', '.join(stable_caps[:3])}, lo que proporciona una base de control funcional y estabilidad en los dominios más maduros de la torre." if stable_caps else "Se identifican oportunidades de consolidación generalizadas en las capacidades de este pilar."
-                p2_text = f"En contraposición, se identifican brechas de madurez relevantes en {', '.join(gaps_caps[:3])}. El análisis técnico revela que {gaps_str_joined}. Esta limitación expone de forma directa al negocio a consecuencias operativas caracterizadas por {risks_str_joined}."
-                p3_text = f"La calificación final del pilar se encuentra sustentada por las capacidades de soporte estables, pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', que actúa como el factor de riesgo principal que limita la resiliencia estructural y la robustez actual de la plataforma."
-            elif v_idx == 1:
-                p1_text = f"El diagnóstico técnico identifica fortalezas funcionales y prácticas estables en {', '.join(stable_caps[:3])}, sirviendo como pilar operativo para el sostenimiento de los servicios actuales." if stable_caps else "Se requiere un esfuerzo de estandarización estructural en todo el perímetro de capacidades de este pilar."
-                p2_text = f"Sin embargo, existen áreas de mejora prioritarias en {', '.join(gaps_caps[:3])}. El análisis de control revela que {gaps_str_joined}. En consecuencia, esto genera una exposición operativa directa caracterizada por {risks_str_joined}."
-                p3_text = f"La puntuación refleja un equilibrio entre las fortalezas de la plataforma y el lastre que suponen las brechas en '{worst_cap}', las cuales restan resiliencia y limitan la escalabilidad operativa global."
-            else:
-                p1_text = f"Se constata un nivel de control adecuado y procesos consistentes en capacidades como {', '.join(stable_caps[:3])}, aportando resiliencia a la operación diaria de la infraestructura." if stable_caps else "Las capacidades actuales muestran un comportamiento elemental con necesidad de redefinición de procesos."
-                p2_text = f"En contraposición, el entorno presenta desafíos operativos materiales en {', '.join(gaps_caps[:3])}. Se constata que {gaps_str_joined}, lo cual expone a la organización a consecuencias de negocio como {risks_str_joined}."
-                p3_text = f"El score consolidado del pilar se ve severamente condicionado por la inmadurez de la capacidad de '{worst_cap}', la cual actúa como el principal obstáculo para consolidar una postura de seguridad y fiabilidad adecuada en la operación actual."
-        else:
-            label_1 = "Operational Strengths and Stability"
-            label_2 = "Control Gaps and Vulnerabilities"
-            label_3 = "Analytical Diagnostic Calibration"
-            
-            if v_idx == 0:
-                p1_text = f"The platform demonstrates operational solvency and solid performance in key capabilities like {', '.join(stable_caps[:3])}, providing a functional control baseline and stability in the mature domains of the tower." if stable_caps else "Generalized consolidation needs are identified in the capabilities of this pillar."
-                p2_text = f"In contrast, relevant maturity gaps are identified in {', '.join(gaps_caps[:3])}. Specifically, {gaps_str_joined}. This structural limitation directly exposes the business to operational consequences characterized by {risks_str_joined}."
-                p3_text = f"The final pillar score is supported by the baseline capabilities, but is directly penalized by the critical deficiencies detected in '{worst_cap}', which acts as the limiting factor for the global evolution of this domain."
-            elif v_idx == 1:
-                p1_text = f"The technical diagnosis identifies functional strengths and stable practices in {', '.join(stable_caps[:3])}, serving as an operational foundation to sustain current services." if stable_caps else "Structural standardization efforts are required across the entire scope of this pillar."
-                p2_text = f"Nonetheless, there are key weaknesses and priority areas for improvement in {', '.join(gaps_caps[:3])}. The analysis reveals that {gaps_str_joined}. Consequently, this generates direct operational exposure characterized by {risks_str_joined}."
-                p3_text = f"The score reflects a balance between the strengths of the platform and the burden of the gaps in '{worst_cap}', which reduce resilience and limit global operational scalability."
-            else:
-                p1_text = f"An adequate control level and consistent processes are noted in capabilities such as {', '.join(stable_caps[:3])}, adding resilience to daily infrastructure operations." if stable_caps else "Current capabilities show basic behavior with a clear need for process redefinition."
-                p2_text = f"In contrast, the environment presents material operational challenges in {', '.join(gaps_caps[:3])}. A material gap is noted in {gaps_str_joined}, which exposes the organization to business consequences such as {risks_str_joined}."
-                p3_text = f"The consolidated pillar score is severely conditioned by the immaturity of the '{worst_cap}' capability, which acts as the main obstacle to reach the target control state."
-
-    else:
-        # CRITICAL/LOW MATURITY CASE (Score < 2.60): No real strengths, focus on State of Deficiency and Remediation Path
-        if doc_lang == "es":
-            label_1 = "Diagnóstico de Deficiencias y Estado Crítico"
-            label_2 = "Exposición al Riesgo e Impacto Operativo"
-            label_3 = "Calibración Analítica de Penalización"
-            
-            p1_text = f"El diagnóstico revela un estado de inmadurez estructural crítico y generalizado, caracterizado por la ausencia de estandarización y control formal en capacidades esenciales como {', '.join(gaps_caps[:3])}." if gaps_caps else "El dominio muestra una postura operativa elemental o no documentada, requiriendo una intervención prioritaria."
-            p2_text = f"El análisis técnico revela que {gaps_str_joined}. La carencia de automatizaciones avanzadas y la alta dependencia de procesos manuales exponen de forma inmediata a la organización a {risks_str_joined}."
-            p3_text = f"La puntuación crítica asignada se encuentra severamente lastrada por la debilidad estructural detectada en '{worst_cap}', que representa el cuello de botella principal de la torre y anula la efectividad de cualquier control adyacente."
-        else:
-            label_1 = "Deficiency Diagnosis and Critical State"
-            label_2 = "Risk Exposure and Operational Impact"
-            label_3 = "Analytical Penalty Calibration"
-            
-            p1_text = f"The diagnosis reveals a critical and widespread structural immaturity, characterized by the absence of standardization and formal control in essential capabilities such as {', '.join(gaps_caps[:3])}." if gaps_caps else "The domain shows a basic or undocumented operational posture, requiring priority intervention."
-            p2_text = f"Technical analysis reveals that {gaps_str_joined}. The lack of advanced automation and high dependence on manual processes directly exposes the organization to {risks_str_joined}."
-            p3_text = f"The assigned critical score is severely burdened by the systemic weakness detected in '{worst_cap}', which represents the main bottleneck of the tower and negates the effectiveness of any adjacent control."
-
-    if doc_lang == "es":
-        return (
-            f"**{label_1}:** {p1_text}\n"
-            f"**{label_2}:** {p2_text}\n"
-            f"**{label_3}:** {p3_text}"
+        label_1, p1_text, label_2, p2_text, label_3, p3_text = _get_balanced_maturity_prose(
+            doc_lang, v_idx, stable_caps, gaps_caps, gaps_str_joined, risks_str_joined, worst_cap
         )
     else:
-        return (
-            f"**{label_1}:** {p1_text}\n"
-            f"**{label_2}:** {p2_text}\n"
-            f"**{label_3}:** {p3_text}"
+        label_1, p1_text, label_2, p2_text, label_3, p3_text = _get_low_maturity_prose(
+            doc_lang, v_idx, gaps_caps, gaps_str_joined, risks_str_joined, worst_cap
         )
+
+    return f"**{label_1}:** {p1_text}\n**{label_2}:** {p2_text}\n**{label_3}:** {p3_text}"
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
@@ -462,175 +477,219 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
     return text
 
 
-def generate_modules(payload_path: str):
-    """Generates a structured set of AS-IS assessment report modules from a JSON payload.
-
-    This function processes a primary JSON payload, enriching it with data from
-    supplementary files such as approved annexes, client intelligence reports,
-    tower definitions, and localization vocabularies. The aggregated data is then
-    serialized into a series of Markdown (.md) and CSV (.csv) files that
-    constitute a complete technical AS-IS report.
-
-    All output files are written to an `asis_modules` subdirectory, which is
-    created within the same directory as the input `payload_path`.
-
-    Args:
-        payload_path (str): The file system path to the main JSON payload file.
-
-    Returns:
-        None. The function's primary effect is writing files to the file system.
-
-    Raises:
-        FileNotFoundError: If the file specified by `payload_path` does not exist.
-        json.JSONDecodeError: If the main payload file contains malformed JSON.
-        OSError: If an error occurs during directory creation or file I/O, such as
-            insufficient write permissions.
-    """
-    payload_path_obj = Path(payload_path)
-    tower_dir = payload_path_obj.parent
-    modules_dir = tower_dir / "asis_modules"
-    modules_dir.mkdir(parents=True, exist_ok=True)
-
-    logger.info(f"📂 Iniciando Extracción de Módulos Docs-as-Code en: {modules_dir}")
-
-    # Loads technical payloads from the blueprint configuration, which serves as the primary data source.
-    with open(payload_path, "r", encoding="utf-8-sig") as f:
-        data = json.load(f)
-
-    # Load scoring output to get exact score and band deterministically
-    scoring_file = tower_dir / "scoring_output.json"
-    exact_score = 3.0
-    exact_band = "Definido"
-    if scoring_file.exists():
-        try:
-            with open(scoring_file, "r", encoding="utf-8-sig") as sf:
-                score_data = json.load(sf)
-            exact_score = float(score_data.get("tower_score_exact", score_data.get("score_exact", 3.0)))
-            exact_band = score_data.get("maturity_band_from_exact", {}).get("label", score_data.get("current_maturity_band", "Definido"))
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
-
-    global_fair_ale = data.get("total_fair_ale", 0.0)
-
-    tower_meta = data.get("document_meta", {})
-    doc_lang = tower_meta.get("language", "es").lower()
-
-    from assessment_engine.infrastructure.config_loader import (
-        resolve_localized_vocabulary,
-    )
-
-    vocab = resolve_localized_vocabulary(doc_lang)
-
-    tower_name = tower_meta.get("tower_name", "Desconocida")
-    tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
-    client_name = clean_client_name(tower_meta.get("client_name", "Cliente"))
-
-    # Load client_intelligence.json for industry_name
-    intel_data = {}
-    client_intel_file = tower_dir.parent / "client_intelligence.json"
-    if client_intel_file.exists():
-        try:
-            with open(client_intel_file, "r", encoding="utf-8-sig") as cif:
-                intel_data = json.load(cif)
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
-
-    profile_sec = intel_data.get("profile", {}) if isinstance(intel_data, dict) else {}
-    raw_industry = profile_sec.get("industry", profile_sec.get("industry_type_es", "Sector Estándar"))
-    if doc_lang == "es":
-        industry_map_es = {
-            "Energy & Critical Infrastructure": "Sectores de Energía e Infraestructura Crítica",
-            "Utilities": "Servicios Públicos e Infraestructura Crítica",
-            "Finance": "Sector Financiero y Bancario",
-            "Retail": "Sector de Distribución y Retail"
-        }
-        industry_name = industry_map_es.get(raw_industry, raw_industry)
-    else:
-        industry_name = raw_industry
-
-    pillars = data.get("pillars_analysis", [])
-    
-    global_fair_p90 = 0.0
-    global_fair_max = 0.0
-    try:
-        for p in pillars:
-            for hc in p.get("health_check_asis", []):
-                global_fair_p90 += hc.get("fair_p90_score", 0.0) or 0.0
-                global_fair_max += hc.get("fair_max_score", 0.0) or 0.0
-    except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
-
-    snap = data.get("executive_snapshot", {})
-    cca = data.get("cross_capabilities_analysis", {})
-
-    # Loads the `approved_annex` data if present, which contains curated and validated findings.
-    annex_path = tower_dir / f"approved_annex_{tower_id.lower()}.template_payload.json"
-    annex_data = {}
-    if annex_path.exists():
-        with open(annex_path, "r", encoding="utf-8-sig") as af:
-            try:
-                annex_data = json.load(af)
-            except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
-
-    exec_sum = annex_data.get("executive_summary", {})
-    score_profile = annex_data.get("pillar_score_profile", {})
-
-    # Dynamically loads the tower definition and integrates KPIs into a narrative paragraph, avoiding bulleted lists to maintain prose flow.
-    pillars_list_md = ""
-    tower_def_path = (
-        Path("engine_config/towers")
-        / tower_id
-        / f"tower_definition_{tower_id.lower()}.json"
-    )
-    if not tower_def_path.exists():
-        # Provides a fallback for case-insensitive key matching to handle variations in source data.
-        tower_def_path = (
-            Path("engine_config/towers")
-            / tower_id
-            / f"tower_definition_{tower_id}.json"
+def _write_module_06_matriz_riesgos_fair(modules_dir: Path, ctx: dict[str, Any]) -> None:
+    """Write 06_matriz_riesgos_fair.csv module."""
+    pillars = ctx.get("pillars", [])
+    # SECTION MAPPING: Module 6 (Risk Register, FAIR) maps to `06_matriz_riesgos_fair.csv`.
+    #
+    # Exports data in the three-column format required by the blueprint specification.
+    csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
+    with open(csv_risks_path, "w", newline="", encoding="utf-8") as cf_out:
+        writer = csv.writer(cf_out, delimiter=";")
+        writer.writerow(
+            [
+                "Capacidad Técnica Evaluada",
+                "Diagnóstico Técnico y Evidencias de Auditoría (Audit RAG)",
+                "Riesgo de Negocio e Impacto Operativo",
+                "TEF",
+                "LM",
+                "ALE",
+            ]
         )
 
-    if tower_def_path.exists():
-        with open(tower_def_path, "r", encoding="utf-8-sig") as tdf:
-            try:
-                t_def = json.load(tdf)
-                for p in t_def.get("pillars", []):
-                    p_name = p.get("pillar_name", "Pilar")
-                    p_weight = p.get("weight_pct", "0")
+        for pilar in pillars:
+            p_name = pilar.get("pilar_name", "General")
+            for hc in pilar.get("health_check_asis", []):
+                #
+                finding = hc.get("finding", hc.get("risk_observed", "No descripto."))
+                evidence = hc.get("literal_evidence", "No se aportó evidencia literal.")
+                biz_risk = hc.get("business_risk", hc.get("impact", "No descripto."))
 
-                    # Extracts Key Performance Indicator (KPI) names for integration into narrative text.
-                    kpi_names = []
-                    for kpi in p.get("kpis", []):
-                        k_name = kpi.get("kpi_name", "KPI").strip()
-                        # Normalizes text to lowercase while preserving the case of known acronyms to maintain technical accuracy.
-                        if k_name and not k_name.isupper() and len(k_name) > 4:
-                            k_name = k_name[0].lower() + k_name[1:]
-                        kpi_names.append(k_name)
+                #
+                finding_full = (
+                    f'{finding}\n\nEvidencia Forense Literal (Audit RAG):\n"{evidence}"'
+                )
 
-                    # Formats the KPI list into a grammatically standard series (e.g., 'a, b, and c') for prose integration.
-                    if len(kpi_names) > 1:
-                        kpi_str = ", ".join(kpi_names[:-1]) + " y " + kpi_names[-1]
-                    elif kpi_names:
-                        kpi_str = kpi_names[0]
-                    else:
-                        kpi_str = "las capacidades operativas del pilar"
+                tef = hc.get("threat_event_frequency", 0.0)
+                lm = hc.get("loss_magnitude", 0.0)
+                ale = hc.get("fair_ale_score", 0.0)
 
-                    pillars_list_md += f"* **{p_name} (Peso: {p_weight}%)**: Evalúa de manera integral la madurez operativa y los baselines técnicos de la infraestructura, analizando críticamente factores clave como {kpi_str}.\n"
-            except Exception as e:
-                logger.info(f"⚠️ Error parsing tower definition: {e}")
-
-    if not pillars_list_md:
-        # Returns a default empty string on a JSON parsing exception to prevent downstream processing failures.
-        for p in pillars:
-            p_name = p.get("pilar_name", "Pilar")
-            pillars_list_md += f"* **{p_name}**: Evaluación técnica y análisis de brechas operativas en la torre.\n"
+                writer.writerow(
+                    [
+                        f"{p_name} - {hc.get('target_state', hc.get('capability', 'Capacidad'))}",
+                        finding_full,
+                        biz_risk,
+                        f"{tef:.1f}",
+                        f"{lm:.1f}",
+                        f"{ale:.0f}",
+                    ]
+                )
 
     #
+
+
+def _write_module_07_conclusiones(modules_dir: Path, ctx: dict[str, Any]) -> None:
+    """Write 07_conclusiones.md module."""
+    vocab = ctx["vocab"]
+    pillars = ctx.get("pillars", [])
+    doc_lang = ctx["doc_lang"]
+    industry_name = ctx.get("industry_name", "")
+    annex_data = ctx.get("annex_data", {})
+    tower_meta = ctx.get("tower_meta", {})
+    exec_sum = ctx.get("exec_sum", {})
+    snap = ctx.get("snap", {})
+    exact_score = ctx["exact_score"]
+    exact_band = ctx["exact_band"]
+    global_fair_ale = ctx["global_fair_ale"]
+    global_fair_p90 = ctx.get("global_fair_p90", 0.0)
+    global_fair_max = ctx.get("global_fair_max", 0.0)
+    # SECTION MAPPING: Module 7 (Conclusions and Gaps) maps to `07_conclusiones.md`.
+    #
+    conc_content = []
+    conc_content.append(
+        f"# {vocab.get('conclusions_title', 'Conclusiones, Brechas y Coste de Inacción')}\n"
+    )
+
+    conc_content.append(
+        f"## {vocab.get('quick_diagnosis_title', 'Fortalezas y Brechas Clave (Diagnóstico Rápido)')}"
+    )
+    conc_content.append(
+        vocab.get(
+            "quick_diagnosis_intro",
+            "A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:",
+        )
+    )
+
+    # Structures strengths and gaps as discrete lists for rendering into a two-column table.
+    strengths_list = []
+    
+    # Generate empirical AS-IS baseline strengths directly by sorting capabilities by vulnerability level
+    empirical_caps = []
+    if pillars:
+        for p in pillars:
+            p_name = p.get("pilar_name", "Dominio")
+            for f in p.get("health_check_asis", []):
+                vuln = f.get("vulnerability_level", 5)
+                cap = f.get("capability", "")
+                if cap:
+                    empirical_caps.append((vuln, cap, p_name))
+        
+        # Sort by vulnerability level (lowest first = healthiest)
+        empirical_caps.sort(key=lambda x: x[0])
+        
+        # Take the top 3 distinct capabilities to build the baseline
+        seen_caps = set()
+        for vuln, cap, p_name in empirical_caps:
+            if cap not in seen_caps:
+                seen_caps.add(cap)
+                if doc_lang == "es":
+                    if vuln <= 2:
+                        strengths_list.append(f"Capacidad consolidada en '{cap}' ({p_name}), operando con niveles de riesgo controlados y sirviendo como anclaje de estabilidad operativa.")
+                    else:
+                        strengths_list.append(f"La capacidad de '{cap}' ({p_name}) conforma la línea base operativa funcional de la plataforma, asegurando el soporte continuo a los servicios de negocio actuales.")
+                else:
+                    if vuln <= 2:
+                        strengths_list.append(f"Consolidated capability in '{cap}' ({p_name}), operating with controlled risk levels and serving as an operational stability anchor.")
+                    else:
+                        strengths_list.append(f"The '{cap}' capability ({p_name}) forms the current operational baseline of the platform, ensuring continuous support for critical business services.")
+            if len(strengths_list) >= 3:
+                break
+
+    if not strengths_list:
+        if doc_lang == "es":
+            strengths_list.append("El entorno tecnológico evaluado requiere una modernización y estandarización integral en todos sus frentes operativos.")
+        else:
+            strengths_list.append("The evaluated technological environment requires comprehensive modernization and standardization across all operational fronts.")
+
+    gaps_list = []
+    # We use the structural risks generated by the executive snapshot as they accurately reflect AS-IS gaps
+    weaknesses = snap.get("structural_risks", [])
+    if isinstance(weaknesses, str):
+        gaps_list.append(weaknesses)
+    elif isinstance(weaknesses, list):
+        gaps_list.extend(weaknesses)
+        
+    # If the LLM failed to provide structural risks, we fallback to empirical critical findings
+    if not gaps_list and pillars:
+        for p in pillars:
+            findings = p.get("health_check_asis", [])
+            for f in findings:
+                f_score = float(f.get("exact_score", 5.0))
+                finding_desc = f.get("finding", f.get("risk_observed", ""))
+                if f_score < 2.60 and finding_desc:
+                    gaps_list.append(finding_desc.strip())
+                    if len(gaps_list) >= 4:
+                        break
+
+    # Serializes data to a specific format required by the downstream document compilation service.
+    conc_content.append("--- TABLA COMPARATIVA FORTALEZAS VS BRECHAS ---")
+    conc_content.append("FORTALEZAS_CLAVE:")
+    for s in strengths_list:
+        conc_content.append(f"* {sanitize_semantic_prose(s, doc_lang)}")
+    conc_content.append("BRECHAS_CLAVE:")
+    for g in gaps_list:
+        conc_content.append(f"* {sanitize_semantic_prose(g, doc_lang)}")
+    conc_content.append("--- FIN TABLA --- \n")
+
+    # Implements regulatory terminology harmonization as specified by Requirement 2.
+    doc_lang = tower_meta.get("language", "es").lower()
+    reg_frameworks = tower_meta.get("regulatory_frameworks")
+    if not reg_frameworks:
+        reg_frameworks = (
+            "marcos normativos aplicables (como NIS2 o ISO 27001)" if doc_lang == "es" else "applicable regulatory frameworks (such as NIS2 or ISO 27001)"
+        )
+
+    conc_content.append(
+        f"## {vocab.get('operational_implications_title', 'Implicaciones Operativas Clave')}"
+    )
+
+    # Loads localized implication text from `locales.json` to generate context-specific output.
+    bottlenecks_txt = vocab.get(
+        "bottlenecks_bullet",
+        "**Cuellos de botella estructurales:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
+    )
+    delayed_txt = vocab.get(
+        "delayed_faults_bullet",
+        "**Detección tardía de incidentes técnicos:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de fallos críticos.",
+    )
+    drift_tmpl = vocab.get(
+        "config_drift_bullet",
+        "**Desalineación y Desviación de Configuraciones:** El mantenimiento manual provoca que los entornos se desvíen continuamente del estado técnico aprobado, dificultando demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.",
+    )
+
+    conc_content.append(f"* {bottlenecks_txt}")
+    conc_content.append(f"* {delayed_txt}")
+    conc_content.append(f"* {drift_tmpl.format(reg_frameworks=reg_frameworks)}\n")
+
+    conc_content.append(
+        f"## {vocab.get('coi_title', 'Coste de Inacción (Do Nothing) y Siguientes Pasos')}"
+    )
+    msg_bottle = exec_sum.get("message_bottleneck", "")
+    if msg_bottle:
+        msg_bottle_clean = sanitize_and_unify_metrics(msg_bottle, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
+        conc_content.append(msg_bottle_clean + "\n")
+
+    coi = snap.get("cost_of_inaction", [])
+    if isinstance(coi, str):
+        coi_clean = sanitize_and_unify_metrics(coi, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
+        conc_content.append(coi_clean + "\n")
+    else:
+        for item in coi:
+            item_clean = sanitize_and_unify_metrics(item, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
+            conc_content.append(f"* {item_clean}")
+
+    with open(modules_dir / "07_conclusiones.md", "w", encoding="utf-8") as f_out:
+        f_out.write("\n".join(conc_content).strip())
+
+
+
+def _write_module_01_introduccion(modules_dir: Path, ctx: dict[str, Any]) -> None:
+    """Write 01_introduccion.md module."""
+    doc_lang = ctx["doc_lang"]
+    tower_name = ctx["tower_name"]
+    client_name = ctx["client_name"]
+    pillars_list_md = ctx["pillars_list_md"]
+    industry_name = ctx.get("industry_name", "")
     # SECTION MAPPING: Appendix B (Objective, Scope, Methodology) maps to `01_introduccion.md`.
     # The following section is designated for Appendix B to conform to the standard report structure.
     #
@@ -685,6 +744,23 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
         f_out.write(intro_content.strip())
 
     #
+
+
+def _write_module_02_resumen_ejecutivo(modules_dir: Path, ctx: dict[str, Any]) -> None:
+    """Write 02_resumen_ejecutivo.md module."""
+    exec_sum = ctx.get("exec_sum", {})
+    snap = ctx.get("snap", {})
+    exact_score = ctx["exact_score"]
+    exact_band = ctx["exact_band"]
+    global_fair_ale = ctx["global_fair_ale"]
+    global_fair_p90 = ctx.get("global_fair_p90", 0.0)
+    global_fair_max = ctx.get("global_fair_max", 0.0)
+    doc_lang = ctx["doc_lang"]
+    cca = ctx.get("cca", {})
+    tower_dir = ctx["tower_dir"]
+    pillars = ctx.get("pillars", [])
+    client_name = ctx["client_name"]
+    industry_name = ctx.get("industry_name", "")
     # SECTION MAPPING: Module 2 (Executive Summary) maps to `02_resumen_ejecutivo.md`.
     # Revises section titles to align with formal reporting terminology.
     #
@@ -880,6 +956,18 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
         f_out.write("\n".join(re_content).strip())
 
     #
+
+
+def _write_modules_03_04_05(modules_dir: Path, ctx: dict[str, Any]) -> None:
+    """Write 03_descripcion_plataforma.md, 04_matriz_madurez.csv, and 05_transversal.md."""
+    pillars = ctx.get("pillars", [])
+    doc_lang = ctx["doc_lang"]
+    cca = ctx.get("cca", {})
+    exact_score = ctx["exact_score"]
+    exact_band = ctx["exact_band"]
+    global_fair_ale = ctx["global_fair_ale"]
+    global_fair_p90 = ctx.get("global_fair_p90", 0.0)
+    global_fair_max = ctx.get("global_fair_max", 0.0)
     # SECTION MAPPING: Module 3 (Platform Description) maps to `03_descripcion_plataforma.md`.
     #
     desc_parts = []
@@ -968,190 +1056,203 @@ A continuación, se define de manera consolidada y unificada el inventario técn
         f_out.write("\n".join(trans_content).strip())
 
     #
-    # SECTION MAPPING: Module 6 (Risk Register, FAIR) maps to `06_matriz_riesgos_fair.csv`.
-    #
-    # Exports data in the three-column format required by the blueprint specification.
-    csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
-    with open(csv_risks_path, "w", newline="", encoding="utf-8") as cf_out:
-        writer = csv.writer(cf_out, delimiter=";")
-        writer.writerow(
-            [
-                "Capacidad Técnica Evaluada",
-                "Diagnóstico Técnico y Evidencias de Auditoría (Audit RAG)",
-                "Riesgo de Negocio e Impacto Operativo",
-                "TEF",
-                "LM",
-                "ALE",
-            ]
-        )
 
-        for pilar in pillars:
-            p_name = pilar.get("pilar_name", "General")
-            for hc in pilar.get("health_check_asis", []):
-                #
-                finding = hc.get("finding", hc.get("risk_observed", "No descripto."))
-                evidence = hc.get("literal_evidence", "No se aportó evidencia literal.")
-                biz_risk = hc.get("business_risk", hc.get("impact", "No descripto."))
 
-                #
-                finding_full = (
-                    f'{finding}\n\nEvidencia Forense Literal (Audit RAG):\n"{evidence}"'
-                )
+def generate_modules(payload_path: str):
+    """Generates a structured set of AS-IS assessment report modules from a JSON payload.
 
-                tef = hc.get("threat_event_frequency", 0.0)
-                lm = hc.get("loss_magnitude", 0.0)
-                ale = hc.get("fair_ale_score", 0.0)
+    This function processes a primary JSON payload, enriching it with data from
+    supplementary files such as approved annexes, client intelligence reports,
+    tower definitions, and localization vocabularies. The aggregated data is then
+    serialized into a series of Markdown (.md) and CSV (.csv) files that
+    constitute a complete technical AS-IS report.
 
-                writer.writerow(
-                    [
-                        f"{p_name} - {hc.get('target_state', hc.get('capability', 'Capacidad'))}",
-                        finding_full,
-                        biz_risk,
-                        f"{tef:.1f}",
-                        f"{lm:.1f}",
-                        f"{ale:.0f}",
-                    ]
-                )
+    All output files are written to an `asis_modules` subdirectory, which is
+    created within the same directory as the input `payload_path`.
 
-    #
-    # SECTION MAPPING: Module 7 (Conclusions and Gaps) maps to `07_conclusiones.md`.
-    #
-    conc_content = []
-    conc_content.append(
-        f"# {vocab.get('conclusions_title', 'Conclusiones, Brechas y Coste de Inacción')}\n"
-    )
+    Args:
+        payload_path (str): The file system path to the main JSON payload file.
 
-    conc_content.append(
-        f"## {vocab.get('quick_diagnosis_title', 'Fortalezas y Brechas Clave (Diagnóstico Rápido)')}"
-    )
-    conc_content.append(
-        vocab.get(
-            "quick_diagnosis_intro",
-            "A continuación se presenta el balance comparativo de las fortalezas encontradas frente a las deudas operativas más críticas:",
-        )
-    )
+    Returns:
+        None. The function's primary effect is writing files to the file system.
 
-    # Structures strengths and gaps as discrete lists for rendering into a two-column table.
-    strengths_list = []
-    
-    # Generate empirical AS-IS baseline strengths directly by sorting capabilities by vulnerability level
-    empirical_caps = []
-    if pillars:
-        for p in pillars:
-            p_name = p.get("pilar_name", "Dominio")
-            for f in p.get("health_check_asis", []):
-                vuln = f.get("vulnerability_level", 5)
-                cap = f.get("capability", "")
-                if cap:
-                    empirical_caps.append((vuln, cap, p_name))
-        
-        # Sort by vulnerability level (lowest first = healthiest)
-        empirical_caps.sort(key=lambda x: x[0])
-        
-        # Take the top 3 distinct capabilities to build the baseline
-        seen_caps = set()
-        for vuln, cap, p_name in empirical_caps:
-            if cap not in seen_caps:
-                seen_caps.add(cap)
-                if doc_lang == "es":
-                    if vuln <= 2:
-                        strengths_list.append(f"Capacidad consolidada en '{cap}' ({p_name}), operando con niveles de riesgo controlados y sirviendo como anclaje de estabilidad operativa.")
-                    else:
-                        strengths_list.append(f"La capacidad de '{cap}' ({p_name}) conforma la línea base operativa funcional de la plataforma, asegurando el soporte continuo a los servicios de negocio actuales.")
-                else:
-                    if vuln <= 2:
-                        strengths_list.append(f"Consolidated capability in '{cap}' ({p_name}), operating with controlled risk levels and serving as an operational stability anchor.")
-                    else:
-                        strengths_list.append(f"The '{cap}' capability ({p_name}) forms the current operational baseline of the platform, ensuring continuous support for critical business services.")
-            if len(strengths_list) >= 3:
-                break
+    Raises:
+        FileNotFoundError: If the file specified by `payload_path` does not exist.
+        json.JSONDecodeError: If the main payload file contains malformed JSON.
+        OSError: If an error occurs during directory creation or file I/O, such as
+            insufficient write permissions.
+    """
+    payload_path_obj = Path(payload_path)
+    tower_dir = payload_path_obj.parent
+    modules_dir = tower_dir / "asis_modules"
+    modules_dir.mkdir(parents=True, exist_ok=True)
 
-    if not strengths_list:
-        if doc_lang == "es":
-            strengths_list.append("El entorno tecnológico evaluado requiere una modernización y estandarización integral en todos sus frentes operativos.")
-        else:
-            strengths_list.append("The evaluated technological environment requires comprehensive modernization and standardization across all operational fronts.")
+    logger.info(f"📂 Iniciando Extracción de Módulos Docs-as-Code en: {modules_dir}")
 
-    gaps_list = []
-    # We use the structural risks generated by the executive snapshot as they accurately reflect AS-IS gaps
-    weaknesses = snap.get("structural_risks", [])
-    if isinstance(weaknesses, str):
-        gaps_list.append(weaknesses)
-    elif isinstance(weaknesses, list):
-        gaps_list.extend(weaknesses)
-        
-    # If the LLM failed to provide structural risks, we fallback to empirical critical findings
-    if not gaps_list and pillars:
-        for p in pillars:
-            findings = p.get("health_check_asis", [])
-            for f in findings:
-                f_score = float(f.get("exact_score", 5.0))
-                finding_desc = f.get("finding", f.get("risk_observed", ""))
-                if f_score < 2.60 and finding_desc:
-                    gaps_list.append(finding_desc.strip())
-                    if len(gaps_list) >= 4:
-                        break
+    # Loads technical payloads from the blueprint configuration, which serves as the primary data source.
+    with open(payload_path, "r", encoding="utf-8-sig") as f:
+        data = json.load(f)
 
-    # Serializes data to a specific format required by the downstream document compilation service.
-    conc_content.append("--- TABLA COMPARATIVA FORTALEZAS VS BRECHAS ---")
-    conc_content.append("FORTALEZAS_CLAVE:")
-    for s in strengths_list:
-        conc_content.append(f"* {sanitize_semantic_prose(s, doc_lang)}")
-    conc_content.append("BRECHAS_CLAVE:")
-    for g in gaps_list:
-        conc_content.append(f"* {sanitize_semantic_prose(g, doc_lang)}")
-    conc_content.append("--- FIN TABLA --- \n")
+    # Load scoring output to get exact score and band deterministically
+    scoring_file = tower_dir / "scoring_output.json"
+    exact_score = 3.0
+    exact_band = "Definido"
+    if scoring_file.exists():
+        try:
+            with open(scoring_file, "r", encoding="utf-8-sig") as sf:
+                score_data = json.load(sf)
+            exact_score = float(score_data.get("tower_score_exact", score_data.get("score_exact", 3.0)))
+            exact_band = score_data.get("maturity_band_from_exact", {}).get("label", score_data.get("current_maturity_band", "Definido"))
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-    # Implements regulatory terminology harmonization as specified by Requirement 2.
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+
+    global_fair_ale = data.get("total_fair_ale", 0.0)
+
+    tower_meta = data.get("document_meta", {})
     doc_lang = tower_meta.get("language", "es").lower()
-    reg_frameworks = tower_meta.get("regulatory_frameworks")
-    if not reg_frameworks:
-        reg_frameworks = (
-            "marcos normativos aplicables (como NIS2 o ISO 27001)" if doc_lang == "es" else "applicable regulatory frameworks (such as NIS2 or ISO 27001)"
+
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_localized_vocabulary,
+    )
+
+    vocab = resolve_localized_vocabulary(doc_lang)
+
+    tower_name = tower_meta.get("tower_name", "Desconocida")
+    tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
+    client_name = clean_client_name(tower_meta.get("client_name", "Cliente"))
+
+    # Load client_intelligence.json for industry_name
+    intel_data = {}
+    client_intel_file = tower_dir.parent / "client_intelligence.json"
+    if client_intel_file.exists():
+        try:
+            with open(client_intel_file, "r", encoding="utf-8-sig") as cif:
+                intel_data = json.load(cif)
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+
+    profile_sec = intel_data.get("profile", {}) if isinstance(intel_data, dict) else {}
+    raw_industry = profile_sec.get("industry", profile_sec.get("industry_type_es", "Sector Estándar"))
+    if doc_lang == "es":
+        industry_map_es = {
+            "Energy & Critical Infrastructure": "Sectores de Energía e Infraestructura Crítica",
+            "Utilities": "Servicios Públicos e Infraestructura Crítica",
+            "Finance": "Sector Financiero y Bancario",
+            "Retail": "Sector de Distribución y Retail"
+        }
+        industry_name = industry_map_es.get(raw_industry, raw_industry)
+    else:
+        industry_name = raw_industry
+
+    pillars = data.get("pillars_analysis", [])
+    
+    global_fair_p90 = 0.0
+    global_fair_max = 0.0
+    try:
+        for p in pillars:
+            for hc in p.get("health_check_asis", []):
+                global_fair_p90 += hc.get("fair_p90_score", 0.0) or 0.0
+                global_fair_max += hc.get("fair_max_score", 0.0) or 0.0
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+
+    snap = data.get("executive_snapshot", {})
+    cca = data.get("cross_capabilities_analysis", {})
+
+    # Loads the `approved_annex` data if present, which contains curated and validated findings.
+    annex_path = tower_dir / f"approved_annex_{tower_id.lower()}.template_payload.json"
+    annex_data = {}
+    if annex_path.exists():
+        with open(annex_path, "r", encoding="utf-8-sig") as af:
+            try:
+                annex_data = json.load(af)
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+
+    exec_sum = annex_data.get("executive_summary", {})
+    score_profile = annex_data.get("pillar_score_profile", {})
+
+    # Dynamically loads the tower definition and integrates KPIs into a narrative paragraph, avoiding bulleted lists to maintain prose flow.
+    pillars_list_md = ""
+    tower_def_path = (
+        Path("engine_config/towers")
+        / tower_id
+        / f"tower_definition_{tower_id.lower()}.json"
+    )
+    if not tower_def_path.exists():
+        # Provides a fallback for case-insensitive key matching to handle variations in source data.
+        tower_def_path = (
+            Path("engine_config/towers")
+            / tower_id
+            / f"tower_definition_{tower_id}.json"
         )
 
-    conc_content.append(
-        f"## {vocab.get('operational_implications_title', 'Implicaciones Operativas Clave')}"
-    )
+    if tower_def_path.exists():
+        with open(tower_def_path, "r", encoding="utf-8-sig") as tdf:
+            try:
+                t_def = json.load(tdf)
+                for p in t_def.get("pillars", []):
+                    p_name = p.get("pillar_name", "Pilar")
+                    p_weight = p.get("weight_pct", "0")
 
-    # Loads localized implication text from `locales.json` to generate context-specific output.
-    bottlenecks_txt = vocab.get(
-        "bottlenecks_bullet",
-        "**Cuellos de botella estructurales:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
-    )
-    delayed_txt = vocab.get(
-        "delayed_faults_bullet",
-        "**Detección tardía de incidentes técnicos:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de fallos críticos.",
-    )
-    drift_tmpl = vocab.get(
-        "config_drift_bullet",
-        "**Desalineación y Desviación de Configuraciones:** El mantenimiento manual provoca que los entornos se desvíen continuamente del estado técnico aprobado, dificultando demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}.",
-    )
+                    # Extracts Key Performance Indicator (KPI) names for integration into narrative text.
+                    kpi_names = []
+                    for kpi in p.get("kpis", []):
+                        k_name = kpi.get("kpi_name", "KPI").strip()
+                        # Normalizes text to lowercase while preserving the case of known acronyms to maintain technical accuracy.
+                        if k_name and not k_name.isupper() and len(k_name) > 4:
+                            k_name = k_name[0].lower() + k_name[1:]
+                        kpi_names.append(k_name)
 
-    conc_content.append(f"* {bottlenecks_txt}")
-    conc_content.append(f"* {delayed_txt}")
-    conc_content.append(f"* {drift_tmpl.format(reg_frameworks=reg_frameworks)}\n")
+                    # Formats the KPI list into a grammatically standard series (e.g., 'a, b, and c') for prose integration.
+                    if len(kpi_names) > 1:
+                        kpi_str = ", ".join(kpi_names[:-1]) + " y " + kpi_names[-1]
+                    elif kpi_names:
+                        kpi_str = kpi_names[0]
+                    else:
+                        kpi_str = "las capacidades operativas del pilar"
 
-    conc_content.append(
-        f"## {vocab.get('coi_title', 'Coste de Inacción (Do Nothing) y Siguientes Pasos')}"
-    )
-    msg_bottle = exec_sum.get("message_bottleneck", "")
-    if msg_bottle:
-        msg_bottle_clean = sanitize_and_unify_metrics(msg_bottle, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
-        conc_content.append(msg_bottle_clean + "\n")
+                    pillars_list_md += f"* **{p_name} (Peso: {p_weight}%)**: Evalúa de manera integral la madurez operativa y los baselines técnicos de la infraestructura, analizando críticamente factores clave como {kpi_str}.\n"
+            except Exception as e:
+                logger.info(f"⚠️ Error parsing tower definition: {e}")
 
-    coi = snap.get("cost_of_inaction", [])
-    if isinstance(coi, str):
-        coi_clean = sanitize_and_unify_metrics(coi, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
-        conc_content.append(coi_clean + "\n")
-    else:
-        for item in coi:
-            item_clean = sanitize_and_unify_metrics(item, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
-            conc_content.append(f"* {item_clean}")
+    if not pillars_list_md:
+        # Returns a default empty string on a JSON parsing exception to prevent downstream processing failures.
+        for p in pillars:
+            p_name = p.get("pilar_name", "Pilar")
+            pillars_list_md += f"* **{p_name}**: Evaluación técnica y análisis de brechas operativas en la torre.\n"
 
-    with open(modules_dir / "07_conclusiones.md", "w", encoding="utf-8") as f_out:
-        f_out.write("\n".join(conc_content).strip())
-
+    #
+    gen_ctx: dict[str, Any] = {
+        "vocab": vocab,
+        "pillars": pillars,
+        "doc_lang": doc_lang,
+        "tower_name": tower_name,
+        "tower_id": tower_id,
+        "client_name": client_name,
+        "industry_name": industry_name,
+        "pillars_list_md": pillars_list_md,
+        "annex_data": annex_data,
+        "tower_meta": tower_meta,
+        "exec_sum": exec_sum,
+        "snap": snap,
+        "cca": cca,
+        "tower_dir": tower_dir,
+        "exact_score": exact_score,
+        "exact_band": exact_band,
+        "global_fair_ale": global_fair_ale,
+        "global_fair_p90": global_fair_p90,
+        "global_fair_max": global_fair_max,
+    }
+    _write_module_01_introduccion(modules_dir, gen_ctx)
+    _write_module_02_resumen_ejecutivo(modules_dir, gen_ctx)
+    _write_modules_03_04_05(modules_dir, gen_ctx)
+    _write_module_06_matriz_riesgos_fair(modules_dir, gen_ctx)
+    _write_module_07_conclusiones(modules_dir, gen_ctx)
     logger.info(f"🎉 ¡Módulos Docs-as-Code extraídos con éxito en: {modules_dir}!")
 
 
