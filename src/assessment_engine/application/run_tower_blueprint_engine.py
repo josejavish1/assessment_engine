@@ -269,7 +269,7 @@ async def process_pilar_blueprint(
         pilar_id=pilar_id,
     )
     
-    # Inject Single-Turn Self-Reflection directive (SOTA 2026) directly into the prompt to halve API roundtrips
+    # Inject Single-Turn Self-Reflection directive (standard 2026) directly into the prompt to halve API roundtrips
     prompt += (
         "\n\n### DIRECTIVA DE AUTO-REFLEXIÓN Y CALIDAD (SINGLE-TURN SELF-REFLECTION):\n"
         "Antes de emitir el esquema JSON final, debes realizar un análisis crítico e interno de consistencia en tu campo "
@@ -489,7 +489,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         blueprint_payload["client_context"] = intel_packet
     failed_pillars = []
 
-    # Dynamic async helper to process a single pillar concurrent under the SOTA 2026 MapReduce framework
+    # Dynamic async helper to process a single pillar concurrent under the standard 2026 MapReduce framework
     async def process_single_pillar_async(p_id):
         # We pass intel_str (containing resolved_truth + client context + gravity constraints)
         p_result = await process_pilar_blueprint(
@@ -589,7 +589,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             return blueprint_analysis
         return None
 
-    # Pillars are processed concurrently using SOTA asyncio.gather MapReduce optimization, controlling concurrency via the ADK API semaphore
+    # Pillars are processed concurrently using standard asyncio.gather MapReduce optimization, controlling concurrency via the ADK API semaphore
     print("🚀 Iniciando procesamiento paralelo de pilares bajo el SOTA 2026...")
     tasks = [process_single_pillar_async(p_id) for p_id in sorted(pillars_map.keys())]
     results = await asyncio.gather(*tasks)
@@ -675,9 +675,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         tower_id=tower_id,
     )
 
-    # SOTA Actuarial Practice: Adversarial Consensus (AI vs AI)
+    # standard Actuarial Practice: Adversarial Consensus (AI vs AI)
     # Before running the mathematical Monte Carlo models, we subject the findings to a deep, 
-    # multi-turn debate between a skeptical CFO and a Tier-1 Actuary to refine and attenuate operational friction.
+    # multi-turn debate between a skeptical CFO and a Enterprise Actuary to refine and attenuate operational friction.
     print("🥊 [Adversarial Consensus] Ejecutando debate de atenuación de riesgos (CFO vs Actuario)...")
     try:
         from assessment_engine.application.tools.adversarial_consensus_engine import AdversarialConsensusEngine
@@ -696,14 +696,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         engine = SovereignPolicyEngine(graph)
         blueprint_payload = engine.compile(blueprint_payload)
         
-        # SOTA Actuarial Practice: Generate SR 11-7 Model Validation Ledger
+        # standard Actuarial Practice: Generate SR 11-7 Model Validation Ledger
         from assessment_engine.application.tools.actuarial_ledger_generator import generate_actuarial_ledger
         generate_actuarial_ledger(tower_id, blueprint_payload)
     except Exception as policy_err:
         print(f"🚨 [Sovereign QA] Error crítico ejecutando Sovereign Policy Engine: {policy_err}")
         raise RuntimeError(f"Fallo crítico en SovereignPolicyEngine: {policy_err}") from policy_err
 
-    # SOTA Actuarial Practice: Take subadditive integrated portfolio ALE from SovereignPolicyEngine
+    # standard Actuarial Practice: Take subadditive integrated portfolio ALE from SovereignPolicyEngine
     total_ale = float(blueprint_payload.get("total_fair_ale") or 0.0)
     if total_ale == 0.0:
         for pilar in blueprint_payload.get("pillars_analysis", []):
@@ -965,6 +965,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     p_name = proj.get("name", "")
                     p_obj = proj.get("tech_objective", "")
                     p_sz = proj.get("sizing", "M")
+                    curr_sym = blueprint_payload.get("document_meta", {}).get("currency", "€") or "€"
 
                     opex_str, capex_str = DeterministicFinOpsEngine.calculate_project_costs(
                         wbs_tasks=wbs,
@@ -972,6 +973,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         project_name=p_name,
                         tech_objective=p_obj,
                         sizing=p_sz,
+                        currency_symbol=curr_sym,
                     )
                     enrichment_data["opex_estimate"] = opex_str
 

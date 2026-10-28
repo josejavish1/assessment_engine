@@ -48,5 +48,3 @@ class FrameworkRubric(BaseModel):
     )
 
 
-# --- START OF BUSINESS LOGIC ---
-# --- END OF BUSINESS LOGIC ---

@@ -333,24 +333,12 @@ def set_cell_text_custom(
         None. The `cell` object is modified in-place.
     """
     # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
-    if isinstance(text, str):
-        # Plural forms (longer) must be replaced BEFORE singular forms (shorter) to prevent substring corruptions like "estructurals"
-        text = text.replace("sistémicas", "estructurales")
-        text = text.replace("sistémicos", "estructurales")
-        text = text.replace("Sistémicas", "Estructurales")
-        text = text.replace("Sistémicos", "Estructurales")
-        text = text.replace("sistémica", "estructural")
-        text = text.replace("sistémico", "estructural")
-        text = text.replace("Sistémica", "Estructural")
-        text = text.replace("Sistémico", "Estructural")
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
 
-        # Centralized spelling sanitization for LLM output typos on 'múltiples'
-        text = text.replace("mùltiples", "múltiples")
-        text = text.replace("Mùltiples", "Múltiples")
-        text = text.replace("móltiples", "múltiples")
-        text = text.replace("Móltiples", "Múltiples")
-        text = text.replace("multiples", "múltiples")
-        text = text.replace("Multiples", "Múltiples")
+    if isinstance(text, str):
+        text = apply_vocabulary_substitutions(text, locale="es")
 
     # Sanitization: Remove markdown emphasis characters from body text.
     clean_txt = (
@@ -448,24 +436,12 @@ def add_body_paragraph(
 ) -> Any:
     r"""{'docstring': "Adds a sanitized and formatted paragraph to a `docx.Document` object.\n\n    The input text is first sanitized by removing markdown emphasis markers\n    (`*`, `_`, `**`, `__`). The function then adds the cleaned text as a new,\n    justified paragraph formatted with a consistent 'Arial' 10pt font.\n\n    For bulleted styles (e.g., 'List Bullet', 'Bullet'), any text preceding\n    the first colon is automatically rendered in bold to enhance readability;\n    this behavior overrides the `bold` parameter.\n\n    If a specified style name does not exist in the document's template, the\n    function falls back to the 'Normal' style. For a non-existent bulleted\n    style, it also manually prepends a '•' character to simulate a list item.\n\n    Args:\n        doc (docx.document.Document): The document instance to which the\n            paragraph will be added.\n        text (str): The raw string content for the paragraph. Markdown emphasis\n            characters will be removed.\n        bold (bool, optional): If True, applies bold formatting to the entire\n            paragraph. This parameter is ignored for bulleted styles containing\n            a colon. Defaults to False.\n        italic (bool, optional): If True, applies italic formatting to the\n            entire paragraph. Defaults to False.\n        space_after (int, optional): The spacing in points (Pt) to apply after\n            the paragraph. Defaults to 6.\n        text_color_rgb (tuple[int, int, int], optional): An RGB tuple specifying\n            the font color. Each value must be in the range 0-255. Defaults\n            to (46, 64, 77).\n        style (str, optional): The name of the paragraph style to apply from\n            the document template. Defaults to 'Normal'.\n\n    Returns:\n        docx.text.paragraph.Paragraph: The newly created paragraph object that was\n            added to the document.\n\n    Raises:\n        ValueError: If any value in the `text_color_rgb` tuple is outside the\n            valid 0-255 range."}."""
     # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
-    if isinstance(text, str):
-        # Plural forms (longer) must be replaced BEFORE singular forms (shorter) to prevent substring corruptions like "estructurals"
-        text = text.replace("sistémicas", "estructurales")
-        text = text.replace("sistémicos", "estructurales")
-        text = text.replace("Sistémicas", "Estructurales")
-        text = text.replace("Sistémicos", "Estructurales")
-        text = text.replace("sistémica", "estructural")
-        text = text.replace("sistémico", "estructural")
-        text = text.replace("Sistémica", "Estructural")
-        text = text.replace("Sistémico", "Estructural")
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
 
-        # Centralized spelling sanitization for LLM output typos on 'múltiples'
-        text = text.replace("mùltiples", "múltiples")
-        text = text.replace("Mùltiples", "Múltiples")
-        text = text.replace("móltiples", "múltiples")
-        text = text.replace("Móltiples", "Múltiples")
-        text = text.replace("multiples", "múltiples")
-        text = text.replace("Multiples", "Múltiples")
+    if isinstance(text, str):
+        text = apply_vocabulary_substitutions(text, locale="es")
 
     # Sanitization: Remove markdown emphasis characters from body text.
     # Keep underscores to prevent breaking uppercase identifiers like CRITICAL_INFRASTRUCTURE.
@@ -1046,7 +1022,7 @@ def compile_docx(tower_dir: str, output_path: str):
         t,
     )
 
-    # SOTA Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
+    # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     # The regulatory framework narrative is mapped dynamically to the client's industry sector.
     if "Financial" in industry or "Banking" in industry:
         reg_name = t(
@@ -1692,11 +1668,11 @@ def compile_docx(tower_dir: str, output_path: str):
                 
                 # Three clear bullet points
                 if doc_lang == "es":
-                    add_body_paragraph(doc, "Criticidad Operativa y Presión Regulatoria: Determina el nivel de dependencia directa de los procesos de negocio y la exigencia de conformidad legal y normativa (v.g. NIS2, ENS Categoría Alta) sobre este dominio.", style="List Bullet", text_color_rgb=text_color_rgb)
+                    add_body_paragraph(doc, "Criticidad Operativa y Presión Regulatoria: Determina el nivel de dependencia directa de los procesos de negocio y la exigencia de conformidad legal y normativa (v.g. NIS2, DORA o ISO 27001) sobre este dominio.", style="List Bullet", text_color_rgb=text_color_rgb)
                     add_body_paragraph(doc, "Viabilidad de la Transformación: Estima la complejidad técnica y facilidad operativa para ejecutar los proyectos del plan de acción propuesto.", style="List Bullet", text_color_rgb=text_color_rgb)
                     add_body_paragraph(doc, "Propagación Topológica y SPOF: Cuantifica el riesgo de que un incidente crítico se propague en cascada a otras torres y determina si el dominio actúa como un Punto Único de Fallo.", style="List Bullet", text_color_rgb=text_color_rgb)
                 else:
-                    add_body_paragraph(doc, "Operational Criticality and Regulatory Pressure: Assesses the level of direct business process dependency and legal compliance requirements (e.g., NIS2, ENS High Category) on this domain.", style="List Bullet", text_color_rgb=text_color_rgb)
+                    add_body_paragraph(doc, "Operational Criticality and Regulatory Pressure: Assesses the level of direct business process dependency and legal compliance requirements (e.g., NIS2, DORA, or ISO 27001) on this domain.", style="List Bullet", text_color_rgb=text_color_rgb)
                     add_body_paragraph(doc, "Transformation Feasibility: Estimates the technical complexity and operational ease of executing the projects in the proposed action plan.", style="List Bullet", text_color_rgb=text_color_rgb)
                     add_body_paragraph(doc, "Topological Propagation and SPOF: Quantifies the risk of critical incident cascade propagation to other towers and determines if the domain acts as a Single Point of Failure.", style="List Bullet", text_color_rgb=text_color_rgb)
                 
@@ -1726,7 +1702,7 @@ def compile_docx(tower_dir: str, output_path: str):
 
                 inter_data = [
                     ("Criticidad de Negocio (MCDA)", f"{business_criticality:.1f}%", "Extrema (Pilar Crítico)" if business_criticality >= 80.0 else "Alta" if business_criticality >= 50.0 else "Media"),
-                    ("Presión Regulatoria (MCDA)", f"{regulatory_compliance:.1f}%", "Crítica (NIS2/ENS/PIC)" if regulatory_compliance >= 80.0 else "Alta" if regulatory_compliance >= 50.0 else "Estándar"),
+                    ("Presión Regulatoria (MCDA)", f"{regulatory_compliance:.1f}%", "Crítica (Regulación Estricta)" if regulatory_compliance >= 80.0 else "Alta" if regulatory_compliance >= 50.0 else "Estándar"),
                     ("Viabilidad Operativa (MCDA)", f"{implementation_feasibility:.1f}%", "Viable" if implementation_feasibility >= 60.0 else "Complejo (Requiere mitigación)"),
                     ("Consistencia del Diagnóstico (DII)", dii_val, "Estable (Diagnóstico Robusto)" if (dii_03 or 0) < 15.0 else "Moderado" if (dii_03 or 0) < 30.0 else "Sensible"),
                     ("Propagación de Fallos en Cascada (ERC)", erc_val, "Alta Influencia" if (erc or 0) >= 0.50 else "Media" if (erc or 0) >= 0.20 else "Baja/Aislada"),
@@ -1782,15 +1758,15 @@ def compile_docx(tower_dir: str, output_path: str):
                 # Regulatory Compliance
                 if regulatory_compliance >= 80.0:
                     glossary_items.append(
-                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo directivas críticas como NIS2, ENS Categoría Alta o PIC) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa."
+                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa."
                     )
                 elif regulatory_compliance >= 50.0:
                     glossary_items.append(
-                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Moderada]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo directivas críticas como NIS2, ENS Categoría Alta o PIC) que aplica sobre el perímetro de esta plataforma. Existen requerimientos de cumplimiento y políticas de seguridad corporativas estrictas, requiriendo auditorías periódicas de los controles de TI."
+                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Moderada]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Existen requerimientos de cumplimiento y políticas de seguridad corporativas estrictas, requiriendo auditorías periódicas de los controles de TI."
                     )
                 else:
                     glossary_items.append(
-                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo directivas críticas como NIS2, ENS Categoría Alta o PIC) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo."
+                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo."
                     )
 
                 # Implementation Feasibility
@@ -2465,11 +2441,29 @@ def compile_docx(tower_dir: str, output_path: str):
             parts_f = finding.split("\n\nEvidencia Forense Literal (Audit RAG):\n")
 
             import re
-            clean_finding_text = clean_text_for_word(parts_f[0]).replace("sistémicas", "estructurales").replace("sistémicos", "estructurales").replace("Sistémicas", "Estructurales").replace("Sistémicos", "Estructurales").replace("sistémica", "estructural").replace("sistémico", "estructural").replace("Sistémica", "Estructural").replace("Sistémico", "Estructural")
-            clean_finding_text = re.sub(re.escape(raw_client_name), client_name, clean_finding_text, flags=re.IGNORECASE).strip()
-            
-            clean_biz_text = clean_text_for_word(biz_risk).replace("sistémicas", "estructurales").replace("sistémicos", "estructurales").replace("Sistémicas", "Estructurales").replace("Sistémicos", "Estructurales").replace("sistémica", "estructural").replace("sistémico", "estructural").replace("Sistémica", "Estructural").replace("Sistémico", "Estructural")
-            clean_biz_text = re.sub(re.escape(raw_client_name), client_name, clean_biz_text, flags=re.IGNORECASE).strip()
+            from assessment_engine.infrastructure.localization import (
+                apply_vocabulary_substitutions,
+            )
+
+            clean_finding_text = apply_vocabulary_substitutions(
+                clean_text_for_word(parts_f[0]), locale="es"
+            )
+            clean_finding_text = re.sub(
+                re.escape(raw_client_name),
+                client_name,
+                clean_finding_text,
+                flags=re.IGNORECASE,
+            ).strip()
+
+            clean_biz_text = apply_vocabulary_substitutions(
+                clean_text_for_word(biz_risk), locale="es"
+            )
+            clean_biz_text = re.sub(
+                re.escape(raw_client_name),
+                client_name,
+                clean_biz_text,
+                flags=re.IGNORECASE,
+            ).strip()
 
             run_obs = p_desc_lbl.add_run("Vulnerabilidad Identificada:")
             run_obs.bold = True
@@ -2652,8 +2646,8 @@ def compile_docx(tower_dir: str, output_path: str):
             "• Observabilidad unificada y capacidades proactivas (AIOps).\n• Reducción radical del MTTR y prevención de fallos antes del impacto.\n• Estabilidad y fiabilidad garantizadas mediante SLOs técnicos."
         ),
         (
-            "Gobernanza y NIS2",
-            "• Incapacidad estructural para demostrar cumplimiento normativo en tiempo real.\n• Exposición activa a severas sanciones administrativas bajo marcos regulatorios (ENS y NIS2, hasta 10M €).",
+            "Gobernanza y Cumplimiento",
+            "• Incapacidad estructural para demostrar cumplimiento normativo en tiempo real.\n• Exposición activa a contingencias operacionales y sanciones administrativas bajo normativas aplicables (como NIS2, RGPD o estándares sectoriales).",
             "• Cumplimiento continuo y auditable por diseño mediante gobernanza programática (*Policy-as-Code*).\n• Conformidad nativa y automática de la infraestructura."
         ),
         (
@@ -2719,7 +2713,7 @@ def compile_docx(tower_dir: str, output_path: str):
     # 5.3 El Impacto de la Indecisión: Exposición Financiera Acumulada (Cumulative CoI)
     add_heading(doc, "El Impacto de la Indecisión: Exposición Financiera Acumulada", level=2, primary_color_rgb=p_color_rgb)
     
-    # SOTA Actuarial Practice: Cumulative Adverse Multi-Year Stress Test (FRTB / Basel III)
+    # standard Actuarial Practice: Cumulative Adverse Multi-Year Stress Test (FRTB / Basel III)
     # Instead of multiplying the extreme worst-case annual loss by 3 or 5 (which implies experiencing 
     # 3 or 5 consecutive catastrophic years, an operational impossibility), we model exactly ONE 
     # catastrophic year (the CVaR/Expected Shortfall) plus N-1 average years (ALE) during that horizon.
@@ -2830,7 +2824,7 @@ def compile_docx(tower_dir: str, output_path: str):
     # Detect if the organization operates in a regulated critical sector to apply custom parameters
     is_critical_client = is_critical if is_critical is not None else True
     
-    # SOTA Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
+    # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     # The regulatory framework narrative is mapped dynamically to the client's industry sector.
     if "Financial" in industry or "Banking" in industry:
         reg_name = "las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA o normativas de banca central)"
@@ -3057,7 +3051,7 @@ def compile_docx(tower_dir: str, output_path: str):
                 "[Capa de Inteligencia de la Plataforma]",
                 "client_intelligence.json",
                 f"Módulo de ingesta y análisis semántico asistido por IA de la plataforma que recopila de forma automatizada "
-                f"las regulaciones de cumplimiento (NIS2, ENS Categoría Alta), reclamos corporativos y baselines del sector (ITIC) "
+                f"las regulaciones de cumplimiento (como NIS2, RGPD o DORA), requerimientos corporativos y baselines del sector (ITIC) "
                 f"para calibrar y enriquecer los hallazgos técnicos con métricas cuantitativas de riesgo de negocio.",
             ),
             (
@@ -3079,10 +3073,10 @@ def compile_docx(tower_dir: str, output_path: str):
                 "en toda la Unión, utilizada para calibrar el límite máximo legal de sanciones administrativas por negligencia (pérdidas secundarias).",
             ),
             (
-                "[ENS-ALTA]",
-                "Esquema Nacional de Seguridad (ENS) de España - Real Decreto 311/2022",
-                "Marco regulatorio de seguridad obligatorio para operadores del sector público e infraestructuras críticas nacionales, "
-                "utilizado como baseline normativo para modelar los criterios y exigencias de conformidad en la Categoría Alta.",
+                "[ISO-27001]",
+                "Norma Internacional ISO/IEC 27001",
+                "Estándar internacional de sistemas de gestión de seguridad de la información (SGSI), utilizado como marco de referencia "
+                "universal para evaluar los controles de seguridad técnica, gobernanza y resiliencia operacional.",
             ),
             (
                 "[DAMA-DMBOK]",
@@ -3181,7 +3175,7 @@ def compile_docx(tower_dir: str, output_path: str):
 
         # Quality Gate: First-Use Rule Verification
         for term, desc in used_glossary.items():
-            # SOTA Bilingual Check: Extract both English form (before parenthesis) and Spanish translation (inside parenthesis)
+            # standard Bilingual Check: Extract both English form (before parenthesis) and Spanish translation (inside parenthesis)
             # to prevent false positive warnings when compiling documents in different languages
             parts = []
             if "(" in desc:
@@ -3245,9 +3239,14 @@ def compile_docx(tower_dir: str, output_path: str):
     if disclaimer_raw:
         for p_text in disclaimer_raw.split("\n\n"):
             if p_text.strip():
+                formatted_p = (
+                    p_text.strip().format(company_name=company_name)
+                    if "{company_name}" in p_text
+                    else p_text.strip().replace("NTT DATA", company_name)
+                )
                 add_body_paragraph(
                     doc,
-                    p_text.strip().replace("NTT DATA", company_name),
+                    formatted_p,
                     text_color_rgb=text_color_rgb,
                 )
     else:

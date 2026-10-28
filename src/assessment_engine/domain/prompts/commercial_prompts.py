@@ -1,5 +1,5 @@
 REFERENCE_CATALOG = """
-Catálogo de Referencia de TCV (Total Contract Value) y Tiempos para NTT DATA (Mercado Enterprise/Mid-Market):
+Catálogo de Referencia de TCV (Total Contract Value) y Tiempos de Consultoría (Mercado Enterprise/Mid-Market):
 - Assessment Ciberseguridad / Ransomware (Wedge): 3-5 semanas, 30k€ - 50k€.
 - Identidad Zero Trust (Microsoft Entra ID / CyberArk): 3-6 meses, 150k€ - 350k€.
 - Migración Cloud Landing Zone (AWS/Azure): 2-4 meses, 80k€ - 150k€.
@@ -9,8 +9,8 @@ Catálogo de Referencia de TCV (Total Contract Value) y Tiempos para NTT DATA (M
 - Resiliencia / Disaster Recovery (Commvault / Rubrik): 3-6 meses, 100k€ - 250k€.
 """
 
-NTTDATA_WIN_THEMES = """
-Aceleradores y Fortalezas de NTT DATA para justificar 'Por qué nosotros':
+CONSULTING_WIN_THEMES = """
+Aceleradores y Fortalezas del Partner de Consultoría para justificar 'Por qué nosotros':
 - Cloud & Infra: Framework 'Cloud Ascent', certificaciones máximas (Azure Expert MSP, AWS Premier).
 - Ciberseguridad: Red Global de SOCs, inteligencia de amenazas propia, metodologías Zero Trust contrastadas.
 - Redes (Edge to Cloud): Liderazgo global en SD-WAN y redes híbridas, alianzas top tier con Cisco/Fortinet/Palo Alto.
@@ -53,7 +53,7 @@ REGLAS DE ORO COMERCIALES:
 2. REALISMO FINANCIERO: Basa tus estimaciones estrictamente en este Catálogo de Referencia:
 {REFERENCE_CATALOG}
 3. VENTAJA COMPETITIVA: Usa estos 'Win Themes' para justificar por qué {company} es la mejor opción:
-{NTTDATA_WIN_THEMES}
+{CONSULTING_WIN_THEMES}
 4. MARCO EXECUTIVE: Aplica rigurosamente estos principios para asegurar la autoridad del informe:
 {EXECUTIVE_CONSULTING_FRAMEWORK}
 5. TONO: Lenguaje B2B Enterprise. Directo, financiero, consultivo y sin "paja".

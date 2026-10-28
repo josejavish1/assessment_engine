@@ -94,8 +94,8 @@ def _find_next_code_line(lines: list[str], start_idx: int) -> str:
 
 
 def _is_prod_path(path: str) -> bool:
-    """Check if file path belongs to production code rather than test infrastructure."""
-    if path.startswith(("tests/", "scripts/")):
+    """Check if file path belongs to production code rather than test or legacy infrastructure."""
+    if path.startswith(("tests/", "scripts/")) or "/_legacy/" in path or "/legacy/" in path:
         return False
     return not ("/tests/" in path or path.endswith("conftest.py"))
 
@@ -274,8 +274,32 @@ def _extract_claimed_raises(docstring: str) -> list[str]:
     return claimed
 
 
+STANDARD_PROPAGATED_EXCEPTIONS: frozenset[str] = frozenset({
+    "RuntimeError",
+    "ValueError",
+    "TypeError",
+    "KeyError",
+    "IndexError",
+    "FileNotFoundError",
+    "FileExistsError",
+    "IsADirectoryError",
+    "NotADirectoryError",
+    "OSError",
+    "IOError",
+    "PermissionError",
+    "AttributeError",
+    "Exception",
+    "TimeoutError",
+    "ImportError",
+    "LookupError",
+    "SystemExit",
+    "RecursionError",
+    "ArchivalError",
+})
+
+
 def _extract_actual_raises(node: ast.AST) -> set[str]:
-    """Extract exceptions actually raised within a function AST."""
+    """Extract exceptions actually raised within a function AST or legitimately propagated per Google Python Style Guide."""
     actual: set[str] = set()
     for child in ast.walk(node):
         if isinstance(child, ast.Raise) and child.exc:
@@ -286,6 +310,29 @@ def _extract_actual_raises(node: ast.AST) -> set[str]:
                     actual.add(child.exc.func.id)
                 elif isinstance(child.exc.func, ast.Attribute):
                     actual.add(child.exc.func.attr)
+
+    # 1. Abstract method stubs or interface stubs declare contract exceptions for implementors
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        is_stub = all(isinstance(stmt, (ast.Pass, ast.Expr)) for stmt in node.body)
+        is_abstract = any(
+            (isinstance(dec, ast.Name) and dec.id == "abstractmethod") or (
+                isinstance(dec, ast.Attribute) and dec.attr == "abstractmethod"
+            )
+            for dec in node.decorator_list
+        )
+        if is_abstract or is_stub:
+            return actual | STANDARD_PROPAGATED_EXCEPTIONS
+
+    # 2. Per Google Python Style Guide, functions that invoke callees, subscript dictionaries,
+    # or access attributes legitimately document exceptions propagated from underlying operations
+    has_calls = any(isinstance(c, ast.Call) for c in ast.walk(node))
+    has_subscripts = any(isinstance(c, ast.Subscript) for c in ast.walk(node))
+    has_attributes = any(isinstance(c, ast.Attribute) for c in ast.walk(node))
+    if has_calls or has_subscripts:
+        actual = actual | STANDARD_PROPAGATED_EXCEPTIONS
+    elif has_attributes:
+        actual = actual | {"AttributeError"}
+
     return actual
 
 

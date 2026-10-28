@@ -59,7 +59,6 @@ def run_pipeline(
                 f"⚠️ Warning: No GCP credentials key found at default path {fallback_credentials}."
             )
 
-    # --- Phase 0: Ingestion ---
     ingest_script = (
         repo_root / "src/assessment_engine/application/tools" / f"ingest_{slug}.py"
     )
@@ -78,7 +77,6 @@ def run_pipeline(
         else:
             print(f"⚠️ FASE 0: Skipping ingestion (no specific ingest_{slug}.py found).")
 
-    # --- Phase 1: Client Intelligence ---
     print("🔍 FASE 1: Harvesting Client & Market Strategic Intelligence...")
     intel_script = (
         repo_root / "src/assessment_engine/application/run_intelligence_harvesting.py"
@@ -90,7 +88,6 @@ def run_pipeline(
         print("❌ Phase 1 Client Intelligence failed. Aborting pipeline.")
         return res.returncode
 
-    # --- Phase 2: Technical Towers ---
     towers = [t.strip() for t in towers_str.split(" ") if t.strip()]
     tower_script = repo_root / "src/assessment_engine/application/run_tower_pipeline.py"
     for tower in towers:
@@ -115,7 +112,6 @@ def run_pipeline(
             print(f"❌ Phase 2 Tower {tower} pipeline failed. Aborting pipeline.")
             return res.returncode
 
-    # --- Phase 3 & 4: Aggregation and Strategic/Commercial Synthesis ---
     print("\n🌐 PROCESANDO AGREGACIÓN GLOBAL Y REPORTES DE ENTREGABLES")
     print("--------------------------------------------------------")
     print("🎛️ FASE 3: Generating Global Consolidated Report...")
@@ -136,7 +132,6 @@ def run_pipeline(
         print("❌ Phase 4 Commercial refining failed. Aborting pipeline.")
         return res.returncode
 
-    # --- Phase 5: Web presentation ---
     print("🖥️ FASE 5: Composing Interactive Web Dashboard...")
     web_script = repo_root / "src/assessment_engine/adapters/render_web_presentation.py"
     res = subprocess.run([python_bin, str(web_script), slug], cwd=repo_root)
@@ -314,7 +309,7 @@ def run_rage_command(client: str, industry: str, tower_filter: Optional[str] = N
         print("--------------------------------------------------------")
         print(f"Total Towers Evaluated: {len(snapshot.snapshots)}")
         for t_id, t_snap in sorted(snapshot.snapshots.items()):
-            # SOTA Visual Posture: Avoid misleading "FAILED" warnings in logs if the tower score actually passed the target baseline
+            # standard Visual Posture: Avoid misleading "FAILED" warnings in logs if the tower score actually passed the target baseline
             v_status = t_snap.verification_status.upper()
             if v_status == "FAILED" and t_snap.dynamic_score >= 4.0:
                 v_status = "PASSED (UNCACHED)"

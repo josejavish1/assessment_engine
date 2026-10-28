@@ -47,7 +47,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
         if min_val >= max_val or min_val <= 0:
             return np.full(size, max_val)
 
-        # SOTA Actuarial Practice: Calibrate Lognormal using the Mode (most_likely) and P95 (max_val).
+        # standard Actuarial Practice: Calibrate Lognormal using the Mode (most_likely) and P95 (max_val).
         # Mode M = exp(mu - sigma^2) => mu = ln(M) + sigma^2
         # P95 X = exp(mu + 1.645*sigma) => ln(X) = mu + 1.645*sigma
         # Substituting mu: ln(X) = ln(M) + sigma^2 + 1.645*sigma => sigma^2 + 1.645*sigma + (ln(M) - ln(X)) = 0
@@ -72,13 +72,13 @@ class FairRiskPolicy(BaseSovereignPolicy):
             sigma = (np.log(max_val) - np.log(min_val)) / 3.29
             mu = (np.log(max_val) + np.log(min_val)) / 2.0
         
-        # SOTA Actuarial Practice: Sigma Cap to prevent the Infinite Mean Paradox.
+        # standard Actuarial Practice: Sigma Cap to prevent the Infinite Mean Paradox.
         # If sigma exceeds ~2.0 in a Lognormal, the theoretical mean diverges towards infinity faster than 
         # the Monte Carlo sample can converge, causing wild instability. We cap sigma at 2.0.
         sigma = min(2.0, max(1e-4, sigma))
         
         samples = rng.lognormal(mean=mu, sigma=sigma, size=size)
-        # SOTA Actuarial Practice: Allow true Black Swans (Heavy Tails). 
+        # standard Actuarial Practice: Allow true Black Swans (Heavy Tails). 
         # Only cap at a massive macroeconomic limit (Enterprise Ruin Level) to prevent float overflow.
         enterprise_ruin_limit = 500_000_000.0
         return np.minimum(samples, enterprise_ruin_limit)
@@ -279,7 +279,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 5: {"min": 250000.0, "ml": 500000.0, "max": 1500000.0},
             }
 
-        # SOTA Actuarial Practice: Systemic Threat Climate (Frailty Model)
+        # standard Actuarial Practice: Systemic Threat Climate (Frailty Model)
         # Threat campaigns (like global Ransomware) do not attack vulnerabilities independently; they hit the entire perimeter at once.
         # To model Multivariate Frequency Covariance, we generate a SINGLE shared stochastic 'Climate Multiplier' for the 10,000 simulated years.
         import hashlib
@@ -361,7 +361,6 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 tef_ml = float(tef_range.get("ml", 1.0))
                 tef_max = float(tef_range.get("max", 3.0))
 
-                # --- ADVERSARIAL CONSENSUS ATTENUATION (FAIR-CAM Grounded) ---
                 # Compute deterministic multipliers from the qualitative security controls audited by the IA
                 tef_mod = 1.0
                 lm_mod = 1.0
@@ -414,7 +413,6 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 tef_ml *= tef_mod
                 tef_max *= tef_mod
 
-                # --- SOTA BAYESIAN INFERENCE CALIBRATION (Horizon 2 - Phase 4) ---
                 # Gamma-Poisson Conjugate Update for Threat Event Frequency (TEF) using physical evidence
                 p_id = p.get("pilar_id", "T2.P1")
                 pillar_evidences = [ev for ev in evidences if p_id in ev.get("pillar_ids", [])] if evidences else []
@@ -463,7 +461,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     tef_max = tef_max * tef_ratio
                     logger.info(f"🔮 [Bayesian Inferencia] TEF_ml actualizado de {tef_ml/tef_ratio:.2f} a {tef_ml:.2f} (Pruebas: {n_trials}, Fallos: {k_failures})")
 
-                # SOTA Actuarial Practice: Metadata-driven Calibration & Typology Segregation (FAIR-MAM)
+                # standard Actuarial Practice: Metadata-driven Calibration & Typology Segregation (FAIR-MAM)
                 # 1. Fetch specific dynamic calibrations for this capability from the client profile
                 cap_name = finding.get("capability", target_state)
                 cap_calibration = capability_calibrations.get(cap_name, {}) if capability_calibrations else {}
@@ -472,17 +470,15 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 typology = cap_calibration.get("typology", "CATASTROPHIC_SYSTEMIC")
                 exposure_factor = float(cap_calibration.get("exposure_factor", 1.0))
 
-                # --- ELITE FAIR-CAM CONTROL EFFICACY MAPPING ---
                 # Symmetrical with the latest 2026 FAIR-CAM standard, Vulnerability (VULN) is formally and mathematically
                 # derived from the actual qualitative technical maturity score (p_score) of the corresponding pillar.
-                # SOTA Actuarial Practice: Instead of a naive linear decay, we use a logistic/exponential decay function.
+                # standard Actuarial Practice: Instead of a naive linear decay, we use a logistic/exponential decay function.
                 # A maturity drop from 3 to 2 causes an exponential collapse in defense efficacy, not a flat 25% drop.
                 # Mathematically: p_vuln = 1.0 / (1.0 + exp(1.5 * (p_score - 3.0)))
                 p_vuln = 1.0 / (1.0 + np.exp(1.5 * (p_score - 3.0)))
                 # Condition vulnerability on network/environmental exposure factor (e.g. air-gapped systems)
                 p_vuln = max(0.01, min(0.99, p_vuln * exposure_factor))
 
-                # --- SOTA BAYESIAN INFERENCE CALIBRATION (Horizon 2 - Phase 4) ---
                 # Beta-Binomial Conjugate Update for Vulnerability (VULN) using physical evidence
                 if n_trials > 0:
                     mu_prior = p_vuln
@@ -515,7 +511,6 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 else:
                     vuln = 1
 
-                # --- ELITE FAIR-MAM MATERIALITY ASSESSMENT MAPPING ---
                 # Symmetrical with the 2026 FAIR-MAM standard, Loss Magnitude (LM) is divided into:
                 # 1. Primary Loss (Response & Restoration): e.g. engineering hours, VM recovery.
                 # 2. Secondary Loss (Regulatory/Compliance liabilities under NIS2 / market SLA penalties).
@@ -526,7 +521,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 lm_ml = float(lm_range.get("ml", 25000.0)) * lm_mod
                 lm_max = float(lm_range.get("max", 80000.0)) * lm_mod
 
-                # SOTA Industrial Practice: Scope-Aware Downtime Impact (Environment Tiering)
+                # standard Industrial Practice: Scope-Aware Downtime Impact (Environment Tiering)
                 hourly_cost = (
                     custom_calibration.get("hourly_downtime_cost_eur")
                     if custom_calibration
@@ -558,7 +553,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     lm_ml = effective_hourly * float(dur_spec.get("ml", 2.0))
                     lm_max = effective_hourly * float(dur_spec.get("max", 6.0))
 
-                # SOTA Tier-1 Actuarial Practice: Ontology & Structure-Driven Typology (Zero-Keywords)
+                # standard Enterprise Actuarial Practice: Ontology & Structure-Driven Typology (Zero-Keywords)
                 finding_typology = finding.get("typology") or cap_calibration.get("typology")
                 is_friction_risk = (
                     typology == "OPERATIONAL_FRICTION"
@@ -576,10 +571,10 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     # Inyectar el sobrecoste de TCO de licencias/horas fijas para el renderizado del Hexágono de Valor
                     finding["deterministic_tco_waste_eur"] = float(cap_calibration.get("deterministic_waste_eur", 0.0))
 
-                # Execute a mathematically rigorous, world-class Open FAIR 10,000-run Monte Carlo simulation (Collective Risk Model).
+                # Execute a mathematically rigorous, production-grade Open FAIR 10,000-run Monte Carlo simulation (Collective Risk Model).
                 size = 10000
 
-                # Deterministic Monte Carlo Seeding (SOTA Actuarial Practice): 
+                # Deterministic Monte Carlo Seeding (standard Actuarial Practice): 
                 # SHA-256 stable hashing algorithm for 100% deterministic, platform-independent random seeds
                 import hashlib
                 node_id_seed = finding.get("node_id", "") or str(len(text))
@@ -592,11 +587,11 @@ class FairRiskPolicy(BaseSovereignPolicy):
 
                 from scipy import stats
 
-                # SOTA Actuarial Practice: Unbound Threat Frequency
+                # standard Actuarial Practice: Unbound Threat Frequency
                 # Replacing Beta-PERT with Lognormal for Threat Event Frequency and passing our safe local rng
                 tef_rates_base = self._sample_lognormal(rng, tef_min, tef_ml, tef_max, size=size)
                 
-                # SOTA Actuarial Practice: Universal First-Principles Topological Attenuation
+                # standard Actuarial Practice: Universal First-Principles Topological Attenuation
                 # Assets isolated behind physical or cryptographic air-gaps exhibit vastly reduced contact frequency (TEF).
                 isolation = cap_calibration.get("isolation", "STANDARD_HYBRID")
                 is_air_gapped = (
@@ -607,7 +602,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 if is_air_gapped:
                     tef_rates_base = tef_rates_base * 0.05
                     
-                # SOTA Actuarial Practice: Bayesian Deduplication (MECE Principle via FAIR-CAM)
+                # standard Actuarial Practice: Bayesian Deduplication (MECE Principle via FAIR-CAM)
                 # If multiple vulnerabilities share the same causal pillar, they are NOT mutually exclusive.
                 # Summing their ALEs causes massive double counting. We apply a Bayesian DAG attenuation 
                 # factor to the frequency based on the number of overlapping findings.
@@ -619,7 +614,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 # Apply the Shared Latent Variable (Systemic Climate) to couple the frequencies across all vulnerabilities
                 tef_rates = tef_rates_base * systemic_climate_multiplier
                 
-                # SOTA Actuarial Practice: Avoid Beta domain edge crash (variance impossibility) by using 
+                # standard Actuarial Practice: Avoid Beta domain edge crash (variance impossibility) by using 
                 # a relative concentration parameter (Kappa) instead of an absolute hardcoded variance.
                 # This mathematically guarantees the pure Beta distribution can exist at any probability bound [0, 1].
                 mu = p_vuln
@@ -628,7 +623,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 beta_beta = (1.0 - mu) * kappa
                 vuln_rates = rng.beta(alpha_beta, beta_beta, size=size)
 
-                # SOTA Actuarial Practice: Dynamic Dispersion (Negative Binomial)
+                # standard Actuarial Practice: Dynamic Dispersion (Negative Binomial)
                 # We model over-dispersed (clustered) cyber attacks, but we scale the dispersion dynamically based on severity.
                 # Highly sophisticated attacks (high impact) cluster less (tend to Poisson, p -> 1.0). Common attacks cluster heavily (p -> 0).
                 # We normalize the most likely impact to create a dynamic 'p' parameter.
@@ -636,11 +631,11 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 # p_param scales from 0.1 (massive clustering for low impact) to 0.9 (almost Poisson for high impact APTs)
                 p_param = 0.1 + (0.8 * impact_factor)
                 
-                # SOTA Actuarial Practice: Restore Bayesian Hierarchical Variance (Epistemic + Aleatory)
+                # standard Actuarial Practice: Restore Bayesian Hierarchical Variance (Epistemic + Aleatory)
                 # The mean of the Negative Binomial must be the stochastic tef_rates array to correctly compound 
                 # expert uncertainty (epistemic) with threat clustering (aleatory).
                 n_param = tef_rates * p_param / (1.0 - p_param) # n = mean * p / (1 - p)
-                n_param = np.maximum(n_param, 1e-6)  # SOTA Actuarial Practice: Anti-Crash Clamp
+                n_param = np.maximum(n_param, 1e-6)  # standard Actuarial Practice: Anti-Crash Clamp
                 
                 n_threats = rng.negative_binomial(n_param, p_param, size=size)
                 k_losses = rng.binomial(n_threats, vuln_rates)
@@ -656,7 +651,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     # Sample all primary loss magnitudes at once using Lognormal heavy-tailed distributions and local thread-safe RNG
                     all_primary_lms = self._sample_lognormal(rng, lm_min, lm_ml, lm_max, size=total_k)
 
-                    # SOTA Actuarial Practice: Erlang-C / Kendall M/M/c Incident Congestion Model (Gap 3)
+                    # standard Actuarial Practice: Erlang-C / Kendall M/M/c Incident Congestion Model (Gap 3)
                     # Instead of an arbitrary decay or rigid presets, 'c_crews' (concurrent response crews) 
                     # is calculated dynamically based on the client's actual financial revenue scale (FAIR-MAM)
                     revenue = 50000000.0 # Default fallback (50M EUR)
@@ -719,7 +714,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     
                     all_primary_lms = all_primary_lms * congestion_multiplier
 
-                    # SOTA Actuarial Practice: Continuous Logistic Regulatory Fine Probability (SLEF)
+                    # standard Actuarial Practice: Continuous Logistic Regulatory Fine Probability (SLEF)
                     # We eliminate the binary "Step-Function Cliff" (15% vs 2%) and replace it with a continuous 
                     # logistic function that smoothly transitions the probability of a fine as the maturity score approaches 2.60.
                     # As maturity drops below 2.60, fine probability approaches 15%. As it rises above, it drops asymptoticaly to 2%.
@@ -728,7 +723,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     if is_friction_risk:
                         slef_base = 0.0
                     
-                    # SOTA Actuarial Practice: Conditional Regulatory Triggers (Materiality Threshold)
+                    # standard Actuarial Practice: Conditional Regulatory Triggers (Materiality Threshold)
                     # Regulatory fines (NIS2) are not triggered by a random coin flip on a €500 laptop crash.
                     # The secondary event is mathematically conditioned on the Primary Loss exceeding a materiality threshold (e.g. median).
                     materiality_threshold = np.percentile(all_primary_lms, 50.0) if len(all_primary_lms) > 0 else 0.0
@@ -737,12 +732,12 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     all_sec_losses = np.zeros(total_k)
                     num_sec = int(np.sum(all_sec_triggered))
                     if num_sec > 0:
-                        # SOTA Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
+                        # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
                         # Secondary loss severity is mapped to the highest regulatory framework applicable to the client's industry.
                         reg_max_fine = 2000000.0 # Default GDPR/LGPD baseline
                         
                         # Load dynamic reg max fine from custom calibration if available (FAIR-MAM)
-                        # SOTA Actuarial Practice: Compliance fines (NIS2) are legally bound by a minimum standard (e.g. 10M) 
+                        # standard Actuarial Practice: Compliance fines (NIS2) are legally bound by a minimum standard (e.g. 10M) 
                         # or 2.0% of the organization's factual global annual revenue (turnover), whichever is higher (NIS2 Art 34).
                         if custom_calibration and "reg_max_fine_eur" in custom_calibration:
                             try:
@@ -767,7 +762,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                             else:
                                 reg_max_fine = 10000000.0 # Global statutory baseline cap (NIS2 / GDPR / ISO)
 
-                        # SOTA Regulatory Law & Actuarial Practice: Proportionality of Single-Deficiency Sanctions (GDPR/NIS2/DORA)
+                        # standard Regulatory Law & Actuarial Practice: Proportionality of Single-Deficiency Sanctions (GDPR/NIS2/DORA)
                         # A single technical deficiency cannot incur the maximum statutory penalty of the entire corporation (27M€).
                         # Penalties for individual infractions are bounded by operational proportionality (1-5% of statutory cap).
                         finding_fine_cap = min(reg_max_fine * 0.05, float(hourly_cost) * 20.0 if hourly_cost else 500000.0)
@@ -785,7 +780,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                                 rng, lm_min * 1.5, lm_ml * 1.5, min(finding_fine_cap, lm_max * 1.5), size=num_sec
                             )
 
-                        # SOTA Actuarial Practice: True Directional Gaussian Copula with Asymmetric Tail Dependence
+                        # standard Actuarial Practice: True Directional Gaussian Copula with Asymmetric Tail Dependence
                         # Primary damage is a real physical simulation that ALREADY HAPPENED.
                         # We must map the REAL primary damage to its theoretical Gaussian percentiles (Z0)
                         # rather than generating a ghost variable. This establishes true causal dependency.
@@ -799,7 +794,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                         z0_real = stats.norm.ppf(empirical_cdf)
                         
                         # We calculate the dynamic correlation vector (Tail Dependence)
-                        # SOTA Actuarial Practice: Continuous Logistic Copula Correlation
+                        # standard Actuarial Practice: Continuous Logistic Copula Correlation
                         # Eliminates the binary "Arbitrage Cliff". The correlation scales smoothly from 0.0 (independent) 
                         # to 0.85 (highly correlated) as the severity of the primary outage approaches its absolute maximum (empirical CDF -> 1.0).
                         # The function is centered at the 80th percentile.
@@ -821,7 +816,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
 
                         all_sec_losses[all_sec_triggered] = final_sec_losses
 
-                    # SOTA Actuarial Practice: Financial Double-Counting Fix (Max Absorption)
+                    # standard Actuarial Practice: Financial Double-Counting Fix (Max Absorption)
                     # Severe secondary legal fines generally absorb the operational cost of the primary response,
                     # avoiding the double-counting fallacy of a blind addition.
                     consolidated_losses = np.maximum(all_primary_lms, all_sec_losses) + (all_primary_lms * 0.1)
@@ -831,7 +826,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 else:
                     loss_per_run = np.zeros(size)
 
-                # SOTA Actuarial Practice: Truncated Lognormal Model (Extreme Outliers Elimination)
+                # standard Actuarial Practice: Truncated Lognormal Model (Extreme Outliers Elimination)
                 # To prevent extreme, non-defensible P100 outliers from distorting the mean and causing 
                 # mathematical discrepancies (like CVaR exceeding the printed Maximum Plausible Loss), 
                 # we truncate the empirical annual loss distribution at the 99.0th percentile (P99).
@@ -843,9 +838,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 # Calculate statistical exposures using the truncated distribution
                 mean_ale = float(np.mean(truncated_losses))
                 
-                # SOTA Actuarial Practice: Coherent Risk Measure (Expected Shortfall / CVaR)
+                # standard Actuarial Practice: Coherent Risk Measure (Expected Shortfall / CVaR)
                 # Value-at-Risk (P90) is not subadditive and ignores the tail magnitude. We use Expected Shortfall (CVaR).
-                # Under the Basel Committee's Fundamental Review of the Trading Book (FRTB) and Tier-1 banking standards, 
+                # Under the Basel Committee's Fundamental Review of the Trading Book (FRTB) and Enterprise banking standards, 
                 # Expected Shortfall must be calculated at the 97.5% confidence level to properly capture tail risk without dilution.
                 # Since we operate on the truncated distribution, CVaR is mathematically bounded by the P99 limit.
                 sorted_losses = np.sort(truncated_losses)
@@ -868,7 +863,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 finding["fair_min_score"] = round(min_ale, 2)
                 finding["fair_max_score"] = round(max_ale, 2)
 
-                # SOTA Tier-1 Actuarial Auditing: Attach Physical Accounting Breakdown to finding
+                # standard Enterprise Actuarial Auditing: Attach Physical Accounting Breakdown to finding
                 hourly_val = float(hourly_cost) if hourly_cost is not None else 500.0
                 hourly_sre_rate = (
                     float(custom_calibration.get("hourly_rate_sre_eur", 36.0))
@@ -952,7 +947,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 # Sum vectorially to compile the corporate-wide annual loss distribution (Gap 2)
                 total_annual_losses += truncated_losses
 
-        # SOTA Actuarial Practice: Portfolio Subadditivity & Operational Absorption Cap
+        # standard Actuarial Practice: Portfolio Subadditivity & Operational Absorption Cap
         if len(total_annual_losses) > 0 and np.sum(total_annual_losses) > 0:
             if hourly_cost is not None and float(hourly_cost) > 0:
                 hourly_f = float(hourly_cost)

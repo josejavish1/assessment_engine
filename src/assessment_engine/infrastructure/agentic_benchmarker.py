@@ -328,7 +328,7 @@ class AgenticRageBenchmarker:
             return False
 
         if not local_snapshot_path:
-            # SOTA Fallback Validation: If the raw PDF/HTML cannot be downloaded locally due to server-side anti-bot 
+            # standard Fallback Validation: If the raw PDF/HTML cannot be downloaded locally due to server-side anti-bot 
             # protections or transient network drops, we fallback to verify the verbatim quote's linguistic structure.
             # Google Search Grounding with Gemini is ALREADY mathematically validated at the source.
             return len(extraction.verbatim_quote) > 10
@@ -526,7 +526,6 @@ class AgenticRageBenchmarker:
             )
             dynamic_rubric = FrameworkRubric.model_validate_json(result.text)
             
-            # --- ENTERPRISE PERSISTENCE LAYER (Gartner/Google SOTA) ---
             # Freeze and write the dynamically generated rubric back to disk on engine_config/frameworks/
             # This guarantees deterministic execution, error reproducibility, and complete auditability.
             from assessment_engine.infrastructure.config_loader import ENGINE_CONFIG_DIR
@@ -568,5 +567,3 @@ class AgenticRageBenchmarker:
             )
 
 
-# --- START OF BUSINESS LOGIC ---
-# --- END OF BUSINESS LOGIC ---

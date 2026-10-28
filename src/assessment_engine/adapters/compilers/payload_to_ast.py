@@ -55,10 +55,10 @@ def _build_criticality_bullet(business_criticality: float) -> ParagraphNode:
 
 def _build_regulatory_bullet(regulatory_compliance: float) -> ParagraphNode:
     if regulatory_compliance >= 80.0:
-        return ParagraphNode(text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo directivas críticas como NIS2, ENS Categoría Alta o PIC) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa.")
+        return ParagraphNode(text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa.")
     elif regulatory_compliance >= 50.0:
-        return ParagraphNode(text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Moderada]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo directivas críticas como NIS2, ENS Categoría Alta o PIC) que aplica sobre el perímetro de esta plataforma. Existen requerimientos de cumplimiento y políticas de seguridad corporativas estrictas, requiriendo auditorías periódicas de los controles de TI.")
-    return ParagraphNode(text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo directivas críticas como NIS2, ENS Categoría Alta o PIC) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo.")
+        return ParagraphNode(text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Moderada]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Existen requerimientos de cumplimiento y políticas de seguridad corporativas estrictas, requiriendo auditorías periódicas de los controles de TI.")
+    return ParagraphNode(text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo.")
 
 
 def _build_feasibility_bullet(implementation_feasibility: float) -> ParagraphNode:
@@ -276,6 +276,7 @@ class PayloadToASTBridge:
     ):
         self.brand_profile_path = Path(brand_profile_path)
         self.locales_path = Path(locales_path)
+        self.meta_lang = "es"
 
         # Load brand profiles, using fallback values to ensure required assets are present.
         self.company_name = "Consultora"
@@ -287,6 +288,7 @@ class PayloadToASTBridge:
         self.brand_data = {}
         from assessment_engine.infrastructure.config_loader import load_brand_profile
 
+        self.meta_lang = "es"
         try:
             brand = load_brand_profile()
             self.brand_data = brand
@@ -315,6 +317,7 @@ class PayloadToASTBridge:
         """Consolidates information from input JSON files and associated Markdown/CSV modules
         to generate a complete Document Abstract Syntax Tree (AST)."""
         ctx = self._extract_conversion_context(blueprint_payload_path, approved_annex_path)
+        self.meta_lang = ctx.get("meta_lang", "es")
 
         nodes: List[Any] = []
         self._build_cover_and_toc(ctx, nodes)
@@ -835,13 +838,13 @@ class PayloadToASTBridge:
                     
                     # Add three clear bullet points in AST
                     if meta_lang == "es":
-                        nodes.append(ParagraphNode(text="Criticidad Operativa y Presión Regulatoria: Determina el nivel de dependencia directa de los procesos de negocio y la exigencia de conformidad legal y normativa (v.g. NIS2, ENS Categoría Alta) sobre este dominio.", style="List Bullet"))
+                        nodes.append(ParagraphNode(text="Criticidad Operativa y Presión Regulatoria: Determina el nivel de dependencia directa de los procesos de negocio y la exigencia de conformidad legal y normativa (v.g. NIS2, DORA o ISO 27001) sobre este dominio.", style="List Bullet"))
                         nodes.append(ParagraphNode(text="Viabilidad de la Transformación: Estima la complejidad técnica y facilidad operativa para ejecutar los proyectos del plan de acción propuesto.", style="List Bullet"))
                         nodes.append(ParagraphNode(text="Propagación Topológica y SPOF: Cuantifica el riesgo de que un incidente crítico se propague en cascada a otras torres y determina si el dominio actúa como un Punto Único de Fallo.", style="List Bullet"))
                         
                         concl_text = "Estos indicadores proporcionan un contexto de decisión cuantitativo y objetivo, permitiendo priorizar las inversiones de transformación en base a su retorno estratégico y resiliencia para la organización:"
                     else:
-                        nodes.append(ParagraphNode(text="Operational Criticality and Regulatory Pressure: Assesses the level of direct business process dependency and legal compliance requirements (e.g., NIS2, ENS High Category) on this domain.", style="List Bullet"))
+                        nodes.append(ParagraphNode(text="Operational Criticality and Regulatory Pressure: Assesses the level of direct business process dependency and legal compliance requirements (e.g., NIS2, DORA, or ISO 27001) on this domain.", style="List Bullet"))
                         nodes.append(ParagraphNode(text="Transformation Feasibility: Estimates the technical complexity and operational ease of executing the projects in the proposed action plan.", style="List Bullet"))
                         nodes.append(ParagraphNode(text="Topological Propagation and SPOF: Quantifies the risk of critical incident cascade propagation to other towers and determines if the domain acts as a Single Point of Failure.", style="List Bullet"))
                         
@@ -877,7 +880,7 @@ class PayloadToASTBridge:
                                     cells=[
                                         CellNode(text="Presión Regulatoria (MCDA)"),
                                         CellNode(text=f"{regulatory_compliance:.1f}%", align="CENTER"),
-                                        CellNode(text="Crítica (NIS2/ENS/PIC)" if regulatory_compliance >= 80.0 else "Alta" if regulatory_compliance >= 50.0 else "Estándar", align="CENTER"),
+                                        CellNode(text="Crítica (Regulación Estricta)" if regulatory_compliance >= 80.0 else "Alta" if regulatory_compliance >= 50.0 else "Estándar", align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
@@ -1086,13 +1089,12 @@ class PayloadToASTBridge:
 
                 logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
-        # Generate introductory text by dynamically injecting the annualized loss exposure value.
-        formatted_ale = (
-            f"{total_fair_ale:,.0f}".replace(",", "X")
-            .replace(".", ",")
-            .replace("X", ".")
-            if meta_lang == "es"
-            else f"{total_fair_ale:,.0f}"
+        from assessment_engine.infrastructure.localization import (
+            format_number,
+        )
+
+        formatted_ale = format_number(
+            total_fair_ale, locale=meta_lang, decimals=0
         )
 
         # Build executive risks summary paragraph
@@ -1113,19 +1115,11 @@ class PayloadToASTBridge:
             highest_risk_pct = (highest_risk_ale / total_fair_ale) * 100.0 if total_fair_ale > 0 else 0.0
             
             # Format sub-amounts
-            formatted_pilar_ale = (
-                f"{highest_pilar_val:,.0f}".replace(",", "X")
-                .replace(".", ",")
-                .replace("X", ".")
-                if meta_lang == "es"
-                else f"{highest_pilar_val:,.0f}"
+            formatted_pilar_ale = format_number(
+                highest_pilar_val, locale=meta_lang, decimals=0
             )
-            formatted_risk_ale = (
-                f"{highest_risk_ale:,.0f}".replace(",", "X")
-                .replace(".", ",")
-                .replace("X", ".")
-                if meta_lang == "es"
-                else f"{highest_risk_ale:,.0f}"
+            formatted_risk_ale = format_number(
+                highest_risk_ale, locale=meta_lang, decimals=0
             )
             
             executive_risk_summary = (
@@ -1305,10 +1299,18 @@ class PayloadToASTBridge:
                         elif ev_clean[:35].lower() == find_clean[:35].lower() or ev_clean[-35:].lower() == find_clean[-35:].lower():
                             is_redundant = True
 
-                    desc_text = (
+                    from assessment_engine.infrastructure.localization import (
+                        apply_vocabulary_substitutions,
+                        format_number,
+                    )
+
+                    desc_raw = (
                         f"**Vulnerabilidad Identificada:**\n{find_clean}\n\n"
                         f"**Impacto de TI / Operativo:**\n{hc['business_risk']}"
-                    ).replace("sistémicas", "estructurales").replace("sistémicos", "estructurales").replace("Sistémicas", "Estructurales").replace("Sistémicos", "Estructurales").replace("sistémica", "estructural").replace("sistémico", "estructural").replace("Sistémica", "Estructural").replace("Sistémico", "Estructural")
+                    )
+                    desc_text = apply_vocabulary_substitutions(
+                        desc_raw, locale=meta_lang
+                    )
 
                     #
                     tef = hc["tef"]
@@ -1322,33 +1324,17 @@ class PayloadToASTBridge:
                     min_val = fair_metrics.get("min", 0.0) or 0.0
                     max_val = fair_metrics.get("max", 0.0) or 0.0
 
-                    formatted_p90 = (
-                        f"{p90_val:,.0f}".replace(",", "X")
-                        .replace(".", ",")
-                        .replace("X", ".")
-                        if meta_lang == "es"
-                        else f"{p90_val:,.0f}"
+                    formatted_p90 = format_number(
+                        p90_val, locale=meta_lang, decimals=0
                     )
-                    formatted_min = (
-                        f"{min_val:,.0f}".replace(",", "X")
-                        .replace(".", ",")
-                        .replace("X", ".")
-                        if meta_lang == "es"
-                        else f"{min_val:,.0f}"
+                    formatted_min = format_number(
+                        min_val, locale=meta_lang, decimals=0
                     )
-                    formatted_max = (
-                        f"{max_val:,.0f}".replace(",", "X")
-                        .replace(".", ",")
-                        .replace("X", ".")
-                        if meta_lang == "es"
-                        else f"{max_val:,.0f}"
+                    formatted_max = format_number(
+                        max_val, locale=meta_lang, decimals=0
                     )
-                    formatted_ale_item = (
-                        f"{ale:,.0f}".replace(",", "X")
-                        .replace(".", ",")
-                        .replace("X", ".")
-                        if meta_lang == "es"
-                        else f"{ale:,.0f}"
+                    formatted_ale_item = format_number(
+                        ale, locale=meta_lang, decimals=0
                     )
 
                     calc_txt = "N/A"
@@ -1915,7 +1901,7 @@ class PayloadToASTBridge:
         )
         nodes.append(
             ParagraphNode(
-                text="2. **Presión Regulatoria (MCDA) [Rango 0% a 100%]:** Un valor mayor al 80% (Crítica) determina que la infraestructura está sujeta a normativas y regulaciones obligatorias severas (como la directiva europea NIS2, el Esquema Nacional de Seguridad ENS en Categoría Alta o directivas PIC) con alto impacto penal o financiero ante incumplimientos. Rangos de 50% a 79% indican presiones sectoriales moderadas, y valores inferiores al 50% corresponden a regulaciones básicas.",
+                text="2. **Presión Regulatoria (MCDA) [Rango 0% a 100%]:** Un valor mayor al 80% (Crítica) determina que la infraestructura está sujeta a normativas y regulaciones obligatorias severas (como la directiva europea NIS2, DORA o normativas sectoriales aplicables) con alto impacto penal o financiero ante incumplimientos. Rangos de 50% a 79% indican presiones sectoriales moderadas, y valores inferiores al 50% corresponden a regulaciones básicas.",
                 style="List Bullet",
             )
         )
@@ -1963,8 +1949,14 @@ class PayloadToASTBridge:
                 continue
 
             # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
+            from assessment_engine.infrastructure.localization import (
+                apply_vocabulary_substitutions,
+            )
+
             if isinstance(cleaned, str):
-                cleaned = cleaned.replace("sistémicas", "estructurales").replace("sistémicos", "estructurales").replace("Sistémicas", "Estructurales").replace("Sistémicos", "Estructurales").replace("sistémica", "estructural").replace("sistémico", "estructural").replace("Sistémica", "Estructural").replace("Sistémico", "Estructural")
+                cleaned = apply_vocabulary_substitutions(
+                    cleaned, locale=getattr(self, "meta_lang", "es")
+                )
 
             # Exclude special markers for table and mosaic directives from the content processing stream.
             if (
@@ -2088,11 +2080,13 @@ class PayloadToASTBridge:
                     
                     val_str = str(val)
                     if isinstance(val_str, str):
-                        # Localization: Replace non-recommended Spanish terms with recommended Spain terms
-                        val_str = val_str.replace("sistémicas", "estructurales").replace("sistémicos", "estructurales").replace("Sistémicas", "Estructurales").replace("Sistémicos", "Estructurales").replace("sistémica", "estructural").replace("sistémico", "estructural").replace("Sistémica", "Estructural").replace("Sistémico", "Estructural")
+                        from assessment_engine.infrastructure.localization import (
+                            apply_vocabulary_substitutions,
+                        )
 
-                        # Spelling corrections for 'múltiples'
-                        val_str = val_str.replace("mùltiples", "múltiples").replace("Mùltiples", "Múltiples").replace("móltiples", "múltiples").replace("Móltiples", "Múltiples").replace("multiples", "múltiples").replace("Multiples", "Múltiples")
+                        val_str = apply_vocabulary_substitutions(
+                            val_str, locale=getattr(self, "meta_lang", "es")
+                        )
 
                     if c_idx == 2:
                         val_str = re.sub(

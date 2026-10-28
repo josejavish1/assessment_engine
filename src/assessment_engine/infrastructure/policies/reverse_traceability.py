@@ -129,9 +129,37 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                     f_text = finding.get(
                         "finding", finding.get("risk_observed", "")
                     )
-                    fallback_proj = _build_remediation_project(
-                        finding, f_text, doc_lang=doc_lang
-                    )
-                    projects.append(fallback_proj)
+                    if len(projects) >= 2:
+                        # Consolidate orphan finding into primary pillar initiative (preserving MECE max 2)
+                        target_proj = projects[0]
+                        delivs = target_proj.setdefault("deliverables", [])
+                        remed_desc = f"Remediación y aseguramiento de {finding.get('capability', 'resiliencia')}"
+                        if remed_desc not in delivs:
+                            delivs.append(remed_desc)
+                    else:
+                        # Build minimal enriched initiative only if pillar is completely empty
+                        fallback_proj = _build_remediation_project(
+                            finding, f_text, doc_lang=doc_lang
+                        )
+                        fallback_proj["wbs_breakdown"] = [
+                            {"phase_name": "Fase 1: HLD & Diseño", "task_name": "Diseño de arquitectura de remediación", "required_profile": "arquitecto", "estimated_hours": 30},
+                            {"phase_name": "Fase 2: Build & Config", "task_name": "Implantación de controles técnicos", "required_profile": "experto", "estimated_hours": 60},
+                            {"phase_name": "Fase 3: QA & Cierre", "task_name": "Pruebas operativas y gestión PMO", "required_profile": "project_manager", "estimated_hours": 20},
+                        ]
+                        from assessment_engine.infrastructure.deterministic_enricher import DeterministicFinOpsEngine
+                        rate_card = {
+                            "tarifas_hora": {"arquitecto": 65, "experto": 58, "project_manager": 45},
+                            "margenes": {"consultoria": 0.45},
+                        }
+                        opex, capex = DeterministicFinOpsEngine.calculate_project_costs(
+                            fallback_proj["wbs_breakdown"],
+                            rate_card,
+                            fallback_proj["name"],
+                            fallback_proj["tech_objective"],
+                            sizing="S",
+                        )
+                        fallback_proj["opex_estimate"] = opex
+                        fallback_proj["capex_estimate"] = capex
+                        projects.append(fallback_proj)
 
         return payload

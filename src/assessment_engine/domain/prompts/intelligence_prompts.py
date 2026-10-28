@@ -9,7 +9,7 @@ JSON_MANDATE = "\n\n### REGLA DE ORO: Devuelve ÚNICAMENTE un bloque de código 
 def get_grounding_harvester_prompt(context_text: str) -> str:
     """Generates a Spanish language model prompt for structured technical fact extraction.
 
-    The prompt instructs the model to act as a staff analyst from NTT DATA. It is
+    The prompt instructs the model to act as a senior staff analyst. It is
     tasked with parsing the provided context, identifying a dominant hyperscaler
     (Azure, AWS, or GCP), and extracting key technical facts and operational
     restrictions. The prompt mandates a specific JSON structure for the model's

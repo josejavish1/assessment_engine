@@ -108,7 +108,6 @@ class FinancialScaleCalibrator:
             logger.info(f"🌐 [Financial Calibrator] Iniciando Elicitación en Dos Pasos para sortear limitación de API de Google...")
             loop = asyncio.get_running_loop()
 
-            # --- STEP 0.8: Crawl Local Private Architecture Context from Case Input ---
             local_context_str = ""
             ha_score = 3.0       # Default standard
             ops_score = 3.0      # Default standard
@@ -173,7 +172,6 @@ class FinancialScaleCalibrator:
                 except Exception as ex:
                     logger.warning(f"Error crawling local case input for resilience and scores: {ex}")
             
-            # --- STEP 1: Quantitative Research via Google Search (No structured output constraints) ---
             research_prompt = f"""
             Investiga con internet (Google Search) de forma rigurosa los siguientes datos financieros y de costes laborales para la empresa "{client_name}" (sector: "{raw_industry}") en {client_country}:
             1. Su facturación anual consolidada más reciente (en Euros).
@@ -199,7 +197,6 @@ class FinancialScaleCalibrator:
             )
             raw_text = research_result.text
             
-            # --- STEP 2: Extraction and Structuring into Pydantic Schema (No search tool constraints) ---
             struct_prompt = f"""
             Eres un validador financiero senior y experto en gestión de riesgos (SR 11-7 standard). Tu tarea es extraer y estructurar las cifras de investigación del texto proporcionado y formatearlas estrictamente en el JSON pedido bajo el esquema DynamicRiskCalibration.
             
@@ -252,7 +249,6 @@ class FinancialScaleCalibrator:
             # Validate and parse response
             calibration = DynamicRiskCalibration.model_validate_json(struct_result.text)
             
-            # --- SOTA RISK GUARDRAIL (Scale-Proportional P&L Bounds) ---
             # Hourly downtime cost is realistically bounded relative to annual turnover.
             company_hourly_revenue = max(1.0, calibration.annual_revenue_eur / 8760.0)
             max_realistic_hourly = company_hourly_revenue * 1.0  # Max 100% of hourly revenue
@@ -276,7 +272,6 @@ class FinancialScaleCalibrator:
         except Exception as e:
             logger.warning(f"⚠️ [Financial Calibrator] Track 1 (Internet Grounding) falló o no tiene red: {e}. Activando Track 2 (Dossier Fallback)...")
             
-            # --- TRACK 2: Local Dossier Fallback ---
             fallback_calibration = self._run_local_fallback(client_name, raw_industry, target_currency, target_symbol)
             
             # Write fallback to disk
