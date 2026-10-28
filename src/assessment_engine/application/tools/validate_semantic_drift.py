@@ -105,7 +105,7 @@ def query_gemini_api(api_key: str, prompt: str) -> str:
         get_model,
     )
 
-    model_name = get_model(ModelTier.REASONING)
+    model_name = get_model(ModelTier.FAST)
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     data = {"contents": [{"parts": [{"text": prompt}]}]}

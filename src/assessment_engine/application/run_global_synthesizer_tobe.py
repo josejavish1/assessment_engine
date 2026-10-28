@@ -467,7 +467,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_3 = Agent(
             name="tobe_phase3",
-            model=get_model(ModelTier.REASONING),
+            model=get_model(ModelTier.FAST),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=Phase3Benefits,
         )
@@ -494,7 +494,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_4 = Agent(
             name="tobe_phase4",
-            model=get_model(ModelTier.REASONING),
+            model=get_model(ModelTier.FAST),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=Phase4RisksAndAssumptions,
         )
@@ -514,7 +514,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_5 = Agent(
             name="tobe_phase5",
-            model=get_model(ModelTier.REASONING),
+            model=get_model(ModelTier.FAST),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=HighLevelRoadmap,
         )
