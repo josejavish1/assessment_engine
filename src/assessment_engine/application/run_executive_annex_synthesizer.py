@@ -55,8 +55,8 @@ class _YamlModule(Protocol):
 
 
 # The following utility functions are architecturally constrained to be pure; they must not produce side effects and their output must depend solely on their input.
-def derive_maturity_band(score: float) -> str:
-    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+def derive_maturity_band(score: float, locale: str | None = None) -> str:
+    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=locale)["label"]
 
 
 def infer_initiative_priority(project: Any, pillar_score: float = 3.0) -> str:
