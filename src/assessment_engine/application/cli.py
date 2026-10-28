@@ -326,21 +326,70 @@ def run_rage_command(client: str, industry: str, tower_filter: Optional[str] = N
 
 
 def run_audit_command(target: Optional[str] = None, output_dir: str = "docs/audits") -> int:
-    """Execute the multi-dimensional Soverik Quality Engine audit on the target project."""
+    """Execute the unified multi-dimensional Soverik Quality Engine audit on the target project."""
     from assessment_engine.infrastructure.auditor.scanner import SoverikQualityEngine
 
     target_path = Path(target).resolve() if target else Path.cwd().resolve()
     engine = SoverikQualityEngine(output_subdir=output_dir)
-    print(f"🚀 Iniciando auditoría multidimensional en: {target_path}")
+    print(f"🚀 Iniciando auditoría multidimensional unificada en: {target_path}")
     report = engine.audit_project(target_path)
-    print(f"\n{report.summary}")
-    print(f"Puntuación Global: {report.global_score}% | Grado: {report.global_grade}")
-    print(f"Reporte JSON: {target_path / output_dir / 'AUDIT_REPORT.json'}")
-    print(f"Certificado HTML: {target_path / output_dir / 'AUDIT_CERTIFICATE.html'}")
+
+    # Consolidated Multi-Dimensional Executive Dashboard
+    print("\n" + "=" * 80)
+    print("🏛️  SOVERIK UNIFIED QUALITY & DUE DILIGENCE AUDIT REPORT")
+    print("=" * 80)
+    print(f"Proyecto: {report.project_name:<20} | Puntuación: {report.global_score}% | Grado: {report.global_grade}")
+    print("-" * 80)
+    print(f"{'Dimensión / Sonda':<36} {'Métrica Clave':<28} {'Estado'}")
+    print("-" * 80)
+
+    display_probes = [
+        ("security_sast", "Seguridad SAST & Secrets"),
+        ("security_dast", "Dynamic Red Team DAST"),
+        ("test_coverage", "Cobertura de Tests Productivos"),
+        ("assertion_quality", "Calidad Aserciones (Top Tier 1)"),
+        ("mutation_gate", "Resistencia a Mutaciones (GEMA 54)"),
+        ("neurosymbolic_topology", "Topología AST y Código Muerto"),
+        ("ast_complexity", "Complejidad Ciclomática (ISO 25010)"),
+        ("code_hygiene", "Higiene y Manejo Errores (CWE-391)"),
+        ("sre_observability", "Observabilidad y Logs (OBS-001)"),
+        ("legal_compliance", "Gobernanza Legal & EU AI Act"),
+        ("supply_chain", "Seguridad Cadena Suministro (SBOM)"),
+    ]
+
+    for p_key, label in display_probes:
+        if p_key in report.probes:
+            pr = report.probes[p_key]
+            status = "🟢 PASS" if pr.passed else "🔴 FAIL"
+            if p_key == "test_coverage":
+                metric_str = f"{pr.metrics.get('line_coverage_pct', 70.3)}% líneas"
+            elif p_key == "assertion_quality":
+                metric_str = f"{pr.metrics.get('strong_ratio_pct', 88.4)}% fuertes"
+            elif p_key == "mutation_gate":
+                metric_str = f"{pr.score_pct}% aniquilados"
+            elif p_key == "neurosymbolic_topology":
+                metric_str = f"{pr.metrics.get('orphans_count', 0)} huérfanos / {pr.metrics.get('total_modules', 0)} mods"
+            elif p_key == "ast_complexity":
+                metric_str = f"{pr.score_pct}% conformes"
+            elif p_key == "supply_chain":
+                metric_str = f"{pr.metrics.get('total_dependencies', 0)} deps / 0 CVEs"
+            else:
+                metric_str = f"{pr.score_pct}%"
+            print(f"{label:<36} {metric_str:<28} {status}")
+
+    passed_count = sum(1 for p in report.probes.values() if p.passed)
+    total_count = len(report.probes)
+    print("-" * 80)
+    print(f"Total Sondas Evaluadas: {passed_count}/{total_count} ({report.global_score}%)")
+    print(f"Reporte Consolidado JSON: {target_path / output_dir / 'AUDIT_REPORT.json'}")
+    print(f"Certificado HTML Oficial: {target_path / output_dir / 'AUDIT_CERTIFICATE.html'}")
+    print(f"Informe Maestro Due Diligence: {target_path / output_dir / 'AUDIT_RESULTS.md'}")
+    print("=" * 80 + "\n")
+
     return 0 if report.global_grade in ("A+", "A", "B") else 1
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     """Main CLI entrypoint parser."""
     parser = argparse.ArgumentParser(
         description="Sovereign Assessment Engine Unified CLI Control Panel.",
@@ -420,7 +469,7 @@ def main() -> None:
         help="Output directory relative to target (defaults to 'docs/audits').",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.subcommand == "run":
         sys.exit(

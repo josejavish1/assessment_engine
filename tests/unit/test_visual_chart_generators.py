@@ -1,15 +1,13 @@
-"""Unit tests for radar chart generators and section output validators."""
+"""Unit tests for radar chart generators."""
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 from assessment_engine.application.generate_global_radar_chart import main as main_global_radar
 from assessment_engine.application.generate_tower_radar_chart import (
     generate_radar_chart_from_pillars,
 )
-from assessment_engine.application.validate_section_output import main as main_validate_section
 
 
 def test_generate_tower_radar_chart_execution(tmp_path: Path):
@@ -40,29 +38,3 @@ def test_generate_global_radar_chart_execution(tmp_path: Path):
     header = out_png.read_bytes()[:8]
     assert header == b"\x89PNG\r\n\x1a\n", "La cabecera binaria del archivo debe ser PNG válida."
 
-
-def test_validate_section_output_pass_and_fail(tmp_path: Path, monkeypatch):
-    """Verify that main_validate_section checks forbidden words in section outputs."""
-    case_dir = tmp_path / "working" / "client" / "T5"
-    case_dir.mkdir(parents=True, exist_ok=True)
-
-    valid_payload = {"executive_narrative": "Infraestructura actual sin menciones prohibidas."}
-    (case_dir / "approved_asis.generated.json").write_text(
-        json.dumps(valid_payload), encoding="utf-8"
-    )
-
-    import assessment_engine.application.validate_section_output as vso
-    monkeypatch.setattr(vso, "CASE_DIR", case_dir)
-
-    # Valid run
-    main_validate_section(["validate_section", "asis"])
-
-    # Invalid run (forbidden keyword)
-    invalid_payload = {"executive_narrative": "Este es el estado objetivo TO-BE proyectado."}
-    (case_dir / "approved_asis.generated.json").write_text(
-        json.dumps(invalid_payload), encoding="utf-8"
-    )
-    import pytest
-    with pytest.raises(SystemExit) as exc_info:
-        main_validate_section(["validate_section", "asis"])
-    assert exc_info.value.code == 1

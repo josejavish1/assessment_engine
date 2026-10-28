@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793228567,
+  "timestamp": 1793229317,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -10,8 +10,8 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 432,
-        "clean_files": 432,
+        "scanned_files": 436,
+        "clean_files": 436,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -35,9 +35,9 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 44318,
-        "test_sloc": 17931,
-        "test_to_code_ratio": 0.4,
+        "prod_sloc": 44487,
+        "test_sloc": 18352,
+        "test_to_code_ratio": 0.41,
         "maintainability_index_sei": 33.3,
         "typed_functions_pct": 89.4,
         "docstring_coverage_pct": 81.4,
@@ -45,7 +45,7 @@
         "rango_d_functions_count": 0,
         "god_modules_count": 0,
         "high_cognitive_funcs_count": 59,
-        "deep_nesting_funcs_count": 29
+        "deep_nesting_funcs_count": 30
       },
       "findings": [
         {
@@ -285,6 +285,15 @@
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/cli.py",
+          "line_number": 328,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'run_audit_command': CoC = 16 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 64,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
@@ -361,15 +370,6 @@
           "line_number": 64,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'build_evidence_entries': CoC = 29 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/validate_section_output.py",
-          "line_number": 41,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'main': CoC = 17 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -797,6 +797,15 @@
         },
         {
           "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/auditor/probes/assertion_quality.py",
+          "line_number": 14,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Anidamiento excesivo en 'run_assertion_quality_probe': 6 niveles de profundidad (límite <= 5)",
+          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
+        },
+        {
+          "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/ot_perimeter.py",
           "line_number": 56,
@@ -951,7 +960,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 331,
+        "scanned_files": 335,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -965,7 +974,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 331,
+        "scanned_files": 335,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -984,10 +993,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.44,
-        "p95_latency_ms": 106.44,
-        "p99_latency_ms": 332.15,
-        "tail_amplification_ratio": 230.66,
+        "p50_latency_ms": 1.45,
+        "p95_latency_ms": 80.54,
+        "p99_latency_ms": 181.4,
+        "tail_amplification_ratio": 125.1,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -1012,23 +1021,42 @@
     },
     "sre_observability": {
       "probe_name": "SRE, Observability & W3C Tracing (RFC-016)",
-      "score_pct": 100.0,
+      "score_pct": 98.5,
       "passed": true,
       "metrics": {
-        "files_scanned": 158,
-        "total_findings": 0,
+        "files_scanned": 160,
+        "total_findings": 2,
         "critical_violations": 0,
-        "high_violations": 0,
-        "sre_grade_10": 10.0
+        "high_violations": 2,
+        "sre_grade_10": 9.8
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "RESILIENCE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/auditor/probes/assertion_quality.py",
+          "line_number": 36,
+          "rule_id": "REL-001-SILENT-EXCEPTION",
+          "message": "Captura ciega silenciosa (except Exception: pass/continue) detectada.",
+          "recommendation": "Capturar excepciones específicas o registrar el fallo con logger.error() antes de continuar."
+        },
+        {
+          "category": "RESILIENCE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/auditor/probes/test_coverage.py",
+          "line_number": 52,
+          "rule_id": "REL-001-SILENT-EXCEPTION",
+          "message": "Captura ciega silenciosa (except Exception: pass/continue) detectada.",
+          "recommendation": "Capturar excepciones específicas o registrar el fallo con logger.error() antes de continuar."
+        }
+      ]
     },
     "hardcoded_artifacts": {
       "probe_name": "Hardcoded Artifacts & Secrets (CWE-798 / 12-Factor)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 365,
+        "scanned_files": 369,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -1038,8 +1066,8 @@
       "score_pct": 99.8,
       "passed": true,
       "metrics": {
-        "files_scanned": 360,
-        "inline_rationale_score": 99.7,
+        "files_scanned": 364,
+        "inline_rationale_score": 99.8,
         "contract_coverage_score": 99.7,
         "linguistic_sovereignty_score": 100.0,
         "comment_smells_count": 7,
@@ -1149,7 +1177,45 @@
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
         }
       ]
+    },
+    "test_coverage": {
+      "probe_name": "test_coverage",
+      "score_pct": 100.0,
+      "passed": true,
+      "metrics": {
+        "line_coverage_pct": 70.3,
+        "branch_coverage_pct": 66.2,
+        "total_statements": 18016,
+        "covered_statements": 12660,
+        "threshold_required_pct": 65.0
+      },
+      "findings": []
+    },
+    "assertion_quality": {
+      "probe_name": "assertion_quality",
+      "score_pct": 87.6,
+      "passed": true,
+      "metrics": {
+        "total_tests": 364,
+        "total_assertions": 1314,
+        "strong_assertions": 1151,
+        "weak_assertions": 163,
+        "strong_ratio_pct": 87.6
+      },
+      "findings": []
+    },
+    "neurosymbolic_topology": {
+      "probe_name": "neurosymbolic_topology",
+      "score_pct": 100.0,
+      "passed": true,
+      "metrics": {
+        "total_modules": 177,
+        "canonical_core_count": 45,
+        "active_leaves_count": 132,
+        "orphans_count": 0
+      },
+      "findings": []
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A+ (100.0%). Sondas pasadas: 18/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A+ (100.0%). Sondas pasadas: 21/21."
 }

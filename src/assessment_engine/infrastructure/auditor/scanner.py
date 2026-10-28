@@ -10,6 +10,7 @@ from typing import Any
 
 from assessment_engine.infrastructure.auditor.models import UniversalAuditReport
 from assessment_engine.infrastructure.auditor.probes.ai_safety_llm import run_ai_safety_llm_probe
+from assessment_engine.infrastructure.auditor.probes.assertion_quality import run_assertion_quality_probe
 from assessment_engine.infrastructure.auditor.probes.ast_complexity import run_ast_complexity_probe
 from assessment_engine.infrastructure.auditor.probes.browser_accessibility import run_browser_accessibility_probe
 from assessment_engine.infrastructure.auditor.probes.code_hygiene import run_code_hygiene_probe
@@ -20,6 +21,7 @@ from assessment_engine.infrastructure.auditor.probes.documentation_quality impor
 from assessment_engine.infrastructure.auditor.probes.hardcoded_artifacts import run_hardcoded_artifacts_probe
 from assessment_engine.infrastructure.auditor.probes.legal_compliance import run_legal_compliance_probe
 from assessment_engine.infrastructure.auditor.probes.mutation_gate import run_mutation_gate_probe
+from assessment_engine.infrastructure.auditor.probes.neurosymbolic_topology import run_neurosymbolic_topology_probe
 from assessment_engine.infrastructure.auditor.probes.performance_finops import run_performance_finops_probe
 from assessment_engine.infrastructure.auditor.probes.resilience_chaos import run_resilience_chaos_probe
 from assessment_engine.infrastructure.auditor.probes.security_dast import run_security_dast_probe
@@ -27,6 +29,7 @@ from assessment_engine.infrastructure.auditor.probes.security_sast import run_se
 from assessment_engine.infrastructure.auditor.probes.sre_observability import audit_sre_observability
 from assessment_engine.infrastructure.auditor.probes.structural_smells import run_structural_smells_probe
 from assessment_engine.infrastructure.auditor.probes.supply_chain import run_supply_chain_probe
+from assessment_engine.infrastructure.auditor.probes.test_coverage import run_test_coverage_probe
 from assessment_engine.infrastructure.auditor.reporter import render_html_certificate
 
 
@@ -105,25 +108,37 @@ class SoverikQualityEngine:
         comment_res = run_comment_quality_probe(target_path)
         report.probes["comment_quality"] = comment_res
 
+        cov_res = run_test_coverage_probe(target_path)
+        report.probes["test_coverage"] = cov_res
+
+        assert_res = run_assertion_quality_probe(target_path)
+        report.probes["assertion_quality"] = assert_res
+
+        topo_res = run_neurosymbolic_topology_probe(target_path)
+        report.probes["neurosymbolic_topology"] = topo_res
+
         weighted_score = (
-            sast_res.score_pct * 0.10 +
-            dast_res.score_pct * 0.10 +
-            ast_res.score_pct * 0.10 +
-            mut_res.score_pct * 0.10 +
-            sca_res.score_pct * 0.10 +
+            sast_res.score_pct * 0.08 +
+            dast_res.score_pct * 0.08 +
+            ast_res.score_pct * 0.08 +
+            mut_res.score_pct * 0.08 +
+            sca_res.score_pct * 0.08 +
+            cov_res.score_pct * 0.08 +
+            assert_res.score_pct * 0.06 +
+            topo_res.score_pct * 0.06 +
             legal_res.score_pct * 0.05 +
-            hardcoded_res.score_pct * 0.025 +
             sre_res.score_pct * 0.05 +
-            perf_res.score_pct * 0.05 +
-            stress_res.score_pct * 0.05 +
-            a11y_res.score_pct * 0.05 +
-            drift_res.score_pct * 0.05 +
-            resil_res.score_pct * 0.05 +
-            ai_res.score_pct * 0.05 +
-            doc_res.score_pct * 0.025 +
-            hygiene_res.score_pct * 0.025 +
-            smells_res.score_pct * 0.025 +
-            comment_res.score_pct * 0.025
+            perf_res.score_pct * 0.04 +
+            stress_res.score_pct * 0.04 +
+            a11y_res.score_pct * 0.04 +
+            drift_res.score_pct * 0.04 +
+            resil_res.score_pct * 0.04 +
+            ai_res.score_pct * 0.04 +
+            hardcoded_res.score_pct * 0.02 +
+            doc_res.score_pct * 0.02 +
+            hygiene_res.score_pct * 0.02 +
+            smells_res.score_pct * 0.02 +
+            comment_res.score_pct * 0.02
         )
         report.global_score = min(100.0, round(weighted_score, 1))
 
