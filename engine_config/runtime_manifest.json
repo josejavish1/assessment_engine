@@ -14,5 +14,13 @@
     "target_maturity": "standard_target_maturity_policy",
     "review": "standard_review_policy",
     "orchestrator": "local_product_owner_orchestrator"
+  },
+  "feature_flags": {
+    "evidence_engine_use_cloud_parser": false
+  },
+  "document_ai": {
+    "project_id": "your-gcp-project-id",
+    "location": "us",
+    "processor_id": "your-processor-id"
   }
 }

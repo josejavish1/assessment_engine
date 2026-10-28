@@ -44,6 +44,7 @@ google-cloud-secret-manager==2.27.0
 google-cloud-spanner==3.64.0
 google-cloud-speech==2.38.0
 google-cloud-storage==3.10.1
+google-cloud-documentai
 google-cloud-trace==1.19.0
 google-crc32c==1.8.0
 google-genai==1.72.0
@@ -138,3 +139,4 @@ hypothesis==6.155.7
 sortedcontainers==2.4.0
 scipy==1.17.1
 playwright
+pytest
