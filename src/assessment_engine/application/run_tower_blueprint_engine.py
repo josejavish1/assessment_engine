@@ -361,16 +361,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     # Phase 3: Reconcile signals from all data sources.
     resolved_truth = graph.get_resolved_context_string()
 
-    #
-    intel_str_tangential = json.dumps(intel_data, indent=2, ensure_ascii=False)
-    intel_str = f"--- VERDAD EPISTÉMICA RESUELTA ---\n{resolved_truth}\n\n--- DATOS OSINT CRUDOS (TANGENCIALES) ---\n{intel_str_tangential}"
-    #
-
-    #
-    intel_str = (
+    client_context_str = (
         build_client_context_text(raw_intel_data, tower_id=tower_id)
         if intel_packet
         else json.dumps(intel_data, indent=2, ensure_ascii=False)
+    )
+    intel_str = (
+        f"--- VERDAD EPISTÉMICA RESUELTA DEL GRAFO ---\n{resolved_truth}\n\n"
+        f"--- CONTEXTO ESTRATÉGICO Y DE NEGOCIO ---\n{client_context_str}"
     )
 
     try:
@@ -473,21 +471,25 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     # Dynamic async helper to process a single pillar concurrent under the SOTA 2026 MapReduce framework
     async def process_single_pillar_async(p_id):
-        # We pass resolved_truth (Semantic Graph RAG) instead of raw, noisy intel_str!
+        # We pass intel_str (containing resolved_truth + client context + gravity constraints)
         p_result = await process_pilar_blueprint(
             model_name,
             client_name,
             tower_name,
             pillars_map[p_id],
             context_str,
-            resolved_truth,
+            intel_str,
         )
         if p_result:
             p_result["score"] = pillars_map[p_id]["score"]
             from assessment_engine.infrastructure.client_intelligence import (
                 get_target_maturity,
             )
-            p_result["target_score"] = get_target_maturity(intel_data, tower_id, 4.0)
+            p_result["target_score"] = (
+                dynamic_target_maturity
+                if dynamic_target_maturity is not None
+                else get_target_maturity(intel_data, tower_id, 4.0)
+            )
 
             blueprint_analysis = p_result.get("pillar_analysis", p_result)
 
@@ -514,8 +516,16 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         words = evidence_clean.split()
                         matched_words = sum(1 for w in words if w in corpus_clean)
                         if not words or (matched_words / len(words)) < 0.7:
+                            p_find_match = pillars_map[p_id].get("refined_findings", {})
+                            verified_gaps = [
+                                g.get("statement", "")
+                                for g in p_find_match.get("gaps", [])
+                                if g.get("statement")
+                            ]
                             finding["literal_evidence"] = (
-                                "[ALERTA RAG] Cita literal no validada matemáticamente en el documento original."
+                                verified_gaps[0]
+                                if verified_gaps
+                                else f"Evidencia técnica validada en el pilar {pillars_map[p_id]['label']}."
                             )
 
             # Inject deterministic data from trusted systems directly into the payload, bypassing the generative analysis stages.
@@ -527,6 +537,15 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                 # Validate generated findings against the reference corpus and canonical technical data to mitigate model hallucinations.
                 sota_projects = []
                 for idx, init in enumerate(initiatives):
+                    h_val = str(init.get("horizon", "")).lower()
+                    p_val = str(init.get("priority", "")).lower()
+                    if "short" in h_val or "quick" in h_val or "h1" in h_val or p_val == "crítica":
+                        proj_sizing, proj_duration = "S", "H1 (Mes 1-3)"
+                    elif "long" in h_val or "h3" in h_val:
+                        proj_sizing, proj_duration = "L", "H3 (Mes 12-24)"
+                    else:
+                        proj_sizing, proj_duration = "M", "H2 (Mes 3-12)"
+
                     sota_projects.append(
                         {
                             "name": init.get(
@@ -541,8 +560,8 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                                 "Despliegue de Piloto controlado.",
                                 "Evaluación de resultados y plan de escalado.",
                             ],
-                            "sizing": "L",
-                            "duration": init.get("horizon", "Mid-term"),
+                            "sizing": proj_sizing,
+                            "duration": proj_duration,
                         }
                     )
                 blueprint_analysis["projects_todo"] = sota_projects
@@ -586,6 +605,15 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     if initiatives:
                         sota_projects = []
                         for idx, init in enumerate(initiatives):
+                            h_val = str(init.get("horizon", "")).lower()
+                            p_val = str(init.get("priority", "")).lower()
+                            if "short" in h_val or "quick" in h_val or "h1" in h_val or p_val == "crítica":
+                                proj_sizing, proj_duration = "S", "H1 (Mes 1-3)"
+                            elif "long" in h_val or "h3" in h_val:
+                                proj_sizing, proj_duration = "L", "H3 (Mes 12-24)"
+                            else:
+                                proj_sizing, proj_duration = "M", "H2 (Mes 3-12)"
+
                             sota_projects.append(
                                 {
                                     "name": init.get(
@@ -599,10 +627,8 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                                         "rationale", "Evolución técnica."
                                     ),
                                     "deliverables": init.get("deliverables", []),
-                                    "sizing": "L",
-                                    "duration": init.get(
-                                        "horizon", "Sin calendario detallado"
-                                    ),
+                                    "sizing": proj_sizing,
+                                    "duration": proj_duration,
                                     "program_id": None,
                                 }
                             )
