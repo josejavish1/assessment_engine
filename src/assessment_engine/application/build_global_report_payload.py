@@ -126,25 +126,41 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         )
 
         for pilar in data.get("pillars_analysis", []):
-            for hc in pilar.get("health_check_asis", []):
+            for r_idx, hc in enumerate(
+                pilar.get("health_check_asis", []), start=1
+            ):
+                vuln = hc.get("vulnerability_level", 3)
+                impact_label = (
+                    "Crítico"
+                    if vuln >= 5
+                    else ("Alto" if vuln >= 4 else "Medio")
+                )
                 strategic_risks.append(
                     {
-                        "id": f"R-{tid}",
-                        "title": hc.get("capability"),
+                        "id": f"R-{tid}-{r_idx:02d}",
+                        "title": hc.get("capability")
+                        or hc.get("target_state", "Capacidad"),
                         "tower": tname,
-                        "impact_level": "Alto",
+                        "impact_level": impact_label,
                         "description": hc.get("finding"),
-                        "business_impact": hc.get("business_risk"),
+                        "business_impact": hc.get("business_risk")
+                        or hc.get("impact"),
                     }
                 )
-            for proj in pilar.get("projects_todo", []):
+            for p_idx, proj in enumerate(
+                pilar.get("projects_todo", []), start=1
+            ):
                 all_initiatives.append(
                     {
+                        "id": f"INIT-{tid}-{p_idx:02d}",
                         "tower": tname,
-                        "title": proj.get("name"),
-                        "objective": proj.get("tech_objective"),
-                        "priority": "Alta",
-                        "expected_outcome": proj.get("business_case"),
+                        "title": proj.get("name")
+                        or proj.get("initiative", "Iniciativa"),
+                        "objective": proj.get("tech_objective")
+                        or proj.get("objective", ""),
+                        "priority": proj.get("priority", "Alta"),
+                        "expected_outcome": proj.get("business_case")
+                        or proj.get("expected_outcome", ""),
                     }
                 )
 
@@ -163,14 +179,23 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             EpistemicGraphService,
         )
 
-        ind_profile = intelligence_dossier.get("profile", {}).get("industry", "default")
+        ind_profile = intelligence_dossier.get("profile", {}).get(
+            "industry", "default"
+        )
         graph_service = EpistemicGraphService(industry_profile=ind_profile)
 
-        intrinsic_audited = {item["id"]: float(item["score"]) for item in towers_data}
-        # Fill missing towers with 5.0 (neutral) to prevent false cascade alarms
+        intrinsic_audited = {
+            item["id"]: float(item["score"]) for item in towers_data
+        }
+        # SOTA Actuarial Practice: Impute empirical mean of audited towers to prevent Bayesian dilution bias
+        avg_audited_score = (
+            sum(intrinsic_audited.values()) / len(intrinsic_audited)
+            if intrinsic_audited
+            else 3.0
+        )
         for t_id in graph_service.towers:
             if t_id not in intrinsic_audited:
-                intrinsic_audited[t_id] = 5.0
+                intrinsic_audited[t_id] = avg_audited_score
 
         propagated_audited = graph_service.propagate_risk(intrinsic_audited)
 

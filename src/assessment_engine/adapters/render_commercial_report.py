@@ -41,8 +41,17 @@ from assessment_engine.infrastructure.docx_render_utils import (
 )
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
-from assessment_engine.infrastructure.config_loader import get_consultant_company_name
-COMPANY = get_consultant_company_name()
+
+
+def _resolve_company() -> str:
+    try:
+        from assessment_engine.infrastructure.config_loader import (
+            get_consultant_company_name,
+        )
+
+        return get_consultant_company_name()
+    except Exception:
+        return "Nuestra Firma"
 
 
 def clean_commercial_text(text) -> Any:
@@ -170,10 +179,11 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
     disclaimer_title_run.bold = True
     disclaimer_title_p.paragraph_format.space_after = Pt(2)
 
+    company = _resolve_company()
     disclaimer_p = doc.add_paragraph()
     disclaimer_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     disclaimer_p.paragraph_format.space_before = Pt(0)
-    p1_text = f"El presente documento es estrictamente confidencial y de uso exclusivo interno para los equipos comerciales, de preventa y de entrega de {COMPANY}. Contiene estimaciones de negocio, argumentarios de venta competitivos, estrategias de cuenta (Go-To-Market) y evaluaciones de riesgo de clientes. Bajo ninguna circunstancia este documento, ni parcial ni totalmente, debe ser compartido con el cliente, partners, proveedores o cualquier tercero."
+    p1_text = f"El presente documento es estrictamente confidencial y de uso exclusivo interno para los equipos comerciales, de preventa y de entrega de {company}. Contiene estimaciones de negocio, argumentarios de venta competitivos, estrategias de cuenta (Go-To-Market) y evaluaciones de riesgo de clientes. Bajo ninguna circunstancia este documento, ni parcial ni totalmente, debe ser compartido con el cliente, partners, proveedores o cualquier tercero."
     r1 = disclaimer_p.add_run(p1_text)
     r1.font.size = Pt(8)
     r1.font.name = "Arial"
@@ -233,8 +243,9 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
     flash_table.columns[0].width = Inches(2.0)
     flash_table.columns[1].width = Inches(4.5)
 
+    company = _resolve_company()
     set_cell_text(
-        flash_table.rows[0].cells[0], f"TAM Estimado {COMPANY}:", bold=True, font_size=11
+        flash_table.rows[0].cells[0], f"TAM Estimado {company}:", bold=True, font_size=11
     )
     shade_cell(flash_table.rows[0].cells[0], "0072BC")
     set_cell_text(
@@ -270,9 +281,13 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
         font_size=10.5,
     )
     shade_cell(flash_table.rows[2].cells[0], "F2F2F2")
+    win_theme_content = clean_commercial_text(
+        getattr(deal_flash, "vendor_win_theme", None)
+        or getattr(deal_flash, "ntt_win_theme", "")
+    )
     set_cell_text(
         flash_table.rows[2].cells[1],
-        clean_commercial_text(deal_flash.ntt_win_theme),
+        win_theme_content,
         font_size=10.5,
     )
     autofit_table_to_contents(flash_table)
@@ -294,7 +309,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
     add_spacer(doc, 10)
 
     p_how = doc.add_paragraph()
-    r_how = p_how.add_run(f"La Estrategia de {COMPANY} (How we Win):")
+    r_how = p_how.add_run(f"La Estrategia de {company} (How we Win):")
     r_how.bold = True
     r_how.font.color.rgb = BASE_TEXT_COLOR
     r_how.font.size = Pt(11)
@@ -431,6 +446,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
         color_rgb=BASE_TEXT_COLOR,
         space_after=12,
     )
+    company = _resolve_company()
     for i, opp in enumerate(pipeline, start=1):
         table = doc.add_table(rows=4, cols=2)
         finalize_table(table)
@@ -462,7 +478,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
         shade_cell(table.rows[1].cells[1], "F2F2F2")
         set_cell_text(
             table.rows[2].cells[0],
-            f"TCV Estimado {COMPANY}:\n{opp.estimated_tcv}",
+            f"TCV Estimado {company}:\n{opp.estimated_tcv}",
             font_size=10.5,
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )
@@ -487,7 +503,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
 
         p2 = obj_cell.add_paragraph()
         p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        r2 = p2.add_run(f"✅ Respuesta {COMPANY} (Objection Handling): ")
+        r2 = p2.add_run(f"✅ Respuesta {company} (Objection Handling): ")
         r2.bold = False
         r2.font.size = Pt(10.5)
         r2.font.color.rgb = RGBColor(39, 78, 19)
@@ -651,6 +667,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
         add_heading_paragraph(doc, "6. Gestión de Riesgos del Proyecto", level=3)
         risks = prop.risk_management
         if risks:
+            company = _resolve_company()
             rtable = doc.add_table(rows=1, cols=2)
             finalize_table(rtable)
             set_cell_text(
@@ -662,7 +679,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             )
             set_cell_text(
                 rtable.rows[0].cells[1],
-                f"Estrategia de Mitigación {COMPANY}",
+                f"Estrategia de Mitigación {company}",
                 bold=True,
                 font_size=10.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -687,7 +704,8 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
                 shade_cell(row.cells[0], "F2F2F2")
                 shade_cell(row.cells[1], "F2F2F2")
             add_spacer(doc, 10)
-        add_heading_paragraph(doc, f"7. Por qué {COMPANY}", level=3)
+        company = _resolve_company()
+        add_heading_paragraph(doc, f"7. Por qué {company}", level=3)
         why = prop.why_ntt_data
         add_smart_bullet_list(
             doc,

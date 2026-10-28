@@ -132,7 +132,6 @@ async def synthesize_global_asis(working_dir: str):
             data = json.load(f)
             payloads.append(data)
 
-            total_ale_global += data.get("total_fair_ale", 0.0)
             snapshot = data.get("executive_snapshot", {})
             tower_summaries.append(
                 f"--- TORRE: {data.get('document_meta', {}).get('tower_name')} ---\n"
@@ -148,6 +147,12 @@ async def synthesize_global_asis(working_dir: str):
     if not payloads:
         print("❌ No payloads found for synthesis.")
         return
+
+    # SOTA Actuarial Practice: Subadditive Portfolio Diversification Discount
+    total_linear_ale = sum(data.get("total_fair_ale", 0.0) for data in payloads)
+    n_towers = len(payloads)
+    diversification = 1.0 / (n_towers ** 0.35) if n_towers > 0 else 1.0
+    total_ale_global = total_linear_ale * diversification
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
 

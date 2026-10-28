@@ -4,10 +4,18 @@ from .common import VersionedPayload
 
 
 class DealFlash(BaseModel):
-    """Model a deal flash summary with the customer's purchase driver and the deal's win theme."""
+    """Model a deal flash summary with the customer's purchase driver and the vendor's win theme."""
 
     purchase_driver: str
-    ntt_win_theme: str
+    vendor_win_theme: str = Field(
+        ...,
+        validation_alias="ntt_win_theme",
+        description="The consultant/vendor unique value proposition and win theme",
+    )
+
+    @property
+    def ntt_win_theme(self) -> str:
+        return self.vendor_win_theme
 
 
 class CommercialSummaryDraft(BaseModel):
