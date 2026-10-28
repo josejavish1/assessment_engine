@@ -163,6 +163,20 @@ def load_model_profile(profile_name: str) -> ModelProfile:
     if profile_name not in profiles:
         raise KeyError(f"Perfil de modelo no encontrado: {profile_name}")
     profile = dict(profiles[profile_name])
+
+    # Dynamic Tier Resolution: if profile specifies tier, resolve canonical model
+    tier_name = profile.get("tier")
+    if tier_name:
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
+        if tier_name == "fast":
+            profile["model"] = get_model(ModelTier.FAST)
+        elif tier_name == "reasoning":
+            profile["model"] = get_model(ModelTier.REASONING)
+
     override_env_name = "ASSESSMENT_MODEL_OVERRIDE_" + re.sub(
         r"[^A-Z0-9]+", "_", profile_name.upper()
     ).strip("_")
@@ -236,7 +250,10 @@ def resolve_model_for_role(
 
         default_model = get_model(ModelTier.REASONING)
     try:
-        profile = resolve_model_profile_for_role(role_name)
+        try:
+            profile = resolve_model_profile_for_role(role_name)
+        except KeyError:
+            profile = load_model_profile(role_name)
         return str(profile.get("model", default_model)).strip()
     except Exception:
         return default_model
