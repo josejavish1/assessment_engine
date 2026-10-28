@@ -174,7 +174,7 @@ flowchart TD
 No es un simple mapeo de datos. El motor transforma cada hallazgo en una **Tripleta Semántica**:
 *   `[ID_PROYECTO] -- REQUIRES --> [ID_DEPENDENCIA]`
 *   `[ID_RIESGO] -- IMPACTS --> [ID_PILLAR]`
-Esto permite al `NetworkXAnalyzer` aplicar algoritmos de teoría de grafos para calcular el **Camino Crítico** de la transformación de Redeia, asegurando que el Roadmap no sea una lista, sino una secuencia lógica.
+Esto permite al `NetworkXAnalyzer` aplicar algoritmos de teoría de grafos para calcular el **Camino Crítico** de la transformación de la organización del cliente, asegurando que el Roadmap no sea una lista, sino una secuencia lógica.
 
 ### 3. El Alineador Semántico (P3.2)
 Cruza el **Árbol RAPTOR** (visión global del Word) con el **Pre-Scoring** (visión técnica del Test).

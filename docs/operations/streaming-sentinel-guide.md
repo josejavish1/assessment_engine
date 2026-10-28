@@ -14,7 +14,7 @@ verification_mode: editorial
 ---
 # Guía de Operación: Streaming Sentinel (On-Demand Mode)
 
-Este documento detalla el diseño, la arquitectura y los comandos de operación del **Streaming Sentinel**, el motor de ingesta de evidencias en tiempo real del *Assessment Engine*. 
+Este documento detalla el diseño, la arquitectura y los comandos de operación del **Streaming Sentinel**, el motor de ingesta de evidencias en tiempo real del *Assessment Engine*.
 
 Para prevenir el riesgo de **agotamiento de cuotas y consumo excesivo de tokens de Vertex AI**, el sistema ha sido configurado para operar de forma estrictamente **Bajo Demanda (On-Demand)**. El daemon automático de segundo plano está desactivado por defecto, dándote a ti el control absoluto de la llave presupuestaria.
 
