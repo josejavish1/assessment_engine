@@ -809,8 +809,9 @@ def _apply_deterministic_finops(
             try:
                 with open(custom_prof_path, encoding="utf-8-sig") as cf:
                     c_data = json.load(cf)
-                    sre_rate = float(c_data.get("hourly_rate_sre_eur", 36.0))
-                    country_mult = sre_rate / 36.0
+                    base_rate = float(rate_data.get("tarifas_hora", {}).get("tecnico_medio", 36.0))
+                    sre_rate = float(c_data.get("hourly_rate_sre_eur", base_rate))
+                    country_mult = sre_rate / base_rate if base_rate > 0 else 1.0
             except Exception:
                 country_mult = 1.0
 

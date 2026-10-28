@@ -7,7 +7,7 @@
       "slef_mitigation_range": [0.50, 0.85],
       "description": "Automatización y gobierno del ciclo de vida de aprovisionamiento de cómputo y plataformas para erradicar errores de configuración manuales y cumplir con NIS2."
     },
-    "ENS-SRE-Observabilidad": {
+    "ISO27001-SRE-Observabilidad": {
       "name": "Observabilidad, SRE y Operaciones en Producción",
       "tef_mitigation_range": [0.10, 0.30],
       "lm_mitigation_range": [0.40, 0.70],

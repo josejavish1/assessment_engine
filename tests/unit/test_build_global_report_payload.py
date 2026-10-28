@@ -58,8 +58,14 @@ def test_build_global_payload_full_pipeline(tmp_path: Path):
 
     result = build_global_payload(tmp_path, "Test Client")
     assert result is not None
-    assert "meta" in result
-    assert "executive_summary" in result
-    assert "tower_bottom_lines" in result
-    assert "heatmap" in result
-    assert "board_memo" in result
+
+    # Validación Estricta de Esquema Pydantic (Garantía Matemática de Contrato)
+    from assessment_engine.domain.schemas.global_report import GlobalReportPayload
+    validated = GlobalReportPayload.model_validate(result)
+
+    assert validated.meta.client == "Test Client"
+    assert len(validated.tower_bottom_lines) == 1
+    assert validated.tower_bottom_lines[0].id == "T2"
+    assert validated.heatmap[0]["id"] == "T2"
+    assert validated.heatmap[0]["score"] == "2.9"
+    assert validated.board_memo is not None

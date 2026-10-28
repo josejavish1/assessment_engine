@@ -1566,17 +1566,22 @@ def render_blueprint(
 
     render_consolidated_asis(doc, payload)
 
-    # Load currency symbol dynamically from custom_risk_profile.json if available (FAIR-MAM)
-    currency_symbol = "€"
-    custom_profile_path = (
-        client_dir / payload.document_meta.tower_code / "custom_risk_profile.json"
-    )
-    if custom_profile_path.exists():
-        try:
-            with open(custom_profile_path, "r", encoding="utf-8") as cpf:
-                currency_symbol = json.load(cpf).get("currency_symbol", "€")
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+    # Load currency symbol dynamically from document_meta or custom_risk_profile.json (FAIR-MAM)
+    currency_symbol = getattr(payload.document_meta, "currency", "") or ""
+    if not currency_symbol:
+        custom_profile_path = (
+            client_dir / payload.document_meta.tower_code / "custom_risk_profile.json"
+        )
+        if not custom_profile_path.exists():
+            custom_profile_path = next(client_dir.glob("**/custom_risk_profile.json"), custom_profile_path)
+        if custom_profile_path.exists():
+            try:
+                with open(custom_profile_path, "r", encoding="utf-8-sig") as cpf:
+                    currency_symbol = json.load(cpf).get("currency_symbol", "€")
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+    if not currency_symbol:
+        currency_symbol = "€"
 
     render_fair_risk_heatmap(doc, payload, currency_symbol=currency_symbol)
     render_consolidated_tobe(doc, payload)

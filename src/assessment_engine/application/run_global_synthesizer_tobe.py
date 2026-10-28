@@ -151,7 +151,7 @@ class Phase4RisksAndAssumptions(BaseModel):
         assumptions_technological (list[str]): Technological and architectural
             compatibility assumptions for the proposed implementation.
         assumptions_regulatory (list[str]): Assumptions regarding the applicable
-            regulatory and compliance landscape (e.g., ENS High category, NIS2).
+            regulatory and compliance landscape (e.g., ISO 27001, NIS2, DORA, local frameworks).
         risks_if_not_acted (list[str]): Organizational risks incurred by
             maintaining the current state (AS-IS) and forgoing the TO-BE model
             implementation.
@@ -171,7 +171,7 @@ class Phase4RisksAndAssumptions(BaseModel):
     )
     assumptions_regulatory: list[str] = Field(
         ...,
-        description="Specifies key assumptions regarding the regulatory and compliance environment (e.g., ENS High category, NIS2). Requires a minimum of four distinct bullet points.",
+        description="Specifies key assumptions regarding the regulatory and compliance environment (e.g., ISO 27001, NIS2, DORA, local frameworks). Requires a minimum of four distinct bullet points.",
     )
     risks_if_not_acted: list[str] = Field(
         ...,

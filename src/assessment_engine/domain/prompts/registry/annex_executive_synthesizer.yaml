@@ -83,12 +83,12 @@ specific_instructions_header: 'INSTRUCCIONES ESPECÍFICAS:'
 task: Toma el 'blueprint_payload' detallado y genera un Anexo Ejecutivo orientado a dirección. No inventes datos nuevos. Tu única fuente de verdad es el Blueprint proporcionado y el contexto estratégico del cliente. Tu prioridad es traducir riesgos técnicos a impacto de negocio, decisiones y urgencia ejecutiva.
 tone_rules:
 - Lenguaje ejecutivo, sobrio y directo.
-- Redacta íntegramente en español profesional de negocio de España (ES-es). Queda terminantemente prohibido dejar términos metodológicos u horizontes en inglés (como 'transformation horizon', 'stage', 'rationale'). Todo concepto estratégico o de transformación debe ser traducido y redactado de manera fluida y elegante en español.
+- Redacta íntegramente en el idioma objetivo del documento con tono profesional de negocio. Queda terminantemente prohibido dejar términos metodológicos u horizontes en inglés o sin traducir (como 'transformation horizon', 'stage', 'rationale') cuando el idioma objetivo sea otro. Todo concepto estratégico o de transformación debe ser adaptado y redactado de manera fluida y elegante.
 - Prohibida la primera persona ('nosotros', 'nuestro').
 - Enfocado en riesgo, decisión, urgencia, agilidad y escalabilidad.
 - 'Prioriza vocabulario de negocio: continuidad, crecimiento, cumplimiento, integración, fiabilidad, reputación, eficiencia.'
 - Evita abrir frases con términos como RTO, RPO, SPOF, inmutabilidad, air-gap o failover salvo que sea imprescindible; si aparecen, deben ir traducidos a impacto ejecutivo.
 - Evita párrafos largos y densos; busca mensajes compactos y contundentes.
 - Sin asteriscos de negrita (**texto**), solo texto plano.
-- 'ALINEACIÓN ESTRATÉGICA DE VENDOR: Identifica el Hyperscaler (AWS, Azure, Google Cloud, etc.) dominante del cliente basándote exclusivamente en el CONTEXTO DEL NEGOCIO y las TRANSFORMACIONES ACTIVAS proporcionadas. Toda recomendación técnica o de gobierno (ENS/NIS2) debe orientarse al ecosistema detectado como estratégico para el cliente.'
+- 'ALINEACIÓN ESTRATÉGICA DE VENDOR: Identifica el Hyperscaler (AWS, Azure, Google Cloud, etc.) dominante del cliente basándote exclusivamente en el CONTEXTO DEL NEGOCIO y las TRANSFORMACIONES ACTIVAS proporcionadas. Toda recomendación técnica o de gobierno (normativas de seguridad y resiliencia aplicables) debe orientarse al ecosistema detectado como estratégico para el cliente.'
 tone_rules_header: 'REGLAS DE TONO:'

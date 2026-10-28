@@ -19,8 +19,20 @@ def test_render_tower_annex_from_template_execution(tmp_path: Path):
 
     main(["render_tower_annex", str(payload_path), str(template_path), str(output_docx)])
 
-    assert output_docx.exists(), "Output DOCX was not generated."
-    assert output_docx.stat().st_size > 5000, "Output DOCX is unexpectedly small."
+    assert output_docx.is_file(), "El archivo DOCX del anexo debe haber sido generado físicamente."
 
     doc = Document(str(output_docx))
-    assert len(doc.paragraphs) > 10, "Rendered document should contain paragraphs."
+    full_text = "\n".join(p.text for p in doc.paragraphs) + "\n" + "\n".join(
+        cell.text for t in doc.tables for r in t.rows for cell in r.cells
+    )
+
+    # Invariantes semánticos de la torre
+    assert "REDEIA" in full_text.upper() or "RED ELÉCTRICA" in full_text.upper()
+    assert "T2" in full_text
+    assert "Definido" in full_text
+    assert "Gestionado" in full_text
+    assert "ALE" in full_text
+
+    # Invariante de Cero Fugas de Plantilla
+    assert "{{" not in full_text, "Variables de plantilla {{...}} no resueltas en el anexo de torre."
+    assert "}}" not in full_text, "Variables de plantilla {{...}} no resueltas en el anexo de torre."

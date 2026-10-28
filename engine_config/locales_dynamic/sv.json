@@ -1,0 +1,245 @@
+{
+  "control_documental_title": "Dokumentstyrning och ändringshistorik",
+  "intro_metodologia_title": "Introduktion och diagnosmetodik",
+  "objetivo_alcance_title": "Syfte och omfattning",
+  "resumen_ejecutivo_title": "Exekutiv sammanfattning av tornet",
+  "impactos_negocio_title": "Väsentliga affärseffekter",
+  "metodologia_madurez_title": "Metodik för mognadsbedömning",
+  "metodologia_fair_title": "Kvantitativ riskmetodik (FAIR)",
+  "disclaimer_heading_title": "Ansvarsfriskrivning",
+  "descripcion_plataforma_title": "Plattformsbeskrivning och enhetlig topologi",
+  "radar_chart_title": "Övergripande mognadsprofil för tornet (radardiagram)",
+  "matriz_fair_title": "Forensiskt sårbarhets- och riskregister (FAIR-matris)",
+  "evaluacion_madurez_title": "Utvärdering av mognadsnivåer",
+  "conclusiones_tobe_title": "Slutsatser och gap inför målbild (TO-BE)",
+  "fortalezas_identificadas_title": "Identifierade infrastrukturella styrkor",
+  "debilidades_criticas_title": "Kritiska svagheter och utmaningar",
+  "band_initial": "Initial",
+  "band_repeatable": "Repeterbar",
+  "band_defined": "Definierad",
+  "band_managed": "Hanterad",
+  "band_optimized": "Optimerad",
+  "currency_symbol": "$",
+  "currency_format": "US",
+  "version_label": "Version",
+  "date_label": "Juni 2026",
+  "table_of_contents_title": "Innehållsförteckning",
+  "appendix_a_title": "Förkortningslista",
+  "conclusions_title": "Konsoliderad rapport över framtida målbild",
+  "bottlenecks_bullet": "**Strukturella flaskhalsar:** Den manuella modellen för infrastrukturprovisinering begränsar kraftigt leveranstakten för strategiska affärsinitiativ.",
+  "delayed_faults_bullet": "**Fördröjd teknisk incidentdetektering:** Avsaknaden av korrelerad observerbarhet ökar den genomsnittliga åtgärdstiden (MTTR) för kritiska systemfel.",
+  "config_drift_bullet": "**Risk för konfigurationsavvikelser (drift):** Manuellt konfigurationsunderhåll försvårar förmågan att i realtid påvisa efterlevnad av {reg_frameworks}.",
+  "desc_band_inicial": "kännetecknas av ad hoc-, reaktiv och informell verksamhet med stort beroende av enskilda personers insatser",
+  "desc_band_repetible": "kännetecknas av grundläggande lokala processer men av taktisk och inkonsekvent karaktär",
+  "desc_band_definido": "kännetecknas av formaliserade och konsekvent dokumenterade processer men med utrymme för integrerad plattformskonsolidering",
+  "table_header_pillar": "Pelare",
+  "table_header_score": "Poäng",
+  "table_header_level": "Nivå",
+  "table_header_reading": "Exekutiv sammanfattning",
+  "table_header_asis": "Nuläge (AS-IS)",
+  "table_header_tobe": "Börläge (TO-BE)",
+  "table_header_gap": "Väsentligt gap",
+  "radar_chart_heading": "Radardiagram",
+  "compact_pillar_detail_heading": "Kompakt detaljvy per pelare",
+  "desc_band_gestionado": "kännetecknas av en mogen, kvantitativt mätt operativ modell som är systematiskt anpassad till IT-styrning",
+  "desc_band_optimizado": "kännetecknas av en operativ modell präglad av spetskompetens, hög grad av automatisering och kontinuerlig förbättring",
+  "audit_justification_template": "Uppskattad primär bokföringsmässig förlust vid grundhändelse: {downtime_hours} timmars driftstopp till {hourly_rate}/timme ({downtime_cost}) + {sre_cost} teknisk SRE-insats ({sre_recovery_hours} timmar till {sre_hourly_rate}/timme).",
+  "remediation_project_name_template": "Taktiskt åtgärdsprogram: {capability}",
+  "remediation_business_case_template": "Direkt riskreducering: {impact}",
+  "remediation_tech_objective_template": "Åtgärda tekniskt gap identifierat i AS-IS: {finding_text}",
+  "remediation_duration": "H1 (Månad 1–3)",
+  "remediation_deliverables": [
+    "Åtgärdsplan",
+    "Driftsättning av patchar och konfiguration",
+    "Verifieringsrapport för gap-stängning"
+  ],
+  "archimate_fallback_deliverables": [
+    "Teknisk arkitekturdesign (HLD/LLD)",
+    "Test- och valideringsplan"
+  ],
+  "archimate_catalog": {
+    "kubernetes": [
+      "Basmanifest i YAML",
+      "IaC-modul för containerorkestrering",
+      "Helm-charts för styrning",
+      "CI/CD-pipeline för GitLab/GitHub Actions"
+    ],
+    "eks": [
+      "Basmanifest i YAML",
+      "IaC-modul för hanterade kluster",
+      "Helm-charts för styrning",
+      "CI/CD-pipeline"
+    ],
+    "container": [
+      "Basmanifest i YAML",
+      "IaC-modul för containerorkestrering",
+      "Helm-charts för styrning",
+      "CI/CD-pipeline"
+    ],
+    "landing zone": [
+      "Ramverk för kontohierarki i Landing Zone (Multi-Account)",
+      "Automatiserade styrningspolicyer och skyddsbarriärer",
+      "Terraform-basmodul för nätverk"
+    ],
+    "platform engineering": [
+      "Tjänstekatalog för intern utvecklarportal (IDP)",
+      "IaC-mallar för självbetjäning",
+      "Ramverk för SLI/SLO"
+    ],
+    "observability": [
+      "Enhetliga instrumentpaneler för mätvärden och spårning",
+      "Larmregler i PromQL",
+      "Incidentintegration med PagerDuty/ServiceNow"
+    ],
+    "aiops": [
+      "Enhetliga instrumentpaneler för observerbarhet",
+      "Modeller för avvikelsedetektering",
+      "ITSM-integration"
+    ],
+    "scada": [
+      "Referensarkitektur enligt Purdue-modellen",
+      "Perimeterbrandväggspolicyer",
+      "Implementering av enkelriktad datadiod"
+    ],
+    "automation": [
+      "Ansible Automation Playbooks",
+      "Terraform-infrastrukturmoduler",
+      "CI/CD-pipelines"
+    ],
+    "iac": [
+      "Terraform-moduler",
+      "Konfiguration av GitOps-arkiv",
+      "Styrningspolicyer i OPA/Sentinel"
+    ],
+    "dr": [
+      "Runbooks för haveriberedskap (Disaster Recovery)",
+      "Testplan för automatiserad redundansväxling",
+      "Mallar för replikering och redundansväxling"
+    ],
+    "disaster recovery": [
+      "Runbooks för haveriberedskap (Disaster Recovery)",
+      "Testplan för automatiserad redundansväxling",
+      "Mallar för replikering och redundansväxling"
+    ],
+    "backup": [
+      "Lagringspolicyer (retention)",
+      "Oföränderligt säkerhetskopieringsvalv (immutable backup)",
+      "Automatiserad testsvit för återläsning"
+    ]
+  },
+  "default_capability_label": "Infrastruktur",
+  "default_impact_label": "Operativ risk",
+  "default_corporate_cloud_label": "företagsmolnet",
+  "unified_platform_program_name": "Strategiskt program för plattformsteknik och hybrid självbetjäning",
+  "unified_platform_program_business_case": "Minskad kognitiv belastning för utvecklare genom enhetliga kataloger och självbetjäningsportaler i {cloud_label}.",
+  "unified_platform_program_tech_objective": "Konsolidera beräkningskapacitet, landningszon och automatiserad provisinering under en gemensam intern utvecklarplattform (IDP).",
+  "unified_platform_program_deliverables": [
+    "Definition av enhetlig tjänstekatalog.",
+    "API-integration för provisinering av landningszoner i {cloud_label}.",
+    "Driftsättning av självbetjäningsportal för utvecklare."
+  ],
+  "business_case_direct_mitigation_template": "Direkt mitigering: Åtgärdar den kritiska sårbarhet som identifierats i AS-IS och eliminerar risken för: '{impact}'.",
+  "business_case_strategic_enabler_template": "Strategisk möjliggörare: Minskar den operativa totalkostnaden (TCO), förkortar time-to-market och säkerställer regelefterlevnad ({reg_frameworks}).",
+  "conjunction_and": " och ",
+  "font_family_default": "Aptos",
+  "priority_high": "Hög",
+  "priority_medium": "Medel",
+  "priority_low": "Låg",
+  "coi_3y_ord": "~{amount} på 3 år",
+  "coi_3y_ext": "~{amount} (värsta utfall på 3 år)",
+  "disclaimer_text": "Denna tekniska diagnosrapport (Dokumentet) har upprättats av konsulten uteslutande för intern och exklusiv användning av klientorganisationen under strikt sekretess. Dokumentet utgör en snabbutvärdering baserad uteslutande på den information, de förklaringar och de självskattningar som tillhandahållits av klientens personal under genomförda tekniska intervjuer, vilka förutsatts vara fullständigt sanningsenliga utan någon oberoende validering eller fältrevision av vårt team. Följaktligen levereras Dokumentet i befintligt skick ('AS-IS') och utgör inte någon uttrycklig eller underförstådd garanti för prestanda, kontinuerlig säkerhet eller skadeslöshet mot operativa eller regulatoriska incidenter.\n\nProjektioner av finansiell påverkan, aktuariella risksimuleringar samt värden för årlig förlustexponering (ALE) och värsta utfall (P90) beräknade enligt standardiserad Open FAIR™-metodik och stokastiska Monte Carlo-modeller utgör endast statistiska uppskattningar och matematiska sannolikhetsmodeller baserade på osäkerhetsfördelningar. Dessa monetära värderingar utgör analytiska verktyg uteslutande avsedda för strategisk prioritering av investeringar och kostnad för passivitet (Business Case). Under inga omständigheter ska de tolkas, användas eller jämställas med formella finansiella revisioner eller redovisningsrevisioner, avsättningar för redovisningsmässiga skulder, garantier för direkt eller indirekt påverkan på bolagets balansräkning, eller som rättsligt eller juridiskt verkställbara förpliktelser.\n\nVarje hänvisning i Dokumentet till standarder, lagar, förordningar eller branschspecifika regelverk för efterlevnad (såsom tillämpliga ramverk för cybersäkerhet, förordningar om operativ motståndskraft och branschstandarder) presenteras uteslutande i belysande syfte samt som teknisk bästa praxis för att minska riskexponeringen. Dessa omnämnanden utgör under inga omständigheter formell juridisk rådgivning, regelefterlevnadsrådgivning eller skatterådgivning. Tolkning, implementering, verifiering och slutlig efterlevnad av tillämpliga regulatoriska skyldigheter och lagkrav åligger strikt, direkt och icke-överlåtbart klientorganisationens styrelse, bolagsjurister, compliance-ansvariga och ledning.\n\nUteslutande av tredje part och ansvarsbegränsningsklausul: Det är förbjudet att distribuera, citera eller möjliggöra åtkomst till detta Dokument, helt eller delvis, till tredje part utan föregående samtycke från konsulten. Konsulten åtar sig inget ansvar gentemot tredje part som tar del av innehållet i detta Dokument, och sådan tredje part bär ensam hela risken. I den utsträckning det är tillåtet enligt tillämplig lag i relevant jurisdiktion, och med undantag för uppsåt eller grov vårdslöshet, ska konsultens totala och sammanlagda ansvar för eventuella krav, skador, förluster eller sanktioner som uppstår ur eller i samband med upprättandet, innehållet, slutsatserna eller användningen av detta Dokument (oavsett om det rör sig om avtalsansvar, utomobligatoriskt ansvar, garantiansvar eller någon annan rättslig ansvarsgrund) i samtliga fall och sammantaget vara kvantitativt begränsat till det nettobelopp i arvoden som konsulten faktiskt erhållit från klientorganisationen för tillhandahållandet av denna specifika utvärderingstjänst. Konsulten ska under inga omständigheter hållas ansvarig för indirekta skador, tillfälliga skador, särskilda skador, följdskador eller skadestånd i avskräckande syfte (punitive damages), inklusive men inte begränsat till utebliven vinst, intäktsbortfall, driftavbrott eller förlust av anseende.",
+  "default_classification": "Konfidentiellt",
+  "title": "Utvärderingsrapport för nuläge (AS-IS)",
+  "project": "Konsultuppdrag för redesign av teknisk infrastruktur",
+  "client_lbl": "Klient:\n",
+  "proj_lbl": "\nProjekt:\n",
+  "toc_title": "Innehåll",
+  "dashboard_title": "Övergripande mognadsöversikt för tornet",
+  "dashboard_intro": "Den omfattande nulägesutvärderingen konsoliderar en kvantitativ bedömning som placerar tornet i dess motsvarande mognadsintervall, vilket motiverar införandet av motståndskraftspraxis:",
+  "score_lbl": "AS-IS-POÄNG",
+  "maturity_lbl": "KVALITATIV MOGNADSNIVÅ",
+  "resilience_reading": "Analys av plattformens motståndskraft:",
+  "radar_title": "Visuell profil för viktad mognad",
+  "justification_table_headers": [
+    "Pelare / Utvärderad teknisk förmåga",
+    "AS-IS-poäng",
+    "Gapanalys och diagnostisk kalibrering"
+  ],
+  "platform_overview_title": "Beskrivning av aktuell infrastrukturplattform",
+  "swot_title": "Huvudsakliga styrkor och gap",
+  "swot_headers": [
+    "Plattformens viktigaste styrkor",
+    "Kritiska gap och teknisk/operativ skuld"
+  ],
+  "transversal_title": "Analys av tvärgående förmågor",
+  "risk_matrix_title": "Finansiell riskexponering och operativ motståndskraft",
+  "risk_intro_1": "Den kvantitativa nulägesanalysen fastställer att de tekniska operativa skulderna och identifierade sårbarheterna uteslutande inom ramen för detta tekniktorn exponerar ",
+  "risk_intro_2": " för en faktisk årlig förlustexponering (ALE) om ",
+  "risk_intro_3": " årligen enligt den internationella FAIR-standarden.",
+  "risk_mosaic_intro": "Denna mosaikmatris konsoliderar fördelningen av denna exponering baserat på hotfrekvens (Threat Event Frequency, TEF) och förlustmagnitud (Loss Magnitude, LM) för varje forensiskt fynd:",
+  "exposure_summary_title": "Kvantitativ riskmatris",
+  "methodology_chapter_title": "Utvärderingens mål, omfattning och referensramverk",
+  "tef_title": "Kriterier för hothändelsefrekvens (TEF)",
+  "tef_headers": [
+    "TEF-nivå",
+    "Beteckning",
+    "Uppskattad annualiserad frekvens"
+  ],
+  "lm_title": "Kriterier för direkt/indirekt förlustmagnitud (LM)",
+  "lm_headers": [
+    "LM-nivå",
+    "Konsekvensklassificering",
+    "Finansiell förlustgräns"
+  ],
+  "top_risks_title": "Högst prioriterade risker för tornet",
+  "top_risks_intro": "De högst prioriterade riskerna baserat på deras direkta inverkan på tjänstemotståndskraft och kostnaden för passivitet (ALE):",
+  "motivo_priorizacion": "Prioriteringsmotivering: ",
+  "top_risks_fallbacks": {
+    "compute": "Den reaktiva modellen för lokal beräkningskapacitet (on-premise compute) hotar direkt tjänstekontinuiteten och hindrar driftsättningen av den digitala tvillingen och strategisk AI.",
+    "container": "Avsaknaden av en företagsgemensam containerplattform bromsar innovation, skapar isolerade utvecklingssilos och ökar moderniseringsskulden.",
+    "cloud": "Manuell hantering av landningszoner omöjliggör verifiering av efterlevnad i realtid, vilket utsätter verksamheten för allvarliga regulatoriska påföljder.",
+    "automation": "Beroendet av manuella ärenden och godkännanden fördröjer time-to-market med veckor och orsakar allvarliga flaskhalsar vid provisinering.",
+    "default": "Fragmentering och inkonsekvens i övervakningssystemen omöjliggör larmkorrelering och förutsägelse av komplexa driftavbrott."
+  },
+  "detailed_risks_title": "Analytisk inventering av risker och exponeringar",
+  "detailed_risks_pilar_title": "Sårbarhetsanalys: ",
+  "detailed_risks_headers": [
+    "ID",
+    "Sårbarhet och revisionsbevis",
+    "FAIR-exponering och affärsrisk"
+  ],
+  "next_steps_title": "Nästa steg och kostnad för passivitet",
+  "appendix_a_intro": "Nedan definieras ordlistan med tekniska termer och akronymer som används i denna tekniska nulägesdiagnos:",
+  "appendix_a_headers": [
+    "Förkortning",
+    "Betydelse / Teknisk beskrivning"
+  ],
+  "appendix_b_title": "Ansvarsfriskrivning",
+  "appendix_c_title": "Förteckning över informationskällor och spårbarhet",
+  "appendix_c_intro": "För att säkerställa transparens, tillförlitlighet och oföränderlighet för den information som samlats in i denna tekniska diagnos förtecknas och kodas de använda dokumentkällorna under revisionsförvaring nedan:",
+  "appendix_c_headers": [
+    "Referenskod",
+    "Källdokument / Dataursprung",
+    "Förvaringsomfattning och beskrivning"
+  ],
+  "vulnerability_lbl": "Identifierad sårbarhet:\n",
+  "evidence_lbl": "Bokstavligt forensiskt bevis:\n",
+  "impact_lbl": "Operativ påverkan:\n",
+  "exposure_lbl": "Kvantitativ exponering (FAIR):\n",
+  "ale_proyectado": "Projekterad ALE: ",
+  "v_lbl": "Version ",
+  "disclaimer_text_1": "Denna tekniska diagnosrapport (Dokumentet) utgör en retrospektiv utvärdering av nuläget (AS-IS) för det utvärderade tornet, uteslutande baserad på den information, den telemetri och de självskattningssvar som klienten tillhandahållit i god tro. De rekommendationer, kvalitativa bedömningar och infrastrukturinventeringar som presenteras återspeglar en aktuell diagnos och utgör inte några garantier för prestanda, kontinuerlig säkerhet eller åtaganden om tillgänglighet från konsultens sida.",
+  "disclaimer_text_2": "De kvantitativa finansiella riskberäkningarna och den årliga förlustexponeringen (ALE) som beräknats med O-FAIR-metodik och Monte Carlo-simuleringar är statistiska sannolikhetsuppskattningar baserade på standardiserade osäkerhetsmodeller för sektorn för kritisk infrastruktur. Dessa siffror tillhandahålls uteslutande i prioriterings- och belysningssyfte avseende kostnaden för passivitet, och ska under inga omständigheter tolkas som formella redovisningsrevisioner, tillgångsgarantier eller rättsligt verkställbara förpliktelser.",
+  "disclaimer_text_3": "Hänvisningar till lagar och regelefterlevnad ska betraktas som riktlinjer och bästa tekniska praxis för att minska angreppsytan och utgör inte formell juridisk rådgivning. Den slutliga tolkningen och implementeringen av efterlevnadskrav åvilar strikt och icke-överlåtbart klientorganisationens funktioner för compliance, säkerhet och styrning.",
+  "disclaimer_text_4": "All distribution, spridning, återgivning, citering eller åtkomst till detta Dokument, helt eller delvis, för tredje part utanför klientorganisationen är strikt förbjuden utan föregående skriftligt medgivande från konsulten. Konsulten påtar sig, accepterar eller förvärvar inget ansvar, vare sig inom- eller utomobligatoriskt, gentemot tredje part som tar del av, läser eller fattar beslut av något slag baserat på innehållet i detta Dokument, varvid sådan tredje part ensam bär hela risken. Klienten förbinder sig att hålla konsulten, dess partners, anställda och underleverantörer skadeslösa mot varje krav, anspråk, skada, kostnad eller förlust som uppstår till följd av distribution, olämplig användning eller obehörigt röjande av detta Dokument till tredje part.",
+  "disclaimer_text_5": "Konsulten ska under inga omständigheter hållas ansvarig för några indirekta skador, oförutsedda skador, följdskador, särskilda skador eller skadestånd i avskräckande syfte (punitive damages), inklusive men inte begränsat till utebliven vinst, intäktsbortfall, driftavbrott eller skada på anseendet.",
+  "bib_cues": "Konsoliderade tekniska självskattningsformulär för ",
+  "bib_cues_desc": "-tornet, som samlar officiella svar från ingenjörsteamet hos ",
+  "bib_contexto": "Underlag för strategisk arkitekturkontext hos ",
+  "bib_contexto_desc": " som definierar inventarievolymer, datacenter och operativ kritikalitet.",
+  "bib_minutas": "Protokoll och anteckningar förda under arkitekturmötena på plats mellan de tekniska ledarna hos ",
+  "bib_minutas_desc": " och konsultteamet.",
+  "default_overview_text": "Den konsoliderade inventeringen och utvärderingen av ",
+  "annex_technical_prefix": "Teknisk bilaga:",
+  "vocabulary_substitutions": {}
+}

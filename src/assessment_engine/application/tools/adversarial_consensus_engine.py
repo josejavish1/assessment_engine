@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ControlEfficacyAssessment(BaseModel):
     """Encapsulates the qualitative technical audit of a specific security control."""
     control_id: str = Field(
-        description="The exact ID of the security control evaluated, e.g., 'NIS2-IaC', 'ENS-SRE-Observabilidad', or 'CIS-Automatizacion'."
+        description="The exact ID of the security control evaluated, e.g., 'NIS2-IaC', 'ISO27001-Observabilidad', or 'CIS-Automatizacion'."
     )
     implementation_status: str = Field(
         description="The factual status of the control based on client evidence. Strict options: 'Implementado' (full mitigation), 'Parcial' (partial mitigation), or 'Ausente' (zero mitigation)."

@@ -22,8 +22,10 @@ def test_generate_tower_radar_chart_execution(tmp_path: Path):
     out_png = tmp_path / "tower_radar.png"
     result = generate_radar_chart_from_pillars(pillars, out_png)
 
-    assert result.exists()
-    assert result.stat().st_size > 1000
+    assert result.is_file(), "El archivo PNG de radar de torre debe existir físicamente."
+    # Validación de cabecera binaria canónica PNG (RFC 2083)
+    header = result.read_bytes()[:8]
+    assert header == b"\x89PNG\r\n\x1a\n", "La cabecera binaria del archivo debe ser PNG válida."
 
 
 def test_generate_global_radar_chart_execution(tmp_path: Path):
@@ -34,8 +36,9 @@ def test_generate_global_radar_chart_execution(tmp_path: Path):
     out_png = tmp_path / "global_radar.png"
     main_global_radar(["global_radar", str(payload_fixture), str(out_png)])
 
-    assert out_png.exists()
-    assert out_png.stat().st_size > 1000
+    assert out_png.is_file(), "El archivo PNG de radar global debe existir físicamente."
+    header = out_png.read_bytes()[:8]
+    assert header == b"\x89PNG\r\n\x1a\n", "La cabecera binaria del archivo debe ser PNG válida."
 
 
 def test_validate_section_output_pass_and_fail(tmp_path: Path, monkeypatch):

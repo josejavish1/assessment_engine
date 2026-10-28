@@ -1,0 +1,245 @@
+{
+  "control_documental_title": "Controllo del documento e cronologia delle modifiche",
+  "intro_metodologia_title": "Introduzione e metodologia diagnostica",
+  "objetivo_alcance_title": "Obiettivi e ambito di applicazione",
+  "resumen_ejecutivo_title": "Executive Summary della Torre",
+  "impactos_negocio_title": "Principali impatti di business",
+  "metodologia_madurez_title": "Metodologia di valutazione della maturità",
+  "metodologia_fair_title": "Metodologia quantitativa del rischio (FAIR)",
+  "disclaimer_heading_title": "Clausola di limitazione della responsabilità",
+  "descripcion_plataforma_title": "Descrizione della piattaforma e topologia unificata",
+  "radar_chart_title": "Profilo complessivo di maturità della Torre (Radar)",
+  "matriz_fair_title": "Registro forense delle vulnerabilità e dei rischi (Matrice FAIR)",
+  "evaluacion_madurez_title": "Valutazione dei livelli di maturità",
+  "conclusiones_tobe_title": "Conclusioni e gap per il target TO-BE",
+  "fortalezas_identificadas_title": "Punti di forza infrastrutturali identificati",
+  "debilidades_criticas_title": "Debolezze critiche e sfide",
+  "band_initial": "Iniziale",
+  "band_repeatable": "Ripetibile",
+  "band_defined": "Definito",
+  "band_managed": "Gestito",
+  "band_optimized": "Ottimizzato",
+  "currency_symbol": "$",
+  "currency_format": "US",
+  "version_label": "Versione",
+  "date_label": "Giugno 2026",
+  "table_of_contents_title": "Indice dei contenuti",
+  "appendix_a_title": "Elenco delle abbreviazioni",
+  "conclusions_title": "Relazione consolidata sullo stato futuro (TO-BE)",
+  "bottlenecks_bullet": "**Colli di bottiglia strutturali:** il modello di provisioning manuale dell'infrastruttura limita gravemente la velocità di delivery delle iniziative strategiche di business.",
+  "delayed_faults_bullet": "**Rilevamento tardivo dei disservizi tecnici:** l'assenza di un'osservabilità correlata aumenta il tempo medio di ripristino (MTTR) a fronte di guasti critici di sistema.",
+  "config_drift_bullet": "**Rischio di Configuration Drift:** la gestione manuale delle configurazioni compromette la capacità di dimostrare la conformità normativa in tempo reale rispetto a {reg_frameworks}.",
+  "desc_band_inicial": "evidenzia operazioni ad-hoc, reattive e informali con un'elevata dipendenza dall'impegno dei singoli individui",
+  "desc_band_repetible": "evidenzia processi locali di base, ma di natura tattica e disomogenea",
+  "desc_band_definido": "evidenzia processi formalizzati e documentati in modo coerente, ma con margini di consolidamento integrato della piattaforma",
+  "table_header_pillar": "Pilastro",
+  "table_header_score": "Punteggio",
+  "table_header_level": "Livello",
+  "table_header_reading": "Executive Summary",
+  "table_header_asis": "Stato attuale (AS-IS)",
+  "table_header_tobe": "Stato target (TO-BE)",
+  "table_header_gap": "Gap principale",
+  "radar_chart_heading": "Grafico radar",
+  "compact_pillar_detail_heading": "Dettaglio sintetico per pilastro",
+  "desc_band_gestionado": "evidenzia un modello operativo maturo, misurato quantitativamente e allineato sistematicamente alla governance IT",
+  "desc_band_optimizado": "evidenzia un modello operativo di eccellenza, altamente automatizzato e in continuo miglioramento",
+  "audit_justification_template": "Perdita contabile primaria stimata nell'evento base: {downtime_hours}h di fermo operativo a {hourly_rate}/h ({downtime_cost}) + {sre_cost} di intervento tecnico SRE ({sre_recovery_hours}h a {sre_hourly_rate}/h).",
+  "remediation_project_name_template": "Programma di remediation tattica: {capability}",
+  "remediation_business_case_template": "Mitigazione diretta del rischio: {impact}",
+  "remediation_tech_objective_template": "Colmare il gap tecnico identificato nell'AS-IS: {finding_text}",
+  "remediation_duration": "H1 (Mesi 1-3)",
+  "remediation_deliverables": [
+    "Piano di remediation",
+    "Rilascio di patch e configurazioni",
+    "Report di verifica chiusura gap"
+  ],
+  "archimate_fallback_deliverables": [
+    "Design dell'architettura tecnica (HLD/LLD)",
+    "Piano di collaudo e validazione"
+  ],
+  "archimate_catalog": {
+    "kubernetes": [
+      "Manifest YAML di base",
+      "Modulo IaC di orchestrazione container",
+      "Helm Chart di governance",
+      "Pipeline CI/CD GitLab/GitHub Actions"
+    ],
+    "eks": [
+      "Manifest YAML di base",
+      "Modulo IaC per cluster gestito",
+      "Helm Chart di governance",
+      "Pipeline CI/CD"
+    ],
+    "container": [
+      "Manifest YAML di base",
+      "Modulo IaC di orchestrazione container",
+      "Helm Chart di governance",
+      "Pipeline CI/CD"
+    ],
+    "landing zone": [
+      "Framework gerarchico per Landing Zone multi-account",
+      "Policy e guardrail automatizzati di governance",
+      "Modulo Terraform per rete di base"
+    ],
+    "platform engineering": [
+      "Catalogo servizi dell'Internal Developer Portal (IDP)",
+      "Template IaC self-service",
+      "Framework SLI/SLO"
+    ],
+    "observability": [
+      "Dashboard unificate di metriche e tracing",
+      "Regole di alerting PromQL",
+      "Integrazione incidenti PagerDuty/ServiceNow"
+    ],
+    "aiops": [
+      "Dashboard unificate di osservabilità",
+      "Modelli di rilevamento delle anomalie",
+      "Integrazione ITSM"
+    ],
+    "scada": [
+      "Blueprint dell'architettura di rete Purdue",
+      "Policy firewall perimetrali",
+      "Implementazione di diodi dati unidirezionali"
+    ],
+    "automation": [
+      "Playbook di automazione Ansible",
+      "Moduli infrastrutturali Terraform",
+      "Pipeline CI/CD"
+    ],
+    "iac": [
+      "Moduli Terraform",
+      "Configurazione repository GitOps",
+      "Policy di governance OPA/Sentinel"
+    ],
+    "dr": [
+      "Runbook di Disaster Recovery",
+      "Piano di test di failover automatizzato",
+      "Template di replica e failover"
+    ],
+    "disaster recovery": [
+      "Runbook di Disaster Recovery",
+      "Piano di test di failover automatizzato",
+      "Template di replica e failover"
+    ],
+    "backup": [
+      "Policy di retention",
+      "Vault di backup immutabile",
+      "Suite di test di ripristino automatizzati"
+    ]
+  },
+  "default_capability_label": "Infrastruttura",
+  "default_impact_label": "Rischio operativo",
+  "default_corporate_cloud_label": "il cloud aziendale",
+  "unified_platform_program_name": "Programma strategico di Platform Engineering e Self-Service ibrido",
+  "unified_platform_program_business_case": "Riduzione del carico cognitivo degli sviluppatori tramite cataloghi unificati e portali self-service su {cloud_label}.",
+  "unified_platform_program_tech_objective": "Consolidare le funzionalità di calcolo, landing zone e provisioning automatizzato all'interno di un'unica Internal Developer Platform (IDP).",
+  "unified_platform_program_deliverables": [
+    "Definizione del catalogo servizi unificato.",
+    "Integrazione API per il provisioning della Landing Zone su {cloud_label}.",
+    "Rilascio del portale Developer Self-Service."
+  ],
+  "business_case_direct_mitigation_template": "Mitigazione diretta: risolve la vulnerabilità critica rilevata nell'AS-IS, eliminando il rischio di: '{impact}'.",
+  "business_case_strategic_enabler_template": "Enabler strategico: riduce il TCO operativo, accelera il time-to-market e garantisce la conformità normativa ({reg_frameworks}).",
+  "conjunction_and": " e ",
+  "font_family_default": "Aptos",
+  "priority_high": "Alta",
+  "priority_medium": "Media",
+  "priority_low": "Bassa",
+  "coi_3y_ord": "~{amount} in 3 anni",
+  "coi_3y_ext": "~{amount} (scenario peggiore a 3 anni)",
+  "disclaimer_text": "Il presente report di diagnosi tecnica (il Documento) è stato redatto dal consulente esclusivamente per l'uso interno e ad esclusivo beneficio dell'organizzazione cliente, a titolo strettamente confidenziale. Il Documento costituisce un'attività di valutazione rapida basata unicamente sulle informazioni, sulle spiegazioni e sulle autovalutazioni fornite dal personale del cliente nel corso delle interviste tecniche svolte, presumendone la totale veridicità, senza alcuna convalida indipendente o audit sul campo da parte del nostro team. Di conseguenza, il Documento viene rilasciato 'così com'è' (AS-IS) e non costituisce una garanzia esplicita o implicita di prestazioni, sicurezza continua o manleva a fronte di incidenti operativi o normativi.\n\nLe proiezioni di impatto finanziario, le simulazioni attuariali del rischio e i valori di Annual Loss Exposure (ALE) e del caso peggiore (P90) calcolati mediante la metodologia standard Open FAIR™ e i modelli stocastici Monte Carlo rappresentano unicamente stime statistiche e modelli probabilistici matematici basati su distribuzioni di incertezza. Tali valorizzazioni monetarie costituiscono strumenti analitici dedicati esclusivamente alla prioritizzazione strategica degli investimenti e del costo dell'inazione (Business Case). In nessun caso devono essere interpretate, utilizzate o assimilate a verifiche contabili o finanziarie formali, accantonamenti di passività a bilancio, garanzie di impatto diretto o indiretto sul bilancio aziendale, né come passività legalmente o giudizialmente esigibili.\n\nQualsiasi riferimento nel Documento a standard, leggi, regolamenti o framework di conformità settoriali (quali normative di cybersecurity applicabili, regolamenti sulla resilienza operativa e standard di settore) viene fornito a titolo meramente illustrativo, tecnico e di best practice ingegneristiche per la mitigazione dell'esposizione al rischio. Tali menzioni non costituiscono in alcuna circostanza una consulenza formale di natura legale, regolamentare o fiscale. L'interpretazione, l'attuazione, la verifica e il rispetto finale degli obblighi regolamentari applicabili e dei requisiti di legge competono in via esclusiva, diretta e non trasferibile agli amministratori, ai consulenti legali, ai responsabili della compliance e ai dirigenti dell'organizzazione cliente.\n\nEsclusione di terzi e clausola di limitazione di responsabilità: È fatto divieto di distribuire, citare o consentire l'accesso al presente Documento, in tutto o in parte, a qualsiasi soggetto terzo senza il previo consenso del consulente. Il consulente non assume alcuna responsabilità nei confronti di terzi che abbiano accesso ai contenuti di questo Documento, intendendosi che qualsiasi terzo agirà a proprio esclusivo rischio. Nella misura massima consentita dalla legge applicabile nella giurisdizione competente, ed esclusi i casi di dolo o colpa grave, la responsabilità complessiva e aggregata del consulente per qualsiasi reclamo, danno, perdita o sanzione derivante da o correlata alla preparazione, al contenuto, alle conclusioni o all'utilizzo del presente Documento (sia contrattuale, extracontrattuale, da garanzia o in base a qualsiasi altra teoria di responsabilità giuridica) sarà quantitativamente limitata, in ogni caso e complessivamente, all'importo netto dei compensi effettivamente percepiti dal consulente dall'organizzazione cliente per l'erogazione di questo specifico servizio di valutazione. In nessun caso il consulente sarà responsabile per danni indiretti, incidentali, speciali, consequenziali o punitivi, inclusi, a titolo esemplificativo ma non esaustivo, lucro cessante, perdita di ricavi, interruzione di attività aziendale o danno reputazionale.",
+  "default_classification": "Confidenziale",
+  "title": "Rapporto di valutazione dello stato attuale (AS-IS)",
+  "project": "Consulenza per la riprogettazione dell'infrastruttura tecnologica",
+  "client_lbl": "Cliente:\n",
+  "proj_lbl": "\nProgetto:\n",
+  "toc_title": "Indice",
+  "dashboard_title": "Dashboard globale di maturità della Torre",
+  "dashboard_intro": "La valutazione complessiva dello stato attuale consolida una misurazione quantitativa che posiziona la torre nella relativa fascia di maturità, giustificando l'adozione di pratiche di resilienza:",
+  "score_lbl": "PUNTEGGIO AS-IS",
+  "maturity_lbl": "LIVELLO QUALITATIVO DI MATURITÀ",
+  "resilience_reading": "Lettura della resilienza della piattaforma:",
+  "radar_title": "Profilo visivo ponderato di maturità",
+  "justification_table_headers": [
+    "Pilastro / Capacità tecnologica valutata",
+    "Punteggio AS-IS",
+    "Analisi dei gap e calibrazione diagnostica"
+  ],
+  "platform_overview_title": "Descrizione attuale della piattaforma infrastrutturale",
+  "swot_title": "Principali punti di forza e gap",
+  "swot_headers": [
+    "Punti di forza chiave della piattaforma",
+    "Gap critici e debiti operativi"
+  ],
+  "transversal_title": "Analisi delle capacità trasversali",
+  "risk_matrix_title": "Esposizione al rischio finanziario e resilienza operativa",
+  "risk_intro_1": "L'analisi quantitativa dello stato attuale stabilisce che i debiti operativi tecnici e le vulnerabilità individuate esclusivamente all'interno del perimetro di questa torre tecnologica espongono ",
+  "risk_intro_2": " a una reale esposizione annualizzata alle perdite (ALE) pari a ",
+  "risk_intro_3": " all'anno secondo lo standard internazionale FAIR.",
+  "risk_mosaic_intro": "Questa matrice a mosaico consolida la distribuzione di tale esposizione in base alla frequenza degli eventi di minaccia (Threat Event Frequency - TEF) e all'entità della perdita (Loss Magnitude - LM) di ciascun rilievo forense:",
+  "exposure_summary_title": "Matrice quantitativa del rischio",
+  "methodology_chapter_title": "Obiettivi della valutazione, ambito e framework di riferimento",
+  "tef_title": "Criteri di frequenza degli eventi di minaccia (TEF)",
+  "tef_headers": [
+    "Livello TEF",
+    "Denominazione",
+    "Frequenza annualizzata stimata"
+  ],
+  "lm_title": "Criteri di entità delle perdite dirette/indirette (LM)",
+  "lm_headers": [
+    "Livello LM",
+    "Classificazione dell'impatto",
+    "Limite della perdita finanziaria"
+  ],
+  "top_risks_title": "Principali rischi prioritari per la Torre",
+  "top_risks_intro": "Principali rischi prioritari in base al loro impatto diretto sulla resilienza del servizio e al costo dell'inazione (ALE):",
+  "motivo_priorizacion": "Motivazione della prioritizzazione: ",
+  "top_risks_fallbacks": {
+    "compute": "Il modello reattivo nelle risorse di calcolo on-premise mette a rischio diretto la continuità operativa e blocca l'implementazione del Digital Twin e delle iniziative strategiche di AI.",
+    "container": "L'assenza di una piattaforma enterprise per i container arresta l'innovazione, crea silos di sviluppo isolati e moltiplica il debito di modernizzazione.",
+    "cloud": "La remediation manuale delle Landing Zone impedisce la verifica della conformità in tempo reale, esponendo il business a severe sanzioni normative.",
+    "automation": "La dipendenza da ticket e approvazioni manuali ritarda il time-to-market di settimane e genera gravi colli di bottiglia nel provisioning.",
+    "default": "La frammentazione e la disomogeneità dei sistemi di monitoraggio rendono impossibile la correlazione degli alert e la previsione di disservizi complessi."
+  },
+  "detailed_risks_title": "Inventario analitico dei rischi e delle esposizioni",
+  "detailed_risks_pilar_title": "Analisi delle vulnerabilità: ",
+  "detailed_risks_headers": [
+    "ID",
+    "Vulnerabilità ed evidenza di audit",
+    "Esposizione FAIR e rischio di business"
+  ],
+  "next_steps_title": "Prossimi passi e costo dell'inazione",
+  "appendix_a_intro": "Di seguito viene definito il glossario dei termini tecnici e degli acronimi utilizzati nella presente diagnosi tecnica dello stato attuale:",
+  "appendix_a_headers": [
+    "Abbreviazione",
+    "Significato / Descrizione tecnica"
+  ],
+  "appendix_b_title": "Clausola di limitazione della responsabilità",
+  "appendix_c_title": "Registro di custodia delle fonti informative",
+  "appendix_c_intro": "Al fine di garantire la trasparenza, la veridicità e l'immutabilità delle informazioni raccolte in questa diagnosi tecnica, le fonti documentali utilizzate e sottoposte a custodia di audit sono elencate e codificate di seguito:",
+  "appendix_c_headers": [
+    "Codice di riferimento",
+    "Documento sorgente / Origine dei dati",
+    "Ambito di custodia e descrizione"
+  ],
+  "vulnerability_lbl": "Vulnerabilità identificata:\n",
+  "evidence_lbl": "Evidenza forense letterale:\n",
+  "impact_lbl": "Impatto operativo:\n",
+  "exposure_lbl": "Esposizione quantitativa (FAIR):\n",
+  "ale_proyectado": "ALE proiettata: ",
+  "v_lbl": "Versione ",
+  "disclaimer_text_1": "Il presente report di diagnosi tecnica (il Documento) costituisce una valutazione retrospettiva dello stato attuale (AS-IS) della torre esaminata, basata esclusivamente sulle informazioni, sulle telemetrie e sui riscontri di autovalutazione forniti in buona fede dal cliente. Le raccomandazioni, le valutazioni qualitative e gli inventari infrastrutturali presentati riflettono una diagnosi allo stato attuale e non costituiscono garanzie di prestazioni, sicurezza continua o impegni di disponibilità del servizio da parte del consulente.",
+  "disclaimer_text_2": "Le proiezioni quantitative del rischio finanziario e l'Annual Loss Exposure (ALE) calcolata mediante la metodologia O-FAIR e simulazioni Monte Carlo sono stime statistiche di probabilità basate su modelli standard di incertezza per il settore delle infrastrutture critiche. Tali valori vengono forniti esclusivamente a fini di prioritizzazione e a titolo illustrativo del costo dell'inazione, e non devono in alcun caso essere interpretati come revisioni contabili formali di bilancio, garanzie patrimoniali o passività legalmente esigibili.",
+  "disclaimer_text_3": "I richiami a normative di legge e di conformità si configurano come linee guida e best practice ingegneristiche volte a ridurre la superficie di attacco, e non costituiscono una consulenza legale formale. L'interpretazione finale e l'attuazione dei requisiti di conformità restano di competenza esclusiva e non trasferibile dei responsabili di compliance, sicurezza e governance dell'organizzazione cliente.",
+  "disclaimer_text_4": "Qualsiasi distribuzione, divulgazione, riproduzione, citazione o accesso al presente Documento, in tutto o in parte, a soggetti terzi esterni all'organizzazione del cliente è severamente vietata senza il previo consenso scritto del consulente. Il consulente non assume, non accetta né acquisisce alcuna responsabilità, contrattuale o extracontrattuale, verso terzi che accedano, leggano o assumano decisioni di qualsivoglia natura basandosi sul contenuto di questo Documento, intendendosi che tali terzi agiranno a proprio esclusivo rischio. Il cliente accetta di manlevare e tenere indenne il consulente, i suoi soci, dipendenti e subappaltatori da qualsiasi reclamo, richiesta di risarcimento, danno, costo o perdita derivante dalla distribuzione, dall'uso improprio o dalla divulgazione non autorizzata del presente Documento a terzi.",
+  "disclaimer_text_5": "In nessun caso il consulente sarà responsabile per danni indiretti, incidentali, consequenziali, speciali o punitivi, inclusi, a titolo esemplificativo ma non esaustivo, lucro cessante, perdita di ricavi, interruzione di attività aziendale o danni all'immagine e alla reputazione.",
+  "bib_cues": "Questionari consolidati di autovalutazione tecnica della torre ",
+  "bib_cues_desc": ", che raccolgono le risposte ufficiali del team di ingegneria di ",
+  "bib_contexto": "Dossier sul contesto architetturale strategico di ",
+  "bib_contexto_desc": " che definisce volumi di inventario, data center e criticità operativa.",
+  "bib_minutas": "Verbali e note raccolti durante le sessioni architetturali in presenza tra i responsabili tecnici di ",
+  "bib_minutas_desc": " e il team di consulenza.",
+  "default_overview_text": "L'inventario e la valutazione consolidati della torre ",
+  "annex_technical_prefix": "Allegato tecnico:",
+  "vocabulary_substitutions": {}
+}

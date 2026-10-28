@@ -73,13 +73,12 @@ def get_consultant_company_name() -> str:
 
 
 def get_localized_disclaimer(lang: str = "es") -> str:
-    """Resolves the legal disclaimer text for the requested locale from brand_profile.json."""
+    """Resolves the legal disclaimer text for the requested locale from locales.json."""
     try:
+        vocab = resolve_localized_vocabulary(lang)
+        if "disclaimer_text" in vocab:
+            return vocab["disclaimer_text"]
         brand = load_brand_profile()
-        locales = brand.get("locales", {})
-        lang_key = lang.lower() if lang else "es"
-        if lang_key in locales and "disclaimer_text" in locales[lang_key]:
-            return locales[lang_key]["disclaimer_text"]
         return brand.get("disclaimer_text", "")
     except Exception:
         return ""
@@ -97,11 +96,22 @@ def load_locales() -> dict:
 def resolve_localized_vocabulary(lang: str) -> dict:
     """Resolves and returns the localized vocabulary terms for a given language.
 
-    Falls back to Spanish ('es') if the requested language is not found.
+    If uncataloged, dynamically synthesizes the dictionary JIT. Falls back to English or Spanish.
     """
-    locales = load_locales()
-    lang_key = lang.lower() if lang else "es"
-    return locales.get(lang_key, locales.get("es", {}))
+    from assessment_engine.infrastructure.localization import (
+        DynamicLocaleSynthesizer,
+        load_locales_catalog,
+    )
+
+    catalog = load_locales_catalog()
+    lang_key = lang.lower().split("_")[0].split("-")[0] if lang else "es"
+
+    if lang_key not in catalog and lang_key not in ["es", "en"]:
+        dynamic_dict = DynamicLocaleSynthesizer().synthesize_locale(lang_key)
+        if dynamic_dict:
+            catalog[lang_key] = dynamic_dict
+
+    return catalog.get(lang_key) or catalog.get("en") or catalog.get("es", {})
 
 
 def load_runtime_manifest() -> Any:

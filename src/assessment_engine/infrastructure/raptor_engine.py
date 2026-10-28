@@ -145,7 +145,7 @@ class RaptorEngine:
 
         ### INVARIANTE DE PRESERVACIÓN DE ENTIDADES Y MÉTRICAS DURAS (HARD METRIC RETENTION):
         1. PRESERVACIÓN CUANTITATIVA: Todo número, porcentaje, latencia (ms), ancho de banda (Gbps), capacidad (TB, PB), coste (€, $) y versión de software DEBE transferirse textualmente al resumen sin redondeos ni generalizaciones.
-        2. ENTIDADES TÉCNICAS DURAS: Mantén exactamente los nombres de fabricantes, modelos de hardware (ej. Cisco 9300, Fortinet), servicios cloud (ej. S3, BigQuery, AKS), normativas (NIS2, ENS, DORA) y sistemas internos.
+        2. ENTIDADES TÉCNICAS DURAS: Mantén exactamente los nombres de fabricantes, modelos de hardware (ej. Cisco 9300, Fortinet), servicios cloud (ej. S3, BigQuery, AKS), normativas (NIS2, ISO 27001, DORA) y sistemas internos.
         3. CERO VAPORWARE: Prohibido sustituir datos concretos por adjetivos cualitativos vacíos ("robusto", "moderno", "adecuado").
 
         ### FRAGMENTOS ORIGINALES:

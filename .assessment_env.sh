@@ -1,4 +1,5 @@
 export GOOGLE_CLOUD_PROJECT="sub403o4u0q5"
-export GOOGLE_CLOUD_LOCATION="europe-west1"
-export AI_FAST_MODEL="gemini-2.5-flash"
-export AI_REASONING_MODEL="gemini-2.5-pro"
+export GOOGLE_CLOUD_LOCATION="global"
+export GOOGLE_APPLICATION_CREDENTIALS="/home/jsanchhi/.secrets/sa-key.json"
+export AI_FAST_MODEL="gemini-3.8-flash"
+export AI_REASONING_MODEL="gemini-4-argon"

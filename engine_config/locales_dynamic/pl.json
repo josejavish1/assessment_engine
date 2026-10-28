@@ -1,0 +1,245 @@
+{
+  "control_documental_title": "Kontrola dokumentacji i historia zmian",
+  "intro_metodologia_title": "Wprowadzenie i metodologia diagnostyczna",
+  "objetivo_alcance_title": "Cel i zakres",
+  "resumen_ejecutivo_title": "Podsumowanie wykonawcze obszaru technologicznego",
+  "impactos_negocio_title": "Kluczowy wpływ na biznes",
+  "metodologia_madurez_title": "Metodologia oceny dojrzałości",
+  "metodologia_fair_title": "Ilościowa metodologia oceny ryzyka (FAIR)",
+  "disclaimer_heading_title": "Zastrzeżenie i ograniczenie odpowiedzialności",
+  "descripcion_plataforma_title": "Opis platformy i ujednolicona topologia",
+  "radar_chart_title": "Ogólny profil dojrzałości obszaru (wykres radarowy)",
+  "matriz_fair_title": "Rejestr podatności i ryzyk kryminalistycznych (Macierz FAIR)",
+  "evaluacion_madurez_title": "Ocena poziomów dojrzałości",
+  "conclusiones_tobe_title": "Wnioski i luki w odniesieniu do stanu docelowego (TO-BE)",
+  "fortalezas_identificadas_title": "Zidentyfikowane mocne strony infrastruktury",
+  "debilidades_criticas_title": "Krytyczne słabości i wyzwania",
+  "band_initial": "Początkowy",
+  "band_repeatable": "Powtarzalny",
+  "band_defined": "Zdefiniowany",
+  "band_managed": "Zarządzany",
+  "band_optimized": "Zoptymalizowany",
+  "currency_symbol": "$",
+  "currency_format": "US",
+  "version_label": "Wersja",
+  "date_label": "Czerwiec 2026",
+  "table_of_contents_title": "Spis treści",
+  "appendix_a_title": "Wykaz skrótów",
+  "conclusions_title": "Skonsolidowany raport stanu docelowego",
+  "bottlenecks_bullet": "**Wąskie gardła strukturalne:** Model ręcznego aprowizowania infrastruktury drastycznie ogranicza tempo wdrażania strategicznych inicjatyw biznesowych.",
+  "delayed_faults_bullet": "**Opóźnione wykrywanie incydentów technicznych:** Brak skorelowanej obserwowalności (observability) wydłuża średni czas usuwania awarii (MTTR) krytycznych systemów.",
+  "config_drift_bullet": "**Ryzyko dryfu konfiguracji:** Ręczne utrzymywanie konfiguracji utrudnia wykazywanie zgodności regulacyjnej w czasie rzeczywistym z {reg_frameworks}.",
+  "desc_band_inicial": "wskazujący na działania doraźne, reaktywne i nieformalne, o wysokiej zależności od indywidualnego wysiłku ludzkiego",
+  "desc_band_repetible": "wskazujący na podstawowe, lokalne procesy, charakteryzujące się jednak podejściem taktycznym i niespójnym",
+  "desc_band_definido": "wskazujący na sformalizowane i spójnie udokumentowane procesy, z potencjałem do zintegrowanej konsolidacji platformowej",
+  "table_header_pillar": "Filar",
+  "table_header_score": "Wynik",
+  "table_header_level": "Poziom",
+  "table_header_reading": "Podsumowanie wykonawcze",
+  "table_header_asis": "Stan obecny (AS-IS)",
+  "table_header_tobe": "Stan docelowy (TO-BE)",
+  "table_header_gap": "Kluczowa luka",
+  "radar_chart_heading": "Wykres radarowy",
+  "compact_pillar_detail_heading": "Zwięzłe zestawienie według filarów",
+  "desc_band_gestionado": "wskazujący na dojrzały, mierzony ilościowo model operacyjny, systematycznie dostosowany do ładu IT",
+  "desc_band_optimizado": "wskazujący na doskonały model operacyjny, wysoce zautomatyzowany i podlegający ciągłemu doskonaleniu",
+  "audit_justification_template": "Szacowana pierwotna strata księgowa w zdarzeniu bazowym: {downtime_hours} godz. przestoju operacyjnego przy stawce {hourly_rate}/godz. ({downtime_cost}) + {sre_cost} koszt interwencji technicznej SRE ({sre_recovery_hours} godz. przy stawce {sre_hourly_rate}/godz.).",
+  "remediation_project_name_template": "Taktyczny program naprawczy: {capability}",
+  "remediation_business_case_template": "Bezpośrednia mitygacja ryzyka: {impact}",
+  "remediation_tech_objective_template": "Usunięcie luki technicznej zidentyfikowanej w stanie AS-IS: {finding_text}",
+  "remediation_duration": "H1 (Miesiące 1–3)",
+  "remediation_deliverables": [
+    "Plan naprawczy",
+    "Wdrożenie poprawek i konfiguracji",
+    "Raport weryfikacji domknięcia luk"
+  ],
+  "archimate_fallback_deliverables": [
+    "Projekt architektury technicznej (HLD/LLD)",
+    "Plan testów i walidacji"
+  ],
+  "archimate_catalog": {
+    "kubernetes": [
+      "Bazowe manifesty YAML",
+      "Moduł IaC orkiestracji kontenerów",
+      "Wykresy Helm dla ładu IT",
+      "Pipeline CI/CD w GitLab/GitHub Actions"
+    ],
+    "eks": [
+      "Bazowe manifesty YAML",
+      "Moduł IaC klastra zarządzanego",
+      "Wykresy Helm dla ładu IT",
+      "Pipeline CI/CD"
+    ],
+    "container": [
+      "Bazowe manifesty YAML",
+      "Moduł IaC orkiestracji kontenerów",
+      "Wykresy Helm dla ładu IT",
+      "Pipeline CI/CD"
+    ],
+    "landing zone": [
+      "Ramy hierarchii strefy lądowania (Landing Zone) multi-account",
+      "Zautomatyzowane polityki ładu i mechanizmy zabezpieczające (Guardrails)",
+      "Bazowy moduł sieciowy Terraform"
+    ],
+    "platform engineering": [
+      "Katalog usług wewnętrznego portalu deweloperskiego (IDP)",
+      "Szablony samoobsługowe IaC",
+      "Ramy wskaźników SLI/SLO"
+    ],
+    "observability": [
+      "Zunifikowane pulpity metryk i śledzenia (Tracing)",
+      "Reguły alertów PromQL",
+      "Integracja incydentów z PagerDuty/ServiceNow"
+    ],
+    "aiops": [
+      "Zunifikowane pulpity obserwowalności",
+      "Modele wykrywania anomalii",
+      "Integracja z ITSM"
+    ],
+    "scada": [
+      "Wzorzec architektury sieciowej Purdue",
+      "Polityki zapory obwodowej",
+      "Implementacja jednokierunkowej diody danych"
+    ],
+    "automation": [
+      "Scenariusze automatyzacji Ansible (Playbooks)",
+      "Moduły infrastrukturalne Terraform",
+      "Pipeline'y CI/CD"
+    ],
+    "iac": [
+      "Moduły Terraform",
+      "Konfiguracja repozytorium GitOps",
+      "Polityki ładu OPA/Sentinel"
+    ],
+    "dr": [
+      "Procedury odzyskiwania awaryjnego (DR Runbooks)",
+      "Zautomatyzowany plan testów przełączania awaryjnego (Failover)",
+      "Szablony replikacji i przełączania awaryjnego"
+    ],
+    "disaster recovery": [
+      "Procedury odzyskiwania awaryjnego (DR Runbooks)",
+      "Zautomatyzowany plan testów przełączania awaryjnego (Failover)",
+      "Szablony replikacji i przełączania awaryjnego"
+    ],
+    "backup": [
+      "Polityki retencji",
+      "Niezmienny magazyn kopii zapasowych (Immutable Backup Vault)",
+      "Zestaw zautomatyzowanych testów odzyskiwania danych"
+    ]
+  },
+  "default_capability_label": "Infrastruktura",
+  "default_impact_label": "Ryzyko operacyjne",
+  "default_corporate_cloud_label": "chmura korporacyjna",
+  "unified_platform_program_name": "Program strategiczny inżynierii platform i hybrydowej samoobsługi",
+  "unified_platform_program_business_case": "Redukcja obciążenia poznawczego deweloperów poprzez ujednolicone katalogi i portale samoobsługowe w oparciu o {cloud_label}.",
+  "unified_platform_program_tech_objective": "Konsolidacja zasobów obliczeniowych, strefy lądowania (Landing Zone) i zautomatyzowanej aprowizacji w ramach jednolitej wewnętrznej platformy deweloperskiej (IDP).",
+  "unified_platform_program_deliverables": [
+    "Definicja ujednoliconego katalogu usług.",
+    "Integracja API na potrzeby aprowizacji strefy lądowania w {cloud_label}.",
+    "Wdrożenie portalu samoobsługowego dla deweloperów."
+  ],
+  "business_case_direct_mitigation_template": "Bezpośrednia mitygacja: Rozwiązuje krytyczną podatność wykrytą w stanie AS-IS, eliminując ryzyko: „{impact}”.",
+  "business_case_strategic_enabler_template": "Katalizator strategiczny: Obniża operacyjne TCO, skraca time-to-market i zapewnia zgodność regulacyjną ({reg_frameworks}).",
+  "conjunction_and": " i ",
+  "font_family_default": "Aptos",
+  "priority_high": "Wysoki",
+  "priority_medium": "Średni",
+  "priority_low": "Niski",
+  "coi_3y_ord": "~{amount} w ciągu 3 lat",
+  "coi_3y_ext": "~{amount} (najgorszy scenariusz w ciągu 3 lat)",
+  "disclaimer_text": "Niniejszy raport z diagnozy technicznej (zwany dalej „Dokumentem”) został przygotowany przez doradcę wyłącznie na wewnętrzny i wyłączny użytek organizacji klienta na zasadach ścisłej poufności. Dokument stanowi badanie typu fast assessment, oparte wyłącznie na informacjach, wyjaśnieniach oraz samoocenie przekazanych przez personel klienta w trakcie przeprowadzonych wywiadów technicznych, przy założeniu ich całkowitej prawdziwości, bez niezależnej walidacji ani audytu weryfikacyjnego na miejscu przeprowadzonego przez nasz zespół. W konsekwencji Dokument jest dostarczany w stanie, w jakim się znajduje („AS-IS”), i nie stanowi wyraźnej ani dorozumianej gwarancji wydajności, ciągłego bezpieczeństwa ani zwolnienia z odpowiedzialności z tytułu incydentów operacyjnych bądź regulacyjnych.\n\nPrognozy skutków finansowych, aktuarialne symulacje ryzyka oraz wartości rocznego narażenia na straty (Annual Loss Exposure – ALE) i scenariusza pesymistycznego (P90), obliczone przy użyciu standardowej metodologii Open FAIR™ oraz stochastycznych modeli Monte Carlo, stanowią jedynie oszacowania statystyczne i modele prawdopodobieństwa matematycznego oparte na rozkładach niepewności. Te wyceny pieniężne stanowią narzędzia analityczne służące wyłącznie do strategicznej priorytetyzacji inwestycji oraz kalkulacji kosztu zaniechania (Business Case). W żadnym wypadku nie powinny być one interpretowane, wykorzystywane ani utożsamiane z formalnymi audytami finansowo-księgowymi, rezerwami na zobowiązania księgowe, gwarancjami bezpośredniego lub pośredniego wpływu na bilans spółki ani z prawnie lub sądownie egzekwowalnymi zobowiązaniami.\n\nWszelkie odniesienia w Dokumencie do norm, przepisów prawa, regulacji lub sektorowych ram zgodności (takich jak właściwe ramy cyberbezpieczeństwa, regulacje w zakresie odporności operacyjnej oraz standardy branżowe) zostały przedstawione w celach czysto ilustracyjnych, jako najlepsze praktyki techniczne i inżynieryjne służące ograniczeniu ekspozycji na ryzyko. Wzmianki te w żadnym wypadku nie stanowią formalnej porady prawnej, regulacyjnej ani podatkowej. Interpretacja, wdrożenie, weryfikacja oraz ostateczne spełnienie obowiązujących wymogów prawnych i regulacyjnych spoczywają wyłącznie, bezpośrednio i w sposób nieprzenoszalny na członkach zarządu, doradcach prawnych, oficerach zgodności (compliance) oraz kadrze zarządzającej organizacji klienta.\n\nWyłączenie stron trzecich i klauzula limitu odpowiedzialności: Zabrania się dystrybuowania, cytowania lub udostępniania niniejszego Dokumentu, w całości lub w części, jakimkolwiek stronom trzecim bez uprzedniej zgody doradcy. Doradca nie ponosi żadnej odpowiedzialności wobec jakiejkolwiek strony trzeciej uzyskującej dostęp do treści niniejszego Dokumentu, a taka strona trzecia podejmuje wszelkie ryzyko wyłącznie na własną odpowiedzialność. W najszerszym zakresie dozwolonym przez obowiązujące prawo w danej jurysdykcji, z wyłączeniem przypadków winy umyślnej lub rażącego niedbalstwa, całkowita i łączna odpowiedzialność doradcy z tytułu wszelkich roszczeń, szkód, strat lub kar wynikających z lub związanych z przygotowaniem, treścią, wnioskami bądź wykorzystaniem niniejszego Dokumentu (zarówno z tytułu umowy, czynu niedozwolonego, gwarancji, jak i jakiejkolwiek innej podstawy odpowiedzialności prawnej) jest ilościowo ograniczona, we wszystkich przypadkach i łącznie, do kwoty netto wynagrodzenia faktycznie otrzymanego przez doradcę od organizacji klienta za świadczenie tej konkretnej usługi doradczej. W żadnym wypadku doradca nie ponosi odpowiedzialności za jakiekolwiek szkody pośrednie, uboczne, szczególne, następcze lub retorsyjne, w tym w szczególności za utratę zysków, utratę przychodów, przerwę w działalności gospodarczej lub utratę reputacji.",
+  "default_classification": "Poufne",
+  "title": "Raport z oceny stanu obecnego (AS-IS)",
+  "project": "Doradztwo w zakresie przeprojektowania infrastruktury technologicznej",
+  "client_lbl": "Klient:\n",
+  "proj_lbl": "\nProjekt:\n",
+  "toc_title": "Spis treści",
+  "dashboard_title": "Globalny panel dojrzałości obszaru",
+  "dashboard_intro": "Kompleksowa ocena stanu obecnego konsoliduje wycenę ilościową, która pozycjonuje obszar technologiczny w odpowiednim przedziale dojrzałości, uzasadniając wdrożenie praktyk odporności:",
+  "score_lbl": "WYNIK AS-IS",
+  "maturity_lbl": "JAKOŚCIOWY POZIOM DOJRZAŁOŚCI",
+  "resilience_reading": "Ocena odporności platformy:",
+  "radar_title": "Wizualny ważony profil dojrzałości",
+  "justification_table_headers": [
+    "Filar / Oceniana zdolność technologiczna",
+    "Wynik AS-IS",
+    "Analiza luk i kalibracja diagnostyczna"
+  ],
+  "platform_overview_title": "Opis bieżącej platformy infrastrukturalnej",
+  "swot_title": "Kluczowe mocne strony i luki",
+  "swot_headers": [
+    "Kluczowe mocne strony platformy",
+    "Krytyczne luki i dług operacyjny"
+  ],
+  "transversal_title": "Analiza zdolności horyzontalnych",
+  "risk_matrix_title": "Finansowa ekspozycja na ryzyko i odporność operacyjna",
+  "risk_intro_1": "Ilościowa analiza stanu obecnego wykazuje, że techniczne długi operacyjne i zidentyfikowane podatności występujące wyłącznie w granicach tego obszaru technologicznego narażają ",
+  "risk_intro_2": " na rzeczywistą roczną stratę oczekiwaną (Annual Loss Exposure – ALE) w wysokości ",
+  "risk_intro_3": " rocznie według międzynarodowego standardu FAIR.",
+  "risk_mosaic_intro": "Niniejsza macierz mozaikowa konsoliduje rozkład tej ekspozycji w oparciu o częstotliwość występowania zdarzeń zagrożeń (TEF) oraz wielkość straty (LM) dla każdego ustalenia audytowego:",
+  "exposure_summary_title": "Ilościowa macierz ryzyka",
+  "methodology_chapter_title": "Cele, zakres i ramy referencyjne oceny",
+  "tef_title": "Kryteria częstotliwości zdarzeń zagrożeń (TEF)",
+  "tef_headers": [
+    "Poziom TEF",
+    "Określenie",
+    "Szacowana częstotliwość roczna"
+  ],
+  "lm_title": "Kryteria wielkości strat bezpośrednich/pośrednich (LM)",
+  "lm_headers": [
+    "Poziom LM",
+    "Klasyfikacja wpływu",
+    "Finansowy próg straty"
+  ],
+  "top_risks_title": "Najważniejsze priorytetyzowane ryzyka dla obszaru",
+  "top_risks_intro": "Kluczowe ryzyka uszeregowane priorytetowo według ich bezpośredniego wpływu na odporność usług oraz kosztu zaniechania (ALE):",
+  "motivo_priorizacion": "Uzasadnienie priorytetyzacji: ",
+  "top_risks_fallbacks": {
+    "compute": "Reaktywny model w środowisku obliczeniowym on-premise bezpośrednio zagraża ciągłości działania i blokuje wdrażanie cyfrowego bliźniaka (Digital Twin) oraz strategicznych rozwiązań AI.",
+    "container": "Brak korporacyjnej platformy kontenerowej wstrzymuje innowacje, tworzy odizolowane silosy deweloperskie i potęguje dług modernizacyjny.",
+    "cloud": "Ręczna mitygacja w strefach lądowania (Landing Zones) uniemożliwia weryfikację zgodności w czasie rzeczywistym, narażając organizację na dotkliwe kary regulacyjne.",
+    "automation": "Zależność od ręcznie obsługiwanych zgłoszeń i zatwierdzeń opóźnia time-to-market o tygodnie i tworzy poważne wąskie gardła przy aprowizacji.",
+    "default": "Fragmentacja i niespójność systemów monitorowania uniemożliwiają korelację alertów i prognozowanie złożonych awarii."
+  },
+  "detailed_risks_title": "Analityczny rejestr ryzyk i ekspozycji",
+  "detailed_risks_pilar_title": "Analiza podatności: ",
+  "detailed_risks_headers": [
+    "ID",
+    "Podatność i dowód audytowy",
+    "Ekspozycja FAIR i ryzyko biznesowe"
+  ],
+  "next_steps_title": "Kolejne kroki i koszt zaniechania",
+  "appendix_a_intro": "Poniżej zdefiniowano słownik terminów technicznych i akronimów zastosowanych w niniejszej diagnozie technicznej:",
+  "appendix_a_headers": [
+    "Skrót",
+    "Znaczenie / Opis techniczny"
+  ],
+  "appendix_b_title": "Zastrzeżenie i ograniczenie odpowiedzialności",
+  "appendix_c_title": "Rejestr pieczy nad źródłami informacji",
+  "appendix_c_intro": "W celu zapewnienia przejrzystości, rzetelności oraz niezmienności informacji zebranych w niniejszej diagnozie technicznej, poniżej skatalogowano i oznaczono źródła dokumentacyjne objęte pieczą audytową:",
+  "appendix_c_headers": [
+    "Kod referencyjny",
+    "Dokument źródłowy / Pochodzenie danych",
+    "Zakres i opis pieczy"
+  ],
+  "vulnerability_lbl": "Zidentyfikowana podatność:\n",
+  "evidence_lbl": "Dosłowny dowód audytowy:\n",
+  "impact_lbl": "Wpływ operacyjny:\n",
+  "exposure_lbl": "Ekspozycja ilościowa (FAIR):\n",
+  "ale_proyectado": "Prognozowane ALE: ",
+  "v_lbl": "Wersja ",
+  "disclaimer_text_1": "Niniejszy raport z diagnozy technicznej (Dokument) stanowi retrospektywną ocenę stanu obecnego (AS-IS) analizowanego obszaru technologicznego, dokonaną wyłącznie na podstawie informacji, danych telemetrycznych oraz odpowiedzi z samooceny dostarczonych w dobrej wierze przez klienta. Przedstawione rekomendacje, oceny jakościowe i inwentaryzacje infrastruktury odzwierciedlają aktualną diagnozę i nie stanowią gwarancji wydajności, ciągłego bezpieczeństwa ani zobowiązań doradcy dotyczących dostępności usług.",
+  "disclaimer_text_2": "Ilościowe prognozy ryzyka finansowego oraz roczna ekspozycja na straty (ALE) obliczone w oparciu o metodologię O-FAIR i symulacje Monte Carlo stanowią statystyczne szacunki prawdopodobieństwa oparte na standardowych modelach niepewności dla sektora infrastruktury krytycznej. Liczby te podano wyłącznie w celach priorytetyzacyjnych oraz do zilustrowania kosztu zaniechania i w żadnym wypadku nie powinny być interpretowane jako formalne audyty bilansowe, gwarancje majątkowe ani prawnie egzekwowalne zobowiązania.",
+  "disclaimer_text_3": "Odniesienia do przepisów prawnych i regulacji dotyczących zgodności mają charakter wytycznych oraz najlepszych praktyk inżynieryjnych służących ograniczeniu powierzchni ataku i nie stanowią formalnej porady prawnej. Ostateczna interpretacja i wdrożenie wymogów zgodności spoczywają ściśle i w sposób nieprzenoszalny na osobach odpowiedzialnych za compliance, bezpieczeństwo oraz ład korporacyjny w organizacji klienta.",
+  "disclaimer_text_4": "Wszelka dystrybucja, ujawnianie, powielanie, cytowanie lub udostępnianie niniejszego Dokumentu w całości lub w części jakimkolwiek stronom trzecim spoza organizacji klienta jest surowo zabronione bez uprzedniej pisemnej zgody doradcy. Doradca nie przyjmuje ani nie ponosi żadnej odpowiedzialności kontraktowej ani deliktowej wobec jakichkolwiek stron trzecich uzyskujących dostęp, zapoznających się lub podejmujących jakiekolwiek decyzje na podstawie treści niniejszego Dokumentu, a taka strona trzecia podejmuje wszelkie ryzyko wyłącznie na własną odpowiedzialność. Klient zobowiązuje się chronić i zwolnić doradcę, jego partnerów, pracowników i podwykonawców z odpowiedzialności z tytułu wszelkich roszczeń, żądań, szkód, kosztów lub strat wynikających z dystrybucji, niewłaściwego użycia lub nieautoryzowanego ujawnienia niniejszego Dokumentu stronom trzecim.",
+  "disclaimer_text_5": "W żadnym wypadku doradca nie ponosi odpowiedzialności za jakiekolwiek szkody pośrednie, uboczne, następcze, szczególne lub retorsyjne, w tym m.in. za utratę zysków, utratę przychodów, przerwę w działalności gospodarczej lub szkodę na reputacji.",
+  "bib_cues": "Skonsolidowane kwestionariusze technicznej samooceny dla obszaru ",
+  "bib_cues_desc": ", zbierające oficjalne odpowiedzi zespołu inżynieryjnego firmy ",
+  "bib_contexto": "Dokumentacja kontekstu architektury strategicznej firmy ",
+  "bib_contexto_desc": " określająca wolumeny inwentarzowe, centra danych i krytyczność operacyjną.",
+  "bib_minutas": "Protokoły i ustalenia ze spotkań architektonicznych na miejscu pomiędzy liderami technicznymi firmy ",
+  "bib_minutas_desc": " a zespołem doradczym.",
+  "default_overview_text": "Skonsolidowana inwentaryzacja i ocena obszaru ",
+  "annex_technical_prefix": "Załącznik techniczny:",
+  "vocabulary_substitutions": {}
+}

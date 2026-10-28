@@ -229,8 +229,8 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
                 else:
                     fd = "carencias de automatización de procedimientos y soporte manual predominante en el ciclo de vida"
             else:
-                # Lowercase the first letter of fd if it was parsed as a separate sentence
-                if fd and fd[0].isupper() and not fd.startswith("NIS2") and not fd.startswith("ENS"):
+                # Lowercase the first letter of fd if it was parsed as a separate sentence and not an acronym
+                if fd and fd[0].isupper() and not (len(fd) >= 2 and fd[:2].isupper()):
                     fd = fd[0].lower() + fd[1:]
             fd_sent = fd.rstrip(".")
             main_gaps.append(fd_sent)
@@ -244,7 +244,7 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
                 else:
                     br = "un aumento de los tiempos de resolución de incidentes (MTTR) y sobrecarga en el equipo de ingeniería"
             else:
-                if br and br[0].isupper() and not br.startswith("NIS2") and not br.startswith("ENS"):
+                if br and br[0].isupper() and not (len(br) >= 2 and br[:2].isupper()):
                     br = br[0].lower() + br[1:]
             br_sent = br.rstrip(".")
             main_risks.append(br_sent)
@@ -360,7 +360,19 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
 
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
-    currency = custom_calibration.get("currency_symbol", currency)
+    currency = custom_calibration.get("currency_symbol", "")
+    if not currency:
+        intel_file = Path(f"working/{client_id}/client_intelligence.json")
+        if intel_file.exists():
+            try:
+                with open(intel_file, "r", encoding="utf-8-sig") as inf:
+                    c_curr = json.load(inf).get("financial", {}).get("currency")
+                    if c_curr:
+                        currency = {"USD": "$", "EUR": "€", "GBP": "£", "BRL": "R$", "MXN": "$", "CHF": "CHF"}.get(c_curr.upper(), c_curr)
+            except Exception as ex:
+                logger.debug("Error leyendo client_intelligence currency: %s", ex)
+    if not currency:
+        currency = "€" if doc_lang == "es" else "$"
     rate_mult = float(custom_calibration.get("exchange_rate", rate_mult))
 
     from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary

@@ -19,6 +19,15 @@ def test_clean_client_name():
     assert clean_client_name("cliente") == "Cliente"
 
 
+def test_clean_cap_name_lcr_killer():
+    """Verify that _clean_cap_name handles empty values and non-Spanish locales."""
+    from assessment_engine.adapters.generate_asis_markdown_modules import _clean_cap_name
+
+    assert _clean_cap_name("", "es") == ""
+    assert _clean_cap_name("Provisioning", "en") == "Provisioning"
+    assert "Autoservicio" in _clean_cap_name("self-service provisioning", "es")
+
+
 def test_sanitize_and_unify_metrics():
     """Verify that metrics sanitization replaces numerical score strings with calibrated format."""
     text = "La madurez de la torre presenta un riesgo ALE estimado."
@@ -50,7 +59,23 @@ def test_generate_modules_full_flow(tmp_path: Path):
     generate_modules(str(bp_copy))
 
     modules_dir = tmp_path / "asis_modules"
-    assert modules_dir.exists(), "asis_modules directory was not created."
+    assert modules_dir.is_dir(), "asis_modules directory was not created."
 
-    md_files = list(modules_dir.glob("*.md"))
-    assert len(md_files) >= 5, f"Expected at least 5 markdown modules, got {len(md_files)}"
+    # Invariantes de presencia de módulos obligatorios
+    file_names = {f.name for f in modules_dir.glob("*.md")}
+    expected_modules = {
+        "01_introduccion.md",
+        "02_resumen_ejecutivo.md",
+        "03_descripcion_plataforma.md",
+        "05_transversal.md",
+        "07_conclusiones.md",
+    }
+    assert expected_modules.issubset(file_names), f"Faltan módulos críticos: {expected_modules - file_names}"
+
+    # Invariantes de contenido semántico no vacío y trazabilidad
+    mod2_text = (modules_dir / "02_resumen_ejecutivo.md").read_text(encoding="utf-8")
+    assert "Resumen Ejecutivo" in mod2_text
+    assert "Hybrid Compute & Platforms" in mod2_text
+
+    mod1_text = (modules_dir / "01_introduccion.md").read_text(encoding="utf-8")
+    assert "Redeia" in mod1_text or "REDEIA" in mod1_text

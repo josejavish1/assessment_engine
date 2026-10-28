@@ -115,10 +115,14 @@ class TestDynamicGenericityFuzzing:
 
         # Backup and controlled write operations for the test
         locales_path = Path("engine_config/locales.json")
+        locales_asis_path = Path("engine_config/locales_asis_annex.json")
         brand_path = Path("engine_config/brand_profile.json")
 
         locales_backup = (
             locales_path.read_text(encoding="utf-8") if locales_path.exists() else None
+        )
+        locales_asis_backup = (
+            locales_asis_path.read_text(encoding="utf-8") if locales_asis_path.exists() else None
         )
         brand_backup = (
             brand_path.read_text(encoding="utf-8") if brand_path.exists() else None
@@ -127,6 +131,9 @@ class TestDynamicGenericityFuzzing:
         try:
             # Write mutated test profiles
             locales_path.write_text(
+                json.dumps(temp_locales, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            locales_asis_path.write_text(
                 json.dumps(temp_locales, ensure_ascii=False, indent=2), encoding="utf-8"
             )
             brand_path.write_text(
@@ -252,6 +259,11 @@ class TestDynamicGenericityFuzzing:
                 locales_path.write_text(locales_backup, encoding="utf-8")
             else:
                 locales_path.unlink(missing_ok=True)
+
+            if locales_asis_backup is not None:
+                locales_asis_path.write_text(locales_asis_backup, encoding="utf-8")
+            else:
+                locales_asis_path.unlink(missing_ok=True)
 
             if brand_backup is not None:
                 brand_path.write_text(brand_backup, encoding="utf-8")

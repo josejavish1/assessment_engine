@@ -192,11 +192,14 @@ class DeliveryAndRiskDirectorOutput(BaseModel):
     activation_plan: list[str]
 
 
-class WhyNttData(BaseModel):
-    """Represent the 'Why NTT DATA' section of a commercial document."""
+class WhyPartner(BaseModel):
+    """Represent the 'Why Partner' value proposition section of a commercial document."""
 
     accelerators: list[str]
     partnerships: str
+
+
+WhyNttData = WhyPartner
 
 
 class InvestmentAndTimeline(BaseModel):
@@ -212,19 +215,15 @@ class SalesPartnerOutput(BaseModel):
     This data model aggregates the primary components of a commercial proposal,
     including the value proposition, financial investment, and an executive
     summary.
-
-    Attributes:
-        why_ntt_data: A structured representation of the value proposition and
-            rationale for selecting the partner.
-        investment_and_timeline: A detailed breakdown of the project's financial
-            investment and projected timeline.
-        executive_synthesis: A concise summary of the proposal, intended for
-            executive review.
     """
 
-    why_ntt_data: WhyNttData
+    why_partner: WhyPartner = Field(default=None, alias="why_ntt_data")
     investment_and_timeline: InvestmentAndTimeline
     executive_synthesis: str
+
+    @property
+    def why_ntt_data(self) -> WhyPartner:
+        return self.why_partner
 
 
 class ProposalDraft(BaseModel):

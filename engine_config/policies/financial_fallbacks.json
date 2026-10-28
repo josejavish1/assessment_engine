@@ -4,13 +4,17 @@
       "EUR": 1.0,
       "USD": 1.09,
       "GBP": 0.84,
-      "CHF": 0.96
+      "CHF": 0.96,
+      "BRL": 6.10,
+      "MXN": 21.50
     },
     "sre_hourly_rates": {
       "EUR": 36.0,
       "USD": 110.0,
       "GBP": 95.0,
-      "CHF": 140.0
+      "CHF": 140.0,
+      "BRL": 250.0,
+      "MXN": 850.0
     },
     "scale_tiers": {
       "MICRO": {

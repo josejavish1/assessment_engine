@@ -581,7 +581,7 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
     )
     compliance_example_str = custom_narratives.get(
         "compliance_example",
-        "ej: NIS2, DORA, Directiva PIC o regulaciones específicas de seguridad de la información, ~85. T1 u otras, ~40",
+        "ej: NIS2, DORA, ISO 27001 o regulaciones de protección de infraestructuras críticas, ~85. T1 u otras, ~40",
     )
     feasibility_example_str = custom_narratives.get(
         "feasibility_example",

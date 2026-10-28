@@ -26,7 +26,7 @@ def test_build_board_memo_structure() -> None:
     assert len(memo.items) == 1
     assert memo.items[0].domain == "T6: Seguridad de Infraestructura"
     assert memo.items[0].status_color == "E06666"
-    assert "NIS2" in memo.items[0].critical_decision
+    assert "PAM" in memo.items[0].critical_decision
 
 
 def test_build_cross_tower_nexus_structure() -> None:

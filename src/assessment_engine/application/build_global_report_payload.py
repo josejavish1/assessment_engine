@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -160,16 +161,16 @@ def _aggregate_tower_blueprints(
 
 
 TOWER_CRITICAL_DECISIONS: dict[str, str] = {
-    "T1": "Aprobar plan de renovación eléctrica 2N y climatización para eliminar riesgo de parada única de CPD.",
-    "T2": "Autorizar migración controlada de cargas legacy y adopción del modelo híbrido soberano.",
-    "T3": "Aprobar despliegue de SD-WAN con doble acometida en plantas industriales para garantizar continuidad de negocio.",
-    "T4": "Activar políticas de retención inmutable nativas en NetApp/Cohesity sin compras de licencias adicionales.",
-    "T5": "Ratificar formalmente SLAs/RTO/RPO por criticidad de negocio y aprobar calendario de simulacros anuales obligatorios.",
-    "T6": "Aprobar implantación inmediata de PAM (Tier-0) y microsegmentación OT para blindar cumplimiento penal NIS2.",
-    "T7": "Estandarizar el catálogo de servicios ITIL y centralizar la observabilidad unificada de operaciones digitales.",
-    "T8": "Instituir la oficina de gobierno FinOps y el marco de decisiones de inversión tecnológica plurianual.",
-    "T9": "Desplegar el puesto de trabajo digital seguro con autenticación MFA basada en riesgo para todo el personal.",
-    "T10": "Aprobar el plan director de desacoplamiento y modernización de aplicativos centrales sobre AS400/Mainframe.",
+    "T1": "Aprobar plan de renovación de infraestructura crítica y climatización para eliminar puntos únicos de fallo.",
+    "T2": "Autorizar modernización de cargas computacionales y adopción del modelo híbrido optimizado.",
+    "T3": "Aprobar despliegue de arquitectura de red redundante con control centralizado para garantizar conectividad.",
+    "T4": "Activar políticas de retención inmutable y nivelado de datos en almacenamiento existente.",
+    "T5": "Ratificar formalmente SLAs/RTO/RPO por criticidad de negocio y aprobar calendario de simulacros anuales.",
+    "T6": "Aprobar implantación inmediata de gestión de accesos privilegiados (PAM) y segmentación de red.",
+    "T7": "Estandarizar el catálogo de servicios operativos y centralizar la observabilidad unificada.",
+    "T8": "Instituir la oficina de gobierno FinOps y el marco de decisiones de inversión plurianual.",
+    "T9": "Desplegar el puesto de trabajo digital seguro con autenticación robusta para el personal.",
+    "T10": "Aprobar el plan director de desacoplamiento y modernización de aplicativos centrales.",
 }
 
 CROSS_TOWER_NEXUS_RULES: list[dict[str, str]] = [
@@ -177,36 +178,36 @@ CROSS_TOWER_NEXUS_RULES: list[dict[str, str]] = [
         "source_tower": "T6: Seguridad de Infraestructura e Identidad",
         "target_tower": "T2: Cómputo Híbrido y Plataformas",
         "dependency_type": "Prerrequisito Crítico (Bloqueante)",
-        "architectural_rationale": "El blindaje del plano de control administrativo (Tier-0 PAM) y la segregación de privilegios es condición obligatoria antes de habilitar consolas de gestión en nubes públicas e híbridas bajo NIS2.",
-        "delay_impact": "Bloqueo del despliegue cloud o exposición crítica de credenciales maestras a robo y movimiento lateral.",
+        "architectural_rationale": "El blindaje del plano de control administrativo (PAM/Tier-0) y la segregación de privilegios es condición obligatoria antes de expandir el entorno de cómputo híbrido y multi-cloud.",
+        "delay_impact": "Exposición crítica del plano de administración y riesgo de movimiento lateral entre dominios.",
     },
     {
         "source_tower": "T5: Resiliencia y Continuidad (DR)",
         "target_tower": "T4: Servicios de Datos y Almacenamiento",
         "dependency_type": "Prerrequisito Tecnológico",
-        "architectural_rationale": "La arquitectura de recuperación limpia ante ransomware (Cyber Recovery Vault) requiere la activación del bloqueo inmutable SnapLock en las cabinas primarias de T4.",
-        "delay_impact": "Imposibilidad de certificar el punto de recuperación confiable (TRP) ante ataques de cifrado masivo.",
+        "architectural_rationale": "La arquitectura de recuperación limpia (Cyber Recovery Vault) requiere activar capacidades de inmutabilidad y aislamiento lógico en las plataformas de datos subyacentes.",
+        "delay_impact": "Imposibilidad de certificar el punto de recuperación confiable ante ataques de cifrado o corrupción de datos.",
     },
     {
         "source_tower": "T3: Redes y Conectividad",
         "target_tower": "T1: Infraestructura Física y CPD",
         "dependency_type": "Habilitador de Resiliencia",
-        "architectural_rationale": "La conmutación automatizada dual-site entre el centro de proceso principal y el alternativo exige interconexión de fibra oscura redundante y SD-WAN corporativo.",
-        "delay_impact": "Pérdida de conectividad y parada operativa de fábricas ante cualquier contingencia en el centro de datos principal.",
+        "architectural_rationale": "La redundancia y conmutación de centros de proceso requiere un transporte de red mallado y enlaces de baja latencia entre sedes y centros de datos.",
+        "delay_impact": "Pérdida de conectividad y caída operativa de sedes remotas ante contingencias en el centro de datos principal.",
     },
     {
         "source_tower": "T6: Seguridad de Infraestructura e Identidad",
         "target_tower": "T7: Operaciones Digitales (ITSM)",
         "dependency_type": "Integración Operativa",
-        "architectural_rationale": "La detección de anomalías de seguridad en redes industriales (OT) debe canalizarse automáticamente hacia las colas de gestión de incidentes de T7 con SLA tipificado.",
-        "delay_impact": "Tiempos ciegos de respuesta superiores a 4 horas ante incidentes de seguridad en líneas de producción.",
+        "architectural_rationale": "La telemetría de seguridad y detección de anomalías debe integrarse en los flujos operativos de gestión de incidentes y monitorización 24/7.",
+        "delay_impact": "Tiempos ciegos de respuesta y falta de trazabilidad forense ante incidentes operativos.",
     },
     {
         "source_tower": "T8: Estrategia, Gobierno y FinOps",
         "target_tower": "T2: Cómputo Híbrido y Plataformas",
         "dependency_type": "Gobernanza Financiera",
-        "architectural_rationale": "El control de etiquetado de recursos y la política de costes unitarios FinOps debe preceder a la expansión de instancias computacionales elásticas.",
-        "delay_impact": "Deriva presupuestaria incontrolada y sobrecostes recurrentes de hasta un 30% en servicios de plataforma.",
+        "architectural_rationale": "El marco de asignación presupuestaria y etiquetado FinOps debe preceder al aprovisionamiento elástico de recursos computacionales.",
+        "delay_impact": "Descontrol presupuestario y sobrecostes recurrentes en consumo de infraestructura.",
     },
 ]
 
@@ -222,6 +223,7 @@ def _build_board_memo(towers_data: list[dict], blueprint_files: list[Path], clie
 
         coi_text = "Evaluación paramétrica"
         budget_tower = 0.0
+        top_project_name = None
 
         for bp in blueprint_files:
             if bp.parent.name.upper() == tid.upper():
@@ -231,12 +233,17 @@ def _build_board_memo(towers_data: list[dict], blueprint_files: list[Path], clie
                         ax_data = json.loads(cand.read_text(encoding="utf-8-sig"))
                         fin_coi = ax_data.get("executive_summary", {}).get("financial_coi", {})
                         coi_text = fin_coi.get("coi_3y_ordinary") or fin_coi.get("annual_loss_exposure") or coi_text
+                        inits = ax_data.get("sections", {}).get("todo", {}).get("priority_initiatives", [])
+                        if inits and inits[0].get("initiative"):
+                            top_project_name = inits[0].get("initiative")
                     except Exception as err:
                         logger.debug("Error leyendo anexo para coi_text: %s", err)
                 try:
                     bp_data = json.loads(bp.read_text(encoding="utf-8-sig"))
                     for pil in bp_data.get("pillars_analysis", []):
                         for pr in pil.get("projects_todo", []):
+                            if not top_project_name and pr.get("name"):
+                                top_project_name = pr.get("name")
                             opex_str = str(pr.get("opex_estimate", "0"))
                             digits = "".join(c for c in opex_str.split("€")[0] if c.isdigit() or c == ".")
                             if digits:
@@ -248,7 +255,10 @@ def _build_board_memo(towers_data: list[dict], blueprint_files: list[Path], clie
                     logger.debug("Error leyendo blueprint para budget: %s", err)
 
         budget_display = f"~{budget_tower:,.0f} € (OpEx/CapEx)" if budget_tower > 0 else "Suscripción / Inversión de Fase"
-        crit_dec = TOWER_CRITICAL_DECISIONS.get(tid, f"Aprobar plan de choque y modernización operativa para {tname}.")
+        if top_project_name:
+            crit_dec = f"Aprobar la ejecución prioritaria de '{top_project_name}' para el dominio de {tname}."
+        else:
+            crit_dec = TOWER_CRITICAL_DECISIONS.get(tid, f"Aprobar plan director de modernización para {tname}.")
 
         items.append({
             "domain": f"{tid}: {tname}",
@@ -285,24 +295,67 @@ def _build_cross_tower_nexus(towers_data: list[dict], blueprint_files: list[Path
     }
 
 
-def _build_executive_callouts(client_name: str, towers_data: list[dict]) -> list[dict[str, str]]:
+def _build_executive_callouts(
+    client_name: str, towers_data: list[dict], client_dir: Path | None = None
+) -> list[dict[str, str]]:
+    currency_symbol = "€"
+    hourly_downtime_cost = 15000.0
+    reg_max_fine = 10000000.0
+    industry_name = "infraestructura empresarial"
+
+    if client_dir:
+        for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
+            try:
+                prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
+                currency_symbol = prof_data.get("currency_symbol", currency_symbol)
+                hourly_downtime_cost = prof_data.get("hourly_downtime_cost_eur", hourly_downtime_cost)
+                reg_max_fine = prof_data.get("reg_max_fine_eur", reg_max_fine)
+                break
+            except Exception as ex:
+                logger.debug("Error leyendo custom_risk_profile: %s", ex)
+
+        intel_path = client_dir / "client_intelligence.json"
+        if intel_path.exists():
+            try:
+                intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
+                ind = intel_data.get("profile", {}).get("industry") or intel_data.get("industry")
+                if ind:
+                    industry_name = ind
+            except Exception as ex:
+                logger.debug("Error leyendo client_intelligence industry: %s", ex)
+
     return [
         {
             "callout_type": "legal",
-            "title": "ADVERTENCIA DE CUMPLIMIENTO LEGAL: RÉGIMEN SANCIONADOR DIRECTIVA NIS2",
-            "message": f"Conforme al marco legal vigente en 2026, las instalaciones de {client_name} operan bajo la consideración de Entidad Esencial en infraestructuras de suministro. Las infracciones graves por ausencia de microsegmentación industrial, falta de gestión de vulnerabilidades o carencia de planes de notificación de brechas conllevan sanciones de hasta 10.000.000 € o el 2% de la facturación global anual, con asunción directa de responsabilidad por parte del Consejo de Administración.",
-            "key_metric": "Sanción máxima: 10.000.000 € (o 2% facturación global anual)",
+            "title": "ADVERTENCIA DE CUMPLIMIENTO REGULATORIO Y GOBERNANZA",
+            "message": (
+                f"Conforme al marco normativo aplicable para el sector de {industry_name}, las deficiencias no mitigadas "
+                f"en el plano de control, la trazabilidad forense o la notificación de incidentes pueden acarrear sanciones de hasta "
+                f"{reg_max_fine:,.0f} {currency_symbol} o el porcentaje legal estipulado sobre la facturación consolidada, "
+                f"con responsabilidad directa de supervisión atribuida al Consejo de Administración."
+            ),
+            "key_metric": f"Exposición sancionadora máxima estimada: {reg_max_fine:,.0f} {currency_symbol}",
         },
         {
             "callout_type": "factory",
-            "title": "CONTINUIDAD OPERATIVA: BLINDAJE DE BÁSCULAS, EXPEDICIÓN Y MOLIENDA",
-            "message": f"El coste de indisponibilidad técnica en los procesos críticos de {client_name} (básculas de despacho continuo de camiones, dosificación de hornos y control de molienda) está calibrado en ~15.500 € por hora de parada. La arquitectura de transformación prohíbe intervenciones invasivas no programadas sobre sistemas SCADA legados, exigiendo un perímetro de aislamiento compensatorio para garantizar el despacho ininterrumpido 24/7.",
-            "key_metric": "Coste de parada no planificada: ~15.500 €/hora de indisponibilidad",
+            "title": "CONTINUIDAD OPERATIVA: PROTECCIÓN DE LÍNEAS Y PROCESOS CRÍTICOS",
+            "message": (
+                f"El coste de indisponibilidad técnica en los procesos de negocio centrales de {client_name} está calibrado en "
+                f"~{hourly_downtime_cost:,.0f} {currency_symbol} por hora de parada no programada. La arquitectura directiva prohíbe "
+                f"intervenciones invasivas sobre plataformas heredadas sin un perímetro de aislamiento compensatorio previo "
+                f"que garantice la operación continua."
+            ),
+            "key_metric": f"Coste de inactividad estimado: ~{hourly_downtime_cost:,.0f} {currency_symbol}/hora",
         },
         {
             "callout_type": "decision",
             "title": "MANDATO DE DECISIÓN DEL COMITÉ: APROBACIÓN DE WAVE 0 (TRIAGE INMEDIATO)",
-            "message": "Se solicita al Comité de Dirección la ratificación formal de las 3 intervenciones de choque prioritarias para los primeros 90 días (Wave 0): 1) Erradicación de cuentas genéricas de administración en fábrica (PAM), 2) Activación de bloqueo inmutable WORM en almacenamiento existente, y 3) Formalización de acuerdos de nivel de servicio (SLA/RTO) con los directores de negocio.",
+            "message": (
+                "Se solicita al Comité de Dirección la ratificación de las intervenciones de choque para los primeros 90 días naturales "
+                "(Wave 0): 1) Control y custodia estricta de accesos administrativos privilegiados, 2) Activación de retención inmutable "
+                "en copias de seguridad de plataformas críticas, y 3) Formalización de acuerdos de nivel de servicio (SLA/RTO/RPO) "
+                "vinculados a impacto en cuenta de resultados."
+            ),
             "key_metric": "Ventana de ejecución inmediata: 90 días naturales (Wave 0)",
         },
     ]
@@ -491,6 +544,14 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     unique_principles = list(dict.fromkeys(all_principles))
     unique_implications = list(dict.fromkeys(all_implications))
 
+    now = datetime.now()
+    spanish_months = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
+    }
+    dynamic_date_str = f"{now.day} de {spanish_months.get(now.month, 'Enero')} de {now.year}"
+
     # Serializes the resolved data into the final `GlobalReportPayload` Pydantic schema for validation and downstream consumption.
     payload = {
         "_generation_metadata": {
@@ -500,7 +561,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         },
         "meta": {
             "client": client_name,
-            "date": "14 de Junio de 2026",
+            "date": dynamic_date_str,
             "version": "v6.0 - Sovereign DTO",
         },
         "executive_summary": {
@@ -622,7 +683,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
 
     payload["board_memo"] = _build_board_memo(towers_data, blueprint_files, client_name)
     payload["cross_tower_nexus"] = _build_cross_tower_nexus(towers_data, blueprint_files)
-    payload["executive_callouts"] = _build_executive_callouts(client_name, towers_data)
+    payload["executive_callouts"] = _build_executive_callouts(client_name, towers_data, client_dir=client_dir)
 
     return payload
 

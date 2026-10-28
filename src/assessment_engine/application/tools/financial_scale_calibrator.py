@@ -18,11 +18,11 @@ class DynamicRiskCalibration(BaseModel):
         description="Estimated operational hourly downtime cost for the client's critical virtual platform, e.g., 150000.0."
     )
     reg_max_fine_eur: float = Field(
-        description="Maximum legal regulatory fine applicable to the client's industry sector and geography (e.g., up to 10000000.0 for NIS2 in Spain)."
+        description="Maximum legal regulatory fine applicable to the client's industry sector and geography (e.g., 2% of annual turnover or applicable legal cap)."
     )
     hourly_rate_sre_eur: float = Field(
         default=36.0,
-        description="Average hourly rate of a senior DevOps / SRE consulting engineer in the client's country in Euros, e.g., 36.0 for Spain or 150.0 for Switzerland."
+        description="Average hourly rate of a senior DevOps / SRE consulting engineer in the client's country and economic region in Euros."
     )
     currency_code: str = Field(
         default="EUR",
@@ -71,7 +71,7 @@ class FinancialScaleCalibrator:
         # Try to resolve client preferred country and currency from intelligence dossier
         target_currency = "EUR"
         target_symbol = "€"
-        client_country = "España"
+        client_country = "Internacional"
 
         intel_path = Path(f"working/{client_id}/client_intelligence.json")
         if not intel_path.exists():
@@ -81,17 +81,22 @@ class FinancialScaleCalibrator:
         if intel_path.exists():
             try:
                 with open(intel_path, "r", encoding="utf-8-sig") as inf:
-                    intel_meta = json.load(inf).get("profile", {})
-                    if intel_meta.get("country"):
-                        client_country = intel_meta["country"]
-                    if intel_meta.get("currency"):
-                        target_currency = intel_meta["currency"].upper()
+                    intel_json = json.load(inf)
+                    intel_meta = intel_json.get("profile", {})
+                    country = intel_meta.get("country") or intel_json.get("country")
+                    if country:
+                        client_country = country
+                    currency = intel_meta.get("currency") or intel_json.get("currency")
+                    if currency:
+                        target_currency = currency.upper()
                         target_symbol = {
                             "USD": "$",
                             "GBP": "£",
                             "CHF": "CHF",
+                            "BRL": "R$",
+                            "MXN": "$",
                             "EUR": "€",
-                        }.get(target_currency, "€")
+                        }.get(target_currency, target_currency)
             except (OSError, json.JSONDecodeError, KeyError, AttributeError) as ex:
                 logger.debug(f"[Calibrator] Error leyendo client_intelligence opcional: {ex}")
 

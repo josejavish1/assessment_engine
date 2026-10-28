@@ -118,8 +118,34 @@ def test_render_commercial_report_execution(tmp_path: Path):
     )
 
     result_path = render_commercial_report(payload, template_path, output_docx)
-    assert result_path.exists()
-    assert result_path.stat().st_size > 5000
+    assert result_path.is_file(), "El informe comercial DOCX debe haber sido generado físicamente."
 
     doc = Document(str(result_path))
-    assert len(doc.paragraphs) > 10
+    full_text = "\n".join(p.text for p in doc.paragraphs) + "\n" + "\n".join(
+        cell.text for t in doc.tables for r in t.rows for cell in r.cells
+    )
+
+    # Invariantes semánticos exactos de negocio
+    assert "ACME CORP" in full_text
+    assert "1.5M €" in full_text
+    assert "Renovación de Infraestructura" in full_text
+    assert "Despliegue de Observabilidad Unificada" in full_text
+    assert "Alianza estratégica global con Red Hat y AWS" in full_text
+    assert "Piloto controlado en datacenter secundario" in full_text
+
+    # Invariante de Cero Fugas de Plantilla (Anti-Leakage Gate)
+    assert "{{" not in full_text, "Variables de plantilla {{...}} no resueltas detectadas en el DOCX comercial."
+    assert "}}" not in full_text, "Variables de plantilla {{...}} no resueltas detectadas en el DOCX comercial."
+
+
+def test_clear_document_elements_ror_killer():
+    """Verify that clear_document_body removes all content children while preserving sectPr."""
+    from assessment_engine.adapters.render_commercial_report import clear_document_body
+
+    doc = Document()
+    doc.add_paragraph("Test Paragraph 1")
+    doc.add_paragraph("Test Paragraph 2")
+    assert len(doc.paragraphs) == 2
+
+    clear_document_body(doc)
+    assert len(doc.paragraphs) == 0

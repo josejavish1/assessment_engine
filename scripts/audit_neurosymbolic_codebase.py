@@ -284,7 +284,7 @@ doc_type: operational
 diataxis: explanation
 verification_mode: editorial
 ---
-# 🏛️ Auditoría Neuro-Simbólica de la Base de Código\n\n""")
+# Auditoría Neuro-Simbólica de la Base de Código\n\n""")
         out.write("**Fecha:** Octubre 2026 | **Metodología:** Topología AST (NetworkX) + Trazabilidad Dinámica (`coverage.py`) + Árbitro Cognitivo (`gemini-4-argon`)\n\n")
 
         # Summary KPIs

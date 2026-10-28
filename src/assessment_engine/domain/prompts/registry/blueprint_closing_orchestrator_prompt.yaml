@@ -69,7 +69,7 @@ task_and_tone:
 - 'ALINEACIÓN ESTRATÉGICA DE VENDOR: Identifica el Hyperscaler (AWS, Azure, Google
   Cloud, etc.) dominante del cliente basándote exclusivamente en el CONTEXTO DEL NEGOCIO
   y las TRANSFORMACIONES ACTIVAS proporcionadas. Toda recomendación técnica o de gobierno
-  (ENS/NIS2) debe orientarse al ecosistema detectado como estratégico para el cliente.'
+  (normativas de seguridad y resiliencia aplicables) debe orientarse al ecosistema detectado como estratégico para el cliente.'
 - 'DIPLOMACIA DE ÉLITE (Tier 1): Prohibido usar adjetivos agresivos (ej. inaceptable,
   desastroso). Describe los riesgos de forma objetiva como "exposición material" o
   "desviación estructural". Nunca acuses al cliente.'

@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793221064,
+  "timestamp": 1793224159,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -10,8 +10,8 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 403,
-        "clean_files": 403,
+        "scanned_files": 423,
+        "clean_files": 423,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -35,16 +35,16 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 45400,
-        "test_sloc": 16031,
-        "test_to_code_ratio": 0.35,
-        "maintainability_index_sei": 32.3,
-        "typed_functions_pct": 88.7,
-        "docstring_coverage_pct": 81.0,
+        "prod_sloc": 45063,
+        "test_sloc": 16738,
+        "test_to_code_ratio": 0.37,
+        "maintainability_index_sei": 32.8,
+        "typed_functions_pct": 88.8,
+        "docstring_coverage_pct": 81.7,
         "max_cognitive_complexity": 246,
         "rango_d_functions_count": 0,
         "god_modules_count": 0,
-        "high_cognitive_funcs_count": 58,
+        "high_cognitive_funcs_count": 60,
         "deep_nesting_funcs_count": 29
       },
       "findings": [
@@ -61,7 +61,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 240,
+          "line_number": 242,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'polish_semantic_tables': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -70,7 +70,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 433,
+          "line_number": 435,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'clean_brackets_and_consultant_notes': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -79,7 +79,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 433,
+          "line_number": 435,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'clean_brackets_and_consultant_notes': CoC = 61 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -99,14 +99,14 @@
           "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
           "line_number": 145,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'derive_pillar_justification': CoC = 58 (límite cognitivo <= 45)",
+          "message": "Sobrecarga cognitiva en 'derive_pillar_justification': CoC = 60 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
-          "line_number": 531,
+          "line_number": 543,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_write_module_07_conclusiones': CoC = 59 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -115,7 +115,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/generate_asis_markdown_modules.py",
-          "line_number": 749,
+          "line_number": 761,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_write_module_02_resumen_ejecutivo': CoC = 85 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -142,7 +142,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 865,
+          "line_number": 683,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_compile_chapter_3_maturity_profile': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -151,7 +151,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 865,
+          "line_number": 683,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_compile_chapter_3_maturity_profile': CoC = 246 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -160,7 +160,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 1497,
+          "line_number": 1315,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_compile_chapter_4_fair_risk_matrix': CoC = 144 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -169,7 +169,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 2288,
+          "line_number": 2106,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_compile_chapter_5_conclusions': CoC = 47 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -178,7 +178,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 2541,
+          "line_number": 2359,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_compile_appendices': CoC = 77 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -187,7 +187,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 779,
+          "line_number": 575,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_systemic_risk_section': CoC = 97 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -196,7 +196,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 936,
+          "line_number": 732,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_maturity_and_benchmarks': CoC = 61 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -205,27 +205,9 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1217,
+          "line_number": 1013,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_detailed_findings_log': CoC = 52 (límite cognitivo <= 45)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1420,
-          "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en '_build_appendix_a_glossary': 6 niveles de profundidad (límite <= 5)",
-          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1420,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en '_build_appendix_a_glossary': CoC = 50 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -403,7 +385,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 214,
+          "line_number": 215,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_build_board_memo': 7 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -412,16 +394,16 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 214,
+          "line_number": 215,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en '_build_board_memo': CoC = 45 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en '_build_board_memo': CoC = 60 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 311,
+          "line_number": 364,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'build_global_payload': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -430,7 +412,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 311,
+          "line_number": 364,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'build_global_payload': CoC = 45 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -559,6 +541,15 @@
           "line_number": 429,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'total_semantic_resilience': CoC = 45 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/domain/schemas/context.py",
+          "line_number": 90,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'hydrate_from_disk': CoC = 18 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -694,6 +685,33 @@
           "line_number": 117,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'run_rage_evaluation': CoC = 30 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 92,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Anidamiento excesivo en 'load_locales_catalog': 4 niveles de profundidad (límite <= 3)",
+          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 92,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'load_locales_catalog': CoC = 17 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 209,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'get_localized_string': CoC = 18 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -841,7 +859,7 @@
         "mutants_tested": 6,
         "mutants_killed": 6,
         "mutation_score_pct": 100.0,
-        "paired_modules_count": 31
+        "paired_modules_count": 37
       },
       "findings": []
     },
@@ -904,7 +922,7 @@
       "passed": true,
       "metrics": {
         "ddl_tables_indexed": 6,
-        "pydantic_models_audited": 135,
+        "pydantic_models_audited": 136,
         "drift_violations_count": 0,
         "has_versioned_contract": true
       },
@@ -929,7 +947,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "llm_calls_audited": 18,
+        "llm_calls_audited": 19,
         "has_bwrap_sandbox": true,
         "has_execution_guard": true,
         "has_finops_budget": true,
@@ -942,7 +960,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 309,
+        "scanned_files": 322,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -956,7 +974,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 309,
+        "scanned_files": 322,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -975,10 +993,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.49,
-        "p95_latency_ms": 87.94,
-        "p99_latency_ms": 132.15,
-        "tail_amplification_ratio": 88.69,
+        "p50_latency_ms": 2.42,
+        "p95_latency_ms": 54.85,
+        "p99_latency_ms": 231.92,
+        "tail_amplification_ratio": 95.83,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -1006,7 +1024,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "files_scanned": 158,
+        "files_scanned": 159,
         "total_findings": 0,
         "critical_violations": 0,
         "high_violations": 0,
@@ -1019,27 +1037,36 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 343,
+        "scanned_files": 356,
         "hardcoded_issues": 0
       },
       "findings": []
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 99.9,
+      "score_pct": 99.8,
       "passed": true,
       "metrics": {
-        "files_scanned": 338,
+        "files_scanned": 351,
         "inline_rationale_score": 99.8,
-        "contract_coverage_score": 99.8,
+        "contract_coverage_score": 99.7,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 5,
-        "missing_docstrings_count": 2,
-        "cqi_score": 99.9,
+        "comment_smells_count": 6,
+        "missing_docstrings_count": 4,
+        "cqi_score": 99.8,
         "grade": "A+",
         "status": "Tier-1 Certified"
       },
       "findings": [
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 3089,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
         {
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
@@ -1062,7 +1089,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1106,
+          "line_number": 1107,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -1101,6 +1128,24 @@
           "line_number": 52,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'main' lacks formal contract docstring",
+          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/domain/schemas/commercial.py",
+          "line_number": 225,
+          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
+          "message": "Public function 'why_ntt_data' lacks formal contract docstring",
+          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 27,
+          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
+          "message": "Public function 'synthesize_locale' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
         }
       ]
