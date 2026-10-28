@@ -9,7 +9,7 @@ applies_to:
 - humans
 - ai-agents
 source_of_truth:
-- ../../src/assessment_engine/infrastructure/review_resilience.py
+- ../../src/assessment_engine/infrastructure/ai_client.py
 - ../../src/assessment_engine/application/tools/regenerate_smoke_artifacts.py
 last_verified_against: 2026-06-26
 notes: Runbook de mitigación, políticas de tolerancia a fallos y FMEA simple para

@@ -11,7 +11,6 @@ source_of_truth:
 - ../../src/assessment_engine/application/run_executive_refiner.py
 - ../../src/assessment_engine/application/run_commercial_refiner.py
 - ../../src/assessment_engine/domain/prompts/intelligence_prompts.py
-- ../../src/assessment_engine/domain/prompts/global_prompts.py
 - ../../src/assessment_engine/domain/prompts/commercial_prompts.py
 last_verified_against: 2026-06-26
 applies_to:
