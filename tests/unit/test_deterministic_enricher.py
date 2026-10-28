@@ -92,7 +92,7 @@ def test_mece_clustering_engine_deduplication():
 
 def test_linguistic_linter_sanitization():
     raw_title = "Proactive Capacity Assurance for Business Continuity **Critical**"
-    sanitized = LinguisticLinter.sanitize_title(raw_title)
+    sanitized = LinguisticLinter.sanitize_title(raw_title, max_words=10)
 
     assert "Proactive Capacity Assurance" not in sanitized
     assert "Gestión Proactiva de Capacidad" in sanitized

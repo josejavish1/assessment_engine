@@ -55,8 +55,9 @@
       "Informe de Cierre de Brecha"
     ],
     "archimate_fallback_deliverables": [
-      "Documento de Diseño Técnico (HLD/LLD)",
-      "Plan de Pruebas y Validación"
+      "Manifiestos de Infraestructura como Código (IaC / Terraform)",
+      "Runbook Operativo Parametrizado y Matriz RACI",
+      "Cuadro de Mando de Observabilidad, Telemetría y Alertas"
     ],
     "archimate_catalog": {
       "kubernetes": [
@@ -309,8 +310,9 @@
       "Gap Closure Verification Report"
     ],
     "archimate_fallback_deliverables": [
-      "Technical Architecture Design (HLD/LLD)",
-      "Testing and Validation Plan"
+      "Infrastructure as Code (IaC / Terraform) Manifests",
+      "Parameterized Operational Runbook and RACI Matrix",
+      "Observability, Telemetry, and Alerting Dashboard"
     ],
     "archimate_catalog": {
       "kubernetes": [
@@ -546,8 +548,9 @@
       "Relatório de Encerramento de Lacuna"
     ],
     "archimate_fallback_deliverables": [
-      "Documento de Design Técnico (HLD/LLD)",
-      "Plano de Testes e Validação"
+      "Manifestos de Infraestrutura como Código (IaC / Terraform)",
+      "Runbook Operacional Parametrizado e Matriz RACI",
+      "Painel de Observabilidade, Telemetria e Alertas"
     ],
     "archimate_catalog": {
       "kubernetes": [
@@ -791,8 +794,9 @@
       "Rapport de Clôture d'Écart"
     ],
     "archimate_fallback_deliverables": [
-      "Document de Conception Technique (HLD/LLD)",
-      "Plan de Tests et Validation"
+      "Manifestes d'Infrastructure as Code (IaC / Terraform)",
+      "Runbook Opérationnel Paramétré et Matrice RACI",
+      "Tableau de Bord d'Observabilité, Télémétrie et Alertes"
     ],
     "archimate_catalog": {
       "kubernetes": [
@@ -1036,8 +1040,9 @@
       "ギャップ解消検証レポート"
     ],
     "archimate_fallback_deliverables": [
-      "技術アーキテクチャ設計書 (HLD/LLD)",
-      "テストおよび検証計画"
+      "Infrastructure as Code (IaC / Terraform) マニフェスト",
+      "パラメータ化された運用ランブックおよびRACIマトリックス",
+      "可観測性・テレメトリ・アラートダッシュボード"
     ],
     "archimate_catalog": {
       "kubernetes": [
@@ -1289,8 +1294,9 @@
       "Verifizierungsbericht zur Lückenschließung"
     ],
     "archimate_fallback_deliverables": [
-      "Technisches Architekturdesign (HLD/LLD)",
-      "Test- und Validierungsplan"
+      "Infrastructure-as-Code (IaC / Terraform) Manifeste",
+      "Parametrisiertes Betriebshandbuch (Runbook) und RACI-Matrix",
+      "Observability-, Telemetrie- und Alerting-Dashboard"
     ],
     "archimate_catalog": {
       "kubernetes": [

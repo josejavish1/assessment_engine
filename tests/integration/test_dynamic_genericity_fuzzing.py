@@ -4,7 +4,7 @@ from pathlib import Path
 
 from docx import Document
 
-from assessment_engine.adapters.render_togaf_asis_annex import render_asis_annex
+from assessment_engine.adapters.compile_asis_docx_from_modules import compile_docx
 
 
 class TestDynamicGenericityFuzzing:
@@ -18,7 +18,7 @@ class TestDynamicGenericityFuzzing:
         mathematically proving that the engine is 100% generic.
         """
         # --- ARRANGE ---
-        fuzzed_client = "MUTATED_CLIENT_NAME_999"
+        fuzzed_client = "MUTATED CLIENT NAME 999"
         fuzzed_project = "MUTATED_PROJECT_LOGISTICS"
         fuzzed_company = "MUTATED_CONSULTANCY_ABC"
         fuzzed_classification = "MUTATED_CLASSIFICATION_SECRET"
@@ -219,8 +219,15 @@ class TestDynamicGenericityFuzzing:
                 output_docx = input_dir / "AS-IS_Anexo_Tecnico_T2.docx"
 
                 # --- ACT ---
-                # Compile using the fuzzed payload
-                render_asis_annex(str(payload_path), str(output_docx))
+                # Compile using the fuzzed payload and canonical module compiler
+                modules_dir = input_dir / "asis_modules"
+                modules_dir.mkdir(parents=True, exist_ok=True)
+                for i in range(1, 8):
+                    (modules_dir / f"0{i}_module.md").write_text(
+                        f"# {i}. Module Content\nDescription with {fuzzed_currency} and {fuzzed_classification}",
+                        encoding="utf-8",
+                    )
+                compile_docx(str(input_dir), str(output_docx))
 
                 # --- ASSERT ---
                 assert output_docx.is_file(), (

@@ -901,17 +901,19 @@ async def _enrich_projects_finops(
                     client_name=client_name,
                     tower_id=tower_id,
                 )
-                if enrichment_data.get("commercial_name"):
-                    old_name = proj["name"]
-                    new_name = LinguisticLinter.sanitize_title(
-                        enrichment_data["commercial_name"]
-                    )
-                    proj["name"] = new_name
+                old_name = proj["name"]
+                target_name = enrichment_data.get("commercial_name") or enrichment_data.get("name") or old_name
+                new_name = LinguisticLinter.sanitize_title(target_name, max_words=8)
+                proj["name"] = new_name
+                if old_name != new_name:
                     _cascade_project_rename(blueprint_payload, old_name, new_name)
 
                 blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][
                     proj_idx
                 ].update(enrichment_data)
+                blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][
+                    proj_idx
+                ]["name"] = new_name
 
         enrichment_tasks = []
         for p_idx, p_analysis in enumerate(
@@ -922,7 +924,18 @@ async def _enrich_projects_finops(
 
         if enrichment_tasks:
             await asyncio.gather(*enrichment_tasks)
-            print("✅ Enriquecimiento de Bid Manager completado.")
+
+        # Enforce strict post-pass executive title sanitization
+        for p_analysis in blueprint_payload.get("pillars_analysis", []):
+            for pr in p_analysis.get("projects_todo", []):
+                if pr.get("name"):
+                    old_n = pr["name"]
+                    new_n = LinguisticLinter.sanitize_title(old_n, max_words=8)
+                    pr["name"] = new_n
+                    if old_n != new_n:
+                        _cascade_project_rename(blueprint_payload, old_n, new_n)
+
+        print("✅ Enriquecimiento de Bid Manager completado.")
     except Exception as bid_err:
         print(f"⚠️ Error en Bid Manager Agent: {bid_err}")
 

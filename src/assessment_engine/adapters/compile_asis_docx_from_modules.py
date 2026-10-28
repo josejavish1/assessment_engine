@@ -1375,7 +1375,11 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: dict[str, Any]) -> dict[s
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     sre_rate = round(float(custom_calibration.get("hourly_rate_sre_eur", 36.0)))
-    currency = custom_calibration.get("currency_symbol", "€" if doc_lang == "es" else "$")
+    currency = (
+        ctx.get("currency")
+        or custom_calibration.get("currency_symbol")
+        or ("€" if doc_lang == "es" else "$")
+    )
 
     # Calculate aggregate Tail Risk (P90 and Max Probable Loss)
     total_p90 = 0.0
@@ -2876,14 +2880,30 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     run_cli.font.size = Pt(28)
     run_cli.font.color.rgb = RGBColor(0, 114, 188)
 
+    p_proj = doc.add_paragraph()
+    proj_label = t("proj_lbl", locale=doc_lang)
+    project_title = t("project", locale=doc_lang)
+    if project_title:
+        run_proj_lbl = p_proj.add_run(proj_label)
+        run_proj_lbl.bold = True
+        run_proj_lbl.font.name = "Arial"
+        run_proj_lbl.font.size = Pt(14)
+        run_proj_lbl.font.color.rgb = RGBColor(*text_color_rgb)
+
+        run_proj = p_proj.add_run(f"{project_title}")
+        run_proj.font.name = "Arial"
+        run_proj.font.size = Pt(14)
+        run_proj.font.color.rgb = RGBColor(*text_color_rgb)
+
     add_spacer(doc, 140)
 
     classification_clean = ctx["classification"].replace(" (Tier-1 Assessment)", "")
     version_label = t("v_lbl", locale=doc_lang)
 
     p_footer = doc.add_paragraph()
+    company_prefix = f"{ctx['company_name'].upper()} | " if ctx.get("company_name") else ""
     run_date = p_footer.add_run(
-        f"{ctx['doc_date']} | {version_label}{ctx['doc_version']} | {classification_clean}"
+        f"{company_prefix}{ctx['doc_date']} | {version_label}{ctx['doc_version']} | {classification_clean}"
     )
     run_date.font.name = "Arial"
     run_date.font.size = Pt(9.5)
@@ -3073,6 +3093,11 @@ def compile_docx(tower_dir: str, output_path: str):
             client_group = tower_meta.get("client_parent_group")  #
             global_fair_ale = b_data.get("total_fair_ale", 0.0)
             custom_overview_intro = b_data.get("platform_overview_intro")  #
+            currency = (
+                tower_meta.get("currency")
+                or brand.get("currency_symbol")
+                or currency
+            )
 
             # Load internationalization (i18n) parameters from the input payload. The implementation avoids using default or hardcoded locales.
             doc_lang = tower_meta.get("language", "es").lower()

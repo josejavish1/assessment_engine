@@ -290,12 +290,14 @@ def get_archimate_fallback_deliverables(locale: str = "es") -> list[str]:
 
     if base_loc == "en":
         return [
-            "Technical Architecture Design (HLD/LLD)",
-            "Testing and Validation Plan",
+            "Infrastructure as Code (IaC / Terraform) Manifests",
+            "Parameterized Operational Runbook and RACI Matrix",
+            "Observability, Telemetry, and Alerting Dashboard",
         ]
     return [
-        "Documento de Diseño Técnico (HLD/LLD)",
-        "Plan de Pruebas y Validación",
+        "Manifiestos de Infraestructura como Código (IaC / Terraform)",
+        "Runbook Operativo Parametrizado y Matriz RACI",
+        "Cuadro de Mando de Observabilidad, Telemetría y Alertas",
     ]
 
 

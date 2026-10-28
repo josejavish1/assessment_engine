@@ -53,6 +53,9 @@ class ArchiMateDeliverablesPolicy(BaseSovereignPolicy):
                     not curr
                     or any("diseño de arquitectura" in d.lower() for d in curr)
                     or any("architecture design" in d.lower() for d in curr)
+                    or any("documento de diseño técnico" in d.lower() for d in curr)
+                    or any("technical architecture design" in d.lower() for d in curr)
+                    or any(d.strip() == "Plan de Pruebas y Validación" for d in curr)
                 )
                 if is_generic:
                     proj["deliverables"] = _resolve_project_deliverables(

@@ -211,8 +211,8 @@ class LinguisticLinter:
     }
 
     @classmethod
-    def sanitize_title(cls, text: str) -> str:
-        """Translates known English leakage and removes markdown artifacts."""
+    def sanitize_title(cls, text: str, max_words: int = 8) -> str:
+        """Translates known English leakage, removes markdown artifacts, and enforces punchy executive length (<= 8 words)."""
         if not text:
             return ""
 
@@ -223,6 +223,46 @@ class LinguisticLinter:
         # Apply deterministic translations
         for pattern, replacement in cls.TRANSLATION_MAP.items():
             cleaned = re.sub(pattern, replacement, cleaned, flags=re.IGNORECASE)
+
+        # If contains colon, take first punchy clause if it has enough substance (3-8 words)
+        if ":" in cleaned:
+            parts = cleaned.split(":")
+            clause = parts[0].strip()
+            clause_words = clause.split()
+            if 3 <= len(clause_words) <= max_words:
+                cleaned = clause
+            elif len(parts) > 1 and len(parts[1].strip().split()) >= 3:
+                cleaned = parts[1].strip()
+
+        # Strip redundant filler prefixes to leave high-impact action + subject
+        fillers = [
+            r"^programa de implantaci[oó]n de metodolog[ií]a de\s+",
+            r"^programa de transformaci[oó]n del?\s+",
+            r"^programa de gobernanza operativa y\s+",
+            r"^programa de excelencia operativa,\s+",
+            r"^programa de gobierno, conciliaci[oó]n y\s+",
+            r"^programa de inteligencia operativa y\s+",
+            r"^programa corporativo de\s+",
+            r"^programa estrat[eé]gico de\s+",
+            r"^programa de\s+",
+            r"^plan director de\s+",
+            r"^sistema automatizado de\s+",
+            r"^plataforma integral de\s+",
+            r"^marco estrat[eé]gico de\s+",
+            r"^garant[ií]a de\s+",
+        ]
+        for f in fillers:
+            cleaned = re.sub(f, "", cleaned, flags=re.IGNORECASE)
+
+        # Enforce strict maximum word limit
+        words = cleaned.split()
+        if len(words) > max_words:
+            words = words[:max_words]
+            while words and words[-1].lower() in [
+                "de", "y", "en", "para", "con", "del", "a", "la", "los", "el", "las", "por", "marco"
+            ]:
+                words.pop()
+            cleaned = " ".join(words)
 
         # Capitalize first letter
         if cleaned:

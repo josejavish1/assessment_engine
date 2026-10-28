@@ -269,3 +269,96 @@ def test_build_default_tower_overrides_integrity():
         assert entry["metrics"]["regulatory_compliance"] == 50.0
         assert entry["metrics"]["implementation_feasibility"] == 50.0
 
+
+@pytest.mark.asyncio
+async def test_enrich_epistemic_graph_and_meta():
+    """Verify that _enrich_epistemic_graph_and_meta computes PageRank centrality and risk propagation."""
+    from assessment_engine.application.run_intelligence_harvesting import (
+        _build_default_tower_overrides,
+        _enrich_epistemic_graph_and_meta,
+    )
+
+    overrides = _build_default_tower_overrides()
+    organized = {"stack": [{"technology": "AWS EC2", "vendor": "AWS"}]}
+    narrative = {"text": "Transformación tecnológica industrial"}
+
+    (
+        dominant_hyperscaler,
+        industry_str,
+        horizon_obj,
+        graph_service,
+        spof_tower,
+        spof_impact,
+        spof_by_centrality,
+        risk_centrality,
+        propagated_maturities,
+    ) = await _enrich_epistemic_graph_and_meta(
+        client_name="TestClient",
+        narrative=narrative,
+        organized=organized,
+        calculated_overrides=overrides,
+    )
+
+    assert dominant_hyperscaler in ["AWS", "Azure", "GCP"]
+    assert industry_str is not None
+    assert "stage" in horizon_obj
+    assert len(risk_centrality) == 10
+    assert spof_tower.startswith("T")
+    assert spof_impact > 0.0
+
+
+@pytest.mark.asyncio
+async def test_assemble_and_persist_dossier(tmp_path: Path):
+    """Verify that _assemble_and_persist_dossier serializes, signs, and writes canonical V3 client dossier."""
+    from assessment_engine.application.run_intelligence_harvesting import (
+        _assemble_and_persist_dossier,
+        _build_default_tower_overrides,
+        _enrich_epistemic_graph_and_meta,
+    )
+
+    overrides = _build_default_tower_overrides()
+    organized = {"stack": [{"technology": "Azure", "vendor": "Microsoft"}], "metrics": []}
+    narrative = {"text": "Estrategia bancaria"}
+
+    (
+        dominant_hyperscaler,
+        industry_str,
+        horizon_obj,
+        graph_service,
+        spof_tower,
+        spof_impact,
+        spof_by_centrality,
+        risk_centrality,
+        propagated_maturities,
+    ) = await _enrich_epistemic_graph_and_meta(
+        client_name="Banco Santander",
+        narrative=narrative,
+        organized=organized,
+        calculated_overrides=overrides,
+    )
+
+    out_file = tmp_path / "client_intelligence.json"
+    _assemble_and_persist_dossier(
+        client_name="Banco Santander",
+        output_path=out_file,
+        industry_str=industry_str,
+        narrative=narrative,
+        horizon_obj=horizon_obj,
+        organized=organized,
+        dominant_hyperscaler=dominant_hyperscaler,
+        calculated_overrides=overrides,
+        graph_service=graph_service,
+        spof_tower=spof_tower,
+        spof_impact=spof_impact,
+        spof_by_centrality=spof_by_centrality,
+        risk_centrality=risk_centrality,
+        propagated_maturities=propagated_maturities,
+        captured=[],
+    )
+
+    assert out_file.is_file()
+    saved = json.loads(out_file.read_text(encoding="utf-8-sig"))
+    assert saved["version"] == "3.0"
+    assert saved["client_name"] == "Banco Santander"
+    assert "metadata" in saved
+
