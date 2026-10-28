@@ -1,15 +1,13 @@
-import logging
-logger = logging.getLogger(__name__)
 """Defines the validation procedures and supporting utilities for tower definition schemas used in the Assessment Engine pipeline."""
 
 import argparse
 import json
+import logging
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[3]
-
-
 from typing import Any, cast
+
+logger = logging.getLogger(__name__)
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -17,37 +15,11 @@ def load_json(path: Path) -> dict[str, Any]:
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
 
 
-def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
-    """Validates a tower definition dictionary against a predefined schema and internal consistency rules.
-
-    This function performs a multi-faceted validation of a tower definition.
-    It checks for:
-    - Presence of required top-level keys (e.g., 'tower_id', 'pillars').
-    - Correct data types for core structures (e.g., 'pillars' must be a list).
-    - Hierarchical integrity of identifiers (e.g., a 'kpi_id' must be prefixed
-      with its parent 'pillar_id').
-    - Uniqueness of all 'pillar_id', 'kpi_id', and 'question_id' values.
-    - Logical constraints, such as the sum of all pillar 'weight_pct' equaling 100.
-    - Referential integrity between the top-level 'questions' list and those
-      nested within KPIs.
-
-    Args:
-        definition: The dictionary representing the tower definition to be
-            validated.
-
-    Returns:
-        A tuple where the first element is a list of validation error strings
-        and the second is a list of warning strings. The definition is considered
-        valid if the error list is empty.
-
-    Raises:
-        AttributeError: If a nested item expected to be a dictionary (such as an
-            element in the 'pillars' or 'kpis' list) is of an incompatible type,
-            preventing key access.
-    """
+def _validate_top_level_structure(
+    definition: dict[str, Any],
+) -> tuple[str, str, list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    """Validate presence and types of mandatory top-level keys."""
     errors: list[str] = []
-    warnings: list[str] = []
-
     tower_id = str(definition.get("tower_id", "")).strip().upper()
     tower_name = str(definition.get("tower_name", "")).strip()
     pillars = definition.get("pillars", [])
@@ -73,11 +45,45 @@ def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
         errors.append("pillars debe ser una lista no vacía.")
         pillars = []
 
+    for k in ["score_bands", "maturity_scale", "working_rules"]:
+        if not definition.get(k):
+            errors.append(f"{k} vacío.")
+
+    return tower_id, tower_name, pillars, questions, errors
+
+
+def _validate_kpi_questions(
+    kpi_id: str, kpi_questions: Any, errors: list[str]
+) -> list[str]:
+    """Validate list of questions embedded inside a single KPI."""
+    question_ids: list[str] = []
+    if not isinstance(kpi_questions, list):
+        errors.append(f"{kpi_id} tiene questions con shape inválido.")
+        return question_ids
+
+    for question in kpi_questions:
+        question_id = str(question.get("question_id", "")).strip().upper()
+        question_text = str(question.get("question_text", "")).strip()
+        if not question_id:
+            errors.append(f"{kpi_id} contiene una question sin question_id.")
+            continue
+        question_ids.append(question_id)
+        if not question_id.startswith(f"{kpi_id}.PR"):
+            errors.append(f"{question_id} no pertenece al KPI {kpi_id}.")
+        if not question_text:
+            errors.append(f"{question_id} tiene question_text vacío.")
+    return question_ids
+
+
+def _validate_pillar_hierarchy(
+    tower_id: str, pillars: list[dict[str, Any]], errors: list[str]
+) -> tuple[list[str], list[str], list[str], int]:
+    """Validate pillar integrity, weights, and contained KPIs."""
     pillar_ids: list[str] = []
     kpi_ids: list[str] = []
     question_ids: list[str] = []
-
     total_weight = 0
+
     for pillar in pillars:
         pillar_id = str(pillar.get("pillar_id", "")).strip().upper()
         pillar_name = str(pillar.get("pillar_name", "")).strip()
@@ -106,8 +112,6 @@ def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
         for kpi in kpis:
             kpi_id = str(kpi.get("kpi_id", "")).strip().upper()
             kpi_name = str(kpi.get("kpi_name", "")).strip()
-            kpi_questions = kpi.get("questions", [])
-
             if not kpi_id:
                 errors.append(f"{pillar_id} contiene un KPI sin kpi_id.")
                 continue
@@ -119,21 +123,74 @@ def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
                 errors.append(f"{kpi_id} tiene kpi_name vacío.")
 
             if "questions" in kpi:
-                if not isinstance(kpi_questions, list):
-                    errors.append(f"{kpi_id} tiene questions con shape inválido.")
-                for question in kpi_questions:
-                    question_id = str(question.get("question_id", "")).strip().upper()
-                    question_text = str(question.get("question_text", "")).strip()
-                    if not question_id:
-                        errors.append(
-                            f"{kpi_id} contiene una question sin question_id."
-                        )
-                        continue
-                    question_ids.append(question_id)
-                    if not question_id.startswith(f"{kpi_id}.PR"):
-                        errors.append(f"{question_id} no pertenece al KPI {kpi_id}.")
-                    if not question_text:
-                        errors.append(f"{question_id} tiene question_text vacío.")
+                q_ids = _validate_kpi_questions(
+                    kpi_id, kpi.get("questions", []), errors
+                )
+                question_ids.extend(q_ids)
+
+    return pillar_ids, kpi_ids, question_ids, total_weight
+
+
+def _validate_top_level_questions(
+    tower_id: str,
+    questions: Any,
+    pillar_ids: list[str],
+    kpi_ids: list[str],
+    embedded_question_ids: list[str],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    """Validate referential integrity of optional top-level questions catalog."""
+    if not questions:
+        return
+    if not isinstance(questions, list):
+        errors.append("questions debe ser lista cuando existe.")
+        return
+
+    known_pillars = set(pillar_ids)
+    known_kpis = set(kpi_ids)
+    top_question_ids: list[str] = []
+
+    for question in questions:
+        question_id = str(question.get("question_id", "")).strip().upper()
+        pillar_id = str(question.get("pillar_id", "")).strip().upper()
+        kpi_id = str(question.get("kpi_id", "")).strip().upper()
+        question_text = str(question.get("question_text", "")).strip()
+        if not question_id:
+            errors.append("Hay una question top-level sin question_id.")
+            continue
+        top_question_ids.append(question_id)
+        if tower_id and not question_id.startswith(f"{tower_id}.P"):
+            errors.append(f"{question_id} no pertenece a la torre {tower_id}.")
+        if pillar_id not in known_pillars:
+            errors.append(
+                f"{question_id} referencia un pillar_id inexistente: {pillar_id}."
+            )
+        if kpi_id not in known_kpis:
+            errors.append(f"{question_id} referencia un kpi_id inexistente: {kpi_id}.")
+        if not question_text:
+            errors.append(f"{question_id} tiene question_text vacío.")
+
+    if len(top_question_ids) != len(set(top_question_ids)):
+        errors.append("Hay question_id duplicados en questions top-level.")
+    if embedded_question_ids and set(top_question_ids) != set(embedded_question_ids):
+        warnings.append(
+            "Las questions top-level no coinciden exactamente con las embebidas en pillars[*].kpis[*].questions."
+        )
+
+
+def validate_tower_definition(
+    definition: dict[str, Any],
+) -> tuple[list[str], list[str]]:
+    """Validates a tower definition dictionary against canonical schema and consistency rules."""
+    warnings: list[str] = []
+    tower_id, tower_name, pillars, questions, errors = _validate_top_level_structure(
+        definition
+    )
+
+    pillar_ids, kpi_ids, question_ids, total_weight = _validate_pillar_hierarchy(
+        tower_id, pillars, errors
+    )
 
     if len(pillar_ids) != len(set(pillar_ids)):
         errors.append("Hay pillar_id duplicados.")
@@ -145,53 +202,20 @@ def validate_tower_definition(definition: dict) -> tuple[list[str], list[str]]:
     if pillars and total_weight != 100:
         errors.append(f"La suma de weight_pct es {total_weight}, no 100.")
 
-    if questions:
-        if not isinstance(questions, list):
-            errors.append("questions debe ser lista cuando existe.")
-            questions = []
-        known_pillars = set(pillar_ids)
-        known_kpis = set(kpi_ids)
-        top_question_ids: list[str] = []
-        for question in questions:
-            question_id = str(question.get("question_id", "")).strip().upper()
-            pillar_id = str(question.get("pillar_id", "")).strip().upper()
-            kpi_id = str(question.get("kpi_id", "")).strip().upper()
-            question_text = str(question.get("question_text", "")).strip()
-            if not question_id:
-                errors.append("Hay una question top-level sin question_id.")
-                continue
-            top_question_ids.append(question_id)
-            if tower_id and not question_id.startswith(f"{tower_id}.P"):
-                errors.append(f"{question_id} no pertenece a la torre {tower_id}.")
-            if pillar_id not in known_pillars:
-                errors.append(
-                    f"{question_id} referencia un pillar_id inexistente: {pillar_id}."
-                )
-            if kpi_id not in known_kpis:
-                errors.append(
-                    f"{question_id} referencia un kpi_id inexistente: {kpi_id}."
-                )
-            if not question_text:
-                errors.append(f"{question_id} tiene question_text vacío.")
-        if len(top_question_ids) != len(set(top_question_ids)):
-            errors.append("Hay question_id duplicados en questions top-level.")
-        if question_ids and set(top_question_ids) != set(question_ids):
-            warnings.append(
-                "Las questions top-level no coinciden exactamente con las embebidas en pillars[*].kpis[*].questions."
-            )
-
-    if not definition.get("score_bands"):
-        errors.append("score_bands vacío.")
-    if not definition.get("maturity_scale"):
-        errors.append("maturity_scale vacío.")
-    if not definition.get("working_rules"):
-        errors.append("working_rules vacío.")
-
+    _validate_top_level_questions(
+        tower_id,
+        questions,
+        pillar_ids,
+        kpi_ids,
+        question_ids,
+        errors,
+        warnings,
+    )
     return errors, warnings
 
 
 def main() -> None:
-    r"""{'docstring': 'Parses and validates a tower definition JSON file from a CLI argument.\n\nThis function serves as the main entry point for the validation script. It\norchestrates the process by parsing a single positional command-line argument\nrepresenting the file path to the tower definition JSON. The specified file\nis subsequently loaded and its contents are passed to the\n`validate_tower_definition` function for structural validation.\n\nThe final validation status (OK, WARNINGS, or ERROR), along with any\ndiagnostic messages, is printed to standard output. The script terminates\nwith an exit code of 1 if validation errors are detected, and 0 otherwise.\n\nRaises:\n    SystemExit: If the required command-line argument is missing or if\n        validation errors are found in the definition file.\n    FileNotFoundError: If the file specified in the command-line arguments\n        does not exist.\n    json.JSONDecodeError: If the specified file is not a valid JSON document.'}."""
+    """Parses and validates a tower definition JSON file from a CLI argument."""
     parser = argparse.ArgumentParser()
     parser.add_argument("definition_json")
     args = parser.parse_args()
