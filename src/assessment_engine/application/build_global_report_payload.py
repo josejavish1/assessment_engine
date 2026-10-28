@@ -141,6 +141,13 @@ def _aggregate_tower_blueprints(
                         "priority": proj.get("priority", "Alta"),
                         "expected_outcome": proj.get("business_case")
                         or proj.get("expected_outcome", ""),
+                        "capex_estimate": str(
+                            proj.get("capex_estimate")
+                            or proj.get("capex")
+                            or proj.get("budget")
+                            or proj.get("opex_estimate")
+                            or "0"
+                        ),
                     }
                 )
                 p_idx += 1
@@ -648,6 +655,37 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 "projects": [i for i in all_initiatives if i["tower"] == t["name"]],
             }
         )
+
+    from assessment_engine.application.tools.corporate_project_aggregator import (
+        aggregate_corporate_projects,
+    )
+
+    corp_result = aggregate_corporate_projects(all_initiatives)
+    payload["execution_roadmap"]["corporate_programs"] = [
+        {
+            "program_id": cp.program_id,
+            "participating_towers": cp.participating_towers,
+            "linear_capex": cp.linear_capex_numeric,
+            "consolidated_capex": cp.consolidated_capex_numeric,
+            "synergy_savings": cp.synergy_savings_numeric,
+            "work_packages_count": len(cp.work_packages),
+            "work_packages": [
+                {
+                    "id": wp.id,
+                    "tower": wp.tower,
+                    "title": wp.title,
+                    "objective": wp.objective,
+                    "priority": wp.priority,
+                    "capex_numeric": wp.capex_numeric,
+                }
+                for wp in cp.work_packages
+            ],
+        }
+        for cp in corp_result.get("programs", [])
+    ]
+    payload["execution_roadmap"]["standalone_initiatives"] = corp_result.get(
+        "standalone_initiatives", []
+    )
 
     # Applies an executive-level refinement layer, allowing for the direct override of certain report elements as specified by Tier 1 configurations.
     # Dynamically extracts the headline and C-level narrative from client-specific configuration extensions, if such extensions are provided.
