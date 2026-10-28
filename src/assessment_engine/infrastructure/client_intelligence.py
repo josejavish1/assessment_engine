@@ -69,13 +69,25 @@ def _claim_type_for_v2(value: Any) -> str:
 
 
 _TOWER_KEYWORDS: dict[str, tuple[str, ...]] = {
-    "T2": ("compute", "plataforma", "cloud", "híbrida", "hybrid", "hosting"),
-    "T3": ("network", "red", "connectivity", "sd-wan", "conectividad", "carrier"),
-    "T5": ("resilience", "continuity", "recovery", "dr", "resiliencia", "continuidad"),
-    "T6": ("security", "zero trust", "identity", "ciber", "seguridad"),
-    "T7": ("itsm", "operaciones", "service desk", "observability", "observabilidad"),
-    "T8": ("finops", "governance", "gobierno", "coste", "cost"),
-    "T9": ("workplace", "employee", "puesto", "colaboración", "dex"),
+    "T1": (
+        "strategy",
+        "estrategia",
+        "arquitectura",
+        "architecture",
+        "enterprise",
+        "soberanía",
+        "sovereignty",
+        "gobierno ti",
+    ),
+    "T2": ("compute", "plataforma", "cloud", "híbrida", "hybrid", "hosting", "virtualización"),
+    "T3": ("network", "red", "connectivity", "sd-wan", "conectividad", "carrier", "telecom"),
+    "T4": ("data", "datos", "ai", "ia", "analytics", "governance", "dama", "lakehouse", "warehouse", "bi"),
+    "T5": ("resilience", "continuity", "recovery", "dr", "resiliencia", "continuidad", "backup"),
+    "T6": ("security", "zero trust", "identity", "ciber", "seguridad", "iam", "soc"),
+    "T7": ("itsm", "operaciones", "service desk", "observability", "observabilidad", "sre", "monitoring"),
+    "T8": ("finops", "governance", "gobierno", "coste", "cost", "tco", "inversión"),
+    "T9": ("workplace", "employee", "puesto", "colaboración", "dex", "digital workplace"),
+    "T10": ("apps", "aplicaciones", "legacy", "modernización", "mainframe", "monolito", "erp", "crm"),
 }
 
 
