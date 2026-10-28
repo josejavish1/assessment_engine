@@ -208,7 +208,7 @@ class DigitalTwinExporter:
                 output is missing the 'roadmap' key, or if a predicate dictionary
                 used to form an edge lacks the 'value' key.
         """
-        print(f"📦 [DTO Exporter] Compilando State Object para {self.client_name}...")
+        logger.info(f"📦 [DTO Exporter] Compilando State Object para {self.client_name}...")
 
         # Resolve the directed acyclic graph (DAG) that represents the strategic topology, including wave sequencing and inter-node dependencies.
         strategic_data = run_strategic_orchestration(self.client_name)
@@ -329,7 +329,7 @@ def main(argv: List[str] | None = None):
     """
     args = argv if argv is not None else sys.argv
     if len(args) < 2:
-        print(
+        logger.info(
             "Uso: python -m assessment_engine.application.export_graph_state <client_name>"
         )
         return
@@ -340,7 +340,7 @@ def main(argv: List[str] | None = None):
 
     output_path = resolve_client_dir(client_name) / "digital_twin_state.json"
     output_path.write_text(json.dumps(state, indent=2, ensure_ascii=False))
-    print(f"✅ State Object DTO generado: {output_path}")
+    logger.info(f"✅ State Object DTO generado: {output_path}")
 
 
 if __name__ == "__main__":

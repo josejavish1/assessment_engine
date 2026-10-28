@@ -2163,6 +2163,7 @@ def execute_plan(
     policy = load_orchestrator_policy()
     timeouts = resolve_execution_timeouts(policy)
     max_attempts = int(policy.get("execution", {}).get("max_attempts_per_task", 3))
+    request_dir = request_dir.resolve()
     preflight_executor(request_dir, executor_command)
 
     branch_name = plan["branch_name"]
@@ -2485,7 +2486,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "execute":
-        request_dir = Path(args.request_dir)
+        request_dir = Path(args.request_dir).resolve()
         plan_path = request_dir / "plan.json"
         if not plan_path.exists():
             raise FileNotFoundError(f"No se encontró plan.json en {request_dir}")

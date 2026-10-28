@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from vertexai.agent_engines import AdkApp
 
 from assessment_engine.infrastructure.ai_client import run_agent
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
 # Defines the data structures governing the iterative, expanded chain-of-synthesis generation process.
 
@@ -397,8 +398,10 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
 
         print("   ➔ Ejecutando Fase 1: Estrategia y Enfoque...")
+        from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+        company = get_consultant_company_name()
         prompt_1 = (
-            f"Eres el Arquitecto Jefe Corporativo de NTT DATA redactando la estrategia TO-BE para {client_name}.\n\n"
+            f"Eres el Arquitecto Jefe Corporativo de {company} redactando la estrategia TO-BE para {client_name}.\n\n"
             f"REGLAS ESTRATÉGICAS DEL SECTOR ({industry_name}):\n"
             f"- Prioridades: {priorities}\n"
             f"- Marco de Riesgo: {risk_modeling}\n"
@@ -412,7 +415,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_1 = Agent(
             name="tobe_phase1",
-            model="gemini-2.5-pro",
+            model=get_model(ModelTier.REASONING),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=Phase1Strategy,
         )
@@ -440,7 +443,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_2 = Agent(
             name="tobe_phase2",
-            model="gemini-2.5-pro",
+            model=get_model(ModelTier.REASONING),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=Phase2ResilienceStrategy,
         )
@@ -464,7 +467,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_3 = Agent(
             name="tobe_phase3",
-            model="gemini-2.5-pro",
+            model=get_model(ModelTier.REASONING),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=Phase3Benefits,
         )
@@ -491,7 +494,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_4 = Agent(
             name="tobe_phase4",
-            model="gemini-2.5-pro",
+            model=get_model(ModelTier.REASONING),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=Phase4RisksAndAssumptions,
         )
@@ -511,7 +514,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_5 = Agent(
             name="tobe_phase5",
-            model="gemini-2.5-pro",
+            model=get_model(ModelTier.REASONING),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=HighLevelRoadmap,
         )
@@ -568,7 +571,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         # Execute a final validation and automated correction pass using a Verifier agent, ensuring the output strictly adheres to all specified technical and business constraints.
         print("\n🔍 --- INICIANDO VERIFICACIÓN DE CALIDAD POR IA (QUALITY GATE) ---")
         audit_prompt = (
-            f"Como Lead Enterprise Auditor de NTT DATA, audita el sumario de transformación TO-BE propuesto.\n\n"
+            f"Como Lead Enterprise Auditor de {company}, audita el sumario de transformación TO-BE propuesto.\n\n"
             f"REQUISITOS DEL SECTOR DEL CLIENTE ({industry_name}):\n"
             f"- Regulación: {primary_reg}\n"
             f"- Tolerancia de Soberanía: {sovereignty}\n"
@@ -581,7 +584,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         verifier_agent = Agent(
             name="tobe_verifier",
-            model="gemini-2.5-pro",
+            model=get_model(ModelTier.REASONING),
             instruction="Responde estrictamente con el JSON pedido.",
             output_schema=SynthesisAudit,
         )

@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import csv
 import html
 import json
@@ -56,7 +58,7 @@ class PayloadToASTBridge:
         self.locales_path = Path(locales_path)
 
         # Load brand profiles, using fallback values to ensure required assets are present.
-        self.company_name = "NTT DATA"
+        self.company_name = "Consultora"
         self.classification = "Confidencial"
         self.disclaimer = ""
         self.primary_color_rgb = [0, 114, 188]  # Primary corporate brand color code.
@@ -82,8 +84,9 @@ class PayloadToASTBridge:
             g = int(p_hex[2:4], 16)
             b = int(p_hex[4:6], 16)
             self.primary_color_rgb = [r, g, b]
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     def convert(
         self, blueprint_payload_path: str, approved_annex_path: str
@@ -107,14 +110,15 @@ class PayloadToASTBridge:
                 with open(client_intel_file, "r", encoding="utf-8-sig") as cif:
                     intel_data = json.load(cif)
             except Exception as e:
-                print(f"⚠️ Error loading client_intelligence in AST Bridge: {e}")
+                logger.info(f"⚠️ Error loading client_intelligence in AST Bridge: {e}")
 
         if annex_file.exists():
             try:
                 with open(annex_file, "r", encoding="utf-8-sig") as f:
                     json.load(f)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         tower_meta = blueprint_data.get("document_meta", {})
         meta_lang = tower_meta.get("language", "es").lower()
@@ -160,7 +164,7 @@ class PayloadToASTBridge:
                     exact_score = score_data.get("tower_score_exact")
                     exact_band = score_data.get("maturity_band_from_exact", {}).get("label")
             except Exception as e:
-                print(f"⚠️ Error loading scoring_output in AST Bridge: {e}")
+                logger.info(f"⚠️ Error loading scoring_output in AST Bridge: {e}")
 
         global_score = str(exact_score) if exact_score is not None else (
             blueprint_data.get("executive_summary", {})
@@ -664,7 +668,7 @@ class PayloadToASTBridge:
 
                     nodes.append(SpacerNode(points=20))
             except Exception as e:
-                print(f"⚠️ Error injecting systemic risk metrics in AST Bridge: {e}")
+                logger.info(f"⚠️ Error injecting systemic risk metrics in AST Bridge: {e}")
 
         # 4.2 Radar Chart
         nodes.append(
@@ -734,7 +738,7 @@ class PayloadToASTBridge:
                             nodes.append(ParagraphNode(text=source_p))
                             nodes.append(SpacerNode(points=10))
             except Exception as ex:
-                print(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
+                logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
         # 4.3 Score Justification Matrix (from CSV) with fallback mechanism
         csv_mat_path = modules_dir / "04_matriz_madurez.csv"
@@ -772,8 +776,9 @@ class PayloadToASTBridge:
                             "min": hc.get("fair_min_score", 0.0),
                             "max": hc.get("fair_max_score", 0.0),
                         }
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         # Read the CSV risks first so we have the data for the executive overview
         csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
@@ -806,8 +811,9 @@ class PayloadToASTBridge:
                             "ale": float(row_data[5]),
                         }
                         risks_data_list.append(r_item)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         # Generate introductory text by dynamically injecting the annualized loss exposure value.
         formatted_ale = (
@@ -1436,11 +1442,11 @@ class PayloadToASTBridge:
                             else:
                                 full_glossary[lang] = terms
                 except json.JSONDecodeError as ex:
-                    print(
+                    logger.info(
                         f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}"
                     )
                 except Exception as ex:
-                    print(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
+                    logger.info(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
             # Get localized glossary dictionary
             glossary = full_glossary.get(meta_lang, full_glossary.get("es", {}))
@@ -1470,7 +1476,7 @@ class PayloadToASTBridge:
             for term, desc in used_glossary.items():
                 long_form = desc.split("(")[0].strip()
                 if long_form.lower() not in text_corpus.lower():
-                    print(
+                    logger.info(
                         f"⚠️  [Glosario] Calidad: La sigla '{term}' se utiliza pero su definición extendida ('{long_form}') no aparece en el informe. Se recomienda expandirla en su primer uso."
                     )
 
@@ -1505,7 +1511,7 @@ class PayloadToASTBridge:
 
                 nodes.append(TableNode(rows=gloss_rows))
         except Exception as ex:
-            print(
+            logger.info(
                 f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}"
             )
 
@@ -1729,8 +1735,9 @@ class PayloadToASTBridge:
             try:
                 with open(tower_def_file, "r", encoding="utf-8-sig") as tdf:
                     t_def = json.load(tdf)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         # Iterate and build the dynamic bulleted list of pillars and their corresponding KPIs.
         pillars_list = t_def.get("pillars", []) if isinstance(t_def, dict) else []

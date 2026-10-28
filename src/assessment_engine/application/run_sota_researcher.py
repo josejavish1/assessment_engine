@@ -17,6 +17,7 @@ from google.genai import types
 from assessment_engine.domain.prompts.intelligence_prompts import (
     get_sota_researcher_prompt,
 )
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 from assessment_engine.infrastructure.runtime_paths import (
     resolve_client_intelligence_path,
 )
@@ -70,7 +71,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
     for attempt in range(1, max_attempts + 1):
         try:
             response = await client.aio.models.generate_content(
-                model="gemini-2.5-flash", contents=prompt, config=config
+                model=get_model(ModelTier.FAST), contents=prompt, config=config
             )
             break
         except Exception as e:

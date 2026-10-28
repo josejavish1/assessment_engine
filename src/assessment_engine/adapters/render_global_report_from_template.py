@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import json
 import re
 import sys
@@ -278,44 +280,46 @@ def render_cover(doc, payload: GlobalReportPayload) -> Any:
     disclaimer_p1.paragraph_format.space_after = Pt(
         2
     )  # Sets a minimum paragraph spacing for the legal disclaimer block to ensure readability and compliance with formatting standards.
+    from assessment_engine.infrastructure.config_loader import (
+        get_consultant_company_name,
+        get_localized_disclaimer,
+    )
+
+    company = get_consultant_company_name()
+    disclaimer_raw = get_localized_disclaimer("es")
+
+    disclaimer_p1 = doc.add_paragraph()
+    disclaimer_p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    disclaimer_p1.paragraph_format.space_after = Pt(2)
     disclaimer_title_run = disclaimer_p1.add_run("Aviso Legal y Confidencialidad: ")
     disclaimer_title_run.font.size = Pt(8)
     disclaimer_title_run.font.name = "Arial"
     disclaimer_title_run.font.color.rgb = RGBColor(127, 127, 127)
     disclaimer_title_run.bold = True
 
-    p1_text = "El presente documento constituye un informe de evaluación rápida (Fast Assessment) elaborado por NTT DATA basándose exclusivamente en la información, entrevistas y datos proporcionados por la organización, los cuales no han sido sometidos a una auditoría o verificación independiente por nuestra parte. Por tanto, NTT DATA no otorga ninguna garantía, expresa o implícita, sobre la exactitud, integridad o fiabilidad absoluta de dicha información base."
-    r1 = disclaimer_p1.add_run(p1_text)
-    r1.font.size = Pt(8)
-    r1.font.name = "Arial"
-    r1.font.color.rgb = RGBColor(127, 127, 127)
-
-    disclaimer_p2 = doc.add_paragraph()
-    disclaimer_p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    disclaimer_p2.paragraph_format.space_after = Pt(2)
-    p2_text = 'Las conclusiones, proyecciones (incluyendo el estado objetivo "TO-BE", los horizontes del roadmap y las estimaciones de impacto de negocio) y recomendaciones tienen un carácter puramente orientativo. Estas proyecciones constituyen estimaciones sujetas a incertidumbres operativas y de mercado, por lo que los resultados reales futuros podrían diferir de los planteados.'
-    r2 = disclaimer_p2.add_run(p2_text)
-    r2.font.size = Pt(8)
-    r2.font.name = "Arial"
-    r2.font.color.rgb = RGBColor(127, 127, 127)
-
-    disclaimer_p3 = doc.add_paragraph()
-    disclaimer_p3.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    disclaimer_p3.paragraph_format.space_after = Pt(2)
-    p3_text = "Este informe tiene un propósito estrictamente técnico y estratégico. Toda decisión ejecutiva, operativa o de inversión que la organización tome basándose en este informe es de su exclusiva responsabilidad. NTT DATA y sus representantes no asumen obligación legal ni responsabilidad alguna por posibles daños directos, indirectos, especiales o consecuentes derivados del uso o dependencia de la información aquí contenida sin una validación posterior exhaustiva."
-    r3 = disclaimer_p3.add_run(p3_text)
-    r3.font.size = Pt(8)
-    r3.font.name = "Arial"
-    r3.font.color.rgb = RGBColor(127, 127, 127)
-
-    disclaimer_p4 = doc.add_paragraph()
-    disclaimer_p4.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    disclaimer_p4.paragraph_format.space_after = Pt(0)
-    p4_text = "Finalmente, este documento y la información que contiene son confidenciales. Este material no podrá ser distribuido, reproducido, divulgado ni utilizado para ningún otro propósito, total o parcialmente, sin el consentimiento previo por escrito de NTT DATA."
-    r4 = disclaimer_p4.add_run(p4_text)
-    r4.font.size = Pt(8)
-    r4.font.name = "Arial"
-    r4.font.color.rgb = RGBColor(127, 127, 127)
+    if disclaimer_raw:
+        paragraphs = [p.strip() for p in disclaimer_raw.split("\n\n") if p.strip()]
+        for idx, p_text in enumerate(paragraphs):
+            p_text_fmt = p_text.replace("NTT DATA", company)
+            if idx == 0:
+                r = disclaimer_p1.add_run(p_text_fmt)
+            else:
+                p_next = doc.add_paragraph()
+                p_next.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                p_next.paragraph_format.space_after = Pt(0) if idx == len(paragraphs) - 1 else Pt(2)
+                r = p_next.add_run(p_text_fmt)
+            r.font.size = Pt(8)
+            r.font.name = "Arial"
+            r.font.color.rgb = RGBColor(127, 127, 127)
+    else:
+        p1_text = (
+            f"El presente documento constituye un informe de evaluación rápida (Fast Assessment) elaborado por {company} "
+            f"basándose exclusivamente en la información, entrevistas y datos proporcionados por la organización."
+        )
+        r1 = disclaimer_p1.add_run(p1_text)
+        r1.font.size = Pt(8)
+        r1.font.name = "Arial"
+        r1.font.color.rgb = RGBColor(127, 127, 127)
 
     doc.add_page_break()
 
@@ -378,8 +382,9 @@ def render_executive_summary(
                     1,
                 )
             )
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # Applies specific styling to the score display: formats as '[X] / 5', sets a #0072BC background fill, and uses a 36pt white font.
     set_cell_text(
@@ -1159,7 +1164,7 @@ def load_payload(payload_path: Path) -> GlobalReportPayload:
     try:
         return GlobalReportPayload.model_validate(payload_dict)
     except ValidationError as e:
-        print(
+        logger.info(
             f"⚠️ Warning: Error de validación de Pydantic en {payload_path} (procediendo con fallback model_construct robustecido): {e}"
         )
         from assessment_engine.domain.schemas.global_report import (
@@ -1455,7 +1460,7 @@ def render_global_report(
         )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))
-    print(f"Informe Global CIO-READY renderizado: {output_path}")
+    logger.info(f"Informe Global CIO-READY renderizado: {output_path}")
     return output_path
 
 

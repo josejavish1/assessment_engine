@@ -1,11 +1,14 @@
 import json
+import logging
 import sqlite3
 import time
 import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional, cast
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
+
+logger = logging.getLogger("assessment_engine.infrastructure.epistemic_graph")
 
 
 class GraphEvent(BaseModel):
@@ -97,8 +100,9 @@ class EpistemicGraph:
                     event_data = json.loads(line)
                     event = GraphEvent(**event_data)
                     self._materialize(event)
-                except Exception:
-                    continue  # To ensure system robustness during ledger reconstruction, corrupted or unparseable event lines are logged and skipped, preventing a full system halt due to isolated data integrity issues.
+                except (json.JSONDecodeError, TypeError, ValidationError) as ex:
+                    logger.debug(f"[EpistemicGraph] Evento corrupto en ledger ignorado: {ex}")
+                    continue
 
     def _materialize(self, event: GraphEvent) -> None:
         """Applies a single event to the materialized view, updating the queryable state."""

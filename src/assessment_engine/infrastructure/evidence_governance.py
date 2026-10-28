@@ -110,7 +110,7 @@ class EvidenceSnapshotter:
                     # Perform an HTTP HEAD request to resolve the final destination of the URL without downloading the entire response body. This is an efficient method for checking redirects and headers.
                     r = await client.head(url)
                     final_human_url = str(r.url)
-                    print(f"      🔗 [REDIRECT] URL real detectada: {final_human_url}")
+                    logger.info(f"      🔗 [REDIRECT] URL real detectada: {final_human_url}")
             except Exception as e:
                 logger.warning(f"No se pudo resolver redirect para {url}: {e}")
 
@@ -130,7 +130,7 @@ class EvidenceSnapshotter:
                 async with httpx.AsyncClient(
                     timeout=20.0, follow_redirects=True, headers=self.headers
                 ) as client:
-                    print(f"      📥 [BINARY] Descargando documento: {final_human_url}")
+                    logger.info(f"      📥 [BINARY] Descargando documento: {final_human_url}")
                     r_bin = await client.get(final_human_url)
                     if r_bin.status_code == 200:
                         content_bytes = r_bin.content
@@ -192,7 +192,7 @@ class EvidenceSnapshotter:
                 )
                 page = await context.new_page()
 
-                print(f"      🌐 [BROWSER] Capturando fuente: {final_human_url}")
+                logger.info(f"      🌐 [BROWSER] Capturando fuente: {final_human_url}")
                 response = await page.goto(
                     final_human_url,
                     wait_until="domcontentloaded",

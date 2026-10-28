@@ -17,6 +17,7 @@ from assessment_engine.domain.prompts.intelligence_prompts import (
     get_tower_refiner_prompt,
 )
 from assessment_engine.infrastructure.ai_client import run_agent
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 from assessment_engine.infrastructure.governance import (
     SecurityIntegrityViolation,
 )
@@ -39,9 +40,11 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     if intel_path.exists():
         grounding_data = load_json(intel_path)
 
+    from assessment_engine.infrastructure.config_loader import resolve_model_for_role
+    model_name = resolve_model_for_role("global_refiner_strict", default_model="gemini-2.5-pro")
     agent = Agent(
         name="executive_refiner",
-        model="gemini-2.5-pro",
+        model=model_name,
         instruction="Eres un Partner de una firma de consultoría estratégica. Tu tono es frío, profesional e impecable. Devuelve ÚNICAMENTE JSON.",
     )
     app = AdkApp(agent=agent)

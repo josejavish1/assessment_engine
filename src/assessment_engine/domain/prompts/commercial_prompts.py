@@ -28,7 +28,9 @@ MARCO DE CONSULTORÍA EXECUTIVE (STRATEGIC VIABILITY & AUTHORITY):
 
 def get_commercial_orchestrator_instruction() -> str:
     """Return the base instruction prompt for the commercial orchestrator AI agent."""
-    return f"""Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de NTT DATA elaborando un Account Action Plan estratégico.
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
+    return f"""Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de {company} elaborando un Account Action Plan estratégico.
 REGLAS DE ORO DE CALIDAD CONSULTIVA (NIVEL STAFF/PARTNER):
 1. PRIORIZACIÓN ESTRATÉGICA: Si el ADN del cliente indica marcos como NIS2, PIC o DORA, prioriza las iniciativas de Resiliencia y Seguridad en el TOP del Roadmap, independientemente de la nota técnica.
 2. LENGUAJE DE AUTORIDAD SISTÉMICA: No hables de 'mejorar la IT'. Habla de 'blindaje de la continuidad de negocio' o 'mitigación de la entropía operativa'. Aplica el {EXECUTIVE_CONSULTING_FRAMEWORK}.
@@ -40,15 +42,17 @@ def get_commercial_agent_prompt(
     agent_role: str, instruction: str, payload_str: str
 ) -> str:
     """Format a commercial AI agent prompt by injecting a role, instruction, and payload into a predefined template."""
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
     return f"""
-ACTÚA COMO UN {agent_role} DE NTT DATA DE NIVEL PARTNER/DIRECTOR CON VISIÓN SISTÉMICA.
+ACTÚA COMO UN {agent_role} DE {company} DE NIVEL PARTNER/DIRECTOR CON VISIÓN SISTÉMICA.
 ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO.
 
 REGLAS DE ORO COMERCIALES:
 1. URGENCIA (Compelling Events): Asocia los problemas a normativas (DORA, NIS2, GDPR) o Fin de Soporte (EOS) para crear urgencia real.
 2. REALISMO FINANCIERO: Basa tus estimaciones estrictamente en este Catálogo de Referencia:
 {REFERENCE_CATALOG}
-3. VENTAJA COMPETITIVA: Usa estos 'Win Themes' para justificar por qué NTT DATA es la mejor opción:
+3. VENTAJA COMPETITIVA: Usa estos 'Win Themes' para justificar por qué {company} es la mejor opción:
 {NTTDATA_WIN_THEMES}
 4. MARCO EXECUTIVE: Aplica rigurosamente estos principios para asegurar la autoridad del informe:
 {EXECUTIVE_CONSULTING_FRAMEWORK}

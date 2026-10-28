@@ -101,19 +101,24 @@ class AdversarialConsensusEngine:
                 logger.warning(f"Adversarial Pydantic API error: {e}. Retrying in {delay:.2f}s... ({attempt+1}/{retries})")
                 await asyncio.sleep(delay)
 
-    async def process_payload(self, tower_id: str, findings_payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_payload(self, tower_id: str, findings_payload: Dict[str, Any], client_name: Optional[str] = None) -> Dict[str, Any]:
         """Iterates through all critical findings and subjects them to adversarial consensus."""
-        client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
-        log_dir = Path(f"working/{client_id}/{tower_id}")
-        log_dir.mkdir(parents=True, exist_ok=True)
-        transcript_file = log_dir / "adversarial_consensus_transcript.log"
+        if not client_name:
+            client_name = findings_payload.get("document_meta", {}).get("client_name")
+        if not client_name:
+            client_name = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+
+        from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
+        case_dir = resolve_case_dir(client_name, tower_id)
+        case_dir.mkdir(parents=True, exist_ok=True)
+        transcript_file = case_dir / "adversarial_consensus_transcript.log"
         
         # Open in write mode to clear previous runs
         with open(transcript_file, "w", encoding="utf-8") as f:
             f.write(f"=== TRANSCRITO DE CONSENSO ADVERSARIAL GROUNDED (TORRE {tower_id}) ===\n\n")
 
         # Load the raw findings.json to extract the qualitative elicited FAIR scores (Gap 1)
-        findings_path = Path(f"working/{client_id}/{tower_id}/findings.json")
+        findings_path = case_dir / "findings.json"
         elicited_scores_map = {}
         if findings_path.exists():
             try:

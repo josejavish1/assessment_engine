@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 import sys
 from typing import Any
 
@@ -179,6 +180,7 @@ def get_default_blueprint_payload(
             "client_name": client_name,
             "tower_name": tower_name,
             "tower_code": tower_id,
+            "tower_id": tower_id,
             "financial_tier": intel_data.get("financial_tier", "Tier 2"),
             "transformation_horizon": intel_data.get(
                 "transformation_horizon", "General"
@@ -625,7 +627,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         from assessment_engine.application.tools.adversarial_consensus_engine import AdversarialConsensusEngine
         
         consensus_engine = AdversarialConsensusEngine(env={})
-        blueprint_payload = await consensus_engine.process_payload(tower_id, blueprint_payload)
+        blueprint_payload = await consensus_engine.process_payload(tower_id, blueprint_payload, client_name=client_name)
     except Exception as consensus_err:
         print(f"⚠️ Error ejecutando Consenso Adversarial (fallback to standard modeling): {consensus_err}")
 
@@ -822,11 +824,13 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             get_bid_manager_prompt,
         )
         from assessment_engine.domain.schemas.blueprint import ProjectCharterEnrichment
+        from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+        company = get_consultant_company_name()
 
         bid_manager_agent = Agent(
             name="bid_manager_architect",
             model=model_name,
-            instruction="Eres el Bid Manager de NTT DATA. Devuelve estrictamente el JSON pedido.",
+            instruction=f"Eres el Bid Manager de {company}. Devuelve estrictamente el JSON pedido.",
             output_schema=ProjectCharterEnrichment,
         )
         app_bid_manager = AdkApp(agent=bid_manager_agent)
@@ -1049,10 +1053,13 @@ def main(argv: list[str] | None = None) -> None:
             "Uso: python -m assessment_engine.application.run_tower_blueprint_engine <client> <tower_id>"
         )
         sys.exit(1)
+    client_arg = (argv if argv is not None else sys.argv)[1]
+    tower_arg = (argv if argv is not None else sys.argv)[2]
+    os.environ["ASSESSMENT_CLIENT_ID"] = client_arg
     asyncio.run(
         run_tower_blueprint(
-            (argv if argv is not None else sys.argv)[1],
-            (argv if argv is not None else sys.argv)[2],
+            client_arg,
+            tower_arg,
         )
     )
 

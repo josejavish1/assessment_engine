@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import json
 import sys
 from pathlib import Path
@@ -11,7 +13,7 @@ def generate_heatmap(payload_path: str, output_image_path: str):
     payload_path_obj = Path(payload_path)
     output_image_path_obj = Path(output_image_path)
 
-    print(f"📊 Generando Mapa de Calor FAIR para: {payload_path_obj}")
+    logger.info(f"📊 Generando Mapa de Calor FAIR para: {payload_path_obj}")
 
     # Ingest and structure risk data from the request payload.
     risks = []
@@ -32,7 +34,7 @@ def generate_heatmap(payload_path: str, output_image_path: str):
                 risks.append({"id": f"RVS{r_idx:02d}", "tef": tef, "lm": lm})
                 r_idx += 1
 
-    print(f"   ├─ Detectados {len(risks)} riesgos activos en el payload.")
+    logger.info(f"   ├─ Detectados {len(risks)} riesgos activos en el payload.")
 
     # Group risks by their corresponding matrix cell, defined by Threat Event Frequency and Loss Magnitude coordinates on a 1-5 scale.
     # In accordance with the FAIR framework, the Y-axis (Threat Event Frequency) is oriented with its origin at the bottom (1) and ascends to the top (5).
@@ -157,11 +159,11 @@ def generate_heatmap(payload_path: str, output_image_path: str):
     plt.savefig(output_image_path_obj, bbox_inches="tight", dpi=300)
     plt.close()
 
-    print(f"🎉 ¡Mapa de calor FAIR guardado con éxito en: {output_image_path_obj}!")
+    logger.info(f"🎉 ¡Mapa de calor FAIR guardado con éxito en: {output_image_path_obj}!")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Uso: python generate_fair_heatmap.py <payload_path> <output_image_path>")
+        logger.info("Uso: python generate_fair_heatmap.py <payload_path> <output_image_path>")
         sys.exit(1)
     generate_heatmap(sys.argv[1], sys.argv[2])

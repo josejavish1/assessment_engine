@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import base64
 import datetime
 import json
@@ -167,7 +169,7 @@ def generate_mermaid_gantt(payload_path: Path, output_png_path: Path) -> bool:
                 f.write(response.content)
             return True
         else:
-            print(
+            logger.info(
                 f"Failed to generate Mermaid Gantt via Kroki: HTTP {response.status_code} - {response.text[:100]}"
             )
             # A fallback mechanism is implemented for diagram rendering. If the primary service endpoint (Kroki) fails, the system redirects rendering requests to a secondary, public endpoint (mermaid.ink) to maintain service availability.
@@ -183,5 +185,5 @@ def generate_mermaid_gantt(payload_path: Path, output_png_path: Path) -> bool:
             return False
 
     except Exception as e:
-        print(f"Error generating Mermaid Gantt: {e}")
+        logger.info(f"Error generating Mermaid Gantt: {e}")
         return False

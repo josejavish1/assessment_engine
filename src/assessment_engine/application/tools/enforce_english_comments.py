@@ -8,11 +8,14 @@ import argparse
 import ast
 import asyncio
 import io
+import logging
 import re
 import sys
 import tokenize
+from dataclasses import dataclass, field
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
 from pydantic import BaseModel, Field
 
 # Ensure project source is in path to allow absolute imports
@@ -151,8 +154,9 @@ def load_sobriety_policy() -> str:
             content = agents_path.read_text(encoding="utf-8")
             # Extract relevant sections or just return the whole file for context
             return content[:3000]  # Return the first 3000 chars for core context
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
     return (
         "All code comments, module descriptions, class/method docstrings and variables "
         "must be written in formal, aseptic, precise technical English. "

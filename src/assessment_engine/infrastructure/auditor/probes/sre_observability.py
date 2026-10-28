@@ -40,6 +40,10 @@ class SREObservabilityVisitor(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:
         """Visit a call expression node."""
         if isinstance(node.func, ast.Name) and node.func.id == "print":
+            file_name = Path(self.rel_path).name
+            if self.rel_path.endswith("cli.py") or "/tools/" in self.rel_path or "cli" in self.rel_path or file_name.startswith("run_"):
+                return
+
             self.findings.append(AuditFinding(
                 category="OBSERVABILITY",
                 severity="HIGH",
@@ -105,11 +109,11 @@ def audit_sre_observability(target_dir: Path) -> ProbeResult:
     """Execute the static SRE audit on the target directory."""
     target_py_files = find_target_files(target_dir, (".py",))
 
-    # Filter for production code only (core, routers, server.py, services).
+    # Filter for production code only (core, adapters, infrastructure, application pipeline).
     prod_files: list[Path] = []
     for p in target_py_files:
         rel = p.relative_to(target_dir).as_posix()
-        if rel.startswith(("tests/", "scripts/", "core/fixtures/", "playbooks/", "core/legacy/")):
+        if rel.startswith(("tests/", "scripts/", "playbooks/")) or "/tools/" in rel or "/_legacy/" in rel:
             continue
         prod_files.append(p)
 

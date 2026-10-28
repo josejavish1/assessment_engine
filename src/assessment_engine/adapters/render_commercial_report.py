@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import json
 import re
 import sys
@@ -39,6 +41,8 @@ from assessment_engine.infrastructure.docx_render_utils import (
 )
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+COMPANY = get_consultant_company_name()
 
 
 def clean_commercial_text(text) -> Any:
@@ -169,7 +173,7 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
     disclaimer_p = doc.add_paragraph()
     disclaimer_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     disclaimer_p.paragraph_format.space_before = Pt(0)
-    p1_text = "El presente documento es estrictamente confidencial y de uso exclusivo interno para los equipos comerciales, de preventa y de entrega de NTT DATA. Contiene estimaciones de negocio, argumentarios de venta competitivos, estrategias de cuenta (Go-To-Market) y evaluaciones de riesgo de clientes. Bajo ninguna circunstancia este documento, ni parcial ni totalmente, debe ser compartido con el cliente, partners, proveedores o cualquier tercero."
+    p1_text = f"El presente documento es estrictamente confidencial y de uso exclusivo interno para los equipos comerciales, de preventa y de entrega de {COMPANY}. Contiene estimaciones de negocio, argumentarios de venta competitivos, estrategias de cuenta (Go-To-Market) y evaluaciones de riesgo de clientes. Bajo ninguna circunstancia este documento, ni parcial ni totalmente, debe ser compartido con el cliente, partners, proveedores o cualquier tercero."
     r1 = disclaimer_p.add_run(p1_text)
     r1.font.size = Pt(8)
     r1.font.name = "Arial"
@@ -230,7 +234,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
     flash_table.columns[1].width = Inches(4.5)
 
     set_cell_text(
-        flash_table.rows[0].cells[0], "TAM Estimado NTT DATA:", bold=True, font_size=11
+        flash_table.rows[0].cells[0], f"TAM Estimado {COMPANY}:", bold=True, font_size=11
     )
     shade_cell(flash_table.rows[0].cells[0], "0072BC")
     set_cell_text(
@@ -290,7 +294,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
     add_spacer(doc, 10)
 
     p_how = doc.add_paragraph()
-    r_how = p_how.add_run("La Estrategia de NTT DATA (How we Win):")
+    r_how = p_how.add_run(f"La Estrategia de {COMPANY} (How we Win):")
     r_how.bold = True
     r_how.font.color.rgb = BASE_TEXT_COLOR
     r_how.font.size = Pt(11)
@@ -458,7 +462,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
         shade_cell(table.rows[1].cells[1], "F2F2F2")
         set_cell_text(
             table.rows[2].cells[0],
-            f"TCV Estimado NTT DATA:\n{opp.estimated_tcv}",
+            f"TCV Estimado {COMPANY}:\n{opp.estimated_tcv}",
             font_size=10.5,
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )
@@ -483,7 +487,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
 
         p2 = obj_cell.add_paragraph()
         p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        r2 = p2.add_run("✅ Respuesta NTT DATA (Objection Handling): ")
+        r2 = p2.add_run(f"✅ Respuesta {COMPANY} (Objection Handling): ")
         r2.bold = False
         r2.font.size = Pt(10.5)
         r2.font.color.rgb = RGBColor(39, 78, 19)
@@ -658,7 +662,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             )
             set_cell_text(
                 rtable.rows[0].cells[1],
-                "Estrategia de Mitigación NTT DATA",
+                f"Estrategia de Mitigación {COMPANY}",
                 bold=True,
                 font_size=10.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -683,7 +687,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
                 shade_cell(row.cells[0], "F2F2F2")
                 shade_cell(row.cells[1], "F2F2F2")
             add_spacer(doc, 10)
-        add_heading_paragraph(doc, "7. Por qué NTT DATA", level=3)
+        add_heading_paragraph(doc, f"7. Por qué {COMPANY}", level=3)
         why = prop.why_ntt_data
         add_smart_bullet_list(
             doc,
@@ -846,7 +850,7 @@ def main(argv: list[str] | None = None) -> None:
         template_path=template_path,
         output_path=output_path,
     )
-    print(f"Account Action Plan renderizado: {output_path}")
+    logger.info(f"Account Action Plan renderizado: {output_path}")
 
 
 if __name__ == "__main__":

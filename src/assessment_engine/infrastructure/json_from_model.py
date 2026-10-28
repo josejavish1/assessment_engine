@@ -39,7 +39,7 @@ def parse_json_from_text(text: str) -> Any:
     cleaned = match.group(1).strip() if match else raw
     try:
         return json.loads(cleaned)
-    except Exception:
+    except (json.JSONDecodeError, UnicodeDecodeError):
         pass
     start = -1
     for i, c in enumerate(cleaned):
@@ -61,7 +61,7 @@ def parse_json_from_text(text: str) -> Any:
     if end != -1:
         try:
             return json.loads(cleaned[start : end + 1])
-        except Exception:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             pass
     last_end = max(cleaned.rfind("}"), cleaned.rfind("]"))
     if last_end == -1 or last_end <= start:

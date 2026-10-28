@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import json
 import sys
 from pathlib import Path
@@ -267,14 +269,14 @@ def render_asis_annex(payload_path: str, output_path: str):
             Word template or the supplementary annex payload, which could be due to
             file corruption or parsing errors.
     """
-    print(f"📄 Iniciando Renderizado de Anexo Técnico AS-IS para: {payload_path}")
+    logger.info(f"📄 Iniciando Renderizado de Anexo Técnico AS-IS para: {payload_path}")
 
     # Dynamically loads brand profiles and corporate glossaries from external configuration files to support document standardization.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
 
     brand = load_brand_profile()
 
-    company_name = brand.get("company_name", "NTT DATA")
+    company_name = brand.get("company_name", "Consultora")
     classification = brand.get("default_classification", "Confidencial")
     disclaimer = brand.get("disclaimer_text", "")
 
@@ -298,10 +300,10 @@ def render_asis_annex(payload_path: str, output_path: str):
     template_path = resolve_tower_annex_template_path()
     try:
         doc = Document(str(template_path))
-        print("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
+        logger.info("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
     except Exception:
         doc = Document()
-        print("   ⚠️ No se encontró plantilla. Inicializando documento en blanco.")
+        logger.info("   ⚠️ No se encontró plantilla. Inicializando documento en blanco.")
 
     # Clears all placeholder paragraphs and tables from the document to provide a clean state for programmatic content injection.
     # This sanitization method preserves embedded styles from the template while preventing format inheritance from placeholder content.
@@ -344,11 +346,11 @@ def render_asis_annex(payload_path: str, output_path: str):
         with open(annex_path, "r", encoding="utf-8-sig") as af:
             try:
                 annex_data = json.load(af)
-                print(
+                logger.info(
                     f"   ├─ Carga exitosa de Síntesis del Anexo Ejecutivo para {tower_id}."
                 )
             except Exception as e:
-                print(f"   ⚠️ Error cargando síntesis: {e}")
+                logger.info(f"   ⚠️ Error cargando síntesis: {e}")
 
     exec_sum = annex_data.get("executive_summary", {})
     score_profile = annex_data.get("pillar_score_profile", {})
@@ -736,8 +738,9 @@ def render_asis_annex(payload_path: str, output_path: str):
         #
         try:
             risks.sort(key=lambda x: x.get("fair_ale_score", 0.0), reverse=True)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         # Renders the data table and programmatically omits the 'Evaluated Capacity' column from the final output.
         table = doc.add_table(rows=1, cols=3)
@@ -1062,12 +1065,12 @@ def render_asis_annex(payload_path: str, output_path: str):
     output_path_obj = Path(output_path)
     output_path_obj.parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
-    print(f"🎉 ¡Anexo Técnico AS-IS COMPLETO generado con éxito en: {output_path}!")
+    logger.info(f"🎉 ¡Anexo Técnico AS-IS COMPLETO generado con éxito en: {output_path}!")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print(
+        logger.info(
             "Uso: python render_togaf_asis_annex.py <blueprint_payload.json> <output_annex.docx>"
         )
         sys.exit(1)

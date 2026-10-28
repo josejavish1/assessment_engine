@@ -120,10 +120,6 @@ def save_versioned_payload(path: Path, payload: BaseModel, artifact_type: str) -
         tmp_path.write_text(content, encoding="utf-8")
         tmp_path.replace(path)
     finally:
-        if tmp_path.exists():
-            try:
-                tmp_path.unlink()
-            except Exception:
-                pass
+        tmp_path.unlink(missing_ok=True)
                 
     logger.info(f"✅ Artefacto {artifact_type} guardado en: {path}")

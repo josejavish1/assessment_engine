@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Provides core business logic and utility functions for the Assessment Engine pipeline."""
 
 import json
@@ -94,13 +96,13 @@ def main(argv=None) -> None:
                 )
 
     if errors:
-        print("VALIDATION_STATUS=FAIL")
+        logger.info("VALIDATION_STATUS=FAIL")
         for err in errors:
-            print(err)
+            logger.info(err)
         raise SystemExit(1)
 
-    print("VALIDATION_STATUS=PASS")
-    print(f"Seccion '{section}' validada correctamente.")
+    logger.info("VALIDATION_STATUS=PASS")
+    logger.info(f"Seccion '{section}' validada correctamente.")
 
 
 if __name__ == "__main__":

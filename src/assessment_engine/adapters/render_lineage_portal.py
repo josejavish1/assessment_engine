@@ -159,7 +159,7 @@ def main(argv: list[str] | None = None) -> int:
     """
     args = argv if argv is not None else sys.argv
     if len(args) < 2:
-        print("Uso: python -m adapters.render_lineage_portal <client_name>")
+        logger.info("Uso: python -m adapters.render_lineage_portal <client_name>")
         return 1
 
     client_name = args[1]

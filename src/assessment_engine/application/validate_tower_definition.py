@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Defines the validation procedures and supporting utilities for tower definition schemas used in the Assessment Engine pipeline."""
 
 import argparse
@@ -198,21 +200,21 @@ def main() -> None:
     definition = load_json(path)
     errors, warnings = validate_tower_definition(definition)
 
-    print(f"Archivo: {path}")
+    logger.info(f"Archivo: {path}")
     if errors:
-        print("STATUS: ERROR")
+        logger.info("STATUS: ERROR")
         for item in errors:
-            print(f"ERROR: {item}")
+            logger.info(f"ERROR: {item}")
         for item in warnings:
-            print(f"WARNING: {item}")
+            logger.info(f"WARNING: {item}")
         raise SystemExit(1)
 
     if warnings:
-        print("STATUS: WARNINGS")
+        logger.info("STATUS: WARNINGS")
         for item in warnings:
-            print(f"WARNING: {item}")
+            logger.info(f"WARNING: {item}")
     else:
-        print("STATUS: OK")
+        logger.info("STATUS: OK")
 
 
 if __name__ == "__main__":

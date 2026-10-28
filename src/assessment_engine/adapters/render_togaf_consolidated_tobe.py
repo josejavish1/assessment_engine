@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import json
 import os
 import sys
@@ -369,10 +371,10 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
             mandatory keys that are essential for the rendering process (e.g.,
             'tower_name', 'score', 'pillars' in a domain definition).
     """
-    print("🚀 Cargando AST de documento TO-BE para Renderizado...")
+    logger.info("🚀 Cargando AST de documento TO-BE para Renderizado...")
 
     if not os.path.exists(ast_json_path):
-        print(f"❌ Error: {ast_json_path} no existe.")
+        logger.info(f"❌ Error: {ast_json_path} no existe.")
         return
 
     with open(ast_json_path, "r", encoding="utf-8-sig") as f:
@@ -404,11 +406,11 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
         with open(client_intel_path, "r", encoding="utf-8-sig") as cif:
             try:
                 intel = json.load(cif)
-                print(
+                logger.info(
                     "   ├─ Carga exitosa de Inteligencia Estratégica del Cliente en Nivel Consolidado."
                 )
             except Exception as e:
-                print(f"   ⚠️ Error cargando inteligencia: {e}")
+                logger.info(f"   ⚠️ Error cargando inteligencia: {e}")
 
     business_context = intel.get("business_context", {})
     ceo_agenda_raw = business_context.get("ceo_agenda", {}).get(
@@ -421,10 +423,10 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     template_path = ROOT / "templates" / "docx" / "template_tobe_consolidated.docx"
     if template_path.exists():
         doc = Document(str(template_path))
-        print("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
+        logger.info("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
     else:
         doc = Document()
-        print("   ⚠️ Plantilla no encontrada. Generando con estilos por defecto.")
+        logger.info("   ⚠️ Plantilla no encontrada. Generando con estilos por defecto.")
 
     # Post-processing step: Removes all placeholder elements from the document to produce the final output.
     for p in list(doc.paragraphs):
@@ -470,7 +472,7 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
     run_client.font.bold = True
 
     # Applies internationalization (i18n) and branding transformations based on the loaded configuration profile.
-    company = brand.get("company_name", "NTT DATA")
+    company = brand.get("company_name", "Consultora")
     classification = brand.get("default_classification", "Confidencial")
 
     # Retrieves the document version identifier from the main configuration.
@@ -1101,12 +1103,12 @@ def render_consolidated_tobe(ast_json_path: str, output_path: str):
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
-    print(f"🎉 ¡Documento Global TO-BE COMPLETO generado con éxito en: {output_path}!")
+    logger.info(f"🎉 ¡Documento Global TO-BE COMPLETO generado con éxito en: {output_path}!")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print(
+        logger.info(
             "Uso: python render_togaf_consolidated_tobe.py <working_dir/tobe_master_ast.json> <output_doc.docx>"
         )
         sys.exit(1)

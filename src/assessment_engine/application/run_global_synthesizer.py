@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import asyncio
 import glob
 import json
@@ -10,6 +12,7 @@ from pydantic import BaseModel, Field
 from vertexai.agent_engines import AdkApp
 
 from assessment_engine.infrastructure.ai_client import run_agent
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
 
 class PriorityAction(BaseModel):
@@ -155,11 +158,15 @@ async def synthesize_global_asis(working_dir: str):
         try:
             intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
             intel_str = json.dumps(intel_data.get("business_context", {}), indent=2)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
 
     prompt = (
-        f"Eres el Socio Director de Arquitectura Empresarial de NTT DATA.\n"
+        f"Eres el Socio Director de Arquitectura Empresarial de {company}.\n"
         f"Tu misión es redactar el Resumen Ejecutivo Global (AS-IS) para el Comité de Dirección de {client_name}.\n\n"
         f"ANTECEDENTES DEL CLIENTE:\n{intel_str}\n\n"
         f"RESÚMENES TÉCNICOS POR TORRE:\n{''.join(tower_summaries)}\n\n"
@@ -177,8 +184,8 @@ async def synthesize_global_asis(working_dir: str):
     try:
         synthesizer_agent = Agent(
             name="global_executive_synthesizer",
-            model="gemini-2.5-pro",
-            instruction="Eres un Socio Director de NTT DATA experto en redacción ejecutiva. Devuelve estrictamente el JSON pedido.",
+            model=get_model(ModelTier.REASONING),
+            instruction=f"Eres un Socio Director de {company} experto en redacción ejecutiva. Devuelve estrictamente el JSON pedido.",
             output_schema=GlobalExecutiveSummary,
         )
         app_synthesizer = AdkApp(agent=synthesizer_agent)

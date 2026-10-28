@@ -1,8 +1,11 @@
 import glob
 import json
+import logging
 import os
 import sys
 from pathlib import Path
+
+logger = logging.getLogger("assessment_engine.adapters.tobe_document_builder")
 
 
 def build_master_ast(working_dir: str, output_path: str):
@@ -40,7 +43,7 @@ def build_master_ast(working_dir: str, output_path: str):
         IsADirectoryError: If `output_path` specifies an existing directory
             instead of a file.
     """
-    print(f"📦 Iniciando Compilación del AST de Documento TO-BE en: {working_dir}")
+    logger.info(f"📦 Iniciando Compilación del AST de Documento TO-BE en: {working_dir}")
 
     # Initiates the data aggregation process by fetching all tower-specific payloads. Each tower represents a distinct vertical or domain, forming the foundational data layer of the final Abstract Syntax Tree (AST).
     payloads = []
@@ -51,14 +54,14 @@ def build_master_ast(working_dir: str, output_path: str):
             try:
                 data = json.load(f)
                 payloads.append(data)
-                print(
+                logger.info(
                     f"   ├─ Cargada torre: {data.get('document_meta', {}).get('tower_name', 'TXX')}"
                 )
             except Exception as e:
-                print(f"   ⚠️ Error leyendo payload {file_path}: {e}")
+                logger.warning(f"   ⚠️ Error leyendo payload {file_path}: {e}")
 
     if not payloads:
-        print("❌ Error: No se encontraron payloads de torres para compilar el AST.")
+        logger.error("❌ Error: No se encontraron payloads de torres para compilar el AST.")
         return
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
@@ -72,11 +75,11 @@ def build_master_ast(working_dir: str, output_path: str):
         with open(global_summary_path, "r", encoding="utf-8-sig") as f:
             try:
                 global_summary = json.load(f)
-                print("   ├─ Cargado Sumario Ejecutivo Global")
+                logger.info("   ├─ Cargado Sumario Ejecutivo Global")
             except Exception as e:
-                print(f"   ⚠️ Error leyendo sumario ejecutivo: {e}")
+                logger.warning(f"   ⚠️ Error leyendo sumario ejecutivo: {e}")
     else:
-        print(
+        logger.warning(
             "   ⚠️ Sumario ejecutivo global no encontrado. El AST se generará sin resumen general."
         )
 
@@ -141,11 +144,11 @@ def build_master_ast(working_dir: str, output_path: str):
     out_path.write_text(
         json.dumps(master_ast, indent=4, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ AST de Documento TO-BE compilado con éxito en: {out_path}")
+    logger.info(f"✅ AST de Documento TO-BE compilado con éxito en: {out_path}")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Uso: python tobe_document_builder.py <working_dir> <output_ast.json>")
+        logger.info("Uso: python tobe_document_builder.py <working_dir> <output_ast.json>")
         sys.exit(1)
     build_master_ast(sys.argv[1], sys.argv[2])

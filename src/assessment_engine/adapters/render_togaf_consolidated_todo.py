@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import glob
 import json
 import os
@@ -146,7 +148,7 @@ def render_consolidated_todo(working_dir: str, output_path: str):
             payloads.append(json.load(f))
 
     if not payloads:
-        print("No payloads found for consolidated TO-DO.")
+        logger.info("No payloads found for consolidated TO-DO.")
         return
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
@@ -208,7 +210,7 @@ def render_consolidated_todo(working_dir: str, output_path: str):
         total_capex += extract_number(capex_text)
 
     # Generate the cover page for the consolidated report.
-    company = brand.get("company_name", "NTT DATA")
+    company = brand.get("company_name", "Consultora")
     classification = brand.get("default_classification", "Confidencial")
     doc.add_heading(f"Roadmap Estratégico y Financiero TO-DO: {client_name}", 0)
     doc.add_paragraph(
@@ -314,8 +316,9 @@ def render_consolidated_todo(working_dir: str, output_path: str):
                         if isinstance(w, dict)
                     ]
                 )
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         proj_desc = proj.get("project_description", "N/A") or "N/A"
         smart_obj = proj.get("smart_objectives", "N/A") or "N/A"
@@ -383,12 +386,12 @@ def render_consolidated_todo(working_dir: str, output_path: str):
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
-    print(f"✅ Documento Global TO-DO generado en: {output_path}")
+    logger.info(f"✅ Documento Global TO-DO generado en: {output_path}")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print(
+        logger.info(
             "Uso: python render_togaf_consolidated_todo.py <working_dir> <output_doc.docx>"
         )
         sys.exit(1)

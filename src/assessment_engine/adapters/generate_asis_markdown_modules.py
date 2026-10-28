@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import csv
 import json
 import sys
@@ -443,21 +445,21 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
 
     # Load dynamic exchange rate and currency symbol from custom calibration if exists (FAIR-MAM)
     client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
-    custom_profile_path = Path(f"working/{client_id}/T2/custom_risk_profile.json")
-    if not custom_profile_path.exists():
-        for t_code in ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
-            temp_path = Path(f"working/{client_id}/{t_code}/custom_risk_profile.json")
-            if temp_path.exists():
-                custom_profile_path = temp_path
-                break
+    custom_profile_path = Path(f"working/{client_id}/custom_risk_profile.json")
+    for t_code in ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
+        temp_path = Path(f"working/{client_id}/{t_code}/custom_risk_profile.json")
+        if temp_path.exists():
+            custom_profile_path = temp_path
+            break
 
     custom_calibration = {}
     if custom_profile_path.exists():
         try:
             with open(custom_profile_path, "r", encoding="utf-8-sig") as cf:
                 custom_calibration = json.load(cf)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     currency = custom_calibration.get("currency_symbol", currency)
     rate_mult = float(custom_calibration.get("exchange_rate", rate_mult))
@@ -647,7 +649,7 @@ def generate_modules(payload_path: str):
     modules_dir = tower_dir / "asis_modules"
     modules_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"📂 Iniciando Extracción de Módulos Docs-as-Code en: {modules_dir}")
+    logger.info(f"📂 Iniciando Extracción de Módulos Docs-as-Code en: {modules_dir}")
 
     # Loads technical payloads from the blueprint configuration, which serves as the primary data source.
     with open(payload_path, "r", encoding="utf-8-sig") as f:
@@ -663,8 +665,9 @@ def generate_modules(payload_path: str):
                 score_data = json.load(sf)
             exact_score = float(score_data.get("tower_score_exact", score_data.get("score_exact", 3.0)))
             exact_band = score_data.get("maturity_band_from_exact", {}).get("label", score_data.get("current_maturity_band", "Definido"))
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     global_fair_ale = data.get("total_fair_ale", 0.0)
 
@@ -688,8 +691,9 @@ def generate_modules(payload_path: str):
         try:
             with open(client_intel_file, "r", encoding="utf-8-sig") as cif:
                 intel_data = json.load(cif)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     profile_sec = intel_data.get("profile", {}) if isinstance(intel_data, dict) else {}
     raw_industry = profile_sec.get("industry", profile_sec.get("industry_type_es", "Sector Estándar"))
@@ -713,8 +717,9 @@ def generate_modules(payload_path: str):
             for hc in p.get("health_check_asis", []):
                 global_fair_p90 += hc.get("fair_p90_score", 0.0) or 0.0
                 global_fair_max += hc.get("fair_max_score", 0.0) or 0.0
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     snap = data.get("executive_snapshot", {})
     cca = data.get("cross_capabilities_analysis", {})
@@ -726,8 +731,9 @@ def generate_modules(payload_path: str):
         with open(annex_path, "r", encoding="utf-8-sig") as af:
             try:
                 annex_data = json.load(af)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     exec_sum = annex_data.get("executive_summary", {})
     score_profile = annex_data.get("pillar_score_profile", {})
@@ -774,7 +780,7 @@ def generate_modules(payload_path: str):
 
                     pillars_list_md += f"* **{p_name} (Peso: {p_weight}%)**: Evalúa de manera integral la madurez operativa y los baselines técnicos de la infraestructura, analizando críticamente factores clave como {kpi_str}.\n"
             except Exception as e:
-                print(f"⚠️ Error parsing tower definition: {e}")
+                logger.info(f"⚠️ Error parsing tower definition: {e}")
 
     if not pillars_list_md:
         # Returns a default empty string on a JSON parsing exception to prevent downstream processing failures.
@@ -893,8 +899,9 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
                 custom_cal = json.load(cf)
                 currency = custom_cal.get("currency_symbol", currency)
                 rate_mult = float(custom_cal.get("exchange_rate", rate_mult))
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # Collect and sort all health check risks from all pillars to identify the top 3
     all_risks = []
@@ -1303,11 +1310,11 @@ A continuación, se define de manera consolidada y unificada el inventario técn
     with open(modules_dir / "07_conclusiones.md", "w", encoding="utf-8") as f_out:
         f_out.write("\n".join(conc_content).strip())
 
-    print(f"🎉 ¡Módulos Docs-as-Code extraídos con éxito en: {modules_dir}!")
+    logger.info(f"🎉 ¡Módulos Docs-as-Code extraídos con éxito en: {modules_dir}!")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Uso: python generate_asis_markdown_modules.py <blueprint_payload.json>")
+        logger.info("Uso: python generate_asis_markdown_modules.py <blueprint_payload.json>")
         sys.exit(1)
     generate_modules(sys.argv[1])

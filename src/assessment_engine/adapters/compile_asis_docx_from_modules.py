@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import csv
 import html
 import json
@@ -763,8 +765,9 @@ def add_appendix_heading(doc, text: str, primary_color_rgb: Any) -> Any:
     p = doc.add_paragraph()
     try:
         p.style = "Appendix Heading 1"
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
     p.paragraph_format.space_before = Pt(18)
     p.paragraph_format.space_after = Pt(6)
     p.paragraph_format.keep_with_next = True
@@ -784,8 +787,9 @@ def add_appendix_subheading(doc, text: str, primary_color_rgb: Any) -> Any:
     p = doc.add_paragraph()
     try:
         p.style = "Appendix Heading 2"
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
     p.paragraph_format.space_before = Pt(14)
     p.paragraph_format.space_after = Pt(6)
     p.paragraph_format.keep_with_next = True
@@ -878,14 +882,14 @@ def compile_docx(tower_dir: str, output_path: str):
     tower_dir_obj = Path(tower_dir)
     modules_dir = tower_dir_obj / "asis_modules"
 
-    print(f"📦 Compilando Anexo Técnico AS-IS Word desde módulos en: {modules_dir}")
+    logger.info(f"📦 Compilando Anexo Técnico AS-IS Word desde módulos en: {modules_dir}")
 
     # Dynamically load corporate brand profiles based on the operational context.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
 
     brand = load_brand_profile()
 
-    company_name = brand.get("company_name", "NTT DATA")
+    company_name = brand.get("company_name", "Consultora")
     classification = brand.get("default_classification", "Confidencial")
     disclaimer_text = brand.get("disclaimer_text", "")
 
@@ -908,10 +912,10 @@ def compile_docx(tower_dir: str, output_path: str):
     template_path = resolve_tower_annex_template_path()
     try:
         doc = Document(str(template_path))
-        print("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
+        logger.info("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
     except Exception:
         doc = Document()
-        print("   ⚠️ No se encontró plantilla. Inicializando documento en blanco.")
+        logger.info("   ⚠️ No se encontró plantilla. Inicializando documento en blanco.")
 
     # Initialize the document by removing all placeholder paragraphs and tables from the template.
     for p in list(doc.paragraphs):
@@ -1024,8 +1028,9 @@ def compile_docx(tower_dir: str, output_path: str):
         try:
             with open(client_intel_file, "r", encoding="utf-8-sig") as cif:
                 intel_data = json.load(cif)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     profile_sec = intel_data.get("profile", {}) if isinstance(intel_data, dict) else {}
     industry = profile_sec.get("industry", "Standard")
@@ -1386,9 +1391,9 @@ def compile_docx(tower_dir: str, output_path: str):
                 })
             if chart_pillars:
                 generate_radar_chart_from_pillars(chart_pillars, radar_path)
-                print(f"✅ Gráfico radial auto-generado con éxito en: {radar_path}")
+                logger.info(f"✅ Gráfico radial auto-generado con éxito en: {radar_path}")
         except Exception as ex:
-            print(f"⚠️ No se pudo auto-generar el gráfico radial: {ex}")
+            logger.info(f"⚠️ No se pudo auto-generar el gráfico radial: {ex}")
 
     if radar_path.exists():
         add_spacer(doc, 5)
@@ -1444,7 +1449,7 @@ def compile_docx(tower_dir: str, output_path: str):
                         add_body_paragraph(doc, source_p, text_color_rgb=RGBColor(120, 130, 140))
                         add_spacer(doc, 10)
         except Exception as ex:
-            print(f"⚠️  [RAGE] Failed to inject RAGE report into main document: {ex}")
+            logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into main document: {ex}")
 
     # Assemble and render Section 3.3: Score Justification Matrix; left-aligned, omits 'TO-BE Target' column.
     csv_mat_path = modules_dir / "04_matriz_madurez.csv"
@@ -1720,7 +1725,7 @@ def compile_docx(tower_dir: str, output_path: str):
                 
                 add_spacer(doc, 20)
         except Exception as e:
-            print(f"⚠️ Error injecting systemic risk metrics: {e}")
+            logger.info(f"⚠️ Error injecting systemic risk metrics: {e}")
 
     #
     # Assemble and render Chapter 4: Quantitative Risk Matrix.
@@ -1749,8 +1754,9 @@ def compile_docx(tower_dir: str, output_path: str):
         try:
             with open(custom_profile_path, "r", encoding="utf-8-sig") as cf:
                 custom_calibration = json.load(cf)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     sre_rate = round(float(custom_calibration.get("hourly_rate_sre_eur", 36.0)))
     currency = custom_calibration.get("currency_symbol", "€" if doc_lang == "es" else "$")
@@ -1763,8 +1769,9 @@ def compile_docx(tower_dir: str, output_path: str):
             for hc in pillar.get("health_check_asis", []):
                 total_p90 += hc.get("fair_p90_score", 0.0) or 0.0
                 total_max += hc.get("fair_max_score", 0.0) or 0.0
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
     
     formatted_p90 = format_currency_custom(total_p90, t_sep, d_sep).split(d_sep)[0]
     formatted_max = format_currency_custom(total_max, t_sep, d_sep).split(d_sep)[0]
@@ -2134,8 +2141,9 @@ def compile_docx(tower_dir: str, output_path: str):
                             "min": hc.get("fair_min_score", 0.0),
                             "max": hc.get("fair_max_score", 0.0),
                         }
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # Assemble and render Section 5.3: Detailed Risk Register; left-aligned content per requirement 4.2.
     add_heading(
@@ -3019,11 +3027,11 @@ def compile_docx(tower_dir: str, output_path: str):
                         else:
                             full_glossary[lang] = terms
             except json.JSONDecodeError as ex:
-                print(
+                logger.info(
                     f"⚠️  [Glosario] Error de sintaxis JSON en {client_glossary_path}: {ex}"
                 )
             except Exception as ex:
-                print(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
+                logger.info(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
         # Get localized glossary dictionary
         glossary = full_glossary.get(doc_lang, full_glossary.get("es", {}))
@@ -3063,7 +3071,7 @@ def compile_docx(tower_dir: str, output_path: str):
 
             # Verification passes if either the English or the Spanish full form is located in the text
             if not any(p.lower() in text_corpus.lower() for p in parts if len(p) > 2):
-                print(
+                logger.info(
                     f"⚠️  [Glosario] Calidad: La sigla '{term}' se utiliza pero su definición extendida ('{parts[0]}') no aparece en el informe. Se recomienda expandirla en su primer uso."
                 )
 
@@ -3100,30 +3108,31 @@ def compile_docx(tower_dir: str, output_path: str):
                     shade_cell(row.cells[0], alt_row_hex)
                     shade_cell(row.cells[1], alt_row_hex)
     except Exception as ex:
-        print(f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}")
+        logger.info(f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}")
 
     add_spacer(doc, 12)
 
     #
     # Assemble and render Appendix D: Cláusula de Limitación de Responsabilidad
-    # Always use the clean, verified vocabulary fallback disclaimers to ensure maximum compliance.
+    # Always prioritize the central declarative brand disclaimer.
     #
     add_appendix_heading(doc, vocab["appendix_b_title"], primary_color_rgb=p_color_rgb)
-    add_body_paragraph(
-        doc, vocab.get("disclaimer_text_1", ""), text_color_rgb=text_color_rgb
-    )
-    add_body_paragraph(
-        doc, vocab.get("disclaimer_text_2", ""), text_color_rgb=text_color_rgb
-    )
-    add_body_paragraph(
-        doc, vocab.get("disclaimer_text_3", ""), text_color_rgb=text_color_rgb
-    )
-    add_body_paragraph(
-        doc, vocab.get("disclaimer_text_4", ""), text_color_rgb=text_color_rgb
-    )
-    add_body_paragraph(
-        doc, vocab.get("disclaimer_text_5", ""), text_color_rgb=text_color_rgb
-    )
+    from assessment_engine.infrastructure.config_loader import get_localized_disclaimer
+    disclaimer_raw = get_localized_disclaimer(doc_lang)
+    if disclaimer_raw:
+        for p_text in disclaimer_raw.split("\n\n"):
+            if p_text.strip():
+                add_body_paragraph(
+                    doc,
+                    p_text.strip().replace("NTT DATA", company_name),
+                    text_color_rgb=text_color_rgb,
+                )
+    else:
+        for k in ["disclaimer_text_1", "disclaimer_text_2", "disclaimer_text_3", "disclaimer_text_4", "disclaimer_text_5"]:
+            if vocab.get(k):
+                add_body_paragraph(
+                    doc, vocab.get(k, ""), text_color_rgb=text_color_rgb
+                )
 
     add_spacer(doc, 20)
 
@@ -3134,14 +3143,14 @@ def compile_docx(tower_dir: str, output_path: str):
     output_path_obj = Path(output_path)
     output_path_obj.parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
-    print(
+    logger.info(
         f"🎉 ¡Anexo Técnico AS-IS COMPILADO modularmente con éxito en: {output_path}!"
     )
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print(
+        logger.info(
             "Uso: python compile_asis_docx_from_modules.py <tower_dir> <output_doc.docx>"
         )
         sys.exit(1)

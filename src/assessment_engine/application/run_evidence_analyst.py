@@ -17,6 +17,7 @@ from assessment_engine.domain.prompts.intelligence_prompts import (
     get_technical_analyst_prompt,
 )
 from assessment_engine.infrastructure.ai_client import run_agent
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 from assessment_engine.infrastructure.runtime_paths import ROOT
 
 
@@ -132,13 +133,22 @@ async def build_findings(
     # The canonical data structure for an answer should be defined in a corresponding Pydantic model or dataclass, making this comment redundant. The type signature of the function should serve as the source of truth.
     answers_text = ""
     for ans in case_input.get("answers", []):
-        answers_text += f"- KPI {ans.get('kpi_id')}: Score {ans.get('score')} | Info: {ans.get('context', 'Sin comentarios')}\n"
+        score = ans.get("value") if ans.get("value") is not None else ans.get("score", "N/A")
+        kpi_label = ans.get("kpi_name", "")
+        q_text = ans.get("question_text") or ans.get("context") or "Sin texto de pregunta"
+        prefix = f"- KPI {ans.get('kpi_id')} ({kpi_label}):" if kpi_label else f"- KPI {ans.get('kpi_id')}:"
+        answers_text += f"{prefix} Score {score} | Pregunta/Info: {q_text}\n"
 
     #
+    from assessment_engine.infrastructure.config_loader import (
+        get_consultant_company_name,
+        resolve_model_for_role,
+    )
+    company = get_consultant_company_name()
     agent = Agent(
         name="technical_analyst",
-        model="gemini-2.5-pro",
-        instruction="Eres un Arquitecto Senior de NTT DATA especializado en infraestructuras críticas.",
+        model=resolve_model_for_role("analyst", default_model="gemini-2.5-pro"),
+        instruction=f"Eres un Arquitecto Senior de {company} especializado en modernización de infraestructuras empresariales y continuidad operativa.",
     )
     app = AdkApp(agent=agent)
 

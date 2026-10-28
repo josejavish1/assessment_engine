@@ -12,6 +12,7 @@ from assessment_engine.domain.schemas.evidence import (
     RaptorNode,
     RaptorTree,
 )
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class RaptorEngine:
         # Utilizes FlashAttention to optimize performance for high-throughput and large-scale summarization workloads.
         self.agent = Agent(
             name="raptor_summarizer",
-            model="gemini-2.5-flash",
+            model=get_model(ModelTier.FAST),
             instruction="Eres un experto en síntesis estratégica y arquitectura empresarial. Tu tarea es resumir fragmentos técnicos manteniendo nombres propios, marcas y cifras exactas.",
         )
         self.app = AdkApp(agent=self.agent)
@@ -164,7 +165,7 @@ class RaptorEngine:
             api_key = os.environ.get("GEMINI_API_KEY")
             client = genai.Client(api_key=api_key)
             response = await client.aio.models.generate_content(
-                model="gemini-2.5-flash",
+                model=get_model(ModelTier.FAST),
                 contents=prompt,
                 config={
                     "system_instruction": "Eres un arquitecto de datos y auditor forense de sistemas. Tu misión es generar resúmenes jerárquicos de máxima densidad de información, reteniendo estrictamente todas las métricas cuantitativas, nombres propios de infraestructura, versiones y acrónimos normativos sin diluirlos."

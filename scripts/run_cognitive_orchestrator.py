@@ -182,8 +182,8 @@ def _log_baseline_signatures(baseline_paths: list[Path], presenter: Orchestrator
             try:
                 snap = snapshot_file(p)
                 tracked_count += snap.get_symbol_count()
-            except Exception:  # noqa: BLE001
-                pass
+            except (SyntaxError, OSError, ValueError) as ex:
+                logger.debug(f"[CognitiveArbiter] Error capturando firma de {p}: {ex}")
     presenter.log(f" OK ({tracked_count} símbolos rastreados en {len(baseline_paths)} archivo(s))")
 
 

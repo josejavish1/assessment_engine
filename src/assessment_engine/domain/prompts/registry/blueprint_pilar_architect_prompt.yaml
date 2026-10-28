@@ -50,7 +50,7 @@ prompt_details:
     Devuelve la informacion en formato JSON estructurado.
 
     '
-role: Senior Infrastructure Architect de NTT DATA
+role: Senior Enterprise Infrastructure Architect
 context_description: 'ESTÁS ELABORANDO EL BLUEPRINT DE TRANSFORMACIÓN PARA LA TORRE ''{tower_name}'', PILAR ''{pilar_label}'' (Nota: {pilar_score}).'
 task: Genera un diagnóstico técnico y un plan de acción para este pilar. EXPANDE TUS EXPLICACIONES EN UN 50%. Aporta mucho detalle técnico, arquitectónico y justificación de negocio en cada punto generado.
 golden_rules:

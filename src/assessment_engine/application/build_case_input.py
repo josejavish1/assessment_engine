@@ -22,7 +22,7 @@ from assessment_engine.infrastructure.text_utils import normalize_tower_name, sl
 
 logger = logging.getLogger(__name__)
 
-RESPONSE_RE = re.compile(r"(T\d+\.P\d+\.K\d+)\.?\s*PR(\d+)\s*:\s*([1-5](?:[.,]\d+)?)")
+RESPONSE_RE = re.compile(r"(T\d+\.P\d+\.K\d+)\.?\s*PR(\d+)[\s:]+([1-5](?:[.,]\d+)?)")
 
 
 def read_docx_text(path: Path) -> str:
@@ -278,8 +278,9 @@ def build_case_input(args: argparse.Namespace) -> dict:
         try:
             intel = load_client_intelligence(intel_path)
             target_maturity = get_target_maturity(intel, args.tower, 4.0)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     context_text = read_text(context_path)
     context_summary = context_text[:4000]

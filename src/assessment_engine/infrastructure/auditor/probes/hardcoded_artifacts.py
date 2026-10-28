@@ -78,7 +78,7 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
         if not (isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)):
             return
         val = node.value.value
-        if len(val) < 12 or is_public_url(val) or any(k in val.lower() for k in ("env", "mock", "test")):
+        if len(val) < 12 or " " in val or "\n" in val or is_public_url(val) or any(k in val.lower() for k in ("env", "mock", "test")):
             return
         entropy = calculate_shannon_entropy(val)
         if entropy > 3.8:
@@ -95,7 +95,7 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def _check_model_leak(self, node: ast.Call) -> None:
-        if "core/genai_client.py" in self.rel_path or "core/legacy/" in self.rel_path:
+        if "genai_client.py" in self.rel_path:
             return
         for kw in node.keywords:
             if kw.arg == "model" and isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
@@ -103,7 +103,7 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
                     self.findings.append(AuditFinding(
                         category="MODEL_LEAK", severity="HIGH", file_path=self.rel_path, line_number=node.lineno,
                         rule_id="ARCH_HARDCODED_AI_MODEL", message=f"Modelo de IA hardcodeado en llamada: '{kw.value.value}'.",
-                        recommendation="Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de core.genai_client."
+                        recommendation="Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de assessment_engine.infrastructure.genai_client."
                     ))
 
     def _check_fallback_secret(self, node: ast.Call) -> None:

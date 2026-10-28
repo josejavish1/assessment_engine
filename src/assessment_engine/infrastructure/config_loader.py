@@ -58,6 +58,28 @@ def load_brand_profile() -> dict:
     return data
 
 
+def get_consultant_company_name() -> str:
+    """Returns the configured consultant company name, defaulting to 'Consultora' if not set."""
+    try:
+        brand = load_brand_profile()
+        return brand.get("company_name", "Consultora")
+    except Exception:
+        return "Consultora"
+
+
+def get_localized_disclaimer(lang: str = "es") -> str:
+    """Resolves the legal disclaimer text for the requested locale from brand_profile.json."""
+    try:
+        brand = load_brand_profile()
+        locales = brand.get("locales", {})
+        lang_key = lang.lower() if lang else "es"
+        if lang_key in locales and "disclaimer_text" in locales[lang_key]:
+            return locales[lang_key]["disclaimer_text"]
+        return brand.get("disclaimer_text", "")
+    except Exception:
+        return ""
+
+
 def load_locales() -> dict:
     """Load and parse the dynamic localization strings file.
 
@@ -339,6 +361,11 @@ def map_industry_to_profile(raw_industry_name: str) -> str:
         "seguros": "banking",
         "salud": "healthcare",
         "hospital": "healthcare",
+        "manufactura": "default",
+        "fabricacion": "default",
+        "industrial": "default",
+        "construccion": "default",
+        "cemento": "default",
         # English
         "energy": "critical_infrastructure",
         "electricity": "critical_infrastructure",
@@ -353,6 +380,9 @@ def map_industry_to_profile(raw_industry_name: str) -> str:
         "insurance": "banking",
         "healthcare": "healthcare",
         "health": "healthcare",
+        "manufacturing": "default",
+        "construction": "default",
+        "building materials": "default",
     }
 
     for key, val in mapping.items():

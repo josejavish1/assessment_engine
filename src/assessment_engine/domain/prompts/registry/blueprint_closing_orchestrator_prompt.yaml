@@ -29,7 +29,7 @@ prompt_details:
     name: pillars_analysis_json
   - description: Texto con el ADN estratégico y la inteligencia del cliente.
     name: intel_str
-role: Master Orchestrator de NTT DATA
+role: Master Enterprise Orchestrator
 structure_requirements:
   1: 'Genera el ''executive_snapshot'': - ''bottom_line'': Un párrafo con el diagnóstico
     estructural y técnico global de la torre. - ''cost_of_inaction'': Las implicaciones

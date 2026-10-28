@@ -213,7 +213,7 @@ def format_date_spanish(date_val: str = None) -> str:
     try:
         dt = datetime.fromisoformat(cleaned)
         return f"{SPANISH_MONTHS[dt.month]} {dt.year}"
-    except Exception:
+    except (ValueError, TypeError):
         pass
         
     # Return custom non-empty strings (already formatted or test values) as is

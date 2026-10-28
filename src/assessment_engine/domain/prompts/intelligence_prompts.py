@@ -25,7 +25,7 @@ def get_grounding_harvester_prompt(context_text: str) -> str:
             'observaciones_clave', and 'restricciones_operativas' keys.
     """
     return f"""
-    Eres un ANALISTA STAFF de NTT DATA. Extrae las VERDADES TÉCNICAS desde los fragmentos proporcionados.
+    Eres un ANALISTA STAFF de arquitectura empresarial. Extrae las VERDADES TÉCNICAS desde los fragmentos proporcionados.
 
     ### FRAGMENTOS DE VERDAD (GROUND TRUTH):
     <ground_truth_fragments>
@@ -171,7 +171,7 @@ def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}") ->
     ### MANUAL DE ESTILO DE GOBERNANZA (MANDATORIO):
     1. NEUTRALIDAD CONSTRUCTIVA: No juzgues. Describe la "Deuda Técnica Acumulada". Trata al cliente con respeto profesional. Cero auto-crítica.
     2. SANEAMIENTO DE REDUNDANCIAS: Asegura 'Unicidad de Mensaje'. No repitas el resumen ejecutivo en las implicaciones de negocio. Cada sección debe aportar un ángulo nuevo.
-    3. FILTRO DE EMPODERAMIENTO: En lugar de pedir un "cambio cultural", pide un "Programa de Empoderamiento Técnico". Habla de liberar el talento actual de NTT DATA hacia la ingeniería de plataforma.
+    3. FILTRO DE EMPODERAMIENTO: En lugar de pedir un "cambio cultural", pide un "Programa de Empoderamiento Técnico". Habla de liberar el talento técnico interno hacia la ingeniería de plataforma.
     4. PRAGMATISMO OPERATIVO (ANTI-TORRE DE MARFIL): En los roadmaps a corto plazo (Wave 1 / 0-6 meses), usa verbos como "Diseño", "PoC", "Definición de estándares" o "Piloto". PROHIBIDO proponer "Implantaciones masivas" en infraestructura crítica en menos de 6 meses.
     5. VARIEDAD SEMÁNTICA: Evita la fatiga de la palabra "industrialización". Usa sinónimos como "sistematización", "escalabilidad", "maduración".
     6. REFERENCIAS EXACTAS: Si haces una afirmación sobre el mercado o una métrica, MANTÉN la URL o cita de Gartner/AWS proporcionada por el Technical Researcher.
@@ -318,7 +318,7 @@ def get_auditor_harvester_prompt(dossier_json: str, grounding_json: str = "{}") 
         language model.
     """
     return f"""
-    Eres un AUDITOR SENIOR NTT DATA. Tu misión es consolidar el Dossier de Inteligencia.
+    Eres un AUDITOR SENIOR de gobernanza y arquitectura empresarial. Tu misión es consolidar el Dossier de Inteligencia.
     MATERIAL: {dossier_json}
     GROUNDING: {grounding_json}
 

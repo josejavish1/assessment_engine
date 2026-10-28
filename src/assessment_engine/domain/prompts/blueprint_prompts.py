@@ -255,8 +255,10 @@ def get_bid_manager_prompt(
     mitigated_risk_impact: str,
 ) -> str:
     r"""{'docstring': "Constructs a Spanish-language prompt to generate a project charter JSON.\n\n    The generated prompt instructs a language model to act as a senior Bid Manager\n    and Solution Architect from NTT DATA. It provides the model with specific\n    project details and a strict set of rules for generating a comprehensive\n    project charter in a JSON format.\n\n    Args:\n        client_name: The name of the client for whom the project is intended.\n        project_name: The internal or generic name of the project.\n        project_objective: A high-level description of the project's goal.\n        project_sizing: The estimated size or scale of the project (e.g., 'Small').\n        mitigated_risk_impact: The business or technical risk the project is\n            designed to mitigate.\n\n    Returns:\n        A complete prompt string in Spanish, ready for use with a generative AI."}."""
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
     prompt = (
-        f"Eres un Bid Manager y Solution Architect Senior de NTT DATA preparando un 'Project Charter' a nivel de Comité de Dirección para el cliente {client_name}.\n"
+        f"Eres un Bid Manager y Solution Architect Senior de {company} preparando un 'Project Charter' a nivel de Comité de Dirección para el cliente {client_name}.\n"
         f"PROYECTO: {project_name}\n"
         f"OBJETIVO: {project_objective}\n"
         f"TALLA (Sizing): {project_sizing}\n"
@@ -265,7 +267,7 @@ def get_bid_manager_prompt(
         "1. commercial_name: Reescribe el nombre genérico del proyecto para que sea un título formal de alto impacto estratégico.\n"
         "2. project_description: Escribe una descripción ejecutiva en lenguaje llano de 3-4 líneas. Explica al CIO exactamente DE QUÉ TRATA el proyecto, sin usar acrónimos técnicos incomprensibles.\n"
         "3. smart_objectives: Escribe un objetivo SMART cuantificable.\n"
-        "4. in_scope / out_of_scope: Define los límites estrictos de ingeniería. En out_of_scope, añade cláusulas defensivas para NTT DATA (ej. Licencias a cargo del cliente, migraciones legacy complejas excluidas).\n"
+        f"4. in_scope / out_of_scope: Define los límites estrictos de ingeniería. En out_of_scope, añade cláusulas defensivas para {company} (ej. Licencias a cargo del cliente, migraciones legacy complejas excluidas).\n"
         "5. governance_roles: Define 3-4 roles RACI críticos, INCLUYENDO OBLIGATORIAMENTE los deberes del cliente (ej. 'Cliente: Sponsor y provisión de accesos').\n"
         "6. critical_risks: Identifica 2 riesgos de ejecución y su mitigación.\n"
         "7. wbs_breakdown: Genera un Work Breakdown Structure (WBS) exhaustivo con Fases reales de delivery (ej. Fase 1: HLD, Fase 2: LLD & Build, Fase 3: Migración, Fase 4: Hypercare). "

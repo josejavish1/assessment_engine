@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Implements the generation of tower radar chart visualizations for the Assessment Engine pipeline."""
 
 import json
@@ -164,8 +166,8 @@ def main(argv: list[str] | None = None) -> None:
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
-    print("Radar chart generado en:", out_path)
-    print("Payload actualizado en:", payload_path)
+    logger.info("Radar chart generado en:", out_path)
+    logger.info("Payload actualizado en:", payload_path)
 
 
 if __name__ == "__main__":

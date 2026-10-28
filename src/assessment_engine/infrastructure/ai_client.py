@@ -114,8 +114,9 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
                 if isinstance(v, (dict, list)):
                     try:
                         return schema.model_validate(v).model_dump(by_alias=True)
-                    except Exception:
-                        pass
+                    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                        logger.debug(f"[Fallback] Excepción controlada: {ex}")
         logger.error(
             f"Fallo de validación SRE. Keys del JSON recibido: {list(data.keys()) if isinstance(data, dict) else type(data)}"
         )

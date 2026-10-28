@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import asyncio
 import json
 import re
@@ -57,14 +59,30 @@ def derive_maturity_band(score: float) -> str:
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
 
 
-def infer_priority_from_size(sizing: str) -> str:
-    text = str(sizing or "").strip().lower()
-    if text in {"xs", "s"}:
+def infer_initiative_priority(project: Any, pillar_score: float = 3.0) -> str:
+    """Derives strategic priority based on risk mitigation, horizon duration, and pillar maturity gap."""
+    explicit_priority = getattr(project, "priority", None) or (
+        project.get("priority") if isinstance(project, dict) else None
+    )
+    if explicit_priority and str(explicit_priority).strip().capitalize() in {"Alta", "Media", "Baja"}:
+        return str(explicit_priority).strip().capitalize()
+
+    duration = str(getattr(project, "duration", "") or (project.get("duration") if isinstance(project, dict) else "")).lower()
+    b_case = str(getattr(project, "business_case", "") or (project.get("business_case") if isinstance(project, dict) else "")).lower()
+    is_direct_mitigation = "mitigación directa" in b_case or "vulnerabilidad crítica" in b_case
+    is_short_term = any(k in duration for k in ["corto", "horizonte 1", "h1", "inmediato", "mes 1", "mes 2", "mes 3"])
+
+    if pillar_score < 2.2 and (is_direct_mitigation or is_short_term):
         return "Alta"
-    if text in {"m", "media", "medium"}:
-        return "Media"
-    if text in {"l", "xl", "large"}:
+    if is_direct_mitigation and is_short_term:
+        return "Alta"
+    if "nis2" in b_case and is_short_term:
+        return "Alta"
+
+    is_long_term = any(k in duration for k in ["horizonte 3", "h3", "largo plazo", "mes 18", "mes 24"])
+    if pillar_score >= 3.8 or is_long_term:
         return "Baja"
+
     return "Media"
 
 
@@ -276,7 +294,7 @@ def derive_priority_initiatives(blueprint: BlueprintPayload) -> list[InitiativeA
     ranked: list[tuple[int, float, str, InitiativeAnnex]] = []
     for pillar in blueprint.pillars_analysis:
         for project in pillar.projects_todo:
-            priority = infer_priority_from_size(project.sizing)
+            priority = infer_initiative_priority(project, pillar.score)
             ranked.append(
                 (
                     PRIORITY_RANK.get(priority, 1),
@@ -586,10 +604,11 @@ def build_synthesis_prompt(
     
     # Calculate dynamic temporal values based on current actual system year (timeless engineering)
     import datetime
+    from assessment_engine.infrastructure.text_utils import format_date_spanish
     now = datetime.datetime.now()
     current_year = now.year
     
-    current_date_str = f"JULIO DE {current_year}" # Standard uppercase month and year
+    current_date_str = format_date_spanish().upper()  # Standard uppercase month and year
     active_strategic_range = f"{current_year - 1}-{current_year + 3}"  # e.g., 2026-2030
     future_investment_horizon_range = f"{current_year + 1}-{current_year + 3}/{current_year + 4}" # e.g., 2028-2030/2031
     obsolete_strategic_range = f"{current_year - 6}-{current_year - 2}" # e.g., 2021-2025
@@ -778,8 +797,9 @@ async def synthesize_annex(client_name: str, tower_id: str):
             if tmp_path.exists():
                 try:
                     tmp_path.unlink()
-                except Exception:
-                    pass
+                except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
         print(f"✅ Anexo Ejecutivo sintetizado con éxito: {output_path}")
     else:
         print("❌ Error al generar el anexo.")

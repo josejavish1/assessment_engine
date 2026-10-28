@@ -13,7 +13,7 @@ from typing import Any
 EXCLUDE_DIRS = {
     ".git", "venv", ".venv", "__pycache__", ".pytest_cache", ".mypy_cache",
     ".ruff_cache", "node_modules", "dist", "build", "archive", "workspaces", "credentials",
-    "working", ".evolution", "tmp"
+    "working", ".evolution", "tmp", ".next"
 }
 
 EXCLUDE_FILES = {

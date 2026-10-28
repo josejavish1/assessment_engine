@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Renders a DOCX tower blueprint from a structured JSON payload."""
 
 import json
@@ -504,8 +506,10 @@ def render_cover(doc, payload: BlueprintPayload) -> Any:
     title_run.bold = True
     title_run.font.size = Pt(8)
     title_run.font.color.rgb = RGBColor(127, 127, 127)
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
     text_run = disclaimer.add_run(
-        "Este documento técnico es propiedad de NTT DATA y el cliente. Contiene "
+        f"Este documento técnico es propiedad de {company} y el cliente. Contiene "
         "información estratégica y de arquitectura sujeta a acuerdos de confidencialidad."
     )
     text_run.font.size = Pt(8)
@@ -1455,8 +1459,9 @@ def render_blueprint(
         try:
             with open(custom_profile_path, "r", encoding="utf-8") as cpf:
                 currency_symbol = json.load(cpf).get("currency_symbol", "€")
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     render_fair_risk_heatmap(doc, payload, currency_symbol=currency_symbol)
     render_consolidated_tobe(doc, payload)
@@ -1486,7 +1491,7 @@ def main(argv: list[str] | None = None) -> None:
         output_path=output_path,
         client_dir=client_dir,
     )
-    print(f"Blueprint de Torre renderizado: {output_path}")
+    logger.info(f"Blueprint de Torre renderizado: {output_path}")
 
 
 if __name__ == "__main__":

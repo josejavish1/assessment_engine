@@ -357,14 +357,14 @@ def _invoke_single_model(
     if system_instruction:
         cfg.system_instruction = system_instruction
 
-    print(f"[Heartbeat] 💓 Invocando inferencia {model_name} (timeout={timeout_ms // 1000}s)...", flush=True)
+    logger.info(f"[Heartbeat] 💓 Invocando inferencia {model_name} (timeout={timeout_ms // 1000}s)...", flush=True)
     resp = client.models.generate_content(
         model=model_name,
         contents=prompt,
         config=cfg,
     )
     _validate_response_truncation(resp)
-    print(f"[Heartbeat] 💓 Inferencia {model_name} completada con éxito.", flush=True)
+    logger.info(f"[Heartbeat] 💓 Inferencia {model_name} completada con éxito.", flush=True)
     return resp.text or ""
 
 
@@ -617,7 +617,7 @@ class SkepticRole:
         if self.client and hasattr(self.client, "models"):
             try:
                 from google.genai import types
-                print("[Heartbeat] 💓 Skeptic consultando estándares web...", flush=True)
+                logger.info("[Heartbeat] 💓 Skeptic consultando estándares web...", flush=True)
                 resp = self.client.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=f"Technical inquiry on current RFC or standards: {query}",
@@ -661,7 +661,7 @@ class SkepticRole:
         if self.client and hasattr(self.client, "models"):
             try:
                 from google.genai import types
-                print("[Heartbeat] 💓 Skeptic generando crítica técnica...", flush=True)
+                logger.info("[Heartbeat] 💓 Skeptic generando crítica técnica...", flush=True)
                 resp = self.client.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=prompt,
@@ -992,7 +992,7 @@ def _attempt_focal_ast_refactoring(
     fn_segment, _ = extracted
     loc_fn = len(fn_segment.splitlines())
     loc_total = len(candidate_code.splitlines())
-    print(
+    logger.info(
         f"[Focal AST] 🎯 Nodo aislado: '{target_fn_name}' ({loc_fn} LOC vs {loc_total} LOC del archivo). Refactorizando en aislamiento...",
         flush=True,
     )
@@ -1031,7 +1031,7 @@ def _attempt_focal_ast_refactoring(
     new_candidate = candidate_code.replace(fn_segment, replacement_code, 1)
     try:
         ast.parse(new_candidate)
-        print(
+        logger.info(
             f"[Focal AST] ✅ Nodo '{target_fn_name}' refactorizado y ensamblado con éxito en el módulo.",
             flush=True,
         )
@@ -1058,7 +1058,7 @@ def _attempt_mcts_refactoring(
 
     try:
         from assessment_engine.infrastructure.evolution.mcts_refactor_engine import MCRefactoringSearch, default_reward_function
-        print("[CognitiveArbiter] 🌲 Disparando MCTS Refactor Engine sobre AST para resolver complejidad...", flush=True)
+        logger.info("[CognitiveArbiter] 🌲 Disparando MCTS Refactor Engine sobre AST para resolver complejidad...", flush=True)
         searcher = MCRefactoringSearch(
             get_actions=lambda code: ["decompose_functions", "extract_helpers"],
             apply_action=lambda code, act: synthesizer.refine_patch(

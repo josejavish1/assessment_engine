@@ -128,13 +128,13 @@ def test_universal_auditor_detects_sqli_and_secret(tmp_path: Path) -> None:
     ws_dir.mkdir(parents=True, exist_ok=True)
 
     dummy_stripe = "sk_" + "live_" + "12345678901234567890123456"
-    (ws_dir / "vuln.py").write_text(
+    mock_code = (
         'user_id = "123"\n'
-        'query = f"SELECT * FROM users WHERE id = {user_id}"\n'
-        f'stripe_key = "{dummy_stripe}"\n'
-        'generic_hex_secret = "9f8a3c2b1e4d5a6b7c8d9e0f1a2b3c4d"\n',
-        encoding="utf-8",
+        'cur.execute("SELECT * FROM users WHERE id = " + user_id)\n'
+        'stripe_key = "' + dummy_stripe + '"\n'
+        'generic_hex_secret = "9f8a3c2b1e4d5a6b7c8d9e0f1a2b3c4d"\n'
     )
+    (ws_dir / "vuln.py").write_text(mock_code, encoding="utf-8")
 
     engine = SoverikQualityEngine()
     report = engine.audit_project(ws_dir, project_name="VulnProject")

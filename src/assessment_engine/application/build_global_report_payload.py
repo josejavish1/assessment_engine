@@ -422,8 +422,9 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             if isinstance(exec_sum, dict):
                 intel_headline = exec_sum.get("headline")
                 intel_narrative = exec_sum.get("narrative")
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     if intel_headline:
         payload["executive_summary"]["headline"] = intel_headline

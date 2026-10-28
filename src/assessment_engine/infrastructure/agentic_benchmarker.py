@@ -11,6 +11,7 @@ from vertexai.agent_engines import AdkApp
 
 from assessment_engine.domain.schemas.rubric import FrameworkRubric
 from assessment_engine.infrastructure.ai_client import run_agent
+from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 from assessment_engine.infrastructure.config_loader import (
     load_framework_rubric,
     load_industry_profile,
@@ -514,7 +515,7 @@ class AgenticRageBenchmarker:
             result = await loop.run_in_executor(
                 None,
                 lambda: client_gen.models.generate_content(
-                    model="gemini-2.5-pro",
+                    model=get_model(ModelTier.REASONING),
                     contents=prompt,
                     config=genai.types.GenerateContentConfig(
                         response_mime_type="application/json",

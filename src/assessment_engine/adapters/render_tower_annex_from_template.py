@@ -857,10 +857,12 @@ def main(argv: list[str] | None = None) -> None:
     render_radar_chart(doc, "{{RADAR_CHART_BLOCK}}", profile.get("radar_chart", ""))
 
     # Render the Loss Exceedance Curve (LEC) Chart (Gap 2)
-    lec_chart_path = Path(f"working/{client_id}/{tower_id}/loss_exceedance_curve.png")
+    lec_chart_path = payload_path.parent / "loss_exceedance_curve.png"
     if not lec_chart_path.exists():
-        client_base = client_id.split('_')[0]
-        lec_chart_path = Path(f"working/{client_id}/{client_base}/loss_exceedance_curve.png")
+        client_id = meta.get("client_name") or os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+        tower_id = meta.get("tower_code", "")
+        from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
+        lec_chart_path = resolve_case_dir(client_id, tower_id) / "loss_exceedance_curve.png"
         
     if lec_chart_path.exists():
         render_radar_chart(doc, "{{LOSS_EXCEEDANCE_CHART}}", str(lec_chart_path))
@@ -965,7 +967,7 @@ def main(argv: list[str] | None = None) -> None:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))
-    print("Documento renderizado en:", output_path)
+    logger.info("Documento renderizado en:", output_path)
 
 
 if __name__ == "__main__":

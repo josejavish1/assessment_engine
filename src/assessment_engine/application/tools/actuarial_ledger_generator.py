@@ -12,16 +12,21 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
     totalmente ejecutable y reproducible por el auditor.
     """
     client_name = blueprint_payload.get("document_meta", {}).get("client_name", "UNKNOWN")
-    base_dir = Path(f"working/{client_name}/{tower_id}")
-    
-    if not base_dir.exists():
-        return
+    from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
+    base_dir = resolve_case_dir(client_name, tower_id)
+    base_dir.mkdir(parents=True, exist_ok=True)
         
     dossier_path = base_dir / f"Expediente_Auditoria_Riesgos_{tower_id}.md"
     
     lines = []
     lines.append(f"# Expediente de Validación Actuarial (SR 11-7) - Torre {tower_id}")
     lines.append("Este documento constituye el **Audit Trail de Caja de Cristal (Whitebox)** para la evaluación de riesgos financieros. Contiene la justificación metodológica completa (SME Elicitation Rationale) y los parámetros estocásticos exactos de cada vulnerabilidad, permitiendo a cualquier auditor de tercera parte replicar empíricamente la simulación de Monte Carlo.\n")
+    
+    lines.append("## 0. Declaración Metodológica y Fuentes de Datos (Model Governance & SR 11-7)")
+    lines.append("- **Naturaleza del Modelo:** Modelo cuantitativo de elicitación estructurada de juicio experto basado en el estándar Open FAIR™ (ISO/IEC 27005) y simulación estocástica de Monte Carlo (10.000 iteraciones).")
+    lines.append("- **Fuente Primaria de Datos:** Expediente de evidencia cualitativa verificado (`evidence_ledger.json`), compuesto por entrevistas de arquitectura, cuestionarios técnicos validados y documentación de contexto operativo del cliente.")
+    lines.append("- **Calibración Financiera:** Las escalas de pérdida (Loss Magnitude - LM) se calibran dinámicamente frente a las cuentas anuales consolidadas oficiales del cliente, límites de sanción regulatoria aplicables y costes de parada por hora ponderados según la madurez técnica auditada.")
+    lines.append("- **Alcance y Limitaciones:** Este modelo no constituye una auditoría contable ni refleja mediciones pasivas de telemetría de red en tiempo real; representa la distribución de probabilidad de pérdida esperada ante los escenarios de fallo de control identificados.\n")
     
     for pillar in blueprint_payload.get("pillars_analysis", []):
         for finding in pillar.get("health_check_asis", []):

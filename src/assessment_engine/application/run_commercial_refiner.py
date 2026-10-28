@@ -131,11 +131,14 @@ async def build_proactive_proposal(model_name, opp, payload_str, client_name):
         client_name,
     )
 
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
+
     print(f"    -> 🔴 Agente A4 (Sales Partner): Pitch Final para '{opp_name}'...")
     ag4 = await call_commercial_agent(
         model_name,
         "SALES PARTNER",
-        f"Genera los diferenciadores de NTT Data y el timeline de inversión para la oportunidad '{opp_name}'.",
+        f"Genera los diferenciadores de {company} y el timeline de inversión para la oportunidad '{opp_name}'.",
         payload_str,
         SalesPartnerOutput,
         client_name,

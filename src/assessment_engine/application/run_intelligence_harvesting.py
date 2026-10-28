@@ -36,6 +36,10 @@ class MetaExtract(BaseModel):
     dominant_hyperscaler: str = Field(
         description="Infers the client's dominant public cloud provider based on their technology footprint (e.g., AWS, Azure, GCP). Value is 'N/A - 100% On-Premise' if the client operates without a public cloud presence."
     )
+    industry_sector: str = Field(
+        default="Enterprise & Industrial Technology",
+        description="Identifies the client's actual industry sector based on their business operations, products, and market activities (e.g. 'Manufacturing & Building Materials', 'Banking & Financial Services', 'Retail & Commerce', 'Energy & Utilities', 'Healthcare', 'Logistics')."
+    )
     stage: Literal["H1", "H2", "H3"] = Field(
         description="The assigned transformation phase: H1 (Brilliant Basics), H2 (Hyperautomation & Scale), or H3 (Vanguard & AI-First), determined by the client's automation level and strategic objectives."
     )
@@ -198,8 +202,9 @@ def save_pdf_cache(cache_path: Path, cache_data: dict[str, str]) -> None:
         if tmp_path.exists():
             try:
                 tmp_path.unlink()
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
 
 class SourceVault:
@@ -300,8 +305,9 @@ class SourceVault:
             for cb in custom_brands:
                 if cb not in brands:
                     brands.append(cb)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         for b in brands:
             if b.lower() in raw.lower():
@@ -410,8 +416,9 @@ async def run_market_intelligence(
                         if isinstance(brands_list, list):
                             discovered_brands = [str(b).strip() for b in brands_list if b]
                             print(f"     ✓ Marcas descubiertas por IA: {discovered_brands}")
-                    except Exception:
-                        pass
+                    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                        logger.debug(f"[Fallback] Excepción controlada: {ex}")
         except Exception as e:
             print(f"  ⚠️ Error en descubrimiento dinámico de marcas: {e}")
 
@@ -421,11 +428,11 @@ async def run_market_intelligence(
     print("  -> [FASE 1] Cosechando Huellas Técnicas Reales...")
     tasks = [
         probe_ai(
-            f"Estrategia independiente de {client_name} tras el acuerdo con EBU.",
+            f"Estrategia de transformación digital, negocio y sostenibilidad de {client_name}.",
             client_name=client_name,
         ),
         probe_ai(
-            f"Stack tecnológico de broadcast y nube de {client_name}.",
+            f"Stack tecnológico de infraestructura, TI, centros de datos y nube de {client_name}.",
             client_name=client_name,
         ),
     ]
@@ -521,8 +528,9 @@ async def run_market_intelligence(
     brand_data_narratives = {}
     try:
         brand_data_narratives = load_brand_profile()
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     custom_narratives = brand_data_narratives.get("custom_narratives", {})
     client_context_str = custom_narratives.get("client_context")
@@ -688,7 +696,10 @@ async def run_market_intelligence(
         f"Analiza de forma síncrona el contexto recopilado de la empresa '{client_name}':\n"
         f"1. Narrativa: {narrative.get('text', 'N/A')}\n"
         f"2. Stack Técnico: {json.dumps(organized.get('stack', []), ensure_ascii=False)}\n\n"
-        f"Deduce el proveedor cloud dominante ('dominant_hyperscaler') y la fase de horizonte de transformación óptimo."
+        f"Deduce:\n"
+        f"- industry_sector: El sector industrial/empresarial real y específico de la compañía (ej. 'Manufacturing & Building Materials', 'Banking & Finance', 'Retail', etc.).\n"
+        f"- dominant_hyperscaler: El proveedor cloud dominante ('dominant_hyperscaler').\n"
+        f"- stage, label, rationale: La fase de horizonte de transformación óptimo."
     )
     from google.genai import types
 
@@ -704,6 +715,7 @@ async def run_market_intelligence(
         )
         meta_data = json.loads(res_meta.text)
         dominant_hyperscaler = meta_data.get("dominant_hyperscaler", "AWS")
+        inferred_industry = meta_data.get("industry_sector")
         horizon_obj = {
             "stage": meta_data.get("stage", "H1"),
             "label": meta_data.get("label", "Estandarización"),
@@ -712,6 +724,7 @@ async def run_market_intelligence(
     except Exception as e:
         print(f"  ⚠️ Error en extracción de meta-datos: {e}. Usando fallbacks.")
         dominant_hyperscaler = "AWS"
+        inferred_industry = None
         horizon_obj = {
             "stage": "H1",
             "label": "Estandarización",
@@ -719,10 +732,8 @@ async def run_market_intelligence(
         }
 
     # Decouples industry-vertical-specific logic from the core processing pipeline.
-    # Reads declaratively from brand profile first (elite approach)
-    industry_str = brand_data_narratives.get("industry_profile_name")
-    if not industry_str:
-        industry_str = "Enterprise & Infrastructure Technology"
+    # Dynamically inferred from the client's actual data first (agnostic by design)
+    industry_str = inferred_industry or brand_data_narratives.get("industry_profile_name") or "Enterprise & Industrial Technology"
 
     # Instantiate the Epistemic Graph Bayesian Belief Network (BBN) Service
     from assessment_engine.infrastructure.epistemic_graph_service import (

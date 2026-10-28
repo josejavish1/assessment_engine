@@ -138,8 +138,9 @@ class FinancialScaleCalibrator:
                                         ha_score = score_val
                                     if f"{tower_id}.P5" in q_id or f"{tower_id}.P2" in q_id:
                                         ops_score = score_val
-                                except Exception:
-                                    pass
+                                except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
                     if scores_list:
                         if ha_score == 3.0:
                             ha_score = round(sum(scores_list[:max(1, len(scores_list)//2)]) / max(1, len(scores_list)//2), 1)

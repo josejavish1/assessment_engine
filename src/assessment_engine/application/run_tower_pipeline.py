@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Provides the core orchestration logic for the Assessment Engine pipeline. The module defines a Directed Acyclic Graph (DAG) of stages, where each stage is executed in an isolated subprocess to prevent state interference and resource contention between steps."""
 
 import argparse
@@ -189,6 +191,7 @@ async def run_pipeline():
     python_bin = resolve_python_bin()
 
     env = build_runtime_env()
+    env["ASSESSMENT_CLIENT_ID"] = client_slug
     case_dir = prepare_case_runtime(env, client_id=client_slug, tower_id=tower_id)
 
     # Defines the sequence of pipeline stages. Each stage is cache-gated and designed to be idempotent, producing a deterministic output artifact that allows subsequent runs to skip re-computation.
@@ -199,6 +202,7 @@ async def run_pipeline():
             for f in [
                 "findings.json",
                 "evidence_ledger.json",
+                f"blueprint_{tower_id.lower()}_payload.json",
                 "blueprint_t2_payload.json",
                 "case_input.json",
                 "scoring_output.json",
@@ -228,6 +232,7 @@ async def run_pipeline():
     payload_path = case_dir / f"{annex_stem}.template_payload.json"
     resolve_tower_annex_template_path()
     output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
+    output_asis_docx = case_dir / f"Diagnostico_ASIS_{tower_id}_{client_slug}.docx"
     blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
     output_blueprint_docx = (
         case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
@@ -328,8 +333,9 @@ async def run_pipeline():
             # Map industry name to profile key
             from assessment_engine.infrastructure.config_loader import map_industry_to_profile
             industry_key = map_industry_to_profile(industry_name)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     #
     # Stage 2.5: Execute dynamic RAGE evaluation to freeze the benchmarks snapshot.
@@ -562,11 +568,13 @@ async def run_pipeline():
                 "-m",
                 "assessment_engine.adapters.compile_asis_docx_from_modules",
                 str(case_dir),
-                str(case_dir / f"AS-IS_Anexo_Tecnico_{tower_id}.docx"),
+                str(output_asis_docx),
             ],
             env,
             "Compile AS-IS DOCX from Modules",
         )
+        import shutil
+        shutil.copyfile(output_asis_docx, case_dir / f"AS-IS_Anexo_Tecnico_{tower_id}.docx")
 
         # Perform an Abstract Syntax Tree (AST) shadow compilation. This generates a canary artifact for non-production analysis of alternative logic paths.
         await run_step_async(
@@ -621,9 +629,10 @@ async def run_pipeline():
     print("\n🚀 Finalizando: Renderizado Estándar + Blueprint en paralelo...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
-    print(f"\n✅ Pipeline {tower_id} completado con éxito.")
-    print(f"📄 DOCX Resumen Ejecutivo: {output_docx}")
-    print(f"🚀 DOCX Blueprint Estratégico: {output_blueprint_docx}")
+    print(f"\n✅ Pipeline {tower_id} completado con éxito (Modelo Dual Canónico):")
+    print(f"  📄 Entregable 1 (Diagnóstico AS-IS): {output_asis_docx}")
+    print(f"  🚀 Entregable 2 (Blueprint TO-BE):   {output_blueprint_docx}")
+    print(f"  📊 Expediente Actuarial (SR 11-7):   {case_dir / f'Expediente_Auditoria_Riesgos_{tower_id}.md'}")
 
 
 if __name__ == "__main__":

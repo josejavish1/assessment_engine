@@ -273,8 +273,8 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
                     intel = json.load(inf)
                     p_meta = intel.get("profile", {})
                     industry = p_meta.get("industry", "Standard")
-            except Exception:
-                pass
+            except (OSError, json.JSONDecodeError) as ex:
+                logger.debug(f"[PolicyEngine] Error leyendo perfil de inteligencia: {ex}")
         else:
             # Implements a security fallback to prevent execution failure in CI/CD environments.
             client_name = payload.get("document_meta", {}).get("client_name", "CLIENTE")
@@ -292,8 +292,8 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
                     is_critical = brand_profile.get("styling", {}).get("is_critical", False)
                     if is_critical:
                         industry = "Critical Infrastructure"
-                except Exception:
-                    pass
+                except (ImportError, KeyError, ValueError) as ex:
+                    logger.debug(f"[PolicyEngine] Fallback de perfil de marca omitido: {ex}")
 
         # SECTOR-LOCK ENFORCEMENT: Halts policy execution if the client's industry sector is not 'Critical Infrastructure' or 'Energy'.
         if "Critical Infrastructure" not in industry and "Energy" not in industry:
@@ -896,8 +896,8 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     p_meta = intel.get("profile", {})
                     industry = p_meta.get("industry", "Standard")
                     hierarchy = p_meta.get("hierarchy", "Standard")
-            except Exception:
-                pass
+            except (OSError, json.JSONDecodeError) as ex:
+                logger.debug(f"[PolicyEngine] Error leyendo perfil para escala actuarial: {ex}")
 
         # Select the risk model preset that is calibrated to the client's organizational scale and data volume.
         preset_key = os.environ.get("ASSESSMENT_COMPANY_SCALE", "").upper()

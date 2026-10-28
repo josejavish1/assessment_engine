@@ -47,8 +47,9 @@ def read_zip_xml_texts(docx_path: Path):
             if name.startswith("word/") and name.endswith(".xml"):
                 try:
                     texts.append(zf.read(name).decode("utf-8", errors="ignore"))
-                except Exception:
-                    pass
+                except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
     return texts
 
 

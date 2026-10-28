@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import os
 import re
 from pathlib import Path
@@ -433,7 +435,7 @@ class DocxCompiler(DocumentCompiler):
             updateFields.set(qn('w:val'), 'true')
             settings.append(updateFields)
         except Exception as e:
-            print(f"⚠️ Failed to force updateFields on open: {e}")
+            logger.info(f"⚠️ Failed to force updateFields on open: {e}")
 
         #
         output_file = Path(output_path)
@@ -515,8 +517,9 @@ class DocxCompiler(DocumentCompiler):
                     p.style = "Appendix Heading 1"
                 elif is_appendix_sub:
                     p.style = "Appendix Heading 2"
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         #
         if node.primary_color_rgb and p:

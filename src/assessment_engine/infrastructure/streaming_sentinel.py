@@ -142,7 +142,7 @@ class StreamingSentinel:
                     lock_dir.rmdir()
                     lock_dir.mkdir(exist_ok=False)
                     has_lock = True
-            except Exception:
+            except OSError:
                 has_lock = False
 
         yield has_lock
@@ -150,7 +150,7 @@ class StreamingSentinel:
         if has_lock:
             try:
                 lock_dir.rmdir()
-            except Exception:
+            except OSError:
                 pass
 
     @staticmethod

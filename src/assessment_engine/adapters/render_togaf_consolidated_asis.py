@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import glob
 import json
 import os
@@ -280,7 +282,7 @@ def render_consolidated_asis(working_dir: str, output_path: str):
             specified `output_path` due to file system permissions,
             insufficient disk space, or other I/O-related errors.
     """
-    print("🚀 Cargando Payloads de Torres para Renderizado AS-IS Consolidado...")
+    logger.info("🚀 Cargando Payloads de Torres para Renderizado AS-IS Consolidado...")
 
     # Define the mapping for risk identifier prefixes according to the FNMT institutional standard.
     prefix_map = {
@@ -365,7 +367,7 @@ def render_consolidated_asis(working_dir: str, output_path: str):
                     all_risks.append(hc)
 
     if not payloads:
-        print("❌ No se encontraron payloads de torre en working_dir.")
+        logger.info("❌ No se encontraron payloads de torre en working_dir.")
         return
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
@@ -391,11 +393,11 @@ def render_consolidated_asis(working_dir: str, output_path: str):
         with open(client_intel_path, "r", encoding="utf-8-sig") as cif:
             try:
                 intel = json.load(cif)
-                print(
+                logger.info(
                     "   ├─ Carga exitosa de Inteligencia Estratégica del Cliente en Nivel Consolidado."
                 )
             except Exception as e:
-                print(f"   ⚠️ Error cargando inteligencia: {e}")
+                logger.info(f"   ⚠️ Error cargando inteligencia: {e}")
 
     business_context = intel.get("business_context", {})
     ceo_agenda_raw = business_context.get("ceo_agenda", {}).get(
@@ -408,10 +410,10 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     template_path = ROOT / "templates" / "docx" / "template_tobe_consolidated.docx"
     if template_path.exists():
         doc = Document(str(template_path))
-        print("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
+        logger.info("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
     else:
         doc = Document()
-        print("   ⚠️ Plantilla no encontrada. Generando con estilos por defecto.")
+        logger.info("   ⚠️ Plantilla no encontrada. Generando con estilos por defecto.")
 
     # Remove all placeholder paragraphs and tables from the document template before populating it with generated content.
     for p in list(doc.paragraphs):
@@ -461,9 +463,12 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     for _ in range(11):
         doc.add_paragraph()
 
+    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    company = get_consultant_company_name()
+
     p_meta = doc.add_paragraph()
     run_meta = p_meta.add_run(
-        f"NTT DATA Corporation | Confidencial\nVersión {version_global} | {date_global}"
+        f"{company} | Confidencial\nVersión {version_global} | {date_global}"
     )
     run_meta.font.size = Pt(10)
     run_meta.font.italic = True
@@ -673,8 +678,9 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     #
     try:
         all_risks.sort(key=lambda x: x.get("fair_ale_score", 0.0), reverse=True)
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
     top_risks = all_risks[:12]
 
     table_risks = doc.add_table(rows=1, cols=4)
@@ -945,14 +951,14 @@ def render_consolidated_asis(working_dir: str, output_path: str):
     output_path_obj = Path(output_path)
     output_path_obj.parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
-    print(
+    logger.info(
         f"🎉 ¡Informe Consolidado AS-IS COMPLETO generado con éxito en: {output_path}!"
     )
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print(
+        logger.info(
             "Uso: python render_togaf_consolidated_asis.py <working_dir> <output_doc.docx>"
         )
         sys.exit(1)

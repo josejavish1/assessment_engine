@@ -88,9 +88,8 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
                             errors.append(
                                 f"references invalid or non-existent flag '{flag}' for script '{script_path.name}'"
                             )
-                except Exception:
-                    # Silently skip if script execution fails due to environment requirements
-                    pass
+                except (subprocess.SubprocessError, OSError, ValueError) as ex:
+                    logger.debug(f"[DocSnippets] Fallo ejecutando script para verificación de flags: {ex}")
 
     return errors
 

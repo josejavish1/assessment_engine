@@ -183,8 +183,9 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
         try:
             with dto_state_path.open("r", encoding="utf-8-sig") as f:
                 dto_state = json.load(f)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     return {
         "meta": {"client": client_id.upper(), "version": "v6.0 Digital Twin (DTO)"},
@@ -478,7 +479,7 @@ def generate_web_dashboard(client_id: str) -> Path:
     output_path = presentation_dir / "index.html"
     output_path.write_text(_render_html(client_id, nexus_data), encoding="utf-8")
 
-    print(f"✅ Dashboard v5.1 (Strategic & Interactive) generado en: {output_path}")
+    logger.info(f"✅ Dashboard v5.1 (Strategic & Interactive) generado en: {output_path}")
     return output_path
 
 
