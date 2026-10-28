@@ -470,6 +470,8 @@ class PayloadToASTBridge:
         vocab = ctx["vocab"]
         gs_val = ctx["gs_val"]
         tower_name = ctx["tower_name"]
+        blueprint_data = ctx["blueprint_data"]
+        client_name = ctx["client_name"]
         client_name = ctx["client_name"]
         date_str = ctx["date_str"]
         version = ctx["version"]
@@ -549,6 +551,7 @@ class PayloadToASTBridge:
         modules_dir = ctx["modules_dir"]
         meta_lang = ctx["meta_lang"]
         blueprint_data = ctx["blueprint_data"]
+        client_name = ctx["client_name"]
         global_band = ctx["global_band"]
         display_score_str = ctx["display_score_str"]
         global_reading = ctx["global_reading"]
@@ -933,6 +936,7 @@ class PayloadToASTBridge:
         tower_id = ctx["tower_id"]
         modules_dir = ctx["modules_dir"]
         blueprint_data = ctx["blueprint_data"]
+        client_name = ctx["client_name"]
         total_fair_ale = ctx["total_fair_ale"]
         currency = ctx["currency"]
         client_name = ctx["client_name"]
@@ -1397,18 +1401,17 @@ class PayloadToASTBridge:
         #
 
     def _build_conclusions_and_appendices(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        self._build_conclusions_chapter(ctx, nodes)
+        nodes.append(PageBreakNode())
+        self._build_appendix_a_glossary(ctx, nodes)
+        self._build_appendix_b_disclaimer(ctx, nodes)
+        self._build_appendix_c_custody(ctx, nodes)
+        self._build_appendix_d_methodology(ctx, nodes)
+
+    def _build_conclusions_chapter(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         blueprint_data = ctx["blueprint_data"]
-        modules_dir = ctx["modules_dir"]
-        vocab = ctx["vocab"]
-        gs_val = ctx["gs_val"]
-        meta_lang = ctx["meta_lang"]
-        currency = ctx["currency"]
-        is_critical = ctx["is_critical"]
-        tower_id = ctx["tower_id"]
         client_name = ctx["client_name"]
-        case_dir = ctx["case_dir"]
-        tower_name = ctx["tower_name"]
-        tower_meta = ctx["tower_meta"]
+        modules_dir = ctx["modules_dir"]
         # 5.1 El Paradigma de Transformación (Promoted here from Chapter 4 as it represents a TO-BE vision)
         nodes.append(
             HeadingNode(
@@ -1428,9 +1431,11 @@ class PayloadToASTBridge:
             nodes.extend(self._parse_markdown_to_nodes(concl_path))
 
         #
-        # APPENDICES (Glossary of Abbreviations, Limitation of Liability, Source Custody Record)
-        #
-        nodes.append(PageBreakNode())
+
+    def _build_appendix_a_glossary(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        vocab = ctx["vocab"]
+        case_dir = ctx["case_dir"]
+        meta_lang = ctx["meta_lang"]
 
         # Appendix A: Glossary and List of Abbreviations
         # Omit the manual 'Appendix A' prefix to avoid conflicts with Word's automatic 'Appendix A' style numbering.
@@ -1545,6 +1550,9 @@ class PayloadToASTBridge:
                 f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}"
             )
 
+    def _build_appendix_b_disclaimer(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        vocab = ctx["vocab"]
+
         # Appendix B: Limitation of Liability Clause
         # Omit the manual 'Appendix B' prefix to prevent numbering conflicts.
         app_b_title = re.sub(
@@ -1591,6 +1599,14 @@ class PayloadToASTBridge:
                 )
             )
 
+
+    def _build_appendix_c_custody(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        vocab = ctx["vocab"]
+        case_dir = ctx["case_dir"]
+        tower_id = ctx["tower_id"]
+        tower_name = ctx["tower_name"]
+        blueprint_data = ctx["blueprint_data"]
+        client_name = ctx["client_name"]
         # Appendix C: Information Sources Chain of Custody
         # Omit the manual 'Appendix C' prefix to prevent numbering conflicts.
         app_c_title = re.sub(
@@ -1684,6 +1700,16 @@ class PayloadToASTBridge:
             )
 
         nodes.append(TableNode(rows=source_rows))
+
+    def _build_appendix_d_methodology(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        meta_lang = ctx["meta_lang"]
+        currency = ctx["currency"]
+        is_critical = ctx["is_critical"]
+        blueprint_data = ctx["blueprint_data"]
+        client_name = ctx["client_name"]
+        tower_id = ctx["tower_id"]
+        tower_meta = ctx["tower_meta"]
+        client_name = ctx["client_name"]
 
         #
         # APPENDIX D: METHODOLOGY (Moved dynamically to the end for C-Suite reading optimization!)
@@ -1917,6 +1943,7 @@ class PayloadToASTBridge:
                 style="List Bullet",
             )
         )
+
 
 
     def _parse_markdown_to_nodes(
