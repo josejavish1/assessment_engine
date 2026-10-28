@@ -47,3 +47,15 @@ def test_render_tower_blueprint_full_oracle(tmp_path: Path) -> None:
     assert "Informe de Madurez Tecnológica" in full_text
     assert "1. Executive Snapshot" in full_text
     assert "5. Conclusión" in full_text
+
+
+def test_clean_text_for_render_dict_formatting() -> None:
+    """Verify dictionary text rendering and kill LCR mutants."""
+    from assessment_engine.adapters.render_tower_blueprint import clean_text_for_render
+    # Dictionary with only name must not format as name: description
+    res_single = clean_text_for_render({"name": "Project Alpha"})
+    assert res_single == "Project Alpha"
+
+    # Dictionary with both name and description
+    res_both = clean_text_for_render({"name": "Project Alpha", "description": "Core Initiative"})
+    assert res_both == "Project Alpha: Core Initiative"

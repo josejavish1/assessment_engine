@@ -139,3 +139,19 @@ def test_safe_shade_cell_ooxml_schema_ordering() -> None:
     assert "shd" in children
     assert "vAlign" in children
     assert children.index("shd") < children.index("vAlign")
+
+
+def test_insert_tbl_pr_child_ordering() -> None:
+    """Verify XML element ordering inside w:tblPr and kill ROR mutants."""
+    from docx.oxml import OxmlElement
+    from assessment_engine.adapters.compilers.docx_compiler import _insert_in_tblpr
+
+    tblPr = OxmlElement("w:tblPr")
+    child1 = OxmlElement("w:tblBorders")
+    child2 = OxmlElement("w:tblW")
+
+    _insert_in_tblpr(tblPr, child1, "tblBorders")
+    _insert_in_tblpr(tblPr, child2, "tblW")
+
+    tags = [c.tag.split("}")[-1] for c in tblPr]
+    assert tags == ["tblW", "tblBorders"], f"Expected ordered tags, got {tags}"
