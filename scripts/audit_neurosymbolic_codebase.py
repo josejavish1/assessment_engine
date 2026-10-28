@@ -270,7 +270,21 @@ def main() -> None:
     # Generate Markdown Report
     REPORT_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(REPORT_OUTPUT, "w", encoding="utf-8") as out:
-        out.write("# 🏛️ Auditoría Neuro-Simbólica de la Base de Código\n\n")
+        out.write("""---
+status: Verified
+owner: docs-governance
+source_of_truth:
+- ../../scripts/audit_neurosymbolic_codebase.py
+- ../../src/assessment_engine/
+last_verified_against: '2026-06-26'
+applies_to:
+- humans
+- ai-agents
+doc_type: operational
+diataxis: explanation
+verification_mode: editorial
+---
+# 🏛️ Auditoría Neuro-Simbólica de la Base de Código\n\n""")
         out.write("**Fecha:** Octubre 2026 | **Metodología:** Topología AST (NetworkX) + Trazabilidad Dinámica (`coverage.py`) + Árbitro Cognitivo (`gemini-4-argon`)\n\n")
 
         # Summary KPIs

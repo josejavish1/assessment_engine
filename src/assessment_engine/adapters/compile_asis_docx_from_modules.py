@@ -2842,7 +2842,7 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     add_spacer(doc, 200)
 
     p_title = doc.add_paragraph()
-    run_title = p_title.add_run(vocab["title"])
+    run_title = p_title.add_run(vocab.get("title", "INFORME DE EVALUACIÓN DE INFRAESTRUCTURA"))
     run_title.bold = True
     run_title.font.name = "Arial"
     run_title.font.size = Pt(36)
@@ -2857,7 +2857,8 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     add_spacer(doc, 140)
 
     p_client = doc.add_paragraph()
-    run_cli_lbl = p_client.add_run(vocab["client_lbl"])
+    client_label = vocab.get("client_lbl", "Cliente:\n")
+    run_cli_lbl = p_client.add_run(client_label)
     run_cli_lbl.bold = True
     run_cli_lbl.font.name = "Arial"
     run_cli_lbl.font.size = Pt(28)
@@ -2875,10 +2876,11 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     add_spacer(doc, 140)
 
     classification_clean = ctx["classification"].replace(" (Tier-1 Assessment)", "")
+    version_label = vocab.get("v_lbl", "Versión ")
 
     p_footer = doc.add_paragraph()
     run_date = p_footer.add_run(
-        f"{ctx['doc_date']} | {vocab['v_lbl']}{ctx['doc_version']} | {classification_clean}"
+        f"{ctx['doc_date']} | {version_label}{ctx['doc_version']} | {classification_clean}"
     )
     run_date.font.name = "Arial"
     run_date.font.size = Pt(9.5)
@@ -2887,7 +2889,8 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     doc.add_page_break()
 
     # Section 0.1: Table of Contents (TOC).
-    add_heading(doc, vocab["toc_title"], level=4, primary_color_rgb=p_color_rgb)
+    toc_heading = vocab.get("toc_title", "Índice de Contenidos")
+    add_heading(doc, toc_heading, level=4, primary_color_rgb=p_color_rgb)
     add_toc(doc)
 
 
@@ -3080,15 +3083,14 @@ def compile_docx(tower_dir: str, output_path: str):
             doc_version = tower_meta.get("version", doc_version)
             currency = tower_meta.get("currency", currency)
 
-            # Resolve localized brand attributes
-            if "locales" in brand:
-                lang_brand = brand["locales"].get(
-                    doc_lang, brand["locales"].get("es", {})
-                )
-                classification = lang_brand.get(
-                    "default_classification", classification
-                )
-                disclaimer_text = lang_brand.get("disclaimer_text", disclaimer_text)
+            # Resolve localized brand attributes from canonical vocabulary
+            canonical_brand_vocab = resolve_localized_vocabulary(doc_lang)
+            classification = canonical_brand_vocab.get(
+                "default_classification", classification
+            )
+            disclaimer_text = canonical_brand_vocab.get(
+                "disclaimer_text", disclaimer_text
+            )
 
     # Load client_intelligence.json
     intel_data = {}
