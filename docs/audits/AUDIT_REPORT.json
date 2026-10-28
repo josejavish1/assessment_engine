@@ -1,17 +1,17 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793195352,
+  "timestamp": 1793196379,
   "global_grade": "A",
-  "global_score": 83.0,
+  "global_score": 93.0,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 400,
-        "clean_files": 400,
+        "scanned_files": 403,
+        "clean_files": 403,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -32,19 +32,19 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 51.5,
+      "score_pct": 51.4,
       "passed": false,
       "metrics": {
-        "prod_sloc": 55547,
-        "test_sloc": 6569,
+        "prod_sloc": 55788,
+        "test_sloc": 6717,
         "test_to_code_ratio": 0.12,
-        "maintainability_index_sei": 30.2,
-        "typed_functions_pct": 84.7,
-        "docstring_coverage_pct": 75.5,
+        "maintainability_index_sei": 30.3,
+        "typed_functions_pct": 84.9,
+        "docstring_coverage_pct": 75.6,
         "max_cognitive_complexity": 570,
-        "rango_d_functions_count": 47,
+        "rango_d_functions_count": 48,
         "god_modules_count": 22,
-        "high_cognitive_funcs_count": 128,
+        "high_cognitive_funcs_count": 129,
         "deep_nesting_funcs_count": 75
       },
       "findings": [
@@ -522,7 +522,7 @@
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
           "line_number": 965,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'render_deep_project_charters' excede límite ciclomático: V(G) = 27 (Rango D > 20)",
+          "message": "Función 'render_deep_project_charters' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -540,7 +540,7 @@
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
           "line_number": 965,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'render_deep_project_charters': CoC = 58 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'render_deep_project_charters': CoC = 61 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -2436,6 +2436,24 @@
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/auditor/probes/supply_chain.py",
+          "line_number": 150,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Función '_is_version_vulnerable' excede límite ciclomático: V(G) = 21 (Rango D > 20)",
+          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/auditor/probes/supply_chain.py",
+          "line_number": 150,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_is_version_vulnerable': CoC = 37 (límite cognitivo <= 35)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/ot_perimeter.py",
           "line_number": 56,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
@@ -2448,7 +2466,7 @@
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'fair_risk.py' tiene 614 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'fair_risk.py' tiene 669 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -2457,7 +2475,7 @@
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
           "line_number": 86,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'evaluate_and_patch' excede límite ciclomático: V(G) = 124 (Rango D > 20)",
+          "message": "Función 'evaluate_and_patch' excede límite ciclomático: V(G) = 131 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -2475,7 +2493,7 @@
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
           "line_number": 86,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'evaluate_and_patch': CoC = 279 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'evaluate_and_patch': CoC = 303 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -2512,1305 +2530,17 @@
     },
     "supply_chain": {
       "probe_name": "Supply Chain, OSV.dev & SBOM (CycloneDX 1.6 / CRA)",
-      "score_pct": 0.0,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "total_dependencies": 142,
         "pinned_dependencies": 142,
         "pinning_ratio": 1.0,
-        "known_cves_detected": 143,
+        "known_cves_detected": 0,
         "sbom_format": "CycloneDX v1.6",
         "sbom_path": "/home/jsanchhi/assessment_engine/docs/audits/SBOM_CYCLONEDX.json"
       },
-      "findings": [
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-5p39-cfhj-2xmp",
-          "message": "Vulnerabilidad conocida en anyio==4.13.0: Vulnerabilidad conocida en componente de terceros (GHSA-5p39-cfhj-2xmp)",
-          "recommendation": "Actualizar anyio a una versión parcheada según el aviso GHSA-5p39-cfhj-2xmp."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-82r6-8w77-94w6",
-          "message": "Vulnerabilidad conocida en anyio==4.13.0: Vulnerabilidad conocida en componente de terceros (GHSA-82r6-8w77-94w6)",
-          "recommendation": "Actualizar anyio a una versión parcheada según el aviso GHSA-82r6-8w77-94w6."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4024",
-          "message": "Vulnerabilidad conocida en anyio==4.13.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4024)",
-          "recommendation": "Actualizar anyio a una versión parcheada según el aviso PYSEC-2026-4024."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4025",
-          "message": "Vulnerabilidad conocida en anyio==4.13.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4025)",
-          "recommendation": "Actualizar anyio a una versión parcheada según el aviso PYSEC-2026-4025."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-6v38-4h7w-rj9h",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-6v38-4h7w-rj9h)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-6v38-4h7w-rj9h."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-7vr2-2fgp-9w7p",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-7vr2-2fgp-9w7p)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-7vr2-2fgp-9w7p."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-8m4g-j4wp-wgcg",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-8m4g-j4wp-wgcg)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-8m4g-j4wp-wgcg."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-c5mf-xmp2-59rc",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-c5mf-xmp2-59rc)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-c5mf-xmp2-59rc."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-fch4-3c6x-j4gc",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-fch4-3c6x-j4gc)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-fch4-3c6x-j4gc."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-jj7h-c3hg-m23x",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-jj7h-c3hg-m23x)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-jj7h-c3hg-m23x."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-jj8c-mmj3-mmgv",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-jj8c-mmj3-mmgv)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-jj8c-mmj3-mmgv."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-q686-2qmg-hqc7",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-q686-2qmg-hqc7)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-q686-2qmg-hqc7."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-r95x-qfjj-fjj2",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-r95x-qfjj-fjj2)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-r95x-qfjj-fjj2."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-w8p2-r796-3vmq",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-w8p2-r796-3vmq)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-w8p2-r796-3vmq."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-x4rv-c3wx-4cr8",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (GHSA-x4rv-c3wx-4cr8)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso GHSA-x4rv-c3wx-4cr8."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-188",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-188)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso PYSEC-2026-188."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2119",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2119)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso PYSEC-2026-2119."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-25",
-          "message": "Vulnerabilidad conocida en Authlib==1.6.9: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-25)",
-          "recommendation": "Actualizar Authlib a una versión parcheada según el aviso PYSEC-2026-25."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-6q48-6c7w-9gw2",
-          "message": "Vulnerabilidad conocida en certifi==2026.2.25: Vulnerabilidad conocida en componente de terceros (GHSA-6q48-6c7w-9gw2)",
-          "recommendation": "Actualizar certifi a una versión parcheada según el aviso GHSA-6q48-6c7w-9gw2."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4320",
-          "message": "Vulnerabilidad conocida en certifi==2026.2.25: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4320)",
-          "recommendation": "Actualizar certifi a una versión parcheada según el aviso PYSEC-2026-4320."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-537c-gmf6-5ccf",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (GHSA-537c-gmf6-5ccf)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso GHSA-537c-gmf6-5ccf."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-g6cj-pr64-35w5",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (GHSA-g6cj-pr64-35w5)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso GHSA-g6cj-pr64-35w5."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-jwv3-5hgf-82ww",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (GHSA-jwv3-5hgf-82ww)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso GHSA-jwv3-5hgf-82ww."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-m2h6-j472-rp4c",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (GHSA-m2h6-j472-rp4c)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso GHSA-m2h6-j472-rp4c."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3552",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3552)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso PYSEC-2026-3552."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3553",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3553)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso PYSEC-2026-3553."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3554",
-          "message": "Vulnerabilidad conocida en cryptography==46.0.7: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3554)",
-          "recommendation": "Actualizar cryptography a una versión parcheada según el aviso PYSEC-2026-3554."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-j5g9-f88f-gfj3",
-          "message": "Vulnerabilidad conocida en httplib2==0.31.2: Vulnerabilidad conocida en componente de terceros (GHSA-j5g9-f88f-gfj3)",
-          "recommendation": "Actualizar httplib2 a una versión parcheada según el aviso GHSA-j5g9-f88f-gfj3."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3444",
-          "message": "Vulnerabilidad conocida en httplib2==0.31.2: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3444)",
-          "recommendation": "Actualizar httplib2 a una versión parcheada según el aviso PYSEC-2026-3444."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-65pc-fj4g-8rjx",
-          "message": "Vulnerabilidad conocida en idna==3.11: Vulnerabilidad conocida en componente de terceros (GHSA-65pc-fj4g-8rjx)",
-          "recommendation": "Actualizar idna a una versión parcheada según el aviso GHSA-65pc-fj4g-8rjx."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-215",
-          "message": "Vulnerabilidad conocida en idna==3.11: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-215)",
-          "recommendation": "Actualizar idna a una versión parcheada según el aviso PYSEC-2026-215."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-vfmq-68hx-4jfw",
-          "message": "Vulnerabilidad conocida en lxml==6.0.3: Vulnerabilidad conocida en componente de terceros (GHSA-vfmq-68hx-4jfw)",
-          "recommendation": "Actualizar lxml a una versión parcheada según el aviso GHSA-vfmq-68hx-4jfw."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-87",
-          "message": "Vulnerabilidad conocida en lxml==6.0.3: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-87)",
-          "recommendation": "Actualizar lxml a una versión parcheada según el aviso PYSEC-2026-87."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-2h4p-vjrc-8xpq",
-          "message": "Vulnerabilidad conocida en Mako==1.3.10: Vulnerabilidad conocida en componente de terceros (GHSA-2h4p-vjrc-8xpq)",
-          "recommendation": "Actualizar Mako a una versión parcheada según el aviso GHSA-2h4p-vjrc-8xpq."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-5639-2j2p-m4mx",
-          "message": "Vulnerabilidad conocida en Mako==1.3.10: Vulnerabilidad conocida en componente de terceros (GHSA-5639-2j2p-m4mx)",
-          "recommendation": "Actualizar Mako a una versión parcheada según el aviso GHSA-5639-2j2p-m4mx."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-v92g-xgxw-vvmm",
-          "message": "Vulnerabilidad conocida en Mako==1.3.10: Vulnerabilidad conocida en componente de terceros (GHSA-v92g-xgxw-vvmm)",
-          "recommendation": "Actualizar Mako a una versión parcheada según el aviso GHSA-v92g-xgxw-vvmm."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2617",
-          "message": "Vulnerabilidad conocida en Mako==1.3.10: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2617)",
-          "recommendation": "Actualizar Mako a una versión parcheada según el aviso PYSEC-2026-2617."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4243",
-          "message": "Vulnerabilidad conocida en Mako==1.3.10: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4243)",
-          "recommendation": "Actualizar Mako a una versión parcheada según el aviso PYSEC-2026-4243."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-88",
-          "message": "Vulnerabilidad conocida en Mako==1.3.10: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-88)",
-          "recommendation": "Actualizar Mako a una versión parcheada según el aviso PYSEC-2026-88."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-5h93-6whr-6q8j",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-5h93-6whr-6q8j)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-5h93-6whr-6q8j."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-84m7-p3x7-pcfv",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-84m7-p3x7-pcfv)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-84m7-p3x7-pcfv."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-hvrp-rf83-w775",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-hvrp-rf83-w775)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-hvrp-rf83-w775."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-jpw9-pfvf-9f58",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-jpw9-pfvf-9f58)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-jpw9-pfvf-9f58."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-rwrf-2pqf-9j8j",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-rwrf-2pqf-9j8j)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-rwrf-2pqf-9j8j."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-vj7q-gjh5-988w",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-vj7q-gjh5-988w)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-vj7q-gjh5-988w."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-w4fh-qvv9-3v23",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (GHSA-w4fh-qvv9-3v23)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso GHSA-w4fh-qvv9-3v23."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3481",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3481)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso PYSEC-2026-3481."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3482",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3482)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso PYSEC-2026-3482."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3483",
-          "message": "Vulnerabilidad conocida en mcp==1.27.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3483)",
-          "recommendation": "Actualizar mcp a una versión parcheada según el aviso PYSEC-2026-3483."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-54p9-h82j-f925",
-          "message": "Vulnerabilidad conocida en multidict==6.7.1: Vulnerabilidad conocida en componente de terceros (GHSA-54p9-h82j-f925)",
-          "recommendation": "Actualizar multidict a una versión parcheada según el aviso GHSA-54p9-h82j-f925."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4244",
-          "message": "Vulnerabilidad conocida en multidict==6.7.1: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4244)",
-          "recommendation": "Actualizar multidict a una versión parcheada según el aviso PYSEC-2026-4244."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-xcq7-p3pf-p88h",
-          "message": "Vulnerabilidad conocida en opentelemetry-api==1.38.0: Vulnerabilidad conocida en componente de terceros (GHSA-xcq7-p3pf-p88h)",
-          "recommendation": "Actualizar opentelemetry-api a una versión parcheada según el aviso GHSA-xcq7-p3pf-p88h."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-22hg-r758-rrw9",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-22hg-r758-rrw9)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-22hg-r758-rrw9."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-24rc-8hj2-v98c",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-24rc-8hj2-v98c)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-24rc-8hj2-v98c."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-254f-3936-288h",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-254f-3936-288h)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-254f-3936-288h."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-27h8-gf7j-v5hc",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-27h8-gf7j-v5hc)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-27h8-gf7j-v5hc."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-332p-7hrc-92wf",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-332p-7hrc-92wf)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-332p-7hrc-92wf."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-3j72-p6qg-6xp7",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-3j72-p6qg-6xp7)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-3j72-p6qg-6xp7."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-4558-3h8r-v8xp",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-4558-3h8r-v8xp)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-4558-3h8r-v8xp."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-45hq-cxwh-f6vc",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-45hq-cxwh-f6vc)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-45hq-cxwh-f6vc."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-462x-pgg6-55fp",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-462x-pgg6-55fp)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-462x-pgg6-55fp."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-4rm8-3hmm-39fg",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-4rm8-3hmm-39fg)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-4rm8-3hmm-39fg."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-4rr5-89j8-mwwm",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-4rr5-89j8-mwwm)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-4rr5-89j8-mwwm."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-4x4j-2g7c-83w6",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-4x4j-2g7c-83w6)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-4x4j-2g7c-83w6."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-58r4-6rv3-gfh8",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-58r4-6rv3-gfh8)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-58r4-6rv3-gfh8."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-5x8w-8jj5-q52h",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-5x8w-8jj5-q52h)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-5x8w-8jj5-q52h."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-5x94-69rx-g8h2",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-5x94-69rx-g8h2)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-5x94-69rx-g8h2."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-5xm2-6676-qcp9",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-5xm2-6676-qcp9)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-5xm2-6676-qcp9."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-62p4-gmf7-7g93",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-62p4-gmf7-7g93)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-62p4-gmf7-7g93."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-654x-cwwv-5j9c",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-654x-cwwv-5j9c)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-654x-cwwv-5j9c."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-65qm-jvmh-6pqg",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-65qm-jvmh-6pqg)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-65qm-jvmh-6pqg."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-6r8x-57c9-28j4",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-6r8x-57c9-28j4)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-6r8x-57c9-28j4."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-74r2-7ff9-mjj2",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-74r2-7ff9-mjj2)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-74r2-7ff9-mjj2."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-78g4-xqwv-q3g8",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-78g4-xqwv-q3g8)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-78g4-xqwv-q3g8."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-7mwm-ghpf-9vrm",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-7mwm-ghpf-9vrm)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-7mwm-ghpf-9vrm."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-8g5g-8vmr-9782",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-8g5g-8vmr-9782)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-8g5g-8vmr-9782."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-8v84-f9pq-wr9x",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-8v84-f9pq-wr9x)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-8v84-f9pq-wr9x."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-9hw9-ch79-4vh6",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-9hw9-ch79-4vh6)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-9hw9-ch79-4vh6."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-9v9v-9qvf-h2hj",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-9v9v-9qvf-h2hj)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-9v9v-9qvf-h2hj."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-c6hw-5grf-ff96",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-c6hw-5grf-ff96)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-c6hw-5grf-ff96."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-cp9v-662q-vvx9",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-cp9v-662q-vvx9)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-cp9v-662q-vvx9."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-f2g6-542v-9j58",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-f2g6-542v-9j58)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-f2g6-542v-9j58."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-fc9g-5qg7-mf45",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-fc9g-5qg7-mf45)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-fc9g-5qg7-mf45."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-fj7v-r99m-22gq",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-fj7v-r99m-22gq)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-fj7v-r99m-22gq."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-g4qv-2jxx-769h",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-g4qv-2jxx-769h)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-g4qv-2jxx-769h."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-g7cr-3p24-7wf7",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-g7cr-3p24-7wf7)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-g7cr-3p24-7wf7."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-g842-9rc4-69pw",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-g842-9rc4-69pw)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-g842-9rc4-69pw."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-gg2r-wvfm-q9rx",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-gg2r-wvfm-q9rx)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-gg2r-wvfm-q9rx."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-j4m9-6w36-pw47",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-j4m9-6w36-pw47)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-j4m9-6w36-pw47."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-jg86-v3jv-hrpm",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-jg86-v3jv-hrpm)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-jg86-v3jv-hrpm."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-jjj6-mw9f-p565",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-jjj6-mw9f-p565)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-jjj6-mw9f-p565."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-mrfp-p49p-3hf2",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-mrfp-p49p-3hf2)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-mrfp-p49p-3hf2."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-p4wg-p73j-c528",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-p4wg-p73j-c528)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-p4wg-p73j-c528."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-p8hx-v2p6-rp84",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-p8hx-v2p6-rp84)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-p8hx-v2p6-rp84."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-pchr-8j38-3x4p",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-pchr-8j38-3x4p)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-pchr-8j38-3x4p."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-pg7v-jwj7-p798",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-pg7v-jwj7-p798)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-pg7v-jwj7-p798."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-phj9-mv4w-65pm",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-phj9-mv4w-65pm)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-phj9-mv4w-65pm."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-q45j-58j2-45rg",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-q45j-58j2-45rg)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-q45j-58j2-45rg."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-rfgq-q3w2-pmv2",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-rfgq-q3w2-pmv2)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-rfgq-q3w2-pmv2."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-v9pv-5gc8-w2m6",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-v9pv-5gc8-w2m6)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-v9pv-5gc8-w2m6."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-vjc4-5qp5-m44j",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-vjc4-5qp5-m44j)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-vjc4-5qp5-m44j."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-vx6w-vv9f-6gvg",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-vx6w-vv9f-6gvg)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-vx6w-vv9f-6gvg."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-w889-685w-c8fh",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-w889-685w-c8fh)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-w889-685w-c8fh."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-xgh8-jp6q-p5x8",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-xgh8-jp6q-p5x8)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-xgh8-jp6q-p5x8."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-xj96-63gp-2gmr",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-xj96-63gp-2gmr)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-xj96-63gp-2gmr."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-xvh5-g6gv-559v",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (GHSA-xvh5-g6gv-559v)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso GHSA-xvh5-g6gv-559v."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2253",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2253)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-2253."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2254",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2254)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-2254."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2255",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2255)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-2255."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2256",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2256)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-2256."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-2257",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-2257)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-2257."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3451",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3451)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3451."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3452",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3452)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3452."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3453",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3453)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3453."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3454",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3454)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3454."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3493",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3493)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3493."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3494",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3494)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3494."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3495",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3495)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3495."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3496",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3496)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-3496."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4326",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4326)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4326."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4327",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4327)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4327."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4328",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4328)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4328."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4329",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4329)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4329."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4330",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4330)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4330."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4331",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4331)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4331."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4332",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4332)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4332."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4333",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4333)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4333."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4334",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4334)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4334."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4335",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4335)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4335."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4336",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4336)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4336."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4337",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4337)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4337."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4338",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4338)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4338."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4339",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4339)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4339."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4340",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4340)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4340."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4341",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4341)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4341."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4342",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4342)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4342."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-4343",
-          "message": "Vulnerabilidad conocida en pillow==12.2.0: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-4343)",
-          "recommendation": "Actualizar pillow a una versión parcheada según el aviso PYSEC-2026-4343."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-8ppf-4f7h-5ppj",
-          "message": "Vulnerabilidad conocida en pyasn1==0.6.3: Vulnerabilidad conocida en componente de terceros (GHSA-8ppf-4f7h-5ppj)",
-          "recommendation": "Actualizar pyasn1 a una versión parcheada según el aviso GHSA-8ppf-4f7h-5ppj."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-hm4w-wwcw-mr6r",
-          "message": "Vulnerabilidad conocida en pyasn1==0.6.3: Vulnerabilidad conocida en componente de terceros (GHSA-hm4w-wwcw-mr6r)",
-          "recommendation": "Actualizar pyasn1 a una versión parcheada según el aviso GHSA-hm4w-wwcw-mr6r."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-GHSA-m4p7-r5rc-7g4j",
-          "message": "Vulnerabilidad conocida en pyasn1==0.6.3: Vulnerabilidad conocida en componente de terceros (GHSA-m4p7-r5rc-7g4j)",
-          "recommendation": "Actualizar pyasn1 a una versión parcheada según el aviso GHSA-m4p7-r5rc-7g4j."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3455",
-          "message": "Vulnerabilidad conocida en pyasn1==0.6.3: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3455)",
-          "recommendation": "Actualizar pyasn1 a una versión parcheada según el aviso PYSEC-2026-3455."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3456",
-          "message": "Vulnerabilidad conocida en pyasn1==0.6.3: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3456)",
-          "recommendation": "Actualizar pyasn1 a una versión parcheada según el aviso PYSEC-2026-3456."
-        },
-        {
-          "category": "SUPPLY_CHAIN",
-          "severity": "HIGH",
-          "file_path": "requirements.txt",
-          "line_number": null,
-          "rule_id": "SCA-PYSEC-2026-3457",
-          "message": "Vulnerabilidad conocida en pyasn1==0.6.3: Vulnerabilidad conocida en componente de terceros (PYSEC-2026-3457)",
-          "recommendation": "Actualizar pyasn1 a una versión parcheada según el aviso PYSEC-2026-3457."
-        }
-      ]
+      "findings": []
     },
     "legal_compliance": {
       "probe_name": "Legal Compliance & GDPR (SPDX / AEPD / CRA)",
@@ -3824,7 +2554,7 @@
         "has_gdpr_art17_erasure": true,
         "has_gdpr_art20_portability": true,
         "has_column_encryption": true,
-        "analyzed_dependencies_count": 93
+        "analyzed_dependencies_count": 91
       },
       "findings": [
         {
@@ -3979,7 +2709,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 309,
+        "scanned_files": 312,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -3993,7 +2723,7 @@
       "score_pct": 80.0,
       "passed": false,
       "metrics": {
-        "scanned_files": 309,
+        "scanned_files": 312,
         "entropy_violations_count": 1,
         "long_parameter_funcs_count": 13,
         "god_classes_count": 0,
@@ -4139,10 +2869,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.56,
-        "p95_latency_ms": 105.28,
-        "p99_latency_ms": 181.68,
-        "tail_amplification_ratio": 116.46,
+        "p50_latency_ms": 1.47,
+        "p95_latency_ms": 105.33,
+        "p99_latency_ms": 181.6,
+        "tail_amplification_ratio": 123.54,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -4270,7 +3000,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "files_scanned": 171,
+        "files_scanned": 172,
         "total_findings": 0,
         "critical_violations": 0,
         "high_violations": 0,
@@ -4283,23 +3013,23 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 343,
+        "scanned_files": 346,
         "hardcoded_issues": 0
       },
       "findings": []
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 73.4,
+      "score_pct": 73.6,
       "passed": false,
       "metrics": {
-        "files_scanned": 338,
+        "files_scanned": 341,
         "inline_rationale_score": 77.6,
-        "contract_coverage_score": 48.0,
-        "linguistic_sovereignty_score": 98.3,
-        "comment_smells_count": 1327,
+        "contract_coverage_score": 48.4,
+        "linguistic_sovereignty_score": 98.2,
+        "comment_smells_count": 1333,
         "missing_docstrings_count": 114,
-        "cqi_score": 73.4,
+        "cqi_score": 73.6,
         "grade": "B",
         "status": "Degradation Detected"
       },
@@ -15286,6 +14016,51 @@
         },
         {
           "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 58,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 108,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 111,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 125,
+          "rule_id": "NON-ENGLISH-COMMENT",
+          "message": "Non-English comment detected in production source code",
+          "recommendation": "Translate comment to concise technical English or delete if self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/localization.py",
+          "line_number": 44,
+          "rule_id": "NON-ENGLISH-COMMENT",
+          "message": "Docstring in 'resolve_base_locale' is written in Spanish instead of technical English",
+          "recommendation": "Translate docstring to concise technical English in imperative mood."
+        },
+        {
+          "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/json_from_model.py",
           "line_number": 6,
@@ -15778,6 +14553,15 @@
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policies/archimate.py",
+          "line_number": 25,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
         },
         {
           "category": "CODE_HYGIENE",
@@ -16458,34 +15242,16 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 758,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 759,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 760,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
           "line_number": 764,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
+          "line_number": 765,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16494,19 +15260,19 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 768,
+          "line_number": 766,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "HIGH",
+          "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 772,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+          "line_number": 770,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
         },
         {
           "category": "CODE_HYGIENE",
@@ -16519,36 +15285,9 @@
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
+          "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
           "line_number": 778,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 782,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 786,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 794,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16557,7 +15296,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 795,
+          "line_number": 780,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16566,7 +15305,25 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 799,
+          "line_number": 784,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
+          "line_number": 788,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
+          "line_number": 792,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16575,7 +15332,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 804,
+          "line_number": 800,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16584,10 +15341,28 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 807,
+          "line_number": 801,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
+          "line_number": 805,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
+          "line_number": 810,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
         },
         {
           "category": "CODE_HYGIENE",
@@ -16600,9 +15375,18 @@
         },
         {
           "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
+          "line_number": 819,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 816,
+          "line_number": 822,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16611,7 +15395,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 818,
+          "line_number": 824,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'Tier-1'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16620,7 +15404,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 820,
+          "line_number": 826,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16629,7 +15413,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 841,
+          "line_number": 847,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16638,7 +15422,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 868,
+          "line_number": 928,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16647,7 +15431,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 871,
+          "line_number": 931,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16656,7 +15440,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 875,
+          "line_number": 935,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16665,7 +15449,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 876,
+          "line_number": 959,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16674,7 +15458,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 899,
+          "line_number": 969,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16683,16 +15467,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 909,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policies/fair_risk.py",
-          "line_number": 922,
+          "line_number": 982,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16727,5 +15502,5 @@
       ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A (83.0%). Sondas pasadas: 13/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (93.0%). Sondas pasadas: 14/18."
 }

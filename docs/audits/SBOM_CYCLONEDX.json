@@ -62,8 +62,8 @@
     {
       "type": "library",
       "name": "anyio",
-      "version": "4.13.0",
-      "purl": "pkg:pypi/anyio@4.13.0",
+      "version": "4.15.1",
+      "purl": "pkg:pypi/anyio@4.15.1",
       "scope": "required"
     },
     {
@@ -76,15 +76,15 @@
     {
       "type": "library",
       "name": "Authlib",
-      "version": "1.6.9",
-      "purl": "pkg:pypi/Authlib@1.6.9",
+      "version": "1.9.1",
+      "purl": "pkg:pypi/Authlib@1.9.1",
       "scope": "required"
     },
     {
       "type": "library",
       "name": "certifi",
-      "version": "2026.2.25",
-      "purl": "pkg:pypi/certifi@2026.2.25",
+      "version": "2026.10.23",
+      "purl": "pkg:pypi/certifi@2026.10.23",
       "scope": "required"
     },
     {
@@ -125,8 +125,8 @@
     {
       "type": "library",
       "name": "cryptography",
-      "version": "46.0.7",
-      "purl": "pkg:pypi/cryptography@46.0.7",
+      "version": "50.0.2",
+      "purl": "pkg:pypi/cryptography@50.0.2",
       "scope": "required"
     },
     {
@@ -433,8 +433,8 @@
     {
       "type": "library",
       "name": "httplib2",
-      "version": "0.31.2",
-      "purl": "pkg:pypi/httplib2@0.31.2",
+      "version": "0.32.1",
+      "purl": "pkg:pypi/httplib2@0.32.1",
       "scope": "required"
     },
     {
@@ -454,8 +454,8 @@
     {
       "type": "library",
       "name": "idna",
-      "version": "3.11",
-      "purl": "pkg:pypi/idna@3.11",
+      "version": "3.20",
+      "purl": "pkg:pypi/idna@3.20",
       "scope": "required"
     },
     {
@@ -489,15 +489,15 @@
     {
       "type": "library",
       "name": "lxml",
-      "version": "6.0.3",
-      "purl": "pkg:pypi/lxml@6.0.3",
+      "version": "6.1.3",
+      "purl": "pkg:pypi/lxml@6.1.3",
       "scope": "required"
     },
     {
       "type": "library",
       "name": "Mako",
-      "version": "1.3.10",
-      "purl": "pkg:pypi/Mako@1.3.10",
+      "version": "1.4.3",
+      "purl": "pkg:pypi/Mako@1.4.3",
       "scope": "required"
     },
     {
@@ -531,8 +531,8 @@
     {
       "type": "library",
       "name": "multidict",
-      "version": "6.7.1",
-      "purl": "pkg:pypi/multidict@6.7.1",
+      "version": "7.2.1",
+      "purl": "pkg:pypi/multidict@7.2.1",
       "scope": "required"
     },
     {
@@ -650,8 +650,8 @@
     {
       "type": "library",
       "name": "pillow",
-      "version": "12.2.0",
-      "purl": "pkg:pypi/pillow@12.2.0",
+      "version": "13.0.0",
+      "purl": "pkg:pypi/pillow@13.0.0",
       "scope": "required"
     },
     {
@@ -685,8 +685,8 @@
     {
       "type": "library",
       "name": "pyasn1",
-      "version": "0.6.3",
-      "purl": "pkg:pypi/pyasn1@0.6.3",
+      "version": "0.6.5",
+      "purl": "pkg:pypi/pyasn1@0.6.5",
       "scope": "required"
     },
     {
@@ -734,8 +734,8 @@
     {
       "type": "library",
       "name": "pyOpenSSL",
-      "version": "26.0.0",
-      "purl": "pkg:pypi/pyOpenSSL@26.0.0",
+      "version": "26.4.0",
+      "purl": "pkg:pypi/pyOpenSSL@26.4.0",
       "scope": "required"
     },
     {

@@ -147,6 +147,49 @@ def _parse_package_json_file(pkg_file: Path, target_dir: Path) -> tuple[int, int
     return deps_count, pinned_count, components, osv_queries, findings
 
 
+def _is_version_vulnerable(version_str: str, vuln: dict[str, Any]) -> bool:
+    """Evaluate whether version_str is strictly within the affected ranges of the OSV advisory."""
+    if not version_str or version_str in ("latest", "unspecified"):
+        return True
+
+    def parse_semver(v_str: str) -> tuple[int, ...]:
+        clean = re.sub(r"[^\d.]", "", v_str.split("+")[0].split("-")[0])
+        parts = []
+        for p in clean.split("."):
+            if p.isdigit():
+                parts.append(int(p))
+        return tuple(parts)
+
+    try:
+        cur_v = parse_semver(version_str)
+    except Exception:
+        return True
+
+    for aff in vuln.get("affected", []):
+        if "versions" in aff and version_str in aff["versions"]:
+            return True
+
+        for r in aff.get("ranges", []):
+            events = r.get("events", [])
+            intro = None
+            fixed = None
+            for ev in events:
+                if "introduced" in ev and ev["introduced"] != "0":
+                    intro = parse_semver(ev["introduced"])
+                if "fixed" in ev:
+                    fixed = parse_semver(ev["fixed"])
+
+            is_in_range = True
+            if intro and cur_v < intro:
+                is_in_range = False
+            if fixed and cur_v >= fixed:
+                is_in_range = False
+            if is_in_range and (intro is not None or fixed is not None):
+                return True
+
+    return False
+
+
 def _check_osv_vulnerabilities(osv_queries: list[dict[str, Any]]) -> tuple[int, list[AuditFinding]]:
     findings: list[AuditFinding] = []
     known_cves_count = 0
@@ -161,6 +204,8 @@ def _check_osv_vulnerabilities(osv_queries: list[dict[str, Any]]) -> tuple[int, 
             p_name = target_query["package"]["name"]
             p_ver = target_query.get("version", "latest")
             for v in vulns:
+                if not _is_version_vulnerable(p_ver, v):
+                    continue
                 known_cves_count += 1
                 vuln_id = v.get("id", "OSV-VULN")
                 aliases = ", ".join(v.get("aliases", [])) or vuln_id
