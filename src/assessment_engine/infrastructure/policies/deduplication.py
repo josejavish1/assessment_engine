@@ -7,50 +7,60 @@ from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 from assessment_engine.infrastructure.policies.base import BaseSovereignPolicy
 
 
-def _is_platform_eng_project(name: str) -> bool:
+def _is_platform_eng_project(proj_or_name: Any) -> bool:
+    if isinstance(proj_or_name, dict):
+        if proj_or_name.get("transformation_typology") in [
+            "Automation & Platform Engineering",
+            "Platform Engineering",
+        ]:
+            return True
+        name = str(proj_or_name.get("name", ""))
+    else:
+        name = str(proj_or_name or "")
+
     low = name.lower()
-    return "platform engineering" in low or "ingeniería de plataforma" in low
+    return (
+        "platform engineering" in low
+        or "plattform engineering" in low
+        or "ingeniería de plataforma" in low
+        or "engenharia de plataforma" in low
+        or "ingénierie de plateforme" in low
+        or "idp" in low
+        or "developer platform" in low
+    )
 
 
 def _build_unified_platform_project(
     doc_lang: str, cloud_provider: str
 ) -> dict[str, Any]:
-    cloud_label = (
-        cloud_provider
-        if cloud_provider
-        else (
-            "la nube corporativa"
-            if doc_lang == "es"
-            else "the corporate cloud"
-        )
+    from assessment_engine.infrastructure.localization import (
+        get_localized_list,
+        t,
     )
-    if doc_lang == "es":
-        return {
-            "node_id": str(uuid.uuid4()),
-            "name": "Programa Estratégico de Platform Engineering y Autoservicio Híbrido",
-            "transformation_typology": "Automation & Platform Engineering",
-            "business_case": f"Reducción de la carga cognitiva de los equipos de desarrollo y operaciones mediante la unificación de portales y catálogos sobre {cloud_label}.",
-            "tech_objective": "Consolidar las iniciativas de cómputo híbrido, landing zones y provisión automática bajo una única Plataforma Interna de Desarrollo (IDP) unificada y autoservicio.",
-            "deliverables": [
-                "Definición del catálogo de servicios unificado.",
-                f"Integración de las APIs de provisión de {cloud_label} Landing Zones.",
-                "Despliegue del portal central de Autoservicio para el desarrollador.",
-            ],
-            "sizing": "XL",
-            "duration": "H1 (Mes 1-6)",
-            "program_id": None,
-        }
+
+    cloud_label = cloud_provider or t(
+        "default_corporate_cloud_label", locale=doc_lang
+    )
+    raw_delivs = get_localized_list(
+        "unified_platform_program_deliverables", locale=doc_lang
+    )
+    deliverables = [d.format(cloud_label=cloud_label) for d in raw_delivs]
+
     return {
         "node_id": str(uuid.uuid4()),
-        "name": "Platform Engineering and Hybrid Self-Service Strategic Program",
+        "name": t("unified_platform_program_name", locale=doc_lang),
         "transformation_typology": "Automation & Platform Engineering",
-        "business_case": f"Reduction of developer cognitive load through unified catalogs and self-service portals over {cloud_label}.",
-        "tech_objective": "Consolidate compute, landing zone, and automated provisioning capabilities under a single Internal Developer Platform (IDP).",
-        "deliverables": [
-            "Unified service catalog definition.",
-            f"API integration for {cloud_label} Landing Zone provisioning.",
-            "Developer Self-Service portal deployment.",
-        ],
+        "business_case": t(
+            "unified_platform_program_business_case",
+            locale=doc_lang,
+            cloud_label=cloud_label,
+        ),
+        "tech_objective": t(
+            "unified_platform_program_tech_objective",
+            locale=doc_lang,
+            cloud_label=cloud_label,
+        ),
+        "deliverables": deliverables,
         "sizing": "XL",
         "duration": "H1 (Mes 1-6)",
         "program_id": None,
@@ -86,7 +96,7 @@ class DeduplicationPolicy(BaseSovereignPolicy):
             if p_id == target_pilar_id:
                 continue
             for proj in list(p.get("projects_todo", [])):
-                if _is_platform_eng_project(proj.get("name", "")):
+                if _is_platform_eng_project(proj):
                     found_platform_projects.append(proj)
                     p["projects_todo"].remove(proj)
 

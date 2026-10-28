@@ -127,7 +127,20 @@
         "Bóveda Inmutable",
         "Pruebas de Restauración Automatizadas"
       ]
-    }
+    },
+    "default_capability_label": "Infraestructura",
+    "default_impact_label": "Riesgo Operativo",
+    "default_corporate_cloud_label": "la nube corporativa",
+    "unified_platform_program_name": "Programa Estratégico de Platform Engineering y Autoservicio Híbrido",
+    "unified_platform_program_business_case": "Reducción de la carga cognitiva de los equipos de desarrollo y operaciones mediante la unificación de portales y catálogos sobre {cloud_label}.",
+    "unified_platform_program_tech_objective": "Consolidar las iniciativas de cómputo híbrido, landing zones y provisión automática bajo una única Plataforma Interna de Desarrollo (IDP) unificada y autoservicio.",
+    "unified_platform_program_deliverables": [
+      "Definición del catálogo de servicios unificado.",
+      "Integración de las APIs de provisión de {cloud_label} Landing Zones.",
+      "Despliegue del portal central de Autoservicio para el desarrollador."
+    ],
+    "business_case_direct_mitigation_template": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'.",
+    "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks})."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -257,7 +270,20 @@
         "Immutable Backup Vault",
         "Automated Restoration Testing Suite"
       ]
-    }
+    },
+    "default_capability_label": "Infrastructure",
+    "default_impact_label": "Operational Risk",
+    "default_corporate_cloud_label": "the corporate cloud",
+    "unified_platform_program_name": "Platform Engineering and Hybrid Self-Service Strategic Program",
+    "unified_platform_program_business_case": "Reduction of developer cognitive load through unified catalogs and self-service portals over {cloud_label}.",
+    "unified_platform_program_tech_objective": "Consolidate compute, landing zone, and automated provisioning capabilities under a single Internal Developer Platform (IDP).",
+    "unified_platform_program_deliverables": [
+      "Unified service catalog definition.",
+      "API integration for {cloud_label} Landing Zone provisioning.",
+      "Developer Self-Service portal deployment."
+    ],
+    "business_case_direct_mitigation_template": "Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'.",
+    "business_case_strategic_enabler_template": "Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks})."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -286,7 +312,121 @@
     "date_label": "Junho 2026",
     "table_of_contents_title": "Índice de Conteúdos",
     "appendix_a_title": "Lista de Abreviaturas",
-    "conclusions_title": "Relatório Consolidado do Estado Futuro"
+    "conclusions_title": "Relatório Consolidado do Estado Futuro",
+    "table_header_pillar": "Pilar",
+    "table_header_score": "Score",
+    "table_header_level": "Nível",
+    "table_header_reading": "Resumo Executivo",
+    "table_header_asis": "Situação Atual (AS-IS)",
+    "table_header_tobe": "Estado Objetivo (TO-BE)",
+    "table_header_gap": "Lacuna Principal",
+    "radar_chart_heading": "Gráfico Radar",
+    "compact_pillar_detail_heading": "Detalhe Compacto por Pilar",
+    "audit_justification_template": "Perda primária contábil estimada no evento base: {downtime_hours}h de paralisação a {hourly_rate}/h ({downtime_cost}) + {sre_cost} de intervenção SRE ({sre_recovery_hours}h a {sre_hourly_rate}/h).",
+    "remediation_project_name_template": "Programa de Remediação Tática: {capability}",
+    "remediation_business_case_template": "Mitigação Direta de Risco: {impact}",
+    "remediation_tech_objective_template": "Resolver a lacuna técnica identificada no AS-IS: {finding_text}",
+    "remediation_duration": "H1 (Meses 1-3)",
+    "remediation_deliverables": [
+      "Plano de Remediação",
+      "Execução de Patches e Configurações",
+      "Relatório de Encerramento de Lacuna"
+    ],
+    "archimate_fallback_deliverables": [
+      "Documento de Design Técnico (HLD/LLD)",
+      "Plano de Testes e Validação"
+    ],
+    "archimate_catalog": {
+      "kubernetes": [
+        "Manifiestos Base YAML",
+        "Módulo Terraform de Orquestación de Contenedores",
+        "Helm Charts de Gobernanza",
+        "Pipeline GitLab/GitHub Actions"
+      ],
+      "eks": [
+        "Manifiestos Base YAML",
+        "Módulo Terraform de Clúster Gestionado",
+        "Helm Charts de Gobernanza",
+        "Pipeline GitLab/GitHub Actions"
+      ],
+      "contenedores": [
+        "Manifiestos Base YAML",
+        "Módulo Terraform de Orquestación de Contenedores",
+        "Helm Charts de Gobernanza",
+        "Pipeline GitLab/GitHub Actions"
+      ],
+      "landing zone": [
+        "Framework de Landing Zone y Jerarquía Multi-Cuenta",
+        "Políticas de Gobernanza y Guardrails Automatizados",
+        "Módulo Terraform Base Network"
+      ],
+      "platform engineering": [
+        "Catálogo Backstage/IDP",
+        "Plantillas de Autoservicio IaC",
+        "Framework de SLIs/SLOs"
+      ],
+      "observabilidad": [
+        "Dashboards Unificados de Métricas y Trazas",
+        "Reglas de Alertas PromQL",
+        "Integración PagerDuty/ServiceNow"
+      ],
+      "aiops": [
+        "Dashboards Unificados de Métricas y Trazas",
+        "Modelos de Detección de Anomalías",
+        "Integración ITSM"
+      ],
+      "scada": [
+        "Topología de Red Purdue",
+        "Reglas de Firewall Perimetral",
+        "Diodo de Datos Unidireccional"
+      ],
+      "automatización": [
+        "Playbooks Ansible",
+        "Módulos Terraform",
+        "Pipelines CI/CD"
+      ],
+      "iac": [
+        "Módulos Terraform",
+        "Repositorio GitOps",
+        "Políticas OPA/Sentinel"
+      ],
+      "dr": [
+        "Runbooks de Recuperación",
+        "Plan de Pruebas de Failover",
+        "Plantillas de Replicación y Automatización de Failover"
+      ],
+      "disaster recovery": [
+        "Runbooks de Recuperación",
+        "Plan de Pruebas de Failover",
+        "Plantillas de Replicación y Automatización de Failover"
+      ],
+      "backup": [
+        "Políticas de Retención",
+        "Bóveda Inmutable",
+        "Pruebas de Restauración Automatizadas"
+      ]
+    },
+    "bottlenecks_bullet": "**Gargalos Estruturais:** O modelo manual de provisionamento limita a velocidade de entrega.",
+    "delayed_faults_bullet": "**Detecção Tardia de Incidentes:** A falta de observabilidade aumenta o MTTR.",
+    "config_drift_bullet": "**Desvio de Configuração:** Manutenção manual dificulta a conformidade.",
+    "desc_band_inicial": "evidenciando um modelo ad-hoc e reativo",
+    "desc_band_repetible": "evidenciando processos locais táticos",
+    "desc_band_definido": "evidenciando processos formalizados",
+    "desc_band_gestionado": "evidenciando um modelo maduro e medido quantitativamente",
+    "desc_band_optimizado": "evidenciando excelência operacional e melhoria contínua",
+    "default_capability_label": "Infraestrutura",
+    "default_impact_label": "Risco Operacional",
+    "default_corporate_cloud_label": "a nuvem corporativa",
+    "unified_platform_program_name": "Programa Estratégico de Platform Engineering e Autoatendimento Híbrido",
+    "unified_platform_program_business_case": "Redução da carga cognitiva das equipes de desenvolvimento e operações através da unificação de portais e catálogos em {cloud_label}.",
+    "unified_platform_program_tech_objective": "Consolidar as iniciativas de computação híbrida, landing zones e provisionamento automatizado sob uma única Plataforma Interna de Desenvolvimento (IDP).",
+    "unified_platform_program_deliverables": [
+      "Definição do catálogo de serviços unificado.",
+      "Integração das APIs de provisionamento de Landing Zones em {cloud_label}.",
+      "Implantação do portal central de Autoatendimento para o desenvolvedor."
+    ],
+    "business_case_direct_mitigation_template": "Mitigação Direta: Resolve a vulnerabilidade crítica detectada no AS-IS, eliminando o risco de: '{impact}'.",
+    "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduz o TCO operacional, acelera o time-to-market e garante a conformidade regulatória ({reg_frameworks})."
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -315,7 +455,121 @@
     "date_label": "Juin 2026",
     "table_of_contents_title": "Table des Matières",
     "appendix_a_title": "Liste des Abréviations",
-    "conclusions_title": "Rapport Consolidé de l'État Futur"
+    "conclusions_title": "Rapport Consolidé de l'État Futur",
+    "table_header_pillar": "Pilier",
+    "table_header_score": "Score",
+    "table_header_level": "Niveau",
+    "table_header_reading": "Synthèse Exécutive",
+    "table_header_asis": "État Actuel (AS-IS)",
+    "table_header_tobe": "État Cible (TO-BE)",
+    "table_header_gap": "Écart Majeur",
+    "radar_chart_heading": "Graphique Radar",
+    "compact_pillar_detail_heading": "Détail Compact par Pilier",
+    "audit_justification_template": "Perte comptable primaire estimée lors de l'événement de base: {downtime_hours}h d'arrêt à {hourly_rate}/h ({downtime_cost}) + {sre_cost} d'intervention SRE ({sre_recovery_hours}h à {sre_hourly_rate}/h).",
+    "remediation_project_name_template": "Programme de Remédiation Tactique: {capability}",
+    "remediation_business_case_template": "Atténuation Directe du Risque: {impact}",
+    "remediation_tech_objective_template": "Résoudre l'écart technique identifié dans l'AS-IS: {finding_text}",
+    "remediation_duration": "H1 (Mois 1-3)",
+    "remediation_deliverables": [
+      "Plan de Remédiation",
+      "Déploiement de Correctifs et Configurations",
+      "Rapport de Clôture d'Écart"
+    ],
+    "archimate_fallback_deliverables": [
+      "Document de Conception Technique (HLD/LLD)",
+      "Plan de Tests et Validation"
+    ],
+    "archimate_catalog": {
+      "kubernetes": [
+        "Base YAML Manifests",
+        "Container Orchestration IaC Module",
+        "Governance Helm Charts",
+        "GitLab/GitHub Actions CI/CD Pipeline"
+      ],
+      "eks": [
+        "Base YAML Manifests",
+        "Managed Cluster IaC Module",
+        "Governance Helm Charts",
+        "CI/CD Pipeline"
+      ],
+      "container": [
+        "Base YAML Manifests",
+        "Container Orchestration IaC Module",
+        "Governance Helm Charts",
+        "CI/CD Pipeline"
+      ],
+      "landing zone": [
+        "Multi-Account Landing Zone Hierarchy Framework",
+        "Automated Governance Policies and Guardrails",
+        "Base Network Terraform Module"
+      ],
+      "platform engineering": [
+        "Internal Developer Portal (IDP) Service Catalog",
+        "Self-Service IaC Templates",
+        "SLI/SLO Framework"
+      ],
+      "observability": [
+        "Unified Metrics & Tracing Dashboards",
+        "PromQL Alerting Rules",
+        "PagerDuty/ServiceNow Incident Integration"
+      ],
+      "aiops": [
+        "Unified Observability Dashboards",
+        "Anomaly Detection Models",
+        "ITSM Integration"
+      ],
+      "scada": [
+        "Purdue Network Architecture Blueprint",
+        "Perimeter Firewall Policies",
+        "Unidirectional Data Diode Implementation"
+      ],
+      "automation": [
+        "Ansible Automation Playbooks",
+        "Terraform Infrastructure Modules",
+        "CI/CD Pipelines"
+      ],
+      "iac": [
+        "Terraform Modules",
+        "GitOps Repository Setup",
+        "OPA/Sentinel Governance Policies"
+      ],
+      "dr": [
+        "Disaster Recovery Runbooks",
+        "Automated Failover Test Plan",
+        "Replication & Failover Templates"
+      ],
+      "disaster recovery": [
+        "Disaster Recovery Runbooks",
+        "Automated Failover Test Plan",
+        "Replication & Failover Templates"
+      ],
+      "backup": [
+        "Retention Policies",
+        "Immutable Backup Vault",
+        "Automated Restoration Testing Suite"
+      ]
+    },
+    "bottlenecks_bullet": "**Goulots d'étranglement:** Le provisionnement manuel limite la vitesse.",
+    "delayed_faults_bullet": "**Détection tardive des pannes:** L'absence d'observabilité augmente le MTTR.",
+    "config_drift_bullet": "**Dérive de configuration:** La maintenance manuelle nuit à la conformité.",
+    "desc_band_inicial": "démontrant un modèle ad-hoc et réactif",
+    "desc_band_repetible": "démontrant des processus locaux et tactiques",
+    "desc_band_definido": "démontrant des processus formalisés",
+    "desc_band_gestionado": "démontrant un modèle mature mesuré quantitativement",
+    "desc_band_optimizado": "démontrant une excellence opérationnelle",
+    "default_capability_label": "Infrastructure",
+    "default_impact_label": "Risque Opérationnel",
+    "default_corporate_cloud_label": "le cloud d'entreprise",
+    "unified_platform_program_name": "Programme Stratégique de Platform Engineering et Libre-Service Hybride",
+    "unified_platform_program_business_case": "Réduction de la charge cognitive des équipes de développement et d'opérations grâce à l'unification des portails et catalogues sur {cloud_label}.",
+    "unified_platform_program_tech_objective": "Consolider les initiatives de calcul hybride, de landing zones et d'approvisionnement automatisé sous une plateforme de développement interne (IDP) unifiée.",
+    "unified_platform_program_deliverables": [
+      "Définition du catalogue de services unifié.",
+      "Intégration des API d'approvisionnement des Landing Zones {cloud_label}.",
+      "Déploiement du portail de libre-service pour les développeurs."
+    ],
+    "business_case_direct_mitigation_template": "Atténuation Directe: Résout la vulnérabilité critique détectée dans l'AS-IS, éliminant le risque de: '{impact}'.",
+    "business_case_strategic_enabler_template": "Facilitateur Stratégique: Réduit le TCO opérationnel, accélère le time-to-market et assure la conformité réglementaire ({reg_frameworks})."
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -344,6 +598,263 @@
     "date_label": "2026年6月",
     "table_of_contents_title": "目次",
     "appendix_a_title": "付録A: 略語一覧",
-    "conclusions_title": "統合将来状態レポート"
+    "conclusions_title": "統合将来状態レポート",
+    "table_header_pillar": "柱",
+    "table_header_score": "スコア",
+    "table_header_level": "レベル",
+    "table_header_reading": "エグゼクティブサマリー",
+    "table_header_asis": "現状 (AS-IS)",
+    "table_header_tobe": "目標状態 (TO-BE)",
+    "table_header_gap": "主なギャップ",
+    "radar_chart_heading": "レーダーチャート",
+    "compact_pillar_detail_heading": "柱別コンパクト詳細",
+    "audit_justification_template": "ベースイベントにおける推定主要会計損失: 稼働停止{downtime_hours}時間、{hourly_rate}/時 ({downtime_cost}) + SRE介入費用 {sre_cost} ({sre_recovery_hours}時間、{sre_hourly_rate}/時)。",
+    "remediation_project_name_template": "戦術的修復プログラム: {capability}",
+    "remediation_business_case_template": "直接的なリスク軽減: {impact}",
+    "remediation_tech_objective_template": "AS-ISで特定された技術的ギャップの修復: {finding_text}",
+    "remediation_duration": "H1 (1〜3か月)",
+    "remediation_deliverables": [
+      "修復計画",
+      "パッチおよび設定の適用",
+      "ギャップ解消検証レポート"
+    ],
+    "archimate_fallback_deliverables": [
+      "技術アーキテクチャ設計書 (HLD/LLD)",
+      "テストおよび検証計画"
+    ],
+    "archimate_catalog": {
+      "kubernetes": [
+        "Base YAML Manifests",
+        "Container Orchestration IaC Module",
+        "Governance Helm Charts",
+        "GitLab/GitHub Actions CI/CD Pipeline"
+      ],
+      "eks": [
+        "Base YAML Manifests",
+        "Managed Cluster IaC Module",
+        "Governance Helm Charts",
+        "CI/CD Pipeline"
+      ],
+      "container": [
+        "Base YAML Manifests",
+        "Container Orchestration IaC Module",
+        "Governance Helm Charts",
+        "CI/CD Pipeline"
+      ],
+      "landing zone": [
+        "Multi-Account Landing Zone Hierarchy Framework",
+        "Automated Governance Policies and Guardrails",
+        "Base Network Terraform Module"
+      ],
+      "platform engineering": [
+        "Internal Developer Portal (IDP) Service Catalog",
+        "Self-Service IaC Templates",
+        "SLI/SLO Framework"
+      ],
+      "observability": [
+        "Unified Metrics & Tracing Dashboards",
+        "PromQL Alerting Rules",
+        "PagerDuty/ServiceNow Incident Integration"
+      ],
+      "aiops": [
+        "Unified Observability Dashboards",
+        "Anomaly Detection Models",
+        "ITSM Integration"
+      ],
+      "scada": [
+        "Purdue Network Architecture Blueprint",
+        "Perimeter Firewall Policies",
+        "Unidirectional Data Diode Implementation"
+      ],
+      "automation": [
+        "Ansible Automation Playbooks",
+        "Terraform Infrastructure Modules",
+        "CI/CD Pipelines"
+      ],
+      "iac": [
+        "Terraform Modules",
+        "GitOps Repository Setup",
+        "OPA/Sentinel Governance Policies"
+      ],
+      "dr": [
+        "Disaster Recovery Runbooks",
+        "Automated Failover Test Plan",
+        "Replication & Failover Templates"
+      ],
+      "disaster recovery": [
+        "Disaster Recovery Runbooks",
+        "Automated Failover Test Plan",
+        "Replication & Failover Templates"
+      ],
+      "backup": [
+        "Retention Policies",
+        "Immutable Backup Vault",
+        "Automated Restoration Testing Suite"
+      ]
+    },
+    "bottlenecks_bullet": "**構造的ボトルネック:** 手動プロビジョニングが提供速度を制限します。",
+    "delayed_faults_bullet": "**障害検知の遅延:** オブザーバビリティの不足がMTTRを増加させます。",
+    "config_drift_bullet": "**構成ドリフトリスク:** 手動メンテナンスが規制順守を妨げます。",
+    "desc_band_inicial": "アドホックで反応的な運用モデル",
+    "desc_band_repetible": "局所的で戦術的なプロセス",
+    "desc_band_definido": "文書化された一貫性のあるプロセス",
+    "desc_band_gestionado": "定量的かつ成熟した運用モデル",
+    "desc_band_optimizado": "継続的改善による優れた運用モデル",
+    "default_capability_label": "インフラストラクチャ",
+    "default_impact_label": "運用リスク",
+    "default_corporate_cloud_label": "コーポレートクラウド",
+    "unified_platform_program_name": "プラットフォームエンジニアリングおよびハイブリッドセルフサービス戦略プログラム",
+    "unified_platform_program_business_case": "{cloud_label}上の統合ポータルおよびカタログによる開発および運用チームの認知負荷の軽減。",
+    "unified_platform_program_tech_objective": "ハイブリッドコンピュート、ランディングゾーン、自動プロビジョニングを統合内部開発プラットフォーム（IDP）の下に集約。",
+    "unified_platform_program_deliverables": [
+      "統合サービスカタログの定義。",
+      "{cloud_label}ランディングゾーンプロビジョニングAPIの統合。",
+      "開発者向けセルフサービスポータルの展開。"
+    ],
+    "business_case_direct_mitigation_template": "直接的な緩和: AS-ISで検出された重大な脆弱性を解決し、リスクを排除: '{impact}'。",
+    "business_case_strategic_enabler_template": "戦略的イネーブラー: 運用TCOを削減し、Time-to-Marketを加速し、規制順守を保証 ({reg_frameworks})。"
+  },
+  "de": {
+    "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
+    "intro_metodologia_title": "Einführung und Diagnosemethodik",
+    "objetivo_alcance_title": "Ziel und Umfang",
+    "resumen_ejecutivo_title": "Management-Zusammenfassung der Säule",
+    "impactos_negocio_title": "Wichtigste Geschäftsauswirkungen",
+    "metodologia_madurez_title": "Reifegradbewertungsmethodik",
+    "metodologia_fair_title": "Quantitative FAIR-Risikomethodik",
+    "disclaimer_heading_title": "Haftungsbeschränkungsklausel",
+    "descripcion_plataforma_title": "Plattformbeschreibung und einheitliche Topologie",
+    "radar_chart_title": "Reifegradprofil der Säule (Radar)",
+    "matriz_fair_title": "Forensisches Risiko- und Schwachstellenregister (FAIR-Matrix)",
+    "evaluacion_madurez_title": "Bewertung der Reifegradstufen",
+    "conclusiones_tobe_title": "Schlussfolgerungen und Lücken für TO-BE",
+    "fortalezas_identificadas_title": "Identifizierte Infrastrukturstärken",
+    "debilidades_criticas_title": "Kritische Schwachstellen und Herausforderungen",
+    "band_initial": "Initial",
+    "band_repeatable": "Wiederholbar",
+    "band_defined": "Definiert",
+    "band_managed": "Gemanagt",
+    "band_optimized": "Optimiert",
+    "currency_symbol": "€",
+    "currency_format": "EU",
+    "version_label": "Version",
+    "date_label": "June 2026",
+    "table_of_contents_title": "Table of Contents",
+    "appendix_a_title": "List of Abbreviations",
+    "conclusions_title": "Consolidated Future State Report",
+    "bottlenecks_bullet": "**Structural Bottlenecks:** The manual infrastructure provisioning model severely limits the delivery speed of strategic business initiatives.",
+    "delayed_faults_bullet": "**Late Technical Incident Detection:** The lack of correlated observability increases the Mean Time To Resolution (MTTR) for critical system failures.",
+    "config_drift_bullet": "**Configuration Drift Risk:** Manual configuration maintenance impairs the ability to demonstrate real-time regulatory compliance with {reg_frameworks}.",
+    "desc_band_inicial": "highlighting ad-hoc, reactive, and informal operations with a high dependency on individual human effort",
+    "desc_band_repetible": "highlighting basic localized processes but with a tactical and inconsistent nature",
+    "desc_band_definido": "highlighting formalized and consistently documented processes but with room for integrated platform consolidation",
+    "table_header_pillar": "Pfeiler",
+    "table_header_score": "Score",
+    "table_header_level": "Stufe",
+    "table_header_reading": "Executive Zusammenfassung",
+    "table_header_asis": "Ist-Zustand (AS-IS)",
+    "table_header_tobe": "Ziel-Zustand (TO-BE)",
+    "table_header_gap": "Hauptlücke",
+    "radar_chart_heading": "Netzdiagramm",
+    "compact_pillar_detail_heading": "Kompakte Detailansicht nach Pfeilern",
+    "desc_band_gestionado": "highlighting a mature, quantitatively measured operational model systematically aligned with IT governance",
+    "desc_band_optimizado": "highlighting an operational model of excellence, highly automated and in constant continuous improvement",
+    "audit_justification_template": "Geschätzter primärer buchhalterischer Verlust im Basisereignis: {downtime_hours}h Ausfallzeit bei {hourly_rate}/h ({downtime_cost}) + {sre_cost} SRE-Intervention ({sre_recovery_hours}h bei {sre_hourly_rate}/h).",
+    "remediation_project_name_template": "Taktisches Sanierungsprogramm: {capability}",
+    "remediation_business_case_template": "Direkte Risikominderung: {impact}",
+    "remediation_tech_objective_template": "Behebung der im AS-IS festgestellten technischen Lücke: {finding_text}",
+    "remediation_duration": "H1 (Monate 1-3)",
+    "remediation_deliverables": [
+      "Sanierungsplan",
+      "Patch- und Konfigurationsbereitstellung",
+      "Verifizierungsbericht zur Lückenschließung"
+    ],
+    "archimate_fallback_deliverables": [
+      "Technisches Architekturdesign (HLD/LLD)",
+      "Test- und Validierungsplan"
+    ],
+    "archimate_catalog": {
+      "kubernetes": [
+        "Base YAML Manifests",
+        "Container Orchestration IaC Module",
+        "Governance Helm Charts",
+        "GitLab/GitHub Actions CI/CD Pipeline"
+      ],
+      "eks": [
+        "Base YAML Manifests",
+        "Managed Cluster IaC Module",
+        "Governance Helm Charts",
+        "CI/CD Pipeline"
+      ],
+      "container": [
+        "Base YAML Manifests",
+        "Container Orchestration IaC Module",
+        "Governance Helm Charts",
+        "CI/CD Pipeline"
+      ],
+      "landing zone": [
+        "Multi-Account Landing Zone Hierarchy Framework",
+        "Automated Governance Policies and Guardrails",
+        "Base Network Terraform Module"
+      ],
+      "platform engineering": [
+        "Internal Developer Portal (IDP) Service Catalog",
+        "Self-Service IaC Templates",
+        "SLI/SLO Framework"
+      ],
+      "observability": [
+        "Unified Metrics & Tracing Dashboards",
+        "PromQL Alerting Rules",
+        "PagerDuty/ServiceNow Incident Integration"
+      ],
+      "aiops": [
+        "Unified Observability Dashboards",
+        "Anomaly Detection Models",
+        "ITSM Integration"
+      ],
+      "scada": [
+        "Purdue Network Architecture Blueprint",
+        "Perimeter Firewall Policies",
+        "Unidirectional Data Diode Implementation"
+      ],
+      "automation": [
+        "Ansible Automation Playbooks",
+        "Terraform Infrastructure Modules",
+        "CI/CD Pipelines"
+      ],
+      "iac": [
+        "Terraform Modules",
+        "GitOps Repository Setup",
+        "OPA/Sentinel Governance Policies"
+      ],
+      "dr": [
+        "Disaster Recovery Runbooks",
+        "Automated Failover Test Plan",
+        "Replication & Failover Templates"
+      ],
+      "disaster recovery": [
+        "Disaster Recovery Runbooks",
+        "Automated Failover Test Plan",
+        "Replication & Failover Templates"
+      ],
+      "backup": [
+        "Retention Policies",
+        "Immutable Backup Vault",
+        "Automated Restoration Testing Suite"
+      ]
+    },
+    "default_capability_label": "Infrastruktur",
+    "default_impact_label": "Betriebsrisiko",
+    "default_corporate_cloud_label": "die Unternehmens-Cloud",
+    "unified_platform_program_name": "Strategisches Programm für Platform Engineering und hybriden Self-Service",
+    "unified_platform_program_business_case": "Reduzierung der kognitiven Belastung von Entwickler- und Betriebsteams durch einheitliche Portale und Kataloge auf {cloud_label}.",
+    "unified_platform_program_tech_objective": "Konsolidierung von Hybrid Compute, Landing Zones und automatisierter Bereitstellung unter einer einheitlichen Internal Developer Platform (IDP).",
+    "unified_platform_program_deliverables": [
+      "Definition des einheitlichen Servicekatalogs.",
+      "API-Integration für Landing Zone-Bereitstellung auf {cloud_label}.",
+      "Bereitstellung des zentralen Entwickler-Self-Service-Portals."
+    ],
+    "business_case_direct_mitigation_template": "Direkte Minderung: Behebt die im AS-IS festgestellte kritische Schwachstelle und eliminiert das Risiko: '{impact}'.",
+    "business_case_strategic_enabler_template": "Strategischer Enabler: Reduziert die Betriebs-TCO, beschleunigt das Time-to-Market und sichert die Einhaltung regulatorischer Vorgaben ({reg_frameworks})."
   }
 }

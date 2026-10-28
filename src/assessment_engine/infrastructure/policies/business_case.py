@@ -29,19 +29,21 @@ def _ground_single_project(
     tech_obj = proj.get("tech_objective", "").lower()
     matched = _find_matching_finding(name, tech_obj, asis_findings)
 
+    from assessment_engine.infrastructure.localization import t
+
     if matched:
         impact = matched.get("impact", matched.get("business_risk", ""))
-        proj["business_case"] = (
-            f"Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'."
-            if doc_lang == "es"
-            else f"Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'."
+        proj["business_case"] = t(
+            "business_case_direct_mitigation_template",
+            locale=doc_lang,
+            impact=impact,
         )
         proj["mitigates_risk_id"] = matched.get("node_id")
     else:
-        proj["business_case"] = (
-            f"Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks})."
-            if doc_lang == "es"
-            else f"Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks})."
+        proj["business_case"] = t(
+            "business_case_strategic_enabler_template",
+            locale=doc_lang,
+            reg_frameworks=reg_frameworks,
         )
 
 

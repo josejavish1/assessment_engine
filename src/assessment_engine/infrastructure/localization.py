@@ -145,6 +145,28 @@ def get_localized_string(
     return text_template
 
 
+# Canonical internationalization alias
+t = get_localized_string
+
+
+def get_localized_list(
+    key: str,
+    locale: str = "es",
+    default: list[str] | None = None,
+) -> list[str]:
+    """Retrieve a localized list of strings using locale fallback resolution."""
+    catalog = load_locales_catalog()
+    base_loc = resolve_base_locale(locale)
+
+    for loc in [locale, base_loc, "en", "es"]:
+        if loc in catalog and isinstance(catalog[loc], dict):
+            val = catalog[loc].get(key)
+            if isinstance(val, list):
+                return [str(item) for item in val]
+
+    return default if default is not None else []
+
+
 def get_archimate_catalog(locale: str = "es") -> dict[str, list[str]]:
     """Retrieve the localized ArchiMate technical deliverables catalog for a given locale."""
     catalog = load_locales_catalog()
