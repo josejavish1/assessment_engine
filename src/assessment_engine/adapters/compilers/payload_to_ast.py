@@ -91,6 +91,180 @@ def _build_spof_bullet(spof_status: str) -> ParagraphNode:
 
 
 
+
+def _build_heatmap_mosaic(risks_data_list: list[dict[str, Any]]) -> TableNode:
+    matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
+    for r in risks_data_list:
+        r_tef = min(5, max(1, int(round(r["tef"]))))
+        r_lm = min(5, max(1, int(round(r["lm"]))))
+        matrix_cells[r_tef][r_lm].append(r["id"])
+
+    heatmap_rows = []
+    heatmap_headers = [r"TEF \ LM", "LM 1", "LM 2", "LM 3", "LM 4", "LM 5"]
+    heatmap_rows.append(
+        TableRowNode(
+            cells=[
+                CellNode(
+                    text=h,
+                    bold=True,
+                    bg_color="0072BC",
+                    text_color_rgb=[255, 255, 255],
+                    align="CENTER",
+                )
+                for h in heatmap_headers
+            ],
+            is_header=True,
+        )
+    )
+
+    for tef_val in range(5, 0, -1):
+        row_cells = [
+            CellNode(
+                text=f"TEF {tef_val}",
+                bold=True,
+                bg_color="0072BC",
+                text_color_rgb=[255, 255, 255],
+                align="CENTER",
+            )
+        ]
+        for lm_val in range(1, 6):
+            cell_risks = matrix_cells[tef_val][lm_val]
+            cell_text = ", ".join(cell_risks) if cell_risks else "-"
+            severity = tef_val * lm_val
+            if severity >= 15:
+                bg_color = "FADBD8"
+            elif severity >= 8:
+                bg_color = "FCF3CD"
+            else:
+                bg_color = "D5F5E3"
+            row_cells.append(
+                CellNode(text=cell_text, bold=True, bg_color=bg_color, align="CENTER")
+            )
+        heatmap_rows.append(TableRowNode(cells=row_cells))
+
+    return TableNode(rows=heatmap_rows)
+
+
+TEF_SCALE_DEFINITIONS: dict[str, list[tuple[str, str]]] = {
+    "es": [
+        ("Muy Bajo", "< 0,1 eventos/año (menos de una vez cada 10 años)"),
+        ("Bajo", "0,1 - 0,5 eventos/año (una vez cada 4 años)"),
+        ("Medio", "0,5 - 2,0 eventos/año (una vez al año)"),
+        ("Alto", "2,0 - 10 eventos/año (una vez al trimestre)"),
+        ("Muy Alto", "> 10 eventos/año (una vez al mes)"),
+    ],
+    "en": [
+        ("Very Low", "< 0.1 events/year (less than once every 10 years)"),
+        ("Low", "0.1 - 0.5 events/year (once every 4 years)"),
+        ("Medium", "0.5 - 2.0 events/year (once a year)"),
+        ("High", "2.0 - 10 events/year (once a quarter)"),
+        ("Very High", "> 10 events/year (once a month)"),
+    ],
+}
+
+
+def _build_tef_scale_table(vocab: dict[str, Any], meta_lang: str, alt_row_hex: str) -> TableNode:
+    tef_headers = vocab.get("tef_headers") or [
+        "Nivel TEF",
+        "Denominación",
+        "Frecuencia Anualizada Estimada",
+    ]
+    tef_tuples = TEF_SCALE_DEFINITIONS.get(meta_lang, TEF_SCALE_DEFINITIONS["es"])
+    tef_data = [(f"TEF {i+1}", tef_tuples[i][0], tef_tuples[i][1]) for i in range(5)]
+    tef_rows = [
+        TableRowNode(
+            cells=[
+                CellNode(text=h, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER")
+                for h in tef_headers
+            ],
+            is_header=True,
+        )
+    ]
+    for t_idx, r_vals in enumerate(tef_data):
+        bg = alt_row_hex if t_idx % 2 == 1 else "FFFFFF"
+        tef_rows.append(
+            TableRowNode(
+                cells=[
+                    CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, align="CENTER"),
+                    CellNode(text=r_vals[1], bg_color=bg, align="CENTER"),
+                    CellNode(text=r_vals[2], bg_color=bg),
+                ]
+            )
+        )
+    return TableNode(rows=tef_rows)
+
+
+def _build_lm_scale_table(
+    vocab: dict[str, Any], meta_lang: str, currency: str, is_critical: bool, alt_row_hex: str
+) -> TableNode:
+    lm_headers = vocab.get("lm_headers") or [
+        "Nivel LM",
+        "Clasificación de Impacto",
+        "Límite de Pérdida Financiera",
+    ]
+    labels_es = ["Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"]
+    labels_en = ["Very Low", "Low", "Medium", "High", "Very High"]
+    labels = labels_es if meta_lang == "es" else labels_en
+
+    if is_critical:
+        limits = [
+            f"< 1.000 {currency}",
+            f"1.000 {currency} - 10.000 {currency}",
+            f"10.000 {currency} - 50.000 {currency}",
+            f"50.000 {currency} - 300.000 {currency}",
+            f"250.000 {currency} - 1.500.000 {currency}",
+        ] if meta_lang == "es" else [
+            f"< 1,000 {currency}",
+            f"1,000 {currency} - 10,000 {currency}",
+            f"10,000 {currency} - 50,000 {currency}",
+            f"50,000 {currency} - 300,000 {currency}",
+            f"250,000 {currency} - 1,500,000 {currency}",
+        ]
+    else:
+        limits = [
+            f"< 1.000 {currency}",
+            f"1.000 {currency} - 5.000 {currency}",
+            f"5.000 {currency} - 25.000 {currency}",
+            f"25.000 {currency} - 100.000 {currency}",
+            f"100.000 {currency} - 500.000 {currency}",
+        ] if meta_lang == "es" else [
+            f"< 1,000 {currency}",
+            f"1,000 {currency} - 5,000 {currency}",
+            f"5,000 {currency} - 25,000 {currency}",
+            f"25,000 {currency} - 100,000 {currency}",
+            f"100,000 {currency} - 500,000 {currency}",
+        ]
+
+    lm_data = [(f"LM {i+1}", labels[i], limits[i]) for i in range(5)]
+    lm_rows = [
+        TableRowNode(
+            cells=[
+                CellNode(
+                    text=f"{h} ({currency})" if h_idx > 0 else h,
+                    bold=True,
+                    bg_color="0072BC",
+                    text_color_rgb=[255, 255, 255],
+                    align="CENTER",
+                )
+                for h_idx, h in enumerate(lm_headers)
+            ],
+            is_header=True,
+        )
+    ]
+    for l_idx, r_vals in enumerate(lm_data):
+        bg = alt_row_hex if l_idx % 2 == 1 else "FFFFFF"
+        lm_rows.append(
+            TableRowNode(
+                cells=[
+                    CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, align="CENTER"),
+                    CellNode(text=r_vals[1], bg_color=bg, align="CENTER"),
+                    CellNode(text=r_vals[2], bg_color=bg),
+                ]
+            )
+        )
+    return TableNode(rows=lm_rows)
+
+
 class PayloadToASTBridge:
     """Translates structured JSON payloads and associated markdown modules into a unified Document Abstract Syntax Tree (AST).
     This process maintains semantic identity and structural alignment with the source content."""
@@ -977,336 +1151,70 @@ class PayloadToASTBridge:
         return risks_data_list, fair_lookup
 
     def _build_fair_risk_analysis(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]]) -> None:
+        if not risks_data_list:
+            return
+
         vocab = ctx["vocab"]
-        gs_val = ctx["gs_val"]
         meta_lang = ctx["meta_lang"]
         currency = ctx["currency"]
-        client_name = ctx["client_name"]
         is_critical = ctx["is_critical"]
+
         # 5.1 Generate 5x5 Heatmap (Word-native mosaic)
-        if risks_data_list:
+        nodes.append(
+            HeadingNode(
+                text=vocab.get(
+                    "exposure_summary_title",
+                    "Exposición financiera y Mapa de Calor de Riesgo",
+                ),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(_build_heatmap_mosaic(risks_data_list))
+        nodes.append(SpacerNode(points=15))
+
+        # 5.2 Methodological Legends (TEF & LM Scales)
+        nodes.append(
+            HeadingNode(
+                text="Leyendas Metodológicas",
+                level=3,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+
+        nodes.append(
+            HeadingNode(
+                text=vocab.get(
+                    "tef_title", "Criterios de Frecuencia de la Amenaza (TEF)"
+                ),
+                level=4,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(_build_tef_scale_table(vocab, meta_lang, self.alt_row_hex))
+        nodes.append(SpacerNode(points=15))
+
+        nodes.append(
+            HeadingNode(
+                text=vocab.get("lm_title", "Criterios de Magnitud de Pérdidas (LM)"),
+                level=4,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(_build_lm_scale_table(vocab, meta_lang, currency, is_critical, self.alt_row_hex))
+        nodes.append(SpacerNode(points=10))
+
+        if is_critical:
             nodes.append(
-                HeadingNode(
-                    text=vocab.get(
-                        "exposure_summary_title",
-                        "Exposición financiera y Mapa de Calor de Riesgo",
-                    ),
-                    level=2,
-                    primary_color_rgb=self.primary_color_rgb,
+                ParagraphNode(
+                    text="*Nota de Calibración de Sector:* Este rango de pérdidas (LM 5) está estrictamente alineado con el estudio de referencia mundial **ITIC Global Server Hardware Downtime Report**, el cual determina que para el 98% de los operadores de infraestructuras críticas y grandes corporaciones, el coste de una sola hora de indisponibilidad de sistemas core supera el millón de euros debido a la interrupción de procesos, penalizaciones por acuerdos de nivel de servicio (SLA) y remediación forense urgente.",
+                    italic=True,
+                    space_after=12,
                 )
             )
-
-            # Group risks by TEF x LM quadrant (1-5).
-            matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
-            for r in risks_data_list:
-                r_tef = min(5, max(1, int(round(r["tef"]))))
-                r_lm = min(5, max(1, int(round(r["lm"]))))
-                matrix_cells[r_tef][r_lm].append(r["id"])
-
-            # 6x6 matrix header
-            heatmap_rows = []
-            heatmap_headers = ["TEF \\ LM", "LM 1", "LM 2", "LM 3", "LM 4", "LM 5"]
-            heatmap_rows.append(
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=h,
-                            bold=True,
-                            bg_color="0072BC",
-                            text_color_rgb=[255, 255, 255],
-                            align="CENTER",
-                        )
-                        for h in heatmap_headers
-                    ],
-                    is_header=True,
-                )
-            )
-
-            #
-            for tef_val in range(5, 0, -1):
-                row_cells = [
-                    CellNode(
-                        text=f"TEF {tef_val}",
-                        bold=True,
-                        bg_color="0072BC",
-                        text_color_rgb=[255, 255, 255],
-                        align="CENTER",
-                    )
-                ]
-
-                for lm_val in range(1, 6):
-                    cell_risks = matrix_cells[tef_val][lm_val]
-                    cell_text = ", ".join(cell_risks) if cell_risks else "-"
-
-                    #
-                    severity = tef_val * lm_val
-                    if severity >= 15:
-                        bg_color = "FADBD8"  # Soft Red
-                    elif severity >= 8:
-                        bg_color = "FCF3CD"  # Soft Amber
-                    else:
-                        bg_color = "D5F5E3"  # Soft Green
-
-                    row_cells.append(
-                        CellNode(
-                            text=cell_text, bold=True, bg_color=bg_color, align="CENTER"
-                        )
-                    )
-
-                heatmap_rows.append(TableRowNode(cells=row_cells))
-
-            nodes.append(TableNode(rows=heatmap_rows))
-            nodes.append(SpacerNode(points=15))
-
-            # 5.2 Methodological Legends (TEF & LM Scales)
-            nodes.append(
-                HeadingNode(
-                    text="Leyendas Metodológicas",
-                    level=3,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-
-            # TEF Table
-            nodes.append(
-                HeadingNode(
-                    text=vocab.get(
-                        "tef_title", "Criterios de Frecuencia de la Amenaza (TEF)"
-                    ),
-                    level=4,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            tef_headers = vocab.get("tef_headers") or [
-                "Nivel TEF",
-                "Denominación",
-                "Frecuencia Anualizada Estimada",
-            ]
-            tef_data = [
-                (
-                    "TEF 1",
-                    "Muy Bajo" if meta_lang == "es" else "Very Low",
-                    "< 0,1 eventos/año (menos de una vez cada 10 años)"
-                    if meta_lang == "es"
-                    else "< 0.1 events/year (less than once every 10 years)",
-                ),
-                (
-                    "TEF 2",
-                    "Bajo" if meta_lang == "es" else "Low",
-                    "0,1 - 0,5 eventos/año (una vez cada 4 años)"
-                    if meta_lang == "es"
-                    else "0.1 - 0.5 events/year (once every 4 years)",
-                ),
-                (
-                    "TEF 3",
-                    "Medio" if meta_lang == "es" else "Medium",
-                    "0,5 - 2,0 eventos/año (una vez al año)"
-                    if meta_lang == "es"
-                    else "0.5 - 2.0 events/year (once a year)",
-                ),
-                (
-                    "TEF 4",
-                    "Alto" if meta_lang == "es" else "High",
-                    "2,0 - 10 eventos/año (una vez al trimestre)"
-                    if meta_lang == "es"
-                    else "2.0 - 10 events/year (once a quarter)",
-                ),
-                (
-                    "TEF 5",
-                    "Muy Alto" if meta_lang == "es" else "Very High",
-                    "> 10 eventos/año (una vez al mes)"
-                    if meta_lang == "es"
-                    else "> 10 events/year (once a month)",
-                ),
-            ]
-
-            tef_rows = [
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=h,
-                            bold=True,
-                            bg_color="0072BC",
-                            text_color_rgb=[255, 255, 255],
-                            align="CENTER",
-                        )
-                        for h in tef_headers
-                    ],
-                    is_header=True,
-                )
-            ]
-            for t_idx, r_vals in enumerate(tef_data):
-                bg = self.alt_row_hex if t_idx % 2 == 1 else "FFFFFF"
-                tef_rows.append(
-                    TableRowNode(
-                        cells=[
-                            CellNode(
-                                text=r_vals[0],
-                                bold=True,
-                                bg_color=self.alt_row_hex,
-                                align="CENTER",
-                            ),
-                            CellNode(text=r_vals[1], bg_color=bg, align="CENTER"),
-                            CellNode(text=r_vals[2], bg_color=bg),
-                        ]
-                    )
-                )
-            nodes.append(TableNode(rows=tef_rows))
             nodes.append(SpacerNode(points=10))
-
-            # LM Table
-            nodes.append(
-                HeadingNode(
-                    text=vocab.get(
-                        "lm_title",
-                        "Criterios de Magnitud de Pérdida Directa/Indirecta (LM)",
-                    ),
-                    level=4,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            
-            if is_critical:
-                nodes.append(
-                    ParagraphNode(
-                        text=f"Se ha activado el Preset de calibración CRITICAL_INFRASTRUCTURE (Escala Alta / Regulada), de acuerdo con la naturaleza del negocio de **{client_name}** como operador de Infraestructura Crítica. Esto ajusta los rangos de Magnitud de Pérdida (LM) para reflejar el impacto estructural real de las interrupciones en su plataforma core:",
-                    )
-                )
-            else:
-                nodes.append(
-                    ParagraphNode(
-                        text="Se ha activado el Preset de calibración MID_MARKET (Escala Estándar Corporativa), de acuerdo con el perfil organizativo estándar. Esto ajusta los rangos de Magnitud de Pérdida (LM) para modelar incidentes dentro de un ecosistema comercial típico:",
-                    )
-                )
-
-            lm_headers = vocab.get("lm_headers") or [
-                "Nivel LM",
-                "Clasificación de Impacto",
-                "Límite de Pérdida Financiera",
-            ]
-            if is_critical:
-                lm_data = [
-                    (
-                        "LM 1",
-                        "Muy Bajo" if meta_lang == "es" else "Very Low",
-                        f"< 1.000 {currency}"
-                        if meta_lang == "es"
-                        else f"< 1,000 {currency}",
-                    ),
-                    (
-                        "LM 2",
-                        "Bajo" if meta_lang == "es" else "Low",
-                        f"1.000 {currency} - 10.000 {currency}"
-                        if meta_lang == "es"
-                        else f"1,000 {currency} - 10,000 {currency}",
-                    ),
-                    (
-                        "LM 3",
-                        "Medio" if meta_lang == "es" else "Medium",
-                        f"10.000 {currency} - 50.000 {currency}"
-                        if meta_lang == "es"
-                        else f"10,000 {currency} - 50,000 {currency}",
-                    ),
-                    (
-                        "LM 4",
-                        "Alto" if meta_lang == "es" else "High",
-                        f"50.000 {currency} - 300.000 {currency}"
-                        if meta_lang == "es"
-                        else f"50,000 {currency} - 300,000 {currency}",
-                    ),
-                    (
-                        "LM 5",
-                        "Muy Alto" if meta_lang == "es" else "Very High",
-                        f"250.000 {currency} - 1.500.000 {currency}"
-                        if meta_lang == "es"
-                        else f"250,000 {currency} - 1,500,000 {currency}",
-                    ),
-                ]
-            else:
-                lm_data = [
-                    (
-                        "LM 1",
-                        "Muy Bajo" if meta_lang == "es" else "Very Low",
-                        f"< 1.000 {currency}"
-                        if meta_lang == "es"
-                        else f"< 1,000 {currency}",
-                    ),
-                    (
-                        "LM 2",
-                        "Bajo" if meta_lang == "es" else "Low",
-                        f"1.000 {currency} - 5.000 {currency}"
-                        if meta_lang == "es"
-                        else f"1,000 {currency} - 5,000 {currency}",
-                    ),
-                    (
-                        "LM 3",
-                        "Medio" if meta_lang == "es" else "Medium",
-                        f"5.000 {currency} - 25.000 {currency}"
-                        if meta_lang == "es"
-                        else f"5,000 {currency} - 25,000 {currency}",
-                    ),
-                    (
-                        "LM 4",
-                        "Alto" if meta_lang == "es" else "High",
-                        f"25.000 {currency} - 100.000 {currency}"
-                        if meta_lang == "es"
-                        else f"25,000 {currency} - 100,000 {currency}",
-                    ),
-                    (
-                        "LM 5",
-                        "Muy Alto" if meta_lang == "es" else "Very High",
-                        f"100.000 {currency} - 500.000 {currency}"
-                        if meta_lang == "es"
-                        else f"100,000 {currency} - 500,000 {currency}",
-                    ),
-                ]
-
-            lm_rows = [
-                TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=f"{h} ({currency})" if h_idx > 0 else h,
-                            bold=True,
-                            bg_color="0072BC",
-                            text_color_rgb=[255, 255, 255],
-                            align="CENTER",
-                        )
-                        for h_idx, h in enumerate(lm_headers)
-                    ],
-                    is_header=True,
-                )
-            ]
-            for l_idx, r_vals in enumerate(lm_data):
-                bg = self.alt_row_hex if l_idx % 2 == 1 else "FFFFFF"
-                lm_rows.append(
-                    TableRowNode(
-                        cells=[
-                            CellNode(
-                                text=r_vals[0],
-                                bold=True,
-                                bg_color=self.alt_row_hex,
-                                align="CENTER",
-                            ),
-                            CellNode(text=r_vals[1], bg_color=bg, align="CENTER"),
-                            CellNode(text=r_vals[2], bg_color=bg),
-                        ]
-                    )
-                )
-            nodes.append(TableNode(rows=lm_rows))
+        else:
             nodes.append(SpacerNode(points=10))
-
-            # If it's a critical infrastructure operator, append the highly powerful ITIC reference note below the table.
-            if is_critical:
-                nodes.append(
-                    ParagraphNode(
-                        text="*Nota de Calibración de Sector:* Este rango de pérdidas (LM 5) está estrictamente alineado con el estudio de referencia mundial **ITIC Global Server Hardware Downtime Report**, el cual determina que para el 98% de los operadores de infraestructuras críticas y grandes corporaciones, el coste de una sola hora de indisponibilidad de sistemas core supera el millón de euros debido a la interrupción de procesos, penalizaciones por acuerdos de nivel de servicio (SLA) y remediación forense urgente.",
-                        italic=True,
-                        space_after=12,
-                    )
-                )
-                nodes.append(SpacerNode(points=10))
-            else:
-                nodes.append(SpacerNode(points=10))
 
 
     def _build_detailed_findings_log(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]], fair_lookup: dict[str, Any]) -> None:

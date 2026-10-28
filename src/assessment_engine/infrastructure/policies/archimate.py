@@ -8,25 +8,25 @@ from assessment_engine.infrastructure.policies.base import BaseSovereignPolicy
 ARCHIMATE_CATALOG: dict[str, list[str]] = {
     "kubernetes": [
         "Manifiestos Base YAML",
-        "Módulo Terraform EKS",
+        "Módulo Terraform de Orquestación de Contenedores",
         "Helm Charts de Gobernanza",
         "Pipeline GitLab/GitHub Actions",
     ],
     "eks": [
         "Manifiestos Base YAML",
-        "Módulo Terraform EKS",
+        "Módulo Terraform de Clúster Gestionado",
         "Helm Charts de Gobernanza",
         "Pipeline GitLab/GitHub Actions",
     ],
     "contenedores": [
         "Manifiestos Base YAML",
-        "Módulo Terraform EKS",
+        "Módulo Terraform de Orquestación de Contenedores",
         "Helm Charts de Gobernanza",
         "Pipeline GitLab/GitHub Actions",
     ],
     "landing zone": [
-        "AWS Control Tower Account Factory",
-        "Políticas SCP (Service Control Policies)",
+        "Framework de Landing Zone y Jerarquía Multi-Cuenta",
+        "Políticas de Gobernanza y Guardrails Automatizados",
         "Módulo Terraform Base Network",
     ],
     "platform engineering": [
@@ -35,12 +35,12 @@ ARCHIMATE_CATALOG: dict[str, list[str]] = {
         "Framework de SLIs/SLOs",
     ],
     "observabilidad": [
-        "Dashboards Grafana/CloudWatch",
+        "Dashboards Unificados de Métricas y Trazas",
         "Reglas de Alertas PromQL",
         "Integración PagerDuty/ServiceNow",
     ],
     "aiops": [
-        "Dashboards Grafana/CloudWatch",
+        "Dashboards Unificados de Métricas y Trazas",
         "Modelos de Detección de Anomalías",
         "Integración ITSM",
     ],
@@ -62,12 +62,12 @@ ARCHIMATE_CATALOG: dict[str, list[str]] = {
     "dr": [
         "Runbooks de Recuperación",
         "Plan de Pruebas de Failover",
-        "Plantillas AWS Elastic Disaster Recovery",
+        "Plantillas de Replicación y Automatización de Failover",
     ],
     "disaster recovery": [
         "Runbooks de Recuperación",
         "Plan de Pruebas de Failover",
-        "Plantillas AWS Elastic Disaster Recovery",
+        "Plantillas de Replicación y Automatización de Failover",
     ],
     "backup": [
         "Políticas de Retención",

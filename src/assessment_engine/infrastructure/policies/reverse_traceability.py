@@ -7,11 +7,53 @@ from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 from assessment_engine.infrastructure.policies.base import BaseSovereignPolicy
 
 
-def _is_orphan_finding(f_text: str, all_proj_text: str) -> bool:
-    words = [w.lower() for w in f_text.split() if len(w) > 5]
+def _is_finding_addressed_by_projects(
+    finding: dict[str, Any], projects: list[dict[str, Any]]
+) -> bool:
+    node_id = finding.get("node_id")
+    finding_cap = str(finding.get("capability", "")).lower()
+
+    for proj in projects:
+        # 1. Direct explicit link via node_id
+        if node_id and (
+            proj.get("mitigates_risk_id") == node_id
+            or node_id in proj.get("mitigated_risk_ids", [])
+        ):
+            return True
+        # 2. Capability architectural match
+        proj_cap = str(proj.get("capability", "")).lower()
+        if finding_cap and proj_cap and finding_cap == proj_cap:
+            return True
+
+    # 3. Semantic overlap: requires substantive domain term overlap, not generic words
+    f_text = finding.get("finding", finding.get("risk_observed", ""))
+    stopwords = {
+        "sistema",
+        "sistemas",
+        "servicio",
+        "servicios",
+        "proceso",
+        "procesos",
+        "entorno",
+        "entornos",
+        "gestión",
+        "control",
+        "controles",
+    }
+    words = [
+        w.lower()
+        for w in f_text.split()
+        if len(w) > 5 and w.lower() not in stopwords
+    ]
     if not words:
-        return False
-    return sum(1 for w in words if w in all_proj_text) == 0
+        return True
+
+    all_proj_text = " ".join(
+        f"{proj.get('name', '')} {proj.get('tech_objective', '')}"
+        for proj in projects
+    ).lower()
+    matched_count = sum(1 for w in words if w in all_proj_text)
+    return (matched_count >= 2) or (len(words) == 1 and matched_count == 1)
 
 
 def _build_remediation_project(finding: dict[str, Any], f_text: str) -> dict[str, Any]:
@@ -29,7 +71,7 @@ def _build_remediation_project(finding: dict[str, Any], f_text: str) -> dict[str
             "Informe de Cierre de Brecha",
         ],
         "sizing": "S",
-        "duration": "Horizonte 1 (Mes 1-3)",
+        "duration": "H1 (Mes 1-3)",
         "program_id": None,
         "mitigates_risk_id": finding.get("node_id"),
     }
@@ -47,16 +89,12 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
             asis_findings = p.get("health_check_asis", [])
             projects = p.get("projects_todo", [])
 
-            all_proj_text = " ".join(
-                f"{proj.get('name', '')} {proj.get('tech_objective', '')}"
-                for proj in projects
-            ).lower()
-
             for finding in asis_findings:
-                f_text = finding.get("finding", finding.get("risk_observed", ""))
-                if _is_orphan_finding(f_text, all_proj_text):
+                if not _is_finding_addressed_by_projects(finding, projects):
+                    f_text = finding.get(
+                        "finding", finding.get("risk_observed", "")
+                    )
                     fallback_proj = _build_remediation_project(finding, f_text)
-                    p["projects_todo"].append(fallback_proj)
-                    all_proj_text += f" {fallback_proj['name'].lower()} {fallback_proj['tech_objective'].lower()}"
+                    projects.append(fallback_proj)
 
         return payload
