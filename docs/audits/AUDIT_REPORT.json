@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793224500,
+  "timestamp": 1793224889,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -35,10 +35,10 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 45063,
-        "test_sloc": 16805,
+        "prod_sloc": 45099,
+        "test_sloc": 16849,
         "test_to_code_ratio": 0.37,
-        "maintainability_index_sei": 32.9,
+        "maintainability_index_sei": 32.8,
         "typed_functions_pct": 88.8,
         "docstring_coverage_pct": 81.7,
         "max_cognitive_complexity": 246,
@@ -385,7 +385,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 215,
+          "line_number": 222,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_build_board_memo': 7 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -394,7 +394,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 215,
+          "line_number": 222,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_board_memo': CoC = 60 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -403,7 +403,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 364,
+          "line_number": 371,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'build_global_payload': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -412,7 +412,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 364,
+          "line_number": 371,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'build_global_payload': CoC = 45 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -993,10 +993,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.36,
-        "p95_latency_ms": 105.0,
-        "p99_latency_ms": 181.83,
-        "tail_amplification_ratio": 133.7,
+        "p50_latency_ms": 1.43,
+        "p95_latency_ms": 80.07,
+        "p99_latency_ms": 181.28,
+        "tail_amplification_ratio": 126.77,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
