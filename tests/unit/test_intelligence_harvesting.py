@@ -251,3 +251,21 @@ def test_source_vault_extracts_new_metrics():
     assert "vCPUs" in units
     assert "EUR" in units
     assert "€" in units
+
+
+def test_build_default_tower_overrides_integrity():
+    """Verify that _build_default_tower_overrides generates a deterministic 10-tower MCDA matrix."""
+    from assessment_engine.application.run_intelligence_harvesting import _build_default_tower_overrides
+
+    overrides = _build_default_tower_overrides()
+    assert len(overrides) == 10
+    for i in range(1, 11):
+        tower_id = f"T{i}"
+        assert tower_id in overrides
+        entry = overrides[tower_id]
+        assert entry["target_maturity"] == 4.0
+        assert "sensitivity_analysis" in entry
+        assert entry["metrics"]["business_criticality"] == 50.0
+        assert entry["metrics"]["regulatory_compliance"] == 50.0
+        assert entry["metrics"]["implementation_feasibility"] == 50.0
+

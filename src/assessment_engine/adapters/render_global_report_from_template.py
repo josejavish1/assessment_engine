@@ -9,7 +9,7 @@ from typing import Any
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml import OxmlElement, ns
+from docx.oxml import OxmlElement, ns, parse_xml
 from docx.shared import Inches, Pt, RGBColor
 from pydantic import ValidationError
 
@@ -19,8 +19,11 @@ Contiene la lógica y utilidades principales para el pipeline de Assessment Engi
 """
 
 from assessment_engine.domain.schemas.global_report import (
+    BoardMemoDraft,
     BurningPlatformItem,
+    CrossTowerNexusDraft,
     ExecutionRoadmapDraft,
+    ExecutiveCalloutItem,
     ExecutiveDecisionsDraft,
     ExecutiveSummaryDraft,
     GlobalReportPayload,
@@ -312,6 +315,275 @@ def render_cover(doc, payload: GlobalReportPayload) -> Any:
         r1.font.color.rgb = RGBColor(127, 127, 127)
 
     doc.add_page_break()
+
+
+def set_callout_border(cell: Any, color: str = "0072BC", size: int = 24) -> None:
+    """Sets a prominent accent left border on a cell while clearing top, bottom, and right."""
+    tcPr = cell._tc.get_or_add_tcPr()
+    borders = parse_xml(
+        f'<w:tcBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        f'<w:top w:val="none"/>'
+        f'<w:left w:val="single" w:sz="{size}" w:space="0" w:color="{color}"/>'
+        f'<w:bottom w:val="none"/>'
+        f'<w:right w:val="none"/>'
+        f'</w:tcBorders>'
+    )
+    tcPr.append(borders)
+
+
+def render_executive_callout(
+    doc: Any, callout: ExecutiveCalloutItem, client_name: str = ""
+) -> Any:
+    """Renders a shaded callout block with a thick left accent border in OpenXML."""
+    color_styles = {
+        "legal": {
+            "border": "C00000",
+            "fill": "FFF5F5",
+            "title_color": RGBColor(192, 0, 0),
+            "icon": "⚠️",
+        },
+        "factory": {
+            "border": "0072BC",
+            "fill": "F2F6FA",
+            "title_color": RGBColor(0, 114, 188),
+            "icon": "🏭",
+        },
+        "decision": {
+            "border": "7030A0",
+            "fill": "F9F5FF",
+            "title_color": RGBColor(112, 48, 160),
+            "icon": "📌",
+        },
+        "strategic": {
+            "border": "1F497D",
+            "fill": "F2F4F7",
+            "title_color": RGBColor(31, 73, 125),
+            "icon": "🎯",
+        },
+    }
+    style = color_styles.get(callout.callout_type, color_styles["strategic"])
+
+    table = doc.add_table(rows=1, cols=1)
+    finalize_table(table)
+    cell = table.cell(0, 0)
+    set_callout_border(cell, color=style["border"], size=36)
+    shade_cell(cell, style["fill"])
+
+    p_title = cell.paragraphs[0]
+    p_title.paragraph_format.space_before = Pt(6)
+    p_title.paragraph_format.space_after = Pt(2)
+    p_title.paragraph_format.left_indent = Pt(10)
+    p_title.paragraph_format.right_indent = Pt(10)
+
+    r_icon = p_title.add_run(f"{style['icon']} ")
+    r_icon.font.name = "Arial"
+    r_icon.font.size = Pt(10.5)
+
+    r_title = p_title.add_run(
+        sanitize_client_name(clean_t_codes(callout.title), client_name)
+    )
+    r_title.bold = True
+    r_title.font.name = "Arial"
+    r_title.font.size = Pt(10.5)
+    r_title.font.color.rgb = style["title_color"]
+
+    p_msg = cell.add_paragraph()
+    p_msg.paragraph_format.space_before = Pt(2)
+    p_msg.paragraph_format.space_after = Pt(4)
+    p_msg.paragraph_format.left_indent = Pt(10)
+    p_msg.paragraph_format.right_indent = Pt(10)
+
+    r_msg = p_msg.add_run(
+        sanitize_client_name(clean_t_codes(callout.message), client_name)
+    )
+    r_msg.font.name = "Arial"
+    r_msg.font.size = Pt(9.5)
+    r_msg.font.color.rgb = RGBColor(46, 64, 77)
+
+    if callout.key_metric:
+        p_metric = cell.add_paragraph()
+        p_metric.paragraph_format.space_before = Pt(0)
+        p_metric.paragraph_format.space_after = Pt(6)
+        p_metric.paragraph_format.left_indent = Pt(10)
+        p_metric.paragraph_format.right_indent = Pt(10)
+        r_lbl = p_metric.add_run("Métrica Clave: ")
+        r_lbl.bold = True
+        r_lbl.font.size = Pt(9.0)
+        r_lbl.font.color.rgb = style["title_color"]
+        r_met = p_metric.add_run(callout.key_metric)
+        r_met.bold = True
+        r_met.font.size = Pt(9.0)
+        r_met.font.color.rgb = RGBColor(46, 64, 77)
+
+    autofit_table_to_contents(table)
+    add_spacer(doc, 10)
+
+
+def render_board_memo(
+    doc: Any, board_memo: BoardMemoDraft, client_name: str = ""
+) -> Any:
+    """Renders a self-contained 1-page Board Memo table for Executive Committee / Board."""
+    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    add_heading_paragraph(doc, "1. Board Memo: Resumen de Decisión Ejecutiva", level=1)
+    add_body_paragraph(
+        doc,
+        sanitize_client_name(board_memo.summary, client_name),
+        color_rgb=BASE_TEXT_COLOR,
+    )
+
+    table = doc.add_table(rows=1, cols=4)
+    finalize_table(table)
+    headers = [
+        "Dominio y Madurez AS-IS",
+        "Exposición FAIR (3A)",
+        "Decisión Crítica del Consejo",
+        "Presupuesto Estimado",
+    ]
+    for i, h in enumerate(headers):
+        set_cell_text(
+            table.rows[0].cells[i],
+            h,
+            bold=True,
+            font_size=10.0,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+        shade_cell(table.rows[0].cells[i], "0072BC")
+        for r in table.rows[0].cells[i].paragraphs[0].runs:
+            r.font.color.rgb = RGBColor(255, 255, 255)
+
+    color_map = {"E06666": "F4CCCC", "FFD966": "FFF2CC", "93C47D": "D9EAD3"}
+
+    for item in board_memo.items:
+        row = table.add_row()
+        cell_0 = row.cells[0]
+        set_cell_text(
+            cell_0,
+            f"{item.domain}\nScore: {item.score} ({item.band})",
+            bold=True,
+            font_size=9.5,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+        )
+        fill_color = color_map.get(item.status_color.upper(), "F4CCCC")
+        shade_cell(cell_0, fill_color)
+
+        cell_1 = row.cells[1]
+        set_cell_text(
+            cell_1,
+            item.fair_exposure_3y,
+            font_size=9.5,
+            bold=True,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+
+        cell_2 = row.cells[2]
+        set_cell_text(
+            cell_2,
+            sanitize_client_name(clean_t_codes(item.critical_decision), client_name),
+            font_size=9.5,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+        )
+
+        cell_3 = row.cells[3]
+        set_cell_text(
+            cell_3,
+            item.budget_estimate,
+            font_size=9.5,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+
+        for cell in (cell_1, cell_2, cell_3):
+            for p in cell.paragraphs:
+                for r in p.runs:
+                    r.font.color.rgb = BASE_TEXT_COLOR
+
+    autofit_table_to_contents(table)
+    add_spacer(doc, 10)
+    doc.add_page_break()
+
+
+def render_cross_tower_nexus(
+    doc: Any, nexus: CrossTowerNexusDraft, client_name: str = ""
+) -> Any:
+    """Renders the Cross-Tower Nexus dependency matrix."""
+    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    add_heading_paragraph(
+        doc, "4. Matriz de Interdependencias Cruzadas (Cross-Tower Nexus)", level=1
+    )
+    add_body_paragraph(
+        doc,
+        sanitize_client_name(nexus.description, client_name),
+        color_rgb=BASE_TEXT_COLOR,
+    )
+
+    table = doc.add_table(rows=1, cols=5)
+    finalize_table(table)
+    headers = [
+        "Dominio Habilitador",
+        "Dominio Impactado",
+        "Tipo Dependencia",
+        "Justificación Arquitectónica",
+        "Impacto si se Posterga",
+    ]
+    for i, h in enumerate(headers):
+        set_cell_text(
+            table.rows[0].cells[i],
+            h,
+            bold=True,
+            font_size=9.5,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+        shade_cell(table.rows[0].cells[i], "0072BC")
+        for r in table.rows[0].cells[i].paragraphs[0].runs:
+            r.font.color.rgb = RGBColor(255, 255, 255)
+
+    for dep in nexus.dependencies:
+        row = table.add_row()
+        set_cell_text(
+            row.cells[0],
+            clean_t_codes(dep.source_tower),
+            bold=True,
+            font_size=9.0,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+        )
+        set_cell_text(
+            row.cells[1],
+            clean_t_codes(dep.target_tower),
+            bold=True,
+            font_size=9.0,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+        )
+        set_cell_text(
+            row.cells[2],
+            dep.dependency_type,
+            bold=True,
+            font_size=9.0,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
+        if "Bloqueante" in dep.dependency_type or "Crítico" in dep.dependency_type:
+            shade_cell(row.cells[2], "F4CCCC")
+        else:
+            shade_cell(row.cells[2], "FFF2CC")
+
+        set_cell_text(
+            row.cells[3],
+            sanitize_client_name(clean_t_codes(dep.architectural_rationale), client_name),
+            font_size=9.0,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+        )
+        set_cell_text(
+            row.cells[4],
+            sanitize_client_name(clean_t_codes(dep.delay_impact), client_name),
+            font_size=9.0,
+            align=WD_ALIGN_PARAGRAPH.LEFT,
+        )
+
+        for cell in row.cells:
+            for p in cell.paragraphs:
+                for r in p.runs:
+                    r.font.color.rgb = BASE_TEXT_COLOR
+
+    autofit_table_to_contents(table)
+    add_spacer(doc, 15)
 
 
 def render_executive_summary(
@@ -1449,6 +1721,10 @@ def render_global_report(
 
     render_cover(doc, payload)
     client_name = payload.meta.client
+
+    if getattr(payload, "board_memo", None):
+        render_board_memo(doc, payload.board_memo, client_name=client_name)
+
     if payload.executive_summary:
         render_executive_summary(
             doc,
@@ -1458,12 +1734,21 @@ def render_global_report(
             client_dir,
             client_name=client_name,
         )
+
+    if getattr(payload, "executive_callouts", None):
+        for co in payload.executive_callouts[:2]:
+            render_executive_callout(doc, co, client_name=client_name)
+
     if payload.burning_platform:
         render_burning_platform(doc, payload.burning_platform, client_name=client_name)
     if payload.tower_bottom_lines and payload.heatmap:
         render_tower_bottom_lines(
             doc, payload.heatmap, payload.tower_bottom_lines, client_name=client_name
         )
+
+    if getattr(payload, "cross_tower_nexus", None):
+        render_cross_tower_nexus(doc, payload.cross_tower_nexus, client_name=client_name)
+
     if payload.target_vision:
         render_target_vision(doc, payload.target_vision, client_name=client_name)
     if payload.execution_roadmap:
@@ -1474,6 +1759,10 @@ def render_global_report(
             client_dir,
             client_name=client_name,
         )
+
+    if getattr(payload, "executive_callouts", None) and len(payload.executive_callouts) > 2:
+        render_executive_callout(doc, payload.executive_callouts[2], client_name=client_name)
+
     if payload.executive_decisions:
         render_executive_decisions(
             doc, payload.executive_decisions, client_name=client_name

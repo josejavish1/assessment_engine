@@ -159,6 +159,155 @@ def _aggregate_tower_blueprints(
     )
 
 
+TOWER_CRITICAL_DECISIONS: dict[str, str] = {
+    "T1": "Aprobar plan de renovación eléctrica 2N y climatización para eliminar riesgo de parada única de CPD.",
+    "T2": "Autorizar migración controlada de cargas legacy y adopción del modelo híbrido soberano.",
+    "T3": "Aprobar despliegue de SD-WAN con doble acometida en plantas industriales para garantizar continuidad de negocio.",
+    "T4": "Activar políticas de retención inmutable nativas en NetApp/Cohesity sin compras de licencias adicionales.",
+    "T5": "Ratificar formalmente SLAs/RTO/RPO por criticidad de negocio y aprobar calendario de simulacros anuales obligatorios.",
+    "T6": "Aprobar implantación inmediata de PAM (Tier-0) y microsegmentación OT para blindar cumplimiento penal NIS2.",
+    "T7": "Estandarizar el catálogo de servicios ITIL y centralizar la observabilidad unificada de operaciones digitales.",
+    "T8": "Instituir la oficina de gobierno FinOps y el marco de decisiones de inversión tecnológica plurianual.",
+    "T9": "Desplegar el puesto de trabajo digital seguro con autenticación MFA basada en riesgo para todo el personal.",
+    "T10": "Aprobar el plan director de desacoplamiento y modernización de aplicativos centrales sobre AS400/Mainframe.",
+}
+
+CROSS_TOWER_NEXUS_RULES: list[dict[str, str]] = [
+    {
+        "source_tower": "T6: Seguridad de Infraestructura e Identidad",
+        "target_tower": "T2: Cómputo Híbrido y Plataformas",
+        "dependency_type": "Prerrequisito Crítico (Bloqueante)",
+        "architectural_rationale": "El blindaje del plano de control administrativo (Tier-0 PAM) y la segregación de privilegios es condición obligatoria antes de habilitar consolas de gestión en nubes públicas e híbridas bajo NIS2.",
+        "delay_impact": "Bloqueo del despliegue cloud o exposición crítica de credenciales maestras a robo y movimiento lateral.",
+    },
+    {
+        "source_tower": "T5: Resiliencia y Continuidad (DR)",
+        "target_tower": "T4: Servicios de Datos y Almacenamiento",
+        "dependency_type": "Prerrequisito Tecnológico",
+        "architectural_rationale": "La arquitectura de recuperación limpia ante ransomware (Cyber Recovery Vault) requiere la activación del bloqueo inmutable SnapLock en las cabinas primarias de T4.",
+        "delay_impact": "Imposibilidad de certificar el punto de recuperación confiable (TRP) ante ataques de cifrado masivo.",
+    },
+    {
+        "source_tower": "T3: Redes y Conectividad",
+        "target_tower": "T1: Infraestructura Física y CPD",
+        "dependency_type": "Habilitador de Resiliencia",
+        "architectural_rationale": "La conmutación automatizada dual-site entre el centro de proceso principal y el alternativo exige interconexión de fibra oscura redundante y SD-WAN corporativo.",
+        "delay_impact": "Pérdida de conectividad y parada operativa de fábricas ante cualquier contingencia en el centro de datos principal.",
+    },
+    {
+        "source_tower": "T6: Seguridad de Infraestructura e Identidad",
+        "target_tower": "T7: Operaciones Digitales (ITSM)",
+        "dependency_type": "Integración Operativa",
+        "architectural_rationale": "La detección de anomalías de seguridad en redes industriales (OT) debe canalizarse automáticamente hacia las colas de gestión de incidentes de T7 con SLA tipificado.",
+        "delay_impact": "Tiempos ciegos de respuesta superiores a 4 horas ante incidentes de seguridad en líneas de producción.",
+    },
+    {
+        "source_tower": "T8: Estrategia, Gobierno y FinOps",
+        "target_tower": "T2: Cómputo Híbrido y Plataformas",
+        "dependency_type": "Gobernanza Financiera",
+        "architectural_rationale": "El control de etiquetado de recursos y la política de costes unitarios FinOps debe preceder a la expansión de instancias computacionales elásticas.",
+        "delay_impact": "Deriva presupuestaria incontrolada y sobrecostes recurrentes de hasta un 30% en servicios de plataforma.",
+    },
+]
+
+
+def _build_board_memo(towers_data: list[dict], blueprint_files: list[Path], client_name: str) -> dict[str, Any]:
+    items = []
+    for t in towers_data:
+        tid = t.get("id", "")
+        tname = t.get("name", "")
+        score = t.get("score", "0.0")
+        band = t.get("band", "")
+        status_color = t.get("status_color", "E06666")
+
+        coi_text = "Evaluación paramétrica"
+        budget_tower = 0.0
+
+        for bp in blueprint_files:
+            if bp.parent.name.upper() == tid.upper():
+                cand = bp.parent / f"approved_annex_{tid.lower()}.template_payload.json"
+                if cand.exists():
+                    try:
+                        ax_data = json.loads(cand.read_text(encoding="utf-8-sig"))
+                        fin_coi = ax_data.get("executive_summary", {}).get("financial_coi", {})
+                        coi_text = fin_coi.get("coi_3y_ordinary") or fin_coi.get("annual_loss_exposure") or coi_text
+                    except Exception as err:
+                        logger.debug("Error leyendo anexo para coi_text: %s", err)
+                try:
+                    bp_data = json.loads(bp.read_text(encoding="utf-8-sig"))
+                    for pil in bp_data.get("pillars_analysis", []):
+                        for pr in pil.get("projects_todo", []):
+                            opex_str = str(pr.get("opex_estimate", "0"))
+                            digits = "".join(c for c in opex_str.split("€")[0] if c.isdigit() or c == ".")
+                            if digits:
+                                try:
+                                    budget_tower += float(digits)
+                                except Exception as err:
+                                    logger.debug("Error convirtiendo opex_estimate: %s", err)
+                except Exception as err:
+                    logger.debug("Error leyendo blueprint para budget: %s", err)
+
+        budget_display = f"~{budget_tower:,.0f} € (OpEx/CapEx)" if budget_tower > 0 else "Suscripción / Inversión de Fase"
+        crit_dec = TOWER_CRITICAL_DECISIONS.get(tid, f"Aprobar plan de choque y modernización operativa para {tname}.")
+
+        items.append({
+            "domain": f"{tid}: {tname}",
+            "score": score,
+            "band": band,
+            "status_color": status_color,
+            "fair_exposure_3y": coi_text,
+            "critical_decision": crit_dec,
+            "budget_estimate": budget_display,
+        })
+
+    return {
+        "headline": f"Board Memo: Resumen de Decisión Ejecutiva para el Consejo de Administración de {client_name}",
+        "summary": "Este memorando sintetiza en una sola página la postura de madurez tecnológica, la exposición financiera actuarial (Open FAIR) a 3 años y las decisiones críticas de inversión requeridas del Consejo para el ciclo 2026-2029.",
+        "items": items,
+        "consolidated_exposure_3y": "Exposición financiera agregada calibrada bajo estándar FAIR en expedientes actuariales.",
+        "total_budget_estimate": "Inversión modular estructurada por horizontes de retorno (Waves 0-3).",
+    }
+
+
+def _build_cross_tower_nexus(towers_data: list[dict], blueprint_files: list[Path]) -> dict[str, Any]:
+    gen_tids = {t["id"].upper() for t in towers_data}
+    active_rules = []
+    for r in CROSS_TOWER_NEXUS_RULES:
+        src_id = r["source_tower"].split(":")[0].strip().upper()
+        tgt_id = r["target_tower"].split(":")[0].strip().upper()
+        if src_id in gen_tids or tgt_id in gen_tids or len(gen_tids) >= 3:
+            active_rules.append(r)
+
+    return {
+        "title": "Matriz de Interdependencias Cruzadas (Cross-Tower Nexus)",
+        "description": "La transformación de infraestructura no opera en silos estancos. La siguiente matriz ilustra las dependencias críticas donde las decisiones o retrasos en un dominio condicionan directamente la viabilidad de los demás.",
+        "dependencies": active_rules if active_rules else CROSS_TOWER_NEXUS_RULES,
+    }
+
+
+def _build_executive_callouts(client_name: str, towers_data: list[dict]) -> list[dict[str, str]]:
+    return [
+        {
+            "callout_type": "legal",
+            "title": "ADVERTENCIA DE CUMPLIMIENTO LEGAL: RÉGIMEN SANCIONADOR DIRECTIVA NIS2",
+            "message": f"Conforme al marco legal vigente en 2026, las instalaciones de {client_name} operan bajo la consideración de Entidad Esencial en infraestructuras de suministro. Las infracciones graves por ausencia de microsegmentación industrial, falta de gestión de vulnerabilidades o carencia de planes de notificación de brechas conllevan sanciones de hasta 10.000.000 € o el 2% de la facturación global anual, con asunción directa de responsabilidad por parte del Consejo de Administración.",
+            "key_metric": "Sanción máxima: 10.000.000 € (o 2% facturación global anual)",
+        },
+        {
+            "callout_type": "factory",
+            "title": "CONTINUIDAD OPERATIVA: BLINDAJE DE BÁSCULAS, EXPEDICIÓN Y MOLIENDA",
+            "message": f"El coste de indisponibilidad técnica en los procesos críticos de {client_name} (básculas de despacho continuo de camiones, dosificación de hornos y control de molienda) está calibrado en ~15.500 € por hora de parada. La arquitectura de transformación prohíbe intervenciones invasivas no programadas sobre sistemas SCADA legados, exigiendo un perímetro de aislamiento compensatorio para garantizar el despacho ininterrumpido 24/7.",
+            "key_metric": "Coste de parada no planificada: ~15.500 €/hora de indisponibilidad",
+        },
+        {
+            "callout_type": "decision",
+            "title": "MANDATO DE DECISIÓN DEL COMITÉ: APROBACIÓN DE WAVE 0 (TRIAGE INMEDIATO)",
+            "message": "Se solicita al Comité de Dirección la ratificación formal de las 3 intervenciones de choque prioritarias para los primeros 90 días (Wave 0): 1) Erradicación de cuentas genéricas de administración en fábrica (PAM), 2) Activación de bloqueo inmutable WORM en almacenamiento existente, y 3) Formalización de acuerdos de nivel de servicio (SLA/RTO) con los directores de negocio.",
+            "key_metric": "Ventana de ejecución inmediata: 90 días naturales (Wave 0)",
+        },
+    ]
+
+
 def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] | None:
     r"""{'docstring': "Aggregates client data into a consolidated global report payload.\n\n    This function orchestrates the construction of a comprehensive dictionary by\n    collating data from multiple sources within a client's directory. It parses\n    and merges tower-specific blueprint files (`T*/blueprint_*_payload.json`),\n    prioritizing data from higher-numbered towers. The aggregated data is then\n    enriched with contextual information from `client_intelligence.json` and a\n    dynamically generated strategic roadmap from an orchestration process.\n\n    The process involves calculating maturity scores, extracting strategic risks,\n    compiling initiatives, and resolving identifiers against an epistemic graph\n    to produce human-readable labels. The final output is a structured payload\n    intended for generating a global client report, with provisions for executive\n    summary content to be overridden by the client intelligence file.\n\n    Args:\n        client_dir: The filesystem path to the root directory for a specific\n            client. This directory is expected to contain tower-specific\n            subdirectories (e.g., 'T1', 'T2') which hold blueprint JSON files.\n        client_name: The canonical name of the client. This identifier is used\n            for lookups within the epistemic graph and is embedded in the final\n            payload metadata.\n\n    Returns:\n        A dictionary representing the complete global report payload if successful.\n        Returns None if no blueprint files are found in the specified `client_dir`\n        or if the discovered files yield no processable data.\n\n    Raises:\n        FileNotFoundError: If the `client_dir` path does not exist.\n        json.JSONDecodeError: If a blueprint or client intelligence file contains\n            malformed JSON.\n        KeyError: If a required key is missing from the input JSON data\n            structures, particularly in sections not accessed with a `.get()`\n            fallback.\n        TypeError: If data in an input file has an unexpected type, causing a\n            failure in downstream operations such as numerical conversions."}."""
     # The loading process prioritizes new Blueprints to ensure that the most recent configurations are applied, establishing a clear override precedence for legacy versions.
@@ -470,6 +619,10 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
 
     if intel_narrative:
         payload["executive_summary"]["narrative"] = intel_narrative
+
+    payload["board_memo"] = _build_board_memo(towers_data, blueprint_files, client_name)
+    payload["cross_tower_nexus"] = _build_cross_tower_nexus(towers_data, blueprint_files)
+    payload["executive_callouts"] = _build_executive_callouts(client_name, towers_data)
 
     return payload
 

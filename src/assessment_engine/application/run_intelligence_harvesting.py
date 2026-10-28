@@ -1,3 +1,6 @@
+import logging
+
+logger = logging.getLogger(__name__)
 import asyncio
 import json
 import os
@@ -38,7 +41,7 @@ class MetaExtract(BaseModel):
     )
     industry_sector: str = Field(
         default="Enterprise & Industrial Technology",
-        description="Identifies the client's actual industry sector based on their business operations, products, and market activities (e.g. 'Manufacturing & Building Materials', 'Banking & Financial Services', 'Retail & Commerce', 'Energy & Utilities', 'Healthcare', 'Logistics')."
+        description="Identifies the client's actual industry sector based on their business operations, products, and market activities (e.g. 'Manufacturing & Building Materials', 'Banking & Financial Services', 'Retail & Commerce', 'Energy & Utilities', 'Healthcare', 'Logistics').",
     )
     stage: Literal["H1", "H2", "H3"] = Field(
         description="The assigned transformation phase: H1 (Brilliant Basics), H2 (Hyperautomation & Scale), or H3 (Vanguard & AI-First), determined by the client's automation level and strategic objectives."
@@ -139,6 +142,7 @@ async def probe_ai(
     """
     if client_name:
         import re
+
         client_name = re.sub(r"_v\d+$", "", client_name, flags=re.IGNORECASE).upper()
 
     from google.genai import types
@@ -191,8 +195,11 @@ def load_pdf_cache(cache_path: Path) -> dict[str, str]:
             return json.loads(cache_path.read_text(encoding="utf-8"))
         except Exception as e:
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.warning(f"Failed to load PDF extraction cache ({e}). Initializing new cache.")
+            logger.warning(
+                f"Failed to load PDF extraction cache ({e}). Initializing new cache."
+            )
     return {}
 
 
@@ -201,17 +208,19 @@ def save_pdf_cache(cache_path: Path, cache_data: dict[str, str]) -> None:
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = cache_path.with_name(f"{cache_path.name}.tmp")
     try:
-        tmp_path.write_text(json.dumps(cache_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp_path.write_text(
+            json.dumps(cache_data, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         tmp_path.replace(cache_path)
     except Exception as e:
         import logging
+
         logger = logging.getLogger(__name__)
         logger.warning(f"Failed to save PDF extraction cache ({e}).")
         if tmp_path.exists():
             try:
                 tmp_path.unlink()
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-
                 logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
 
@@ -313,7 +322,6 @@ class SourceVault:
                 if cb not in brands:
                     brands.append(cb)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
         for b in brands:
@@ -331,7 +339,9 @@ class SourceVault:
 
         # Stage 2: Metric Derivation. Computes quantitative metrics from raw, unstructured intelligence data.
         hits = re.findall(
-            r"(\d+[\.,]\d+|\d+)\s*(km|MW|kW|GW|kV|MVA|ms|Gbps|Tbps|vCPUs|cores|GB|TB|CHF|EUR|€|USD|%)", raw, re.IGNORECASE
+            r"(\d+[\.,]\d+|\d+)\s*(km|MW|kW|GW|kV|MVA|ms|Gbps|Tbps|vCPUs|cores|GB|TB|CHF|EUR|€|USD|%)",
+            raw,
+            re.IGNORECASE,
         )
         for val, unit in hits:
             idx = raw.find(val)
@@ -347,91 +357,58 @@ class SourceVault:
             )
 
 
-async def run_market_intelligence(
-    client_name: str, output_path: Path, context_file: Path = None
-) -> None:
-    """Orchestrates an asynchronous, multi-stage market intelligence pipeline.
+async def _discover_brands_from_document(
+    vault: SourceVault, context_file: Path | None, client_name: str
+) -> list[str]:
+    """Ingest context document and discover corporate technology brands dynamically."""
+    discovered_brands: list[str] = []
+    if not (context_file and context_file.exists()):
+        return discovered_brands
 
-    This function executes a comprehensive intelligence gathering and analysis
-    process. It begins by ingesting an optional internal document, then
-    asynchronously probes public web sources and PDF reports for client-specific
-    data. The collected information is synthesized and semantically labeled
-    against a structured ontology. A deterministic multi-criteria decision model
-    then calculates strategic maturity scores based on the synthesized data and
-    client-specific context. Finally, all findings are assembled into a
-    structured JSON dossier and persisted to the specified output path.
+    from docx import Document
 
-    Args:
-        client_name: The name of the target client company for the analysis.
-        output_path: The destination file path for the final JSON dossier.
-            Parent directories are created if they do not exist.
-        context_file: An optional path to a .docx file providing initial
-            internal context. If provided and the file exists, its text content
-            is ingested. Defaults to None.
+    doc_text = "\n".join([p.text for p in Document(context_file).paragraphs])
+    vault.ingest(
+        {"text": doc_text},
+        source_uri=str(context_file),
+        source_type="Internal Document",
+    )
 
-    Returns:
-        None: The function has side effects (writing a file) and does not
-            return a value.
-
-    Raises:
-        FileNotFoundError: If a referenced local file, such as a downloaded PDF
-            report, cannot be located on the filesystem for processing.
-        PermissionError: If the process lacks sufficient permissions to read a
-            source file (e.g., `context_file`) or write to the `output_path`.
-        json.JSONDecodeError: If a generative AI API call returns a string that
-            is not valid JSON when a structured JSON response is required.
-        google.api_core.exceptions.GoogleAPICallError: If an interaction with the
-            Google Generative AI API fails due to network issues, authentication
-            problems, or invalid arguments.
-        docx.opc.exceptions.PackageNotFoundError: If the file specified by
-            `context_file` is not a valid or uncorrupted .docx file.
-    """
-    print(f"\n🚀 Iniciando Pipeline V35.0 (The Purist) para: {client_name}")
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    vault = SourceVault(client_name)
-
-    # Stage 0: Internal Ingestion. Establishes the canonical data source for subsequent executive insight generation.
-    discovered_brands = []
-    if context_file and context_file.exists():
-        from docx import Document
-
-        doc_text = "\n".join([p.text for p in Document(context_file).paragraphs])
-        vault.ingest(
-            {"text": doc_text},
-            source_uri=str(context_file),
-            source_type="Internal Document",
+    print(
+        "  -> [FASE 0] Descubriendo marcas tecnológicas dinámicamente desde el documento de contexto..."
+    )
+    try:
+        discovery_prompt = f"""
+        Analiza el siguiente texto de contexto técnico e identifica todas las marcas tecnológicas, proveedores de nube, fabricantes de hardware, soluciones de software corporativas y bases de datos que utiliza esta organización de forma activa (por ejemplo, AWS, Alibaba Cloud, GCP, IBM, Proxmox, Oracle, SAP, VMware, Cohesity, Centreon, Okta, Dynatrace).
+        
+        TEXTO DE CONTEXTO:
+        {doc_text[:8000]}
+        
+        REGLA DE ORO: Devuelve ÚNICAMENTE una lista JSON de strings con los nombres exactos de las marcas detectadas (ej. ["AWS", "Alibaba", "IBM", "VMware"]). No devuelvas explicaciones ni texto adicional.
+        """
+        res_brand = await probe_ai(
+            discovery_prompt, client_name=client_name, model_name=MODEL_FAST
         )
-
-        # Discover brands dynamically from the context file using the fast LLM!
-        print("  -> [FASE 0] Descubriendo marcas tecnológicas dinámicamente desde el documento de contexto...")
-        try:
-            discovery_prompt = f"""
-            Analiza el siguiente texto de contexto técnico e identifica todas las marcas tecnológicas, proveedores de nube, fabricantes de hardware, soluciones de software corporativas y bases de datos que utiliza esta organización de forma activa (por ejemplo, AWS, Alibaba Cloud, GCP, IBM, Proxmox, Oracle, SAP, VMware, Cohesity, Centreon, Okta, Dynatrace).
-            
-            TEXTO DE CONTEXTO:
-            {doc_text[:8000]}
-            
-            REGLA DE ORO: Devuelve ÚNICAMENTE una lista JSON de strings con los nombres exactos de las marcas detectadas (ej. ["AWS", "Alibaba", "IBM", "VMware"]). No devuelvas explicaciones ni texto adicional.
-            """
-            res_brand = await probe_ai(discovery_prompt, client_name=client_name, model_name=MODEL_FAST)
-            if isinstance(res_brand, dict) and "text" in res_brand:
-                txt = res_brand["text"].strip()
-                if "[" in txt and "]" in txt:
-                    start, end = txt.find("["), txt.rfind("]") + 1
-                    try:
-                        brands_list = json.loads(txt[start:end])
-                        if isinstance(brands_list, list):
-                            discovered_brands = [str(b).strip() for b in brands_list if b]
-                            print(f"     ✓ Marcas descubiertas por IA: {discovered_brands}")
-                    except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-                        logger.debug(f"[Fallback] Excepción controlada: {ex}")
-        except Exception as e:
-            print(f"  ⚠️ Error en descubrimiento dinámico de marcas: {e}")
+        if isinstance(res_brand, dict) and "text" in res_brand:
+            txt = res_brand["text"].strip()
+            if "[" in txt and "]" in txt:
+                start, end = txt.find("["), txt.rfind("]") + 1
+                try:
+                    brands_list = json.loads(txt[start:end])
+                    if isinstance(brands_list, list):
+                        discovered_brands = [str(b).strip() for b in brands_list if b]
+                        print(f"     ✓ Marcas descubiertas por IA: {discovered_brands}")
+                except (OSError, ValueError, KeyError, AttributeError) as ex:
+                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
+    except Exception as e:
+        print(f"  ⚠️ Error en descubrimiento dinámico de marcas: {e}")
 
     vault.custom_discovered_brands = discovered_brands
+    return discovered_brands
 
-    # Stage 1: Web Intelligence Probing. Executes targeted scans of public web sources to acquire relevant client-specific intelligence.
+
+async def _probe_web_intelligence(vault: SourceVault, client_name: str) -> None:
+    """Execute targeted web probes for business strategy and technical stack footprint."""
     print("  -> [FASE 1] Cosechando Huellas Técnicas Reales...")
     tasks = [
         probe_ai(
@@ -447,10 +424,19 @@ async def run_market_intelligence(
     vault.ingest(res_strat, source_uri="Web-Strategy", source_type="Web Search")
     vault.ingest(res_stack, source_uri="Web-Stack", source_type="Web Search")
 
-    # Stage 2: PDF Deep Mining and Analysis. Performs deep content extraction and semantic analysis on specified PDF documents.
+
+async def _mine_pdf_reports(
+    vault: SourceVault, client_name: str, output_path: Path
+) -> list[dict[str, Any]]:
+    """Discover, download, and extract text from client ESG / Annual Report PDFs."""
+    import hashlib
+
+    from google.genai import types
+
     snapshotter = EvidenceSnapshotter(storage_dir=output_path.parent)
     pdf_search = await probe_ai(
-        f"filetype:pdf {client_name} ESG OR Annual Report", client_name=client_name
+        f"filetype:pdf {client_name} ESG OR Annual Report",
+        client_name=client_name,
     )
     captured = await snapshotter.process_urls(
         " ".join(pdf_search.get("_links", [])[:5])
@@ -460,100 +446,147 @@ async def run_market_intelligence(
     pdf_cache = load_pdf_cache(cache_path)
     cache_updated = False
 
-    for snap in [
+    pdf_snaps = [
         c
         for c in captured
         if c.get("local_snapshot") and c["local_snapshot"].endswith(".pdf")
-    ]:
+    ]
+
+    for snap in pdf_snaps:
         local_p = output_path.parent.parent.parent / snap["local_snapshot"]
-        if local_p.exists():
-            import hashlib
+        if not local_p.exists():
+            continue
+
+        try:
+            pdf_bytes = Path(local_p).read_bytes()
+            pdf_hash = hashlib.sha256(pdf_bytes).hexdigest()
+        except Exception as e:
+            print(f"       ⚠️ Error al calcular hash de PDF {local_p}: {e}")
+            pdf_hash = None
+
+        if pdf_hash and pdf_hash in pdf_cache:
+            print(f"       📖 Minería PDF (Caché): {snap['url']}")
+            extracted_text = pdf_cache[pdf_hash]
+        else:
+            print(f"       📖 Minería PDF (API): {snap['url']}")
             try:
-                pdf_bytes = Path(local_p).read_bytes()
-                pdf_hash = hashlib.sha256(pdf_bytes).hexdigest()
+                client = _get_genai_client()
+                res = client.models.generate_content(
+                    model=MODEL_PRO,
+                    contents=[
+                        "Extrae marcas y métricas en texto denso.",
+                        types.Part.from_bytes(
+                            data=pdf_bytes, mime_type="application/pdf"
+                        ),
+                    ],
+                )
+                extracted_text = res.text or ""
+                if pdf_hash:
+                    pdf_cache[pdf_hash] = extracted_text
+                    cache_updated = True
             except Exception as e:
-                print(f"       ⚠️ Error al calcular hash de PDF {local_p}: {e}")
-                pdf_hash = None
+                print(
+                    f"       ❌ Error fatal en API de Vertex AI para PDF {snap['url']}: {e}"
+                )
+                print(
+                    "       ⚠️ Saltando este documento para no bloquear el pipeline de inteligencia."
+                )
+                extracted_text = ""
 
-            if pdf_hash and pdf_hash in pdf_cache:
-                print(f"       📖 Minería PDF (Caché): {snap['url']}")
-                extracted_text = pdf_cache[pdf_hash]
-            else:
-                print(f"       📖 Minería PDF (API): {snap['url']}")
-                from google.genai import types
-
-                try:
-                    client = _get_genai_client()
-                    res = client.models.generate_content(
-                        model=MODEL_PRO,
-                        contents=[
-                            "Extrae marcas y métricas en texto denso.",
-                            types.Part.from_bytes(
-                                data=pdf_bytes, mime_type="application/pdf"
-                            ),
-                        ],
-                    )
-                    extracted_text = res.text or ""
-                    if pdf_hash:
-                        pdf_cache[pdf_hash] = extracted_text
-                        cache_updated = True
-                except Exception as e:
-                    print(f"       ❌ Error fatal en API de Vertex AI para PDF {snap['url']}: {e}")
-                    print("       ⚠️ Saltando este documento para no bloquear el pipeline de inteligencia.")
-                    extracted_text = ""
-
-            vault.ingest(
-                {"text": extracted_text},
-                source_uri=snap["url"],
-                source_type="PDF Document",
-            )
+        vault.ingest(
+            {"text": extracted_text},
+            source_uri=snap["url"],
+            source_type="PDF Document",
+        )
 
     if cache_updated:
         save_pdf_cache(cache_path, pdf_cache)
 
-    # Stage 3: Semantic Labeling and Classification. Applies semantic tags to and classifies synthesized data against a predefined, structured ontology.
+    return captured
+
+
+async def _synthesize_vault_intelligence(
+    vault: SourceVault, client_name: str
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Synthesize labeled ontology metrics and qualitative leadership narrative from vault atoms."""
     print("  -> [FASE 3] Etiquetado y Citación de Bóveda...")
-    label_q = f"Organiza estos hallazgos en JSON. ÁTOMOS: {json.dumps(vault.atoms[:40])}. JSON: {{'metrics': [{{'name':'', 'value':'', 'unit':'', 'source':{{'uri':''}}}}], 'stack': [{{'technology':'', 'vendor':'', 'source':{{'uri':''}}}}]}}"
+    label_q = (
+        f"Organiza estos hallazgos en JSON. ÁTOMOS: {json.dumps(vault.atoms[:40])}. "
+        f"JSON: {{metrics: [{{name:, value:, unit:, source:{{uri:}}}}], "
+        f"stack: [{{technology:, vendor:, source:{{uri:}}}}]}}"
+    )
     organized = await probe_ai(label_q, model_name=MODEL_PRO, client_name=client_name)
 
-    # Stage 4: Intelligence Synthesis. Consolidates and integrates intelligence from multiple sources into a unified analytical model.
     print("  -> [FASE 4] Redactando Narrativa (Anti-Contaminación)...")
     narrative = await probe_ai(
         f"Resume Estrategia y Agenda de Liderazgo para {client_name}. No inventes nombres de CEOs si no aparecen en los datos.",
         model_name=MODEL_PRO,
         client_name=client_name,
     )
+    return organized, narrative
 
-    # Stage 4.5: Dynamic Maturity Target Calculation. Executes the Sovereign Target Model to compute dynamic, strategic maturity targets.
+
+def _build_default_tower_overrides() -> dict[str, Any]:
+    """Construct deterministic fallback maturity matrix when LLM response is unavailable."""
+    from assessment_engine.infrastructure.mcda_sensitivity_engine import (
+        MCDASensitivityEngine,
+    )
+
+    sensitivity_engine = MCDASensitivityEngine()
+    calculated_overrides: dict[str, Any] = {}
+    for i in range(1, 11):
+        tower_id = f"T{i}"
+        gsa_report = sensitivity_engine.run_sensitivity_analysis(
+            base_criticality=50.0,
+            base_compliance=50.0,
+            base_feasibility=50.0,
+            N=10000,
+            uncertainty_range=20.0,
+        )
+        calculated_overrides[tower_id] = {
+            "target_maturity": 4.0,
+            "metrics": {
+                "business_criticality": 50.0,
+                "regulatory_compliance": 50.0,
+                "implementation_feasibility": 50.0,
+            },
+            "justification": "Estándar por defecto debido a indisponibilidad de API.",
+            "sensitivity_analysis": gsa_report,
+        }
+    return calculated_overrides
+
+
+async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
+    """Execute MCDA Conjoint Multi-Criteria Target Model and Sobol GSA Sensitivity for all 10 towers."""
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    from assessment_engine.infrastructure.mcda_sensitivity_engine import (
+        MCDASensitivityEngine,
+    )
+
     print(
         "  -> [FASE 4.5] Evaluando Criterios de Madurez por Torre (Conjoint Multi-Criteria Matrix)..."
     )
-
-    # Load declarative custom narratives from brand_profile.json first (elite approach)
-    from assessment_engine.infrastructure.config_loader import load_brand_profile
 
     brand_data_narratives = {}
     try:
         brand_data_narratives = load_brand_profile()
     except (OSError, ValueError, KeyError, AttributeError) as ex:
-
         logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     custom_narratives = brand_data_narratives.get("custom_narratives", {})
-    client_context_str = custom_narratives.get("client_context")
-    compliance_example_str = custom_narratives.get("compliance_example")
-    feasibility_example_str = custom_narratives.get("feasibility_example")
-
-    # Fallback to decoupled generic default text if not declaratively configured in brand_profile.json
-    if not client_context_str:
-        client_context_str = (
-            "footprint global, cumplimiento normativo general de sector crítico, "
-            "y la necesidad de ciberresiliencia, resiliencia operativa y modernización de su arquitectura."
-        )
-    if not compliance_example_str:
-        compliance_example_str = "ej: NIS2, DORA, Directiva PIC o regulaciones específicas de seguridad de la información, ~85. T1 u otras, ~40"
-    if not feasibility_example_str:
-        feasibility_example_str = "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70"
+    client_context_str = custom_narratives.get(
+        "client_context",
+        "footprint global, cumplimiento normativo general de sector crítico, "
+        "y la necesidad de ciberresiliencia, resiliencia operativa y modernización de su arquitectura.",
+    )
+    compliance_example_str = custom_narratives.get(
+        "compliance_example",
+        "ej: NIS2, DORA, Directiva PIC o regulaciones específicas de seguridad de la información, ~85. T1 u otras, ~40",
+    )
+    feasibility_example_str = custom_narratives.get(
+        "feasibility_example",
+        "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70",
+    )
 
     overrides_prompt = (
         f"Actúa como un Consultor de Estrategia Tecnológica Principal de Gartner.\n"
@@ -583,119 +616,89 @@ async def run_market_intelligence(
         overrides_prompt, model_name=MODEL_PRO, client_name=client_name
     )
 
-    # Stage 4.6: Deterministic Mathematical Computation. Applies the Sovereign Target Engine's deterministic mathematical formula to derive a precise maturity score.
     print(
         "  -> [FASE 4.6] Ejecutando Algoritmo de Decisión Multicriterio (Sovereign Target Engine)..."
     )
-    calculated_overrides = {}
-    if isinstance(raw_overrides, dict):
-        for tower_id, metrics in raw_overrides.items():
-            if not isinstance(metrics, dict):
-                continue
-            try:
-                crit = float(metrics.get("criticality", 50))
-                comp = float(metrics.get("compliance", 50))
-                feas = float(metrics.get("feasibility", 50))
-
-                # Defines the deterministic utility function that maps weighted scores for Criticality, Complexity, and Feasibility to a final target value. The formula is `Target = 3.0 + 2.0 * ((Crit*0.4 + Comp*0.4 + Feas*0.2) / 100)`.
-                # The base `3.0` and multiplier `2.0` constants enforce a strict, asymmetrical output range of [3.0, 5.0] for the calculated target value. This constraint prevents score drift outside the defined maturity spectrum.
-                raw_target = 3.0 + 2.0 * (
-                    (crit * 0.4 + comp * 0.4 + feas * 0.2) / 100.0
-                )
-                target_score = round(raw_target, 1)
-
-                # Run advanced Global Sensitivity Analysis (Sobol Indices & Monte Carlo Fuzzing)
-                from assessment_engine.infrastructure.mcda_sensitivity_engine import (
-                    MCDASensitivityEngine,
-                )
-
-                gsa_samples = int(os.environ.get("ASSESSMENT_GSA_MONTE_CARLO_SAMPLES", "10000"))
-                gsa_uncertainty = float(os.environ.get("ASSESSMENT_GSA_UNCERTAINTY_RANGE", "20.0"))
-
-                sensitivity_engine = MCDASensitivityEngine()
-                gsa_report = sensitivity_engine.run_sensitivity_analysis(
-                    base_criticality=crit,
-                    base_compliance=comp,
-                    base_feasibility=feas,
-                    N=gsa_samples,
-                    uncertainty_range=gsa_uncertainty,
-                )
-
-                calculated_overrides[tower_id] = {
-                    "target_maturity": target_score,
-                    "metrics": {
-                        "business_criticality": crit,
-                        "regulatory_compliance": comp,
-                        "implementation_feasibility": feas,
-                    },
-                    "justification": metrics.get(
-                        "justification", "Alineación multicriterio calculada."
-                    ),
-                    "sensitivity_analysis": gsa_report,
-                }
-                just_str = metrics.get("justification", "")[:60]
-                print(
-                    f"       * {tower_id}: Score Calculado = {target_score} (Justificación: {just_str}...)"
-                )
-            except Exception as e:
-                from assessment_engine.infrastructure.mcda_sensitivity_engine import (
-                    MCDASensitivityEngine,
-                )
-
-                gsa_samples = int(os.environ.get("ASSESSMENT_GSA_MONTE_CARLO_SAMPLES", "10000"))
-                gsa_uncertainty = float(os.environ.get("ASSESSMENT_GSA_UNCERTAINTY_RANGE", "20.0"))
-
-                fallback_engine = MCDASensitivityEngine()
-                fallback_gsa = fallback_engine.run_sensitivity_analysis(
-                    50.0, 50.0, 50.0, N=gsa_samples, uncertainty_range=gsa_uncertainty
-                )
-                calculated_overrides[tower_id] = {
-                    "target_maturity": 4.0,
-                    "metrics": {
-                        "business_criticality": 50.0,
-                        "regulatory_compliance": 50.0,
-                        "implementation_feasibility": 50.0,
-                    },
-                    "justification": f"Fallback estándar por fallo en cálculo de torre: {e}",
-                    "sensitivity_analysis": fallback_gsa,
-                }
-    else:
-        # Provides a fallback mechanism to ensure system stability and graceful degradation in the event of a malformed or non-compliant JSON response from the large language model.
+    if not isinstance(raw_overrides, dict):
         print(
             "  ⚠️ Fallo en el retorno de matriz de madurez. Aplicando fallbacks estocásticos estándar de robustez..."
         )
-        calculated_overrides = {}
-        from assessment_engine.infrastructure.mcda_sensitivity_engine import (
-            MCDASensitivityEngine,
-        )
+        return _build_default_tower_overrides()
 
-        sensitivity_engine = MCDASensitivityEngine()
+    calculated_overrides: dict[str, Any] = {}
+    sensitivity_engine = MCDASensitivityEngine()
+    gsa_samples = int(os.environ.get("ASSESSMENT_GSA_MONTE_CARLO_SAMPLES", "10000"))
+    gsa_uncertainty = float(os.environ.get("ASSESSMENT_GSA_UNCERTAINTY_RANGE", "20.0"))
 
-        for i in range(1, 11):
-            tower_id = f"T{i}"
-            crit, comp, feas = 50.0, 50.0, 50.0
+    for tower_id, metrics in raw_overrides.items():
+        if not isinstance(metrics, dict):
+            continue
+        try:
+            crit = float(metrics.get("criticality", 50))
+            comp = float(metrics.get("compliance", 50))
+            feas = float(metrics.get("feasibility", 50))
 
-            # Compute a mathematically valid default GSA report for structural consistency
+            raw_target = 3.0 + 2.0 * ((crit * 0.4 + comp * 0.4 + feas * 0.2) / 100.0)
+            target_score = round(raw_target, 1)
+
             gsa_report = sensitivity_engine.run_sensitivity_analysis(
                 base_criticality=crit,
                 base_compliance=comp,
                 base_feasibility=feas,
-                N=10000,
-                uncertainty_range=20.0,
+                N=gsa_samples,
+                uncertainty_range=gsa_uncertainty,
             )
 
             calculated_overrides[tower_id] = {
-                "target_maturity": 4.0,
+                "target_maturity": target_score,
                 "metrics": {
                     "business_criticality": crit,
                     "regulatory_compliance": comp,
                     "implementation_feasibility": feas,
                 },
-                "justification": "Estándar por defecto debido a indisponibilidad de API.",
+                "justification": metrics.get(
+                    "justification", "Alineación multicriterio calculada."
+                ),
                 "sensitivity_analysis": gsa_report,
             }
+            just_str = metrics.get("justification", "")[:60]
+            print(
+                f"       * {tower_id}: Score Calculado = {target_score} (Justificación: {just_str}...)"
+            )
+        except Exception as e:
+            fallback_gsa = sensitivity_engine.run_sensitivity_analysis(
+                50.0, 50.0, 50.0, N=gsa_samples, uncertainty_range=gsa_uncertainty
+            )
+            calculated_overrides[tower_id] = {
+                "target_maturity": 4.0,
+                "metrics": {
+                    "business_criticality": 50.0,
+                    "regulatory_compliance": 50.0,
+                    "implementation_feasibility": 50.0,
+                },
+                "justification": f"Fallback estándar por fallo en cálculo de torre: {e}",
+                "sensitivity_analysis": fallback_gsa,
+            }
 
-    # Stage 5: Final Assembly. Executes dynamic just-in-time (JIT) data extraction and enforces schema integrity through Pydantic model validation.
+    return calculated_overrides
+
+
+async def _enrich_epistemic_graph_and_meta(
+    client_name: str,
+    narrative: dict[str, Any],
+    organized: dict[str, Any],
+    calculated_overrides: dict[str, Any],
+) -> tuple[
+    str, str, dict[str, Any], Any, str, float, str, dict[str, float], dict[str, float]
+]:
+    """Deduce dominant hyperscaler, infer industry, and execute Epistemic Graph risk propagation."""
+    from google.genai import types
+
+    from assessment_engine.infrastructure.config_loader import load_brand_profile
+    from assessment_engine.infrastructure.epistemic_graph_service import (
+        EpistemicGraphService,
+    )
+
     print(
         "  -> [FASE 4.7] Extrayendo Meta-Arquitectura e Hyperscaler Dominante de forma Dinámica (Agnóstico)..."
     )
@@ -708,10 +711,8 @@ async def run_market_intelligence(
         f"- dominant_hyperscaler: El proveedor cloud dominante ('dominant_hyperscaler').\n"
         f"- stage, label, rationale: La fase de horizonte de transformación óptimo."
     )
-    from google.genai import types
 
     client_gen = _get_genai_client()
-
     try:
         res_meta = client_gen.models.generate_content(
             model=MODEL_PRO,
@@ -738,13 +739,16 @@ async def run_market_intelligence(
             "rationale": "Fallback estándar.",
         }
 
-    # Decouples industry-vertical-specific logic from the core processing pipeline.
-    # Dynamically inferred from the client's actual data first (agnostic by design)
-    industry_str = inferred_industry or brand_data_narratives.get("industry_profile_name") or "Enterprise & Industrial Technology"
+    brand_data_narratives = {}
+    try:
+        brand_data_narratives = load_brand_profile()
+    except (OSError, ValueError, KeyError, AttributeError):
+        pass
 
-    # Instantiate the Epistemic Graph Bayesian Belief Network (BBN) Service
-    from assessment_engine.infrastructure.epistemic_graph_service import (
-        EpistemicGraphService,
+    industry_str = (
+        inferred_industry
+        or brand_data_narratives.get("industry_profile_name")
+        or "Enterprise & Industrial Technology"
     )
 
     graph_service = EpistemicGraphService()
@@ -754,11 +758,9 @@ async def run_market_intelligence(
         t_id: float(t_data.get("target_maturity", 4.0))
         for t_id, t_data in calculated_overrides.items()
     }
-    # Ensure all 10 towers are present in the intrinsic map (default to 4.0 if missing)
     for i in range(1, 11):
         t_id = f"T{i}"
-        if t_id not in intrinsic_maturities:
-            intrinsic_maturities[t_id] = 4.0
+        intrinsic_maturities.setdefault(t_id, 4.0)
 
     # Propagate risks and find Single Point of Failure (SPOF)
     propagated_maturities = graph_service.propagate_risk(intrinsic_maturities)
@@ -775,11 +777,9 @@ async def run_market_intelligence(
         )
         for t_id, t_data in calculated_overrides.items()
     }
-    # Ensure all 10 towers are present in the std dev map
     for i in range(1, 11):
         t_id = f"T{i}"
-        if t_id not in std_devs:
-            std_devs[t_id] = 0.05
+        std_devs.setdefault(t_id, 0.05)
 
     # Compute advanced PageRank-style Risk Centrality (ERC)
     risk_centrality = graph_service.calculate_risk_centrality(std_devs)
@@ -790,6 +790,39 @@ async def run_market_intelligence(
         orig_score = t_data.get("target_maturity", 4.0)
         t_data["intrinsic_target_maturity"] = orig_score
         t_data["target_maturity"] = propagated_maturities.get(t_id, orig_score)
+
+    return (
+        dominant_hyperscaler,
+        industry_str,
+        horizon_obj,
+        graph_service,
+        spof_tower,
+        spof_impact,
+        spof_by_centrality,
+        risk_centrality,
+        propagated_maturities,
+    )
+
+
+def _assemble_and_persist_dossier(
+    client_name: str,
+    output_path: Path,
+    industry_str: str,
+    narrative: dict[str, Any],
+    horizon_obj: dict[str, Any],
+    organized: dict[str, Any],
+    dominant_hyperscaler: str,
+    calculated_overrides: dict[str, Any],
+    graph_service: Any,
+    spof_tower: str,
+    spof_impact: float,
+    spof_by_centrality: str,
+    risk_centrality: dict[str, float],
+    propagated_maturities: dict[str, float],
+    captured: list[dict[str, Any]],
+) -> None:
+    """Construct canonical V3 client intelligence JSON, sign with cryptographic seal, and write atomically."""
+    import uuid
 
     final_json = {
         "version": "3.0",
@@ -838,14 +871,12 @@ async def run_market_intelligence(
 
     final_json = sign_dossier(final_json)
 
-    import uuid
-
     tmp_path = output_path.with_name(f"{output_path.name}.{uuid.uuid4().hex[:8]}.tmp")
     try:
         tmp_path.write_text(
-            json.dumps(final_json, indent=2, ensure_ascii=False), encoding="utf-8-sig"
+            json.dumps(final_json, indent=2, ensure_ascii=False),
+            encoding="utf-8-sig",
         )
-        # POSIX Atomic Rename: replaces the old file atomically, preventing partial corruption
         tmp_path.replace(output_path)
     except Exception:
         if tmp_path.exists():
@@ -853,6 +884,64 @@ async def run_market_intelligence(
         raise
 
     print(f"✅ BLUEPRINT SANEADO Y COMPLETADO: {output_path}")
+
+
+async def run_market_intelligence(
+    client_name: str, output_path: Path, context_file: Path = None
+) -> None:
+    """Orchestrates an asynchronous, multi-stage market intelligence pipeline."""
+    print(f"\n🚀 Iniciando Pipeline V35.0 (The Purist) para: {client_name}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    vault = SourceVault(client_name)
+
+    # Stage 0: Internal Ingestion & Dynamic Brand Discovery
+    await _discover_brands_from_document(vault, context_file, client_name)
+
+    # Stage 1: Targeted Web Intelligence Probing
+    await _probe_web_intelligence(vault, client_name)
+
+    # Stage 2: PDF Deep Mining and Semantic Extraction
+    captured = await _mine_pdf_reports(vault, client_name, output_path)
+
+    # Stage 3 & 4: Semantic Labeling & Narrative Synthesis
+    organized, narrative = await _synthesize_vault_intelligence(vault, client_name)
+
+    # Stage 4.5 & 4.6: Dynamic Maturity Target Calculation (Conjoint MCDA & Sobol GSA)
+    calculated_overrides = await _calculate_tower_target_overrides(client_name)
+
+    # Stage 4.7 & Graph: Meta-Architecture & Epistemic BBN Propagation
+    (
+        dominant_hyperscaler,
+        industry_str,
+        horizon_obj,
+        graph_service,
+        spof_tower,
+        spof_impact,
+        spof_by_centrality,
+        risk_centrality,
+        propagated_maturities,
+    ) = await _enrich_epistemic_graph_and_meta(
+        client_name, narrative, organized, calculated_overrides
+    )
+
+    # Stage 5: Final Assembly, Cryptographic Signing & Atomic Persistence
+    _assemble_and_persist_dossier(
+        client_name=client_name,
+        output_path=output_path,
+        industry_str=industry_str,
+        narrative=narrative,
+        horizon_obj=horizon_obj,
+        organized=organized,
+        dominant_hyperscaler=dominant_hyperscaler,
+        calculated_overrides=calculated_overrides,
+        graph_service=graph_service,
+        spof_tower=spof_tower,
+        spof_impact=spof_impact,
+        spof_by_centrality=spof_by_centrality,
+        risk_centrality=risk_centrality,
+        propagated_maturities=propagated_maturities,
+        captured=captured,
+    )
 
 
 def main() -> None:
