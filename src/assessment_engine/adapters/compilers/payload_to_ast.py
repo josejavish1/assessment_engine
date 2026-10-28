@@ -7,7 +7,9 @@ import re
 from pathlib import Path
 from typing import Any, List
 
-from assessment_engine.infrastructure.text_utils import format_date_spanish
+from assessment_engine.infrastructure.localization import (
+    format_date_localized,
+)
 
 from assessment_engine.domain.schemas.ast import (
     CellNode,
@@ -347,7 +349,6 @@ class PayloadToASTBridge:
         with open(blueprint_file, "r", encoding="utf-8-sig") as f:
             blueprint_data = json.load(f)
 
-        # Cargar client_intelligence.json si existe a nivel de cliente
         client_intel_file = case_dir.parent / "client_intelligence.json"
         intel_data = {}
         if client_intel_file.exists():
@@ -387,7 +388,9 @@ class PayloadToASTBridge:
         tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
         client_name = clean_client_name(tower_meta.get("client_name", "Cliente"))
         version = tower_meta.get("version", "1.0")
-        date_str = format_date_spanish(tower_meta.get("date"))
+        date_str = format_date_localized(
+            tower_meta.get("date"), locale=meta_lang
+        )
         currency = tower_meta.get("currency", "€")
 
         # Dynamically detect organizational scale to apply customized calibration.
@@ -596,7 +599,7 @@ class PayloadToASTBridge:
                 ParagraphNode(text="Módulo de introducción y alcance no disponible.")
             )
 
-        # Section 2.3 (Contexto Estratégico de Negocio) has been symmetrically removed from tower-specific reports, as strategic alignment and traceability registry belong exclusively in the Global Consolidated Report, per Gartner standards.
+        # Section 2.3 (Strategic Business Context) has been symmetrically removed from tower-specific reports, as strategic alignment and traceability registry belong exclusively in the Global Consolidated Report, per Gartner standards.
 
         #
         # CHAPTER 3: TECHNOLOGICAL DIAGNOSIS AND PLATFORM ANALYSIS
@@ -708,7 +711,6 @@ class PayloadToASTBridge:
         nodes.append(ParagraphNode(text=f"**{res_reading}** {global_reading}"))
         nodes.append(SpacerNode(points=15))
 
-        # McKinsey/Accenture Style: Matriz de Diagnóstico y Desempeño por Dominio Tecnológico
         health_title = "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico" if meta_lang == "es" else "Diagnosis and Performance Matrix by Technology Domain"
         nodes.append(
             HeadingNode(
@@ -779,7 +781,6 @@ class PayloadToASTBridge:
         modules_dir = ctx["modules_dir"]
         intel_data = ctx["intel_data"]
         tower_id = ctx["tower_id"]
-        # 3.4 Assemble and render Section: Cross-Cutting Analysis and Systemic Risk
         transversal_title = "Análisis Transversal de Deuda Tecnológica y Patrones de Riesgo Estructural" if meta_lang == "es" else "Cross-Cutting Analysis of Technological Debt and Structural Risk Patterns"
         nodes.append(HeadingNode(text=transversal_title, level=2, primary_color_rgb=self.primary_color_rgb))
         trans_path = modules_dir / "05_transversal.md"
@@ -787,7 +788,7 @@ class PayloadToASTBridge:
             nodes.extend(self._parse_markdown_to_nodes(trans_path, skip_level_1=True))
         nodes.append(SpacerNode(points=20))
 
-        # 3.5 Indicadores de Riesgo Sistémico y Contexto de Decisión (MCDA + Monte Carlo + LCBN)
+        # 3.5 Systemic Risk Indicators and Decision Context (MCDA + Monte Carlo + LCBN)
         if intel_data:
             try:
                 overrides = intel_data.get("tower_overrides", {}).get(tower_id, {})
@@ -1099,7 +1100,6 @@ class PayloadToASTBridge:
 
         # Build executive risks summary paragraph
         if risks_data_list and total_fair_ale > 0:
-            # Group by pilar
             pilar_sums = {}
             for r in risks_data_list:
                 p_name = r["pilar"]
@@ -1107,7 +1107,6 @@ class PayloadToASTBridge:
             highest_pilar = max(pilar_sums, key=pilar_sums.get)
             highest_pilar_val = pilar_sums[highest_pilar]
             
-            # Find highest individual risk
             highest_risk = max(risks_data_list, key=lambda x: x["ale"])
             highest_risk_id = highest_risk["id"]
             highest_risk_cap = highest_risk["capability"]
@@ -1398,7 +1397,7 @@ class PayloadToASTBridge:
         blueprint_data = ctx["blueprint_data"]
         client_name = ctx["client_name"]
         modules_dir = ctx["modules_dir"]
-        # 5.1 El Paradigma de Transformación (Promoted here from Chapter 4 as it represents a TO-BE vision)
+        # 5.1 Transformation Paradigm (Promoted here from Chapter 4 as it represents a TO-BE vision)
         nodes.append(
             HeadingNode(
                 text="El Paradigma de Transformación: Platform as a Product",
@@ -1411,7 +1410,7 @@ class PayloadToASTBridge:
         nodes.append(ParagraphNode(text=paradigm_text, italic=True))
         nodes.append(SpacerNode(points=15))
 
-        # 5.2 Siguientes Pasos e Impacto de Inacción
+        # 5.2 Next Steps and Impact of Inaction
         concl_path = modules_dir / "07_conclusiones.md"
         if concl_path.exists():
             nodes.extend(self._parse_markdown_to_nodes(concl_path))
@@ -1469,7 +1468,6 @@ class PayloadToASTBridge:
                 except Exception as ex:
                     logger.info(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
-            # Get localized glossary dictionary
             glossary = full_glossary.get(meta_lang, full_glossary.get("es", {}))
 
             # Gather all text accumulated in nodes so far to detect used abbreviations
@@ -1767,7 +1765,6 @@ class PayloadToASTBridge:
             )
         )
 
-        # Cargar la definición de la torre
         tower_def_file = Path("engine_config/towers") / tower_id / f"tower_definition_{tower_id.lower()}.json"
         if not tower_def_file.exists():
             tower_def_file = Path("engine_config/towers") / tower_id / f"tower_definition_{tower_id}.json"
@@ -1879,7 +1876,7 @@ class PayloadToASTBridge:
             )
         )
 
-        # D.3 Modelado de Indicadores de Interdependencia Tecnológica
+        # D.3 Technological Interdependence Indicator Modeling
         nodes.append(SpacerNode(points=15))
         nodes.append(
             HeadingNode(
@@ -1948,7 +1945,7 @@ class PayloadToASTBridge:
             if not cleaned:
                 continue
 
-            # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
+            # Sanitization: Replace non-standard vocabulary with canonical terms
             from assessment_engine.infrastructure.localization import (
                 apply_vocabulary_substitutions,
             )

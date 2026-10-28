@@ -56,6 +56,7 @@ class _YamlModule(Protocol):
 
 # The following utility functions are architecturally constrained to be pure; they must not produce side effects and their output must depend solely on their input.
 def derive_maturity_band(score: float, locale: str | None = None) -> str:
+    """Derive maturity band according to architectural specification."""
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=locale)["label"]
 
 
@@ -87,10 +88,12 @@ def infer_initiative_priority(project: Any, pillar_score: float = 3.0) -> str:
 
 
 def truncate_list(items, limit) -> Any:
+    """Truncate list according to architectural specification."""
     return items[:limit] if isinstance(items, list) else items
 
 
 def truncate_text(text: str, limit: int = 280) -> str:
+    """Truncate text according to architectural specification."""
     normalized = " ".join(str(text or "").split())
     if len(normalized) <= limit:
         return normalized
@@ -103,6 +106,7 @@ def take_complete_sentences(
     max_sentences: int = 2,
     max_chars: int = 360,
 ) -> str:
+    """Take complete sentences according to architectural specification."""
     normalized = " ".join(str(text or "").split())
     if not normalized:
         return ""
@@ -146,10 +150,12 @@ def take_complete_sentences(
 
 
 def average(values: list[float], default: float = 0.0) -> float:
+    """Average  according to architectural specification."""
     return round(sum(values) / len(values), 1) if values else default
 
 
 def unique_list(items: list[str], limit: int | None = None) -> list[str]:
+    """Unique list according to architectural specification."""
     seen: set[str] = set()
     output: list[str] = []
     for item in items:
@@ -167,6 +173,7 @@ def unique_list(items: list[str], limit: int | None = None) -> list[str]:
 
 
 def summarize_project_name(name: str) -> str:
+    """Summarize project name according to architectural specification."""
     text = " ".join(str(name or "").split())
     if ":" in text:
         _, remainder = text.split(":", 1)
@@ -176,6 +183,7 @@ def summarize_project_name(name: str) -> str:
 
 
 def build_executive_handover(blueprint: BlueprintPayload) -> dict[str, Any]:
+    """Build executive handover according to architectural specification."""
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
     project_names = [
         summarize_project_name(project.initiative)
@@ -203,6 +211,7 @@ def lookup_dependency_display(
     initiative_name: str,
     external_dependencies: list[Any],
 ) -> str:
+    """Lookup dependency display according to architectural specification."""
     matches = [
         dependency.depends_on
         for dependency in external_dependencies
@@ -214,6 +223,7 @@ def lookup_dependency_display(
 
 
 def derive_gap_rows(blueprint: BlueprintPayload) -> tuple[list[str], list[GapRowAnnex]]:
+    """Derive gap rows according to architectural specification."""
     target_capabilities: list[str] = []
     gap_rows: list[GapRowAnnex] = []
     for pillar in sorted(blueprint.pillars_analysis, key=lambda item: item.score):
@@ -253,6 +263,7 @@ def derive_gap_rows(blueprint: BlueprintPayload) -> tuple[list[str], list[GapRow
 
 
 def derive_risks(blueprint: BlueprintPayload) -> list[RiskItemAnnex]:
+    """Derive risks according to architectural specification."""
     risks: list[RiskItemAnnex] = []
     for pillar in sorted(blueprint.pillars_analysis, key=lambda item: item.score):
         if not pillar.health_check_asis:
@@ -291,6 +302,7 @@ def derive_risks(blueprint: BlueprintPayload) -> list[RiskItemAnnex]:
 
 
 def derive_priority_initiatives(blueprint: BlueprintPayload) -> list[InitiativeAnnex]:
+    """Derive priority initiatives according to architectural specification."""
     ranked: list[tuple[int, float, str, InitiativeAnnex]] = []
     for pillar in blueprint.pillars_analysis:
         for project in pillar.projects_todo:
@@ -333,6 +345,7 @@ def derive_priority_initiatives(blueprint: BlueprintPayload) -> list[InitiativeA
 
 
 def derive_focus_areas(blueprint: BlueprintPayload) -> list[str]:
+    """Derive focus areas according to architectural specification."""
     initiatives = [
         summarize_project_name(project.initiative)
         for pillar in sorted(blueprint.pillars_analysis, key=lambda item: item.score)
@@ -344,6 +357,7 @@ def derive_focus_areas(blueprint: BlueprintPayload) -> list[str]:
 
 
 def derive_pillar_executive_reading(pillar: Any, idx: int = 0) -> str:
+    """Derive pillar executive reading according to architectural specification."""
     score = pillar.score
     band = derive_maturity_band(score)
     formatted_score = f"{score:.2f}".replace(".", ",")
@@ -367,15 +381,13 @@ def derive_pillar_executive_reading(pillar: Any, idx: int = 0) -> str:
         return getattr(f, "vulnerability_level", 3) or 3
         
     sorted_findings = sorted(findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True)
-    
-    # Gaps (worst findings: vuln >= 4 or first 2)
+
     gaps_findings = [f for f in sorted_findings if get_vuln(f) >= 4]
     if not gaps_findings:
         gaps_findings = sorted_findings[:1]
-        
-    # Stable (vulnerability < 4 or remaining findings)
+
     stable_findings = [f for f in sorted_findings if f not in gaps_findings]
-    
+
     # Extract capability names
     gaps_caps = [f.target_state for f in gaps_findings if f.target_state]
     stable_caps = [f.target_state for f in stable_findings if f.target_state]
@@ -477,6 +489,7 @@ def enrich_annex_payload(
     radar_chart_path: Path,
     run_id: str,
 ) -> AnnexPayload:
+    """Enrich annex payload according to architectural specification."""
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
     target_scores = [pillar.target_score for pillar in blueprint.pillars_analysis]
     avg_score = average(scores)
@@ -618,6 +631,7 @@ def enrich_annex_payload(
 
 
 def load_yaml_config(filename: str) -> dict:
+    """Load yaml config according to architectural specification."""
     yaml = cast(_YamlModule, import_module("yaml"))
     filepath = (
         Path(__file__).resolve().parent.parent
@@ -637,6 +651,7 @@ def build_synthesis_prompt(
     context_summary: str,
     config: dict,
 ) -> str:
+    """Build synthesis prompt according to architectural specification."""
     tower_name = blueprint_data.get("document_meta", {}).get(
         "tower_name", "la torre evaluada"
     )
@@ -712,12 +727,26 @@ async def generate_synthesis(
         config=config,
     )
 
-    model_name = resolve_model_for_role("section_writer", default_model="gemini-2.5-pro")
+    model_name = resolve_model_for_role(
+        "section_writer", default_model="gemini-2.5-pro"
+    )
+
+    from assessment_engine.infrastructure.localization import (
+        resolve_target_language_name,
+    )
+
+    doc_lang = getattr(blueprint.document_meta, "language", "es")
+    target_lang = resolve_target_language_name(doc_lang)
 
     agent = Agent(
         name="executive_synthesizer",
         model=model_name,
-        instruction=f"Eres un {config['role']}. Tu misión es: {config['mission']}",
+        instruction=(
+            f"You are a {config.get('role', 'Principal Solutions Architect')}. "
+            f"Mission: {config.get('mission', 'Synthesize high-impact executive annexes')}.\n\n"
+            f"### CRITICAL LANGUAGE MANDATE:\n"
+            f"You MUST generate all executive summaries, domain narratives, and strategic findings EXCLUSIVELY in {target_lang}."
+        ),
         output_schema=AnnexPayload,
     )
     app = AdkApp(agent=agent)

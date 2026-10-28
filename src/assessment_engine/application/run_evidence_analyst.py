@@ -147,11 +147,22 @@ async def build_findings(
         get_consultant_company_name,
         resolve_model_for_role,
     )
+    from assessment_engine.infrastructure.localization import (
+        resolve_target_language_name,
+    )
+
     company = get_consultant_company_name()
+    doc_lang = case_input.get("language") or "es"
+    target_lang = resolve_target_language_name(doc_lang)
+
     agent = Agent(
         name="technical_analyst",
         model=resolve_model_for_role("analyst", default_model="gemini-2.5-pro"),
-        instruction=f"Eres un Arquitecto Senior de {company} especializado en modernización de infraestructuras empresariales y continuidad operativa.",
+        instruction=(
+            f"You are a Senior Infrastructure & Enterprise Architecture Analyst at {company}.\n\n"
+            f"### CRITICAL LANGUAGE MANDATE:\n"
+            f"You MUST generate all analytical narratives, findings, observations, and evidence references EXCLUSIVELY in {target_lang}."
+        ),
     )
     app = AdkApp(agent=agent)
 

@@ -122,7 +122,7 @@ def get_localized_string(
     catalog = load_locales_catalog()
     base_loc = resolve_base_locale(locale)
 
-    # Resolution hierarchy: exact locale -> base language -> 'en' -> 'es'
+    # Resolution hierarchy: exact locale -> base language -> 'en' -> fallback
     text_template = None
     for loc in [locale, base_loc, "en", "es"]:
         if loc in catalog and isinstance(catalog[loc], dict):
@@ -218,3 +218,96 @@ def apply_vocabulary_substitutions(text: str, locale: str = "es") -> str:
     for pattern_str, repl in substitutions.items():
         res = re.sub(rf"\b{pattern_str}\b", repl, res, flags=re.IGNORECASE)
     return res
+
+
+ISO_LANGUAGE_NAMES: dict[str, str] = {
+    "es": "Spanish",
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "pt": "Portuguese",
+    "it": "Italian",
+    "ja": "Japanese",
+    "zh": "Chinese",
+    "ko": "Korean",
+    "nl": "Dutch",
+    "pl": "Polish",
+    "sv": "Swedish",
+    "no": "Norwegian",
+    "da": "Danish",
+    "fi": "Finnish",
+    "ar": "Arabic",
+    "ru": "Russian",
+}
+
+
+def resolve_target_language_name(locale_code: str | None) -> str:
+    """Resolves an ISO-639-1 / BCP-47 locale code to its standardized English name for generative prompt projection."""
+    if not locale_code:
+        return "Spanish"
+    base_loc = resolve_base_locale(locale_code)
+    return ISO_LANGUAGE_NAMES.get(base_loc, base_loc.capitalize())
+
+
+MONTH_NAMES: dict[str, dict[int, str]] = {
+    "es": {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
+    },
+    "en": {
+        1: "January", 2: "February", 3: "March", 4: "April",
+        5: "May", 6: "June", 7: "July", 8: "August",
+        9: "September", 10: "October", 11: "November", 12: "December",
+    },
+    "de": {
+        1: "Januar", 2: "Februar", 3: "März", 4: "April",
+        5: "Mai", 6: "Juni", 7: "Juli", 8: "August",
+        9: "September", 10: "Oktober", 11: "November", 12: "Dezember",
+    },
+    "fr": {
+        1: "Janvier", 2: "Février", 3: "Mars", 4: "Avril",
+        5: "Mai", 6: "Juin", 7: "Juillet", 8: "Août",
+        9: "Septembre", 10: "Octobre", 11: "Novembre", 12: "Décembre",
+    },
+    "it": {
+        1: "Gennaio", 2: "Febbraio", 3: "Marzo", 4: "Aprile",
+        5: "Maggio", 6: "Giugno", 7: "Luglio", 8: "Agosto",
+        9: "Settembre", 10: "Ottobre", 11: "Novembre", 12: "Dicembre",
+    },
+    "pt": {
+        1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+        5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+        9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro",
+    },
+    "ja": {
+        1: "1月", 2: "2月", 3: "3月", 4: "4月",
+        5: "5月", 6: "6月", 7: "7月", 8: "8月",
+        9: "9月", 10: "10月", 11: "11月", 12: "12月",
+    },
+}
+
+
+def format_date_localized(date_val: str | None = None, locale: str = "es") -> str:
+    """Formats a date string or ISO date into localized 'Month Year' conforming to regional grammar standards."""
+    from datetime import datetime
+
+    base_loc = resolve_base_locale(locale)
+    months_map = MONTH_NAMES.get(base_loc, MONTH_NAMES["en"])
+
+    if not date_val or not str(date_val).strip():
+        now = datetime.now()
+        if base_loc == "ja":
+            return f"{now.year}年{months_map[now.month]}"
+        return f"{months_map[now.month]} {now.year}"
+
+    cleaned = str(date_val).strip()
+    try:
+        dt = datetime.fromisoformat(cleaned)
+        if base_loc == "ja":
+            return f"{dt.year}年{months_map[dt.month]}"
+        return f"{months_map[dt.month]} {dt.year}"
+    except (ValueError, TypeError):
+        pass
+
+    return cleaned

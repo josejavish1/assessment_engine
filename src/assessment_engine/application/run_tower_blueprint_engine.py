@@ -381,15 +381,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     )
 
     doc_lang = str(case_data.get("language") or "es").lower()
-    lang_names = {
-        "es": "Spanish",
-        "en": "English",
-        "de": "German",
-        "fr": "French",
-        "pt": "Portuguese",
-        "ja": "Japanese",
-    }
-    target_language = lang_names.get(doc_lang, "Spanish")
+    from assessment_engine.infrastructure.localization import (
+        resolve_target_language_name,
+    )
+
+    target_language = resolve_target_language_name(doc_lang)
 
     try:
         from assessment_engine.infrastructure.config_loader import (
@@ -768,7 +764,6 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         )
                         return matches[0] if matches else None
 
-                    # Resilient external dependencies resolution
                     for dep in closing_data.get("external_dependencies", []):
                         dep_name = dep.get("depends_on")
                         if dep_name not in valid_project_names and dep_name not in [
@@ -966,6 +961,16 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     p_obj = proj.get("tech_objective", "")
                     p_sz = proj.get("sizing", "M")
                     curr_sym = blueprint_payload.get("document_meta", {}).get("currency", "€") or "€"
+                    custom_prof_path = Path(working_dir) / "custom_risk_profile.json"
+                    country_mult = 1.0
+                    if custom_prof_path.exists():
+                        try:
+                            with open(custom_prof_path, encoding="utf-8-sig") as cf:
+                                c_data = json.load(cf)
+                                sre_rate = float(c_data.get("hourly_rate_sre_eur", 36.0))
+                                country_mult = sre_rate / 36.0
+                        except Exception:
+                            country_mult = 1.0
 
                     opex_str, capex_str = DeterministicFinOpsEngine.calculate_project_costs(
                         wbs_tasks=wbs,
@@ -974,6 +979,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                         tech_objective=p_obj,
                         sizing=p_sz,
                         currency_symbol=curr_sym,
+                        country_rate_multiplier=country_mult,
                     )
                     enrichment_data["opex_estimate"] = opex_str
 
