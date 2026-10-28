@@ -1,17 +1,17 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793202268,
+  "timestamp": 1793205407,
   "global_grade": "A",
-  "global_score": 97.6,
+  "global_score": 97.5,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 409,
-        "clean_files": 409,
+        "scanned_files": 412,
+        "clean_files": 412,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -32,20 +32,20 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 50.8,
+      "score_pct": 50.5,
       "passed": false,
       "metrics": {
-        "prod_sloc": 56196,
-        "test_sloc": 6927,
-        "test_to_code_ratio": 0.12,
-        "maintainability_index_sei": 30.3,
-        "typed_functions_pct": 84.9,
-        "docstring_coverage_pct": 82.2,
-        "max_cognitive_complexity": 547,
-        "rango_d_functions_count": 50,
+        "prod_sloc": 56595,
+        "test_sloc": 7111,
+        "test_to_code_ratio": 0.13,
+        "maintainability_index_sei": 30.4,
+        "typed_functions_pct": 85.0,
+        "docstring_coverage_pct": 81.9,
+        "max_cognitive_complexity": 312,
+        "rango_d_functions_count": 52,
         "god_modules_count": 22,
-        "high_cognitive_funcs_count": 130,
-        "deep_nesting_funcs_count": 76
+        "high_cognitive_funcs_count": 133,
+        "deep_nesting_funcs_count": 79
       },
       "findings": [
         {
@@ -621,14 +621,14 @@
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'compile_asis_docx_from_modules.py' tiene 2679 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'compile_asis_docx_from_modules.py' tiene 2866 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 292,
+          "line_number": 296,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'set_cell_text_custom': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -637,7 +637,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 292,
+          "line_number": 296,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'set_cell_text_custom': CoC = 45 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -646,7 +646,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 658,
+          "line_number": 662,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'parse_and_append_markdown_section' excede límite ciclomático: V(G) = 26 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -655,27 +655,117 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 830,
+          "line_number": 865,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'compile_docx' excede límite ciclomático: V(G) = 279 (Rango D > 20)",
+          "message": "Función '_compile_chapter_3_maturity_profile' excede límite ciclomático: V(G) = 119 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 830,
+          "line_number": 865,
           "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en 'compile_docx': 6 niveles de profundidad (límite <= 3)",
+          "message": "Anidamiento excesivo en '_compile_chapter_3_maturity_profile': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 830,
+          "line_number": 865,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'compile_docx': CoC = 547 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en '_compile_chapter_3_maturity_profile': CoC = 246 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 1497,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Función '_compile_chapter_4_fair_risk_matrix' excede límite ciclomático: V(G) = 72 (Rango D > 20)",
+          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 1497,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Anidamiento excesivo en '_compile_chapter_4_fair_risk_matrix': 4 niveles de profundidad (límite <= 3)",
+          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 1497,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_compile_chapter_4_fair_risk_matrix': CoC = 144 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 2289,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Anidamiento excesivo en '_compile_chapter_5_conclusions': 5 niveles de profundidad (límite <= 3)",
+          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 2289,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_compile_chapter_5_conclusions': CoC = 47 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 2542,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Función '_compile_appendices' excede límite ciclomático: V(G) = 50 (Rango D > 20)",
+          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 2542,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Anidamiento excesivo en '_compile_appendices': 4 niveles de profundidad (límite <= 3)",
+          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 2542,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en '_compile_appendices': CoC = 77 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 3107,
+          "rule_id": "MCCABE-RANGE-D",
+          "message": "Función 'compile_docx' excede límite ciclomático: V(G) = 33 (Rango D > 20)",
+          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "CRITICAL",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 3107,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'compile_docx': CoC = 39 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -729,14 +819,14 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'payload_to_ast.py' tiene 1780 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'payload_to_ast.py' tiene 1784 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 337,
+          "line_number": 339,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_extract_conversion_context': CoC = 17 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -745,7 +835,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 552,
+          "line_number": 556,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_executive_summary_and_scope': CoC = 22 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -754,7 +844,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 775,
+          "line_number": 779,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función '_build_systemic_risk_section' excede límite ciclomático: V(G) = 42 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -763,7 +853,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 775,
+          "line_number": 779,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_build_systemic_risk_section': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -772,7 +862,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 775,
+          "line_number": 779,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_systemic_risk_section': CoC = 97 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -781,7 +871,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 932,
+          "line_number": 936,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función '_build_maturity_and_benchmarks' excede límite ciclomático: V(G) = 34 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -790,7 +880,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 932,
+          "line_number": 936,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_build_maturity_and_benchmarks': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -799,7 +889,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 932,
+          "line_number": 936,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_maturity_and_benchmarks': CoC = 61 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -808,7 +898,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1213,
+          "line_number": 1217,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función '_build_detailed_findings_log' excede límite ciclomático: V(G) = 28 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -817,7 +907,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1213,
+          "line_number": 1217,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_build_detailed_findings_log': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -826,7 +916,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1213,
+          "line_number": 1217,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_detailed_findings_log': CoC = 52 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -835,7 +925,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1416,
+          "line_number": 1420,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función '_build_appendix_a_glossary' excede límite ciclomático: V(G) = 27 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -844,7 +934,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1416,
+          "line_number": 1420,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_build_appendix_a_glossary': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -853,7 +943,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1416,
+          "line_number": 1420,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_appendix_a_glossary': CoC = 50 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -862,7 +952,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 1684,
+          "line_number": 1688,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en '_build_appendix_d_methodology': CoC = 19 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1024,7 +1114,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 83,
+          "line_number": 86,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'main' excede límite ciclomático: V(G) = 96 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1033,7 +1123,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 83,
+          "line_number": 86,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'main': 8 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1042,7 +1132,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 83,
+          "line_number": 86,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'main': CoC = 206 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1089,7 +1179,7 @@
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 746 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 859 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -1098,61 +1188,43 @@
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 63,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'infer_initiative_priority': CoC = 18 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'infer_initiative_priority': CoC = 20 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 103,
+          "line_number": 146,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'take_complete_sentences': CoC = 17 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
+          "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 359,
+          "line_number": 541,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'derive_pillar_executive_reading' excede límite ciclomático: V(G) = 28 (Rango D > 20)",
+          "message": "Función 'enrich_annex_payload' excede límite ciclomático: V(G) = 32 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 359,
+          "line_number": 541,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'derive_pillar_executive_reading': CoC = 29 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'enrich_annex_payload': CoC = 40 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 486,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'enrich_annex_payload' excede límite ciclomático: V(G) = 21 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 486,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'enrich_annex_payload': CoC = 23 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
+          "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
           "line_number": 92,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'build_findings' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
+          "message": "Función 'build_findings' excede límite ciclomático: V(G) = 31 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -1161,7 +1233,7 @@
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
           "line_number": 92,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'build_findings': CoC = 41 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'build_findings': CoC = 42 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -1170,14 +1242,14 @@
           "file_path": "src/assessment_engine/application/run_intelligence_harvesting.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_intelligence_harvesting.py' tiene 731 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_intelligence_harvesting.py' tiene 739 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_intelligence_harvesting.py",
-          "line_number": 342,
+          "line_number": 350,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'run_market_intelligence' excede límite ciclomático: V(G) = 39 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1186,7 +1258,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_intelligence_harvesting.py",
-          "line_number": 342,
+          "line_number": 350,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'run_market_intelligence': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1195,7 +1267,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_intelligence_harvesting.py",
-          "line_number": 342,
+          "line_number": 350,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'run_market_intelligence': CoC = 67 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1260,14 +1332,14 @@
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 927 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 930 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 305,
+          "line_number": 309,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'run_tower_blueprint' excede límite ciclomático: V(G) = 130 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1276,7 +1348,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 305,
+          "line_number": 309,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'run_tower_blueprint': 7 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1285,7 +1357,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 305,
+          "line_number": 309,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'run_tower_blueprint': CoC = 276 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1294,7 +1366,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 493,
+          "line_number": 498,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_single_pillar_async': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1303,7 +1375,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 493,
+          "line_number": 498,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_single_pillar_async': CoC = 40 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1312,7 +1384,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 887,
+          "line_number": 892,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'enrich_project' excede límite ciclomático: V(G) = 23 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1321,7 +1393,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 887,
+          "line_number": 892,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'enrich_project': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1330,7 +1402,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 887,
+          "line_number": 892,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'enrich_project': CoC = 44 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1609,7 +1681,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/adversarial_consensus_engine.py",
-          "line_number": 104,
+          "line_number": 109,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_payload': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1618,7 +1690,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/adversarial_consensus_engine.py",
-          "line_number": 104,
+          "line_number": 109,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_payload': CoC = 23 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1717,7 +1789,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 129,
+          "line_number": 135,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'check_semantic_drift': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1726,7 +1798,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 129,
+          "line_number": 135,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'check_semantic_drift': CoC = 33 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1798,7 +1870,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/enforce_english_comments.py",
-          "line_number": 202,
+          "line_number": 206,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'get_docstring_spans': CoC = 23 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1807,7 +1879,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/enforce_english_comments.py",
-          "line_number": 246,
+          "line_number": 250,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'is_in_docstring_spans': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1816,7 +1888,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/enforce_english_comments.py",
-          "line_number": 266,
+          "line_number": 270,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'process_file' excede límite ciclomático: V(G) = 30 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1825,7 +1897,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/enforce_english_comments.py",
-          "line_number": 266,
+          "line_number": 270,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_file': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1834,7 +1906,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/enforce_english_comments.py",
-          "line_number": 266,
+          "line_number": 270,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_file': CoC = 75 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1852,7 +1924,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/apex_dispatcher.py",
-          "line_number": 365,
+          "line_number": 370,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_task': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1861,7 +1933,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/apex_dispatcher.py",
-          "line_number": 365,
+          "line_number": 370,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_task': CoC = 27 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1870,7 +1942,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/apex_dispatcher.py",
-          "line_number": 487,
+          "line_number": 492,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'monitor_mode': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1879,7 +1951,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/apex_dispatcher.py",
-          "line_number": 487,
+          "line_number": 492,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'monitor_mode': CoC = 31 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1906,7 +1978,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 59,
+          "line_number": 64,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'calibrate_client_scale' excede límite ciclomático: V(G) = 47 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -1915,7 +1987,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 59,
+          "line_number": 64,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'calibrate_client_scale': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1924,7 +1996,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 59,
+          "line_number": 64,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'calibrate_client_scale': CoC = 86 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1933,7 +2005,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 126,
+          "line_number": 131,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'extract_resilience_hints': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -2275,7 +2347,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/agentic_benchmarker.py",
-          "line_number": 109,
+          "line_number": 117,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'run_rage_evaluation': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -2284,7 +2356,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/infrastructure/agentic_benchmarker.py",
-          "line_number": 109,
+          "line_number": 117,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'run_rage_evaluation': CoC = 30 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -2661,7 +2733,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 316,
+        "scanned_files": 319,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -2675,7 +2747,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 316,
+        "scanned_files": 319,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -2694,10 +2766,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.48,
-        "p95_latency_ms": 105.26,
-        "p99_latency_ms": 133.38,
-        "tail_amplification_ratio": 90.12,
+        "p50_latency_ms": 1.47,
+        "p95_latency_ms": 105.13,
+        "p99_latency_ms": 181.38,
+        "tail_amplification_ratio": 123.39,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -2738,7 +2810,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 350,
+        "scanned_files": 353,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -2748,18 +2820,46 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "files_scanned": 345,
-        "inline_rationale_score": 100.0,
+        "files_scanned": 348,
+        "inline_rationale_score": 99.9,
         "contract_coverage_score": 100.0,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 0,
+        "comment_smells_count": 4,
         "missing_docstrings_count": 0,
         "cqi_score": 100.0,
         "grade": "A+",
         "status": "Tier-1 Certified"
       },
-      "findings": []
+      "findings": [
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 1660,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
+          "line_number": 1660,
+          "rule_id": "NON-ENGLISH-COMMENT",
+          "message": "Non-English comment detected in production source code",
+          "recommendation": "Translate comment to concise technical English or delete if self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
+          "line_number": 594,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        }
+      ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A (97.6%). Sondas pasadas: 17/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (97.5%). Sondas pasadas: 17/18."
 }

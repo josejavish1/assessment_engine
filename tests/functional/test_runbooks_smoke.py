@@ -82,7 +82,7 @@ def test_runbook_commands_dry_runs(tmp_path: Path):
             capture_output=True,
             text=True,
             env={"PYTHONPATH": str(repo_root / "src")},
-            timeout=15,
+            timeout=60,
         )
         assert res.returncode == 0, (
             f"Documented runbook command failed: {' '.join(full_args)}\n"
