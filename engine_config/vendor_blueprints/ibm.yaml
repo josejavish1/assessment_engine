@@ -1,0 +1,25 @@
+vendor_id: ibm
+display_name: IBM Technology (Turbonomic / Instana / Power)
+official_domains:
+- ibm.com
+coverage_domains:
+- domain_id: IBM_TURBONOMIC_ARM
+  name: IBM Turbonomic Application Resource Management
+  criticality: CRITICAL
+  search_query: IBM Turbonomic Application Resource Management architecture datasheet
+    filetype:pdf site:ibm.com
+  expected_entities:
+  - Turbonomic
+  - ARM
+  - Resource Optimization
+  - FinOps
+- domain_id: IBM_INSTANA_OBSERVABILITY
+  name: IBM Instana Observability en Tiempo Real
+  criticality: HIGH
+  search_query: IBM Instana Observability automated APM architecture datasheet filetype:pdf
+    site:ibm.com
+  expected_entities:
+  - Instana
+  - 1-Second Metrics
+  - AIOps
+  - Automation

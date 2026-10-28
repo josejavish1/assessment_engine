@@ -1,0 +1,17 @@
+vendor_id: cloudflare
+display_name: Cloudflare (SASE, Magic Transit & WAF)
+official_domains:
+- cloudflare.com
+- developers.cloudflare.com
+coverage_domains:
+- domain_id: CLOUDFLARE_ONE_SASE
+  name: Cloudflare One Zero Trust y Magic Transit
+  criticality: CRITICAL
+  search_query: Cloudflare One Magic Transit DDoS mitigation enterprise architecture
+    datasheet filetype:pdf site:cloudflare.com
+  expected_entities:
+  - Cloudflare One
+  - Magic Transit
+  - Zero Trust
+  - DDoS
+  - WAF

@@ -1,0 +1,27 @@
+vendor_id: infoblox
+display_name: Infoblox BloxOne DDI (DNS, DHCP, IPAM)
+official_domains:
+- infoblox.com
+coverage_domains:
+- domain_id: INFOBLOX_BLOXONE_DDI
+  name: Infoblox DDI Architecture (DNS / DHCP / IPAM)
+  criticality: CRITICAL
+  search_query: Infoblox DDI BloxOne DNS DHCP IPAM architecture datasheet filetype:pdf
+    site:infoblox.com
+  expected_entities:
+  - Infoblox
+  - DDI
+  - DNS
+  - DHCP
+  - IPAM
+  - Grid
+- domain_id: DNS_SECURITY_ANYCAST
+  name: Infoblox BloxOne Threat Defense y DNS Anycast
+  criticality: HIGH
+  search_query: Infoblox BloxOne Threat Defense DNS security datasheet filetype:pdf
+    site:infoblox.com
+  expected_entities:
+  - Threat Defense
+  - DNS Security
+  - Anycast
+  - RPZ

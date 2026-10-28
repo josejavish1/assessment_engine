@@ -1,0 +1,17 @@
+vendor_id: gaia_x
+display_name: Gaia-X (Iniciativa Europea de Soberanía Cloud y Datos)
+official_domains:
+- gaia-x.eu
+- docs.gaia-x.eu
+coverage_domains:
+- domain_id: GAIA_X_TRUST_FRAMEWORK
+  name: Marco de Confianza Gaia-X y Soberanía de Datos Europea
+  criticality: CRITICAL
+  search_query: Gaia-X Trust Framework architecture specifications sovereign cloud
+    data spaces compliance filetype:pdf site:gaia-x.eu
+  expected_entities:
+  - Gaia-X
+  - Trust Framework
+  - Soberanía
+  - Data Spaces
+  - Interoperabilidad

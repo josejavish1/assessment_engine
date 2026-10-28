@@ -1,0 +1,17 @@
+vendor_id: equinix
+display_name: Equinix Enterprise Solutions
+official_domains:
+- docs.equinix.com
+- equinix.com
+coverage_domains:
+- domain_id: CORE_SOLUTION_SPECS
+  name: Especificaciones Oficiales de equinix
+  criticality: HIGH
+  search_query: equinix datasheet technical specifications filetype:pdf
+  expected_entities:
+  - equinix
+  - Architecture
+  - Throughput
+  - SLA
+synthesized_jit: true
+created_at: '2026-10-09T00:37:43.495518+00:00'

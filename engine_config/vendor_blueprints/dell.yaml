@@ -1,0 +1,46 @@
+vendor_id: "dell"
+display_name: "Dell Technologies"
+official_domains:
+  - "delltechnologies.com"
+  - "dell.com"
+
+coverage_domains:
+  - domain_id: "CYBER_RECOVERY_VAULT"
+    name: "Bóveda Aislada PowerProtect Cyber Recovery"
+    criticality: "CRITICAL"
+    search_query: "Dell PowerProtect Cyber Recovery vault architecture guide proven solution filetype:pdf site:delltechnologies.com"
+    expected_entities:
+      - "PowerProtect"
+      - "Cyber Recovery"
+      - "Air-Gap"
+      - "CyberSense"
+      - "RTO"
+
+  - domain_id: "POWERSTORE_STORAGE"
+    name: "Almacenamiento PowerStore Architecture"
+    criticality: "HIGH"
+    search_query: "Dell PowerStore storage technical white paper datasheet filetype:pdf site:delltechnologies.com"
+    expected_entities:
+      - "PowerStore"
+      - "AppsON"
+      - "NVMe"
+      - "Deduplication"
+
+  - domain_id: "APEX_FLEXIBLE_OPEX"
+    name: "Modelo APEX Cloud Services / Opex"
+    criticality: "MEDIUM"
+    search_query: "Dell APEX storage and compute solutions solution brief filetype:pdf site:delltechnologies.com"
+    expected_entities:
+      - "APEX"
+      - "As-a-Service"
+      - "Opex"
+
+  - domain_id: "REGULATORY_COMPLIANCE_SPAIN"
+    name: "Homologación CPSTI / ENS Alto Dell"
+    criticality: "HIGH"
+    override_domain: "ccn-stic.cni.es"
+    search_query: "Catalogo CPSTI Productos Seguridad TIC Dell PowerProtect filetype:pdf site:ccn-stic.cni.es"
+    expected_entities:
+      - "CPSTI"
+      - "ENS Alto"
+      - "CCN-STIC"

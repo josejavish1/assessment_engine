@@ -1,0 +1,15 @@
+vendor_id: forrester
+display_name: Forrester Research (The Forrester Wave & TEI)
+official_domains:
+- forrester.com
+coverage_domains:
+- domain_id: FORRESTER_WAVE_EVALUATION
+  name: The Forrester Wave y Total Economic Impact (TEI)
+  criticality: HIGH
+  search_query: The Forrester Wave Leader multicloud zero trust enterprise storage
+    reprint filetype:pdf
+  expected_entities:
+  - Forrester
+  - The Forrester Wave
+  - Leader
+  - Strategy

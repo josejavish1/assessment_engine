@@ -1,0 +1,18 @@
+vendor_id: openstack
+display_name: OpenStack (Infraestructura Cloud Abierta IaaS)
+official_domains:
+- docs.openstack.org
+- openstack.org
+coverage_domains:
+- domain_id: OPENSTACK_IAAS_ARCHITECTURE
+  name: Arquitectura OpenStack IaaS (Nova, Neutron, Cinder, Keystone)
+  criticality: CRITICAL
+  search_query: OpenStack architecture design guide Nova Neutron Cinder enterprise
+    private cloud filetype:pdf site:openstack.org
+  expected_entities:
+  - OpenStack
+  - Nova
+  - Neutron
+  - Cinder
+  - Private Cloud
+  - IaaS

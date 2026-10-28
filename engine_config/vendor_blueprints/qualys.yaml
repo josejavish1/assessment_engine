@@ -1,0 +1,15 @@
+vendor_id: qualys
+display_name: Qualys Cloud Platform (VMDR)
+official_domains:
+- qualys.com
+coverage_domains:
+- domain_id: QUALYS_VMDR_ARCHITECTURE
+  name: Qualys VMDR (Vulnerability Management, Detection & Response)
+  criticality: CRITICAL
+  search_query: Qualys VMDR architecture datasheet vulnerability management detection
+    response filetype:pdf site:qualys.com
+  expected_entities:
+  - Qualys
+  - VMDR
+  - Cloud Agent
+  - Compliance

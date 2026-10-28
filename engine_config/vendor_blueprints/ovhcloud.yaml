@@ -1,0 +1,15 @@
+vendor_id: ovhcloud
+display_name: OVHcloud (Nube Soberana Europea)
+official_domains:
+- ovhcloud.com
+coverage_domains:
+- domain_id: SOVEREIGN_CLOUD_EUROPE
+  name: Infraestructura Cloud Soberana y SecNumCloud
+  criticality: CRITICAL
+  search_query: OVHcloud Hosted Private Cloud architecture guide sovereignty SecNumCloud
+    ENS filetype:pdf site:ovhcloud.com
+  expected_entities:
+  - OVHcloud
+  - Soberanía
+  - Hosted Private Cloud
+  - SecNumCloud

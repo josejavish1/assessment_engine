@@ -1,0 +1,16 @@
+vendor_id: supermicro
+display_name: Supermicro (Servidores de Alta Densidad y Clústeres GPU)
+official_domains:
+- supermicro.com
+coverage_domains:
+- domain_id: GPU_AI_DENSITY_SERVERS
+  name: Servidores GPU y Clústeres de Cómputo para Inteligencia Artificial
+  criticality: CRITICAL
+  search_query: Supermicro GPU server architecture datasheet specifications AI training
+    high density filetype:pdf site:supermicro.com
+  expected_entities:
+  - Supermicro
+  - GPU
+  - High Density
+  - Liquid Cooling
+  - PCIe 5.0

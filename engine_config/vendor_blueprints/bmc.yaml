@@ -1,0 +1,18 @@
+vendor_id: bmc
+display_name: BMC Software (BMC Helix ITSM / ITOM)
+official_domains:
+- bmc.com
+- docs.bmc.com
+coverage_domains:
+- domain_id: BMC_HELIX_ENTERPRISE_ITSM
+  name: Plataforma BMC Helix ITSM e ITOM Cloud
+  criticality: CRITICAL
+  search_query: BMC Helix ITSM architecture datasheet ITIL enterprise service management
+    filetype:pdf site:bmc.com
+  expected_entities:
+  - BMC Helix
+  - Remedy
+  - ITSM
+  - ITOM
+  - CMDB
+  - ITIL

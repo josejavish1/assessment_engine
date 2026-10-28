@@ -1,0 +1,16 @@
+vendor_id: edb_postgres
+display_name: EnterpriseDB (EDB Postgres Advanced Server)
+official_domains:
+- enterprisedb.com
+coverage_domains:
+- domain_id: EDB_POSTGRES_ENTERPRISE_DATABASE
+  name: EDB Postgres Advanced Server y Alta Disponibilidad
+  criticality: CRITICAL
+  search_query: EnterpriseDB EDB Postgres Advanced Server architecture datasheet Oracle
+    compatibility high availability filetype:pdf site:enterprisedb.com
+  expected_entities:
+  - EnterpriseDB
+  - EDB Postgres
+  - Oracle Compatibility
+  - Failover Manager
+  - RPO 0

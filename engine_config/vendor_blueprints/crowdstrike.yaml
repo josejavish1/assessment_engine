@@ -1,0 +1,16 @@
+vendor_id: crowdstrike
+display_name: CrowdStrike Falcon (EDR / XDR)
+official_domains:
+- crowdstrike.com
+coverage_domains:
+- domain_id: FALCON_EDR_XDR_ARCHITECTURE
+  name: Plataforma CrowdStrike Falcon EDR y OverWatch
+  criticality: CRITICAL
+  search_query: CrowdStrike Falcon platform architecture datasheet EDR XDR technical
+    overview filetype:pdf site:crowdstrike.com
+  expected_entities:
+  - CrowdStrike
+  - Falcon
+  - EDR
+  - XDR
+  - OverWatch

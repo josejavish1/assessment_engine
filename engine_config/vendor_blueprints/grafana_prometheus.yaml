@@ -1,0 +1,17 @@
+vendor_id: grafana_prometheus
+display_name: Grafana Labs & Prometheus (Observabilidad Open Source)
+official_domains:
+- grafana.com/docs
+- prometheus.io
+coverage_domains:
+- domain_id: LGTM_PROMETHEUS_OBSERVABILITY_STACK
+  name: Stack de Observabilidad Abierto Grafana, Prometheus, Loki y Tempo
+  criticality: CRITICAL
+  search_query: Grafana Prometheus enterprise observability architecture guide metrics
+    logs traces filetype:pdf site:grafana.com
+  expected_entities:
+  - Grafana
+  - Prometheus
+  - Loki
+  - Tempo
+  - Open Source Observability

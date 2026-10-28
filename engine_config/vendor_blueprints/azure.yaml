@@ -1,0 +1,46 @@
+vendor_id: "azure"
+display_name: "Microsoft Azure Cloud"
+official_domains:
+  - "learn.microsoft.com"
+  - "azure.microsoft.com"
+
+coverage_domains:
+  - domain_id: "SOVEREIGN_CLOUD_SPAIN"
+    name: "Región Soberana Spain Central (Madrid)"
+    criticality: "CRITICAL"
+    search_query: "Azure Spain Central region availability zones latency architecture guide filetype:pdf site:microsoft.com"
+    expected_entities:
+      - "Spain Central"
+      - "Availability Zones"
+      - "Madrid"
+      - "Latencia"
+
+  - domain_id: "ENTERPRISE_LANDING_ZONE"
+    name: "Azure Landing Zone (ALZ) Blueprint"
+    criticality: "HIGH"
+    search_query: "Azure Landing Zone enterprise-scale architecture blueprint guide filetype:pdf site:microsoft.com"
+    expected_entities:
+      - "Landing Zone"
+      - "Management Groups"
+      - "Hub-Spoke"
+      - "ExpressRoute"
+
+  - domain_id: "SERVICE_LEVEL_AGREEMENTS"
+    name: "Acuerdos de Nivel de Servicio (SLAs)"
+    criticality: "CRITICAL"
+    search_query: "Service Level Agreements SLA for Microsoft Azure Services summary pdf filetype:pdf site:microsoft.com"
+    expected_entities:
+      - "SLA"
+      - "99.99%"
+      - "Uptime"
+      - "Availability"
+
+  - domain_id: "REGULATORY_COMPLIANCE_SPAIN"
+    name: "Certificación ENS Alto CCN-STIC España"
+    criticality: "CRITICAL"
+    override_domain: "ccn-stic.cni.es"
+    search_query: "Dictamen Certificacion Conformidad ENS Categoria Alta Microsoft Azure CCN-STIC filetype:pdf site:ccn-stic.cni.es"
+    expected_entities:
+      - "ENS Alto"
+      - "CCN-STIC"
+      - "Spain Central"

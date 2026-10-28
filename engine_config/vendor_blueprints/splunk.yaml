@@ -1,0 +1,17 @@
+vendor_id: splunk
+display_name: Splunk (SIEM / ITSI / Telemetría)
+official_domains:
+- splunk.com
+- docs.splunk.com
+coverage_domains:
+- domain_id: SPLUNK_SIEM_ENTERPRISE
+  name: Splunk Enterprise Security (SIEM) e ITSI
+  criticality: CRITICAL
+  search_query: Splunk Enterprise Security SIEM architecture datasheet technical guide
+    filetype:pdf site:splunk.com
+  expected_entities:
+  - Splunk
+  - Enterprise Security
+  - SIEM
+  - ITSI
+  - AIOps

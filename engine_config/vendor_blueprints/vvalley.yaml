@@ -1,0 +1,16 @@
+vendor_id: vvalley
+display_name: V-Valley / Esprinet (Mayorista de Valor)
+official_domains:
+- v-valley.com
+- esprinet.com
+coverage_domains:
+- domain_id: SUPPLY_CHAIN_SLA
+  name: Distribución de Soluciones de Valor para Data Center
+  criticality: HIGH
+  search_query: V-Valley Esprinet distribucion mayorista valor centros de datos servidores
+    almacenamiento filetype:pdf site:v-valley.com
+  expected_entities:
+  - V-Valley
+  - Esprinet
+  - Mayorista
+  - Data Center

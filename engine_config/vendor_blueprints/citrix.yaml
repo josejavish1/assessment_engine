@@ -1,0 +1,17 @@
+vendor_id: citrix
+display_name: Citrix Systems (DaaS / Virtual Apps & Desktops)
+official_domains:
+- citrix.com
+- docs.citrix.com
+coverage_domains:
+- domain_id: CITRIX_DAAS_ARCHITECTURE
+  name: Citrix DaaS y Virtual Apps and Desktops
+  criticality: CRITICAL
+  search_query: Citrix DaaS Virtual Apps and Desktops architecture guide sizing datasheet
+    filetype:pdf site:citrix.com
+  expected_entities:
+  - Citrix DaaS
+  - HDX
+  - VDI
+  - Virtual Apps
+  - NetScaler

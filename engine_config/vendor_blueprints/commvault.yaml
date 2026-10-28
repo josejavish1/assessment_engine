@@ -1,0 +1,25 @@
+vendor_id: commvault
+display_name: Commvault Cloud & Cleanroom Recovery
+official_domains:
+- commvault.com
+coverage_domains:
+- domain_id: COMMVAULT_CLEANROOM_RECOVERY
+  name: Commvault Cleanroom Recovery y Ciberresiliencia
+  criticality: CRITICAL
+  search_query: Commvault Cleanroom Recovery architecture solution brief filetype:pdf
+    site:commvault.com
+  expected_entities:
+  - Cleanroom Recovery
+  - Air-Gap Protect
+  - Ransomware
+  - RTO
+- domain_id: COMMVAULT_AIR_GAP_PROTECT
+  name: Bóveda Aislada Cloud Air Gap Protect
+  criticality: HIGH
+  search_query: Commvault Air Gap Protect immutable cloud storage technical guide
+    filetype:pdf site:commvault.com
+  expected_entities:
+  - Air Gap Protect
+  - Immutability
+  - WORM
+  - Deduplication

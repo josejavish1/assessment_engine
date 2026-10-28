@@ -1,0 +1,15 @@
+vendor_id: templus
+display_name: Templus Data Centers (Soberanía Regional)
+official_domains:
+- templus.es
+coverage_domains:
+- domain_id: REGIONAL_DC_NETWORK
+  name: Red de Centros de Datos Regionales Templus
+  criticality: HIGH
+  search_query: Templus Data Centers centros de datos España Madrid Malaga Sevilla
+    especificaciones tecnicas filetype:pdf site:templus.es
+  expected_entities:
+  - Templus
+  - Edge Data Center
+  - PUE
+  - Soberanía

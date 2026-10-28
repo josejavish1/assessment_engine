@@ -1,0 +1,35 @@
+vendor_id: rhel
+display_name: Red Hat Enterprise Linux (RHEL)
+official_domains:
+- redhat.com
+- access.redhat.com
+coverage_domains:
+- domain_id: RHEL_LIFECYCLE_EUS
+  name: Ciclo de Vida RHEL 9 y Soporte EUS Extendido
+  criticality: CRITICAL
+  search_query: Red Hat Enterprise Linux life cycle Extended Update Support EUS technical
+    overview filetype:pdf site:redhat.com
+  expected_entities:
+  - RHEL
+  - Extended Update Support
+  - Kernel
+  - 10 Years
+- domain_id: KERNEL_LIVE_PATCHING
+  name: Kernel Live Patching sin Reinicio (kpatch)
+  criticality: HIGH
+  search_query: Red Hat Enterprise Linux kernel live patching architecture guide filetype:pdf
+    site:redhat.com
+  expected_entities:
+  - Live Patching
+  - kpatch
+  - Security
+  - Uptime
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Homologación CPSTI / ENS Alto RHEL
+  criticality: CRITICAL
+  search_query: Catalogo CPSTI Productos Seguridad TIC Red Hat Enterprise Linux filetype:pdf
+    site:ccn-stic.cni.es
+  expected_entities:
+  - CPSTI
+  - ENS Alto
+  - Common Criteria

@@ -1,0 +1,18 @@
+vendor_id: proxmox
+display_name: Proxmox Server Solutions (Proxmox VE / KVM)
+official_domains:
+- pve.proxmox.com
+- proxmox.com
+coverage_domains:
+- domain_id: PROXMOX_VE_ENTERPRISE_VIRTUALIZATION
+  name: Proxmox VE Virtualización KVM, LXC y Clúster con Ceph
+  criticality: CRITICAL
+  search_query: Proxmox VE technical documentation virtualization KVM cluster Ceph
+    enterprise storage filetype:pdf site:proxmox.com
+  expected_entities:
+  - Proxmox VE
+  - KVM
+  - LXC
+  - Ceph
+  - High Availability
+  - Corosync

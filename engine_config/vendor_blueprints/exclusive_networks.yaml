@@ -1,0 +1,15 @@
+vendor_id: exclusive_networks
+display_name: Exclusive Networks (Mayorista Especialista Ciberseguridad)
+official_domains:
+- exclusive-networks.com
+coverage_domains:
+- domain_id: SUPPLY_CHAIN_CYBERSECURITY
+  name: Distribución Oficial y Soporte de Ciberseguridad Enterprise
+  criticality: CRITICAL
+  search_query: Exclusive Networks España mayorista ciberseguridad logistica certificacion
+    fabricante oficial filetype:pdf site:exclusive-networks.com
+  expected_entities:
+  - Exclusive Networks
+  - Ciberseguridad
+  - Mayorista
+  - Distribución

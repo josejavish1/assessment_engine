@@ -1,0 +1,16 @@
+vendor_id: colt
+display_name: Colt Technology Services
+official_domains:
+- colt.net
+coverage_domains:
+- domain_id: COLT_IQ_NETWORK
+  name: Red Metropolitana Colt IQ Network y Dark Fibre
+  criticality: CRITICAL
+  search_query: Colt IQ Network Optical Wave Dark Fibre data centre interconnect latency
+    SLA datasheet filetype:pdf site:colt.net
+  expected_entities:
+  - Colt
+  - IQ Network
+  - Dark Fibre
+  - Wave
+  - Data Centre Interconnect

@@ -1,0 +1,16 @@
+vendor_id: tdsynnex
+display_name: TD SYNNEX España (Mayorista Oficial)
+official_domains:
+- tdsynnex.com
+- tdsynnex.es
+coverage_domains:
+- domain_id: SUPPLY_CHAIN_SLA
+  name: Compromiso de Suministro y Distribución Multivendor
+  criticality: CRITICAL
+  search_query: TD SYNNEX España servicios logisticos entrega mayorista oficial distribucion
+    filetype:pdf site:tdsynnex.com
+  expected_entities:
+  - TD SYNNEX
+  - Logística
+  - Entrega
+  - Garantía

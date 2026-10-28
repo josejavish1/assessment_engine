@@ -1,0 +1,25 @@
+vendor_id: suse
+display_name: SUSE Linux Enterprise Server (SLES)
+official_domains:
+- suse.com
+- documentation.suse.com
+coverage_domains:
+- domain_id: SLES_SAP_HANA
+  name: SLES para Soluciones SAP y Alta Disponibilidad
+  criticality: CRITICAL
+  search_query: SUSE Linux Enterprise Server for SAP Applications architecture datasheet
+    filetype:pdf site:suse.com
+  expected_entities:
+  - SLES
+  - SAP HANA
+  - High Availability
+  - Corosync
+- domain_id: SUSE_LIVE_PATCHING
+  name: SUSE Linux Enterprise Live Patching
+  criticality: HIGH
+  search_query: SUSE Linux Enterprise Live Patching technical overview datasheet filetype:pdf
+    site:suse.com
+  expected_entities:
+  - Live Patching
+  - Zero Downtime
+  - Kernel

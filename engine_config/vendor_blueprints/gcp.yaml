@@ -1,0 +1,34 @@
+vendor_id: gcp
+display_name: Google Cloud Platform (GCP)
+official_domains:
+- cloud.google.com
+coverage_domains:
+- domain_id: GCP_MADRID_REGION
+  name: Región Google Cloud Madrid (europe-southwest1)
+  criticality: CRITICAL
+  search_query: Google Cloud Madrid region europe-southwest1 technical architecture
+    guide filetype:pdf site:google.com
+  expected_entities:
+  - europe-southwest1
+  - Madrid
+  - Sovereignty
+  - Zones
+- domain_id: GKE_ENTERPRISE_ARCHITECTURE
+  name: Google Kubernetes Engine (GKE) Enterprise
+  criticality: HIGH
+  search_query: GKE Enterprise Google Kubernetes Engine architecture guide whitepaper
+    filetype:pdf site:google.com
+  expected_entities:
+  - GKE Enterprise
+  - Kubernetes
+  - Anthos
+  - Multi-Cluster
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Certificación ENS Alto CCN-STIC Google Cloud
+  criticality: CRITICAL
+  search_query: Dictamen Certificacion Conformidad ENS Categoria Alta Google Cloud
+    CCN-STIC filetype:pdf site:ccn-stic.cni.es
+  expected_entities:
+  - ENS Alto
+  - CCN-STIC
+  - Google Cloud

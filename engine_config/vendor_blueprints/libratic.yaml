@@ -1,0 +1,16 @@
+vendor_id: libratic
+display_name: Libratic (Instalaciones Físicas y Cableado Estructurado)
+official_domains:
+- libratic.com
+coverage_domains:
+- domain_id: FIELD_DEPLOYMENT_CABLING
+  name: Cableado Estructurado Cat 6A/7/8 y Certificación Fluke
+  criticality: CRITICAL
+  search_query: Libratic instalaciones telecomunicaciones cableado estructurado fibra
+    optica certificacion Fluke CPD filetype:pdf site:libratic.com
+  expected_entities:
+  - Libratic
+  - Cableado Estructurado
+  - Fibra Óptica
+  - Fluke
+  - Despliegue Multi-Sede

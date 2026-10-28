@@ -1,0 +1,16 @@
+vendor_id: grupoaire
+display_name: Grupo Aire / Aire Networks (Operador Neutro)
+official_domains:
+- grupoaire.com
+- airenetworks.es
+coverage_domains:
+- domain_id: AIRE_NETWORK_INTERCONNECT
+  name: Conectividad IP y Transporte de Datos Inter-CPD
+  criticality: HIGH
+  search_query: Aire Networks Grupo Aire transporte datos fibra conectividad carrier
+    neutral data center filetype:pdf site:grupoaire.com
+  expected_entities:
+  - Grupo Aire
+  - Aire Networks
+  - Carrier Neutral
+  - Transporte

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Any, cast
 
@@ -55,9 +56,7 @@ def get_blueprint_architect_instruction(
         f"You are a Principal Enterprise Solutions Architect ({config.get('role', 'Socio Consultor')}) "
         f"with top-tier expertise in {config.get('expertise', 'Enterprise Cloud & Infrastructure Architecture')}.\n"
     )
-    instruction += (
-        f"Your mission: {config.get('mission', 'Design an actionable, world-class enterprise transformation blueprint')}\n\n"
-    )
+    instruction += f"Your mission: {config.get('mission', 'Design an actionable, world-class enterprise transformation blueprint')}\n\n"
     instruction += "### CRITICAL LANGUAGE MANDATE:\n"
     instruction += (
         f"You MUST generate all analytical narratives, findings, gap statements, business cases, "
@@ -140,12 +139,9 @@ def get_pilar_architect_prompt(
 
     if "golden_exemplar" in config:
         prompt += "\nEJEMPLAR DE ORO DE REFERENCIA (ESTÁNDAR TIER-1 / MISIÓN CRÍTICA - FNMT CERES):\n"
+        prompt += "Este es el estándar exacto de profundidad técnica, rigor regulatorio y nivel de detalle esperado:\n"
         prompt += (
-            "Este es el estándar exacto de profundidad técnica, rigor regulatorio y nivel de detalle esperado:\n"
-        )
-        prompt += (
-            json.dumps(config["golden_exemplar"], indent=2, ensure_ascii=False)
-            + "\n\n"
+            json.dumps(config["golden_exemplar"], indent=2, ensure_ascii=False) + "\n\n"
         )
 
     prompt += f"\n{config.get('handover', '')}\n"
@@ -279,7 +275,10 @@ def get_bid_manager_prompt(
     mitigated_risk_impact: str,
 ) -> str:
     r"""{'docstring': "Constructs a Spanish-language prompt to generate a project charter JSON.\n\n    The generated prompt instructs a language model to act as a senior Bid Manager\n    and Solution Architect from the consulting organization. It provides the model with specific\n    project details and a strict set of rules for generating a comprehensive\n    project charter in a JSON format.\n\n    Args:\n        client_name: The name of the client for whom the project is intended.\n        project_name: The internal or generic name of the project.\n        project_objective: A high-level description of the project's goal.\n        project_sizing: The estimated size or scale of the project (e.g., 'Small').\n        mitigated_risk_impact: The business or technical risk the project is\n            designed to mitigate.\n\n    Returns:\n        A complete prompt string in Spanish, ready for use with a generative AI."}."""
-    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    from assessment_engine.infrastructure.config_loader import (
+        get_consultant_company_name,
+    )
+
     company = get_consultant_company_name()
     prompt = (
         f"Eres un Bid Manager y Solution Architect Senior de {company} preparando un 'Project Charter' a nivel de Comité de Dirección para el cliente {client_name}.\n"

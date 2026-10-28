@@ -1,0 +1,25 @@
+vendor_id: datadog
+display_name: Datadog Cloud Observability & Security
+official_domains:
+- datadoghq.com
+coverage_domains:
+- domain_id: DATADOG_APM_INFRASTRUCTURE
+  name: Datadog APM y Monitorización de Infraestructuras
+  criticality: CRITICAL
+  search_query: Datadog APM infrastructure monitoring architecture technical overview
+    filetype:pdf site:datadoghq.com
+  expected_entities:
+  - APM
+  - Tracing
+  - Metrics
+  - Watchdog
+- domain_id: DATADOG_AIOPS_WATCHDOG
+  name: Datadog Watchdog AI Detección de Anomalías
+  criticality: HIGH
+  search_query: Datadog Watchdog AI anomaly detection technical brief filetype:pdf
+    site:datadoghq.com
+  expected_entities:
+  - Watchdog
+  - Anomaly Detection
+  - AIOps
+  - Alerts

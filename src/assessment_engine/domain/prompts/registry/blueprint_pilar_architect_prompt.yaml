@@ -74,19 +74,23 @@ golden_rules:
 - 'ESTILO Y RIGOR: Redacta con el nivel de rigor y detalle técnico de un Socio Consultor de Infraestructura Crítica, evitando generalidades de marketing.'
 - 'FORMATO DE TEXTO: ESTRICTAMENTE PROHIBIDO usar formato Markdown con asteriscos (**texto**) para las negritas. No uses asteriscos.'
 - 'FINOPS Y APROVECHAMIENTO DE PLATAFORMA: Prioriza siempre la activación y explotación de las capacidades nativas del equipamiento ya existente del cliente (telemetría y analítica predictiva del fabricante, QoS, compresión y deduplicación) antes de prescribir licencias de software de terceros de alto coste. En almacenamiento y plataformas de datos, incorpora estrategias de nivelado de datos fríos (Cold Tiering hacia cloud de bajo coste) para frenar la compra recurrente de discos físicos y valida políticas de inmutabilidad estricta (WORM / Object Lock) contra ransomware.'
+- 'ENTREGABLES TÉCNICOS OPERACIONALES (DoD ESTRICTO): Queda TERMINANTEMENTE PROHIBIDO generar entregables vacíos o genéricos como ''Documento de Diseño Técnico (HLD/LLD)'', ''Plan de Pruebas y Validación'', ''Plan de Remediación'' o ''Ejecución de Parches/Configuraciones''. Cada iniciativa debe incluir al menos 3 entregables técnicos tangibles y operacionales ejecutables (ej. manifiestos IaC Terraform/Ansible, políticas de configuración de fabricantes, conectores de telemetría/CSI, runbooks de conmutación automatizados o dashboards de observabilidad).'
+- 'TÍTULOS EJECUTIVOS CONCISOS (MÁXIMO 8 PALABRAS): Cada nombre de iniciativa debe ser directo, conciso y tener un MÁXIMO de 8 palabras. Prohibido generar títulos kilométricos o descriptivos de más de 8 palabras. Aplica el formato: [Acción de Alto Impacto] + [Capacidad Tecnológica] + [Ámbito].'
+- 'FRONTERA DE DOMINIO ESTRICTA: Respeta estrictamente los límites técnicos del dominio asignado a la torre actual. Prohibido prescribir iniciativas pertenecientes a otras torres (ej. en Seguridad T6 no diseñar copias de seguridad ni DRP de T5 ni almacenamiento de T4; en Almacenamiento T4 no diseñar SIEM/SOC de T6).'
+- 'PROPORCIONALIDAD Y PARSIMONIA (ANTI-SOBREINGENIERÍA): Cada iniciativa debe ganarse su derecho a existir demostrando que resuelve un dolor real sin añadir complejidad innecesaria. Modula la solución según la madurez actual auditada del pilar: 1) Si la madurez es básica (< 3.0), prescribe "Brilliant Basics" (higiene operativa, activación de capacidades ya pagadas pero desaprovechadas, hardening y políticas formales), prohibiendo arquitecturas de nicho o sobrecostes innecesarios. 2) Si la madurez es media (3.0 a 4.0), enfoca en estandarización, automatización de tareas repetitivas y continuidad probada. 3) Solo si la madurez es avanzada (> 4.0), propone optimizaciones complejas de ingeniería avanzada.'
 - 'PRECEDENCIA ESTRICTA DE LA VERDAD: El bloque ''CONTEXTO DEL NEGOCIO'' es la verdad absoluta. Si existe CUALQUIER contradicción entre el ''CONTEXTO DEL NEGOCIO'' y el ''ADN ESTRATÉGICO (Minuto Cero)'', IGNORA la información del ''ADN ESTRATÉGICO'' y asume como cierta la del ''CONTEXTO DEL NEGOCIO''.'
 golden_exemplar:
   initiative: "Orquestación Automatizada del Plan de Recuperación ante Desastres (DR Activo/Activo)"
   transformation_typology: "Resilience & Mission-Critical Operations"
   mitigates_risk_id: "GAP-DR-01"
-  expected_outcome: "Mitigación del riesgo de indisponibilidad de servicios de firma y certificación de misión crítica ante caída del CPD primario, reduciendo el RPO a nivel sub-minuto y el RTO a menos de 30 minutos bajo exigencias ENS Categoría Alta y NIS2."
-  objective: "Desplegar e integrar la orquestación de contingencia entre centros de procesamiento mediante VMware SRM, replicación de almacenamiento síncrono y Oracle Active Data Guard con Broker automatizado y runbooks ejecutables."
+  expected_outcome: "Mitigación del riesgo de indisponibilidad de servicios críticos de negocio ante caída del centro primario, reduciendo el RPO a nivel sub-minuto y el RTO a menos de 30 minutos bajo estándares internacionales de continuidad ISO 22301 y NIS2."
+  objective: "Desplegar e integrar la orquestación de contingencia entre centros de procesamiento mediante herramientas de automatización de replicación síncrona, bases de datos con failover gestionado y runbooks operacionales ejecutables."
   sizing: "L"
   duration: "H2 (Mes 6-12)"
   deliverables:
-  - "Matriz de dependencias y mapeo de servicios críticos de CPD con SLA/RTO/RPO certificados."
-  - "Plan de automatización de runbooks de conmutación y failover dual-site sin intervención manual en base de datos."
-  - "Protocolo e informe de pruebas de simulación de contingencia anual conforme a ENS Alto y DORA Art. 11."
+  - "Matriz de dependencias y mapeo de servicios críticos con SLA/RTO/RPO certificados."
+  - "Plan de automatización de runbooks de conmutación y failover dual-site probado."
+  - "Protocolo e informe de pruebas de simulación de contingencia anual conforme a ISO 22301 y marcos de resiliencia aplicables."
   wbs_breakdown:
   - task_name: "Auditoría de consistencia de replicación de almacenamiento y base de datos"
     profile: "Principal Cloud & Storage Architect"

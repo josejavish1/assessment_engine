@@ -1,0 +1,25 @@
+vendor_id: f5
+display_name: F5 BIG-IP (ADC / Balanceo / WAF)
+official_domains:
+- f5.com
+coverage_domains:
+- domain_id: BIG_IP_HARDWARE_VIPRION
+  name: Hardware F5 BIG-IP iSeries y VIPRION Datasheet
+  criticality: CRITICAL
+  search_query: F5 BIG-IP iSeries hardware platform datasheet specifications filetype:pdf
+    site:f5.com
+  expected_entities:
+  - BIG-IP
+  - LTM
+  - SSL Offloading
+  - Throughput
+  - TPS
+- domain_id: ADVANCED_WAF_ARCHITECTURE
+  name: F5 Advanced WAF (ASM) Seguridad Web
+  criticality: HIGH
+  search_query: F5 Advanced WAF datasheet architecture white paper filetype:pdf site:f5.com
+  expected_entities:
+  - Advanced WAF
+  - Bot Defense
+  - OWASP
+  - Behavioral DoS

@@ -1,0 +1,26 @@
+vendor_id: newrelic
+display_name: New Relic Observability Platform
+official_domains:
+- newrelic.com
+- docs.newrelic.com
+coverage_domains:
+- domain_id: NEW_RELIC_ONE_PLATFORM
+  name: Plataforma New Relic One y Telemetry Data
+  criticality: CRITICAL
+  search_query: New Relic One telemetry data platform architecture guide filetype:pdf
+    site:newrelic.com
+  expected_entities:
+  - New Relic One
+  - Telemetry
+  - APM
+  - NRQL
+- domain_id: NEW_RELIC_AIOPS
+  name: New Relic AIOps Reducción de Ruido de Alertas
+  criticality: HIGH
+  search_query: New Relic AIOps alert noise reduction correlation guide filetype:pdf
+    site:newrelic.com
+  expected_entities:
+  - AIOps
+  - Noise Reduction
+  - Incident Intelligence
+  - MTTR

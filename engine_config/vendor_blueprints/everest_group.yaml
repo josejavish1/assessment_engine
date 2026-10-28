@@ -1,0 +1,16 @@
+vendor_id: everest_group
+display_name: Everest Group (PEAK Matrix Assessment)
+official_domains:
+- everestgrp.com
+coverage_domains:
+- domain_id: PEAK_MATRIX_LEADER_POSITIONING
+  name: Evaluación PEAK Matrix de Servicios de Infraestructura y Cloud
+  criticality: HIGH
+  search_query: Everest Group PEAK Matrix assessment Leader Cloud Transformation IT
+    Infrastructure Services reprint filetype:pdf
+  expected_entities:
+  - Everest Group
+  - PEAK Matrix
+  - Leader
+  - Star Performer
+  - Vision and Capability

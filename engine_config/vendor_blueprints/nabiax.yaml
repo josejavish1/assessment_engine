@@ -1,0 +1,27 @@
+vendor_id: nabiax
+display_name: Nabiax Data Centers (Madrid / Barcelona)
+official_domains:
+- nabiax.com
+coverage_domains:
+- domain_id: DC_FACILITIES_TIER
+  name: Centros de Datos Alcalá y Julián Camarillo (Tier IV / III)
+  criticality: CRITICAL
+  search_query: Nabiax Data Center Alcala Julian Camarillo Tier IV Tier III PUE especificaciones
+    tecnicas filetype:pdf site:nabiax.com
+  expected_entities:
+  - Nabiax
+  - Alcalá
+  - Julián Camarillo
+  - Tier IV
+  - PUE
+  - Potencia
+- domain_id: CERTIFICACIONES_ENS_ISO
+  name: Certificaciones ENS Alto y Eficiencia Energética Nabiax
+  criticality: CRITICAL
+  search_query: Nabiax certificaciones ENS Esquema Nacional Seguridad ISO 27001 ISO
+    50001 filetype:pdf site:nabiax.com
+  expected_entities:
+  - ENS Alto
+  - ISO 27001
+  - PUE
+  - Sostenibilidad

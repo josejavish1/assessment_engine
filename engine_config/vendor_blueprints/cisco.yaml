@@ -1,0 +1,25 @@
+vendor_id: cisco
+display_name: Cisco Systems (Nexus / ACI / Catalyst)
+official_domains:
+- cisco.com
+coverage_domains:
+- domain_id: NEXUS_DATA_CENTER_SWITCHING
+  name: Conmutación Data Center Cisco Nexus 9000
+  criticality: CRITICAL
+  search_query: Cisco Nexus 9000 Series Switches datasheet specifications filetype:pdf
+    site:cisco.com
+  expected_entities:
+  - Nexus 9000
+  - NX-OS
+  - 400G
+  - Throughput
+  - Latency
+- domain_id: CISCO_ACI_ARCHITECTURE
+  name: Arquitectura Cisco Application Centric Infrastructure (ACI)
+  criticality: HIGH
+  search_query: Cisco ACI architecture design guide white paper filetype:pdf site:cisco.com
+  expected_entities:
+  - Cisco ACI
+  - Spine-Leaf
+  - APIC
+  - Software Defined Networking

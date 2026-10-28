@@ -1,0 +1,26 @@
+vendor_id: netapp
+display_name: NetApp ONTAP All-Flash Storage
+official_domains:
+- netapp.com
+coverage_domains:
+- domain_id: NETAPP_ONTAP_ARCHITECTURE
+  name: NetApp ONTAP 9 All-Flash Array (AFF) Architecture
+  criticality: CRITICAL
+  search_query: NetApp ONTAP 9 architecture technical report AFF A-Series filetype:pdf
+    site:netapp.com
+  expected_entities:
+  - ONTAP
+  - AFF
+  - NVMe
+  - MetroCluster
+  - SnapMirror
+- domain_id: AUTONOMOUS_RANSOMWARE_PROTECTION
+  name: Protección Autónoma contra Ransomware (ARP)
+  criticality: HIGH
+  search_query: NetApp Autonomous Ransomware Protection ARP technical report filetype:pdf
+    site:netapp.com
+  expected_entities:
+  - Autonomous Ransomware Protection
+  - SnapLock
+  - WORM
+  - Immutability

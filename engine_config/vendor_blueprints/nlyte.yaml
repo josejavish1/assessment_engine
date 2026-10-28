@@ -1,0 +1,16 @@
+vendor_id: nlyte
+display_name: Nlyte Software (DCIM & Optimización Energética)
+official_domains:
+- nlyte.com
+coverage_domains:
+- domain_id: DCIM_ENERGY_OPTIMIZATION
+  name: Data Center Infrastructure Management (DCIM) y PUE
+  criticality: HIGH
+  search_query: Nlyte Software DCIM data center infrastructure management capacity
+    PUE datasheet filetype:pdf site:nlyte.com
+  expected_entities:
+  - Nlyte
+  - DCIM
+  - PUE
+  - Gestión de Capacidad
+  - Eficiencia

@@ -1,0 +1,18 @@
+vendor_id: ceph
+display_name: Ceph Storage (Almacenamiento Distribuido SDS)
+official_domains:
+- docs.ceph.com
+- ceph.io
+coverage_domains:
+- domain_id: CEPH_DISTRIBUTED_STORAGE_ARCHITECTURE
+  name: Almacenamiento Definido por Software Ceph (RBD, CephFS, RGW S3)
+  criticality: CRITICAL
+  search_query: Ceph architecture technical paper distributed storage object block
+    file system filetype:pdf site:ceph.com
+  expected_entities:
+  - Ceph
+  - RBD
+  - CephFS
+  - RGW
+  - RADOS
+  - Software Defined Storage

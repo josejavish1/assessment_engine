@@ -1,0 +1,17 @@
+vendor_id: zerto
+display_name: Zerto by HPE (Continuous Data Protection / DR)
+official_domains:
+- zerto.com
+- hpe.com
+coverage_domains:
+- domain_id: CONTINUOUS_DATA_PROTECTION
+  name: Zerto Continuous Data Protection (CDP) con RPO en Segundos
+  criticality: CRITICAL
+  search_query: Zerto Continuous Data Protection architecture datasheet disaster recovery
+    RPO seconds filetype:pdf site:zerto.com
+  expected_entities:
+  - Zerto
+  - Continuous Data Protection
+  - CDP
+  - RPO Segundos
+  - Orquestación DR

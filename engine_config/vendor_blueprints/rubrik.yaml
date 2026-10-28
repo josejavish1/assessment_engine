@@ -1,0 +1,23 @@
+vendor_id: rubrik
+display_name: Rubrik Zero Trust Data Security
+official_domains:
+- rubrik.com
+coverage_domains:
+- domain_id: RUBRIK_SECURITY_CLOUD
+  name: Rubrik Security Cloud Arquitectura Zero Trust
+  criticality: CRITICAL
+  search_query: Rubrik Security Cloud Zero Trust data security architecture white
+    paper filetype:pdf site:rubrik.com
+  expected_entities:
+  - Rubrik
+  - Zero Trust
+  - Append-Only
+  - Immutable
+- domain_id: RANSOMWARE_RECOVERY_WARRANTY
+  name: Recuperación ante Ransomware y SLA Garantizado
+  criticality: HIGH
+  search_query: Rubrik ransomware recovery warranty technical paper filetype:pdf site:rubrik.com
+  expected_entities:
+  - Ransomware Recovery
+  - Anomaly Detection
+  - Sensitive Data Discovery

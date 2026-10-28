@@ -1,0 +1,15 @@
+vendor_id: gartner
+display_name: Gartner Research (Magic Quadrant & Critical Capabilities)
+official_domains:
+- gartner.com
+coverage_domains:
+- domain_id: MAGIC_QUADRANT_LEADERS
+  name: Cuadrantes Mágicos de Gartner para Infraestructura y Seguridad
+  criticality: CRITICAL
+  search_query: Gartner Magic Quadrant Leader Strategic Cloud Platform Primary Storage
+    AIOps reprint filetype:pdf
+  expected_entities:
+  - Gartner
+  - Magic Quadrant
+  - Leader
+  - Ability to Execute

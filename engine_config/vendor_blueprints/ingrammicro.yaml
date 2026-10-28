@@ -1,0 +1,15 @@
+vendor_id: ingrammicro
+display_name: Ingram Micro España (Mayorista Oficial)
+official_domains:
+- ingrammicro.com
+- es-ingrammicro.com
+coverage_domains:
+- domain_id: SUPPLY_CHAIN_SLA
+  name: Suministro y Distribución Tecnológica
+  criticality: HIGH
+  search_query: Ingram Micro España distribucion mayorista hardware logistica entrega
+    filetype:pdf site:ingrammicro.com
+  expected_entities:
+  - Ingram Micro
+  - Distribución
+  - Logística

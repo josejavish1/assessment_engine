@@ -1,0 +1,34 @@
+vendor_id: veeam
+display_name: Veeam Data Platform (Backup & Recovery)
+official_domains:
+- veeam.com
+coverage_domains:
+- domain_id: VEEAM_V12_HARDENED_REPOSITORY
+  name: Veeam Backup & Replication v12 Hardened Repository
+  criticality: CRITICAL
+  search_query: Veeam Backup Replication v12 Hardened Repository immutable architecture
+    guide filetype:pdf site:veeam.com
+  expected_entities:
+  - Veeam
+  - Hardened Repository
+  - Immutable
+  - Linux
+  - RPO
+- domain_id: INSTANT_VM_RECOVERY
+  name: Instant VM Recovery y Métricas RTO
+  criticality: HIGH
+  search_query: Veeam Instant VM Recovery technical white paper sizing filetype:pdf
+    site:veeam.com
+  expected_entities:
+  - Instant Recovery
+  - RTO
+  - Failover
+  - CDP
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Homologación CPSTI / ENS Alto Veeam
+  criticality: CRITICAL
+  search_query: Catalogo CPSTI Productos Seguridad TIC Veeam Backup filetype:pdf site:ccn-stic.cni.es
+  expected_entities:
+  - CPSTI
+  - ENS Alto
+  - CCN-STIC

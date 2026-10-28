@@ -1,0 +1,17 @@
+vendor_id: rancher
+display_name: SUSE Rancher (Gestión Multi-Cluster Kubernetes)
+official_domains:
+- rancher.com
+- suse.com
+coverage_domains:
+- domain_id: RANCHER_MULTICLUSTER_K8S
+  name: Gestión Multi-Cluster Kubernetes SUSE Rancher y RKE2
+  criticality: CRITICAL
+  search_query: SUSE Rancher multi-cluster Kubernetes management architecture datasheet
+    RKE2 filetype:pdf site:rancher.com
+  expected_entities:
+  - Rancher
+  - RKE2
+  - Kubernetes
+  - Multi-Cluster
+  - FIPS

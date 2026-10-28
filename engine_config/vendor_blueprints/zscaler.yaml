@@ -1,0 +1,16 @@
+vendor_id: zscaler
+display_name: Zscaler (Zero Trust Exchange / ZIA / ZPA)
+official_domains:
+- zscaler.com
+coverage_domains:
+- domain_id: ZERO_TRUST_EXCHANGE
+  name: Zscaler Zero Trust Exchange (ZIA / ZPA)
+  criticality: CRITICAL
+  search_query: Zscaler Zero Trust Exchange ZIA ZPA architecture datasheet technical
+    overview filetype:pdf site:zscaler.com
+  expected_entities:
+  - Zscaler
+  - Zero Trust Exchange
+  - ZIA
+  - ZPA
+  - SASE

@@ -1,0 +1,16 @@
+vendor_id: arrow
+display_name: Arrow ECS España (Mayorista Oficial)
+official_domains:
+- arrow.com
+- arrowecs.es
+coverage_domains:
+- domain_id: SUPPLY_CHAIN_SLA
+  name: Cadena de Suministro y Plazos de Entrega de Hardware
+  criticality: CRITICAL
+  search_query: Arrow ECS España logistica plazos entrega hardware distribución oficial
+    carta fabricante filetype:pdf site:arrow.com
+  expected_entities:
+  - Arrow ECS
+  - Suministro
+  - Logística
+  - Distribución

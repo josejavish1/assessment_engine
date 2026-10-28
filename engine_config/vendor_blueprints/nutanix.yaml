@@ -1,0 +1,46 @@
+vendor_id: nutanix
+display_name: Nutanix Cloud Platform (HCI / AHV)
+official_domains:
+- nutanix.com
+- portal.nutanix.com
+coverage_domains:
+- domain_id: NUTANIX_AOS_AHV_ARCHITECTURE
+  name: Arquitectura Nutanix AOS y Hypervisor AHV
+  criticality: CRITICAL
+  search_query: Nutanix Cloud Platform AOS AHV architecture guide datasheet filetype:pdf
+    site:nutanix.com
+  expected_entities:
+  - Nutanix
+  - AOS
+  - AHV
+  - Acropolis
+  - Prism
+- domain_id: PRISM_CENTRAL_MANAGEMENT
+  name: Gestión y Capacidad Prism Central
+  criticality: HIGH
+  search_query: Nutanix Prism Central sizing guide technical specification filetype:pdf
+    site:nutanix.com
+  expected_entities:
+  - Prism Central
+  - AIOps
+  - Multi-Cluster
+  - Capacity Runaway
+- domain_id: FLOW_NETWORK_SECURITY
+  name: Microsegmentación y Seguridad Flow
+  criticality: HIGH
+  search_query: Nutanix Flow Network Security microsegmentation datasheet filetype:pdf
+    site:nutanix.com
+  expected_entities:
+  - Flow
+  - Microsegmentation
+  - Zero Trust
+  - Policy
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Homologación CPSTI / ENS Alto Nutanix
+  criticality: CRITICAL
+  search_query: Catalogo CPSTI Productos Seguridad TIC Nutanix Cloud Platform filetype:pdf
+    site:ccn-stic.cni.es
+  expected_entities:
+  - CPSTI
+  - ENS Alto
+  - CCN-STIC

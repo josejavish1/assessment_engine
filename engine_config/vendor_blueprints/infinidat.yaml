@@ -1,0 +1,16 @@
+vendor_id: infinidat
+display_name: Infinidat (InfiniBox / InfiniGuard)
+official_domains:
+- infinidat.com
+coverage_domains:
+- domain_id: INFINIBOX_STORAGE_ARCHITECTURE
+  name: InfiniBox Enterprise Storage (100% Availability SLA)
+  criticality: CRITICAL
+  search_query: Infinidat InfiniBox enterprise storage architecture datasheet 100
+    percent availability filetype:pdf site:infinidat.com
+  expected_entities:
+  - Infinidat
+  - InfiniBox
+  - Neural Cache
+  - Multi-Petabyte
+  - 100% Availability

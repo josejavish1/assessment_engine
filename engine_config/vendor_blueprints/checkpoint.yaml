@@ -1,0 +1,25 @@
+vendor_id: checkpoint
+display_name: Check Point Software (Quantum & Infinity)
+official_domains:
+- checkpoint.com
+coverage_domains:
+- domain_id: QUANTUM_FIREWALL_MATRIX
+  name: Check Point Quantum Security Gateways
+  criticality: CRITICAL
+  search_query: Check Point Quantum security gateway appliance datasheet specifications
+    throughput filetype:pdf site:checkpoint.com
+  expected_entities:
+  - Quantum
+  - Check Point
+  - Threat Prevention
+  - Throughput
+  - Maestro
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Homologación CPSTI / ENS Alto Check Point
+  criticality: CRITICAL
+  search_query: Catalogo CPSTI Productos Seguridad TIC Check Point Quantum filetype:pdf
+    site:ccn-stic.cni.es
+  expected_entities:
+  - CPSTI
+  - ENS Alto
+  - CCN-STIC

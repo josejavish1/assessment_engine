@@ -1,0 +1,26 @@
+vendor_id: akamai
+display_name: Akamai Cloud Security & Edge
+official_domains:
+- akamai.com
+coverage_domains:
+- domain_id: APP_AND_API_PROTECTOR
+  name: Akamai App & API Protector (WAF / DDoS)
+  criticality: CRITICAL
+  search_query: Akamai App and API Protector architecture datasheet white paper filetype:pdf
+    site:akamai.com
+  expected_entities:
+  - App and API Protector
+  - WAF
+  - DDoS
+  - API Security
+  - Edge
+- domain_id: PROLEXIC_DDOS_PROTECTION
+  name: Protección contra DDoS Akamai Prolexic
+  criticality: HIGH
+  search_query: Akamai Prolexic DDoS protection architecture datasheet filetype:pdf
+    site:akamai.com
+  expected_entities:
+  - Prolexic
+  - DDoS Mitigation
+  - Scrubbing Center
+  - Tbps

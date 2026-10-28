@@ -1,0 +1,17 @@
+vendor_id: canonical_ubuntu
+display_name: Canonical (Ubuntu Pro Enterprise & ESM)
+official_domains:
+- ubuntu.com
+- canonical.com
+coverage_domains:
+- domain_id: UBUNTU_PRO_ENTERPRISE_LIFECYCLE
+  name: Ubuntu Pro Enterprise con Soporte ESM de 10 Años y FIPS
+  criticality: CRITICAL
+  search_query: Ubuntu Pro enterprise security Expanded Security Maintenance ESM datasheet
+    FIPS compliance filetype:pdf site:ubuntu.com
+  expected_entities:
+  - Ubuntu Pro
+  - Canonical
+  - ESM
+  - FIPS 140-2
+  - Kernel Livepatch

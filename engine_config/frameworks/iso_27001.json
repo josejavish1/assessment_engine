@@ -1,0 +1,62 @@
+{
+  "framework_id": "iso_27001",
+  "framework_name": "ISO/IEC 27001 & Industrial Resilience Standards (NIS2 / IEC 62443)",
+  "description": "Estándar internacional de gestión de seguridad de la información y resiliencia operacional para infraestructuras críticas y entornos empresariales globales.",
+  "rules": [
+    {
+      "tower_id": "T1",
+      "query_template": "adopcion estandar datacenter redundancia electrica y climatica iso 27001",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {"condition": "adoption >= 60.0", "score": 4.5},
+        {"condition": "adoption >= 40.0", "score": 4.0},
+        {"condition": "adoption >= 20.0", "score": 3.5}
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T2",
+      "query_template": "adopcion segregacion entornos computo nube hibrida iso 27001",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {"condition": "adoption >= 60.0", "score": 4.5},
+        {"condition": "adoption >= 40.0", "score": 4.0},
+        {"condition": "adoption >= 20.0", "score": 3.5}
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T3",
+      "query_template": "adopcion microsegmentacion y controles red sd-wan iso 27001",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {"condition": "adoption >= 65.0", "score": 4.5},
+        {"condition": "adoption >= 45.0", "score": 4.0},
+        {"condition": "adoption >= 25.0", "score": 3.5}
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T5",
+      "query_template": "adopcion alta disponibilidad y recuperacion desastres iso 27001",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {"condition": "adoption >= 70.0", "score": 4.5},
+        {"condition": "adoption >= 50.0", "score": 4.0},
+        {"condition": "adoption >= 30.0", "score": 3.5}
+      ],
+      "default_score": 3.0
+    },
+    {
+      "tower_id": "T6",
+      "query_template": "adopcion soc continuo y monitoreo perimetral nis2 cisa",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {"condition": "adoption >= 70.0", "score": 4.5},
+        {"condition": "adoption >= 50.0", "score": 4.0},
+        {"condition": "adoption >= 30.0", "score": 3.5}
+      ],
+      "default_score": 3.5
+    }
+  ]
+}

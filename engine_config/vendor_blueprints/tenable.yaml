@@ -1,0 +1,15 @@
+vendor_id: tenable
+display_name: Tenable (Nessus / Tenable.io / Vulnerability Management)
+official_domains:
+- tenable.com
+coverage_domains:
+- domain_id: VULNERABILITY_MANAGEMENT
+  name: Gestión de Vulnerabilidades Tenable.io y Nessus
+  criticality: CRITICAL
+  search_query: Tenable.io vulnerability management technical architecture datasheet
+    filetype:pdf site:tenable.com
+  expected_entities:
+  - Tenable
+  - Nessus
+  - Vulnerability Management
+  - Exposure Management

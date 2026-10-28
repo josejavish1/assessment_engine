@@ -1,0 +1,46 @@
+vendor_id: "hpe"
+display_name: "Hewlett Packard Enterprise (HPE)"
+official_domains:
+  - "hpe.com"
+  - "buy.hpe.com"
+
+coverage_domains:
+  - domain_id: "PROLIANT_GEN11_COMPUTE"
+    name: "Servidores ProLiant Gen11 QuickSpecs"
+    criticality: "CRITICAL"
+    search_query: "HPE ProLiant Gen11 QuickSpecs technical specifications overview filetype:pdf site:hpe.com"
+    expected_entities:
+      - "ProLiant"
+      - "Gen11"
+      - "DL380"
+      - "PCIe 5.0"
+
+  - domain_id: "ALLETRA_STORAGE_MATRIX"
+    name: "Almacenamiento Alletra MP Architecture"
+    criticality: "HIGH"
+    search_query: "HPE Alletra Storage technical specifications datasheet filetype:pdf site:hpe.com"
+    expected_entities:
+      - "Alletra"
+      - "NVMe"
+      - "IOPS"
+      - "Availability"
+
+  - domain_id: "OPSRAMP_AIOPS_OBSERVABILITY"
+    name: "Plataforma AIOps OpsRamp Architecture"
+    criticality: "CRITICAL"
+    search_query: "HPE OpsRamp architecture guide sizing datasheet filetype:pdf site:hpe.com"
+    expected_entities:
+      - "OpsRamp"
+      - "AIOps"
+      - "Root Cause Analysis"
+      - "Multi-Tenant"
+
+  - domain_id: "GREENLAKE_FLEXIBLE_OPEX"
+    name: "Modelo GreenLake Pago por Uso / Opex"
+    criticality: "MEDIUM"
+    search_query: "HPE GreenLake consumption services solution brief filetype:pdf site:hpe.com"
+    expected_entities:
+      - "GreenLake"
+      - "Consumption"
+      - "Opex"
+      - "Metering"

@@ -1,0 +1,25 @@
+vendor_id: oracle_db
+display_name: Oracle Database & Exadata Platform
+official_domains:
+- oracle.com
+coverage_domains:
+- domain_id: ORACLE_DATABASE_23AI_19C
+  name: Oracle Database 19c / 23ai Arquitectura Enterprise
+  criticality: CRITICAL
+  search_query: Oracle Database 19c 23ai Enterprise Edition architecture technical
+    white paper filetype:pdf site:oracle.com
+  expected_entities:
+  - Oracle Database
+  - Enterprise Edition
+  - Multitenant
+  - Partitioning
+- domain_id: MAXIMUM_AVAILABILITY_RAC
+  name: Oracle Real Application Clusters (RAC) y Data Guard (MAA)
+  criticality: CRITICAL
+  search_query: Oracle Maximum Availability Architecture MAA RAC Data Guard white
+    paper filetype:pdf site:oracle.com
+  expected_entities:
+  - RAC
+  - Active Data Guard
+  - Zero Data Loss
+  - RPO 0

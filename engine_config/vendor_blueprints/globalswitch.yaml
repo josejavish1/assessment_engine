@@ -1,0 +1,17 @@
+vendor_id: globalswitch
+display_name: Global Switch Madrid (Data Center)
+official_domains:
+- globalswitch.com
+coverage_domains:
+- domain_id: DC_FACILITIES_MADRID
+  name: Centro de Datos Global Switch Madrid (Yécora)
+  criticality: CRITICAL
+  search_query: Global Switch Madrid data center specifications technical datasheet
+    PUE Tier III filetype:pdf site:globalswitch.com
+  expected_entities:
+  - Global Switch
+  - Madrid
+  - Yécora
+  - Tier III
+  - PUE
+  - Carrier Neutral

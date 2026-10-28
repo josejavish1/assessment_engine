@@ -1,0 +1,24 @@
+vendor_id: servicenow
+display_name: ServiceNow Platform (ITSM / ITOM / CMDB)
+official_domains:
+- servicenow.com
+coverage_domains:
+- domain_id: SERVICENOW_ITOM_AIOPS
+  name: ServiceNow ITOM Predictive AIOps y Service Mapping
+  criticality: CRITICAL
+  search_query: ServiceNow ITOM AIOps Service Mapping architecture datasheet filetype:pdf
+    site:servicenow.com
+  expected_entities:
+  - ITOM
+  - AIOps
+  - Service Mapping
+  - Event Management
+- domain_id: SERVICENOW_CMDB_ENTERPRISE
+  name: ServiceNow CMDB y Discovery para Nube Híbrida
+  criticality: HIGH
+  search_query: ServiceNow CMDB Discovery architecture white paper filetype:pdf site:servicenow.com
+  expected_entities:
+  - CMDB
+  - Discovery
+  - ITIL
+  - Single Pane of Glass

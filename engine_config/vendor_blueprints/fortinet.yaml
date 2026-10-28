@@ -1,0 +1,45 @@
+vendor_id: "fortinet"
+display_name: "Fortinet Security Fabric"
+official_domains:
+  - "fortinet.com"
+  - "docs.fortinet.com"
+
+coverage_domains:
+  - domain_id: "HARDWARE_MATRIX"
+    name: "Matriz Maestra de Hardware FortiGate"
+    criticality: "CRITICAL"
+    search_query: "Fortinet Product Matrix (FortiGate Security Platform & Management) filetype:pdf site:fortinet.com"
+    expected_entities:
+      - "FortiGate"
+      - "SSL Inspection"
+      - "Throughput"
+      - "NP7"
+
+  - domain_id: "CENTRAL_MANAGEMENT_LOGS"
+    name: "Gestión Centralizada y Retención de Logs"
+    criticality: "HIGH"
+    search_query: "FortiManager FortiAnalyzer Datasheet Sizing Guide filetype:pdf site:fortinet.com"
+    expected_entities:
+      - "FortiManager"
+      - "FortiAnalyzer"
+      - "ADOMs"
+      - "GB/Day"
+
+  - domain_id: "FLEXIBLE_LICENSING"
+    name: "Licenciamiento Flexible Cloud / Opex"
+    criticality: "MEDIUM"
+    search_query: "FortiFlex points licensing guide filetype:pdf site:fortinet.com"
+    expected_entities:
+      - "FortiFlex"
+      - "Tokens"
+      - "Opex"
+
+  - domain_id: "REGULATORY_COMPLIANCE_SPAIN"
+    name: "Homologación CPSTI / ENS Alto España"
+    criticality: "CRITICAL"
+    override_domain: "ccn-stic.cni.es"
+    search_query: "Catalogo Productos Seguridad TIC CPSTI Fortinet FortiGate filetype:pdf site:ccn-stic.cni.es"
+    expected_entities:
+      - "CPSTI"
+      - "ENS Alto"
+      - "CCN-STIC"

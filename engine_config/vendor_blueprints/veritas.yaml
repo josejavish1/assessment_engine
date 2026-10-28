@@ -1,0 +1,15 @@
+vendor_id: veritas
+display_name: Veritas Technologies (NetBackup / Alta)
+official_domains:
+- veritas.com
+coverage_domains:
+- domain_id: NETBACKUP_ENTERPRISE
+  name: Veritas NetBackup y Alta Data Protection
+  criticality: CRITICAL
+  search_query: Veritas NetBackup enterprise data protection architecture datasheet
+    filetype:pdf site:veritas.com
+  expected_entities:
+  - NetBackup
+  - Veritas Alta
+  - Inmutabilidad
+  - Deduplicación

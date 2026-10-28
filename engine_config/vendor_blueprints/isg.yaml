@@ -1,0 +1,16 @@
+vendor_id: isg
+display_name: ISG (Information Services Group - Provider Lens)
+official_domains:
+- isg-one.com
+coverage_domains:
+- domain_id: ISG_PROVIDER_LENS_LEADERSHIP
+  name: Informes de Liderazgo ISG Provider Lens en Servicios Cloud y TI
+  criticality: HIGH
+  search_query: ISG Provider Lens Leader quadrant report cloud private hybrid cybersecurity
+    IT services reprint filetype:pdf
+  expected_entities:
+  - ISG
+  - Provider Lens
+  - Leader
+  - Market Challenger
+  - IT Services

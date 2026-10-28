@@ -1,0 +1,16 @@
+vendor_id: fortra
+display_name: Fortra (Ciberseguridad & GoAnywhere MFT)
+official_domains:
+- fortra.com
+coverage_domains:
+- domain_id: MANAGED_FILE_TRANSFER
+  name: Fortra GoAnywhere MFT y Seguridad de Datos
+  criticality: HIGH
+  search_query: Fortra GoAnywhere MFT managed file transfer architecture datasheet
+    filetype:pdf site:fortra.com
+  expected_entities:
+  - Fortra
+  - GoAnywhere
+  - MFT
+  - Cifrado
+  - Cumplimiento

@@ -1,0 +1,15 @@
+vendor_id: idc
+display_name: IDC (MarketScape & Vendor Assessment)
+official_domains:
+- idc.com
+coverage_domains:
+- domain_id: IDC_MARKETSCAPE_ASSESSMENT
+  name: Evaluación de Proveedores IDC MarketScape
+  criticality: HIGH
+  search_query: IDC MarketScape vendor assessment Leader worldwide cloud IT services
+    datacenter filetype:pdf
+  expected_entities:
+  - IDC
+  - MarketScape
+  - Leader
+  - Capabilities

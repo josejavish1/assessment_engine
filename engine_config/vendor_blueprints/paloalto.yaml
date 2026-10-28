@@ -1,0 +1,25 @@
+vendor_id: paloalto
+display_name: Palo Alto Networks (PA-Series / Strata)
+official_domains:
+- paloaltonetworks.com
+coverage_domains:
+- domain_id: PA_SERIES_NEXT_GEN_FIREWALL
+  name: Next-Generation Firewall PA-Series Datasheet Matrix
+  criticality: CRITICAL
+  search_query: Palo Alto Networks PA-Series next-generation firewall datasheet specifications
+    filetype:pdf site:paloaltonetworks.com
+  expected_entities:
+  - PA-Series
+  - PAN-OS
+  - App-ID
+  - Threat Prevention
+  - Throughput
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Homologación CPSTI / ENS Alto Palo Alto
+  criticality: CRITICAL
+  search_query: Catalogo CPSTI Productos Seguridad TIC Palo Alto Networks filetype:pdf
+    site:ccn-stic.cni.es
+  expected_entities:
+  - CPSTI
+  - ENS Alto
+  - CCN-STIC

@@ -1,0 +1,15 @@
+vendor_id: cellnex
+display_name: Cellnex Telecom (Infraestructuras de Conectividad)
+official_domains:
+- cellnex.com
+coverage_domains:
+- domain_id: TELECOM_INFRASTRUCTURE
+  name: Infraestructuras Críticas de Conectividad y Edge
+  criticality: HIGH
+  search_query: Cellnex Telecom conectividad redes privadas infraestructuras criticas
+    centros de datos edge filetype:pdf site:cellnex.com
+  expected_entities:
+  - Cellnex
+  - Edge
+  - Redes Privadas
+  - Conectividad Crítica

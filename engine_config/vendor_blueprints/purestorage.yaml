@@ -1,0 +1,26 @@
+vendor_id: purestorage
+display_name: Pure Storage FlashArray // Evergreen
+official_domains:
+- purestorage.com
+coverage_domains:
+- domain_id: FLASHARRAY_X_C_ARCHITECTURE
+  name: Arquitectura FlashArray //X y //C
+  criticality: CRITICAL
+  search_query: Pure Storage FlashArray architecture technical white paper datasheet
+    filetype:pdf site:purestorage.com
+  expected_entities:
+  - FlashArray
+  - Purity
+  - DirectFlash
+  - NVMe-oF
+  - IOPS
+- domain_id: SAFEMODE_IMMUTABLE_SNAPSHOTS
+  name: Instantáneas Inmutables SafeMode ante Ransomware
+  criticality: HIGH
+  search_query: Pure Storage SafeMode snapshots ransomware protection solution brief
+    filetype:pdf site:purestorage.com
+  expected_entities:
+  - SafeMode
+  - Immutable Snapshots
+  - Zero Data Loss
+  - Ransomware

@@ -1,0 +1,16 @@
+vendor_id: opensearch
+display_name: OpenSearch Project (Motor de Búsqueda y Logs Abierto)
+official_domains:
+- opensearch.org
+coverage_domains:
+- domain_id: OPENSEARCH_LOG_ANALYTICS_SIEM
+  name: OpenSearch Análisis de Logs, Seguridad SIEM y Búsqueda Vectorial
+  criticality: HIGH
+  search_query: OpenSearch architecture technical guide log analytics security analytics
+    vector search filetype:pdf site:opensearch.org
+  expected_entities:
+  - OpenSearch
+  - OpenSearch Dashboards
+  - Log Analytics
+  - Vector Search
+  - Security Analytics

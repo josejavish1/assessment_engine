@@ -1,0 +1,18 @@
+vendor_id: telefonica_tech
+display_name: Telefónica Tech / Telxius (Red Troncal y Comunicaciones)
+official_domains:
+- telefonicatech.com
+- telxius.com
+coverage_domains:
+- domain_id: CRITICAL_TELECOM_TRUNK_SERVICES
+  name: Comunicaciones Troncales, Redes Críticas y Conectividad Cloud
+  criticality: CRITICAL
+  search_query: Telefonica Tech Telxius servicios conectividad troncal red empresarial
+    cloud interconnect especificaciones filetype:pdf site:telefonicatech.com
+  expected_entities:
+  - Telefónica Tech
+  - Telxius
+  - Troncal
+  - Conectividad Crítica
+  - MPLS
+  - SD-WAN

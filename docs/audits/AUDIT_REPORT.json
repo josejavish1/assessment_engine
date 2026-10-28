@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793218422,
+  "timestamp": 1793218836,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -10,8 +10,8 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 425,
-        "clean_files": 425,
+        "scanned_files": 426,
+        "clean_files": 426,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -35,10 +35,10 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 48098,
-        "test_sloc": 17525,
-        "test_to_code_ratio": 0.36,
-        "maintainability_index_sei": 32.3,
+        "prod_sloc": 48195,
+        "test_sloc": 17728,
+        "test_to_code_ratio": 0.37,
+        "maintainability_index_sei": 32.4,
         "typed_functions_pct": 86.5,
         "docstring_coverage_pct": 81.7,
         "max_cognitive_complexity": 246,
@@ -133,7 +133,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 747,
+          "line_number": 754,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en '_render_fair_5x5_table': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -142,7 +142,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_blueprint.py",
-          "line_number": 1193,
+          "line_number": 1192,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'render_roadmap_page': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -601,7 +601,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/vendor_intelligence.py",
-          "line_number": 122,
+          "line_number": 152,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'initialize': CoC = 21 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -960,7 +960,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 331,
+        "scanned_files": 332,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -974,7 +974,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 331,
+        "scanned_files": 332,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -993,10 +993,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.36,
-        "p95_latency_ms": 105.37,
-        "p99_latency_ms": 131.55,
-        "tail_amplification_ratio": 96.73,
+        "p50_latency_ms": 1.45,
+        "p95_latency_ms": 80.35,
+        "p99_latency_ms": 231.58,
+        "tail_amplification_ratio": 159.71,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -1037,7 +1037,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 365,
+        "scanned_files": 366,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -1047,7 +1047,7 @@
       "score_pct": 99.9,
       "passed": true,
       "metrics": {
-        "files_scanned": 360,
+        "files_scanned": 361,
         "inline_rationale_score": 99.9,
         "contract_coverage_score": 99.9,
         "linguistic_sovereignty_score": 100.0,
@@ -1080,7 +1080,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/corporate_project_aggregator.py",
-          "line_number": 157,
+          "line_number": 178,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'aggregate_corporate_projects' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."

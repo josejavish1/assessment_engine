@@ -1,0 +1,26 @@
+vendor_id: vmware
+display_name: VMware by Broadcom (VCF / vSphere)
+official_domains:
+- vmware.com
+- broadcom.com
+coverage_domains:
+- domain_id: VMWARE_VCF_ARCHITECTURE
+  name: VMware Cloud Foundation (VCF) Architecture
+  criticality: CRITICAL
+  search_query: VMware Cloud Foundation VCF architecture guide datasheet filetype:pdf
+    site:vmware.com
+  expected_entities:
+  - VCF
+  - vSphere 8
+  - vSAN
+  - NSX
+- domain_id: VSAN_STORAGE_PERFORMANCE
+  name: Almacenamiento vSAN Express Storage Architecture (ESA)
+  criticality: HIGH
+  search_query: VMware vSAN Express Storage Architecture ESA performance sizing guide
+    filetype:pdf site:vmware.com
+  expected_entities:
+  - vSAN
+  - ESA
+  - NVMe
+  - IOPS

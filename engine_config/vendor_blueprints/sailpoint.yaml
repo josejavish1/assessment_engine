@@ -1,0 +1,17 @@
+vendor_id: sailpoint
+display_name: SailPoint (Gobernanza y Administración de Identidades IGA)
+official_domains:
+- sailpoint.com
+- documentation.sailpoint.com
+coverage_domains:
+- domain_id: IDENTITY_GOVERNANCE_ADMINISTRATION
+  name: Gobernanza de Identidades SailPoint Identity Security Cloud
+  criticality: CRITICAL
+  search_query: SailPoint Identity Security Cloud architecture datasheet IGA compliance
+    filetype:pdf site:sailpoint.com
+  expected_entities:
+  - SailPoint
+  - Identity Governance
+  - IGA
+  - Access Certification
+  - Role Mining

@@ -1,0 +1,17 @@
+vendor_id: sentinelone
+display_name: SentinelOne Singularity Platform (EDR / XDR Autónomo)
+official_domains:
+- sentinelone.com
+coverage_domains:
+- domain_id: SINGULARITY_AUTONOMOUS_XDR
+  name: Plataforma Singularity XDR y Remediación Autónoma por IA
+  criticality: CRITICAL
+  search_query: SentinelOne Singularity platform architecture datasheet autonomous
+    EDR XDR rollback filetype:pdf site:sentinelone.com
+  expected_entities:
+  - SentinelOne
+  - Singularity
+  - EDR
+  - XDR
+  - Rollback
+  - Behavioral AI

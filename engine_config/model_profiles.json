@@ -5,70 +5,80 @@
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-3.8-flash"
     },
     "section_writer": {
       "tier": "fast",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-3.8-flash"
     },
     "analyst": {
       "tier": "fast",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-3.8-flash"
     },
     "experimental_writer": {
       "tier": "fast",
       "temperature": 0.25,
       "top_p": 0.9,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-3.8-flash"
     },
     "global_refiner": {
       "tier": "fast",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-3.8-flash"
     },
     "global_refiner_strict": {
       "tier": "fast",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-3.8-flash"
     },
     "review_strict": {
       "tier": "reasoning",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-4-argon"
     },
     "global_reviewer_strict": {
       "tier": "reasoning",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-4-argon"
     },
     "product_owner_planner": {
       "tier": "reasoning",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-4-argon"
     },
     "product_owner_doctor": {
       "tier": "reasoning",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
-      "max_output_tokens": 8192
+      "max_output_tokens": 8192,
+      "model": "gemini-4-argon"
     }
   }
 }

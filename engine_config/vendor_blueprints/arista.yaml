@@ -1,0 +1,16 @@
+vendor_id: arista
+display_name: Arista Networks (Conmutación Datacenter y EOS para IA)
+official_domains:
+- arista.com
+coverage_domains:
+- domain_id: ARISTA_EOS_DATA_CENTER_SWITCHING
+  name: Conmutación Data Center Arista 7000 Series y EOS
+  criticality: CRITICAL
+  search_query: Arista Networks 7000 Series data center switch specifications EOS
+    datasheet filetype:pdf site:arista.com
+  expected_entities:
+  - Arista
+  - EOS
+  - 7000 Series
+  - Ultra Low Latency
+  - Throughput

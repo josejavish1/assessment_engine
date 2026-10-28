@@ -1,0 +1,16 @@
+vendor_id: beyondtrust
+display_name: BeyondTrust (Privileged Access Management & Remote Support)
+official_domains:
+- beyondtrust.com
+coverage_domains:
+- domain_id: PRIVILEGE_MANAGEMENT_PAM
+  name: Gestión de Privilegios Endpoint y Acceso Remoto Seguro PAM
+  criticality: CRITICAL
+  search_query: BeyondTrust Endpoint Privilege Management architecture datasheet PAM
+    secure remote access filetype:pdf site:beyondtrust.com
+  expected_entities:
+  - BeyondTrust
+  - Endpoint Privilege Management
+  - PAM
+  - Least Privilege
+  - Auditoría

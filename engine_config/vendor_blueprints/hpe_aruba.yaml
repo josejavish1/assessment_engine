@@ -1,0 +1,17 @@
+vendor_id: hpe_aruba
+display_name: HPE Aruba Networking (Campus Switching & Wi-Fi 7)
+official_domains:
+- arubanetworks.com
+- hpe.com
+coverage_domains:
+- domain_id: ARUBA_CX_CAMPUS_NETWORKING
+  name: Conmutación de Campus Aruba CX y Puntos de Acceso Wi-Fi
+  criticality: CRITICAL
+  search_query: Aruba CX campus switch datasheet technical specifications Wi-Fi filetype:pdf
+    site:arubanetworks.com
+  expected_entities:
+  - Aruba CX
+  - AOS-CX
+  - Campus Switching
+  - PoE
+  - Wi-Fi

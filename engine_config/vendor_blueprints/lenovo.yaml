@@ -1,0 +1,18 @@
+vendor_id: lenovo
+display_name: Lenovo Infrastructure Solutions (ThinkSystem)
+official_domains:
+- lenovopress.lenovo.com
+- lenovo.com
+coverage_domains:
+- domain_id: THINKSYSTEM_SERVERS_HPC
+  name: Servidores ThinkSystem SR650 / SR630 y Almacenamiento
+  criticality: CRITICAL
+  search_query: Lenovo ThinkSystem server technical product guide specifications datasheet
+    filetype:pdf site:lenovopress.lenovo.com
+  expected_entities:
+  - ThinkSystem
+  - Lenovo
+  - SR650
+  - Xeon
+  - PCIe
+  - HPC

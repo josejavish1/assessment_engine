@@ -1,0 +1,17 @@
+vendor_id: nozomi_networks
+display_name: Nozomi_networks Enterprise Solutions
+official_domains:
+- docs.nozomi_networks.com
+- nozomi_networks.com
+coverage_domains:
+- domain_id: CORE_SOLUTION_SPECS
+  name: Especificaciones Oficiales de nozomi_networks
+  criticality: HIGH
+  search_query: nozomi_networks datasheet technical specifications filetype:pdf
+  expected_entities:
+  - nozomi_networks
+  - Architecture
+  - Throughput
+  - SLA
+synthesized_jit: true
+created_at: '2026-10-09T00:37:27.168633+00:00'

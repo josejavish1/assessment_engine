@@ -1,0 +1,16 @@
+vendor_id: lyntria
+display_name: Lyntria (Red Neutra de Fibra Oscura)
+official_domains:
+- lyntria.com
+coverage_domains:
+- domain_id: DARK_FIBER_DWDM
+  name: Red de Fibra Oscura de Larga Distancia y DWDM
+  criticality: CRITICAL
+  search_query: Lyntria fibra oscura DWDM servicios conectividad centros de datos
+    mapa de red especificaciones filetype:pdf site:lyntria.com
+  expected_entities:
+  - Lyntria
+  - Fibra Oscura
+  - DWDM
+  - Latencia
+  - Interconexión CPD

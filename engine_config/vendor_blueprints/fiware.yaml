@@ -1,0 +1,16 @@
+vendor_id: fiware
+display_name: FIWARE Foundation (Smart Cities & Espacios de Datos)
+official_domains:
+- fiware.org
+coverage_domains:
+- domain_id: FIWARE_NGSI_LD_DATA_SPACES
+  name: Plataforma FIWARE Context Broker y Estándar NGSI-LD
+  criticality: CRITICAL
+  search_query: FIWARE Context Broker Orion-LD NGSI-LD smart city data spaces architecture
+    guide filetype:pdf site:fiware.org
+  expected_entities:
+  - FIWARE
+  - Context Broker
+  - NGSI-LD
+  - Smart Cities
+  - Data Spaces

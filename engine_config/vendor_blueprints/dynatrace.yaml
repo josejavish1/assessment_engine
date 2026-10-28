@@ -1,0 +1,26 @@
+vendor_id: dynatrace
+display_name: Dynatrace AIOps & Observability
+official_domains:
+- dynatrace.com
+- docs.dynatrace.com
+coverage_domains:
+- domain_id: DAVIS_AI_CAUSAL_ENGINE
+  name: Motor Davis AI Causal y Análisis de Causa Raíz
+  criticality: CRITICAL
+  search_query: Dynatrace Davis AI causal engine root cause analysis architecture
+    white paper filetype:pdf site:dynatrace.com
+  expected_entities:
+  - Davis AI
+  - Root Cause Analysis
+  - Topology
+  - Grail
+- domain_id: FULL_STACK_APM_ONEAGENT
+  name: Observabilidad Full-Stack OneAgent Sizing
+  criticality: HIGH
+  search_query: Dynatrace OneAgent full stack observability deployment guide filetype:pdf
+    site:dynatrace.com
+  expected_entities:
+  - OneAgent
+  - APM
+  - Microservices
+  - Kubernetes

@@ -1,0 +1,26 @@
+vendor_id: cohesity
+display_name: Cohesity Data Cloud & FortKnox
+official_domains:
+- cohesity.com
+coverage_domains:
+- domain_id: COHESITY_FORTKNOX_VAULT
+  name: Bóveda Aislada Cohesity FortKnox (Air-Gap)
+  criticality: CRITICAL
+  search_query: Cohesity FortKnox SaaS cyber vault solution brief technical guide
+    filetype:pdf site:cohesity.com
+  expected_entities:
+  - FortKnox
+  - Cyber Vault
+  - Air-Gap
+  - WORM
+  - Helios
+- domain_id: COHESITY_DATAPROTECT_ARCHITECTURE
+  name: Arquitectura Cohesity DataProtect
+  criticality: HIGH
+  search_query: Cohesity DataProtect enterprise backup architecture white paper filetype:pdf
+    site:cohesity.com
+  expected_entities:
+  - DataProtect
+  - SpanFS
+  - Global Deduplication
+  - Instant Recovery

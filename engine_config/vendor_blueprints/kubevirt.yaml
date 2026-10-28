@@ -1,0 +1,16 @@
+vendor_id: kubevirt
+display_name: KubeVirt / CNCF (Virtualización Nativa en Contenedores)
+official_domains:
+- kubevirt.io
+coverage_domains:
+- domain_id: KUBEVIRT_CONTAINER_NATIVE_VIRT
+  name: KubeVirt Virtual Machines on Kubernetes Cloud Native Architecture
+  criticality: HIGH
+  search_query: KubeVirt virtual machine virtualization on Kubernetes architecture
+    user guide filetype:pdf site:kubevirt.io
+  expected_entities:
+  - KubeVirt
+  - Kubernetes
+  - Virtual Machines
+  - CNCF
+  - Container-Native

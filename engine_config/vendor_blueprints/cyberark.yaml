@@ -1,0 +1,24 @@
+vendor_id: cyberark
+display_name: CyberArk Privileged Access Manager (PAM)
+official_domains:
+- cyberark.com
+coverage_domains:
+- domain_id: CYBERARK_PAM_ARCHITECTURE
+  name: CyberArk Privilege Cloud / PAM Architecture
+  criticality: CRITICAL
+  search_query: CyberArk Privileged Access Security PAM architecture overview datasheet
+    filetype:pdf site:cyberark.com
+  expected_entities:
+  - CyberArk
+  - PAM
+  - Vault
+  - Session Recording
+  - Credentials
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Homologación CPSTI / ENS Alto CyberArk
+  criticality: CRITICAL
+  search_query: Catalogo CPSTI Productos Seguridad TIC CyberArk filetype:pdf site:ccn-stic.cni.es
+  expected_entities:
+  - CPSTI
+  - ENS Alto
+  - CCN-STIC

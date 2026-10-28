@@ -1,0 +1,18 @@
+vendor_id: ntt_gdc
+display_name: NTT Global Data Centers Madrid 1
+official_domains:
+- services.global.ntt
+- datacenter.evroc.com
+coverage_domains:
+- domain_id: NTT_MADRID1_DATA_CENTER
+  name: NTT Madrid 1 Data Center (Las Rozas / Európolis)
+  criticality: CRITICAL
+  search_query: NTT Global Data Centers Madrid 1 Las Rozas technical specifications
+    datasheet PUE Tier III filetype:pdf site:services.global.ntt
+  expected_entities:
+  - NTT
+  - Madrid 1
+  - Las Rozas
+  - PUE
+  - Tier III
+  - Colocation

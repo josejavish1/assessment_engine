@@ -1,0 +1,16 @@
+vendor_id: itwise
+display_name: ITWise (Smart Hands en Centros de Datos y Campo)
+official_domains:
+- itwise.es
+coverage_domains:
+- domain_id: SMART_HANDS_FIELD_SUPPORT
+  name: Servicios Smart Hands y Soporte de Campo en CPDs
+  criticality: CRITICAL
+  search_query: ITWise servicios smart hands data center soporte campo despliegue
+    hardware mantenimiento 24x7 filetype:pdf site:itwise.es
+  expected_entities:
+  - ITWise
+  - Smart Hands
+  - Data Center
+  - Despliegue Hardware
+  - 24/7

@@ -1,0 +1,17 @@
+vendor_id: digitalrealty
+display_name: Digital Realty / Interxion Madrid
+official_domains:
+- digitalrealty.es
+- digitalrealty.com
+coverage_domains:
+- domain_id: INTERXION_MADRID_CAMPUS
+  name: Campus Interxion Madrid (MAD1 a MAD4)
+  criticality: CRITICAL
+  search_query: Digital Realty Interxion Madrid MAD1 MAD2 MAD3 MAD4 technical specifications
+    datasheet filetype:pdf site:digitalrealty.es
+  expected_entities:
+  - Interxion
+  - Digital Realty
+  - MAD1
+  - MAD4
+  - Hub de Conectividad

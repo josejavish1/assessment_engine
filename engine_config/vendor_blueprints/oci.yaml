@@ -1,0 +1,24 @@
+vendor_id: oci
+display_name: Oracle Cloud Infrastructure (OCI)
+official_domains:
+- oracle.com
+coverage_domains:
+- domain_id: OCI_FASTCONNECT_EXADATA
+  name: OCI FastConnect y Exadata Database Service
+  criticality: CRITICAL
+  search_query: Oracle Cloud Infrastructure OCI FastConnect Exadata Cloud architecture
+    datasheet filetype:pdf site:oracle.com
+  expected_entities:
+  - FastConnect
+  - Exadata
+  - Dedicated Region
+  - SLA
+- domain_id: REGULATORY_COMPLIANCE_SPAIN
+  name: Conformidad ENS Nivel Alto OCI Madrid
+  criticality: CRITICAL
+  search_query: Certificacion ENS Categoria Alta Oracle Cloud Infrastructure CCN-STIC
+    filetype:pdf site:ccn-stic.cni.es
+  expected_entities:
+  - ENS Alto
+  - CCN-STIC
+  - OCI

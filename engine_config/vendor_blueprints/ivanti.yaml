@@ -1,0 +1,16 @@
+vendor_id: ivanti
+display_name: Ivanti (Neurons ITSM, Gestión de Activos y Parches)
+official_domains:
+- ivanti.com
+coverage_domains:
+- domain_id: IVANTI_NEURONS_UNIFIED_IT
+  name: Plataforma Ivanti Neurons para ITSM y Gestión de Parches
+  criticality: HIGH
+  search_query: Ivanti Neurons ITSM patch management enterprise architecture datasheet
+    filetype:pdf site:ivanti.com
+  expected_entities:
+  - Ivanti
+  - Neurons
+  - ITSM
+  - Patch Management
+  - Asset Management

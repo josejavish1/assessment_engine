@@ -1,0 +1,16 @@
+vendor_id: atlassian
+display_name: Atlassian (Jira Enterprise / JSM / Confluence)
+official_domains:
+- atlassian.com
+coverage_domains:
+- domain_id: JIRA_SERVICE_MANAGEMENT
+  name: Jira Service Management (JSM) e ITIL v4
+  criticality: HIGH
+  search_query: Jira Service Management Enterprise architecture datasheet ITIL v4
+    incident management filetype:pdf site:atlassian.com
+  expected_entities:
+  - Jira
+  - JSM
+  - ITIL
+  - SLA
+  - Incident Management

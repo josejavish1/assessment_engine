@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """Renders a DOCX tower blueprint from a structured JSON payload."""
 
@@ -30,6 +31,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
+from assessment_engine.infrastructure.localization import get_localized_string
 from assessment_engine.infrastructure.runtime_paths import (
     resolve_tower_annex_template_path,
 )
@@ -506,7 +508,10 @@ def render_cover(doc, payload: BlueprintPayload) -> Any:
     title_run.bold = True
     title_run.font.size = Pt(8)
     title_run.font.color.rgb = RGBColor(127, 127, 127)
-    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
+    from assessment_engine.infrastructure.config_loader import (
+        get_consultant_company_name,
+    )
+
     company = get_consultant_company_name()
     text_run = disclaimer.add_run(
         f"Este documento técnico es propiedad de {company} y el cliente. Contiene "
@@ -553,7 +558,6 @@ def _render_snapshot_scores_table(
             tbl_pr.append(tbl_w)
         tbl_w.set(ns.qn("w:type"), "pct")
         tbl_w.set(ns.qn("w:w"), "5000")
-
 
 
 def _resolve_snapshot_business_angles(client_intelligence: dict) -> list[str]:
@@ -626,7 +630,9 @@ def render_snapshot_page(
 
     add_heading_paragraph(doc, "1. Executive Snapshot (Resumen ejecutivo)", level=1)
 
-    _render_snapshot_scores_table(doc, str(global_score_val), str(global_band_val or "N/A"), str(target_score_val))
+    _render_snapshot_scores_table(
+        doc, str(global_score_val), str(global_band_val or "N/A"), str(target_score_val)
+    )
     add_spacer(doc, 15)
     add_body_paragraph(doc, snap.bottom_line, color_rgb=BASE_TEXT_COLOR)
 
@@ -695,7 +701,9 @@ def render_cross_capabilities_analysis(doc, payload: BlueprintPayload) -> Any:
     add_heading_paragraph(doc, "Deuda Técnica Crítica", level=2)
     add_body_paragraph(doc, cca.critical_technical_debt, color_rgb=BASE_TEXT_COLOR)
 
-    add_heading_paragraph(doc, "Patrones Transversales de Ineficiencia y Deuda Estructural", level=2)
+    add_heading_paragraph(
+        doc, "Patrones Transversales de Ineficiencia y Deuda Estructural", level=2
+    )
     for item in cca.common_deficiency_patterns:
         add_bullet_p(doc, item)
 
@@ -874,9 +882,7 @@ def _render_fair_details_table(
 
         set_cell_text(
             row.cells[4],
-            format_currency(
-                ale_val, currency_symbol=currency_symbol, locale="es"
-            ),
+            format_currency(ale_val, currency_symbol=currency_symbol, locale="es"),
             font_size=8,
             align=WD_ALIGN_PARAGRAPH.RIGHT,
         )
@@ -892,9 +898,9 @@ def _render_fair_details_table(
     add_spacer(doc, 15)
 
 
-
-
-def render_fair_risk_heatmap(doc, payload: BlueprintPayload, currency_symbol: str = "€") -> Any:
+def render_fair_risk_heatmap(
+    doc, payload: BlueprintPayload, currency_symbol: str = "€"
+) -> Any:
     r"""{'docstring': 'Renders a FAIR quantitative risk heatmap and details table into a document.\n\n    This function processes Factor Analysis of Information Risk (FAIR) data from\n    the provided payload to generate two primary components within the given\n    Word document: a risk matrix and a detailed risk register.\n\n    First, a 5x5 heatmap is constructed where rows represent Threat Event\n    Frequency (TEF) and columns represent Loss Magnitude (LM). Each cell is\n    color-coded based on the calculated risk score (TEF * LM), mapping to a\n    severity scale from low (green) to critical (dark red). Cells are\n    populated with unique identifiers (e.g., "R01", "R02") for each risk that\n    falls within that specific TEF/LM coordinate.\n\n    Second, a detailed table is generated that lists each identified risk. This\n    table includes the risk\'s identifier, its domain, a description of the\n    finding, its coordinates on the heatmap, and its calculated Annualized Loss\n    Expectancy (ALE). The risks in this table are sorted in descending order of\n    their ALE to prioritize the most significant financial exposures.\n\n    If the payload contains no findings with valid FAIR data (where both TEF > 0\n    and LM > 0), the function appends a notification message to the document\n    instead of the heatmap and table.\n\n    Args:\n        doc (docx.document.Document): The python-docx Document object to which\n            the generated content will be appended.\n        payload (BlueprintPayload): A data object containing analysis results. It is\n            expected to have a `pillars_analysis` attribute, which is an\n            iterable of objects each containing a `health_check_asis` list of\n            findings. Each finding may have `threat_event_frequency`,\n            `loss_magnitude`, and `fair_ale_score` attributes.\n\n    Returns:\n        None: The function modifies the input `doc` object in place.'}."""
     add_heading_paragraph(doc, "Coste Estimado del Riesgo de No Actuar", level=1)
     add_body_paragraph(
@@ -1034,9 +1040,7 @@ def _resolve_project_charter_data(
         for d in payload.external_dependencies
         if d.project == project.initiative
     ]
-    deps_text = (
-        " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
-    )
+    deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
 
     #
     mitigated_risk_text = _find_mitigated_risk_text(project, payload)
@@ -1132,9 +1136,7 @@ def _render_single_project_charter(
     project_table = doc.add_table(rows=len(rows) + 1, cols=2)
     finalize_table(project_table)
 
-    merged = (
-        project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
-    )
+    merged = project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
     set_cell_text(
         merged,
         "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA",
@@ -1146,9 +1148,7 @@ def _render_single_project_charter(
         run.font.color.rgb = RGBColor(255, 255, 255)
 
     for idx, (label, value) in enumerate(rows, 1):
-        set_cell_text(
-            project_table.rows[idx].cells[0], label, bold=True, font_size=9
-        )
+        set_cell_text(project_table.rows[idx].cells[0], label, bold=True, font_size=9)
         shade_cell(project_table.rows[idx].cells[0], "F2F2F2")
         set_cell_text(project_table.rows[idx].cells[1], value, font_size=9.5)
         for run in project_table.rows[idx].cells[1].paragraphs[0].runs:
@@ -1157,7 +1157,6 @@ def _render_single_project_charter(
     autofit_table_to_contents(project_table)
     add_spacer(doc, 15)
     project_idx += 1
-
 
 
 def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
@@ -1188,6 +1187,7 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
                 doc, project_idx, pilar_name, project, payload
             )
             project_idx += 1
+
 
 def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> Any:
     """Constructs and appends a strategic roadmap page to a document object.
@@ -1315,10 +1315,18 @@ def _render_maturity_pillars_table(doc, pillars: list[dict], doc_lang: str) -> N
         table = doc.add_table(rows=1, cols=4)
         finalize_table(table)
         headers = [
-            get_localized_string("table_header_pillar", locale=doc_lang, default="Pilar"),
-            get_localized_string("table_header_score", locale=doc_lang, default="Score"),
-            get_localized_string("table_header_level", locale=doc_lang, default="Nivel"),
-            get_localized_string("table_header_reading", locale=doc_lang, default="Lectura ejecutiva"),
+            get_localized_string(
+                "table_header_pillar", locale=doc_lang, default="Pilar"
+            ),
+            get_localized_string(
+                "table_header_score", locale=doc_lang, default="Score"
+            ),
+            get_localized_string(
+                "table_header_level", locale=doc_lang, default="Nivel"
+            ),
+            get_localized_string(
+                "table_header_reading", locale=doc_lang, default="Lectura ejecutiva"
+            ),
         ]
         for i, header in enumerate(headers):
             set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
@@ -1348,7 +1356,6 @@ def _render_maturity_pillars_table(doc, pillars: list[dict], doc_lang: str) -> N
                         run.font.color.rgb = BASE_TEXT_COLOR
         autofit_table_to_contents(table)
         add_spacer(doc, 10)
-
 
 
 def _render_maturity_asis_table(doc, asis: dict) -> None:
@@ -1406,8 +1413,6 @@ def _render_maturity_asis_table(doc, asis: dict) -> None:
                 run.font.color.rgb = BASE_TEXT_COLOR
 
 
-
-
 def render_maturity_profile(doc, annex_data: dict) -> Any:
     r"""{'docstring': "Renders a detailed maturity profile section into a `docx.document.Document`.\n\nConstructs and appends a formatted maturity profile to the provided document. The profile consists of an introductory text, an optional radar chart image, a table detailing pillar scores and executive summaries, and an AS-IS analysis including strengths, gaps, and operational impacts. If `annex_data` is empty, a placeholder message is added instead.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to be modified in-place.\n    annex_data (dict): Data for the maturity profile. An empty dictionary results in a placeholder message. Expected structure includes top-level keys 'pillar_score_profile' and 'sections'. The 'pillar_score_profile' dictionary should contain textual introductions and a list of 'pillars' dictionaries. The 'sections' dictionary should contain an 'asis' dictionary with lists of 'strengths', 'gaps', and 'operational_impacts'.\n\nReturns:\n    None. The function modifies the `doc` object directly.\n\nRaises:\n    ValueError: If the image file path provided under the 'radar_chart' key within `annex_data` is invalid or refers to an unsupported image format."}."""
     add_heading_paragraph(doc, "Perfil de madurez por pilar", level=1)
@@ -1436,10 +1441,17 @@ def render_maturity_profile(doc, annex_data: dict) -> Any:
 
     radar_path = profile.get("radar_chart", "")
     from assessment_engine.infrastructure.localization import get_localized_string
+
     doc_lang = str(annex_data.get("document_meta", {}).get("language", "es")).lower()
 
-    radar_heading = get_localized_string("radar_chart_heading", locale=doc_lang, default="Gráfico radial")
-    compact_heading = get_localized_string("compact_pillar_detail_heading", locale=doc_lang, default="Detalle compacto por pilar")
+    radar_heading = get_localized_string(
+        "radar_chart_heading", locale=doc_lang, default="Gráfico radial"
+    )
+    compact_heading = get_localized_string(
+        "compact_pillar_detail_heading",
+        locale=doc_lang,
+        default="Detalle compacto por pilar",
+    )
 
     if radar_path and Path(radar_path).exists():
         add_heading_paragraph(doc, radar_heading, level=2)
@@ -1553,16 +1565,17 @@ def render_blueprint(
     render_cross_capabilities_analysis(doc, payload)
 
     render_consolidated_asis(doc, payload)
-    
+
     # Load currency symbol dynamically from custom_risk_profile.json if available (FAIR-MAM)
     currency_symbol = "€"
-    custom_profile_path = client_dir / payload.document_meta.tower_code / "custom_risk_profile.json"
+    custom_profile_path = (
+        client_dir / payload.document_meta.tower_code / "custom_risk_profile.json"
+    )
     if custom_profile_path.exists():
         try:
             with open(custom_profile_path, "r", encoding="utf-8") as cpf:
                 currency_symbol = json.load(cpf).get("currency_symbol", "€")
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     render_fair_risk_heatmap(doc, payload, currency_symbol=currency_symbol)
