@@ -260,12 +260,11 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
     ) -> Dict[str, Any]:
         r"""{'docstring': "Conditionally injects data diode security controls into a project portfolio.\n\nThis policy enforces a mandatory security control for clients operating within\nthe 'Critical Infrastructure' or 'Energy' sectors. It first determines the\nclient's industry by reading a `client_intelligence.json` file, with a\nfallback mechanism that inspects the client name in the payload metadata.\n\nThe policy activates only if the sector matches and the project portfolio\ncontains a combination of both Operational Technology (OT/SCADA) and IT\nAIOps initiatives. Upon activation, the function modifies the relevant\nprojects in-place, injecting deliverables and technical objectives to\nmandate the implementation of a hardware data diode. This ensures a secure,\none-way data flow from the OT to the IT environment.\n\nThe modification is idempotent; it verifies the absence of existing data\ndiode deliverables before injection to prevent duplication. If the activation\nconditions are not met, the original payload is returned unmodified.\n\nArgs:\n    graph (EpistemicGraph): The epistemic graph for the assessment. Unused by\n        this policy.\n    payload (Dict[str, Any]): The project portfolio data structure. Expected to\n        contain 'pillars_analysis' (a list of pillars, each with a\n        'projects_todo' list) and 'document_meta' (containing 'client_name').\n\nReturns:\n    Dict[str, Any]: The payload, potentially modified to include data diode\n        deliverables. Returns the original payload if policy conditions are\n        not met."}."""
         # Resolve client's industry sector from environment metadata to enforce sector-specific policy execution.
-        meta = payload.get("document_meta", {})
-        client_id = meta.get("client_name") or os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
-        from assessment_engine.infrastructure.runtime_paths import resolve_client_intelligence_path
-        intel_path = resolve_client_intelligence_path(client_id)
+        client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+        intel_path = Path(f"working/{client_id}/client_intelligence.json")
         if not intel_path.exists():
-            intel_path = Path(f"working/{client_id}/client_intelligence.json")
+            client_base = client_id.split('_')[0]
+            intel_path = Path(f"working/{client_id}/{client_base}/client_intelligence.json")
             
         industry = "Standard"
         if intel_path.exists():
@@ -581,7 +580,9 @@ class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
         reg_frameworks = payload.get("document_meta", {}).get("regulatory_frameworks")
         if not reg_frameworks:
             reg_frameworks = (
-                "ENS/NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
+                "marcos normativos aplicables (ej. NIS2, ISO 27001)"
+                if doc_lang == "es"
+                else "applicable regulatory frameworks"
             )
 
         for p in pillars:
@@ -880,12 +881,11 @@ class FairRiskPolicy(BaseSovereignPolicy):
             profiles = {}
 
         # Load client metadata to ascertain the industry sector for sector-lock policy enforcement.
-        meta = payload.get("document_meta", {})
-        client_id = meta.get("client_name") or os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
-        from assessment_engine.infrastructure.runtime_paths import resolve_case_dir, resolve_client_intelligence_path
-        intel_path = resolve_client_intelligence_path(client_id)
+        client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+        intel_path = Path(f"working/{client_id}/client_intelligence.json")
         if not intel_path.exists():
-            intel_path = Path(f"working/{client_id}/client_intelligence.json")
+            client_base = client_id.split('_')[0]
+            intel_path = Path(f"working/{client_id}/{client_base}/client_intelligence.json")
 
         industry = "Standard"
         hierarchy = "Standard"
@@ -900,11 +900,14 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 pass
 
         # Select the risk model preset that is calibrated to the client's organizational scale and data volume.
-        preset_key = "MID_MARKET"
-        if "Critical Infrastructure" in industry or "Energy" in industry:
-            preset_key = "CRITICAL_INFRASTRUCTURE"
-        elif "Global" in hierarchy or "Mega" in hierarchy:
-            preset_key = "MEGA_ENTERPRISE"
+        preset_key = os.environ.get("ASSESSMENT_COMPANY_SCALE", "").upper()
+        if preset_key not in profiles:
+            if "Critical" in industry or "Essential" in industry or "Infrastructure" in industry:
+                preset_key = "CRITICAL_INFRASTRUCTURE"
+            elif "Global" in hierarchy or "Mega" in hierarchy:
+                preset_key = "MEGA_ENTERPRISE"
+            else:
+                preset_key = "MID_MARKET"
 
         preset = profiles.get(preset_key, profiles.get("MID_MARKET", {}))
 
@@ -914,7 +917,8 @@ class FairRiskPolicy(BaseSovereignPolicy):
         lm_map = {int(k): v for k, v in preset.get("lm_map", {}).items()}
 
         # Load dynamic custom risk profile generated by the financial scale calibrator (FAIR-MAM)
-        tower_id = meta.get("tower_id") or meta.get("tower_code") or meta.get("tower") or "T1"
+        tower_id = payload.get("document_meta", {}).get("tower_id", "T2")
+        from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
         case_dir = resolve_case_dir(client_id, tower_id)
         custom_profile_path = case_dir / "custom_risk_profile.json"
         
@@ -1461,11 +1465,10 @@ class FairRiskPolicy(BaseSovereignPolicy):
                                 val_rev = custom_calibration.get("annual_revenue_eur")
                                 revenue = float(val_rev) if val_rev is not None else 0.0
                                 
-                                # Scale dynamically with the 2.0% global turnover rule of NIS2 Article 34
-                                if "Energy" in industry or "Critical" in industry or "Infrastructure" in industry:
-                                    reg_max_fine = max(base_fine, revenue * 0.02)
-                                else:
-                                    reg_max_fine = base_fine
+                                # Scale dynamically with global turnover statutory cap (e.g. 2.0%-4.0% rule under NIS2/GDPR)
+                                fine_ratio = float(custom_calibration.get("regulatory_fine_cap_ratio", 0.02))
+                                turnover_fine = revenue * fine_ratio if revenue > 0 else base_fine
+                                reg_max_fine = min(base_fine, turnover_fine) if revenue > 0 else base_fine
                             except (ValueError, TypeError):
                                 reg_max_fine = 10000000.0
                         else:

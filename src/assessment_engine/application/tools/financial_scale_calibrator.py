@@ -260,54 +260,59 @@ class FinancialScaleCalibrator:
             return fallback_calibration
 
     def _run_local_fallback(self, client_name: str, raw_industry: str, target_currency: str = "EUR", target_symbol: str = "€") -> DynamicRiskCalibration:
-        """Saves a resilient, fail-safe estimation based on client sector metadata."""
-        is_large_critical = any(
-            k in raw_industry.lower() or k in client_name.lower()
-            for k in ["critical", "energy", "infraestructura", "banca", "finance"]
-        )
-
+        """Saves a resilient, fail-safe estimation based on declarative scale tiers (FAIR-MAM)."""
         # Load dynamic financial fallbacks from config catalog (FAIR-MAM)
         fallbacks_path = Path(__file__).resolve().parents[4] / "engine_config" / "policies" / "financial_fallbacks.json"
         rates = {"EUR": 1.0, "USD": 1.09, "GBP": 0.84, "CHF": 0.96}
         sre_rates = {"EUR": 36.0, "USD": 110.0, "GBP": 95.0, "CHF": 140.0}
-        
+        scale_tiers = {
+            "MID_MARKET": {
+                "annual_revenue_eur": 50000000.0,
+                "digital_dependency_factor": 0.5,
+                "statutory_fine_cap_ratio": 0.03,
+            }
+        }
+
         if fallbacks_path.exists():
             try:
                 with open(fallbacks_path, "r", encoding="utf-8-sig") as cf:
                     fallbacks_data = json.load(cf).get("financial_fallbacks", {})
                     rates = fallbacks_data.get("exchange_rates", rates)
                     sre_rates = fallbacks_data.get("sre_hourly_rates", sre_rates)
+                    scale_tiers = fallbacks_data.get("scale_tiers", scale_tiers)
             except Exception as e:
                 logger.warning(f"Error loading financial fallbacks config: {e}")
 
+        # Resolve tier dynamically from environment or declarative fallback
+        detected_tier = os.environ.get("ASSESSMENT_COMPANY_SCALE", "").upper()
+        if detected_tier not in scale_tiers:
+            # Map default tier: Mid-Market as conservative enterprise standard
+            detected_tier = "MID_MARKET"
+
+        tier_cfg = scale_tiers.get(detected_tier, scale_tiers.get("MID_MARKET", {}))
+        revenue = float(tier_cfg.get("annual_revenue_eur", 50000000.0))
+        dependency = float(tier_cfg.get("digital_dependency_factor", 0.5))
+        hourly_cost = (revenue * dependency) / 8760.0
+        fine_ratio = float(tier_cfg.get("statutory_fine_cap_ratio", 0.03))
+        max_fine = revenue * fine_ratio
+
         rate_val = rates.get(target_currency, 1.0)
         sre_rate_val = sre_rates.get(target_currency, 36.0)
-        
-        justification_msg = f"Tipo de cambio del BCE consolidado de resiliencia (tasa {rate_val} {target_currency}/EUR)." if target_currency != "EUR" else "Divisa base en Euros sin conversión."
 
-        if is_large_critical:
-            # High-end default corporate baseline values
-            return DynamicRiskCalibration(
-                annual_revenue_eur=4900000000.0,  # High-end default corporate baseline value (4.9B EUR standard)
-                hourly_downtime_cost_eur=150000.0,
-                reg_max_fine_eur=10000000.0,
-                hourly_rate_sre_eur=sre_rate_val,
-                currency_code=target_currency,
-                currency_symbol=target_symbol,
-                exchange_rate=rate_val,
-                currency_justification=justification_msg,
-                calibration_justification="Calibración de resiliencia fallback: Estimación conservadora basada en el sector esencial y tamaño crítico del operador nacional."
-            )
-        else:
-            # Medium business default baseline values
-            return DynamicRiskCalibration(
-                annual_revenue_eur=50000000.0,
-                hourly_downtime_cost_eur=5000.0,
-                reg_max_fine_eur=2000000.0,
-                hourly_rate_sre_eur=sre_rate_val,
-                currency_code=target_currency,
-                currency_symbol=target_symbol,
-                exchange_rate=rate_val,
-                currency_justification=justification_msg,
-                calibration_justification="Calibración de resiliencia fallback: Estimación de perfil estándar adecuada para corporaciones de volumen medio."
-            )
+        justification_msg = (
+            f"Tipo de cambio del BCE consolidado de resiliencia (tasa {rate_val} {target_currency}/EUR)."
+            if target_currency != "EUR"
+            else "Divisa base en Euros sin conversión."
+        )
+
+        return DynamicRiskCalibration(
+            annual_revenue_eur=revenue,
+            hourly_downtime_cost_eur=hourly_cost,
+            reg_max_fine_eur=max_fine,
+            hourly_rate_sre_eur=sre_rate_val,
+            currency_code=target_currency,
+            currency_symbol=target_symbol,
+            exchange_rate=rate_val,
+            currency_justification=justification_msg,
+            calibration_justification=f"Calibración paramétrica de resiliencia fallback: Perfil de escala {detected_tier} derivado de configuración declarativa.",
+        )
