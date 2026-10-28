@@ -60,31 +60,74 @@ def derive_maturity_band(score: float, locale: str | None = None) -> str:
     return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=locale)["label"]
 
 
-def infer_initiative_priority(project: Any, pillar_score: float = 3.0) -> str:
+def infer_initiative_priority(
+    project: Any, pillar_score: float = 3.0, locale: str = "es"
+) -> str:
     """Derives strategic priority based on risk mitigation, horizon duration, and pillar maturity gap."""
+    from assessment_engine.infrastructure.localization import t
+
     explicit_priority = getattr(project, "priority", None) or (
         project.get("priority") if isinstance(project, dict) else None
     )
-    if explicit_priority and str(explicit_priority).strip().capitalize() in {"Alta", "Media", "Baja"}:
-        return str(explicit_priority).strip().capitalize()
+    if explicit_priority:
+        raw_p = str(explicit_priority).strip().lower()
+        if raw_p in {"alta", "high", "hoch", "haute", "高"}:
+            return t("priority_high", locale=locale)
+        if raw_p in {"baja", "low", "niedrig", "basse", "低"}:
+            return t("priority_low", locale=locale)
+        return t("priority_medium", locale=locale)
 
-    duration = str(getattr(project, "duration", "") or (project.get("duration") if isinstance(project, dict) else "")).lower()
-    b_case = str(getattr(project, "business_case", "") or (project.get("business_case") if isinstance(project, dict) else "")).lower()
-    is_direct_mitigation = "mitigación directa" in b_case or "vulnerabilidad crítica" in b_case
-    is_short_term = any(k in duration for k in ["corto", "horizonte 1", "h1", "inmediato", "mes 1", "mes 2", "mes 3"])
+    duration = str(
+        getattr(project, "duration", "")
+        or (project.get("duration") if isinstance(project, dict) else "")
+    ).lower()
+    b_case = str(
+        getattr(project, "business_case", "")
+        or (project.get("business_case") if isinstance(project, dict) else "")
+    ).lower()
+    is_direct_mitigation = (
+        "mitigación directa" in b_case or "vulnerabilidad crítica" in b_case
+    )
+    is_short_term = any(
+        k in duration
+        for k in [
+            "corto",
+            "horizonte 1",
+            "h1",
+            "inmediato",
+            "mes 1",
+            "mes 2",
+            "mes 3",
+            "month 1",
+            "month 2",
+            "month 3",
+        ]
+    )
 
-    if pillar_score < 2.2 and (is_direct_mitigation or is_short_term):
-        return "Alta"
-    if is_direct_mitigation and is_short_term:
-        return "Alta"
-    if "nis2" in b_case and is_short_term:
-        return "Alta"
+    if (
+        (pillar_score < 2.2 and (is_direct_mitigation or is_short_term))
+        or (is_direct_mitigation and is_short_term)
+        or ("nis2" in b_case and is_short_term)
+    ):
+        return t("priority_high", locale=locale)
 
-    is_long_term = any(k in duration for k in ["horizonte 3", "h3", "largo plazo", "mes 18", "mes 24"])
+    is_long_term = any(
+        k in duration
+        for k in [
+            "horizonte 3",
+            "h3",
+            "largo plazo",
+            "long term",
+            "mes 18",
+            "mes 24",
+            "month 18",
+            "month 24",
+        ]
+    )
     if pillar_score >= 3.8 or is_long_term:
-        return "Baja"
+        return t("priority_low", locale=locale)
 
-    return "Media"
+    return t("priority_medium", locale=locale)
 
 
 def truncate_list(items, limit) -> Any:
@@ -262,8 +305,12 @@ def derive_gap_rows(blueprint: BlueprintPayload) -> tuple[list[str], list[GapRow
     return unique_list(target_capabilities, limit=5), gap_rows[:6]
 
 
-def derive_risks(blueprint: BlueprintPayload) -> list[RiskItemAnnex]:
+def derive_risks(
+    blueprint: BlueprintPayload, locale: str = "es"
+) -> list[RiskItemAnnex]:
     """Derive risks according to architectural specification."""
+    from assessment_engine.infrastructure.localization import t
+
     risks: list[RiskItemAnnex] = []
     for pillar in sorted(blueprint.pillars_analysis, key=lambda item: item.score):
         if not pillar.health_check_asis:
@@ -278,6 +325,11 @@ def derive_risks(blueprint: BlueprintPayload) -> list[RiskItemAnnex]:
                 else "Definir un plan de remediación específico para la capacidad afectada."
             )
         )
+        prob_str = (
+            t("priority_high", locale=locale)
+            if pillar.score < 2.0
+            else t("priority_medium", locale=locale)
+        )
         risks.append(
             RiskItemAnnex(
                 risk=take_complete_sentences(
@@ -290,7 +342,7 @@ def derive_risks(blueprint: BlueprintPayload) -> list[RiskItemAnnex]:
                     max_sentences=2,
                     max_chars=420,
                 ),
-                probability="Alta" if pillar.score < 2.0 else "Media",
+                probability=prob_str,
                 mitigation_summary=take_complete_sentences(
                     mitigation_source,
                     max_sentences=2,
@@ -301,12 +353,16 @@ def derive_risks(blueprint: BlueprintPayload) -> list[RiskItemAnnex]:
     return risks[:6]
 
 
-def derive_priority_initiatives(blueprint: BlueprintPayload) -> list[InitiativeAnnex]:
+def derive_priority_initiatives(
+    blueprint: BlueprintPayload, locale: str = "es"
+) -> list[InitiativeAnnex]:
     """Derive priority initiatives according to architectural specification."""
     ranked: list[tuple[int, float, str, InitiativeAnnex]] = []
     for pillar in blueprint.pillars_analysis:
         for project in pillar.projects_todo:
-            priority = infer_initiative_priority(project, pillar.score)
+            priority = infer_initiative_priority(
+                project, pillar.score, locale=locale
+            )
             ranked.append(
                 (
                     PRIORITY_RANK.get(priority, 1),
@@ -328,7 +384,8 @@ def derive_priority_initiatives(blueprint: BlueprintPayload) -> list[InitiativeA
                         ),
                         dependencies_display=take_complete_sentences(
                             lookup_dependency_display(
-                                project.initiative, blueprint.external_dependencies
+                                project.initiative,
+                                blueprint.external_dependencies,
                             ),
                             max_sentences=2,
                             max_chars=280,
@@ -356,131 +413,129 @@ def derive_focus_areas(blueprint: BlueprintPayload) -> list[str]:
     return unique_list(blueprint.executive_snapshot.decisions, limit=3)
 
 
-def derive_pillar_executive_reading(pillar: Any, idx: int = 0) -> str:
-    """Derive pillar executive reading according to architectural specification."""
+def _format_pillar_kpis_narrative(
+    pillar_name: str,
+    band: str,
+    formatted_score: str,
+    stable_caps: list[str],
+    gaps_caps: list[str],
+    v_idx: int,
+) -> str:
+    prose = [
+        f"El diagnóstico para el dominio de {pillar_name} sitúa su nivel de madurez en un rango '{band}' ({formatted_score} / 5,00)."
+    ]
+    if stable_caps:
+        prose.append(
+            f"Se constata solvencia operativa en {', '.join(stable_caps[:3])}."
+        )
+    if gaps_caps:
+        prose.append(
+            f"No obstante, se identifican brechas relevantes en {', '.join(gaps_caps[:3])}."
+        )
+    return " ".join(prose)
+
+
+def _format_pillar_gaps_narrative(gaps_findings: list[Any]) -> str:
+    main_gaps = []
+    main_risks = []
+    for f in gaps_findings[:2]:
+        fd = (
+            getattr(f, "risk_observed", None)
+            or getattr(f, "finding", None)
+            or ""
+        ).strip()
+        br = (
+            getattr(f, "impact", None)
+            or getattr(f, "business_risk", None)
+            or ""
+        ).strip()
+        if fd:
+            main_gaps.append(fd.split(".")[0] + ".")
+        if br:
+            main_risks.append(br.split(".")[0] + ".")
+
+    gaps_str = (
+        " ".join(main_gaps)
+        or "Se registran carencias en la automatización de la infraestructura."
+    )
+    risks_str = (
+        " ".join(main_risks)
+        or "Esto eleva el riesgo de incidentes operativos."
+    )
+    return f"La limitación principal reside en que {gaps_str} Esto deriva en un impacto directo de negocio: {risks_str}"
+
+
+def _format_pillar_score_justification(
+    formatted_score: str, worst_cap: str
+) -> str:
+    return (
+        f"La calificación final del pilar ({formatted_score}) se encuentra sustentada por el nivel de madurez base, "
+        f"pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', "
+        f"que actúa como el factor limitante para el desarrollo global de esta plataforma."
+    )
+
+
+def derive_pillar_executive_reading(
+    pillar: Any, idx: int = 0, locale: str = "es"
+) -> str:
+    """Derive pillar executive reading with modular structure and low cognitive complexity."""
+    from assessment_engine.infrastructure.localization import format_number
+
     score = pillar.score
-    band = derive_maturity_band(score)
-    formatted_score = f"{score:.2f}".replace(".", ",")
-    
+    band = derive_maturity_band(score, locale=locale)
+    formatted_score = format_number(score, locale=locale, decimals=2)
+
     findings = pillar.health_check_asis or []
     if not findings:
         return (
             f"**Situación de Capacidades (KPIs):**\n"
-            f"La capacidad presenta un nivel de madurez '{band}' ({formatted_score} / 5,00). "
-            f"No se han registrado hallazgos ni brechas críticas específicas en el perímetro de evaluación.\n\n"
+            f"La capacidad presenta un nivel de madurez '{band}' ({formatted_score} / 5,00).\n\n"
             f"**Brechas y Consecuencias Operativas:**\n"
-            f"La plataforma opera de forma estable, sin identificarse limitaciones de continuidad de negocio o cuellos de botella de infraestructura materiales.\n\n"
+            f"La plataforma opera de forma estable, sin identificarse limitaciones de continuidad materiales.\n\n"
             f"**Justificación de la Nota:**\n"
-            f"La puntuación refleja un estado consistente de operaciones, recomendado para sostener el catálogo de servicios actual."
+            f"La puntuación refleja un estado consistente de operaciones."
         )
-    
-    # Sort findings by vulnerability_level (descending) or fair_ale_score (descending)
+
     def get_ale(f):
         return getattr(f, "fair_ale_score", 0.0) or 0.0
+
     def get_vuln(f):
         return getattr(f, "vulnerability_level", 3) or 3
-        
-    sorted_findings = sorted(findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True)
 
-    gaps_findings = [f for f in sorted_findings if get_vuln(f) >= 4]
-    if not gaps_findings:
-        gaps_findings = sorted_findings[:1]
-
+    sorted_findings = sorted(
+        findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True
+    )
+    gaps_findings = (
+        [f for f in sorted_findings if get_vuln(f) >= 4] or sorted_findings[:1]
+    )
     stable_findings = [f for f in sorted_findings if f not in gaps_findings]
 
-    # Extract capability names
-    gaps_caps = [f.target_state for f in gaps_findings if f.target_state]
-    stable_caps = [f.target_state for f in stable_findings if f.target_state]
-    
-    # Deterministic variation index based on index
-    v_idx = idx % 3
-    
-    # 1. Capabilities Situation
-    prose_caps = []
-    
-    if v_idx == 0:
-        prose_caps.append(f"El diagnóstico para el dominio de {pillar.pilar_name} sitúa su nivel de madurez en un rango '{band}' ({formatted_score} / 5,00), evidenciando margen de consolidación.")
-    elif v_idx == 1:
-        prose_caps.append(f"La evaluación de capacidades en el perímetro de {pillar.pilar_name} refleja un nivel de control '{band}' ({formatted_score} / 5,00).")
-    else:
-        prose_caps.append(f"Con una puntuación de {formatted_score} sobre 5,00, el pilar {pillar.pilar_name} se clasifica cualitativamente en la banda de '{band}', mostrando un comportamiento heterogéneo.")
-    
-    if stable_caps:
-        caps_str = ", ".join(stable_caps[:3])
-        if v_idx == 0:
-            prose_caps.append(f"Este resultado se apoya en un desempeño sólido y consistente en capacidades clave como {caps_str}.")
-        elif v_idx == 1:
-            prose_caps.append(f"En este ámbito, se detectan fortalezas funcionales y prácticas estables en {caps_str}.")
-        else:
-            prose_caps.append(f"La plataforma demuestra solvencia operativa y control adecuado en {caps_str}.")
-    else:
-        prose_caps.append("Se identifican necesidades de consolidación generalizada en las capacidades evaluadas.")
-        
-    if gaps_caps:
-        caps_str = ", ".join(gaps_caps[:3])
-        if v_idx == 0:
-            prose_caps.append(f"No obstante, se identifican brechas de madurez relevantes en {caps_str}.")
-        elif v_idx == 1:
-            prose_caps.append(f"Sin embargo, existen debilidades y áreas de mejora prioritarias en {caps_str}.")
-        else:
-            prose_caps.append(f"En contraposición, el entorno presenta desafíos operativos materiales en {caps_str}.")
-        
-    situacion_text = " ".join(prose_caps)
-    
-    # 2. Brechas y Consecuencias Operativas
-    main_gaps = []
-    main_risks = []
-    for f in gaps_findings[:2]:
-        fd = (f.risk_observed or f.finding or "").strip()
-        br = (f.impact or f.business_risk or "").strip()
-        if fd:
-            fd_sent = fd.split(".")[0] + "."
-            main_gaps.append(fd_sent)
-        if br:
-            br_sent = br.split(".")[0] + "."
-            main_risks.append(br_sent)
-            
-    if not main_gaps:
-        main_gaps = ["Se registran carencias en la automatización y predictibilidad de las operaciones de infraestructura."]
-    if not main_risks:
-        main_risks = ["Esto eleva el riesgo de incidentes operativos y limita la agilidad frente al crecimiento de la demanda."]
-        
-    gaps_str_joined = " ".join(main_gaps)
-    risks_str_joined = " ".join(main_risks)
-    
-    if v_idx == 0:
-        gaps_text = f"La limitación principal reside en que {gaps_str_joined} Esto deriva en un impacto directo de negocio, destacando {risks_str_joined}"
-    elif v_idx == 1:
-        gaps_text = f"El análisis técnico identifica un cuello de botella relevante en {gaps_str_joined} En consecuencia, esto genera una exposición operativa directa caracterizada por {risks_str_joined}"
-    else:
-        gaps_text = f"Se constata una carencia material en {gaps_str_joined} lo cual expone a la organización a consecuencias de negocio como {risks_str_joined}"
-    
-    # 3. Score Justification
+    gaps_caps = [
+        f.target_state
+        for f in gaps_findings
+        if getattr(f, "target_state", None)
+    ]
+    stable_caps = [
+        f.target_state
+        for f in stable_findings
+        if getattr(f, "target_state", None)
+    ]
     worst_cap = gaps_caps[0] if gaps_caps else "las capacidades críticas"
-    
-    if v_idx == 0:
-        justificacion_text = (
-            f"La calificación final del pilar ({formatted_score}) se encuentra sustentada por el nivel de madurez base, "
-            f"pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', "
-            f"que actúa como el factor limitante para el desarrollo global de esta plataforma."
-        )
-    elif v_idx == 1:
-        justificacion_text = (
-            f"La puntuación de {formatted_score} refleja un equilibrio entre las fortalezas de la plataforma y el lastre "
-            f"que suponen las brechas en '{worst_cap}', las cuales restan resiliencia y limitan la escalabilidad operativa."
-        )
-    else:
-        justificacion_text = (
-            f"El score consolidado del pilar ({formatted_score}) se ve severamente condicionado por la inmadurez de la capacidad "
-            f"de '{worst_cap}', la cual penaliza el resultado global y actúa como el principal obstáculo para consolidar un nivel de control estructural robusto en la operación actual."
-        )
-    
-    full_narrative = (
-        f"**Situación de Capacidades (KPIs):**\n{situacion_text}\n\n"
-        f"**Brechas y Consecuencias Operativas:**\n{gaps_text}\n\n"
-        f"**Justificación de la Nota:**\n{justificacion_text}"
+
+    v_idx = idx % 3
+    kpis_text = _format_pillar_kpis_narrative(
+        pillar.pilar_name, band, formatted_score, stable_caps, gaps_caps, v_idx
     )
-    return full_narrative
+    gaps_text = _format_pillar_gaps_narrative(gaps_findings)
+    justification_text = _format_pillar_score_justification(
+        formatted_score, worst_cap
+    )
+
+    return (
+        f"**Situación de Capacidades (KPIs):**\n{kpis_text}\n\n"
+        f"**Brechas y Consecuencias Operativas:**\n{gaps_text}\n\n"
+        f"**Justificación de la Nota:**\n{justification_text}"
+    )
 
 
 def enrich_annex_payload(
@@ -490,13 +545,24 @@ def enrich_annex_payload(
     run_id: str,
 ) -> AnnexPayload:
     """Enrich annex payload according to architectural specification."""
+    doc_lang = (
+        getattr(blueprint.document_meta, "language", None)
+        or (
+            blueprint.document_meta.get("language")
+            if isinstance(blueprint.document_meta, dict)
+            else "es"
+        )
+        or "es"
+    )
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
-    target_scores = [pillar.target_score for pillar in blueprint.pillars_analysis]
+    target_scores = [
+        pillar.target_score for pillar in blueprint.pillars_analysis
+    ]
     avg_score = average(scores)
     avg_target_score = average(target_scores, default=4.0)
     target_capabilities, gap_rows = derive_gap_rows(blueprint)
-    risks = derive_risks(blueprint)
-    initiatives = derive_priority_initiatives(blueprint)
+    risks = derive_risks(blueprint, locale=doc_lang)
+    initiatives = derive_priority_initiatives(blueprint, locale=doc_lang)
     design_principles = unique_list(
         getattr(blueprint, "design_principles", []),
         limit=6,
@@ -520,15 +586,44 @@ def enrich_annex_payload(
         else "unknown"
     )
     if blueprint.generation_metadata and blueprint.generation_metadata.run_id:
-        meta_dict["source_blueprint_run_id"] = blueprint.generation_metadata.run_id
+        meta_dict["source_blueprint_run_id"] = (
+            blueprint.generation_metadata.run_id
+        )
     result_payload.document_meta = meta_dict
+
+    # SOTA Practice: Preserve rich generative reading from LLM and fall back to deterministic template only if missing
+    existing_pillar_readings = {}
+    if (
+        hasattr(result_payload, "pillar_score_profile")
+        and result_payload.pillar_score_profile
+    ):
+        for p in getattr(result_payload.pillar_score_profile, "pillars", []):
+            label = (
+                p.get("pillar_label")
+                if isinstance(p, dict)
+                else getattr(p, "pillar_label", None)
+            )
+            reading = (
+                p.get("executive_reading")
+                if isinstance(p, dict)
+                else getattr(p, "executive_reading", None)
+            )
+            if label and reading:
+                existing_pillar_readings[label] = reading
 
     result_payload.pillar_score_profile.pillars = [
         {
             "pillar_label": pillar.pilar_name,
             "score_display": str(pillar.score),
-            "maturity_band": derive_maturity_band(pillar.score),
-            "executive_reading": derive_pillar_executive_reading(pillar, idx),
+            "maturity_band": derive_maturity_band(
+                pillar.score, locale=doc_lang
+            ),
+            "executive_reading": (
+                existing_pillar_readings.get(pillar.pilar_name)
+                or derive_pillar_executive_reading(
+                    pillar, idx, locale=doc_lang
+                )
+            ),
         }
         for idx, pillar in enumerate(blueprint.pillars_analysis)
     ]
@@ -538,11 +633,15 @@ def enrich_annex_payload(
         )
 
     result_payload.executive_summary.global_score = f"{avg_score} / 5.0"
-    result_payload.executive_summary.global_band = derive_maturity_band(avg_score)
+    result_payload.executive_summary.global_band = derive_maturity_band(
+        avg_score, locale=doc_lang
+    )
     if str(avg_target_score) not in str(
         result_payload.executive_summary.target_maturity
     ):
-        result_payload.executive_summary.target_maturity = f"{avg_target_score:.1f}"
+        result_payload.executive_summary.target_maturity = (
+            f"{avg_target_score:.1f}"
+        )
 
     # Calculate and inject financial Cost of Inaction (COI) deterministically
     global_fair_ale = blueprint.total_fair_ale or 0.0
@@ -557,7 +656,11 @@ def enrich_annex_payload(
         for p in blueprint.pillars_analysis:
             for hc in p.health_check_asis:
                 p90_raw += hc.fair_p90_score or 0.0
-        diversification = 1.0 / (len(blueprint.pillars_analysis) ** 0.35) if blueprint.pillars_analysis else 1.0
+        diversification = (
+            1.0 / (len(blueprint.pillars_analysis) ** 0.35)
+            if blueprint.pillars_analysis
+            else 1.0
+        )
         global_fair_p90 = p90_raw * diversification
 
     coi_extreme_3y = global_fair_p90 + (global_fair_ale * 2)
@@ -569,6 +672,7 @@ def enrich_annex_payload(
     from assessment_engine.infrastructure.localization import (
         format_currency,
         format_number,
+        t,
     )
 
     str_ale = format_number(ale_rounded, locale=doc_lang, decimals=0)
@@ -593,14 +697,17 @@ def enrich_annex_payload(
         locale=doc_lang,
         decimals=0,
     )
-    formatted_3y_ord = f"~{cost_3y_ord} en 3 años"
-    formatted_3y_ext = f"~{cost_3y_ext} (peor caso en 3 años)"
+    formatted_3y_ord = t("coi_3y_ord", locale=doc_lang, amount=cost_3y_ord)
+    formatted_3y_ext = t("coi_3y_ext", locale=doc_lang, amount=cost_3y_ext)
 
-    from assessment_engine.domain.schemas.annex_synthesis import FinancialCOIProfile
+    from assessment_engine.domain.schemas.annex_synthesis import (
+        FinancialCOIProfile,
+    )
+
     result_payload.executive_summary.financial_coi = FinancialCOIProfile(
         annual_loss_exposure=fmt_ale,
         coi_3y_ordinary=formatted_3y_ord,
-        coi_3y_extreme=formatted_3y_ext
+        coi_3y_extreme=formatted_3y_ext,
     )
 
     result_payload.domain_introduction.technological_domain = (
@@ -784,7 +891,9 @@ async def generate_synthesis(
         )
 
     if not result:
-        return None
+        raise RuntimeError(
+            f"Fallo crítico en el Sintetizador de Anexo tras 3 intentos. Último error: {last_error}"
+        )
 
     result_payload = AnnexPayload.model_validate(result)
     return enrich_annex_payload(result_payload, blueprint, radar_chart_path, run_id)

@@ -152,7 +152,12 @@
       "monitoreo": "monitorización",
       "mùltiples": "múltiples",
       "móltiples": "múltiples"
-    }
+    },
+    "priority_high": "Alta",
+    "priority_medium": "Media",
+    "priority_low": "Baja",
+    "coi_3y_ord": "~{amount} en 3 años",
+    "coi_3y_ext": "~{amount} (peor caso en 3 años)"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -297,7 +302,12 @@
     "business_case_direct_mitigation_template": "Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'.",
     "business_case_strategic_enabler_template": "Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks}).",
     "conjunction_and": " and ",
-    "font_family_default": "Aptos"
+    "font_family_default": "Aptos",
+    "priority_high": "High",
+    "priority_medium": "Medium",
+    "priority_low": "Low",
+    "coi_3y_ord": "~{amount} in 3 years",
+    "coi_3y_ext": "~{amount} (worst case in 3 years)"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -442,7 +452,12 @@
     "business_case_direct_mitigation_template": "Mitigação Direta: Resolve a vulnerabilidade crítica detectada no AS-IS, eliminando o risco de: '{impact}'.",
     "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduz o TCO operacional, acelera o time-to-market e garante a conformidade regulatória ({reg_frameworks}).",
     "conjunction_and": " e ",
-    "font_family_default": "Aptos"
+    "font_family_default": "Aptos",
+    "priority_high": "Alta",
+    "priority_medium": "Média",
+    "priority_low": "Baixa",
+    "coi_3y_ord": "~{amount} em 3 anos",
+    "coi_3y_ext": "~{amount} (pior cenário em 3 anos)"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -587,7 +602,12 @@
     "business_case_direct_mitigation_template": "Atténuation Directe: Résout la vulnérabilité critique détectée dans l'AS-IS, éliminant le risque de: '{impact}'.",
     "business_case_strategic_enabler_template": "Facilitateur Stratégique: Réduit le TCO opérationnel, accélère le time-to-market et assure la conformité réglementaire ({reg_frameworks}).",
     "conjunction_and": " et ",
-    "font_family_default": "Aptos"
+    "font_family_default": "Aptos",
+    "priority_high": "Haute",
+    "priority_medium": "Moyenne",
+    "priority_low": "Basse",
+    "coi_3y_ord": "~{amount} sur 3 ans",
+    "coi_3y_ext": "~{amount} (pire des cas sur 3 ans)"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -732,7 +752,12 @@
     "business_case_direct_mitigation_template": "直接的な緩和: AS-ISで検出された重大な脆弱性を解決し、リスクを排除: '{impact}'。",
     "business_case_strategic_enabler_template": "戦略的イネーブラー: 運用TCOを削減し、Time-to-Marketを加速し、規制順守を保証 ({reg_frameworks})。",
     "conjunction_and": "および",
-    "font_family_default": "Meiryo"
+    "font_family_default": "Meiryo",
+    "priority_high": "高",
+    "priority_medium": "中",
+    "priority_low": "低",
+    "coi_3y_ord": "~3年間で{amount}",
+    "coi_3y_ext": "~3年間で{amount}（ワーストケース）"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -877,6 +902,11 @@
     "business_case_direct_mitigation_template": "Direkte Minderung: Behebt die im AS-IS festgestellte kritische Schwachstelle und eliminiert das Risiko: '{impact}'.",
     "business_case_strategic_enabler_template": "Strategischer Enabler: Reduziert die Betriebs-TCO, beschleunigt das Time-to-Market und sichert die Einhaltung regulatorischer Vorgaben ({reg_frameworks}).",
     "conjunction_and": " und ",
-    "font_family_default": "Aptos"
+    "font_family_default": "Aptos",
+    "priority_high": "Hoch",
+    "priority_medium": "Mittel",
+    "priority_low": "Niedrig",
+    "coi_3y_ord": "~{amount} in 3 Jahren",
+    "coi_3y_ext": "~{amount} (Worst-Case in 3 Jahren)"
   }
 }
