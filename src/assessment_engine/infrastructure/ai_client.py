@@ -161,7 +161,12 @@ def estimate_cost(
     """
     # Normalizes the model name to a canonical format for consistent pricing lookups.
     clean_model = model.lower()
-    price = PRICING.get(clean_model, PRICING["default"])
+    if clean_model in PRICING:
+        price = PRICING[clean_model]
+    elif "flash" in clean_model:
+        price = PRICING.get("gemini-3.8-flash", PRICING["default"])
+    else:
+        price = PRICING.get("default", {"input": 1.25, "output": 5.00})
     cost = (input_tokens / 1_000_000 * price["input"]) + (
         output_tokens / 1_000_000 * price["output"]
     )

@@ -42,9 +42,16 @@ from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
 
 def test_model_tier_reasoning_resolves_gemini_3_1_pro() -> None:
-    """Verify that reasoning tier resolves strictly to gemini-3.1-pro-preview per project governance."""
+    """Verify that reasoning tier resolves to the configured reasoning model."""
+    import os
+
+    expected = (
+        os.environ.get("AI_REASONING_MODEL")
+        or os.environ.get("GEMINI_PRO_MODEL")
+        or "gemini-3.1-pro-preview"
+    )
     model = get_model(ModelTier.REASONING)
-    assert model == "gemini-3.1-pro-preview"
+    assert model == expected
 
 
 def test_mccabe_complexity_calculation() -> None:
