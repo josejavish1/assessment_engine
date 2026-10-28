@@ -208,7 +208,7 @@ def build_tower_payload(
         RuntimeError: If the underlying script execution encounters an error.
     """
     out = _run_script(
-        "assessment_engine.application._legacy.build_tower_annex_template_payload",
+        "assessment_engine.application.run_executive_annex_synthesizer",
         [approved_annex_json, output_json, client_name, profile],
     )
     return f"✅ Payload construido con éxito.\n{out}"
