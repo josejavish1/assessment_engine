@@ -296,7 +296,7 @@ def build_case_input(args: argparse.Namespace) -> dict:
                 if n.get("level") == 1
             ]
             if l1_nodes:
-                context_summary = "\n".join(l1_nodes)[:4000]
+                context_summary = "\n".join(l1_nodes)[:40000]
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo raptor_tree: {ex}")
 
@@ -305,13 +305,13 @@ def build_case_input(args: argparse.Namespace) -> dict:
             vault_data = json.loads(vault_path.read_text(encoding="utf-8"))
             frags = [f.get("content", "") for f in vault_data.get("fragments", [])]
             if frags:
-                context_summary = "\n".join(frags)[:4000]
+                context_summary = "\n".join(frags)[:40000]
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo evidence_vault: {ex}")
 
     if not context_summary and context_path.exists():
         context_text = read_text(context_path)
-        context_summary = context_text[:4000]
+        context_summary = context_text[:40000]
     client_context = (
         build_client_context_packet(intel, tower_id=args.tower) if intel else {}
     )

@@ -387,15 +387,8 @@ class FairRiskPolicy(BaseSovereignPolicy):
 
                     # Fallback default definitions if not found in the loaded catalog
                     if not ctrl_def or tef_range == [0.0, 0.0]:
-                        if c_id == "NIS2-IaC":
-                            tef_range = [0.30, 0.60]
-                            lm_range = [0.00, 0.20]
-                        elif c_id == "ENS-SRE-Observabilidad":
-                            tef_range = [0.10, 0.30]
-                            lm_range = [0.40, 0.70]
-                        elif c_id == "CIS-Automatizacion":
-                            tef_range = [0.20, 0.40]
-                            lm_range = [0.10, 0.30]
+                        tef_range = [0.20, 0.45]
+                        lm_range = [0.10, 0.35]
 
                     # Calculate exact mitigation for TEF and LM
                     tef_mitigation = tef_range[0] + (tef_range[1] - tef_range[0]) * mitigation_multiplier
@@ -651,15 +644,18 @@ class FairRiskPolicy(BaseSovereignPolicy):
                         except (ValueError, TypeError):
                             pass
 
-                    # Mathematically scale the SRE response team's concurrent capacity based on corporate scale
-                    if revenue < 50000000.0:
-                        c_crews = 1 # Small business / startup (1 SRE crew)
-                    elif 50000000.0 <= revenue < 500000000.0:
-                        c_crews = 2 # Mid-market (2 SRE crews)
-                    elif 500000000.0 <= revenue < 2000000000.0:
-                        c_crews = 3 # Large Enterprise (3 SRE crews)
-                    else:
-                        c_crews = 4 # Mega Enterprise / Critical Infrastructure (4 SRE crews, e.g. large utility)
+                    # Continuous logarithmic scaling of concurrent SRE capacity with corporate turnover (1 to 6 crews)
+                    c_crews = max(
+                        1,
+                        min(
+                            6,
+                            int(
+                                np.floor(
+                                    1 + np.log10(max(1.0, revenue / 10000000.0))
+                                )
+                            ),
+                        ),
+                    )
                     
                     # 'mu' is the service rate (1 / MTTR). SRE Maturity directly and exponentially scales MTTR
                     # Low maturity (1.5) -> MTTR = 12 hours. High maturity (4.5) -> MTTR = 0.5 hours.
@@ -876,9 +872,12 @@ class FairRiskPolicy(BaseSovereignPolicy):
         if len(total_annual_losses) > 0 and np.sum(total_annual_losses) > 0:
             if hourly_cost is not None and float(hourly_cost) > 0:
                 hourly_f = float(hourly_cost)
-                # Maximum plausible cumulative operational downtime across a single tech tower per year (120 hours ceiling)
-                max_annual_tower_loss = hourly_f * 120.0 + min(reg_max_fine, hourly_f * 16.0)
-                total_annual_losses = np.minimum(total_annual_losses, max_annual_tower_loss)
+                # Portfolio subadditivity: Annual cumulative operational downtime across a tower is realistically bounded
+                # by total operating hours (500h ceiling), while statutory legal liabilities apply uncompressed up to reg_max_fine.
+                max_annual_tower_loss = hourly_f * 500.0 + reg_max_fine
+                total_annual_losses = np.minimum(
+                    total_annual_losses, max_annual_tower_loss
+                )
 
             portfolio_sorted = np.sort(total_annual_losses)
             portfolio_mean = float(np.mean(total_annual_losses))
