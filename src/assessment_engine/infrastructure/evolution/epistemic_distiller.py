@@ -39,6 +39,7 @@ from assessment_engine.infrastructure.genai_client import ModelTier, create_gena
 logger = logging.getLogger("assessment_engine.infrastructure.evolution.epistemic_distiller")
 
 CACHE_DB_PATH = Path.cwd() / "working" / "epistemic_cache.db"
+DB_TAXONOMY_PATH = Path.cwd() / "working" / "enterprise_taxonomy.db"
 CACHE_TTL_SECONDS = 15552000.0  # 180-day (6-month) TTL for AOT Epistemic Invariants
 _DB_WRITE_LOCK = threading.Lock()
 

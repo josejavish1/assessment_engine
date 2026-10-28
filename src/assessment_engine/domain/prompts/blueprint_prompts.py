@@ -264,7 +264,7 @@ def get_bid_manager_prompt(
         f"TALLA (Sizing): {project_sizing}\n"
         f"RIESGO A MITIGAR: {mitigated_risk_impact}\n\n"
         "REGLAS ESTRICTAS DE CUMPLIMIENTO:\n"
-        "1. commercial_name: Reescribe el nombre genérico del proyecto para que sea un título formal de alto impacto estratégico.\n"
+        "1. commercial_name: Reescribe el nombre del proyecto para que sea un título formal y ejecutivo EXCLUSIVAMENTE EN ESPAÑOL (prohibido mantener o generar títulos en inglés).\n"
         "2. project_description: Escribe una descripción ejecutiva en lenguaje llano de 3-4 líneas. Explica al CIO exactamente DE QUÉ TRATA el proyecto, sin usar acrónimos técnicos incomprensibles.\n"
         "3. smart_objectives: Escribe un objetivo SMART cuantificable.\n"
         f"4. in_scope / out_of_scope: Define los límites estrictos de ingeniería. En out_of_scope, añade cláusulas defensivas para {company} (ej. Licencias a cargo del cliente, migraciones legacy complejas excluidas).\n"
@@ -273,7 +273,8 @@ def get_bid_manager_prompt(
         "7. wbs_breakdown: Genera un Work Breakdown Structure (WBS) exhaustivo con Fases reales de delivery (ej. Fase 1: HLD, Fase 2: LLD & Build, Fase 3: Migración, Fase 4: Hypercare). "
         "Asigna un esfuerzo en horas realista basado en la talla del proyecto. OBLIGATORIO: Debes incluir al menos una tarea de Gestión de Proyecto (PMO/QA). "
         "OBLIGATORIO: El perfil debe ser estrictamente uno de estos: 'gerente_cuenta', 'arquitecto', 'experto', 'project_manager', 'tecnico_medio', 'tecnico_junior'.\n"
-        "8. roi_justification: Redacta un ROI profundo basado en el Riesgo a Mitigar (Hard/Soft savings). Tienes el dato del ALE (Annualized Loss Expectancy) en el riesgo a mitigar si aplica.\n"
+        "8. capex_estimate: Estima con rigor técnico y de forma diferenciada la inversión inicial (CapEx) en equipamiento de red, servidores, appliances o licenciamiento inicial necesario para el alcance del proyecto. Formatea en Euros y añade justificación paramétrica breve (ej. '~45.000,00 € (Equipamiento de conmutación)', '~85.000,00 € (Licenciamiento enterprise)', o 'Bajo / Nulo (Suscripción cloud/OpEx)'). PROHIBIDO clonar la misma estimación en todos los proyectos.\n"
+        "9. roi_justification: Redacta un ROI profundo basado en el Riesgo a Mitigar (Hard/Soft savings). Tienes el dato del ALE (Annualized Loss Expectancy) en el riesgo a mitigar si aplica.\n"
         "\nDevuelve la información en el formato JSON estricto."
     )
     return prompt

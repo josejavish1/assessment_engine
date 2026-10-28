@@ -357,14 +357,14 @@ def _invoke_single_model(
     if system_instruction:
         cfg.system_instruction = system_instruction
 
-    logger.info(f"[Heartbeat] 💓 Invocando inferencia {model_name} (timeout={timeout_ms // 1000}s)...", flush=True)
+    logger.info(f"[Heartbeat] 💓 Invocando inferencia {model_name} (timeout={timeout_ms // 1000}s)...")
     resp = client.models.generate_content(
         model=model_name,
         contents=prompt,
         config=cfg,
     )
     _validate_response_truncation(resp)
-    logger.info(f"[Heartbeat] 💓 Inferencia {model_name} completada con éxito.", flush=True)
+    logger.info(f"[Heartbeat] 💓 Inferencia {model_name} completada con éxito.")
     return resp.text or ""
 
 
@@ -617,7 +617,7 @@ class SkepticRole:
         if self.client and hasattr(self.client, "models"):
             try:
                 from google.genai import types
-                logger.info("[Heartbeat] 💓 Skeptic consultando estándares web...", flush=True)
+                logger.info("[Heartbeat] 💓 Skeptic consultando estándares web...")
                 resp = self.client.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=f"Technical inquiry on current RFC or standards: {query}",
@@ -661,7 +661,7 @@ class SkepticRole:
         if self.client and hasattr(self.client, "models"):
             try:
                 from google.genai import types
-                logger.info("[Heartbeat] 💓 Skeptic generando crítica técnica...", flush=True)
+                logger.info("[Heartbeat] 💓 Skeptic generando crítica técnica...")
                 resp = self.client.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=prompt,
@@ -993,8 +993,7 @@ def _attempt_focal_ast_refactoring(
     loc_fn = len(fn_segment.splitlines())
     loc_total = len(candidate_code.splitlines())
     logger.info(
-        f"[Focal AST] 🎯 Nodo aislado: '{target_fn_name}' ({loc_fn} LOC vs {loc_total} LOC del archivo). Refactorizando en aislamiento...",
-        flush=True,
+        f"[Focal AST] 🎯 Nodo aislado: '{target_fn_name}' ({loc_fn} LOC vs {loc_total} LOC del archivo). Refactorizando en aislamiento..."
     )
 
     prompt = (
@@ -1032,8 +1031,7 @@ def _attempt_focal_ast_refactoring(
     try:
         ast.parse(new_candidate)
         logger.info(
-            f"[Focal AST] ✅ Nodo '{target_fn_name}' refactorizado y ensamblado con éxito en el módulo.",
-            flush=True,
+            f"[Focal AST] ✅ Nodo '{target_fn_name}' refactorizado y ensamblado con éxito en el módulo."
         )
         return new_candidate
     except SyntaxError:
@@ -1058,7 +1056,7 @@ def _attempt_mcts_refactoring(
 
     try:
         from assessment_engine.infrastructure.evolution.mcts_refactor_engine import MCRefactoringSearch, default_reward_function
-        logger.info("[CognitiveArbiter] 🌲 Disparando MCTS Refactor Engine sobre AST para resolver complejidad...", flush=True)
+        logger.info("[CognitiveArbiter] 🌲 Disparando MCTS Refactor Engine sobre AST para resolver complejidad...")
         searcher = MCRefactoringSearch(
             get_actions=lambda code: ["decompose_functions", "extract_helpers"],
             apply_action=lambda code, act: synthesizer.refine_patch(

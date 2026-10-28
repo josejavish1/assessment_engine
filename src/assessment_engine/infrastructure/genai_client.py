@@ -32,8 +32,8 @@ class ModelTier(str, Enum):
 # Tier: (Primary Agnostic Variable, Optional Legacy Variable, Default)
 _MODEL_SPECS: dict[ModelTier, tuple[str, str, str]] = {
     ModelTier.REASONING: ("AI_REASONING_MODEL", "GEMINI_PRO_MODEL", "gemini-3.1-pro-preview"),
-    ModelTier.FAST:      ("AI_FAST_MODEL",      "GEMINI_FLASH_MODEL", "gemini-3.8-flash"),
-    ModelTier.LOCAL:     ("AI_LOCAL_MODEL",     "LOCAL_LLM_MODEL",    "gemini-3.8-flash"),
+    ModelTier.FAST:      ("AI_FAST_MODEL",      "GEMINI_FLASH_MODEL", "gemini-2.5-flash"),
+    ModelTier.LOCAL:     ("AI_LOCAL_MODEL",     "LOCAL_LLM_MODEL",    "gemini-2.5-flash"),
     ModelTier.IMAGE:     ("AI_IMAGE_MODEL",     "GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image"),
     ModelTier.AUDIO:     ("AI_AUDIO_MODEL",     "GEMINI_AUDIO_MODEL", "gemini-2.5-flash"),
     ModelTier.VIDEO:     ("AI_VIDEO_MODEL",     "GEMINI_VIDEO_MODEL", "gemini-2.5-flash"),

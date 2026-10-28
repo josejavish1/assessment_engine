@@ -388,6 +388,10 @@ class ProjectCharterEnrichment(BaseModel):
         ...,
         description="The Return on Investment (ROI) justification, including detailed calculations for both hard and soft savings.",
     )
+    capex_estimate: Optional[str] = Field(
+        None,
+        description="Estimated upfront Capital Expenditure (CAPEX) in Euros with brief rationale, customized to the project scope.",
+    )
 
 
 class PillarBlueprintDraft(BaseModel):
