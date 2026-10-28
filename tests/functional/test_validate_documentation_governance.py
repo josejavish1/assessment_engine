@@ -9,8 +9,15 @@ from assessment_engine.application.tools import (
     validate_documentation_governance as validator,
 )
 
+_CURRENT_DATE = date.today().isoformat()
 
-def _write_markdown(path: Path, title: str = "Doc", body: str = "") -> None:
+
+def _write_markdown(
+    path: Path,
+    title: str = "Doc",
+    body: str = "",
+    last_verified_against: str = _CURRENT_DATE,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "\n".join(
@@ -20,7 +27,7 @@ def _write_markdown(path: Path, title: str = "Doc", body: str = "") -> None:
                 "owner: docs-governance",
                 "source_of_truth:",
                 "  - src/example.py",
-                "last_verified_against: 2026-04-30",
+                f"last_verified_against: {last_verified_against}",
                 "applies_to:",
                 "  - humans",
                 "  - ai-agents",
@@ -52,7 +59,7 @@ def _write_map(path: Path, entries: list[dict]) -> None:
         yaml.safe_dump(
             {
                 "schema_version": 1,
-                "last_reviewed": "2026-04-30",
+                "last_reviewed": _CURRENT_DATE,
                 "freshness": {"verified_max_age_days": 120},
                 "owners": {"docs-governance": {"scope": ["docs/"]}},
                 "entries": normalized_entries,
@@ -87,7 +94,7 @@ def test_source_linked_review_requires_matching_doc_change(
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
                 "review_when_source_changes": ["src/example.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Example",
             }
         ],
@@ -131,7 +138,7 @@ def test_source_linked_review_passes_when_allowed_doc_changes(
                 "source_of_truth": ["src/example.py"],
                 "review_when_source_changes": ["src/example.py"],
                 "review_paths_on_source_change": ["docs/example.md", "docs/related.md"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Example",
             },
             {
@@ -143,7 +150,7 @@ def test_source_linked_review_passes_when_allowed_doc_changes(
                 "owner": "docs-governance",
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Related",
             },
         ],
@@ -185,7 +192,7 @@ def test_source_linked_review_configuration_must_reference_real_paths(
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
                 "review_when_source_changes": ["src/missing.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Example",
             }
         ],
@@ -218,7 +225,7 @@ def test_markdown_link_targets_must_exist(tmp_path: Path) -> None:
                 "owner": "docs-governance",
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Example",
             }
         ],
@@ -252,7 +259,7 @@ def test_markdown_anchor_targets_must_exist(tmp_path: Path) -> None:
                 "owner": "docs-governance",
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Example",
             },
             {
@@ -264,7 +271,7 @@ def test_markdown_anchor_targets_must_exist(tmp_path: Path) -> None:
                 "owner": "docs-governance",
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Target",
             },
         ],
@@ -281,7 +288,7 @@ def test_verified_documents_become_stale_after_threshold(tmp_path: Path) -> None
     repo_root = tmp_path
     (repo_root / "src").mkdir()
     (repo_root / "src/example.py").write_text("print('hello')\n", encoding="utf-8")
-    _write_markdown(repo_root / "docs/example.md")
+    _write_markdown(repo_root / "docs/example.md", last_verified_against="2026-01-01")
 
     doc_map = repo_root / "docs/documentation-map.yaml"
     doc_map.parent.mkdir(parents=True, exist_ok=True)
@@ -335,7 +342,7 @@ def test_markdown_coverage_requires_map_entry_or_collection(tmp_path: Path) -> N
                 "owner": "docs-governance",
                 "applies_to": ["humans", "ai-agents"],
                 "source_of_truth": ["src/example.py"],
-                "last_verified_against": "2026-04-30",
+                "last_verified_against": _CURRENT_DATE,
                 "notes": "Example",
             }
         ],
