@@ -233,10 +233,17 @@ class FairRiskPolicy(BaseSovereignPolicy):
         if custom_calibration:
             try:
                 val = custom_calibration.get("hourly_downtime_cost_eur")
-                cost = float(val) if val is not None else 150000.0
+                if val is not None:
+                    cost = float(val)
+                elif "annual_revenue_eur" in custom_calibration:
+                    rev = float(custom_calibration["annual_revenue_eur"])
+                    dep = float(custom_calibration.get("digital_dependency_factor", 0.5))
+                    cost = (rev * dep) / 8760.0
+                else:
+                    cost = 5000.0
             except (ValueError, TypeError):
                 logger.warning("🎯 [Policy Engine] Calibración de coste horario con formato no numérico. Aplicando fallback seguro.")
-                cost = 150000.0
+                cost = 5000.0
 
             lm_map = {
                 1: {"min": cost * 0.1, "ml": cost * 0.3, "max": cost * 1.0},
@@ -297,7 +304,18 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 tef = int(finding.get("_elicited_tef", 3) or 3)
                 if "_elicited_tef" not in finding:
                     tef = 3
-                    if any(
+                    has_defense = any(
+                        d in text
+                        for d in [
+                            "protegido contra",
+                            "defensa contra",
+                            "inmune",
+                            "mitigado",
+                            "ausencia de",
+                            "sin riesgo",
+                        ]
+                    )
+                    if not has_defense and any(
                         k in text
                         for k in [
                             "ransomware",
@@ -352,6 +370,21 @@ class FairRiskPolicy(BaseSovereignPolicy):
                         lm = 4
                     else:
                         lm = 3
+
+                # Sanity Gate: Bound TEF and LM by the finding's calibrated severity when explicitly specified
+                # A Low or Informative finding cannot escalate to catastrophic TEF=5 or LM=5
+                sev = finding.get("severity")
+                if sev is not None:
+                    sev_str = str(sev).lower()
+                    if sev_str in ["low", "baja", "informativa"]:
+                        tef = min(tef, 2)
+                        lm = min(lm, 2)
+                    elif sev_str in ["medium", "media"]:
+                        tef = min(tef, 3)
+                        lm = min(lm, 3)
+                    elif sev_str in ["high", "alta"]:
+                        tef = min(tef, 4)
+                        lm = min(lm, 4)
 
                 # Define uncertainty for model inputs using a Beta-PERT distribution, as specified by the Open FAIR standard.
                 #
@@ -429,16 +462,30 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 
                 if n_trials > 0:
                     for ev in pillar_evidences:
-                        ev_text = ev.get("excerpt", "").lower()
-                        if any(
-                            keyword in ev_text
-                            for k_list in [
-                                ["gap", "deficiencia", "vulnerabilidad", "riesgo", "incumplimiento", "ausencia"],
-                                ["fragmenta", "silo", "heterogeneidad", "coexistencia", "duplic", "legacy", "obsoleto"]
-                            ]
-                            for keyword in k_list
-                        ):
+                        supports = ev.get("supports", [])
+                        if "risk" in supports or "gap" in supports:
                             k_failures += 1
+                        else:
+                            ev_text = ev.get("excerpt", "").lower()
+                            has_negation = any(
+                                neg in ev_text
+                                for neg in [
+                                    "ausencia de incidentes",
+                                    "ausencia de vulnerabilidades",
+                                    "sin incidencias",
+                                    "protegido contra",
+                                    "mitigado",
+                                ]
+                            )
+                            if not has_negation and any(
+                                keyword in ev_text
+                                for k_list in [
+                                    ["deficiencia", "vulnerabilidad crítica", "riesgo alto", "incumplimiento"],
+                                    ["fragmenta", "silo", "heterogeneidad", "coexistencia", "duplic", "legacy", "obsoleto"]
+                                ]
+                                for keyword in k_list
+                            ):
+                                k_failures += 1
                             
                     # Prior Gamma(alpha, beta) parameters
                     alpha_prior = 4.0
@@ -557,7 +604,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 finding["is_operational_friction"] = is_friction_risk
                 finding["p_vuln"] = p_vuln
                 if is_friction_risk:
-                    lm_max = min(lm_max, 150000.0) # Cap at an extreme but plausible OPEX friction cost
+                    calib_rev = float(custom_calibration.get("annual_revenue_eur", 50000000.0)) if custom_calibration else 50000000.0
+                    max_frict_cap = calib_rev * 0.05 if calib_rev > 0 else 150000.0
+                    lm_max = min(lm_max, max_frict_cap)
                     
                     # Inyectar el sobrecoste de TCO de licencias/horas fijas para el renderizado del Hexágono de Valor
                     finding["deterministic_tco_waste_eur"] = float(cap_calibration.get("deterministic_waste_eur", 0.0))
