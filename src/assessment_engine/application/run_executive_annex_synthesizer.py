@@ -926,6 +926,26 @@ async def synthesize_annex(client_name: str, tower_id: str):
     )
 
     if final_payload:
+        from assessment_engine.infrastructure.text_utils import (
+            ExecutiveStyleCompressor,
+        )
+
+        if final_payload.executive_summary:
+            if final_payload.executive_summary.summary_body:
+                final_payload.executive_summary.summary_body = (
+                    ExecutiveStyleCompressor.compress_executive_paragraph(
+                        final_payload.executive_summary.summary_body,
+                        max_words_per_sentence=25,
+                    )
+                )
+            if final_payload.executive_summary.headline:
+                final_payload.executive_summary.headline = (
+                    ExecutiveStyleCompressor.compress_executive_paragraph(
+                        final_payload.executive_summary.headline,
+                        max_words_per_sentence=25,
+                    )
+                )
+
         content = final_payload.model_dump_json(indent=2, by_alias=True)
 
         from assessment_engine.infrastructure.localization import (

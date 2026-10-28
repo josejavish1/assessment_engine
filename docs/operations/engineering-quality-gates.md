@@ -69,6 +69,23 @@ Para prevenir la duplicidad semántica de políticas y la fragmentación lógica
 
 El cálculo compartido de madurez reside de forma exclusiva en `src/assessment_engine/infrastructure/maturity_band.py`. Los componentes de ejecución (`run_scoring.py`, `run_executive_annex_synthesizer.py`, `render_tower_blueprint.py`, `build_global_report_payload.py` y el compilador del dashboard web) consumen este servicio de forma centralizada sin implementar deducciones o umbrales locales. A su vez, `src/assessment_engine/infrastructure/global_maturity_policy.py` hereda esta misma política para mantener la equivalencia consolidada. La consistencia lógica transversal se blinda mediante aserciones dedicadas en `tests/integration/test_policy_engine.py`.
 
+### 4. Auditoría Multidimensional Soverik (CLI Unificado)
+La compuerta integral de certificación y due diligence se ejecuta localmente o en CI mediante:
+
+```bash
+python -m assessment_engine.application.cli audit
+```
+
+Evalúa 21 sondas automatizadas que consolidan en un único paso:
+- Seguridad estática (SAST/DAST) y detección de secretos por entropía Shannon.
+- Cobertura de código productivo (exigencia Tier-1 >= 65.0%).
+- Calidad de aserciones en tests unitarios (ratio de aserciones fuertes >= 80.0%).
+- Resistencia a mutaciones sintácticas bajo norma ISO/IEC/IEEE 29119.
+- Topología AST y detección de módulos huérfanos o código muerto (NetworkX).
+- Complejidad ciclomática ISO 25010 y ausencia de violaciones CWE-391.
+
+Genera automáticamente los informes `docs/audits/AUDIT_REPORT.json`, `docs/audits/AUDIT_CERTIFICATE.html` y actualiza `docs/audits/AUDIT_RESULTS.md`. Los detalles de especificación de sondas están documentados en [`AUDIT_FRAMEWORK.md`](../audits/AUDIT_FRAMEWORK.md).
+
 ## Reglas de implementación del proyecto
 
 -   **Reutilización Imperativa:** Consumir siempre helpers, esquemas de datos y utilidades de dominio compartidas antes de duplicar lógicas de cálculo o formateo.

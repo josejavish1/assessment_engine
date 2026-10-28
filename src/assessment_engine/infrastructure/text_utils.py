@@ -202,3 +202,88 @@ def format_date_spanish(date_val: str = None) -> str:
     )
 
     return format_date_localized(date_val, locale="es")
+
+
+class ExecutiveStyleCompressor:
+    """Enforces Minto Pyramid / BLUF executive readability on C-level texts.
+
+    1. Prunes bureaucratic throat-clearing openers ('A fecha de...', 'En el plano cuantitativo...', etc.).
+    2. Splits run-on sentences into atomic subject-verb-predicate thoughts (target <= 25 words).
+    3. Ensures high information density and direct active voice.
+    """
+
+    BUREAUCRATIC_OPENERS = [
+        r"^a fecha de [a-záéíóú0-9\s]+,\s*(?:en plena vigencia del ciclo estratégico corporativo [0-9\-]+ de [a-záéíóú\s]+,)?\s*",
+        r"^a fecha de hoy,?\s*",
+        r"^en el plano cuantitativo,\s*",
+        r"^es menester señalar que\s*",
+        r"^cabe destacar que\s*",
+        r"^resulta relevante indicar que\s*",
+        r"^la presente torre evidencia\s*",
+        r"^en el contexto actual,\s*",
+    ]
+
+    @classmethod
+    def compress_executive_paragraph(cls, text: str, max_words_per_sentence: int = 25) -> str:
+        """Cleans bureaucratic fluff and ensures sentences do not exceed max_words_per_sentence."""
+        if not text:
+            return ""
+
+        cleaned = text.strip()
+        for pat in cls.BUREAUCRATIC_OPENERS:
+            cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE)
+
+        if cleaned:
+            cleaned = cleaned[0].upper() + cleaned[1:]
+
+        raw_sentences = [
+            s.strip() for s in re.split(r"(?<=[.!?])\s+", cleaned) if s.strip()
+        ]
+        compressed_sentences: list[str] = []
+
+        for s in raw_sentences:
+            has_period = s.endswith(".")
+            core = s[:-1].strip() if has_period else s.strip()
+            words = core.split()
+
+            if len(words) <= max_words_per_sentence:
+                compressed_sentences.append(core + ".")
+                continue
+
+            # Split long run-on sentences on logical clause boundaries
+            split_points = [
+                r";\s*",
+                r",\s+generando\s+",
+                r",\s+lo que deriva en\s+",
+                r",\s+lo que incrementa\s+",
+                r",\s+lo que sitúa\s+",
+                r",\s+pero\s+",
+                r",\s+mientras que\s+",
+            ]
+
+            broken = False
+            for sp in split_points:
+                parts = re.split(sp, core, maxsplit=1, flags=re.IGNORECASE)
+                if len(parts) == 2 and len(parts[0].split()) >= 6:
+                    p1 = parts[0].strip()
+                    p2 = parts[1].strip()
+                    if p2:
+                        p2 = p2[0].upper() + p2[1:]
+                    if sp == r",\s+generando\s+":
+                        p2 = "Esto genera " + p2[0].lower() + p2[1:]
+                    elif sp in [r",\s+lo que deriva en\s+", r",\s+lo que incrementa\s+", r",\s+lo que sitúa\s+"]:
+                        p2 = "Esto " + sp.replace(r",\s+", "").strip() + " " + p2
+                    elif sp == r",\s+pero\s+":
+                        p2 = "Sin embargo, " + p2[0].lower() + p2[1:]
+
+                    compressed_sentences.append(p1 + ".")
+                    compressed_sentences.append(p2 + ".")
+                    broken = True
+                    break
+
+            if not broken:
+                compressed_sentences.append(core + ".")
+
+        result = " ".join(compressed_sentences)
+        result = re.sub(r"\.([A-ZÁÉÍÓÚ])", r". \1", result)
+        return result

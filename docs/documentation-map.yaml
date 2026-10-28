@@ -1170,18 +1170,20 @@ entries:
   verification_mode: editorial
 - path: docs/audits/AUDIT_FRAMEWORK.md
   kind: document
-  title: Documentation audit framework
+  title: Unified audit framework (Soverik Quality Engine)
   doc_type: operational
-  status: Needs Review
+  status: Verified
   owner: docs-governance
   applies_to:
   - humans
+  - ai-agents
   source_of_truth:
-  - docs
-  - src/assessment_engine
-  last_verified_against: '2026-06-25'
-  notes: Framework de auditoría útil como checklist e histórico, no como verdad operativa
-    actual.
+  - docs/audits/AUDIT_RESULTS.md
+  - src/assessment_engine/application/cli.py
+  - src/assessment_engine/infrastructure/auditor/scanner.py
+  - src/assessment_engine/infrastructure/auditor/models.py
+  last_verified_against: '2026-06-26'
+  notes: Marco operativo unificado de auditoría para CLI y certificación multidimensional.
   diataxis: explanation
   verification_mode: editorial
 - path: docs/audits/AUDIT_RESULTS.md
