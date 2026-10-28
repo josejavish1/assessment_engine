@@ -27,7 +27,7 @@ async def test_run_agent_timeout_error_handling():
     class MockAppWithTimeout:
         def __init__(self):
             self._agent = type(
-                "MockAgent", (object,), {"model": "gemini-2.5-pro", "name": "TestAgent"}
+                "MockAgent", (object,), {"model": "gemini-3.8-flash", "name": "TestAgent"}
             )()
 
         async def async_stream_query(self, user_id, message):
@@ -118,7 +118,7 @@ async def test_run_agent_grpc_resource_exhausted_resilience():
     class MockAppWithRateLimit:
         def __init__(self):
             self._agent = type(
-                "MockAgent", (object,), {"model": "gemini-2.5-pro", "name": "TestAgent"}
+                "MockAgent", (object,), {"model": "gemini-3.8-flash", "name": "TestAgent"}
             )()
 
         async def async_stream_query(self, user_id, message):

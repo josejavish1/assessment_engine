@@ -125,11 +125,11 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
 
 # Estimated pricing in USD per one million tokens, based on approximate rates for the Gemini 2.5 Pro model.
 PRICING = {
-    "gemini-2.5-pro": {
+    "gemini-3.1-pro-preview": {
         "input": 1.25,
         "output": 5.00,
-    },  # Cost in USD per one million tokens.
-    "gemini-2.5-flash": {"input": 0.10, "output": 0.40},
+    },
+    "gemini-3.8-flash": {"input": 0.075, "output": 0.30},
     "default": {"input": 1.25, "output": 5.00},
 }
 

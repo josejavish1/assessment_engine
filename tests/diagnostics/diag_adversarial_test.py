@@ -5,7 +5,7 @@ from google import genai
 def main():
     # Inicializamos el cliente nativo de Vertex AI / Gemini
     client = genai.Client()
-    model_name = "gemini-2.5-pro"
+    model_name = "gemini-3.1-pro-preview"
     
     # Riesgo real extraído de la Torre T2 (tras nuestra calibración P99)
     risk_finding = """

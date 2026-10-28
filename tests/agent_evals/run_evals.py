@@ -55,7 +55,7 @@ async def run_single_eval_case(case_file: Path, is_live: bool) -> Dict[str, Any]
             po_profile = resolve_model_profile_for_role("product_owner_planner")
             agent = Agent(
                 name="eval_product_owner",
-                model=po_profile.get("model", "gemini-2.5-pro"),
+                model=po_profile.get("model", "gemini-3.1-pro-preview"),
                 instruction="Eres el Product Owner del proyecto. Planifica con rigor arquitectónico.",
             )
             app = AdkApp(agent=agent)

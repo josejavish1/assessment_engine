@@ -68,7 +68,7 @@ def test_load_model_profile_and_overrides() -> None:
     # --- ARRANGE & ACT ---
     # Test standard profile load
     profile = load_model_profile("writer_fast")
-    assert profile["model"] in {"gemini-3.8-flash", "gemini-2.5-pro"}
+    assert profile["model"] == "gemini-3.8-flash"
 
     # Test environment variable override
     os.environ["ASSESSMENT_MODEL_OVERRIDE_WRITER_FAST"] = "my-custom-model"

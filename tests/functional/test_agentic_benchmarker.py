@@ -106,7 +106,7 @@ async def test_rage_benchmarker_full_flow(tmp_path: Path):
             benchmarker = AgenticRageBenchmarker(
                 client_id="test_client",
                 working_dir=working_dir,
-                model_name="gemini-2.5-pro",
+                model_name="gemini-3.8-flash",
             )
 
             snapshot = await benchmarker.run_rage_evaluation("critical_infrastructure")
@@ -129,7 +129,7 @@ async def test_rage_benchmarker_full_flow(tmp_path: Path):
             benchmarker = AgenticRageBenchmarker(
                 client_id="test_client",
                 working_dir=working_dir,
-                model_name="gemini-2.5-pro",
+                model_name="gemini-3.8-flash",
             )
 
             snapshot = await benchmarker.run_rage_evaluation("critical_infrastructure")
@@ -230,7 +230,7 @@ async def test_rage_benchmarker_prompt_injection_containment(tmp_path: Path):
         benchmarker = AgenticRageBenchmarker(
             client_id="test_client",
             working_dir=working_dir,
-            model_name="gemini-2.5-pro",
+            model_name="gemini-3.8-flash",
         )
 
         snapshot = await benchmarker.run_rage_evaluation("critical_infrastructure")

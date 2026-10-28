@@ -23,7 +23,7 @@ def test_grounding_direct():
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-pro",  # El modelo que sabemos que funciona en tu proyecto
+            model="gemini-3.1-pro-preview",
             contents=prompt,
             config=types.GenerateContentConfig(tools=[search_tool]),
         )
