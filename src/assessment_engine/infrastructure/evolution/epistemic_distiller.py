@@ -38,9 +38,7 @@ from assessment_engine.infrastructure.genai_client import ModelTier, create_gena
 
 logger = logging.getLogger("assessment_engine.infrastructure.evolution.epistemic_distiller")
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-CACHE_DB_PATH = REPO_ROOT / "storage" / "data" / "epistemic_cache.db"
-DB_TAXONOMY_PATH = REPO_ROOT / "data" / "enterprise_taxonomy.db"
+CACHE_DB_PATH = Path.cwd() / "working" / "epistemic_cache.db"
 CACHE_TTL_SECONDS = 15552000.0  # 180-day (6-month) TTL for AOT Epistemic Invariants
 _DB_WRITE_LOCK = threading.Lock()
 
