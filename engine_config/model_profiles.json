@@ -1,70 +1,80 @@
 {
   "profiles": {
     "writer_fast": {
-      "model": "gemini-3.8-flash",
+      "tier": "fast",
+      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "section_writer": {
-      "model": "gemini-3.8-flash",
+      "tier": "fast",
+      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "analyst": {
-      "model": "gemini-3.8-flash",
+      "tier": "fast",
+      "model": "gemini-flash-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "experimental_writer": {
-      "model": "gemini-3.8-flash",
+      "tier": "fast",
+      "model": "gemini-flash-latest",
       "temperature": 0.25,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "global_refiner": {
-      "model": "gemini-3.8-flash",
+      "tier": "fast",
+      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "global_refiner_strict": {
-      "model": "gemini-3.8-flash",
+      "tier": "fast",
+      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "review_strict": {
-      "model": "gemini-3.1-pro-preview",
+      "tier": "reasoning",
+      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "global_reviewer_strict": {
-      "model": "gemini-3.1-pro-preview",
+      "tier": "reasoning",
+      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "product_owner_planner": {
-      "model": "gemini-3.1-pro-preview",
+      "tier": "reasoning",
+      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
       "max_output_tokens": 8192
     },
     "product_owner_doctor": {
-      "model": "gemini-3.1-pro-preview",
+      "tier": "reasoning",
+      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
