@@ -349,7 +349,7 @@ def map_industry_to_profile(raw_industry_name: str) -> str:
     industry_clean = normalized.encode("ascii", "ignore").decode("ascii").lower()
 
     mapping = {
-        # Español
+        # Spanish
         "energia": "critical_infrastructure",
         "electrico": "critical_infrastructure",
         "infraestructura critica": "critical_infrastructure",

@@ -8,7 +8,7 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
-  // Evitar problemas de hidratación en SSR
+  // Prevent SSR hydration mismatch
   React.useEffect(() => {
     setMounted(true);
   }, []);

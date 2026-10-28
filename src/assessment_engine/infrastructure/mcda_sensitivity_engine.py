@@ -130,7 +130,6 @@ class MCDASensitivityEngine:
             Y_Ci = self.mcda_utility_function(C_i[:, 0], C_i[:, 1], C_i[:, 2])
 
             # State-of-the-art Saltelli (2010) First-Order index estimator:
-            # S_i = ( (1/N) * sum(Y_A * Y_Ci) - mean(Y_A)*mean(Y_Ci) ) / Var(Y)
             numerator_first = np.mean(Y_A * Y_Ci) - (np.mean(Y_A) * np.mean(Y_Ci))
             S_first[i] = numerator_first / var_Y
 

@@ -384,7 +384,7 @@ def _merge_test_suites(base_test_code: str, new_test_code: str) -> str:
     if not to_append:
         return base_test_code
 
-    # Extraer e inyectar imports necesarios que no existan en base_test_code
+    # Extract and inject missing required imports into base_test_code
     new_imports = [
         line.strip()
         for line in new_test_code.splitlines()
@@ -1232,7 +1232,7 @@ class CognitiveArbiter:
         mutation_score = 0.0
         regression_passed = False
 
-        # Pre-consultar estándares web una sola vez antes de entrar al bucle cerrado
+        # Pre-fetch web standards once before entering closed loop
         frozen_search_ctx = self.skeptic.query_web_standards(f"Standards and edge cases for {task_description}")
 
         for iteration in range(1, self.max_rounds + 1):

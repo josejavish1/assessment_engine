@@ -73,7 +73,6 @@ def generate_interactive_map(
             }
         )
 
-        # Parse source of truth dependencies
         for sot in entry.get("source_of_truth", []):
             if sot not in node_set:
                 node_set.add(sot)

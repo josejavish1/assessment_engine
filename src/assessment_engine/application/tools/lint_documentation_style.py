@@ -21,6 +21,7 @@ BANNED_HYPE_PATTERNS = [
 def lint_documentation_style(
     repo_root: Path, documentation_map_path: Path
 ) -> list[str]:
+    """Lint documentation style according to technical specification."""
     documentation_map = governance.load_yaml(documentation_map_path)
     errors: list[str] = []
 
@@ -52,6 +53,7 @@ def lint_documentation_style(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
@@ -59,6 +61,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Execute command-line interface entrypoint."""
     args = parse_args()
     errors = lint_documentation_style(
         repo_root=Path(args.repo_root).resolve(),

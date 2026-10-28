@@ -87,7 +87,6 @@ class StreamingSentinel:
         """
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
 
-        # Enforce WAL mode
         self.conn.execute("PRAGMA journal_mode=WAL;")
         self.conn.execute("PRAGMA synchronous=NORMAL;")
 
@@ -269,7 +268,7 @@ class StreamingSentinel:
                 )
                 return 0
 
-            # Instanciar EvidenceEngine para la capa "Cold"
+            # Instantiate EvidenceEngine for cold storage layer
             import os
 
             storage_dir_name = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
@@ -444,7 +443,6 @@ class StreamingSentinel:
                 if processed > 0:
                     logger.info(f"Sentinel Loop: Ingested {processed} new items.")
 
-                # Run the blocking check_and_trigger_dampened_rebuild in a background thread!
                 await asyncio.to_thread(self.check_and_trigger_dampened_rebuild)
             except Exception as e:
                 logger.error(f"Error in Sentinel daemon polling iteration: {e}")

@@ -332,7 +332,7 @@ def set_cell_text_custom(
     Returns:
         None. The `cell` object is modified in-place.
     """
-    # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
+    # Sanitization: Replace non-standard vocabulary with canonical terms
     from assessment_engine.infrastructure.localization import (
         apply_vocabulary_substitutions,
     )
@@ -435,7 +435,7 @@ def add_body_paragraph(
     style="Normal",
 ) -> Any:
     r"""{'docstring': "Adds a sanitized and formatted paragraph to a `docx.Document` object.\n\n    The input text is first sanitized by removing markdown emphasis markers\n    (`*`, `_`, `**`, `__`). The function then adds the cleaned text as a new,\n    justified paragraph formatted with a consistent 'Arial' 10pt font.\n\n    For bulleted styles (e.g., 'List Bullet', 'Bullet'), any text preceding\n    the first colon is automatically rendered in bold to enhance readability;\n    this behavior overrides the `bold` parameter.\n\n    If a specified style name does not exist in the document's template, the\n    function falls back to the 'Normal' style. For a non-existent bulleted\n    style, it also manually prepends a '•' character to simulate a list item.\n\n    Args:\n        doc (docx.document.Document): The document instance to which the\n            paragraph will be added.\n        text (str): The raw string content for the paragraph. Markdown emphasis\n            characters will be removed.\n        bold (bool, optional): If True, applies bold formatting to the entire\n            paragraph. This parameter is ignored for bulleted styles containing\n            a colon. Defaults to False.\n        italic (bool, optional): If True, applies italic formatting to the\n            entire paragraph. Defaults to False.\n        space_after (int, optional): The spacing in points (Pt) to apply after\n            the paragraph. Defaults to 6.\n        text_color_rgb (tuple[int, int, int], optional): An RGB tuple specifying\n            the font color. Each value must be in the range 0-255. Defaults\n            to (46, 64, 77).\n        style (str, optional): The name of the paragraph style to apply from\n            the document template. Defaults to 'Normal'.\n\n    Returns:\n        docx.text.paragraph.Paragraph: The newly created paragraph object that was\n            added to the document.\n\n    Raises:\n        ValueError: If any value in the `text_color_rgb` tuple is outside the\n            valid 0-255 range."}."""
-    # Sanitization: Replace non-standard Spanish 'sistémico/sistémica' with 'estructural/estructurales'
+    # Sanitization: Replace non-standard vocabulary with canonical terms
     from assessment_engine.infrastructure.localization import (
         apply_vocabulary_substitutions,
     )
@@ -498,7 +498,6 @@ def add_callout_box(doc, text, bg_color_hex="F2F2F2", border_color_hex=None, tex
     cell = tbl.rows[0].cells[0]
     cell.width = Inches(6.5)
     
-    # Shade cell background
     shade_cell(cell, bg_color_hex)
     
     # Set text
@@ -1211,7 +1210,7 @@ def compile_docx(tower_dir: str, output_path: str):
         skip_level_1=True,
     )
 
-    # Section 2.3 (Contexto Estratégico de Negocio) has been removed from tower-specific reports, as strategic alignment and traceability registry belong exclusively in the Global Consolidated Report, per Gartner standards.
+    # Section 2.3 (Strategic Business Context) has been removed from tower-specific reports, as strategic alignment and traceability registry belong exclusively in the Global Consolidated Report, per Gartner standards.
 
     #
     # Assemble and render Chapter 3: Maturity Profile and General Evaluation.
@@ -1375,7 +1374,7 @@ def compile_docx(tower_dir: str, output_path: str):
     add_body_paragraph(doc, explanation_str, text_color_rgb=text_color_rgb)
     add_spacer(doc, 15)
 
-    # McKinsey/Accenture Style: Matriz de Diagnóstico y Desempeño por Dominio Tecnológico
+    # Standard Diagnostic and Performance Matrix by Technical Domain
     health_title = t(
         "diagnosis_performance_matrix_title",
         locale=doc_lang,
@@ -1585,7 +1584,7 @@ def compile_docx(tower_dir: str, output_path: str):
                     align=WD_ALIGN_PARAGRAPH.CENTER,
                 )
                 
-                # Sanitize the third column text to remove "(X,XX)" from the "Justificación de la Nota" heading
+                # Sanitize third column heading text to remove grade placeholders
                 justification_cell_text = row_data[2]
                 import re
                 justification_cell_text = re.sub(
@@ -1613,7 +1612,6 @@ def compile_docx(tower_dir: str, output_path: str):
         autofit_table_to_contents(mat_table)
         add_spacer(doc, 20)
 
-    # 3.4 Assemble and render Section: Cross-Cutting Analysis and Systemic Risk
     transversal_title = "Análisis Transversal de Deuda Tecnológica y Patrones de Riesgo Estructural" if doc_lang == "es" else "Cross-Cutting Analysis of Technological Debt and Structural Risk Patterns"
     add_heading(doc, transversal_title, level=2, primary_color_rgb=p_color_rgb)
     parse_and_append_markdown_section(
@@ -1624,7 +1622,7 @@ def compile_docx(tower_dir: str, output_path: str):
         skip_level_1=True,
     )
 
-    # 3.5 Indicadores de Riesgo Estructural y Contexto de Decisión
+    # 3.5 Structural Risk Indicators and Decision Context
     if intel_data:
         try:
             overrides = intel_data.get("tower_overrides", {}).get(tower_id, {})
@@ -1741,7 +1739,6 @@ def compile_docx(tower_dir: str, output_path: str):
 
                 glossary_items = []
                 
-                # Business Criticality
                 if business_criticality >= 80.0:
                     glossary_items.append(
                         f"**Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Extrema]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. En este caso, este valor extremo confirma que los procesos operativos core de la organización dependen críticamente de esta plataforma, y su indisponibilidad causaría una interrupción inmediata de servicios esenciales."
@@ -1755,7 +1752,6 @@ def compile_docx(tower_dir: str, output_path: str):
                         f"**Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Media]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. El impacto medio sugiere que la torre provee servicios de soporte o back-office cuya indisponibilidad temporal es asumible mediante planes de contingencia estándar."
                     )
 
-                # Regulatory Compliance
                 if regulatory_compliance >= 80.0:
                     glossary_items.append(
                         f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa."
@@ -1769,7 +1765,6 @@ def compile_docx(tower_dir: str, output_path: str):
                         f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo."
                     )
 
-                # Implementation Feasibility
                 if implementation_feasibility >= 60.0:
                     glossary_items.append(
                         f"**Viabilidad Operativa (MCDA) [{implementation_feasibility:.1f}% - Favorable]:** Estima el nivel de complejidad operativa y facilidad técnica para ejecutar los proyectos del plan de acción propuesto, considerando recursos, ventanas de mantenimiento y dependencias previas. La viabilidad de transformación es favorable. Los proyectos de modernización se pueden abordar con tecnologías maduras y recursos disponibles en el mercado sin generar disrupciones críticas."
@@ -1779,7 +1774,6 @@ def compile_docx(tower_dir: str, output_path: str):
                         f"**Viabilidad Operativa (MCDA) [{implementation_feasibility:.1f}% - Compleja]:** Estima el nivel de complejidad operativa y facilidad técnica para ejecutar los proyectos del plan de acción propuesto, considerando recursos, ventanas de mantenimiento y dependencias previas. La baja calificación actual refleja que existe una alta complejidad para la transformación debido a la presencia de deudas estructurales profundas, cuellos de botella en el mantenimiento o falta de talento especializado."
                     )
 
-                # DII
                 dii_pct = dii_03 if dii_03 is not None else 0.0
                 if dii_pct < 15.0:
                     glossary_items.append(
@@ -1794,7 +1788,6 @@ def compile_docx(tower_dir: str, output_path: str):
                         f"**Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Sensibilidad Alta (Volátil)]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). El valor registrado muestra una sensibilidad alta, sugiriendo que la escasez de evidencias o variaciones de criterio podrían alterar la nota asignada, por lo que se recomienda un análisis de contraste de evidencias confirmatorio."
                     )
 
-                # ERC
                 erc_val_num = erc if erc is not None else 0.0
                 if erc_val_num >= 0.50:
                     glossary_items.append(
@@ -1809,7 +1802,6 @@ def compile_docx(tower_dir: str, output_path: str):
                         f"**Propagación de Fallos (ERC) [{erc_val_num:.3f} - Baja/Aislada]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor de propagación bajo indica una influencia estructural baja; un fallo técnico se contendría dentro de su propio perímetro sin arrastrar a otras torres tecnológicas clave."
                     )
 
-                # SPOF
                 if spof_status == "SÍ":
                     glossary_items.append(
                         "**Punto Único de Fallo (SPOF) [SÍ - Crítico]:** Identifica si el dominio tecnológico actúa como un cuello de botella o eslabón débil de la infraestructura que, en caso de caída o compromiso técnico, detendría inmediatamente los flujos de servicio esenciales de la organización. La evaluación alerta de manera inequívoca que esta plataforma representa un cuello de botella o eslabón débil crítico sin redundancia suficiente, requiriendo acción de mitigación inmediata."
@@ -1955,7 +1947,7 @@ def compile_docx(tower_dir: str, output_path: str):
     add_body_paragraph(doc, intro_prose_p4, text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, intro_prose_p5, text_color_rgb=text_color_rgb, italic=True)
 
-    # El Hexágono de Valor de NTT DATA (SME & TBM Framework)
+    # NTT DATA Value Hexagon (SME & TBM Framework)
     add_appendix_subheading(doc, "El Hexágono de Valor: Palancas de Retorno de Resiliencia y Eficiencia (RoRE)", primary_color_rgb=p_color_rgb)
     
     if doc_lang == "es":
@@ -2572,11 +2564,11 @@ def compile_docx(tower_dir: str, output_path: str):
         add_spacer(doc, 15)
 
     #
-    # Assemble and render Chapter 5: Conclusiones y Coste de Inacción.
+    # Assemble and render Chapter 5: Conclusions and Cost of Inaction.
     #
     add_heading(doc, "Conclusiones y Coste de Inacción", level=1, primary_color_rgb=p_color_rgb)
 
-    # 5.1 Conclusiones del Diagnóstico de Situación
+    # 5.1 Current Situation Diagnostic Conclusions
     add_heading(doc, "Conclusiones del Diagnóstico de Situación", level=2, primary_color_rgb=p_color_rgb)
     parse_and_append_markdown_section(
         doc,
@@ -2587,7 +2579,7 @@ def compile_docx(tower_dir: str, output_path: str):
         end_header="Coste de Inacción",
     )
 
-    # 5.2 El Dilema del Decisor: Matriz de Contraste Estratégico
+    # 5.2 Decision Dilemma: Strategic Contrast Matrix
     add_heading(doc, "El Dilema del Decisor: Matriz de Contraste Estratégico", level=2, primary_color_rgb=p_color_rgb)
     
     matrix_intro = (
@@ -2633,7 +2625,6 @@ def compile_docx(tower_dir: str, output_path: str):
         tcPr.append(tcW)
         shade_cell(cell, p_color_hex)
 
-    # Data Rows
     matrix_data = [
         (
             "Exposición Económica",
@@ -2710,7 +2701,7 @@ def compile_docx(tower_dir: str, output_path: str):
             tcW.set(qn('w:w'), str(int(dec_col_widths[i].twips)))
             tcPr.append(tcW)
 
-    # 5.3 El Impacto de la Indecisión: Exposición Financiera Acumulada (Cumulative CoI)
+    # 5.3 Financial Inaction Impact: Cumulative Cost of Inaction
     add_heading(doc, "El Impacto de la Indecisión: Exposición Financiera Acumulada", level=2, primary_color_rgb=p_color_rgb)
     
     # standard Actuarial Practice: Cumulative Adverse Multi-Year Stress Test (FRTB / Basel III)
@@ -2809,7 +2800,7 @@ def compile_docx(tower_dir: str, output_path: str):
     add_spacer(doc, 15)
 
     #
-    # Assemble and render Appendix A: Metodología Cuantitativa de Riesgos
+    # Assemble and render Appendix A: Quantitative Risk Methodology
     #
     add_appendix_heading(doc, "Metodología Cuantitativa de Riesgos", primary_color_rgb=p_color_rgb)
     add_body_paragraph(
@@ -2842,7 +2833,7 @@ def compile_docx(tower_dir: str, output_path: str):
         reg_name = "los marcos generales de protección de datos y privacidad (v.g. RGPD o legislación sectorial estándar)"
         reg_fine_limit = f"2.000.000 {currency}"
 
-    # Section 1: Por qué cuantificamos
+    # Section 1: Quantitative Rationale
     add_appendix_subheading(doc, "Limitaciones del Análisis Cualitativo frente a Open FAIR™", primary_color_rgb=p_color_rgb)
     p_why = (
         "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de "
@@ -2856,7 +2847,7 @@ def compile_docx(tower_dir: str, output_path: str):
     )
     add_body_paragraph(doc, p_why, text_color_rgb=text_color_rgb)
 
-    # Section 2: Modelo de Calibración de Doble Capa
+    # Section 2: Dual-Layer Calibration Model
     add_appendix_subheading(doc, "El Modelo de Calibración Actuarial de Doble Capa", primary_color_rgb=p_color_rgb)
     p_layer_intro = (
         "Con el fin de comprender de forma intuitiva cómo una deficiencia técnica se propaga hasta impactar en el "
@@ -2901,7 +2892,7 @@ def compile_docx(tower_dir: str, output_path: str):
         space_after=12
     )
 
-    # Section 3: El Núcleo de Simulación Actuarial
+    # Section 3: Actuarial Simulation Core
     add_appendix_subheading(doc, "El Núcleo de Simulación Actuarial", primary_color_rgb=p_color_rgb)
     p_mc_intro = (
         "Más allá de la lógica conceptual, el verdadero valor diferencial de este diagnóstico reside en su arquitectura matemática. "
@@ -2950,7 +2941,7 @@ def compile_docx(tower_dir: str, output_path: str):
         space_after=12
     )
 
-    # Section 4: Métricas Decisionales
+    # Section 4: Decision Metrics
     add_appendix_subheading(doc, "Definición de Métricas Decisionales de Exposición Financiera", primary_color_rgb=p_color_rgb)
     p_metrics_intro = (
         "Al integrar y ordenar los resultados de las 10.000 iteraciones de simulación virtual, el motor genera la distribución "
@@ -2992,7 +2983,7 @@ def compile_docx(tower_dir: str, output_path: str):
         # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
 
     #
-    # Assemble and render Appendix B: Registro de Custodia de Fuentes de Información
+    # Assemble and render Appendix B: Information Sources Custody Ledger
     #
     add_appendix_heading(doc, vocab["appendix_c_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_c_intro"], text_color_rgb=text_color_rgb)
@@ -3118,7 +3109,7 @@ def compile_docx(tower_dir: str, output_path: str):
     add_spacer(doc, 12)
 
     #
-    # Assemble and render Appendix C: Glosario de Términos y Abreviaturas
+    # Assemble and render Appendix C: Terms and Abbreviations Glossary
     #
     add_appendix_heading(doc, vocab["appendix_a_title"], primary_color_rgb=p_color_rgb)
     add_body_paragraph(doc, vocab["appendix_a_intro"], text_color_rgb=text_color_rgb)
@@ -3150,7 +3141,6 @@ def compile_docx(tower_dir: str, output_path: str):
             except Exception as ex:
                 logger.info(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
-        # Get localized glossary dictionary
         glossary = full_glossary.get(doc_lang, full_glossary.get("es", {}))
 
         # Gather all text accumulated in paragraphs and tables so far (now fully includes Appendix A and B!)
@@ -3230,7 +3220,7 @@ def compile_docx(tower_dir: str, output_path: str):
     add_spacer(doc, 12)
 
     #
-    # Assemble and render Appendix D: Cláusula de Limitación de Responsabilidad
+    # Assemble and render Appendix D: Liability Limitation Clause
     # Always prioritize the central declarative brand disclaimer.
     #
     add_appendix_heading(doc, vocab["appendix_b_title"], primary_color_rgb=p_color_rgb)

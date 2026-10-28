@@ -12,6 +12,7 @@ from assessment_engine.application.tools import (
 
 
 def render_markdown(markdown_text: str) -> str:
+    """Render markdown according to technical specification."""
     lines = markdown_text.splitlines()
     output: list[str] = []
     in_code = False
@@ -77,6 +78,7 @@ def render_markdown(markdown_text: str) -> str:
 
 
 def build_site(repo_root: Path, documentation_map_path: Path, output_dir: Path) -> None:
+    """Build site according to technical specification."""
     documentation_map = governance.load_yaml(documentation_map_path)
     entries = {
         entry["path"]: entry
@@ -186,6 +188,7 @@ def build_site(repo_root: Path, documentation_map_path: Path, output_dir: Path) 
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
@@ -194,6 +197,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Execute command-line interface entrypoint."""
     args = parse_args()
     build_site(
         repo_root=Path(args.repo_root).resolve(),

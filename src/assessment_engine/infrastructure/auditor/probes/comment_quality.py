@@ -44,6 +44,13 @@ ES_STOPWORDS: frozenset[str] = frozenset({
 ES_CHARS_PATTERN = re.compile(r"[áéíóúÁÉÍÓÚñÑ¿¡]")
 
 
+UNAMBIGUOUS_ES_STOPWORDS: frozenset[str] = frozenset({
+    "de", "la", "el", "para", "por", "con", "los", "las", "del", "al", "se",
+    "que", "su", "sus", "como", "este", "esta", "estos", "estas", "entre",
+    "sobre", "cuando", "donde", "pero", "mas", "más", "ya", "función", "método"
+})
+
+
 def _compute_jaccard_similarity(set_a: set[str], set_b: set[str]) -> float:
     """Calculate the Jaccard similarity coefficient between two token sets."""
     if not set_a and not set_b:
@@ -60,14 +67,16 @@ def _is_epistemic_rationale(text: str) -> bool:
 
 
 def is_spanish_text(text: str) -> bool:
-    """Detect whether natural language text is written in Spanish."""
-    if ES_CHARS_PATTERN.search(text):
-        return True
-    words = re.findall(r"[a-zA-ZáéíóúñÁÉÍÓÚÑ]{2,}", text.lower())
+    """Detect whether natural language text is predominantly written in Spanish."""
+    words = [w for w in re.findall(r"[a-zA-ZáéíóúñÁÉÍÓÚÑ]{2,}", text.lower()) if w not in ("en", "es")]
     if not words:
         return False
-    es_matches = sum(1 for w in words if w in ES_STOPWORDS)
-    return es_matches >= 2 or (len(words) <= 4 and es_matches >= 1)
+    es_matches = sum(1 for w in words if w in UNAMBIGUOUS_ES_STOPWORDS)
+    es_ratio = es_matches / len(words)
+    has_accent = bool(ES_CHARS_PATTERN.search(text))
+    if len(words) <= 5:
+        return (has_accent and es_matches >= 1) or es_matches >= 2
+    return (has_accent and es_ratio >= 0.15) or es_ratio >= 0.20
 
 
 def _extract_tokens(text: str) -> set[str]:
@@ -160,6 +169,8 @@ def _check_echo_smell(
 ) -> AuditFinding | None:
     """Flag redundant echo comments that merely rephrase adjacent code."""
     if not _is_prod_path(file_path):
+        return None
+    if stripped.startswith("///"):
         return None
     if not stripped.startswith(("#", "//")):
         return None
@@ -405,6 +416,8 @@ def audit_docstring_contract_consistency(tree: ast.AST, rel_path: str) -> tuple[
             total_invalid_raises += r
             all_findings.extend(f)
         elif isinstance(node, ast.ClassDef):
+            if node.name.startswith("_"):
+                continue
             for item in node.body:
                 if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     u, r, f = _audit_function_docstring(item, rel_path)

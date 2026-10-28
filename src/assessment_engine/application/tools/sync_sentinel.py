@@ -25,7 +25,6 @@ def main() -> None:
         if processed > 0:
             logger.info(f"✓ Processed {processed} pending evidence items.")
             # Force trigger the dampened scheduler to immediately rebuild the Raptor Tree
-            # by pretending we hit a quiet period
             sentinel.last_ingest_time = 0.0  # Force quiet period timeout
             triggered = sentinel.check_and_trigger_dampened_rebuild()
             if triggered:

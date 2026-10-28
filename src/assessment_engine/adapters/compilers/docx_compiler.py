@@ -464,7 +464,7 @@ class DocxCompiler(DocumentCompiler):
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
         if "índice de contenidos" in node.text.lower() or "[índice de contenidos" in node.text.lower():
-            # Inyectar un campo TOC nativo de Word (simple field xml)
+            # Inject native Word TOC field (simple field xml)
             from docx.oxml import OxmlElement
             from docx.oxml.ns import qn
             p = doc.add_paragraph()

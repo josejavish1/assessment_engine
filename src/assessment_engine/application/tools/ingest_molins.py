@@ -7,6 +7,7 @@ from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
 
 async def ingest_documents():
+    """Ingest documents according to technical specification."""
     client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "molins")
     storage_dir = Path("working") / client_id / "molins"
     storage_dir.mkdir(parents=True, exist_ok=True)
@@ -32,7 +33,6 @@ async def ingest_documents():
 
     print(f"Total fragmentos en Vault: {len(evidence_engine.ledger.fragments)}")
 
-    # 2. RAG Tree (Raptor Engine)
     print("Iniciando Raptor Engine...")
     raptor = RaptorEngine(client_id=client_id, storage_dir=storage_dir)
     await raptor.build_tree(evidence_engine.ledger.fragments)

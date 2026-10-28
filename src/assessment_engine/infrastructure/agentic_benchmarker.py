@@ -230,7 +230,6 @@ class AgenticRageBenchmarker:
                 if local_snapshot_path:
                     justification += f"Archivo de Respaldo Local: {local_snapshot_path} (Disponible para auditoría forense)."
 
-                # Add to master snapshot
                 master_snapshot.snapshots[tower_id] = TowerBenchmarkSnapshot(
                     tower_id=tower_id,
                     framework_id=framework_id,

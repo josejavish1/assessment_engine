@@ -6,10 +6,10 @@ from src.infrastructure.raptor_engine import RaptorEngine
 
 
 async def ingest_documents():
+    """Ingest documents according to technical specification."""
     storage_dir = Path("working/eurovision_demo_ultimate")
     client_id = "eurovision_demo_ultimate"
 
-    # 1. Fragmentation (Evidence Engine)
     print("Iniciando Evidence Engine...")
     evidence_engine = EvidenceEngine(client_id=client_id, storage_dir=storage_dir)
 
@@ -24,7 +24,6 @@ async def ingest_documents():
 
     print(f"Total fragmentos: {len(evidence_engine.ledger.fragments)}")
 
-    # 2. RAG Tree (Raptor Engine)
     print("Iniciando Raptor Engine (esto puede tardar unos minutos)...")
     raptor = RaptorEngine(client_id=client_id, storage_dir=storage_dir)
     await raptor.build_tree(evidence_engine.ledger.fragments)

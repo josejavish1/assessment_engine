@@ -13,6 +13,7 @@ from assessment_engine.application.tools import (
 
 
 def normalize_type_annotation(annotation) -> str:
+    """Normalize type annotation according to technical specification."""
     if annotation is None:
         return "None"
     type_str = str(annotation)
@@ -24,6 +25,7 @@ def normalize_type_annotation(annotation) -> str:
 
 
 def check_type_compatibility(pydantic_type: str, documented_type: str) -> bool:
+    """Check type compatibility according to technical specification."""
     p_type = pydantic_type.lower().replace(" ", "")
     d_type = documented_type.lower().replace(" ", "")
 
@@ -52,6 +54,7 @@ def check_type_compatibility(pydantic_type: str, documented_type: str) -> bool:
 
 
 def parse_markdown_table_row(line: str) -> dict | None:
+    """Parse markdown table row according to technical specification."""
     stripped_line = line.strip()
     if not stripped_line.startswith("|") or not stripped_line.endswith("|"):
         return None
@@ -95,6 +98,7 @@ def parse_markdown_table_row(line: str) -> dict | None:
 
 
 def extract_markdown_models_and_tables(absolute_path: Path) -> dict[str, list[dict]]:
+    """Extract markdown models and tables according to technical specification."""
     text = absolute_path.read_text(encoding="utf-8")
     models: dict[str, list[dict]] = {}
     current_model: str | None = None
@@ -118,6 +122,7 @@ def extract_markdown_models_and_tables(absolute_path: Path) -> dict[str, list[di
 
 
 def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[str]:
+    """Generate markdown table lines according to technical specification."""
     # Map old field names (or aliases) to their human descriptions to prevent data loss
     old_descriptions: dict[str, str] = {}
     for f in old_fields:
@@ -165,6 +170,7 @@ def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[s
 def replace_table_in_markdown(
     file_content: str, class_name: str, new_table_lines: list[str]
 ) -> str:
+    """Replace table in markdown according to technical specification."""
     lines = file_content.splitlines()
     heading_re = re.compile(r"^(#{2,4})\s+.*?\`" + re.escape(class_name) + r"\`")
 
@@ -204,6 +210,7 @@ def replace_table_in_markdown(
 def validate_contracts_schemas(
     repo_root: Path, documentation_map_path: Path, autofix: bool = False
 ) -> list[str]:
+    """Validate contracts schemas according to technical specification."""
     documentation_map = governance.load_yaml(documentation_map_path)
     errors: list[str] = []
 
@@ -335,6 +342,7 @@ def validate_contracts_schemas(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
@@ -343,6 +351,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Execute command-line interface entrypoint."""
     args = parse_args()
     errors = validate_contracts_schemas(
         repo_root=Path(args.repo_root).resolve(),

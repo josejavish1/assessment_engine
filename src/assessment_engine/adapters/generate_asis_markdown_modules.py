@@ -32,6 +32,7 @@ def clean_client_name(client_name: str) -> str:
 
 
 def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
+    """Derive pillar justification according to technical specification."""
     from assessment_engine.domain.maturity_band import (
         ANNEX_MATURITY_BANDS,
         resolve_maturity_band,
@@ -82,12 +83,10 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
             
     sorted_findings = sorted(findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True)
     
-    # Gaps (worst findings: vuln >= 4 or first 2)
     gaps_findings = [f for f in sorted_findings if get_vuln(f) >= 4]
     if not gaps_findings:
         gaps_findings = sorted_findings[:1]
         
-    # Stable (vulnerability < 4 or remaining findings)
     stable_findings = [f for f in sorted_findings if f not in gaps_findings]
     
     # Extract capability names (translate/sanitize them to Spanish if needed!)
@@ -269,7 +268,7 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
     t = str(text).strip()
     lang = str(doc_lang).lower()
 
-    # Apply declarative vocabulary substitutions (e.g. sistémico -> estructural, monitoreo -> monitorización)
+    # Apply declarative vocabulary substitutions for standard compliance
     from assessment_engine.infrastructure.localization import (
         apply_vocabulary_substitutions,
     )
@@ -318,6 +317,7 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
 
 
 def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, total_fair_ale: float, doc_lang: str, total_p90: float = 0.0, total_max: float = 0.0) -> str:
+    """Sanitize and unify metrics according to technical specification."""
     import re
     import os
     if not text:
@@ -698,7 +698,6 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
         # Apply bilingually-sanitized and unified metrics on the entire un-split text first to avoid double regex matches
         body_text_sanitized = sanitize_and_unify_metrics(body_text, exact_score, exact_band, global_fair_ale, doc_lang, global_fair_p90, global_fair_max)
         
-        # Split body text on double newlines to process paragraphs separately
         paragraphs = [p.strip() for p in body_text_sanitized.split("\n\n") if p.strip()]
         
         for p in paragraphs:
@@ -760,7 +759,6 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
                 "finding": finding
             })
             
-    # Sort risks by ALE descending
     all_risks.sort(key=lambda x: x["ale"], reverse=True)
 
     # Group risks by strategic mitigation initiative to prevent repetitive mapping of multiple risks to the same project
@@ -803,7 +801,7 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
     # Sort grouped mitigations by ALE sum descending
     sorted_groups = sorted(mitigation_groups.items(), key=lambda x: x[1]["ale_sum"], reverse=True)
 
-    # 4. Pilares de Mitigación y Habilitación de Valor Estratégico (Streamlined Section 1.2 + 1.3 for 1-page fit)
+    # 4. Strategic Value Enablement and Mitigation Pillars (Streamlined Section 1.2 + 1.3 for 1-page fit)
     re_content.append("## Pilares de Mitigación y Habilitación de Valor Estratégico")
     
     if sorted_groups:

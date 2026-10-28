@@ -291,7 +291,6 @@ class SourceVault:
             "SAP",
             "Microsoft",
         ]
-        # Include custom discovered brands dynamically
         for cb in getattr(self, "custom_discovered_brands", []):
             if cb and cb not in brands:
                 brands.append(cb)

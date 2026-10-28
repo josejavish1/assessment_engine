@@ -18,6 +18,7 @@ def _load_yaml_config(filename: str) -> dict:
 
 
 def get_product_owner_planner_instruction(max_tasks: int) -> str:
+    """Get product owner planner instruction according to architectural specification."""
     config = _load_yaml_config("product_owner_planner.yaml")
 
     #
@@ -47,6 +48,7 @@ def get_product_owner_planner_instruction(max_tasks: int) -> str:
 def build_product_owner_planner_prompt(
     request_text: str, repo_context: str = ""
 ) -> str:
+    """Build product owner planner prompt according to architectural specification."""
     context_block = ""
     if repo_context:
         context_block = f"Contexto del Repositorio:\n{repo_context}\n\n"
@@ -61,6 +63,7 @@ def build_product_owner_planner_prompt(
 
 
 def get_product_owner_doctor_instruction() -> str:
+    """Get product owner doctor instruction according to architectural specification."""
     config = _load_yaml_config("product_owner_doctor.yaml")
     rules = "\n".join(f"{idx + 1}. {rule}" for idx, rule in enumerate(config["rules"]))
     return f"""{config["persona"]}
@@ -73,6 +76,7 @@ REGLAS:
 
 
 def build_product_owner_doctor_prompt(plan: dict, task: dict, error_log: str) -> str:
+    """Build product owner doctor prompt according to architectural specification."""
     payload = {
         "request_title": plan["request_title"],
         "in_scope": plan.get("in_scope", []),
@@ -91,6 +95,7 @@ def build_product_owner_doctor_prompt(plan: dict, task: dict, error_log: str) ->
 
 
 def render_plan_markdown(plan: dict) -> str:
+    """Render plan markdown according to architectural specification."""
     tasks = "\n".join(
         [
             f"## {index}. {task['title']}\n"
@@ -129,6 +134,7 @@ def render_task_prompt(
     attempt: int,
     validation_feedback: str | None = None,
 ) -> str:
+    """Render task prompt according to architectural specification."""
     feedback_block = ""
     if validation_feedback:
         feedback_block = (
@@ -164,6 +170,7 @@ def render_pr_reconciliation_prompt(
     *,
     attempt: int,
 ) -> str:
+    """Render pr reconciliation prompt according to architectural specification."""
     payload = {
         "request_title": plan["request_title"],
         "problem": plan["problem"],

@@ -474,7 +474,6 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 # derived from the actual qualitative technical maturity score (p_score) of the corresponding pillar.
                 # standard Actuarial Practice: Instead of a naive linear decay, we use a logistic/exponential decay function.
                 # A maturity drop from 3 to 2 causes an exponential collapse in defense efficacy, not a flat 25% drop.
-                # Mathematically: p_vuln = 1.0 / (1.0 + exp(1.5 * (p_score - 3.0)))
                 p_vuln = 1.0 / (1.0 + np.exp(1.5 * (p_score - 3.0)))
                 # Condition vulnerability on network/environmental exposure factor (e.g. air-gapped systems)
                 p_vuln = max(0.01, min(0.99, p_vuln * exposure_factor))
@@ -568,7 +567,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     max_frict_cap = calib_rev * 0.05 if calib_rev > 0 else 150000.0
                     lm_max = min(lm_max, max_frict_cap)
                     
-                    # Inyectar el sobrecoste de TCO de licencias/horas fijas para el renderizado del Hexágono de Valor
+                    # Inject TCO fixed license/hours cost for Value Hexagon rendering
                     finding["deterministic_tco_waste_eur"] = float(cap_calibration.get("deterministic_waste_eur", 0.0))
 
                 # Execute a mathematically rigorous, production-grade Open FAIR 10,000-run Monte Carlo simulation (Collective Risk Model).
@@ -755,12 +754,15 @@ class FairRiskPolicy(BaseSovereignPolicy):
                                 reg_max_fine = 10000000.0
                         else:
                             reg_context_str = " ".join(intel.get("regulatory_context", [])).lower()
+                            client_country = str(intel.get("country") or intel.get("geography", "")).lower()
                             if "dora" in reg_context_str:
                                 reg_max_fine = 15000000.0 # DORA compliance cap
                             elif "hipaa" in reg_context_str:
                                 reg_max_fine = 5000000.0 # HIPAA compliance cap
+                            elif any(c in client_country for c in ["brasil", "brazil", "mexico", "méxico", "chile", "colombia", "argentina", "peru", "perú"]) or any(k in reg_context_str for k in ["lgpd", "lfpd", "1581", "21.663"]):
+                                reg_max_fine = 2000000.0 # LatAm statutory baseline cap (LGPD / LFPDPPP / SIC / INAI)
                             else:
-                                reg_max_fine = 10000000.0 # Global statutory baseline cap (NIS2 / GDPR / ISO)
+                                reg_max_fine = 10000000.0 # EU statutory baseline cap (NIS2 / GDPR / ISO)
 
                         # standard Regulatory Law & Actuarial Practice: Proportionality of Single-Deficiency Sanctions (GDPR/NIS2/DORA)
                         # A single technical deficiency cannot incur the maximum statutory penalty of the entire corporation (27M€).
@@ -821,7 +823,6 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     # avoiding the double-counting fallacy of a blind addition.
                     consolidated_losses = np.maximum(all_primary_lms, all_sec_losses) + (all_primary_lms * 0.1)
 
-                    # Aggregate losses per run using fast bincount accumulator
                     loss_per_run = np.bincount(event_run_ids, weights=consolidated_losses, minlength=size)
                 else:
                     loss_per_run = np.zeros(size)

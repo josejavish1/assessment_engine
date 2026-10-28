@@ -19,6 +19,7 @@ class LegacyParserStrategy(ParserStrategy):
     """Fallback implementation of the sequential parser."""
 
     def parse(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
+        """Parse  according to technical specification."""
         return {
             "text": file_content.decode("utf-8", errors="ignore"),
             "source": "legacy_parser",
@@ -32,6 +33,7 @@ class CloudParserStrategy(ParserStrategy):
         self._client = client
 
     def parse(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
+        """Parse  according to technical specification."""
         processed_document = self._client.process_document(
             file_content, mime_type
         )

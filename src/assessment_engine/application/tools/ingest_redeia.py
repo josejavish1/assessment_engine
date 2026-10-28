@@ -6,15 +6,15 @@ from assessment_engine.infrastructure.raptor_engine import RaptorEngine
 
 
 async def ingest_documents():
+    """Ingest documents according to technical specification."""
     import os
 
     client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "redeia_v3")
     storage_dir = Path("working") / client_id / "redeia"
 
-    # Asegurar que el directorio de almacenamiento existe
+    # Ensure storage directory exists
     storage_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Fragmentation (Evidence Engine)
     print("Iniciando Evidence Engine...")
     evidence_engine = EvidenceEngine(client_id=client_id, storage_dir=storage_dir)
 
@@ -29,7 +29,6 @@ async def ingest_documents():
 
     print(f"Total fragmentos: {len(evidence_engine.ledger.fragments)}")
 
-    # 2. RAG Tree (Raptor Engine)
     print("Iniciando Raptor Engine (esto puede tardar unos minutos)...")
     raptor = RaptorEngine(client_id=client_id, storage_dir=storage_dir)
     await raptor.build_tree(evidence_engine.ledger.fragments)

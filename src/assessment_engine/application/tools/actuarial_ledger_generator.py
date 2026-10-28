@@ -6,10 +6,10 @@ from typing import Any, Dict
 logger = logging.getLogger(__name__)
 
 def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) -> None:
-    """
-    Genera un Expediente de Auditoría (Audit Dossier) en formato Markdown para cada riesgo,
-    combinando el Racional de Elicitación de Expertos (SME) con un script de Python 
-    totalmente ejecutable y reproducible por el auditor.
+    """Generate a formal Markdown Audit Dossier for each quantified financial risk.
+
+    Combines SME elicitation rationale with a self-contained, reproducible Python simulation
+    script compliant with the Federal Reserve SR 11-7 model risk management guidance.
     """
     client_name = blueprint_payload.get("document_meta", {}).get("client_name", "UNKNOWN")
     from assessment_engine.infrastructure.runtime_paths import resolve_case_dir

@@ -76,7 +76,6 @@ class DigitalTwinExporter:
             "T10": 3.0,
         }
 
-        # Resolve paths
         client_dir = resolve_client_dir(self.client_name)
         case_input_path = client_dir / "case_input.json"
 
@@ -89,7 +88,6 @@ class DigitalTwinExporter:
         elif case_input_path.exists():
             target_path = case_input_path
         else:
-            # Look for case_input.json in any tower subdirectories
             for p in client_dir.glob("**/case_input.json"):
                 target_path = p
                 break

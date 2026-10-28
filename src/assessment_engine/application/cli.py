@@ -350,7 +350,6 @@ def main() -> None:
         dest="subcommand", required=True, help="Subcommands"
     )
 
-    # Pipeline Run
     run_parser = subparsers.add_parser(
         "run", help="Run the full end-to-end assessment pipeline."
     )

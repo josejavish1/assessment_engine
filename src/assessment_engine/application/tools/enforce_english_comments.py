@@ -389,6 +389,7 @@ async def process_file(filepath: Path, autofix: bool) -> bool:
 
 
 async def main() -> int:
+    """Execute command-line interface entrypoint."""
     parser = argparse.ArgumentParser(
         description="Enforce English on all code comments and docstrings."
     )

@@ -24,6 +24,7 @@ class DeterministicFinOpsEngine:
 
     @staticmethod
     def infer_typology(project_name: str, objective: str) -> str:
+        """Infer typology according to technical specification."""
         text = f"{project_name} {objective}".lower()
         if any(w in text for w in ["gobernanza", "marco", "proceso", "política", "estandarización", "auditoría", "capacitación"]):
             return "governance_process"
@@ -120,6 +121,7 @@ class MeceClusteringEngine:
 
     @classmethod
     def get_token_signature(cls, text: str) -> set[str]:
+        """Get token signature according to technical specification."""
         words = re.findall(r"\b[a-záéíóúñ]{4,}\b", text.lower())
         return {w for w in words if w not in cls.STOPWORDS}
 
@@ -150,7 +152,6 @@ class MeceClusteringEngine:
         """Merges secondary initiative into primary, creating a robust, unified initiative."""
         merged = dict(primary)
 
-        # Merge deliverables
         delivs_a = set(primary.get("deliverables", []))
         delivs_b = set(secondary.get("deliverables", []))
         merged["deliverables"] = sorted(list(delivs_a | delivs_b))[:5]

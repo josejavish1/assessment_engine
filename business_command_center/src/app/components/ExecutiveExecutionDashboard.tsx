@@ -73,7 +73,6 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
     const res = await authorizeActionGate(requestDir, altIndex);
     if (res.success) {
       setLogs(prev => prev + "✅ Action Gate autorizado. Reintentando ejecución...\n");
-      // Resuming execution
       const runRes = await startPlanExecution(requestDir, altIndex);
       if (runRes.success && runRes.jobId) {
         const poll = setInterval(async () => {

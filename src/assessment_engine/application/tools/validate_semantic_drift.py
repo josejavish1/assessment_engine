@@ -19,6 +19,7 @@ from assessment_engine.application.tools import (
 
 
 def get_modified_py_files(repo_root: Path) -> list[str]:
+    """Get modified py files according to technical specification."""
     modified = set()
 
     # 1. Try diffing against origin/main (typical PR workflow)
@@ -66,6 +67,7 @@ def get_modified_py_files(repo_root: Path) -> list[str]:
 
 
 def get_git_diff(repo_root: Path, file_path: str) -> str:
+    """Get git diff according to technical specification."""
     try:
         # First try diffing committed changes
         res = subprocess.run(
@@ -97,6 +99,7 @@ def get_git_diff(repo_root: Path, file_path: str) -> str:
 
 
 def query_gemini_api(api_key: str, prompt: str) -> str:
+    """Query gemini api according to technical specification."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     data = {"contents": [{"parts": [{"text": prompt}]}]}
@@ -128,6 +131,7 @@ def check_semantic_drift(
     documentation_map_path: Path,
     api_key: str,
 ) -> tuple[list[str], str]:
+    """Check semantic drift according to technical specification."""
     documentation_map = governance.load_yaml(documentation_map_path)
     modified_py = get_modified_py_files(repo_root)
 
@@ -208,6 +212,7 @@ Otherwise, provide a clear, professional architectural review listing:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
@@ -216,6 +221,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Execute command-line interface entrypoint."""
     args = parse_args()
     api_key = os.environ.get("GEMINI_API_KEY")
 

@@ -449,7 +449,6 @@ class EpistemicGraphService:
             if policy_file.exists():
                 policy_data = json.loads(policy_file.read_text(encoding="utf-8-sig"))
 
-                # Resolve target profile
                 target_profile = "default"
                 if (
                     "energy" in self.industry_profile
@@ -463,7 +462,6 @@ class EpistemicGraphService:
                 ):
                     target_profile = self.industry_profile
 
-                # Build updated list
                 updated_list = []
                 for u, v, d in self.graph.edges(data=True):
                     updated_list.append(

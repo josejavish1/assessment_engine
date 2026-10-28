@@ -53,12 +53,14 @@ AGENT_ADAPTER_PATHS = {
 
 
 def load_yaml(path: Path) -> dict:
+    """Load yaml according to technical specification."""
     with path.open("r", encoding="utf-8") as handle:
         data = yaml.safe_load(handle)
     return data or {}
 
 
 def read_front_matter(path: Path) -> dict | None:
+    """Read front matter according to technical specification."""
     text = path.read_text(encoding="utf-8")
     if not text.startswith("---\n"):
         return None
@@ -72,10 +74,12 @@ def read_front_matter(path: Path) -> dict | None:
 
 
 def path_exists(repo_root: Path, raw_path: str) -> bool:
+    """Path exists according to technical specification."""
     return (repo_root / raw_path).exists()
 
 
 def is_valid_date_value(value: object) -> bool:
+    """Is valid date value according to technical specification."""
     if isinstance(value, str):
         return bool(DATE_RE.match(value))
     if isinstance(value, (date, datetime)):
@@ -84,16 +88,19 @@ def is_valid_date_value(value: object) -> bool:
 
 
 def is_subpath(changed_path: str, required_path: str) -> bool:
+    """Is subpath according to technical specification."""
     if changed_path == required_path:
         return True
     return changed_path.startswith(required_path.rstrip("/") + "/")
 
 
 def normalize_repo_path(path: Path, repo_root: Path) -> str:
+    """Normalize repo path according to technical specification."""
     return path.resolve().relative_to(repo_root.resolve()).as_posix()
 
 
 def should_validate_markdown_target(target: str) -> bool:
+    """Should validate markdown target according to technical specification."""
     stripped = target.strip()
     if not stripped or stripped.startswith("#"):
         return False
@@ -103,6 +110,7 @@ def should_validate_markdown_target(target: str) -> bool:
 
 
 def split_markdown_target(target: str) -> tuple[str, str]:
+    """Split markdown target according to technical specification."""
     stripped = target.strip()
     path_part, fragment = stripped, ""
     if "#" in stripped:
@@ -111,6 +119,7 @@ def split_markdown_target(target: str) -> tuple[str, str]:
 
 
 def github_anchor_slug(text: str) -> str:
+    """Github anchor slug according to technical specification."""
     slug = text.strip().lower()
     slug = re.sub(r"[^\w\s-]", "", slug)
     slug = re.sub(r"\s+", "-", slug)
@@ -119,6 +128,7 @@ def github_anchor_slug(text: str) -> str:
 
 
 def markdown_heading_anchors(markdown_text: str) -> set[str]:
+    """Markdown heading anchors according to technical specification."""
     anchors: set[str] = set()
     counts: dict[str, int] = {}
     for match in MARKDOWN_HEADING_RE.finditer(markdown_text):
@@ -133,6 +143,7 @@ def markdown_heading_anchors(markdown_text: str) -> set[str]:
 
 
 def markdown_link_target_path(current_path: Path, target: str) -> Path | None:
+    """Markdown link target path according to technical specification."""
     if not should_validate_markdown_target(target):
         return None
 
@@ -151,6 +162,7 @@ def validate_markdown_links(
     external_timeout_seconds: float = 5.0,
     external_link_cache: dict[str, str] | None = None,
 ) -> None:
+    """Validate markdown links according to technical specification."""
     text = current_path.read_text(encoding="utf-8")
     anchors_by_file: dict[Path, set[str]] = {
         current_path.resolve(): markdown_heading_anchors(text)
@@ -202,6 +214,7 @@ def validate_markdown_links(
 
 
 def check_external_link(url: str, timeout_seconds: float) -> str | None:
+    """Check external link according to technical specification."""
     request = urllib.request.Request(
         url,
         headers={"User-Agent": "assessment-engine-docs-governance/1.0"},
@@ -236,6 +249,7 @@ def check_external_link(url: str, timeout_seconds: float) -> str | None:
 
 
 def is_path_covered_by_entry(path: str, entry_path: str, kind: str) -> bool:
+    """Is path covered by entry according to technical specification."""
     if kind == "document":
         return path == entry_path
     if kind == "collection":
@@ -244,12 +258,14 @@ def is_path_covered_by_entry(path: str, entry_path: str, kind: str) -> bool:
 
 
 def matches_any_pattern(path: str, patterns: list[str]) -> bool:
+    """Matches any pattern according to technical specification."""
     return any(fnmatch.fnmatch(path, pattern) for pattern in patterns)
 
 
 def validate_front_matter_fields(
     front_matter: dict, entry_path: str, error_prefix: str, errors: list[str]
 ) -> None:
+    """Validate front matter fields according to technical specification."""
     missing_front_matter = sorted(FRONT_MATTER_REQUIRED - set(front_matter))
     if missing_front_matter:
         errors.append(
@@ -292,6 +308,7 @@ def validate_documentation_coverage(
     *,
     check_external_links: bool = False,
 ) -> None:
+    """Validate documentation coverage according to technical specification."""
     coverage = documentation_map.get("coverage", {})
     include_patterns = coverage.get("include", DEFAULT_COVERAGE_INCLUDE)
     exclude_patterns = coverage.get("exclude", DEFAULT_COVERAGE_EXCLUDE)
@@ -357,6 +374,7 @@ def validate_path_list_field(
     raw_value: object,
     errors: list[str],
 ) -> list[str] | None:
+    """Validate path list field according to technical specification."""
     if not isinstance(raw_value, list) or not raw_value:
         errors.append(f"{entry_path}: {field_name} must be a non-empty list")
         return None
@@ -379,6 +397,7 @@ def validate_path_list_field(
 def git_changed_files(
     repo_root: Path, base_sha: str | None, head_sha: str | None
 ) -> list[str]:
+    """Git changed files according to technical specification."""
     if not base_sha or not head_sha:
         return []
     if re.fullmatch(r"0+", base_sha):
@@ -397,6 +416,7 @@ def git_changed_files(
 
 
 def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
+    """Validate entry according to technical specification."""
     required = {
         "path",
         "kind",
@@ -535,6 +555,7 @@ def validate_entry(repo_root: Path, entry: dict, errors: list[str]) -> None:
 def validate_freshness(
     documentation_map: dict, entries: list[dict], today: date, errors: list[str]
 ) -> None:
+    """Validate freshness according to technical specification."""
     freshness = documentation_map.get("freshness", {})
     verified_max_age_days = freshness.get(
         "verified_max_age_days", DEFAULT_VERIFIED_MAX_AGE_DAYS
@@ -568,6 +589,7 @@ def validate_freshness(
 def validate_automation_rules(
     repo_root: Path, rules: list[dict], changed_files: list[str], errors: list[str]
 ) -> None:
+    """Validate automation rules according to technical specification."""
     for rule in rules:
         required = {"name", "when_changed", "require_review_of"}
         missing = sorted(required - set(rule))
@@ -624,6 +646,7 @@ def validate_automation_rules(
 def validate_source_linked_review(
     entries: list[dict], changed_files: list[str], errors: list[str]
 ) -> None:
+    """Validate source linked review according to technical specification."""
     if not changed_files:
         return
 
@@ -686,6 +709,7 @@ def validate_documentation_governance(
     check_external_links: bool = False,
     today: date | None = None,
 ) -> list[str]:
+    """Validate documentation governance according to technical specification."""
     errors: list[str] = []
     documentation_map = load_yaml(documentation_map_path)
 
@@ -738,6 +762,7 @@ def validate_documentation_governance(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
@@ -756,6 +781,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Execute command-line interface entrypoint."""
     args = parse_args()
     repo_root = Path(args.repo_root).resolve()
     documentation_map_path = Path(args.documentation_map).resolve()

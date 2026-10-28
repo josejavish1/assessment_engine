@@ -215,14 +215,17 @@ class FinancialScaleCalibrator:
             - reg_max_fine_eur: El límite máximo de multa reguladora aplicable bajo la directiva NIS2.
             - hourly_rate_sre_eur: La tarifa horaria de consultoría senior de DevOps / SRE para {client_country} en Euros.
             
-            - hourly_downtime_cost_eur: El coste por hora de inactividad de su plataforma de TI, centros de datos y operaciones. 
-              Para calibrar esta cifra con rigor actuarial y credibilidad directiva:
-              1. En empresas industriales, de manufactura, construcción y B2B (como {client_name}), los procesos de fabricación y planta operan con sistemas de control local (OT/SCADA) que no se detienen instantáneamente por una caída de servidores centrales. Por tanto, el coste horario de caída de TI se sitúa típicamente entre el 0.0008% y el 0.0018% de la facturación anual consolidada (para una empresa de ~1.300 M€, esto representa entre 12.000 € y 25.000 € por hora).
-              2. En empresas financieras o comercio digital masivo (B2C), se sitúa entre el 0.002% y el 0.005%.
-              3. CRUCE CON MADUREZ TÉCNICA LOCAL: Analiza las 'Métricas de Madurez Técnica' y el 'Contexto de Arquitectura' del cliente:
-                 - Si la madurez de Resiliencia es >= 3.0 (clustering distribuido, failover geográfico, redundancia) y/o el nivel de Monitorización es >= 3.0, sitúa el coste de inactividad efectiva en el extremo inferior del rango sectorial (hacia ~12.000 € - 16.000 €/h).
-                 - Si la madurez es baja (< 3.0), sitúa el coste en el extremo superior del rango sectorial (hacia ~20.000 € - 25.000 €/h).
-              IMPORTANTE: Bajo ninguna circunstancia propongas cifras desproporcionadas (> 30.000 €/h para entornos industriales B2B).
+            - hourly_downtime_cost_eur: El coste estimado por hora de inactividad de la infraestructura digital y operaciones del cliente. 
+              Para calibrar esta cifra con rigor actuarial y credibilidad directiva según el estándar mundial ITIC / Gartner:
+              1. CRUCE POR SECTOR DE ACTIVIDAD:
+                 - Sector Financiero, Banca, Seguros y Pasarelas de Pago: 0.003% a 0.006% de la facturación anual consolidada por hora (alta dependencia transaccional en tiempo real).
+                 - Comercio Masivo, E-Commerce, Retail y Telecomunicaciones: 0.0015% a 0.0035% de la facturación anual consolidada por hora (canales continuos de venta y logística).
+                 - Industria Pesada, Manufactura, Construcción y Energía: 0.0008% a 0.0018% de la facturación anual consolidada por hora (buffers operativos y sistemas de control local OT/SCADA).
+                 - Servicios Profesionales, Sanidad y Sector Público: 0.0005% a 0.0015% de la facturación anual consolidada por hora.
+              2. CRUCE CON MADUREZ TÉCNICA AUDITADA:
+                 - Si la madurez de Resiliencia es >= 3.0 (clustering distribuido, failover geográfico, redundancia) y/o Monitorización >= 3.0, sitúa el coste efectivo en el tercio inferior del rango sectorial correspondiente.
+                 - Si la madurez es baja (< 3.0), sitúa el coste en el tercio superior del rango sectorial.
+              IMPORTANTE: Mantén siempre la proporcionalidad matemática con la facturación real del cliente sin inflar artificialmente el coste.
             
             Establece obligatoriamente de forma constante:
             - currency_code: "{target_currency}"

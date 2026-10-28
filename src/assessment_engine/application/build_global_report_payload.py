@@ -163,11 +163,9 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             EpistemicGraphService,
         )
 
-        # Resolve industry profile from dossier
         ind_profile = intelligence_dossier.get("profile", {}).get("industry", "default")
         graph_service = EpistemicGraphService(industry_profile=ind_profile)
 
-        # Collect intrinsic audited scores
         intrinsic_audited = {item["id"]: float(item["score"]) for item in towers_data}
         # Fill missing towers with 5.0 (neutral) to prevent false cascade alarms
         for t_id in graph_service.towers:

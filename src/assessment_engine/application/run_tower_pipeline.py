@@ -330,7 +330,6 @@ async def run_pipeline():
             if not industry_name:
                 industry_name = intel_data.get("industry", "default")
 
-            # Map industry name to profile key
             from assessment_engine.infrastructure.config_loader import map_industry_to_profile
             industry_key = map_industry_to_profile(industry_name)
         except (OSError, ValueError, KeyError, AttributeError) as ex:

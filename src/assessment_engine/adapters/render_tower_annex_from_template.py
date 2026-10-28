@@ -489,7 +489,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
     # Step 2: Sanitize the document by removing paragraphs that serve as instructional notes or contain non-content template markers. This ensures the final output is clean of authoring artifacts.
     paragraphs_to_remove = []
     for p in doc.paragraphs:
-        # Identifies and marks for deletion any paragraphs containing instructional prompts, such as "Teniendo en cuenta el resumen de...". This sanitization step removes non-content markers intended for document authors from the final output.
+        # Identifies and marks for deletion any paragraphs containing instructional prompts, such as "Considering the summary of...". This sanitization step removes non-content markers intended for document authors from the final output.
         if (
             "[Teniendo en cuenta el resumen de" in p.text
             or "[Teniendo en cuenta el Resumen ejecutivo" in p.text
@@ -856,7 +856,6 @@ def main(argv: list[str] | None = None) -> None:
     )
     render_radar_chart(doc, "{{RADAR_CHART_BLOCK}}", profile.get("radar_chart", ""))
 
-    # Render the Loss Exceedance Curve (LEC) Chart (Gap 2)
     lec_chart_path = payload_path.parent / "loss_exceedance_curve.png"
     if not lec_chart_path.exists():
         client_id = meta.get("client_name") or os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")

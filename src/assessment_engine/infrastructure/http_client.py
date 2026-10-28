@@ -49,7 +49,7 @@ class SovereignHttpClient:
         self.default_timeout = max(0.1, default_timeout)
         self.session = requests.Session()
 
-        # Configurar reintentos automáticos a nivel de transporte para fallos de conexión y 502/503/504
+        # Configure automatic transport retries for connection drops and 502/503/504 status codes
         retries = Retry(
             total=max_retries,
             backoff_factor=backoff_factor,

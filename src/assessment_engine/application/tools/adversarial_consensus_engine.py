@@ -207,31 +207,31 @@ class AdversarialConsensusEngine:
         """
         
         try:
-            # Iteración 1: Ataque del CFO
+            # Iteration 1: CFO adversarial critique
             history += "--- RONDA 1: ATAQUE DEL CFO ---\n"
             cfo_prompt = cfo_prompt_base + "\n" + history + "\nEscribe tu primer ataque:"
             cfo_resp1 = await self._generate_text_with_retry(cfo_prompt)
             history += f"👔 CFO: {cfo_resp1}\n\n"
             
-            # Iteración 2: Defensa del Actuario
+            # Iteration 2: Actuary statistical defense
             history += "--- RONDA 2: DEFENSA DEL ACTUARIO ---\n"
             act_prompt = actuary_prompt_base + "\n" + history + "\nEscribe tu defensa basada en la falta de control robusto:"
             act_resp1 = await self._generate_text_with_retry(act_prompt)
             history += f"🧮 ACTUARIO: {act_resp1}\n\n"
             
-            # Iteración 3: Contra-ataque del CFO
+            # Iteration 3: CFO fiscal counter-attack
             history += "--- RONDA 3: CONTRA-ATAQUE DEL CFO ---\n"
             cfo_prompt2 = cfo_prompt_base + "\n" + history + "\nResponde al Actuario, defendiendo los controles compensatorios locales de la empresa:"
             cfo_resp2 = await self._generate_text_with_retry(cfo_prompt2)
             history += f"👔 CFO: {cfo_resp2}\n\n"
             
-            # Iteración 4: Consenso Final del Actuario
+            # Iteration 4: Actuary consensus synthesis
             history += "--- RONDA 4: DEFENSA FINAL DEL ACTUARIO ---\n"
             act_prompt2 = actuary_prompt_base + "\n" + history + "\nResponde al CFO, cediendo y consensuando el estado fáctico real del control (Implementado/Parcial/Ausente):"
             act_resp2 = await self._generate_text_with_retry(act_prompt2)
             history += f"🧮 ACTUARIO: {act_resp2}\n\n"
             
-            # Iteración 5: Extracción del Consenso a Pydantic
+            # Iteration 5: Consensus extraction to Pydantic
             history += "--- RONDA 5: EXTRACCIÓN DE RACIONAL SR 11-7 (FAIR-CAM GROUNDING) ---\n"
             final_prompt = f"""
             Basándote en el debate de 4 rondas, debes clasificar el nivel de implantación de cada control de seguridad relevante del catálogo para esta vulnerabilidad, y justificarlo bajo el estándar de validación de modelos SR 11-7.
@@ -252,7 +252,6 @@ class AdversarialConsensusEngine:
                 schema=ConsensusAdjustment
             )
             
-            # Write to transcript file
             with open(transcript_file, "a", encoding="utf-8") as f:
                 f.write(f"\n======================================================\n")
                 f.write(f"--- DEBATE COMPLETO PARA CAPACIDAD: {cap} ---\n")

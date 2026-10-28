@@ -22,6 +22,7 @@ REPO_RELATIVE_HINTS = {".venv", ".github", "bin", "docs", "src", "templates", "t
 
 
 def should_validate_repo_relative_path(token: str) -> bool:
+    """Should validate repo relative path according to technical specification."""
     normalized = token
     if normalized.startswith("./"):
         normalized = normalized[2:]
@@ -32,6 +33,7 @@ def should_validate_repo_relative_path(token: str) -> bool:
 
 
 def validate_command_flags(repo_root: Path, line: str) -> list[str]:
+    """Validate command flags according to technical specification."""
     errors: list[str] = []
 
     # Match direct script path, e.g. python src/tools/script.py ...
@@ -44,7 +46,6 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
         script_path = repo_root / script_rel
         args_str = line[script_match.end() :]
     else:
-        # Match python -m module
         module_match = re.search(r"\bpython3?\s+-m\s+([a-zA-Z0-9_\.]+)\b", line)
         if module_match:
             module_name = module_match.group(1)
@@ -97,6 +98,7 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
 def validate_documentation_snippets(
     repo_root: Path, documentation_map_path: Path
 ) -> list[str]:
+    """Validate documentation snippets according to technical specification."""
     documentation_map = governance.load_yaml(documentation_map_path)
     errors: list[str] = []
 
@@ -158,6 +160,7 @@ def validate_documentation_snippets(
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", required=True)
     parser.add_argument("--documentation-map", required=True)
@@ -165,6 +168,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Execute command-line interface entrypoint."""
     args = parse_args()
     errors = validate_documentation_snippets(
         repo_root=Path(args.repo_root).resolve(),
