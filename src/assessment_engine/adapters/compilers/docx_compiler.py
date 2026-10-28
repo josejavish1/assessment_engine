@@ -42,11 +42,46 @@ def set_run_font_comprehensive(
     rFonts = rPr.find(qn("w:rFonts"))
     if rFonts is None:
         rFonts = OxmlElement("w:rFonts")
-        rPr.insert(0, rFonts)
+        rStyle = rPr.find(qn("w:rStyle"))
+        if rStyle is not None:
+            rStyle.addnext(rFonts)
+        else:
+            rPr.insert(0, rFonts)
     rFonts.set(qn("w:ascii"), font_name)
     rFonts.set(qn("w:hAnsi"), font_name)
     rFonts.set(qn("w:cs"), cs_fallback)
     rFonts.set(qn("w:eastAsia"), east_asia_fallback)
+
+
+def _insert_in_tblpr(tblPr: Any, element: Any, tag_name: str) -> None:
+    """Inserts a child element into w:tblPr adhering strictly to the OpenXML CT_TblPr XSD sequence."""
+    order = [
+        "tblStyle",
+        "tblpPr",
+        "tblOverlap",
+        "bidiVisual",
+        "tblStyleRowBandSize",
+        "tblStyleColBandSize",
+        "tblW",
+        "jc",
+        "tblCellSpacing",
+        "tblInd",
+        "tblBorders",
+        "shd",
+        "tblLayout",
+        "tblCellMar",
+        "tblLook",
+        "tblCaption",
+        "tblDescription",
+    ]
+    if tag_name in order:
+        target_idx = order.index(tag_name)
+        for child in list(tblPr):
+            c_tag = child.tag.split("}")[-1]
+            if c_tag in order and order.index(c_tag) > target_idx:
+                child.addprevious(element)
+                return
+    tblPr.append(element)
 
 
 def safe_shade_cell(cell: Any, fill: str) -> None:
@@ -128,11 +163,11 @@ def safe_autofit_table_to_contents(table: Any) -> None:
     tblW = OxmlElement("w:tblW")
     tblW.set(qn("w:type"), "pct")
     tblW.set(qn("w:w"), "5000")
-    tblPr.append(tblW)
+    _insert_in_tblpr(tblPr, tblW, "tblW")
 
     tblLayout = OxmlElement("w:tblLayout")
     tblLayout.set(qn("w:type"), "autofit")
-    tblPr.append(tblLayout)
+    _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
 
     # Forces automatic width (type='auto', w='0') on each cell, ensuring the property is inserted in the correct sequence within the XML schema.
     for row in table.rows:
