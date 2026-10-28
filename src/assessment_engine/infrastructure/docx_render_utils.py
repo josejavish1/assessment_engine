@@ -818,14 +818,15 @@ def render_note_box(doc, placeholder: Any, text: Any) -> Any:
     remove_paragraph(paragraph)
 
 
-def render_pillar_score_table(doc, placeholder: Any, rows: Any) -> Any:
+def render_pillar_score_table(
+    doc, placeholder: Any, rows: Any, locale: str = "es"
+) -> Any:
     """Replaces a placeholder paragraph in a .docx document with a formatted table.
 
     Locates the first paragraph containing the `placeholder` text and inserts a
     styled table in its place. The generated table features a four-column layout
-    with fixed Spanish headers: "Pilar", "Score", "Nivel", and
-    "Lectura ejecutiva". The header row is shaded, bolded, and configured to
-    repeat across page breaks. Data rows are populated from the `rows`
+    with localized headers resolved from locales.json. The header row is shaded, bolded,
+    and configured to repeat across page breaks. Data rows are populated from the `rows`
     iterable, and column widths are automatically adjusted to fit content.
     The original placeholder paragraph is removed after table creation.
 
@@ -840,6 +841,7 @@ def render_pillar_score_table(doc, placeholder: Any, rows: Any) -> Any:
         rows (Iterable[Dict[str, str]]): An iterable of dictionaries, each
             representing a table row. Expected keys include 'pillar_label',
             'score_display', 'maturity_band', and 'executive_reading'.
+        locale (str): Document locale for internationalized table headers.
 
     Returns:
         None. This function modifies the 'doc' object in-place.
@@ -852,7 +854,24 @@ def render_pillar_score_table(doc, placeholder: Any, rows: Any) -> Any:
     finalize_table(table)
     move_table_after_paragraph(paragraph, table)
 
-    headers = ["Pilar", "Score", "Nivel", "Lectura ejecutiva"]
+    from assessment_engine.infrastructure.localization import (
+        get_localized_string,
+    )
+
+    headers = [
+        get_localized_string(
+            "table_header_pillar", locale=locale, default="Pilar"
+        ),
+        get_localized_string(
+            "table_header_score", locale=locale, default="Score"
+        ),
+        get_localized_string(
+            "table_header_level", locale=locale, default="Nivel"
+        ),
+        get_localized_string(
+            "table_header_reading", locale=locale, default="Lectura ejecutiva"
+        ),
+    ]
     for idx, header in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[idx],
@@ -962,8 +981,29 @@ def render_risks_table(doc, placeholder: Any, rows: Any) -> Any:
     remove_paragraph(paragraph)
 
 
-def render_gap_table(doc, placeholder: Any, rows: Any) -> Any:
-    r"""{'docstring': 'Inserts a styled gap analysis table into a python-docx Document object.\n\nLocates a paragraph containing the specified placeholder text and inserts a\n4-column table immediately after it. The table is populated with the\nprovided row data and formatted with specific styles, including hardcoded\nSpanish headers, a shaded header row, and defined text alignments. The\nheader row is configured to repeat on subsequent pages.\n\nThe original placeholder paragraph is removed after the table is created.\nIf the placeholder is not found, the document is not modified. This\nfunction modifies the `doc` object in-place.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` document object to modify.\n    placeholder (str): The text within a paragraph that serves as the anchor\n        for table insertion.\n    rows (List[Dict[str, str]]): A list of dictionaries, where each\n        dictionary represents a data row. Required keys are "pillar",\n        "as_is_summary", "target_state", and "key_gap".'}."""
+def render_gap_table(
+    doc, placeholder: Any, rows: Any, locale: str = "es"
+) -> Any:
+    r"""Inserts a styled gap analysis table into a python-docx Document object.
+
+    Locates a paragraph containing the specified placeholder text and inserts a
+    4-column table immediately after it. The table is populated with the
+    provided row data and formatted with localized headers resolved from locales.json.
+    The header row is configured to repeat on subsequent pages.
+
+    The original placeholder paragraph is removed after the table is created.
+    If the placeholder is not found, the document is not modified. This
+    function modifies the `doc` object in-place.
+
+    Args:
+        doc (docx.document.Document): The `python-docx` document object to modify.
+        placeholder (str): The text within a paragraph that serves as the anchor
+            for table insertion.
+        rows (List[Dict[str, str]]): A list of dictionaries, where each
+            dictionary represents a data row. Required keys are "pillar",
+            "as_is_summary", "target_state", and "key_gap".
+        locale (str): Document locale for internationalized table headers.
+    """
     paragraph = find_first_paragraph(doc, placeholder)
     if not paragraph:
         return
@@ -972,7 +1012,24 @@ def render_gap_table(doc, placeholder: Any, rows: Any) -> Any:
     finalize_table(table)
     move_table_after_paragraph(paragraph, table)
 
-    headers = ["Pilar", "Situación actual", "Estado objetivo", "Brecha clave"]
+    from assessment_engine.infrastructure.localization import (
+        get_localized_string,
+    )
+
+    headers = [
+        get_localized_string(
+            "table_header_pillar", locale=locale, default="Pilar"
+        ),
+        get_localized_string(
+            "table_header_asis", locale=locale, default="Situación actual"
+        ),
+        get_localized_string(
+            "table_header_tobe", locale=locale, default="Estado objetivo"
+        ),
+        get_localized_string(
+            "table_header_gap", locale=locale, default="Brecha clave"
+        ),
+    ]
     for idx, header in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[idx],

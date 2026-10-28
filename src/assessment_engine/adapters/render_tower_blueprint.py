@@ -1011,13 +1011,13 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
                             break
 
             # Performs FinOps resolution by sanitizing financial data to exclude internal cost margins from client-facing documents.
-            capex = getattr(project, "capex_estimate", "N/A")
-            opex = getattr(project, "opex_estimate", "N/A")
+            capex = getattr(project, "capex_estimate", "N/A") or "N/A"
+            opex = getattr(project, "opex_estimate", "N/A") or "N/A"
 
             # The OPEX value is sanitized to strip any internal margin calculations, ensuring only the client-facing cost is presented.
             # The financial data is filtered to retain only the final selling price for this context.
             clean_opex = opex
-            if "(Margen" in opex:
+            if isinstance(opex, str) and "(Margen" in opex:
                 clean_opex = opex.split("(Margen")[0].strip()
 
             finops_text = f"Inversión de Implantación: {clean_opex}\nInversión de Licencias/Hardware: {capex}"
@@ -1257,19 +1257,30 @@ def render_maturity_profile(doc, annex_data: dict) -> Any:
             run.font.color.rgb = RGBColor(127, 127, 127)
 
     radar_path = profile.get("radar_chart", "")
+    from assessment_engine.infrastructure.localization import get_localized_string
+    doc_lang = str(annex_data.get("document_meta", {}).get("language", "es")).lower()
+
+    radar_heading = get_localized_string("radar_chart_heading", locale=doc_lang, default="Gráfico radial")
+    compact_heading = get_localized_string("compact_pillar_detail_heading", locale=doc_lang, default="Detalle compacto por pilar")
+
     if radar_path and Path(radar_path).exists():
-        add_heading_paragraph(doc, "Gráfico radial", level=2)
+        add_heading_paragraph(doc, radar_heading, level=2)
         image_paragraph = doc.add_paragraph()
         image_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
         image_paragraph.add_run().add_picture(radar_path, width=Inches(4.35))
         add_spacer(doc, 10)
 
     pillars = profile.get("pillars", [])
-    add_heading_paragraph(doc, "Detalle compacto por pilar", level=2)
+    add_heading_paragraph(doc, compact_heading, level=2)
     if pillars:
         table = doc.add_table(rows=1, cols=4)
         finalize_table(table)
-        headers = ["Pilar", "Score", "Nivel", "Lectura ejecutiva"]
+        headers = [
+            get_localized_string("table_header_pillar", locale=doc_lang, default="Pilar"),
+            get_localized_string("table_header_score", locale=doc_lang, default="Score"),
+            get_localized_string("table_header_level", locale=doc_lang, default="Nivel"),
+            get_localized_string("table_header_reading", locale=doc_lang, default="Lectura ejecutiva"),
+        ]
         for i, header in enumerate(headers):
             set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
             shade_cell(table.rows[0].cells[i], "D9EAF7")
