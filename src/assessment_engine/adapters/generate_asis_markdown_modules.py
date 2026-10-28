@@ -262,144 +262,31 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
-    """Rephrases technical prose to remove speculative language and align it with formal compliance terminology. This function applies two primary sets of transformations: 1. It replaces speculative or conditional phrases (e.g., "posiblemente", "potencialmente") with more declarative, assertive equivalents based on a predefined mapping. 2. It inspects the text for compliance-related keywords (e.g., "automatización", "runbooks", "compliance"). If found, it may replace the entire input string with a standardized statement that frames the subject within target-state regulatory frameworks such as ENS and NIS2. This transformation is language-dependent. If keywords are present but no specific replacement rule matches, a suffix is appended to indicate planned automation. The function is designed to standardize descriptions in formal reports, ensuring consistent, assertive, and compliance-oriented language. Args: text: The source prose to sanitize. doc_lang: The language identifier (e.g., "es", "en") used to select the appropriate set of transformation rules. Defaults to "es". Returns: The sanitized string, which may be a significant modification or a complete replacement of the original input."""
+    """Standardizes technical descriptions and applies declarative style and vocabulary substitutions."""
     if not text:
         return text
 
     t = str(text).strip()
     lang = str(doc_lang).lower()
 
-    # Rule -1: Centralized dynamic translation/cleaning of non-idiomatic terms (Spain compliance)
+    # Apply declarative vocabulary substitutions (e.g. sistémico -> estructural, monitoreo -> monitorización)
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
+
+    t = apply_vocabulary_substitutions(t, locale=lang)
+
+    # Replace speculative language with declarative phrasing
     if lang == "es":
-        t = t.replace("Riesgo de deriva de configuración (Configuration Drift)", "Desalineación y Desviación de Configuraciones")
-        t = t.replace("Riesgo de deriva de configuración", "Desalineación y Desviación de Configuraciones")
-        t = t.replace("deriva de configuración", "desalineación y desviación de configuraciones")
-        t = t.replace("deriva de la configuración", "desalineación y desviación de configuraciones")
-        t = t.replace("monitoreo", "monitorización")
-        t = t.replace("Monitoreo", "Monitorización")
-
-        # Centralized spelling sanitization for LLM output typos on 'múltiples'
-        t = t.replace("mùltiples", "múltiples")
-        t = t.replace("Mùltiples", "Múltiples")
-        t = t.replace("móltiples", "múltiples")
-        t = t.replace("Móltiples", "Múltiples")
-        t = t.replace("multiples", "múltiples")
-        t = t.replace("Multiples", "Múltiples")
-
-    # Rule 0: Translate core platform descriptions from English to high-quality Spanish if lang is "es"
-    if lang == "es":
-        # Check if the text contains key English platform overview terms
-        if "platform operations" in t.lower() or "siloed architecture" in t.lower() or "standardized yet siloed" in t.lower():
-            t = t.replace(
-                "The current platform operations model at the client's organization reflects a standardized yet siloed architecture, a common outcome of the organic evolution of a large-scale, critical infrastructure.",
-                "El modelo operativo actual de la plataforma de la organización del cliente refleja una arquitectura estandarizada pero altamente fragmentada en silos, un resultado habitual del crecimiento orgánico de infraestructuras críticas a gran escala."
-            )
-            t = t.replace(
-                "The observability capability is founded on powerful, domain-specific tools: Dynatrace is leveraged for Application Performance Monitoring (APM), while Splunk serves as the primary solution for log aggregation and analysis. Despite the strengths of these individual platforms, they operate in discrete technological verticals without a unified correlation layer.",
-                "La capacidad de observabilidad se fundamenta en herramientas robustas y especializadas por dominio: se explota Dynatrace para la monitorización de rendimiento de aplicaciones (APM), mientras que Splunk actúa como la solución principal para la agregación y análisis de registros de eventos (logs). A pesar de la solvencia individual de estas plataformas, las mismas operan en verticales tecnológicas discretas sin una capa unificada de correlación cruzada."
-            )
-            t = t.replace(
-                "This fragmentation inhibits end-to-end service visibility, rendering root cause analysis dependent on specialized expertise and manual cross-team collaboration, which introduces delays.",
-                "Esta fragmentación restringe la visibilidad extremo a extremo de los servicios, haciendo que el análisis de causa raíz dependa de la experiencia especializada de silos técnicos y de la colaboración manual entre distintos equipos, lo cual introduce demoras operativas inevitables."
-            )
-            t = t.replace(
-                "The monitoring topology mirrors the client's 80/20 hybrid infrastructure. A distinct set of agents and collectors service the on-premise workloads hosted on VMware and Oracle VM, while a separate configuration addresses the AWS cloud environment.",
-                "La topología de monitorización refleja con precisión la infraestructura híbrida con un reparto estimado del 80/20 del cliente. Un conjunto específico de agentes y colectores da servicio a las cargas de trabajo locales (on-premise) alojadas en entornos virtuales de VMware y Oracle VM, mientras que una configuración completamente segregada atiende al entorno de nube pública en AWS."
-            )
-            t = t.replace(
-                "The absence of an agnostic telemetry standard like OpenTelemetry perpetuates this tool-dependency and complicates the creation of a consolidated service health view. This separation presents a strategic challenge to achieving a single pane of glass for operations.",
-                "La ausencia de un estándar agnóstico de telemetría como OpenTelemetry perpetúa la dependencia directa de herramientas propietarias y dificulta la consolidación de un cuadro de mando único de salud del servicio. Esta segregación técnica representa un desafío estratégico para lograr una consola única operacional (Single Pane of Glass)."
-            )
-            t = t.replace(
-                "Reliability management is currently governed by traditional Service Level Agreements (SLAs), focusing on the availability of individual infrastructure components such as VM uptime or database availability.",
-                "La gestión de la fiabilidad y resiliencia está gobernada actualmente por Acuerdos de Nivel de Servicio (SLA) tradicionales, enfocados en la disponibilidad aislada de componentes de infraestructura (v.g. tiempo de actividad de máquinas virtuales o disponibilidad de bases de datos)."
-            )
-            t = t.replace(
-                "This approach, while providing a baseline, is an incomplete measure of actual user experience or the health of transversal business services. The operational model is consequently reactive, a fact underscored by instances where business units report service degradation before it is detected by operations teams. This 'firefighting' posture consumes valuable engineering capacity, limiting the focus on proactive improvement and strategic innovation, which poses a significant risk to the organization's digital transformation ambitions.",
-                "Este enfoque basado en SLAs tradicionales, aunque ofrece un baseline de control, resulta en una métrica incompleta para medir la experiencia real del usuario final o la salud de los servicios de negocio transversales. En consecuencia, el modelo operativo es predominantemente reactivo, evidenciado por situaciones donde las unidades de negocio detectan y reportan degradaciones de servicio antes de que sean identificadas por los equipos de operaciones de TI. Esta postura reactiva ('firefighting') consume una gran parte de la capacidad del equipo de ingeniería, desviando el foco de la mejora continua y de la innovación proactiva, lo cual compromete el cumplimiento de los objetivos de transformación digital del cliente."
-            )
-
-        # Check if the text contains key English container and observability terms and translate them
-        container_obs_translations = {
-            "There is a complete absence of a standardized catalog of base services for a container ecosystem. Foundational capabilities are deployed via manual, ad-hoc procedures, which creates operational friction and limits developer agility.":
-                "Existe una ausencia absoluta de un catálogo estandarizado de servicios base para el ecosistema de contenedores. Las capacidades fundacionales se despliegan mediante procedimientos manuales y ad-hoc, lo que genera fricción operativa y limita la agilidad de los desarrolladores.",
-            "There is a complete absence of a standardized catalog of base services for a container ecosystem.":
-                "Existe una ausencia absoluta de un catálogo estandarizado de servicios base para el ecosistema de contenedores.",
-            "A complete lack of automated processes and tooling for Kubernetes cluster lifecycle management is evident. Capabilities for provisioning, patching, and scaling clusters depend on manual scripts and specialist knowledge, which introduces risks and scale bottlenecks.":
-                "Es evidente la falta absoluta de procesos automatizados y herramientas para la gestión del ciclo de vida de los clústeres de Kubernetes. Las capacidades para la provisión, parcheado y escalado de clústeres dependen de scripts manuales y conocimientos especializados, lo que introduce riesgos y cuellos de botella de escala.",
-            "A complete lack of automated processes and tooling for Kubernetes cluster lifecycle management is evident.":
-                "Es evidente la falta absoluta de procesos automatizados y herramientas para la gestión del ciclo de vida de los clústeres de Kubernetes.",
-            "A 'Zero Trust' security model for the container ecosystem is non-existent. There is no systematic application of container security practices, such as vulnerability scanning of images, network policies, or runtime security monitoring, which leaves the platform exposed to threats.":
-                "No existe un modelo de seguridad 'Zero Trust' para el ecosistema de contenedores. No hay una aplicación sistemática de prácticas de seguridad de contenedores, tales como el escaneo de vulnerabilidades de imágenes, políticas de red o monitorización de seguridad en tiempo de ejecución, lo que deja la plataforma expuesta a amenazas.",
-            "A 'Zero Trust' security model for the container ecosystem is non-existent.":
-                "No existe un modelo de seguridad 'Zero Trust' para el ecosistema de contenedores.",
-            "There is no systematic application of container security practices, such as vulnerability scanning of images, network policies, or runtime security monitoring, which leaves the platform exposed to threats.":
-                "No hay una aplicación sistemática de prácticas de seguridad de contenedores, tales como el escaneo de vulnerabilidades de imágenes, políticas de red o monitorización de seguridad en tiempo de ejecución, lo que deja la plataforma expuesta a amenazas.",
-            "There is a total lack of a formal operating model for managing a container platform. The current model is based on reactive operations and manual troubleshooting, without clear roles, SLAs, or SRE practices to support the platform at scale.":
-                "Existe una falta total de un modelo operativo formal para gestionar una plataforma de contenedores. El modelo actual se basa en operaciones reactivas y resolución de problemas manual, sin roles claros, SLAs o prácticas de SRE para dar soporte a la plataforma a escala.",
-            "There is a total lack of a formal operating model for managing a container platform.":
-                "Existe una falta total de un modelo operativo formal para gestionar una plataforma de contenedores.",
-            "The platform's observability model is fragmented due to siloed monitoring tools and the absence of a common telemetry standard. This separation limits end-to-end service visibility, rendering root cause analysis dependent on specialized expertise and manual cross-team collaboration, which introduces delays.":
-                "El modelo de observabilidad de la plataforma está fragmentado debido a herramientas de monitorización aisladas en silos y la ausencia de un estándar de telemetría común. Esta separación limita la visibilidad de extremo a extremo del servicio, haciendo que el análisis de causa raíz dependa de la experiencia especializada y de la colaboración manual entre equipos, lo cual introduce retrasos.",
-            "The platform's observability model is fragmented due to siloed monitoring tools and the absence of a common telemetry standard.":
-                "El modelo de observabilidad de la plataforma está fragmentado debido a herramientas de monitorización aisladas en silos y la ausencia de un estándar de telemetría común.",
-            "This separation limits end-to-end service visibility, rendering root cause analysis dependent on specialized expertise and manual cross-team collaboration, which introduces delays.":
-                "Esta separación limita la visibilidad de extremo a extremo del servicio, haciendo que el análisis de causa raíz dependa de la experiencia especializada y de la colaboración manual entre equipos, lo cual introduce retrasos.",
-            "Reliability is managed via infrastructure-centric SLAs rather than customer-focused Service Level Objectives (SLOs). This approach is an incomplete measure of actual user experience or the health of transversal business services, rendering operations reactive and limiting focus on proactive improvement.":
-                "La fiabilidad se gestiona a través de SLAs centrados en la infraestructura en lugar de Objetivos de Nivel de Servicio (SLO) centrados en el cliente. Este enfoque resulta en una medida incompleta de la experiencia real del usuario o de la salud de los servicios de negocio transversales, lo que hace que las operaciones sean reactivas y limiten el foco en la mejora proactiva.",
-            "Reliability is managed via infrastructure-centric SLAs rather than customer-focused Service Level Objectives (SLOs).":
-                "La fiabilidad se gestiona a través de SLAs centrados en la infraestructura en lugar de Objetivos de Nivel de Servicio (SLO) centrados en el cliente.",
-            "This approach is an incomplete measure of actual user experience or the health of transversal business services, rendering operations reactive and limiting focus on proactive improvement.":
-                "Este enfoque resulta en una medida incompleta de la experiencia real del usuario o de la salud de los servicios de negocio transversales, lo que hace que las operaciones sean reactivas y limiten el foco en la mejora proactiva.",
-            "Lack of standardized services results in slow time-to-market and increased onboarding friction for developers.":
-                "La falta de servicios estandarizados ralentiza el time-to-market e incrementa la fricción de incorporación para los desarrolladores.",
-            "Manual lifecycle operations increase the risk of configuration drift, security vulnerabilities, and operational outages.":
-                "Las operaciones manuales del ciclo de vida aumentan el riesgo de deriva de configuración, vulnerabilidades de seguridad e interrupciones operativas.",
-            "Absence of container security controls leaves the platform highly vulnerable to container breakout and unauthorized access.":
-                "La ausencia de controles de seguridad en contenedores deja la plataforma altamente vulnerable a escapes de contenedor y accesos no autorizados.",
-            "Reactive operations without formal SRE practices lead to high MTTR, frequent outages, and low service reliability.":
-                "Las operaciones reactivas sin prácticas formales de SRE conducen a un MTTR alto, interrupciones frecuentes y baja fiabilidad del servicio.",
-            "Siloed monitoring increases MTTR and limits visibility into end-to-end transaction flows, delaying root cause analysis.":
-                "La monitorización en silos aumenta el MTTR y limita la visibilidad en los flujos de transacciones de extremo a extremo, retrasando el análisis de causa raíz.",
-            "Infrastructure-focused SLAs fail to protect user-facing service availability, leading to undetected service degradation.":
-                "Los SLAs enfocados en infraestructura no logran proteger la disponibilidad del servicio de cara al usuario, lo que provoca una degradación del servicio no detectada."
+        speculative_patterns = {
+            "posiblemente": "de manera contrastada",
+            "potencialmente": "de forma estructurada",
+            "tal vez": "con certeza técnica",
         }
-        for old, new in container_obs_translations.items():
+        for old, new in speculative_patterns.items():
             if old in t:
                 t = t.replace(old, new)
 
-    # RULE 1: Replace speculative or conditional language with declarative phrasing.
-    speculative_patterns = {
-        "posiblemente con componentes Mainframe": "integrando servidores corporativos y entornos de misión crítica de rango medio (Unix/AIX, AS/400 y plataformas legacy)",
-        "posiblemente con componentes mainframe": "integrando servidores corporativos y entornos de misión crítica de rango medio (Unix/AIX, AS/400 y plataformas legacy)",
-        "posiblemente con": "integrando",
-        "posiblemente": "de manera probada",
-        "potencialmente": "de forma estructurada",
-        "tal vez": "con total seguridad",
-    }
-    for old, new in speculative_patterns.items():
-        if old in t:
-            t = t.replace(old, new)
-
-    # RULE 3: Language compliance (Spain) - Replace non-idiomatic 'sistémico/sistémica' with 'estructural' and 'monitoreo' with 'monitorización'
-    if lang == "es":
-        # Plural forms (longer) must be replaced BEFORE singular forms (shorter) to prevent substring corruptions
-        t = t.replace("sistémicas", "estructurales")
-        t = t.replace("sistémicos", "estructurales")
-        t = t.replace("Sistémicas", "Estructurales")
-        t = t.replace("Sistémicos", "Estructurales")
-        t = t.replace("sistémica", "estructural")
-        t = t.replace("sistémico", "estructural")
-        t = t.replace("Sistémica", "Estructural")
-        t = t.replace("Sistémico", "Estructural")
-        
-        # Spain compliance: remove 'monitoreo' entirely in favor of 'monitorización'
-        t = t.replace("monitoreos", "monitorizaciones")
-        t = t.replace("Monitoreos", "Monitorizaciones")
-        t = t.replace("monitoreo", "monitorización")
-        t = t.replace("Monitoreo", "Monitorización")
-
-    # RULE 2: Re-aligns terminology describing current strengths to match future-state compliance frameworks (e.g., NIS2/ENS).
     compliance_keywords = [
         "demostrar",
         "industrialización",
@@ -413,7 +300,7 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
     if has_target_vocab and len(t) < 300:
         if lang == "es":
             if "cumplimiento" in t.lower() or "normativo" in t.lower():
-                t = "Sólida postura de partida y alineamiento inicial para facilitar la conformidad continua con marcos normativos (ENS, NIS2) en el estado objetivo."
+                t = "Sólida postura de partida y alineamiento inicial para facilitar la conformidad continua con marcos normativos y estándares aplicables (NIS2, ISO 27001) en el estado objetivo."
             elif "runbooks" in t.lower():
                 t = "Base técnica establecida para la futura codificación y automatización de procedimientos operativos (Runbooks-as-Code) de forma estructurada."
             else:
@@ -423,7 +310,7 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
                 )
         else:
             if "compliance" in t.lower() or "regulatory" in t.lower():
-                t = "Solid baseline posture and initial alignment to facilitate continuous compliance with regulatory frameworks (ENS, NIS2) in the target state."
+                t = "Solid baseline posture and initial alignment to facilitate continuous compliance with regulatory frameworks and standards (NIS2, ISO 27001) in the target state."
             else:
                 t = t + " (planned to be fully automated in the target state)."
 
@@ -1250,7 +1137,7 @@ A continuación, se define de manera consolidada y unificada el inventario técn
     reg_frameworks = tower_meta.get("regulatory_frameworks")
     if not reg_frameworks:
         reg_frameworks = (
-            "ENS y NIS2" if doc_lang == "es" else "applicable regulatory frameworks"
+            "marcos normativos aplicables (como NIS2 o ISO 27001)" if doc_lang == "es" else "applicable regulatory frameworks (such as NIS2 or ISO 27001)"
         )
 
     conc_content.append(

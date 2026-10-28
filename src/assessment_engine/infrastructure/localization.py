@@ -197,3 +197,24 @@ def get_archimate_fallback_deliverables(locale: str = "es") -> list[str]:
         "Documento de Diseño Técnico (HLD/LLD)",
         "Plan de Pruebas y Validación",
     ]
+
+
+def apply_vocabulary_substitutions(text: str, locale: str = "es") -> str:
+    """Applies declarative style and vocabulary normalizations using regex word boundaries."""
+    if not text:
+        return text
+
+    import re
+
+    base_loc = resolve_base_locale(locale)
+    catalog = load_locales_catalog()
+    substitutions = catalog.get(base_loc, {}).get(
+        "vocabulary_substitutions", {}
+    )
+    if not substitutions:
+        return text
+
+    res = text
+    for pattern_str, repl in substitutions.items():
+        res = re.sub(rf"\b{pattern_str}\b", repl, res, flags=re.IGNORECASE)
+    return res

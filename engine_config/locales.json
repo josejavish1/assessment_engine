@@ -142,7 +142,17 @@
     "business_case_direct_mitigation_template": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'.",
     "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks}).",
     "conjunction_and": " y ",
-    "font_family_default": "Aptos"
+    "font_family_default": "Aptos",
+    "vocabulary_substitutions": {
+      "sistémicas": "estructurales",
+      "sistémicos": "estructurales",
+      "sistémica": "estructural",
+      "sistémico": "estructural",
+      "monitoreos": "monitorizaciones",
+      "monitoreo": "monitorización",
+      "mùltiples": "múltiples",
+      "móltiples": "múltiples"
+    }
   },
   "en": {
     "control_documental_title": "Document Control and Change History",

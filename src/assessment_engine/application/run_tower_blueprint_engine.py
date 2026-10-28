@@ -1068,24 +1068,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     output_path = resolve_blueprint_payload_path(client_name, tower_id)
     content = json.dumps(final_payload_dict, indent=2, ensure_ascii=False)
     
-    if doc_lang == "es":
-        # European Spanish localization: Replace 'sistémico/sistémica' with 'estructural'
-        content = content.replace("sistémicas", "estructurales")
-        content = content.replace("sistémicos", "estructurales")
-        content = content.replace("Sistémicas", "Estructurales")
-        content = content.replace("Sistémicos", "Estructurales")
-        content = content.replace("sistémica", "estructural")
-        content = content.replace("sistémico", "estructural")
-        content = content.replace("Sistémica", "Estructural")
-        content = content.replace("Sistémico", "Estructural")
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
 
-        # Spelling corrections for 'múltiples'
-        content = content.replace("mùltiples", "múltiples")
-        content = content.replace("Mùltiples", "Múltiples")
-        content = content.replace("móltiples", "múltiples")
-        content = content.replace("Móltiples", "Múltiples")
-        content = content.replace("multiples", "múltiples")
-        content = content.replace("Multiples", "Múltiples")
+    content = apply_vocabulary_substitutions(content, locale=doc_lang)
 
     output_path.write_text(
         content,
