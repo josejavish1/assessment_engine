@@ -424,7 +424,7 @@ def render_board_memo(
 ) -> Any:
     """Renders a self-contained 1-page Board Memo table for Executive Committee / Board."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)
-    add_heading_paragraph(doc, "1. Board Memo: Resumen de Decisión Ejecutiva", level=1)
+    add_heading_paragraph(doc, "Board Memo: Resumen de Decisión Ejecutiva para el Consejo", level=1)
     add_body_paragraph(
         doc,
         sanitize_client_name(board_memo.summary, client_name),
