@@ -1,9 +1,9 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793198207,
+  "timestamp": 1793198765,
   "global_grade": "A",
-  "global_score": 94.5,
+  "global_score": 97.0,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
@@ -35,8 +35,8 @@
       "score_pct": 51.5,
       "passed": false,
       "metrics": {
-        "prod_sloc": 56012,
-        "test_sloc": 6879,
+        "prod_sloc": 56035,
+        "test_sloc": 6887,
         "test_to_code_ratio": 0.12,
         "maintainability_index_sei": 30.3,
         "typed_functions_pct": 84.9,
@@ -1251,23 +1251,23 @@
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 909 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 925 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 296,
+          "line_number": 305,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'run_tower_blueprint' excede límite ciclomático: V(G) = 124 (Rango D > 20)",
+          "message": "Función 'run_tower_blueprint' excede límite ciclomático: V(G) = 127 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 296,
+          "line_number": 305,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'run_tower_blueprint': 7 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1276,16 +1276,16 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 296,
+          "line_number": 305,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'run_tower_blueprint': CoC = 269 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'run_tower_blueprint': CoC = 271 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 473,
+          "line_number": 493,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_single_pillar_async': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1294,7 +1294,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 473,
+          "line_number": 493,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_single_pillar_async': CoC = 40 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1303,7 +1303,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 873,
+          "line_number": 888,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'enrich_project': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1312,7 +1312,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 873,
+          "line_number": 888,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'enrich_project': CoC = 38 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -2580,70 +2580,15 @@
     },
     "browser_accessibility": {
       "probe_name": "Accessibility & UI Standards (WCAG 2.2 AA / EAA)",
-      "score_pct": 49.8,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "ui_files_scanned": 81,
-        "findings_count": 6,
-        "high_severity_a11y_count": 5,
-        "wcag_compliance_level": "No Conforme"
+        "findings_count": 0,
+        "high_severity_a11y_count": 0,
+        "wcag_compliance_level": "WCAG 2.2 AA Conforme"
       },
-      "findings": [
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/components/FloatingOmnibar.tsx",
-          "line_number": 105,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Campo <input type='text'> carece de <label> asociado o atributo 'aria-label'",
-          "recommendation": "Vincular con '<label htmlFor=\"id\">' o añadir 'aria-label=\"Descripción\"' para lectores de pantalla."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/app/components/FloatingOmnibar.tsx",
-          "line_number": 115,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Botón interactivo <button> no contiene texto accesible ni 'aria-label'",
-          "recommendation": "Añadir texto visible o atributo 'aria-label=\"Acción\"' para lectores de pantalla."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/app/components/KanbanModal.tsx",
-          "line_number": 23,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Botón interactivo <button> no contiene texto accesible ni 'aria-label'",
-          "recommendation": "Añadir texto visible o atributo 'aria-label=\"Acción\"' para lectores de pantalla."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/app/components/ConfirmationModal.tsx",
-          "line_number": 24,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Botón interactivo <button> no contiene texto accesible ni 'aria-label'",
-          "recommendation": "Añadir texto visible o atributo 'aria-label=\"Acción\"' para lectores de pantalla."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/app/components/AgentChat.tsx",
-          "line_number": 105,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Botón interactivo <button> no contiene texto accesible ni 'aria-label'",
-          "recommendation": "Añadir texto visible o atributo 'aria-label=\"Acción\"' para lectores de pantalla."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "templates/web/lineage_portal_template.html",
-          "line_number": 283,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Botón interactivo <button> no contiene texto accesible ni 'aria-label'",
-          "recommendation": "Añadir texto visible o atributo 'aria-label=\"Acción\"' para lectores de pantalla."
-        }
-      ]
+      "findings": []
     },
     "contract_drift": {
       "probe_name": "Contract Integrity & Schema Drift (OpenAPI 3.1 / Pydantic)",
@@ -2689,7 +2634,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 315,
+        "scanned_files": 316,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -2703,7 +2648,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 315,
+        "scanned_files": 316,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -2722,10 +2667,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.3,
-        "p95_latency_ms": 79.99,
-        "p99_latency_ms": 130.78,
-        "tail_amplification_ratio": 100.6,
+        "p50_latency_ms": 1.46,
+        "p95_latency_ms": 80.38,
+        "p99_latency_ms": 131.57,
+        "tail_amplification_ratio": 90.12,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -2766,23 +2711,23 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 349,
+        "scanned_files": 350,
         "hardcoded_issues": 0
       },
       "findings": []
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 73.6,
+      "score_pct": 73.7,
       "passed": false,
       "metrics": {
-        "files_scanned": 344,
-        "inline_rationale_score": 77.8,
-        "contract_coverage_score": 48.4,
+        "files_scanned": 345,
+        "inline_rationale_score": 77.7,
+        "contract_coverage_score": 48.6,
         "linguistic_sovereignty_score": 98.2,
-        "comment_smells_count": 1330,
+        "comment_smells_count": 1331,
         "missing_docstrings_count": 114,
-        "cqi_score": 73.6,
+        "cqi_score": 73.7,
         "grade": "B",
         "status": "Degradation Detected"
       },
@@ -8173,7 +8118,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 248,
+          "line_number": 255,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8182,7 +8127,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 265,
+          "line_number": 272,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -8191,7 +8136,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 265,
+          "line_number": 272,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8200,7 +8145,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 456,
+          "line_number": 476,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8209,7 +8154,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 472,
+          "line_number": 492,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -8218,7 +8163,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 472,
+          "line_number": 492,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8227,7 +8172,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 496,
+          "line_number": 517,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8236,7 +8181,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 497,
+          "line_number": 518,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8245,7 +8190,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 513,
+          "line_number": 534,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8254,7 +8199,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 571,
+          "line_number": 592,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -8263,7 +8208,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 657,
+          "line_number": 678,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -8272,7 +8217,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 657,
+          "line_number": 678,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8281,7 +8226,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 659,
+          "line_number": 680,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'Tier-1'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -8290,7 +8235,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 659,
+          "line_number": 680,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8299,7 +8244,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 678,
+          "line_number": 699,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -8308,52 +8253,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 678,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 691,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 794,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1013,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1014,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1056,
+          "line_number": 699,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8362,7 +8262,88 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1056,
+          "line_number": 706,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 714,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 771,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 785,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 802,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 811,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1028,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1029,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1072,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1072,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -8371,7 +8352,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1066,
+          "line_number": 1082,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8380,7 +8361,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1066,
+          "line_number": 1082,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -11620,34 +11601,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 38,
-          "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
-          "message": "Docstring in 'get_blueprint_architect_instruction' claims 'Raises: FileNotFoundError', but exception is never raised",
-          "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 38,
-          "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
-          "message": "Docstring in 'get_blueprint_architect_instruction' claims 'Raises: cannot', but exception is never raised",
-          "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 38,
-          "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
-          "message": "Docstring in 'get_blueprint_architect_instruction' claims 'Raises: KeyError', but exception is never raised",
-          "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 66,
+          "line_number": 73,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'get_pilar_architect_prompt' claims 'Raises: FileNotFoundError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -11656,7 +11610,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 66,
+          "line_number": 73,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'get_pilar_architect_prompt' claims 'Raises: configuration', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -11665,7 +11619,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 66,
+          "line_number": 73,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'get_pilar_architect_prompt' claims 'Raises: KeyError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -11674,7 +11628,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 133,
+          "line_number": 140,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'get_critic_prompt' claims 'Raises: FileNotFoundError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -11683,7 +11637,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 133,
+          "line_number": 140,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'get_critic_prompt' claims 'Raises: file', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -11692,7 +11646,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/domain/prompts/blueprint_prompts.py",
-          "line_number": 133,
+          "line_number": 140,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'get_critic_prompt' claims 'Raises: KeyError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -15228,5 +15182,5 @@
       ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A (94.5%). Sondas pasadas: 15/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (97.0%). Sondas pasadas: 16/18."
 }

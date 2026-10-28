@@ -105,6 +105,7 @@ export function AgentChat({ messages, isSubmitting, onSendMessage }: AgentChatPr
           <button
             onClick={handleSend}
             disabled={isSubmitting || inputValue.trim() === ''}
+            aria-label="Enviar mensaje"
             className="bg-primary text-primary-foreground p-2.5 rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors mb-0.5 mr-0.5"
           >
             <Send className="h-4 w-4" />

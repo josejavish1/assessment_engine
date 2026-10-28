@@ -104,6 +104,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
         </div>
         <input
           type="text"
+          aria-label="Directiva para el orquestador cognitivo"
           className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground px-2 py-3"
           placeholder="¿Qué quieres construir o mejorar hoy? (ej. Endurecer reconciliación de PRs)"
           value={inputValue}
@@ -115,6 +116,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || inputValue.trim() === ''}
+          aria-label="Enviar directiva"
           className="bg-primary text-primary-foreground p-3 rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors ml-2"
         >
           <Send className="h-4 w-4" />
