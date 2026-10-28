@@ -11,6 +11,7 @@ from assessment_engine.domain.schemas.ast import (
 )
 from assessment_engine.domain.schemas.common import SectionReview
 from assessment_engine.domain.schemas.conclusion import ConclusionDraft
+from assessment_engine.domain.schemas.context import AssessmentContext
 from assessment_engine.domain.schemas.gap import GapDraft
 from assessment_engine.domain.schemas.risks import RisksDraft
 from assessment_engine.domain.schemas.rubric import (
@@ -28,6 +29,7 @@ __all__ = [
     "GapDraft",
     "TodoDraft",
     "ConclusionDraft",
+    "AssessmentContext",
     "SectionReview",
     "DocumentAST",
     "DocNode",

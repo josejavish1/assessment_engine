@@ -10,24 +10,118 @@ from assessment_engine.infrastructure.runtime_paths import ROOT
 logger = logging.getLogger(__name__)
 
 _LOCALES_CACHE: dict[str, Any] | None = None
+_LOCALES_MTIME: float | None = None
+
+DYNAMIC_LOCALES_DIR = ROOT / "engine_config" / "locales_dynamic"
+if not DYNAMIC_LOCALES_DIR.exists():
+    DYNAMIC_LOCALES_DIR = Path("engine_config/locales_dynamic")
+
+
+class DynamicLocaleSynthesizer:
+    """Just-In-Time (JIT) synthesizer that dynamically generates UI dictionary translations for any language on Earth."""
+
+    def __init__(self, cache_dir: Path | None = None):
+        self.cache_dir = cache_dir or DYNAMIC_LOCALES_DIR
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+    def synthesize_locale(self, target_locale: str) -> dict[str, Any]:
+        import json
+        import re
+
+        clean_loc = (
+            target_locale.lower().strip().replace("-", "_").split("_")[0]
+            if target_locale
+            else "en"
+        )
+        cache_file = self.cache_dir / f"{clean_loc}.json"
+        if cache_file.exists():
+            try:
+                with open(cache_file, "r", encoding="utf-8-sig") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and len(data) >= 50:
+                        return data
+            except Exception as ex:
+                logger.debug(f"[JIT Locale] Error reading cached locale: {ex}")
+
+        catalog = load_locales_catalog()
+        ref_en = catalog.get("en", {})
+        if not ref_en:
+            return {}
+
+        try:
+            from assessment_engine.infrastructure.genai_client import (
+                ModelTier,
+                create_genai_client,
+                get_model,
+            )
+
+            client = create_genai_client()
+            model_name = get_model(ModelTier.FAST)
+
+            prompt = f"""You are a certified executive business translator specializing in C-level management reports.
+Translate the following JSON dictionary of professional executive technical report UI titles, headings, and labels from English into target language: '{clean_loc}'.
+Preserve the exact same JSON keys and formatting placeholders (e.g. {{amount}}, {{capability}}).
+Return ONLY the raw valid JSON with the exact same keys:
+
+{json.dumps(ref_en, indent=2, ensure_ascii=False)}"""
+
+            response = client.models.generate_content(
+                model=model_name, contents=prompt
+            )
+            text = response.text.strip()
+            if text.startswith("```"):
+                text = re.sub(r"^```(?:json)?\n?", "", text)
+                text = re.sub(r"\n?```$", "", text)
+
+            synthesized = json.loads(text)
+            if isinstance(synthesized, dict) and len(synthesized) >= 50:
+                with open(cache_file, "w", encoding="utf-8") as f:
+                    json.dump(synthesized, f, indent=2, ensure_ascii=False)
+                logger.info(
+                    f"✅ [JIT Locale] Successfully synthesized and cached new locale dictionary for '{clean_loc}'."
+                )
+                return synthesized
+        except Exception as ex:
+            logger.warning(
+                f"⚠️ [JIT Locale] Failed to dynamically synthesize locale '{clean_loc}': {ex}. Using English fallback."
+            )
+
+        return ref_en
 
 
 def load_locales_catalog() -> dict[str, Any]:
-    """Load and cache the canonical locales catalog from engine_config/locales.json."""
-    global _LOCALES_CACHE
-    if _LOCALES_CACHE is not None:
-        return _LOCALES_CACHE
+    """Load and cache the canonical locales catalog from engine_config/locales.json and dynamic locales."""
+    global _LOCALES_CACHE, _LOCALES_MTIME
 
     locales_path = ROOT / "engine_config" / "locales.json"
     if not locales_path.exists():
         locales_path = Path("engine_config/locales.json")
 
+    current_mtime = locales_path.stat().st_mtime if locales_path.exists() else None
+    if _LOCALES_CACHE is not None and current_mtime == _LOCALES_MTIME:
+        return _LOCALES_CACHE
+
     try:
         with open(locales_path, "r", encoding="utf-8-sig") as f:
             _LOCALES_CACHE = json.load(f)
+            _LOCALES_MTIME = current_mtime
     except Exception as ex:
         logger.warning(f"⚠️ [Localization] Failed to load locales catalog: {ex}. Using fallback.")
         _LOCALES_CACHE = {}
+
+    # Auto-load any dynamically synthesized and cached locales
+    dynamic_dir = ROOT / "engine_config" / "locales_dynamic"
+    if not dynamic_dir.exists():
+        dynamic_dir = Path("engine_config/locales_dynamic")
+    if dynamic_dir.exists():
+        for loc_file in dynamic_dir.glob("*.json"):
+            lang_code = loc_file.stem.lower()
+            if lang_code not in _LOCALES_CACHE:
+                try:
+                    with open(loc_file, "r", encoding="utf-8-sig") as lf:
+                        _LOCALES_CACHE[lang_code] = json.load(lf)
+                except Exception as ex:
+                    logger.debug("Error leyendo locale dinámico %s: %s", loc_file, ex)
 
     return _LOCALES_CACHE or {}
 
@@ -121,6 +215,12 @@ def get_localized_string(
     """Retrieve a localized template string and format it with parameters using locale fallback resolution."""
     catalog = load_locales_catalog()
     base_loc = resolve_base_locale(locale)
+
+    # JIT Synthesis: If the requested language is uncataloged, dynamically generate it on the fly
+    if base_loc not in catalog and base_loc not in ["es", "en"]:
+        dynamic_dict = DynamicLocaleSynthesizer().synthesize_locale(base_loc)
+        if dynamic_dict:
+            catalog[base_loc] = dynamic_dict
 
     # Resolution hierarchy: exact locale -> base language -> 'en' -> fallback
     text_template = None
