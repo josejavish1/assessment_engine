@@ -125,10 +125,10 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             }
         )
 
+        r_idx = 1
+        p_idx = 1
         for pilar in data.get("pillars_analysis", []):
-            for r_idx, hc in enumerate(
-                pilar.get("health_check_asis", []), start=1
-            ):
+            for hc in pilar.get("health_check_asis", []):
                 vuln = hc.get("vulnerability_level", 3)
                 impact_label = (
                     "Crítico"
@@ -147,9 +147,8 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                         or hc.get("impact"),
                     }
                 )
-            for p_idx, proj in enumerate(
-                pilar.get("projects_todo", []), start=1
-            ):
+                r_idx += 1
+            for proj in pilar.get("projects_todo", []):
                 all_initiatives.append(
                     {
                         "id": f"INIT-{tid}-{p_idx:02d}",
@@ -163,6 +162,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                         or proj.get("expected_outcome", ""),
                     }
                 )
+                p_idx += 1
 
         # Extracts associated principles and implications from the Blueprint configuration if they are defined.
         if data.get("architecture_principles"):

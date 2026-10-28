@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 from .common import VersionedPayload
 
@@ -6,10 +6,12 @@ from .common import VersionedPayload
 class DealFlash(BaseModel):
     """Model a deal flash summary with the customer's purchase driver and the vendor's win theme."""
 
+    model_config = ConfigDict(populate_by_name=True)
+
     purchase_driver: str
     vendor_win_theme: str = Field(
         ...,
-        validation_alias="ntt_win_theme",
+        validation_alias=AliasChoices("vendor_win_theme", "ntt_win_theme"),
         description="The consultant/vendor unique value proposition and win theme",
     )
 
