@@ -530,9 +530,12 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 hourly_cost = custom_calibration.get("hourly_downtime_cost_eur") if custom_calibration else None
                 if hourly_cost is not None and typology != "OPERATIONAL_FRICTION":
                     hourly = float(hourly_cost)
-                    lm_min = hourly * 0.5
-                    lm_ml = hourly * 2.5
-                    lm_max = hourly * 12.0
+                    op_assumptions = profiles.get("operational_assumptions", {})
+                    duration_map = op_assumptions.get("duration_hours_by_severity", {})
+                    dur_spec = duration_map.get(str(lm), {"min": 0.5, "ml": 2.0, "max": 6.0})
+                    lm_min = hourly * float(dur_spec.get("min", 0.5))
+                    lm_ml = hourly * float(dur_spec.get("ml", 2.0))
+                    lm_max = hourly * float(dur_spec.get("max", 6.0))
 
                 # SOTA Tier-1 Actuarial Practice: Ontology & Structure-Driven Typology (Zero-Keywords)
                 finding_typology = finding.get("typology") or cap_calibration.get("typology")
@@ -933,8 +936,10 @@ class FairRiskPolicy(BaseSovereignPolicy):
             if hourly_cost is not None and float(hourly_cost) > 0:
                 hourly_f = float(hourly_cost)
                 # Portfolio subadditivity: Annual cumulative operational downtime across a tower is realistically bounded
-                # by maximum outage ceiling (40h), while secondary consolidated regulatory sanctions are capped proportionally.
-                max_annual_tower_loss = hourly_f * 40.0 + min(reg_max_fine * 0.02, hourly_f * 20.0)
+                # by declarative operational assumptions, while secondary consolidated regulatory sanctions are capped proportionally.
+                op_assumptions = profiles.get("operational_assumptions", {})
+                max_dt_hours = float(op_assumptions.get("max_annual_downtime_hours", 40.0))
+                max_annual_tower_loss = hourly_f * max_dt_hours + min(reg_max_fine * 0.02, hourly_f * 20.0)
                 total_annual_losses = np.minimum(
                     total_annual_losses, max_annual_tower_loss
                 )

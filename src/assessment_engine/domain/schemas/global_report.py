@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from pydantic import BaseModel, Field
 
@@ -64,11 +64,11 @@ class GlobalReviewDraft(BaseModel):
 
 
 class GlobalEdit(BaseModel):
-    """{'docstring': 'Represent a single, atomic global configuration edit.'}."""
+    """Represent a single, atomic global configuration edit."""
 
     path: str
     action: str
-    value: Any
+    value: Union[str, int, float, bool, list[str], dict[str, str]]
     reason: str
 
 

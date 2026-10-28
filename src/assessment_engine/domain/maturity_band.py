@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Iterable
 from typing import TypedDict, cast
+
+logger = logging.getLogger(__name__)
 
 
 class MaturityBandDefinition(TypedDict, total=False):
@@ -77,8 +80,8 @@ def resolve_maturity_band(
             )
             if localized_label:
                 band_dict["label"] = localized_label
-        except Exception:
-            pass
+        except (KeyError, ValueError, AttributeError, OSError) as ex:
+            logger.debug(f"[MaturityBand] Localización omitida: {ex}")
 
     return cast(MaturityBandDefinition, band_dict)
 
