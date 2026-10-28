@@ -2,7 +2,6 @@
   "profiles": {
     "writer_fast": {
       "tier": "fast",
-      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
@@ -10,7 +9,6 @@
     },
     "section_writer": {
       "tier": "fast",
-      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
@@ -18,7 +16,6 @@
     },
     "analyst": {
       "tier": "fast",
-      "model": "gemini-flash-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
@@ -26,7 +23,6 @@
     },
     "experimental_writer": {
       "tier": "fast",
-      "model": "gemini-flash-latest",
       "temperature": 0.25,
       "top_p": 0.9,
       "seed": 17,
@@ -34,7 +30,6 @@
     },
     "global_refiner": {
       "tier": "fast",
-      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
@@ -42,7 +37,6 @@
     },
     "global_refiner_strict": {
       "tier": "fast",
-      "model": "gemini-flash-latest",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
@@ -50,7 +44,6 @@
     },
     "review_strict": {
       "tier": "reasoning",
-      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
@@ -58,7 +51,6 @@
     },
     "global_reviewer_strict": {
       "tier": "reasoning",
-      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
@@ -66,7 +58,6 @@
     },
     "product_owner_planner": {
       "tier": "reasoning",
-      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
@@ -74,7 +65,6 @@
     },
     "product_owner_doctor": {
       "tier": "reasoning",
-      "model": "gemini-pro-latest",
       "temperature": 0.1,
       "top_p": 0.85,
       "seed": 17,
