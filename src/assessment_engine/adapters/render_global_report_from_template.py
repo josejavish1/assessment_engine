@@ -921,7 +921,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
             required attributes.
     """
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "4. Visión de Estado Objetivo (To-Be)", level=1)
+    add_heading_paragraph(doc, "5. Visión de Estado Objetivo (To-Be)", level=1)
 
     table = doc.add_table(rows=2, cols=1)
     finalize_table(table)
@@ -981,7 +981,7 @@ def render_execution_roadmap(
     """Renders the execution roadmap section into a Word document. This function constructs the "Plan de Implementación y Horizontes Temporales" section of the report. It first generates a table listing the defined transversal programs and their descriptions. It then iterates through the time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1"). For each horizon that contains initiatives, a detailed table is created, listing each initiative's associated program, title, business case, start month, and duration. Args: doc (docx.document.Document): The python-docx Document object to be modified. roadmap (ExecutionRoadmapDraft): A data object containing the structured roadmap information, including programs and initiatives per time horizon. visuals (dict): This parameter is currently unused. client_dir (str): This parameter is currently unused. client_name (str): The client's name, used for placeholder substitution in text content. Defaults to an empty string. Returns: None: The function modifies the `doc` object in place."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
     add_heading_paragraph(
-        doc, "5. Plan de Implementación y Horizontes Temporales", level=1
+        doc, "6. Plan de Implementación y Horizontes Temporales", level=1
     )
     add_body_paragraph(
         doc,
@@ -1117,7 +1117,7 @@ def render_executive_decisions(
 ) -> Any:
     r"""{'docstring': "Populates a `python-docx` document with a formatted executive decisions section.\n\nModifies the provided document object by adding a main heading, a descriptive\nparagraph, and a table listing priority decisions. The table includes columns\nfor the decision's scope, the required action, and the impact of a delay.\nCell text is sanitized based on the provided client name.\n\nArgs:\n    doc (docx.document.Document): The document object to be modified.\n    decisions (ExecutiveDecisionsDraft): A data object containing the list of\n        executive decisions to render.\n    client_name (str): The name of the client, used to sanitize text content\n        in the table.\n\nReturns:\n    None: The function modifies the `doc` object in-place."}."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "6. Decisiones Ejecutivas Prioritarias", level=1)
+    add_heading_paragraph(doc, "7. Decisiones Ejecutivas Prioritarias", level=1)
     add_body_paragraph(
         doc,
         "Líneas de decisión requeridas por la Dirección para desbloquear la ejecución del programa y mitigar los riesgos identificados.",
