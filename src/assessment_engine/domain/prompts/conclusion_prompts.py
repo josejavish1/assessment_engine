@@ -5,12 +5,12 @@ def get_conclusion_writer_prompt(
     scoring_pretty: str,
     asis_pretty: str,
     risks_pretty: str,
-    tobe_pretty: str,
-    gap_pretty: str,
-    todo_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
-    feedback_block: str,
+    tobe_pretty: str = "",
+    gap_pretty: str = "",
+    todo_pretty: str = "",
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
+    feedback_block: str = "",
 ) -> str:
     """Assembles the prompt for the Conclusion Writer agent.
 
@@ -99,11 +99,11 @@ def get_conclusion_reviewer_prompt(
     scoring_pretty: str,
     asis_pretty: str,
     risks_pretty: str,
-    tobe_pretty: str,
-    gap_pretty: str,
-    todo_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
+    tobe_pretty: str = "",
+    gap_pretty: str = "",
+    todo_pretty: str = "",
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
 ) -> str:
     """Constructs a prompt for an AI agent to review an assessment's conclusion.
 

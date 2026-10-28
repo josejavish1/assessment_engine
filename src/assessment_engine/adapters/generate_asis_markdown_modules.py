@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+from assessment_engine.infrastructure.localization import format_number
+
 
 def clean_client_name(client_name: str) -> str:
     """Cleans a raw client name (which might be a slug or directory name) for reporting.

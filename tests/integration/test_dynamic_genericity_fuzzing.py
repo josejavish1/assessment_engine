@@ -257,3 +257,12 @@ class TestDynamicGenericityFuzzing:
                 brand_path.write_text(brand_backup, encoding="utf-8")
             else:
                 brand_path.unlink(missing_ok=True)
+
+            from assessment_engine.infrastructure.config_loader import (
+                load_brand_profile,
+                resolve_localized_vocabulary,
+            )
+            if hasattr(load_brand_profile, "cache_clear"):
+                load_brand_profile.cache_clear()
+            if hasattr(resolve_localized_vocabulary, "cache_clear"):
+                resolve_localized_vocabulary.cache_clear()

@@ -35,29 +35,36 @@ def load_prompt_config(filename: str) -> dict[str, Any]:
         return cast(dict[str, Any], yaml.safe_load(f))
 
 
-def get_blueprint_architect_instruction() -> str:
+def get_blueprint_architect_instruction(
+    target_language: str = "Spanish",
+) -> str:
     """Constructs the instruction prompt for the Blueprint Architect agent from a configuration file.
 
-    This function loads configuration details from 'blueprint_architect_instruction.yaml'
-    to assemble a structured, multi-part instructional prompt in Spanish.
-    The prompt specifies the agent's role, expertise, mission, and a
-    numbered list of critical writing rules derived from the configuration.
+    Loads configuration details from 'blueprint_architect_instruction.yaml'
+    to assemble a structured instructional prompt, enforcing the target output language.
+
+    Args:
+        target_language (str): Target output language for the generated blueprint (e.g. 'Spanish', 'English', 'German', 'Japanese').
 
     Returns:
         A single string containing the complete, formatted instruction prompt.
-
-    Raises:
-        FileNotFoundError: If the 'blueprint_architect_instruction.yaml' file
-            cannot be found or accessed by the underlying loader.
-        KeyError: If the loaded configuration lacks a required key, such as
-            'role', 'expertise', 'mission', or 'critical_rules'.
     """
     config = load_prompt_config("blueprint_architect_instruction.yaml")
 
-    instruction = f"Eres un {config['role']} experto en {config['expertise']}.\n"
-    instruction += f"Tu misión es: {config['mission']}\n\n"
-    instruction += "REGLAS CRÍTICAS DE REDACCIÓN:\n"
-    for idx, rule in enumerate(config["critical_rules"], 1):
+    instruction = (
+        f"You are a Principal Enterprise Solutions Architect ({config.get('role', 'Socio Consultor')}) "
+        f"with top-tier expertise in {config.get('expertise', 'Enterprise Cloud & Infrastructure Architecture')}.\n"
+    )
+    instruction += (
+        f"Your mission: {config.get('mission', 'Design an actionable, world-class enterprise transformation blueprint')}\n\n"
+    )
+    instruction += "### CRITICAL LANGUAGE MANDATE:\n"
+    instruction += (
+        f"You MUST generate all analytical narratives, findings, gap statements, business cases, "
+        f"and technical objectives EXCLUSIVELY in {target_language}.\n\n"
+    )
+    instruction += "CRITICAL ARCHITECTURAL RULES:\n"
+    for idx, rule in enumerate(config.get("critical_rules", []), 1):
         instruction += f"{idx}. {rule}\n"
 
     return instruction
@@ -67,10 +74,10 @@ def get_pilar_architect_prompt(
     tower_name: str,
     pilar_label: str,
     pilar_score: float,
-    context_str: str,
-    intel_str: str,
-    answers_json: str,
-    pilar_id: str,
+    context_str: str = "",
+    intel_str: str = "",
+    answers_json: str = "[]",
+    pilar_id: str = "",
 ) -> Any:
     """Constructs a structured prompt for a generative model from various inputs.
 

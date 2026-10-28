@@ -637,12 +637,12 @@ def build_tower_definition(
     base_definition: dict,
     tower_id: str,
     tower_name: str,
-    purpose: str,
-    scope_summary: list[str],
-    related_towers: list[str],
-    boundary_notes: list[str],
-    pillars: list[dict],
-    questions: list[dict],
+    purpose: str = "",
+    scope_summary: list[str] | None = None,
+    related_towers: list[str] | None = None,
+    boundary_notes: list[str] | None = None,
+    pillars: list[dict] | None = None,
+    questions: list[dict] | None = None,
 ) -> dict:
     """Constructs a tower definition dictionary from a base template and components.
 

@@ -6,9 +6,9 @@ def get_gap_writer_prompt(
     scoring_pretty: str,
     asis_pretty: str,
     tobe_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
-    feedback_block: str,
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
+    feedback_block: str = "",
 ) -> str:
     """Constructs the prompt for the GAP analysis Writer agent.
 
@@ -96,9 +96,9 @@ def get_gap_reviewer_prompt(
     findings_pretty: str,
     scoring_pretty: str,
     asis_pretty: str,
-    tobe_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
+    tobe_pretty: str = "",
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
 ) -> str:
     r"""{'docstring': "Constructs the prompt for an AI agent to review a GAP analysis section.\n\nGenerates a detailed prompt in Spanish that instructs an AI agent to review\nthe GAP analysis section of a technical assessment. The prompt assembles\ncontextual data from the assessment (findings, scoring, AS-IS/TO-BE states),\nthe official tower methodology, and a set of explicit review rules. It also\ndefines the exact JSON schema required for the agent's output.\n\nArgs:\n    draft_pretty: A string representation of the draft GAP section to be\n        reviewed.\n    findings_pretty: A string representation of the findings section, used for\n        contextual consistency validation.\n    scoring_pretty: A string representation of the scoring section, used for\n        contextual consistency validation.\n    asis_pretty: A string representation of the AS-IS state description.\n    tobe_pretty: A string representation of the TO-BE state description.\n    tower_definition_pretty: A string representation of the tower's\n        methodological definition, serving as the ground truth for the review.\n    tower_label: The label of the tower under review, used to scope the\n        agent's task.\n\nReturns:\n    A formatted string containing the complete prompt in Spanish for the AI\n    reviewer agent."}."""
     return f"""

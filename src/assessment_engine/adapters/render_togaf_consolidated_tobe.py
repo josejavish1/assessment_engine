@@ -50,10 +50,10 @@ def set_cell_text_custom(
     cell, text, bold=False, font_size=9, align=WD_ALIGN_PARAGRAPH.LEFT, color_rgb=None
 ):
     """Set the text content and apply custom formatting to a table cell."""
-    set_cell_text_custom_impl(cell, text, bold, font_size, align, color_rgb)
+    _set_cell_text_custom_impl(cell, text, bold, font_size, align, color_rgb)
 
 
-def set_cell_text_custom_impl(cell, text, bold, font_size, align, color_rgb):
+def _set_cell_text_custom_impl(cell, text, bold, font_size, align, color_rgb):
     r"""{'docstring': "Sets the text and formatting for a `python-docx` table cell.\n\nThis function first erases all existing content within the target cell. It\nthen configures the cell's primary paragraph with specified alignment,\nspacing, and line height. A new run is added to this paragraph containing\nthe provided text, which is sanitized to ensure XML compatibility before\ninsertion. Finally, font properties such as bold style, size, and color\nare applied to the new run.\n\nArgs:\n    cell (docx.table._Cell): The `_Cell` object from a `python-docx` table\n        that will be modified.\n    text (str): The string content to insert into the cell.\n    bold (bool): A flag to determine if the text should be bold.\n    font_size (Union[int, float]): The desired font size in points.\n    align (int): A member of the `docx.enum.text.WD_ALIGN_PARAGRAPH`\n        enumeration used to set the paragraph's horizontal alignment.\n    color_rgb (Optional[docx.shared.RGBColor]): An `RGBColor` instance for the\n        font color. If None, the document's default font color is applied."}."""
     # Ensures content is XML-escaped for structural integrity within the document.
     cell.text = ""

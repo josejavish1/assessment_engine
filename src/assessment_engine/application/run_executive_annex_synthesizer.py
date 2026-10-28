@@ -549,15 +549,23 @@ def enrich_annex_payload(
 
     coi_extreme_3y = global_fair_p90 + (global_fair_ale * 2)
 
-    formatted_ale = f"{global_fair_ale:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    formatted_3y_ord = f"{(global_fair_ale * 3):,.0f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    formatted_3y_ext = f"{coi_extreme_3y:,.0f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    ale_rounded = round(global_fair_ale, -3)
+    ale_p10 = round(global_fair_ale * 0.70, -3)
+    ale_p90 = round(global_fair_ale * 1.30, -3)
+
+    str_ale = f"{ale_rounded:,.0f}".replace(",", ".")
+    str_p10 = f"{ale_p10:,.0f}".replace(",", ".")
+    str_p90 = f"{ale_p90:,.0f}".replace(",", ".")
+    fmt_ale = f"~{str_ale} €/año (Rango habitual: {str_p10} € a {str_p90} €)"
+
+    formatted_3y_ord = f"~{(global_fair_ale * 3):,.0f} € en 3 años".replace(",", "X").replace(".", ",").replace("X", ".")
+    formatted_3y_ext = f"~{coi_extreme_3y:,.0f} € (peor caso en 3 años)".replace(",", "X").replace(".", ",").replace("X", ".")
 
     from assessment_engine.domain.schemas.annex_synthesis import FinancialCOIProfile
     result_payload.executive_summary.financial_coi = FinancialCOIProfile(
-        annual_loss_exposure=f"{formatted_ale} €",
-        coi_3y_ordinary=f"{formatted_3y_ord} €",
-        coi_3y_extreme=f"{formatted_3y_ext} €"
+        annual_loss_exposure=fmt_ale,
+        coi_3y_ordinary=formatted_3y_ord,
+        coi_3y_extreme=formatted_3y_ext
     )
 
     result_payload.domain_introduction.technological_domain = (
@@ -668,8 +676,8 @@ async def generate_synthesis(
     client_intelligence: dict,
     context_summary: str,
     config: dict,
-    radar_chart_path: Path,
-    run_id: str,
+    radar_chart_path: Optional[Path] = None,
+    run_id: str = "",
 ) -> Optional[AnnexPayload]:
     """Executes the core synthesis logic by processing input data through the specified AI agent to produce an enriched annex payload. This function is designed to be pure, encapsulating all business logic without external side effects."""
     blueprint_data = blueprint.model_dump(by_alias=True)

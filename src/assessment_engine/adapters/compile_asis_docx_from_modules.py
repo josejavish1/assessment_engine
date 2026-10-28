@@ -21,6 +21,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     set_cell_text,
 )
 from assessment_engine.infrastructure.text_utils import clean_text_for_word, format_date_spanish
+from assessment_engine.infrastructure.localization import format_number
 
 # Define constants for branding and document styling.
 COLOR_BLUE = "0072BC"

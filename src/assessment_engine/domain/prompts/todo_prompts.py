@@ -5,11 +5,11 @@ def get_todo_writer_prompt(
     findings_pretty: str,
     scoring_pretty: str,
     asis_pretty: str,
-    tobe_pretty: str,
-    gap_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
-    feedback_block: str,
+    tobe_pretty: str = "",
+    gap_pretty: str = "",
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
+    feedback_block: str = "",
 ) -> str:
     """Constructs a Spanish-language prompt for an LLM to generate a TO-DO section.
 
@@ -107,10 +107,10 @@ def get_todo_reviewer_prompt(
     findings_pretty: str,
     scoring_pretty: str,
     asis_pretty: str,
-    tobe_pretty: str,
-    gap_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
+    tobe_pretty: str = "",
+    gap_pretty: str = "",
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
 ) -> str:
     """Construct a Spanish-language prompt for an AI agent to review an assessment's TO-DO section."""
     return f"""

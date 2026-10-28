@@ -22,11 +22,14 @@ def generate_actuarial_ledger(tower_id: str, blueprint_payload: Dict[str, Any]) 
     lines.append(f"# Expediente de Validación Actuarial (SR 11-7) - Torre {tower_id}")
     lines.append("Este documento constituye el **Audit Trail de Caja de Cristal (Whitebox)** para la evaluación de riesgos financieros. Contiene la justificación metodológica completa (SME Elicitation Rationale) y los parámetros estocásticos exactos de cada vulnerabilidad, permitiendo a cualquier auditor de tercera parte replicar empíricamente la simulación de Monte Carlo.\n")
     
-    lines.append("## 0. Declaración Metodológica y Fuentes de Datos (Model Governance & SR 11-7)")
-    lines.append("- **Naturaleza del Modelo:** Modelo cuantitativo de elicitación estructurada de juicio experto basado en el estándar Open FAIR™ (ISO/IEC 27005) y simulación estocástica de Monte Carlo (10.000 iteraciones).")
-    lines.append("- **Fuente Primaria de Datos:** Expediente de evidencia cualitativa verificado (`evidence_ledger.json`), compuesto por entrevistas de arquitectura, cuestionarios técnicos validados y documentación de contexto operativo del cliente.")
-    lines.append("- **Calibración Financiera:** Las escalas de pérdida (Loss Magnitude - LM) se calibran dinámicamente frente a las cuentas anuales consolidadas oficiales del cliente, límites de sanción regulatoria aplicables y costes de parada por hora ponderados según la madurez técnica auditada.")
-    lines.append("- **Alcance y Limitaciones:** Este modelo no constituye una auditoría contable ni refleja mediciones pasivas de telemetría de red en tiempo real; representa la distribución de probabilidad de pérdida esperada ante los escenarios de fallo de control identificados.\n")
+    lines.append("## 0. Explicación para Dirección: Cómo se Calculan estos Riesgos (Marco Metodológico)")
+    lines.append("- **¿Qué representan estas cifras?** No son pérdidas que la empresa haya pagado en una factura real ni multas impuestas. Es una estimación económica prudente de lo que costaría la indisponibilidad, la degradación de servicios esenciales o el trabajo manual si los fallos identificados provocan incidencias.")
+    lines.append("- **Diferenciación por criticidad del entorno afectado:** El modelo no asume que cualquier fallo paraliza toda la compañía. Distingue tres niveles de alcance funcional:")
+    lines.append("  - *Nivel 1 - Operaciones Críticas de Negocio y CPD:* Entornos de producción directa, prestación de servicios esenciales al cliente o infraestructura base del centro de datos (ponderado al 60% del coste horario corporativo).")
+    lines.append("  - *Nivel 2 - Plataformas Centrales y Gestión Transaccional:* Sistemas centrales de gestión (ERP, bases de datos corporativas, almacenamiento y facturación, ponderado al 35% del coste horario).")
+    lines.append("  - *Nivel 3 - Entornos de Soporte y Redes Administrativas:* Oficinas, puestos de trabajo y herramientas ofimáticas (ponderado al 15% del coste horario por pérdida de productividad de empleados, sin interrupción de servicios a clientes ni operaciones esenciales).")
+    lines.append("- **¿Para qué sirve este análisis?** Su objetivo es servir de referencia para el Comité de Dirección: permite comparar si la inversión en modernizar la infraestructura (CapEx/OpEx de los proyectos) es rentable frente al coste de no hacer nada y asumir el riesgo.")
+    lines.append("- **Nivel de precisión y margen de prudencia:** Al tratarse de un diagnóstico rápido basado en entrevistas técnicas (y no en una auditoría forense con telemetría de 12 meses), las cifras no deben leerse como exactitudes matemáticas al céntimo, sino como órdenes de magnitud e intervalos de referencia razonables (±30%).\n")
     
     for pillar in blueprint_payload.get("pillars_analysis", []):
         for finding in pillar.get("health_check_asis", []):

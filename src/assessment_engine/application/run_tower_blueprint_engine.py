@@ -207,7 +207,7 @@ def get_default_blueprint_payload(
 
 
 async def process_pilar_blueprint(
-    model_name, client_name, tower_name, pilar_data, context_str, intel_str
+    model_name, client_name, tower_name, pilar_data, context_str="", intel_str=""
 ):
     """Asynchronously processes an architectural pillar using a two-phase generative AI pipeline.
 

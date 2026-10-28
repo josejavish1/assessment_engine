@@ -5,9 +5,9 @@ def get_tobe_writer_prompt(
     findings_pretty: str,
     scoring_pretty: str,
     case_input_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
-    feedback_block: str,
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
+    feedback_block: str = "",
 ) -> str:
     """Constructs a Spanish-language prompt for a language model agent.
 
@@ -93,9 +93,9 @@ def get_tobe_reviewer_prompt(
     draft_pretty: str,
     findings_pretty: str,
     scoring_pretty: str,
-    case_input_pretty: str,
-    tower_definition_pretty: str,
-    tower_label: str,
+    case_input_pretty: str = "",
+    tower_definition_pretty: str = "",
+    tower_label: str = "",
 ) -> str:
     """Constructs the prompt for a Large Language Model to review a 'TO-BE' section.
 
