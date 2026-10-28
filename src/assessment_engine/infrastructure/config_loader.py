@@ -1,9 +1,12 @@
 """Implements the core logic and utility functions for the Assessment Engine pipeline."""
 
 import json
+import logging
 import os
 import re
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[3]
 ENGINE_CONFIG_DIR = ROOT / "engine_config"
@@ -415,3 +418,43 @@ def map_industry_to_profile(raw_industry_name: str) -> str:
         if key in industry_clean:
             return val
     return "default"
+
+
+def load_strategic_programs() -> dict[str, Any]:
+    """Loads canonical strategic programs configuration from declarative policy."""
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    file_path = (
+        repo_root / "engine_config" / "policies" / "strategic_programs.json"
+    )
+    if file_path.is_file():
+        try:
+            return json.loads(file_path.read_text(encoding="utf-8-sig"))
+        except (json.JSONDecodeError, OSError) as ex:
+            logger.warning("Error reading strategic_programs.json: %s", ex)
+    return {"programs": []}
+
+
+def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
+    """Resolves an initiative title or raw identifier to a canonical strategic program ID."""
+    if not raw_name_or_id:
+        return None
+
+    normalized = raw_name_or_id.strip()
+    data = load_strategic_programs()
+    programs = data.get("programs", [])
+
+    # Exact ID match (case-insensitive)
+    for p in programs:
+        pid = p.get("id", "")
+        if pid.upper() == normalized.upper():
+            return pid
+
+    # Semantic keyword and alias match
+    norm_lower = normalized.lower()
+    for p in programs:
+        pid = p.get("id", "")
+        aliases = p.get("aliases", [])
+        if any(alias.lower() in norm_lower for alias in aliases):
+            return pid
+
+    return None

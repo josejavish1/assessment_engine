@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "programs": [
+    {
+      "id": "PROG_OBSERVABILITY",
+      "name": "Enterprise Observability & Telemetry",
+      "lead_towers": [
+        "OPERATIONS",
+        "SECURITY",
+        "INFRASTRUCTURE"
+      ],
+      "description": "Centralized observability, logging, metrics, SIEM correlation, and APM telemetry across hybrid infrastructure.",
+      "aliases": [
+        "observabilidad",
+        "observability",
+        "telemetria",
+        "telemetry",
+        "siem",
+        "monitorizacion",
+        "monitoring",
+        "apm",
+        "log management",
+        "centralized logging",
+        "trazabilidad"
+      ]
+    },
+    {
+      "id": "PROG_ZERO_TRUST_IAM",
+      "name": "Zero Trust Architecture & Identity Governance",
+      "lead_towers": [
+        "SECURITY",
+        "NETWORK",
+        "IAM"
+      ],
+      "description": "Zero Trust network access, identity and access management (IAM/PAM), MFA enforcement, and micro-segmentation.",
+      "aliases": [
+        "zero trust",
+        "identidades",
+        "identity",
+        "iam",
+        "pam",
+        "mfa",
+        "control de acceso",
+        "ztna",
+        "microsegmentacion",
+        "microsegmentation",
+        "privileged access"
+      ]
+    },
+    {
+      "id": "PROG_SOVEREIGN_CLOUD",
+      "name": "Sovereign & Hybrid Cloud Platform",
+      "lead_towers": [
+        "CLOUD",
+        "INFRASTRUCTURE",
+        "GOVERNANCE"
+      ],
+      "description": "Enterprise Cloud Landing Zone, hybrid cloud governance, workload migration, and data sovereignty compliance.",
+      "aliases": [
+        "landing zone",
+        "cloud hibrido",
+        "hybrid cloud",
+        "sovereign cloud",
+        "nube soberana",
+        "migracion cloud",
+        "cloud migration",
+        "cloud foundation",
+        "cloud governance"
+      ]
+    },
+    {
+      "id": "PROG_NETWORK_FABRIC",
+      "name": "Next-Gen Software-Defined Network Fabric",
+      "lead_towers": [
+        "NETWORK",
+        "SECURITY"
+      ],
+      "description": "SD-WAN transformation, core network fabric modernization, SASE integration, and high-availability backbone.",
+      "aliases": [
+        "network fabric",
+        "sd-wan",
+        "sdwan",
+        "sase",
+        "red definida por software",
+        "sdn",
+        "arquitectura de red",
+        "backbone",
+        "wan edge",
+        "network segmentation"
+      ]
+    },
+    {
+      "id": "PROG_CORE_MODERNIZATION",
+      "name": "Core Application & Legacy Modernization",
+      "lead_towers": [
+        "APPLICATIONS",
+        "ARCHITECTURE",
+        "CLOUD"
+      ],
+      "description": "Refactoring monolithic legacy systems, containerization, microservices adoption, and technical debt remediation.",
+      "aliases": [
+        "modernizacion del core",
+        "core modernization",
+        "legacy modernization",
+        "microservicios",
+        "microservices",
+        "desacoplamiento",
+        "containerization",
+        "kubernetes",
+        "deuda tecnica",
+        "app refactoring",
+        "modernizacion legada"
+      ]
+    },
+    {
+      "id": "PROG_DATA_AI_PLATFORM",
+      "name": "Unified Data Governance & Enterprise AI Platform",
+      "lead_towers": [
+        "DATA",
+        "AI",
+        "GOVERNANCE"
+      ],
+      "description": "Enterprise data lakehouse, master data management, data governance, and scalable AI/ML platform.",
+      "aliases": [
+        "data platform",
+        "plataforma de datos",
+        "gobierno del dato",
+        "data governance",
+        "inteligencia artificial",
+        "ai platform",
+        "lakehouse",
+        "data fabric",
+        "mlops",
+        "ia empresarial",
+        "enterprise ai",
+        "big data",
+        "llm platform"
+      ]
+    },
+    {
+      "id": "PROG_BUSINESS_RESILIENCE",
+      "name": "Business Continuity & Cyber Resilience",
+      "lead_towers": [
+        "RESILIENCE",
+        "INFRASTRUCTURE",
+        "SECURITY"
+      ],
+      "description": "Disaster recovery orchestration, immutable backups, business continuity planning (BCP/DRP), and geo-redundancy.",
+      "aliases": [
+        "continuidad de negocio",
+        "business continuity",
+        "disaster recovery",
+        "resiliencia",
+        "resilience",
+        "drp",
+        "bcp",
+        "contingencia",
+        "backup inmutable",
+        "alta disponibilidad",
+        "high availability"
+      ]
+    }
+  ]
+}
