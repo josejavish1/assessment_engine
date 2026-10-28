@@ -526,16 +526,37 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 lm_ml = float(lm_range.get("ml", 25000.0)) * lm_mod
                 lm_max = float(lm_range.get("max", 80000.0)) * lm_mod
 
-                # Scale P&L dynamically if client-specific downtime cost is calibrated
-                hourly_cost = custom_calibration.get("hourly_downtime_cost_eur") if custom_calibration else None
+                # SOTA Industrial Practice: Scope-Aware Downtime Impact (Environment Tiering)
+                hourly_cost = (
+                    custom_calibration.get("hourly_downtime_cost_eur")
+                    if custom_calibration
+                    else None
+                )
                 if hourly_cost is not None and typology != "OPERATIONAL_FRICTION":
                     hourly = float(hourly_cost)
+                    env_tier = str(
+                        finding.get("environment_tier")
+                        or cap_calibration.get("environment_tier", "")
+                    ).upper()
+                    if env_tier in ["CRITICAL_CORE", "DC_PLANT", "PRODUCTION_OT"]:
+                        scope_ratio = 0.60
+                    elif env_tier in ["CAMPUS_OFFICE", "INTERNAL_SUPPORT"]:
+                        scope_ratio = 0.15
+                    else:
+                        scope_ratio = float(cap_calibration.get("scope_ratio", 0.35))
+
+                    effective_hourly = hourly * scope_ratio
+
                     op_assumptions = profiles.get("operational_assumptions", {})
-                    duration_map = op_assumptions.get("duration_hours_by_severity", {})
-                    dur_spec = duration_map.get(str(lm), {"min": 0.5, "ml": 2.0, "max": 6.0})
-                    lm_min = hourly * float(dur_spec.get("min", 0.5))
-                    lm_ml = hourly * float(dur_spec.get("ml", 2.0))
-                    lm_max = hourly * float(dur_spec.get("max", 6.0))
+                    duration_map = op_assumptions.get(
+                        "duration_hours_by_severity", {}
+                    )
+                    dur_spec = duration_map.get(
+                        str(lm), {"min": 0.5, "ml": 2.0, "max": 6.0}
+                    )
+                    lm_min = effective_hourly * float(dur_spec.get("min", 0.5))
+                    lm_ml = effective_hourly * float(dur_spec.get("ml", 2.0))
+                    lm_max = effective_hourly * float(dur_spec.get("max", 6.0))
 
                 # SOTA Tier-1 Actuarial Practice: Ontology & Structure-Driven Typology (Zero-Keywords)
                 finding_typology = finding.get("typology") or cap_calibration.get("typology")

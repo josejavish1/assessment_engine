@@ -1040,23 +1040,98 @@ def compile_docx(tower_dir: str, output_path: str):
         else profile_sec.get("industry_type_en", "Standard Industry")
     )
 
+    from assessment_engine.infrastructure.localization import (
+        format_currency,
+        t,
+    )
+
     # SOTA Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     # The regulatory framework narrative is mapped dynamically to the client's industry sector.
     if "Financial" in industry or "Banking" in industry:
-        reg_name = "las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA o normativas de banca central)" if doc_lang == "es" else "financial operational resilience regulations (e.g. DORA or central bank mandates)"
-        reg_fine_limit = f"15.000.000 {currency}"
+        reg_name = t(
+            "reg_desc_financial",
+            locale=doc_lang,
+            default=(
+                "las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA o normativas de banca central)"
+                if doc_lang == "es"
+                else "financial operational resilience regulations (e.g. DORA or central bank mandates)"
+            ),
+        )
+        reg_fine_limit = format_currency(
+            15000000.0,
+            currency_code="EUR",
+            currency_symbol=currency,
+            locale=doc_lang,
+            decimals=0,
+        )
     elif "Energy" in industry or "Critical Infrastructure" in industry:
-        reg_name = "los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2 o leyes de seguridad nacional)" if doc_lang == "es" else "critical infrastructure protection frameworks (e.g. NIS2 Directive or national security laws)"
-        reg_fine_limit = f"10.000.000 {currency}"
+        reg_name = t(
+            "reg_desc_critical_infra",
+            locale=doc_lang,
+            default=(
+                "los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2 o leyes de seguridad nacional)"
+                if doc_lang == "es"
+                else "critical infrastructure protection frameworks (e.g. NIS2 Directive or national security laws)"
+            ),
+        )
+        reg_fine_limit = format_currency(
+            10000000.0,
+            currency_code="EUR",
+            currency_symbol=currency,
+            locale=doc_lang,
+            decimals=0,
+        )
     elif "Telecommunications" in industry or "Media" in industry:
-        reg_name = "los marcos regulatorios sectoriales de Telecomunicaciones, Media y soberanía de datos" if doc_lang == "es" else "sectoral regulatory frameworks for Telecommunications, Media, and data sovereignty"
-        reg_fine_limit = f"5.000.000 {currency}"
+        reg_name = t(
+            "reg_desc_telecom",
+            locale=doc_lang,
+            default=(
+                "los marcos regulatorios sectoriales de Telecomunicaciones, Media y soberanía de datos"
+                if doc_lang == "es"
+                else "sectoral regulatory frameworks for Telecommunications, Media, and data sovereignty"
+            ),
+        )
+        reg_fine_limit = format_currency(
+            5000000.0,
+            currency_code="EUR",
+            currency_symbol=currency,
+            locale=doc_lang,
+            decimals=0,
+        )
     elif "Healthcare" in industry:
-        reg_name = "las regulaciones de protección de datos de salud y privacidad (v.g. HIPAA o marcos locales equivalentes)" if doc_lang == "es" else "healthcare data protection and privacy regulations (e.g. HIPAA or equivalent local frameworks)"
-        reg_fine_limit = f"5.000.000 {currency}"
+        reg_name = t(
+            "reg_desc_healthcare",
+            locale=doc_lang,
+            default=(
+                "las regulaciones de protección de datos de salud y privacidad (v.g. HIPAA o marcos locales equivalentes)"
+                if doc_lang == "es"
+                else "healthcare data protection and privacy regulations (e.g. HIPAA or equivalent local frameworks)"
+            ),
+        )
+        reg_fine_limit = format_currency(
+            5000000.0,
+            currency_code="EUR",
+            currency_symbol=currency,
+            locale=doc_lang,
+            decimals=0,
+        )
     else:
-        reg_name = "los marcos generales de protección de datos y privacidad (v.g. RGPD o legislación sectorial estándar)" if doc_lang == "es" else "general data protection and privacy frameworks (e.g. GDPR or standard sectoral legislation)"
-        reg_fine_limit = f"2.000.000 {currency}"
+        reg_name = t(
+            "reg_desc_general",
+            locale=doc_lang,
+            default=(
+                "los marcos generales de protección de datos y privacidad (v.g. RGPD o legislación sectorial estándar)"
+                if doc_lang == "es"
+                else "general data protection and privacy frameworks (e.g. GDPR or standard sectoral legislation)"
+            ),
+        )
+        reg_fine_limit = format_currency(
+            2000000.0,
+            currency_code="EUR",
+            currency_symbol=currency,
+            locale=doc_lang,
+            decimals=0,
+        )
 
     if scoring_path.exists():
         with open(scoring_path, "r", encoding="utf-8-sig") as f:
@@ -1164,7 +1239,15 @@ def compile_docx(tower_dir: str, output_path: str):
     #
     # Assemble and render Chapter 3: Maturity Profile and General Evaluation.
     #
-    chapter_3_title = "Evaluación y Madurez Tecnológica" if doc_lang == "es" else "Technology Maturity and Evaluation"
+    chapter_3_title = t(
+        "chapter_3_title",
+        locale=doc_lang,
+        default=(
+            "Evaluación y Madurez Tecnológica"
+            if doc_lang == "es"
+            else "Technology Maturity and Evaluation"
+        ),
+    )
     add_heading(doc, chapter_3_title, level=1, primary_color_rgb=p_color_rgb)
 
     # Assemble and render Section 3.1: Global Maturity Dashboard; centered, 2-column layout per requirement 2.
@@ -1176,16 +1259,10 @@ def compile_docx(tower_dir: str, output_path: str):
     finalize_table(dash_table)
 
     # Data Sanitization: Ensure data integrity by dynamically resolving scores and qualitative bands from the canonical scoring output.
-    formatted_global_score = (
-        f"{global_score:.2f}".replace(".", ",")
-        if doc_lang == "es"
-        else f"{global_score:.2f}"
+    formatted_global_score = format_number(
+        global_score, locale=doc_lang, decimals=2
     )
-    display_score_str = (
-        f"{formatted_global_score} / 5,00"
-        if doc_lang == "es"
-        else f"{formatted_global_score} / 5.00"
-    )
+    display_score_str = f"{formatted_global_score} / {format_number(5.0, locale=doc_lang, decimals=2)}"
     display_band_str = f"{global_band}"
 
     #
@@ -1322,46 +1399,91 @@ def compile_docx(tower_dir: str, output_path: str):
     add_spacer(doc, 15)
 
     # McKinsey/Accenture Style: Matriz de Diagnóstico y Desempeño por Dominio Tecnológico
-    health_title = "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico" if doc_lang == "es" else "Diagnosis and Performance Matrix by Technology Domain"
+    health_title = t(
+        "diagnosis_performance_matrix_title",
+        locale=doc_lang,
+        default=(
+            "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico"
+            if doc_lang == "es"
+            else "Diagnosis and Performance Matrix by Technology Domain"
+        ),
+    )
     add_heading(doc, health_title, level=2, primary_color_rgb=p_color_rgb)
-    add_body_paragraph(doc, "A continuación, se detalla el perfil de desempeño operativo y de gobierno para cada uno de los sub-dominios técnicos evaluados dentro de esta torre:", text_color_rgb=text_color_rgb)
+    add_body_paragraph(
+        doc,
+        t(
+            "diagnosis_performance_matrix_intro",
+            locale=doc_lang,
+            default=(
+                "A continuación, se detalla el perfil de desempeño operativo y de gobierno para cada uno de los sub-dominios técnicos evaluados dentro de esta torre:"
+            ),
+        ),
+        text_color_rgb=text_color_rgb,
+    )
     add_spacer(doc, 5)
 
     health_table = doc.add_table(rows=1, cols=3)
     health_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     health_table.style = "Table Grid"
 
-    for i, h_txt in enumerate([
-        "Pilar / Capacidad Tecnológica Evaluada",
-        "Score AS-IS",
-        "Nivel de Madurez" if doc_lang == "es" else "Maturity Level"
-    ]):
-        set_cell_text_custom(health_table.rows[0].cells[i], h_txt, bold=True, font_size=10, color_rgb=RGBColor(255, 255, 255), align=WD_ALIGN_PARAGRAPH.CENTER)
+    for i, h_txt in enumerate(
+        [
+            t(
+                "table_header_pillar_capacity",
+                locale=doc_lang,
+                default="Pilar / Capacidad Tecnológica Evaluada",
+            ),
+            t("table_header_score_asis", locale=doc_lang, default="Score AS-IS"),
+            t(
+                "table_header_maturity_level",
+                locale=doc_lang,
+                default="Nivel de Madurez",
+            ),
+        ]
+    ):
+        set_cell_text_custom(
+            health_table.rows[0].cells[i],
+            h_txt,
+            bold=True,
+            font_size=10,
+            color_rgb=RGBColor(255, 255, 255),
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+        )
         shade_cell(health_table.rows[0].cells[i], p_color_hex)
 
     if b_data and "pillars_analysis" in b_data:
-        for s_idx, p in enumerate(sorted(b_data.get("pillars_analysis", []), key=lambda item: item.get("score", 0.0))):
+        from assessment_engine.domain.maturity_band import (
+            ANNEX_MATURITY_BANDS,
+            resolve_maturity_band,
+        )
+
+        for s_idx, p in enumerate(
+            sorted(
+                b_data.get("pillars_analysis", []),
+                key=lambda item: item.get("score", 0.0),
+            )
+        ):
             bg = alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
             p_name = p.get("pilar_name", "Pilar")
             p_score = float(p.get("score", 3.0))
 
-            score_formatted = f"{p_score:.2f}".replace(".", ",") if doc_lang == "es" else f"{p_score:.2f}"
+            score_formatted = format_number(
+                p_score, locale=doc_lang, decimals=2
+            )
+            p_status = resolve_maturity_band(
+                p_score, ANNEX_MATURITY_BANDS, locale=doc_lang
+            )["label"]
 
-            # Map score to status and color
+            # Map score to background color
             if p_score >= 4.20:
-                p_status = "Optimizado" if doc_lang == "es" else "Optimized"
                 p_bg_color = "D9F2D9"
             elif p_score >= 3.40:
-                p_status = "Gestionado y Medido" if doc_lang == "es" else "Managed"
                 p_bg_color = "E2F0D9"
             elif p_score >= 2.60:
-                p_status = "Definido" if doc_lang == "es" else "Defined"
                 p_bg_color = "FFF3CD"
             elif p_score >= 1.80:
-                p_status = "Repetible" if doc_lang == "es" else "Repeatable"
                 p_bg_color = "FCE4D6"
             else:
-                p_status = "Inicial" if doc_lang == "es" else "Initial"
                 p_bg_color = "F2D9D9"
 
             row = health_table.add_row()

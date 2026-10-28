@@ -30,22 +30,17 @@ def clean_client_name(client_name: str) -> str:
 
 
 def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
-    # 1. Gather score and band
+    from assessment_engine.domain.maturity_band import (
+        ANNEX_MATURITY_BANDS,
+        resolve_maturity_band,
+    )
+    from assessment_engine.infrastructure.localization import format_number
+
     p_score = float(p.get("score", 3.0))
-    
-    # Map score to band
-    if p_score >= 4.20:
-        band = "Optimizado" if doc_lang == "es" else "Optimized"
-    elif p_score >= 3.40:
-        band = "Gestionado" if doc_lang == "es" else "Managed"
-    elif p_score >= 2.60:
-        band = "Definido" if doc_lang == "es" else "Defined"
-    elif p_score >= 1.80:
-        band = "Repetible" if doc_lang == "es" else "Repeatable"
-    else:
-        band = "Inicial" if doc_lang == "es" else "Initial"
-        
-    formatted_score = f"{p_score:.2f}".replace(".", ",") if doc_lang == "es" else f"{p_score:.2f}"
+    band = resolve_maturity_band(
+        p_score, ANNEX_MATURITY_BANDS, locale=doc_lang
+    )["label"]
+    formatted_score = format_number(p_score, locale=doc_lang, decimals=2)
     p_name = p.get("pilar_name", "Pilar")
 
     findings = p.get("health_check_asis", [])
@@ -473,28 +468,14 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
     total_max = total_max * rate_mult
 
     # 1. Format of TRUE ALE (with 2 decimals as requested)
-    formatted_ale = (
-        f"{total_fair_ale:,.2f}".replace(",", "X")
-        .replace(".", ",")
-        .replace("X", ".")
-        if doc_lang == "es"
-        else f"{total_fair_ale:,.2f}"
-    )
+    from assessment_engine.infrastructure.localization import format_number
+
+    formatted_ale = format_number(total_fair_ale, locale=doc_lang, decimals=2)
     true_ale_str = f"{formatted_ale} {currency}"
 
-    formatted_p90 = (
-        f"{total_p90:,.0f}".replace(",", ".")
-        if doc_lang == "es"
-        else f"{total_p90:,.0f}"
-    )
-    formatted_max = (
-        f"{total_max:,.0f}".replace(",", ".")
-        if doc_lang == "es"
-        else f"{total_max:,.0f}"
-    )
-    
-    # 2. Format of TRUE SCORE
-    formatted_score = f"{exact_score:.2f}".replace(".", ",") if doc_lang == "es" else f"{exact_score:.2f}"
+    formatted_p90 = format_number(total_p90, locale=doc_lang, decimals=0)
+    formatted_max = format_number(total_max, locale=doc_lang, decimals=0)
+    formatted_score = format_number(exact_score, locale=doc_lang, decimals=2)
     
     # Clean up any mention of currency values (like 35.560.000, 32,120,000, 2.580.552,94, etc.)
     # Robust money_pattern preventing partial matches and ensuring full match of floats/thousands sep
@@ -990,7 +971,9 @@ The robustness of this analysis is grounded in a **cross-objective calibration**
             
             # Scale dynamically by the exchange rate in time of presentation (FAIR-MAM)
             scaled_g_ale = g_ale * rate_mult
-            formatted_g_ale = f"{scaled_g_ale:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if doc_lang == "es" else f"{scaled_g_ale:,.2f}"
+            formatted_g_ale = format_number(
+                scaled_g_ale, locale=doc_lang, decimals=2
+            )
             
             value_proposition = f"{g_data['prop']} Esta iniciativa mitiga de forma consolidada **{formatted_g_ale} {currency}** ({pct:.1f}% del ALE total) de exposición financiera latente."
             re_content.append(f"* **{g_key}:** {value_proposition}")
