@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -265,6 +265,55 @@ class ExecutiveDecisionsDraft(BaseModel):
     immediate_decisions: list[ExecutiveDecisionItem]
 
 
+class BoardMemoItem(BaseModel):
+    """A single domain row in the 1-page Board Memo."""
+
+    domain: str
+    score: str
+    band: str
+    status_color: str
+    fair_exposure_3y: str
+    critical_decision: str
+    budget_estimate: str
+
+
+class BoardMemoDraft(BaseModel):
+    """1-page Board Memo for Executive Committee and Board of Directors."""
+
+    headline: str
+    summary: str
+    items: list[BoardMemoItem]
+    consolidated_exposure_3y: str
+    total_budget_estimate: str
+
+
+class CrossTowerDependencyItem(BaseModel):
+    """A cross-tower architectural dependency link."""
+
+    source_tower: str
+    target_tower: str
+    dependency_type: str
+    architectural_rationale: str
+    delay_impact: str
+
+
+class CrossTowerNexusDraft(BaseModel):
+    """Cross-Tower Nexus matrix illustrating architectural coupling."""
+
+    title: str
+    description: str
+    dependencies: list[CrossTowerDependencyItem]
+
+
+class ExecutiveCalloutItem(BaseModel):
+    """A shaded executive callout block with bold accent border."""
+
+    callout_type: str
+    title: str
+    message: str
+    key_metric: str = ""
+
+
 class GlobalReportDocumentMeta(BaseModel):
     """Represent the metadata structure for a global report document."""
 
@@ -279,33 +328,18 @@ class GlobalReportPayload(VersionedPayload):
     Aggregates various components that constitute a global report into a single,
     structured container for data transfer and serialization. This class inherits
     versioning capabilities from `VersionedPayload`.
-
-    Attributes:
-        meta: Metadata associated with the global report document.
-        executive_summary: The draft content for the executive summary section.
-        burning_platform: A list of items outlining critical business challenges.
-        intelligence_dossier: A dictionary containing intelligence data.
-        heatmap: A list of raw heatmap data structured for direct client-side
-            consumption, decoupling data generation from presentation logic.
-        tower_bottom_lines: A list of bottom-line summaries from different
-            business towers or departments.
-        target_vision: The draft content for the target vision or future state section.
-        execution_roadmap: The draft content for the strategic execution roadmap.
-        executive_decisions: The draft content outlining executive decisions and
-            action items.
-        visuals: A dictionary mapping unique visual element identifiers to their
-            data, such as a URL or a base64-encoded string.
     """
 
     meta: GlobalReportDocumentMeta
     executive_summary: ExecutiveSummaryDraft
     burning_platform: list[BurningPlatformItem]
     intelligence_dossier: dict = Field(default_factory=dict)
-    heatmap: list[Any] = Field(
-        default_factory=list
-    )  # Raw heatmap data structured for direct consumption and client-side rendering, decoupling data generation from presentation logic.
+    heatmap: list[Any] = Field(default_factory=list)
     tower_bottom_lines: list[TowerBottomLineItem]
     target_vision: TargetVisionDraft
     execution_roadmap: ExecutionRoadmapDraft
     executive_decisions: ExecutiveDecisionsDraft
+    board_memo: Optional[BoardMemoDraft] = None
+    cross_tower_nexus: Optional[CrossTowerNexusDraft] = None
+    executive_callouts: list[ExecutiveCalloutItem] = Field(default_factory=list)
     visuals: Dict[str, str] = Field(default_factory=dict)

@@ -123,7 +123,11 @@ echo -e "\n${BLUE}==============================================================
 echo -e "${BLUE}  PHASE 1: Ingesting Documents (Evidence & Raptor RAG Tree)           ${NC}"
 echo -e "${BLUE}======================================================================${NC}"
 
-"${PYTHON_BIN}" -m assessment_engine.application.tools.ingest_redeia
+"${PYTHON_BIN}" -m assessment_engine.application.tools.ingest_documents \
+    --client "${CLIENT_NAME}" \
+    --context-file "${SOURCE_DIR}/context_redeia.docx" \
+    --responses-file "${SOURCE_DIR}/preguntas_redeia_con_notas.txt" \
+    --storage-dir "${SOURCE_DIR}"
 
 # Quick verification of Phase 1 outputs
 if [ -f "${SOURCE_DIR}/evidence_vault.json" ] && [ -f "${SOURCE_DIR}/raptor_tree.json" ]; then
