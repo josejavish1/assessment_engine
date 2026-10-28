@@ -85,7 +85,7 @@ entries:
   - docs/ai/documentation-governance.md
   - pyproject.toml
   - src/assessment_engine
-  - .github/workflows/daily-auto-heal.yml
+  - .github/workflows/quality.yml
   last_verified_against: '2026-06-26'
   notes: Project entry point and onboarding index.
   diataxis: explanation
@@ -101,7 +101,7 @@ entries:
   source_of_truth:
   - docs/documentation-map.yaml
   - src/assessment_engine/application/tools/validate_documentation_governance.py
-  - .github/workflows/daily-auto-heal.yml
+  - .github/workflows/quality.yml
   last_verified_against: '2026-06-26'
   notes: Documentation directory index and map overview.
   diataxis: explanation
@@ -826,7 +826,6 @@ entries:
   - .github/workflows/agent-evals.yml
   - .github/workflows/ci.yml
   - .github/workflows/docs-governance.yml
-  - .github/workflows/daily-auto-heal.yml
   - .github/workflows/orchestrator-pr-reconcile.yml
   - .github/workflows/quality.yml
   - .github/workflows/typing.yml

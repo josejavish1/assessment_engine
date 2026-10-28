@@ -59,14 +59,6 @@ jobs:
             --repo-root . \
             --documentation-map docs/documentation-map.yaml
 
-      - name: Run Nightly Self-Healing & Decay Engine
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          python src/assessment_engine/application/tools/nightly_self_healing.py \
-            --repo-root . \
-            --documentation-map docs/documentation-map.yaml
-
       - name: Lint documentation style
         run: |
           python src/assessment_engine/application/tools/lint_documentation_style.py \

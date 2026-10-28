@@ -4,7 +4,7 @@ owner: docs-governance
 source_of_truth:
 - ../docs/documentation-map.yaml
 - ../src/assessment_engine/application/tools/validate_documentation_governance.py
-- ../.github/workflows/daily-auto-heal.yml
+- ../.github/workflows/quality.yml
 last_verified_against: 2026-06-26
 applies_to:
 - repository
@@ -62,7 +62,7 @@ La integridad y alineación del corpus se mantienen mediante un **sistema integr
 
 *   **Sincronización de Esquemas:** Cada confirmación (commit) verifica que los esquemas de datos del código de Python coincidan de forma idéntica con las especificaciones técnicas en las tablas Markdown de los contratos.
 *   **Conciliación Pre-commit:** Al ejecutar `git commit` de forma local, el validador formatea y reescribe de manera automática las tablas Markdown que presenten desviaciones antes de consolidar el cambio.
-*   **Validación Diaria Continua:** GitHub Actions ejecuta un flujo automatizado diario a medianoche (`daily-auto-heal.yml`) para verificar la consistencia del código, ejecutar análisis estáticos, compilar el mapa maestro de sitemaps (`llms-full.txt`) y reconciliar el estado del repositorio.
+*   **Validación Continua en CI/CD:** GitHub Actions ejecuta un flujo automatizado de calidad (`quality.yml`) para verificar la consistencia del código, ejecutar análisis estáticos y certificar el estado del repositorio.
 
 ---
 

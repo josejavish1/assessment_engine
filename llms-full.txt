@@ -229,7 +229,7 @@ source_of_truth:
 - docs/ai/documentation-governance.md
 - pyproject.toml
 - src/assessment_engine/
-- .github/workflows/daily-auto-heal.yml
+- .github/workflows/quality.yml
 last_verified_against: 2026-06-26
 applies_to:
 - humans
@@ -306,7 +306,7 @@ El repositorio cuenta con un sistema de verificación estricta de la documentaci
 
 *   **Sincronización de Esquemas:** El linter automático verifica que las propiedades y tipos de las tablas en `docs/contracts/` coincidan bit a bit con los esquemas Pydantic del código de Python.
 *   **Bucle de Auto-Curación Pre-Commit:** Al ejecutar `git commit`, un gancho local de pre-commit corrige de forma desatendida y actualiza las tablas Markdown con cualquier cambio que hayas introducido en el código.
-*   **Nightly Reconciliador:** GitHub Actions ejecuta un flujo diario de auto-curación (`daily-auto-heal.yml`) a medianoche para formatear, linterizar, compilar sitemaps de IA (`llms-full.txt`) y reconciliar el repositorio.
+*   **Quality Gates en CI/CD:** GitHub Actions ejecuta un flujo estricto de calidad (`quality.yml`) y auditoría para verificar la integridad del código, análisis estático y estabilidad del repositorio.
 
 ---
 
