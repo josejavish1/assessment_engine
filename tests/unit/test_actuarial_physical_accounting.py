@@ -104,7 +104,11 @@ def test_actuarial_physical_accounting_breakdown(tmp_path: Path):
         # 2. Auditable plain-text justification must be present
         assert "audit_justification" in finding
         assert "Pérdida primaria contable estimada" in finding["audit_justification"]
-        assert f"{round(hourly_cost, 2):,.2f} €" in finding["audit_justification"] or str(round(hourly_cost, 2)) in finding["audit_justification"]
+        assert (
+            "1.426,94 €" in finding["audit_justification"]
+            or "1,426.94 €" in finding["audit_justification"]
+            or "1426.94" in finding["audit_justification"]
+        )
 
         # 3. Typology must be OPERATIONAL_FRICTION (TCO) without any Spanish keywords
         assert finding["is_operational_friction"] is True

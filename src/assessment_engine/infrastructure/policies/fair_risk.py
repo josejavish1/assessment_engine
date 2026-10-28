@@ -865,31 +865,65 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     "sre_cost_eur": round(sre_cost, 2),
                     "direct_incident_cost_eur": round(downtime_cost + sre_cost, 2),
                 }
+                from assessment_engine.infrastructure.localization import (
+                    format_currency,
+                    get_localized_string,
+                )
+
                 doc_lang = str(
                     payload.get("document_meta", {}).get("language", "es")
                 ).lower()
-                curr_sym = (
-                    payload.get("document_meta", {}).get("currency_symbol")
+                curr_code = str(
+                    payload.get("document_meta", {}).get("currency")
                     or (
-                        custom_calibration.get("currency_symbol")
+                        custom_calibration.get("currency_code")
                         if custom_calibration
-                        else None
+                        else "EUR"
                     )
-                    or "€"
+                ).upper()
+                curr_sym = payload.get("document_meta", {}).get(
+                    "currency_symbol"
+                ) or (
+                    custom_calibration.get("currency_symbol")
+                    if custom_calibration
+                    else None
                 )
 
-                if doc_lang == "en":
-                    finding["audit_justification"] = (
-                        f"Estimated primary accounting loss in base event: {downtime_h:.1f}h operational downtime at {curr_sym}{hourly_val:,.2f}/h "
-                        f"({curr_sym}{downtime_cost:,.2f}) + {curr_sym}{sre_cost:,.2f} SRE technical intervention "
-                        f"({sre_h:.1f}h at {curr_sym}{hourly_sre_rate:,.2f}/h)."
-                    )
-                else:
-                    finding["audit_justification"] = (
-                        f"Pérdida primaria contable estimada en evento base: {downtime_h:.1f}h de parada operativa a {hourly_val:,.2f} {curr_sym}/h "
-                        f"({downtime_cost:,.2f} {curr_sym}) + {sre_cost:,.2f} {curr_sym} de intervención técnica SRE "
-                        f"({sre_h:.1f}h a {hourly_sre_rate:,.2f} {curr_sym}/h)."
-                    )
+                formatted_hourly = format_currency(
+                    hourly_val,
+                    currency_code=curr_code,
+                    currency_symbol=curr_sym,
+                    locale=doc_lang,
+                )
+                formatted_downtime_cost = format_currency(
+                    downtime_cost,
+                    currency_code=curr_code,
+                    currency_symbol=curr_sym,
+                    locale=doc_lang,
+                )
+                formatted_sre_rate = format_currency(
+                    hourly_sre_rate,
+                    currency_code=curr_code,
+                    currency_symbol=curr_sym,
+                    locale=doc_lang,
+                )
+                formatted_sre_cost = format_currency(
+                    sre_cost,
+                    currency_code=curr_code,
+                    currency_symbol=curr_sym,
+                    locale=doc_lang,
+                )
+
+                finding["audit_justification"] = get_localized_string(
+                    "audit_justification_template",
+                    locale=doc_lang,
+                    downtime_hours=f"{downtime_h:.1f}",
+                    hourly_rate=formatted_hourly,
+                    downtime_cost=formatted_downtime_cost,
+                    sre_cost=formatted_sre_cost,
+                    sre_recovery_hours=f"{sre_h:.1f}",
+                    sre_hourly_rate=formatted_sre_rate,
+                )
 
                 # Sum vectorially to compile the corporate-wide annual loss distribution (Gap 2)
                 total_annual_losses += truncated_losses
@@ -899,8 +933,8 @@ class FairRiskPolicy(BaseSovereignPolicy):
             if hourly_cost is not None and float(hourly_cost) > 0:
                 hourly_f = float(hourly_cost)
                 # Portfolio subadditivity: Annual cumulative operational downtime across a tower is realistically bounded
-                # by maximum outage ceiling (80h), while secondary consolidated regulatory sanctions are capped proportionally.
-                max_annual_tower_loss = hourly_f * 80.0 + min(reg_max_fine * 0.05, hourly_f * 40.0)
+                # by maximum outage ceiling (40h), while secondary consolidated regulatory sanctions are capped proportionally.
+                max_annual_tower_loss = hourly_f * 40.0 + min(reg_max_fine * 0.02, hourly_f * 20.0)
                 total_annual_losses = np.minimum(
                     total_annual_losses, max_annual_tower_loss
                 )

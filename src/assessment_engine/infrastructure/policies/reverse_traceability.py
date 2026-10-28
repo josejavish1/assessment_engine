@@ -59,46 +59,87 @@ def _is_finding_addressed_by_projects(
 def _build_remediation_project(
     finding: dict[str, Any], f_text: str, doc_lang: str = "es"
 ) -> dict[str, Any]:
-    default_cap = "Infraestructura" if doc_lang == "es" else "Infrastructure"
+    from assessment_engine.infrastructure.localization import (
+        get_localized_string,
+        load_locales_catalog,
+        resolve_base_locale,
+    )
+
+    base_loc = resolve_base_locale(doc_lang)
+    catalog = load_locales_catalog()
+    loc_entry = catalog.get(base_loc, catalog.get("en", catalog.get("es", {})))
+
+    default_cap = (
+        "Infraestructura" if base_loc == "es" else "Infrastructure"
+    )
     default_impact = (
-        "Riesgo Operativo" if doc_lang == "es" else "Operational Risk"
+        "Riesgo Operativo" if base_loc == "es" else "Operational Risk"
     )
     cap = finding.get("capability", finding.get("target_state", default_cap))
     impact = finding.get(
         "impact", finding.get("business_risk", default_impact)
     )
 
-    if doc_lang == "en":
-        return {
-            "node_id": str(uuid.uuid4()),
-            "name": f"Tactical Remediation Program: {cap}",
-            "transformation_typology": "Core Modernization & Risk Mitigation",
-            "business_case": f"Direct Risk Mitigation: {impact}",
-            "tech_objective": f"Remediate technical gap identified in AS-IS: {f_text}",
-            "deliverables": [
+    name = get_localized_string(
+        "remediation_project_name_template",
+        locale=base_loc,
+        capability=cap,
+        default=(
+            f"Programa de Remediación Táctica: {cap}"
+            if base_loc == "es"
+            else f"Tactical Remediation Program: {cap}"
+        ),
+    )
+    b_case = get_localized_string(
+        "remediation_business_case_template",
+        locale=base_loc,
+        impact=impact,
+        default=(
+            f"Mitigación Directa de Riesgo: {impact}"
+            if base_loc == "es"
+            else f"Direct Risk Mitigation: {impact}"
+        ),
+    )
+    tech_obj = get_localized_string(
+        "remediation_tech_objective_template",
+        locale=base_loc,
+        finding_text=f_text,
+        default=(
+            f"Resolver la brecha detectada en el AS-IS: {f_text}"
+            if base_loc == "es"
+            else f"Remediate technical gap identified in AS-IS: {f_text}"
+        ),
+    )
+    duration = loc_entry.get(
+        "remediation_duration",
+        "H1 (Mes 1-3)" if base_loc == "es" else "H1 (Months 1-3)",
+    )
+    deliverables = loc_entry.get(
+        "remediation_deliverables",
+        (
+            [
+                "Plan de Remediación",
+                "Ejecución de Parches/Configuraciones",
+                "Informe de Cierre de Brecha",
+            ]
+            if base_loc == "es"
+            else [
                 "Remediation Plan",
                 "Patch & Configuration Deployment",
                 "Gap Closure Verification Report",
-            ],
-            "sizing": "S",
-            "duration": "H1 (Months 1-3)",
-            "program_id": None,
-            "mitigates_risk_id": finding.get("node_id"),
-        }
+            ]
+        ),
+    )
 
     return {
         "node_id": str(uuid.uuid4()),
-        "name": f"Programa de Remediación Táctica: {cap}",
+        "name": name,
         "transformation_typology": "Core Modernization & Risk Mitigation",
-        "business_case": f"Mitigación Directa de Riesgo: {impact}",
-        "tech_objective": f"Resolver la brecha detectada en el AS-IS: {f_text}",
-        "deliverables": [
-            "Plan de Remediación",
-            "Ejecución de Parches/Configuraciones",
-            "Informe de Cierre de Brecha",
-        ],
+        "business_case": b_case,
+        "tech_objective": tech_obj,
+        "deliverables": list(deliverables),
         "sizing": "S",
-        "duration": "H1 (Mes 1-3)",
+        "duration": duration,
         "program_id": None,
         "mitigates_risk_id": finding.get("node_id"),
     }
