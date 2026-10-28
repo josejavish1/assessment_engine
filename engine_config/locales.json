@@ -140,7 +140,9 @@
       "Despliegue del portal central de Autoservicio para el desarrollador."
     ],
     "business_case_direct_mitigation_template": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: '{impact}'.",
-    "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks})."
+    "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduce el TCO operativo, acelera el time-to-market y garantiza el cumplimiento normativo ({reg_frameworks}).",
+    "conjunction_and": " y ",
+    "font_family_default": "Aptos"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -283,7 +285,9 @@
       "Developer Self-Service portal deployment."
     ],
     "business_case_direct_mitigation_template": "Direct Mitigation: Resolves the critical vulnerability detected in the AS-IS, eliminating the risk of: '{impact}'.",
-    "business_case_strategic_enabler_template": "Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks})."
+    "business_case_strategic_enabler_template": "Strategic Enabler: Reduces operational TCO, accelerates time-to-market, and ensures regulatory compliance ({reg_frameworks}).",
+    "conjunction_and": " and ",
+    "font_family_default": "Aptos"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -426,7 +430,9 @@
       "Implantação do portal central de Autoatendimento para o desenvolvedor."
     ],
     "business_case_direct_mitigation_template": "Mitigação Direta: Resolve a vulnerabilidade crítica detectada no AS-IS, eliminando o risco de: '{impact}'.",
-    "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduz o TCO operacional, acelera o time-to-market e garante a conformidade regulatória ({reg_frameworks})."
+    "business_case_strategic_enabler_template": "Habilitador Estratégico: Reduz o TCO operacional, acelera o time-to-market e garante a conformidade regulatória ({reg_frameworks}).",
+    "conjunction_and": " e ",
+    "font_family_default": "Aptos"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -569,7 +575,9 @@
       "Déploiement du portail de libre-service pour les développeurs."
     ],
     "business_case_direct_mitigation_template": "Atténuation Directe: Résout la vulnérabilité critique détectée dans l'AS-IS, éliminant le risque de: '{impact}'.",
-    "business_case_strategic_enabler_template": "Facilitateur Stratégique: Réduit le TCO opérationnel, accélère le time-to-market et assure la conformité réglementaire ({reg_frameworks})."
+    "business_case_strategic_enabler_template": "Facilitateur Stratégique: Réduit le TCO opérationnel, accélère le time-to-market et assure la conformité réglementaire ({reg_frameworks}).",
+    "conjunction_and": " et ",
+    "font_family_default": "Aptos"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -712,7 +720,9 @@
       "開発者向けセルフサービスポータルの展開。"
     ],
     "business_case_direct_mitigation_template": "直接的な緩和: AS-ISで検出された重大な脆弱性を解決し、リスクを排除: '{impact}'。",
-    "business_case_strategic_enabler_template": "戦略的イネーブラー: 運用TCOを削減し、Time-to-Marketを加速し、規制順守を保証 ({reg_frameworks})。"
+    "business_case_strategic_enabler_template": "戦略的イネーブラー: 運用TCOを削減し、Time-to-Marketを加速し、規制順守を保証 ({reg_frameworks})。",
+    "conjunction_and": "および",
+    "font_family_default": "Meiryo"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -855,6 +865,8 @@
       "Bereitstellung des zentralen Entwickler-Self-Service-Portals."
     ],
     "business_case_direct_mitigation_template": "Direkte Minderung: Behebt die im AS-IS festgestellte kritische Schwachstelle und eliminiert das Risiko: '{impact}'.",
-    "business_case_strategic_enabler_template": "Strategischer Enabler: Reduziert die Betriebs-TCO, beschleunigt das Time-to-Market und sichert die Einhaltung regulatorischer Vorgaben ({reg_frameworks})."
+    "business_case_strategic_enabler_template": "Strategischer Enabler: Reduziert die Betriebs-TCO, beschleunigt das Time-to-Market und sichert die Einhaltung regulatorischer Vorgaben ({reg_frameworks}).",
+    "conjunction_and": " und ",
+    "font_family_default": "Aptos"
   }
 }
