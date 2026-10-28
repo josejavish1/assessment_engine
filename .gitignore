@@ -70,5 +70,6 @@ _archive_*/
 commercial_report_payload.json
 global_report_payload.json
 sa-key.json
+!tests/test_data/**
 __pycache__/
 .evolution/
