@@ -109,11 +109,13 @@ ignore_errors = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 norecursedirs = [".git", "_PROJECT_ARCHIVE_", "_legacy", ".venv", "working", "diagnostics", "node_modules", ".hypothesis", "templates", ".mypy_cache", ".pytest_cache", ".ruff_cache"]
-addopts = "-ra -q"
+addopts = "-ra -q -n auto"
 markers = [
     "contract: marks tests that validate data contracts between pipeline stages"
 ]
 filterwarnings = [
     "ignore::UserWarning:google.adk.features._feature_decorator",
-    "ignore:This feature is deprecated as of June 24, 2025:UserWarning:vertexai.generative_models._generative_models"
+    "ignore:This feature is deprecated as of June 24, 2025:UserWarning:vertexai.generative_models._generative_models",
+    "ignore::FutureWarning:google.api_core.*",
+    "ignore::FutureWarning:google.cloud.*",
 ]

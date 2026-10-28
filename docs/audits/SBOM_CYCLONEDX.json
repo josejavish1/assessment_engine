@@ -1003,6 +1003,20 @@
       "version": "9.1.1",
       "purl": "pkg:pypi/pytest@9.1.1",
       "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "pytest-xdist",
+      "version": "3.8.0",
+      "purl": "pkg:pypi/pytest-xdist@3.8.0",
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "execnet",
+      "version": "2.1.2",
+      "purl": "pkg:pypi/execnet@2.1.2",
+      "scope": "required"
     }
   ]
 }
