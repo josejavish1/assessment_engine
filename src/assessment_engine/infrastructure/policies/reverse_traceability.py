@@ -56,9 +56,36 @@ def _is_finding_addressed_by_projects(
     return (matched_count >= 2) or (len(words) == 1 and matched_count == 1)
 
 
-def _build_remediation_project(finding: dict[str, Any], f_text: str) -> dict[str, Any]:
-    cap = finding.get("capability", finding.get("target_state", "Infraestructura"))
-    impact = finding.get("impact", finding.get("business_risk", "Riesgo Operativo"))
+def _build_remediation_project(
+    finding: dict[str, Any], f_text: str, doc_lang: str = "es"
+) -> dict[str, Any]:
+    default_cap = "Infraestructura" if doc_lang == "es" else "Infrastructure"
+    default_impact = (
+        "Riesgo Operativo" if doc_lang == "es" else "Operational Risk"
+    )
+    cap = finding.get("capability", finding.get("target_state", default_cap))
+    impact = finding.get(
+        "impact", finding.get("business_risk", default_impact)
+    )
+
+    if doc_lang == "en":
+        return {
+            "node_id": str(uuid.uuid4()),
+            "name": f"Tactical Remediation Program: {cap}",
+            "transformation_typology": "Core Modernization & Risk Mitigation",
+            "business_case": f"Direct Risk Mitigation: {impact}",
+            "tech_objective": f"Remediate technical gap identified in AS-IS: {f_text}",
+            "deliverables": [
+                "Remediation Plan",
+                "Patch & Configuration Deployment",
+                "Gap Closure Verification Report",
+            ],
+            "sizing": "S",
+            "duration": "H1 (Months 1-3)",
+            "program_id": None,
+            "mitigates_risk_id": finding.get("node_id"),
+        }
+
     return {
         "node_id": str(uuid.uuid4()),
         "name": f"Programa de Remediación Táctica: {cap}",
@@ -85,6 +112,10 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
     ) -> Dict[str, Any]:
         """Injects remediation projects into a payload for unaddressed findings."""
         pillars = payload.get("pillars_analysis", [])
+        doc_lang = str(
+            payload.get("document_meta", {}).get("language", "es")
+        ).lower()
+
         for p in pillars:
             asis_findings = p.get("health_check_asis", [])
             projects = p.get("projects_todo", [])
@@ -94,7 +125,9 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                     f_text = finding.get(
                         "finding", finding.get("risk_observed", "")
                     )
-                    fallback_proj = _build_remediation_project(finding, f_text)
+                    fallback_proj = _build_remediation_project(
+                        finding, f_text, doc_lang=doc_lang
+                    )
                     projects.append(fallback_proj)
 
         return payload

@@ -743,16 +743,22 @@ class FairRiskPolicy(BaseSovereignPolicy):
                             else:
                                 reg_max_fine = 10000000.0 # Global statutory baseline cap (NIS2 / GDPR / ISO)
 
-                        # SOTA Tier-1 Actuarial Practice: Statutory Secondary Loss Calibration
-                        # Mode (most likely fine) calibrated to 10% of maximum statutory exposure under GDPR/NIS2/DORA
+                        # SOTA Regulatory Law & Actuarial Practice: Proportionality of Single-Deficiency Sanctions (GDPR/NIS2/DORA)
+                        # A single technical deficiency cannot incur the maximum statutory penalty of the entire corporation (27M€).
+                        # Penalties for individual infractions are bounded by operational proportionality (1-5% of statutory cap).
+                        finding_fine_cap = min(reg_max_fine * 0.05, float(hourly_cost) * 20.0 if hourly_cost else 500000.0)
+                        if hourly_cost is not None:
+                            hourly = float(hourly_cost)
+                            finding_fine_cap = min(finding_fine_cap, hourly * 8.0)
+
                         if lm >= 4:
-                            most_likely_fine = max(10000.0, reg_max_fine * 0.1)
+                            most_likely_fine = min(finding_fine_cap * 0.25, float(hourly_cost) * 1.5 if hourly_cost else 50000.0)
                             raw_sec_losses = self._sample_lognormal(
-                                rng, min(10000.0, lm_min), most_likely_fine, reg_max_fine, size=num_sec
+                                rng, min(5000.0, lm_min), most_likely_fine, finding_fine_cap, size=num_sec
                             )
                         else:
                             raw_sec_losses = self._sample_lognormal(
-                                rng, lm_min * 2.0, lm_ml * 2.0, min(reg_max_fine, lm_max * 2.0), size=num_sec
+                                rng, lm_min * 1.5, lm_ml * 1.5, min(finding_fine_cap, lm_max * 1.5), size=num_sec
                             )
 
                         # SOTA Actuarial Practice: True Directional Gaussian Copula with Asymmetric Tail Dependence
@@ -859,11 +865,31 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     "sre_cost_eur": round(sre_cost, 2),
                     "direct_incident_cost_eur": round(downtime_cost + sre_cost, 2),
                 }
-                finding["audit_justification"] = (
-                    f"Pérdida primaria contable estimada en evento base: {downtime_h:.1f}h de parada operativa a {hourly_val:,.2f} €/h "
-                    f"({downtime_cost:,.2f} €) + {sre_cost:,.2f} € de intervención técnica SRE "
-                    f"({sre_h:.1f}h a {hourly_sre_rate:,.2f} €/h)."
+                doc_lang = str(
+                    payload.get("document_meta", {}).get("language", "es")
+                ).lower()
+                curr_sym = (
+                    payload.get("document_meta", {}).get("currency_symbol")
+                    or (
+                        custom_calibration.get("currency_symbol")
+                        if custom_calibration
+                        else None
+                    )
+                    or "€"
                 )
+
+                if doc_lang == "en":
+                    finding["audit_justification"] = (
+                        f"Estimated primary accounting loss in base event: {downtime_h:.1f}h operational downtime at {curr_sym}{hourly_val:,.2f}/h "
+                        f"({curr_sym}{downtime_cost:,.2f}) + {curr_sym}{sre_cost:,.2f} SRE technical intervention "
+                        f"({sre_h:.1f}h at {curr_sym}{hourly_sre_rate:,.2f}/h)."
+                    )
+                else:
+                    finding["audit_justification"] = (
+                        f"Pérdida primaria contable estimada en evento base: {downtime_h:.1f}h de parada operativa a {hourly_val:,.2f} {curr_sym}/h "
+                        f"({downtime_cost:,.2f} {curr_sym}) + {sre_cost:,.2f} {curr_sym} de intervención técnica SRE "
+                        f"({sre_h:.1f}h a {hourly_sre_rate:,.2f} {curr_sym}/h)."
+                    )
 
                 # Sum vectorially to compile the corporate-wide annual loss distribution (Gap 2)
                 total_annual_losses += truncated_losses
@@ -873,8 +899,8 @@ class FairRiskPolicy(BaseSovereignPolicy):
             if hourly_cost is not None and float(hourly_cost) > 0:
                 hourly_f = float(hourly_cost)
                 # Portfolio subadditivity: Annual cumulative operational downtime across a tower is realistically bounded
-                # by total operating hours (500h ceiling), while statutory legal liabilities apply uncompressed up to reg_max_fine.
-                max_annual_tower_loss = hourly_f * 500.0 + reg_max_fine
+                # by maximum outage ceiling (80h), while secondary consolidated regulatory sanctions are capped proportionally.
+                max_annual_tower_loss = hourly_f * 80.0 + min(reg_max_fine * 0.05, hourly_f * 40.0)
                 total_annual_losses = np.minimum(
                     total_annual_losses, max_annual_tower_loss
                 )
