@@ -1,0 +1,23 @@
+{
+  "security_controls": {
+    "NIS2-IaC": {
+      "name": "Estandarización e Infraestructura como Código (IaC)",
+      "tef_mitigation_range": [0.30, 0.60],
+      "lm_mitigation_range": [0.00, 0.20],
+      "slef_mitigation_range": [0.50, 0.85],
+      "description": "Automatización y gobierno del ciclo de vida de aprovisionamiento de cómputo y plataformas para erradicar errores de configuración manuales y cumplir con NIS2."
+    },
+    "ENS-SRE-Observabilidad": {
+      "name": "Observabilidad, SRE y Operaciones en Producción",
+      "tef_mitigation_range": [0.10, 0.30],
+      "lm_mitigation_range": [0.40, 0.70],
+      "description": "Monitorización de nivel de servicio (SLOs), análisis forense continuo y observabilidad unificada para predecir incidentes y reducir drásticamente el MTTR de caídas críticas."
+    },
+    "CIS-Automatizacion": {
+      "name": "Automatización y Autoservicio de Plataformas Híbridas",
+      "tef_mitigation_range": [0.20, 0.40],
+      "lm_mitigation_range": [0.10, 0.30],
+      "description": "Erradicación de silos tecnológicos, remediación proactiva de vulnerabilidades de configuración y autoservicio seguro para gobernar entornos locales heterogéneos de virtualización."
+    }
+  }
+}

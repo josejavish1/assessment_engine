@@ -1,0 +1,16 @@
+{
+  "financial_fallbacks": {
+    "exchange_rates": {
+      "EUR": 1.0,
+      "USD": 1.09,
+      "GBP": 0.84,
+      "CHF": 0.96
+    },
+    "sre_hourly_rates": {
+      "EUR": 36.0,
+      "USD": 110.0,
+      "GBP": 95.0,
+      "CHF": 140.0
+    }
+  }
+}

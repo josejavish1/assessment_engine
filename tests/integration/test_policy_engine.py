@@ -8,6 +8,7 @@ from assessment_engine.infrastructure.policy_engine import SovereignPolicyEngine
 
 def test_sovereign_policy_engine_compilation():
     os.environ["ASSESSMENT_CLIENT_ID"] = "redeia_v3"
+    os.environ["ASSESSMENT_INDUSTRY"] = "Critical Infrastructure"
 
     # 1. Initialize a temporary graph in memory
     # --- ARRANGE ---
