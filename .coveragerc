@@ -6,6 +6,10 @@ omit =
     */tests/*
     */diagnostics/*
     */node_modules/*
+    */tools/*
+    */bootstrap/*
+    */evolution/*
+    */_legacy/*
 
 [report]
 fail_under = 20

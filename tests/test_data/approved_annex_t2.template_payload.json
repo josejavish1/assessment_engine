@@ -1,0 +1,269 @@
+{
+  "_generation_metadata": {
+    "artifact_type": "annex_payload",
+    "artifact_version": "1.1.0",
+    "source_version": "1.0.0",
+    "timestamp_utc": "2026-07-23T09:05:04.125271+00:00",
+    "run_id": "run_3a1d3ad1-a15d-4483-a996-9ee019016b47"
+  },
+  "document_meta": {
+    "client_name": "redeia_v3",
+    "tower_name": "Hybrid Compute & Platforms",
+    "tower_code": "T2",
+    "financial_tier": "Tier 2",
+    "transformation_horizon": "H2: Modernización de Infraestructuras y Digitalización a Escala. Redeia se encuentra en una fase H2, caracterizada por una escala masiva y una hiperautomatización, como lo demuestra su Plan Estratégico 2026-2029, el mayor ciclo de inversión de su historia. La estrategia se centra en la expansión y modernización a gran escala de sus infraestructuras energéticas y de telecomunicaciones, tanto a nivel nacional como internacional. La creación de la plataforma tecnológica Elewit para impulsar la eficiencia y la digitalización del TSO subraya un enfoque en la optimización de operaciones a escala. El uso de un stack tecnológico avanzado con múltiples nubes (AWS, Azure, GCP) y herramientas como Dynatrace y Splunk confirma una madurez que va más allá de los 'Brilliant Basics' (H1) y se alinea con la gestión de ecosistemas complejos.",
+    "report_variant": "short",
+    "source_blueprint_artifact_version": "1.0.0"
+  },
+  "executive_summary": {
+    "global_score": "2.9 / 5.0",
+    "global_band": "Definido",
+    "target_maturity": "4.5",
+    "headline": "La fragmentación estructural de la plataforma de cómputo y la dependencia de procesos manuales limitan la agilidad operativa y exponen la infraestructura a una desviación material de los objetivos de resiliencia.",
+    "summary_body": "El análisis de la torre de Hybrid Compute & Platforms, a julio de 2026, revela una arquitectura funcional pero estructuralmente fragmentada. El estado actual se caracteriza por la coexistencia de silos tecnológicos (virtualización VMware y Oracle VM, contenedores tácticos en AWS, nube pública) y un modelo operativo predominantemente manual y reactivo. Esta configuración, si bien sostiene la operativa diaria, representa un freno estructural para la agilidad y resiliencia requeridas por el plan estratégico corporativo 2026-2029, limitando la capacidad de la organización para acelerar la digitalización y la transición energética.\n\nEl perfil de madurez cuantitativo de la torre se sitúa en un score de 2.90, correspondiente a una banda de 'Definido'. Este nivel de madurez genera una exposición financiera material para la organización, con una Pérdida Anualizada Esperada (ALE) que ha sido calculada matemáticamente bajo el estándar FAIR en 539.577,25 € debido a riesgos operativos, de seguridad y de disponibilidad consolidados en el estado actual de la plataforma.\n\nLa inacción sobre estas brechas estructurales perpetuará un modelo operativo intrínsecamente incompatible con los requisitos de resiliencia proactiva de la directiva NIS2. Las consecuencias directas incluyen una erosión progresiva de la postura de seguridad, una incapacidad para responder ágilmente a las iniciativas de negocio y la acumulación de deuda técnica que hará que las futuras evoluciones sean prohibitivamente complejas. En última instancia, se pone en riesgo la capacidad de la infraestructura para soportar de manera fiable los servicios digitales que son críticos para la misión de Redeia.",
+    "financial_coi": {
+      "annual_loss_exposure": "539.577,25 €",
+      "coi_3y_ordinary": "1.618.732 €",
+      "coi_3y_extreme": "13.031.916 €"
+    },
+    "message_strength": "La plataforma actual demuestra capacidad para sostener las operaciones de negocio existentes, apoyándose en la estandarización de componentes base como las imágenes de sistema operativo.",
+    "message_gap": "Se identifica una brecha estructural entre las capacidades actuales de la plataforma y los requisitos de agilidad, escalabilidad y resiliencia que demanda el plan estratégico.",
+    "message_bottleneck": "El principal cuello de botella es la dependencia de flujos de trabajo manuales y un modelo de gobierno reactivo, que ralentizan la entrega de servicios y aumentan el riesgo operativo.",
+    "key_business_impacts": [
+      "La fragmentación tecnológica y operativa impide la gobernanza unificada y la automatización a escala, limitando la portabilidad de cargas de trabajo.",
+      "La dependencia estructural de procesos manuales y reactivos incrementa el riesgo de error humano, limita la resiliencia operativa y ralentiza la entrega de servicios.",
+      "La ausencia de un modelo de observabilidad unificado y proactivo impide la gestión de la fiabilidad basada en la experiencia de servicio y el cumplimiento de SLOs."
+    ]
+  },
+  "domain_introduction": {
+    "introduction_paragraph": "La torre de 'Hybrid Compute & Platforms' es el cimiento sobre el que se construyen y operan todos los servicios digitales de Redeia. Su modernización es un habilitador crítico para el Plan Estratégico 2026-2029, ya que una plataforma de cómputo ágil, soberana y resiliente es indispensable para acelerar la innovación que impulsa la transición energética, como los sistemas de operación de la red en tiempo real, y para procesar los grandes volúmenes de datos que alimentarán futuros modelos de Gemelo Digital del sistema de transporte eléctrico. Asimismo, su robustez y auditabilidad son un requisito no negociable para garantizar el cumplimiento de normativas estrictas como NIS2, protegiendo así la continuidad de una infraestructura crítica nacional.",
+    "technological_domain": "Hybrid Compute & Platforms",
+    "domain_objective": "Evaluar la capacidad de la plataforma actual para soportar los objetivos del Plan Estratégico 2026-2029, identificando las brechas estructurales que limitan la agilidad, la resiliencia y la seguridad, y definiendo una hoja de ruta de transformación para establecer una base tecnológica soberana y escalable.",
+    "evaluated_capabilities": [
+      "Compute Foundation & Virtualization",
+      "Container Platform & Kubernetes Operations",
+      "Hybrid Cloud Enablement & Landing Zones",
+      "Automation, Provisioning & Platform Self-Service",
+      "Platform Operations, Observability & Reliability"
+    ],
+    "included_components": [
+      "Plataformas de virtualización (VMware, Oracle VM)",
+      "Servicios de contenedores en AWS (EKS)",
+      "Infraestructura cloud en AWS (Landing Zone)",
+      "Herramientas de monitorización (Centreon, Dynatrace)",
+      "Procesos de aprovisionamiento y gestión de infraestructura"
+    ]
+  },
+  "pillar_score_profile": {
+    "profile_intro": "El perfil de madurez proporciona una evaluación cuantitativa de las capacidades de la torre 'Hybrid Compute & Platforms', desglosada por sus pilares tecnológicos fundamentales. Cada pilar ha sido evaluado frente a un modelo de madurez de cinco niveles, permitiendo identificar de forma objetiva tanto las fortalezas relativas como las áreas con una desviación estructural que requieren una acción prioritaria.",
+    "scoring_method_note": "La puntuación de cada pilar se calcula como la media ponderada de las respuestas a un cuestionario detallado, validado a través de entrevistas con los expertos técnicos y responsables de servicio. Las puntuaciones se asignan en una escala de 1 (Reactivo) a 5 (Optimizado).",
+    "radar_chart": "/home/jsanchhi/assessment_engine/working/redeia_v3/T2/pillar_radar_chart.generated.png",
+    "pillars": [
+      {
+        "pillar_label": "Compute Foundation & Virtualization",
+        "score_display": "2.8",
+        "maturity_band": "Definido",
+        "executive_reading": "**Situación de Capacidades (KPIs):**\nEl diagnóstico para el dominio de Compute Foundation & Virtualization sitúa su nivel de madurez en un rango 'Definido' (2,80 / 5,00), evidenciando margen de consolidación. Este resultado se apoya en un desempeño sólido y consistente en capacidades clave como Estandarización y Convergencia de la Plataforma de Virtualización, Gestión Proactiva del Ciclo de Vida y Obsolescencia Tecnológica. No obstante, se identifican brechas de madurez relevantes en Gestión de Capacidad y Rendimiento.\n\n**Brechas y Consecuencias Operativas:**\nLa limitación principal reside en que La gestión de la capacidad y el rendimiento de la plataforma es predominantemente reactiva (Nivel 2), fundamentada en la monitorización de umbrales básicos. Esto deriva en un impacto directo de negocio, destacando Riesgo de degradación del rendimiento o interrupción del servicio por saturación imprevista de recursos (CPU, RAM).\n\n**Justificación de la Nota:**\nLa calificación final del pilar (2,80) se encuentra sustentada por el nivel de madurez base, pero se ve penalizada de forma directa por las deficiencias críticas detectadas en 'Gestión de Capacidad y Rendimiento', que actúa como el factor limitante para el desarrollo global de esta plataforma."
+      },
+      {
+        "pillar_label": "Container Platform & Kubernetes Operations",
+        "score_display": "1.0",
+        "maturity_band": "Inicial",
+        "executive_reading": "**Situación de Capacidades (KPIs):**\nLa evaluación de capacidades en el perímetro de Container Platform & Kubernetes Operations refleja un nivel de control 'Inicial' (1,00 / 5,00). Se identifican necesidades de consolidación generalizada en las capacidades evaluadas. Sin embargo, existen debilidades y áreas de mejora prioritarias en Modelo Operativo y Ciclo de Vida de Clústeres Kubernetes, Estandarización de Servicios Base para Contenedores, Estrategia y Plataforma de Contenedores Híbrida.\n\n**Brechas y Consecuencias Operativas:**\nEl análisis técnico identifica un cuello de botella relevante en La puntuación de 1. Inexistencia de servicios base estandarizados como un registro de imágenes corporativo, un controlador de 'ingress' homologado, gestión de certificados o clases de almacenamiento definidas. En consecuencia, esto genera una exposición operativa directa caracterizada por Alto riesgo de indisponibilidad por obsolescencia tecnológica no gestionada. Incremento exponencial de la deuda técnica y la complejidad operativa.\n\n**Justificación de la Nota:**\nLa puntuación de 1,00 refleja un equilibrio entre las fortalezas de la plataforma y el lastre que suponen las brechas en 'Modelo Operativo y Ciclo de Vida de Clústeres Kubernetes', las cuales restan resiliencia y limitan la escalabilidad operativa."
+      },
+      {
+        "pillar_label": "Hybrid Cloud Enablement & Landing Zones",
+        "score_display": "3.8",
+        "maturity_band": "Gestionado",
+        "executive_reading": "**Situación de Capacidades (KPIs):**\nCon una puntuación de 3,80 sobre 5,00, el pilar Hybrid Cloud Enablement & Landing Zones se clasifica cualitativamente en la banda de 'Gestionado', mostrando un comportamiento heterogéneo. La plataforma demuestra solvencia operativa y control adecuado en Catálogo de Servicios y Patrones de Arquitectura, Gobernanza Financiera y Operativa (FinOps & CCoE), Gobierno Técnico y Cumplimiento Continuo (Policy-as-Code). En contraposición, el entorno presenta desafíos operativos materiales en Gestión del Ciclo de Vida de Landing Zones.\n\n**Brechas y Consecuencias Operativas:**\nSe constata una carencia material en La Landing Zone de AWS, aunque funcional, carece de una formalización como producto de plataforma gestionado mediante Infraestructura como Código (IaC). lo cual expone a la organización a consecuencias de negocio como Incremento del 'time-to-market' para nuevas iniciativas digitales por la lentitud en el aprovisionamiento.\n\n**Justificación de la Nota:**\nEl score consolidado del pilar (3,80) se ve severamente condicionado por la inmadurez de la capacidad de 'Gestión del Ciclo de Vida de Landing Zones', la cual penaliza el resultado global y actúa como el principal obstáculo para consolidar un nivel de control estructural robusto en la operación actual."
+      },
+      {
+        "pillar_label": "Automation, Provisioning & Platform Self-Service",
+        "score_display": "3.7",
+        "maturity_band": "Gestionado",
+        "executive_reading": "**Situación de Capacidades (KPIs):**\nEl diagnóstico para el dominio de Automation, Provisioning & Platform Self-Service sitúa su nivel de madurez en un rango 'Gestionado' (3,70 / 5,00), evidenciando margen de consolidación. Este resultado se apoya en un desempeño sólido y consistente en capacidades clave como Orquestación y Gobierno de la Automatización Híbrida, Aprovisionamiento de Infraestructura vía Autoservicio. No obstante, se identifican brechas de madurez relevantes en Industrialización del Aprovisionamiento mediante IaC.\n\n**Brechas y Consecuencias Operativas:**\nLa limitación principal reside en que Se constata que el uso de Infraestructura como Código (IaC) es esporádico y carece de un framework estandarizado. Esto deriva en un impacto directo de negocio, destacando Incremento del riesgo operativo por deriva de configuración y error humano.\n\n**Justificación de la Nota:**\nLa calificación final del pilar (3,70) se encuentra sustentada por el nivel de madurez base, pero se ve penalizada de forma directa por las deficiencias críticas detectadas en 'Industrialización del Aprovisionamiento mediante IaC', que actúa como el factor limitante para el desarrollo global de esta plataforma."
+      },
+      {
+        "pillar_label": "Platform Operations, Observability & Reliability",
+        "score_display": "3.2",
+        "maturity_band": "Definido",
+        "executive_reading": "**Situación de Capacidades (KPIs):**\nLa evaluación de capacidades en el perímetro de Platform Operations, Observability & Reliability refleja un nivel de control 'Definido' (3,20 / 5,00). En este ámbito, se detectan fortalezas funcionales y prácticas estables en Observabilidad Proactiva y Unificada. Sin embargo, existen debilidades y áreas de mejora prioritarias en Ingeniería de Fiabilidad de Sitio (SRE).\n\n**Brechas y Consecuencias Operativas:**\nEl análisis técnico identifica un cuello de botella relevante en Se constata la ausencia de un marco formal de Site Reliability Engineering (SRE). En consecuencia, esto genera una exposición operativa directa caracterizada por Recurrencia sistemática de incidentes por falta de análisis de causa raíz y aprendizaje estructurado.\n\n**Justificación de la Nota:**\nLa puntuación de 3,20 refleja un equilibrio entre las fortalezas de la plataforma y el lastre que suponen las brechas en 'Ingeniería de Fiabilidad de Sitio (SRE)', las cuales restan resiliencia y limitan la escalabilidad operativa."
+      }
+    ]
+  },
+  "sections": {
+    "asis": {
+      "narrative": "La arquitectura actual de la plataforma de cómputo es el resultado de una evolución orgánica que, si bien funcional, ha generado una fragmentación estructural crítica. La coexistencia de múltiples hipervisores, una gestión disociada de los entornos on-premise y AWS, la proliferación de scripts de automatización no gobernados y el uso de herramientas de monitorización en silos constituyen una deuda técnica que incrementa la complejidad, impide la estandarización y eleva el Coste Total de Propiedad (TCO). Este modelo de operación en silos, combinado con una dependencia de procesos manuales basados en tickets, crea cuellos de botella estructurales que limitan la capacidad de la organización para operar su entorno híbrido como un todo coherente, seguro y eficiente, comprometiendo la agilidad requerida para las iniciativas de negocio.",
+      "strengths": [
+        "La plataforma es funcional y soporta la operativa diaria de los servicios de negocio existentes.",
+        "Se dispone de procesos maduros para la creación y gestión de imágenes de sistema operativo estandarizadas ('Golden Images').",
+        "Existen herramientas especializadas y consolidadas para la monitorización de aplicaciones (APM) y de infraestructura."
+      ],
+      "gaps": [
+        "Operación en Silos Tecnológicos: Los dominios de cómputo, contenedores y cloud operan con herramientas y procesos desconectados, impidiendo una gestión integrada del servicio.",
+        "Gobernanza Reactiva y Manual: La gestión de configuración, seguridad y costes se basa en intervenciones manuales y detecciones post-evento, en lugar de controles preventivos y automatizados.",
+        "Ausencia de Autoservicio: El consumo de infraestructura depende de flujos de trabajo basados en tickets, creando cuellos de botella que ralentizan los proyectos."
+      ],
+      "operational_impacts": [
+        "Ralentización del 'time-to-market' para el despliegue de nuevos servicios digitales debido a procesos de aprovisionamiento manuales.",
+        "Aumento del riesgo de incidentes por error humano y deriva de configuración entre entornos heterogéneos.",
+        "Ineficiencia en la gestión de costes y recursos al carecer de una visión unificada y una gobernanza financiera proactiva (FinOps).",
+        "Dificultad para cumplir de manera eficiente y auditable con los requisitos de resiliencia y seguridad de la normativa NIS2."
+      ]
+    },
+    "tobe": {
+      "vision": "La transformación consiste en evolucionar desde el actual modelo artesanal y fragmentado hacia un modelo industrializado de 'Platform Engineering'. El objetivo es consolidar el panorama tecnológico en una Plataforma Interna de Desarrolladores (IDP) que abstraiga la complejidad del entorno híbrido. Esta plataforma ofrecerá la infraestructura como un conjunto de servicios estandarizados, seguros y consumibles en modo autoservicio. El modelo operativo se basará en el gobierno por código (IaC, GitOps) y un enfoque en la fiabilidad (SRE) y la eficiencia financiera (FinOps), proporcionando una base soberana, resiliente y ágil para el negocio.",
+      "design_principles": [
+        "Sovereign Hybrid by Design: Priorizar el despliegue on-premise para cargas de trabajo críticas, utilizando el cloud pùblico (AWS) como una extensión elástica y para servicios de valor añadido, preservando siempre la soberanía de los datos y las operaciones.",
+        "Platform as a Product: Tratar la infraestructura híbrida como un producto interno, con un roadmap definido, interfaces claras (APIs, portal de autoservicio) y equipos de ingeniería de plataforma dedicados a su evolución y fiabilidad.",
+        "Automate Everything, Govern by Code: Mandatar el uso de Infraestructura como Código (IaC) y Política como Código (PaC) para todo el aprovisionamiento, configuración y gobierno, garantizando la consistencia, auditabilidad y velocidad.",
+        "Unified Observability: Implementar un plano de datos y visualización unificado que proporcione visibilidad de extremo a extremo a través de todo el patrimonio híbrido, correlacionando métricas técnicas con indicadores de servicio y negocio.",
+        "Reliability is a Feature: Adoptar principios de Site Reliability Engineering (SRE), definiendo y gestionando servicios a través de Objetivos de Nivel de Servicio (SLOs) y 'Error Budgets' para la toma de decisiones basada en datos sobre el equilibrio entre estabilidad e innovación.",
+        "Agnostic Abstraction Layer: Utilizar estándares abiertos y capas de abstracción (ej. Kubernetes, OpenTelemetry) para minimizar la dependencia de proveedores específicos ('vendor lock-in') y habilitar la portabilidad de cargas de trabajo a través del entorno híbrido."
+      ]
+    },
+    "gap": {
+      "introduction": "El análisis de brechas contrasta el estado actual de las capacidades de la plataforma con la visión objetivo, identificando las desviaciones estructurales que deben ser abordadas por el plan de transformación. Cada brecha representa un obstáculo para alcanzar los niveles de agilidad, resiliencia y eficiencia requeridos.",
+      "target_capabilities": [
+        "Container Platform & Kubernetes Operations: Establecer un modelo 'Sovereign Hybrid Edge' para la orquestación de contenedores, basado en una plataforma Kubernetes unificada y agnóstica. Esta arquitectura mantendrá las cargas de trabajo críticas y sensibles a la latencia en la infraestructura on-premise (80%), garantizando la soberanía de los datos y el cumplimiento regulatorio estricto.",
+        "Compute Foundation & Virtualization: Establecer un modelo de 'Sovereign Hybrid Edge' para la fundación de cómputo, donde una plataforma de virtualización on-premise, unificada y definida por software, constituya el núcleo soberano para las cargas de trabajo críticas. Esta plataforma se consolidará sobre un único estándar tecnológico (VMware), eliminando la heterogeneidad actual.",
+        "Platform Operations, Observability & Reliability: Establecer un modelo de 'Sovereign Hybrid Edge' para la operación de plataformas, donde un plano de control de observabilidad y fiabilidad unificado proporcione visibilidad y gobierno de extremo a extremo sobre toda la infraestructura híbrida de REDEIA.",
+        "Automation, Provisioning & Platform Self-Service: La arquitectura futura se basará en el modelo 'Sovereign Hybrid Edge', implementado a través de una Plataforma Interna de Desarrolladores (IDP) construida sobre principios de 'Platform Engineering'.",
+        "Hybrid Cloud Enablement & Landing Zones: Establecer un modelo 'Sovereign Hybrid Edge' que consolide a REDEIA como una infraestructura crítica resiliente y tecnológicamente avanzada. Esta arquitectura mantendrá las cargas de trabajo más sensibles y de baja latencia en el entorno on-premise soberano, gestionadas a través de una plataforma de contenedores agnóstica basada en Kubernetes."
+      ],
+      "gap_rows": [
+        {
+          "pillar": "Container Platform & Kubernetes Operations",
+          "as_is_summary": "Se constata la ausencia total de una estrategia y plataforma de contenedores empresarial estandarizada. La adopción es puramente táctica, descentralizada y confinada a soluciones PaaS de AWS, lo que genera una fractura estratégica entre los entornos cloud y el 80% de la infraestructura on-premise, impidiendo la portabilidad y el gobierno unificado.",
+          "target_state": "Establecer un modelo 'Sovereign Hybrid Edge' para la orquestación de contenedores, basado en una plataforma Kubernetes unificada y agnóstica. Esta arquitectura mantendrá las cargas de trabajo críticas y sensibles a la latencia en la infraestructura on-premise (80%), garantizando la soberanía de los datos y el cumplimiento regulatorio estricto.",
+          "key_gap": "Proliferación de silos tecnológicos ingobernables, dependencia estructural de un único proveedor cloud para cargas de trabajo modernas, e incapacidad para desplegar aplicaciones nativas de nube en el entorno on-premise soberano. Esto limita la agilidad y eleva el riesgo de incumplimiento de normativas de resiliencia como NIS2."
+        },
+        {
+          "pillar": "Compute Foundation & Virtualization",
+          "as_is_summary": "Se constata una heterogeneidad tecnológica significativa en la capa de virtualización, con la coexistencia no estandarizada de plataformas VMware y Oracle VM. Esta fragmentación genera silos operativos, incrementa la complejidad de la gestión y duplica los costes de licenciamiento, soporte y formación especializada.",
+          "target_state": "Establecer un modelo de 'Sovereign Hybrid Edge' para la fundación de cómputo, donde una plataforma de virtualización on-premise, unificada y definida por software, constituya el núcleo soberano para las cargas de trabajo críticas. Esta plataforma se consolidará sobre un único estándar tecnológico (VMware), eliminando la heterogeneidad actual.",
+          "key_gap": "Incremento del Coste Total de Propiedad (TCO) por duplicidad de licencias y soporte. Reducción de la agilidad operativa y dificultad para implementar automatización transversal."
+        },
+        {
+          "pillar": "Platform Operations, Observability & Reliability",
+          "as_is_summary": "El modelo de observabilidad es reactivo y opera en silos tecnológicos. La falta de una plataforma unificada que correlacione eventos de infraestructura (Centreon) y aplicaciones (Dynatrace) impide la detección proactiva de problemas, provocando que las unidades de negocio identifiquen las degradaciones antes que los equipos de operaciones.",
+          "target_state": "Establecer un modelo de 'Sovereign Hybrid Edge' para la operación de plataformas, donde un plano de control de observabilidad y fiabilidad unificado proporcione visibilidad y gobierno de extremo a extremo sobre toda la infraestructura híbrida de REDEIA.",
+          "key_gap": "Incremento del Tiempo Medio de Detección y Resolución (MTTD/MTTR) de incidentes, afectando directamente a la continuidad operativa de servicios críticos. Riesgo reputacional elevado y posible incumplimiento de las exigencias de resiliencia de la directiva NIS2 para infraestructuras esenciales."
+        },
+        {
+          "pillar": "Automation, Provisioning & Platform Self-Service",
+          "as_is_summary": "Se constata que el uso de Infraestructura como Código (IaC) es esporádico y carece de un framework estandarizado. La provisión de infraestructura se fundamenta en una combinación de procedimientos manuales y scripts aislados, sin un pipeline de despliegue automatizado, versionado y auditable.",
+          "target_state": "La arquitectura futura se basará en el modelo 'Sovereign Hybrid Edge', implementado a través de una Plataforma Interna de Desarrolladores (IDP) construida sobre principios de 'Platform Engineering'.",
+          "key_gap": "Incremento del riesgo operativo por deriva de configuración y error humano. Reducción de la agilidad en la entrega de proyectos y dificultad para demostrar el cumplimiento normativo (NIS2) de forma sistemática y automatizada."
+        },
+        {
+          "pillar": "Hybrid Cloud Enablement & Landing Zones",
+          "as_is_summary": "La Landing Zone de AWS, aunque funcional, carece de una formalización como producto de plataforma gestionado mediante Infraestructura como Código (IaC). Su estado depende de convenciones y ejecuciones manuales de scripts, lo que introduce un alto riesgo operativo, inconsistencias y una limitada agilidad en la provisión de nuevos entornos.",
+          "target_state": "Establecer un modelo 'Sovereign Hybrid Edge' que consolide a REDEIA como una infraestructura crítica resiliente y tecnológicamente avanzada. Esta arquitectura mantendrá las cargas de trabajo más sensibles y de baja latencia en el entorno on-premise soberano, gestionadas a través de una plataforma de contenedores agnóstica basada en Kubernetes.",
+          "key_gap": "Incremento del 'time-to-market' para nuevas iniciativas digitales por la lentitud en el aprovisionamiento. Elevado riesgo de errores humanos que pueden derivar en configuraciones inseguras o fallos de servicio, afectando directamente la resiliencia y la postura de cumplimiento requerida por la normativa NIS2."
+        }
+      ],
+      "closing_summary": ""
+    },
+    "todo": {
+      "introduction": "Para cerrar las brechas identificadas y materializar la visión de una plataforma híbrida soberana, se propone un plan de transformación articulado en tres decisiones estratégicas clave. Estas decisiones se traducen en un conjunto de iniciativas prioritarias, diseñadas para construir progresivamente las capacidades necesarias y entregar valor de forma incremental.",
+      "priority_initiatives": [
+        {
+          "sequence": 1,
+          "initiative": "Estandarización de la Plataforma de Contenedores para la Nube Híbrida Soberana",
+          "objective": "Valida la plataforma de contenedores seleccionada en el entorno on-premise, asegurando su integración con los sistemas existentes de almacenamiento, monitorización y seguridad. El piloto definirá los patrones de arquitectura y los manuales operativos requeridos para escalar la solución a nivel corporativo.",
+          "priority": "Baja",
+          "expected_outcome": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: 'Proliferación de silos tecnológicos ingobernables, dependencia estructural de un único proveedor cloud para cargas de trabajo modernas, e incapacidad para desplegar aplicaciones nativas de nube en el entorno on-premise soberano.",
+          "dependencies_display": "Sin dependencias externas críticas identificadas."
+        },
+        {
+          "sequence": 2,
+          "initiative": "Estrategia de Soberanía y Aceleración Cloud-Native",
+          "objective": "Establece un equipo transversal (C4E) para impulsar la adopción de la plataforma, definir buenas prácticas y proveer patrones de CI/CD y formación. Esta función es crítica para asegurar un uso seguro y eficiente de la tecnología a escala, previniendo la creación de nuevos silos de conocimiento.",
+          "priority": "Baja",
+          "expected_outcome": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: 'Proliferación de silos tecnológicos ingobernables, dependencia estructural de un único proveedor cloud para cargas de trabajo modernas, e incapacidad para desplegar aplicaciones nativas de nube en el entorno on-premise soberano.",
+          "dependencies_display": "Proyecto Soberanía Híbrida: Plataforma Unificada de Contenedores para la Transición Energética."
+        },
+        {
+          "sequence": 3,
+          "initiative": "Plataforma Unificada de Contenedores para la Transición Energética",
+          "objective": "Establece Kubernetes como la base operativa estándar para cargas de trabajo modernas y críticas, incluyendo futuras aplicaciones de IA. Aborda la carencia actual proveyendo un modelo robusto y automatizado de gobierno y operación para el entorno híbrido (80% on-premise), fundamental para la estrategia de transición energética.",
+          "priority": "Baja",
+          "expected_outcome": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: 'Proliferación de silos tecnológicos ingobernables, dependencia estructural de un único proveedor cloud para cargas de trabajo modernas, e incapacidad para desplegar aplicaciones nativas de nube en el entorno on-premise soberano.",
+          "dependencies_display": "Proyecto 'Quantum': Convergencia Estratégica de la Plataforma de Cómputo Híbrida, Proyecto 'Cloud Foundation Guard': Aseguramiento Estratégico y Estandarización de la Landing Zone AWS."
+        },
+        {
+          "sequence": 4,
+          "initiative": "Iniciativa Estratégica para la Modernización y Resiliencia de la Infraestructura de Cómputo",
+          "objective": "Aborda el riesgo que representa el 10-15% de la infraestructura identificada como 'legacy'. Se requiere un análisis para identificar componentes sin soporte, cuyo resultado será un plan de acción priorizado para actualizar, migrar o aislar dichos elementos, reduciendo riesgos de seguridad y disponibilidad.",
+          "priority": "Baja",
+          "expected_outcome": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: 'Exposición a vulnerabilidades de seguridad no subsanables en componentes fuera de soporte, lo que incrementa la superficie de ataque. Riesgo elevado de fallos de hardware/software con impacto directo en la disponibilidad del servicio.",
+          "dependencies_display": "Sin dependencias externas críticas identificadas."
+        },
+        {
+          "sequence": 5,
+          "initiative": "Programa Estratégico de Gobernanza Tecnológica y Convergencia de Plataformas para redeia_v3",
+          "objective": "Mitiga la operativa reactiva derivada de la falta de visibilidad sobre la estrategia del cliente. Se requiere un foro de gobernanza formal para alinear proactivamente la gestión del ciclo de vida de la infraestructura, planificar evoluciones y prevenir la obsolescencia tecnológica.",
+          "priority": "Baja",
+          "expected_outcome": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: 'Incremento del Coste Total de Propiedad (TCO) por duplicidad de licencias y soporte. Reducción de la agilidad operativa y dificultad para implementar automatización transversal.",
+          "dependencies_display": "Sin dependencias externas críticas identificadas."
+        },
+        {
+          "sequence": 6,
+          "initiative": "Convergencia Estratégica de la Plataforma de Cómputo Híbrida",
+          "objective": "Reduce la complejidad operativa y los costes de licenciamiento al consolidar las plataformas de virtualización. Habilita la estandarización y automatización de la capa de cómputo, mejorando la agilidad y portabilidad de cargas de trabajo.",
+          "priority": "Baja",
+          "expected_outcome": "Mitigación Directa: Resuelve la vulnerabilidad crítica detectada en el AS-IS, eliminando el riesgo de: 'Incremento del Coste Total de Propiedad (TCO) por duplicidad de licencias y soporte. Reducción de la agilidad operativa y dificultad para implementar automatización transversal.",
+          "dependencies_display": "Sin dependencias externas críticas identificadas."
+        }
+      ],
+      "closing_summary": "La ejecución secuencial y coordinada de estas iniciativas permitirá una transición ordenada desde el modelo actual hacia una plataforma moderna, industrializada y alineada con los objetivos estratégicos de Redeia para el horizonte 2029."
+    },
+    "risks": {
+      "introduction": "El estado actual de la plataforma expone a la organización a una serie de riesgos operativos, de seguridad y de negocio que deben ser gestionados de forma proactiva. A continuación se detallan los riesgos estructurales más significativos derivados de la inacción.",
+      "risks": [
+        {
+          "risk": "Container Platform & Kubernetes Operations: Estrategia y Plataforma de Contenedores Híbrida.",
+          "impact": "Proliferación de silos tecnológicos ingobernables, dependencia estructural de un único proveedor cloud para cargas de trabajo modernas, e incapacidad para desplegar aplicaciones nativas de nube en el entorno on-premise soberano. Esto limita la agilidad y eleva el riesgo de incumplimiento de normativas de resiliencia como NIS2.",
+          "probability": "Alta",
+          "mitigation_summary": "Plataforma Unificada de Contenedores para la Transición Energética."
+        },
+        {
+          "risk": "Compute Foundation & Virtualization: Estandarización y Convergencia de la Plataforma de Virtualización.",
+          "impact": "Incremento del Coste Total de Propiedad (TCO) por duplicidad de licencias y soporte. Reducción de la agilidad operativa y dificultad para implementar automatización transversal.",
+          "probability": "Media",
+          "mitigation_summary": "Convergencia Estratégica de la Plataforma de Cómputo Híbrida."
+        },
+        {
+          "risk": "Platform Operations, Observability & Reliability: Observabilidad Proactiva y Unificada.",
+          "impact": "Incremento del Tiempo Medio de Detección y Resolución (MTTD/MTTR) de incidentes, afectando directamente a la continuidad operativa de servicios críticos. Riesgo reputacional elevado y posible incumplimiento de las exigencias de resiliencia de la directiva NIS2 para infraestructuras esenciales.",
+          "probability": "Media",
+          "mitigation_summary": "Transformación a la Observabilidad Proactiva para la Resiliencia de Servicios Críticos (NIS2)."
+        },
+        {
+          "risk": "Automation, Provisioning & Platform Self-Service: Industrialización del Aprovisionamiento mediante IaC.",
+          "impact": "Incremento del riesgo operativo por deriva de configuración y error humano. Reducción de la agilidad en la entrega de proyectos y dificultad para demostrar el cumplimiento normativo (NIS2) de forma sistemática y automatizada.",
+          "probability": "Media",
+          "mitigation_summary": "Implementación Estratégica de la Plataforma Interna de Desarrolladores (IDP)."
+        },
+        {
+          "risk": "Hybrid Cloud Enablement & Landing Zones: Gestión del Ciclo de Vida de Landing Zones.",
+          "impact": "Incremento del 'time-to-market' para nuevas iniciativas digitales por la lentitud en el aprovisionamiento. Elevado riesgo de errores humanos que pueden derivar en configuraciones inseguras o fallos de servicio, afectando directamente la resiliencia y la postura de cumplimiento requerida por la normativa NIS2.",
+          "probability": "Media",
+          "mitigation_summary": "Marco Estratégico para la Gobernanza y Optimización del Ecosistema Cloud Híbrido."
+        }
+      ],
+      "closing_summary": ""
+    },
+    "conclusion": {
+      "final_assessment": "El análisis de la torre Hybrid Compute & Platforms de REDEIA revela una arquitectura funcional pero estructuralmente fragmentada, caracterizada por la coexistencia de silos tecnológicos y un modelo operativo predominantemente manual y reactivo. Esta fragmentación genera ineficiencias, incrementa la superficie de riesgo y limita la agilidad necesaria para soportar los objetivos estratégicos de digitalización.",
+      "executive_message": "La transformación de esta torre es una inversión crítica para convertir la infraestructura de un centro de coste reactivo a un habilitador estratégico de negocio. El plan propuesto no solo mitiga una exposición financiera anual material, sino que establece las bases para garantizar la soberanía, la resiliencia y la agilidad que el plan estratégico y el entorno regulatorio demandan.",
+      "priority_focus_areas": [
+        "Plataforma Unificada de Contenedores para la Transición Energética",
+        "Convergencia Estratégica de la Plataforma de Cómputo Híbrida",
+        "Transformación a la Observabilidad Proactiva para la Resiliencia de Servicios Críticos (NIS2)"
+      ],
+      "closing_statement": "La adopción de esta hoja de ruta permitirá a Redeia disponer de una plataforma tecnológica moderna, segura y eficiente, capaz de sostener su liderazgo como gestor de infraestructuras críticas esenciales en el contexto de la transición energética y la digitalización."
+    }
+  }
+}

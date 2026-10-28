@@ -83,7 +83,9 @@ def clean_client_name(client_name: str) -> str:
 
 
 def _load_asis_vocab() -> dict[str, Any]:
-    p = Path(__file__).resolve().parents[3] / "engine_config" / "locales_asis_annex.json"
+    p = Path(__file__).resolve().parents[3] / "engine_config" / "locales.json"
+    if not p.is_file():
+        p = Path(__file__).resolve().parents[3] / "engine_config" / "locales_asis_annex.json"
     if p.is_file():
         try:
             return json.loads(p.read_text(encoding="utf-8"))
@@ -2837,19 +2839,20 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     """Render Section 0 (Corporate Cover Page) and Section 0.1 (Table of Contents)."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]
-    vocab = ctx["vocab"]
+    doc_lang = ctx.get("doc_lang", "es")
 
     add_spacer(doc, 200)
 
     p_title = doc.add_paragraph()
-    run_title = p_title.add_run(vocab.get("title", "INFORME DE EVALUACIÓN DE INFRAESTRUCTURA"))
+    run_title = p_title.add_run(t("title", locale=doc_lang))
     run_title.bold = True
     run_title.font.name = "Arial"
     run_title.font.size = Pt(36)
     run_title.font.color.rgb = RGBColor(*text_color_rgb)
 
     p_sub = doc.add_paragraph()
-    run_sub = p_sub.add_run(f"Anexo Técnico: {ctx['tower_name']}")
+    sub_prefix = t("annex_technical_prefix", locale=doc_lang)
+    run_sub = p_sub.add_run(f"{sub_prefix} {ctx['tower_name']}")
     run_sub.font.name = "Arial"
     run_sub.font.size = Pt(20)
     run_sub.font.color.rgb = RGBColor(*p_color_rgb)
@@ -2857,7 +2860,7 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     add_spacer(doc, 140)
 
     p_client = doc.add_paragraph()
-    client_label = vocab.get("client_lbl", "Cliente:\n")
+    client_label = t("client_lbl", locale=doc_lang)
     run_cli_lbl = p_client.add_run(client_label)
     run_cli_lbl.bold = True
     run_cli_lbl.font.name = "Arial"
@@ -2876,7 +2879,7 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     add_spacer(doc, 140)
 
     classification_clean = ctx["classification"].replace(" (Tier-1 Assessment)", "")
-    version_label = vocab.get("v_lbl", "Versión ")
+    version_label = t("v_lbl", locale=doc_lang)
 
     p_footer = doc.add_paragraph()
     run_date = p_footer.add_run(
@@ -2889,7 +2892,7 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     doc.add_page_break()
 
     # Section 0.1: Table of Contents (TOC).
-    toc_heading = vocab.get("toc_title", "Índice de Contenidos")
+    toc_heading = t("toc_title", locale=doc_lang)
     add_heading(doc, toc_heading, level=4, primary_color_rgb=p_color_rgb)
     add_toc(doc)
 
