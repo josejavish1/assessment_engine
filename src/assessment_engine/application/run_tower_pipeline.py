@@ -518,6 +518,15 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             )
 
         try:
+            from assessment_engine.application.run_tower_blueprint_engine import (
+                run_tower_blueprint,
+            )
+
+            await run_tower_blueprint(cfg.args.client, cfg.tower_id)
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] Invocación en memoria de Blueprint falló: {e}. Usando fallback subprocess..."
+            )
             await run_step_async(
                 [
                     cfg.python_bin,
@@ -529,9 +538,6 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
                 cfg.env,
                 "Engine: Tower Strategic Blueprint",
             )
-        except Exception as e:
-            print(f"⚠️ Fallo crítico en Blueprint: {e}")
-            raise RuntimeError(f"Fallo crítico en Blueprint: {e}") from e
     else:
         print(
             "⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call."
@@ -544,6 +550,15 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
         or cfg.payload_path.stat().st_size == 0
     ):
         try:
+            from assessment_engine.application.run_executive_annex_synthesizer import (
+                synthesize_annex,
+            )
+
+            await synthesize_annex(cfg.args.client, cfg.tower_id)
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] Invocación en memoria de Anexo falló: {e}. Usando fallback subprocess..."
+            )
             await run_step_async(
                 [
                     cfg.python_bin,
@@ -555,9 +570,6 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
                 cfg.env,
                 "Engine: Executive Annex Synthesizer",
             )
-        except Exception as e:
-            print(f"⚠️ Fallo crítico en síntesis del anexo: {e}")
-            raise RuntimeError(f"Fallo crítico en síntesis del anexo: {e}")
     else:
         print(
             "⏭️  [Cache Bypass] Engine: Executive Annex Synthesizer already generated. Skipping API call."
@@ -591,17 +603,27 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
             "Generate short radar",
         )
 
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.adapters.compile_asis_docx_from_modules",
-                str(cfg.case_dir),
-                str(cfg.output_asis_docx),
-            ],
-            cfg.env,
-            "Compile AS-IS DOCX from Modules",
-        )
+        try:
+            from assessment_engine.adapters.compile_asis_docx_from_modules import (
+                compile_docx,
+            )
+
+            compile_docx(str(cfg.case_dir), str(cfg.output_asis_docx))
+        except Exception as ex:
+            logger.warning(
+                f"[Pipeline] Compilación en memoria de AS-IS falló: {ex}. Usando fallback subprocess..."
+            )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.adapters.compile_asis_docx_from_modules",
+                    str(cfg.case_dir),
+                    str(cfg.output_asis_docx),
+                ],
+                cfg.env,
+                "Compile AS-IS DOCX from Modules",
+            )
         import shutil
 
         shutil.copyfile(
@@ -627,17 +649,39 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
 
     async def run_blueprint_flow() -> None:
         if cfg.blueprint_payload_path.exists():
-            await run_step_async(
-                [
-                    cfg.python_bin,
-                    "-m",
-                    "assessment_engine.adapters.render_tower_blueprint",
-                    str(cfg.blueprint_payload_path),
-                    str(cfg.output_blueprint_docx),
-                ],
-                cfg.env,
-                "Render: Tower Strategic Blueprint DOCX",
-            )
+            try:
+                import json
+                from assessment_engine.adapters.render_tower_blueprint import (
+                    render_blueprint,
+                )
+                from assessment_engine.domain.schemas.blueprint import (
+                    BlueprintPayload,
+                )
+
+                bp_data = json.loads(
+                    cfg.blueprint_payload_path.read_text(encoding="utf-8")
+                )
+                bp_payload = BlueprintPayload.model_validate(bp_data)
+                render_blueprint(
+                    payload=bp_payload,
+                    output_path=cfg.output_blueprint_docx,
+                    client_dir=cfg.case_dir.parent,
+                )
+            except Exception as ex:
+                logger.warning(
+                    f"[Pipeline] Renderizado en memoria de Blueprint falló: {ex}. Usando fallback subprocess..."
+                )
+                await run_step_async(
+                    [
+                        cfg.python_bin,
+                        "-m",
+                        "assessment_engine.adapters.render_tower_blueprint",
+                        str(cfg.blueprint_payload_path),
+                        str(cfg.output_blueprint_docx),
+                    ],
+                    cfg.env,
+                    "Render: Tower Strategic Blueprint DOCX",
+                )
 
     print("\n🚀 Finalizando: Renderizado Estándar + Blueprint en paralelo...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
