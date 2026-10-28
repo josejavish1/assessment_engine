@@ -58,7 +58,7 @@ class FinancialScaleCalibrator:
         )
 
         self.client = genai.Client()
-        self.model_name = get_model(ModelTier.REASONING)
+        self.model_name = get_model(ModelTier.FAST)
         self.env = env
 
     async def calibrate_client_scale(self, client_id: str, tower_id: str, raw_industry: str) -> Optional[DynamicRiskCalibration]:

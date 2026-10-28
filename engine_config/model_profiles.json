@@ -42,8 +42,15 @@
       "seed": 17,
       "max_output_tokens": 8192
     },
+    "global_refiner": {
+      "model": "gemini-3.8-flash",
+      "temperature": 0.2,
+      "top_p": 0.9,
+      "seed": 17,
+      "max_output_tokens": 8192
+    },
     "global_refiner_strict": {
-      "model": "gemini-3.1-pro-preview",
+      "model": "gemini-3.8-flash",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,

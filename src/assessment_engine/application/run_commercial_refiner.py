@@ -251,7 +251,7 @@ async def refine_commercial_payload(
             get_model,
         )
 
-        model_name = get_model(ModelTier.REASONING)
+        model_name = get_model(ModelTier.FAST)
 
     #
     hybrid_context = {
