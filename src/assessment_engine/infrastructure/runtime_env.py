@@ -5,9 +5,14 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from assessment_engine.infrastructure.genai_client import (
+    ModelTier,
+    get_model,
+)
+
 DEFAULT_GOOGLE_CLOUD_PROJECT = "sub403o4u0q5"
 DEFAULT_GOOGLE_CLOUD_LOCATION = "europe-west1"
-DEFAULT_VERTEX_PREFLIGHT_MODEL = "gemini-2.5-pro"
+DEFAULT_VERTEX_PREFLIGHT_MODEL = get_model(ModelTier.REASONING)
 DEFAULT_VERTEX_PREFLIGHT_TIMEOUT_SECONDS = 20.0
 DEFAULT_VERTEX_QUERY_TIMEOUT_SECONDS = 300.0
 

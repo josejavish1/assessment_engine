@@ -220,12 +220,21 @@ def resolve_model_profile_for_role(role_name: str) -> ModelProfile:
     return load_model_profile(profile_name)
 
 
-def resolve_model_for_role(role_name: str, default_model: str = "gemini-2.5-pro") -> str:
+def resolve_model_for_role(
+    role_name: str, default_model: str | None = None
+) -> str:
     """Resolves and returns the canonical model name for a given role from active profiles.
 
-    Bypasses any in-code hardcoding, falling back cleanly to a robust standard model if the
+    Bypasses any in-code hardcoding, falling back cleanly to the canonical reasoning model if the
     profile loader fails or if the role isn't mapped.
     """
+    if default_model is None:
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
+        default_model = get_model(ModelTier.REASONING)
     try:
         profile = resolve_model_profile_for_role(role_name)
         return str(profile.get("model", default_model)).strip()

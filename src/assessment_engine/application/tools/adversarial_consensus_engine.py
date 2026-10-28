@@ -38,8 +38,13 @@ class AdversarialConsensusEngine:
     cibersecurity controls based on client evidence, compliant with the 2026 FAIR-CAM standard.
     """
     def __init__(self, ai_client=None, env=None):
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
         self.client = genai.Client()
-        self.model_name = "gemini-2.5-pro"
+        self.model_name = get_model(ModelTier.REASONING)
         self.env = env
         self.max_iterations = 4  # 4 structured rounds of debate
 

@@ -181,9 +181,13 @@ async def translate_text(text: str) -> str:
     )
 
     try:
-        # Use cheap and fast model (gemini-2.5-flash)
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
         result = await call_agent(
-            model_name="gemini-2.5-flash",
+            model_name=get_model(ModelTier.FAST),
             prompt=prompt,
             instruction="You are an expert software developer translating and sanitizing code comments and docstrings to formal, sober, technical English based on dynamic policy documents.",
             output_schema=TranslationResult,

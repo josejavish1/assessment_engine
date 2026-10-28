@@ -40,8 +40,11 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     if intel_path.exists():
         grounding_data = load_json(intel_path)
 
-    from assessment_engine.infrastructure.config_loader import resolve_model_for_role
-    model_name = resolve_model_for_role("global_refiner_strict", default_model="gemini-2.5-pro")
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_model_for_role,
+    )
+
+    model_name = resolve_model_for_role("global_refiner_strict")
     agent = Agent(
         name="executive_refiner",
         model=model_name,

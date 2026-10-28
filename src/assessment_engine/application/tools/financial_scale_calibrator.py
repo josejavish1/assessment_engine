@@ -52,8 +52,13 @@ class FinancialScaleCalibrator:
     to bypass Google API constraints, backed by a local fallback track.
     """
     def __init__(self, env=None):
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
         self.client = genai.Client()
-        self.model_name = "gemini-2.5-pro"
+        self.model_name = get_model(ModelTier.REASONING)
         self.env = env
 
     async def calibrate_client_scale(self, client_id: str, tower_id: str, raw_industry: str) -> Optional[DynamicRiskCalibration]:

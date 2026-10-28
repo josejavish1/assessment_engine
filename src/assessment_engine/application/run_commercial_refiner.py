@@ -246,7 +246,12 @@ async def refine_commercial_payload(
     try:
         model_name = resolve_model_profile_for_role("global_refiner")["model"]
     except Exception:
-        model_name = "gemini-2.5-pro"
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
+        model_name = get_model(ModelTier.REASONING)
 
     #
     hybrid_context = {

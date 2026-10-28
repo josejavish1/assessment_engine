@@ -834,9 +834,7 @@ async def generate_synthesis(
         config=config,
     )
 
-    model_name = resolve_model_for_role(
-        "section_writer", default_model="gemini-2.5-pro"
-    )
+    model_name = resolve_model_for_role("section_writer")
 
     from assessment_engine.infrastructure.localization import (
         resolve_target_language_name,
@@ -952,6 +950,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
             apply_vocabulary_substitutions,
         )
 
+        doc_lang = getattr(blueprint.document_meta, "language", "es") or "es"
         content = apply_vocabulary_substitutions(content, locale=doc_lang)
 
         tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")

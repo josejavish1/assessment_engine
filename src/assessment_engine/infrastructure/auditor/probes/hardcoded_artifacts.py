@@ -67,6 +67,12 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
                             rule_id="ARCH_DOMAIN_LEAK", message=f"Fuga de dominio detectada en paquete agnóstico: '{val}'",
                             recommendation="Desacoplar la entidad específica usando configuración de esquema genérico."
                         ))
+            if AI_MODEL_REGEX.match(val) and not any(p in self.rel_path for p in ("genai_client.py", "ai_client.py", "test_", "hardcoded_artifacts.py")):
+                self.findings.append(AuditFinding(
+                    category="MODEL_LEAK", severity="HIGH", file_path=self.rel_path, line_number=node.lineno,
+                    rule_id="ARCH_HARDCODED_AI_MODEL", message=f"Modelo de IA hardcodeado en literal de cadena: '{val}'.",
+                    recommendation="Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de assessment_engine.infrastructure.genai_client."
+                ))
         self.generic_visit(node)
 
     def _check_assign_target(self, target: Any, node: ast.Assign) -> None:

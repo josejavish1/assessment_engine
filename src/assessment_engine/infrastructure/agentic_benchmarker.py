@@ -95,11 +95,19 @@ class AgenticRageBenchmarker:
     """The core engine orchestrating Runtime Agentic Grounding & Evaluation (RAGE)."""
 
     def __init__(
-        self, client_id: str, working_dir: Path, model_name: str = "gemini-2.5-pro"
+        self,
+        client_id: str,
+        working_dir: Path,
+        model_name: Optional[str] = None,
     ):
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
         self.client_id = client_id
         self.working_dir = working_dir
-        self.model_name = model_name
+        self.model_name = model_name or get_model(ModelTier.REASONING)
 
         # Create localized evidence cache directory (the Vault)
         self.evidence_dir = self.working_dir / "evidence_cache"

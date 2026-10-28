@@ -40,7 +40,7 @@ Normaliza el 'predicate' usando nombres en MAYÚSCULAS y separados por guiones b
 
 
 async def extract_triples_from_text(
-    text: str, model_name: str = "gemini-2.5-flash"
+    text: str, model_name: str | None = None
 ) -> List[Dict[str, str]]:
     """Asynchronously extracts knowledge triplets from unstructured text using a generative model.
 
@@ -59,6 +59,13 @@ async def extract_triples_from_text(
         triplet. Returns an empty list if no triplets are found or if an
         internal error occurs during processing.
     """
+    if model_name is None:
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
+        model_name = get_model(ModelTier.FAST)
     try:
         agent = Agent(
             name="epistemic_extractor",

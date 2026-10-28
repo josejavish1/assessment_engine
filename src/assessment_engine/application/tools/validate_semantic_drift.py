@@ -100,7 +100,13 @@ def get_git_diff(repo_root: Path, file_path: str) -> str:
 
 def query_gemini_api(api_key: str, prompt: str) -> str:
     """Query gemini api according to technical specification."""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={api_key}"
+    from assessment_engine.infrastructure.genai_client import (
+        ModelTier,
+        get_model,
+    )
+
+    model_name = get_model(ModelTier.REASONING)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
     data = {"contents": [{"parts": [{"text": prompt}]}]}
 

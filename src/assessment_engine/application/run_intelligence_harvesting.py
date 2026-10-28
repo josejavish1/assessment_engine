@@ -67,9 +67,17 @@ Garantiza el aislamiento absoluto de los contextos empresariales.
 """
 
 from assessment_engine.infrastructure.config_loader import resolve_model_for_role
+from assessment_engine.infrastructure.genai_client import (
+    ModelTier,
+    get_model,
+)
 
-MODEL_FAST = os.environ.get("MODEL_TIER_FAST", "").strip() or resolve_model_for_role("section_writer", "gemini-2.5-flash")
-MODEL_PRO = os.environ.get("MODEL_TIER_PRO", "").strip() or resolve_model_for_role("section_reviewer", "gemini-2.5-pro")
+MODEL_FAST = os.environ.get("MODEL_TIER_FAST", "").strip() or resolve_model_for_role(
+    "section_writer", get_model(ModelTier.FAST)
+)
+MODEL_PRO = os.environ.get("MODEL_TIER_PRO", "").strip() or resolve_model_for_role(
+    "section_reviewer", get_model(ModelTier.REASONING)
+)
 
 
 def _get_genai_client():

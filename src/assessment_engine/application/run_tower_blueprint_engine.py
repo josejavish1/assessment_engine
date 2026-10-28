@@ -398,7 +398,12 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
         model_name = resolve_model_profile_for_role("section_writer")["model"]
     except Exception:
-        model_name = "gemini-2.5-pro"
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
+        )
+
+        model_name = get_model(ModelTier.REASONING)
 
     # Resolve data dependencies and establish processing priorities.
     print(

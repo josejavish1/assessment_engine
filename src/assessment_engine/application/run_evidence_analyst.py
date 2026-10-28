@@ -157,7 +157,7 @@ async def build_findings(
 
     agent = Agent(
         name="technical_analyst",
-        model=resolve_model_for_role("analyst", default_model="gemini-2.5-pro"),
+        model=resolve_model_for_role("analyst"),
         instruction=(
             f"You are a Senior Infrastructure & Enterprise Architecture Analyst at {company}.\n\n"
             f"### CRITICAL LANGUAGE MANDATE:\n"

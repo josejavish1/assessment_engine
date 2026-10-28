@@ -301,8 +301,13 @@ async def perform_apex_debate(
         repository_invariants=(REPO_ROOT / "GEMINI.md").read_text(),
         proposed_strategy=doctor_prompt,
     )
+    from assessment_engine.infrastructure.genai_client import (
+        ModelTier,
+        get_model,
+    )
+
     data = await call_agent(
-        model_name="gemini-2.5-pro",
+        model_name=get_model(ModelTier.REASONING),
         prompt=architect_prompt,
         output_schema=ApexDebateResponse,
         instruction="Resuelve el bloqueo.",
