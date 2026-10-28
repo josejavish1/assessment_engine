@@ -46,6 +46,7 @@ class DeterministicFinOpsEngine:
         tech_objective: str,
         sizing: str = "M",
         currency_symbol: str = "€",
+        country_rate_multiplier: float = 1.0,
     ) -> tuple[str, str]:
         """Calculates precise (OpEx, CapEx) formatted strings via deterministic accounting."""
         rates = rate_card.get("tarifas_hora", {
@@ -57,18 +58,26 @@ class DeterministicFinOpsEngine:
             "tecnico_junior": 28,
         })
         margin = rate_card.get("margenes", {}).get("consultoria", 0.45)
+        country_mult = max(0.2, min(5.0, float(country_rate_multiplier)))
 
-        # 1. Deterministic OpEx (WBS engineering effort / (1 - margin))
+        # 1. Deterministic OpEx (WBS engineering effort * country_mult / (1 - margin))
         total_internal_cost = 0.0
         for task in wbs_tasks:
             profile = task.get("required_profile", "experto")
             hours = float(task.get("estimated_hours", 0))
-            hourly_rate = float(rates.get(profile, 58))
+            base_hourly_rate = float(rates.get(profile, 58))
+            hourly_rate = base_hourly_rate * country_mult
             total_internal_cost += hours * hourly_rate
 
-        sell_price_opex = total_internal_cost / max(0.1, (1.0 - margin)) if total_internal_cost > 0 else 35000.0
+        sell_price_opex = total_internal_cost / max(0.1, (1.0 - margin)) if total_internal_cost > 0 else 35000.0 * country_mult
 
-        formatted_opex = f"{sell_price_opex:,.2f} {currency_symbol}".replace(",", "X").replace(".", ",").replace("X", ".")
+        from assessment_engine.infrastructure.localization import (
+            format_currency,
+        )
+
+        formatted_opex = format_currency(
+            sell_price_opex, currency_symbol=currency_symbol, locale="es"
+        )
 
         # 2. Deterministic CapEx based on Typology and Scale
         typology = cls.infer_typology(project_name, tech_objective)
@@ -90,9 +99,11 @@ class DeterministicFinOpsEngine:
             raw_capex = round(sell_price_opex * final_ratio, -3)
             # Bound between 15k and 200k for enterprise sanity
             raw_capex = max(15000.0, min(250000.0, raw_capex))
+            capex_val_str = format_currency(
+                raw_capex, currency_symbol=currency_symbol, locale="es"
+            )
             formatted_capex = (
-                f"~{raw_capex:,.2f} {currency_symbol} (Inversión paramétrica de equipamiento y licencias base)"
-                .replace(",", "X").replace(".", ",").replace("X", ".")
+                f"~{capex_val_str} (Inversión paramétrica de equipamiento y licencias base)"
             )
 
         return formatted_opex, formatted_capex
