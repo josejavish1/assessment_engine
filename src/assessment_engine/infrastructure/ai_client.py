@@ -89,10 +89,26 @@ async def _execute_query_with_retry(
                     text = extract_model_text(event)
                     if text:
                         last_text = text
-        except TimeoutError as exc:
-            raise VertexQueryTimeoutError(
-                f"Vertex agent query timed out after {timeout_seconds:.0f}s for user_id={user_id}."
-            ) from exc
+        except Exception as exc:
+            from assessment_engine.infrastructure.genai_client import (
+                get_fallback_model,
+            )
+
+            agent_obj = getattr(app, "_agent", None)
+            current_model = getattr(agent_obj, "model", None)
+            fallback = get_fallback_model(current_model)
+            if fallback and fallback != current_model:
+                logger.warning(
+                    f"⚠️ [AI Failover] Error en modelo primario '{current_model}': {exc}. "
+                    f"Conmutando inmediatamente a modelo de respaldo '{fallback}' para el siguiente intento..."
+                )
+                agent_obj.model = fallback
+
+            if isinstance(exc, TimeoutError):
+                raise VertexQueryTimeoutError(
+                    f"Vertex agent query timed out after {timeout_seconds:.0f}s for user_id={user_id}."
+                ) from exc
+            raise
 
         if not last_text:
             raise RuntimeError("Respuesta vacía o incompleta del modelo.")
@@ -123,13 +139,10 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
         raise e
 
 
-# Estimated pricing in USD per one million tokens, based on approximate rates for the Gemini 2.5 Pro model.
+# Tier-1 Model-Agnostic Pricing (USD per one million tokens)
 PRICING = {
-    "gemini-3.1-pro-preview": {
-        "input": 1.25,
-        "output": 5.00,
-    },
-    "gemini-3.8-flash": {"input": 0.075, "output": 0.30},
+    "flash": {"input": 0.075, "output": 0.30},
+    "reasoning": {"input": 1.25, "output": 5.00},
     "default": {"input": 1.25, "output": 5.00},
 }
 
@@ -139,34 +152,15 @@ def estimate_cost(
 ) -> float:
     """Calculate the estimated cost of an API request based on token usage.
 
-    Computes the cost by looking up a model's price per million tokens from
-    the module-level `PRICING` constant. The model name lookup is
-    case-insensitive. If the specified model is not found, the pricing for the
-    "default" model is used as a fallback. The total cost is the sum of the
-    input and output token costs.
-
-    Args:
-        input_tokens (int): The number of tokens in the input prompt.
-        output_tokens (int): The number of tokens in the generated output.
-        model (str): The model identifier for which to look up pricing.
-
-    Returns:
-        float: The estimated cost of the request, rounded to 5 decimal places.
-
-    Raises:
-        KeyError: If the fallback "default" model is not in the `PRICING`
-            dictionary, or if a model's retrieved pricing entry is missing
-            the required 'input' or 'output' keys.
-        TypeError: If `input_tokens` or `output_tokens` are not numeric types.
+    Automatically maps any flash variant to high-efficiency flash tier rates,
+    and all reasoning models to standard cognitive rates.
     """
-    # Normalizes the model name to a canonical format for consistent pricing lookups.
     clean_model = model.lower()
-    if clean_model in PRICING:
-        price = PRICING[clean_model]
-    elif "flash" in clean_model:
-        price = PRICING.get("gemini-3.8-flash", PRICING["default"])
+    if "flash" in clean_model:
+        price = PRICING["flash"]
     else:
-        price = PRICING.get("default", {"input": 1.25, "output": 5.00})
+        price = PRICING["reasoning"]
+
     cost = (input_tokens / 1_000_000 * price["input"]) + (
         output_tokens / 1_000_000 * price["output"]
     )

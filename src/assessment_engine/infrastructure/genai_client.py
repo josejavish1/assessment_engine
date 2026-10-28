@@ -28,25 +28,42 @@ class ModelTier(str, Enum):
     EMBEDDING = "embedding"  # Vector representation and CAG memory
 
 
-# Canonical decoupled resolution table:
-# Tier: (Primary Agnostic Variable, Optional Legacy Variable, Default)
-_MODEL_SPECS: dict[ModelTier, tuple[str, str, str]] = {
-    ModelTier.REASONING: ("AI_REASONING_MODEL", "GEMINI_PRO_MODEL", "gemini-pro-latest"),
-    ModelTier.FAST:      ("AI_FAST_MODEL",      "GEMINI_FLASH_MODEL", "gemini-flash-latest"),
-    ModelTier.LOCAL:     ("AI_LOCAL_MODEL",     "LOCAL_LLM_MODEL",    "gemini-flash-latest"),
-    ModelTier.IMAGE:     ("AI_IMAGE_MODEL",     "GEMINI_IMAGE_MODEL", "imagen-3.0-generate-002"),
-    ModelTier.AUDIO:     ("AI_AUDIO_MODEL",     "GEMINI_AUDIO_MODEL", "gemini-flash-latest"),
-    ModelTier.VIDEO:     ("AI_VIDEO_MODEL",     "GEMINI_VIDEO_MODEL", "gemini-flash-latest"),
-    ModelTier.EMBEDDING: ("AI_EMBEDDING_MODEL", "GEMINI_EMBEDDING_MODEL", "text-embedding-004"),
+# Canonical decoupled resolution table (SSOT):
+# Tier: (Primary Agnostic Variable, Optional Legacy Variable, Primary Default, Fallback Default)
+_MODEL_SPECS: dict[ModelTier, tuple[str, str, str, str | None]] = {
+    ModelTier.REASONING: ("AI_REASONING_MODEL", "GEMINI_PRO_MODEL", "gemini-4-argon", "gemini-3.1-pro-preview"),
+    ModelTier.FAST:      ("AI_FAST_MODEL",      "GEMINI_FLASH_MODEL", "gemini-flash-latest", "gemini-3.8-flash"),
+    ModelTier.LOCAL:     ("AI_LOCAL_MODEL",     "LOCAL_LLM_MODEL",    "gemini-flash-latest", None),
+    ModelTier.IMAGE:     ("AI_IMAGE_MODEL",     "GEMINI_IMAGE_MODEL", "imagen-3.0-generate-002", None),
+    ModelTier.AUDIO:     ("AI_AUDIO_MODEL",     "GEMINI_AUDIO_MODEL", "gemini-flash-latest", None),
+    ModelTier.VIDEO:     ("AI_VIDEO_MODEL",     "GEMINI_VIDEO_MODEL", "gemini-flash-latest", None),
+    ModelTier.EMBEDDING: ("AI_EMBEDDING_MODEL", "GEMINI_EMBEDDING_MODEL", "text-embedding-004", None),
 }
 
 
 def get_model(tier: ModelTier = ModelTier.FAST) -> str:
     """Resolve canonical model identifier for the requested inference tier."""
-    primary_var, legacy_var, default_model = _MODEL_SPECS.get(
-        tier, ("AI_FAST_MODEL", "GEMINI_FLASH_MODEL", "gemini-3.8-flash")
+    spec = _MODEL_SPECS.get(
+        tier, ("AI_FAST_MODEL", "GEMINI_FLASH_MODEL", "gemini-flash-latest", None)
     )
+    primary_var, legacy_var, default_model, _ = spec
     return os.environ.get(primary_var) or os.environ.get(legacy_var) or default_model
+
+
+def get_fallback_model(model_name: str | None = None) -> str | None:
+    """Returns the configured fallback model if the primary model fails or experiences rate limits."""
+    if not model_name:
+        return None
+    for _, spec in _MODEL_SPECS.items():
+        primary_var, legacy_var, default_model, fallback = spec
+        active_model = (
+            os.environ.get(primary_var)
+            or os.environ.get(legacy_var)
+            or default_model
+        )
+        if active_model == model_name and fallback and fallback != active_model:
+            return fallback
+    return None
 
 
 def create_genai_client(location: str | None = None) -> genai.Client:

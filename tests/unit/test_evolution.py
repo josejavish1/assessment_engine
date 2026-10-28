@@ -48,7 +48,7 @@ def test_model_tier_reasoning_resolves_gemini_3_1_pro() -> None:
     expected = (
         os.environ.get("AI_REASONING_MODEL")
         or os.environ.get("GEMINI_PRO_MODEL")
-        or "gemini-pro-latest"
+        or "gemini-4-argon"
     )
     model = get_model(ModelTier.REASONING)
     assert model == expected
