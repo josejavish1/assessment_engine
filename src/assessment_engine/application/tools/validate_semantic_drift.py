@@ -1,5 +1,9 @@
-# golden-path: ignore
 from __future__ import annotations
+
+# golden-path: ignore
+import logging
+
+logger = logging.getLogger(__name__)
 
 import argparse
 import json
@@ -27,8 +31,9 @@ def get_modified_py_files(repo_root: Path) -> list[str]:
             check=True,
         )
         modified.update(res.stdout.splitlines())
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # 2. Try diffing against HEAD~1 (commits on local branches)
     if not modified:
@@ -41,8 +46,9 @@ def get_modified_py_files(repo_root: Path) -> list[str]:
                 check=True,
             )
             modified.update(res.stdout.splitlines())
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # 3. Fallback to uncommitted changes
     try:
@@ -54,8 +60,9 @@ def get_modified_py_files(repo_root: Path) -> list[str]:
             check=True,
         )
         modified.update(res.stdout.splitlines())
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     return [f.strip() for f in modified if f.strip().endswith(".py")]
 
@@ -73,8 +80,9 @@ def get_git_diff(repo_root: Path, file_path: str) -> str:
         diff = res.stdout.strip()
         if diff:
             return diff
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+        logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # Fallback to current workspace modifications
     try:

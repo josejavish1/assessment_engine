@@ -1,5 +1,9 @@
-# golden-path: ignore
 from __future__ import annotations
+
+# golden-path: ignore
+import logging
+
+logger = logging.getLogger(__name__)
 
 import argparse
 import importlib.util
@@ -49,8 +53,9 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
                 spec = importlib.util.find_spec(module_name)
                 if spec and spec.origin:
                     script_path = Path(spec.origin)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+
+                logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     if script_path and script_path.exists():
         # Only validate local scripts inside repo_root and NOT in .venv
