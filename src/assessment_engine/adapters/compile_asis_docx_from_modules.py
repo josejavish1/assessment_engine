@@ -19,6 +19,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     autofit_table_to_contents,
     finalize_table,
     set_cell_text,
+    shade_cell,
 )
 from assessment_engine.infrastructure.text_utils import clean_text_for_word, format_date_spanish
 from assessment_engine.infrastructure.localization import (
@@ -81,215 +82,30 @@ def clean_client_name(client_name: str) -> str:
     return cleaned
 
 
-# Use an internationalization (i18n) dictionary to support multiple locales.
-LANG_VOCAB = {
-    "es": {
-        "title": "Informe de Situación Actual (AS-IS)",
-        "project": "Consultoría para el rediseño de infraestructura tecnológica",
-        "client_lbl": "Cliente:\n",
-        "proj_lbl": "\nProyecto:\n",
-        "toc_title": "Contenido",
-        "dashboard_title": "Cuadro de Mando de Madurez Global de la Torre",
-        "dashboard_intro": "La evaluación integral del estado actual consolida una valoración cuantitativa que sitúa a la torre en su banda de madurez correspondiente, justificando el grado de adopción de prácticas de resiliencia:",
-        "score_lbl": "PUNTUACIÓN AS-IS",
-        "maturity_lbl": "NIVEL DE MADUREZ CUALITATIVO",
-        "resilience_reading": "Lectura de Resiliencia de la Plataforma:",
-        "radar_title": "Análisis Comparativo de Madurez por Pilar",
-        "justification_table_headers": [
-            "Pilar / Capacidad Tecnológica Evaluada",
-            "Score AS-IS",
-            "Análisis de Brechas y Calibración del Diagnóstico",
-        ],
-        "platform_overview_title": "Descripción de la Plataforma de Infraestructura Actual",
-        "swot_title": "Fortalezas y Brechas Clave",
-        "swot_headers": [
-            "Fortalezas Clave de la Plataforma",
-            "Brechas y Deudas Operativas Críticas",
-        ],
-        "transversal_title": "Análisis Transversal de Capacidades",
-        "risk_matrix_title": "Exposición Financiera al Riesgo y Resiliencia Operativa",
-        "risk_intro_1": "El análisis cuantitativo del estado actual establece que las deudas técnicas operativas y las vulnerabilidades detectadas exclusivamente dentro del perímetro de esta torre tecnológica exponen ",
-        "risk_intro_2": " a una Expectativa de Pérdida Anualizada (ALE) real de ",
-        "risk_intro_3": " anuales bajo el estándar internacional FAIR.",
-        "risk_mosaic_intro": "Esta matriz de mosaico consolida la distribución de esta exposición a partir de la frecuencia de amenazas (TEF) y magnitud de pérdidas (LM) de cada hallazgo forense:",
-        "exposure_summary_title": "Matriz de Riesgos Cuantitativa",
-        "methodology_chapter_title": "Objetivo, Alcance y Marco Metodológico",
-        "tef_title": "Criterios de Frecuencia de la Amenaza (TEF)",
-        "tef_headers": ["Nivel TEF", "Denominación", "Frecuencia Anualizada Estimada"],
-        "lm_title": "Criterios de Magnitud de Pérdida Directa/Indirecta (LM)",
-        "lm_headers": [
-            "Nivel LM",
-            "Clasificación de Impacto",
-            "Límite de Pérdida Financiera",
-        ],
-        "top_risks_title": "Top de Riesgos Prioritarios de la Torre",
-        "top_risks_intro": "Top de riesgos priorizados por su impacto directo en la resiliencia del servicio y el coste de inacción (ALE):",
-        "motivo_priorizacion": "Motivo de priorización: ",
-        "top_risks_fallbacks": {
-            "compute": "El modelo reactivo en el cómputo on-premise arriesga directamente la continuidad del servicio y bloquea el despliegue del Gemelo Digital y la IA estratégica.",
-            "container": "La falta de plataforma corporativa de contenedores estanca la innovación, genera silos aislados en desarrollo y multiplica la deuda de modernización.",
-            "cloud": "La remediación manual de las Landing Zones impide verificar el cumplimiento normativo en tiempo real, exponiendo al negocio a severas sanciones regulatorias.",
-            "automation": "La dependencia de tickets y validaciones manuales retarda semanas el time-to-market y genera cuellos de botella severos en la provisión.",
-            "default": "La fragmentación e inconsistencia en las monitorizaciones imposibilita correlar alertas y predecir fallas complejas que detienen las operaciones.",
-        },
-        "detailed_risks_title": "Inventario Analítico de Riesgos y Exposiciones",
-        "detailed_risks_pilar_title": "Análisis de Vulnerabilidades: ",
-        "detailed_risks_headers": [
-            "ID",
-            "Vulnerabilidad y Evidencias de Auditoría",
-            "Exposición y Riesgo de Negocio",
-        ],
-        "next_steps_title": "Siguientes Pasos y Coste de Inacción",
-        "appendix_a_title": "Lista de Abreviaturas",
-        "appendix_a_intro": "A continuación, se define el glosario de términos técnicos y acrónimos utilizados en este diagnóstico técnico actual:",
-        "appendix_a_headers": ["Abreviatura", "Significado / Descripción Técnica"],
-        "appendix_b_title": "Cláusula de Limitación de Responsabilidad",
-        "appendix_c_title": "Registro de Custodia de Fuentes de Información",
-        "appendix_c_intro": "Para garantizar la transparencia, veracidad e inmutabilidad de la información recopilada en este diagnóstico técnico, a continuación, se listan y codifican las fuentes documentales utilizadas bajo custodia de auditoría:",
-        "appendix_c_headers": [
-            "Código de Referencia",
-            "Documento Fuente / Origen de Datos",
-            "Descripción y Ámbito de Custodia",
-        ],
-        "vulnerability_lbl": "Vulnerabilidad Identificada:\n",
-        "evidence_lbl": "Evidencia Forense Literal:\n",
-        "impact_lbl": "Impacto Operativo:\n",
-        "exposure_lbl": "Exposición Cuantitativa (FAIR):\n",
-        "ale_proyectado": "ALE Proyectado: ",
-        "v_lbl": "Versión ",
-        "disclaimer_text_1": "Este informe de diagnóstico técnico (el Documento) constituye un ejercicio de evaluación rápida (Fast Assessment) preparado por la consultora únicamente para el uso interno y exclusivo de la organización cliente, sobre una base estrictamente confidencial. El lector y la organización cliente aceptan y declaran conocer que el Documento se fundamenta de manera única y exclusiva en las declaraciones verbales, narrativas, explicaciones de arquitectura y autoevaluaciones facilitadas por el personal del cliente durante las entrevistas técnicas y reuniones de contexto mantenidas, sin que se haya procedido a realizar ninguna auditoría de campo, revisión directo de código, análisis de configuraciones en sistemas, captura de tráfico de red, ni contraste o validación independiente de evidencias físicas o documentales por parte de la consultora. En consecuencia, la consultora no asume obligación, deber ni responsabilidad alguna de verificar, validar o contrastar la veracidad, exactitud, completitud o vigencia de la información facilitada por el cliente, estando completamente exenta de cualquier responsabilidad o culpa profesional contractual o extracontractual en caso de que los datos o narrativas proporcionados por los equipos del cliente resulten ser incompletos, inexactos, desactualizados o erróneos. El Documento no constituye, bajo ningún concepto, una garantía de rendimiento, ciberresiliencia, seguridad continua o indemnidad frente a incidentes operacionales o regulatorios.",
-        "disclaimer_text_2": "Las proyecciones de impacto financiero, simulación actuarial de riesgos, y los valores de Expectativa de Pérdida Anualizada (ALE) y peor caso (CVaR) calculados mediante la metodología estándar de Open FAIR™ y modelos estocásticos de Monte Carlo, representan únicamente estimaciones estadísticas y modelos matemáticos de probabilidad basados en distribuciones de incertidumbre. Dichas valoraciones monetarias constituyen herramientas analíticas exclusivas de priorización estratégica de inversiones y coste de inacción (Business Case). Bajo ninguna circunstancia deben interpretarse, utilizarse ni asimilarse a auditorías financieras o contables formales, provisiones de pasivos contables, garantías de impacto directo o indirecto en el balance de la compañía, ni como compromisos de pasivos exigibles legalmente o judicialmente.",
-        "disclaimer_text_3": "Cualquier referencia contenida en el Documento a normativas, leyes, regulaciones o esquemas de cumplimiento sectorial se expone con un propósito estrictamente ilustrativo, técnico y de buenas prácticas de ingeniería para mitigar la superficie de exposición al riesgo. Dichas menciones no constituyen, bajo ningún concepto, asesoramiento legal, jurídico, fiscal o regulatorio formal. La interpretación, implantación, verificación y cumplimiento final de las obligaciones normativas y requerimientos legales aplicables recaen de manera estricta, directa e intransferible en los administradores, asesores legales, oficiales de cumplimiento y directivos de la organización cliente.",
-        "disclaimer_text_4": "Queda expresamente prohibido distribuir, divulgar, reproducir, citar o facilitar el acceso a este Documento, de forma total o parcial, a cualquier tercero ajeno a la organización cliente sin el consentimiento previo y por escrito de la consultora. La consultora no asume, acepta ni adquiere responsabilidad alguna, contractual o extracontractual, frente a ningún tercero que acceda, lea o tome decisiones de cualquier naturaleza basadas en el contenido de este Documento, asumiendo dicho tercero todo el riesgo de forma exclusiva. El cliente se compromete a mantener indemne a la consultora, sus socios, empleados y subcontratistas frente a cualquier reclamación, demanda, daño, coste o perjuicio derivado de la distribución, uso inapropiado o divulgación no autorizada de este Documento a terceros.",
-        "disclaimer_text_5": "En ningún caso la consultora será responsable por daños indirectos, incidentales, consecuenciales, lucro cesante, pérdida de ingresos, interrupción de negocio o daños reputacionales.",
-        "bib_cues": "Cuestionarios consolidados de autoevaluación técnica de la torre de ",
-        "bib_cues_desc": ", recopilando las respuestas oficiales del equipo de ingeniería de ",
-        "bib_contexto": "Dossier estratégico de contexto de arquitectura de ",
-        "bib_contexto_desc": " que define la volumetría del patrimonio, centros de datos y criticidad operativa.",
-        "bib_minutas": "Minutas y registros tomados durante las sesiones presenciales de contexto de arquitectura mantenidas entre los líderes técnicos de ",
-        "bib_minutas_desc": " y el equipo consultor.",
-        "default_overview_text": "El inventario consolidado y la evaluación de la plataforma de ",
-    },
-    "en": {
-        "title": "Current State Assessment Report (AS-IS)",
-        "project": "Technology infrastructure redesign consultancy",
-        "client_lbl": "Client:\n",
-        "proj_lbl": "\nProject:\n",
-        "toc_title": "Contents",
-        "dashboard_title": "Global Tower Maturity Dashboard",
-        "dashboard_intro": "The comprehensive current state assessment consolidates a quantitative valuation that positions the tower in its corresponding maturity band, justifying the adoption of resilience practices:",
-        "score_lbl": "AS-IS SCORE",
-        "maturity_lbl": "QUALITATIVE MATURITY LEVEL",
-        "resilience_reading": "Platform Resilience Reading:",
-        "radar_title": "Weighted Maturity Visual Profile",
-        "justification_table_headers": [
-            "Pilar / Evaluated Technology Capability",
-            "AS-IS Score",
-            "Gap Analysis and Diagnostic Calibration",
-        ],
-        "platform_overview_title": "Current Infrastructure Platform Description",
-        "swot_title": "Key Strengths and Gaps",
-        "swot_headers": [
-            "Key Platform Strengths",
-            "Critical Gaps and Operational Debts",
-        ],
-        "transversal_title": "Cross-Cutting Capabilities Analysis",
-        "risk_matrix_title": "Financial Risk Exposure and Operational Resilience",
-        "risk_intro_1": "The quantitative current state analysis establishes that the technical operational debts and identified vulnerabilities exclusively within the perimeter of this technological tower expose ",
-        "risk_intro_2": " to a real Annual Loss Exposure (ALE) of ",
-        "risk_intro_3": " annually under the international FAIR standard.",
-        "risk_mosaic_intro": "This mosaic matrix consolidates the distribution of this exposure based on the Threat Event Frequency (TEF) and Loss Magnitude (LM) of each forensic finding:",
-        "exposure_summary_title": "Quantitative Risk Matrix",
-        "methodology_chapter_title": "Assessment Objectives, Scope, and Reference Framework",
-        "tef_title": "Threat Event Frequency Criteria (TEF)",
-        "tef_headers": ["TEF Level", "Denomination", "Estimated Annualized Frequency"],
-        "lm_title": "Direct/Indirect Loss Magnitude Criteria (LM)",
-        "lm_headers": ["LM Level", "Impact Classification", "Financial Loss Limit"],
-        "top_risks_title": "Top Prioritized Risks for the Tower",
-        "top_risks_intro": "Top risks prioritized by their direct impact on service resilience and the cost of inaction (ALE):",
-        "motivo_priorizacion": "Prioritization rationale: ",
-        "top_risks_fallbacks": {
-            "compute": "The reactive model in on-premise compute directly risks service continuity and blocks the deployment of the Digital Twin and strategic AI.",
-            "container": "The lack of an enterprise container platform stalls innovation, creates isolated development silos, and multiplies modernization debt.",
-            "cloud": "The manual remediation of Landing Zones prevents verifying compliance in real-time, exposing the business to severe regulatory penalties.",
-            "automation": "Dependence on manual tickets and approvals delays time-to-market by weeks and generates severe provisioning bottlenecks.",
-            "default": "Fragmentation and inconsistency in monitoring systems make it impossible to correlate alerts and predict complex outages.",
-        },
-        "detailed_risks_title": "Analytical Inventory of Risks and Exposures",
-        "detailed_risks_pilar_title": "Vulnerability Analysis: ",
-        "detailed_risks_headers": [
-            "ID",
-            "Vulnerability and Audit Evidence",
-            "FAIR Exposure and Business Risk",
-        ],
-        "next_steps_title": "Next Steps and Cost of Inaction",
-        "appendix_a_title": "List of Abbreviations",
-        "appendix_a_intro": "The following defines the glossary of technical terms and acronyms used in this current technical diagnosis:",
-        "appendix_a_headers": ["Abbreviation", "Significado / Technical Description"],
-        "appendix_b_title": "Limitation of Liability Disclaimer",
-        "appendix_c_title": "Registry of Custody of Information Sources",
-        "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
-        "appendix_c_headers": [
-            "Reference Code",
-            "Source Document / Data Origin",
-            "Custody Scope and Description",
-        ],
-        "vulnerability_lbl": "Identified Vulnerability:\n",
-        "evidence_lbl": "Literal Forensic Evidence:\n",
-        "impact_lbl": "Operational Impact:\n",
-        "exposure_lbl": "Quantitative Exposure (FAIR):\n",
-        "ale_proyectado": "Projected ALE: ",
-        "v_lbl": "Version ",
-        "disclaimer_text_1": "This technical diagnosis report (the Document) represents a retrospective evaluation of the current state (AS-IS) of the evaluated tower based exclusively on the information, telemetries, and self-assessment responses provided by the client in good faith. The recommendations, qualitative assessments, and infrastructure inventories presented reflect a current diagnosis and do not constitute guarantees of performance, continuous security, or service availability commitments by the consultant.",
-        "disclaimer_text_2": "The quantitative financial risk projections and the Annual Loss Exposure (ALE) calculated through the O-FAIR methodology and Monte Carlo simulations are statistical probability estimates based on standard uncertainty models for the critical infrastructure sector. These figures are provided solely for prioritization and illustrative purposes of cost of inaction, and should not be interpreted in any case as formal balance sheet accounting audits, asset guarantees, or legally enforceable liabilities.",
-        "disclaimer_text_3": "References to legal and compliance regulations are framed as guidelines and best engineering practices to mitigate the attack surface, and do not constitute formal legal advice. The final interpretation and implementation of compliance requirements remain strictly and non-transferably with the compliance, security, and governance officers of the client organization.",
-        "disclaimer_text_4": "Any distribution, disclosure, reproduction, quotation, or access to this Document, in whole or in part, to any third party outside the client organization is strictly prohibited without the prior written consent of the consultant. The consultant does not assume, accept, or acquire any liability, contractual or extra-contractual, towards any third party accessing, reading, or making decisions of any nature based on the content of this Document, with such third party assuming all risk exclusively. The client agrees to hold harmless and indemnify the consultant, its partners, employees, and subcontractors against any claim, demand, damage, cost, or loss arising from the distribution, inappropriate use, or unauthorized disclosure of this Document to third parties.",
-        "disclaimer_text_5": "In no event shall the consultant be liable for any indirect, incidental, consequential, special, or punitive damages, including but not limited to loss of profits, loss of revenue, business interruption, or reputational damage.",
-        "bib_cues": "Consolidated technical self-assessment questionnaires of the ",
-        "bib_cues_desc": " tower, gathering official responses from the engineering team of ",
-        "bib_contexto": "Strategic architecture context dossier of ",
-        "bib_contexto_desc": " defining inventory volumes, data centers, and operational criticality.",
-        "bib_minutas": "Minutes and records taken during the on-site architecture sessions between the technical leaders of ",
-        "bib_minutas_desc": " and the consulting team.",
-        "default_overview_text": "The consolidated inventory and evaluation of the ",
-    },
-}
+def _load_asis_vocab() -> dict[str, Any]:
+    p = Path(__file__).resolve().parents[3] / "engine_config" / "locales_asis_annex.json"
+    if p.is_file():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {}
 
 
-def shade_cell(cell, color_hex):
-    """Applies a background color shading to a table cell.
-
-    This function directly manipulates the underlying Open Office XML (OOXML)
-    of the cell's properties to set its background fill color.
-
-    Args:
-        cell (docx.table._Cell): The table cell object to modify.
-        color_hex (str): A six-character RRGGBB hexadecimal string representing
-            the background color (e.g., 'FFC000').
-    """
-    tcPr = cell._tc.get_or_add_tcPr()
-    shd = OxmlElement("w:shd")
-    shd.set(qn("w:val"), "clear")
-    shd.set(qn("w:color"), "auto")
-    shd.set(qn("w:fill"), color_hex)
-    tcPr.append(shd)
+LANG_VOCAB: dict[str, Any] = _load_asis_vocab()
 
 
-def set_cell_border_white(cell):
-    r"""{'docstring': 'Set a 2.0 pt white border on a table cell.\n\nDirectly manipulates the underlying Office Open XML (OOXML) representation\nof a table cell to apply a single, white, 2.0 pt border to all four sides.\nThis effect is typically used to create visual separation between cells in\na heatmap-style table, giving them a tiled appearance.\n\nArgs:\n    cell (docx.table.Cell): The target table cell object whose borders will\n        be modified in-place.\n\nRaises:\n    AttributeError: If the provided `cell` object does not conform to the\n        expected internal OOXML structure.'}."""
+def set_cell_border_white(cell: Any) -> None:
+    """Sets a 2.0 pt white border on all four sides of a table cell."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcBorders = OxmlElement("w:tcBorders")
-
     for border_name in ["top", "left", "bottom", "right"]:
         border = OxmlElement(f"w:{border_name}")
         border.set(qn("w:val"), "single")
-        border.set(
-            qn("w:sz"), "16"
-        )  # The OpenXML value of 16 corresponds to a 2.0 pt border thickness (16 / 8 = 2.0 pt).
+        border.set(qn("w:sz"), "16")
         border.set(qn("w:space"), "0")
-        border.set(qn("w:color"), "FFFFFF")  #
+        border.set(qn("w:color"), "FFFFFF")
         tcBorders.append(border)
-
     tcPr.append(tcBorders)
 
 
