@@ -27,7 +27,7 @@ def test_vertex_search_grounding():
         print(f"  -> Consultando a Google Search: '{prompt}'")
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",  # Modelo estable en Vertex
+            model="gemini-3.8-flash",
             contents=prompt,
             config=types.GenerateContentConfig(tools=[google_search_tool]),
         )

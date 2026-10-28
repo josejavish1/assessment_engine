@@ -4,7 +4,7 @@ from pathlib import Path
 out = """/home/jsanchhi/assessment_engine/.venv/lib/python3.11/site-packages/google/adk/features/_feature_decorator.py:72: UserWarning: [EXPERIMENTAL] feature FeatureName.PLUGGABLE_AUTH is enabled.
   check_feature_enabled()
 {"timestamp": "2026-05-02 14:06:32,432", "severity": "INFO", "logger": "google_genai._api_client", "message": "The project/location from the environment variables will take precedence over the API key from the environment variables."}
-{"timestamp": "2026-05-02 14:06:32,530", "severity": "INFO", "logger": "google_adk.google.adk.models.google_llm", "message": "Sending out request, model: gemini-2.5-pro, backend: GoogleLLMVariant.VERTEX_AI, stream: False"}
+{"timestamp": "2026-05-02 14:06:32,530", "severity": "INFO", "logger": "google_adk.google.adk.models.google_llm", "message": "Sending out request, model: gemini-3.1-pro-preview, backend: GoogleLLMVariant.VERTEX_AI, stream: False"}
 {"timestamp": "2026-05-02 14:06:32,530", "severity": "INFO", "logger": "google_genai.models", "message": "AFC is enabled with max remote calls: 10."}
 {"timestamp": "2026-05-02 14:06:44,784", "severity": "INFO", "logger": "google_adk.google.adk.models.google_llm", "message": "Response received from the model."}
 {"timestamp": "2026-05-02 14:06:44,792", "severity": "INFO", "logger": "assessment_engine.scripts.lib.ai_client", "message": "AI Agent Telemetry", "telemetry": {"agent_name": "N/A", "model": "N/A", "user_id": "ad-hoc-user", "duration_seconds": 13.15, "retries": 0, "output_schema": "ProductOwnerPlan"}}

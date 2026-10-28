@@ -307,7 +307,7 @@ async def call_agent(
 
     Args:
         model_name: The identifier for the generative model to be invoked (e.g.,
-            'gemini-1.5-pro').
+            'gemini-3.1-pro-preview').
         prompt: The user-provided query or instruction for the model.
         raw_output_file: An optional file path to which the raw JSON response from
             the model will be written. Defaults to None.

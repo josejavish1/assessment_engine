@@ -11,7 +11,7 @@ async def test_search():
     print(f"Using Vertex AI: {os.environ.get('GOOGLE_GENAI_USE_VERTEXAI')}")
     agent = Agent(
         name="test_search_agent",
-        model="gemini-2.5-flash",
+        model="gemini-3.8-flash",
         tools=[google_search],
         instruction="Eres un investigador. Usa la herramienta de búsqueda para encontrar quién ganó la Eurocopa 2024.",
     )

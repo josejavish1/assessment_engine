@@ -14,7 +14,7 @@ async def test_search():
     print("\nTesting agent with search_google_tier1...")
     agent = Agent(
         name="test_search_agent",
-        model="gemini-2.5-flash",
+        model="gemini-3.8-flash",
         tools=[search_google_tier1],
         instruction="Eres un investigador. Usa la herramienta search_google_tier1 para buscar en internet quién ganó la Eurocopa 2024.",
     )
