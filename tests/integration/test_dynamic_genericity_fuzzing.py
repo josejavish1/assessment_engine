@@ -140,6 +140,8 @@ class TestDynamicGenericityFuzzing:
                 json.dumps(temp_brand_profile, ensure_ascii=False, indent=2),
                 encoding="utf-8",
             )
+            import assessment_engine.infrastructure.localization as loc_mod
+            loc_mod._LOCALES_CACHE = None
 
             with tempfile.TemporaryDirectory() as tmp_dir:
                 input_dir = Path(tmp_dir)
@@ -285,3 +287,6 @@ class TestDynamicGenericityFuzzing:
                 load_brand_profile.cache_clear()
             if hasattr(resolve_localized_vocabulary, "cache_clear"):
                 resolve_localized_vocabulary.cache_clear()
+
+            import assessment_engine.infrastructure.localization as loc_mod
+            loc_mod._LOCALES_CACHE = None

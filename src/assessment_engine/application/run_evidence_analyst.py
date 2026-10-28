@@ -335,7 +335,7 @@ async def build_findings(
     }
 
 
-async def main():
+async def main(argv: list[str] | None = None) -> None:
     """Executes the main evidence analysis pipeline from command-line arguments.
 
     This coroutine serves as the primary entry point for the script. It parses
@@ -357,7 +357,7 @@ async def main():
     parser.add_argument("--case-input", required=True)
     parser.add_argument("--evidence-ledger", required=True)
     parser.add_argument("--scoring-output", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     case_input = load_json(Path(args.case_input))
     evidence_ledger = load_json(Path(args.evidence_ledger))

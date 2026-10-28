@@ -2,9 +2,12 @@
 
 import asyncio
 import json
+import logging
 import os
 import sys
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
@@ -245,11 +248,10 @@ async def process_pilar_blueprint(
         returned. Returns `None` if the initial phase fails or a critical
         exception occurs during processing.
     """
-    print(f"    -> Analizando Pilar: {pilar_data['label']}...")
-
     pilar_id = pilar_data["id"]
     pilar_label = pilar_data["label"]
     pilar_score = pilar_data["score"]
+    logger.info("Analyzing pillar: %s (%s)...", pilar_label, pilar_id)
 
     # Enrich the context string with refined findings, including technical standard references and supporting source text fragments.
     refined = pilar_data.get("refined_findings", {})
@@ -298,7 +300,7 @@ async def process_pilar_blueprint(
         )
         return raw_output
     except Exception as e:
-        print(f"Error procesando pilar {pilar_label}: {e}")
+        logger.error("Error processing pillar %s: %s", pilar_label, e, exc_info=True)
     return None
 
 
@@ -595,7 +597,7 @@ async def _execute_pillar_mapreduce(
             )
         return blueprint_analysis
 
-    print("🚀 Iniciando procesamiento paralelo de pilares bajo el SOTA 2026...")
+    logger.info("Starting parallel processing of %d pillars...", len(pillars_map))
     tasks = [process_single_pillar_async(p_id) for p_id in sorted(pillars_map.keys())]
     results = await asyncio.gather(*tasks)
 
@@ -607,7 +609,7 @@ async def _execute_pillar_mapreduce(
             failed_pillars.append(pillars_map[p_id]["label"])
 
     if failed_pillars:
-        print("⚠️ Pilares sin respuesta válida: " + ", ".join(failed_pillars))
+        logger.warning("Pillars without valid response: %s", ", ".join(failed_pillars))
     if not blueprint_payload["pillars_analysis"]:
         raise RuntimeError(
             "No se pudo generar ningún análisis de pilar para el blueprint."
@@ -837,7 +839,7 @@ def _apply_deterministic_finops(
         else:
             enrichment_data["capex_estimate"] = capex_str
     except Exception as finops_err:
-        print(f"⚠️ Error calculando FinOps matemático: {finops_err}")
+        logger.error("Error calculating deterministic FinOps: %s", finops_err, exc_info=True)
 
 
 async def _enrich_projects_finops(
@@ -847,7 +849,7 @@ async def _enrich_projects_finops(
     model_name: str,
 ) -> None:
     """Orchestrate async Bid Manager financial enrichment across all projects."""
-    print("💼 [Bid Manager] Enriqueciendo proyectos con WBS, TCO, y ROI...")
+    logger.info("Enriching projects with WBS, TCO, and ROI via Bid Manager...")
     try:
         from assessment_engine.domain.prompts.blueprint_prompts import (
             get_bid_manager_prompt,
@@ -935,9 +937,9 @@ async def _enrich_projects_finops(
                     if old_n != new_n:
                         _cascade_project_rename(blueprint_payload, old_n, new_n)
 
-        print("✅ Enriquecimiento de Bid Manager completado.")
+        logger.info("Bid Manager project enrichment completed successfully.")
     except Exception as bid_err:
-        print(f"⚠️ Error en Bid Manager Agent: {bid_err}")
+        logger.error("Error in Bid Manager Agent: %s", bid_err, exc_info=True)
 
 
 def _scrub_client_placeholders(obj: Any, name: str) -> Any:
@@ -971,7 +973,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     intel_path = resolve_client_intelligence_path(client_name)
 
     if not case_input_path.exists():
-        print(f"Error: No se encuentra input para {tower_id}")
+        logger.error("No case input found for %s at %s", tower_id, case_input_path)
         return
 
     case_data = json.loads(case_input_path.read_text(encoding="utf-8"))
@@ -992,7 +994,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     context_str = case_data.get("context_summary", "")
 
     # Phase 1: Ingest into Epistemic Graph
-    print("🧠 [Epistemic Engine] Ingestando contexto e inteligencia...")
+    logger.info("Epistemic Engine ingesting context and intelligence for %s...", client_name)
     graph, entity_resolver, ontology, resolved_truth = await _resolve_epistemic_context(
         client_name, raw_intel_data, context_str
     )
@@ -1026,9 +1028,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         model_name = get_model(ModelTier.REASONING)
 
     # Phase 2: Architectural Gravity Profile
-    print(
-        "🔎 [Pre-flight] Calculando el Perfil de Gravedad Arquitectónica del cliente..."
-    )
+    logger.info("Pre-flight: Calculating Architectural Gravity Profile for %s...", client_name)
     dynamic_target_maturity, gravity_constraint = await _resolve_gravity_profile(
         model_name, intel_str, client_name
     )
@@ -1040,7 +1040,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     tower_def = json.loads(tower_def_path.read_text(encoding="utf-8"))
     pillars_map = _build_pillars_map(tower_def, case_data, refined_findings)
 
-    print(f"🏗️ Generando Blueprint de Transformación para {tower_name}...")
+    logger.info("Generating Transformation Blueprint for %s (%s)...", tower_name, tower_id)
     blueprint_payload = get_default_blueprint_payload(
         client_name, tower_name, tower_id, intel_data
     )
@@ -1068,12 +1068,12 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         if findings_path.exists():
             refined_findings = json.loads(findings_path.read_text(encoding="utf-8-sig"))
     except Exception as read_err:
-        print(f"⚠️ Warning loading findings.json for final mapping: {read_err}")
+        logger.warning("Failed to load findings.json for final mapping: %s", read_err)
 
     _remap_canonical_initiatives(blueprint_payload, refined_findings)
 
     # Phase 5: Knowledge Graph Sync & Policy Engine QA
-    print(f"🔄 Sincronizando hallazgos de {tower_id} con el Epistemic Graph...")
+    logger.info("Synchronizing tower findings with Epistemic Graph for %s...", tower_id)
     sync_findings_to_graph(
         graph=graph,
         entity_resolver=entity_resolver,
@@ -1082,9 +1082,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         tower_id=tower_id,
     )
 
-    print(
-        "🥊 [Adversarial Consensus] Ejecutando debate de atenuación de riesgos (CFO vs Actuario)..."
-    )
+    logger.info("Running adversarial consensus risk mitigation debates...")
     try:
         from assessment_engine.application.tools.adversarial_consensus_engine import (
             AdversarialConsensusEngine,
@@ -1095,11 +1093,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             tower_id, blueprint_payload, client_name=client_name
         )
     except Exception as consensus_err:
-        print(f"⚠️ Error ejecutando Consenso Adversarial: {consensus_err}")
+        logger.error("Error running adversarial consensus: %s", consensus_err, exc_info=True)
 
-    print(
-        "🛡️ [Sovereign QA] Ejecutando el Motor de Políticas Arquitectónicas y Simulación FAIR..."
-    )
+    logger.info("Executing Sovereign QA Architecture Policies and FAIR Monte Carlo Simulation...")
     try:
         from assessment_engine.infrastructure.policy_engine import SovereignPolicyEngine
 
@@ -1118,7 +1114,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     total_ale = _calculate_total_fair_ale(blueprint_payload)
 
     # Phase 6: Orchestrator Snapshot & Roadmap
-    print("    -> Generando Snapshot Ejecutivo y Roadmap Estratégico...")
+    logger.info("Generating Executive Snapshot and Strategic Roadmap...")
     closing_prompt = get_closing_orchestrator_prompt(
         tower_name=tower_name,
         pillars_analysis_json=json.dumps(blueprint_payload["pillars_analysis"]),
@@ -1170,13 +1166,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     content = apply_vocabulary_substitutions(content, locale=doc_lang)
     output_path.write_text(content, encoding="utf-8-sig")
-    print(f"✅ Payload del Blueprint generado y validado: {output_path}")
+    logger.info("Blueprint payload generated and validated at %s", output_path)
 
 
 def main(argv: list[str] | None = None) -> None:
     """Parses command-line arguments and initiates the Tower Blueprint process."""
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     if len(argv if argv is not None else sys.argv) < 3:
-        print(
+        logger.error(
             "Uso: python -m assessment_engine.application.run_tower_blueprint_engine <client> <tower_id>"
         )
         sys.exit(1)

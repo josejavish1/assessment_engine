@@ -155,7 +155,7 @@ async def inject_sota(client_name: str, findings: dict) -> dict:
     return findings
 
 
-async def main():
+async def main(argv: list[str] | None = None) -> None:
     """Orchestrates the technical research enrichment process from the command line.
 
     This asynchronous function serves as the main entry point for the script. It
@@ -179,7 +179,7 @@ async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--findings-path", required=True)
     parser.add_argument("--client", required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     findings_path = Path(args.findings_path)
     findings = load_json(findings_path)

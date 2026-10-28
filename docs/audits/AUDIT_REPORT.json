@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793226601,
+  "timestamp": 1793226981,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -10,8 +10,8 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 428,
-        "clean_files": 428,
+        "scanned_files": 430,
+        "clean_files": 430,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -35,11 +35,11 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 44280,
-        "test_sloc": 17320,
-        "test_to_code_ratio": 0.39,
+        "prod_sloc": 44277,
+        "test_sloc": 17607,
+        "test_to_code_ratio": 0.4,
         "maintainability_index_sei": 33.2,
-        "typed_functions_pct": 89.2,
+        "typed_functions_pct": 89.4,
         "docstring_coverage_pct": 81.6,
         "max_cognitive_complexity": 246,
         "rango_d_functions_count": 0,
@@ -850,7 +850,7 @@
         "mutants_tested": 6,
         "mutants_killed": 6,
         "mutation_score_pct": 100.0,
-        "paired_modules_count": 39
+        "paired_modules_count": 41
       },
       "findings": []
     },
@@ -951,7 +951,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 327,
+        "scanned_files": 329,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -965,7 +965,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 327,
+        "scanned_files": 329,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -985,9 +985,9 @@
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
         "p50_latency_ms": 1.36,
-        "p95_latency_ms": 109.98,
-        "p99_latency_ms": 181.08,
-        "tail_amplification_ratio": 133.15,
+        "p95_latency_ms": 80.08,
+        "p99_latency_ms": 181.53,
+        "tail_amplification_ratio": 133.48,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -1028,7 +1028,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 361,
+        "scanned_files": 363,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -1038,11 +1038,11 @@
       "score_pct": 99.8,
       "passed": true,
       "metrics": {
-        "files_scanned": 356,
-        "inline_rationale_score": 99.8,
+        "files_scanned": 358,
+        "inline_rationale_score": 99.7,
         "contract_coverage_score": 99.7,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 6,
+        "comment_smells_count": 7,
         "missing_docstrings_count": 4,
         "cqi_score": 99.8,
         "grade": "A+",
@@ -1071,7 +1071,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 647,
+          "line_number": 649,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -1080,7 +1080,16 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1120,
+          "line_number": 1030,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1116,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
