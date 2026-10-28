@@ -451,8 +451,8 @@ async def run_pipeline():
                     with open(findings_target, "r", encoding="utf-8-sig") as vf:
                         json.load(vf)
                     break
-                except Exception:
-                    pass
+                except (OSError, json.JSONDecodeError, ValueError) as ex:
+                    logger.debug(f"[Pipeline] Polling de findings_target en curso: {ex}")
             await asyncio.sleep(0.5)
     else:
         print(

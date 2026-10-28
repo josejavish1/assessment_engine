@@ -87,8 +87,8 @@ class FinancialScaleCalibrator:
                             "CHF": "CHF",
                             "EUR": "€",
                         }.get(target_currency, "€")
-            except Exception:
-                pass
+            except (OSError, json.JSONDecodeError, KeyError, AttributeError) as ex:
+                logger.debug(f"[Calibrator] Error leyendo client_intelligence opcional: {ex}")
 
         cid_tokens = client_id.lower().replace("-", "_").split("_")
         if "usd" in cid_tokens or "usa" in cid_tokens:

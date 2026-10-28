@@ -152,7 +152,8 @@ def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}") -> 
     1. SOBRIEDAD EXTREMA: Elimina cualquier rastro de lenguaje emocional o impreciso.
     2. PRESERVACIÓN DE EVIDENCIA: Es CRÍTICO que mantengas todos los 'fragment_id' asociados a cada hallazgo y fortaleza. No los borres.
     3. COHERENCIA ESTRATÉGICA: Asegura que los riesgos identificados en los pilares se reflejen correctamente en el 'assessment_summary'.
-    4. FOCO EN VALOR: Reescribe las iniciativas para que suenen como inversiones estratégicas, no solo tareas técnicas.
+    4. PRINCIPIO MECE Y CONSOLIDACIÓN: FUSIONA iniciativas solapadas o redundantes dentro del mismo pilar. Cada pilar debe tener entre 1 y máximo 2 iniciativas consolidadas y mutuamente excluyentes (MECE). PROHIBIDO generar múltiples proyectos que aborden la misma necesidad técnica con diferente redacción (ej: no generes validación continua y pruebas manuales separadas para el mismo DCI).
+    5. TITULACIÓN EXCLUSIVAMENTE EN ESPAÑOL: Todos los títulos de iniciativas deben estar redactados estrictamente en ESPAÑOL con lenguaje formal y ejecutivo (prohibido mantener títulos en inglés).
 
     ESTRUCTURA DE SALIDA (MANDATORIA):
     Debes devolver un JSON con la estructura EXACTA del input, incluyendo la lista 'pillar_findings' completa.
@@ -288,7 +289,7 @@ def get_technical_analyst_prompt(
       "elicited_tef_score": 3, // Integer del 1 al 5 que califica la frecuencia del evento de amenaza (TEF) según la severidad observada
       "elicited_lm_score": 3, // Integer del 1 al 5 que califica la magnitud de pérdida (LM) en caso de que el riesgo se materialice
       "initiatives": [
-          {{ "title": "string", "rationale": "string", "horizon": "string" }}
+          {{ "title": "string exclusivamente en español (máx 2 iniciativas MECE)", "rationale": "string en español", "horizon": "string" }}
       ]
     }}
     ATENCIÓN: Si no hay un fragmento claro para la fortaleza o la brecha, deja el fragment_id como nulo.

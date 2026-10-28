@@ -597,3 +597,11 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
         None,
         description="The consolidated Annualized Loss Expectancy (ALE), denominated in Euros (EUR).",
     )
+    total_fair_p90: Optional[float] = Field(
+        None,
+        description="The consolidated Conditional Value-at-Risk (CVaR / P90), denominated in Euros (EUR).",
+    )
+    total_fair_max: Optional[float] = Field(
+        None,
+        description="The maximum plausible annual loss (P99), denominated in Euros (EUR).",
+    )

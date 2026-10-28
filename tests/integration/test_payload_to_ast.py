@@ -149,3 +149,21 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     assert has_risk_tables, (
         "FAIR CSV risk matrix was not compiled into TableNode in AST."
     )
+
+
+def test_systemic_risk_bullets_mutation_gate() -> None:
+    """Verify that systemic risk bullet formatters rigorously evaluate relational thresholds."""
+    from assessment_engine.adapters.compilers.payload_to_ast import (
+        _build_criticality_bullet,
+        _build_dii_bullet,
+        _build_regulatory_bullet,
+    )
+
+    node_dii = _build_dii_bullet(5.0)
+    assert "Alta Estabilidad" in node_dii.text
+
+    node_crit = _build_criticality_bullet(90.0)
+    assert "Extrema" in node_crit.text
+
+    node_reg = _build_regulatory_bullet(85.0)
+    assert "Crítica" in node_reg.text

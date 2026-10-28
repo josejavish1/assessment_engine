@@ -604,7 +604,15 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     initiatives = p_find.get("candidate_initiatives", [])
                     if initiatives:
                         sota_projects = []
+                        seen_topics = set()
                         for idx, init in enumerate(initiatives):
+                            raw_title = init.get("title", f"Iniciativa Estratégica {idx + 1}").strip()
+                            key_words = [w for w in raw_title.lower().split() if len(w) > 3 and w not in ["iniciativa", "programa", "proyecto", "para"]]
+                            topic_sig = tuple(sorted(key_words[:3])) if key_words else (raw_title,)
+                            if topic_sig in seen_topics:
+                                continue
+                            seen_topics.add(topic_sig)
+
                             h_val = str(init.get("horizon", "")).lower()
                             p_val = str(init.get("priority", "")).lower()
                             if "short" in h_val or "quick" in h_val or "h1" in h_val or p_val == "crítica":
@@ -616,9 +624,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
                             sota_projects.append(
                                 {
-                                    "name": init.get(
-                                        "title", f"Iniciativa Estratégica {idx + 1}"
-                                    ),
+                                    "name": raw_title,
                                     "transformation_typology": init.get(
                                         "typology", "Core Modernization"
                                     ),
@@ -632,7 +638,10 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                                     "program_id": None,
                                 }
                             )
-                        p_analysis["projects_todo"] = sota_projects
+                            if len(sota_projects) >= 2:
+                                break
+                        from assessment_engine.infrastructure.deterministic_enricher import MeceClusteringEngine
+                        p_analysis["projects_todo"] = MeceClusteringEngine.consolidate_pillar_projects(sota_projects, max_projects=2)
                     break
 
     # Synchronize the processed payload with the master knowledge graph.
@@ -933,34 +942,30 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
             )
             if enrichment_data:
                 try:
-                    rates = rate_data.get("tarifas_hora", {})
-                    margin = rate_data.get("margenes", {}).get("consultoria", 0.45)
-
-                    total_cost = 0.0
-                    for task in enrichment_data.get("wbs_breakdown", []):
-                        profile = task.get("required_profile", "experto")
-                        hours = task.get("estimated_hours", 0)
-                        rate = rates.get(
-                            profile, 58
-                        )  # If the primary model fails, reroute the request to the 'experto' model configuration as a fallback.
-                        total_cost += hours * rate
-
-                    sell_price = total_cost / (1 - margin)
-                    enrichment_data["opex_estimate"] = (
-                        f"{sell_price:,.2f} €".replace(",", "X")
-                        .replace(".", ",")
-                        .replace("X", ".")
+                    from assessment_engine.infrastructure.deterministic_enricher import (
+                        DeterministicFinOpsEngine,
+                        LinguisticLinter,
                     )
+                    wbs = enrichment_data.get("wbs_breakdown", [])
+                    p_name = proj.get("name", "")
+                    p_obj = proj.get("tech_objective", "")
+                    p_sz = proj.get("sizing", "M")
 
-                    sizing = proj.get("sizing", "M").upper()
-                    if sizing in ["L", "XL"]:
-                        enrichment_data["capex_estimate"] = (
-                            "~150.000,00 € (Estimación paramétrica de licenciamiento Enterprise / Nodos físicos)"
-                        )
+                    opex_str, capex_str = DeterministicFinOpsEngine.calculate_project_costs(
+                        wbs_tasks=wbs,
+                        rate_card=rate_data,
+                        project_name=p_name,
+                        tech_objective=p_obj,
+                        sizing=p_sz,
+                    )
+                    enrichment_data["opex_estimate"] = opex_str
+
+                    # Respect LLM CapEx only if non-empty, non-cloned and specific; otherwise apply deterministic accounting
+                    dynamic_capex = enrichment_data.get("capex_estimate")
+                    if dynamic_capex and dynamic_capex.strip() and "150.000" not in dynamic_capex and len(dynamic_capex) > 10:
+                        enrichment_data["capex_estimate"] = dynamic_capex.strip()
                     else:
-                        enrichment_data["capex_estimate"] = (
-                            "Bajo / Nulo (Suscripciones cloud menores a 20.000€)"
-                        )
+                        enrichment_data["capex_estimate"] = capex_str
 
                 except Exception as finops_err:
                     print(f"⚠️ Error calculando FinOps matemático: {finops_err}")
@@ -970,7 +975,8 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
                     and enrichment_data["commercial_name"]
                 ):
                     old_name = proj["name"]
-                    new_name = enrichment_data["commercial_name"]
+                    from assessment_engine.infrastructure.deterministic_enricher import LinguisticLinter
+                    new_name = LinguisticLinter.sanitize_title(enrichment_data["commercial_name"])
                     proj["name"] = new_name
 
                     #
