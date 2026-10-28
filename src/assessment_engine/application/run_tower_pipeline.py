@@ -443,8 +443,17 @@ async def run_pipeline():
             env,
             "Run executive refiner",
         )
-        print("[System] Waiting for findings.json to be physically saved on disk...")
-        await asyncio.sleep(2.0)
+        # Verify findings.json is physically written and valid JSON on disk before proceeding
+        findings_target = case_dir / "findings.json"
+        for _ in range(10):
+            if findings_target.exists() and findings_target.stat().st_size > 0:
+                try:
+                    with open(findings_target, "r", encoding="utf-8-sig") as vf:
+                        json.load(vf)
+                    break
+                except Exception:
+                    pass
+            await asyncio.sleep(0.5)
     else:
         print(
             "[System] [Cache Bypass] Findings and technical research already generated. Skipping Analyst Chain."
@@ -480,7 +489,7 @@ async def run_pipeline():
             )
         except Exception as e:
             print(f"⚠️ Fallo crítico en Blueprint: {e}")
-            return
+            raise RuntimeError(f"Fallo crítico en Blueprint: {e}") from e
     else:
         print(
             "⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call."
