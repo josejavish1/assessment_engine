@@ -11,31 +11,33 @@ def _sequence_single_project(proj: dict[str, Any]) -> None:
     typology = str(proj.get("transformation_typology", "")).lower()
     sizing = str(proj.get("sizing", "")).upper()
 
-    is_foundation = (
-        "estrategia" in name_low
-        or "strategy" in name_low
-        or "adopción" in name_low
-        or "adoption" in name_low
-        or "governance" in typology
-        or "tactical" in typology
-        or sizing == "S"
+    is_foundation_plan = (
+        "adopción de plataforma" in name_low
+        or "estrategia de adopción" in name_low
+        or "container adoption" in name_low
+        or "adoption strategy" in name_low
     )
-    is_platform_or_core = (
-        "platform" in name_low
-        or "idp" in name_low
+    is_platform_pilot = (
+        "plataforma interna de desarrollo" in name_low
+        or "piloto" in name_low
+        or "pilot" in name_low
         or "kubernetes" in name_low
-        or "core" in typology
-        or "platform engineering" in typology
-        or sizing in ["M", "L", "XL"]
+        or "eks" in name_low
     )
 
-    if is_foundation and sizing in ["S", "M"]:
+    if is_foundation_plan:
+        proj["duration"] = "Horizonte 1 - Fase de Arranque (Mes 1-2)"
+        proj["tech_objective"] = (
+            "Establecer las directrices operativas, de gobernanza, de costes y de seguridad para cargas de contenedores antes de iniciar desarrollos técnicos de IDP."
+        )
+    elif is_platform_pilot:
+        proj["duration"] = "Horizonte 2 (Mes 3-12)"
+    elif sizing == "S" or "tactical" in typology or "quick" in typology:
         proj["duration"] = "H1 (Mes 1-3)"
-    elif is_platform_or_core:
-        if sizing in ["L", "XL"]:
-            proj["duration"] = "H3 (Mes 12-24)"
-        else:
-            proj["duration"] = "H2 (Mes 3-12)"
+    elif sizing in ["L", "XL"] or "strategic" in typology:
+        proj["duration"] = "H3 (Mes 12-24)"
+    else:
+        proj["duration"] = "H2 (Mes 3-12)"
 
 
 class SequencingPolicy(BaseSovereignPolicy):
