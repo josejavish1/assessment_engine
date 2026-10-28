@@ -172,8 +172,8 @@ def _check_echo_smell(
         return None
     overlap = c_tokens & code_tokens
     containment = len(overlap) / len(c_tokens)
-    has_substantive = any(len(w) >= 6 and w in next_code.lower() for w in c_tokens)
-    if containment < 0.20 and _compute_jaccard_similarity(c_tokens, code_tokens) < 0.15 and not has_substantive:
+    jaccard = _compute_jaccard_similarity(c_tokens, code_tokens)
+    if containment < 0.50 and jaccard < 0.35:
         return None
     return AuditFinding(
         category="CODE_HYGIENE",
@@ -267,7 +267,8 @@ def _extract_claimed_raises(docstring: str) -> list[str]:
 
     claimed: list[str] = []
     for line in raises_match.group(1).splitlines():
-        m = re.match(r"^[ \t]*([A-Za-z0-9_]+)", line)
+        # Google format requires the exception identifier followed by a colon (e.g., 'ValueError: If ...')
+        m = re.match(r"^[ \t]*([A-Za-z0-9_]+)\s*:", line)
         if m and m.group(1) not in ("Raises", "Throws", "Args", "Returns"):
             claimed.append(m.group(1))
     return claimed
