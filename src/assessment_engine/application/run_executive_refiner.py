@@ -17,7 +17,6 @@ from assessment_engine.domain.prompts.intelligence_prompts import (
     get_tower_refiner_prompt,
 )
 from assessment_engine.infrastructure.ai_client import run_agent
-from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 from assessment_engine.infrastructure.governance import (
     SecurityIntegrityViolation,
 )
@@ -83,52 +82,10 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     )
 
 
-async def main():
-    """Orchestrates the end-to-end refinement and normalization of executive findings.
-
-    This function serves as the main asynchronous entry point for the script, processing
-    client findings through an LLM-based service and performing comprehensive
-    post-processing to ensure data integrity and schema conformance. The process
-    involves parsing command-line arguments, loading the source data, invoking the
-    refinement service, and then applying a series of data preservation and
-    normalization rules before overwriting the original file with the result.
-
-    Post-processing is divided into two main stages:
-    1.  **Sovereign Data Preservation**: Key data structures from the original
-        input (e.g., `_generation_metadata`, `meta`, `heatmap`, `visuals`) are
-        re-injected into the refined output. This mitigates the risk of data
-        loss or hallucination-induced corruption for structured data not
-        intended for modification by the refinement service.
-    2.  **Schema Normalization**: The refined data structure is rigorously validated
-        and conformed to a canonical schema. This includes adding default values,
-        restructuring nested objects, renaming keys for consistency, and enforcing
-        correct data types across sections like `burning_platform`,
-        `execution_roadmap`, and `executive_decisions`.
-
-    Args:
-        The script is controlled via command-line arguments:
-        --findings-path (str): The file path to the input JSON containing client
-            findings. This file will be overwritten with the refined output.
-        --client (str): The client identifier used to provide context to the
-            refinement service.
-
-    Raises:
-        FileNotFoundError: If the file specified by `--findings-path` does not exist.
-        json.JSONDecodeError: If the input findings file contains malformed JSON.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--findings-path", required=True)
-    parser.add_argument("--client", required=True)
-    args = parser.parse_args()
-
-    findings_path = Path(args.findings_path)
-    findings = load_json(findings_path)
-
-    print(f"🚀 Iniciando Refinado Ejecutivo para {args.client}...")
-    refined = await refine_findings(args.client, findings)
-
-    # Sovereign Quality Assurance: Re-merge pristine, unmodified fields post-LLM processing to mitigate the risk of data loss or hallucination-induced corruption.
-    # Re-inject structured data blocks that are not intended for LLM mutation, ensuring their integrity is preserved.
+def _preserve_sovereign_blocks(
+    refined: dict[str, Any], raw_findings: dict[str, Any]
+) -> None:
+    """Re-merge pristine, unmodified fields post-LLM processing to mitigate corruption."""
     for key in [
         "_generation_metadata",
         "meta",
@@ -137,16 +94,17 @@ async def main():
         "visuals",
         "tower_bottom_lines",
     ]:
-        if key in findings and key not in refined:
-            refined[key] = findings[key]
+        if key in raw_findings and key not in refined:
+            refined[key] = raw_findings[key]
 
-    # Preserve the integrity of the heatmap data structure, a critical input for the global radar chart visualization.
-    if "heatmap" in findings and (
+    if "heatmap" in raw_findings and (
         not refined.get("heatmap") or len(refined.get("heatmap", [])) == 0
     ):
-        refined["heatmap"] = findings["heatmap"]
+        refined["heatmap"] = raw_findings["heatmap"]
 
-    # Section: Preventative Schema Normalization in the Refined Layer
+
+def _normalize_burning_platform(refined: dict[str, Any]) -> None:
+    """Normalize burning platform root causes into list format."""
     if "burning_platform" in refined and isinstance(refined["burning_platform"], list):
         for item in refined["burning_platform"]:
             if (
@@ -156,9 +114,14 @@ async def main():
             ):
                 item["root_causes"] = [item["root_causes"]]
 
+
+def _normalize_tower_bottom_lines(
+    refined: dict[str, Any], raw_findings: dict[str, Any]
+) -> None:
+    """Ensure all tower bottom lines have scores, bands, and status colors."""
     original_tbl = {
         orig.get("tower_id") or orig.get("tower_name"): orig
-        for orig in findings.get("tower_bottom_lines", [])
+        for orig in raw_findings.get("tower_bottom_lines", [])
         if isinstance(orig, dict)
     }
 
@@ -179,6 +142,9 @@ async def main():
                         "amber" if float(item.get("score", 0.0)) < 3.0 else "green",
                     )
 
+
+def _normalize_target_vision(refined: dict[str, Any]) -> None:
+    """Normalize keys in target vision evolution principles and strategic pillars."""
     if "target_vision" in refined and isinstance(refined["target_vision"], dict):
         target_v = refined["target_vision"]
         if "evolution_principles" in target_v and isinstance(
@@ -198,133 +164,127 @@ async def main():
                 if isinstance(item, dict) and "title" in item and "pillar" not in item:
                     item["pillar"] = item["title"]
 
-    if "execution_roadmap" in refined and isinstance(
-        refined["execution_roadmap"], dict
+
+def _normalize_roadmap_horizon_item(item: Any, h_key: str) -> Any:
+    """Normalize fields, timing and duration for a single roadmap horizon initiative."""
+    if isinstance(item, str):
+        item = {"title": item}
+    if not isinstance(item, dict):
+        return item
+
+    item_copy = item.copy()
+
+    # Stage 1: Consolidate program field
+    if "program" not in item_copy or not item_copy["program"]:
+        item_copy["program"] = (
+            item_copy.get("program_id")
+            or item_copy.get("program_name")
+            or item_copy.get("program_title")
+            or item_copy.get("program")
+            or ""
+        )
+    item_copy.pop("program_id", None)
+
+    # Stage 2: Consolidate business case
+    if "business_case" not in item_copy or not item_copy["business_case"]:
+        item_copy["business_case"] = (
+            item_copy.get("objective")
+            or item_copy.get("description")
+            or item_copy.get("business_impact")
+            or item_copy.get("impact")
+            or "Mitigación de deuda técnica."
+        )
+    item_copy.pop("objective", None)
+
+    # Stage 3: Normalize start_month
+    start_defaults = {
+        "quick_wins_0_3_months": 1,
+        "year_1_3_12_months": 3,
+        "year_2_12_24_months": 12,
+        "year_3_24_36_months": 24,
+    }
+    if "start_month" not in item_copy or item_copy["start_month"] == 0:
+        item_copy["start_month"] = start_defaults.get(h_key, 1)
+
+    # Stage 4: Normalize duration_months
+    duration_defaults = {
+        "quick_wins_0_3_months": 3,
+        "year_1_3_12_months": 9,
+        "year_2_12_24_months": 12,
+        "year_3_24_36_months": 12,
+    }
+    if "duration_months" not in item_copy or item_copy["duration_months"] == 0:
+        item_copy["duration_months"] = duration_defaults.get(h_key, 6)
+
+    return item_copy
+
+
+def _normalize_programs_list(roadmap: dict[str, Any]) -> None:
+    """Normalize program names and descriptions within execution roadmap."""
+    if "programs" not in roadmap or not isinstance(roadmap["programs"], list):
+        return
+    normalized_programs = []
+    for p in roadmap["programs"]:
+        if isinstance(p, dict):
+            p_copy = p.copy()
+            if not p_copy.get("description"):
+                p_copy["description"] = (
+                    p_copy.get("name")
+                    or p_copy.get("id")
+                    or "Programa de transformación tecnológica."
+                )
+            normalized_programs.append(p_copy)
+        else:
+            normalized_programs.append(p)
+    roadmap["programs"] = normalized_programs
+
+
+def _normalize_horizons_dict(roadmap: dict[str, Any]) -> None:
+    """Normalize standard temporal horizons and ensure lists are populated."""
+    if "horizons" not in roadmap or not roadmap["horizons"]:
+        roadmap["horizons"] = {
+            "quick_wins_0_3_months": [],
+            "year_1_3_12_months": [],
+            "year_2_12_24_months": [],
+            "year_3_24_36_months": [],
+        }
+
+    if not isinstance(roadmap.get("horizons"), dict):
+        return
+    h_dict = roadmap["horizons"]
+    if "quick_wins_0_6_months" in h_dict and "quick_wins_0_3_months" not in h_dict:
+        h_dict["quick_wins_0_3_months"] = h_dict.pop("quick_wins_0_6_months")
+    if "year_1_6_12_months" in h_dict and "year_1_3_12_months" not in h_dict:
+        h_dict["year_1_3_12_months"] = h_dict.pop("year_1_6_12_months")
+
+    for h_key in [
+        "quick_wins_0_3_months",
+        "year_1_3_12_months",
+        "year_2_12_24_months",
+        "year_3_24_36_months",
+    ]:
+        if h_key not in h_dict or h_dict[h_key] is None:
+            h_dict[h_key] = []
+        if isinstance(h_dict[h_key], list):
+            h_dict[h_key] = [
+                _normalize_roadmap_horizon_item(item, h_key) for item in h_dict[h_key]
+            ]
+
+
+def _normalize_execution_roadmap(refined: dict[str, Any]) -> None:
+    """Normalize program metadata and horizon timing across execution roadmap."""
+    if not (
+        "execution_roadmap" in refined
+        and isinstance(refined["execution_roadmap"], dict)
     ):
-        roadmap = refined["execution_roadmap"]
+        return
+    roadmap = refined["execution_roadmap"]
+    _normalize_programs_list(roadmap)
+    _normalize_horizons_dict(roadmap)
 
-        # Normalize the `programs` data structure to conform to the canonical schema.
-        if "programs" in roadmap and isinstance(roadmap["programs"], list):
-            normalized_programs = []
-            for p in roadmap["programs"]:
-                if isinstance(p, dict):
-                    p_copy = p.copy()
-                    if "description" not in p_copy or not p_copy["description"]:
-                        p_copy["description"] = (
-                            p_copy.get("name")
-                            or p_copy.get("id")
-                            or "Programa de transformación tecnológica."
-                        )
-                    normalized_programs.append(p_copy)
-                else:
-                    normalized_programs.append(p)
-            roadmap["programs"] = normalized_programs
 
-        # Validate the existence of the `horizons` data structure, initializing if absent to prevent downstream null pointer exceptions.
-        if "horizons" not in roadmap or not roadmap["horizons"]:
-            roadmap["horizons"] = {
-                "quick_wins_0_3_months": [],
-                "year_1_3_12_months": [],
-                "year_2_12_24_months": [],
-                "year_3_24_36_months": [],
-            }
-
-        if "horizons" in roadmap and isinstance(roadmap["horizons"], dict):
-            h_dict = roadmap["horizons"]
-            if (
-                "quick_wins_0_6_months" in h_dict
-                and "quick_wins_0_3_months" not in h_dict
-            ):
-                h_dict["quick_wins_0_3_months"] = h_dict["quick_wins_0_6_months"]
-                del h_dict["quick_wins_0_6_months"]
-            if "year_1_6_12_months" in h_dict and "year_1_3_12_months" not in h_dict:
-                h_dict["year_1_3_12_months"] = h_dict["year_1_6_12_months"]
-                del h_dict["year_1_6_12_months"]
-
-            for h_key in [
-                "quick_wins_0_3_months",
-                "year_1_3_12_months",
-                "year_2_12_24_months",
-                "year_3_24_36_months",
-            ]:
-                if h_key not in h_dict or h_dict[h_key] is None:
-                    h_dict[h_key] = []
-
-                if isinstance(h_dict[h_key], list):
-                    normalized_list = []
-                    for item in h_dict[h_key]:
-                        if isinstance(item, str):
-                            item = {"title": item}
-
-                        if isinstance(item, dict):
-                            item_copy = item.copy()
-
-                            # Stage 1: Consolidate program-related fields into a unified `program` object.
-                            if "program" not in item_copy or not item_copy["program"]:
-                                p_val = (
-                                    item_copy.get("program_id")
-                                    or item_copy.get("program_name")
-                                    or item_copy.get("program_title")
-                                    or item_copy.get("program")
-                                    or ""
-                                )
-                                item_copy["program"] = p_val
-                            if "program_id" in item_copy:
-                                del item_copy["program_id"]
-
-                            # Stage 2: Consolidate business case fields into a unified `business_case` object.
-                            if (
-                                "business_case" not in item_copy
-                                or not item_copy["business_case"]
-                            ):
-                                bc_val = (
-                                    item_copy.get("objective")
-                                    or item_copy.get("description")
-                                    or item_copy.get("business_impact")
-                                    or item_copy.get("impact")
-                                    or "Mitigación de deuda técnica."
-                                )
-                                item_copy["business_case"] = bc_val
-                            if "objective" in item_copy:
-                                del item_copy["objective"]
-
-                            # Stage 3: Normalize `start_month`, applying a default value if the field is null or zero to ensure valid temporal calculations.
-                            if (
-                                "start_month" not in item_copy
-                                or item_copy["start_month"] == 0
-                            ):
-                                if h_key == "quick_wins_0_3_months":
-                                    item_copy["start_month"] = 1
-                                elif h_key == "year_1_3_12_months":
-                                    item_copy["start_month"] = 3
-                                elif h_key == "year_2_12_24_months":
-                                    item_copy["start_month"] = 12
-                                elif h_key == "year_3_24_36_months":
-                                    item_copy["start_month"] = 24
-                                else:
-                                    item_copy["start_month"] = 1
-
-                            # Stage 4: Normalize `duration_months`, applying a default value if the field is null or zero to prevent invalid temporal calculations.
-                            if (
-                                "duration_months" not in item_copy
-                                or item_copy["duration_months"] == 0
-                            ):
-                                if h_key == "quick_wins_0_3_months":
-                                    item_copy["duration_months"] = 3
-                                elif h_key == "year_1_3_12_months":
-                                    item_copy["duration_months"] = 9
-                                elif h_key == "year_2_12_24_months":
-                                    item_copy["duration_months"] = 12
-                                elif h_key == "year_3_24_36_months":
-                                    item_copy["duration_months"] = 12
-                                else:
-                                    item_copy["duration_months"] = 6
-
-                            normalized_list.append(item_copy)
-                        else:
-                            normalized_list.append(item)
-                    h_dict[h_key] = normalized_list
-
+def _normalize_executive_decisions(refined: dict[str, Any]) -> None:
+    """Normalize executive decisions into standard dict with immediate_decisions list."""
     if "executive_decisions" in refined and isinstance(
         refined["executive_decisions"], list
     ):
@@ -337,8 +297,36 @@ async def main():
         if "immediate_decisions" not in refined["executive_decisions"]:
             refined["executive_decisions"]["immediate_decisions"] = []
 
+
+def postprocess_refined_findings(
+    refined: dict[str, Any], raw_findings: dict[str, Any]
+) -> dict[str, Any]:
+    """Execute complete post-processing pipeline: preserve sovereign blocks and normalize schema conformance."""
+    _preserve_sovereign_blocks(refined, raw_findings)
+    _normalize_burning_platform(refined)
+    _normalize_tower_bottom_lines(refined, raw_findings)
+    _normalize_target_vision(refined)
+    _normalize_execution_roadmap(refined)
+    _normalize_executive_decisions(refined)
+    return refined
+
+
+async def main(argv: list[str] | None = None) -> None:
+    """Orchestrates the end-to-end refinement and normalization of executive findings."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--findings-path", required=True)
+    parser.add_argument("--client", required=True)
+    args = parser.parse_args(argv)
+
+    findings_path = Path(args.findings_path)
+    findings = load_json(findings_path)
+
+    print(f"🚀 Iniciando Refinado Ejecutivo para {args.client}...")
+    refined = await refine_findings(args.client, findings)
+    final_refined = postprocess_refined_findings(refined, findings)
+
     findings_path.write_text(
-        json.dumps(refined, indent=2, ensure_ascii=False), encoding="utf-8-sig"
+        json.dumps(final_refined, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
     print(f"✅ Hallazgos refinados con éxito: {findings_path}")
 
