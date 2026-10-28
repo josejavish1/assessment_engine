@@ -15,8 +15,8 @@ class ConclusionDraft(BaseDraftModel):
     section_title: str = "Conclusion"
     final_assessment: str
     executive_message: str
-    priority_focus_areas: List[str]
-    closing_statement: str
+    priority_focus_areas: List[str] = []
+    closing_statement: str = ""
     notes_for_reviewer: List[str] = []
 
     def get_forbidden_phrases(self) -> List[str]:
