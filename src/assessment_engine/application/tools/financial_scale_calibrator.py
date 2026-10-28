@@ -63,19 +63,43 @@ class FinancialScaleCalibrator:
         case_dir.mkdir(parents=True, exist_ok=True)
         output_path = case_dir / "custom_risk_profile.json"
 
-        # Try to resolve client preferred currency from context
+        # Try to resolve client preferred country and currency from intelligence dossier
         target_currency = "EUR"
         target_symbol = "€"
         client_country = "España"
-        if "usd" in client_id.lower() or "us" in client_id.lower() or "global" in raw_industry.lower():
+
+        intel_path = Path(f"working/{client_id}/client_intelligence.json")
+        if not intel_path.exists():
+            client_base = client_id.split("_")[0]
+            intel_path = Path(f"working/{client_id}/{client_base}/client_intelligence.json")
+
+        if intel_path.exists():
+            try:
+                with open(intel_path, "r", encoding="utf-8-sig") as inf:
+                    intel_meta = json.load(inf).get("profile", {})
+                    if intel_meta.get("country"):
+                        client_country = intel_meta["country"]
+                    if intel_meta.get("currency"):
+                        target_currency = intel_meta["currency"].upper()
+                        target_symbol = {
+                            "USD": "$",
+                            "GBP": "£",
+                            "CHF": "CHF",
+                            "EUR": "€",
+                        }.get(target_currency, "€")
+            except Exception:
+                pass
+
+        cid_tokens = client_id.lower().replace("-", "_").split("_")
+        if "usd" in cid_tokens or "usa" in cid_tokens:
             target_currency = "USD"
             target_symbol = "$"
             client_country = "Estados Unidos"
-        elif "gbp" in client_id.lower() or "uk" in client_id.lower():
+        elif "gbp" in cid_tokens or "uk" in cid_tokens or "gbr" in cid_tokens:
             target_currency = "GBP"
             target_symbol = "£"
             client_country = "Reino Unido"
-        elif "chf" in client_id.lower() or "switzerland" in client_id.lower():
+        elif "chf" in cid_tokens or "che" in cid_tokens or "switzerland" in cid_tokens:
             target_currency = "CHF"
             target_symbol = "CHF"
             client_country = "Suiza"
@@ -228,17 +252,19 @@ class FinancialScaleCalibrator:
             # Validate and parse response
             calibration = DynamicRiskCalibration.model_validate_json(struct_result.text)
             
-            # --- SOTA RISK GUARDRAIL (Anti-Hallucination Clamp) ---
+            # --- SOTA RISK GUARDRAIL (Scale-Proportional P&L Bounds) ---
             # Hourly downtime cost is realistically bounded relative to annual turnover.
-            # In corporate B2B environments, an IT outage affects a subset of turnover, capped at 15-20% of hourly revenue.
-            company_hourly_revenue = calibration.annual_revenue_eur / 8760.0
-            max_realistic_hourly = min(35000.0, max(8000.0, company_hourly_revenue * 0.20))
+            company_hourly_revenue = max(1.0, calibration.annual_revenue_eur / 8760.0)
+            max_realistic_hourly = company_hourly_revenue * 1.0  # Max 100% of hourly revenue
+            min_realistic_hourly = max(1.0, company_hourly_revenue * 0.005)  # Min 0.5% of hourly revenue
             if calibration.hourly_downtime_cost_eur > max_realistic_hourly:
                 logger.warning(
                     f"⚠️ [Financial Calibrator] Clamping disproportionate hourly downtime cost ({calibration.hourly_downtime_cost_eur:,.2f} €) "
-                    f"to realistic guardrail ({max_realistic_hourly:,.2f} €)."
+                    f"to revenue ceiling ({max_realistic_hourly:,.2f} €)."
                 )
                 calibration.hourly_downtime_cost_eur = max_realistic_hourly
+            elif calibration.hourly_downtime_cost_eur < min_realistic_hourly:
+                calibration.hourly_downtime_cost_eur = min_realistic_hourly
 
             # Save the custom profile physically in the case folder
             with open(output_path, "w", encoding="utf-8-sig") as out_f:

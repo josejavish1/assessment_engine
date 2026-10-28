@@ -75,6 +75,10 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
         if not (has_scada and has_aiops):
             return payload
 
+        cloud_target = payload.get("document_meta", {}).get(
+            "cloud_provider", "la plataforma IoT corporativa"
+        )
+
         for p in pillars:
             for proj in p.get("projects_todo", []):
                 name = proj.get("name", "").lower()
@@ -87,7 +91,7 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
                 if "aiops" in name or "observabilidad predictiva" in name or "observabilidad" in name:
                     _patch_data_diode_deliverable(
                         proj,
-                        "Despliegue del gateway receptor del Diodo de Datos de OT para ingesta pasiva de telemetría en AWS IoT Core.",
+                        f"Despliegue del gateway receptor del Diodo de Datos de OT para ingesta pasiva de telemetría en {cloud_target}.",
                         " Toda la ingesta de telemetría en tiempo real de subestaciones y OT se canalizará de forma 100% pasiva y segura mediante diodos de datos unidireccionales.",
                     )
 

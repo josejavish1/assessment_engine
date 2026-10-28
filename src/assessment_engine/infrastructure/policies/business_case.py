@@ -55,12 +55,13 @@ class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
         pillars = payload.get("pillars_analysis", [])
         doc_lang = payload.get("document_meta", {}).get("language", "es").lower()
 
-        raw_frameworks = payload.get("document_meta", {}).get("regulatory_frameworks", [])
-        if isinstance(raw_frameworks, list):
-            cleaned_frameworks = [fw for fw in raw_frameworks if fw.upper() != "NIS2"]
-            reg_frameworks = ", ".join(cleaned_frameworks) if cleaned_frameworks else "DORA, ENS"
+        raw_frameworks = payload.get("document_meta", {}).get(
+            "regulatory_frameworks", []
+        )
+        if isinstance(raw_frameworks, list) and raw_frameworks:
+            reg_frameworks = ", ".join(raw_frameworks)
         else:
-            reg_frameworks = "DORA, ENS"
+            reg_frameworks = "ISO 27001, NIS2"
 
         for p in pillars:
             asis_findings = p.get("health_check_asis", [])

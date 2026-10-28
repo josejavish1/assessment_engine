@@ -613,14 +613,12 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 
                 # SOTA Actuarial Practice: Universal First-Principles Topological Attenuation
                 # Assets isolated behind physical or cryptographic air-gaps exhibit vastly reduced contact frequency (TEF).
-                AIR_GAP_KEYWORDS = [
-                    "air-gap", "airgap", "aislado", "segregado", "red aislada",
-                    "scada", "ics", "plc", "ot", "industrial", "planta",
-                    "mainframe", "cobol", "swift", "core bancario", "core network",
-                    "oss", "bss", "isolated backup", "bóveda aislada"
-                ]
                 isolation = cap_calibration.get("isolation", "STANDARD_HYBRID")
-                is_air_gapped = (isolation in ["AIR_GAPPED_OT", "ISOLATED_MAINFRAME"]) or any(k in text for k in AIR_GAP_KEYWORDS)
+                is_air_gapped = (
+                    isolation in ["AIR_GAPPED_OT", "ISOLATED_MAINFRAME"]
+                    or finding.get("network_zone") in ["AIR_GAPPED", "ISOLATED"]
+                    or cap_calibration.get("is_air_gapped") is True
+                )
                 if is_air_gapped:
                     tef_rates_base = tef_rates_base * 0.05
                     
