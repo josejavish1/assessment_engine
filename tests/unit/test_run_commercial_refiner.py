@@ -63,3 +63,30 @@ async def test_build_proactive_proposal_mock():
         assert "context_and_why" in proposal
         assert "solution_and_what" in proposal
         assert "scope_and_how" in proposal
+
+
+def test_extract_towers_catalog_lcr_killer(tmp_path: Path):
+    """Verify that extract_towers_catalog extracts initiatives with fallback objective and name fields."""
+    import json
+    from assessment_engine.application.run_commercial_refiner import extract_towers_catalog
+
+    t1_dir = tmp_path / "T1"
+    t1_dir.mkdir(parents=True)
+    bp_data = {
+        "pillars_analysis": [
+            {
+                "projects_todo": [
+                    {"name": "Proj1", "tech_objective": "Objetivo Tecnológico Solo"},
+                    {"initiative": "Proj2", "objective": "Objetivo Directo Solo"},
+                ]
+            }
+        ]
+    }
+    (t1_dir / "blueprint_t1_payload.json").write_text(json.dumps(bp_data), encoding="utf-8")
+
+    catalog = extract_towers_catalog(tmp_path)
+    inits = catalog["T1"]["initiatives"]
+    assert inits[0]["name"] == "Proj1"
+    assert inits[0]["objective"] == "Objetivo Tecnológico Solo"
+    assert inits[1]["name"] == "Proj2"
+    assert inits[1]["objective"] == "Objetivo Directo Solo"

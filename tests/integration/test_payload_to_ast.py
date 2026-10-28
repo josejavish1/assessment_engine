@@ -150,6 +150,15 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
         "FAIR CSV risk matrix was not compiled into TableNode in AST."
     )
 
+    # Invariante de aislamiento: is_critical por defecto es False (Aniquilador de mutante COR línea 195)
+    has_critical_note = any(
+        isinstance(node, ParagraphNode) and "Nota de Calibración de Sector" in node.text
+        for node in ast.nodes
+    )
+    assert not has_critical_note, (
+        "Compilación por defecto no debe inyectar la nota de sector crítico cuando is_critical es False."
+    )
+
 
 def test_systemic_risk_bullets_mutation_gate() -> None:
     """Verify that systemic risk bullet formatters rigorously evaluate relational thresholds."""

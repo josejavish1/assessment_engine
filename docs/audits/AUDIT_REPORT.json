@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793224159,
+  "timestamp": 1793224500,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -10,8 +10,8 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 423,
-        "clean_files": 423,
+        "scanned_files": 424,
+        "clean_files": 424,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -36,9 +36,9 @@
       "passed": true,
       "metrics": {
         "prod_sloc": 45063,
-        "test_sloc": 16738,
+        "test_sloc": 16805,
         "test_to_code_ratio": 0.37,
-        "maintainability_index_sei": 32.8,
+        "maintainability_index_sei": 32.9,
         "typed_functions_pct": 88.8,
         "docstring_coverage_pct": 81.7,
         "max_cognitive_complexity": 246,
@@ -960,7 +960,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 322,
+        "scanned_files": 323,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -974,7 +974,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 322,
+        "scanned_files": 323,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
@@ -993,10 +993,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 2.42,
-        "p95_latency_ms": 54.85,
-        "p99_latency_ms": 231.92,
-        "tail_amplification_ratio": 95.83,
+        "p50_latency_ms": 1.36,
+        "p95_latency_ms": 105.0,
+        "p99_latency_ms": 181.83,
+        "tail_amplification_ratio": 133.7,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -1037,7 +1037,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 356,
+        "scanned_files": 357,
         "hardcoded_issues": 0
       },
       "findings": []
@@ -1047,7 +1047,7 @@
       "score_pct": 99.8,
       "passed": true,
       "metrics": {
-        "files_scanned": 351,
+        "files_scanned": 352,
         "inline_rationale_score": 99.8,
         "contract_coverage_score": 99.7,
         "linguistic_sovereignty_score": 100.0,
