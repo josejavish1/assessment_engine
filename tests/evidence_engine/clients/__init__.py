@@ -1,1 +1,0 @@
-# This file makes the 'clients' directory a Python package for testing.

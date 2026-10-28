@@ -2,11 +2,18 @@ import hashlib
 import logging
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import docx
+from pydantic import ValidationError
 
 from assessment_engine.domain.schemas.evidence import EvidenceFragment, EvidenceLedger
+from assessment_engine.infrastructure.document_ai_client import DocumentAIClient
+from assessment_engine.infrastructure.parser_strategy import (
+    CloudParserStrategy,
+    LegacyParserStrategy,
+    ParserStrategy,
+)
 from assessment_engine.infrastructure.text_utils import slugify
 
 logger = logging.getLogger(__name__)
@@ -15,31 +22,43 @@ logger = logging.getLogger(__name__)
 class EvidenceEngine:
     r"""{'EvidenceEngine': "Manages the ingestion, parsing, and serialization of evidence fragments.\n\n    This class provides a pipeline for processing source documents (e.g., .docx,\n    .txt, .html) into discrete, content-addressable `EvidenceFragment` objects.\n    It maintains a persistent ledger of these fragments for a specific client,\n    handling deduplication based on content hashes. The engine can serialize the\n    entire collection of fragments into a formatted string suitable for use as\n    grounding context in Retrieval-Augmented Generation (RAG) systems.\n\n    Attributes:\n        client_id: The unique identifier for the client instance.\n        storage_dir: The root directory for storing the client's evidence ledger\n            and extracted media files.\n        ledger_path: The full path to the `evidence_vault.json` ledger file.\n        ledger: The in-memory representation of the evidence ledger, containing\n            all registered fragments.", '__init__': "Initializes the EvidenceEngine for a specific client.\n\n        Establishes the storage path for the client's data and attempts to load\n        an existing evidence ledger from disk. If no ledger is found, a new,\n        empty one is created in memory.\n\n        Args:\n            client_id: The unique identifier for the client.\n            storage_dir: The directory path for storing the evidence ledger and\n                any associated media files.", '_load_ledger': 'Loads the evidence ledger from disk or creates a new one.\n\n        Attempts to read and validate the `evidence_vault.json` file from the\n        configured storage path. If the file does not exist or contains invalid\n        data, a new, empty `EvidenceLedger` instance is returned.\n\n        Returns:\n            An `EvidenceLedger` instance, either loaded from disk or newly\n            initialized.', 'ingest_file': "Parses a source file into content fragments and adds them to the ledger.\n\n        Selects a parser based on the file's extension to decompose its content.\n        Each resulting fragment is registered in the evidence ledger. The use of\n        content-addressable identifiers provides implicit deduplication, ensuring\n        only new, unique fragments are added. The ledger is persisted to storage\n        upon successful completion.\n\n        Args:\n            file_path: The path to the source file to ingest.\n\n        Returns:\n            The number of new, unique fragments added to the ledger. Returns 0 if\n            the file type is unsupported or if all fragments from the file were\n            already present.\n\n        Raises:\n            FileNotFoundError: If the file specified by `file_path` does not exist.", '_parse_docx': 'Decomposes a `.docx` file into a list of `EvidenceFragment` objects.\n\n        Iterates through block-level items (paragraphs, tables) in document order,\n        maintaining a hierarchical context based on heading styles. It also\n        extracts all media assets (e.g., images) directly from the underlying\n        ZIP archive and creates placeholder fragments for them. Heuristics are\n        used to identify implicit headings (e.g., short, bolded lines).\n\n        Args:\n            path: The path to the `.docx` file.\n\n        Returns:\n            A list of `EvidenceFragment` objects representing the structured\n            content of the document.', '_parse_text': 'Parses a plaintext or Markdown file into a list of `EvidenceFragment` objects.\n\n        The method infers a document hierarchy by treating lines prefixed with\n        Markdown-style hash characters (`#`, `##`, etc.) as headings. All other\n        non-empty lines are treated as simple text content. This structure is\n        used to populate the location metadata for each created fragment.\n\n        Args:\n            path: The path to the `.txt` or `.md` file.\n\n        Returns:\n            A list of `EvidenceFragment` objects from the text content.', '_parse_html': 'Parses an HTML file into a list of `EvidenceFragment` objects.\n\n        This method uses BeautifulSoup4 to extract textual content from common\n        semantic tags (`h1`-`h3`, `p`, `li`). It first removes `<script>` and\n        `<style>` elements to isolate content. If BeautifulSoup4 is not\n        available, it falls back to parsing the file as raw text.\n\n        Args:\n            path: The path to the `.html` file.\n\n        Returns:\n            A list of `EvidenceFragment` objects extracted from the HTML content.', '_create_fragment': "Creates an `EvidenceFragment` from content and location metadata.\n\n        Generates a content hash (SHA256) for deduplication and a deterministic\n        UUIDv5 for stable identification. The UUID is derived from the source URI,\n        the fragment's hierarchical path, and its content hash, ensuring that\n        identical content in the same structural position yields the same ID.\n\n        Args:\n            content: The textual content of the fragment.\n            source_uri: The identifier of the source document.\n            location: A dictionary containing metadata about the fragment's\n                position and type within the source document.\n\n        Returns:\n            An initialized `EvidenceFragment` instance.", '_save_ledger': 'Persists the current evidence ledger to disk as a JSON file.', 'get_grounding_context': 'Serializes all registered fragments into a single string for LLM context.\n\n        This method compiles all evidence fragments from the ledger into a single,\n        newline-separated string. A header is added, and each subsequent line is\n        formatted as `[fragment_id] content`, which is an optimized format for\n        inclusion as grounding context in a language model prompt.\n\n        Returns:\n            A formatted string containing all evidence fragments prefixed with their\n            unique identifiers.'}."""
 
-    def __init__(self, client_id: str, storage_dir: Path):
-        """Initializes the EvidenceEngine for a specific client.
+    def __init__(
+        self,
+        client_id: Any = "generic_client",
+        storage_dir: Optional[Path] = None,
+        config: Optional[Dict[str, Any]] = None,
+    ):
+        """Initializes the EvidenceEngine for a specific client or configuration."""
+        if isinstance(client_id, dict) and storage_dir is None and config is None:
+            config = client_id
+            client_id = "generic_client"
 
-        Sets up instance attributes and loads the client's evidence ledger from disk.
-        The ledger is read from a file named 'evidence_vault.json' located within the
-        specified storage directory.
-
-        Args:
-            client_id (str): The unique identifier for the client.
-            storage_dir (pathlib.Path): The base directory for evidence storage.
-
-        Attributes:
-            client_id (str): The unique identifier for the client.
-            storage_dir (pathlib.Path): The base directory for evidence storage.
-            ledger_path (pathlib.Path): The direct path to the evidence ledger file.
-            ledger (dict): The deserialized evidence ledger loaded from the JSON file.
-
-        Raises:
-            IOError: If the ledger file cannot be found or read.
-            ValueError: If the ledger file contains malformed JSON.
-        """
-        self.client_id = client_id
-        self.storage_dir = storage_dir
-        self.ledger_path = storage_dir / "evidence_vault.json"
+        self.client_id = str(client_id)
+        self.storage_dir = storage_dir or Path(f"working/{self.client_id}")
+        self.ledger_path = self.storage_dir / "evidence_vault.json"
         self.ledger = self._load_ledger()
+        self._config = config
+        self._parser_strategy = self._create_parser_strategy(config)
+
+    def _create_parser_strategy(self, config: Optional[Dict[str, Any]] = None) -> Any:
+        cfg = config or {}
+        if not cfg:
+            from assessment_engine.infrastructure.config_loader import load_runtime_manifest
+            cfg = load_runtime_manifest() or {}
+        use_cloud = cfg.get("feature_flags", {}).get("evidence_engine_use_cloud_parser", False)
+        if use_cloud:
+            doc_ai = cfg.get("document_ai", {})
+            client = DocumentAIClient(
+                project_id=doc_ai.get("project_id", "default-project"),
+                location=doc_ai.get("location", "us"),
+                processor_id=doc_ai.get("processor_id", "default-processor"),
+            )
+            return CloudParserStrategy(client)
+        return LegacyParserStrategy()
+
+    def parse_document(self, file_content: bytes, mime_type: str) -> Dict[str, Any]:
+        """Parses a document using the configured strategy."""
+        return self._parser_strategy.parse(file_content, mime_type)
 
     def _load_ledger(self) -> EvidenceLedger:
         if self.ledger_path.exists():
@@ -47,8 +66,8 @@ class EvidenceEngine:
                 return EvidenceLedger.model_validate_json(
                     self.ledger_path.read_text(encoding="utf-8")
                 )
-            except Exception:
-                pass
+            except (ValidationError, OSError, ValueError) as ex:
+                logger.debug(f"[EvidenceEngine] Fallo al leer bóveda de evidencias: {ex}")
         return EvidenceLedger(client_id=self.client_id)
 
     def ingest_file(self, file_path: Path) -> int:
@@ -84,8 +103,10 @@ class EvidenceEngine:
             fragments = self._parse_text(file_path)
         elif file_path.suffix.lower() == ".html":
             fragments = self._parse_html(file_path)
+        elif file_path.suffix.lower() == ".xlsx":
+            fragments = self._parse_xlsx(file_path)
         else:
-            print(f"⚠️ Unsupported file type: {file_path.suffix}")
+            logger.info(f"⚠️ Unsupported file type: {file_path.suffix}")
             return 0
 
         # Registers the newly generated fragments into the evidence ledger. The use of content-addressable identifiers provides implicit deduplication at the point of insertion.
@@ -281,7 +302,7 @@ class EvidenceEngine:
                 BeautifulSoup,  # Suppresses a static type checker error where the framework's behavior intentionally deviates from the statically inferred type.
             )
         except ImportError:
-            print("⚠️ BeautifulSoup4 not installed. Falling back to raw text for HTML.")
+            logger.info("⚠️ BeautifulSoup4 not installed. Falling back to raw text for HTML.")
             return self._parse_text(path)
 
         content = path.read_text(encoding="utf-8")
@@ -309,6 +330,112 @@ class EvidenceEngine:
                         },
                     )
                 )
+        return fragments
+
+    def _parse_xlsx(self, path: Path) -> List[EvidenceFragment]:
+        """Parses an Excel (.xlsx) file into semantic EvidenceFragments per sheet row."""
+        import xml.etree.ElementTree as ET
+        import zipfile
+
+        fragments: List[EvidenceFragment] = []
+        try:
+            with zipfile.ZipFile(path) as z:
+                if "xl/workbook.xml" not in z.namelist():
+                    return fragments
+
+                wb_tree = ET.fromstring(z.read("xl/workbook.xml"))
+                ns = {
+                    "main": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+                    "rels": "http://schemas.openxmlformats.org/package/2006/relationships",
+                }
+
+                rel_map: Dict[str, str] = {}
+                if "xl/_rels/workbook.xml.rels" in z.namelist():
+                    rels_tree = ET.fromstring(z.read("xl/_rels/workbook.xml.rels"))
+                    rel_map = {
+                        r.attrib.get("Id", ""): r.attrib.get("Target", "")
+                        for r in rels_tree
+                    }
+
+                shared_strings: List[str] = []
+                if "xl/sharedStrings.xml" in z.namelist():
+                    ss_tree = ET.fromstring(z.read("xl/sharedStrings.xml"))
+                    for si in ss_tree.findall("main:si", ns):
+                        shared_strings.append(
+                            "".join([node.text for node in si.iter() if node.text])
+                        )
+
+                sheets = []
+                for s in wb_tree.findall("main:sheets/main:sheet", ns):
+                    name = s.attrib.get("name", "Sheet")
+                    r_id = s.attrib.get(
+                        "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id",
+                        "",
+                    )
+                    target = rel_map.get(r_id, "")
+                    if target:
+                        target_path = (
+                            f"xl/{target}" if not target.startswith("xl/") else target
+                        )
+                        if target_path in z.namelist():
+                            sheets.append((name, target_path))
+
+                for sheet_name, target_path in sheets:
+                    sheet_tree = ET.fromstring(z.read(target_path))
+                    rows = sheet_tree.findall(".//main:row", ns)
+                    header_map: Dict[str, str] = {}
+
+                    for r_idx, r in enumerate(rows):
+                        row_cells: List[tuple[str, str]] = []
+                        for c in r.findall("main:c", ns):
+                            ref = c.attrib.get("r", "")
+                            col_letter = "".join([ch for ch in ref if ch.isalpha()])
+                            v = c.find("main:v", ns)
+                            val = v.text if v is not None else ""
+                            if c.attrib.get("t") == "s" and val.isdigit():
+                                idx = int(val)
+                                val = (
+                                    shared_strings[idx]
+                                    if idx < len(shared_strings)
+                                    else ""
+                                )
+                            val = val.strip()
+                            if val:
+                                row_cells.append((col_letter, val))
+
+                        if not row_cells:
+                            continue
+
+                        if r_idx <= 1 and not header_map and len(row_cells) >= 3:
+                            for col_letter, val in row_cells:
+                                header_map[col_letter] = val.replace("\n", " ").strip()
+                            continue
+
+                        formatted_parts = []
+                        for col_letter, val in row_cells:
+                            header = header_map.get(col_letter)
+                            if header and header != val:
+                                formatted_parts.append(f"{header}: {val}")
+                            else:
+                                formatted_parts.append(val)
+
+                        row_text = " | ".join(formatted_parts)
+                        if len(row_text) >= 20:
+                            fragments.append(
+                                self._create_fragment(
+                                    content=row_text,
+                                    source_uri=str(path),
+                                    location={
+                                        "type": "spreadsheet_row",
+                                        "sheet": sheet_name,
+                                        "row_index": r_idx,
+                                        "hierarchy": [path.stem, sheet_name],
+                                    },
+                                )
+                            )
+        except Exception as e:
+            logger.error(f"Error parsing .xlsx file {path}: {e}")
+
         return fragments
 
     def _create_fragment(
