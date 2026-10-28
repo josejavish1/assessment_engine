@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import importlib
+import math
 import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-_CLEAN_CAPEX_PATTERN = re.compile(r"[^\d.,-]")
+_NUMBER_TOKEN_PATTERN = re.compile(
+    r"(?<![a-zA-Z0-9])([+-]?\d[\d.,]*(?:[eE][+-]?\d+)?)\s*([kKmMbB])?(?![a-zA-Z0-9])"
+)
+_MULTIPLIERS = {"k": 1e3, "m": 1e6, "b": 1e9}
 
 
 def _resolve_loader() -> Callable[[str], str | None]:
@@ -89,17 +93,34 @@ def _normalize_capex_separators(cleaned: str) -> str:
 
 def _parse_capex_estimate(raw_capex: Any) -> float:
     if isinstance(raw_capex, (int, float)) and not isinstance(raw_capex, bool):
-        return float(raw_capex)
+        val = float(raw_capex)
+        return max(0.0, val) if math.isfinite(val) else 0.0
     if not isinstance(raw_capex, str):
         return 0.0
 
-    cleaned = _CLEAN_CAPEX_PATTERN.sub("", raw_capex.strip())
+    match = _NUMBER_TOKEN_PATTERN.search(raw_capex.strip())
+    if not match:
+        return 0.0
+
+    num_str, suffix = match.group(1), match.group(2)
+    multiplier = _MULTIPLIERS.get(suffix.lower(), 1.0) if suffix else 1.0
+
+    if "e" in num_str.lower():
+        try:
+            val = float(num_str.replace(",", ".")) * multiplier
+            return max(0.0, val) if math.isfinite(val) else 0.0
+        except ValueError:
+            return 0.0
+
+    sign = -1.0 if num_str.startswith("-") else 1.0
+    cleaned = re.sub(r"[^\d.,]", "", num_str)
     if not cleaned:
         return 0.0
 
     normalized = _normalize_capex_separators(cleaned)
     try:
-        return float(normalized)
+        val = sign * float(normalized) * multiplier
+        return max(0.0, val) if math.isfinite(val) else 0.0
     except ValueError:
         return 0.0
 
@@ -107,9 +128,13 @@ def _parse_capex_estimate(raw_capex: Any) -> float:
 def _build_work_package(initiative: dict[str, Any]) -> WorkPackage:
     capex_raw = initiative.get("capex_estimate", "")
     capex_str = str(capex_raw) if capex_raw is not None else ""
-    capex_num = _parse_capex_estimate(
-        initiative.get("capex_numeric", capex_raw if capex_raw != "" else 0.0)
+    raw_num = initiative.get("capex_numeric")
+    capex_val = (
+        raw_num
+        if raw_num is not None
+        else (capex_raw if capex_raw != "" else 0.0)
     )
+    capex_num = _parse_capex_estimate(capex_val)
     return WorkPackage(
         id=str(initiative.get("id", "")),
         tower=str(initiative.get("tower", "UNKNOWN")),
@@ -150,16 +175,25 @@ def _create_corporate_program(
     )
 
 
-def aggregate_corporate_projects(initiatives: list[dict[str, Any]]) -> dict[str, Any]:
+def aggregate_corporate_projects(
+    initiatives: list[dict[str, Any]],
+    program_resolver: Callable[[str], str | None] | None = None,
+) -> dict[str, Any]:
     if not initiatives:
         return {"programs": [], "standalone_initiatives": []}
 
+    resolver = program_resolver or resolve_canonical_program_id
     grouped_packages: dict[str, list[WorkPackage]] = {}
     standalone_initiatives: list[dict[str, Any]] = []
 
     for initiative in initiatives:
         search_text = _extract_initiative_search_text(initiative)
-        program_id = resolve_canonical_program_id(search_text)
+        explicit_pid = initiative.get("program_id")
+        program_id = (
+            str(explicit_pid).strip()
+            if explicit_pid
+            else resolver(search_text)
+        )
 
         if not program_id:
             standalone_initiatives.append(dict(initiative))

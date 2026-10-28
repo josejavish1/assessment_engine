@@ -97,3 +97,49 @@ def test_enforce_program_temporal_precedence_preserves_dag():
 
     cycles = analyzer.detect_cycles()
     assert len(cycles) == 0
+
+
+def test_enforce_program_temporal_precedence_case_insensitive():
+    """Verify that case differences in node IDs do not create duplicate nodes or orphan precedence edges."""
+    analyzer = NetworkXAnalyzer()
+
+    # Lowercase in work package IDs
+    wp1 = WorkPackage(id="init-t8-01", tower="T8", capex_numeric=50_000.0, title="Landing Zone")
+    wp2 = WorkPackage(id="init-t4-01", tower="T4", capex_numeric=10_000.0, title="Migration")
+
+    prog = CorporateProgram(
+        program_id="PROG_SOVEREIGN_CLOUD",
+        participating_towers=["T4", "T8"],
+        work_packages=[wp1, wp2],
+        linear_capex_numeric=60_000.0,
+        consolidated_capex_numeric=50_000.0,
+        synergy_savings_numeric=10_000.0,
+    )
+
+    # Graph previously populated with uppercase triples
+    analyzer.graph.add_node("INIT-T8-01")
+    analyzer.graph.add_node("INIT-T4-01")
+
+    analyzer.enforce_program_temporal_precedence([prog])
+
+    # Must connect INIT-T8-01 -> INIT-T4-01 without creating lowercase ghost nodes
+    assert analyzer.graph.has_edge("INIT-T8-01", "INIT-T4-01")
+    assert "init-t8-01" not in analyzer.graph
+
+
+def test_enforce_program_temporal_precedence_single_work_package():
+    """Verify that programs with a single work package do not fail and register the node."""
+    analyzer = NetworkXAnalyzer()
+    wp = WorkPackage(id="INIT-SOLO-01", tower="T1", capex_numeric=15_000.0, title="Solo Task")
+
+    prog = CorporateProgram(
+        program_id="PROG_OBSERVABILITY",
+        participating_towers=["T1"],
+        work_packages=[wp],
+        linear_capex_numeric=15_000.0,
+        consolidated_capex_numeric=15_000.0,
+        synergy_savings_numeric=0.0,
+    )
+
+    analyzer.enforce_program_temporal_precedence([prog])
+    assert "INIT-SOLO-01" in analyzer.graph

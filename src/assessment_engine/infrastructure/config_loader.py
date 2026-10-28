@@ -1,9 +1,11 @@
 """Implements the core logic and utility functions for the Assessment Engine pipeline."""
 
+import functools
 import json
 import logging
 import os
 import re
+import unicodedata
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -420,6 +422,7 @@ def map_industry_to_profile(raw_industry_name: str) -> str:
     return "default"
 
 
+@functools.lru_cache(maxsize=1)
 def load_strategic_programs() -> dict[str, Any]:
     """Loads canonical strategic programs configuration from declarative policy."""
     repo_root = Path(__file__).resolve().parent.parent.parent.parent
@@ -435,13 +438,34 @@ def load_strategic_programs() -> dict[str, Any]:
 
 
 def _strip_diacritics(text: str) -> str:
-    import unicodedata
-
     return "".join(
         c
         for c in unicodedata.normalize("NFD", text)
         if unicodedata.category(c) != "Mn"
     )
+
+
+@functools.lru_cache(maxsize=1)
+def _get_compiled_programs_index() -> tuple[
+    dict[str, str], list[tuple[str, tuple[str, ...]]]
+]:
+    """Pre-computes exact ID map and normalized alias tuples for O(1) / fast O(M) lookup."""
+    programs = load_strategic_programs().get("programs", [])
+    exact_map: dict[str, str] = {}
+    alias_index: list[tuple[str, tuple[str, ...]]] = []
+
+    for p in programs:
+        pid = p.get("id", "")
+        if not pid:
+            continue
+        exact_map[pid.upper()] = pid
+        norm_aliases = tuple(
+            _strip_diacritics(a.lower()) for a in p.get("aliases", []) if a
+        )
+        if norm_aliases:
+            alias_index.append((pid, norm_aliases))
+
+    return exact_map, alias_index
 
 
 def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
@@ -450,23 +474,14 @@ def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
         return None
 
     normalized = raw_name_or_id.strip()
-    data = load_strategic_programs()
-    programs = data.get("programs", [])
+    exact_map, alias_index = _get_compiled_programs_index()
 
-    # Exact ID match (case-insensitive)
-    for p in programs:
-        pid = p.get("id", "")
-        if pid.upper() == normalized.upper():
-            return pid
+    if matched_id := exact_map.get(normalized.upper()):
+        return matched_id
 
-    # Semantic keyword and alias match with diacritic normalization
     norm_lower = _strip_diacritics(normalized.lower())
-    for p in programs:
-        pid = p.get("id", "")
-        aliases = p.get("aliases", [])
-        if any(
-            _strip_diacritics(alias.lower()) in norm_lower for alias in aliases
-        ):
+    for pid, aliases in alias_index:
+        if any(alias in norm_lower for alias in aliases):
             return pid
 
     return None

@@ -81,42 +81,71 @@ def _add_triple_to_graph(graph: nx.DiGraph, triple: Dict[str, Any]) -> None:
         graph.add_edge(subj, obj, relation=pred)
 
 
+from decimal import Decimal, InvalidOperation
+
+
+def _normalize_node_id(raw_id: Any) -> str:
+    """Normalize node identifiers consistently across triples and work packages."""
+    return str(raw_id or "").strip().upper()
+
+
 def _extract_capex_score(wp: Any) -> Decimal:
     """Extract CAPEX numeric value safely as a Decimal for deterministic comparison."""
     raw = getattr(wp, "capex_numeric", 0) or 0
-    return Decimal(str(raw))
+    try:
+        val = Decimal(str(raw))
+        return val if val.is_finite() else Decimal(0)
+    except (InvalidOperation, ValueError, TypeError):
+        return Decimal(0)
 
 
-def _select_core_work_package(work_packages: List[Any]) -> Any:
-    """Select the core platform work package (highest CAPEX) from a list."""
-    return max(work_packages, key=_extract_capex_score)
+def _select_core_work_package(valid_wps: List[Any]) -> Any:
+    """Select the core platform work package deterministically (highest CAPEX, then lexical ID)."""
+    return max(
+        valid_wps,
+        key=lambda wp: (
+            _extract_capex_score(wp),
+            _normalize_node_id(getattr(wp, "id", "")),
+        ),
+    )
 
 
 def _can_safely_add_precedence(
     graph: nx.DiGraph, core_id: str, target_id: str
 ) -> bool:
     """Check if adding an edge from core_id to target_id preserves DAG property."""
-    if core_id == target_id or graph.has_edge(core_id, target_id):
+    c_norm = _normalize_node_id(core_id)
+    t_norm = _normalize_node_id(target_id)
+    if not c_norm or not t_norm or c_norm == t_norm or graph.has_edge(c_norm, t_norm):
         return False
-    if core_id not in graph or target_id not in graph:
+    if c_norm not in graph or t_norm not in graph:
         return True
-    return not nx.has_path(graph, target_id, core_id)
+    return not nx.has_path(graph, t_norm, c_norm)
 
 
 def _enforce_single_program_precedence(
     graph: nx.DiGraph, program: Any
 ) -> None:
     """Add precedence edges from the core package to contributing packages."""
-    wps = getattr(program, "work_packages", None) or []
-    if len(wps) < 2:
-        return
-    core_id = getattr(_select_core_work_package(wps), "id", "")
-    if not core_id:
+    raw_wps = getattr(program, "work_packages", None) or []
+    valid_wps = [
+        wp for wp in raw_wps if _normalize_node_id(getattr(wp, "id", ""))
+    ]
+    if not valid_wps:
         return
 
-    for wp in wps:
-        wp_id = getattr(wp, "id", "")
-        if wp_id and _can_safely_add_precedence(graph, core_id, wp_id):
+    if len(valid_wps) == 1:
+        graph.add_node(_normalize_node_id(getattr(valid_wps[0], "id", "")))
+        return
+
+    core_wp = _select_core_work_package(valid_wps)
+    core_id = _normalize_node_id(getattr(core_wp, "id", ""))
+    graph.add_node(core_id)
+
+    for wp in valid_wps:
+        wp_id = _normalize_node_id(getattr(wp, "id", ""))
+        graph.add_node(wp_id)
+        if _can_safely_add_precedence(graph, core_id, wp_id):
             graph.add_edge(core_id, wp_id, relation="PROGRAM_CORE_PRECEDENCE")
 
 

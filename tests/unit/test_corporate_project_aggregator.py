@@ -108,3 +108,45 @@ def test_empty_initiatives_safe():
     result = aggregate_corporate_projects([])
     assert result["programs"] == []
     assert result["standalone_initiatives"] == []
+
+
+def test_capex_parsing_edge_cases():
+    """Verify that capex parsing handles suffixes (k, M), ranges, scientific notation and invalid floats."""
+    from assessment_engine.application.tools.corporate_project_aggregator import (
+        _parse_capex_estimate,
+    )
+
+    # Multipliers
+    assert _parse_capex_estimate("$250k") == 250_000.0
+    assert _parse_capex_estimate("1.2M €") == 1_200_000.0
+
+    # Range format
+    assert _parse_capex_estimate("100.000 € - 150.000 €") == 100_000.0
+
+    # Scientific notation
+    assert _parse_capex_estimate("1.5e6") == 1_500_000.0
+
+    # Special IEEE 754 & None values
+    assert _parse_capex_estimate(float("nan")) == 0.0
+    assert _parse_capex_estimate(float("inf")) == 0.0
+    assert _parse_capex_estimate(None) == 0.0
+    assert _parse_capex_estimate({}) == 0.0
+
+
+def test_custom_program_resolver_injection():
+    """Verify that aggregate_corporate_projects respects dependency-injected program resolvers."""
+    initiatives = [
+        {"id": "CUSTOM-1", "tower": "T1", "title": "Proyecto Alfa", "capex_estimate": "10k"},
+        {"id": "CUSTOM-2", "tower": "T2", "title": "Proyecto Beta", "capex_estimate": "20k"},
+    ]
+
+    # Custom resolver mapping anything with 'Alfa' or 'Beta' to 'PROG_CUSTOM'
+    def my_resolver(text: str) -> str | None:
+        if "Alfa" in text or "Beta" in text:
+            return "PROG_CUSTOM"
+        return None
+
+    result = aggregate_corporate_projects(initiatives, program_resolver=my_resolver)
+    assert len(result["programs"]) == 1
+    assert result["programs"][0].program_id == "PROG_CUSTOM"
+    assert set(result["programs"][0].participating_towers) == {"T1", "T2"}
