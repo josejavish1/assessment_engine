@@ -171,10 +171,44 @@ class RaptorEngine:
                     "system_instruction": "Eres un arquitecto de datos y auditor forense de sistemas. Tu misión es generar resúmenes jerárquicos de máxima densidad de información, reteniendo estrictamente todas las métricas cuantitativas, nombres propios de infraestructura, versiones y acrónimos normativos sin diluirlos."
                 },
             )
-            return str(response.text).strip()
+            raw_summary = str(response.text).strip()
+            return self._enforce_deterministic_metric_retention(context, raw_summary)
         except Exception as e:
             logger.warning(f"Error generando resumen Raptor (fallback aplicado): {e}")
             return "Resumen no disponible debido a un error de procesamiento."
+
+    @staticmethod
+    def _enforce_deterministic_metric_retention(context: str, summary: str) -> str:
+        """Deterministically audits and guarantees that quantitative metrics and units
+        from the input context are retained in the abstractive summary.
+        If the generative model dropped any metric, it is appended in an immutable audit block.
+        """
+        import re
+
+        metric_pattern = re.compile(
+            r"\b\d+(?:[\.,]\d+)*(?:\s*(?:ms|s|h|horas|gbps|mbps|tb|pb|gb)\b|\s*[%€\$])",
+            re.IGNORECASE,
+        )
+
+        context_metrics = set(m.strip() for m in metric_pattern.findall(context))
+        if not context_metrics:
+            return summary
+
+        summary_lower = summary.lower()
+        missing_metrics = []
+        for metric in sorted(context_metrics):
+            normalized_metric = re.sub(r"\s+", " ", metric.lower())
+            if normalized_metric not in summary_lower:
+                missing_metrics.append(metric)
+
+        if missing_metrics:
+            logger.info(
+                f"🛡️ [RAPTOR Gate] Rescatadas {len(missing_metrics)} métricas cuantitativas omitidas por el LLM: {missing_metrics}"
+            )
+            retention_block = f"\n[Métricas Críticas Preservadas]: {', '.join(missing_metrics)}"
+            return f"{summary.strip()}{retention_block}"
+
+        return summary
 
     def _save_tree(self) -> None:
         import uuid
