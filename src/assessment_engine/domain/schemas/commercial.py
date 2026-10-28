@@ -17,6 +17,7 @@ class DealFlash(BaseModel):
 
     @property
     def ntt_win_theme(self) -> str:
+        """Provide legacy access alias for vendor win theme attribute."""
         return self.vendor_win_theme
 
 

@@ -20,7 +20,6 @@ from assessment_engine.domain.prompts.intelligence_prompts import (
     get_technical_analyst_prompt,
 )
 from assessment_engine.infrastructure.ai_client import run_agent
-from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 from assessment_engine.infrastructure.runtime_paths import ROOT
 
 
@@ -89,6 +88,28 @@ def band_for_score(score: float, tower_definition: dict) -> str:
     ]
 
 
+def _format_answers_summary(answers: list[dict[str, Any]]) -> str:
+    """Format assessment answers into a structured text summary for LLM context."""
+    lines: list[str] = []
+    for ans in answers:
+        score = (
+            ans.get("value")
+            if ans.get("value") is not None
+            else ans.get("score", "N/A")
+        )
+        kpi_label = ans.get("kpi_name", "")
+        q_text = (
+            ans.get("question_text") or ans.get("context") or "Sin texto de pregunta"
+        )
+        prefix = (
+            f"- KPI {ans.get('kpi_id')} ({kpi_label}):"
+            if kpi_label
+            else f"- KPI {ans.get('kpi_id')}:"
+        )
+        lines.append(f"{prefix} Score {score} | Pregunta/Info: {q_text}")
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
 async def build_findings(
     case_input: dict,
     evidence_ledger: dict,
@@ -132,15 +153,7 @@ async def build_findings(
     tower_id = scoring_output.get("tower_id", "Unknown")
     case_input.get("context_summary", "")
 
-    # Extract the complete, verbatim test responses. Supplying the full qualitative text is essential for the AI to perform deep contextual analysis and identify nuances not captured by quantitative scores.
-    # The canonical data structure for an answer should be defined in a corresponding Pydantic model or dataclass, making this comment redundant. The type signature of the function should serve as the source of truth.
-    answers_text = ""
-    for ans in case_input.get("answers", []):
-        score = ans.get("value") if ans.get("value") is not None else ans.get("score", "N/A")
-        kpi_label = ans.get("kpi_name", "")
-        q_text = ans.get("question_text") or ans.get("context") or "Sin texto de pregunta"
-        prefix = f"- KPI {ans.get('kpi_id')} ({kpi_label}):" if kpi_label else f"- KPI {ans.get('kpi_id')}:"
-        answers_text += f"{prefix} Score {score} | Pregunta/Info: {q_text}\n"
+    answers_text = _format_answers_summary(case_input.get("answers", []))
 
     #
     from assessment_engine.infrastructure.config_loader import (
@@ -168,9 +181,7 @@ async def build_findings(
 
     pillar_findings = []
     all_valid_fragment_ids = {
-        str(e.get("fragment_id")): e
-        for e in evidences
-        if e.get("fragment_id")
+        str(e.get("fragment_id")): e for e in evidences if e.get("fragment_id")
     }
 
     for pillar in scoring_output.get("pillar_scores", []):
@@ -298,10 +309,10 @@ async def build_findings(
                 "gaps": [{"statement": gap_text, "fragment_id": gap_frag}],
                 "risks": [
                     {
-                        "title": r_title, 
+                        "title": r_title,
                         "severity": calibrated_severity,
                         "_elicited_tef": e_tef,
-                        "_elicited_lm": e_lm
+                        "_elicited_lm": e_lm,
                     }
                 ],
                 "candidate_initiatives": candidate_initiatives,

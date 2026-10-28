@@ -1657,7 +1657,6 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: dict[str, Any]) -> dict[s
     def add_markdown_bullet_local(text: str, space_after: int = 4) -> Any:
         return _add_markdown_bullet(doc, text, text_color_rgb, space_after)
 
-    # El Hexágono de Valor (SME & TBM Framework)
     add_appendix_subheading(doc, "El Hexágono de Valor: Palancas de Retorno de Resiliencia y Eficiencia (RoRE)", primary_color_rgb=p_color_rgb)
     
     if doc_lang == "es":

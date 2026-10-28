@@ -65,33 +65,17 @@ def _build_source_version(blueprint_towers: list[str]) -> str:
     return f"blueprint-only;blueprints={blueprint_part}"
 
 
-def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] | None:
-    r"""{'docstring': "Aggregates client data into a consolidated global report payload.\n\n    This function orchestrates the construction of a comprehensive dictionary by\n    collating data from multiple sources within a client's directory. It parses\n    and merges tower-specific blueprint files (`T*/blueprint_*_payload.json`),\n    prioritizing data from higher-numbered towers. The aggregated data is then\n    enriched with contextual information from `client_intelligence.json` and a\n    dynamically generated strategic roadmap from an orchestration process.\n\n    The process involves calculating maturity scores, extracting strategic risks,\n    compiling initiatives, and resolving identifiers against an epistemic graph\n    to produce human-readable labels. The final output is a structured payload\n    intended for generating a global client report, with provisions for executive\n    summary content to be overridden by the client intelligence file.\n\n    Args:\n        client_dir: The filesystem path to the root directory for a specific\n            client. This directory is expected to contain tower-specific\n            subdirectories (e.g., 'T1', 'T2') which hold blueprint JSON files.\n        client_name: The canonical name of the client. This identifier is used\n            for lookups within the epistemic graph and is embedded in the final\n            payload metadata.\n\n    Returns:\n        A dictionary representing the complete global report payload if successful.\n        Returns None if no blueprint files are found in the specified `client_dir`\n        or if the discovered files yield no processable data.\n\n    Raises:\n        FileNotFoundError: If the `client_dir` path does not exist.\n        json.JSONDecodeError: If a blueprint or client intelligence file contains\n            malformed JSON.\n        KeyError: If a required key is missing from the input JSON data\n            structures, particularly in sections not accessed with a `.get()`\n            fallback.\n        TypeError: If data in an input file has an unexpected type, causing a\n            failure in downstream operations such as numerical conversions."}."""
-    # The loading process prioritizes new Blueprints to ensure that the most recent configurations are applied, establishing a clear override precedence for legacy versions.
-    blueprint_files = list(client_dir.glob("T*/blueprint_*_payload.json"))
+def _aggregate_tower_blueprints(
+    blueprint_files: list[Path],
+) -> tuple[list[dict], list[dict], list[dict], list[str], list[str], list[str]]:
+    """Parse and aggregate tower blueprint files into consolidated metrics and initiative lists."""
+    towers_data: list[dict] = []
+    strategic_risks: list[dict] = []
+    all_initiatives: list[dict] = []
+    all_principles: list[str] = []
+    all_implications: list[str] = []
+    blueprint_towers: list[str] = []
 
-    if not blueprint_files:
-        logger.warning(f"No se encontraron archivos de torre en {client_dir}")
-        return None
-
-    towers_data = []
-    strategic_risks = []
-    all_initiatives = []
-    all_principles = []
-    all_implications = []
-    blueprint_towers = []
-    intelligence_dossier = {}
-
-    intelligence_path = Path(client_dir) / "client_intelligence.json"
-    if intelligence_path.exists():
-        try:
-            intelligence_dossier = build_client_context_packet(
-                load_client_intelligence(intelligence_path)
-            )
-        except Exception:
-            intelligence_dossier = {}
-
-    # Initializes the payload construction process by loading and parsing all relevant Blueprint configurations.
     for bp in sorted(
         blueprint_files,
         key=lambda x: int(x.parent.name[1:]) if x.parent.name[1:].isdigit() else 99,
@@ -106,7 +90,6 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             tid, data.get("document_meta", {}).get("tower_name", tid)
         )
 
-        # Extracts foundational data from the active Blueprint configuration, which serves as the primary input for the report generation logic.
         pillars_analysis = data.get("pillars_analysis", [])
         avg_score = average_pillar_score(pillars_analysis, default=0.0)
         target_score = average_pillar_target(pillars_analysis, default=4.0)
@@ -131,9 +114,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             for hc in pilar.get("health_check_asis", []):
                 vuln = hc.get("vulnerability_level", 3)
                 impact_label = (
-                    "Crítico"
-                    if vuln >= 5
-                    else ("Alto" if vuln >= 4 else "Medio")
+                    "Crítico" if vuln >= 5 else ("Alto" if vuln >= 4 else "Medio")
                 )
                 strategic_risks.append(
                     {
@@ -143,8 +124,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                         "tower": tname,
                         "impact_level": impact_label,
                         "description": hc.get("finding"),
-                        "business_impact": hc.get("business_risk")
-                        or hc.get("impact"),
+                        "business_impact": hc.get("business_risk") or hc.get("impact"),
                     }
                 )
                 r_idx += 1
@@ -164,11 +144,48 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 )
                 p_idx += 1
 
-        # Extracts associated principles and implications from the Blueprint configuration if they are defined.
         if data.get("architecture_principles"):
             all_principles.extend(data.get("architecture_principles", []))
         if data.get("operating_model_implications"):
             all_implications.extend(data.get("operating_model_implications", []))
+
+    return (
+        towers_data,
+        strategic_risks,
+        all_initiatives,
+        all_principles,
+        all_implications,
+        blueprint_towers,
+    )
+
+
+def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] | None:
+    r"""{'docstring': "Aggregates client data into a consolidated global report payload.\n\n    This function orchestrates the construction of a comprehensive dictionary by\n    collating data from multiple sources within a client's directory. It parses\n    and merges tower-specific blueprint files (`T*/blueprint_*_payload.json`),\n    prioritizing data from higher-numbered towers. The aggregated data is then\n    enriched with contextual information from `client_intelligence.json` and a\n    dynamically generated strategic roadmap from an orchestration process.\n\n    The process involves calculating maturity scores, extracting strategic risks,\n    compiling initiatives, and resolving identifiers against an epistemic graph\n    to produce human-readable labels. The final output is a structured payload\n    intended for generating a global client report, with provisions for executive\n    summary content to be overridden by the client intelligence file.\n\n    Args:\n        client_dir: The filesystem path to the root directory for a specific\n            client. This directory is expected to contain tower-specific\n            subdirectories (e.g., 'T1', 'T2') which hold blueprint JSON files.\n        client_name: The canonical name of the client. This identifier is used\n            for lookups within the epistemic graph and is embedded in the final\n            payload metadata.\n\n    Returns:\n        A dictionary representing the complete global report payload if successful.\n        Returns None if no blueprint files are found in the specified `client_dir`\n        or if the discovered files yield no processable data.\n\n    Raises:\n        FileNotFoundError: If the `client_dir` path does not exist.\n        json.JSONDecodeError: If a blueprint or client intelligence file contains\n            malformed JSON.\n        KeyError: If a required key is missing from the input JSON data\n            structures, particularly in sections not accessed with a `.get()`\n            fallback.\n        TypeError: If data in an input file has an unexpected type, causing a\n            failure in downstream operations such as numerical conversions."}."""
+    # The loading process prioritizes new Blueprints to ensure that the most recent configurations are applied, establishing a clear override precedence for legacy versions.
+    blueprint_files = list(client_dir.glob("T*/blueprint_*_payload.json"))
+
+    if not blueprint_files:
+        logger.warning(f"No se encontraron archivos de torre en {client_dir}")
+        return None
+
+    intelligence_dossier = {}
+    intelligence_path = Path(client_dir) / "client_intelligence.json"
+    if intelligence_path.exists():
+        try:
+            intelligence_dossier = build_client_context_packet(
+                load_client_intelligence(intelligence_path)
+            )
+        except Exception:
+            intelligence_dossier = {}
+
+    (
+        towers_data,
+        strategic_risks,
+        all_initiatives,
+        all_principles,
+        all_implications,
+        blueprint_towers,
+    ) = _aggregate_tower_blueprints(blueprint_files)
 
     if not towers_data:
         return None
@@ -179,15 +196,11 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             EpistemicGraphService,
         )
 
-        ind_profile = intelligence_dossier.get("profile", {}).get(
-            "industry", "default"
-        )
+        ind_profile = intelligence_dossier.get("profile", {}).get("industry", "default")
         graph_service = EpistemicGraphService(industry_profile=ind_profile)
 
-        intrinsic_audited = {
-            item["id"]: float(item["score"]) for item in towers_data
-        }
-        # SOTA Actuarial Practice: Impute empirical mean of audited towers to prevent Bayesian dilution bias
+        intrinsic_audited = {item["id"]: float(item["score"]) for item in towers_data}
+        # Actuarial model: Impute empirical mean of audited towers to prevent Bayesian dilution bias
         avg_audited_score = (
             sum(intrinsic_audited.values()) / len(intrinsic_audited)
             if intrinsic_audited
@@ -446,7 +459,6 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 intel_headline = exec_sum.get("headline")
                 intel_narrative = exec_sum.get("narrative")
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     if intel_headline:

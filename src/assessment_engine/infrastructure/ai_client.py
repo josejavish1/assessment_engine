@@ -159,7 +159,7 @@ def _robust_unwrap_and_validate(data: Any, schema: Any) -> Any:
         raise e
 
 
-# Tier-1 Model-Agnostic Pricing (USD per one million tokens)
+# Model-Agnostic Pricing (USD per one million tokens)
 PRICING = {
     "flash": {"input": 0.075, "output": 0.30},
     "reasoning": {"input": 1.25, "output": 5.00},

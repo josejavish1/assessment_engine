@@ -148,7 +148,7 @@ async def synthesize_global_asis(working_dir: str):
         print("❌ No payloads found for synthesis.")
         return
 
-    # SOTA Actuarial Practice: Subadditive Portfolio Diversification Discount
+    # Actuarial model: Subadditive Portfolio Diversification Discount
     total_linear_ale = sum(data.get("total_fair_ale", 0.0) for data in payloads)
     n_towers = len(payloads)
     diversification = 1.0 / (n_towers ** 0.35) if n_towers > 0 else 1.0

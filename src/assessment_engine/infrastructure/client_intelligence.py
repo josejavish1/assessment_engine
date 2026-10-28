@@ -79,15 +79,74 @@ _TOWER_KEYWORDS: dict[str, tuple[str, ...]] = {
         "sovereignty",
         "gobierno ti",
     ),
-    "T2": ("compute", "plataforma", "cloud", "híbrida", "hybrid", "hosting", "virtualización"),
-    "T3": ("network", "red", "connectivity", "sd-wan", "conectividad", "carrier", "telecom"),
-    "T4": ("data", "datos", "ai", "ia", "analytics", "governance", "dama", "lakehouse", "warehouse", "bi"),
-    "T5": ("resilience", "continuity", "recovery", "dr", "resiliencia", "continuidad", "backup"),
+    "T2": (
+        "compute",
+        "plataforma",
+        "cloud",
+        "híbrida",
+        "hybrid",
+        "hosting",
+        "virtualización",
+    ),
+    "T3": (
+        "network",
+        "red",
+        "connectivity",
+        "sd-wan",
+        "conectividad",
+        "carrier",
+        "telecom",
+    ),
+    "T4": (
+        "data",
+        "datos",
+        "ai",
+        "ia",
+        "analytics",
+        "governance",
+        "dama",
+        "lakehouse",
+        "warehouse",
+        "bi",
+    ),
+    "T5": (
+        "resilience",
+        "continuity",
+        "recovery",
+        "dr",
+        "resiliencia",
+        "continuidad",
+        "backup",
+    ),
     "T6": ("security", "zero trust", "identity", "ciber", "seguridad", "iam", "soc"),
-    "T7": ("itsm", "operaciones", "service desk", "observability", "observabilidad", "sre", "monitoring"),
+    "T7": (
+        "itsm",
+        "operaciones",
+        "service desk",
+        "observability",
+        "observabilidad",
+        "sre",
+        "monitoring",
+    ),
     "T8": ("finops", "governance", "gobierno", "coste", "cost", "tco", "inversión"),
-    "T9": ("workplace", "employee", "puesto", "colaboración", "dex", "digital workplace"),
-    "T10": ("apps", "aplicaciones", "legacy", "modernización", "mainframe", "monolito", "erp", "crm"),
+    "T9": (
+        "workplace",
+        "employee",
+        "puesto",
+        "colaboración",
+        "dex",
+        "digital workplace",
+    ),
+    "T10": (
+        "apps",
+        "aplicaciones",
+        "legacy",
+        "modernización",
+        "mainframe",
+        "monolito",
+        "erp",
+        "crm",
+    ),
 }
 
 
@@ -924,47 +983,35 @@ def coerce_client_dossier_v2(client_name: str, data: dict[str, Any]) -> dict[str
     return _coerce_legacy_to_v2(client_name, data)
 
 
-def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
-    r"""{'docstring': "Coerces a client data dictionary into a canonical Client Dossier V3 format.\n\n    Transforms a raw client data dictionary, which may conform to a legacy, V2,\n    or V3 schema, into a validated and fully populated V3 client dossier.\n\n    The function first detects the input schema version. If the data is already\n    in V3 format, it performs minimal enrichment by setting default metadata\n    fields (e.g., dossier ID, timestamps) before re-validating.\n\n    For older V2 or legacy formats, a comprehensive transformation is executed.\n    This process involves:\n    1.  Coercing legacy data into an intermediate V2-like structure.\n    2.  Mapping fields from the V2 structure to the corresponding V3 context\n        sections (profile, business, technology, regulatory).\n    3.  Generating structured `Claim` objects from unstructured or\n        semi-structured evidence lists (e.g., `evidence_register`,\n        `regulatory_frameworks`, `vendor_dependencies`).\n    4.  Populating all required V3 fields with coerced data or defaults.\n    5.  Linking generated claims to relevant `tower_overrides`.\n\n    The final dictionary is validated against the `ClientDossierV3` Pydantic\n    model to ensure schema compliance.\n\n    Args:\n        client_name: The unique identifier for the client, used to populate the\n            dossier's name and generate a unique dossier ID.\n        data: A dictionary containing the client's data. The structure can\n            conform to a legacy format, Client Dossier V2, or Client Dossier V3.\n\n    Returns:\n        A JSON-serializable dictionary representing the client's dossier,\n        validated and structured according to the ClientDossierV3 schema.\n\n    Raises:\n        pydantic.ValidationError: If the final transformed data fails validation\n            against the ClientDossierV3 schema."}."""
-    if is_client_dossier_v3(data):
-        dossier = dict(data)
-        dossier["client_name"] = client_name
-        metadata = dict(dossier.get("metadata", {}))
-        metadata.setdefault("dossier_id", f"{client_name}-{uuid.uuid4().hex[:12]}")
-        metadata.setdefault("schema_version", "3.0")
-        metadata.setdefault("created_at", _now_iso())
-        metadata.setdefault("modified_at", metadata["created_at"])
-        metadata.setdefault("generated_by", "assessment_engine")
-        metadata.setdefault("lang", "es")
-        dossier["metadata"] = metadata
-        return ClientDossierV3.model_validate(dossier).model_dump(mode="json")
+def _enrich_v3_metadata(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
+    """Enrich already-valid Client Dossier V3 with default metadata if missing."""
+    dossier = dict(data)
+    dossier["client_name"] = client_name
+    metadata = dict(dossier.get("metadata", {}))
+    metadata.setdefault("dossier_id", f"{client_name}-{uuid.uuid4().hex[:12]}")
+    metadata.setdefault("schema_version", "3.0")
+    metadata.setdefault("created_at", _now_iso())
+    metadata.setdefault("modified_at", metadata["created_at"])
+    metadata.setdefault("generated_by", "assessment_engine")
+    metadata.setdefault("lang", "es")
+    dossier["metadata"] = metadata
+    return ClientDossierV3.model_validate(dossier).model_dump(mode="json")
 
-    base_v2 = (
-        data if is_client_dossier_v2(data) else _coerce_legacy_to_v2(client_name, data)
-    )
-    profile = base_v2.get("profile", {})
-    business_context = base_v2.get("business_context", {})
-    regulatory_frameworks = base_v2.get("regulatory_frameworks", [])
-    evidence_register = base_v2.get("evidence_register", [])
-    drivers = business_context.get("technological_drivers", [])
-    osint_sources = business_context.get("osint_footprint", {}).get("sources", [])
-    ceo_sources = business_context.get("ceo_agenda", {}).get("sources", [])
-    now = _now_iso()
 
-    priority_markets = _as_list_of_strings(data.get("priority_markets", []))
-    business_lines = _as_list_of_strings(data.get("business_lines", []))
-    vendor_dependencies = _as_list_of_strings(data.get("vendor_dependencies", []))
-    recent_incident_signals = _as_list_of_strings(
-        data.get("recent_incident_signals", [])
-    )
-    active_transformations = _as_list_of_strings(data.get("active_transformations", []))
-    business_constraints = _as_list_of_strings(data.get("business_constraints", []))
-    operating_constraints = _as_list_of_strings(data.get("operating_constraints", []))
-    regulatory_pressures = _as_list_of_strings(data.get("regulatory_pressures", []))
-    evidence_values = _as_list_of_strings(data.get("evidences", []))
-    legacy_source_type = _source_type_for_legacy_payload(data)
-    legacy_sources = _source_refs(evidence_values, source_type=legacy_source_type)
-
+def _generate_v3_claims(
+    evidence_register: list[Any],
+    legacy_sources: list[str],
+    legacy_source_type: str,
+    regulatory_frameworks: list[str],
+    regulatory_pressures: list[str],
+    priority_markets: list[str],
+    business_lines: list[str],
+    active_transformations: list[str],
+    operating_constraints: list[str],
+    vendor_dependencies: list[str],
+    recent_incident_signals: list[str],
+) -> list[dict[str, Any]]:
+    """Synthesize structured Claims for V3 dossier from evidence and context."""
     generated_claims: list[dict[str, Any]] = []
     for index, claim in enumerate(evidence_register, start=1):
         if not isinstance(claim, dict):
@@ -985,7 +1032,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
         )
 
     for index, framework in enumerate(
-        _unique_strings(_as_list_of_strings(data.get("regulatory_frameworks", []))),
+        _unique_strings(regulatory_frameworks),
         start=1,
     ):
         _append_claim(
@@ -1062,6 +1109,57 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                 incident, " ".join(operating_constraints)
             ),
         )
+
+    return generated_claims
+
+
+def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
+    r"""{'docstring': "Coerces a client data dictionary into a canonical Client Dossier V3 format.\n\n    Transforms a raw client data dictionary, which may conform to a legacy, V2,\n    or V3 schema, into a validated and fully populated V3 client dossier.\n\n    The function first detects the input schema version. If the data is already\n    in V3 format, it performs minimal enrichment by setting default metadata\n    fields (e.g., dossier ID, timestamps) before re-validating.\n\n    For older V2 or legacy formats, a comprehensive transformation is executed.\n    This process involves:\n    1.  Coercing legacy data into an intermediate V2-like structure.\n    2.  Mapping fields from the V2 structure to the corresponding V3 context\n        sections (profile, business, technology, regulatory).\n    3.  Generating structured `Claim` objects from unstructured or\n        semi-structured evidence lists (e.g., `evidence_register`,\n        `regulatory_frameworks`, `vendor_dependencies`).\n    4.  Populating all required V3 fields with coerced data or defaults.\n    5.  Linking generated claims to relevant `tower_overrides`.\n\n    The final dictionary is validated against the `ClientDossierV3` Pydantic\n    model to ensure schema compliance.\n\n    Args:\n        client_name: The unique identifier for the client, used to populate the\n            dossier's name and generate a unique dossier ID.\n        data: A dictionary containing the client's data. The structure can\n            conform to a legacy format, Client Dossier V2, or Client Dossier V3.\n\n    Returns:\n        A JSON-serializable dictionary representing the client's dossier,\n        validated and structured according to the ClientDossierV3 schema.\n\n    Raises:\n        pydantic.ValidationError: If the final transformed data fails validation\n            against the ClientDossierV3 schema."}."""
+    if is_client_dossier_v3(data):
+        return _enrich_v3_metadata(client_name, data)
+
+    base_v2 = (
+        data if is_client_dossier_v2(data) else _coerce_legacy_to_v2(client_name, data)
+    )
+    profile = base_v2.get("profile", {})
+    business_context = base_v2.get("business_context", {})
+    regulatory_frameworks = base_v2.get("regulatory_frameworks", [])
+    evidence_register = base_v2.get("evidence_register", [])
+    drivers = business_context.get("technological_drivers", [])
+    osint_sources = business_context.get("osint_footprint", {}).get("sources", [])
+    ceo_sources = business_context.get("ceo_agenda", {}).get("sources", [])
+    now = _now_iso()
+
+    priority_markets = _as_list_of_strings(data.get("priority_markets", []))
+    business_lines = _as_list_of_strings(data.get("business_lines", []))
+    vendor_dependencies = _as_list_of_strings(data.get("vendor_dependencies", []))
+    recent_incident_signals = _as_list_of_strings(
+        data.get("recent_incident_signals", [])
+    )
+    active_transformations = _as_list_of_strings(data.get("active_transformations", []))
+    business_constraints = _as_list_of_strings(data.get("business_constraints", []))
+    operating_constraints = _as_list_of_strings(data.get("operating_constraints", []))
+    regulatory_pressures = _as_list_of_strings(data.get("regulatory_pressures", []))
+    evidence_values = _as_list_of_strings(data.get("evidences", []))
+    legacy_source_type = _source_type_for_legacy_payload(data)
+    legacy_sources = _source_refs(evidence_values, source_type=legacy_source_type)
+
+    regulatory_framework_items = _as_list_of_strings(
+        data.get("regulatory_frameworks", [])
+    )
+    generated_claims = _generate_v3_claims(
+        evidence_register=evidence_register,
+        legacy_sources=legacy_sources,
+        legacy_source_type=legacy_source_type,
+        regulatory_frameworks=regulatory_framework_items,
+        regulatory_pressures=regulatory_pressures,
+        priority_markets=priority_markets,
+        business_lines=business_lines,
+        active_transformations=active_transformations,
+        operating_constraints=operating_constraints,
+        vendor_dependencies=vendor_dependencies,
+        recent_incident_signals=recent_incident_signals,
+    )
 
     payload = {
         "client_name": client_name,

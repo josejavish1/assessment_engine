@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 import asyncio
 import json
@@ -216,13 +217,8 @@ def unique_list(items: list[str], limit: int | None = None) -> list[str]:
 
 
 def summarize_project_name(name: str) -> str:
-    """Summarize project name according to architectural specification."""
-    text = " ".join(str(name or "").split())
-    if ":" in text:
-        _, remainder = text.split(":", 1)
-        if remainder.strip():
-            return remainder.strip()
-    return text
+    """Preserves exact canonical project title for strict cross-document consistency."""
+    return " ".join(str(name or "").split()).strip()
 
 
 def build_executive_handover(blueprint: BlueprintPayload) -> dict[str, Any]:
@@ -360,9 +356,7 @@ def derive_priority_initiatives(
     ranked: list[tuple[int, float, str, InitiativeAnnex]] = []
     for pillar in blueprint.pillars_analysis:
         for project in pillar.projects_todo:
-            priority = infer_initiative_priority(
-                project, pillar.score, locale=locale
-            )
+            priority = infer_initiative_priority(project, pillar.score, locale=locale)
             ranked.append(
                 (
                     PRIORITY_RANK.get(priority, 1),
@@ -440,14 +434,10 @@ def _format_pillar_gaps_narrative(gaps_findings: list[Any]) -> str:
     main_risks = []
     for f in gaps_findings[:2]:
         fd = (
-            getattr(f, "risk_observed", None)
-            or getattr(f, "finding", None)
-            or ""
+            getattr(f, "risk_observed", None) or getattr(f, "finding", None) or ""
         ).strip()
         br = (
-            getattr(f, "impact", None)
-            or getattr(f, "business_risk", None)
-            or ""
+            getattr(f, "impact", None) or getattr(f, "business_risk", None) or ""
         ).strip()
         if fd:
             main_gaps.append(fd.split(".")[0] + ".")
@@ -458,16 +448,11 @@ def _format_pillar_gaps_narrative(gaps_findings: list[Any]) -> str:
         " ".join(main_gaps)
         or "Se registran carencias en la automatización de la infraestructura."
     )
-    risks_str = (
-        " ".join(main_risks)
-        or "Esto eleva el riesgo de incidentes operativos."
-    )
+    risks_str = " ".join(main_risks) or "Esto eleva el riesgo de incidentes operativos."
     return f"La limitación principal reside en que {gaps_str} Esto deriva en un impacto directo de negocio: {risks_str}"
 
 
-def _format_pillar_score_justification(
-    formatted_score: str, worst_cap: str
-) -> str:
+def _format_pillar_score_justification(formatted_score: str, worst_cap: str) -> str:
     return (
         f"La calificación final del pilar ({formatted_score}) se encuentra sustentada por el nivel de madurez base, "
         f"pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', "
@@ -505,20 +490,16 @@ def derive_pillar_executive_reading(
     sorted_findings = sorted(
         findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True
     )
-    gaps_findings = (
-        [f for f in sorted_findings if get_vuln(f) >= 4] or sorted_findings[:1]
-    )
+    gaps_findings = [f for f in sorted_findings if get_vuln(f) >= 4] or sorted_findings[
+        :1
+    ]
     stable_findings = [f for f in sorted_findings if f not in gaps_findings]
 
     gaps_caps = [
-        f.target_state
-        for f in gaps_findings
-        if getattr(f, "target_state", None)
+        f.target_state for f in gaps_findings if getattr(f, "target_state", None)
     ]
     stable_caps = [
-        f.target_state
-        for f in stable_findings
-        if getattr(f, "target_state", None)
+        f.target_state for f in stable_findings if getattr(f, "target_state", None)
     ]
     worst_cap = gaps_caps[0] if gaps_caps else "las capacidades críticas"
 
@@ -527,15 +508,37 @@ def derive_pillar_executive_reading(
         pillar.pilar_name, band, formatted_score, stable_caps, gaps_caps, v_idx
     )
     gaps_text = _format_pillar_gaps_narrative(gaps_findings)
-    justification_text = _format_pillar_score_justification(
-        formatted_score, worst_cap
-    )
+    justification_text = _format_pillar_score_justification(formatted_score, worst_cap)
 
     return (
         f"**Situación de Capacidades (KPIs):**\n{kpis_text}\n\n"
         f"**Brechas y Consecuencias Operativas:**\n{gaps_text}\n\n"
         f"**Justificación de la Nota:**\n{justification_text}"
     )
+
+
+def _extract_existing_pillar_readings(result_payload: Any) -> dict[str, str]:
+    """Extract existing executive readings from pillar score profile if present."""
+    readings: dict[str, str] = {}
+    if not (
+        hasattr(result_payload, "pillar_score_profile")
+        and result_payload.pillar_score_profile
+    ):
+        return readings
+    for p in getattr(result_payload.pillar_score_profile, "pillars", []):
+        label = (
+            p.get("pillar_label")
+            if isinstance(p, dict)
+            else getattr(p, "pillar_label", None)
+        )
+        reading = (
+            p.get("executive_reading")
+            if isinstance(p, dict)
+            else getattr(p, "executive_reading", None)
+        )
+        if label and reading:
+            readings[label] = reading
+    return readings
 
 
 def enrich_annex_payload(
@@ -555,9 +558,7 @@ def enrich_annex_payload(
         or "es"
     )
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
-    target_scores = [
-        pillar.target_score for pillar in blueprint.pillars_analysis
-    ]
+    target_scores = [pillar.target_score for pillar in blueprint.pillars_analysis]
     avg_score = average(scores)
     avg_target_score = average(target_scores, default=4.0)
     target_capabilities, gap_rows = derive_gap_rows(blueprint)
@@ -586,43 +587,20 @@ def enrich_annex_payload(
         else "unknown"
     )
     if blueprint.generation_metadata and blueprint.generation_metadata.run_id:
-        meta_dict["source_blueprint_run_id"] = (
-            blueprint.generation_metadata.run_id
-        )
+        meta_dict["source_blueprint_run_id"] = blueprint.generation_metadata.run_id
     result_payload.document_meta = meta_dict
 
-    # SOTA Practice: Preserve rich generative reading from LLM and fall back to deterministic template only if missing
-    existing_pillar_readings = {}
-    if (
-        hasattr(result_payload, "pillar_score_profile")
-        and result_payload.pillar_score_profile
-    ):
-        for p in getattr(result_payload.pillar_score_profile, "pillars", []):
-            label = (
-                p.get("pillar_label")
-                if isinstance(p, dict)
-                else getattr(p, "pillar_label", None)
-            )
-            reading = (
-                p.get("executive_reading")
-                if isinstance(p, dict)
-                else getattr(p, "executive_reading", None)
-            )
-            if label and reading:
-                existing_pillar_readings[label] = reading
+    # Preserve rich generative reading from LLM and fall back to deterministic template only if missing
+    existing_pillar_readings = _extract_existing_pillar_readings(result_payload)
 
     result_payload.pillar_score_profile.pillars = [
         {
             "pillar_label": pillar.pilar_name,
             "score_display": str(pillar.score),
-            "maturity_band": derive_maturity_band(
-                pillar.score, locale=doc_lang
-            ),
+            "maturity_band": derive_maturity_band(pillar.score, locale=doc_lang),
             "executive_reading": (
                 existing_pillar_readings.get(pillar.pilar_name)
-                or derive_pillar_executive_reading(
-                    pillar, idx, locale=doc_lang
-                )
+                or derive_pillar_executive_reading(pillar, idx, locale=doc_lang)
             ),
         }
         for idx, pillar in enumerate(blueprint.pillars_analysis)
@@ -639,9 +617,7 @@ def enrich_annex_payload(
     if str(avg_target_score) not in str(
         result_payload.executive_summary.target_maturity
     ):
-        result_payload.executive_summary.target_maturity = (
-            f"{avg_target_score:.1f}"
-        )
+        result_payload.executive_summary.target_maturity = f"{avg_target_score:.1f}"
 
     # Calculate and inject financial Cost of Inaction (COI) deterministically
     global_fair_ale = blueprint.total_fair_ale or 0.0
@@ -762,17 +738,23 @@ def build_synthesis_prompt(
     tower_name = blueprint_data.get("document_meta", {}).get(
         "tower_name", "la torre evaluada"
     )
-    
+
     # Calculate dynamic temporal values based on current actual system year (timeless engineering)
     import datetime
+
     from assessment_engine.infrastructure.text_utils import format_date_spanish
+
     now = datetime.datetime.now()
     current_year = now.year
-    
-    current_date_str = format_date_spanish().upper()  # Standard uppercase month and year
+
+    current_date_str = (
+        format_date_spanish().upper()
+    )  # Standard uppercase month and year
     active_strategic_range = f"{current_year - 1}-{current_year + 3}"  # e.g., 2026-2030
-    future_investment_horizon_range = f"{current_year + 1}-{current_year + 3}/{current_year + 4}" # e.g., 2028-2030/2031
-    obsolete_strategic_range = f"{current_year - 6}-{current_year - 2}" # e.g., 2021-2025
+    future_investment_horizon_range = f"{current_year + 1}-{current_year + 3}/{current_year + 4}"  # e.g., 2028-2030/2031
+    obsolete_strategic_range = (
+        f"{current_year - 6}-{current_year - 2}"  # e.g., 2021-2025
+    )
 
     prompt = (
         f"Eres un {config['role']} con expertise en {config['expertise']}.\n"
@@ -962,7 +944,6 @@ async def synthesize_annex(client_name: str, tower_id: str):
                 try:
                     tmp_path.unlink()
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
-
                     logger.debug(f"[Fallback] Excepción controlada: {ex}")
         print(f"✅ Anexo Ejecutivo sintetizado con éxito: {output_path}")
     else:
