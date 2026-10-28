@@ -533,10 +533,19 @@ def enrich_annex_payload(
 
     # Calculate and inject financial Cost of Inaction (COI) deterministically
     global_fair_ale = blueprint.total_fair_ale or 0.0
-    global_fair_p90 = 0.0
-    for p in blueprint.pillars_analysis:
-        for hc in p.health_check_asis:
-            global_fair_p90 += hc.fair_p90_score or 0.0
+    portfolio_p90 = getattr(blueprint, "total_fair_p90", None)
+    if not portfolio_p90 and hasattr(blueprint, "model_dump"):
+        portfolio_p90 = blueprint.model_dump().get("total_fair_p90")
+
+    if portfolio_p90 and float(portfolio_p90) > 0:
+        global_fair_p90 = float(portfolio_p90)
+    else:
+        p90_raw = 0.0
+        for p in blueprint.pillars_analysis:
+            for hc in p.health_check_asis:
+                p90_raw += hc.fair_p90_score or 0.0
+        diversification = 1.0 / (len(blueprint.pillars_analysis) ** 0.35) if blueprint.pillars_analysis else 1.0
+        global_fair_p90 = p90_raw * diversification
 
     coi_extreme_3y = global_fair_p90 + (global_fair_ale * 2)
 

@@ -994,14 +994,14 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     blueprint_payload = scrub_client_placeholders(blueprint_payload, client_name)
 
-    #
-    total_ale = 0.0
-    for pilar in blueprint_payload.get("pillars_analysis", []):
-        for finding in pilar.get("health_check_asis", []):
-            val = finding.get("fair_ale_score")
-            total_ale += float(val) if val is not None else 0.0
-
-    blueprint_payload["total_fair_ale"] = total_ale
+    # Respect portfolio-level integrated ALE from SovereignPolicyEngine if present; fallback to sum if missing
+    if not blueprint_payload.get("total_fair_ale"):
+        total_ale = 0.0
+        for pilar in blueprint_payload.get("pillars_analysis", []):
+            for finding in pilar.get("health_check_asis", []):
+                val = finding.get("fair_ale_score")
+                total_ale += float(val) if val is not None else 0.0
+        blueprint_payload["total_fair_ale"] = total_ale
 
     #
     try:

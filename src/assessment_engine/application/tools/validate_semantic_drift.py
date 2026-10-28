@@ -31,8 +31,7 @@ def get_modified_py_files(repo_root: Path) -> list[str]:
             check=True,
         )
         modified.update(res.stdout.splitlines())
-    except (OSError, ValueError, KeyError, AttributeError) as ex:
-
+    except (OSError, ValueError, KeyError, AttributeError, subprocess.SubprocessError) as ex:
         logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # 2. Try diffing against HEAD~1 (commits on local branches)
@@ -46,23 +45,22 @@ def get_modified_py_files(repo_root: Path) -> list[str]:
                 check=True,
             )
             modified.update(res.stdout.splitlines())
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-
+        except (OSError, ValueError, KeyError, AttributeError, subprocess.SubprocessError) as ex:
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     # 3. Fallback to uncommitted changes
-    try:
-        res = subprocess.run(
-            ["git", "diff", "--name-only"],
-            cwd=repo_root,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        modified.update(res.stdout.splitlines())
-    except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+    if not modified:
+        try:
+            res = subprocess.run(
+                ["git", "diff", "--name-only"],
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            modified.update(res.stdout.splitlines())
+        except (OSError, ValueError, KeyError, AttributeError, subprocess.SubprocessError) as ex:
+            logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
     return [f.strip() for f in modified if f.strip().endswith(".py")]
 

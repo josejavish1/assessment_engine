@@ -117,3 +117,25 @@ def test_docx_compiler_e2e() -> None:
         # Row 2 (Data)
         assert table.rows[1].cells[0].text == "Compute"
         assert table.rows[1].cells[1].text == "4.5"
+
+
+def test_safe_shade_cell_ooxml_schema_ordering() -> None:
+    """Verify that safe_shade_cell strictly preserves OOXML schema element sequence in tcPr."""
+    from docx import Document
+    from docx.oxml import parse_xml
+    from docx.oxml.ns import nsdecls
+    from assessment_engine.adapters.compilers.docx_compiler import safe_shade_cell
+
+    doc = Document()
+    table = doc.add_table(rows=1, cols=1)
+    cell = table.cell(0, 0)
+    tcPr = cell._tc.get_or_add_tcPr()
+    v_align = parse_xml(f'<w:vAlign {nsdecls("w")} w:val="center"/>')
+    tcPr.append(v_align)
+
+    safe_shade_cell(cell, "FF0000")
+
+    children = [child.tag.split("}")[-1] for child in list(tcPr)]
+    assert "shd" in children
+    assert "vAlign" in children
+    assert children.index("shd") < children.index("vAlign")

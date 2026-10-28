@@ -924,11 +924,15 @@ class FairRiskPolicy(BaseSovereignPolicy):
         
         custom_calibration = None
         capability_calibrations = {}
+        reg_max_fine = 2000000.0
         if custom_profile_path.exists():
             try:
                 with open(custom_profile_path, "r", encoding="utf-8-sig") as cf:
                     custom_calibration = json.load(cf)
                     capability_calibrations = custom_calibration.get("capability_calibrations", {})
+                    val_fine = custom_calibration.get("reg_max_fine_eur")
+                    if val_fine is not None:
+                        reg_max_fine = float(val_fine)
                     logger.info(f"🎯 [Policy Engine] Cargando calibración financiera dinámica desde: {custom_profile_path}")
             except Exception as e:
                 logger.warning(f"Error loading custom risk profile: {e}")
@@ -1581,6 +1585,23 @@ class FairRiskPolicy(BaseSovereignPolicy):
 
                 # Sum vectorially to compile the corporate-wide annual loss distribution (Gap 2)
                 total_annual_losses += truncated_losses
+
+        # SOTA Actuarial Practice: Portfolio Subadditivity & Operational Absorption Cap
+        if len(total_annual_losses) > 0 and np.sum(total_annual_losses) > 0:
+            if hourly_cost is not None and float(hourly_cost) > 0:
+                hourly_f = float(hourly_cost)
+                # Maximum plausible cumulative operational downtime across a single tech tower per year (120 hours ceiling)
+                max_annual_tower_loss = hourly_f * 120.0 + min(reg_max_fine, hourly_f * 16.0)
+                total_annual_losses = np.minimum(total_annual_losses, max_annual_tower_loss)
+
+            portfolio_sorted = np.sort(total_annual_losses)
+            portfolio_mean = float(np.mean(total_annual_losses))
+            tail_idx = int(len(portfolio_sorted) * 0.975)
+            portfolio_cvar = float(np.mean(portfolio_sorted[tail_idx:])) if len(portfolio_sorted[tail_idx:]) > 0 else portfolio_mean
+
+            payload["total_fair_ale"] = round(portfolio_mean, 2)
+            payload["total_fair_p90"] = round(portfolio_cvar, 2)
+            payload["total_fair_max"] = round(float(np.percentile(total_annual_losses, 99.0)), 2)
 
         # Generate the Loss Exceedance Curve (LEC) Chart (Gap 2)
         if len(total_annual_losses) > 0 and np.sum(total_annual_losses) > 0:

@@ -12,10 +12,6 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-SRC_ROOT = Path(__file__).resolve().parents[2]
-if str(SRC_ROOT) not in sys.path:
-    sys.path.insert(0, str(SRC_ROOT))
-
 from assessment_engine.domain.maturity_band import (
     GLOBAL_MATURITY_BANDS,
     resolve_maturity_band,
@@ -77,11 +73,9 @@ def _safe_float(value: Any, default: float) -> float:
 
 
 def _try_float(value: Any) -> float | None:
-    if value in (None, ""):
-        return None
     try:
         return float(str(value).split()[0].replace(",", "."))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError, IndexError):
         return None
 
 

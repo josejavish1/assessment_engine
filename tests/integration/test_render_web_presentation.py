@@ -41,6 +41,14 @@ def test_strategic_terminal_escapes_json_for_script_blocks() -> None:
     assert "\\u003c/script\\u003e" in nexus_json
 
 
+def test_normalize_tower_meta_preserves_explicit_band() -> None:
+    from assessment_engine.adapters.render_web_presentation import _normalize_tower_meta
+
+    meta = {"band": "CustomEliteBand", "score": "1.0"}
+    normalized = _normalize_tower_meta(meta)
+    assert normalized["band"] == "CustomEliteBand"
+
+
 def _script_json(html: str, script_id: str) -> str:
     match = re.search(
         rf'<script id="{script_id}" type="application/json">(.*?)</script>',

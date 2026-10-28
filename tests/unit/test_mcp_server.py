@@ -108,3 +108,28 @@ async def test_mcp_abort_and_revert_execution() -> None:
         assert data["success"] is False
         assert "Error al revertir" in data["message"]
         assert "Git repository locked" in data["message"]
+
+
+def test_inspect_payload_artifact_blueprint_mutation_gate(tmp_path: Path) -> None:
+    """Verify that _inspect_payload_artifact correctly accesses attributes for Blueprint schemas."""
+    from assessment_engine.mcp_server import _inspect_payload_artifact
+    from pathlib import Path
+
+    class MockMeta:
+        tower_code = "T1"
+        tower_name = "Workplace"
+
+    class MockBlueprint:
+        document_meta = MockMeta()
+
+        @classmethod
+        def model_validate(cls, data):
+            return cls()
+
+    p_file = tmp_path / "bp.json"
+    p_file.write_text("{}", encoding="utf-8")
+
+    res = _inspect_payload_artifact(p_file, MockBlueprint, "Blueprint")
+    assert res["status"] == "valid"
+    assert res["tower_code"] == "T1"
+    assert res["tower_name"] == "Workplace"

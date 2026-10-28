@@ -1,9 +1,9 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793187544,
-  "global_grade": "B",
-  "global_score": 76.1,
+  "timestamp": 1793190494,
+  "global_grade": "A",
+  "global_score": 82.9,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
@@ -32,20 +32,20 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 49.3,
+      "score_pct": 51.0,
       "passed": false,
       "metrics": {
-        "prod_sloc": 55882,
-        "test_sloc": 5708,
-        "test_to_code_ratio": 0.1,
-        "maintainability_index_sei": 29.4,
-        "typed_functions_pct": 84.5,
-        "docstring_coverage_pct": 76.5,
+        "prod_sloc": 55266,
+        "test_sloc": 5888,
+        "test_to_code_ratio": 0.11,
+        "maintainability_index_sei": 29.5,
+        "typed_functions_pct": 84.3,
+        "docstring_coverage_pct": 77.4,
         "max_cognitive_complexity": 570,
-        "rango_d_functions_count": 46,
-        "god_modules_count": 23,
-        "high_cognitive_funcs_count": 128,
-        "deep_nesting_funcs_count": 80
+        "rango_d_functions_count": 44,
+        "god_modules_count": 22,
+        "high_cognitive_funcs_count": 124,
+        "deep_nesting_funcs_count": 76
       },
       "findings": [
         {
@@ -916,7 +916,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 81,
+          "line_number": 83,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Función 'main' excede límite ciclomático: V(G) = 90 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
@@ -925,7 +925,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 81,
+          "line_number": 83,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'main': 8 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -934,7 +934,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 81,
+          "line_number": 83,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'main': CoC = 196 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -981,7 +981,7 @@
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 692 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_executive_annex_synthesizer.py' tiene 700 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -1018,6 +1018,15 @@
           "line_number": 346,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'derive_pillar_executive_reading': CoC = 29 (límite cognitivo <= 15)",
+          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
+          "line_number": 474,
+          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
+          "message": "Sobrecarga cognitiva en 'enrich_annex_payload': CoC = 22 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -1125,23 +1134,23 @@
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 874 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'run_tower_blueprint_engine.py' tiene 876 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 295,
+          "line_number": 296,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'run_tower_blueprint' excede límite ciclomático: V(G) = 103 (Rango D > 20)",
+          "message": "Función 'run_tower_blueprint' excede límite ciclomático: V(G) = 104 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 295,
+          "line_number": 296,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'run_tower_blueprint': 6 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1150,16 +1159,16 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 295,
+          "line_number": 296,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'run_tower_blueprint': CoC = 219 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'run_tower_blueprint': CoC = 223 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 474,
+          "line_number": 475,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'process_single_pillar_async': 5 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1168,7 +1177,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 474,
+          "line_number": 475,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'process_single_pillar_async': CoC = 25 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1177,7 +1186,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 837,
+          "line_number": 838,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'enrich_project': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1186,7 +1195,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 837,
+          "line_number": 838,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'enrich_project': CoC = 39 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1591,7 +1600,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 128,
+          "line_number": 126,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'check_semantic_drift': 4 niveles de profundidad (límite <= 3)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -1600,7 +1609,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 128,
+          "line_number": 126,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'check_semantic_drift': CoC = 33 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
@@ -1756,114 +1765,6 @@
           "line_number": 487,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Sobrecarga cognitiva en 'monitor_mode': CoC = 31 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 1,
-          "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'nightly_self_healing.py' tiene 673 SLOC (límite recomendado <= 600)",
-          "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 105,
-          "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en 'add_source_of_truth_to_map': 4 niveles de profundidad (límite <= 3)",
-          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 105,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'add_source_of_truth_to_map': CoC = 17 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 259,
-          "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en 'run_runnable_docs_validation': 6 niveles de profundidad (límite <= 3)",
-          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 259,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'run_runnable_docs_validation': CoC = 35 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 449,
-          "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en 'discover_and_register_untracked_md': 4 niveles de profundidad (límite <= 3)",
-          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 449,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'discover_and_register_untracked_md': CoC = 29 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 571,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'discover_dynamic_source_of_truth_dependencies' excede límite ciclomático: V(G) = 22 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 571,
-          "rule_id": "ARCH-DEEP-NESTING",
-          "message": "Anidamiento excesivo en 'discover_dynamic_source_of_truth_dependencies': 4 niveles de profundidad (límite <= 3)",
-          "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 571,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'discover_dynamic_source_of_truth_dependencies': CoC = 42 (límite cognitivo <= 15)",
-          "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 667,
-          "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'main' excede límite ciclomático: V(G) = 32 (Rango D > 20)",
-          "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
-        },
-        {
-          "category": "COMPLEXITY",
-          "severity": "CRITICAL",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 667,
-          "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'main': CoC = 48 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -2250,7 +2151,7 @@
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Archivo monolito detectado: 'policy_engine.py' tiene 1256 SLOC (límite recomendado <= 600)",
+          "message": "Archivo monolito detectado: 'policy_engine.py' tiene 1272 SLOC (límite recomendado <= 600)",
           "recommendation": "Desacoplar en submódulos de dominio cohesivos para reducir la entropía."
         },
         {
@@ -2340,7 +2241,7 @@
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
           "line_number": 822,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Función 'evaluate_and_patch' excede límite ciclomático: V(G) = 111 (Rango D > 20)",
+          "message": "Función 'evaluate_and_patch' excede límite ciclomático: V(G) = 117 (Rango D > 20)",
           "recommendation": "Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10)."
         },
         {
@@ -2358,7 +2259,7 @@
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
           "line_number": 822,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'evaluate_and_patch': CoC = 263 (límite cognitivo <= 15)",
+          "message": "Sobrecarga cognitiva en 'evaluate_and_patch': CoC = 272 (límite cognitivo <= 15)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -2545,52 +2446,15 @@
     },
     "mutation_gate": {
       "probe_name": "Mutation Testing Score (ISO/IEC/IEEE 29119 & GEMA 54)",
-      "score_pct": 33.3,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "mutants_tested": 6,
-        "mutants_killed": 2,
-        "mutation_score_pct": 33.3,
+        "mutants_killed": 6,
+        "mutation_score_pct": 100.0,
         "paired_modules_count": 25
       },
-      "findings": [
-        {
-          "category": "MUTATION",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/mcp_server.py",
-          "line_number": null,
-          "rule_id": "MUT-ROR-SURVIVED",
-          "message": "Mutante en 'mcp_server.py' sobrevivió (ROR: '==' invertido a '!=' en línea 71): los tests no detectaron la corrupción.",
-          "recommendation": "Añadir aserciones directas sobre los operadores aritméticos o lógicos evaluados."
-        },
-        {
-          "category": "MUTATION",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/render_web_presentation.py",
-          "line_number": null,
-          "rule_id": "MUT-ROR-SURVIVED",
-          "message": "Mutante en 'render_web_presentation.py' sobrevivió (ROR: 'not in' invertido a 'in' en línea 16): los tests no detectaron la corrupción.",
-          "recommendation": "Añadir aserciones directas sobre los operadores aritméticos o lógicos evaluados."
-        },
-        {
-          "category": "MUTATION",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/compilers/docx_compiler.py",
-          "line_number": null,
-          "rule_id": "MUT-ROR-SURVIVED",
-          "message": "Mutante en 'docx_compiler.py' sobrevivió (ROR: 'in' invertido a 'not in' en línea 82): los tests no detectaron la corrupción.",
-          "recommendation": "Añadir aserciones directas sobre los operadores aritméticos o lógicos evaluados."
-        },
-        {
-          "category": "MUTATION",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": null,
-          "rule_id": "MUT-SURVIVED",
-          "message": "Mutante en 'validate_semantic_drift.py' sobrevivió (COR: booleano 'True' invertido a 'False' en línea 29): los tests no detectaron la corrupción.",
-          "recommendation": "Añadir aserciones directas sobre los operadores aritméticos o lógicos evaluados."
-        }
-      ]
+      "findings": []
     },
     "supply_chain": {
       "probe_name": "Supply Chain, OSV.dev & SBOM (CycloneDX 1.6 / CRA)",
@@ -4034,7 +3898,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "network_calls_audited": 15,
+        "network_calls_audited": 14,
         "unbounded_timeouts_count": 0,
         "has_circuit_breaker": true,
         "has_exponential_backoff": true,
@@ -4077,7 +3941,7 @@
       "metrics": {
         "scanned_files": 287,
         "entropy_violations_count": 1,
-        "long_parameter_funcs_count": 14,
+        "long_parameter_funcs_count": 13,
         "god_classes_count": 0,
         "zombie_code_blocks_count": 0
       },
@@ -4104,7 +3968,7 @@
           "category": "STRUCTURAL_SMELL",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 657,
+          "line_number": 666,
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Función pública 'generate_synthesis' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
           "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
@@ -4113,7 +3977,7 @@
           "category": "STRUCTURAL_SMELL",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 208,
+          "line_number": 209,
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Función pública 'process_pilar_blueprint' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
           "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
@@ -4125,15 +3989,6 @@
           "line_number": 636,
           "rule_id": "SMELL-LONG-PARAMETER-LIST",
           "message": "Función pública 'build_tower_definition' declara 9 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-          "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 325,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Función pública 'run_ai_semantic_auditor_validation' declara 6 parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
           "recommendation": "Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
         },
         {
@@ -4230,10 +4085,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.48,
-        "p95_latency_ms": 80.15,
-        "p99_latency_ms": 131.49,
-        "tail_amplification_ratio": 88.84,
+        "p50_latency_ms": 1.44,
+        "p95_latency_ms": 56.03,
+        "p99_latency_ms": 181.83,
+        "tail_amplification_ratio": 126.27,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []
@@ -4381,16 +4236,16 @@
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 72.4,
+      "score_pct": 72.8,
       "passed": false,
       "metrics": {
         "files_scanned": 316,
-        "inline_rationale_score": 76.9,
-        "contract_coverage_score": 46.0,
+        "inline_rationale_score": 77.4,
+        "contract_coverage_score": 46.6,
         "linguistic_sovereignty_score": 98.1,
-        "comment_smells_count": 1378,
-        "missing_docstrings_count": 127,
-        "cqi_score": 72.4,
+        "comment_smells_count": 1351,
+        "missing_docstrings_count": 112,
+        "cqi_score": 72.8,
         "grade": "B",
         "status": "Degradation Detected"
       },
@@ -6019,7 +5874,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_web_presentation.py",
-          "line_number": 392,
+          "line_number": 386,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -6028,7 +5883,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_web_presentation.py",
-          "line_number": 424,
+          "line_number": 418,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -6037,7 +5892,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_web_presentation.py",
-          "line_number": 439,
+          "line_number": 433,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'generate_web_dashboard' claims 'Raises: ValueError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -6046,7 +5901,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_web_presentation.py",
-          "line_number": 439,
+          "line_number": 433,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'generate_web_dashboard' claims 'Raises: retrieved', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -8575,7 +8430,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 138,
+          "line_number": 140,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8584,7 +8439,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 144,
+          "line_number": 146,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8593,7 +8448,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 190,
+          "line_number": 192,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8602,7 +8457,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 207,
+          "line_number": 209,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8611,7 +8466,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 246,
+          "line_number": 248,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8620,7 +8475,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 81,
+          "line_number": 83,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'main' claims 'Raises: FileNotFoundError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -8629,7 +8484,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 81,
+          "line_number": 83,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'main' claims 'Raises: json', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -8890,7 +8745,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 774,
+          "line_number": 783,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8899,7 +8754,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 774,
+          "line_number": 783,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -8908,7 +8763,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 784,
+          "line_number": 793,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -8917,7 +8772,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 784,
+          "line_number": 793,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -9070,7 +8925,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 581,
+          "line_number": 590,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'load_yaml_config' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -9079,7 +8934,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_executive_annex_synthesizer.py",
-          "line_number": 594,
+          "line_number": 603,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'build_synthesis_prompt' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -9097,7 +8952,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
-          "line_number": 163,
+          "line_number": 166,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -9106,7 +8961,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
-          "line_number": 193,
+          "line_number": 196,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -9205,7 +9060,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
-          "line_number": 268,
+          "line_number": 271,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'main' claims 'Raises: FileNotFoundError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -9214,7 +9069,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
-          "line_number": 268,
+          "line_number": 271,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'main' claims 'Raises: or', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -9223,7 +9078,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
-          "line_number": 268,
+          "line_number": 271,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'main' claims 'Raises: KeyError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -9232,7 +9087,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_evidence_analyst.py",
-          "line_number": 268,
+          "line_number": 271,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'main' claims 'Raises: output', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -9925,7 +9780,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 82,
+          "line_number": 83,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -9934,34 +9789,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 247,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 264,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 264,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 457,
+          "line_number": 248,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -9970,7 +9798,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 473,
+          "line_number": 265,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -9979,7 +9807,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 473,
+          "line_number": 265,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -9988,7 +9816,25 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 493,
+          "line_number": 458,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 474,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 474,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10006,7 +9852,16 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 510,
+          "line_number": 495,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 511,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10015,7 +9870,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 551,
+          "line_number": 552,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -10024,7 +9879,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 621,
+          "line_number": 622,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -10033,7 +9888,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 621,
+          "line_number": 622,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10042,7 +9897,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 623,
+          "line_number": 624,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'Tier-1'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -10051,7 +9906,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 623,
+          "line_number": 624,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10060,7 +9915,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 642,
+          "line_number": 643,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -10069,7 +9924,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 642,
+          "line_number": 643,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10078,7 +9933,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 655,
+          "line_number": 656,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10087,16 +9942,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 758,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 980,
+          "line_number": 759,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10114,7 +9960,16 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1023,
+          "line_number": 982,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
+          "line_number": 1024,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10123,7 +9978,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1023,
+          "line_number": 1024,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -10132,7 +9987,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1033,
+          "line_number": 1034,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -10141,7 +9996,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1033,
+          "line_number": 1034,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -12292,7 +12147,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 147,
+          "line_number": 145,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -12301,7 +12156,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 245,
+          "line_number": 243,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -12319,7 +12174,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 70,
+          "line_number": 68,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'get_git_diff' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -12328,7 +12183,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 101,
+          "line_number": 99,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'query_gemini_api' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -12337,7 +12192,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 128,
+          "line_number": 126,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'check_semantic_drift' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -12346,7 +12201,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 212,
+          "line_number": 210,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'parse_args' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -12355,7 +12210,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/validate_semantic_drift.py",
-          "line_number": 220,
+          "line_number": 218,
           "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
           "message": "Public function 'main' lacks formal contract docstring",
           "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
@@ -12822,375 +12677,6 @@
         {
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 454,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 469,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 471,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 474,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 482,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 501,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 504,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 508,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 511,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 534,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 560,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 632,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 633,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 636,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 638,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 657,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 661,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 733,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 733,
-          "rule_id": "NON-ENGLISH-COMMENT",
-          "message": "Non-English comment detected in production source code",
-          "recommendation": "Translate comment to concise technical English or delete if self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 736,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 756,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 759,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 787,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 800,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 807,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 812,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 29,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'update_front_matter_status_to_needs_review' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 53,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'update_map_status_to_needs_review' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 71,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'add_source_of_truth_to_front_matter' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 105,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'add_source_of_truth_to_map' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 149,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'find_correct_script_path' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 164,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'repair_stale_command_in_file' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 186,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'query_gemini_api' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 206,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'clean_json_response' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 219,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'run_command_safely' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 259,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'run_runnable_docs_validation' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 325,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'run_ai_semantic_auditor_validation' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 419,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'run_automated_stale_decay_validation' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 449,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'discover_and_register_untracked_md' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 571,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'discover_dynamic_source_of_truth_dependencies' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/nightly_self_healing.py",
-          "line_number": 667,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'main' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/repair_tower_payload_scores.py",
           "line_number": 264,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
@@ -13354,7 +12840,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 226,
+          "line_number": 228,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -13363,7 +12849,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 229,
+          "line_number": 231,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -13372,19 +12858,10 @@
           "category": "CODE_HYGIENE",
           "severity": "LOW",
           "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 229,
+          "line_number": 231,
           "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
           "message": "Unnecessary cosmetic section separator in comments",
           "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/financial_scale_calibrator.py",
-          "line_number": 231,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
         },
         {
           "category": "CODE_HYGIENE",
@@ -15829,7 +15306,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 936,
+          "line_number": 940,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15838,7 +15315,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 950,
+          "line_number": 954,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15847,7 +15324,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 962,
+          "line_number": 966,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15856,7 +15333,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1005,
+          "line_number": 1009,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -15865,7 +15342,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1012,
+          "line_number": 1016,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15874,7 +15351,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1025,
+          "line_number": 1029,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15883,7 +15360,7 @@
           "category": "CODE_HYGIENE",
           "severity": "LOW",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1093,
+          "line_number": 1097,
           "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
           "message": "Unnecessary cosmetic section separator in comments",
           "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
@@ -15892,7 +15369,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1099,
+          "line_number": 1103,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15901,7 +15378,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1105,
+          "line_number": 1109,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15910,16 +15387,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1112,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1129,
+          "line_number": 1116,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -15935,9 +15403,18 @@
         },
         {
           "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1137,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1153,
+          "line_number": 1157,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -15946,19 +15423,10 @@
           "category": "CODE_HYGIENE",
           "severity": "LOW",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1153,
+          "line_number": 1157,
           "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
           "message": "Unnecessary cosmetic section separator in comments",
           "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1173,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
         },
         {
           "category": "CODE_HYGIENE",
@@ -15980,9 +15448,18 @@
         },
         {
           "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1185,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1193,
+          "line_number": 1197,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -15991,7 +15468,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1194,
+          "line_number": 1198,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16000,7 +15477,7 @@
           "category": "CODE_HYGIENE",
           "severity": "LOW",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1202,
+          "line_number": 1206,
           "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
           "message": "Unnecessary cosmetic section separator in comments",
           "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
@@ -16008,26 +15485,26 @@
         {
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1205,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1207,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
           "line_number": 1209,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1211,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1213,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16036,7 +15513,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1212,
+          "line_number": 1216,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16045,7 +15522,7 @@
           "category": "CODE_HYGIENE",
           "severity": "LOW",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1212,
+          "line_number": 1216,
           "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
           "message": "Unnecessary cosmetic section separator in comments",
           "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
@@ -16054,7 +15531,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1220,
+          "line_number": 1224,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16063,7 +15540,7 @@
           "category": "CODE_HYGIENE",
           "severity": "LOW",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1245,
+          "line_number": 1249,
           "rule_id": "COMMENT-BEAUTIFICATION-SEPARATOR",
           "message": "Unnecessary cosmetic section separator in comments",
           "recommendation": "Remove visual banner lines (// --- or ### ---) to reduce clutter in AST."
@@ -16072,7 +15549,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1256,
+          "line_number": 1260,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16081,7 +15558,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1264,
+          "line_number": 1268,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -16090,7 +15567,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1280,
+          "line_number": 1284,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -16099,7 +15576,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1282,
+          "line_number": 1286,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -16108,7 +15585,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1292,
+          "line_number": 1296,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -16117,7 +15594,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1295,
+          "line_number": 1299,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'world-class'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16126,7 +15603,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1298,
+          "line_number": 1302,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16135,7 +15612,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1311,
+          "line_number": 1315,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16144,7 +15621,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1312,
+          "line_number": 1316,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16153,7 +15630,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1315,
+          "line_number": 1319,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16162,7 +15639,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1315,
+          "line_number": 1319,
           "rule_id": "NON-ENGLISH-COMMENT",
           "message": "Non-English comment detected in production source code",
           "recommendation": "Translate comment to concise technical English or delete if self-evident."
@@ -16171,7 +15648,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1326,
+          "line_number": 1330,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16180,7 +15657,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1327,
+          "line_number": 1331,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16189,7 +15666,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1329,
+          "line_number": 1333,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16198,7 +15675,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1335,
+          "line_number": 1339,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16207,7 +15684,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1338,
+          "line_number": 1342,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16216,7 +15693,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1347,
+          "line_number": 1351,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16225,7 +15702,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1349,
+          "line_number": 1353,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16234,28 +15711,10 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1350,
+          "line_number": 1354,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1352,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1355,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
         },
         {
           "category": "CODE_HYGIENE",
@@ -16277,9 +15736,27 @@
         },
         {
           "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1360,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1375,
+          "line_number": 1363,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1379,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16288,7 +15765,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1377,
+          "line_number": 1381,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16297,25 +15774,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1398,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1422,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1425,
+          "line_number": 1402,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16340,27 +15799,9 @@
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1435,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1444,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1444,
+          "line_number": 1430,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16369,7 +15810,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1446,
+          "line_number": 1433,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16378,7 +15819,16 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1453,
+          "line_number": 1439,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1448,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16386,35 +15836,26 @@
         {
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1448,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1450,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
           "line_number": 1457,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1458,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1490,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1499,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16423,16 +15864,43 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1500,
+          "line_number": 1461,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
         },
         {
           "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1462,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1494,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1503,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1501,
+          "line_number": 1504,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16457,21 +15925,21 @@
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1513,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1515,
+          "line_number": 1513,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1517,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
         },
         {
           "category": "CODE_HYGIENE",
@@ -16502,21 +15970,21 @@
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1535,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1536,
+          "line_number": 1531,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1539,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
         },
         {
           "category": "CODE_HYGIENE",
@@ -16529,27 +15997,9 @@
         },
         {
           "category": "CODE_HYGIENE",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1545,
-          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
-          "message": "Non-technical promotional jargon in comment: 'SOTA'",
-          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
-        },
-        {
-          "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1548,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1554,
+          "line_number": 1544,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16558,7 +16008,34 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1557,
+          "line_number": 1549,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1552,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1558,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1561,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'SOTA'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16567,7 +16044,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1559,
+          "line_number": 1563,
           "rule_id": "COMMENT-PROMOTIONAL-JARGON",
           "message": "Non-technical promotional jargon in comment: 'Tier-1'",
           "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
@@ -16576,7 +16053,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1561,
+          "line_number": 1565,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16585,7 +16062,25 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1582,
+          "line_number": 1586,
+          "rule_id": "COMMENT-ECHO-REDUNDANT",
+          "message": "Redundant echo comment: literally rephrases adjacent code logic",
+          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "HIGH",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1589,
+          "rule_id": "COMMENT-PROMOTIONAL-JARGON",
+          "message": "Non-technical promotional jargon in comment: 'SOTA'",
+          "recommendation": "Remove marketing adjectives and self-praising fluff; use neutral technical facts."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
+          "line_number": 1614,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16594,7 +16089,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1593,
+          "line_number": 1624,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16603,7 +16098,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1603,
+          "line_number": 1637,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16612,7 +16107,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1616,
+          "line_number": 1651,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -16621,16 +16116,7 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1630,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/policy_engine.py",
-          "line_number": 1671,
+          "line_number": 1692,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
@@ -17008,7 +16494,7 @@
           "category": "CODE_HYGIENE",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/raptor_engine.py",
-          "line_number": 201,
+          "line_number": 235,
           "rule_id": "DOCSTRING-UNRAISED-EXCEPTION-CLAIM",
           "message": "Docstring in 'semantic_search' claims 'Raises: AttributeError', but exception is never raised",
           "recommendation": "Synchronize docstring contract with actual exceptions raised by the body."
@@ -17349,5 +16835,5 @@
       ]
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado B (76.1%). Sondas pasadas: 12/18."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A (82.9%). Sondas pasadas: 13/18."
 }

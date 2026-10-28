@@ -195,11 +195,13 @@ class FinancialScaleCalibrator:
             - hourly_rate_sre_eur: La tarifa horaria de consultoría senior de DevOps / SRE para {client_country} en Euros.
             
             - hourly_downtime_cost_eur: El coste por hora de inactividad de su plataforma de TI, centros de datos y operaciones. 
-              Para calibrar esta cifra de forma realista, realiza un razonamiento cruzado:
-              1. Toma como límite de escala general proporcional una fracción de entre el 0.001% y el 0.01% de su facturación anual consolidada.
-              2. CRUCE CON MADUREZ TÉCNICA LOCAL: Analiza las 'Métricas de Madurez Técnica' y el 'Contexto de Arquitectura' del cliente:
-                 - Si la madurez de Resiliencia es >= 3.0 (clustering distribuido, failover geográfico, redundancia) y/o el nivel de Monitorización es >= 3.0, significa que cuentan con alta tolerancia a fallos. Sitúa el coste de inactividad efectiva en el extremo inferior del rango proporcional (ej. hacia el 0.001% de su facturación anual).
-                 - Si la madurez es baja (< 3.0), significa que sufren de puntos únicos de fallo (SPOF) o falta de monitorización. Sitúa el coste en el extremo superior (ej. hacia el 0.01% de su facturación anual).
+              Para calibrar esta cifra con rigor actuarial y credibilidad directiva:
+              1. En empresas industriales, de manufactura, construcción y B2B (como {client_name}), los procesos de fabricación y planta operan con sistemas de control local (OT/SCADA) que no se detienen instantáneamente por una caída de servidores centrales. Por tanto, el coste horario de caída de TI se sitúa típicamente entre el 0.0008% y el 0.0018% de la facturación anual consolidada (para una empresa de ~1.300 M€, esto representa entre 12.000 € y 25.000 € por hora).
+              2. En empresas financieras o comercio digital masivo (B2C), se sitúa entre el 0.002% y el 0.005%.
+              3. CRUCE CON MADUREZ TÉCNICA LOCAL: Analiza las 'Métricas de Madurez Técnica' y el 'Contexto de Arquitectura' del cliente:
+                 - Si la madurez de Resiliencia es >= 3.0 (clustering distribuido, failover geográfico, redundancia) y/o el nivel de Monitorización es >= 3.0, sitúa el coste de inactividad efectiva en el extremo inferior del rango sectorial (hacia ~12.000 € - 16.000 €/h).
+                 - Si la madurez es baja (< 3.0), sitúa el coste en el extremo superior del rango sectorial (hacia ~20.000 € - 25.000 €/h).
+              IMPORTANTE: Bajo ninguna circunstancia propongas cifras desproporcionadas (> 30.000 €/h para entornos industriales B2B).
             
             Establece obligatoriamente de forma constante:
             - currency_code: "{target_currency}"
@@ -227,12 +229,10 @@ class FinancialScaleCalibrator:
             calibration = DynamicRiskCalibration.model_validate_json(struct_result.text)
             
             # --- SOTA RISK GUARDRAIL (Anti-Hallucination Clamp) ---
-            # An hourly downtime cost of e.g. 187M EUR/hour is a severe scale hallucination.
-            # Even for critical infrastructure, hourly downtime cost should be bounded relative to annual revenue.
-            # We calculate the company's total hourly revenue rate (Revenue / 8760).
-            # We set the maximum realistic downtime cost to 5x the hourly revenue rate, or a hard cap of 500,000 EUR/hour.
+            # Hourly downtime cost is realistically bounded relative to annual turnover.
+            # In corporate B2B environments, an IT outage affects a subset of turnover, capped at 15-20% of hourly revenue.
             company_hourly_revenue = calibration.annual_revenue_eur / 8760.0
-            max_realistic_hourly = max(50000.0, min(500000.0, company_hourly_revenue * 5.0))
+            max_realistic_hourly = min(35000.0, max(8000.0, company_hourly_revenue * 0.20))
             if calibration.hourly_downtime_cost_eur > max_realistic_hourly:
                 logger.warning(
                     f"⚠️ [Financial Calibrator] Clamping disproportionate hourly downtime cost ({calibration.hourly_downtime_cost_eur:,.2f} €) "
