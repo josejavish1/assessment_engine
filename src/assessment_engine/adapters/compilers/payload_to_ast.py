@@ -88,11 +88,33 @@ class PayloadToASTBridge:
 
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
+
     def convert(
         self, blueprint_payload_path: str, approved_annex_path: str
     ) -> DocumentAST:
         """Consolidates information from input JSON files and associated Markdown/CSV modules
         to generate a complete Document Abstract Syntax Tree (AST)."""
+        ctx = self._extract_conversion_context(blueprint_payload_path, approved_annex_path)
+
+        nodes: List[Any] = []
+        self._build_cover_and_toc(ctx, nodes)
+        self._build_executive_summary_and_scope(ctx, nodes)
+        self._build_systemic_risk_section(ctx, nodes)
+        risks_data_list, fair_lookup = self._build_maturity_and_benchmarks(ctx, nodes)
+        self._build_fair_risk_analysis(ctx, nodes, risks_data_list)
+        self._build_detailed_findings_log(ctx, nodes, risks_data_list, fair_lookup)
+        self._build_conclusions_and_appendices(ctx, nodes)
+
+        return DocumentAST(
+            title=f"Technical Annex - Tower {ctx['tower_id']}",
+            metadata=ctx["tower_meta"],
+            nodes=nodes,
+        )
+
+    def _extract_conversion_context(
+        self, blueprint_payload_path: str, approved_annex_path: str
+    ) -> dict[str, Any]:
+        """Extract and prepare all context variables needed for DocumentAST compilation."""
         blueprint_file = Path(blueprint_payload_path)
         annex_file = Path(approved_annex_path)
         case_dir = blueprint_file.parent
@@ -196,7 +218,42 @@ class PayloadToASTBridge:
 
         nodes: List[Any] = []
 
-        #
+        return {
+            "blueprint_file": blueprint_file,
+            "annex_file": annex_file,
+            "case_dir": case_dir,
+            "modules_dir": modules_dir,
+            "blueprint_data": blueprint_data,
+            "intel_data": intel_data,
+            "tower_meta": tower_meta,
+            "meta_lang": meta_lang,
+            "vocab": vocab,
+            "tower_name": tower_name,
+            "tower_id": tower_id,
+            "client_name": client_name,
+            "version": version,
+            "date_str": date_str,
+            "currency": currency,
+            "is_critical": is_critical,
+            "total_fair_ale": total_fair_ale,
+            "exact_score": exact_score,
+            "exact_band": exact_band,
+            "global_score": global_score,
+            "global_band": global_band,
+            "global_reading": global_reading,
+            "gs_val": gs_val,
+            "formatted_global_score": formatted_global_score,
+            "display_score_str": display_score_str,
+        }
+
+    def _build_cover_and_toc(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        vocab = ctx["vocab"]
+        gs_val = ctx["gs_val"]
+        tower_name = ctx["tower_name"]
+        client_name = ctx["client_name"]
+        date_str = ctx["date_str"]
+        version = ctx["version"]
+        meta_lang = ctx["meta_lang"]
         # 1. Corporate Cover Page
         #
         nodes.append(SpacerNode(points=120))
@@ -267,6 +324,16 @@ class PayloadToASTBridge:
         nodes.append(PageBreakNode())
 
         #
+
+    def _build_executive_summary_and_scope(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        modules_dir = ctx["modules_dir"]
+        meta_lang = ctx["meta_lang"]
+        blueprint_data = ctx["blueprint_data"]
+        global_band = ctx["global_band"]
+        display_score_str = ctx["display_score_str"]
+        global_reading = ctx["global_reading"]
+        vocab = ctx["vocab"]
+        gs_val = ctx["gs_val"]
         # 3. CHAPTER 1: EXECUTIVE SUMMARY
         #
         resumen_path = modules_dir / "02_resumen_ejecutivo.md"
@@ -480,6 +547,12 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=health_rows))
         nodes.append(SpacerNode(points=15))
 
+
+    def _build_systemic_risk_section(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        meta_lang = ctx["meta_lang"]
+        modules_dir = ctx["modules_dir"]
+        intel_data = ctx["intel_data"]
+        tower_id = ctx["tower_id"]
         # 3.4 Assemble and render Section: Cross-Cutting Analysis and Systemic Risk
         transversal_title = "Análisis Transversal de Deuda Tecnológica y Patrones de Riesgo Estructural" if meta_lang == "es" else "Cross-Cutting Analysis of Technological Debt and Structural Risk Patterns"
         nodes.append(HeadingNode(text=transversal_title, level=2, primary_color_rgb=self.primary_color_rgb))
@@ -670,6 +743,18 @@ class PayloadToASTBridge:
             except Exception as e:
                 logger.info(f"⚠️ Error injecting systemic risk metrics in AST Bridge: {e}")
 
+
+    def _build_maturity_and_benchmarks(self, ctx: dict[str, Any], nodes: List[Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        vocab = ctx["vocab"]
+        gs_val = ctx["gs_val"]
+        case_dir = ctx["case_dir"]
+        tower_id = ctx["tower_id"]
+        modules_dir = ctx["modules_dir"]
+        blueprint_data = ctx["blueprint_data"]
+        total_fair_ale = ctx["total_fair_ale"]
+        currency = ctx["currency"]
+        client_name = ctx["client_name"]
+        meta_lang = ctx["meta_lang"]
         # 4.2 Radar Chart
         nodes.append(
             HeadingNode(
@@ -881,6 +966,15 @@ class PayloadToASTBridge:
             )
         )
 
+        return risks_data_list, fair_lookup
+
+    def _build_fair_risk_analysis(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]]) -> None:
+        vocab = ctx["vocab"]
+        gs_val = ctx["gs_val"]
+        meta_lang = ctx["meta_lang"]
+        currency = ctx["currency"]
+        client_name = ctx["client_name"]
+        is_critical = ctx["is_critical"]
         # 5.1 Generate 5x5 Heatmap (Word-native mosaic)
         if risks_data_list:
             nodes.append(
@@ -1206,6 +1300,12 @@ class PayloadToASTBridge:
             else:
                 nodes.append(SpacerNode(points=10))
 
+
+    def _build_detailed_findings_log(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]], fair_lookup: dict[str, Any]) -> None:
+        vocab = ctx["vocab"]
+        gs_val = ctx["gs_val"]
+        currency = ctx["currency"]
+        meta_lang = ctx["meta_lang"]
         # 5.3 Detailed Log Segmented by Domain (in multiple independent tables)
         if risks_data_list:
             nodes.append(
@@ -1379,6 +1479,20 @@ class PayloadToASTBridge:
         #
         # CHAPTER 5: CONCLUSIONS AND COST OF INACTION
         #
+
+    def _build_conclusions_and_appendices(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        blueprint_data = ctx["blueprint_data"]
+        modules_dir = ctx["modules_dir"]
+        vocab = ctx["vocab"]
+        gs_val = ctx["gs_val"]
+        meta_lang = ctx["meta_lang"]
+        currency = ctx["currency"]
+        is_critical = ctx["is_critical"]
+        tower_id = ctx["tower_id"]
+        client_name = ctx["client_name"]
+        case_dir = ctx["case_dir"]
+        tower_name = ctx["tower_name"]
+        tower_meta = ctx["tower_meta"]
         # 5.1 El Paradigma de Transformación (Promoted here from Chapter 4 as it represents a TO-BE vision)
         nodes.append(
             HeadingNode(
@@ -1888,11 +2002,6 @@ class PayloadToASTBridge:
             )
         )
 
-        return DocumentAST(
-            title=f"Technical Annex - Tower {tower_id}",
-            metadata=tower_meta,
-            nodes=nodes,
-        )
 
     def _parse_markdown_to_nodes(
         self, md_path: Path, skip_level_1: bool = False
