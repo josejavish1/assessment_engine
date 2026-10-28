@@ -89,12 +89,15 @@ def simulate_risk_{risk_id.replace('-', '_')}():
     simulated_losses = np.random.lognormal(mean=np.log(max(1000, lm_base * 5000)), sigma=1.5, size=iterations)
     simulated_frequencies = np.random.poisson(lam=max(0.1, tef_base * 0.5), size=iterations)
     
-    # Cálculo de Riesgo Colectivo Compuesto
+    # Cálculo de Riesgo Colectivo Compuesto y Métricas Coherentes de Riesgo (FRTB / Basel standard)
     annual_losses = simulated_losses * simulated_frequencies
+    tail_threshold = np.percentile(annual_losses, 97.5)
+    cvar_tail = annual_losses[annual_losses >= tail_threshold]
+    cvar_score = np.mean(cvar_tail) if len(cvar_tail) > 0 else np.mean(annual_losses)
     
     print("--- Validación de Modelado ---")
     print(f"ALE Proyectado (Media): {{np.mean(annual_losses):,.2f}} €")
-    print(f"CVaR Teórico (P90): {{np.percentile(annual_losses, 90.0):,.2f}} €")
+    print(f"CVaR Teórico (Expected Shortfall 97.5%): {{cvar_score:,.2f}} €")
     print(f"Límite Máximo (P99): {{np.percentile(annual_losses, 99.0):,.2f}} €")
 
 if __name__ == "__main__":

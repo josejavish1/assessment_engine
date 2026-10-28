@@ -300,76 +300,44 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 ).lower()
 
                 # Implements dynamic qualitative TEF and LM mapping from the AI-Elicited scores (Gap 1)
-                # Falls back to standard text heuristics if not available in the payload
-                tef = int(finding.get("_elicited_tef", 3) or 3)
-                if "_elicited_tef" not in finding:
-                    tef = 3
-                    has_defense = any(
-                        d in text
-                        for d in [
-                            "protegido contra",
-                            "defensa contra",
-                            "inmune",
-                            "mitigado",
-                            "ausencia de",
-                            "sin riesgo",
-                        ]
-                    )
-                    if not has_defense and any(
-                        k in text
-                        for k in [
-                            "ransomware",
-                            "ataque",
-                            "pública",
-                            "internet",
-                            "ddos",
-                            "hack",
-                        ]
-                    ):
-                        tef = 5
-                    elif any(
-                        k in text
-                        for k in ["interno", "error", "manual", "legacy", "obsoleto"]
-                    ):
-                        tef = 4
+                # Falls back to deterministic mapping from calibrated severity if not available in the payload
+                tef = int(finding.get("_elicited_tef", 0) or 0)
+                sev_raw = str(finding.get("severity", "")).lower()
+
+                if tef == 0:
+                    if sev_raw in ["critical", "crítica"]:
+                        tef = 5 if ("internet" in text or "ransomware" in text) else 4
+                    elif sev_raw in ["high", "alta"]:
+                        tef = 4 if p_score < 3.0 else 3
+                    elif sev_raw in ["low", "baja", "informativa"]:
+                        tef = 1 if p_score >= 3.5 else 2
+                    else:
+                        if "internet" in text or "ransomware" in text:
+                            tef = 5
+                        elif p_score < 2.5:
+                            tef = 4
+                        else:
+                            tef = 3
 
                 # Implements dynamic qualitative Loss Magnitude mapping (Gap 1)
-                # Falls back to standard text heuristics if not available in the payload
-                lm = int(finding.get("_elicited_lm", 3) or 3)
-                if "_elicited_lm" not in finding:
-                    if any(
-                        k in text
-                        for k in [
-                            "parada total",
-                            "caída catastrófica",
-                            "indisponibilidad crítica",
-                        ]
-                    ):
+                # Falls back to deterministic mapping from calibrated severity if not available in the payload
+                lm = int(finding.get("_elicited_lm", 0) or 0)
+                if lm == 0:
+                    if sev_raw in ["critical", "crítica"]:
                         lm = 5
-                    elif any(
-                        k in text
-                        for k in [
-                            "nis2",
-                            "ens",
-                            "soc2",
-                            "hipaa",
-                            "fedramp",
-                            "gdpr",
-                            "lgpd",
-                            "multa",
-                            "sanción",
-                            "retraso",
-                            "indisponibilidad",
-                            "pérdida de datos",
-                            "legal",
-                            "compliance",
-                            "regulatory",
-                            "penalty",
-                        ]
-                    ):
+                    elif sev_raw in ["high", "alta"]:
                         lm = 4
-                    else:
+                    elif sev_raw in ["medium", "media"]:
                         lm = 3
+                    elif sev_raw in ["low", "baja", "informativa"]:
+                        lm = 2
+                    else:
+                        if "parada total" in text or "caída catastrófica" in text:
+                            lm = 5
+                        elif any(k in text for k in ["nis2", "ens", "multa", "sanción"]):
+                            lm = 4
+                        else:
+                            lm = 3
 
                 # Sanity Gate: Bound TEF and LM by the finding's calibrated severity when explicitly specified
                 # A Low or Informative finding cannot escalate to catastrophic TEF=5 or LM=5
@@ -779,20 +747,17 @@ class FairRiskPolicy(BaseSovereignPolicy):
                             else:
                                 reg_max_fine = 10000000.0 # Global statutory baseline cap (NIS2 / GDPR / ISO)
 
-                        # Generate raw lognormal samples for secondary losses and passing our safe local rng
-                        if hourly_cost is not None:
-                            hourly = float(hourly_cost)
-                            reg_max_fine = min(reg_max_fine, hourly * 8.0)
-
+                        # SOTA Tier-1 Actuarial Practice: Statutory Secondary Loss Calibration
+                        # Mode (most likely fine) calibrated to 10% of maximum statutory exposure under GDPR/NIS2/DORA
                         if lm >= 4:
-                            # SOTA Actuarial Practice: Calibrate the mode (most likely) as a proportion of the legal maximum fine limit
-                            if hourly_cost is not None:
-                                most_likely_fine = min(reg_max_fine * 0.1, float(hourly_cost) * 1.5)
-                            else:
-                                most_likely_fine = min(1000000.0, reg_max_fine * 0.1)
-                            raw_sec_losses = self._sample_lognormal(rng, min(10000.0, lm_min), most_likely_fine, reg_max_fine, size=num_sec)
+                            most_likely_fine = max(10000.0, reg_max_fine * 0.1)
+                            raw_sec_losses = self._sample_lognormal(
+                                rng, min(10000.0, lm_min), most_likely_fine, reg_max_fine, size=num_sec
+                            )
                         else:
-                            raw_sec_losses = self._sample_lognormal(rng, lm_min * 2.0, lm_ml * 2.0, min(reg_max_fine, lm_max * 2.0), size=num_sec)
+                            raw_sec_losses = self._sample_lognormal(
+                                rng, lm_min * 2.0, lm_ml * 2.0, min(reg_max_fine, lm_max * 2.0), size=num_sec
+                            )
 
                         # SOTA Actuarial Practice: True Directional Gaussian Copula with Asymmetric Tail Dependence
                         # Primary damage is a real physical simulation that ALREADY HAPPENED.

@@ -886,15 +886,34 @@ class EpistemicDistiller:
         seed: dict[str, Any] | None = None,
     ) -> ProductStrategyDossier:
         """Parse the JSON response robustly, merging with local taxonomy seed."""
-        match = re.search(r"(\{.*\})", raw_text.strip(), flags=re.DOTALL)
-        clean = match.group(1) if match else raw_text.strip()
+        from assessment_engine.infrastructure.json_from_model import (
+            parse_json_from_text,
+        )
+
         try:
-            data = json.loads(clean)
+            data = parse_json_from_text(raw_text.strip())
+            if not isinstance(data, dict):
+                data = {}
         except Exception:  # noqa: BLE001
-            return self._heuristic_fallback(task, sector, queries, archetype=archetype, seed=seed)
+            return self._heuristic_fallback(
+                task, sector, queries, archetype=archetype, seed=seed
+            )
 
         seed_leaders = tuple(seed.get("leaders", [])) if seed else ()
-        leaders = _to_string_tuple(data.get("leaders"), seed_leaders or ("Stripe", "Adyen", "Shopify"))
+        if not seed_leaders:
+            default_leaders_by_sector = {
+                "fintech": ("Stripe", "Adyen", "Shopify"),
+                "energy": ("Schneider Electric", "Siemens Energy", "ABB"),
+                "healthcare": ("Epic Systems", "Cerner", "Veeva Systems"),
+                "manufacturing": ("Siemens", "Rockwell Automation", "PTC"),
+                "infrastructure": ("Cisco", "Palo Alto Networks", "Arista"),
+            }
+            sec_key = sector.lower() if sector else ""
+            seed_leaders = next(
+                (v for k, v in default_leaders_by_sector.items() if k in sec_key),
+                ("Líder de Referencia Sectorial", "Benchmark Global del Sector"),
+            )
+        leaders = _to_string_tuple(data.get("leaders"), seed_leaders)
         invs = _to_string_tuple(data.get("invariants"), ("Validación precondicional estricta y céntimos enteros en UTC.",))
         advs = _to_string_tuple(data.get("unfair_advantages"), ("Almacenamiento nativo local en SQLite WAL a coste $0.00.",))
         antis = _to_string_tuple(data.get("anti_features"), ("Veto al uso de Redis o microservicios por sobreingeniería.",))
