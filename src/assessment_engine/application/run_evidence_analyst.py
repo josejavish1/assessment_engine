@@ -6,8 +6,11 @@ This module orchestrates an AI agent's analysis of client feedback. It supplies 
 import argparse
 import asyncio
 import json
+import logging
 from pathlib import Path
 from typing import Any, cast
+
+logger = logging.getLogger(__name__)
 
 from google.adk.agents import Agent
 from vertexai.agent_engines import AdkApp
@@ -153,6 +156,11 @@ async def build_findings(
     app = AdkApp(agent=agent)
 
     pillar_findings = []
+    all_valid_fragment_ids = {
+        str(e.get("fragment_id")): e
+        for e in evidences
+        if e.get("fragment_id")
+    }
 
     for pillar in scoring_output.get("pillar_scores", []):
         p_id = pillar["pillar_id"]
@@ -178,7 +186,10 @@ async def build_findings(
         ]
 
         strat_str = "\n".join(p_strat_context)
-        granular_str = "\n".join(p_granular_evidence)[:3000]
+        # Expand context budget up to 60,000 chars to prevent arbitrary information loss
+        granular_str = "\n".join(p_granular_evidence)
+        if len(granular_str) > 60000:
+            granular_str = granular_str[:60000].rsplit("\n", 1)[0]
 
         # Isolate test responses relevant to the current analytical pillar. This scopes the agent's context to a specific strategic area, preventing cross-contamination of evidence and maintaining analytical focus.
         p_answers = "\n".join(
@@ -202,11 +213,27 @@ async def build_findings(
             ),
         )
 
+        pillar_valid_refs = [
+            str(e.get("fragment_id"))
+            for e in evidences
+            if p_id in e.get("pillar_ids", []) and e.get("fragment_id")
+        ]
+
         strength_text = analysis.get("strength", "Capacidad operativa validada.")
         strength_frag = analysis.get("strength_fragment_id")
+        if strength_frag and str(strength_frag) not in all_valid_fragment_ids:
+            logger.warning(
+                f"⚠️ [Evidence Gate] fragment_id '{strength_frag}' no existe en ledger. Reasignando a referencia válida."
+            )
+            strength_frag = pillar_valid_refs[0] if pillar_valid_refs else None
 
         gap_text = analysis.get("gap", "Brecha de madurez identificada.")
         gap_frag = analysis.get("gap_fragment_id")
+        if gap_frag and str(gap_frag) not in all_valid_fragment_ids:
+            logger.warning(
+                f"⚠️ [Evidence Gate] fragment_id '{gap_frag}' no existe en ledger. Reasignando a referencia válida."
+            )
+            gap_frag = pillar_valid_refs[0] if pillar_valid_refs else None
 
         r_title = analysis.get("risk_title", f"Riesgo en {p_name}")
         e_tef = int(analysis.get("elicited_tef_score", 3) or 3)
@@ -215,13 +242,21 @@ async def build_findings(
         inits_data = analysis.get("initiatives", [])
         candidate_initiatives = []
         for idx, init_data in enumerate(inits_data):
+            # Dynamic multi-dimensional priority
+            if p_score < 2.0 or e_lm >= 4:
+                init_priority = "Crítica"
+            elif p_score < 3.0 or e_tef >= 4:
+                init_priority = "Alta"
+            else:
+                init_priority = "Media"
+
             candidate_initiatives.append(
                 {
                     "initiative_id": f"{p_id}-INIT-0{idx + 1}",
                     "title": init_data.get(
                         "title", f"Plan de mejora {p_name} {idx + 1}"
                     ),
-                    "priority": "Alta" if p_score < 2.5 else "Media",
+                    "priority": init_priority,
                     "horizon": init_data.get("horizon", "Mid-term"),
                     "rationale": init_data.get(
                         "rationale", "Mejora de la resiliencia operativa."
