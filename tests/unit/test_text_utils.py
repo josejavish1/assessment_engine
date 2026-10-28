@@ -112,3 +112,30 @@ def test_slugify_property_based(val: str) -> None:
 
     # 4. Invariant: Must never be empty
     assert len(result) > 0, "Slug cannot be empty"
+
+
+def test_executive_style_compressor_kills_buzzwords():
+    """Verify ExecutiveStyleCompressor eliminates bureaucratic openers and consulting buzzwords."""
+    from assessment_engine.infrastructure.text_utils import ExecutiveStyleCompressor
+
+    raw_text = (
+        "En el contexto actual, la captura de sinergias fabriles representa una palanca de valor "
+        "holística para apalancar el nuevo paradigma y frenar la inercia de gasto."
+    )
+    compressed = ExecutiveStyleCompressor.compress_executive_paragraph(raw_text)
+
+    assert "En el contexto actual" not in compressed
+    assert "sinergias fabriles" not in compressed
+    assert "palanca de valor" not in compressed
+    assert "holística" not in compressed
+    assert "apalancar" not in compressed
+    assert "paradigma" not in compressed
+    assert "inercia de gasto" not in compressed
+    assert "reducción de costes duplicados en plantas" in compressed
+    assert "un beneficio directo" in compressed
+    assert "integral" in compressed
+    assert "aprovechar" in compressed
+    assert "modelo" in compressed
+    assert "el gasto descontrolado" in compressed
+
+

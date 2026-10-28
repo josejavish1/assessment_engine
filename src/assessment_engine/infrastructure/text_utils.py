@@ -223,9 +223,26 @@ class ExecutiveStyleCompressor:
         r"^en el contexto actual,\s*",
     ]
 
+    BUZZWORD_REPLACEMENTS = {
+        r"\bcaptura de sinergias fabriles\b": "reducción de costes duplicados en plantas",
+        r"\bsinergias fabriles\b": "ahorros operativos y unificación de plantas",
+        r"\bcaptura de sinergias\b": "reducción de costes e integración operativa",
+        r"\bsinergias\b": "ahorros e integraciones operativas",
+        r"\bparadigma\b": "modelo",
+        r"\buna palanca de valor\b": "un beneficio directo",
+        r"\bpalancas de valor\b": "beneficios directos",
+        r"\bpalanca de valor\b": "beneficio directo",
+        r"\bholístico\b": "integral",
+        r"\bholística\b": "integral",
+        r"\bapalancar\b": "aprovechar",
+        r"\bapalancando\b": "aprovechando",
+        r"\bla inercia de gasto\b": "el gasto descontrolado",
+        r"\binercia de gasto\b": "gasto descontrolado",
+    }
+
     @classmethod
     def compress_executive_paragraph(cls, text: str, max_words_per_sentence: int = 25) -> str:
-        """Cleans bureaucratic fluff and ensures sentences do not exceed max_words_per_sentence."""
+        """Cleans bureaucratic fluff, kills consulting buzzwords, and ensures sentences do not exceed max_words_per_sentence."""
         if not text:
             return ""
 
@@ -233,11 +250,14 @@ class ExecutiveStyleCompressor:
         for pat in cls.BUREAUCRATIC_OPENERS:
             cleaned = re.sub(pat, "", cleaned, flags=re.IGNORECASE)
 
+        for pat, repl in cls.BUZZWORD_REPLACEMENTS.items():
+            cleaned = re.sub(pat, repl, cleaned, flags=re.IGNORECASE)
+
         if cleaned:
             cleaned = cleaned[0].upper() + cleaned[1:]
 
         raw_sentences = [
-            s.strip() for s in re.split(r"(?<=[.!?])\s+", cleaned) if s.strip()
+            s.strip() for s in re.split(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚ¿¡])", cleaned) if s.strip()
         ]
         compressed_sentences: list[str] = []
 
@@ -285,5 +305,8 @@ class ExecutiveStyleCompressor:
                 compressed_sentences.append(core + ".")
 
         result = " ".join(compressed_sentences)
+        # Re-glue split numbers like '2. 40' -> '2.40' and '1. 773. 836' -> '1.773.836'
+        result = re.sub(r"(\d+)\.\s+(\d+)", r"\1.\2", result)
+        result = re.sub(r"(\d+)\.\s+(\d+)", r"\1.\2", result)
         result = re.sub(r"\.([A-ZÁÉÍÓÚ])", r". \1", result)
         return result
