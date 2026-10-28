@@ -153,17 +153,28 @@ async def main():
             ):
                 item["root_causes"] = [item["root_causes"]]
 
+    original_tbl = {
+        orig.get("tower_id") or orig.get("tower_name"): orig
+        for orig in findings.get("tower_bottom_lines", [])
+        if isinstance(orig, dict)
+    }
+
     if "tower_bottom_lines" in refined and isinstance(
         refined["tower_bottom_lines"], list
     ):
         for item in refined["tower_bottom_lines"]:
             if isinstance(item, dict):
-                if "score" not in item:
-                    item["score"] = 4.0
-                if "band" not in item:
-                    item["band"] = "Managed"
-                if "status_color" not in item:
-                    item["status_color"] = "green"
+                key = item.get("tower_id") or item.get("tower_name")
+                orig_match = original_tbl.get(key, {})
+                if "score" not in item or item["score"] is None:
+                    item["score"] = orig_match.get("score", 0.0)
+                if "band" not in item or item["band"] is None:
+                    item["band"] = orig_match.get("band", "Unassessed")
+                if "status_color" not in item or item["status_color"] is None:
+                    item["status_color"] = orig_match.get(
+                        "status_color",
+                        "amber" if float(item.get("score", 0.0)) < 3.0 else "green",
+                    )
 
     if "target_vision" in refined and isinstance(refined["target_vision"], dict):
         target_v = refined["target_vision"]

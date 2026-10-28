@@ -86,15 +86,16 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
             await asyncio.sleep(2)
 
     try:
-        import re
+        from assessment_engine.infrastructure.json_from_model import parse_json_from_text
 
-        text = response.text or "{}"
-        match = re.search(r"\{.*\}", text, re.DOTALL)
-        if match:
-            text = match.group(0)
-        sota_result = json.loads(text)
+        raw_text = response.text or "{}" if response else "{}"
+        sota_result = parse_json_from_text(raw_text)
+        if not isinstance(sota_result, dict):
+            sota_result = {}
     except Exception as e:
-        print(f"Error parsing JSON from search: {e}")
+        print(
+            f"        ⚠️ [SOTA Parser] Error extrayendo JSON estructurado para {p_name}: {e}"
+        )
         sota_result = {}
 
     return p_name, sota_result
