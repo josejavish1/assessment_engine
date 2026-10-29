@@ -237,6 +237,8 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
             client=cfg.company_name,
             date="2026-10-28",
             version="1.0.0",
+            doc_lang=cfg.doc_lang,
+            currency_symbol=cfg.currency_symbol,
         ),
         commercial_summary=CommercialSummaryDraft(
             deal_flash=DealFlash(
@@ -328,8 +330,11 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
     annex_payload_data["document_meta"]["client_name"] = cfg.company_name
     annex_payload_data["document_meta"]["language"] = cfg.doc_lang
     annex_payload_data["document_meta"]["regulatory_context"] = cfg.regulatory_frameworks
+    annex_payload_data["document_meta"]["source_client"] = "redeia_v3"
 
     annex_payload_str = json.dumps(annex_payload_data, ensure_ascii=False)
+    for src_name in ["redeia_v3", "REDEIA", "Redeia", "Red Eléctrica"]:
+        annex_payload_str = annex_payload_str.replace(src_name, cfg.company_name)
     if cfg.currency_symbol != "€":
         annex_payload_str = annex_payload_str.replace("€", cfg.currency_symbol)
     annex_payload_data = json.loads(annex_payload_str)
@@ -456,6 +461,34 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
         })
         if has_buzzword:
             audit_results["checks_passed"] = False
+
+        # Audit 5: Zero Residual Client Leakage (purgar clientes previos como Redeia o Secil)
+        has_client_leak = "redeia" in extracted_text.lower() or "secil" in extracted_text.lower()
+        audit_results["check_details"].append({
+            "file": d_path.name,
+            "check": "Zero Residual Client Leakage",
+            "passed": not has_client_leak,
+        })
+        if has_client_leak:
+            audit_results["checks_passed"] = False
+
+        # Audit 6: Multilingual Cover Page Integrity for Commercial Proposals
+        if d_path == comm_docx_path:
+            if cfg.doc_lang == "en":
+                passed_cov = "Classification: CONFIDENTIAL - INTERNAL USE ONLY" in extracted_text and "Fecha:" not in extracted_text
+            elif cfg.doc_lang == "de":
+                passed_cov = "Klassifizierung: VERTRAULICH - NUR FÜR INTERNEN GEBRAUCH" in extracted_text and "Fecha:" not in extracted_text
+            elif cfg.doc_lang == "ja":
+                passed_cov = "機密区分: 機密 - 社内限定" in extracted_text and "Fecha:" not in extracted_text
+            else:
+                passed_cov = "Clasificación: CONFIDENCIAL - USO INTERNO" in extracted_text
+            audit_results["check_details"].append({
+                "file": d_path.name,
+                "check": "Multilingual Cover Page Integrity",
+                "passed": passed_cov,
+            })
+            if not passed_cov:
+                audit_results["checks_passed"] = False
 
     return audit_results
 

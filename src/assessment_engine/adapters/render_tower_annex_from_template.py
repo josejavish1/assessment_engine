@@ -48,8 +48,23 @@ from assessment_engine.infrastructure.docx_render_utils import (
     replace_simple_placeholder,
     resolve_radar_chart_image,
 )
+from assessment_engine.infrastructure.localization import load_locales_catalog, t
 
 WORD_RENDER_MODE_ENV = "AE_WORD_RENDER_MODE"
+
+ANNEX_CANONICAL_HEADING_SPECS = [
+    ("Resumen ejecutivo de la torre", "annex_heading_executive_summary", 1),
+    ("Perfil de madurez por pilar", "annex_heading_maturity_profile", 1),
+    ("AS-IS resumido", "annex_heading_asis_summary", 1),
+    ("Riesgos principales", "annex_heading_risks_summary", 1),
+    ("Estado objetivo y brechas", "annex_heading_target_vision_gap", 1),
+    ("Iniciativas prioritarias", "annex_heading_initiatives", 1),
+    ("Conclusión", "annex_heading_conclusion", 1),
+    ("Gráfico radial", "annex_heading_radar_chart", 2),
+    ("Detalle compacto por pilar", "annex_heading_compact_pillar_detail", 2),
+    ("Tabla de brechas por pilar", "annex_heading_gap_matrix", 2),
+    ("Fichas de iniciativas priorizadas", "annex_heading_initiative_fact_sheets", 2),
+]
 
 
 def normalize_annex_payload(payload_dict: dict) -> dict:
@@ -327,35 +342,8 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
     """
     enable_update_fields_on_open(doc)
 
+    catalog = load_locales_catalog()
     heading_level_1 = {
-        "Resumen ejecutivo de la torre",
-        "Executive Summary of the Tower",
-        "Management-Zusammenfassung der Tower-Analyse",
-        "タワー分析エグゼクティブサマリー",
-        "Perfil de madurez por pilar",
-        "Pillar Maturity Profile",
-        "Reifegradprofil nach Pfeilern",
-        "ピラー別成熟度プロファイル",
-        "AS-IS resumido",
-        "Current State Summary (AS-IS)",
-        "Zusammenfassung des Ist-Zustands (AS-IS)",
-        "現行状態サマリー (AS-IS)",
-        "Riesgos principales",
-        "Key Operational & Security Risks",
-        "Wesentliche Betriebs- und Sicherheitsrisiken",
-        "主要な運用およびセキュリティリスク",
-        "Estado objetivo y brechas",
-        "Target Vision & Gap Analysis",
-        "Zielzustand und Lückenanalyse (TO-BE & GAP)",
-        "目標ビジョンおよびギャップ分析 (TO-BE & GAP)",
-        "Iniciativas prioritarias",
-        "Prioritized Strategic Initiatives",
-        "Priorisierte strategische Initiativen",
-        "優先戦略イニシアチブ",
-        "Conclusión",
-        "Executive Conclusion",
-        "Management-Fazit",
-        "エグゼクティブ総括",
         "Desarrollo ampliado",
         "1. AS-IS detallado",
         "2. Riesgos detallados",
@@ -368,20 +356,10 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
         "Fortaleza principal",
         "Brecha principal",
         "Cuello de botella",
-        "Gráfico radial",
-        "Pillar Maturity Radar Chart",
-        "Reifegrad-Radardiagramm",
-        "成熟度レーダーチャート",
-        "Detalle compacto por pilar",
-        "Compact Pillar Assessment Detail",
-        "Kompakte Bewertung nach Pfeilern",
-        "ピラー別詳細評価サマリー",
         "Fortalezas clave",
         "Brechas clave",
         "Implicaciones operativas clave",
         "Principios / capacidades objetivo",
-        "Tabla de brechas por pilar",
-        "Fichas de iniciativas priorizadas",
         "Mensaje ejecutivo final",
         "Áreas prioritarias de actuación",
         "Fortalezas observadas",
@@ -391,6 +369,16 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
         "Principios de arquitectura y operación",
         "Implicaciones para el modelo operativo",
     }
+
+    for template_es_title, loc_key, level in ANNEX_CANONICAL_HEADING_SPECS:
+        if level == 1:
+            heading_level_1.add(template_es_title)
+            for lang_code in catalog:
+                heading_level_1.add(t(loc_key, lang_code))
+        else:
+            heading_level_2.add(template_es_title)
+            for lang_code in catalog:
+                heading_level_2.add(t(loc_key, lang_code))
 
     title_text = (
         f"ANEXO {payload_dict['document_meta']['tower_code']} – "
@@ -544,45 +532,12 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
         "[Fecha]": meta.get("date", "2026"),
     }
 
-    section_heading_translations = {
-        "en": {
-            "Resumen ejecutivo de la torre": "Executive Summary of the Tower",
-            "Perfil de madurez por pilar": "Pillar Maturity Profile",
-            "AS-IS resumido": "Current State Summary (AS-IS)",
-            "Riesgos principales": "Key Operational & Security Risks",
-            "Estado objetivo y brechas": "Target Vision & Gap Analysis",
-            "Iniciativas prioritarias": "Prioritized Strategic Initiatives",
-            "Conclusión": "Executive Conclusion",
-            "Gráfico radial": "Pillar Maturity Radar Chart",
-            "Detalle compacto por pilar": "Compact Pillar Assessment Detail",
-        },
-        "de": {
-            "Resumen ejecutivo de la torre": "Management-Zusammenfassung der Tower-Analyse",
-            "Perfil de madurez por pilar": "Reifegradprofil nach Pfeilern",
-            "AS-IS resumido": "Zusammenfassung des Ist-Zustands (AS-IS)",
-            "Riesgos principales": "Wesentliche Betriebs- und Sicherheitsrisiken",
-            "Estado objetivo y brechas": "Zielzustand und Lückenanalyse (TO-BE & GAP)",
-            "Iniciativas prioritarias": "Priorisierte strategische Initiativen",
-            "Conclusión": "Management-Fazit",
-            "Gráfico radial": "Reifegrad-Radardiagramm",
-            "Detalle compacto por pilar": "Kompakte Bewertung nach Pfeilern",
-        },
-        "ja": {
-            "Resumen ejecutivo de la torre": "タワー分析エグゼクティブサマリー",
-            "Perfil de madurez por pilar": "ピラー別成熟度プロファイル",
-            "AS-IS resumido": "現行状態サマリー (AS-IS)",
-            "Riesgos principales": "主要な運用およびセキュリティリスク",
-            "Estado objetivo y brechas": "目標ビジョンおよびギャップ分析 (TO-BE & GAP)",
-            "Iniciativas prioritarias": "優先戦略イニシアチブ",
-            "Conclusión": "エグゼクティブ総括",
-            "Gráfico radial": "成熟度レーダーチャート",
-            "Detalle compacto por pilar": "ピラー別詳細評価サマリー",
-        },
-    }
-
     doc_lang = str(meta.get("language") or meta.get("doc_lang") or "es").lower()
-    if doc_lang in section_heading_translations:
-        replacements.update(section_heading_translations[doc_lang])
+    if doc_lang != "es":
+        for template_es_title, loc_key, _level in ANNEX_CANONICAL_HEADING_SPECS:
+            translated_title = t(loc_key, doc_lang)
+            if translated_title and translated_title != loc_key:
+                replacements[template_es_title] = translated_title
 
     source_client = (
         meta.get("source_client")
@@ -855,9 +810,16 @@ def main(argv: list[str] | None = None) -> None:
         mode="strict",
     )
     payload_dict = normalize_annex_payload(payload.model_dump(by_alias=True))
+    meta_initial = payload_dict.get("document_meta", {})
+    source_client = (
+        meta_initial.get("source_client")
+        or meta_initial.get("source_client_name")
+        or meta_initial.get("source_blueprint_artifact_client")
+    )
     payload_dict = _replace_client_placeholders(
         payload_dict,
-        str(payload_dict.get("document_meta", {}).get("client_name", "CLIENTE")),
+        str(meta_initial.get("client_name", "CLIENTE")),
+        source_client,
     )
 
     doc = Document(str(template_path))

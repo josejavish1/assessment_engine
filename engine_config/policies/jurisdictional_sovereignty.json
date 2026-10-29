@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "jurisdictions": {
+    "DE": {
+      "name": "Germany / DACH & Central Europe",
+      "region_code": "DE",
+      "sovereign_cloud_providers": [
+        "STACKIT (Schwarz Gruppe)",
+        "Open Telekom Cloud (T-Systems)",
+        "Delos Cloud (Microsoft/Arvato)",
+        "AWS European Sovereign Cloud"
+      ],
+      "architectural_invariants": [
+        "Federación GAIA-X / GXFS para compartición soberana de datos industriales",
+        "Enclaves certificados BSI C5 (Cloud Computing Compliance Criteria Catalogue)",
+        "Inmunidad técnica y jurídica frente a accesos extraterritoriales (US CLOUD Act)",
+        "Segmentación estricta de redes OT según IEC 62443 / BSI IT-Grundschutz"
+      ],
+      "connectivity_standards": [
+        "Interconexión redundante DE-CIX Frankfurt",
+        "Cifrado MACsec punto a punto en centros de transformación"
+      ],
+      "primary_hsm_standard": "BSI TR-03109 / Common Criteria EAL4+",
+      "data_residency_rules": [
+        "Residencia estricta en centros de datos ubicados físicamente en territorio alemán",
+        "Control exclusivo de llaves criptográficas por personal con nacionalidad de la UE"
+      ]
+    },
+    "ES": {
+      "name": "Spain / Southern Europe & Public Sector",
+      "region_code": "ES",
+      "sovereign_cloud_providers": [
+        "Telefónica Tech Cloud Soberana",
+        "OVHcloud SecNumCloud / ENS",
+        "AWS European Sovereign Cloud (Aragón)",
+        "Microsoft Cloud Soberana España"
+      ],
+      "architectural_invariants": [
+        "Esquema Nacional de Seguridad (ENS Nivel Alto - RD 311/2022)",
+        "Acreditación formal del Centro Criptológico Nacional (CCN-CERT Cualificada)",
+        "Aislamiento de planos de gestión y control administrativo en territorio nacional"
+      ],
+      "connectivity_standards": [
+        "Red SARA (Conexión Cifrada Interadministrativa)",
+        "Centros de Proceso de Datos con certificación Tier IV / ENS Alto"
+      ],
+      "primary_hsm_standard": "FIPS 140-3 Nivel 3 / Producto Cualificado CCN-STIC",
+      "data_residency_rules": [
+        "Tratamiento y custodia de datos exclusivos dentro del Espacio Económico Europeo",
+        "Copias de respaldo inmutables fuera de línea bajo jurisdicción judicial española"
+      ]
+    },
+    "US": {
+      "name": "United States / North America Federal & Regulated",
+      "region_code": "US",
+      "sovereign_cloud_providers": [
+        "AWS GovCloud (US)",
+        "Microsoft Azure Government",
+        "Google Cloud Assured Workloads"
+      ],
+      "architectural_invariants": [
+        "Autorización FedRAMP High Baseline",
+        "Cumplimiento DoD Impact Level 5 (IL5) para cargas sensibles de misión crítica",
+        "Controles de acceso CMMC 2.0 Nivel 3 / NIST SP 800-171 para CUI",
+        "Acuerdos Business Associate Agreement (BAA) de HIPAA para telemetría clínica"
+      ],
+      "connectivity_standards": [
+        "DISA Cloud Access Point (CAP) Direct Connect",
+        "Arquitectura Zero Trust unificada según NIST SP 800-207"
+      ],
+      "primary_hsm_standard": "FIPS 140-3 Level 3 Dedicated Hardware Security Modules",
+      "data_residency_rules": [
+        "Custodia exclusiva en zonas de disponibilidad continentales de EE.UU. (CONUS)",
+        "Operación y soporte técnico restringido a ciudadanos estadounidenses verificados (ITAR)"
+      ]
+    },
+    "BR": {
+      "name": "Brazil / South America Financial & Telecomm",
+      "region_code": "BR",
+      "sovereign_cloud_providers": [
+        "AWS São Paulo (sa-east-1)",
+        "Microsoft Azure Brazil South (Campinas)",
+        "Embratel / Claro Cloud Brasil"
+      ],
+      "architectural_invariants": [
+        "Resolução CMN 4.893 e BCB 85 para cibersegurança e continuidade em nuvem",
+        "Garantia de disponibilidade 99.999% para liquidação instantânea de transações Pix",
+        "Cumprimento integral da LGPD (Lei Geral de Proteção de Dados)"
+      ],
+      "connectivity_standards": [
+        "Rede do Sistema Financeiro Nacional (RSFN)",
+        "Conexão direta ao IX.br São Paulo para latência inferior a 5ms"
+      ],
+      "primary_hsm_standard": "Padrão ICP-Brasil / HSM FIPS 140-2 Level 3",
+      "data_residency_rules": [
+        "Manutenção de réplica primária de dados financeiros dentro do território brasileiro",
+        "Plano formal de transição em caso de falha ou descontinuidade de provedor externo"
+      ]
+    },
+    "MX": {
+      "name": "Mexico / Central America Banking & Energy",
+      "region_code": "MX",
+      "sovereign_cloud_providers": [
+        "AWS Querétaro (mx-central-1)",
+        "Google Cloud Región D.F.",
+        "KIO Networks Data Centers"
+      ],
+      "architectural_invariants": [
+        "Disposiciones de la CNBV (Circular Única de Bancos - CUB para Computación en Nube)",
+        "Alta disponibilidad y redundancia de conmutación para enlaces SPEI de Banxico",
+        "Alineación con directrices del INAI para tratamiento de información sensible"
+      ],
+      "connectivity_standards": [
+        "Red Financiera Privada de Banco de México (Banxico)",
+        "Interconexión troncal dedicada en el clúster de Querétaro"
+      ],
+      "primary_hsm_standard": "FIPS 140-2 Level 3 para infraestructura de pagos",
+      "data_residency_rules": [
+        "Residencia de información bancaria primaria en zonas de centro de datos nacionales",
+        "Auditoría in situ permitida para reguladores de la CNBV y Banxico"
+      ]
+    },
+    "JP": {
+      "name": "Japan / APAC Financial & Government",
+      "region_code": "JP",
+      "sovereign_cloud_providers": [
+        "AWS Tokyo & Osaka (ap-northeast-1, ap-northeast-3)",
+        "Oracle Cloud Infrastructure Tokyo",
+        "NTT Communications Enterprise Cloud"
+      ],
+      "architectural_invariants": [
+        "Acreditación ISMAP (Information System Security Management and Assessment Program)",
+        "Directrices de seguridad del FISC para sistemas bancarios y bursátiles",
+        "Alineación técnica con los requisitos de la Agencia Digital de Japón (デジタル庁)"
+      ],
+      "connectivity_standards": [
+        "Red óptica de ultra-baja latencia JGN",
+        "Pasarela directa ZEDI para liquidación de pagos interbancarios"
+      ],
+      "primary_hsm_standard": "JCMVP (Japan Cryptographic Module Validation Program) / FIPS 140-2 Level 3",
+      "data_residency_rules": [
+        "Centros de datos redundantes en regiones este y oeste (Tokio y Osaka)",
+        "Separación criptográfica total bajo directrices de soberanía de datos de Japón"
+      ]
+    }
+  }
+}

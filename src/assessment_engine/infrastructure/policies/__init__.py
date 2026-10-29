@@ -10,6 +10,9 @@ from assessment_engine.infrastructure.policies.client_sanitization import (
 )
 from assessment_engine.infrastructure.policies.deduplication import DeduplicationPolicy
 from assessment_engine.infrastructure.policies.fair_risk import FairRiskPolicy
+from assessment_engine.infrastructure.policies.jurisdictional_sovereignty import (
+    JurisdictionalSovereigntyPolicy,
+)
 from assessment_engine.infrastructure.policies.ot_perimeter import OTPerimeterPolicy
 from assessment_engine.infrastructure.policies.reverse_traceability import ReverseTraceabilityPolicy
 from assessment_engine.infrastructure.policies.sequencing import SequencingPolicy
@@ -24,6 +27,7 @@ __all__ = [
     "BusinessCaseGroundingPolicy",
     "ReverseTraceabilityPolicy",
     "FairRiskPolicy",
+    "JurisdictionalSovereigntyPolicy",
     "_sanitize_text_placeholders",
     "_sanitize_risk_tree",
 ]
