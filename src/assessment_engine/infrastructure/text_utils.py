@@ -142,15 +142,14 @@ def format_currency_custom(
         A string representing the formatted monetary value.
     """
     symbol = vocab.get("currency_symbol", "€")
-    format_type = vocab.get(
-        "currency_format", "EU"
-    )  # Specifies the locale format, e.g., "EU" or "US".
     lang = str(doc_lang or "es").lower()
+    default_format = "US" if lang in ["en", "ja"] else "EU"
+    format_type = vocab.get("currency_format", default_format)
 
     # Perform number formatting via direct string and mathematical manipulation to ensure OS-agnostic behavior.
     formatted_num = f"{val:,.2f}"  # Example: "1,234,567.89"
 
-    if format_type == "EU" or lang in ["es", "pt", "fr"]:
+    if format_type == "EU" or (format_type != "US" and lang in ["es", "pt", "fr", "de", "it", "pl"]):
         # Swaps the decimal and thousands separators to conform to the European number format.
         formatted_num = (
             formatted_num.replace(",", "X").replace(".", ",").replace("X", ".")

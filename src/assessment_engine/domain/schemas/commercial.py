@@ -280,11 +280,15 @@ class CommercialDocumentMeta(BaseModel):
         date: The publication date of the document in ISO 8601 format (YYYY-MM-DD).
         version: The document version string, preferably following semantic
             versioning (e.g., "1.0.0").
+        doc_lang: The ISO 639-1 language code for document rendering (default "es").
+        currency_symbol: The localized currency symbol (default "€").
     """
 
     client: str
     date: str
     version: str
+    doc_lang: str = "es"
+    currency_symbol: str = "€"
 
 
 class CommercialPayload(VersionedPayload):

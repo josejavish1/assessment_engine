@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793232235,
+  "timestamp": 1793232618,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -35,11 +35,11 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "prod_sloc": 45196,
+        "prod_sloc": 45354,
         "test_sloc": 18418,
         "test_to_code_ratio": 0.41,
         "maintainability_index_sei": 33.4,
-        "typed_functions_pct": 90.3,
+        "typed_functions_pct": 90.4,
         "docstring_coverage_pct": 81.4,
         "max_cognitive_complexity": 246,
         "rango_d_functions_count": 0,
@@ -61,7 +61,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 242,
+          "line_number": 265,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'polish_semantic_tables': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -70,7 +70,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 435,
+          "line_number": 485,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Anidamiento excesivo en 'clean_brackets_and_consultant_notes': 6 niveles de profundidad (límite <= 5)",
           "recommendation": "Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código."
@@ -79,9 +79,9 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/render_tower_annex_from_template.py",
-          "line_number": 435,
+          "line_number": 485,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Sobrecarga cognitiva en 'clean_brackets_and_consultant_notes': CoC = 61 (límite cognitivo <= 45)",
+          "message": "Sobrecarga cognitiva en 'clean_brackets_and_consultant_notes': CoC = 66 (límite cognitivo <= 45)",
           "recommendation": "Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA."
         },
         {
@@ -1020,10 +1020,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.45,
-        "p95_latency_ms": 80.49,
-        "p99_latency_ms": 131.61,
-        "tail_amplification_ratio": 90.77,
+        "p50_latency_ms": 1.46,
+        "p95_latency_ms": 54.9,
+        "p99_latency_ms": 182.18,
+        "tail_amplification_ratio": 124.78,
         "concurrency_status": "Resiliente y Escalable"
       },
       "findings": []

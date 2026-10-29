@@ -119,16 +119,39 @@ def normalize_annex_payload(payload_dict: dict) -> dict:
     return normalized
 
 
-def _replace_client_placeholders(value, client_name: str) -> Any:
+def _replace_client_placeholders(
+    value: Any, client_name: str, source_client: str | None = None
+) -> Any:
     if isinstance(value, dict):
         return {
-            key: _replace_client_placeholders(item, client_name)
+            key: _replace_client_placeholders(item, client_name, source_client)
             for key, item in value.items()
         }
     if isinstance(value, list):
-        return [_replace_client_placeholders(item, client_name) for item in value]
+        return [
+            _replace_client_placeholders(item, client_name, source_client)
+            for item in value
+        ]
     if isinstance(value, str):
-        return value.replace("[Cliente]", client_name).replace("[cliente]", client_name)
+        res = value
+        for token in [
+            "[Cliente]",
+            "[cliente]",
+            "[CLIENTE]",
+            "[Nombre del Cliente]",
+            "[Nombre del cliente]",
+            "{client_name}",
+            "{CLIENT_NAME}",
+            "{{client_name}}",
+            "{{CLIENT_NAME}}",
+        ]:
+            res = res.replace(token, client_name)
+        if source_client and source_client.strip():
+            src = source_client.strip()
+            res = res.replace(src, client_name)
+            res = res.replace(src.upper(), client_name)
+            res = res.replace(src.lower(), client_name)
+        return res
     return value
 
 
@@ -306,12 +329,33 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
 
     heading_level_1 = {
         "Resumen ejecutivo de la torre",
+        "Executive Summary of the Tower",
+        "Management-Zusammenfassung der Tower-Analyse",
+        "タワー分析エグゼクティブサマリー",
         "Perfil de madurez por pilar",
+        "Pillar Maturity Profile",
+        "Reifegradprofil nach Pfeilern",
+        "ピラー別成熟度プロファイル",
         "AS-IS resumido",
+        "Current State Summary (AS-IS)",
+        "Zusammenfassung des Ist-Zustands (AS-IS)",
+        "現行状態サマリー (AS-IS)",
         "Riesgos principales",
+        "Key Operational & Security Risks",
+        "Wesentliche Betriebs- und Sicherheitsrisiken",
+        "主要な運用およびセキュリティリスク",
         "Estado objetivo y brechas",
+        "Target Vision & Gap Analysis",
+        "Zielzustand und Lückenanalyse (TO-BE & GAP)",
+        "目標ビジョンおよびギャップ分析 (TO-BE & GAP)",
         "Iniciativas prioritarias",
+        "Prioritized Strategic Initiatives",
+        "Priorisierte strategische Initiativen",
+        "優先戦略イニシアチブ",
         "Conclusión",
+        "Executive Conclusion",
+        "Management-Fazit",
+        "エグゼクティブ総括",
         "Desarrollo ampliado",
         "1. AS-IS detallado",
         "2. Riesgos detallados",
@@ -325,7 +369,13 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
         "Brecha principal",
         "Cuello de botella",
         "Gráfico radial",
+        "Pillar Maturity Radar Chart",
+        "Reifegrad-Radardiagramm",
+        "成熟度レーダーチャート",
         "Detalle compacto por pilar",
+        "Compact Pillar Assessment Detail",
+        "Kompakte Bewertung nach Pfeilern",
+        "ピラー別詳細評価サマリー",
         "Fortalezas clave",
         "Brechas clave",
         "Implicaciones operativas clave",
@@ -462,7 +512,13 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
     replacements = {
         "[Cliente]": client_name,
         "[cliente]": client_name,
+        "[CLIENTE]": client_name,
+        "{client_name}": client_name,
+        "{CLIENT_NAME}": client_name,
+        "{{client_name}}": client_name,
+        "{{CLIENT_NAME}}": client_name,
         "[Nombre del Cliente]": client_name,
+        "[Nombre del cliente]": client_name,
         "[número]": "los",
         "[número de pilares]": "varios",
         "-[Lista de torres evaluadas]": f"• {tower_name}",
@@ -487,6 +543,57 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
         "[línea de evolución]": "",
         "[Fecha]": meta.get("date", "2026"),
     }
+
+    section_heading_translations = {
+        "en": {
+            "Resumen ejecutivo de la torre": "Executive Summary of the Tower",
+            "Perfil de madurez por pilar": "Pillar Maturity Profile",
+            "AS-IS resumido": "Current State Summary (AS-IS)",
+            "Riesgos principales": "Key Operational & Security Risks",
+            "Estado objetivo y brechas": "Target Vision & Gap Analysis",
+            "Iniciativas prioritarias": "Prioritized Strategic Initiatives",
+            "Conclusión": "Executive Conclusion",
+            "Gráfico radial": "Pillar Maturity Radar Chart",
+            "Detalle compacto por pilar": "Compact Pillar Assessment Detail",
+        },
+        "de": {
+            "Resumen ejecutivo de la torre": "Management-Zusammenfassung der Tower-Analyse",
+            "Perfil de madurez por pilar": "Reifegradprofil nach Pfeilern",
+            "AS-IS resumido": "Zusammenfassung des Ist-Zustands (AS-IS)",
+            "Riesgos principales": "Wesentliche Betriebs- und Sicherheitsrisiken",
+            "Estado objetivo y brechas": "Zielzustand und Lückenanalyse (TO-BE & GAP)",
+            "Iniciativas prioritarias": "Priorisierte strategische Initiativen",
+            "Conclusión": "Management-Fazit",
+            "Gráfico radial": "Reifegrad-Radardiagramm",
+            "Detalle compacto por pilar": "Kompakte Bewertung nach Pfeilern",
+        },
+        "ja": {
+            "Resumen ejecutivo de la torre": "タワー分析エグゼクティブサマリー",
+            "Perfil de madurez por pilar": "ピラー別成熟度プロファイル",
+            "AS-IS resumido": "現行状態サマリー (AS-IS)",
+            "Riesgos principales": "主要な運用およびセキュリティリスク",
+            "Estado objetivo y brechas": "目標ビジョンおよびギャップ分析 (TO-BE & GAP)",
+            "Iniciativas prioritarias": "優先戦略イニシアチブ",
+            "Conclusión": "エグゼクティブ総括",
+            "Gráfico radial": "成熟度レーダーチャート",
+            "Detalle compacto por pilar": "ピラー別詳細評価サマリー",
+        },
+    }
+
+    doc_lang = str(meta.get("language") or meta.get("doc_lang") or "es").lower()
+    if doc_lang in section_heading_translations:
+        replacements.update(section_heading_translations[doc_lang])
+
+    source_client = (
+        meta.get("source_client")
+        or meta.get("source_client_name")
+        or meta.get("source_blueprint_artifact_client")
+    )
+    if source_client and str(source_client).strip():
+        src = str(source_client).strip()
+        replacements[src] = client_name
+        replacements[src.upper()] = client_name
+        replacements[src.lower()] = client_name
 
     # Step 2: Sanitize the document by removing paragraphs that serve as instructional notes or contain non-content template markers. This ensures the final output is clean of authoring artifacts.
     paragraphs_to_remove = []

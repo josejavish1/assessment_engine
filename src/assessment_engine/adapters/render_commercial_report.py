@@ -159,8 +159,63 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
 
     doc.add_paragraph().paragraph_format.space_after = Pt(100)
 
+    lang = getattr(payload.meta, "doc_lang", "es").lower()
+
+    cover_labels = {
+        "es": {
+            "date_lbl": "Fecha",
+            "class_lbl": "Clasificación: CONFIDENCIAL - USO INTERNO",
+            "warning_title": "Advertencia de Confidencialidad:",
+            "warning_body": (
+                "El presente documento es estrictamente confidencial y de uso exclusivo interno "
+                "para los equipos comerciales, de preventa y de entrega de {company}. Contiene "
+                "estimaciones de negocio, argumentarios de venta competitivos, estrategias de cuenta "
+                "(Go-To-Market) y evaluaciones de riesgo de clientes. Bajo ninguna circunstancia este "
+                "documento, ni parcial ni totalmente, debe ser compartido con el cliente, partners, "
+                "proveedores o cualquier tercero."
+            ),
+        },
+        "en": {
+            "date_lbl": "Date",
+            "class_lbl": "Classification: CONFIDENTIAL - INTERNAL USE ONLY",
+            "warning_title": "Confidentiality Warning:",
+            "warning_body": (
+                "This document is strictly confidential and for the exclusive internal use of "
+                "commercial, presales, and delivery teams of {company}. It contains business "
+                "estimates, competitive battlecards, Go-To-Market account strategies, and client "
+                "risk evaluations. Under no circumstances may this document, in whole or in part, "
+                "be shared with the client, partners, vendors, or any third party."
+            ),
+        },
+        "de": {
+            "date_lbl": "Datum",
+            "class_lbl": "Klassifizierung: VERTRAULICH - NUR FÜR INTERNEN GEBRAUCH",
+            "warning_title": "Vertraulichkeitshinweis:",
+            "warning_body": (
+                "Dieses Dokument ist streng vertraulich und ausschließlich für die interne Nutzung "
+                "durch Vertriebs-, Presales- und Delivery-Teams von {company} bestimmt. Es enthält "
+                "Geschäftsschätzungen, Wettbewerbsstrategien, Go-to-Market-Pläne und Kundenrisikoanalysen. "
+                "Dieses Dokument darf unter keinen Umständen ganz oder teilweise an den Kunden, Partner, "
+                "Lieferanten oder Dritte weitergegeben werden."
+            ),
+        },
+        "ja": {
+            "date_lbl": "作成日",
+            "class_lbl": "機密区分: 機密 - 社内限定",
+            "warning_title": "機密保持に関する警告:",
+            "warning_body": (
+                "本文書は極めて機密性が高く、{company}の営業、プリセールス、デリバリーチームによる"
+                "社内利用に限定されています。ビジネス見積、競合戦略、Go-To-Market計画、および顧客リスク評価が"
+                "含まれています。いかなる状況においても、本文書の全部または一部を顧客、パートナー、"
+                "ベンダー、または第三者に共有することは固く禁じられています。"
+            ),
+        },
+    }
+
+    labels = cover_labels.get(lang, cover_labels["es"])
+
     version_p = doc.add_paragraph()
-    v_text = f"Fecha: {payload.meta.date}\nClasificación: CONFIDENCIAL - USO INTERNO"
+    v_text = f"{labels['date_lbl']}: {payload.meta.date}\n{labels['class_lbl']}"
     version_run = version_p.add_run(v_text)
     version_run.font.size = Pt(14)
     version_run.font.name = "Arial"
@@ -170,9 +225,7 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
     add_spacer(doc, 150)
 
     disclaimer_title_p = doc.add_paragraph()
-    disclaimer_title_run = disclaimer_title_p.add_run(
-        "Advertencia de Confidencialidad:"
-    )
+    disclaimer_title_run = disclaimer_title_p.add_run(labels["warning_title"])
     disclaimer_title_run.font.size = Pt(8)
     disclaimer_title_run.font.name = "Arial"
     disclaimer_title_run.font.color.rgb = RGBColor(127, 127, 127)
@@ -183,7 +236,7 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
     disclaimer_p = doc.add_paragraph()
     disclaimer_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     disclaimer_p.paragraph_format.space_before = Pt(0)
-    p1_text = f"El presente documento es estrictamente confidencial y de uso exclusivo interno para los equipos comerciales, de preventa y de entrega de {company}. Contiene estimaciones de negocio, argumentarios de venta competitivos, estrategias de cuenta (Go-To-Market) y evaluaciones de riesgo de clientes. Bajo ninguna circunstancia este documento, ni parcial ni totalmente, debe ser compartido con el cliente, partners, proveedores o cualquier tercero."
+    p1_text = labels["warning_body"].format(company=company)
     r1 = disclaimer_p.add_run(p1_text)
     r1.font.size = Pt(8)
     r1.font.name = "Arial"

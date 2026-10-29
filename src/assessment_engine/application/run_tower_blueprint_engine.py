@@ -910,6 +910,9 @@ async def _enrich_projects_finops(
                 if old_name != new_name:
                     _cascade_project_rename(blueprint_payload, old_name, new_name)
 
+                if enrichment_data.get("deliverables") is None:
+                    enrichment_data.pop("deliverables", None)
+
                 blueprint_payload["pillars_analysis"][p_analysis_idx]["projects_todo"][
                     proj_idx
                 ].update(enrichment_data)
@@ -931,7 +934,12 @@ async def _enrich_projects_finops(
         if enrichment_tasks:
             await asyncio.gather(*enrichment_tasks)
 
-        # Enforce strict post-pass executive title sanitization
+        # Enforce strict post-pass executive title sanitization and deliverables safety guard
+        from assessment_engine.infrastructure.policies.archimate import (
+            _resolve_project_deliverables,
+        )
+
+        doc_lang_meta = blueprint_payload.get("document_meta", {}).get("language", "es")
         for p_analysis in blueprint_payload.get("pillars_analysis", []):
             for pr in p_analysis.get("projects_todo", []):
                 if pr.get("name"):
@@ -940,6 +948,12 @@ async def _enrich_projects_finops(
                     pr["name"] = new_n
                     if old_n != new_n:
                         _cascade_project_rename(blueprint_payload, old_n, new_n)
+                if not pr.get("deliverables") or not isinstance(pr.get("deliverables"), list):
+                    pr["deliverables"] = _resolve_project_deliverables(
+                        pr.get("name", ""),
+                        pr.get("tech_objective", ""),
+                        doc_lang=doc_lang_meta,
+                    )
 
         logger.info("Bid Manager project enrichment completed successfully.")
     except Exception as bid_err:
