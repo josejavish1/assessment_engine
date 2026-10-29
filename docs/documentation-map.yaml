@@ -1235,21 +1235,6 @@ entries:
     implementado.
   diataxis: explanation
   verification_mode: editorial
-- path: docs/audits/IMPROVEMENT_BACKLOG.md
-  kind: document
-  title: Documentation improvement backlog
-  doc_type: operational
-  status: Verified
-  owner: docs-governance
-  applies_to:
-  - humans
-  source_of_truth:
-  - docs
-  - src/assessment_engine
-  last_verified_against: '2026-06-26'
-  notes: Backlog histórico de mejoras documentales; no debe leerse como plan comprometido.
-  diataxis: explanation
-  verification_mode: editorial
 - path: docs/audits
   kind: collection
   title: Documentation and code audits
