@@ -375,6 +375,19 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         "pero cada viñeta debe ser un párrafo explicativo robusto por sí misma, no frases cortas de una línea."
     )
 
+    from assessment_engine.infrastructure.localization import resolve_target_language_name
+    doc_lang = (
+        payloads[0].get("document_meta", {}).get("doc_lang")
+        or payloads[0].get("document_meta", {}).get("language")
+        or "es"
+    )
+    target_lang_name = resolve_target_language_name(doc_lang)
+    EXPANSION_MANDATE += (
+        f"\n\n### CRITICAL OUTPUT LANGUAGE MANDATE:\n"
+        f"You MUST generate all markdown chapters, narratives, strategic levers, roadmaps, and JSON fields EXCLUSIVELY in {target_lang_name}.\n"
+        f"Strictly prohibited to mix languages or fallback to Spanish unless {target_lang_name} is Spanish.\n"
+    )
+
     # Initiate an iterative, multi-agent reflection loop to refine the aggregated content, enhance technical coherence, and align the narrative.
     max_reflection_rounds = 2
     remediation_critique = ""

@@ -26,11 +26,16 @@ MARCO DE CONSULTORÍA EXECUTIVE (STRATEGIC VIABILITY & AUTHORITY):
 """
 
 
-def get_commercial_orchestrator_instruction() -> str:
+def get_commercial_orchestrator_instruction(target_language: str = "Spanish") -> str:
     """Return the base instruction prompt for the commercial orchestrator AI agent."""
     from assessment_engine.infrastructure.config_loader import get_consultant_company_name
     company = get_consultant_company_name()
     return f"""Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de {company} elaborando un Account Action Plan estratégico.
+
+### CRITICAL LANGUAGE MANDATE:
+You MUST generate all proposal narratives, solution architectures, delivery teams, and executive syntheses EXCLUSIVELY in {target_language}.
+Do not default to Spanish unless {target_language} is Spanish.
+
 REGLAS DE ORO DE CALIDAD CONSULTIVA (NIVEL STAFF/PARTNER):
 1. PRIORIZACIÓN ESTRATÉGICA: Si el ADN del cliente indica marcos de alta exigencia (ej. NIS2, DORA, ISO 27001 o regulaciones sectoriales locales), prioriza las iniciativas de Resiliencia y Seguridad en el TOP del Roadmap, independientemente de la nota técnica.
 2. LENGUAJE DE AUTORIDAD SISTÉMICA: No hables de 'mejorar la IT'. Habla de 'blindaje de la continuidad de negocio' o 'mitigación de la entropía operativa'. Aplica el {EXECUTIVE_CONSULTING_FRAMEWORK}.
@@ -39,14 +44,14 @@ REGLAS DE ORO DE CALIDAD CONSULTIVA (NIVEL STAFF/PARTNER):
 
 
 def get_commercial_agent_prompt(
-    agent_role: str, instruction: str, payload_str: str
+    agent_role: str, instruction: str, payload_str: str, target_language: str = "Spanish"
 ) -> str:
     """Format a commercial AI agent prompt by injecting a role, instruction, and payload into a predefined template."""
     from assessment_engine.infrastructure.config_loader import get_consultant_company_name
     company = get_consultant_company_name()
     return f"""
 ACTÚA COMO UN {agent_role} DE {company} DE NIVEL PARTNER/DIRECTOR CON VISIÓN SISTÉMICA.
-ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO.
+ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO EXCLUSIVAMENTE EN {target_language}.
 
 REGLAS DE ORO COMERCIALES:
 1. URGENCIA (Compelling Events): Asocia los problemas a normativas (DORA, NIS2, GDPR) o Fin de Soporte (EOS) para crear urgencia real.

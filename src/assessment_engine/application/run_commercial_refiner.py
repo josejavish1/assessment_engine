@@ -39,18 +39,19 @@ async def call_commercial_agent(
     payload_str,
     schema_cls,
     client_name="el cliente",
+    target_language="Spanish",
 ):
-    r"""{'docstring': 'Asynchronously invokes a commercial agent to process a payload against a schema.\n\n    Initializes an `Agent` instance with a specified model and instruction set.\n    The function then constructs a formatted prompt containing the payload and\n    executes the agent. It attempts to parse the agent\'s output using the\n    provided schema class. If any exception occurs during execution or parsing,\n    the error is printed to standard output and an empty dictionary is returned.\n\n    Args:\n        model_name (str): The identifier for the language model to be used.\n        agent_role (str): A descriptive role for the agent (e.g., "sales analyst")\n            used in prompt construction.\n        instruction (str): The specific task or command for the agent to execute.\n        payload_str (str): A string representation of the data payload for the\n            agent to process.\n        schema_cls (Type): The class definition (e.g., a Pydantic model) used to\n            validate and structure the agent\'s output.\n        client_name (str): The name of the client. Defaults to "el cliente".\n\n    Returns:\n        Any: An instance of `schema_cls` containing the structured output from the\n            agent on successful execution. Returns an empty dictionary (`{}`) if\n            any exception occurs during the process.'}."""
+    """Asynchronously invokes a commercial agent to process a payload against a schema."""
     agent = Agent(
         model=model_name,
         name=f"commercial_{agent_role.replace(' ', '')[-10:]}",
-        instruction=get_commercial_orchestrator_instruction(),
+        instruction=get_commercial_orchestrator_instruction(target_language=target_language),
         output_schema=schema_cls,
     )
     app = AdkApp(agent=agent)
 
     prompt = get_commercial_agent_prompt(
-        agent_role=agent_role, instruction=instruction, payload_str=payload_str
+        agent_role=agent_role, instruction=instruction, payload_str=payload_str, target_language=target_language
     )
 
     try:
@@ -66,34 +67,10 @@ async def call_commercial_agent(
         return {}
 
 
-async def build_proactive_proposal(model_name, opp, payload_str, client_name):
-    """Asynchronously orchestrates multiple AI agents to generate a commercial proposal.
-
-    This coroutine coordinates four concurrent calls to distinct commercial AI
-    agents, each responsible for a specific section of a proactive proposal. It
-    awaits the completion of all agent tasks and aggregates their structured
-    outputs into a single, comprehensive dictionary.
-
-    Args:
-        model_name (str): The identifier for the generative AI model to be used by
-            the agents.
-        opp (dict): A dictionary containing details about the commercial opportunity.
-            It is expected to contain an 'initiative' key which provides the
-            proposal's title.
-        payload_str (str): A serialized data payload, such as a JSON string,
-            containing the core context for proposal generation.
-        client_name (str): The name of the client for whom the proposal is
-            generated.
-
-    Returns:
-        dict: A dictionary representing the complete commercial proposal. The
-            structure includes keys such as 'initiative_name',
-            'context_and_why', 'solution_and_what', 'scope_and_how',
-            'delivery_team', 'ai_transformation_strategy',
-            'governance_and_assumptions', 'risk_management', 'activation_plan',
-            'why_ntt_data', 'investment_and_timeline', and
-            'executive_synthesis'.
-    """
+async def build_proactive_proposal(
+    model_name, opp, payload_str, client_name, target_language="Spanish"
+):
+    """Asynchronously orchestrates multiple AI agents to generate a commercial proposal."""
     opp_name = opp.get("initiative", "Iniciativa Estratégica")
     print(
         f"    -> 🟢 Agente A1 (Engagement Manager): Contexto y Valor para '{opp_name}'..."
@@ -105,6 +82,7 @@ async def build_proactive_proposal(model_name, opp, payload_str, client_name):
         payload_str,
         EngagementManagerOutput,
         client_name,
+        target_language=target_language,
     )
 
     print(
@@ -117,6 +95,7 @@ async def build_proactive_proposal(model_name, opp, payload_str, client_name):
         payload_str,
         LeadSolutionsArchitectOutput,
         client_name,
+        target_language=target_language,
     )
 
     print(
@@ -129,6 +108,7 @@ async def build_proactive_proposal(model_name, opp, payload_str, client_name):
         payload_str,
         DeliveryAndRiskDirectorOutput,
         client_name,
+        target_language=target_language,
     )
 
     from assessment_engine.infrastructure.config_loader import get_consultant_company_name
@@ -142,6 +122,7 @@ async def build_proactive_proposal(model_name, opp, payload_str, client_name):
         payload_str,
         SalesPartnerOutput,
         client_name,
+        target_language=target_language,
     )
 
     proposal = {
@@ -276,16 +257,25 @@ async def refine_commercial_payload(
         },
     }
 
+    from assessment_engine.infrastructure.localization import resolve_target_language_name
+    doc_lang = (
+        payload.get("meta", {}).get("language")
+        or payload.get("meta", {}).get("doc_lang")
+        or "es"
+    )
+    target_language = resolve_target_language_name(doc_lang)
+
     print(
         "\nFase 1: Estrategia de Cuenta (Agente 1: Global Account Director) ----------"
     )
     strategy = await call_commercial_agent(
         model_name,
         "GLOBAL ACCOUNT DIRECTOR",
-        "Diseña el Executive Summary Comercial, la Estrategia Go-to-Market y el Mapa de Stakeholders basándote en la visión estratégica global.",
+        f"Diseña el Executive Summary Comercial, la Estrategia Go-to-Market y el Mapa de Stakeholders basándote en la visión estratégica global.",
         payload_str,
         AccountDirectorOutput,
         client_name,
+        target_language=target_language,
     )
     final_payload.update(strategy)
 
@@ -299,6 +289,7 @@ async def refine_commercial_payload(
         payload_str,
         PresalesArchitectOutput,
         client_name,
+        target_language=target_language,
     )
     final_payload["opportunities_pipeline"] = pipeline.get("opportunities_pipeline", [])
 
@@ -312,7 +303,7 @@ async def refine_commercial_payload(
     for idx, opp in enumerate(top_opps, start=1):
         print(f"\n  [Orquestando Proposal {idx}/2]")
         proposal = await build_proactive_proposal(
-            model_name, opp, payload_str, client_name
+            model_name, opp, payload_str, client_name, target_language=target_language
         )
         proposals.append(proposal)
 
