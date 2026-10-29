@@ -7,8 +7,8 @@ Audits and scores (0.0 to 100.0) across three orthogonal dimensions:
 2. Interface Contract Integrity (Public docstrings and unraised exception claims).
 3. Linguistic Sovereignty (100% Technical English, zero Spanish in production code).
 """
-
 from __future__ import annotations
+
 
 import ast
 import io

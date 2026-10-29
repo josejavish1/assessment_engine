@@ -1,4 +1,6 @@
 from __future__ import annotations
+import logging
+logger = logging.getLogger(__name__)
 
 from typing import Any, Dict
 
@@ -48,8 +50,8 @@ def _load_generic_deliverable_triggers() -> list[str]:
             return json.loads(p.read_text(encoding="utf-8")).get(
                 "generic_deliverable_triggers", []
             )
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
     return ["design", "test plan"]
 
 

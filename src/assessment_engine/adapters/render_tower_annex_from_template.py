@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import sys
@@ -476,14 +477,15 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
     tower_code = meta.get("tower_code", "TX")
 
     # Step 1: Construct the primary replacement map. This dictionary contains key-value pairs for direct, inline text substitution throughout the document.
+    import json
     from assessment_engine.infrastructure.runtime_paths import ROOT
     cfg_file = ROOT / "engine_config/locales_asis_annex.json"
     tags: dict[str, str] = {}
     if cfg_file.exists():
         try:
             tags = json.loads(cfg_file.read_text(encoding="utf-8")).get("legacy_docx_template_tags", {})
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[Config] Optional legacy docx tags unavailable: %s", ex)
 
     template_replacements = {
         "{client_name}": client_name,

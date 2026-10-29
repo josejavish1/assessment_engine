@@ -2,8 +2,8 @@
 
 Provides functionality to explicitly validate foundational access to Vertex AI. This pre-flight check is intended to run prior to agent instantiation to ensure proper credentials and permissions are configured.
 """
-
 from __future__ import annotations
+
 
 import argparse
 import logging

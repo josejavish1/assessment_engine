@@ -75,8 +75,8 @@ def _load_tower_keywords() -> dict[str, tuple[str, ...]]:
         try:
             raw = json.loads(path.read_text(encoding="utf-8"))
             return {k: tuple(v) for k, v in raw.items()}
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
     return {}
 
 

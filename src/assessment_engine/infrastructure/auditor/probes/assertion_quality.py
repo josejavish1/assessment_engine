@@ -33,7 +33,7 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
     for tf in test_files:
         try:
             tree = ast.parse(tf.read_text(encoding="utf-8"))
-        except Exception:
+        except (SyntaxError, UnicodeDecodeError, OSError):
             continue
 
         for node in ast.walk(tree):

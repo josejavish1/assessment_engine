@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from assessment_engine.infrastructure.genai_client import (
     ModelTier,
@@ -267,7 +270,8 @@ def run_vertex_ai_preflight(
                     publisher_model_name = cand_path
                     verified = True
                     break
-                except Exception:
+                except (OSError, ValueError, KeyError, AttributeError) as ex:
+                    logger.debug("[Fallback] Handled exception: %s", ex)
                     continue
             if not verified:
                 raise

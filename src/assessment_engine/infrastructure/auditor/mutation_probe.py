@@ -8,8 +8,8 @@ SOTA 2026: Multi-Operator Mutation Engine:
 - LCR (Logical Connector Replacement): and, or.
 - COR (Constant & Boolean Replacement): True, False.
 """
-
 from __future__ import annotations
+
 
 import ast
 import logging

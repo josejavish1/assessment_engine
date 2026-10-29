@@ -1,3 +1,6 @@
+from __future__ import annotations
+import logging
+logger = logging.getLogger(__name__)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Sovereign Assessment Engine CLI Control Panel.
@@ -8,7 +11,6 @@ into a single, unified, and cross-platform Python-native console CLI script.
 """
 
 # golden-path: ignore
-from __future__ import annotations
 
 import argparse
 import asyncio
@@ -75,8 +77,8 @@ def run_pipeline(
                 )
                 if raw_l:
                     resolved_lang = resolve_base_locale(raw_l)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+                logger.debug("[Fallback] Handled exception: %s", ex)
 
     if not resolved_lang:
         resolved_lang = "en"
@@ -298,10 +300,7 @@ def run_pipeline(
             if force:
                 cmd.append("--force")
 
-            loop = asyncio.get_running_loop()
-            res = await loop.run_in_executor(
-                None, lambda: subprocess.run(cmd, cwd=repo_root)
-            )
+            res = await asyncio.to_thread(subprocess.run, cmd, cwd=repo_root)
             if res.returncode != 0:
                 return TowerExecutionResult(
                     tower_id=tower_id,
@@ -481,7 +480,8 @@ def generate_and_print_finops_summary(working_dir: Path, client: str) -> dict[st
                 by_tower[tow]["calls"] += 1
                 by_tower[tow]["tokens"] += inp + out
                 by_tower[tow]["cost_usd"] = round(by_tower[tow]["cost_usd"] + cost, 4)
-            except Exception:
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+                logger.debug("[Fallback] Handled exception: %s", ex)
                 continue
 
     total_tokens = total_input + total_output
@@ -503,8 +503,8 @@ def generate_and_print_finops_summary(working_dir: Path, client: str) -> dict[st
             json.dumps(summary_data, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-    except Exception:
-        pass
+    except (OSError, ValueError, KeyError, AttributeError) as ex:
+        logger.debug("[Fallback] Handled exception: %s", ex)
 
     print("\n==========================================================")
     print(" 📊 RESUMEN EJECUTIVO FINOPS & CONSUMO DE TOKENS (AI STUDIO)")

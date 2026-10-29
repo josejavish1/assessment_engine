@@ -6,8 +6,8 @@ Analyze AST complexity, maintainability, and architecture according to ISO/IEC 2
 - Monolith file / God Module detection (> 600 production SLOC).
 - Strict typing coverage and PEP 257 docstrings.
 """
-
 from __future__ import annotations
+
 
 import ast
 import math

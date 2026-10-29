@@ -99,8 +99,8 @@ def infer_initiative_priority(
     if p_dur.exists():
         try:
             dur_cfg = json.loads(p_dur.read_text(encoding="utf-8")).get("duration_priority_keywords", {})
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[Config] Duration priority keywords loading failed: %s", ex)
 
     short_keys = dur_cfg.get("short_term", ["h1", "month 1", "month 2", "month 3"])
     long_keys = dur_cfg.get("long_term", ["h3", "month 18", "month 24", "long term"])

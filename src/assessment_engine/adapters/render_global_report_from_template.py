@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 import json
 import re
@@ -11,7 +12,6 @@ from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement, ns, parse_xml
 from docx.shared import Inches, Pt, RGBColor
-from pydantic import ValidationError
 
 """
 Module render_global_report_from_template.py.
@@ -259,7 +259,7 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
     )
 
     company = get_consultant_company_name()
-    disclaimer_raw = get_localized_disclaimer("en")
+    disclaimer_raw = get_localized_disclaimer(doc_lang)
 
     disclaimer_p1 = doc.add_paragraph()
     disclaimer_p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -295,6 +295,21 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
         r1.font.name = "Arial"
         r1.font.color.rgb = RGBColor(127, 127, 127)
 
+    doc.add_page_break()
+
+
+def render_global_toc(doc: Document, doc_lang: str, scope: str | None = None) -> None:
+    """Renders a formal Table of Contents (TOC) section immediately following the cover page."""
+    from assessment_engine.adapters.compilers.asis_docx_primitives import (
+        add_heading,
+        add_toc,
+        set_update_fields,
+    )
+
+    toc_title = t("toc_title", locale=doc_lang)
+    add_heading(doc, toc_title, level=1, primary_color_rgb=(0, 114, 188))
+    add_toc(doc)
+    set_update_fields(doc)
     doc.add_page_break()
 
 
@@ -1262,7 +1277,8 @@ def render_tobe_domain_architectures(
             continue
         try:
             bp_data = json.loads(bp_path.read_text(encoding="utf-8-sig"))
-        except Exception:
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[Blueprint] Blueprint payload parsing failed for %s: %s", t_id, ex)
             continue
 
         num, dom_name = CANONICAL_TOWER_NAMES.get(t_id, (str(i).zfill(2), t_id))
@@ -1331,7 +1347,7 @@ def render_tobe_domain_architectures(
 
             if all_levers:
                 add_heading_paragraph(doc, "Palancas Clave de Evolucion", level=4)
-                add_smart_bullet_list(doc, [sanitize_client_name(l, client_name, doc_lang=doc_lang) for l in all_levers[:4]], color_rgb=BASE_TEXT_COLOR)
+                add_smart_bullet_list(doc, [sanitize_client_name(lev_item, client_name, doc_lang=doc_lang) for lev_item in all_levers[:4]], color_rgb=BASE_TEXT_COLOR)
 
             if benefits or risks_inaction:
                 b_table = doc.add_table(rows=2, cols=2)
@@ -1375,7 +1391,8 @@ def render_todo_detailed_project_charters(
             continue
         try:
             bp_data = json.loads(bp_path.read_text(encoding="utf-8-sig"))
-        except Exception:
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[Blueprint] Blueprint payload parsing failed for %s: %s", t_id, ex)
             continue
 
         num, dom_name = CANONICAL_TOWER_NAMES.get(t_id, (str(i).zfill(2), t_id))
@@ -1806,14 +1823,10 @@ def _construct_fallback_payload(payload_dict: dict) -> GlobalReportPayload:
     from assessment_engine.domain.schemas.global_report import (
         BurningPlatformItem,
         EvolutionPrinciple,
-        ExecutionRoadmapDraft,
         ExecutiveDecisionItem,
         ExecutiveDecisionsDraft,
         ExecutiveSummaryDraft,
         GlobalReportDocumentMeta,
-        HorizonsDef,
-        InitiativeDef,
-        ProgramDef,
         StrategicPillar,
         TargetVisionDraft,
         TowerBottomLineItem,
@@ -1956,6 +1969,7 @@ def render_global_report(
         create_page_number_footer(doc.sections[0], doc_lang=doc_lang)
 
     render_cover(doc, payload, doc_lang=doc_lang)
+    render_global_toc(doc, doc_lang=doc_lang, scope=scope)
     client_name = payload.meta.client
 
     render_all = scope in (None, "full", "master")

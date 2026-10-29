@@ -49,7 +49,7 @@ def run_test_coverage_probe(target_dir: Path) -> ProbeResult:
                     cov_lines = totals.get("covered_lines", cov_lines)
                     line_cov = round((cov_lines / num_stmts) * 100.0, 1)
                     branch_cov = round(float(totals.get("percent_covered", branch_cov)), 1)
-        except Exception:
+        except (OSError, ValueError, KeyError):
             pass
 
     passed = line_cov >= 65.0

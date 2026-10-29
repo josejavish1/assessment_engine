@@ -3,8 +3,8 @@ Unified Google GenAI Client Factory & Agnostic Model Hub for Autonomuos Tier-1.
 Supports direct GEMINI_API_KEY as primary auth, falling back to Vertex AI ADC.
 Provides capability-based model tiering (AI_*_MODEL) decoupled from provider branding.
 """
-
 from __future__ import annotations
+
 
 import logging
 import os

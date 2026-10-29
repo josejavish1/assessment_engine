@@ -7,9 +7,9 @@ extracts all referenced Markdown documentation files recursively, and
 concatenates them into a single, unified 'llms-full.txt' file. This facilitates
 one-shot, zero-turn context ingestion for massive-context models (e.g. Gemini Pro).
 """
+from __future__ import annotations
 
 # golden-path: ignore
-from __future__ import annotations
 
 import argparse
 import re

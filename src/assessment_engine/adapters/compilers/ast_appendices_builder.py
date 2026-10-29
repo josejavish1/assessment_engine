@@ -31,8 +31,8 @@ def _get_appendix_strip_regex() -> str:
             return json.loads(p.read_text(encoding="utf-8")).get(
                 "appendix_strip_regex", r"^Appendix\s+[A-Z]:\s*"
             )
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
     return r"^Appendix\s+[A-Z]:\s*"
 
 

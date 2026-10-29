@@ -4,8 +4,8 @@ Maps client regulatory environments and country contexts to concrete territorial
 architectural invariants, sovereign cloud stacks, and direct connectivity standards,
 featuring Just-In-Time (JIT) dynamic synthesis and caching for unlisted jurisdictions.
 """
-
 from __future__ import annotations
+
 
 import json
 import logging

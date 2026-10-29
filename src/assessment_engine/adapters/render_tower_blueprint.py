@@ -453,9 +453,13 @@ def load_payload(
 def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
     """Constructs the cover page for a technology maturity report."""
     meta = payload.document_meta
+    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
+
+    num, dom_name = CANONICAL_TOWER_NAMES.get(meta.tower_code, ("01", meta.tower_name))
+    dom_display = dom_name.replace("_", " ")
     doc.add_paragraph().paragraph_format.space_after = Pt(60)
     title_p = doc.add_paragraph()
-    report_title = t("blueprint_cover_report_title", locale=doc_lang, tower_name=meta.tower_name)
+    report_title = t("blueprint_cover_report_title", locale=doc_lang, tower_name=dom_display)
     run = title_p.add_run(report_title)
     run.font.size = Pt(34)
     run.font.name = "Georgia"
@@ -727,15 +731,16 @@ def render_consolidated_asis(doc, payload: BlueprintPayload, doc_lang: str) -> A
             #
             impact_text = row_data.impact
             impact_lower = impact_text.lower()
-            from assessment_engine.infrastructure.runtime_paths import ROOT
             import json
+
+            from assessment_engine.infrastructure.runtime_paths import ROOT
             shading_cfg = {}
             p_shading = ROOT / "engine_config/locales_asis_annex.json"
             if p_shading.exists():
                 try:
                     shading_cfg = json.loads(p_shading.read_text(encoding="utf-8")).get("impact_shading_keywords", {})
-                except Exception:
-                    pass
+                except (OSError, ValueError, KeyError) as ex:
+                    logger.debug("[Config] Shading keywords loading failed: %s", ex)
 
             crit_keys = shading_cfg.get("critical", ["critical", "high", "severe"])
             mod_keys = shading_cfg.get("moderate", ["medium", "moderate"])
@@ -1478,6 +1483,21 @@ def render_conclusion(doc, annex_data: dict, doc_lang: str) -> Any:
         )
 
 
+def render_blueprint_toc(doc: Document, doc_lang: str) -> None:
+    """Renders a formal Table of Contents (TOC) section in the blueprint report."""
+    from assessment_engine.adapters.compilers.asis_docx_primitives import (
+        add_heading,
+        add_toc,
+        set_update_fields,
+    )
+
+    toc_title = t("toc_title", locale=doc_lang)
+    add_heading(doc, toc_title, level=1, primary_color_rgb=(0, 114, 188))
+    add_toc(doc)
+    set_update_fields(doc)
+    doc.add_page_break()
+
+
 def render_blueprint(
     payload: BlueprintPayload,
     output_path: Path,
@@ -1495,6 +1515,7 @@ def render_blueprint(
         create_page_number_footer(doc.sections[0], doc_lang=doc_lang)
 
     render_cover(doc, payload, doc_lang=doc_lang)
+    render_blueprint_toc(doc, doc_lang=doc_lang)
     render_snapshot_page(doc, payload, client_intelligence, annex_data, doc_lang=doc_lang)
     render_maturity_profile(doc, annex_data, doc_lang=doc_lang)
     render_cross_capabilities_analysis(doc, payload, doc_lang=doc_lang)

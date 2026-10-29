@@ -45,8 +45,8 @@ def _load_asis_annex_catalogs() -> dict[str, Any]:
     if path.exists():
         try:
             return json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[Config] Failed to load AS-IS annex catalogs: %s", ex)
     return {}
 
 
@@ -293,8 +293,8 @@ def resolve_client_currency_context(
                 rate_mult = float(data.get("exchange_rate", rate_mult))
                 if currency:
                     break
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError) as ex:
+                logger.debug("[Currency] Currency extraction fallback triggered: %s", ex)
 
     if not currency:
         intel_file = Path(f"working/{client_id}/client_intelligence.json")
@@ -304,8 +304,8 @@ def resolve_client_currency_context(
                 curr = data.get("financial", {}).get("currency") or data.get("currency")
                 if curr:
                     currency = {"USD": "$", "EUR": "€", "GBP": "£", "BRL": "R$", "MXN": "$", "CHF": "CHF", "JPY": "¥"}.get(curr.upper(), curr)
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError) as ex:
+                logger.debug("[Currency] Intelligence currency extraction fallback triggered: %s", ex)
 
     if not currency:
         currency = "€"

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import sys
 from datetime import datetime
@@ -281,8 +282,8 @@ def _build_stratified_financial_case(
         try:
             fb_data = json.loads(fallbacks_path.read_text(encoding="utf-8"))
             strat_metrics = fb_data.get("financial_fallbacks", {}).get("stratification_metrics", {})
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[GlobalPayload] Fallbacks metrics loading fallback: %s", ex)
 
     finops_waste_ratio = float(strat_metrics.get("finops_cash_waste_ratio", 0.00135))
     baseline_downtime_hours = float(strat_metrics.get("baseline_annual_downtime_hours", 27.0))
@@ -307,8 +308,8 @@ def _build_stratified_financial_case(
                 reg_max_fine = float(prof_data.get("reg_max_fine_eur", reg_max_fine))
                 compliance_framework = prof_data.get("compliance_framework", compliance_framework)
                 break
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError) as ex:
+                logger.debug("[GlobalPayload] Risk profile loading fallback: %s", ex)
 
         intel_path = client_dir / "client_intelligence.json"
         if intel_path.exists():
@@ -320,8 +321,8 @@ def _build_stratified_financial_case(
                 )
                 if framework:
                     compliance_framework = framework
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError) as ex:
+                logger.debug("[GlobalPayload] Intelligence framework loading fallback: %s", ex)
 
     total_opex_inv = 0.0
     total_capex_inv = 0.0
@@ -445,8 +446,8 @@ def _build_board_memo(
                 currency_code = prof_data.get("currency_code", currency_code)
                 currency_symbol = prof_data.get("currency_symbol", currency_symbol)
                 break
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError) as ex:
+                logger.debug("[GlobalPayload] Currency loading fallback: %s", ex)
 
     items = []
     total_holding_opex = 0.0
@@ -621,8 +622,8 @@ def _build_executive_callouts(
         try:
             fb_data = json.loads(fallbacks_path.read_text(encoding="utf-8"))
             strat_metrics = fb_data.get("financial_fallbacks", {}).get("stratification_metrics", {})
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[GlobalPayload] Fallbacks metrics loading fallback: %s", ex)
 
     currency_code = "EUR"
     currency_symbol = "€"
@@ -699,20 +700,24 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         return None
 
     intelligence_dossier = {}
-    doc_lang: str
+    resolved_lang = os.environ.get("ASSESSMENT_DOC_LANG") or os.environ.get("ASSESSMENT_LANGUAGE")
     intelligence_path = Path(client_dir) / "client_intelligence.json"
     if intelligence_path.exists():
         try:
             raw_int = json.loads(intelligence_path.read_text(encoding="utf-8-sig"))
             intelligence_dossier = build_client_context_packet(raw_int)
-            doc_lang = (
-                raw_int.get("language")
-                or raw_int.get("locale")
-                or raw_int.get("doc_lang")
-                or "en"
-            ).lower()
+            if not resolved_lang:
+                resolved_lang = (
+                    raw_int.get("language")
+                    or raw_int.get("locale")
+                    or raw_int.get("doc_lang")
+                )
         except Exception:
             intelligence_dossier = {}
+
+    from assessment_engine.infrastructure.localization import resolve_base_locale
+
+    doc_lang = resolve_base_locale(resolved_lang or "en")
 
     (
         towers_data,
@@ -1083,8 +1088,8 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 or raw_int.get("doc_lang")
                 or "en"
             ).lower()
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
 
     payload["board_memo"] = _build_board_memo(
         towers_data, blueprint_files, client_name, client_dir=client_dir, doc_lang=doc_lang
@@ -1125,7 +1130,8 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
     client_dir = Path(raw_args[1])
     client_name = raw_args[2]
-    payload = build_global_payload(client_dir, client_name)
+    doc_lang = raw_args[4].lower() if len(raw_args) > 4 else None
+    payload = build_global_payload(client_dir, client_name, doc_lang=doc_lang)
     if payload:
         Path(raw_args[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2))
         logger.info("Dynamic payload generated successfully.")

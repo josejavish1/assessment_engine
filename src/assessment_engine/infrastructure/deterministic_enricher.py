@@ -6,8 +6,12 @@ probabilistic LLM arithmetic with deterministic Python business logic.
 
 from __future__ import annotations
 
+import json
+import logging
 import re
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class DeterministicFinOpsEngine:
@@ -209,8 +213,8 @@ class LinguisticLinter:
                 return json.loads(p.read_text(encoding="utf-8")).get(
                     "linguistic_linter_translations", {}
                 )
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+                logger.debug("[Fallback] Handled exception: %s", ex)
         return {}
 
     TRANSLATION_MAP: Dict[str, str] = {}
@@ -243,14 +247,15 @@ class LinguisticLinter:
                 cleaned = parts[1].strip()
 
         # Strip redundant filler prefixes to leave high-impact action + subject
+        import json
         from assessment_engine.infrastructure.runtime_paths import ROOT
         annex_config = ROOT / "engine_config/locales_asis_annex.json"
         fillers = []
         if annex_config.exists():
             try:
                 fillers = json.loads(annex_config.read_text(encoding="utf-8")).get("initiative_title_filler_regexes", [])
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+                logger.debug("[Fallback] Handled exception: %s", ex)
         for f in fillers:
             cleaned = re.sub(f, "", cleaned, flags=re.IGNORECASE)
 

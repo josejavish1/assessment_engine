@@ -532,7 +532,8 @@ async def monitor_mode(layout: Layout) -> None:
                             UI_STATE["debate_transcript"].append(
                                 ("ARCHITECT", tx["details"]["decision"])
                             )
-                    except Exception:
+                    except (OSError, ValueError, KeyError, AttributeError) as ex:
+                        logger.debug("[Fallback] Handled exception: %s", ex)
                         continue
         update_ui_components(layout)
         await asyncio.sleep(1)

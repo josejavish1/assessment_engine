@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificado de Calidad y Seguridad — assessment_engine</title>
+    <title>Quality and Security Certificate — assessment_engine</title>
     <style>
         :root {
             --bg: #090d16;
@@ -62,8 +62,8 @@
             font-size: 38px;
             font-weight: 900;
             color: #fff;
-            background: #10b981;
-            box-shadow: 0 0 30px #10b98166;
+            background: #059669;
+            box-shadow: 0 0 30px #05966966;
         }
         .summary-stats {
             display: grid;
@@ -162,25 +162,25 @@
                 <div class="title">assessment_engine</div>
                 <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Ruta: /home/jsanchhi/assessment_engine</div>
             </div>
-            <div class="grade-badge">A+</div>
+            <div class="grade-badge">A</div>
         </div>
 
         <div class="summary-stats">
             <div class="stat-card">
-                <div class="stat-val">100.0%</div>
-                <div class="stat-label">Puntuación Global</div>
+                <div class="stat-val">99.1%</div>
+                <div class="stat-label">Global Score</div>
             </div>
             <div class="stat-card">
                 <div class="stat-val">21</div>
                 <div class="stat-label">Sondas Ejecutadas</div>
             </div>
             <div class="stat-card">
-                <div class="stat-val">107</div>
+                <div class="stat-val">166</div>
                 <div class="stat-label">Desviaciones Detectadas</div>
             </div>
         </div>
 
-        <h3 style="margin-bottom: 16px;">Resultados por Dimensión de Calidad</h3>
+        <h3 style="margin-bottom: 16px;">Quality Dimension Results</h3>
         
         <div class="probe-card">
             <div class="probe-header">
@@ -191,7 +191,7 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 443, <strong>clean_files:</strong> 443, <strong>findings_count:</strong> 0, <strong>critical_count:</strong> 0
+                <strong>scanned_files:</strong> 490, <strong>clean_files:</strong> 490, <strong>findings_count:</strong> 0, <strong>critical_count:</strong> 0
             </div>
         </div>
         
@@ -211,13 +211,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Architecture & Complexity (ISO 25010 / Cognitive)</span>
-                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #10b981;">99.6% • ✓ PASADO</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 99.6%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>prod_sloc:</strong> 45354, <strong>test_sloc:</strong> 18418, <strong>test_to_code_ratio:</strong> 0.41, <strong>maintainability_index_sei:</strong> 33.4
+                <strong>prod_sloc:</strong> 46489, <strong>test_sloc:</strong> 19860, <strong>test_to_code_ratio:</strong> 0.43, <strong>maintainability_index_sei:</strong> 33.4
             </div>
         </div>
         
@@ -276,13 +276,13 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Accessibility & UI Standards (WCAG 2.2 AA / EAA)</span>
-                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #ef4444;">47.2% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 47.2%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>ui_files_scanned:</strong> 81, <strong>findings_count:</strong> 0, <strong>high_severity_a11y_count:</strong> 0, <strong>wcag_compliance_level:</strong> WCAG 2.2 AA Conforme
+                <strong>ui_files_scanned:</strong> 95, <strong>findings_count:</strong> 19, <strong>high_severity_a11y_count:</strong> 5, <strong>wcag_compliance_level:</strong> No Conforme
             </div>
         </div>
         
@@ -295,7 +295,7 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>ddl_tables_indexed:</strong> 6, <strong>pydantic_models_audited:</strong> 137, <strong>drift_violations_count:</strong> 0, <strong>has_versioned_contract:</strong> True
+                <strong>ddl_tables_indexed:</strong> 6, <strong>pydantic_models_audited:</strong> 139, <strong>drift_violations_count:</strong> 0, <strong>has_versioned_contract:</strong> True
             </div>
         </div>
         
@@ -321,7 +321,7 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>llm_calls_audited:</strong> 19, <strong>has_bwrap_sandbox:</strong> True, <strong>has_execution_guard:</strong> True, <strong>has_finops_budget:</strong> True
+                <strong>llm_calls_audited:</strong> 21, <strong>has_bwrap_sandbox:</strong> True, <strong>has_execution_guard:</strong> True, <strong>has_finops_budget:</strong> True
             </div>
         </div>
         
@@ -334,20 +334,20 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 342, <strong>silent_exceptions_count:</strong> 0, <strong>static_defects_count:</strong> 0, <strong>unprofessional_comments_count:</strong> 0
+                <strong>scanned_files:</strong> 355, <strong>silent_exceptions_count:</strong> 0, <strong>static_defects_count:</strong> 0, <strong>unprofessional_comments_count:</strong> 0
             </div>
         </div>
         
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Structural Smells & Zero-Entropy (SWEBOK v4 / Clean Code)</span>
-                <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #ef4444;">60.0% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 60.0%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 342, <strong>entropy_violations_count:</strong> 0, <strong>long_parameter_funcs_count:</strong> 0, <strong>god_classes_count:</strong> 0
+                <strong>scanned_files:</strong> 355, <strong>entropy_violations_count:</strong> 2, <strong>long_parameter_funcs_count:</strong> 1, <strong>god_classes_count:</strong> 0
             </div>
         </div>
         
@@ -367,52 +367,52 @@
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Documentation Quality & Architectural Traceability (ISO 26514 / Google)</span>
-                <span class="probe-score" style="color: #10b981;">98.5% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #ef4444;">73.5% • ✗ REVISAR</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 98.5%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 73.5%; background-color: #ef4444;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>markdown_files_scanned:</strong> 63, <strong>internal_links_evaluated:</strong> 84, <strong>dead_links_count:</strong> 0, <strong>architectural_references_evaluated:</strong> 0
+                <strong>markdown_files_scanned:</strong> 62, <strong>internal_links_evaluated:</strong> 575, <strong>dead_links_count:</strong> 1, <strong>architectural_references_evaluated:</strong> 0
             </div>
         </div>
         
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">SRE, Observability & W3C Tracing (RFC-016)</span>
-                <span class="probe-score" style="color: #10b981;">98.5% • ✓ PASADO</span>
-            </div>
-            <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 98.5%; background-color: #10b981;"></div>
-            </div>
-            <div class="probe-metrics">
-                <strong>files_scanned:</strong> 165, <strong>total_findings:</strong> 2, <strong>critical_violations:</strong> 0, <strong>high_violations:</strong> 2
-            </div>
-        </div>
-        
-        <div class="probe-card">
-            <div class="probe-header">
-                <span class="probe-title">Hardcoded Artifacts & Secrets (CWE-798 / 12-Factor)</span>
                 <span class="probe-score" style="color: #10b981;">100.0% • ✓ PASADO</span>
             </div>
             <div class="probe-bar-bg">
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>scanned_files:</strong> 376, <strong>hardcoded_issues:</strong> 0
+                <strong>files_scanned:</strong> 167, <strong>total_findings:</strong> 0, <strong>critical_violations:</strong> 0, <strong>high_violations:</strong> 0
+            </div>
+        </div>
+        
+        <div class="probe-card">
+            <div class="probe-header">
+                <span class="probe-title">Hardcoded Artifacts & Secrets (CWE-798 / 12-Factor)</span>
+                <span class="probe-score" style="color: #ef4444;">65.0% • ✗ REVISAR</span>
+            </div>
+            <div class="probe-bar-bg">
+                <div class="probe-bar-fill" style="width: 65.0%; background-color: #ef4444;"></div>
+            </div>
+            <div class="probe-metrics">
+                <strong>scanned_files:</strong> 417, <strong>hardcoded_issues:</strong> 7
             </div>
         </div>
         
         <div class="probe-card">
             <div class="probe-header">
                 <span class="probe-title">Comment Quality & Semantic Contracts (3-Dimensional CQI)</span>
-                <span class="probe-score" style="color: #10b981;">99.8% • ✓ PASADO</span>
+                <span class="probe-score" style="color: #10b981;">99.7% • ✓ PASADO</span>
             </div>
             <div class="probe-bar-bg">
-                <div class="probe-bar-fill" style="width: 99.8%; background-color: #10b981;"></div>
+                <div class="probe-bar-fill" style="width: 99.7%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>files_scanned:</strong> 371, <strong>inline_rationale_score:</strong> 99.7, <strong>contract_coverage_score:</strong> 99.7, <strong>linguistic_sovereignty_score:</strong> 100.0
+                <strong>files_scanned:</strong> 412, <strong>inline_rationale_score:</strong> 99.6, <strong>contract_coverage_score:</strong> 99.5, <strong>linguistic_sovereignty_score:</strong> 100.0
             </div>
         </div>
         
@@ -438,7 +438,7 @@
                 <div class="probe-bar-fill" style="width: 87.5%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>total_tests:</strong> 367, <strong>total_assertions:</strong> 1337, <strong>strong_assertions:</strong> 1170, <strong>weak_assertions:</strong> 167
+                <strong>total_tests:</strong> 394, <strong>total_assertions:</strong> 1507, <strong>strong_assertions:</strong> 1319, <strong>weak_assertions:</strong> 188
             </div>
         </div>
         
@@ -451,7 +451,7 @@
                 <div class="probe-bar-fill" style="width: 100.0%; background-color: #10b981;"></div>
             </div>
             <div class="probe-metrics">
-                <strong>total_modules:</strong> 182, <strong>canonical_core_count:</strong> 47, <strong>active_leaves_count:</strong> 135, <strong>orphans_count:</strong> 0
+                <strong>total_modules:</strong> 184, <strong>canonical_core_count:</strong> 50, <strong>active_leaves_count:</strong> 134, <strong>orphans_count:</strong> 0
             </div>
         </div>
         
@@ -461,111 +461,111 @@
             <div class="finding-row sev-high">
                 <span class="sev-tag">HIGH</span>
                 <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en 'authorize_action_gate': CoC = 16 (límite cognitivo <= 15)</span>
+                <span class="finding-msg">Cognitive complexity overload in 'authorize_action_gate': CoC = 16 (cognitive limit <= 15)</span>
                 <span class="finding-path">src/assessment_engine/mcp_server.py:512</span>
             </div>
             
             <div class="finding-row sev-medium">
                 <span class="sev-tag">MEDIUM</span>
                 <span class="rule-tag">ARCH-DEEP-NESTING</span>
-                <span class="finding-msg">Anidamiento excesivo en 'polish_semantic_tables': 6 niveles de profundidad (límite <= 5)</span>
-                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:265</span>
+                <span class="finding-msg">Excessive nesting in 'polish_semantic_tables': 6 depth levels (threshold <= 5)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:281</span>
             </div>
             
             <div class="finding-row sev-medium">
                 <span class="sev-tag">MEDIUM</span>
                 <span class="rule-tag">ARCH-DEEP-NESTING</span>
-                <span class="finding-msg">Anidamiento excesivo en 'clean_brackets_and_consultant_notes': 6 niveles de profundidad (límite <= 5)</span>
-                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:485</span>
+                <span class="finding-msg">Excessive nesting in 'clean_brackets_and_consultant_notes': 6 depth levels (threshold <= 5)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:453</span>
             </div>
             
             <div class="finding-row sev-critical">
                 <span class="sev-tag">CRITICAL</span>
                 <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en 'clean_brackets_and_consultant_notes': CoC = 66 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:485</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en 'derive_pillar_justification': CoC = 60 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:145</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_write_module_07_conclusiones': CoC = 59 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:543</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_write_module_02_resumen_ejecutivo': CoC = 85 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:761</span>
-            </div>
-            
-            <div class="finding-row sev-medium">
-                <span class="sev-tag">MEDIUM</span>
-                <span class="rule-tag">ARCH-DEEP-NESTING</span>
-                <span class="finding-msg">Anidamiento excesivo en '_render_fair_5x5_table': 6 niveles de profundidad (límite <= 5)</span>
-                <span class="finding-path">src/assessment_engine/adapters/render_tower_blueprint.py:754</span>
-            </div>
-            
-            <div class="finding-row sev-medium">
-                <span class="sev-tag">MEDIUM</span>
-                <span class="rule-tag">ARCH-DEEP-NESTING</span>
-                <span class="finding-msg">Anidamiento excesivo en 'render_roadmap_page': 6 niveles de profundidad (límite <= 5)</span>
-                <span class="finding-path">src/assessment_engine/adapters/render_tower_blueprint.py:1192</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_compile_chapter_4_fair_risk_matrix': CoC = 145 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/compilers/asis_fair_chapter.py:47</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_compile_appendices': CoC = 77 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/compilers/asis_appendices_chapter.py:36</span>
+                <span class="finding-msg">Cognitive complexity overload in 'clean_brackets_and_consultant_notes': CoC = 78 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_annex_from_template.py:453</span>
             </div>
             
             <div class="finding-row sev-high">
                 <span class="sev-tag">HIGH</span>
                 <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_compile_chapter_5_conclusions': CoC = 47 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/compilers/asis_conclusions_chapter.py:33</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_build_systemic_risk_section': CoC = 97 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/compilers/payload_to_ast.py:575</span>
-            </div>
-            
-            <div class="finding-row sev-critical">
-                <span class="sev-tag">CRITICAL</span>
-                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_build_maturity_and_benchmarks': CoC = 61 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/compilers/payload_to_ast.py:732</span>
+                <span class="finding-msg">Cognitive complexity overload in 'derive_pillar_justification': CoC = 51 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:112</span>
             </div>
             
             <div class="finding-row sev-high">
                 <span class="sev-tag">HIGH</span>
                 <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
-                <span class="finding-msg">Sobrecarga cognitiva en '_build_detailed_findings_log': CoC = 52 (límite cognitivo <= 45)</span>
-                <span class="finding-path">src/assessment_engine/adapters/compilers/payload_to_ast.py:1013</span>
+                <span class="finding-msg">Cognitive complexity overload in '_write_module_07_conclusiones': CoC = 52 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:474</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in '_write_module_02_resumen_ejecutivo': CoC = 62 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/generate_asis_markdown_modules.py:628</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in 'render_tobe_domain_architectures': CoC = 54 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_global_report_from_template.py:1258</span>
+            </div>
+            
+            <div class="finding-row sev-medium">
+                <span class="sev-tag">MEDIUM</span>
+                <span class="rule-tag">ARCH-DEEP-NESTING</span>
+                <span class="finding-msg">Excessive nesting in '_render_fair_5x5_table': 6 depth levels (threshold <= 5)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_blueprint.py:766</span>
+            </div>
+            
+            <div class="finding-row sev-medium">
+                <span class="sev-tag">MEDIUM</span>
+                <span class="rule-tag">ARCH-DEEP-NESTING</span>
+                <span class="finding-msg">Excessive nesting in 'render_roadmap_page': 6 depth levels (threshold <= 5)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_blueprint.py:1185</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in 'render_roadmap_page': CoC = 47 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/render_tower_blueprint.py:1185</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in '_compile_chapter_4_fair_risk_matrix': CoC = 119 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/compilers/asis_fair_chapter.py:48</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in '_compile_appendices': CoC = 85 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/compilers/asis_appendices_chapter.py:38</span>
+            </div>
+            
+            <div class="finding-row sev-high">
+                <span class="sev-tag">HIGH</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in '_compile_chapter_5_conclusions': CoC = 47 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/compilers/asis_conclusions_chapter.py:34</span>
+            </div>
+            
+            <div class="finding-row sev-critical">
+                <span class="sev-tag">CRITICAL</span>
+                <span class="rule-tag">ARCH-COGNITIVE-OVERLOAD</span>
+                <span class="finding-msg">Cognitive complexity overload in '_build_systemic_risk_section': CoC = 81 (cognitive limit <= 45)</span>
+                <span class="finding-path">src/assessment_engine/adapters/compilers/payload_to_ast.py:558</span>
             </div>
             
 
         <div class="seal-footer">
-            <span>SELLO CRIPTOGRÁFICO SHA-256: b1991e146dd010e43dbad5da05ffa2c0...</span>
+            <span>CRYPTOGRAPHIC SHA-256 SEAL: a0c92d7e2548adcfe4528b51618e062a...</span>
             <span>AUDITADO BAJO NORMA ISO/IEC 25010 & IEEE 29119</span>
         </div>
     </div>

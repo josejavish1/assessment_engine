@@ -789,13 +789,9 @@ def finalize_table(table: Any) -> Any:
 
 
 def autofit_table_to_contents(table: Any) -> Any:
-    r"""{'docstring': "Forces a `python-docx` table to autofit its contents by manipulating OXML.\n\nThis function directly modifies the underlying Office Open XML (OXML)\nrepresentation of a `python-docx` Table object to enforce a content-based\nautofit layout. It serves as a more robust alternative to the standard\n`table.autofit = True` property, which may not override pre-existing\nfixed-width settings. The provided `table` object is mutated in-place.\n\nThe modification process consists of the following steps:\n1.  Removes the `w:tblGrid` element, which pre-defines fixed column widths.\n2.  Clears any existing table-level width (`w:tblW`) and layout (`w:tblLayout`)\n    properties from the table's properties (`w:tblPr`) element.\n3.  Sets the overall table layout type to `autofit` and its width type to\n    `auto`.\n4.  Iterates through each cell (`w:tc`) in the table, removing any\n    pre-existing cell-level fixed-width property (`w:tcW`).\n5.  Sets each cell's width type to `auto`, allowing it to dynamically resize\n    based on its content.\n\nArgs:\n    table (docx.table.Table): The `python-docx` Table object to be modified.\n\nRaises:\n    AttributeError: If the `table` object lacks the expected internal OXML\n        structure (e.g., `_tbl`, `_tc` attributes), indicating it is not a\n        valid `python-docx` Table object."}."""
+    """Forces a python-docx table to autofit its contents while strictly preserving w:tblGrid structure."""
     table.autofit = True
     tbl = table._tbl
-
-    for child in list(tbl):
-        if child.tag.split("}")[-1] == "tblGrid":
-            tbl.remove(child)
 
     tblPr = tbl.tblPr
     if tblPr is None:

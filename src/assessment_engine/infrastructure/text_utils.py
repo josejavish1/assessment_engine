@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 """Centralized text-processing utilities for sanitization and normalization.
 
 This module provides a suite of functions designed to prepare text for rendering
@@ -216,8 +218,8 @@ class ExecutiveStyleCompressor:
             try:
                 data = json.loads(p.read_text(encoding="utf-8")).get("executive_editorial_linter", {})
                 return data.get("bureaucratic_openers", []), data.get("buzzword_replacements", {})
-            except Exception:
-                pass
+            except (OSError, ValueError, KeyError, AttributeError) as ex:
+                logger.debug("[Fallback] Handled exception: %s", ex)
         return [], {}
 
     BUREAUCRATIC_OPENERS: list[str] = []
@@ -264,8 +266,8 @@ class ExecutiveStyleCompressor:
             if p_split.exists():
                 try:
                     split_rules = json.loads(p_split.read_text(encoding="utf-8")).get("sentence_clause_split_rules", [])
-                except Exception:
-                    pass
+                except (OSError, ValueError, KeyError) as ex:
+                    logger.debug("[TextUtils] Sentence clause split rules loading fallback: %s", ex)
 
             broken = False
             for r_item in split_rules:
@@ -317,8 +319,8 @@ def _load_canonical_tower_names() -> dict[str, tuple[str, str]]:
             )
             if raw:
                 return {k: tuple(v) for k, v in raw.items()}
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
     return defaults
 
 

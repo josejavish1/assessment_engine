@@ -3,8 +3,8 @@
 Neuro-symbolic integration of 86+ official manufacturer technical architectures
 with real-time JIT synthesis for novel, niche, or uncataloged vendors.
 """
-
 from __future__ import annotations
+
 
 import logging
 import re

@@ -14,8 +14,8 @@ Architecture:
 - Canonical Orthogonal Key: Canonical tuple (Sector + Archetype) for instant hits in 0.001s.
 - Adversarial Epistemic Judge: 4-pillar audit with a strict certification threshold of score >= 9.80/10.0.
 """
-
 from __future__ import annotations
+
 
 import concurrent.futures
 import hashlib

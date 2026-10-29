@@ -86,6 +86,7 @@ def main(argv: list[str] | None = None) -> None:
             str(client_dir),
             client_name,
             str(payload_path),
+            doc_lang,
         ],
         "Build Global Payload (Graph-Based Roadmap)",
         env,

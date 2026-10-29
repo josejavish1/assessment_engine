@@ -145,8 +145,8 @@ def _get_legacy_ingestion_tokens(key: str, default: list[str]) -> list[str]:
                 "legacy_word_ingestion_cleaning", {}
             )
             return cfg.get(key, default)
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError) as ex:
+            logger.debug("[Bootstrap] Ingestion tokens loading fallback: %s", ex)
     return default
 
 
@@ -162,8 +162,8 @@ def _get_legacy_ingestion_cleaner() -> tuple[str, str]:
             return cfg.get("repeated_phrase_regex", ""), cfg.get(
                 "repeated_phrase_replacement", ""
             )
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
     return "", ""
 
 

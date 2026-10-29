@@ -421,8 +421,8 @@ def persist_finops_telemetry(telemetry_data: dict[str, Any]) -> None:
     if not client_id and os.environ.get("ASSESSMENT_CASE_DIR"):
         try:
             client_id = Path(os.environ["ASSESSMENT_CASE_DIR"]).parent.name
-        except Exception:
-            pass
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug("[Fallback] Handled exception: %s", ex)
     if not client_id:
         return
 
