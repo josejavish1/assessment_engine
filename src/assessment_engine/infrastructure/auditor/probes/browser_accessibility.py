@@ -59,8 +59,8 @@ def _audit_inputs_accessibility(content: str, rel_path: str, declared_label_targ
                 file_path=rel_path,
                 line_number=lineno,
                 rule_id="A11Y-INPUT-NO-LABEL",
-                message=f"Campo <input type='{input_type}'> carece de <label> asociado o atributo 'aria-label'",
-                recommendation="Vincular con '<label htmlFor=\"id\">' o añadir 'aria-label=\"Descripción\"' para lectores de pantalla."
+                message=f"Form control <input type='{input_type}'> lacks associated <label> or 'aria-label' attribute",
+                recommendation="Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
             ))
     return findings
 
@@ -78,8 +78,8 @@ def _audit_images_accessibility(content: str, rel_path: str) -> list[AuditFindin
                 file_path=rel_path,
                 line_number=lineno,
                 rule_id="A11Y-IMG-NO-ALT",
-                message="Etiqueta <img /> carece del atributo obligatorio 'alt' (WCAG 1.1.1)",
-                recommendation="Añadir 'alt=\"Descripción visual\"' o 'alt=\"\"' si es puramente decorativa."
+                message="Image tag <img /> missing mandatory 'alt' attribute (WCAG 1.1.1)",
+                recommendation="Add 'alt=\"Visual description\"' or 'alt=\"\"' if purely decorative."
             ))
     return findings
 
@@ -106,8 +106,8 @@ def _audit_buttons_accessibility(content: str, rel_path: str) -> list[AuditFindi
                 file_path=rel_path,
                 line_number=lineno,
                 rule_id="A11Y-BUTTON-NO-NAME",
-                message="Botón interactivo <button> no contiene texto accesible ni 'aria-label'",
-                recommendation="Añadir texto visible o atributo 'aria-label=\"Acción\"' para lectores de pantalla."
+                message="Interactive <button> lacks accessible text or 'aria-label' attribute",
+                recommendation="Add visible text or 'aria-label=\"Action\"' attribute for screen readers."
             ))
     return findings
 
@@ -145,8 +145,8 @@ def audit_html_head_standards(index_html: Path, rel_path: str) -> list[AuditFind
                 file_path=rel_path,
                 line_number=content[:vp_match.start()].count("\n") + 1,
                 rule_id="A11Y-VIEWPORT-ZOOM-DISABLED",
-                message="Etiqueta viewport bloquea el zoom del usuario ('user-scalable=no' o 'maximum-scale=1')",
-                recommendation="Permitir zoom accesible eliminando restricciones de escala máxima (WCAG 1.4.4)."
+                message="Viewport tag restricts user pinch-zoom ('user-scalable=no' or 'maximum-scale=1')",
+                recommendation="Allow responsive zoom by eliminating maximum-scale restrictions (WCAG 1.4.4)."
             ))
 
     head_match = re.search(r"<head\b[^>]*>(.*?)</head>", content, re.IGNORECASE | re.DOTALL)
@@ -160,8 +160,8 @@ def audit_html_head_standards(index_html: Path, rel_path: str) -> list[AuditFind
                 file_path=rel_path,
                 line_number=content[:head_match.start()].count("\n") + 1,
                 rule_id="A11Y-MISSING-ZERO-FOUC",
-                message="No se detectó script síncrono en <head> para evitar destello de tema (Zero-FOUC)",
-                recommendation="Inyectar script inline que lea localStorage de tema antes del primer renderizado de CSS."
+                message="Synchronous theme initialization script missing from <head> to prevent theme flash (Zero-FOUC)",
+                recommendation="Inject synchronous inline script reading theme storage prior to CSS rendering."
             ))
 
     return findings

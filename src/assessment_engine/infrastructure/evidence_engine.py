@@ -68,7 +68,7 @@ class EvidenceEngine:
                     self.ledger_path.read_text(encoding="utf-8")
                 )
             except (ValidationError, OSError, ValueError) as ex:
-                logger.debug(f"[EvidenceEngine] Fallo al leer bóveda de evidencias: {ex}")
+                logger.debug(f"[EvidenceEngine] Failed to read evidence vault: {ex}")
         return EvidenceLedger(client_id=self.client_id)
 
     def ingest_file(self, file_path: Path) -> int:
@@ -169,7 +169,7 @@ class EvidenceEngine:
                 img_counter += 1
                 fragments.append(
                     self._create_fragment(
-                        content=f"[EVIDENCIA MULTIMODAL]: Imagen o diagrama técnico detectado en la posición {img_counter}.",
+                        content=f"[MULTIMODAL EVIDENCE]: Technical diagram or architectural image detected at position {img_counter}.",
                         source_uri=str(path),
                         location={
                             "type": "image",

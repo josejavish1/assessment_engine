@@ -21,6 +21,12 @@ Este archivo debe leerse como **adaptador operativo breve para Gemini**, no como
 
 Como agente de Google, **DEBES leer y someterte obligatoriamente a las Leyes de Ingeniería No Negociables y el Checklist de Disciplina de Cambio definidos en [AGENTS.md](AGENTS.md)**. Esas leyes de calidad son absolutas e inmutables para esta base de código.
 
+### Desacoplamiento Lingüístico Obligatorio (Language Decoupling Law)
+- **Regla Inmutable:** Aunque el usuario interactúe en español en el chat, **NUNCA** debes escribir código, comentarios, docstrings, excepciones, logs, prompts o tests en español.
+- **Todo artefacto de ingeniería debe ser 100% Technical English.**
+- El español u otros idiomas solo existen como datos en `engine_config/locales.json` para renderizar informes al cliente final cuando este lo solicite con un parámetro explícito.
+- Prohibido hardcodear `locale="es"` o usar `"es"` como valor por defecto en firmas de funciones; el valor por defecto del sistema es siempre `"en"`.
+
 ## Orden de lectura
 
 1. [README.md](README.md)

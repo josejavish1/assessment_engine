@@ -36,7 +36,8 @@ def _is_finding_addressed_by_projects(
         "procesos",
         "entorno",
         "entornos",
-        "gestión",
+        "gestion",
+        "management",
         "control",
         "controles",
     }
@@ -57,7 +58,7 @@ def _is_finding_addressed_by_projects(
 
 
 def _build_remediation_project(
-    finding: dict[str, Any], f_text: str, doc_lang: str = "es"
+    finding: dict[str, Any], f_text: str, doc_lang: str
 ) -> dict[str, Any]:
     from assessment_engine.infrastructure.localization import (
         get_localized_list,
@@ -117,7 +118,7 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
         """Injects remediation projects into a payload for unaddressed findings."""
         pillars = payload.get("pillars_analysis", [])
         doc_lang = str(
-            payload.get("document_meta", {}).get("language", "es")
+            payload.get("document_meta", {}).get("language", "en")
         ).lower()
 
         for p in pillars:
@@ -133,7 +134,7 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                         # Consolidate orphan finding into primary pillar initiative (preserving MECE max 2)
                         target_proj = projects[0]
                         delivs = target_proj.setdefault("deliverables", [])
-                        remed_desc = f"Remediación y aseguramiento de {finding.get('capability', 'resiliencia')}"
+                        remed_desc = f"Remediation and assurance of {finding.get('capability', 'resilience')}"
                         if remed_desc not in delivs:
                             delivs.append(remed_desc)
                     else:
@@ -142,9 +143,9 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                             finding, f_text, doc_lang=doc_lang
                         )
                         fallback_proj["wbs_breakdown"] = [
-                            {"phase_name": "Fase 1: HLD & Diseño", "task_name": "Diseño de arquitectura de remediación", "required_profile": "arquitecto", "estimated_hours": 30},
-                            {"phase_name": "Fase 2: Build & Config", "task_name": "Implantación de controles técnicos", "required_profile": "experto", "estimated_hours": 60},
-                            {"phase_name": "Fase 3: QA & Cierre", "task_name": "Pruebas operativas y gestión PMO", "required_profile": "project_manager", "estimated_hours": 20},
+                            {"phase_name": "Phase 1: HLD & Architecture", "task_name": "Remediation architecture design", "required_profile": "arquitecto", "estimated_hours": 30},
+                            {"phase_name": "Phase 2: Build & Config", "task_name": "Technical controls deployment", "required_profile": "experto", "estimated_hours": 60},
+                            {"phase_name": "Phase 3: QA & Handover", "task_name": "Operational validation and PMO handoff", "required_profile": "project_manager", "estimated_hours": 20},
                         ]
                         from assessment_engine.infrastructure.deterministic_enricher import DeterministicFinOpsEngine
                         rate_card = {
@@ -157,6 +158,7 @@ class ReverseTraceabilityPolicy(BaseSovereignPolicy):
                             fallback_proj["name"],
                             fallback_proj["tech_objective"],
                             sizing="S",
+                            doc_lang=doc_lang,
                         )
                         fallback_proj["opex_estimate"] = opex
                         fallback_proj["capex_estimate"] = capex

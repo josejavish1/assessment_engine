@@ -576,6 +576,10 @@ class BlueprintDocumentMeta(BaseModel):
     tower_code: str
     financial_tier: str
     transformation_horizon: str
+    language: Optional[str] = Field("en", description="Target ISO language code (e.g. 'en', 'es').")
+    doc_lang: Optional[str] = Field(None, description="Optional alias for language.")
+    currency: Optional[str] = Field("€", description="Currency symbol for financial reporting.")
+    regulatory_frameworks: Optional[list[str]] = Field(default_factory=list, description="Applicable regulatory frameworks.")
 
 
 class BlueprintPayload(OrchestratorBlueprintDraft):

@@ -29,7 +29,7 @@ def test_aggregate_tower_blueprints_execution(tmp_path: Path):
         all_principles,
         all_implications,
         blueprint_towers,
-    ) = _aggregate_tower_blueprints(blueprint_files)
+    ) = _aggregate_tower_blueprints(blueprint_files, doc_lang="es")
 
     assert len(towers_data) == 1
     assert towers_data[0]["id"] == "T2"

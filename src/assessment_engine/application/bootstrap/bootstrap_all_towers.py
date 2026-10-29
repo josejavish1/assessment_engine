@@ -70,12 +70,12 @@ def main() -> None:
     parser.add_argument(
         "--source-root",
         default=str(ROOT / "source_docs" / "towers"),
-        help="Directorio raíz con source_docs/towers/T*/",
+        help="Root directory with source_docs/towers/T*/",
     )
     parser.add_argument(
         "--engine-root",
         default=str(ROOT / "engine_config" / "towers"),
-        help="Directorio raíz de salida engine_config/towers/T*/",
+        help="Output root directory engine_config/towers/T*/",
     )
     args = parser.parse_args()
 

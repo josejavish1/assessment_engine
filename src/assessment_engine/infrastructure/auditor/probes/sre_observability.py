@@ -50,8 +50,8 @@ class SREObservabilityVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="OBS-001-ZERO-PRINT",
-                message="Uso de print() detectado en código de producción.",
-                recommendation="Reemplazar por get_structured_logger(...) con active trace_id."
+                message="Use of print() detected in production code.",
+                recommendation="Replace with get_structured_logger(...) with active trace_id."
             ))
 
         # Detectar llamadas bloqueantes dentro de async def
@@ -65,8 +65,8 @@ class SREObservabilityVisitor(ast.NodeVisitor):
                         file_path=self.rel_path,
                         line_number=node.lineno,
                         rule_id="ASYNC221-BLOCKING-SUBPROCESS",
-                        message=f"Llamada bloqueante subprocess.{node.func.attr}() dentro de función asíncrona '{self._current_async_func}'.",
-                        recommendation="Delegar la ejecución a un hilo aislado mediante 'await asyncio.to_thread(...)' o 'anyio.to_thread.run_sync(...)'.",
+                        message=f"Blocking call subprocess.{node.func.attr}() inside async function '{self._current_async_func}'.",
+                        recommendation="Offload execution to worker thread via 'await asyncio.to_thread(...)'.",
                     ))
                 elif node.func.value.id == "time" and node.func.attr == "sleep":
                     self.findings.append(AuditFinding(
@@ -75,7 +75,7 @@ class SREObservabilityVisitor(ast.NodeVisitor):
                         file_path=self.rel_path,
                         line_number=node.lineno,
                         rule_id="ASYNC221-BLOCKING-SLEEP",
-                        message=f"Llamada bloqueante time.sleep() dentro de función asíncrona '{self._current_async_func}'.",
+                        message=f"Blocking call time.sleep() inside async function '{self._current_async_func}'.",
                         recommendation="Reemplazar por 'await asyncio.sleep(...)'.",
                     ))
 
@@ -99,8 +99,8 @@ class SREObservabilityVisitor(ast.NodeVisitor):
                         file_path=self.rel_path,
                         line_number=handler.lineno,
                         rule_id="REL-001-SILENT-EXCEPTION",
-                        message="Captura ciega silenciosa (except Exception: pass/continue) detectada.",
-                        recommendation="Capturar excepciones específicas o registrar el fallo con logger.error() antes de continuar.",
+                        message="Blind silent catch (except Exception: pass/continue) detected.",
+                        recommendation="Catch specific exceptions or log failure with logger.error() before continuing.",
                     ))
         self.generic_visit(node)
 

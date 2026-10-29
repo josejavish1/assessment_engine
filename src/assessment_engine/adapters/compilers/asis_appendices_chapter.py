@@ -1,6 +1,7 @@
 """Technical appendices and regulatory disclaimers builder for Word DOCX."""
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
 from assessment_engine.infrastructure.localization import (
     format_currency,
     format_number,
+    get_localized_list,
     t,
 )
 from assessment_engine.adapters.compilers.asis_docx_primitives import (
@@ -56,241 +58,74 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
         return _add_markdown_bullet(doc, text, text_color_rgb, space_after)
 
     # Assemble and render Appendix A: Quantitative Risk Methodology
-    appendix_a_title = t("appendix_fair_title", locale=doc_lang, default="Metodología Cuantitativa de Riesgos" if doc_lang == "es" else "Quantitative Risk Methodology")
+    appendix_a_title = t("appendix_fair_title", locale=doc_lang)
     add_appendix_heading(doc, appendix_a_title, primary_color_rgb=p_color_rgb)
-    appendix_a_intro = t(
-        "appendix_fair_intro",
-        locale=doc_lang,
-        default=(
-            "Este apéndice detalla el rigor metodológico, las ecuaciones estadísticas y los supuestos actuariales de "
-            "calibración aplicados para sustentar las evaluaciones de riesgo de este informe."
-            if doc_lang == "es"
-            else "This appendix substantiates the methodological rigor, statistical formulations, and actuarial calibration models applied to support the risk projections in this report."
-        ),
-    )
+    appendix_a_intro = t("appendix_fair_intro", locale=doc_lang)
     add_body_paragraph(doc, appendix_a_intro, text_color_rgb=text_color_rgb)
 
     # Detect if the organization operates in a regulated critical sector to apply custom parameters
     is_critical_client = is_critical if is_critical is not None else True
-    
+
     # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     if "Financial" in industry or "Banking" in industry:
-        reg_name = t("reg_financial_banking", locale=doc_lang, default="las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA)" if doc_lang == "es" else "applicable operational resilience statutory regulations (e.g. DORA)")
-        reg_fine_limit = f"15.000.000 {currency}" if doc_lang == "es" else f"{currency}15,000,000"
+        reg_name = t("reg_financial_banking", locale=doc_lang)
+        reg_fine_limit = format_currency(15000000.0, currency_symbol=currency, locale=doc_lang, decimals=0)
     elif "Energy" in industry or "Critical Infrastructure" in industry:
-        reg_name = t("reg_energy_infra", locale=doc_lang, default="los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2)" if doc_lang == "es" else "critical national infrastructure protection frameworks (e.g. NIS2 Directive)")
-        reg_fine_limit = f"10.000.000 {currency}" if doc_lang == "es" else f"{currency}10,000,000"
+        reg_name = t("reg_energy_infra", locale=doc_lang)
+        reg_fine_limit = format_currency(10000000.0, currency_symbol=currency, locale=doc_lang, decimals=0)
     elif "Telecommunications" in industry or "Media" in industry:
-        reg_name = t("reg_telecom_media", locale=doc_lang, default="los marcos regulatorios sectoriales de Telecomunicaciones y soberanía" if doc_lang == "es" else "telecommunications and data sovereignty mandates")
-        reg_fine_limit = f"5.000.000 {currency}" if doc_lang == "es" else f"{currency}5,000,000"
+        reg_name = t("reg_telecom_media", locale=doc_lang)
+        reg_fine_limit = format_currency(5000000.0, currency_symbol=currency, locale=doc_lang, decimals=0)
     elif "Healthcare" in industry:
-        reg_name = t("reg_healthcare", locale=doc_lang, default="las regulaciones de protección de datos de salud y privacidad" if doc_lang == "es" else "health data protection and patient safety regulations")
-        reg_fine_limit = f"5.000.000 {currency}" if doc_lang == "es" else f"{currency}5,000,000"
+        reg_name = t("reg_healthcare", locale=doc_lang)
+        reg_fine_limit = format_currency(5000000.0, currency_symbol=currency, locale=doc_lang, decimals=0)
     else:
-        reg_name = t("reg_general_privacy", locale=doc_lang, default="los marcos generales de protección de datos y privacidad (v.g. RGPD)" if doc_lang == "es" else "general data protection and privacy statutory frameworks (e.g. GDPR)")
-        reg_fine_limit = f"2.000.000 {currency}" if doc_lang == "es" else f"{currency}2,000,000"
+        reg_name = t("reg_general_privacy", locale=doc_lang)
+        reg_fine_limit = format_currency(2000000.0, currency_symbol=currency, locale=doc_lang, decimals=0)
 
     # Section 1: Quantitative Rationale
-    sub_1_title = t("appendix_fair_qualitative_limitations_title", locale=doc_lang, default="Limitaciones del Análisis Cualitativo frente a Open FAIR™" if doc_lang == "es" else "Limitations of Qualitative Risk Matrices vs. Open FAIR™")
+    sub_1_title = t("appendix_fair_qualitative_limitations_title", locale=doc_lang)
     add_appendix_subheading(doc, sub_1_title, primary_color_rgb=p_color_rgb)
-    if doc_lang == "es":
-        p_why = (
-            "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de "
-            "impacto y probabilidad (como las matrices de rango alto/medio/bajo), constituyen un valioso punto de partida para "
-            "identificar y clasificar de forma temprana las superficies de vulnerabilidad de una organización. No obstante, para "
-            "facilitar la toma de decisiones presupuestarias y justificar la rentabilidad de las inversiones tecnológicas (ROI), "
-            "es necesario complementar estos marcos de referencia con un enfoque cuantitativo avanzado. Este diagnóstico "
-            "adopta de forma complementaria la metodología estándar **Open FAIR™ (Factor Analysis of Information Risk)** "
-            "(reconocida por *The Open Group* e incorporada en marcos normativos como ISO/IEC 27005), aportando una metodología "
-            "rigurosa para modelar e identificar la exposición financiera real de la plataforma ante eventos de riesgo."
-        )
-    else:
-        p_why = (
-            "Traditional qualitative risk matrices (High/Medium/Low) provide an initial surface categorization but lack the "
-            "actuarial precision required for executive capital allocation and ROI justification. To substantiate technical investments, "
-            "this assessment adopts the international Open FAIR™ (Factor Analysis of Information Risk) standard, recognized by The Open "
-            "Group and embedded in ISO/IEC 27005, quantitatively modeling annualized financial exposure."
-        )
+    p_why = t("appendix_fair_rationale_p", locale=doc_lang)
     add_body_paragraph(doc, p_why, text_color_rgb=text_color_rgb)
 
     # Section 2: Dual-Layer Calibration Model
-    sub_2_title = t("appendix_fair_dual_layer_title", locale=doc_lang, default="El Modelo de Calibración Actuarial de Doble Capa" if doc_lang == "es" else "Dual-Layer Actuarial Calibration Model")
+    sub_2_title = t("appendix_fair_dual_layer_title", locale=doc_lang)
     add_appendix_subheading(doc, sub_2_title, primary_color_rgb=p_color_rgb)
-    if doc_lang == "es":
-        p_layer_intro = (
-            "Con el fin de comprender de forma intuitiva cómo una deficiencia técnica se propaga hasta impactar en el "
-            "balance de la compañía, resulta de gran utilidad seguir paso a paso la cronología de un único evento de amenaza. "
-            "A este recorrido lo denominamos 'La Biografía del Incidente'. Imaginemos, a modo de ejemplo ilustrativo, "
-            "un incidente donde un fallo en la infraestructura de copia de seguridad o una brecha de ransomware afecta "
-            "a un repositorio crítico de la plataforma. El modelo divide las consecuencias en dos capas claramente diferenciadas:"
-        )
-    else:
-        p_layer_intro = (
-            "To trace how technical vulnerabilities propagate into balance sheet impact, the assessment reconstructs threat scenarios "
-            "step by step ('The Biography of an Incident'). The actuarial model segments financial consequences into two distinct layers:"
-        )
+    p_layer_intro = t("appendix_fair_dual_layer_p", locale=doc_lang)
     add_body_paragraph(doc, p_layer_intro, text_color_rgb=text_color_rgb)
 
-    # Local inline Markdown parser to cleanly render bold (**) and italics (_) inside Appendix D bullet points,
-    # completely eliminating raw asterisks and styling math variables beautifully.
-    # Note: Function body is defined early in compile_docx to avoid scope conflicts.
-
     add_markdown_bullet_local(
-        "Capa 1: Modelado de Vulnerabilidad (Garantía FAIR-CAM™) - Calibración Estocástica de Eficacia Defensiva: El incidente se inicia "
-        "con la materialización de un evento de amenaza (v.g. un fallo operativo o desalineación en la capa de virtualización). En este "
-        "instante, el evento choca contra las barreras de control de la organización. La probabilidad de que la amenaza supere estas "
-        "salvaguardas y cause una pérdida real se define técnicamente como Vulnerabilidad (_VULN_). Nuestro motor aplica el estándar "
-        "**FAIR-CAM™ (Control Analytics Model)** para calibrar esta probabilidad en función de la madurez real auditada en el Capítulo 3. "
-        "Si la capacidad se sitúa en un nivel reactivo o inmaduro (Nivel 1 o 2), las barreras de control exhiben fallas estructurales severas, "
-        "permitiendo el filtrado de la amenaza y detonando de inmediato **Pérdidas Primarias** (costes de respuesta de emergencia, "
-        "horas de ingeniería extraordinaria de restauración e interrupción directa del negocio), cuyo coste de severidad "
-        "es modelado estocásticamente mediante curvas continuas lognormales. Con el objetivo de distinguir matemáticamente las vulnerabilidades de riesgo estructural frente a ineficiencias rutinarias, "
-        "el modelo aplica una **segregación tipológica**: si la deficiencia es de fricción operativa pura (ej. uso de hojas de cálculo o procesos ITSM lentos), "
-        "el impacto se acota a un límite estricto de OPEX, garantizando proyecciones financieras realistas y contenidas.",
+        t("appendix_fair_dual_layer_b1", locale=doc_lang),
         space_after=4
     )
 
     add_markdown_bullet_local(
-        f"Capa 2: Exposición Secundaria y Diligencia Debida (Garantía FAIR-MAM™) - Propagación Condicional de la Exposición Reguladora: "
-        f"Una vez materializada la pérdida primaria, se activa de forma secuencial una segunda capa de exposición reguladora y "
-        f"contractual basada en la demostración de la 'diligencia debida' (compliance). Utilizando la metodología **FAIR-MAM™ (Materiality Analytics Model)**, "
-        f"el motor simula el desencadenamiento de **Pérdidas Secundarias** catastróficas (sanciones bajo {reg_name} de hasta "
-        f"{reg_fine_limit} o reclamaciones por incumplimiento severo de SLAs). Esta propagación no utiliza saltos binarios arbitrarios, "
-        f"sino que se modela mediante una **curva de transición logística continua** anclada en el nivel de madurez. A medida que la "
-        f"madurez técnica decae por debajo del **Nivel 3 (Definido - score < 2,60)**, se asume una omisión estructural de diligencia, "
-        f"disparando la probabilidad estocástica de sanción de forma asintótica hacia un techo del **15%**. Por el contrario, a medida que la capacidad "
-        f"consolida el Nivel 3 o superior, la organización puede probar documentalmente su debida diligencia ante el regulador, "
-        f"desplomando suavemente dicha probabilidad penalizadora hacia un suelo residual del **2%** de manera justificada.",
+        t("appendix_fair_dual_layer_b2", locale=doc_lang, reg_name=reg_name, reg_fine_limit=reg_fine_limit),
         space_after=12
     )
 
     # Section 3: Actuarial Simulation Core
-    sub_3_title = t("appendix_fair_sim_kernel_title", locale=doc_lang, default="El Núcleo de Simulación Actuarial" if doc_lang == "es" else "The Actuarial Simulation Kernel")
+    sub_3_title = t("appendix_fair_sim_kernel_title", locale=doc_lang)
     add_appendix_subheading(doc, sub_3_title, primary_color_rgb=p_color_rgb)
-    if doc_lang == "es":
-        p_mc_intro = (
-            "Más allá de la lógica conceptual, el verdadero valor diferencial de este diagnóstico reside en su arquitectura matemática. "
-            "El motor de riesgo no emplea promedios estáticos, sino que ejecuta una **Simulación de Monte Carlo de 10.000 iteraciones** "
-            "impulsada por un **Proceso de Riesgo Colectivo Compuesto de Dos Etapas**. Este núcleo de cálculo, diseñado bajo los "
-            "estándares de la banca de inversión (Basilea III), modela la complejidad real del ciberespacio:"
-        )
-    else:
-        p_mc_intro = (
-            "Beyond conceptual logic, the core differentiator of this assessment resides in its mathematical architecture. "
-            "The risk engine executes a **10,000-iteration Monte Carlo simulation** driven by a compound two-stage risk process "
-            "modeling real cyberspace complexity:"
-        )
+    p_mc_intro = t("appendix_fair_sim_kernel_p", locale=doc_lang)
     add_body_paragraph(doc, p_mc_intro, text_color_rgb=text_color_rgb)
 
-    add_markdown_bullet_local(
-        "La Elicitación de Expertos (Consenso Adversarial Multi-Agente): Previo a la simulación matemática, el motor aplica un proceso de actualización bayesiana para adaptar las curvas de probabilidad teóricas a la realidad operativa de la organización. Mediante un panel automatizado de Inteligencia Artificial que debate desde perspectivas adversariales (viabilidad operativa vs. riesgo catastrófico), se deducen atenuantes topológicos (como el aislamiento de redes OT) y se separa la fricción técnica ordinaria del riesgo regulatorio. Este proceso simula de forma auditable la Elicitación de Expertos en la Materia (SME Elicitation) requerida por el estándar FAIR™, generando multiplicadores de descuento (Priors Bayesianos) que calibran el modelo y evitan el doble conteo de riesgos antes de inyectarlos en el núcleo estocástico.",
-        space_after=4
-    )
-
-    add_markdown_bullet_local(
-        "La Frecuencia de Amenazas - El Contagio (Distribución Binomial Negativa): En lugar de asumir una frecuencia fija o eventos aleatorios independientes (Poisson), "
-        "el motor simula el número de amenazas anuales (_n_) mediante una **Distribución Binomial Negativa**. Este modelo captura la sobre-dispersión empírica de "
-        "los ciberataques, donde un intento fallido suele preceder a una oleada concentrada de incidentes (clustering). "
-        "La tasa media (_λ_) no es estática; se muestrea de una distribución de incertidumbre calibrada mediante **Elicitación de Expertos (Expert Elicitation)**, "
-        "anclada en heurísticas de inteligencia de amenazas sectoriales y taxonomías de vulnerabilidad conocidas.",
-        space_after=4
-    )
-
-    add_markdown_bullet_local(
-        "El Pararrayos de Control - El Éxito o Fallo (Distribución Binomial): Para cada una de las amenazas simuladas (_n_), el ordenador "
-        "simula si nuestras defensas reales desvían el impacto o fallan. El número final de pérdidas reales (_k_) sigue una distribución "
-        "binomial (expresada matemáticamente como _k ~ Binomial(n, VULN)_). La vulnerabilidad (_VULN_) se correlaciona con la madurez "
-        "técnica del Capítulo 3 mediante una **función de decadencia logística**, reflejando matemáticamente el desplome exponencial de eficacia defensiva cuando los controles caen por debajo de los estándares definidos.",
-        space_after=4
-    )
-
-    add_markdown_bullet_local(
-        f"La Severidad de Pérdidas - El Coste (Distribución Lognormal de Colas Pesadas): Para modelar el coste de reparación técnica y las posibles "
-        f"multas secundarias, el motor emplea una **Distribución Lognormal**. Ante la ausencia de series temporales empíricas masivas del cliente, esta curva actúa como una "
-        f"**Aproximación Conservadora de Valores Extremos (EVT)** para modelar impactos financieros con colas pesadas. Los parámetros de la curva (_μ_, _σ_) se ajustan estocásticamente. "
-        f"Para evitar la inestabilidad estadística de simulaciones infinitas, el modelo realiza un truncamiento matemático (soft truncation) en el límite legal correspondiente "
-        f"(hasta {reg_fine_limit}), forzando la convergencia estable de la Expectativa de Pérdida Anualizada (ALE) bajo el Teorema del Límite Central.",
-        space_after=4
-    )
-
-    add_markdown_bullet_local(
-        "Correlación Multivariante (Cópula Gaussiana Direccional): En el mundo real, un daño técnico severo eleva de forma casi determinista la probabilidad de sufrir "
-        "una sanción regulatoria grave. Para evitar infravalorar eventos catastróficos, el motor no suma costes de forma independiente. Utiliza el Teorema de Sklar "
-        "y una **Cópula Gaussiana** para inyectar una Dependencia de Cola asimétrica. Esto vincula causalmente las matrices de pérdida primaria y secundaria, "
-        "garantizando que la distribución financiera final refleje el riesgo estructural compuesto con precisión absoluta.",
-        space_after=12
-    )
+    bullets_sim = get_localized_list("appendix_fair_sim_bullets", locale=doc_lang)
+    for b_idx, b_txt in enumerate(bullets_sim):
+        add_markdown_bullet_local(b_txt, space_after=12 if b_idx == len(bullets_sim) - 1 else 4)
 
     # Section 4: Decision Metrics
-    sub_4_title = t("appendix_fair_decision_metrics_title", locale=doc_lang, default="Definición de Métricas Decisionales de Exposición Financiera" if doc_lang == "es" else "Financial Exposure Decision Metrics Definition")
+    sub_4_title = t("appendix_fair_decision_metrics_title", locale=doc_lang)
     add_appendix_subheading(doc, sub_4_title, primary_color_rgb=p_color_rgb)
-    if doc_lang == "es":
-        p_metrics_intro = (
-            "Al integrar y ordenar los resultados de las 10.000 iteraciones de simulación virtual, el motor genera la distribución "
-            "acumulada de pérdidas de la plataforma. De esta distribución se derivan matemáticamente las tres métricas decisionales "
-            "que permiten al Consejo justificar las inversiones de mitigación:"
-        )
-    else:
-        p_metrics_intro = (
-            "By integrating and ranking the outputs of the 10,000 virtual simulation iterations, the engine computes the cumulative "
-            "loss distribution. From this curve, three decisive actuarial metrics are mathematically derived to support executive mitigation investment:"
-        )
+    p_metrics_intro = t("appendix_fair_metrics_intro", locale=doc_lang)
     add_body_paragraph(doc, p_metrics_intro, text_color_rgb=text_color_rgb)
 
-    if doc_lang == "es":
-        p_m1 = add_markdown_bullet_local(
-            "Pérdida Anualizada (ALE - Annual Loss Exposure): Representa la media aritmética de todos los escenarios de pérdida anualizada agregados. "
-            "Es el impacto económico promedio latente que la organización experimenta cada año si decide mantener el statu quo (coste de inacción).",
-            space_after=4
-        )
+    bullets_met = get_localized_list("appendix_fair_metrics_bullets", locale=doc_lang)
+    for b_idx, b_txt in enumerate(bullets_met):
+        add_markdown_bullet_local(b_txt, space_after=12 if b_idx == len(bullets_met) - 1 else 4)
 
-        p_m2 = add_markdown_bullet_local(
-            "Déficit Esperado Condicional (CVaR / Expected Shortfall): Representa el promedio matemático del 2.5% de los peores escenarios de la distribución de pérdidas (Expected Shortfall al 97.5%). "
-            "Se define como una métrica de riesgo matemáticamente coherente (coherent risk measure) y de referencia bajo los más estrictos estándares internacionales de gestión financiera (como la Fundamental Review of the Trading Book - FRTB de Basilea III), "
-            "capturando con rigor la verdadera magnitud de las pérdidas extremas en la cola de la distribución sin sufrir el efecto de dilución de eventos de baja frecuencia. Al agregar los valores, ilustramos el peor caso estructural absoluto "
-            "donde las mayores vulnerabilidades convergen simultáneamente, proporcionando el requerimiento de capital de resiliencia necesario para proteger el Valor de la Empresa (Enterprise Value).",
-            space_after=4
-        )
-
-        p_m3 = add_markdown_bullet_local(
-            f"Rango Probabilístico de Pérdidas: Muestra la volatilidad de la exposición del riesgo, ilustrando desde un año virtual benigno (Mín) hasta "
-            f"un año catastrófico (Máx) provocado por la ineficiencia acumulada de múltiples fallos y sanciones regulatorias de {reg_name} concurrentes.",
-            space_after=12
-        )
-
-        p_convergence = (
-            "*(Nota de Estabilidad y Exposición de Riesgo Bruto: El volumen de 10.000 iteraciones simuladas garantiza la plena convergencia "
-            "y estabilidad matemática de los indicadores económicos bajo el Teorema del Límite Central, proporcionando un estimador de exposición "
-            "financiero de alta precisión y máxima fidelidad estadística. Asimismo, todos los valores monetarios aquí expuestos (ALE y CVaR) representan "
-            "el Riesgo Bruto Latente (Gross Exposure) antes de la aplicación de posibles mitigaciones de transferencia financiera (como franquicias o topes de pólizas de ciberseguro). "
-            "Por consiguiente, deben interpretarse como indicadores de magnitud probabilística para la priorización ejecutiva de inversiones tecnológicas (Business Case), "
-            "no como límites absolutos o provisiones directas de pasivos en el balance contable de la organización).*"
-        )
-    else:
-        p_m1 = add_markdown_bullet_local(
-            "Annual Loss Exposure (ALE): Represents the arithmetic mean across all aggregated annualized loss scenarios. "
-            "It is the latent baseline economic drag experienced annually under the status quo (Cost of Inaction).",
-            space_after=4
-        )
-
-        p_m2 = add_markdown_bullet_local(
-            "Conditional Value at Risk (CVaR / Expected Shortfall): Represents the mathematical average of the worst 2.5% tail loss scenarios (Expected Shortfall at 97.5%). "
-            "Recognized as a coherent risk measure under international banking standards (FRTB Basel III), rigorously capturing severe tail risk without low-frequency dilution. "
-            "By aggregating across pillars, it models the absolute worst-case scenario where primary and secondary losses converge concurrently, defining the resilience capital required to protect Enterprise Value.",
-            space_after=4
-        )
-
-        p_m3 = add_markdown_bullet_local(
-            f"Probabilistic Loss Range: Illustrates risk volatility from a benign baseline year (Min) to a catastrophic tail scenario (Max) "
-            f"driven by compounded technical outages and concurrent statutory fines under {reg_name}.",
-            space_after=12
-        )
-
-        p_convergence = (
-            "*(Note on Convergence and Gross Risk: 10,000 iterations guarantee full mathematical convergence under the Central Limit Theorem. "
-            "Monetary figures represent Gross Latent Exposure before financial risk transfer mitigations, serving as an executive prioritization "
-            "indicator for technology investment, not an accounting liability reserve).*"
-        )
+    p_convergence = t("appendix_fair_convergence_note", locale=doc_lang)
     add_body_paragraph(doc, p_convergence, text_color_rgb=text_color_rgb)
     
         # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
@@ -340,127 +175,19 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
                 (
                     doc_item.get("code", "[Doc]"),
                     doc_item.get("name", "Documento"),
-                    doc_item.get("desc", "Documento bajo custodia de auditoría."),
+                    doc_item.get("desc", t("appendix_c_default_custody_desc", locale=doc_lang)),
                 )
             )
     else:
         # Dynamically generate a context-aware bibliography based on the specified technology stack to avoid invalid source file references.
         client_name_slug = client_name.lower().replace(" ", "_")
-        if doc_lang == "es":
-            src_data = [
-                (
-                    "[Cuestionario de Autoevaluación]",
-                    f"preguntas_{client_name_slug}.txt",
-                    f"Cuestionario estructurado de autoevaluación técnica de la torre de {tower_name}, recopilando "
-                    f"las respuestas oficiales, notas y telemetrías declaradas de buena fe por el equipo de ingeniería de {client_name}.",
-                ),
-                (
-                    "[Dossier de Contexto]",
-                    f"contexto_{client_name_slug}.docx",
-                    f"Dossier estratégico de contexto de arquitectura de {client_name} que define la volumetría del "
-                    f"patrimonio, distribución de centros de datos, dependencias y criticidad operativa general.",
-                ),
-                (
-                    "[Capa de Inteligencia de la Plataforma]",
-                    "client_intelligence.json",
-                    f"Módulo de ingesta y análisis semántico asistido por IA de la plataforma que recopila de forma automatizada "
-                    f"las regulaciones de cumplimiento (como NIS2, RGPD o DORA), requerimientos corporativos y baselines del sector (ITIC) "
-                    f"para calibrar y enriquecer los hallazgos técnicos con métricas cuantitativas de riesgo de negocio.",
-                ),
-                (
-                    "[ITIC-DOWNTIME]",
-                    "ITIC Global Server Hardware Downtime Report",
-                    "Estudio de referencia mundial y métrica estadística industrial que barema el coste promedio por hora de "
-                    "indisponibilidad de infraestructura core en grandes corporaciones y servicios críticos, utilizado como baseline de calibración de pérdidas primarias.",
-                ),
-                (
-                    "[CISA-KEV]",
-                    "CISA Known Exploited Vulnerabilities Catalog",
-                    "Catálogo internacional de vulnerabilidades explotadas activamente por agentes de amenaza, mantenido por la Cybersecurity "
-                    "and Infrastructure Security Agency (CISA) y utilizado como baseline para calibrar la Frecuencia de Eventos de Amenaza (TEF).",
-                ),
-                (
-                    "[DIRECTIVA-NIS2]",
-                    "Directiva (UE) 2022/2555 (NIS2)",
-                    "Directiva del Parlamento Europeo y del Consejo relativa a medidas destinadas a garantizar un elevado nivel común de ciberseguridad "
-                    "en toda la Unión, utilizada para calibrar el límite máximo legal de sanciones administrativas por negligencia (pérdidas secundarias).",
-                ),
-                (
-                    "[ISO-27001]",
-                    "Norma Internacional ISO/IEC 27001",
-                    "Estándar internacional de sistemas de gestión de seguridad de la información (SGSI), utilizado como marco de referencia "
-                    "universal para evaluar los controles de seguridad técnica, gobernanza y resiliencia operacional.",
-                ),
-                (
-                    "[DAMA-DMBOK]",
-                    "DAMA Data Management Body of Knowledge (DAMA-DMBOK v2)",
-                    "Marco metodológico estándar internacional para la evaluación de madurez del gobierno y gestión de datos corporativos, "
-                    "utilizado para modelar y auditar la consistencia del pilar de gobierno de datos de la plataforma.",
-                ),
-                (
-                    "[GOOGLE-DORA]",
-                    "Google DevOps Research and Assessment (DORA) Framework",
-                    "Estándar industrial internacional utilizado para evaluar la madurez de la automatización, entrega continua, "
-                    "y fiabilidad operacional (SRE) en ecosistemas modernos de desarrollo e infraestructura híbrida.",
-                )
-            ]
-        else:
-            src_data = [
-                (
-                    "[Self-Assessment Questionnaire]",
-                    f"questions_{client_name_slug}.txt",
-                    f"Structured self-assessment technical questionnaire for the {tower_name} tower, compiling official responses, "
-                    f"notes, and operational telemetry declared in good faith by the {client_name} engineering team.",
-                ),
-                (
-                    "[Enterprise Context Dossier]",
-                    f"context_{client_name_slug}.docx",
-                    f"Strategic enterprise architecture context dossier for {client_name} defining platform footprint, "
-                    f"datacenter distribution, dependencies, and overall operational criticality.",
-                ),
-                (
-                    "[Platform Intelligence Layer]",
-                    "client_intelligence.json",
-                    "AI-assisted semantic ingestion and analysis module gathering statutory compliance mandates (such as NIS2, GDPR, or DORA), "
-                    "corporate requirements, and industry baselines to enrich technical findings with quantitative business risk metrics.",
-                ),
-                (
-                    "[ITIC-DOWNTIME]",
-                    "ITIC Global Server Hardware Downtime Report",
-                    "Global industry benchmark calibrating average hourly cost of downtime for core enterprise infrastructure in "
-                    "large corporations and critical infrastructure operators, utilized as a baseline for primary financial loss calibration.",
-                ),
-                (
-                    "[CISA-KEV]",
-                    "CISA Known Exploited Vulnerabilities Catalog",
-                    "Catalog of vulnerabilities actively exploited in the wild, maintained by the Cybersecurity and Infrastructure Security "
-                    "Agency (CISA) to calibrate Threat Event Frequency (TEF).",
-                ),
-                (
-                    "[DIRECTIVE-NIS2]",
-                    "Directive (EU) 2022/2555 (NIS2)",
-                    "European Directive on measures for a high common level of cybersecurity across the Union, used to calibrate "
-                    "statutory maximum administrative fines for negligence.",
-                ),
-                (
-                    "[ISO-27001]",
-                    "International Standard ISO/IEC 27001",
-                    "International standard for information security management systems (ISMS), used as an authoritative benchmark for "
-                    "technical security controls, governance, and operational resilience.",
-                ),
-                (
-                    "[DAMA-DMBOK]",
-                    "DAMA Data Management Body of Knowledge (DAMA-DMBOK v2)",
-                    "International standard framework for corporate data management and governance maturity assessment, used to evaluate "
-                    "the data governance pillar.",
-                ),
-                (
-                    "[GOOGLE-DORA]",
-                    "Google DevOps Research and Assessment (DORA) Framework",
-                    "International industry framework used to evaluate DevOps maturity, continuous delivery, and Site Reliability Engineering "
-                    "(SRE) capabilities in hybrid development ecosystems.",
-                )
-            ]
+        raw_bib_entries = get_localized_list("appendix_c_bib_entries", locale=doc_lang)
+        src_data = []
+        for entry in raw_bib_entries:
+            tag, name_tpl, desc_tpl = entry[0], entry[1], entry[2]
+            name = name_tpl.format(client_name_slug=client_name_slug, tower_name=tower_name, client_name=client_name)
+            desc = desc_tpl.format(client_name_slug=client_name_slug, tower_name=tower_name, client_name=client_name)
+            src_data.append((tag, name, desc))
 
     for s_idx, row_vals in enumerate(src_data):
         row = source_table.add_row()
@@ -520,7 +247,7 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
             except Exception as ex:
                 logger.info(f"⚠️  [Glosario] No se pudo leer {client_glossary_path}: {ex}")
 
-        glossary = full_glossary.get(doc_lang, full_glossary.get("es", {}))
+        glossary = full_glossary.get(doc_lang, full_glossary.get("en", {}))
 
         # Gather all text accumulated in paragraphs and tables so far (now fully includes Appendix A and B!)
         all_text_elements = []
@@ -558,7 +285,7 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
             # Verification passes if either the English or the Spanish full form is located in the text
             if not any(p.lower() in text_corpus.lower() for p in parts if len(p) > 2):
                 logger.info(
-                    f"⚠️  [Glosario] Calidad: La sigla '{term}' se utiliza pero su definición extendida ('{parts[0]}') no aparece en el informe. Se recomienda expandirla en su primer uso."
+                    f"⚠️  [Glossary] Quality: Acronym '{term}' is used but its definition ('{parts[0]}') does not appear in document corpus. Recommended to expand upon first use."
                 )
 
         if used_glossary:
@@ -594,7 +321,7 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
                     shade_cell(row.cells[0], alt_row_hex)
                     shade_cell(row.cells[1], alt_row_hex)
     except Exception as ex:
-        logger.info(f"⚠️  [Glosario] Error inesperado en el apéndice de abreviaturas: {ex}")
+        logger.info(f"⚠️  [Glossary] Unexpected error in abbreviations appendix: {ex}")
 
     add_spacer(doc, 12)
 

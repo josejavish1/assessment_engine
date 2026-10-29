@@ -330,8 +330,8 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
     priorities = frameworks.get("strategic_priorities", "Resilience & Security")
 
     print(f"   ├─ Marco Sectorial: {industry_name}")
-    print(f"   ├─ Regulación Primaria: {primary_reg}")
-    print(f"   └─ Nivel de Soberanía: {sovereignty}")
+    print(f"   ├─ Primary Regulation: {primary_reg}")
+    print(f"   └─ Sovereignty Level: {sovereignty}")
 
     # Aggregate the outputs from specialized agent models to form a comprehensive, multi-faceted draft of the target architecture.
     payloads = []
@@ -356,7 +356,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             )
 
     if not payloads:
-        print("❌ Error: No se encontraron payloads de torres para sintetizar.")
+        print("❌ Error: No tower payloads found to synthesize.")
         return
 
     client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
@@ -364,22 +364,22 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
 
     # Enforce a strict thematic expansion mandate to maintain focus and prevent generative drift from the core architectural topic.
     EXPANSION_MANDATE = (
-        "\n\nMANDATO DE EXPANSIÓN Y COMPLETITUD CRUCIAL (MANDATORIO):\n"
-        "1. NO des respuestas cortas, escuetas o de un solo párrafo.\n"
+        "\n\nCRITICAL EXPANSION AND COMPLETENESS MANDATE (MANDATORY):\n"
+        "1. Do NOT emit brief, shallow, or single-paragraph responses.\n"
         "2. Cada campo de tipo string (executive_vision, transformation_strategy, document_purpose, document_scope, "
         "maturity_approach, cpd_strategy_3_years, cpd_strategy_5_years, active_active_transition, app_modernization_relation, "
-        "public_mission_impact) DEBE redactarse como prosa técnica, elegante, sofisticada y de nivel C-Level, con una "
-        "extensión mínima de 3 a 4 párrafos largos y completos por campo (mínimo de 2000 a 3000 caracteres por campo).\n"
-        "3. Aporta muchísimo detalle arquitectónico y metodológico real basándote en los payloads de las torres. Evita las generalidades.\n"
-        "4. En el caso de las listas (strategic_levers, global_benefits, assumptions, risks, next_steps), escribe al menos 4-5 viñetas, "
-        "pero cada viñeta debe ser un párrafo explicativo robusto por sí misma, no frases cortas de una línea."
+        "public_mission_impact) MUST be authored in elegant, sophisticated, C-Level technical prose with a "
+        "minimum length of 3 to 4 comprehensive paragraphs per field (minimum 2000 to 3000 characters per field).\n"
+        "3. Provide extensive architectural and methodological rigor grounded in tower payloads. Avoid vacuous generalities.\n"
+        "4. For list structures (strategic_levers, global_benefits, assumptions, risks, next_steps), provide at least 4-5 items, "
+        "where each bullet is a self-contained, analytical paragraph rather than a single-line phrase."
     )
 
     from assessment_engine.infrastructure.localization import resolve_target_language_name
     doc_lang = (
         payloads[0].get("document_meta", {}).get("doc_lang")
         or payloads[0].get("document_meta", {}).get("language")
-        or "es"
+        or "en"
     )
     target_lang_name = resolve_target_language_name(doc_lang)
     EXPANSION_MANDATE += (
@@ -397,39 +397,39 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
 
     while round_idx <= max_reflection_rounds:
         print(
-            f"\n🔄 --- INICIANDO RONDA DE SÍNTESIS {round_idx} / {max_reflection_rounds} ---"
+            f"\n🔄 --- STARTING SYNTHESIS ROUND {round_idx} / {max_reflection_rounds} ---"
         )
         if remediation_critique:
             print(
-                "   ⚠️ Crítica del Verificador inyectada en el prompt para auto-corrección."
+                "   ⚠️ Verifier critique injected into prompt for self-correction."
             )
 
         feedback_prompt = (
-            f"\n\nDIRECTIVAS DE CORRECCIÓN DE LA RONDA ANTERIOR:\n{remediation_critique}"
+            f"\n\nCORRECTION DIRECTIVES FROM PREVIOUS ROUND:\n{remediation_critique}"
             if remediation_critique
             else ""
         )
 
-        print("   ➔ Ejecutando Fase 1: Estrategia y Enfoque...")
+        print("   ➔ Executing Phase 1: Strategy and Architectural Approach...")
         from assessment_engine.infrastructure.config_loader import get_consultant_company_name
         company = get_consultant_company_name()
         prompt_1 = (
-            f"Eres el Arquitecto Jefe Corporativo de {company} redactando la estrategia TO-BE para {client_name}.\n\n"
-            f"REGLAS ESTRATÉGICAS DEL SECTOR ({industry_name}):\n"
-            f"- Prioridades: {priorities}\n"
-            f"- Marco de Riesgo: {risk_modeling}\n"
-            f"- Regulación Primaria: {primary_reg}\n"
-            f"- Exigencias de Soberanía: {sovereignty}\n\n"
-            f"VISION TO-BE POR TORRES:\n{tower_text}\n\n"
-            "Sintetiza la visión futura en una estrategia consolidada, define el paradigma de transformación, "
-            "y redacta en Markdown el propósito, alcance y enfoque de madurez para el documento maestro TO-BE."
+            f"You are the Chief Enterprise Architect at {company} drafting the TO-BE master strategy for {client_name}.\n\n"
+            f"INDUSTRY STRATEGIC MANDATES ({industry_name}):\n"
+            f"- Strategic Priorities: {priorities}\n"
+            f"- Risk Framework: {risk_modeling}\n"
+            f"- Primary Regulatory Body: {primary_reg}\n"
+            f"- Data Sovereignty Constraints: {sovereignty}\n\n"
+            f"TO-BE TOWER INPUTS:\n{tower_text}\n\n"
+            "Synthesize the future state into a consolidated architectural strategy, define the transformation paradigm, "
+            "and draft in Markdown the purpose, scope, and maturity targets for the TO-BE master deliverable."
             f"{EXPANSION_MANDATE}"
             f"{feedback_prompt}"
         )
         agent_1 = Agent(
             name="tobe_phase1",
             model=get_model(ModelTier.REASONING),
-            instruction="Responde estrictamente con el JSON pedido.",
+            instruction="Strictly return the requested JSON schema.",
             output_schema=Phase1Strategy,
         )
         res_1 = await run_agent(
@@ -440,24 +440,24 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
 
         print(
-            "   ➔ Ejecutando Fase 2: Resiliencia Geográfica y Modernización Aplicacional..."
+            "   ➔ Executing Phase 2: Geographic Resilience and Application Modernization..."
         )
         prompt_2 = (
-            f"Como Arquitecto Jefe Corporativo para {client_name}, considerando la estrategia definida:\n"
-            f"- Visión: {res_1.get('executive_vision', '')}\n"
-            f"- Estrategia: {res_1.get('transformation_strategy', '')}\n\n"
-            f"REGLAS ESTRATÉGICAS DEL SECTOR:\n"
-            f"- Regulación Primaria: {primary_reg}\n"
-            f"- Exigencias de Soberanía: {sovereignty}\n\n"
-            f"Escribe en Markdown los capítulos estratégicos sobre: 1) Plan de CPDs a 3 años. 2) Plan de CPDs a 5 años. "
-            "3) Modelo operativo dual-site (activo-activo vs activo-pasivo). 4) La relación de la plataforma con la modernización de aplicaciones del cliente."
+            f"As Chief Enterprise Architect for {client_name}, building on the approved strategy:\n"
+            f"- Vision: {res_1.get('executive_vision', '')}\n"
+            f"- Strategy: {res_1.get('transformation_strategy', '')}\n\n"
+            f"INDUSTRY STRATEGIC MANDATES:\n"
+            f"- Primary Regulation: {primary_reg}\n"
+            f"- Data Sovereignty Constraints: {sovereignty}\n\n"
+            "Author in Markdown the strategic sections covering: 1) 3-Year Data Center Plan. 2) 5-Year Data Center Strategy. "
+            "3) Dual-site operational topology (active-active vs active-passive). 4) Platform coupling with client application modernization."
             f"{EXPANSION_MANDATE}"
             f"{feedback_prompt}"
         )
         agent_2 = Agent(
             name="tobe_phase2",
             model=get_model(ModelTier.REASONING),
-            instruction="Responde estrictamente con el JSON pedido.",
+            instruction="Strictly return the requested JSON schema.",
             output_schema=Phase2ResilienceStrategy,
         )
         res_2 = await run_agent(
@@ -467,21 +467,21 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             schema=Phase2ResilienceStrategy,
         )
 
-        print("   ➔ Ejecutando Fase 3: Beneficios Globales e Impacto en Misión...")
+        print("   ➔ Executing Phase 3: Global Benefits and Mission Impact...")
         prompt_3 = (
-            f"Basado en la estrategia de resiliencia geográfica para {client_name}:\n"
-            f"- Activo-Activo: {res_2.get('active_active_transition', '')}\n\n"
-            f"REGLAS ESTRATÉGICAS DEL SECTOR:\n"
-            f"- Prioridades: {priorities}\n\n"
-            "Define las palancas estratégicas transversales, los beneficios corporativos globales y el impacto "
-            "en la misión estratégica y posicionamiento público/institucional de la organización cliente."
+            f"Based on the geographic resilience strategy for {client_name}:\n"
+            f"- Active-Active Transition: {res_2.get('active_active_transition', '')}\n\n"
+            f"INDUSTRY STRATEGIC MANDATES:\n"
+            f"- Strategic Priorities: {priorities}\n\n"
+            "Define the cross-cutting strategic levers, global corporate benefits, and the impact "
+            "on executive mission enablement and market positioning for the client organization."
             f"{EXPANSION_MANDATE}"
             f"{feedback_prompt}"
         )
         agent_3 = Agent(
             name="tobe_phase3",
             model=get_model(ModelTier.FAST),
-            instruction="Responde estrictamente con el JSON pedido.",
+            instruction="Strictly return the requested JSON schema.",
             output_schema=Phase3Benefits,
         )
         res_3 = await run_agent(
@@ -492,23 +492,23 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
 
         print(
-            "   ➔ Ejecutando Fase 4: Supuestos Estructurales, Riesgos de Implantación y Siguientes Pasos..."
+            "   ➔ Executing Phase 4: Structural Assumptions, Delivery Risks, and Immediate Next Steps..."
         )
         prompt_4 = (
-            f"Considerando el plan de transformación integral de {client_name}:\n"
-            f"- Visión ejecutiva: {res_1.get('executive_vision', '')}\n\n"
-            f"REGLAS ESTRATÉGICAS DEL SECTOR:\n"
-            f"- Regulación Primaria: {primary_reg}\n"
-            f"- Exigencias de Soberanía: {sovereignty}\n\n"
-            "Define de forma detallada: 1) Supuestos organizativos. 2) Supuestos tecnológicos. 3) Supuestos regulatorios. "
-            "4) Los riesgos de no actuar (Cost of Inaction). 5) Los riesgos propios de la implantación del plan. 6) Las conclusiones y próximos pasos ejecutivos inmediatos."
+            f"Considering the comprehensive transformation blueprint for {client_name}:\n"
+            f"- Executive Vision: {res_1.get('executive_vision', '')}\n\n"
+            f"INDUSTRY STRATEGIC MANDATES:\n"
+            f"- Primary Regulation: {primary_reg}\n"
+            f"- Data Sovereignty Constraints: {sovereignty}\n\n"
+            "Define in detail: 1) Organizational assumptions. 2) Technical dependencies. 3) Regulatory assumptions. "
+            "4) Cost of Inaction (COI) risks. 5) Execution delivery risks. 6) Executive conclusions and immediate mobilization next steps."
             f"{EXPANSION_MANDATE}"
             f"{feedback_prompt}"
         )
         agent_4 = Agent(
             name="tobe_phase4",
             model=get_model(ModelTier.FAST),
-            instruction="Responde estrictamente con el JSON pedido.",
+            instruction="Strictly return the requested JSON schema.",
             output_schema=Phase4RisksAndAssumptions,
         )
         res_4 = await run_agent(
@@ -518,17 +518,17 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
             schema=Phase4RisksAndAssumptions,
         )
 
-        print("   ➔ Ejecutando Fase 5: Planificación de Roadmap a Alto Nivel...")
+        print("   ➔ Executing Phase 5: High-Level Roadmap Planning...")
         prompt_5 = (
-            f"A partir de las visiones por torre de {client_name}:\n{tower_text}\n\n"
-            "Genera un Roadmap consolidado de Alto Nivel definiendo hitos claros para el Corto Plazo (0-12 meses), Medio Plazo (Años 2-3) y Largo Plazo (Años 4-5)."
+            f"Synthesizing across all technical tower inputs for {client_name}:\n{tower_text}\n\n"
+            "Generate a consolidated High-Level Roadmap with verifiable milestone gates for Short-Term (0-12 months), Medium-Term (Years 2-3), and Long-Term (Years 4-5)."
             f"{EXPANSION_MANDATE}"
             f"{feedback_prompt}"
         )
         agent_5 = Agent(
             name="tobe_phase5",
             model=get_model(ModelTier.FAST),
-            instruction="Responde estrictamente con el JSON pedido.",
+            instruction="Strictly return the requested JSON schema.",
             output_schema=HighLevelRoadmap,
         )
         res_5 = await run_agent(
@@ -582,23 +582,22 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
 
         # Execute a final validation and automated correction pass using a Verifier agent, ensuring the output strictly adheres to all specified technical and business constraints.
-        print("\n🔍 --- INICIANDO VERIFICACIÓN DE CALIDAD POR IA (QUALITY GATE) ---")
+        print("\n🔍 --- STARTING AI QUALITY GATE VERIFICATION ---")
         audit_prompt = (
-            f"Como Lead Enterprise Auditor de {company}, audita el sumario de transformación TO-BE propuesto.\n\n"
-            f"REQUISITOS DEL SECTOR DEL CLIENTE ({industry_name}):\n"
-            f"- Regulación: {primary_reg}\n"
-            f"- Tolerancia de Soberanía: {sovereignty}\n"
-            f"- Prioridades: {priorities}\n\n"
-            f"DOCUMENTO A AUDITAR:\n{final_summary.model_dump_json(indent=2)}\n\n"
-            "Verifica exhaustivamente que: 1) Todo el contenido esté personalizado para el cliente. 2) No contenga "
-            "marcas de competidores ni alucinaciones. 3) Mencione explícitamente y alinee el documento con las normativas sectoriales "
-            f"como '{primary_reg}' y niveles de '{sovereignty}'. 4) El documento tenga un nivel de extensión y "
-            "detalle alto, rechazando resúmenes de una sola línea o secciones breves. Aprueba o genera una crítica detallada de reparación."
+            f"As Lead Enterprise Auditor at {company}, perform an adversarial audit on the proposed TO-BE transformation summary.\n\n"
+            f"CLIENT INDUSTRY REQUIREMENTS ({industry_name}):\n"
+            f"- Primary Regulation: {primary_reg}\n"
+            f"- Sovereignty Requirements: {sovereignty}\n"
+            f"- Strategic Priorities: {priorities}\n\n"
+            f"DOCUMENT TO AUDIT:\n{final_summary.model_dump_json(indent=2)}\n\n"
+            "Thoroughly verify that: 1) Content is strictly tailored to the client context. 2) Zero competitor brand mentions or hallucinations exist. "
+            f"3) The deliverable explicitly cites and aligns with regulatory requirements like '{primary_reg}' and '{sovereignty}'. "
+            "4) The synthesis demonstrates comprehensive depth, firmly rejecting single-line summaries or brief placeholders. Approve or provide a rigorous remediation critique."
         )
         verifier_agent = Agent(
             name="tobe_verifier",
             model=get_model(ModelTier.REASONING),
-            instruction="Responde estrictamente con el JSON pedido.",
+            instruction="Strictly return the requested JSON schema.",
             output_schema=SynthesisAudit,
         )
         audit_res = await run_agent(
@@ -610,26 +609,26 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
 
         if audit_res and audit_res.get("is_approved"):
             print(
-                "   ✅ ¡El Verificador de Calidad ha APROBADO la síntesis de forma definitiva!"
+                "   ✅ Quality Gate Verifier has permanently APPROVED the synthesis!"
             )
             break
         else:
-            print("   ❌ El Verificador de Calidad ha RECHAZADO el borrador actual.")
+            print("   ❌ Quality Gate Verifier has REJECTED the current draft.")
             remediation_critique = audit_res.get(
                 "remediation_critique",
-                "Revisa alineación general, extensión de texto y ortografía.",
+                "Review strategic alignment, analytical depth, and corporate terminology.",
             )
             print(
-                f"   ├─ Hallucinaciones/Errores: {audit_res.get('hallucinations_detected', [])}"
+                f"   ├─ Hallucinations/Errors: {audit_res.get('hallucinations_detected', [])}"
             )
-            print(f"   └─ Instrucciones de Reparación: {remediation_critique}")
+            print(f"   └─ Remediation Instructions: {remediation_critique}")
             round_idx += 1
 
     #
     out_path = Path(working_dir) / "global_tobe_executive_summary.json"
     out_path.write_text(final_summary.model_dump_json(indent=4), encoding="utf-8-sig")
     print(
-        f"\n🎉 Síntesis TO-BE Global consolidada y verificada guardada en: {out_path}"
+        f"\n🎉 Consolidated and verified Global TO-BE synthesis saved to: {out_path}"
     )
 
 
@@ -637,12 +636,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Defines the root schema for the Global TO-BE Executive Synthesizer, a standardized 2026 architecture."
     )
-    parser.add_argument("working_dir", type=str, help="Directorio de trabajo")
+    parser.add_argument("working_dir", type=str, help="Working directory path")
     parser.add_argument(
         "--industry",
         type=str,
         default="critical_infrastructure",
-        help="Perfil sectorial del cliente",
+        help="Industry profile for the client",
     )
     args = parser.parse_args()
 

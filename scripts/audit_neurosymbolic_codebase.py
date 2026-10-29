@@ -163,24 +163,24 @@ def audit_with_gemini_argon(
                 f"--- EXTRACT ---\n{head}\n"
             )
 
-        prompt = f"""Eres un Principal Systems Architect de Google / Palantir.
-Evalúa estos {len(chunk)} archivos de un motor de arquitectura empresarial (Assessment Engine).
-Para cada archivo, determina si es:
-- CANONICAL_CORE (Componente esencial que debe mantenerse)
-- ACTIVE_LEAF (CLI, script de renderizado o punto de entrada válido aunque no tenga importadores directos)
-- SHADOW_DUPLICATE (Copia o módulo redundante con otro existente)
-- CONFIRMED_ORPHAN (Código muerto sin función ni cobertura que debe ser eliminado)
+        prompt = f"""You are a Principal Systems Architect from Google / Palantir.
+Evaluate these {len(chunk)} files from an enterprise architecture assessment engine.
+For each file, determine if it is:
+- CANONICAL_CORE (Essential component that must be maintained)
+- ACTIVE_LEAF (CLI, rendering script, or valid entry point even without direct importers)
+- SHADOW_DUPLICATE (Redundant copy or duplicate module)
+- CONFIRMED_ORPHAN (Dead code without purpose or test coverage that should be eliminated)
 
-Archivos a auditar:
+Files to audit:
 {chr(10).join(items_text)}
 
-Responde estrictamente en formato JSON con la siguiente estructura:
+Respond strictly in JSON format with schema:
 {{
   "evaluations": [
     {{
-      "file": "ruta/al/archivo.py",
+      "file": "path/to/file.py",
       "verdict": "CANONICAL_CORE | ACTIVE_LEAF | SHADOW_DUPLICATE | CONFIRMED_ORPHAN",
-      "rationale": "Explicación técnica en 1 frase directa"
+      "rationale": "Direct 1-sentence technical explanation"
     }}
   ]
 }}
@@ -213,7 +213,7 @@ def main() -> None:
     print(f"[2/4] 🕸️ Grafo de importaciones construido ({graph.number_of_nodes()} nodos, {graph.number_of_edges()} aristas)...")
 
     coverage_map = load_dynamic_coverage()
-    print(f"[3/4] ⚡ Cobertura dinámica cargada ({len(coverage_map)} archivos con trazas)...")
+    print(f"[3/4] ⚡ Dynamic coverage loaded ({len(coverage_map)} files with execution traces)...")
 
     metrics: list[FileMetric] = []
     for p in all_py_files:
@@ -228,10 +228,10 @@ def main() -> None:
         # Baseline heuristic categorization
         if in_deg >= 3 and cov_pct > 0.0:
             verdict = "CANONICAL_CORE"
-            rationale = f"Módulo nuclear altamente acoplado ({in_deg} dependientes) y ejecutado dinámicamente ({cov_pct:.1f}%)."
+            rationale = f"Core module highly coupled ({in_deg} dependents) and dynamically executed ({cov_pct:.1f}%)."
         elif "cli" in p.name or "run_" in p.name or "main" in p.name:
             verdict = "ACTIVE_LEAF"
-            rationale = "Punto de entrada CLI o script de fase de orquestación."
+            rationale = "CLI entry point or orchestration phase script."
         else:
             verdict = "PENDING"
             rationale = ""
@@ -262,10 +262,10 @@ def main() -> None:
         elif m.verdict == "PENDING":
             if m.in_degree == 0 and m.string_refs_count == 0 and m.percent_covered == 0.0:
                 m.verdict = "CONFIRMED_ORPHAN"
-                m.rationale = "Sin dependientes estáticos, sin menciones en string y 0% de ejecución dinámica."
+                m.rationale = "No static dependents, no string references, and 0% dynamic execution."
             else:
                 m.verdict = "ACTIVE_LEAF"
-                m.rationale = "Módulo hoja auxiliar o adaptador secundario."
+                m.rationale = "Auxiliary leaf module or secondary adapter."
 
     # Generate Markdown Report
     REPORT_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
@@ -284,8 +284,8 @@ doc_type: operational
 diataxis: explanation
 verification_mode: editorial
 ---
-# Auditoría Neuro-Simbólica de la Base de Código\n\n""")
-        out.write("**Fecha:** Octubre 2026 | **Metodología:** Topología AST (NetworkX) + Trazabilidad Dinámica (`coverage.py`) + Árbitro Cognitivo (`gemini-4-argon`)\n\n")
+# Neurosymbolic Codebase Topology and Redundancy Audit\n\n""")
+        out.write("**Date:** October 2026 | **Methodology:** AST Topology (NetworkX) + Dynamic Traceability (`coverage.py`) + Cognitive Arbiter (`gemini-4-argon`)\n\n")
 
         # Summary KPIs
         canonical = [m for m in metrics if m.verdict == "CANONICAL_CORE"]
@@ -293,24 +293,24 @@ verification_mode: editorial
         shadow = [m for m in metrics if m.verdict == "SHADOW_DUPLICATE"]
         orphans = [m for m in metrics if m.verdict == "CONFIRMED_ORPHAN"]
 
-        out.write("## 1. Resumen Ejecutivo de Salud del Código\n\n")
+        out.write("## 1. Executive Summary of Codebase Health\n\n")
         out.write(f"- **Total de Archivos Auditados:** {len(metrics)}\n")
-        out.write(f"- **Núcleo Canónico (Vital):** {len(canonical)} ({len(canonical)/len(metrics)*100:.1f}%)\n")
+        out.write(f"- **Canonical Core (Vital):** {len(canonical)} ({len(canonical)/len(metrics)*100:.1f}%)\n")
         out.write(f"- **Hojas Activas / Adaptadores:** {len(active_leaf)} ({len(active_leaf)/len(metrics)*100:.1f}%)\n")
-        out.write(f"- **Módulos Sombra (Duplicados / Candidatos a Fusión):** {len(shadow)}\n")
-        out.write(f"- **Huérfanos Confirmados (Código Muerto / Purga Segura):** {len(orphans)}\n\n")
+        out.write(f"- **Shadow Modules (Duplicates / Merge Candidates):** {len(shadow)}\n")
+        out.write(f"- **Confirmed Orphans (Dead Code / Safe Purge):** {len(orphans)}\n\n")
 
         if orphans:
-            out.write("## 2. ⚠️ Huérfanos Confirmados (Blast Radius = 0)\n\n")
-            out.write("| Archivo | LOC | Cobertura | In-Degree | Razón Técnica de Purga |\n")
+            out.write("## 2. ⚠️ Confirmed Orphans (Blast Radius = 0)\n\n")
+            out.write("| File Path | LOC | Dynamic Cov | In-Degree | Technical Purge Rationale |\n")
             out.write("| :--- | :---: | :---: | :---: | :--- |\n")
             for m in orphans:
                 out.write(f"| `{m.rel_path}` | {m.loc} | {m.percent_covered:.1f}% | {m.in_degree} | {m.rationale} |\n")
             out.write("\n")
 
         if shadow:
-            out.write("## 3. 👥 Módulos Sombra (Candidatos a Fusión / Refactor)\n\n")
-            out.write("| Archivo | LOC | Cobertura | In-Degree | Diagnóstico de Fusión |\n")
+            out.write("## 3. 👥 Shadow Modules (Merge / Refactoring Candidates)\n\n")
+            out.write("| File Path | LOC | Dynamic Cov | In-Degree | Consolidation Diagnosis |\n")
             out.write("| :--- | :---: | :---: | :---: | :--- |\n")
             for m in shadow:
                 out.write(f"| `{m.rel_path}` | {m.loc} | {m.percent_covered:.1f}% | {m.in_degree} | {m.rationale} |\n")
@@ -323,13 +323,13 @@ verification_mode: editorial
             out.write(f"| `{m.rel_path}` | **{m.verdict}** | {m.loc} | {m.percent_covered:.1f}% | {m.in_degree} | {m.rationale} |\n")
 
     print("\n" + "=" * 80)
-    print("  RESULTADOS DE LA AUDITORÍA NEURO-SIMBÓLICA")
+    print("  NEUROSYMBOLIC AUDIT REPORT RESULTS")
     print("=" * 80)
     print(f"  Total Archivos: {len(metrics)}")
-    print(f"  ✅ Núcleo Canónico:       {len(canonical)}")
+    print(f"  ✅ Canonical Core:        {len(canonical)}")
     print(f"  🍃 Hojas Activas / CLI:    {len(active_leaf)}")
-    print(f"  👥 Módulos Sombra:         {len(shadow)}")
-    print(f"  🗑️  Huérfanos Confirmados:  {len(orphans)}")
+    print(f"  👥 Shadow Modules:        {len(shadow)}")
+    print(f"  🗑️  Confirmed Orphans:    {len(orphans)}")
     print(f"\n📄 Informe exhaustivo guardado en: {REPORT_OUTPUT}")
     print("=" * 80)
 

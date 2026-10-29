@@ -211,7 +211,7 @@ def build_tower_payload(
         "assessment_engine.application.run_executive_annex_synthesizer",
         [approved_annex_json, output_json, client_name, profile],
     )
-    return f"✅ Payload construido con éxito.\n{out}"
+    return f"✅ Payload successfully built.\n{out}"
 
 
 @mcp.tool()
@@ -241,7 +241,7 @@ def render_tower_docx(payload_json: str, template_docx: str, output_docx: str) -
         "assessment_engine.adapters.render_tower_annex_from_template",
         [payload_json, template_docx, output_docx],
     )
-    return f"✅ Documento de Torre renderizado con éxito.\n{out}"
+    return f"✅ Tower Document successfully rendered.\n{out}"
 
 
 @mcp.tool()
@@ -269,7 +269,7 @@ def generate_radar_chart(global_payload_json: str) -> str:
         "assessment_engine.application.generate_global_radar_chart",
         [global_payload_json],
     )
-    return f"✅ Gráfico generado con éxito.\n{out}"
+    return f"✅ Chart successfully generated.\n{out}"
 
 
 @mcp.tool()
@@ -350,12 +350,12 @@ async def _background_run_plan(job_id: str, request_text: str):
                     if plan_path.exists():
                         plan_data = plan_path.read_text(encoding="utf-8")
                         job_results[job_id] = (
-                            f"✅ Plan generado con éxito.\nREQUEST_DIR={request_dir}\n{plan_data}"
+                            f"✅ Plan successfully generated.\nREQUEST_DIR={request_dir}\n{plan_data}"
                         )
                         found_plan = True
                         break
             except (json.JSONDecodeError, IndexError, OSError) as ex:
-                logger.debug(f"[PO-Orchestrator] Línea de log no analizable como plan: {ex}")
+                logger.debug(f"[PO-Orchestrator] Log line unparseable as plan: {ex}")
                 continue
         if not found_plan:
             job_results[job_id] = (
@@ -450,15 +450,15 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
             if process.returncode != 0:
                 job_status[job_id] = "error"
                 job_results[job_id] += (
-                    f"\n❌ El proceso terminó con código de error {process.returncode}"
+                    f"\n❌ Process terminated with error code {process.returncode}"
                 )
             else:
                 job_status[job_id] = "completed"
-                job_results[job_id] += "\n✅ Ejecución completada."
+                job_results[job_id] += "\n✅ Execution completed."
 
         except Exception as e:
             job_status[job_id] = "error"
-            job_results[job_id] += f"\n❌ Error en ejecución: {e}"
+            job_results[job_id] += f"\n❌ Execution error: {e}"
 
     asyncio.create_task(_background_run_execution())
     return json.dumps({"job_id": job_id, "status": "started"})
@@ -581,7 +581,7 @@ def authorize_action_gate(request_dir: str, alt_index: int = 0) -> str:
                 json.dump(
                     {
                         "task_id": summary.get("task_id"),
-                        "feedback": f"SÍNTOMA ANTERIOR:\n{summary.get('raw_error')}\n\nCURA AUTORIZADA POR EL PRODUCT OWNER:\n{summary.get('diagnosis', {}).get('proposed_cure')}",
+                        "feedback": f"PREVIOUS SYMPTOM:\n{summary.get('raw_error')}\n\nAUTHORIZED REMEDIATION:\n{summary.get('diagnosis', {}).get('proposed_cure')}",
                     },
                     f,
                     indent=2,
@@ -625,7 +625,7 @@ def abort_and_revert() -> str:
         return json.dumps(
             {
                 "success": True,
-                "message": "✅ Abortado y código revertido a su estado original (git reset --hard).",
+                "message": "✅ Aborted and working tree reverted to original commit (git reset --hard).",
             }
         )
     except Exception as e:

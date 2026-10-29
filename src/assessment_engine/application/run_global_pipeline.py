@@ -1,6 +1,9 @@
 """Defines the primary orchestration logic and core utilities for the Assessment Engine pipeline."""
 
+import logging
 import sys
+
+logger = logging.getLogger(__name__)
 
 from assessment_engine.infrastructure.pipeline_runtime import (
     build_runtime_env,
@@ -60,9 +63,17 @@ def main(argv: list[str] | None = None) -> None:
             f"(project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
         )
 
+    from assessment_engine.infrastructure.text_utils import (
+        get_canonical_global_filename,
+    )
+
+    doc_lang = (env.get("ASSESSMENT_DOC_LANG") or "en").lower()
     payload_path = resolve_global_report_payload_path(client_name)
     template_path = resolve_global_report_template_path()
-    output_path = client_dir / f"Informe_Ejecutivo_Consolidado_{client_name}.docx"
+    canonical_global_name = get_canonical_global_filename(
+        client_name, locale=doc_lang
+    )
+    output_path = client_dir / canonical_global_name
 
     python_bin = resolve_python_bin()
 
@@ -129,19 +140,72 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    # Step 4: Render the final assessment report in DOCX format.
-    run_module_step(
-        [
-            python_bin,
-            "-m",
-            "assessment_engine.adapters.render_global_report_from_template",
-            str(payload_path),
-            str(template_path),
-            str(output_path),
-        ],
-        "Render Global DOCX (CIO-Ready)",
-        env,
+    # Step 4: Render the final assessment report and the 3 Strategic Volumes (AS-IS, TO-BE, TO-DO) in parallel.
+    from assessment_engine.infrastructure.text_utils import (
+        get_canonical_tomo_filename,
     )
+
+    tomo_asis_name = get_canonical_tomo_filename(client_name, "asis", locale=doc_lang)
+    tomo_tobe_name = get_canonical_tomo_filename(client_name, "tobe", locale=doc_lang)
+    tomo_todo_name = get_canonical_tomo_filename(client_name, "todo", locale=doc_lang)
+
+    tomos_to_render = [
+        (output_path, "master"),
+        (client_dir / tomo_asis_name, "asis"),
+        (client_dir / tomo_tobe_name, "tobe"),
+        (client_dir / tomo_todo_name, "todo"),
+    ]
+
+    import asyncio
+
+    async def _render_all_tomos_concurrently() -> None:
+        from assessment_engine.adapters.render_global_report_from_template import (
+            load_payload,
+            render_global_report,
+        )
+
+        loaded_pl = load_payload(payload_path)
+        loop = asyncio.get_running_loop()
+        tasks = [
+            loop.run_in_executor(
+                None,
+                render_global_report,
+                loaded_pl,
+                template_path,
+                out_p,
+                client_dir,
+                scope,
+            )
+            for out_p, scope in tomos_to_render
+        ]
+        await asyncio.gather(*tasks)
+
+    try:
+        asyncio.run(_render_all_tomos_concurrently())
+    except Exception as exc:
+        logger.warning(
+            f"[GlobalPipeline] Error compiling strategic volumes in-memory ({exc}). Usando fallback CLI..."
+        )
+        run_module_step(
+            [
+                python_bin,
+                "-m",
+                "assessment_engine.adapters.render_global_report_from_template",
+                str(payload_path),
+                str(template_path),
+                str(output_path),
+            ],
+            "Render Global DOCX (CIO-Ready)",
+            env,
+        )
+
+    if output_path.exists():
+        import shutil
+
+        shutil.copyfile(
+            output_path,
+            client_dir / f"Informe_Ejecutivo_Consolidado_{client_name}.docx",
+        )
 
     # Step 5: Render the interactive Lineage Matrix Explorer Portal, which serves as the digital twin interface.
     run_module_step(
@@ -155,7 +219,7 @@ def main(argv: list[str] | None = None) -> None:
         env,
     )
 
-    print(f"\nInforme Global Estratégico finalizado: {output_path}")
+    print(f"\nStrategic Global Report completed: {output_path}")
 
 
 if __name__ == "__main__":

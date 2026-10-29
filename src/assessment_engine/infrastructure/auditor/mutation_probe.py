@@ -33,7 +33,7 @@ class AstOperatorMutator(ast.NodeTransformer):
 
     def __init__(self) -> None:
         self.mutated = False
-        self.mutation_desc = "Sin mutación"
+        self.mutation_desc = "No mutation"
 
     def visit_Compare(self, node: ast.Compare) -> ast.AST:
         """Visit a comparison expression node."""
@@ -42,27 +42,27 @@ class AstOperatorMutator(ast.NodeTransformer):
             if isinstance(op, ast.Gt):
                 node.ops = [ast.LtE()]
                 self.mutated = True
-                self.mutation_desc = f"ROR: '>' invertido a '<=' en línea {node.lineno}"
+                self.mutation_desc = f"ROR: '>' inverted to '<=' at line {node.lineno}"
             elif isinstance(op, ast.Lt):
                 node.ops = [ast.GtE()]
                 self.mutated = True
-                self.mutation_desc = f"ROR: '<' invertido a '>=' en línea {node.lineno}"
+                self.mutation_desc = f"ROR: '<' inverted to '>=' at line {node.lineno}"
             elif isinstance(op, ast.Eq):
                 node.ops = [ast.NotEq()]
                 self.mutated = True
-                self.mutation_desc = f"ROR: '==' invertido a '!=' en línea {node.lineno}"
+                self.mutation_desc = f"ROR: '==' inverted to '!=' at line {node.lineno}"
             elif isinstance(op, ast.NotEq):
                 node.ops = [ast.Eq()]
                 self.mutated = True
-                self.mutation_desc = f"ROR: '!=' invertido a '==' en línea {node.lineno}"
+                self.mutation_desc = f"ROR: '!=' inverted to '==' at line {node.lineno}"
             elif isinstance(op, ast.In):
                 node.ops = [ast.NotIn()]
                 self.mutated = True
-                self.mutation_desc = f"ROR: 'in' invertido a 'not in' en línea {node.lineno}"
+                self.mutation_desc = f"ROR: 'in' inverted to 'not in' at line {node.lineno}"
             elif isinstance(op, ast.NotIn):
                 node.ops = [ast.In()]
                 self.mutated = True
-                self.mutation_desc = f"ROR: 'not in' invertido a 'in' en línea {node.lineno}"
+                self.mutation_desc = f"ROR: 'not in' inverted to 'in' at line {node.lineno}"
         return self.generic_visit(node)
 
     def visit_BinOp(self, node: ast.BinOp) -> ast.AST:
@@ -72,11 +72,11 @@ class AstOperatorMutator(ast.NodeTransformer):
             if isinstance(node.op, ast.Add):
                 node.op = ast.Sub()
                 self.mutated = True
-                self.mutation_desc = f"AOR: '+' invertido a '-' en línea {node.lineno}"
+                self.mutation_desc = f"AOR: '+' inverted to '-' at line {node.lineno}"
             elif isinstance(node.op, ast.Sub):
                 node.op = ast.Add()
                 self.mutated = True
-                self.mutation_desc = f"AOR: '-' invertido a '+' en línea {node.lineno}"
+                self.mutation_desc = f"AOR: '-' inverted to '+' at line {node.lineno}"
         return self.generic_visit(node)
 
     def visit_BoolOp(self, node: ast.BoolOp) -> ast.AST:
@@ -86,11 +86,11 @@ class AstOperatorMutator(ast.NodeTransformer):
             if isinstance(node.op, ast.And):
                 node.op = ast.Or()
                 self.mutated = True
-                self.mutation_desc = f"LCR: 'and' invertido a 'or' en línea {node.lineno}"
+                self.mutation_desc = f"LCR: 'and' inverted to 'or' at line {node.lineno}"
             elif isinstance(node.op, ast.Or):
                 node.op = ast.And()
                 self.mutated = True
-                self.mutation_desc = f"LCR: 'or' invertido a 'and' en línea {node.lineno}"
+                self.mutation_desc = f"LCR: 'or' inverted to 'and' at line {node.lineno}"
         return self.generic_visit(node)
 
     def visit_Constant(self, node: ast.Constant) -> ast.AST:
@@ -99,7 +99,7 @@ class AstOperatorMutator(ast.NodeTransformer):
         if not self.mutated and isinstance(node.value, bool):
             node.value = not node.value
             self.mutated = True
-            self.mutation_desc = f"COR: booleano '{not node.value}' invertido a '{node.value}' en línea {node.lineno}"
+            self.mutation_desc = f"COR: boolean '{not node.value}' inverted to '{node.value}' at line {node.lineno}"
         return self.generic_visit(node)
 
 
@@ -135,8 +135,8 @@ class MutationTestingProbe:
         except subprocess.TimeoutExpired:
             return MutationProbeResult(True, "Timeout detectado (mutante bloqueante matado)", "")
         except (RuntimeError, ValueError, KeyError, OSError, TypeError) as ex:# noqa: BLE001
-            logger.error(f"[MutationProbe] Error durante la mutación de {target_file.name}: {ex}")
-            return MutationProbeResult(False, f"Error durante la mutación: {ex}", "")
+            logger.error(f"[MutationProbe] Error during mutation of {target_file.name}: {ex}")
+            return MutationProbeResult(False, f"Error during mutation: {ex}", "")
         finally:
             target_file.write_text(backup, encoding="utf-8")
 

@@ -14,8 +14,8 @@ from docx.shared import Inches, Pt, RGBColor
 from pydantic import ValidationError
 
 """
-Módulo render_global_report_from_template.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+Module render_global_report_from_template.py.
+Contains core orchestration and rendering logic for Assessment Engine pipeline.
 """
 
 from assessment_engine.domain.schemas.global_report import (
@@ -43,6 +43,7 @@ from assessment_engine.infrastructure.global_maturity_policy import (
     safe_float,
     status_color_for_score,
 )
+from assessment_engine.infrastructure.localization import get_localized_list, t
 
 
 def load_json(path) -> Any:
@@ -76,8 +77,8 @@ def clean_t_codes(text) -> Any:
     return text.strip()
 
 
-def sanitize_client_name(text, client_name) -> Any:
-    """Replaces a specific client's name in a string with a generic term. This function performs a series of case-insensitive regular expression substitutions to render a given text client-agnostic. It operates on two variations of the client name: the original string and a version with underscores converted to spaces. The sanitization process involves two main stages: 1. Removal of associated Spanish possessive prepositions (`de` or `del`) preceding the client's name to avoid dangling phrases after replacement (e.g., "informe de [Client]" becomes "informe"). 2. Replacement of all standalone occurrences of the client's name with the generic Spanish phrase "la organización". If the input `text` is not a string, or if `client_name` is empty or None, the function returns the original `text` object without modification. Args: text (Any): The input text to process. If not a string, it is returned unmodified. client_name (str): The name of the client to find and replace. If an empty string or None, the original text is returned. Returns: Any: A new string with the client's name sanitized, or the original `text` object if no sanitization is performed."""
+def sanitize_client_name(text, client_name, doc_lang: str) -> Any:
+    """Replaces a specific client's name in a string with a generic term."""
     if not isinstance(text, str) or not client_name:
         return text
 
@@ -94,17 +95,17 @@ def sanitize_client_name(text, client_name) -> Any:
 
     # Replaces direct client name mentions with the generic term 'the organization' to produce a client-agnostic narrative.
     text = re.sub(
-        rf"\b{re.escape(client_name)}\b", "la organización", text, flags=re.IGNORECASE
+        rf"\b{re.escape(client_name)}\b", "the organization", text, flags=re.IGNORECASE
     )
     text = re.sub(
-        rf"\b{re.escape(clean_name)}\b", "la organización", text, flags=re.IGNORECASE
+        rf"\b{re.escape(clean_name)}\b", "the organization", text, flags=re.IGNORECASE
     )
 
     from assessment_engine.infrastructure.localization import (
         apply_vocabulary_substitutions,
     )
 
-    return apply_vocabulary_substitutions(text, locale="es")
+    return apply_vocabulary_substitutions(text, locale=doc_lang)
 
 
 def clear_document_body(doc) -> Any:
@@ -214,29 +215,12 @@ def add_smart_bullet_list(container, items, color_rgb=None, bold_prefix=True) ->
                 r.font.color.rgb = color_rgb
 
 
-def render_cover(doc, payload: GlobalReportPayload) -> Any:
-    """Renders a formatted cover page into a `docx.Document` object.
-
-    This function constructs and appends a cover page to the provided document.
-    It adds a styled title, the client's name, report metadata (date and
-    version), and a multi-paragraph legal disclaimer. Each element is
-    programmatically formatted with specific fonts, sizes, colors, alignment, and
-    paragraph spacing. A page break is inserted at the end of the cover page.
-
-    Args:
-        doc (docx.document.Document): The document object to be modified in-place.
-        payload (GlobalReportPayload): A data object containing report metadata,
-            including `meta.client`, `meta.date`, and `meta.version`.
-
-    Returns:
-        None. The function modifies the `doc` object directly.
-    """
-    # Decreases the top margin of the first page to optimize vertical space utilization and improve the header's visual placement.
+def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
+    """Renders a formatted cover page into a `docx.Document` object."""
     doc.add_paragraph().paragraph_format.space_after = Pt(60)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    # Applies title case capitalization while preserving lowercase for minor words such as articles, prepositions, and conjunctions to adhere to standard typographical conventions.
-    run = title_p.add_run("Informe Estratégico de\nMadurez Tecnológica")
+    run = title_p.add_run(t("global_report_cover_title", locale=doc_lang))
     run.font.size = Pt(34)
     run.font.name = "Georgia"
     run.font.color.rgb = RGBColor(0, 114, 188)
@@ -275,12 +259,12 @@ def render_cover(doc, payload: GlobalReportPayload) -> Any:
     )
 
     company = get_consultant_company_name()
-    disclaimer_raw = get_localized_disclaimer("es")
+    disclaimer_raw = get_localized_disclaimer("en")
 
     disclaimer_p1 = doc.add_paragraph()
     disclaimer_p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     disclaimer_p1.paragraph_format.space_after = Pt(2)
-    disclaimer_title_run = disclaimer_p1.add_run("Aviso Legal y Confidencialidad: ")
+    disclaimer_title_run = disclaimer_p1.add_run(t("legal_notice_confidentiality", locale=doc_lang) + " ")
     disclaimer_title_run.font.size = Pt(8)
     disclaimer_title_run.font.name = "Arial"
     disclaimer_title_run.font.color.rgb = RGBColor(127, 127, 127)
@@ -305,10 +289,7 @@ def render_cover(doc, payload: GlobalReportPayload) -> Any:
             r.font.name = "Arial"
             r.font.color.rgb = RGBColor(127, 127, 127)
     else:
-        p1_text = (
-            f"El presente documento constituye un informe de evaluación rápida (Fast Assessment) elaborado por {company} "
-            f"basándose exclusivamente en la información, entrevistas y datos proporcionados por la organización."
-        )
+        p1_text = t("global_disclaimer_p1", locale=doc_lang, company=company)
         r1 = disclaimer_p1.add_run(p1_text)
         r1.font.size = Pt(8)
         r1.font.name = "Arial"
@@ -332,7 +313,10 @@ def set_callout_border(cell: Any, color: str = "0072BC", size: int = 24) -> None
 
 
 def render_executive_callout(
-    doc: Any, callout: ExecutiveCalloutItem, client_name: str = ""
+    doc: Any,
+    callout: ExecutiveCalloutItem,
+    doc_lang: str,
+    client_name: str = "",
 ) -> Any:
     """Renders a shaded callout block with a thick left accent border in OpenXML."""
     color_styles = {
@@ -380,7 +364,7 @@ def render_executive_callout(
     r_icon.font.size = Pt(10.5)
 
     r_title = p_title.add_run(
-        sanitize_client_name(clean_t_codes(callout.title), client_name)
+        sanitize_client_name(clean_t_codes(callout.title), client_name, doc_lang=doc_lang)
     )
     r_title.bold = True
     r_title.font.name = "Arial"
@@ -394,7 +378,7 @@ def render_executive_callout(
     p_msg.paragraph_format.right_indent = Pt(10)
 
     r_msg = p_msg.add_run(
-        sanitize_client_name(clean_t_codes(callout.message), client_name)
+        sanitize_client_name(clean_t_codes(callout.message), client_name, doc_lang=doc_lang)
     )
     r_msg.font.name = "Arial"
     r_msg.font.size = Pt(9.5)
@@ -406,7 +390,7 @@ def render_executive_callout(
         p_metric.paragraph_format.space_after = Pt(6)
         p_metric.paragraph_format.left_indent = Pt(10)
         p_metric.paragraph_format.right_indent = Pt(10)
-        r_lbl = p_metric.add_run("Métrica Clave: ")
+        r_lbl = p_metric.add_run(t("key_metric_label", locale=doc_lang) + " ")
         r_lbl.bold = True
         r_lbl.font.size = Pt(9.0)
         r_lbl.font.color.rgb = style["title_color"]
@@ -420,27 +404,25 @@ def render_executive_callout(
 
 
 def render_board_memo(
-    doc: Any, board_memo: BoardMemoDraft, client_name: str = "", doc_lang: str = "es"
+    doc: Any,
+    board_memo: BoardMemoDraft,
+    doc_lang: str,
+    client_name: str = "",
 ) -> Any:
     """Renders a self-contained 1-page Board Memo table for Executive Committee / Board."""
     from assessment_engine.infrastructure.localization import t
 
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)
-    add_heading_paragraph(doc, "Board Memo: Resumen de Decisión Ejecutiva para el Consejo", level=1)
+    add_heading_paragraph(doc, t("board_memo_title", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
-        sanitize_client_name(board_memo.summary, client_name),
+        sanitize_client_name(board_memo.summary, client_name, doc_lang=doc_lang),
         color_rgb=BASE_TEXT_COLOR,
     )
 
     table = doc.add_table(rows=1, cols=4)
     finalize_table(table)
-    headers = [
-        "Dominio y Madurez AS-IS",
-        "Exposición FAIR (3A)",
-        "Decisión Crítica del Consejo",
-        "Presupuesto Estimado",
-    ]
+    headers = get_localized_list("board_memo_table_headers", locale=doc_lang)
     for i, h in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[i],
@@ -480,7 +462,7 @@ def render_board_memo(
         cell_2 = row.cells[2]
         set_cell_text(
             cell_2,
-            sanitize_client_name(clean_t_codes(item.critical_decision), client_name),
+            sanitize_client_name(clean_t_codes(item.critical_decision), client_name, doc_lang=doc_lang),
             font_size=9.5,
             align=WD_ALIGN_PARAGRAPH.LEFT,
         )
@@ -587,7 +569,10 @@ def render_board_memo(
 
 
 def render_cross_tower_nexus(
-    doc: Any, nexus: CrossTowerNexusDraft, client_name: str = ""
+    doc: Any,
+    nexus: CrossTowerNexusDraft,
+    doc_lang: str,
+    client_name: str = "",
 ) -> Any:
     """Renders the Cross-Tower Nexus dependency matrix."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)
@@ -596,7 +581,7 @@ def render_cross_tower_nexus(
     )
     add_body_paragraph(
         doc,
-        sanitize_client_name(nexus.description, client_name),
+        sanitize_client_name(nexus.description, client_name, doc_lang=doc_lang),
         color_rgb=BASE_TEXT_COLOR,
     )
 
@@ -606,7 +591,7 @@ def render_cross_tower_nexus(
         "Dominio Habilitador",
         "Dominio Impactado",
         "Tipo Dependencia",
-        "Justificación Arquitectónica",
+        "Architectural Rationale",
         "Impacto si se Posterga",
     ]
     for i, h in enumerate(headers):
@@ -644,20 +629,20 @@ def render_cross_tower_nexus(
             font_size=9.0,
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )
-        if "Bloqueante" in dep.dependency_type or "Crítico" in dep.dependency_type:
+        if "Blocker" in dep.dependency_type or "Critical" in dep.dependency_type or "Bloqueante" in dep.dependency_type:
             shade_cell(row.cells[2], "F4CCCC")
         else:
             shade_cell(row.cells[2], "FFF2CC")
 
         set_cell_text(
             row.cells[3],
-            sanitize_client_name(clean_t_codes(dep.architectural_rationale), client_name),
+            sanitize_client_name(clean_t_codes(dep.architectural_rationale), client_name, doc_lang=doc_lang),
             font_size=9.0,
             align=WD_ALIGN_PARAGRAPH.LEFT,
         )
         set_cell_text(
             row.cells[4],
-            sanitize_client_name(clean_t_codes(dep.delay_impact), client_name),
+            sanitize_client_name(clean_t_codes(dep.delay_impact), client_name, doc_lang=doc_lang),
             font_size=9.0,
             align=WD_ALIGN_PARAGRAPH.LEFT,
         )
@@ -670,13 +655,13 @@ def render_cross_tower_nexus(
     autofit_table_to_contents(table)
     add_spacer(doc, 15)
 
-
 def render_executive_summary(
     doc,
     data: ExecutiveSummaryDraft,
     heatmap: list,
     visuals: dict,
     client_dir,
+    doc_lang: str,
     client_name="",
 ):
     """Renders the executive summary section into a `docx.document.Document` object.
@@ -709,7 +694,7 @@ def render_executive_summary(
         None
     """
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "1. Resumen Ejecutivo", level=1)
+    add_heading_paragraph(doc, t("global_ch1_exec_summary", locale=doc_lang), level=1)
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
     table.autofit = False
@@ -731,7 +716,7 @@ def render_executive_summary(
             )
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     # Applies specific styling to the score display: formats as '[X] / 5', sets a #0072BC background fill, and uses a 36pt white font.
     set_cell_text(
@@ -750,7 +735,7 @@ def render_executive_summary(
     desc_cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
     shade_cell(desc_cell, "F2F2F2")
 
-    headline = sanitize_client_name(clean_t_codes(data.headline), client_name)
+    headline = sanitize_client_name(clean_t_codes(data.headline), client_name, doc_lang=doc_lang)
 
     # Applies bold formatting exclusively to the substring of the headline that precedes the first colon, creating a visual distinction for the primary label.
     clear_paragraph(desc_cell.paragraphs[0])
@@ -775,8 +760,8 @@ def render_executive_summary(
     add_spacer(doc, 15)
 
     # The narrative and associated bullet points are rendered externally to the main table structure. This architectural choice improves document flow and readability.
-    narrative = sanitize_client_name(clean_t_codes(data.narrative), client_name)
-    sentences = re.split(r"(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚ])", narrative.strip())
+    narrative = sanitize_client_name(clean_t_codes(data.narrative), client_name, doc_lang=doc_lang)
+    sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z])", narrative.strip())
 
     if sentences:
         # The first sentence of the narrative is semantically treated as the executive summary or 'Bottom Line' and is styled accordingly.
@@ -812,7 +797,7 @@ def render_executive_summary(
     for r in header_cell.paragraphs[0].runs:
         r.font.color.rgb = RGBColor(255, 255, 255)
 
-    impacts = [sanitize_client_name(i, client_name) for i in data.key_business_impacts]
+    impacts = [sanitize_client_name(i, client_name, doc_lang=doc_lang) for i in data.key_business_impacts]
     for impact in impacts:
         row = impact_table.add_row()
         body_cell = row.cells[0]
@@ -848,14 +833,14 @@ def render_executive_summary(
 
 
 def render_burning_platform(
-    doc, platform_risks: list[BurningPlatformItem], client_name=""
+    doc, platform_risks: list[BurningPlatformItem], doc_lang: str, client_name: str = ""
 ):
     r"""{'docstring': "Renders a section detailing systemic threats into a `python-docx` document.\n\nThis function appends a titled section for systemic threats to an existing\n`python-docx` document. For each threat provided in `platform_risks`, it\nconstructs a dedicated, formatted three-row table. The table's first row\nserves as a header with the threat's theme, the second row details the\nassociated business risk, and the third row enumerates the root causes as\na bulleted list. All text content is sanitized to process special codes\nand substitute placeholders with the specified client's name.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to which\n        the content will be appended.\n    platform_risks (list[BurningPlatformItem]): A list of objects, each\n        representing a systemic threat. Each object must expose `theme` (str),\n        `business_risk` (str), and `root_causes` (list[str]) attributes.\n    client_name (str): The name of the client, used for substituting\n        placeholders in the text. Defaults to an empty string.\n\nRaises:\n    AttributeError: If an object in the `platform_risks` list lacks the\n        required `theme`, `business_risk`, or `root_causes` attributes."}."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "2. Principales Amenazas Sistémicas", level=1)
+    add_heading_paragraph(doc, t("global_ch2_threats", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
-        "Identificación de riesgos críticos que comprometen la viabilidad operativa y la agilidad de la organización.",
+        t("global_ch2_intro", locale=doc_lang),
         color_rgb=BASE_TEXT_COLOR,
     )
     for i, risk in enumerate(platform_risks, start=1):
@@ -864,7 +849,7 @@ def render_burning_platform(
 
         #
         h_cell = table.rows[0].cells[0]
-        theme = sanitize_client_name(clean_t_codes(risk.theme), client_name)
+        theme = sanitize_client_name(clean_t_codes(risk.theme), client_name, doc_lang=doc_lang)
         theme = theme[0].upper() + theme[1:] if theme else ""
         set_cell_text(
             h_cell,
@@ -883,12 +868,12 @@ def render_burning_platform(
         clear_paragraph(r_cell.paragraphs[0])
         p1 = r_cell.paragraphs[0]
         p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        r1_label = p1.add_run("Riesgo de Negocio: ")
+        r1_label = p1.add_run(t("business_risk_label", locale=doc_lang) + " ")
         r1_label.bold = True
         r1_label.font.color.rgb = BASE_TEXT_COLOR
         r1_label.font.size = Pt(10.5)
         r1_text = p1.add_run(
-            sanitize_client_name(clean_t_codes(risk.business_risk), client_name)
+            sanitize_client_name(clean_t_codes(risk.business_risk), client_name, doc_lang=doc_lang)
         )
         r1_text.bold = False
         r1_text.font.color.rgb = BASE_TEXT_COLOR
@@ -900,13 +885,13 @@ def render_burning_platform(
         clear_paragraph(c_cell.paragraphs[0])
         p2 = c_cell.paragraphs[0]
         p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        r2_label = p2.add_run("Causas Raíz: ")
+        r2_label = p2.add_run(t("root_causes_label", locale=doc_lang) + " ")
         r2_label.bold = True
         r2_label.font.color.rgb = BASE_TEXT_COLOR
         r2_label.font.size = Pt(10.5)
         causes_list = risk.root_causes
         sanitized_causes = [
-            sanitize_client_name(clean_t_codes(c), client_name) for c in causes_list
+            sanitize_client_name(clean_t_codes(c), client_name, doc_lang=doc_lang) for c in causes_list
         ]
         r2_text = p2.add_run("\n" + "\n".join([f"  • {c}" for c in sanitized_causes]))
         r2_text.bold = False
@@ -917,14 +902,22 @@ def render_burning_platform(
 
 
 def render_tower_bottom_lines(
-    doc, heatmap: list, tower_texts: list[TowerBottomLineItem], client_name=""
+    doc, heatmap: list, tower_texts: list[TowerBottomLineItem], doc_lang: str, client_name=""
 ):
-    """Populates a Word document with a technology area diagnosis table. This function appends a new section titled '3. Diagnóstico por Área Tecnológica' to the document. The section contains a three-column table summarizing the assessment for each technology area ('tower') from the heatmap data. For each area, the table displays its name, a maturity score with a corresponding descriptive band, and an executive diagnosis. The maturity cell is color-coded based on its score. The executive diagnosis text is sourced preferentially from a matching item in `tower_texts` based on the technology area ID. If no match is found, the function falls back to using the `executive_message` from the `heatmap` data. Args: doc (docx.document.Document): The `python-docx` Document object to be modified in-place. heatmap (list[dict]): A list of dictionaries representing technology areas. Each dictionary is expected to contain 'id', 'name', 'score', 'band', and 'executive_message' keys. tower_texts (list[TowerBottomLineItem]): A list of data objects providing high-priority diagnostic text. Each object must have an 'id' attribute for matching and a 'bottom_line' attribute for the text. client_name (str): The client's name, used to replace a placeholder token within the final diagnostic text. Defaults to an empty string. Returns: None. The function modifies the `doc` object in-place. Raises: AttributeError: If an object within `tower_texts` lacks the required `id` or `bottom_line` attributes. TypeError: If `heatmap` or `tower_texts` are not iterable (e.g., not a list)."""
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "3. Diagnóstico por Área Tecnológica", level=1)
+    """Populates a Word document with a technology area diagnosis table."""
+    from assessment_engine.infrastructure.localization import t
+
+    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    title = t("section_domain_assessment", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=1)
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
-    for i, h in enumerate(["Área", "Madurez", "Diagnóstico Ejecutivo"]):
+    headers = [
+        t("header_domain_area", locale=doc_lang),
+        t("header_domain_maturity", locale=doc_lang),
+        t("header_executive_diagnosis", locale=doc_lang),
+    ]
+    for i, h in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[i],
             h,
@@ -936,29 +929,28 @@ def render_tower_bottom_lines(
         for r in table.rows[0].cells[i].paragraphs[0].runs:
             r.font.color.rgb = RGBColor(255, 255, 255)
     color_map = {"E06666": "F4CCCC", "FFD966": "FFF2CC", "93C47D": "D9EAD3"}
-    for t in heatmap:
+    for item in heatmap:
         # The color value is explicitly recalculated here to enforce strict document-wide consistency, overriding any inherited or default template styles.
-        strict_color = status_color_for_score(safe_float(t.get("score"), 0.0))
+        strict_color = status_color_for_score(safe_float(item.get("score"), 0.0))
 
         row = table.add_row()
         set_cell_text(
             row.cells[0],
-            f"{t.get('id', '')}\n{t.get('name', '')}",
+            f"{item.get('id', '')}\n{item.get('name', '')}",
             bold=False,
             font_size=10.5,
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )
         set_cell_text(
             row.cells[1],
-            f"{t.get('score', '')}\n({t.get('band', '')})",
+            f"{item.get('score', '')}\n({item.get('band', '')})",
             align=WD_ALIGN_PARAGRAPH.CENTER,
             font_size=10.5,
             bold=False,
         )
         shade_cell(row.cells[1], color_map.get(strict_color, "FFFFFF"))
 
-        #
-        tower_id = t.get("id", "")
+        tower_id = item.get("id", "")
         text_val = ""
         for bottom_line_item in tower_texts:
             if bottom_line_item.id == tower_id:
@@ -966,11 +958,11 @@ def render_tower_bottom_lines(
                 break
 
         if not text_val:
-            text_val = t.get("executive_message", "")
+            text_val = item.get("executive_message", "")
 
         set_cell_text(
             row.cells[2],
-            sanitize_client_name(clean_t_codes(str(text_val)), client_name),
+            sanitize_client_name(clean_t_codes(str(text_val)), client_name, doc_lang=doc_lang),
             font_size=10.5,
         )
         #
@@ -981,7 +973,7 @@ def render_tower_bottom_lines(
     add_spacer(doc, 20)
 
 
-def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
+def render_target_vision(doc, vision: TargetVisionDraft, doc_lang: str, client_name="") -> Any:
     """Renders the 'Target State Vision' section into a `docx.document.Document`.
 
     This function populates the provided Document object with a formatted section
@@ -1006,7 +998,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
             required attributes.
     """
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "5. Visión de Estado Objetivo (To-Be)", level=1)
+    add_heading_paragraph(doc, t("global_ch5_tobe", locale=doc_lang), level=1)
 
     table = doc.add_table(rows=2, cols=1)
     finalize_table(table)
@@ -1015,7 +1007,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
     v_cell_header = table.rows[0].cells[0]
     set_cell_text(
         v_cell_header,
-        "Propuesta de valor estratégica",
+        t("strategic_value_proposition_header", locale=doc_lang),
         bold=True,
         font_size=10.5,
         align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -1030,7 +1022,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
     clear_paragraph(v_cell_body.paragraphs[0])
     p_body = v_cell_body.paragraphs[0]
     p_body.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    prop = sanitize_client_name(clean_t_codes(vision.value_proposition), client_name)
+    prop = sanitize_client_name(clean_t_codes(vision.value_proposition), client_name, doc_lang=doc_lang)
     prop = prop[0].upper() + prop[1:] if prop else ""
     prop = prop.replace("─", "").replace("—", "").replace(";", ",")
     r_body = p_body.add_run(prop)
@@ -1040,18 +1032,18 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
 
     add_spacer(doc, 10)
     if vision.evolution_principles:
-        add_heading_paragraph(doc, "Principios de Evolución de Madurez", level=2)
+        add_heading_paragraph(doc, t("maturity_evolution_principles", locale=doc_lang), level=2)
         p_list = [
-            f"{p.principle}: {sanitize_client_name(p.description, client_name)}"
+            f"{p.principle}: {sanitize_client_name(p.description, client_name, doc_lang=doc_lang)}"
             for p in vision.evolution_principles
         ]
         add_smart_bullet_list(doc, p_list, color_rgb=BASE_TEXT_COLOR)
-    add_heading_paragraph(doc, "Pilares Estratégicos Habilitadores", level=2)
+    add_heading_paragraph(doc, t("strategic_enablers_pillars", locale=doc_lang), level=2)
     pillars = vision.strategic_pillars
     pillar_texts = []
     for p in pillars:
-        p_name = sanitize_client_name(p.pillar, client_name)
-        p_desc = sanitize_client_name(p.description, client_name)
+        p_name = sanitize_client_name(p.pillar, client_name, doc_lang=doc_lang)
+        p_desc = sanitize_client_name(p.description, client_name, doc_lang=doc_lang)
         pillar_texts.append(f"{p_name}: {p_desc}")
 
     add_smart_bullet_list(
@@ -1061,16 +1053,21 @@ def render_target_vision(doc, vision: TargetVisionDraft, client_name="") -> Any:
 
 
 def render_execution_roadmap(
-    doc, roadmap: ExecutionRoadmapDraft, visuals: dict, client_dir, client_name=""
+    doc,
+    roadmap: ExecutionRoadmapDraft,
+    visuals: dict,
+    client_dir,
+    doc_lang: str,
+    client_name="",
 ):
-    """Renders the execution roadmap section into a Word document. This function constructs the "Plan de Implementación y Horizontes Temporales" section of the report. It first generates a table listing the defined transversal programs and their descriptions. It then iterates through the time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1"). For each horizon that contains initiatives, a detailed table is created, listing each initiative's associated program, title, business case, start month, and duration. Args: doc (docx.document.Document): The python-docx Document object to be modified. roadmap (ExecutionRoadmapDraft): A data object containing the structured roadmap information, including programs and initiatives per time horizon. visuals (dict): This parameter is currently unused. client_dir (str): This parameter is currently unused. client_name (str): The client's name, used for placeholder substitution in text content. Defaults to an empty string. Returns: None: The function modifies the `doc` object in place."""
+    """Renders the execution roadmap section into a Word document. This function constructs the "Implementation Plan and Time Horizons" section of the report. It first generates a table listing the defined transversal programs and their descriptions. It then iterates through the time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1"). For each horizon that contains initiatives, a detailed table is created, listing each initiative's associated program, title, business case, start month, and duration. Args: doc (docx.document.Document): The python-docx Document object to be modified. roadmap (ExecutionRoadmapDraft): A data object containing the structured roadmap information, including programs and initiatives per time horizon. visuals (dict): This parameter is currently unused. client_dir (str): This parameter is currently unused. client_name (str): The client's name, used for placeholder substitution in text content. Defaults to an empty string. Returns: None: The function modifies the `doc` object in place."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
     add_heading_paragraph(
-        doc, "6. Plan de Implementación y Horizontes Temporales", level=1
+        doc, "6. Implementation Plan and Time Horizons", level=1
     )
     add_body_paragraph(
         doc,
-        "La transformación tecnológica se articula en programas transversales ejecutados en cuatro horizontes temporales para asegurar la resiliencia y escalabilidad del negocio.",
+        t("global_ch6_intro", locale=doc_lang),
         color_rgb=BASE_TEXT_COLOR,
     )
     table_p = doc.add_table(rows=1, cols=1)
@@ -1112,7 +1109,7 @@ def render_execution_roadmap(
         p_bull.paragraph_format.space_after = Pt(6)
 
         program_name = clean_t_codes(p.name)
-        program_desc = sanitize_client_name(clean_t_codes(p.description), client_name)
+        program_desc = sanitize_client_name(clean_t_codes(p.description), client_name, doc_lang=doc_lang)
 
         r_name = p_bull.add_run(f"{program_name}: ")
         r_name.bold = True
@@ -1128,9 +1125,9 @@ def render_execution_roadmap(
     horizons = roadmap.horizons
     mapping = [
         ("Quick Wins (0-3 meses)", horizons.quick_wins_0_3_months),
-        ("Año 1 (4-12 meses)", horizons.year_1_3_12_months),
-        ("Año 2 (13-24 meses)", horizons.year_2_12_24_months),
-        ("Año 3 (25-36 meses)", horizons.year_3_24_36_months),
+        ("Year 1 (4-12 months)", horizons.year_1_3_12_months),
+        ("Year 2 (13-24 months)", horizons.year_2_12_24_months),
+        ("Year 3 (25-36 months)", horizons.year_3_24_36_months),
     ]
     for title, initiatives in mapping:
         if not initiatives:
@@ -1138,13 +1135,7 @@ def render_execution_roadmap(
         add_heading_paragraph(doc, title, level=3)
         table = doc.add_table(rows=1, cols=5)
         finalize_table(table)
-        headers = [
-            "Programa",
-            "Iniciativa",
-            "Impacto / Business Case",
-            "Inicio",
-            "Dur.",
-        ]
+        headers = get_localized_list("roadmap_table_headers", locale=doc_lang)
         for i, h in enumerate(headers):
             set_cell_text(
                 table.rows[0].cells[i],
@@ -1167,13 +1158,13 @@ def render_execution_roadmap(
             )
             set_cell_text(
                 row.cells[1],
-                sanitize_client_name(clean_t_codes(init.title), client_name),
+                sanitize_client_name(clean_t_codes(init.title), client_name, doc_lang=doc_lang),
                 bold=False,
                 font_size=10.5,
             )
             set_cell_text(
                 row.cells[2],
-                sanitize_client_name(clean_t_codes(init.business_case), client_name),
+                sanitize_client_name(clean_t_codes(init.business_case), client_name, doc_lang=doc_lang),
                 font_size=10.5,
             )
             set_cell_text(
@@ -1198,19 +1189,19 @@ def render_execution_roadmap(
 
 
 def render_executive_decisions(
-    doc, decisions: ExecutiveDecisionsDraft, client_name=""
+    doc, decisions: ExecutiveDecisionsDraft, doc_lang: str, client_name=""
 ) -> Any:
     r"""{'docstring': "Populates a `python-docx` document with a formatted executive decisions section.\n\nModifies the provided document object by adding a main heading, a descriptive\nparagraph, and a table listing priority decisions. The table includes columns\nfor the decision's scope, the required action, and the impact of a delay.\nCell text is sanitized based on the provided client name.\n\nArgs:\n    doc (docx.document.Document): The document object to be modified.\n    decisions (ExecutiveDecisionsDraft): A data object containing the list of\n        executive decisions to render.\n    client_name (str): The name of the client, used to sanitize text content\n        in the table.\n\nReturns:\n    None: The function modifies the `doc` object in-place."}."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
-    add_heading_paragraph(doc, "7. Decisiones Ejecutivas Prioritarias", level=1)
+    add_heading_paragraph(doc, t("global_ch7_decisions", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
-        "Líneas de decisión requeridas por la Dirección para desbloquear la ejecución del programa y mitigar los riesgos identificados.",
+        t("global_ch7_decisions_intro", locale=doc_lang),
         color_rgb=BASE_TEXT_COLOR,
     )
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
-    headers = ["Ámbito de Decisión", "Acción Requerida", "Impacto de Demora"]
+    headers = get_localized_list("board_decision_headers", locale=doc_lang)
     for i, h in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[i],
@@ -1226,18 +1217,18 @@ def render_executive_decisions(
         row = table.add_row()
         set_cell_text(
             row.cells[0],
-            sanitize_client_name(clean_t_codes(d.decision_type), client_name),
+            sanitize_client_name(clean_t_codes(d.decision_type), client_name, doc_lang=doc_lang),
             bold=False,
             font_size=10.5,
         )
         set_cell_text(
             row.cells[1],
-            sanitize_client_name(clean_t_codes(d.action_required), client_name),
+            sanitize_client_name(clean_t_codes(d.action_required), client_name, doc_lang=doc_lang),
             font_size=10.5,
         )
         set_cell_text(
             row.cells[2],
-            sanitize_client_name(clean_t_codes(d.impact_if_delayed), client_name),
+            sanitize_client_name(clean_t_codes(d.impact_if_delayed), client_name, doc_lang=doc_lang),
             font_size=10.5,
         )
         shade_cell(row.cells[2], "FFFFFF")
@@ -1249,7 +1240,194 @@ def render_executive_decisions(
     autofit_table_to_contents(table)
 
 
-def create_page_number_footer(section) -> Any:
+def render_tobe_domain_architectures(
+    doc: Document, client_dir: Path, doc_lang: str, client_name: str = ""
+) -> None:
+    """Renders the comprehensive Target State Architecture for each technological domain, matching FNMT Volume 2."""
+    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
+
+    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    add_heading_paragraph(doc, t("global_tobe_domain_architectures_heading", locale=doc_lang), level=1)
+    add_body_paragraph(
+        doc,
+        t("global_tobe_domain_architectures_intro", locale=doc_lang),
+        color_rgb=BASE_TEXT_COLOR,
+    )
+    add_spacer(doc, 10)
+
+    for i in range(1, 11):
+        t_id = f"T{i}"
+        bp_path = client_dir / t_id / f"blueprint_{t_id.lower()}_payload.json"
+        if not bp_path.exists():
+            continue
+        try:
+            bp_data = json.loads(bp_path.read_text(encoding="utf-8-sig"))
+        except Exception:
+            continue
+
+        num, dom_name = CANONICAL_TOWER_NAMES.get(t_id, (str(i).zfill(2), t_id))
+        dom_display = dom_name.replace("_", " ")
+        add_heading_paragraph(doc, f"{num}. {dom_display}", level=2)
+
+        # 1. Executive Snapshot & Principles
+        snap = bp_data.get("executive_snapshot", {})
+        bottom_line = snap.get("bottom_line", "") if isinstance(snap, dict) else ""
+        if bottom_line:
+            add_body_paragraph(doc, sanitize_client_name(bottom_line, client_name, doc_lang=doc_lang), color_rgb=BASE_TEXT_COLOR)
+
+        principles = bp_data.get("design_principles", [])
+        if principles:
+            add_heading_paragraph(doc, t("strategic_enablers_pillars", locale=doc_lang), level=3)
+            add_smart_bullet_list(doc, [sanitize_client_name(p, client_name, doc_lang=doc_lang) for p in principles], color_rgb=BASE_TEXT_COLOR)
+
+        # 2. Pillars Target Architecture (FNMT Schema)
+        for p_idx, pillar in enumerate(bp_data.get("pillars_analysis", []), start=1):
+            p_name = pillar.get("pilar_name", f"Pillar {p_idx}")
+            tobe = pillar.get("target_architecture_tobe", {})
+            if not isinstance(tobe, dict):
+                tobe = {}
+
+            vision = tobe.get("vision", "")
+            vis_3y = tobe.get("vision_3_years", "")
+            vis_5y = tobe.get("vision_5_years", "")
+            levers_tech = tobe.get("levers_technology", [])
+            levers_proc = tobe.get("levers_process", [])
+            benefits = tobe.get("expected_benefits", [])
+            risks_inaction = tobe.get("cost_of_inaction_risks", [])
+
+            add_heading_paragraph(doc, p_name, level=3)
+            if vision:
+                add_body_paragraph(doc, sanitize_client_name(vision, client_name, doc_lang=doc_lang), color_rgb=BASE_TEXT_COLOR)
+
+            if vis_3y or vis_5y:
+                h_table = doc.add_table(rows=3, cols=2)
+                finalize_table(h_table)
+                set_cell_text(h_table.rows[0].cells[0], "Horizonte Temporal", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                shade_cell(h_table.rows[0].cells[0], "0072BC")
+                set_cell_text(h_table.rows[0].cells[1], "Objetivos de Modernizacion", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                shade_cell(h_table.rows[0].cells[1], "0072BC")
+
+                set_cell_text(h_table.rows[1].cells[0], "Objetivo a 3 Anos", bold=True, font_size=9.5)
+                shade_cell(h_table.rows[1].cells[0], "F2F2F2")
+                set_cell_text(h_table.rows[1].cells[1], sanitize_client_name(vis_3y, client_name, doc_lang=doc_lang), font_size=9.5)
+
+                set_cell_text(h_table.rows[2].cells[0], "Vision a 5 Anos", bold=True, font_size=9.5)
+                shade_cell(h_table.rows[2].cells[0], "F2F2F2")
+                set_cell_text(h_table.rows[2].cells[1], sanitize_client_name(vis_5y, client_name, doc_lang=doc_lang), font_size=9.5)
+
+                autofit_table_to_contents(h_table)
+                add_spacer(doc, 10)
+
+            all_levers = []
+            if isinstance(levers_tech, list):
+                all_levers.extend([f"Tecnologia: {lev}" for lev in levers_tech])
+            elif isinstance(levers_tech, str):
+                all_levers.append(f"Tecnologia: {levers_tech}")
+
+            if isinstance(levers_proc, list):
+                all_levers.extend([f"Procesos: {lev}" for lev in levers_proc])
+            elif isinstance(levers_proc, str):
+                all_levers.append(f"Procesos: {levers_proc}")
+
+            if all_levers:
+                add_heading_paragraph(doc, "Palancas Clave de Evolucion", level=4)
+                add_smart_bullet_list(doc, [sanitize_client_name(l, client_name, doc_lang=doc_lang) for l in all_levers[:4]], color_rgb=BASE_TEXT_COLOR)
+
+            if benefits or risks_inaction:
+                b_table = doc.add_table(rows=2, cols=2)
+                finalize_table(b_table)
+                set_cell_text(b_table.rows[0].cells[0], "Beneficios Esperados", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                shade_cell(b_table.rows[0].cells[0], "0072BC")
+                set_cell_text(b_table.rows[0].cells[1], "Risk of Inaction (Cost of Delay)", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                shade_cell(b_table.rows[0].cells[1], "0072BC")
+
+                b_text = "\n* ".join([str(b) for b in benefits]) if isinstance(benefits, list) else str(benefits)
+                r_text = "\n* ".join([str(r) for r in risks_inaction]) if isinstance(risks_inaction, list) else str(risks_inaction)
+
+                set_cell_text(b_table.rows[1].cells[0], ("* " + sanitize_client_name(b_text, client_name, doc_lang=doc_lang)) if b_text else "Optimizacion", font_size=9.5)
+                set_cell_text(b_table.rows[1].cells[1], ("* " + sanitize_client_name(r_text, client_name, doc_lang=doc_lang)) if r_text else "Deuda tecnica", font_size=9.5)
+                autofit_table_to_contents(b_table)
+                add_spacer(doc, 10)
+
+        add_spacer(doc, 15)
+
+
+def render_todo_detailed_project_charters(
+    doc: Document, client_dir: Path, doc_lang: str, client_name: str = ""
+) -> None:
+    """Renders all detailed project charters with SMART goals, WBS, CapEx/OpEx, matching FNMT Volume 3."""
+    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
+
+    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    add_heading_paragraph(doc, t("global_todo_project_catalog_heading", locale=doc_lang), level=1)
+    add_body_paragraph(
+        doc,
+        t("global_todo_project_catalog_intro", locale=doc_lang),
+        color_rgb=BASE_TEXT_COLOR,
+    )
+    add_spacer(doc, 10)
+
+    proj_counter = 1
+    for i in range(1, 11):
+        t_id = f"T{i}"
+        bp_path = client_dir / t_id / f"blueprint_{t_id.lower()}_payload.json"
+        if not bp_path.exists():
+            continue
+        try:
+            bp_data = json.loads(bp_path.read_text(encoding="utf-8-sig"))
+        except Exception:
+            continue
+
+        num, dom_name = CANONICAL_TOWER_NAMES.get(t_id, (str(i).zfill(2), t_id))
+        dom_display = dom_name.replace("_", " ")
+
+        projects = []
+        for p in bp_data.get("pillars_analysis", []):
+            projects.extend(p.get("projects_todo", []))
+
+        if not projects:
+            continue
+
+        add_heading_paragraph(doc, f"Program {num}: {dom_display} ({len(projects)} Projects)", level=2)
+
+        for proj in projects:
+            p_name = proj.get("name", f"Initiative {proj_counter}")
+            typology = proj.get("transformation_typology", "Core Modernization")
+            sizing = proj.get("sizing", "M")
+            b_case = proj.get("business_case", "")
+            t_obj = proj.get("tech_objective", "")
+            capex = proj.get("capex_estimate", "Parametric CapEx")
+            opex = proj.get("opex_estimate", "Parametric OpEx")
+            roi = proj.get("roi_justification", "")
+            horizon = proj.get("duration", "H2 (M3-12)")
+
+            add_heading_paragraph(doc, f"PRJ-{proj_counter:03d}: {p_name}", level=3)
+
+            c_table = doc.add_table(rows=6, cols=2)
+            finalize_table(c_table)
+
+            rows_data = [
+                ("Typology & Sizing", f"{typology} | Sizing: {sizing} | Horizon: {horizon}"),
+                ("Technical SMART Objective", sanitize_client_name(t_obj, client_name, doc_lang=doc_lang)),
+                ("Business Case / Mitigation", sanitize_client_name(b_case, client_name, doc_lang=doc_lang)),
+                ("FinOps Budget", f"CapEx: {capex} | OpEx: {opex}"),
+                ("ROI & Justification", sanitize_client_name(roi, client_name, doc_lang=doc_lang)),
+                ("Work Breakdown Structure (WBS)", f"{len(proj.get('wbs_tasks', []))} execution phases coordinated"),
+            ]
+
+            for r_idx, (k, v) in enumerate(rows_data):
+                set_cell_text(c_table.rows[r_idx].cells[0], k, bold=True, font_size=9.5)
+                shade_cell(c_table.rows[r_idx].cells[0], "F2F2F2")
+                set_cell_text(c_table.rows[r_idx].cells[1], v, font_size=9.5)
+
+            autofit_table_to_contents(c_table)
+            add_spacer(doc, 10)
+            proj_counter += 1
+
+        add_spacer(doc, 15)
+
+
+def create_page_number_footer(section, doc_lang: str) -> Any:
     """Adds a 'Page X of Y' footer to a document section, clearing the first page's footer.    This function configures a document section to have a distinct footer for its    first page, which is typically a cover page. It sets the    `different_first_page_header_footer` property to True and clears all content    from the first page's footer.    For all subsequent pages within the section, a centered footer is added with    the format "Page {PAGE} of {NUMPAGES}". The implementation directly    manipulates the underlying Office Open XML (OOXML) structure to insert the    dynamic `PAGE` and `NUMPAGES` fields. The footer text is styled as 9pt    grey Arial.    Args:        section (docx.section.Section): The `python-docx` Section object to be            modified in-place.    Returns:        None. The section object is modified directly.    Raises:        AttributeError: If the section object lacks expected attributes like            `first_page_footer` or `footer`.        IndexError: If the section's default footer does not contain at least one            paragraph to modify."""
     # Enables a distinct footer for the first page. This setting is required to treat the cover page layout independently from subsequent pages.
     section.different_first_page_header_footer = True
@@ -1314,14 +1492,14 @@ def create_page_number_footer(section) -> Any:
         fldChar3.set(ns.qn("w:fldCharType"), "end")
         run._r.append(fldChar3)
 
-    r = paragraph.add_run("Página ")
+    r = paragraph.add_run(t("page_number_label", locale=doc_lang) + " ")
     r.font.size = Pt(9)
     r.font.name = "Arial"
     r.font.color.rgb = RGBColor(127, 127, 127)
 
     add_field(paragraph, "PAGE")
 
-    r2 = paragraph.add_run(" de ")
+    r2 = paragraph.add_run(" " + t("page_of_label", locale=doc_lang) + " ")
     r2.font.size = Pt(9)
     r2.font.name = "Arial"
     r2.font.color.rgb = RGBColor(127, 127, 127)
@@ -1362,7 +1540,7 @@ def _normalize_single_horizon_item(item: dict, h_key: str) -> dict:
             or item_copy.get("description")
             or item_copy.get("business_impact")
             or item_copy.get("impact")
-            or "Mitigación de deuda técnica."
+            or "Technical debt mitigation."
         )
         item_copy["business_case"] = bc_val
 
@@ -1387,7 +1565,7 @@ def _normalize_programs_list(programs: list) -> list:
                 p_copy["description"] = (
                     p_copy.get("name")
                     or p_copy.get("id")
-                    or "Programa de transformación tecnológica."
+                    or "Technology transformation program."
                 )
             normalized_programs.append(p_copy)
         else:
@@ -1563,7 +1741,7 @@ def _construct_fallback_roadmap(er_dict: dict) -> Any:
         InitiativeDef,
         ProgramDef,
     )
-    er_dict = payload.execution_roadmap.copy()
+    er_dict = er_dict.copy() if hasattr(er_dict, "copy") else dict(er_dict)
     if "programs" in er_dict and isinstance(er_dict["programs"], list):
         er_dict["programs"] = [
             _safe_construct(ProgramDef, p, {"name": "", "description": ""})
@@ -1764,120 +1942,105 @@ def render_global_report(
     template_path: Path,
     output_path: Path,
     client_dir: Path,
+    scope: str | None = None,
 ) -> Path:
     """Renders a global report by populating a Microsoft Word document template.
 
-    This function orchestrates the report generation process. It begins by loading
-    a specified `.docx` template, clearing its existing body content, and adding
-    page numbering. It then conditionally renders various report sections—such as
-    the cover, executive summary, and execution roadmap—based on the content of the
-    provided payload. Finally, it ensures the output directory exists and saves the
-    completed document to the specified path.
-
-    Args:
-        payload: An object containing all structured data for the report.
-        template_path: The file system path to the `.docx` template document.
-        output_path: The destination file system path for the generated report. The
-            parent directory will be created if it does not exist.
-        client_dir: The file system path to a directory containing client-specific
-            assets like images.
-
-    Returns:
-        The file system path to the newly generated report document.
-
-    Raises:
-        FileNotFoundError: If the template file specified by `template_path`
-            does not exist.
-        PermissionError: If the output directory cannot be created or the final
-            report file cannot be written due to insufficient permissions.
+    Supports rendering the full master report or individual strategic volumes (ASIS, TOBE, TODO).
     """
     doc = Document(str(template_path))
     clear_document_body(doc)
 
+    doc_lang = getattr(payload.meta, "language", "en") or "en"
     if doc.sections:
-        create_page_number_footer(doc.sections[0])
+        create_page_number_footer(doc.sections[0], doc_lang=doc_lang)
 
-    render_cover(doc, payload)
+    render_cover(doc, payload, doc_lang=doc_lang)
     client_name = payload.meta.client
 
-    doc_lang = getattr(payload.meta, "language", "es") or "es"
-    if getattr(payload, "board_memo", None):
-        render_board_memo(doc, payload.board_memo, client_name=client_name, doc_lang=doc_lang)
+    render_all = scope in (None, "full", "master")
+    render_asis = render_all or scope == "asis"
+    render_tobe = render_all or scope == "tobe"
+    render_todo = render_all or scope == "todo"
 
-    if payload.executive_summary:
-        render_executive_summary(
-            doc,
-            payload.executive_summary,
-            payload.heatmap,
-            payload.visuals,
-            client_dir,
-            client_name=client_name,
-        )
+    if render_asis:
+        if getattr(payload, "board_memo", None):
+            render_board_memo(doc, payload.board_memo, client_name=client_name, doc_lang=doc_lang)
 
-    if getattr(payload, "executive_callouts", None):
-        for co in payload.executive_callouts[:2]:
-            render_executive_callout(doc, co, client_name=client_name)
+        if payload.executive_summary:
+            render_executive_summary(
+                doc,
+                payload.executive_summary,
+                payload.heatmap,
+                payload.visuals,
+                client_dir,
+                client_name=client_name,
+                doc_lang=doc_lang,
+            )
 
-    if payload.burning_platform:
-        render_burning_platform(doc, payload.burning_platform, client_name=client_name)
-    if payload.tower_bottom_lines and payload.heatmap:
-        render_tower_bottom_lines(
-            doc, payload.heatmap, payload.tower_bottom_lines, client_name=client_name
-        )
+        if getattr(payload, "executive_callouts", None):
+            for co in payload.executive_callouts[:2]:
+                render_executive_callout(
+                    doc, co, client_name=client_name, doc_lang=doc_lang
+                )
 
-    if getattr(payload, "cross_tower_nexus", None):
-        render_cross_tower_nexus(doc, payload.cross_tower_nexus, client_name=client_name)
+        if payload.burning_platform:
+            render_burning_platform(doc, payload.burning_platform, client_name=client_name, doc_lang=doc_lang)
+        if payload.tower_bottom_lines and payload.heatmap:
+            render_tower_bottom_lines(
+                doc, payload.heatmap, payload.tower_bottom_lines, client_name=client_name, doc_lang=doc_lang
+            )
 
-    if payload.target_vision:
-        render_target_vision(doc, payload.target_vision, client_name=client_name)
-    if payload.execution_roadmap:
-        render_execution_roadmap(
-            doc,
-            payload.execution_roadmap,
-            payload.visuals,
-            client_dir,
-            client_name=client_name,
-        )
+        if getattr(payload, "cross_tower_nexus", None):
+            render_cross_tower_nexus(doc, payload.cross_tower_nexus, doc_lang=doc_lang, client_name=client_name)
 
-    if getattr(payload, "executive_callouts", None) and len(payload.executive_callouts) > 2:
-        render_executive_callout(doc, payload.executive_callouts[2], client_name=client_name)
+    if render_tobe:
+        if payload.target_vision:
+            render_target_vision(doc, payload.target_vision, client_name=client_name, doc_lang=doc_lang)
+        if scope in ("tobe", "full"):
+            render_tobe_domain_architectures(doc, client_dir, doc_lang=doc_lang, client_name=client_name)
 
-    if payload.executive_decisions:
-        render_executive_decisions(
-            doc, payload.executive_decisions, client_name=client_name
-        )
+    if render_todo:
+        if payload.execution_roadmap:
+            render_execution_roadmap(
+                doc,
+                payload.execution_roadmap,
+                payload.visuals,
+                client_dir,
+                doc_lang=doc_lang,
+                client_name=client_name,
+            )
+
+        if getattr(payload, "executive_callouts", None) and len(payload.executive_callouts) > 2:
+            render_executive_callout(
+                doc, payload.executive_callouts[2], client_name=client_name, doc_lang=doc_lang
+            )
+
+        if payload.executive_decisions:
+            render_executive_decisions(
+                doc, payload.executive_decisions, client_name=client_name, doc_lang=doc_lang
+            )
+        if scope in ("todo", "full"):
+            render_todo_detailed_project_charters(doc, client_dir, doc_lang=doc_lang, client_name=client_name)
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))
-    logger.info(f"Informe Global CIO-READY renderizado: {output_path}")
+    logger.info(f"Informe Global ({scope or 'master'}) renderizado: {output_path}")
     return output_path
 
 
 def main(argv: list[str] | None = None) -> None:
-    """Orchestrates rendering a global report from command-line arguments.
-
-    This function serves as the main entry point for a command-line script,
-    parsing arguments for a JSON payload path, a Jinja2 template path, and an
-    output file path. The program exits with a status code of 1 if an
-    incorrect number of arguments is provided.
-
-    Args:
-        argv: A list of command-line arguments. If None, `sys.argv` is used.
-            The list is expected to contain the script name followed by the paths
-            to the payload, template, and output files.
-
-    Raises:
-        FileNotFoundError: If the specified payload or template file does not exist.
-        IOError: If an error occurs while writing the output report file.
-        ValueError: If the payload file contains malformed data.
-    """
-    if len(argv if argv is not None else sys.argv) != 4:
+    """Orchestrates rendering a global report from command-line arguments."""
+    args_list = list(argv if argv is not None else sys.argv)[1:]
+    if len(args_list) < 3:
         sys.exit(1)
-    payload_path = Path((argv if argv is not None else sys.argv)[1])
-    template_path = Path((argv if argv is not None else sys.argv)[2])
-    output_path = Path((argv if argv is not None else sys.argv)[3])
+    payload_path = Path(args_list[0])
+    template_path = Path(args_list[1])
+    output_path = Path(args_list[2])
+    scope = args_list[3] if len(args_list) > 3 else None
     client_dir = payload_path.parent
     payload = load_payload(payload_path)
-    render_global_report(payload, template_path, output_path, client_dir)
+    render_global_report(payload, template_path, output_path, client_dir, scope=scope)
 
 
 if __name__ == "__main__":

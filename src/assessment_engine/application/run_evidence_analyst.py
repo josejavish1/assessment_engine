@@ -99,14 +99,14 @@ def _format_answers_summary(answers: list[dict[str, Any]]) -> str:
         )
         kpi_label = ans.get("kpi_name", "")
         q_text = (
-            ans.get("question_text") or ans.get("context") or "Sin texto de pregunta"
+            ans.get("question_text") or ans.get("context") or "No question text provided"
         )
         prefix = (
             f"- KPI {ans.get('kpi_id')} ({kpi_label}):"
             if kpi_label
             else f"- KPI {ans.get('kpi_id')}:"
         )
-        lines.append(f"{prefix} Score {score} | Pregunta/Info: {q_text}")
+        lines.append(f"{prefix} Score {score} | Question/Context: {q_text}")
     return "\n".join(lines) + ("\n" if lines else "")
 
 
@@ -165,7 +165,7 @@ async def build_findings(
     )
 
     company = get_consultant_company_name()
-    doc_lang = case_input.get("language") or "es"
+    doc_lang = case_input.get("language") or "en"
     target_lang = resolve_target_language_name(doc_lang)
 
     agent = Agent(
@@ -184,13 +184,13 @@ async def build_findings(
         str(e.get("fragment_id")): e for e in evidences if e.get("fragment_id")
     }
 
-    for pillar in scoring_output.get("pillar_scores", []):
+    async def _analyze_single_pillar(pillar: dict[str, Any]) -> dict[str, Any]:
         p_id = pillar["pillar_id"]
         p_name = pillar["pillar_name"]
         p_score = pillar["score_exact"]
 
         print(
-            f"    -> Analizando pilar {p_id} con IA (Contexto Jerárquico + Respuestas Test)..."
+            f"    -> Analyzing pillar {p_id} with AI (Hierarchical Context + Assessment Answers)..."
         )
 
         # Partitioning evidence is a prerequisite for the agent's hierarchical analysis. Strategic evidence provides high-level context, while granular evidence is used for detailed, KPI-specific evaluation.
@@ -219,17 +219,17 @@ async def build_findings(
         )
 
         full_analysis_context = f"""
-        RESUMEN ESTRATÉGICO DE CONTEXTO:
+        STRATEGIC CONTEXT SUMMARY:
         {strat_str}
 
-        ANÁLISIS DE RESPUESTAS DEL TEST:
+        ASSESSMENT RESPONSES ANALYSIS:
         {p_answers}
         """
 
         # Invoke the agent with the granular evidence subset for detailed analysis. This payload contains the specific data points required for generating pillar-specific insights.
         analysis = await run_agent(
             app,
-            user_id="tech_analyst",
+            user_id=f"tech_analyst_{p_id}",
             message=get_technical_analyst_prompt(
                 tower_id, p_name, p_score, full_analysis_context, granular_str
             ),
@@ -241,23 +241,23 @@ async def build_findings(
             if p_id in e.get("pillar_ids", []) and e.get("fragment_id")
         ]
 
-        strength_text = analysis.get("strength", "Capacidad operativa validada.")
+        strength_text = analysis.get("strength", "Validated operational capability.")
         strength_frag = analysis.get("strength_fragment_id")
         if strength_frag and str(strength_frag) not in all_valid_fragment_ids:
             logger.warning(
-                f"⚠️ [Evidence Gate] fragment_id '{strength_frag}' no existe en ledger. Reasignando a referencia válida."
+                f"⚠️ [Evidence Gate] fragment_id '{strength_frag}' not found in ledger. Reassigning to valid reference."
             )
             strength_frag = pillar_valid_refs[0] if pillar_valid_refs else None
 
-        gap_text = analysis.get("gap", "Brecha de madurez identificada.")
+        gap_text = analysis.get("gap", "Identified maturity gap.")
         gap_frag = analysis.get("gap_fragment_id")
         if gap_frag and str(gap_frag) not in all_valid_fragment_ids:
             logger.warning(
-                f"⚠️ [Evidence Gate] fragment_id '{gap_frag}' no existe en ledger. Reasignando a referencia válida."
+                f"⚠️ [Evidence Gate] fragment_id '{gap_frag}' not found in ledger. Reassigning to valid reference."
             )
             gap_frag = pillar_valid_refs[0] if pillar_valid_refs else None
 
-        r_title = analysis.get("risk_title", f"Riesgo en {p_name}")
+        r_title = analysis.get("risk_title", f"Operational Risk in {p_name}")
         e_tef = int(analysis.get("elicited_tef_score", 3) or 3)
         e_lm = int(analysis.get("elicited_lm_score", 3) or 3)
 
@@ -266,22 +266,22 @@ async def build_findings(
         for idx, init_data in enumerate(inits_data):
             # Dynamic multi-dimensional priority
             if p_score < 2.0 or e_lm >= 4:
-                init_priority = "Crítica"
+                init_priority = "Critical"
             elif p_score < 3.0 or e_tef >= 4:
-                init_priority = "Alta"
+                init_priority = "High"
             else:
-                init_priority = "Media"
+                init_priority = "Medium"
 
             candidate_initiatives.append(
                 {
                     "initiative_id": f"{p_id}-INIT-0{idx + 1}",
                     "title": init_data.get(
-                        "title", f"Plan de mejora {p_name} {idx + 1}"
+                        "title", f"Improvement Plan {p_name} {idx + 1}"
                     ),
                     "priority": init_priority,
                     "horizon": init_data.get("horizon", "Mid-term"),
                     "rationale": init_data.get(
-                        "rationale", "Mejora de la resiliencia operativa."
+                        "rationale", "Operational resilience improvement."
                     ),
                 }
             )
@@ -296,28 +296,31 @@ async def build_findings(
         else:
             calibrated_severity = "Medium"
 
-        pillar_findings.append(
-            {
-                "pillar_id": p_id,
-                "pillar_name": p_name,
-                "score_exact": p_score,
-                "score_display_1d": round(p_score, 1),
-                "current_maturity_band": band_for_score(p_score, tower_definition),
-                "strengths": [
-                    {"statement": strength_text, "fragment_id": strength_frag}
-                ],
-                "gaps": [{"statement": gap_text, "fragment_id": gap_frag}],
-                "risks": [
-                    {
-                        "title": r_title,
-                        "severity": calibrated_severity,
-                        "_elicited_tef": e_tef,
-                        "_elicited_lm": e_lm,
-                    }
-                ],
-                "candidate_initiatives": candidate_initiatives,
-            }
-        )
+        return {
+            "pillar_id": p_id,
+            "pillar_name": p_name,
+            "score_exact": p_score,
+            "score_display_1d": round(p_score, 1),
+            "current_maturity_band": band_for_score(p_score, tower_definition),
+            "strengths": [
+                {"statement": strength_text, "fragment_id": strength_frag}
+            ],
+            "gaps": [{"statement": gap_text, "fragment_id": gap_frag}],
+            "risks": [
+                {
+                    "title": r_title,
+                    "severity": calibrated_severity,
+                    "_elicited_tef": e_tef,
+                    "_elicited_lm": e_lm,
+                }
+            ],
+            "candidate_initiatives": candidate_initiatives,
+        }
+
+    pillar_tasks = [
+        _analyze_single_pillar(p) for p in scoring_output.get("pillar_scores", [])
+    ]
+    pillar_findings = await asyncio.gather(*pillar_tasks)
 
     return {
         "schema_name": "findings",
@@ -326,7 +329,7 @@ async def build_findings(
         "assessment_summary": {
             "key_messages": [
                 {
-                    "message": f"La torre {tower_id} presenta un estado de madurez de {scoring_output['tower_score_display_1d']}.",
+                    "message": f"Tower {tower_id} demonstrates an assessed maturity score of {scoring_output['tower_score_display_1d']}.",
                     "derived_from": [p["pillar_id"] for p in pillar_findings],
                 }
             ]
@@ -373,7 +376,7 @@ async def main(argv: list[str] | None = None) -> None:
     )
     tower_definition = load_json(tower_def_path)
 
-    print(f"🚀 Iniciando Análisis de Evidencias IA Senior para {tower_id}...")
+    print(f"🚀 Starting Senior AI Evidence Analysis for {tower_id}...")
     findings = await build_findings(
         case_input, evidence_ledger, scoring_output, tower_definition
     )

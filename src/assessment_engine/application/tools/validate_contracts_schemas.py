@@ -136,7 +136,7 @@ def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[s
 
     table_lines = []
     if has_aliases:
-        table_lines.append("| Campo | Tipo | Alias JSON | Descripción |")
+        table_lines.append("| Field | Type | JSON Alias | Description |")
         table_lines.append("|---|---|---|---|")
         for f_name, f_def in model_class.model_fields.items():
             if f_name.startswith("_"):
@@ -148,11 +148,11 @@ def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[s
                 f_def.alias or ""
             )
             if not desc:
-                desc = f_def.description or "Descripción del campo."
+                desc = f_def.description or "Field description."
             desc = desc.replace("\n", " ").strip()
             table_lines.append(f"| `{f_name}` | `{type_str}` | {alias_str} | {desc} |")
     else:
-        table_lines.append("| Campo | Tipo | Descripción |")
+        table_lines.append("| Field | Type | Description |")
         table_lines.append("|---|---|---|")
         for f_name, f_def in model_class.model_fields.items():
             if f_name.startswith("_"):
@@ -160,7 +160,7 @@ def generate_markdown_table_lines(model_class, old_fields: list[dict]) -> list[s
             type_str = normalize_type_annotation(f_def.annotation)
             desc = old_descriptions.get(f_name)
             if not desc:
-                desc = f_def.description or "Descripción del campo."
+                desc = f_def.description or "Field description."
             desc = desc.replace("\n", " ").strip()
             table_lines.append(f"| `{f_name}` | `{type_str}` | {desc} |")
 

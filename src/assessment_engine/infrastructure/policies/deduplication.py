@@ -22,9 +22,8 @@ def _is_platform_eng_project(proj_or_name: Any) -> bool:
     return (
         "platform engineering" in low
         or "plattform engineering" in low
-        or "ingeniería de plataforma" in low
-        or "engenharia de plataforma" in low
-        or "ingénierie de plateforme" in low
+        or "ingenier" in low and "plataform" in low
+        or "engenharia" in low and "plataforma" in low
         or "idp" in low
         or "developer platform" in low
     )
@@ -62,7 +61,7 @@ def _build_unified_platform_project(
         ),
         "deliverables": deliverables,
         "sizing": "XL",
-        "duration": "H1 (Mes 1-6)",
+        "duration": t("duration_h1_month_1_6", locale=doc_lang),
         "program_id": None,
     }
 
@@ -83,7 +82,7 @@ class DeduplicationPolicy(BaseSovereignPolicy):
             return payload
 
         doc_lang = (
-            payload.get("document_meta", {}).get("language", "es").lower()
+            payload.get("document_meta", {}).get("language", "en").lower()
         )
         cloud_provider = payload.get("document_meta", {}).get(
             "cloud_provider", ""

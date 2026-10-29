@@ -1,9 +1,9 @@
 from typing import Any
 
 """
-Módulo contract_utils.py.
-Proporciona utilidades para la validación resiliente de contratos entre etapas.
-Permite detectar desviaciones de esquema sin necesariamente abortar la ejecución.
+Module contract_utils.py.
+Provides utilities for resilient contract validation across pipeline stages.
+Enables schema drift detection without aborting execution.
 """
 
 import json
@@ -63,14 +63,14 @@ def robust_load_payload(
             required for Pydantic model instantiation.
     """
     if not path.exists():
-        raise FileNotFoundError(f"No se encontró el artefacto: {path}")
+        raise FileNotFoundError(f"Artifact not found: {path}")
 
     try:
         content = path.read_text(encoding="utf-8-sig")
         data = json.loads(content)
     except Exception as e:
         logger.error(
-            f"❌ Error crítico cargando JSON de {artifact_name} en {path}: {e}"
+            f"❌ Critical error loading JSON for {artifact_name} at {path}: {e}"
         )
         raise
 
@@ -79,7 +79,7 @@ def robust_load_payload(
         return schema.model_validate(data)
     except ValidationError as e:
         logger.warning(
-            f"⚠️ Desviación de contrato detectada en {artifact_name} ({path.name}):"
+            f"⚠️ Contract deviation detected in {artifact_name} ({path.name}):"
         )
         for error in e.errors():
             loc = " -> ".join(str(x) for x in error["loc"])

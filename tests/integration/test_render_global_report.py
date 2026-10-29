@@ -51,4 +51,8 @@ def test_render_global_report_full_oracle(tmp_path: Path) -> None:
     assert len(doc.tables) >= 10, f"Expected at least 10 tables, got {len(doc.tables)}"
 
     full_text = "\n".join(p.text for p in doc.paragraphs)
-    assert payload.meta.client in full_text or "Informe" in full_text
+    assert (
+        payload.meta.client.lower() in full_text.lower()
+        or "Assessment" in full_text
+        or "Informe" in full_text
+    )

@@ -72,7 +72,7 @@ def get_consultant_company_name() -> str:
         return "Consultora"
 
 
-def get_localized_disclaimer(lang: str = "es") -> str:
+def get_localized_disclaimer(lang: str = "en") -> str:
     """Resolves the legal disclaimer text for the requested locale from locales.json."""
     try:
         vocab = resolve_localized_vocabulary(lang)
@@ -101,17 +101,18 @@ def resolve_localized_vocabulary(lang: str) -> dict:
     from assessment_engine.infrastructure.localization import (
         DynamicLocaleSynthesizer,
         load_locales_catalog,
+        resolve_base_locale,
     )
 
     catalog = load_locales_catalog()
-    lang_key = lang.lower().split("_")[0].split("-")[0] if lang else "es"
+    lang_key = resolve_base_locale(lang)
 
-    if lang_key not in catalog and lang_key not in ["es", "en"]:
+    if lang_key not in catalog:
         dynamic_dict = DynamicLocaleSynthesizer().synthesize_locale(lang_key)
         if dynamic_dict:
             catalog[lang_key] = dynamic_dict
 
-    return catalog.get(lang_key) or catalog.get("en") or catalog.get("es", {})
+    return catalog.get(lang_key) or catalog.get("en", {})
 
 
 def load_runtime_manifest() -> Any:
@@ -245,7 +246,7 @@ def resolve_model_profile_for_role(role_name: str) -> ModelProfile:
     model_profiles = manifest.get("model_profiles", {})
     profile_name = model_profiles.get(role_name)
     if not profile_name:
-        raise KeyError(f"No hay perfil de modelo configurado para el rol: {role_name}")
+        raise KeyError(f"No model profile configured for role: {role_name}")
     return load_model_profile(profile_name)
 
 
@@ -317,7 +318,7 @@ def resolve_target_maturity_defaults(document_profile_id: str) -> dict:
     defaults = policy.get("defaults", {})
     if document_profile_id not in defaults:
         raise KeyError(
-            f"No hay defaults de target maturity para: {document_profile_id}"
+            f"Missing target maturity defaults for: {document_profile_id}"
         )
     return defaults[document_profile_id]
 
@@ -360,7 +361,7 @@ def load_industry_profile(profile_key: str) -> dict:
             return _load_json(default_file)
         except Exception:
             raise KeyError(
-                "No se pudo cargar el perfil de industria por defecto o se encuentra corrupto."
+                "Failed to load default industry profile or profile is corrupted."
             )
 
 

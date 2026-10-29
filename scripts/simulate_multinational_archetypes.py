@@ -499,8 +499,6 @@ def main() -> None:
     print("  Countries: DE, JP, US, ES | Sectors: Critical Infra, Banking, Pharma, Retail")
     print("=" * 80)
 
-    if BASE_OUTPUT_DIR.exists():
-        shutil.rmtree(BASE_OUTPUT_DIR)
     BASE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     summary_results = []
@@ -517,7 +515,16 @@ def main() -> None:
             print(f"✅ Generated {len(res['generated_files'])} artifacts. All empirical checks passed.")
 
     summary_file = BASE_OUTPUT_DIR / "SIMULATION_SUMMARY.json"
-    summary_file.write_text(json.dumps(summary_results, indent=2, ensure_ascii=False), encoding="utf-8")
+    existing_entries = []
+    if summary_file.exists():
+        try:
+            existing_entries = json.loads(summary_file.read_text(encoding="utf-8"))
+        except Exception:
+            existing_entries = []
+
+    canonical_ids = {a.archetype_id for a in ARCHETYPES}
+    merged_summary = [e for e in existing_entries if e.get("archetype_id") not in canonical_ids] + summary_results
+    summary_file.write_text(json.dumps(merged_summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
     print("\n" + "=" * 80)
     print(f"  SIMULATION SUMMARY: {'ALL 4 ARCHETYPES CERTIFIED' if all_passed else 'FAILURES DETECTED'}")

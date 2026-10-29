@@ -63,7 +63,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
 
     config = types.GenerateContentConfig(
         tools=[{"google_search": {}}],
-        system_instruction="Eres un Investigador Senior de Gartner. Tu misión es encontrar soluciones disruptivas 2026 usando búsqueda web.",
+        system_instruction="You are a Senior Gartner Research Analyst. Your mission is to identify leading 2026 technologies using web search.",
     )
 
     response = None
@@ -76,17 +76,19 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
             break
         except Exception as e:
             print(
-                f"        ⚠️ [Reintento {attempt}/{max_attempts}] Fallo temporal en consulta de investigación para {p_name}: {e}"
+                f"        ⚠️ [Retry {attempt}/{max_attempts}] Transient research query failure for {p_name}: {e}"
             )
             if attempt == max_attempts:
                 print(
-                    f"        ❌ Fallo definitivo de API en consulta de investigación para {p_name}. Aplicando fallback vacío."
+                    f"        ❌ Definitive API failure in research query for {p_name}. Applying empty fallback."
                 )
                 return p_name, {}
             await asyncio.sleep(2)
 
     try:
-        from assessment_engine.infrastructure.json_from_model import parse_json_from_text
+        from assessment_engine.infrastructure.json_from_model import (
+            parse_json_from_text,
+        )
 
         raw_text = response.text or "{}" if response else "{}"
         sota_result = parse_json_from_text(raw_text)
@@ -104,7 +106,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
 async def inject_sota(client_name: str, findings: dict) -> dict:
     r"""{'docstring': "Asynchronously enriches strategic findings with state-of-the-art research.\n\n    This function orchestrates an asynchronous research task for each strategic\n    pillar defined in the `findings` dictionary. For each pillar's specified\n    gap, it queries the Gemini API to identify relevant solutions,\n    architectural patterns, and strategic benefits. Optional, pre-existing\n    client data, loaded based on `client_name`, can provide grounding context\n    for the queries. The results are integrated back into the `findings`\n    dictionary by modifying the 'candidate_initiatives' in-place with new\n    titles and detailed, evidence-supported rationales.\n\n    Args:\n        client_name (str): The client identifier used to locate and load\n            supplementary grounding data for the research queries.\n        findings (dict): A dictionary containing the initial analysis, which is\n            modified in-place. It is expected to contain a 'pillar_findings'\n            key mapping to a list of pillar dictionaries. Each pillar\n            dictionary should contain keys such as 'pillar_name', 'gaps', and\n            'candidate_initiatives'.\n\n    Returns:\n        dict: The original `findings` dictionary object, now augmented with the\n        research results.\n\n    Raises:\n        IndexError: If 'gaps' or 'candidate_initiatives' lists within a pillar\n            are empty where at least one element is expected.\n        FileNotFoundError: Propagated if the client intelligence file specified\n            by `client_name` does not exist.\n        google.api_core.exceptions.GoogleAPICallError: Propagated from the\n            `genai` client upon API errors, such as authentication failure,\n            invalid requests, or network connectivity issues."}."""
     print(
-        "    -> [Investigación Técnica] Lanzando investigación profunda 2026 con Internet..."
+        "    -> [Technical Research] Launching deep 2026 web research..."
     )
 
     intel_path = resolve_client_intelligence_path(client_name)
@@ -116,12 +118,20 @@ async def inject_sota(client_name: str, findings: dict) -> dict:
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
 
-    results_map = {}
-    for pillar in findings.get("pillar_findings", []):
-        p_name = pillar.get("pillar_name")
-        gap_text = pillar.get("gaps", [{}])[0].get("statement", "")
-        _, res = await research_pillar(client, p_name, gap_text, grounding_json)
-        results_map[p_name] = res
+    tasks = [
+        research_pillar(
+            client,
+            pillar.get("pillar_name"),
+            pillar.get("gaps", [{}])[0].get("statement", ""),
+            grounding_json,
+        )
+        for pillar in findings.get("pillar_findings", [])
+    ]
+    if tasks:
+        research_results = await asyncio.gather(*tasks)
+        results_map = {res[0]: res[1] for res in research_results}
+    else:
+        results_map = {}
 
     for pillar in findings.get("pillar_findings", []):
         p_name = pillar.get("pillar_name")
@@ -130,10 +140,10 @@ async def inject_sota(client_name: str, findings: dict) -> dict:
         init = pillar.get("candidate_initiatives", [{}])[0]
         # Augment the initial analysis by incorporating publicly available information sourced from web research.
         if sota_result.get("sota_solution_name"):
-            init["title"] = f"Implantación de {sota_result['sota_solution_name']}"
+            init["title"] = f"Implementation of {sota_result['sota_solution_name']}"
             base_rationale = (
                 f"{sota_result.get('strategic_benefit', '')} "
-                f"La arquitectura seguirá el patrón de {sota_result.get('architectural_pattern', 'vanguardia')}."
+                f"The target architecture follows {sota_result.get('architectural_pattern', 'modern design principles')}."
             )
             source_ref_raw = sota_result.get("source_reference", "")
             if isinstance(source_ref_raw, dict):

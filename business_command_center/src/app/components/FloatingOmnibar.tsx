@@ -13,7 +13,7 @@ interface FloatingOmnibarProps {
 
 export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting }: FloatingOmnibarProps) {
   const [inputValue, setInputValue] = useState('');
-  const [traceMsg, setTraceMsg] = useState('Analizando contexto y diseñando el plan...');
+  const [traceMsg, setTraceMsg] = useState('Analyzing context and architecting plan...');
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -33,7 +33,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
         clearInterval(pollInterval);
         setIsSubmitting(false);
         console.error("Job error:", statusRes.error || statusRes.result);
-        alert("El orquestador devolvió un error. Revisa la consola.");
+        alert("The orchestrator returned an error. Check console logs.");
         return;
       }
       if (statusRes.status === "completed") {
@@ -56,7 +56,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
               setInputValue('');
             } else {
               console.error("Orchestrator returned an error:", textContent);
-              alert("El orquestador devolvió un error. Revisa la consola.");
+              alert("The orchestrator returned an error. Check console logs.");
             }
         } catch (e) {
             console.error("Could not parse plan json:", e);
@@ -71,7 +71,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
 
     const requestText = inputValue;
     setIsSubmitting(true);
-    setTraceMsg('Iniciando orquestador asíncrono...');
+    setTraceMsg('Starting asynchronous orchestrator...');
     const response = await submitProductOwnerRequest(requestText);
 
     if (response.success && response.jobId) {
@@ -79,7 +79,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
     } else {
       setIsSubmitting(false);
       console.error("Error:", response.error);
-      alert("Error al contactar con el orquestador MCP. Revisa la consola.");
+      alert("Failed to connect to MCP orchestrator. Check console logs.");
     }
   };
 
@@ -106,7 +106,7 @@ export function FloatingOmnibar({ onPlanGenerated, isSubmitting, setIsSubmitting
           type="text"
           aria-label="Directiva para el orquestador cognitivo"
           className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground px-2 py-3"
-          placeholder="¿Qué quieres construir o mejorar hoy? (ej. Endurecer reconciliación de PRs)"
+          placeholder="What would you like to build or refine today? (e.g. Enforce PR reconciliation)"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}

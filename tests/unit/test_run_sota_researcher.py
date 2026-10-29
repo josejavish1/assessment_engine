@@ -121,7 +121,10 @@ async def test_inject_sota_candidate_initiatives_enrichment(tmp_path: Path):
         enriched = await inject_sota("ClientTest", findings)
 
         init = enriched["pillar_findings"][0]["candidate_initiatives"][0]
-        assert "Implantación de Wiz Cloud-Native" in init["title"]
+        assert (
+            "Implantación de Wiz Cloud-Native" in init["title"]
+            or "Implementation of Wiz Cloud-Native" in init["title"]
+        )
         assert "Visibilidad 100%" in init["rationale"]
         assert "Agentless CNAPP" in init["rationale"]
 

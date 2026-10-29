@@ -23,7 +23,7 @@ class AssessmentContext(BaseModel):
     tower_id: str
     case_dir: Optional[Path] = None
     industry: str = "default"
-    language: str = "es"
+    language: str = "en"
     currency: str = "€"
 
     # In-Memory Pipeline State

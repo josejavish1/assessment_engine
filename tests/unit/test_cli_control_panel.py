@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -44,6 +45,69 @@ def test_run_pipeline_phase_failures(tmp_path: Path):
         ]
         code = cli_mod.run_pipeline("Acme", "acme", "c.docx", "r.txt", "T1")
         assert code == 2
+
+
+def test_run_pipeline_incremental_cache_bypass():
+    """Verify run_pipeline bypasses subprocess execution when canonical artifacts exist."""
+    repo_root = Path(cli_mod.__file__).resolve().parents[3]
+    slug = "test_incremental_client"
+    working_dir = repo_root / "working" / slug
+    tower_dir = working_dir / "T1"
+    presentation_dir = working_dir / "presentation"
+
+    try:
+        working_dir.mkdir(parents=True, exist_ok=True)
+        tower_dir.mkdir(parents=True, exist_ok=True)
+        presentation_dir.mkdir(parents=True, exist_ok=True)
+
+        # Create mock artifacts for all phases
+        (working_dir / "client_intelligence.json").write_text("{}", encoding="utf-8")
+        (working_dir / "benchmarks_snapshot.json").write_text("{}", encoding="utf-8")
+        (tower_dir / f"Diagnostico_ASIS_T1_{slug}.docx").write_text("asis", encoding="utf-8")
+        (tower_dir / f"Strategic_Blueprint_T1_{slug}.docx").write_text("blueprint", encoding="utf-8")
+        (tower_dir / "blueprint_t1_payload.json").write_text("{}", encoding="utf-8")
+        (working_dir / "Informe_Ejecutivo_Consolidado_Test Inc.docx").write_text("global", encoding="utf-8")
+        (working_dir / "global_report_payload.json").write_text("{}", encoding="utf-8")
+        (working_dir / "Account_Action_Plan_Test Inc.docx").write_text("commercial", encoding="utf-8")
+        (working_dir / "commercial_report_payload.json").write_text("{}", encoding="utf-8")
+        (presentation_dir / "index.html").write_text("<html></html>", encoding="utf-8")
+
+        with patch("subprocess.run") as mock_sub:
+            code = cli_mod.run_pipeline(
+                client="Test Inc",
+                slug=slug,
+                context="c.docx",
+                responses="r.txt",
+                towers_str="T1",
+                force=False,
+            )
+            assert code == 0
+            assert mock_sub.call_count == 0  # All phases bypassed!
+    finally:
+        if working_dir.exists():
+            shutil.rmtree(working_dir, ignore_errors=True)
+
+
+def test_run_pipeline_force_rebuild():
+    """Verify run_pipeline with force=True forwards --force to towers and runs all phases."""
+    with patch("subprocess.run") as mock_sub:
+        mock_sub.return_value = subprocess.CompletedProcess(args=["python"], returncode=0)
+        code = cli_mod.run_pipeline(
+            client="Acme Force",
+            slug="acme_force",
+            context="c.docx",
+            responses="r.txt",
+            towers_str="T1",
+            force=True,
+        )
+        assert code == 0
+        assert mock_sub.call_count >= 4
+        # Tower invocation should include --force
+        tower_calls = [
+            call for call in mock_sub.call_args_list if "--tower" in call[0][0]
+        ]
+        assert len(tower_calls) == 1
+        assert "--force" in tower_calls[0][0][0]
 
 
 # --- APEX PO-BATCH MANAGER TESTS ---
@@ -150,9 +214,12 @@ def test_cli_main_subcommand_dispatch():
                 "--context", "ctx.docx",
                 "--responses", "resp.txt",
                 "--towers", "T1 T2",
+                "--force",
             ])
         assert exc.value.code == 0
-        assert mock_rp.called
+        mock_rp.assert_called_once_with(
+            "Acme", "acme", "ctx.docx", "resp.txt", "T1 T2", force=True, concurrency=6, language=None
+        )
 
     # 2. po-batch subcommand
     with patch("assessment_engine.application.cli.manage_po_batch", return_value=0) as mock_pb:

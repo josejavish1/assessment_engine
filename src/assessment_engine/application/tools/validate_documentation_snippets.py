@@ -56,7 +56,7 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
                     script_path = Path(spec.origin)
             except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                logger.debug(f"[Fallback] Handled exception: {ex}")
 
     if script_path and script_path.exists():
         # Only validate local scripts inside repo_root and NOT in .venv
@@ -90,7 +90,7 @@ def validate_command_flags(repo_root: Path, line: str) -> list[str]:
                                 f"references invalid or non-existent flag '{flag}' for script '{script_path.name}'"
                             )
                 except (subprocess.SubprocessError, OSError, ValueError) as ex:
-                    logger.debug(f"[DocSnippets] Fallo ejecutando script para verificación de flags: {ex}")
+                    logger.debug(f"[DocSnippets] Failed executing script for flag validation: {ex}")
 
     return errors
 

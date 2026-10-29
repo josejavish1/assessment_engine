@@ -35,19 +35,19 @@ def _validate_top_level_structure(
     ]
     for key in required_top_level:
         if key not in definition:
-            errors.append(f"Falta clave requerida: {key}")
+            errors.append(f"Missing required key: {key}")
 
     if not tower_id:
-        errors.append("tower_id vacío.")
+        errors.append("tower_id is empty.")
     if not tower_name:
-        errors.append("tower_name vacío.")
+        errors.append("tower_name is empty.")
     if not isinstance(pillars, list) or not pillars:
-        errors.append("pillars debe ser una lista no vacía.")
+        errors.append("pillars must be a non-empty list.")
         pillars = []
 
     for k in ["score_bands", "maturity_scale", "working_rules"]:
         if not definition.get(k):
-            errors.append(f"{k} vacío.")
+            errors.append(f"{k} is empty.")
 
     return tower_id, tower_name, pillars, questions, errors
 
@@ -58,7 +58,7 @@ def _validate_kpi_questions(
     """Validate list of questions embedded inside a single KPI."""
     question_ids: list[str] = []
     if not isinstance(kpi_questions, list):
-        errors.append(f"{kpi_id} tiene questions con shape inválido.")
+        errors.append(f"{kpi_id} has questions with invalid shape.")
         return question_ids
 
     for question in kpi_questions:
@@ -71,7 +71,7 @@ def _validate_kpi_questions(
         if not question_id.startswith(f"{kpi_id}.PR"):
             errors.append(f"{question_id} no pertenece al KPI {kpi_id}.")
         if not question_text:
-            errors.append(f"{question_id} tiene question_text vacío.")
+            errors.append(f"{question_id} has empty question_text.")
     return question_ids
 
 
@@ -95,9 +95,9 @@ def _validate_pillar_hierarchy(
         pillar_ids.append(pillar_id)
 
         if tower_id and not pillar_id.startswith(f"{tower_id}.P"):
-            errors.append(f"{pillar_id} no pertenece a la torre {tower_id}.")
+            errors.append(f"{pillar_id} does not belong to tower {tower_id}.")
         if not pillar_name:
-            errors.append(f"{pillar_id} tiene pillar_name vacío.")
+            errors.append(f"{pillar_id} has empty pillar_name.")
 
         weight = pillar.get("weight_pct")
         if not isinstance(weight, int):
@@ -106,7 +106,7 @@ def _validate_pillar_hierarchy(
             total_weight += weight
 
         if not isinstance(kpis, list) or not kpis:
-            errors.append(f"{pillar_id} debe tener una lista no vacía de kpis.")
+            errors.append(f"{pillar_id} must have a non-empty list of kpis.")
             continue
 
         for kpi in kpis:
@@ -120,7 +120,7 @@ def _validate_pillar_hierarchy(
             if not kpi_id.startswith(f"{pillar_id}.K"):
                 errors.append(f"{kpi_id} no pertenece al pilar {pillar_id}.")
             if not kpi_name:
-                errors.append(f"{kpi_id} tiene kpi_name vacío.")
+                errors.append(f"{kpi_id} has empty kpi_name.")
 
             if "questions" in kpi:
                 q_ids = _validate_kpi_questions(
@@ -161,21 +161,21 @@ def _validate_top_level_questions(
             continue
         top_question_ids.append(question_id)
         if tower_id and not question_id.startswith(f"{tower_id}.P"):
-            errors.append(f"{question_id} no pertenece a la torre {tower_id}.")
+            errors.append(f"{question_id} does not belong to tower {tower_id}.")
         if pillar_id not in known_pillars:
             errors.append(
-                f"{question_id} referencia un pillar_id inexistente: {pillar_id}."
+                f"{question_id} references nonexistent pillar_id: {pillar_id}."
             )
         if kpi_id not in known_kpis:
-            errors.append(f"{question_id} referencia un kpi_id inexistente: {kpi_id}.")
+            errors.append(f"{question_id} references nonexistent kpi_id: {kpi_id}.")
         if not question_text:
-            errors.append(f"{question_id} tiene question_text vacío.")
+            errors.append(f"{question_id} has empty question_text.")
 
     if len(top_question_ids) != len(set(top_question_ids)):
-        errors.append("Hay question_id duplicados en questions top-level.")
+        errors.append("Duplicate question_ids detected in top-level questions.")
     if embedded_question_ids and set(top_question_ids) != set(embedded_question_ids):
         warnings.append(
-            "Las questions top-level no coinciden exactamente con las embebidas en pillars[*].kpis[*].questions."
+            "Top-level questions do not exactly match embedded questions in pillars[*].kpis[*].questions."
         )
 
 
@@ -200,7 +200,7 @@ def validate_tower_definition(
         errors.append("Hay question_id duplicados en pillars[*].kpis[*].questions.")
 
     if pillars and total_weight != 100:
-        errors.append(f"La suma de weight_pct es {total_weight}, no 100.")
+        errors.append(f"Sum of weight_pct is {total_weight}, expected 100.")
 
     _validate_top_level_questions(
         tower_id,

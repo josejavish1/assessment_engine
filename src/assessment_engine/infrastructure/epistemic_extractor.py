@@ -31,11 +31,11 @@ class EpistemicTriplesList(BaseModel):
 
 
 INSTRUCTION = """
-Eres un analizador epistémico de élite (Information Extraction).
-Tu único objetivo es extraer "hechos absolutos" del texto proporcionado y convertirlos en Tripletas (Sujeto, Predicado, Objeto).
-Concéntrate exclusivamente en datos clave de arquitectura tecnológica (Cloud Providers, Herramientas Core, Regulaciones, Estrategias a nivel C-Level).
-Extrae afirmaciones rotundas. Ignora dudas o suposiciones débiles.
-Normaliza el 'predicate' usando nombres en MAYÚSCULAS y separados por guiones bajos (e.g., CLOUD_PROVIDER_PRINCIPAL, REGULACION_APLICABLE).
+You are an elite epistemic analyzer (Information Extraction).
+Your sole objective is to extract ground-truth facts from provided text into Knowledge Graph Triplets (Subject, Predicate, Object).
+Focus exclusively on core technical architecture data (Cloud Providers, Core Infrastructure, Regulations, C-Level Strategy).
+Extract definite empirical assertions. Ignore ambiguous hypotheses.
+Normalize predicate using UPPERCASE snake_case identifiers (e.g. PRIMARY_CLOUD_PROVIDER, APPLICABLE_REGULATION).
 """
 
 
@@ -75,7 +75,7 @@ async def extract_triples_from_text(
         )
         app = AdkApp(agent=agent)
 
-        prompt = f"Analiza este texto y extrae TODAS las tripletas tecnológicas y estratégicas relevantes:\n\n{text[:15000]}"
+        prompt = f"Analyze this text and extract ALL relevant technology and strategic knowledge graph triplets:\n\n{text[:15000]}"
 
         result = await run_agent(
             app, user_id="extractor_system", message=prompt, schema=EpistemicTriplesList
@@ -85,5 +85,5 @@ async def extract_triples_from_text(
             return list(result["triples"])
         return []
     except Exception as e:
-        logger.error(f"Fallo en la extracción epistémica: {e}")
+        logger.error(f"Epistemic extraction failure: {e}")
         return []

@@ -1,0 +1,27 @@
+{
+  "framework_id": "finops_foundation",
+  "framework_name": "FinOps Foundation Framework",
+  "description": "Standard operational framework and cultural practice for cloud financial management, enabling organizations across general industries to maximize business value through data-driven spending decisions and cost governance.",
+  "rules": [
+    {
+      "tower_id": "T8",
+      "query_template": "\"FinOps Foundation\" framework adoption rate OR maturity benchmark percentage in \"cloud cost governance\" OR \"FinOps\" global industry report",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    }
+  ]
+}

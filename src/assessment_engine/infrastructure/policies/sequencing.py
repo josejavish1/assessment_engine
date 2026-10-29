@@ -5,39 +5,42 @@ from typing import Any, Dict
 from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 from assessment_engine.infrastructure.policies.base import BaseSovereignPolicy
 
-
-def _sequence_single_project(proj: dict[str, Any]) -> None:
+def _sequence_single_project(proj: dict[str, Any], doc_lang: str = "en") -> None:
+    """Enforces horizon sequencing for a single project based on name and scope."""
     name_low = proj.get("name", "").lower()
-    typology = str(proj.get("transformation_typology", "")).lower()
-    sizing = str(proj.get("sizing", "")).upper()
+    typology = proj.get("typology", "").lower()
+    sizing = proj.get("sizing", "M").upper()
 
+    import unicodedata
+    name_low_ascii = unicodedata.normalize("NFKD", name_low).encode("ASCII", "ignore").decode("utf-8")
     is_foundation_plan = (
-        "adopción de plataforma" in name_low
-        or "estrategia de adopción" in name_low
-        or "container adoption" in name_low
-        or "adoption strategy" in name_low
+        "platform adoption" in name_low_ascii
+        or "adoption strategy" in name_low_ascii
+        or "container adoption" in name_low_ascii
+        or "adopcion" in name_low_ascii
+        or "adoption" in name_low_ascii
     )
     is_platform_pilot = (
-        "plataforma interna de desarrollo" in name_low
-        or "piloto" in name_low
+        "internal developer platform" in name_low
         or "pilot" in name_low
+        or "piloto" in name_low
         or "kubernetes" in name_low
         or "eks" in name_low
     )
 
+    from assessment_engine.infrastructure.localization import t
+
     if is_foundation_plan:
-        proj["duration"] = "Horizonte 1 - Fase de Arranque (Mes 1-2)"
-        proj["tech_objective"] = (
-            "Establecer las directrices operativas, de gobernanza, de costes y de seguridad para cargas de contenedores antes de iniciar desarrollos técnicos de IDP."
-        )
+        proj["duration"] = t("horizon_1_kickoff", locale=doc_lang)
+        proj["tech_objective"] = t("seq_tech_objective_container_guidelines", locale=doc_lang)
     elif is_platform_pilot:
-        proj["duration"] = "Horizonte 2 (Mes 3-12)"
+        proj["duration"] = t("horizon_2_pilot", locale=doc_lang)
     elif sizing == "S" or "tactical" in typology or "quick" in typology:
-        proj["duration"] = "H1 (Mes 1-3)"
+        proj["duration"] = t("duration_h1_month_1_3", locale=doc_lang)
     elif sizing in ["L", "XL"] or "strategic" in typology:
-        proj["duration"] = "H3 (Mes 12-24)"
+        proj["duration"] = t("duration_h3_month_12_24", locale=doc_lang)
     else:
-        proj["duration"] = "H2 (Mes 3-12)"
+        proj["duration"] = t("duration_h2_month_3_12", locale=doc_lang)
 
 
 class SequencingPolicy(BaseSovereignPolicy):
@@ -51,8 +54,15 @@ class SequencingPolicy(BaseSovereignPolicy):
         if not pillars:
             return payload
 
+        import os
+        doc_lang = (
+            payload.get("document_meta", {}).get("language")
+            or os.environ.get("ASSESSMENT_DOC_LANG")
+            or "en"
+        ).lower()
+
         for p in pillars:
             for proj in p.get("projects_todo", []):
-                _sequence_single_project(proj)
+                _sequence_single_project(proj, doc_lang=doc_lang)
 
         return payload

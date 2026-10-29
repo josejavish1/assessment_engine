@@ -100,7 +100,7 @@ def normalize_annex_payload(payload_dict: dict) -> dict:
             part for part in summary_body if clean_text(part)
         )
     executive_summary.setdefault(
-        "headline", f"Anexo ejecutivo de la torre {meta.get('tower_code', 'TX')}"
+        "headline", f"Executive Technical Annex for Tower {meta.get('tower_code', 'TX')}"
     )
     executive_summary.setdefault("key_business_impacts", [])
 
@@ -170,7 +170,7 @@ def _replace_client_placeholders(
     return value
 
 
-def insert_toc_after(paragraph) -> None:
+def insert_toc_after(paragraph, doc_lang: str) -> None:
     """Insert a Table of Contents (TOC) into the document after a given paragraph.
 
     This function adds a new heading titled "Contents" and then inserts a Word
@@ -182,7 +182,7 @@ def insert_toc_after(paragraph) -> None:
             the TOC section will be inserted.
     """
     heading = insert_paragraph_after_block(paragraph)
-    heading.add_run("Contents")
+    heading.add_run(t("table_of_contents_title", locale=doc_lang))
     apply_paragraph_style(heading, "TOC Heading", "TtuloTDC")
     heading.paragraph_format.space_before = Pt(12)
     heading.paragraph_format.space_after = Pt(6)
@@ -292,7 +292,7 @@ def polish_semantic_tables(doc) -> None:
     for table in doc.tables:
         apply_table_style(
             table,
-            "Tabla con cuadrícula 1 clara - Énfasis 11",
+            "Table Grid",
             "Tablaconcuadrcula1clara-nfasis11",
             "Smart Navy table",
             "SmartNavytable",
@@ -347,7 +347,7 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
     heading_level_2 = set()
 
     for loc_key, level in ANNEX_CANONICAL_HEADING_SPECS:
-        template_es_title = t(loc_key, "es")
+        template_es_title = t(loc_key, "en")
         if level == 1:
             heading_level_1.add(template_es_title)
             for lang_code in catalog:
@@ -404,12 +404,14 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
 
         rewrite_body_paragraph(paragraph, text)
 
+    doc_lang = str(payload_dict.get("document_meta", {}).get("language") or payload_dict.get("document_meta", {}).get("doc_lang") or "en").lower()
+
     if (
         subtitle_anchor is not None
         and "Update field to build contents."
         not in "\n".join(paragraph.text for paragraph in doc.paragraphs)
     ):
-        insert_toc_after(subtitle_anchor)
+        insert_toc_after(subtitle_anchor, doc_lang=doc_lang)
 
     polish_semantic_tables(doc)
 
@@ -474,48 +476,54 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
     tower_code = meta.get("tower_code", "TX")
 
     # Step 1: Construct the primary replacement map. This dictionary contains key-value pairs for direct, inline text substitution throughout the document.
-    replacements = {
-        "[Cliente]": client_name,
-        "[cliente]": client_name,
-        "[CLIENTE]": client_name,
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    cfg_file = ROOT / "engine_config/locales_asis_annex.json"
+    tags: dict[str, str] = {}
+    if cfg_file.exists():
+        try:
+            tags = json.loads(cfg_file.read_text(encoding="utf-8")).get("legacy_docx_template_tags", {})
+        except Exception:
+            pass
+
+    template_replacements = {
         "{client_name}": client_name,
         "{CLIENT_NAME}": client_name,
         "{{client_name}}": client_name,
         "{{CLIENT_NAME}}": client_name,
-        "[Nombre del Cliente]": client_name,
-        "[Nombre del cliente]": client_name,
-        "[número]": "los",
-        "[número de pilares]": "varios",
-        "-[Lista de torres evaluadas]": f"• {tower_name}",
-        "[Lista de torres evaluadas]": tower_name,
-        "T[X]": tower_code,
-        "[Nombre de la Torre]": tower_name,
-        "[Código]": tower_code,
-        "[Nombre de la torre]": tower_name,
-        "[descripción del dominio]": intro.get("domain_objective", ""),
-        "descripción del dominio tecnológico": intro.get("technological_domain", ""),
-        "Nivel de madurez obtenido: [Nivel de madurez de la torre]": "",
-        "El resultado de [X.X] sitúa la torre en Nivel [X] – [Descripción].": "",
-        "Nivel objetivo:\n[Nivel objetivo recomendado]": "",
-        "[INSTRUCCIÓN PARA EL AGENTE:Hazlo extenso y bien estructurado mediante bullets]": "",
-        "El análisis del estado actual del dominio Resilience & Continuity permite concluir que la infraestructura presenta un nivel de madurez [nivel de madurez], caracterizado por:": "",
-        "[fortaleza identificada]": "",
-        "[limitación identificada]": "",
-        "[riesgo identificado]": "",
-        "Pilar [Nombre del pilar]": "",
-        "[Descripción del estado actual basada en las respuestas del cuestionario. Hazla extensa y estructurada por bullets]": "",
-        "[capacidad objetivo]": "",
-        "[línea de evolución]": "",
-        "[Fecha]": meta.get("date", "2026"),
+        tags.get("num_tag", ""): "the",
+        tags.get("num_pillars_tag", ""): "several",
+        tags.get("list_towers_bullet_tag", ""): f"• {tower_name}",
+        tags.get("list_towers_tag", ""): tower_name,
+        tags.get("tower_code_tag", "T[X]"): tower_code,
+        tags.get("tower_name_bracket_tag", ""): tower_name,
+        tags.get("tower_code_bracket_tag", ""): tower_code,
+        tags.get("tower_name_lower_bracket_tag", ""): tower_name,
+        tags.get("domain_desc_tag", ""): intro.get("domain_objective", ""),
+        tags.get("tech_domain_desc_tag", ""): intro.get("technological_domain", ""),
+        tags.get("maturity_result_tag_1", ""): "",
+        tags.get("maturity_result_tag_2", ""): "",
+        tags.get("target_level_tag", ""): "",
+        tags.get("instruction_agent_tag", ""): "",
+        tags.get("resilience_current_state_tag", ""): "",
+        tags.get("strength_tag", ""): "",
+        tags.get("limitation_tag", ""): "",
+        tags.get("risk_tag", ""): "",
+        tags.get("pillar_name_tag", ""): "",
+        tags.get("current_state_desc_tag", ""): "",
+        tags.get("target_capability_tag", ""): "",
+        tags.get("evolution_line_tag", ""): "",
+        tags.get("date_bracket_tag", ""): meta.get("date", "2026"),
     }
+    replacements = {k: v for k, v in template_replacements.items() if k}
 
-    doc_lang = str(meta.get("language") or meta.get("doc_lang") or "es").lower()
-    if doc_lang != "es":
+    doc_lang = str(meta.get("language") or meta.get("doc_lang") or "en").lower()
+    base_template_lang = "en"
+    if doc_lang != base_template_lang:
         for loc_key, _level in ANNEX_CANONICAL_HEADING_SPECS:
-            template_es_title = t(loc_key, "es")
+            template_base_title = t(loc_key, base_template_lang)
             translated_title = t(loc_key, doc_lang)
-            if translated_title and translated_title != loc_key and template_es_title:
-                replacements[template_es_title] = translated_title
+            if translated_title and translated_title != loc_key and template_base_title:
+                replacements[template_base_title] = translated_title
 
     source_client = (
         meta.get("source_client")
@@ -533,23 +541,23 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
     for p in doc.paragraphs:
         # Identifies and marks for deletion any paragraphs containing instructional prompts, such as "Considering the summary of...". This sanitization step removes non-content markers intended for document authors from the final output.
         if (
-            "[Teniendo en cuenta el resumen de" in p.text
-            or "[Teniendo en cuenta el Resumen ejecutivo" in p.text
+            "[Taking into account the summary of" in p.text or "[Teniendo en cuenta" in p.text
+            or "[Taking into account Executive Summary" in p.text
         ):
             paragraphs_to_remove.append(p)
-            if "Resumen ejecutivo del documento de contexto" in p.text:
+            if "Executive summary of the context document" in p.text or "Resumen ejecutivo del documento" in p.text:
                 p.insert_paragraph_before(intro.get("introduction_paragraph", ""))
             continue
 
-        if "[Generar un gráfico" in p.text:
+        if "[Generate chart" in p.text or "[Generar un gr" in p.text:
             paragraphs_to_remove.append(p)
             continue
 
         if (
-            "[capacidad tecnológica evaluada]" in p.text
+            "[evaluated technical capability]" in p.text
             or "[infraestructura evaluada]" in p.text
-            or "[plataformas tecnológicas incluidas]" in p.text
-            or "[alcance específico del assessment]" in p.text
+            or "[included technology platforms]" in p.text or "[plataformas tecnol" in p.text
+            or "[specific assessment scope]" in p.text or "[alcance espec" in p.text
         ):
             paragraphs_to_remove.append(p)
             continue
@@ -570,7 +578,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
 
         # Performs a comprehensive inline text substitution pass across the entire document body. Each key in the predefined replacement map is replaced with its corresponding value.
         for old, new in replacements.items():
-            if old in p.text:
+            if old and old in p.text:
                 p.text = p.text.replace(old, new)
 
     for p in paragraphs_to_remove:
@@ -579,7 +587,7 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
             if parent is not None:
                 parent.remove(p._element)
         except (AttributeError, TypeError, ValueError) as ex:
-            logger.debug(f"[DocxRender] Error eliminando parágrafo XML: {ex}")
+            logger.debug(f"[DocxRender] Error removing XML paragraph: {ex}")
 
     # Step 3: Purge placeholder rows from all tables. Rows are identified for removal if they contain markers, typically denoted by bracket notation (e.g., "[EXAMPLE]"), which are used in the template for illustrative purposes only.
     for table in doc.tables:
@@ -631,91 +639,94 @@ def render_extended_variant(doc, payload) -> Any:
     if not extended:
         return
 
+    meta = payload.get("document_meta", {})
+    doc_lang = str(meta.get("language") or meta.get("doc_lang") or "en").lower()
+
     doc.add_page_break()
-    add_heading_paragraph(doc, "Desarrollo ampliado", level=1)
+    add_heading_paragraph(doc, t("annex_extended_development", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
-        "Esta versión desarrolla con más detalle el diagnóstico, el estado objetivo, las brechas y las iniciativas prioritarias de la torre.",
+        "This version expands upon the diagnostic baseline, target state, gaps, and prioritized transformation initiatives for the tower.",
     )
 
     asis = extended.get("asis", {})
-    add_heading_paragraph(doc, "1. AS-IS detallado", level=1)
+    add_heading_paragraph(doc, t("annex_extended_asis_detailed", locale=doc_lang), level=1)
     add_body_paragraph(doc, asis.get("executive_narrative", ""))
     add_label_value_paragraph(
-        doc, "Madurez actual", asis.get("current_maturity_band", "")
+        doc, t("lbl_current_maturity", locale=doc_lang), asis.get("current_maturity_band", "")
     )
     add_label_value_paragraph(
-        doc, "Referencia de score", asis.get("current_score_reference", "")
+        doc, t("lbl_score_reference", locale=doc_lang), asis.get("current_score_reference", "")
     )
     if asis.get("strengths"):
-        add_heading_paragraph(doc, "Fortalezas observadas", level=2)
+        add_heading_paragraph(doc, t("annex_extended_strengths_observed", locale=doc_lang), level=2)
         add_bullet_list(doc, asis.get("strengths", []))
     if asis.get("gaps"):
-        add_heading_paragraph(doc, "Brechas observadas", level=2)
+        add_heading_paragraph(doc, t("annex_extended_gaps_observed", locale=doc_lang), level=2)
         add_bullet_list(doc, asis.get("gaps", []))
     if asis.get("operational_impacts"):
-        add_heading_paragraph(doc, "Implicaciones operativas", level=2)
+        add_heading_paragraph(doc, t("annex_extended_operational_implications", locale=doc_lang), level=2)
         add_bullet_list(doc, asis.get("operational_impacts", []))
 
     risks = extended.get("risks", {})
-    add_heading_paragraph(doc, "2. Riesgos detallados", level=1)
+    add_heading_paragraph(doc, t("annex_extended_risks_detailed", locale=doc_lang), level=1)
     add_body_paragraph(doc, risks.get("introduction", ""))
     for idx, item in enumerate(risks.get("risk_details", []), start=1):
         add_long_detail_table(
             doc,
-            f"Riesgo {idx}. {item.get('risk', '')}",
+            t("lbl_risk_numbered_prefix", locale=doc_lang, idx=idx, title=item.get("risk", "")),
             [
-                ("Causa", item.get("cause", "")),
-                ("Impacto", item.get("impact", "")),
-                ("Probabilidad", item.get("probability", "")),
-                ("Mitigación", item.get("mitigation_summary", "")),
-                ("Pilares afectados", item.get("affected_pillars_display", "")),
+                (t("lbl_cause", locale=doc_lang), item.get("cause", "")),
+                (t("lbl_impact", locale=doc_lang), item.get("impact", "")),
+                (t("lbl_probability", locale=doc_lang), item.get("probability", "")),
+                (t("lbl_mitigation", locale=doc_lang), item.get("mitigation_summary", "")),
+                (t("lbl_affected_pillars", locale=doc_lang), item.get("affected_pillars_display", "")),
             ],
         )
         add_body_paragraph(doc, "", space_after=2)
     add_body_paragraph(doc, risks.get("closing_summary", ""))
 
     tobe = extended.get("tobe", {})
-    add_heading_paragraph(doc, "3. Estado objetivo detallado", level=1)
+    add_heading_paragraph(doc, t("annex_extended_tobe_detailed", locale=doc_lang), level=1)
     add_body_paragraph(doc, tobe.get("introduction", ""))
     add_label_value_paragraph(
-        doc, "Madurez objetivo recomendada", tobe.get("target_maturity_level", "")
+        doc, t("lbl_target_maturity_recommended", locale=doc_lang), tobe.get("target_maturity_level", "")
     )
     add_label_value_paragraph(
-        doc, "Referencia de score objetivo", tobe.get("target_score_reference", "")
+        doc, t("lbl_target_score_reference", locale=doc_lang), tobe.get("target_score_reference", "")
     )
     add_body_paragraph(doc, tobe.get("target_maturity_justification", ""))
     for pillar in tobe.get("target_capabilities_by_pillar", []):
         add_heading_paragraph(doc, pillar.get("pillar", ""), level=2)
         add_bullet_list(doc, pillar.get("target_capabilities", []))
     if tobe.get("architecture_principles"):
-        add_heading_paragraph(doc, "Principios de arquitectura y operación", level=2)
+        add_heading_paragraph(doc, t("annex_extended_arch_principles", locale=doc_lang), level=2)
         add_bullet_list(doc, tobe.get("architecture_principles", []))
     if tobe.get("operating_model_implications"):
-        add_heading_paragraph(doc, "Implicaciones para el modelo operativo", level=2)
+        add_heading_paragraph(doc, t("annex_extended_op_model_implications", locale=doc_lang), level=2)
         add_bullet_list(doc, tobe.get("operating_model_implications", []))
 
     gap = extended.get("gap", {})
-    add_heading_paragraph(doc, "4. Brechas detalladas", level=1)
+    add_heading_paragraph(doc, t("annex_extended_gaps_detailed", locale=doc_lang), level=1)
     add_body_paragraph(doc, gap.get("introduction", ""))
     if gap.get("cross_cutting_gap_summary"):
-        add_heading_paragraph(doc, "Lectura transversal de gaps", level=2)
+        add_heading_paragraph(doc, t("annex_extended_transversal_gaps", locale=doc_lang), level=2)
         add_bullet_list(doc, gap.get("cross_cutting_gap_summary", []))
     for idx, item in enumerate(gap.get("gap_items", []), start=1):
         add_long_detail_table(
             doc,
             f"Gap {idx}. {item.get('pillar', '')}",
             [
-                ("Situación actual", item.get("as_is_summary", "")),
-                ("Estado objetivo", item.get("target_state", "")),
-                ("Brecha clave", item.get("key_gap", "")),
-                ("Implicación operativa", item.get("operational_implication", "")),
+                (t("current_state_label", locale=doc_lang), item.get("as_is_summary", "")),
+                (t("target_state_label", locale=doc_lang), item.get("target_state", "")),
+                (t("key_gap_label", locale=doc_lang), item.get("key_gap", "")),
+                (t("operational_implication_label", locale=doc_lang), item.get("operational_implication", "")),
             ],
         )
         add_body_paragraph(doc, "", space_after=2)
 
     todo = extended.get("todo", {})
-    add_heading_paragraph(doc, "5. Iniciativas priorizadas detalladas", level=1)
+    add_heading_paragraph(doc, t("annex_extended_initiatives_detailed", locale=doc_lang), level=1)
     add_body_paragraph(doc, todo.get("introduction", ""))
     for item in todo.get("todo_items", []):
         add_long_detail_table(
@@ -733,11 +744,11 @@ def render_extended_variant(doc, payload) -> Any:
     add_body_paragraph(doc, todo.get("closing_summary", ""))
 
     conclusion = extended.get("conclusion", {})
-    add_heading_paragraph(doc, "6. Cierre ampliado", level=1)
+    add_heading_paragraph(doc, t("annex_extended_closing_detailed", locale=doc_lang), level=1)
     add_body_paragraph(doc, conclusion.get("final_assessment", ""))
     add_body_paragraph(doc, conclusion.get("executive_message", ""))
     if conclusion.get("priority_focus_areas"):
-        add_heading_paragraph(doc, "Áreas de foco prioritarias", level=2)
+        add_heading_paragraph(doc, t("annex_extended_priority_focus_areas", locale=doc_lang), level=2)
         add_bullet_list(doc, conclusion.get("priority_focus_areas", []))
     add_body_paragraph(doc, conclusion.get("closing_statement", ""))
 
@@ -810,7 +821,7 @@ def main(argv: list[str] | None = None) -> None:
     profile["radar_chart"] = _ensure_radar_chart_path(payload_path, profile)
     sections = payload_dict["sections"]
     variant = clean_text(meta.get("report_variant", "short")).lower()
-    subtitle_suffix = " · Versión Extendida" if variant == "long" else ""
+    subtitle_suffix = " · Extended Version" if variant == "long" else ""
 
     replace_simple_placeholder(
         doc,
@@ -912,6 +923,8 @@ def main(argv: list[str] | None = None) -> None:
         from assessment_engine.infrastructure.runtime_paths import resolve_case_dir
         lec_chart_path = resolve_case_dir(client_id, tower_id) / "loss_exceedance_curve.png"
         
+    doc_lang = str(meta.get("language") or meta.get("doc_lang") or "en").lower()
+
     if lec_chart_path.exists():
         render_radar_chart(doc, "{{LOSS_EXCEEDANCE_CHART}}", str(lec_chart_path))
     else:
@@ -920,7 +933,7 @@ def main(argv: list[str] | None = None) -> None:
         if paragraph:
             remove_paragraph(paragraph)
 
-    render_pillar_score_table(doc, "{{PILLAR_SCORE_TABLE}}", profile.get("pillars", []))
+    render_pillar_score_table(doc, "{{PILLAR_SCORE_TABLE}}", profile.get("pillars", []), locale=doc_lang)
 
     replace_simple_placeholder(
         doc,
@@ -947,7 +960,7 @@ def main(argv: list[str] | None = None) -> None:
         font_size=10.5,
     )
     render_risks_table(
-        doc, "{{RISKS_TABLE}}", sections.get("risks", {}).get("risks", [])
+        doc, "{{RISKS_TABLE}}", sections.get("risks", {}).get("risks", []), doc_lang=doc_lang
     )
     replace_simple_placeholder(
         doc,
@@ -969,7 +982,7 @@ def main(argv: list[str] | None = None) -> None:
         sections.get("gap", {}).get("target_capabilities", [])
         or sections.get("tobe", {}).get("design_principles", []),
     )
-    render_gap_table(doc, "{{GAP_TABLE}}", sections.get("gap", {}).get("gap_rows", []))
+    render_gap_table(doc, "{{GAP_TABLE}}", sections.get("gap", {}).get("gap_rows", []), locale=doc_lang)
 
     replace_simple_placeholder(
         doc,

@@ -241,5 +241,7 @@
   "bib_minutas_desc": " e il team di consulenza.",
   "default_overview_text": "L'inventario e la valutazione consolidati della torre ",
   "annex_technical_prefix": "Allegato tecnico:",
-  "vocabulary_substitutions": {}
+  "vocabulary_substitutions": {},
+  "file_prefix_annex": "Allegato",
+  "file_name_consolidated_report": "Relazione_Consolidata"
 }

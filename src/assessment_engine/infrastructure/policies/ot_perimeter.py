@@ -45,7 +45,7 @@ def _resolve_industry(payload: dict[str, Any]) -> str:
 def _patch_data_diode_deliverable(proj: dict[str, Any], deliverable_text: str, objective_suffix: str) -> None:
     if "deliverables" not in proj:
         proj["deliverables"] = []
-    if not any("diodo de datos" in d.lower() for d in proj["deliverables"]):
+    if not any("diodo de datos" in d.lower() or "data diode" in d.lower() for d in proj["deliverables"]):
         proj["deliverables"].append(deliverable_text)
         proj["tech_objective"] = (proj.get("tech_objective", "") + objective_suffix).strip()
 
@@ -78,21 +78,21 @@ class OTPerimeterPolicy(BaseSovereignPolicy):
         cloud_target = payload.get("document_meta", {}).get(
             "cloud_provider", "la plataforma IoT corporativa"
         )
+        doc_lang = str(payload.get("document_meta", {}).get("language") or "en").lower()
+
+        from assessment_engine.infrastructure.localization import t
+
+        scada_del = t("policy_ot_scada_deliverable", locale=doc_lang)
+        scada_suf = t("policy_ot_scada_suffix", locale=doc_lang)
+        aiops_del = t("policy_ot_aiops_deliverable", locale=doc_lang, cloud_target=cloud_target)
+        aiops_suf = t("policy_ot_aiops_suffix", locale=doc_lang)
 
         for p in pillars:
             for proj in p.get("projects_todo", []):
                 name = proj.get("name", "").lower()
                 if "scada" in name or "legada" in name or "infraestructura legacy" in name:
-                    _patch_data_diode_deliverable(
-                        proj,
-                        "Implementación de un Diodo de Datos Unidireccional por Hardware para extracción segura de telemetría sin canal de retorno.",
-                        " El aislamiento físico del entorno SCADA se mantendrá de forma inquebrantable mediante el uso de un diodo de datos unidireccional.",
-                    )
+                    _patch_data_diode_deliverable(proj, scada_del, scada_suf)
                 if "aiops" in name or "observabilidad predictiva" in name or "observabilidad" in name:
-                    _patch_data_diode_deliverable(
-                        proj,
-                        f"Despliegue del gateway receptor del Diodo de Datos de OT para ingesta pasiva de telemetría en {cloud_target}.",
-                        " Toda la ingesta de telemetría en tiempo real de subestaciones y OT se canalizará de forma 100% pasiva y segura mediante diodos de datos unidireccionales.",
-                    )
+                    _patch_data_diode_deliverable(proj, aiops_del, aiops_suf)
 
         return payload

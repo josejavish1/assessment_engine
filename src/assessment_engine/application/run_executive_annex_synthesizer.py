@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 import asyncio
 import json
+import os
 import re
 import sys
 import uuid
@@ -11,8 +12,8 @@ from pathlib import Path
 from typing import IO, Any, Optional, Protocol, cast
 
 """
-Módulo run_executive_annex_synthesizer.py.
-Implementa el flujo Top-Down: Toma el Blueprint y genera el resumen para el Anexo del CTO.
+Module run_executive_annex_synthesizer.py.
+Implements Top-Down flow: Ingests Blueprint and synthesizes CTO Executive Annex.
 """
 
 from google.adk.agents import Agent
@@ -39,6 +40,7 @@ from assessment_engine.infrastructure.config_loader import (
     resolve_model_for_role,
 )
 from assessment_engine.infrastructure.contract_utils import robust_load_payload
+from assessment_engine.infrastructure.localization import format_number, t
 from assessment_engine.infrastructure.runtime_paths import (
     resolve_annex_template_payload_path,
     resolve_blueprint_payload_path,
@@ -62,21 +64,22 @@ def derive_maturity_band(score: float, locale: str | None = None) -> str:
 
 
 def infer_initiative_priority(
-    project: Any, pillar_score: float = 3.0, locale: str = "es"
+    project: Any, locale: str | None = None, pillar_score: float = 3.0
 ) -> str:
     """Derives strategic priority based on risk mitigation, horizon duration, and pillar maturity gap."""
     from assessment_engine.infrastructure.localization import t
 
+    target_locale = locale or "en"
     explicit_priority = getattr(project, "priority", None) or (
         project.get("priority") if isinstance(project, dict) else None
     )
     if explicit_priority:
         raw_p = str(explicit_priority).strip().lower()
         if raw_p in {"alta", "high", "hoch", "haute", "高"}:
-            return t("priority_high", locale=locale)
+            return t("priority_high", locale=target_locale)
         if raw_p in {"baja", "low", "niedrig", "basse", "低"}:
-            return t("priority_low", locale=locale)
-        return t("priority_medium", locale=locale)
+            return t("priority_low", locale=target_locale)
+        return t("priority_medium", locale=target_locale)
 
     duration = str(
         getattr(project, "duration", "")
@@ -87,44 +90,31 @@ def infer_initiative_priority(
         or (project.get("business_case") if isinstance(project, dict) else "")
     ).lower()
     is_direct_mitigation = (
-        "mitigación directa" in b_case or "vulnerabilidad crítica" in b_case
+        "direct mitigation" in b_case.lower() or "critical vulnerability" in b_case.lower() or "mitigacion" in b_case.lower()
     )
-    is_short_term = any(
-        k in duration
-        for k in [
-            "corto",
-            "horizonte 1",
-            "h1",
-            "inmediato",
-            "mes 1",
-            "mes 2",
-            "mes 3",
-            "month 1",
-            "month 2",
-            "month 3",
-        ]
-    )
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    import json
+    dur_cfg = {}
+    p_dur = ROOT / "engine_config/locales_asis_annex.json"
+    if p_dur.exists():
+        try:
+            dur_cfg = json.loads(p_dur.read_text(encoding="utf-8")).get("duration_priority_keywords", {})
+        except Exception:
+            pass
+
+    short_keys = dur_cfg.get("short_term", ["h1", "month 1", "month 2", "month 3"])
+    long_keys = dur_cfg.get("long_term", ["h3", "month 18", "month 24", "long term"])
+
+    is_short_term = any(k in duration for k in short_keys)
 
     if (
         (pillar_score < 2.2 and (is_direct_mitigation or is_short_term))
         or (is_direct_mitigation and is_short_term)
         or ("nis2" in b_case and is_short_term)
     ):
-        return t("priority_high", locale=locale)
+        return t("priority_high", locale=target_locale)
 
-    is_long_term = any(
-        k in duration
-        for k in [
-            "horizonte 3",
-            "h3",
-            "largo plazo",
-            "long term",
-            "mes 18",
-            "mes 24",
-            "month 18",
-            "month 24",
-        ]
-    )
+    is_long_term = any(k in duration for k in long_keys)
     if pillar_score >= 3.8 or is_long_term:
         return t("priority_low", locale=locale)
 
@@ -257,7 +247,7 @@ def lookup_dependency_display(
         if str(dependency.project).strip().lower() == initiative_name.strip().lower()
     ]
     if not matches:
-        return "Sin dependencias externas críticas identificadas"
+        return "No critical external dependencies identified"
     return ", ".join(matches)
 
 
@@ -279,20 +269,20 @@ def derive_gap_rows(blueprint: BlueprintPayload) -> tuple[list[str], list[GapRow
                 as_is_summary=take_complete_sentences(
                     primary_finding.risk_observed
                     if primary_finding
-                    else f"Madurez actual {pillar.score:.1f}/5.0",
+                    else f"Current maturity {pillar.score:.1f}/5.0",
                     max_sentences=2,
                     max_chars=420,
                 ),
                 target_state=take_complete_sentences(
                     pillar.target_architecture_tobe.vision
-                    or "Capacidad objetivo todavía no formalizada.",
+                    or "Target capability not yet formalized.",
                     max_sentences=2,
                     max_chars=420,
                 ),
                 key_gap=take_complete_sentences(
                     primary_finding.impact
                     if primary_finding
-                    else "Persisten brechas técnicas y operativas que limitan la evolución de la torre.",
+                    else "Technical and operational gaps persist, constraining tower evolution.",
                     max_sentences=2,
                     max_chars=420,
                 ),
@@ -302,10 +292,18 @@ def derive_gap_rows(blueprint: BlueprintPayload) -> tuple[list[str], list[GapRow
 
 
 def derive_risks(
-    blueprint: BlueprintPayload, locale: str = "es"
+    blueprint: BlueprintPayload, locale: str | None = None
 ) -> list[RiskItemAnnex]:
     """Derive risks according to architectural specification."""
     from assessment_engine.infrastructure.localization import t
+
+    meta = getattr(blueprint, "document_meta", None)
+    target_locale = (
+        locale
+        or getattr(meta, "language", None)
+        or getattr(meta, "doc_lang", None)
+        or "en"
+    )
 
     risks: list[RiskItemAnnex] = []
     for pillar in sorted(blueprint.pillars_analysis, key=lambda item: item.score):
@@ -318,13 +316,13 @@ def derive_risks(
             else (
                 pillar.target_architecture_tobe.design_principles[0]
                 if pillar.target_architecture_tobe.design_principles
-                else "Definir un plan de remediación específico para la capacidad afectada."
+                else "Define a specific remediation plan for the affected capability."
             )
         )
         prob_str = (
-            t("priority_high", locale=locale)
+            t("priority_high", locale=target_locale)
             if pillar.score < 2.0
-            else t("priority_medium", locale=locale)
+            else t("priority_medium", locale=target_locale)
         )
         risks.append(
             RiskItemAnnex(
@@ -350,13 +348,20 @@ def derive_risks(
 
 
 def derive_priority_initiatives(
-    blueprint: BlueprintPayload, locale: str = "es"
+    blueprint: BlueprintPayload, locale: str | None = None
 ) -> list[InitiativeAnnex]:
     """Derive priority initiatives according to architectural specification."""
+    meta = getattr(blueprint, "document_meta", None)
+    target_locale = (
+        locale
+        or getattr(meta, "language", None)
+        or getattr(meta, "doc_lang", None)
+        or "en"
+    )
     ranked: list[tuple[int, float, str, InitiativeAnnex]] = []
     for pillar in blueprint.pillars_analysis:
         for project in pillar.projects_todo:
-            priority = infer_initiative_priority(project, pillar.score, locale=locale)
+            priority = infer_initiative_priority(project, locale=target_locale, pillar_score=pillar.score)
             ranked.append(
                 (
                     PRIORITY_RANK.get(priority, 1),
@@ -414,22 +419,23 @@ def _format_pillar_kpis_narrative(
     stable_caps: list[str],
     gaps_caps: list[str],
     v_idx: int,
+    locale: str,
 ) -> str:
     prose = [
-        f"El diagnóstico para el dominio de {pillar_name} sitúa su nivel de madurez en un rango '{band}' ({formatted_score} / 5,00)."
+        t("asis_pillar_kpis_narrative", locale=locale, pillar_name=pillar_name, band=band, formatted_score=formatted_score)
     ]
     if stable_caps:
         prose.append(
-            f"Se constata solvencia operativa en {', '.join(stable_caps[:3])}."
+            t("asis_pillar_stable_caps", locale=locale, caps=", ".join(stable_caps[:3]))
         )
     if gaps_caps:
         prose.append(
-            f"No obstante, se identifican brechas relevantes en {', '.join(gaps_caps[:3])}."
+            t("asis_pillar_gaps_caps", locale=locale, caps=", ".join(gaps_caps[:3]))
         )
     return " ".join(prose)
 
 
-def _format_pillar_gaps_narrative(gaps_findings: list[Any]) -> str:
+def _format_pillar_gaps_narrative(gaps_findings: list[Any], locale: str) -> str:
     main_gaps = []
     main_risks = []
     for f in gaps_findings[:2]:
@@ -446,39 +452,37 @@ def _format_pillar_gaps_narrative(gaps_findings: list[Any]) -> str:
 
     gaps_str = (
         " ".join(main_gaps)
-        or "Se registran carencias en la automatización de la infraestructura."
+        or t("asis_pillar_default_gap", locale=locale)
     )
-    risks_str = " ".join(main_risks) or "Esto eleva el riesgo de incidentes operativos."
-    return f"La limitación principal reside en que {gaps_str} Esto deriva en un impacto directo de negocio: {risks_str}"
+    risks_str = " ".join(main_risks) or t("asis_pillar_default_risk", locale=locale)
+    return t("asis_pillar_gaps_narrative", locale=locale, gaps_str=gaps_str, risks_str=risks_str)
 
 
-def _format_pillar_score_justification(formatted_score: str, worst_cap: str) -> str:
-    return (
-        f"La calificación final del pilar ({formatted_score}) se encuentra sustentada por el nivel de madurez base, "
-        f"pero se ve penalizada de forma directa por las deficiencias críticas detectadas en '{worst_cap}', "
-        f"que actúa como el factor limitante para el desarrollo global de esta plataforma."
-    )
+def _format_pillar_score_justification(formatted_score: str, worst_cap: str, locale: str) -> str:
+    return t("asis_pillar_score_justification", locale=locale, formatted_score=formatted_score, worst_cap=worst_cap)
 
 
 def derive_pillar_executive_reading(
-    pillar: Any, idx: int = 0, locale: str = "es"
+    pillar: Any, locale: str, idx: int = 0
 ) -> str:
     """Derive pillar executive reading with modular structure and low cognitive complexity."""
-    from assessment_engine.infrastructure.localization import format_number
-
     score = pillar.score
     band = derive_maturity_band(score, locale=locale)
     formatted_score = format_number(score, locale=locale, decimals=2)
 
+    hdr_kpis = t("asis_header_kpis_status", locale=locale)
+    hdr_gaps = t("asis_header_gaps_consequences", locale=locale)
+    hdr_just = t("asis_header_score_justification", locale=locale)
+
     findings = pillar.health_check_asis or []
     if not findings:
+        empty_kpis = t("asis_pillar_empty_kpis", locale=locale, band=band, formatted_score=formatted_score)
+        empty_gaps = t("asis_pillar_empty_gaps", locale=locale)
+        empty_just = t("asis_pillar_empty_justification", locale=locale)
         return (
-            f"**Situación de Capacidades (KPIs):**\n"
-            f"La capacidad presenta un nivel de madurez '{band}' ({formatted_score} / 5,00).\n\n"
-            f"**Brechas y Consecuencias Operativas:**\n"
-            f"La plataforma opera de forma estable, sin identificarse limitaciones de continuidad materiales.\n\n"
-            f"**Justificación de la Nota:**\n"
-            f"La puntuación refleja un estado consistente de operaciones."
+            f"**{hdr_kpis}**\n{empty_kpis}\n\n"
+            f"**{hdr_gaps}**\n{empty_gaps}\n\n"
+            f"**{hdr_just}**\n{empty_just}"
         )
 
     def get_ale(f):
@@ -501,19 +505,19 @@ def derive_pillar_executive_reading(
     stable_caps = [
         f.target_state for f in stable_findings if getattr(f, "target_state", None)
     ]
-    worst_cap = gaps_caps[0] if gaps_caps else "las capacidades críticas"
+    worst_cap = gaps_caps[0] if gaps_caps else "the critical capabilities"
 
     v_idx = idx % 3
     kpis_text = _format_pillar_kpis_narrative(
-        pillar.pilar_name, band, formatted_score, stable_caps, gaps_caps, v_idx
+        pillar.pilar_name, band, formatted_score, stable_caps, gaps_caps, v_idx, locale=locale
     )
-    gaps_text = _format_pillar_gaps_narrative(gaps_findings)
-    justification_text = _format_pillar_score_justification(formatted_score, worst_cap)
+    gaps_text = _format_pillar_gaps_narrative(gaps_findings, locale=locale)
+    justification_text = _format_pillar_score_justification(formatted_score, worst_cap, locale=locale)
 
     return (
-        f"**Situación de Capacidades (KPIs):**\n{kpis_text}\n\n"
-        f"**Brechas y Consecuencias Operativas:**\n{gaps_text}\n\n"
-        f"**Justificación de la Nota:**\n{justification_text}"
+        f"**{hdr_kpis}**\n{kpis_text}\n\n"
+        f"**{hdr_gaps}**\n{gaps_text}\n\n"
+        f"**{hdr_just}**\n{justification_text}"
     )
 
 
@@ -553,9 +557,9 @@ def enrich_annex_payload(
         or (
             blueprint.document_meta.get("language")
             if isinstance(blueprint.document_meta, dict)
-            else "es"
+            else "en"
         )
-        or "es"
+        or "en"
     )
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
     target_scores = [pillar.target_score for pillar in blueprint.pillars_analysis]
@@ -600,7 +604,7 @@ def enrich_annex_payload(
             "maturity_band": derive_maturity_band(pillar.score, locale=doc_lang),
             "executive_reading": (
                 existing_pillar_readings.get(pillar.pilar_name)
-                or derive_pillar_executive_reading(pillar, idx, locale=doc_lang)
+                or derive_pillar_executive_reading(pillar, locale=doc_lang, idx=idx)
             ),
         }
         for idx, pillar in enumerate(blueprint.pillars_analysis)
@@ -645,12 +649,14 @@ def enrich_annex_payload(
     ale_p10 = round(global_fair_ale * 0.70, -3)
     ale_p90 = round(global_fair_ale * 1.30, -3)
 
+    from assessment_engine.adapters.generate_asis_markdown_modules import (
+        resolve_client_currency_context,
+    )
     from assessment_engine.infrastructure.localization import (
         format_currency,
         format_number,
         t,
     )
-    from assessment_engine.adapters.generate_asis_markdown_modules import resolve_client_currency_context
 
     str_ale = format_number(ale_rounded, locale=doc_lang, decimals=0)
     str_p10 = format_number(ale_p10, locale=doc_lang, decimals=0)
@@ -662,7 +668,7 @@ def enrich_annex_payload(
         currency_sym = blueprint.document_meta.currency_symbol
     elif hasattr(blueprint.document_meta, "currency") and blueprint.document_meta.currency:
         currency_sym = blueprint.document_meta.currency
-    fmt_ale = f"~{str_ale} {currency_sym}/año (Rango habitual: {str_p10} {currency_sym} a {str_p90} {currency_sym})"
+    fmt_ale = f"~{str_ale} {currency_sym}/year (Typical range: {str_p10} {currency_sym} to {str_p90} {currency_sym})"
 
     cost_3y_ord = format_currency(
         global_fair_ale * 3,
@@ -745,13 +751,23 @@ def build_synthesis_prompt(
     # Calculate dynamic temporal values based on current actual system year (timeless engineering)
     import datetime
 
-    from assessment_engine.infrastructure.text_utils import format_date_spanish
+    from assessment_engine.infrastructure.localization import (
+        format_date_localized,
+        resolve_target_language_name,
+    )
 
     now = datetime.datetime.now()
     current_year = now.year
 
+    doc_lang = str(
+        blueprint_data.get("document_meta", {}).get("language")
+        or os.environ.get("ASSESSMENT_DOC_LANG")
+        or "en"
+    ).lower()
+    target_language = resolve_target_language_name(doc_lang)
+
     current_date_str = (
-        format_date_spanish().upper()
+        format_date_localized(locale=doc_lang).upper()
     )  # Standard uppercase month and year
     active_strategic_range = f"{current_year - 1}-{current_year + 3}"  # e.g., 2026-2030
     future_investment_horizon_range = f"{current_year + 1}-{current_year + 3}/{current_year + 4}"  # e.g., 2028-2030/2031
@@ -759,40 +775,48 @@ def build_synthesis_prompt(
         f"{current_year - 6}-{current_year - 2}"  # e.g., 2021-2025
     )
 
+    format_kwargs = {
+        "current_date_str": current_date_str,
+        "active_strategic_range": active_strategic_range,
+        "future_investment_horizon_range": future_investment_horizon_range,
+        "obsolete_strategic_range": obsolete_strategic_range,
+        "target_language": target_language,
+        "tower_name": tower_name,
+    }
+
     prompt = (
-        f"Eres un {config['role']} con expertise en {config['expertise']}.\n"
-        f"{config['context_description'].format(tower_name=tower_name)}\n\n"
-        f"TAREA PRINCIPAL:\n{config['task']}\n\n"
-        f"{config['non_negotiable_facts_header']}\n"
+        f"You are a {config.get('role', 'Senior Enterprise Architecture Partner')} with expertise in {config.get('expertise', 'Executive Communication & Strategic Alignment')}.\n"
+        f"{config.get('context_description', '').format(**format_kwargs)}\n\n"
+        f"TAREA PRINCIPAL:\n{config.get('task', '')}\n\n"
+        f"{config.get('non_negotiable_facts_header', 'NON-NEGOTIABLE FACTS FOR THE EXECUTIVE ANNEX:')}\n"
         f"{json.dumps(executive_handover, ensure_ascii=False, indent=2)}\n\n"
-        f"{config['client_strategy_header']}\n"
+        f"{config.get('client_strategy_header', 'CLIENT STRATEGIC CONTEXT:')}\n"
         f"{json.dumps(client_intelligence, ensure_ascii=False, indent=2)}\n\n"
-        f"{config['interview_context_header']}\n"
+        f"{config.get('interview_context_header', 'INTERVIEW & CASE CONTEXT:')}\n"
         f"{context_summary or 'No hay contexto adicional disponible.'}\n\n"
-        f"{config['source_blueprint_header']}\n"
+        f"{config.get('source_blueprint_header', 'DETAILED TOWER BLUEPRINT CONTEXT:')}\n"
         f"{json.dumps(blueprint_data, ensure_ascii=False, indent=2)}\n\n"
-        f"{config['specific_instructions_header']}\n"
+        f"{config.get('specific_instructions_header', 'SPECIFIC OPERATIONAL INSTRUCTIONS:')}\n"
     )
     for idx, instruction in enumerate(config.get("instructions", []), start=1):
         if isinstance(instruction, str):
-            instruction = instruction.format(
-                current_date_str=current_date_str,
-                active_strategic_range=active_strategic_range,
-                future_investment_horizon_range=future_investment_horizon_range,
-                obsolete_strategic_range=obsolete_strategic_range,
-            )
+            try:
+                instruction = instruction.format(**format_kwargs)
+            except KeyError:
+                pass
         prompt += f"{idx}. {instruction}\n"
 
-    prompt += f"\n{config['tone_rules_header']}\n"
-    for idx, rule in enumerate(config.get("tone_rules", []), start=1):
-        if isinstance(rule, str):
-            rule = rule.format(
-                current_date_str=current_date_str,
-                active_strategic_range=active_strategic_range,
-                future_investment_horizon_range=future_investment_horizon_range,
-                obsolete_strategic_range=obsolete_strategic_range,
-            )
-        prompt += f"{idx}. {rule}\n"
+    tone_header = config.get("tone_rules_header")
+    tone_rules = config.get("tone_rules", [])
+    if tone_header or tone_rules:
+        prompt += f"\n{tone_header or 'EXECUTIVE TONE AND STYLE GOVERNANCE:'}\n"
+        for idx, rule in enumerate(tone_rules, start=1):
+            if isinstance(rule, str):
+                try:
+                    rule = rule.format(**format_kwargs)
+                except KeyError:
+                    pass
+            prompt += f"{idx}. {rule}\n"
 
     prompt += f"\n{config.get('handover', '')}\n"
     prompt += f"{config.get('final_handover_instruction', '')}\n"
@@ -825,7 +849,7 @@ async def generate_synthesis(
         resolve_target_language_name,
     )
 
-    doc_lang = getattr(blueprint.document_meta, "language", "es")
+    doc_lang = getattr(blueprint.document_meta, "language", "en")
     target_lang = resolve_target_language_name(doc_lang)
 
     agent = Agent(
@@ -847,7 +871,7 @@ async def generate_synthesis(
         try:
             msg = prompt
             if last_error:
-                msg += f"\n\n🚨 VIOLACIÓN DE PROTOCOLO EN INTENTO ANTERIOR:\n{last_error}\nCorrige el texto inmediatamente.\n"
+                msg += f"\n\n🚨 PROTOCOL VIOLATION IN PREVIOUS ATTEMPT:\n{last_error}\nCorrect the text immediately.\n"
             result = await run_agent(
                 app,
                 user_id=f"synthesizer_{blueprint.document_meta.tower_code}",
@@ -865,17 +889,17 @@ async def generate_synthesis(
         except Exception as e:
             last_error = str(e)
             print(
-                f"    🚨 VIOLACIÓN DIPLOMÁTICA O ERROR: {e}. Reintentando Anexo (Intento {attempt + 1})..."
+                f"    🚨 DIPLOMATIC PROTOCOL VIOLATION: {e}. Retrying Annex Synthesizer (Attempt {attempt + 1})..."
             )
 
     if last_error:
         print(
-            f"⚠️ Fallo crítico en el Sintetizador de Anexo tras 3 intentos. Último error: {last_error}"
+            f"⚠️ Critical failure in Annex Synthesizer after 3 attempts. Last error: {last_error}"
         )
 
     if not result:
         raise RuntimeError(
-            f"Fallo crítico en el Sintetizador de Anexo tras 3 intentos. Último error: {last_error}"
+            f"Critical failure in Annex Synthesizer after 3 attempts. Last error: {last_error}"
         )
 
     result_payload = AnnexPayload.model_validate(result)
@@ -899,7 +923,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
     radar_chart_path = tower_dir / "pillar_radar_chart.generated.png"
 
     if not blueprint_path.exists():
-        print(f"❌ Error: No se encontró el Blueprint en {blueprint_path}")
+        print(f"❌ Error: Blueprint not found at {blueprint_path}")
         return
 
     blueprint = robust_load_payload(
@@ -955,7 +979,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
             apply_vocabulary_substitutions,
         )
 
-        doc_lang = getattr(blueprint.document_meta, "language", "es") or "es"
+        doc_lang = getattr(blueprint.document_meta, "language", "en") or "en"
         content = apply_vocabulary_substitutions(content, locale=doc_lang)
 
         tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
@@ -967,8 +991,8 @@ async def synthesize_annex(client_name: str, tower_id: str):
                 try:
                     tmp_path.unlink()
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
-                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
-        print(f"✅ Anexo Ejecutivo sintetizado con éxito: {output_path}")
+                    logger.debug(f"[Fallback] Handled exception: {ex}")
+        print(f"✅ Executive Annex synthesized successfully at: {output_path}")
     else:
         print("❌ Error al generar el anexo.")
 

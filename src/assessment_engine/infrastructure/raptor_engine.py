@@ -31,7 +31,7 @@ class RaptorEngine:
         self.agent = Agent(
             name="raptor_summarizer",
             model=get_model(ModelTier.FAST),
-            instruction="Eres un experto en síntesis estratégica y arquitectura empresarial. Tu tarea es resumir fragmentos técnicos manteniendo nombres propios, marcas y cifras exactas.",
+            instruction="You are an enterprise architecture and strategic synthesis expert. Summarize technical chunks strictly preserving proper nouns, technology brands, and quantitative metrics.",
         )
         self.app = AdkApp(agent=self.agent)
 
@@ -42,7 +42,7 @@ class RaptorEngine:
                     self.tree_path.read_text(encoding="utf-8")
                 )
             except (ValidationError, OSError, ValueError) as ex:
-                logger.debug(f"[RaptorEngine] Fallo al cargar árbol existente: {ex}")
+                logger.debug(f"[RaptorEngine] Failed to load existing tree: {ex}")
         return RaptorTree(client_id=self.client_id)
 
     async def build_tree(self, fragments: List[EvidenceFragment]) -> None:
@@ -64,7 +64,7 @@ class RaptorEngine:
                 processing failures.
         """
         logger.info(
-            f"🌲 [RAPTOR] Construyendo Árbol de Conocimiento para {self.client_id}..."
+            f"🌲 [RAPTOR] Building Knowledge Tree for {self.client_id}..."
         )
 
         # Phase 1: Construct the leaf-node layer (Level 0) from the initial text chunks.
@@ -85,7 +85,7 @@ class RaptorEngine:
             len(current_level_nodes) > 1 and level < 3
         ):  # To manage computational complexity in the prototype implementation, the summarization hierarchy is constrained to a maximum of three levels.
             level += 1
-            logger.info(f"   -> [RAPTOR] Generando Nivel {level} (Resúmenes en Paralelo)...")
+            logger.info(f"   -> [RAPTOR] Generating Level {level} (Parallel Summaries)...")
 
             #
             groups = self._group_nodes_by_hierarchy(current_level_nodes)
@@ -120,7 +120,7 @@ class RaptorEngine:
             self.tree.root_id = current_level_nodes[0].node_id
 
         self._save_tree()
-        logger.info(f"✅ [RAPTOR] Árbol finalizado con {len(self.tree.nodes)} nodos.")
+        logger.info(f"✅ [RAPTOR] Tree completed with {len(self.tree.nodes)} nodes.")
 
     def _group_nodes_by_hierarchy(
         self, nodes: List[RaptorNode]
@@ -141,20 +141,20 @@ class RaptorEngine:
         """Generates a concise, abstractive summary for a specified cluster of text nodes by invoking the configured Language Model."""
         context = "\n".join([f"- {n.content}" for n in nodes])
         prompt = f"""
-        RESUME LOS SIGUIENTES FRAGMENTOS EN UN PÁRRAFO ESTRATÉGICO DE ALTA DENSIDAD TÉCNICA.
+        SUMMARIZE THE FOLLOWING CHUNKS INTO A HIGH-DENSITY STRATEGIC PARAGRAPH.
 
-        ### INVARIANTE DE PRESERVACIÓN DE ENTIDADES Y MÉTRICAS DURAS (HARD METRIC RETENTION):
-        1. PRESERVACIÓN CUANTITATIVA: Todo número, porcentaje, latencia (ms), ancho de banda (Gbps), capacidad (TB, PB), coste (€, $) y versión de software DEBE transferirse textualmente al resumen sin redondeos ni generalizaciones.
-        2. ENTIDADES TÉCNICAS DURAS: Mantén exactamente los nombres de fabricantes, modelos de hardware (ej. Cisco 9300, Fortinet), servicios cloud (ej. S3, BigQuery, AKS), normativas (NIS2, ISO 27001, DORA) y sistemas internos.
-        3. CERO VAPORWARE: Prohibido sustituir datos concretos por adjetivos cualitativos vacíos ("robusto", "moderno", "adecuado").
+        ### HARD ENTITY AND METRIC PRESERVATION INVARIANT:
+        1. QUANTITATIVE PRESERVATION: Every number, percentage, latency (ms), bandwidth (Gbps), capacity (TB, PB), cost and software version MUST transfer verbatim without rounding.
+        2. HARD TECHNICAL ENTITIES: Preserve exact vendor trade names, hardware models, cloud services, and regulatory standards.
+        3. ZERO VAPORWARE: Prohibited from replacing concrete data with vacuous corporate adjectives.
 
         ### FRAGMENTOS ORIGINALES:
         {context}
 
         Reglas de Formato:
-        1. Sé conciso y de alta densidad informacional.
-        2. No inventes información fuera del contexto proporcionado.
-        3. Devuelve ÚNICAMENTE el texto del resumen en texto plano, sin JSON ni etiquetas.
+        1. Be concise with high informational density.
+        2. Do not hallucinate data outside context.
+        3. Return EXCLUSIVELY plain text summary, without JSON or conversational wrapping.
         """
 
         try:
@@ -168,14 +168,14 @@ class RaptorEngine:
                 model=get_model(ModelTier.FAST),
                 contents=prompt,
                 config={
-                    "system_instruction": "Eres un arquitecto de datos y auditor forense de sistemas. Tu misión es generar resúmenes jerárquicos de máxima densidad de información, reteniendo estrictamente todas las métricas cuantitativas, nombres propios de infraestructura, versiones y acrónimos normativos sin diluirlos."
+                    "system_instruction": "You are a data architect and forensic systems auditor. Generate high-density hierarchical summaries, retaining all quantitative metrics, infrastructure brand names, versions, and statutory acronyms without dilution."
                 },
             )
             raw_summary = str(response.text).strip()
             return self._enforce_deterministic_metric_retention(context, raw_summary)
         except Exception as e:
             logger.warning(f"Error generando resumen Raptor (fallback aplicado): {e}")
-            return "Resumen no disponible debido a un error de procesamiento."
+            return "Summary unavailable due to upstream processing error."
 
     @staticmethod
     def _enforce_deterministic_metric_retention(context: str, summary: str) -> str:
@@ -203,9 +203,9 @@ class RaptorEngine:
 
         if missing_metrics:
             logger.info(
-                f"🛡️ [RAPTOR Gate] Rescatadas {len(missing_metrics)} métricas cuantitativas omitidas por el LLM: {missing_metrics}"
+                f"🛡️ [RAPTOR Gate] Rescued {len(missing_metrics)} quantitative metrics omitted by LLM: {missing_metrics}"
             )
-            retention_block = f"\n[Métricas Críticas Preservadas]: {', '.join(missing_metrics)}"
+            retention_block = f"\n[Preserved Critical Metrics]: {', '.join(missing_metrics)}"
             return f"{summary.strip()}{retention_block}"
 
         return summary
@@ -280,7 +280,7 @@ class RaptorEngine:
             # If a query yields no results at the leaf-node level (Level 0), the search scope is automatically expanded to include Level 1 summaries to ensure comprehensive retrieval.
             return self.get_context_at_level(1)
 
-        lines = ["--- EVIDENCIAS RELEVANTES EXTRAÍDAS DEL DOCUMENTO (RAG) ---"]
+        lines = ["--- RELEVANT EVIDENCE EXTRACTED FROM DOCUMENT (RAG) ---"]
         for n in top_nodes:
             lines.append(f"[Fragmento UUID: {n.node_id}] {n.content}")
         return "\n".join(lines)

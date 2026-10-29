@@ -257,7 +257,7 @@ def get_bid_manager_prompt(
         "7. wbs_breakdown: Generate a comprehensive Work Breakdown Structure (WBS) with delivery phases. Assign realistic effort hours based on project size. MANDATORY: The engineering profile must be strictly one of: 'gerente_cuenta', 'arquitecto', 'experto', 'project_manager', 'tecnico_medio', 'tecnico_junior'.\n"
         "8. capex_estimate: Rigorously estimate initial capital expenditure (CapEx) in network gear, servers, appliances, or baseline licensing. Differentiate from OpEx subscriptions. Prohibit cloning the same estimate across all projects.\n"
         "9. roi_justification: Articulate quantitative ROI based on the mitigated risk (hard/soft operational savings and ALE avoidance).\n"
-        f"10. deliverables: MANDATORY to generate 3-4 tangible, operational technical deliverables written in {target_language}. STRICTLY PROHIBITED from generating empty clichés like 'Design Document' or 'Test Plan'. For FinOps deliver 'Cost Allocation Model (Showback/Chargeback)' or 'Cloud Tagging and Rightsizing Policy'; for Architecture deliver 'ARB Governance Charter'; for Infrastructure deliver 'Terraform Manifests' or 'Ansible Playbooks'.\n"
+        f"10. deliverables: MANDATORY to generate 3-4 tangible, operational technical deliverables written in {target_language}. STRICTLY PROHIBITED from generating empty cliches like 'Design Document' or 'Test Plan'. For FinOps deliver 'Cost Allocation Model (Showback/Chargeback)' or 'Cloud Tagging and Rightsizing Policy'; for Architecture deliver 'ARB Governance Charter'; for Infrastructure deliver 'Terraform Manifests' or 'Ansible Playbooks'.\n"
         "\nReturn the information strictly in the requested JSON schema."
     )
     return prompt

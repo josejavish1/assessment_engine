@@ -62,7 +62,7 @@ def main():
     path.write_text(
         json.dumps(signed_data, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ Dossier RE-FIRMADO con éxito: {path}")
+    print(f"✅ Dossier RE-SIGNED successfully: {path}")
 
 
 if __name__ == "__main__":

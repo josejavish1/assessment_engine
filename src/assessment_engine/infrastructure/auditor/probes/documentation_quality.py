@@ -54,8 +54,8 @@ def audit_markdown_links_and_fences(
                     file_path=rel_file,
                     line_number=None,
                     rule_id="DOC-DEAD-LINK",
-                    message=f"Enlace roto detectado hacia '{url}': el archivo de destino no existe en disco",
-                    recommendation="Actualizar o corregir la ruta relativa hacia el archivo existente."
+                    message=f"Broken link detected pointing to '{url}': target file missing from disk",
+                    recommendation="Update or correct relative path to existing target file."
                 ))
 
         # 2. Audit code blocks (require syntax language identifiers per Google style)
@@ -75,7 +75,7 @@ def audit_markdown_links_and_fences(
                             file_path=rel_file,
                             line_number=i,
                             rule_id="DOC-BARE-CODE-FENCE",
-                            message="Bloque de código sin especificador de sintaxis declarado (Google Documentation Style Guide)",
+                            message="Code block missing language syntax specifier (Google Documentation Style Guide)",
                             recommendation="Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
                         ))
                 else:
@@ -117,8 +117,8 @@ def audit_architectural_traceability(
                 file_path="docs/ARCHITECTURE.md",
                 line_number=None,
                 rule_id="DOC-ARCHITECTURAL-DRIFT",
-                message=f"Deriva arquitectónica detectada: el archivo '{ref}' citado en la arquitectura no existe en el código",
-                recommendation=f"Actualizar docs/ARCHITECTURE.md para reflejar la ruta actual de '{ref}' o crear el módulo."
+                message=f"Architectural drift detected: file '{ref}' cited in documentation does not exist in codebase",
+                recommendation=f"Update docs/SYSTEM_ARCHITECTURE.md to reflect actual path of '{ref}' or create module."
             ))
 
     return total_refs, drifted_count, findings
@@ -165,8 +165,8 @@ def audit_openapi_endpoint_coverage(
                     file_path="server.py",
                     line_number=None,
                     rule_id="DOC-ENDPOINT-UNDOCUMENTED",
-                    message=f"Endpoint '{r.path}' ({r.name}) carece de 'summary' o docstring para documentación OpenAPI",
-                    recommendation="Añadir parámetro summary/description al decorador de ruta o docstring explicativo a la función."
+                    message=f"Endpoint '{r.path}' ({r.name}) lacks OpenAPI summary or docstring",
+                    recommendation="Add summary/description parameter to route decorator or docstring to handler."
                 ))
 
     except (ImportError, AttributeError, OSError):

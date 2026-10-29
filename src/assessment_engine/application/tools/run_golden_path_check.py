@@ -161,15 +161,15 @@ def main() -> int:
                 "\n[ERROR] FITNESS FUNCTION FAILED: Golden Path violation detected."
             )
             logger.error(
-                "Los siguientes archivos nuevos no parecen usar las plantillas oficiales:"
+                "The following new files do not adhere to official architectural templates:"
             )
             for v in violations:
                 logger.error(f"  - {v}")
             logger.error(
-                "\nAcción requerida: NUNCA crees archivos Python desde cero para lógica de negocio o tests."
+                "\nAction required: NEVER create Python files from scratch for business logic or tests."
             )
             logger.error(
-                "DEBES usar las plantillas en 'templates/golden_paths/' que contienen los bloques"
+                "You MUST utilize templates in 'templates/golden_paths/' containing standard architectural blocks"
             )
             logger.error(
                 "estructurales requeridos (ej. '# --- START OF BUSINESS LOGIC ---' o '# --- ARRANGE ---').\n"

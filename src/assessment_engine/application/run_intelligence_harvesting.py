@@ -64,9 +64,9 @@ from assessment_engine.infrastructure.runtime_paths import (
 from assessment_engine.infrastructure.text_utils import slugify
 
 """
-Módulo run_intelligence_harvesting.py (MASTER EDITION V35.0 - THE PURIST).
-Arquitectura Anti-Contaminación: Bloqueo estricto de cruces de datos entre clientes.
-Garantiza el aislamiento absoluto de los contextos empresariales.
+Module run_intelligence_harvesting.py (MASTER EDITION V35.0 - THE PURIST).
+Anti-Contamination Architecture: Strict cross-client isolation.
+Guarantees absolute cryptographic isolation across enterprise contexts.
 """
 
 from assessment_engine.infrastructure.config_loader import resolve_model_for_role
@@ -154,12 +154,12 @@ async def probe_ai(
     anti_mix = ""
     if client_name:
         anti_mix = (
-            f"\n\n⚠️ REGLA CRÍTICA DE AISLAMIENTO: Estás analizando exclusivamente el caso de la empresa '{client_name}'. "
-            "Queda terminantemente prohibido cruzar, mencionar o contaminar la respuesta con información, "
-            "proyectos, marcas o nombres de directivos pertenecientes a otras entidades o a evaluaciones previas. "
-            "Si no posees con total certeza el nombre verificado de un directivo, utiliza siempre un término "
-            "institucional o colectivo genérico (ej: 'Dirección Ejecutiva' o 'Comité Técnico') en lugar de "
-            "alucinar o heredar nombres propios de otras compañías."
+            f"\n\n⚠️ CRITICAL ISOLATION RULE: You are analyzing exclusively enterprise context for '{client_name}'. "
+            "Strictly prohibited from referencing, crossing, or contaminating response with data from other clients. "
+            "Never mention projects, vendor trade names, or executive titles from other enterprises. "
+            "If executive name is not verified with 100% certainty, always use generic executive title "
+            "generic organizational entity (e.g. 'Executive Committee' or 'Technical Board') rather than "
+            "hallucinating names from other enterprises."
         )
 
     try:
@@ -221,7 +221,7 @@ def save_pdf_cache(cache_path: Path, cache_data: dict[str, str]) -> None:
             try:
                 tmp_path.unlink()
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                logger.debug(f"[Fallback] Handled exception: {ex}")
 
 
 class SourceVault:
@@ -322,7 +322,7 @@ class SourceVault:
                 if cb not in brands:
                     brands.append(cb)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
         for b in brands:
             if b.lower() in raw.lower():
@@ -375,16 +375,16 @@ async def _discover_brands_from_document(
     )
 
     print(
-        "  -> [FASE 0] Descubriendo marcas tecnológicas dinámicamente desde el documento de contexto..."
+        "  -> [PHASE 0] Dynamically discovering technology brands from context document..."
     )
     try:
         discovery_prompt = f"""
-        Analiza el siguiente texto de contexto técnico e identifica todas las marcas tecnológicas, proveedores de nube, fabricantes de hardware, soluciones de software corporativas y bases de datos que utiliza esta organización de forma activa (por ejemplo, AWS, Alibaba Cloud, GCP, IBM, Proxmox, Oracle, SAP, VMware, Cohesity, Centreon, Okta, Dynatrace).
+        Analyze the following technical context text and identify all enterprise technology brands, cloud hyperscalers, hardware manufacturers, enterprise software solutions, and databases actively deployed by this organization (for example, AWS, Azure, GCP, IBM, Oracle, SAP, VMware, Cohesity, Okta, Dynatrace).
         
-        TEXTO DE CONTEXTO:
+        CONTEXT TEXT:
         {doc_text[:8000]}
         
-        REGLA DE ORO: Devuelve ÚNICAMENTE una lista JSON de strings con los nombres exactos de las marcas detectadas (ej. ["AWS", "Alibaba", "IBM", "VMware"]). No devuelvas explicaciones ni texto adicional.
+        STRICT MANDATE: Return EXCLUSIVELY a JSON list of strings with the exact names of detected brands (e.g. ["AWS", "Azure", "IBM", "VMware"]). Do not output explanations or conversational filler.
         """
         res_brand = await probe_ai(
             discovery_prompt, client_name=client_name, model_name=MODEL_FAST
@@ -397,11 +397,11 @@ async def _discover_brands_from_document(
                     brands_list = json.loads(txt[start:end])
                     if isinstance(brands_list, list):
                         discovered_brands = [str(b).strip() for b in brands_list if b]
-                        print(f"     ✓ Marcas descubiertas por IA: {discovered_brands}")
+                        print(f"     ✓ AI-discovered brands: {discovered_brands}")
                 except (OSError, ValueError, KeyError, AttributeError) as ex:
-                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                    logger.debug(f"[Fallback] Handled exception: {ex}")
     except Exception as e:
-        print(f"  ⚠️ Error en descubrimiento dinámico de marcas: {e}")
+        print(f"  ⚠️ Error in dynamic brand discovery: {e}")
 
     vault.custom_discovered_brands = discovered_brands
     return discovered_brands
@@ -409,14 +409,14 @@ async def _discover_brands_from_document(
 
 async def _probe_web_intelligence(vault: SourceVault, client_name: str) -> None:
     """Execute targeted web probes for business strategy and technical stack footprint."""
-    print("  -> [FASE 1] Cosechando Huellas Técnicas Reales...")
+    print("  -> [PHASE 1] Harvesting Real Technical Footprints...")
     tasks = [
         probe_ai(
-            f"Estrategia de transformación digital, negocio y sostenibilidad de {client_name}.",
+            f"Digital transformation strategy, business agenda, and operational priorities for {client_name}.",
             client_name=client_name,
         ),
         probe_ai(
-            f"Stack tecnológico de infraestructura, TI, centros de datos y nube de {client_name}.",
+            f"Infrastructure technology stack, IT landscape, data centers, and cloud platforms for {client_name}.",
             client_name=client_name,
         ),
     ]
@@ -465,16 +465,16 @@ async def _mine_pdf_reports(
             pdf_hash = None
 
         if pdf_hash and pdf_hash in pdf_cache:
-            print(f"       📖 Minería PDF (Caché): {snap['url']}")
+            print(f"       📖 PDF Mining (Cache): {snap['url']}")
             extracted_text = pdf_cache[pdf_hash]
         else:
-            print(f"       📖 Minería PDF (API): {snap['url']}")
+            print(f"       📖 PDF Mining (API): {snap['url']}")
             try:
                 client = _get_genai_client()
                 res = client.models.generate_content(
                     model=MODEL_PRO,
                     contents=[
-                        "Extrae marcas y métricas en texto denso.",
+                        "Extract brands and quantitative metrics in dense text.",
                         types.Part.from_bytes(
                             data=pdf_bytes, mime_type="application/pdf"
                         ),
@@ -486,10 +486,10 @@ async def _mine_pdf_reports(
                     cache_updated = True
             except Exception as e:
                 print(
-                    f"       ❌ Error fatal en API de Vertex AI para PDF {snap['url']}: {e}"
+                    f"       ❌ Fatal error in Vertex AI API for PDF {snap['url']}: {e}"
                 )
                 print(
-                    "       ⚠️ Saltando este documento para no bloquear el pipeline de inteligencia."
+                    "       ⚠️ Skipping document to unblock intelligence harvesting pipeline."
                 )
                 extracted_text = ""
 
@@ -509,17 +509,17 @@ async def _synthesize_vault_intelligence(
     vault: SourceVault, client_name: str
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Synthesize labeled ontology metrics and qualitative leadership narrative from vault atoms."""
-    print("  -> [FASE 3] Etiquetado y Citación de Bóveda...")
+    print("  -> [PHASE 3] Vault Tagging and Citation...")
     label_q = (
-        f"Organiza estos hallazgos en JSON. ÁTOMOS: {json.dumps(vault.atoms[:40])}. "
+        f"Organize these findings into structured JSON. ATOMS: {json.dumps(vault.atoms[:40])}. "
         f"JSON: {{metrics: [{{name:, value:, unit:, source:{{uri:}}}}], "
         f"stack: [{{technology:, vendor:, source:{{uri:}}}}]}}"
     )
     organized = await probe_ai(label_q, model_name=MODEL_PRO, client_name=client_name)
 
-    print("  -> [FASE 4] Redactando Narrativa (Anti-Contaminación)...")
+    print("  -> [PHASE 4] Drafting Narrative (Anti-Contamination)...")
     narrative = await probe_ai(
-        f"Resume Estrategia y Agenda de Liderazgo para {client_name}. No inventes nombres de CEOs si no aparecen en los datos.",
+        f"Synthesize Strategy and Executive Leadership Agenda for {client_name}. Do not hallucinate executive names if not present in the empirical corpus.",
         model_name=MODEL_PRO,
         client_name=client_name,
     )
@@ -550,7 +550,7 @@ def _build_default_tower_overrides() -> dict[str, Any]:
                 "regulatory_compliance": 50.0,
                 "implementation_feasibility": 50.0,
             },
-            "justification": "Estándar por defecto debido a indisponibilidad de API.",
+            "justification": "Default baseline due to API unavailability.",
             "sensitivity_analysis": gsa_report,
         }
     return calculated_overrides
@@ -564,44 +564,44 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
     )
 
     print(
-        "  -> [FASE 4.5] Evaluando Criterios de Madurez por Torre (Conjoint Multi-Criteria Matrix)..."
+        "  -> [PHASE 4.5] Evaluating Target Maturity Criteria per Tower (Conjoint Multi-Criteria Matrix)..."
     )
 
     brand_data_narratives = {}
     try:
         brand_data_narratives = load_brand_profile()
     except (OSError, ValueError, KeyError, AttributeError) as ex:
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+        logger.debug(f"[Fallback] Handled exception: {ex}")
 
     custom_narratives = brand_data_narratives.get("custom_narratives", {})
     client_context_str = custom_narratives.get(
         "client_context",
-        "footprint global, cumplimiento normativo general de sector crítico, "
-        "y la necesidad de ciberresiliencia, resiliencia operativa y modernización de su arquitectura.",
+        "global footprint, critical infrastructure regulatory compliance, "
+        "and operational cyber-resilience architecture modernization.",
     )
     compliance_example_str = custom_narratives.get(
         "compliance_example",
-        "ej: NIS2, DORA, ISO 27001 o regulaciones de protección de infraestructuras críticas, ~85. T1 u otras, ~40",
+        "e.g.: NIS2, DORA, ISO 27001 or critical infrastructure mandates, ~85. T1 or others, ~40",
     )
     feasibility_example_str = custom_narratives.get(
         "feasibility_example",
-        "ej: T2 es compleja debido a migración de infraestructura heredada, ~50. T10 DTO es de soporte estratégico, ~70",
+        "e.g.: T2 is complex due to legacy data center cutovers, ~50. T10 DTO is strategic support, ~70",
     )
 
     overrides_prompt = (
-        f"Actúa como un Consultor de Estrategia Tecnológica Principal de Gartner.\n"
-        f"Analiza todo el contexto de la empresa '{client_name}': {client_context_str}\n\n"
-        f"Evalúa para cada una de las 10 torres técnicas (T1 a la T10) los siguientes tres criterios cuantitativos (puntuaciones de 0 a 100):\n"
-        f"1. 'criticality': Puntuación de criticidad de negocio de la torre para evitar interrupciones de señal o pérdidas inmediatas de ingresos (ej. T3 Networks debe ser extremadamente alta, ~95. T7 ITSM es soporte, ~50).\n"
-        f"2. 'compliance': Presión regulatoria, legal y ciberseguridad ({compliance_example_str}).\n"
-        f"3. 'feasibility': Viabilidad operacional y facilidad de implementación técnica real considerando la inercia cultural y que actualmente se opera con excels heterogéneos ({feasibility_example_str}).\n\n"
-        f"Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (claves T1, T2... T10):\n"
+        f"Act as a Principal Technology Strategy Advisor at Gartner.\n"
+        f"Analyze all context for enterprise '{client_name}': {client_context_str}\n\n"
+        f"Evaluate for each of the 10 technology towers (T1 to T10) the following three quantitative criteria (0 to 100):\n"
+        f"1. 'criticality': Business criticality score to avoid service disruption or immediate revenue impact (e.g. T3 Networks must be high, ~95. T7 ITSM is support, ~50).\n"
+        f"2. 'compliance': Regulatory, statutory, and cybersecurity scrutiny ({compliance_example_str}).\n"
+        f"3. 'feasibility': Operational feasibility and real delivery velocity accounting for organizational inertia and current tooling ({feasibility_example_str}).\n\n"
+        f"Return EXCLUSIVELY valid JSON matching this exact structure (keys T1, T2... T10):\n"
         f"{{\n"
         f'  "T1": {{\n'
         f'    "criticality": 60,\n'
         f'    "compliance": 40,\n'
         f'    "feasibility": 70,\n'
-        f'    "justification": "Explicación estratégica de por qué se asignan estos valores en base a los hechos del cliente."\n'
+        f'    "justification": "Strategic rationale based on empirical client context."\n'
         f"  }},\n"
         f'  "T2": {{\n'
         f'    "criticality": 75,\n'
@@ -617,11 +617,11 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
     )
 
     print(
-        "  -> [FASE 4.6] Ejecutando Algoritmo de Decisión Multicriterio (Sovereign Target Engine)..."
+        "  -> [PHASE 4.6] Executing Multi-Criteria Decision Algorithm (Sovereign Target Engine)..."
     )
     if not isinstance(raw_overrides, dict):
         print(
-            "  ⚠️ Fallo en el retorno de matriz de madurez. Aplicando fallbacks estocásticos estándar de robustez..."
+            "  ⚠️ Target matrix response failed. Applying stochastic baseline fallbacks..."
         )
         return _build_default_tower_overrides()
 
@@ -657,13 +657,13 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
                     "implementation_feasibility": feas,
                 },
                 "justification": metrics.get(
-                    "justification", "Alineación multicriterio calculada."
+                    "justification", "Calculated multi-criteria alignment."
                 ),
                 "sensitivity_analysis": gsa_report,
             }
             just_str = metrics.get("justification", "")[:60]
             print(
-                f"       * {tower_id}: Score Calculado = {target_score} (Justificación: {just_str}...)"
+                f"       * {tower_id}: Calculated Target = {target_score} (Rationale: {just_str}...)"
             )
         except Exception as e:
             fallback_gsa = sensitivity_engine.run_sensitivity_analysis(
@@ -676,7 +676,7 @@ async def _calculate_tower_target_overrides(client_name: str) -> dict[str, Any]:
                     "regulatory_compliance": 50.0,
                     "implementation_feasibility": 50.0,
                 },
-                "justification": f"Fallback estándar por fallo en cálculo de torre: {e}",
+                "justification": f"Standard fallback due to tower calculation error: {e}",
                 "sensitivity_analysis": fallback_gsa,
             }
 
@@ -700,16 +700,16 @@ async def _enrich_epistemic_graph_and_meta(
     )
 
     print(
-        "  -> [FASE 4.7] Extrayendo Meta-Arquitectura e Hyperscaler Dominante de forma Dinámica (Agnóstico)..."
+        "  -> [PHASE 4.7] Extracting Target Meta-Architecture and Dominant Hyperscaler dynamically..."
     )
     meta_prompt = (
-        f"Analiza de forma síncrona el contexto recopilado de la empresa '{client_name}':\n"
+        f"Analyze synchronously the synthesized context for '{client_name}':\n"
         f"1. Narrativa: {narrative.get('text', 'N/A')}\n"
-        f"2. Stack Técnico: {json.dumps(organized.get('stack', []), ensure_ascii=False)}\n\n"
+        f"2. Tech Stack: {json.dumps(organized.get('stack', []), ensure_ascii=False)}\n\n"
         f"Deduce:\n"
-        f"- industry_sector: El sector industrial/empresarial real y específico de la compañía (ej. 'Manufacturing & Building Materials', 'Banking & Finance', 'Retail', etc.).\n"
+        f"- industry_sector: Specific industrial/enterprise sector of the company (e.g. 'Manufacturing & Building Materials', 'Banking & Finance', 'Retail').\n"
         f"- dominant_hyperscaler: El proveedor cloud dominante ('dominant_hyperscaler').\n"
-        f"- stage, label, rationale: La fase de horizonte de transformación óptimo."
+        f"- stage, label, rationale: Optimal transformation horizon phase."
     )
 
     client_gen = _get_genai_client()
@@ -726,17 +726,17 @@ async def _enrich_epistemic_graph_and_meta(
         inferred_industry = meta_data.get("industry_sector")
         horizon_obj = {
             "stage": meta_data.get("stage", "H1"),
-            "label": meta_data.get("label", "Estandarización"),
-            "rationale": meta_data.get("rationale", "Calculado dinámicamente."),
+            "label": meta_data.get("label", "Standardization"),
+            "rationale": meta_data.get("rationale", "Dynamically calculated."),
         }
     except Exception as e:
-        print(f"  ⚠️ Error en extracción de meta-datos: {e}. Usando fallbacks.")
+        print(f"  ⚠️ Error in metadata extraction: {e}. Using fallbacks.")
         dominant_hyperscaler = "AWS"
         inferred_industry = None
         horizon_obj = {
             "stage": "H1",
-            "label": "Estandarización",
-            "rationale": "Fallback estándar.",
+            "label": "Standardization",
+            "rationale": "Standard fallback.",
         }
 
     brand_data_narratives = {}
@@ -831,7 +831,7 @@ def _assemble_and_persist_dossier(
             "dossier_id": f"{slugify(client_name)}-purist",
             "schema_version": "3.0",
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "lang": "es",
+            "lang": "en",
         },
         "profile": {"industry": industry_str, "hierarchy": "Global Entity"},
         "regulatory_context": [],
@@ -863,7 +863,7 @@ def _assemble_and_persist_dossier(
             },
         },
         "review": {
-            "summary": "Certificación Purist V35.0 (Aislamiento de Contexto)",
+            "summary": "Purist V35.0 Certification (Context Isolation)",
             "status": "Final",
         },
         "claims": captured,

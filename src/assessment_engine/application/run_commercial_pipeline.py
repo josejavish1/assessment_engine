@@ -81,7 +81,7 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     print(
-        f"\n¡Pipeline Comercial finalizado con éxito! Documento generado: {output_path}"
+        f"\nCommercial Pipeline completed successfully! Document generated at: {output_path}"
     )
 
 

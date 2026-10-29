@@ -22,7 +22,7 @@ def _ground_single_project(
     reg_frameworks: str,
 ) -> None:
     bc = proj.get("business_case", "")
-    if bc and "impacto estratégico basado en la validación" not in bc.lower():
+    if bc and not any(k in bc.lower() for k in ["impacto estrateg", "strategic impact"]):
         return
 
     name = proj.get("name", "").lower()
@@ -55,7 +55,7 @@ class BusinessCaseGroundingPolicy(BaseSovereignPolicy):
     ) -> Dict[str, Any]:
         """Populates missing project business cases by linking them to risk findings."""
         pillars = payload.get("pillars_analysis", [])
-        doc_lang = payload.get("document_meta", {}).get("language", "es").lower()
+        doc_lang = payload.get("document_meta", {}).get("language", "en").lower()
 
         raw_frameworks = payload.get("document_meta", {}).get(
             "regulatory_frameworks", []

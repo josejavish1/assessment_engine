@@ -37,7 +37,7 @@ class DynamicRiskCalibration(BaseModel):
         description="The dynamic exchange rate from EUR to the target currency_code (e.g., 1.0925 for EUR to USD)."
     )
     currency_justification: str = Field(
-        default="Cambio de divisa base en Euros sin conversión (tasa 1.0).",
+        default="Base currency EUR without conversion (exchange rate 1.0).",
         description="SME Elicitation Rationale citing the official exchange rate published by the European Central Bank (BCE) with dates."
     )
     calibration_justification: str = Field(
@@ -115,7 +115,7 @@ class FinancialScaleCalibrator:
             client_country = "Suiza"
 
         try:
-            logger.info(f"🌐 [Financial Calibrator] Iniciando Elicitación en Dos Pasos para sortear limitación de API de Google...")
+            logger.info(f"🌐 [Financial Calibrator] Starting Two-Step Elicitation to circumvent Google API limits...")
             loop = asyncio.get_running_loop()
 
             local_context_str = ""
@@ -173,7 +173,7 @@ class FinancialScaleCalibrator:
                                         ops_score = score_val
                                 except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-                                    logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                                    logger.debug(f"[Fallback] Handled exception: {ex}")
                     if scores_list:
                         if ha_score == 3.0:
                             ha_score = round(sum(scores_list[:max(1, len(scores_list)//2)]) / max(1, len(scores_list)//2), 1)
@@ -183,17 +183,17 @@ class FinancialScaleCalibrator:
                     logger.warning(f"Error crawling local case input for resilience and scores: {ex}")
             
             research_prompt = f"""
-            Investiga con internet (Google Search) de forma rigurosa los siguientes datos financieros y de costes laborales para la empresa "{client_name}" (sector: "{raw_industry}") en {client_country}:
-            1. Su facturación anual consolidada más reciente (en Euros).
-            2. El coste por hora estimado de inactividad de su plataforma corporativa de TI, centros de datos y operaciones digitales (el cual debe ser proporcional al tamaño e ingresos de la organización y reflejar el coste de parada operativa de sus servidores y servicios informáticos y de negocio internos).
-            3. El límite máximo de multa reguladora aplicable bajo la directiva NIS2 (el cual ronda hasta 10.000.000 € o el 2% de su facturación global, lo que sea mayor).
-            4. El tipo de cambio oficial del Euro (EUR) a la divisa preferida "{target_currency}" publicado por el Banco Central Europeo (BCE) al día de hoy, detallando su justificación citada con fecha.
-            5. La tarifa horaria promedio en Euros de un consultor senior de DevOps / SRE en {client_country} en 2026.
+            Research online via Google Search rigorously the following financial and labor cost telemetry for enterprise "{client_name}" (sector: "{raw_industry}") in {client_country}:
+            1. Most recent consolidated annual turnover/revenue (in EUR).
+            2. Estimated hourly cost of downtime for corporate IT platforms, data centers, and digital operations (proportional to revenue and reflecting business outage drag).
+            3. Maximum regulatory statutory fine under the EU NIS2 directive (up to €10,000,000 or 2% of global annual turnover, whichever is greater).
+            4. Official European Central Bank (ECB) exchange rate from EUR to preferred currency "{target_currency}", including cited date.
+            5. Average hourly consulting rate in EUR for a Senior DevOps / SRE Consultant in {client_country} in 2026.
             
-            Devuelve un resumen detallado con todas las cifras reales encontradas y cita minuciosamente tus fuentes oficiales (informes financieros, boletines gubernamentales, comunicados oficiales del BCE, etc.).
+            Return a detailed summary with real figures found and thoroughly cite official sources (annual reports, government filings, regulatory notices).
             """
             
-            logger.info(f"🌐 [Financial Calibrator] [Paso 1: Investigación] Consultando Google Search para {client_name} en {client_country}...")
+            logger.info(f"🌐 [Financial Calibrator] [Step 1: Research] Querying Google Search for {client_name} in {client_country}...")
             research_result = await loop.run_in_executor(
                 None,
                 lambda: self.client.models.generate_content(
@@ -208,44 +208,43 @@ class FinancialScaleCalibrator:
             raw_text = research_result.text
             
             struct_prompt = f"""
-            Eres un validador financiero senior y experto en gestión de riesgos (SR 11-7 standard). Tu tarea es extraer y estructurar las cifras de investigación del texto proporcionado y formatearlas estrictamente en el JSON pedido bajo el esquema DynamicRiskCalibration.
+            You are a Senior Quantitative Risk Validator adhering to model risk governance standard SR 11-7. Your mandate is extracting and structuring empirical research findings into the structured DynamicRiskCalibration JSON schema.
             
-            Texto de Investigación de Internet (OSINT):
+            OSINT Web Research Findings:
             \"\"\"{raw_text}\"\"\"
             
-            Contexto de Arquitectura Técnica Interna Privada del Cliente (Auditoría Local):
+            Internal Private Client Architecture Telemetry (Local Audit):
             \"\"\"{local_context_str}\"\"\"
             
-            Métricas de Madurez Técnica Auditadas en Local para este Cliente:
-            - Nivel de Resiliencia / Continuidad ({tower_id}): {ha_score}/5.0
-            - Nivel de Operaciones / Monitorización ({tower_id}): {ops_score}/5.0
+            Audited Technical Maturity Metrics for this Client:
+            - Resilience / Continuity Maturity ({tower_id}): {ha_score}/5.0
+            - Operations / Observability Maturity ({tower_id}): {ops_score}/5.0
             
-            Extrae de forma exacta y calcula:
-            - annual_revenue_eur: La facturación consolidada de {client_name} en Euros.
-            - reg_max_fine_eur: El límite máximo de multa reguladora aplicable bajo la directiva NIS2.
-            - hourly_rate_sre_eur: La tarifa horaria de consultoría senior de DevOps / SRE para {client_country} en Euros.
+            Extract and calculate defensibly:
+            - annual_revenue_eur: Consolidated annual revenue of {client_name} in EUR.
+            - reg_max_fine_eur: Maximum statutory penalty under the EU NIS2 directive.
+            - hourly_rate_sre_eur: Senior DevOps/SRE hourly rate for {client_country} in EUR.
+            - hourly_downtime_cost_eur: Estimated hourly cost of platform downtime.
+              Calibrate with actuarial rigor following Gartner / ITIC benchmark distributions:
+              1. SECTOR CLASSIFICATION:
+                 - Financial Services, Banking, Insurance: 0.003% to 0.006% of consolidated annual revenue per hour.
+                 - High-Volume Commerce, Retail, Telco: 0.0015% to 0.0035% of annual revenue per hour.
+                 - Heavy Industry, Manufacturing, Energy: 0.0008% to 0.0018% of annual revenue per hour.
+                 - Professional Services, Healthcare, Public Sector: 0.0005% to 0.0015% of annual revenue per hour.
+              2. AUDITED TECHNICAL MATURITY COUPLING:
+                 - If Resilience Maturity >= 3.0 and/or Observability >= 3.0, calibrate in the lower tercile of the sector band.
+                 - If Maturity is low (< 3.0), calibrate in the upper tercile.
+              MANDATE: Maintain mathematical proportionality to actual revenue without artificial inflation.
             
-            - hourly_downtime_cost_eur: El coste estimado por hora de inactividad de la infraestructura digital y operaciones del cliente. 
-              Para calibrar esta cifra con rigor actuarial y credibilidad directiva según el estándar mundial ITIC / Gartner:
-              1. CRUCE POR SECTOR DE ACTIVIDAD:
-                 - Sector Financiero, Banca, Seguros y Pasarelas de Pago: 0.003% a 0.006% de la facturación anual consolidada por hora (alta dependencia transaccional en tiempo real).
-                 - Comercio Masivo, E-Commerce, Retail y Telecomunicaciones: 0.0015% a 0.0035% de la facturación anual consolidada por hora (canales continuos de venta y logística).
-                 - Industria Pesada, Manufactura, Construcción y Energía: 0.0008% a 0.0018% de la facturación anual consolidada por hora (buffers operativos y sistemas de control local OT/SCADA).
-                 - Servicios Profesionales, Sanidad y Sector Público: 0.0005% a 0.0015% de la facturación anual consolidada por hora.
-              2. CRUCE CON MADUREZ TÉCNICA AUDITADA:
-                 - Si la madurez de Resiliencia es >= 3.0 (clustering distribuido, failover geográfico, redundancia) y/o Monitorización >= 3.0, sitúa el coste efectivo en el tercio inferior del rango sectorial correspondiente.
-                 - Si la madurez es baja (< 3.0), sitúa el coste en el tercio superior del rango sectorial.
-              IMPORTANTE: Mantén siempre la proporcionalidad matemática con la facturación real del cliente sin inflar artificialmente el coste.
-            
-            Establece obligatoriamente de forma constante:
+            Set mandatory fields strictly:
             - currency_code: "{target_currency}"
             - currency_symbol: "{target_symbol}"
-            - exchange_rate: El tipo de cambio oficial de EUR a {target_currency} extraído del texto de investigación (por ejemplo, 1.0925).
-            - currency_justification: Una justificación formal citando la tasa y la fuente del BCE del texto de investigación.
-            - calibration_justification: La justificación de validación citando los ingresos del ejercicio, las fuentes de internet, y el análisis cruzado de resiliencia (basado en las respuestas reales de madurez del cuestionario local de la torre {tower_id} de este cliente) de la arquitectura privada del cliente.
+            - exchange_rate: Official ECB exchange rate from EUR to {target_currency} extracted from research text (e.g. 1.0925).
+            - currency_justification: Formal rationale citing ECB published rate and date from research text.
+            - calibration_justification: Validation rationale citing verified turnover, empirical sources, and technical resilience assessment for tower {tower_id}.
             """
             
-            logger.info(f"🌐 [Financial Calibrator] [Paso 2: Estructurado] Parseando datos de investigación en el esquema Pydantic...")
+            logger.info(f"🌐 [Financial Calibrator] [Step 2: Structured] Parsing research data into Pydantic schema...")
             struct_result = await loop.run_in_executor(
                 None,
                 lambda: self.client.models.generate_content(
@@ -279,11 +278,11 @@ class FinancialScaleCalibrator:
             with open(output_path, "w", encoding="utf-8-sig") as out_f:
                 json.dump(calibration.model_dump(), out_f, indent=2, ensure_ascii=False)
                 
-            logger.info(f"✅ [Financial Calibrator] Perfil dinámico de riesgos de Internet guardado con ÉXITO en: {output_path}")
+            logger.info(f"✅ [Financial Calibrator] Internet dynamic risk profile saved successfully at: {output_path}")
             return calibration
 
         except Exception as e:
-            logger.warning(f"⚠️ [Financial Calibrator] Track 1 (Internet Grounding) falló o no tiene red: {e}. Activando Track 2 (Dossier Fallback)...")
+            logger.warning(f"⚠️ [Financial Calibrator] Track 1 (Internet Grounding) failed or offline: {e}. Activating Track 2 (Dossier Fallback)...")
             
             fallback_calibration = self._run_local_fallback(client_name, raw_industry, target_currency, target_symbol)
             
@@ -291,7 +290,7 @@ class FinancialScaleCalibrator:
             with open(output_path, "w", encoding="utf-8-sig") as out_f:
                 json.dump(fallback_calibration.model_dump(), out_f, indent=2, ensure_ascii=False)
                 
-            logger.info(f"✅ [Financial Calibrator] Perfil dinámico de riesgos guardado bajo Fallback de Autocuración en: {output_path}")
+            logger.info(f"✅ [Financial Calibrator] Dynamic risk profile saved under self-healing fallback at: {output_path}")
             return fallback_calibration
 
     def _run_local_fallback(self, client_name: str, raw_industry: str, target_currency: str = "EUR", target_symbol: str = "€") -> DynamicRiskCalibration:
@@ -331,9 +330,9 @@ class FinancialScaleCalibrator:
         sre_rate_val = sre_rates.get(target_currency, 36.0)
 
         justification_msg = (
-            f"Tipo de cambio del BCE consolidado de resiliencia (tasa {rate_val} {target_currency}/EUR)."
+            f"Consolidated ECB resilience exchange rate (rate {rate_val} {target_currency}/EUR)."
             if target_currency != "EUR"
-            else "Divisa base en Euros sin conversión."
+            else "Base currency in Euros without conversion."
         )
 
         return DynamicRiskCalibration(
@@ -345,5 +344,5 @@ class FinancialScaleCalibrator:
             currency_symbol=target_symbol,
             exchange_rate=rate_val,
             currency_justification=justification_msg,
-            calibration_justification=f"Calibración paramétrica de resiliencia fallback: Perfil de escala {detected_tier} derivado de configuración declarativa.",
+            calibration_justification=f"Parametric fallback resilience calibration: Scale profile {detected_tier} derived from declarative configuration.",
         )

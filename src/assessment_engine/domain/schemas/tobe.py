@@ -72,7 +72,7 @@ class ToBeDraft(BaseDraftModel):
             "3-6 meses",
             "6-12 meses",
             "plan de evolucion",
-            "plan de evolución",
+            "evolution_plan",
         ]
 
     @field_validator("target_capabilities_by_pillar")
@@ -95,7 +95,7 @@ class ToBeDraft(BaseDraftModel):
                 False in a boolean context.
         """
         if not v:
-            raise ValueError("Debe haber al menos un pilar con capacidades objetivo")
+            raise ValueError("At least one pillar with target capabilities must be present")
         return v
 
 

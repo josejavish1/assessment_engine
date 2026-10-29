@@ -13,8 +13,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
 
 """
-Módulo render_commercial_report.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+Module render_commercial_report.py.
+Contains core orchestration and rendering logic for Assessment Engine pipeline.
 """
 
 from assessment_engine.adapters.render_global_report_from_template import (
@@ -40,7 +40,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
-from assessment_engine.infrastructure.localization import t
+from assessment_engine.infrastructure.localization import get_localized_list, t
 
 BASE_TEXT_COLOR = RGBColor(46, 64, 77)
 
@@ -125,7 +125,7 @@ def load_payload(payload_path: Path) -> CommercialPayload:
     )
 
 
-def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
+def render_commercial_cover(doc, payload: CommercialPayload, doc_lang: str) -> Any:
     """Render a formatted cover page into a `docx.Document` object.
 
     Populates the provided document with a standardized commercial report cover page.
@@ -146,7 +146,7 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
     doc.add_paragraph().paragraph_format.space_after = Pt(60)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-    run = title_p.add_run("Account Action Plan")
+    run = title_p.add_run(t("account_action_plan_title", locale=doc_lang))
     run.font.size = Pt(34)
     run.font.name = "Georgia"
     run.font.color.rgb = RGBColor(0, 114, 188)
@@ -161,7 +161,7 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
 
     doc.add_paragraph().paragraph_format.space_after = Pt(100)
 
-    lang = getattr(payload.meta, "doc_lang", "es").lower()
+    lang = getattr(payload.meta, "doc_lang", "en").lower()
 
     date_lbl = t("commercial_cover_date_lbl", lang)
     class_lbl = t("commercial_cover_class_lbl", lang)
@@ -202,7 +202,7 @@ def render_commercial_cover(doc, payload: CommercialPayload) -> Any:
     doc.add_page_break()
 
 
-def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -> Any:
+def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list, doc_lang: str) -> Any:
     """Renders a commercial summary and stakeholder matrix into a `python-docx` document.
 
     This function populates a Word document with a formatted executive summary
@@ -225,7 +225,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
         AttributeError: If `data` or any object within the `matrix` list is
             missing required attributes.
     """
-    add_heading_paragraph(doc, "1. Executive Summary & Deal Snapshot", level=1)
+    add_heading_paragraph(doc, t("commercial_ch1_heading", locale=doc_lang), level=1)
 
     #
     warn_table = doc.add_table(rows=1, cols=1)
@@ -235,13 +235,11 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
     clear_paragraph(w_cell.paragraphs[0])
     wp = w_cell.paragraphs[0]
     wp.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    wr1 = wp.add_run("⚠️ CONTEXTO DEL INFORME (FAST ASSESSMENT): ")
+    wr1 = wp.add_run(t("commercial_report_context_badge", locale=doc_lang))
     wr1.bold = True
     wr1.font.size = Pt(9)
     wr1.font.color.rgb = RGBColor(127, 127, 127)
-    wr2 = wp.add_run(
-        "Este documento es un artefacto comercial interno. Las oportunidades, riesgos y valoraciones económicas nacen de un diagnóstico preliminar y entrevistas de alto nivel, no de una due-diligence técnica. Su propósito es definir la estrategia de entrada (Go-To-Market), no es una oferta vinculante."
-    )
+    wr2 = wp.add_run(t("commercial_report_disclaimer_body", locale=doc_lang))
     wr2.font.size = Pt(9)
     wr2.font.color.rgb = RGBColor(127, 127, 127)
     add_spacer(doc, 15)
@@ -305,7 +303,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
 
     #
     p_why = doc.add_paragraph()
-    r_why = p_why.add_run("El Problema (Why Now):")
+    r_why = p_why.add_run(t("commercial_the_problem_why_now", locale=doc_lang))
     r_why.bold = True
     r_why.font.color.rgb = BASE_TEXT_COLOR
     r_why.font.size = Pt(11)
@@ -319,7 +317,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
     add_spacer(doc, 10)
 
     p_how = doc.add_paragraph()
-    r_how = p_how.add_run(f"La Estrategia de {company} (How we Win):")
+    r_how = p_how.add_run(t("commercial_how_we_win_label", locale=doc_lang, company=company))
     r_how.bold = True
     r_how.font.color.rgb = BASE_TEXT_COLOR
     r_how.font.size = Pt(11)
@@ -339,18 +337,18 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
         )
         add_body_paragraph(
             doc,
-            "Alineación del discurso comercial según las prioridades de cada rol directivo.",
+            "Commercial alignment structured around the strategic priorities of each stakeholder role.",
             color_rgb=BASE_TEXT_COLOR,
             space_after=12,
         )
 
         m_table = doc.add_table(rows=1, cols=3)
         finalize_table(m_table)
-        headers = [
-            "Rol Directivo",
-            "Foco Estratégico",
-            "Mensaje Clave (Elevator Pitch)",
-        ]
+        headers = get_localized_list(
+            "commercial_messaging_headers",
+            locale=doc_lang,
+            default=["Executive Role", "Strategic Focus", "Key Elevator Pitch"],
+        )
         for i, h in enumerate(headers):
             set_cell_text(
                 m_table.rows[0].cells[i],
@@ -387,13 +385,13 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list) -
         add_spacer(doc, 20)
 
 
-def render_gtm_strategy(doc, gtm: GtmStrategy) -> Any:
+def render_gtm_strategy(doc, gtm: GtmStrategy, doc_lang: str) -> Any:
     r"""{'docstring': "Adds a 'Go-To-Market' strategy section to a Word document object.\n\nThis function generates a level-1 heading and a formatted two-column table\nsummarizing Go-To-Market strategies. The table populates rows with strategy\nnames and their corresponding descriptions, which are sourced from the `gtm`\ndata object. The table's appearance is customized with specific colors,\nfonts, and alignments, and its columns are auto-fitted to the content.\n\nArgs:\n    doc: The `python-docx` Document object to which the section is added.\n        This object is modified in-place.\n    gtm: An object containing go-to-market strategy descriptions, required\n        to have `trojan_horse`, `self_funded_transformation`, and `lock_in`\n        attributes.\n\nReturns:\n    None. The `doc` object is modified by side effect.\n\nRaises:\n    AttributeError: If the `gtm` object lacks a required strategy attribute."}."""
-    add_heading_paragraph(doc, "2. Go-To-Market", level=1)
+    add_heading_paragraph(doc, t("commercial_ch2_gtm", locale=doc_lang), level=1)
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
     finalize_table(table)
-    headers = ["Vector de Entrada", "Estrategia Recomendada"]
+    headers = get_localized_list("commercial_gtm_headers", locale=doc_lang)
     for i, h in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[i],
@@ -406,9 +404,9 @@ def render_gtm_strategy(doc, gtm: GtmStrategy) -> Any:
         for r in table.rows[0].cells[i].paragraphs[0].runs:
             r.font.color.rgb = RGBColor(255, 255, 255)
     vectors = [
-        ("El Caballo de Troya (Wedge)", gtm.trojan_horse),
-        ("Transformación Autofinanciada", gtm.self_funded_transformation),
-        ("Estrategia de Lock-in (MRR)", gtm.lock_in),
+        (t("commercial_vector_trojan_horse", locale=doc_lang), gtm.trojan_horse),
+        (t("commercial_vector_self_funded", locale=doc_lang), gtm.self_funded_transformation),
+        (t("commercial_vector_lock_in", locale=doc_lang), gtm.lock_in),
     ]
     for v_name, v_desc in vectors:
         row = table.add_row()
@@ -427,7 +425,7 @@ def render_gtm_strategy(doc, gtm: GtmStrategy) -> Any:
     add_spacer(doc, 20)
 
 
-def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) -> Any:
+def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem], doc_lang: str) -> Any:
     """Populates a Word document with a section detailing commercial opportunities.
 
     This function generates the "Pipeline de Oportunidades" section by first
@@ -449,10 +447,10 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
     Returns:
         None. The function modifies the input `doc` object in-place.
     """
-    add_heading_paragraph(doc, "3. Pipeline de Oportunidades", level=1)
+    add_heading_paragraph(doc, t("commercial_ch3_pipeline", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
-        "Estimaciones financieras y estrategias de mitigación de objeciones (Red Team).",
+        "Financial estimates and Red Team objection mitigation strategies.",
         color_rgb=BASE_TEXT_COLOR,
         space_after=12,
     )
@@ -503,7 +501,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
         clear_paragraph(obj_cell.paragraphs[0])
         p1 = obj_cell.paragraphs[0]
         p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        r1 = p1.add_run("🛑 Objeción del Cliente (Red Team): ")
+        r1 = p1.add_run(t("commercial_client_objection_badge", locale=doc_lang))
         r1.bold = False
         r1.font.size = Pt(10.5)
         r1.font.color.rgb = RGBColor(204, 0, 0)
@@ -523,7 +521,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem]) 
         add_spacer(doc, 15)
 
 
-def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
+def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -> Any:
     """Appends a formatted appendix section for each proactive proposal to a document.
 
     This function first adds a main heading for the "Proactive Proposals" appendix. It then iterates through each `ProposalDraft` object, inserting a page break before each new proposal to ensure clear separation. For each proposal, it constructs a detailed, multi-part section with specific formatting, including:
@@ -543,10 +541,10 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
     Raises:
         AttributeError: If a `ProposalDraft` object is missing a required attribute, indicating malformed input data.
     """
-    add_heading_paragraph(doc, "4. Anexos: Propuestas Proactivas", level=1)
+    add_heading_paragraph(doc, t("commercial_ch4_proposals", locale=lang), level=1)
     add_body_paragraph(
         doc,
-        "Borradores de propuestas detalladas listos para ser adaptados y enviados al cliente tras incluir las credenciales correspondientes.",
+        "Detailed proposal drafts ready for client transmission following credential attachment.",
         color_rgb=BASE_TEXT_COLOR,
         space_after=12,
     )
@@ -554,12 +552,12 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
         doc.add_page_break()
         p_title = add_heading_paragraph(
             doc,
-            f"Propuesta {idx}: {clean_commercial_text(prop.initiative_name)}",
+            t("commercial_proposal_numbered_title", locale=lang, idx=idx, title=clean_commercial_text(prop.initiative_name)),
             level=2,
         )
         for r in p_title.runs:
             r.font.size = Pt(16)
-        add_heading_paragraph(doc, "1. Executive Synthesis", level=3)
+        add_heading_paragraph(doc, t("commercial_proposal_synthesis", locale=lang), level=3)
         p_syn = doc.add_paragraph()
         p_syn.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         r_syn_text = p_syn.add_run(clean_commercial_text(prop.executive_synthesis))
@@ -570,7 +568,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
         ai_strat = prop.ai_transformation_strategy
         if ai_strat:
             add_heading_paragraph(
-                doc, "Estrategia de Transformación y Automatización", level=3
+                doc, t("commercial_transformation_strategy_title", locale=lang), level=3
             )
             p_ai = doc.add_paragraph()
             p_ai.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -579,37 +577,41 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             p_ai.paragraph_format.space_after = Pt(12)
 
         add_heading_paragraph(
-            doc, "2. Contexto y Comprensión del Reto (The 'Why')", level=3
+            doc, t("commercial_context_the_why", locale=lang), level=3
         )
         ctx = prop.context_and_why
+        orig_lbl = t("commercial_project_origin_label", locale=lang)
+        coi_lbl = t("commercial_coi_label", locale=lang)
         add_smart_bullet_list(
             doc,
             [
-                f"Origen del Proyecto: {clean_commercial_text(ctx.origin)}",
-                f"Coste de la Inacción (COI): {clean_commercial_text(ctx.cost_of_inaction)}",
+                f"{orig_lbl}: {clean_commercial_text(ctx.origin)}",
+                f"{coi_lbl}: {clean_commercial_text(ctx.cost_of_inaction)}",
             ],
             color_rgb=RGBColor(46, 64, 77),
             bold_prefix=True,
         )
         add_spacer(doc, 10)
         add_heading_paragraph(
-            doc, "3. La Solución y Resultados Estratégicos (The 'What')", level=3
+            doc, t("commercial_solution_the_what", locale=lang), level=3
         )
         sol = prop.solution_and_what
+        target_lbl = t("commercial_target_state_label", locale=lang)
+        ns_lbl = t("commercial_north_star_label", locale=lang)
         add_smart_bullet_list(
             doc,
             [
-                f"Estado Objetivo (TO-BE): {clean_commercial_text(sol.target_state)}",
-                f"Métrica de Éxito (North Star Metric): {clean_commercial_text(sol.north_star_metric)}",
+                f"{target_lbl}: {clean_commercial_text(sol.target_state)}",
+                f"{ns_lbl}: {clean_commercial_text(sol.north_star_metric)}",
             ],
             color_rgb=RGBColor(46, 64, 77),
             bold_prefix=True,
         )
         add_spacer(doc, 10)
-        add_heading_paragraph(doc, "4. Alcance y Entregables (The 'How')", level=3)
+        add_heading_paragraph(doc, t("commercial_proposal_scope", locale=lang), level=3)
         scope = prop.scope_and_how
         p_phases = doc.add_paragraph()
-        r_ph = p_phases.add_run("Fases del Proyecto:")
+        r_ph = p_phases.add_run(t("commercial_project_phases", locale=lang))
         r_ph.bold = True
         r_ph.font.color.rgb = RGBColor(46, 64, 77)
         p_phases.paragraph_format.space_after = Pt(4)
@@ -620,7 +622,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             bold_prefix=True,
         )
         p_del = doc.add_paragraph()
-        r_del = p_del.add_run("Entregables Principales:")
+        r_del = p_del.add_run(t("commercial_key_deliverables", locale=lang))
         r_del.bold = True
         r_del.font.color.rgb = RGBColor(46, 64, 77)
         p_del.paragraph_format.space_after = Pt(4)
@@ -631,7 +633,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             bold_prefix=False,
         )
         p_out = doc.add_paragraph()
-        r_out = p_out.add_run("Fuera de Alcance (Out of Scope):")
+        r_out = p_out.add_run(t("commercial_out_of_scope", locale=lang))
         r_out.bold = True
         r_out.font.color.rgb = RGBColor(46, 64, 77)
         p_out.paragraph_format.space_after = Pt(4)
@@ -642,17 +644,18 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             bold_prefix=False,
         )
         add_spacer(doc, 10)
-        add_heading_paragraph(doc, "5. Modelo de Entrega y Asunciones", level=3)
+        add_heading_paragraph(doc, t("commercial_delivery_model", locale=lang), level=3)
         gov = prop.governance_and_assumptions
         team = prop.delivery_team
+        gov_lbl = t("commercial_governance_model_label", locale=lang)
         add_body_paragraph(
             doc,
-            f"Modelo de Gobierno: {clean_commercial_text(gov.governance_model)}",
+            f"{gov_lbl}: {clean_commercial_text(gov.governance_model)}",
             color_rgb=RGBColor(46, 64, 77),
             space_after=6,
         )
         p_team = doc.add_paragraph()
-        r_team = p_team.add_run("Perfiles Clave:")
+        r_team = p_team.add_run(t("commercial_key_profiles", locale=lang))
         r_team.bold = True
         r_team.font.color.rgb = RGBColor(46, 64, 77)
         p_team.paragraph_format.space_after = Pt(4)
@@ -663,7 +666,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             bold_prefix=False,
         )
         p_as = doc.add_paragraph()
-        r_as = p_as.add_run("Asunciones Críticas (Assumptions):")
+        r_as = p_as.add_run(t("commercial_critical_assumptions", locale=lang))
         r_as.bold = True
         r_as.font.color.rgb = RGBColor(46, 64, 77)
         p_as.paragraph_format.space_after = Pt(4)
@@ -674,7 +677,11 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             bold_prefix=False,
         )
         add_spacer(doc, 10)
-        add_heading_paragraph(doc, "6. Gestión de Riesgos del Proyecto", level=3)
+        add_heading_paragraph(
+            doc,
+            t("section_project_risk_management", locale=lang),
+            level=3,
+        )
         risks = prop.risk_management
         if risks:
             company = _resolve_company()
@@ -682,14 +689,14 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             finalize_table(rtable)
             set_cell_text(
                 rtable.rows[0].cells[0],
-                "Riesgo Identificado",
+                t("header_identified_risk", locale=lang),
                 bold=True,
                 font_size=10.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER,
             )
             set_cell_text(
                 rtable.rows[0].cells[1],
-                f"Estrategia de Mitigación {company}",
+                t("header_mitigation_strategy", locale=lang, company=company),
                 bold=True,
                 font_size=10.5,
                 align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -715,7 +722,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
                 shade_cell(row.cells[1], "F2F2F2")
             add_spacer(doc, 10)
         company = _resolve_company()
-        add_heading_paragraph(doc, f"7. Por qué {company}", level=3)
+        add_heading_paragraph(doc, t("commercial_why_company", locale=lang, company=company), level=3)
         why = prop.why_ntt_data
         add_smart_bullet_list(
             doc,
@@ -723,34 +730,35 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft]) -> Any:
             color_rgb=RGBColor(46, 64, 77),
             bold_prefix=False,
         )
+        part_lbl = t("commercial_key_partnerships_label", locale=lang)
         add_body_paragraph(
             doc,
-            f"Partnerships Clave: {clean_commercial_text(why.partnerships)}",
+            f"{part_lbl}: {clean_commercial_text(why.partnerships)}",
             color_rgb=RGBColor(46, 64, 77),
         )
         p_cred = doc.add_paragraph()
-        r_cred = p_cred.add_run(
-            "[⚠️ ACCIÓN COMERCIAL REQUERIDA: INSERTE AQUÍ AL MENOS 2 CREDENCIALES DE PROYECTOS SIMILARES EN EL SECTOR DEL CLIENTE ANTES DE ENVIAR]"
-        )
+        r_cred = p_cred.add_run(t("commercial_action_required_credentials", locale=lang))
         r_cred.bold = True
         r_cred.font.color.rgb = RGBColor(238, 63, 50)
         p_cred.paragraph_format.space_before = Pt(6)
         p_cred.paragraph_format.space_after = Pt(10)
         add_heading_paragraph(
-            doc, "8. Inversión y Plan de Activación (Next 14 Days)", level=3
+            doc, t("commercial_investment_activation_title", locale=lang), level=3
         )
         inv = prop.investment_and_timeline
+        dur_lbl = t("commercial_estimated_duration_label", locale=lang)
+        inv_range_lbl = t("commercial_investment_range_label", locale=lang)
         add_smart_bullet_list(
             doc,
             [
-                f"Duración Estimada: {clean_commercial_text(inv.estimated_duration)}",
-                f"Rango de Inversión (TCV): {clean_commercial_text(inv.tcv_range)}",
+                f"{dur_lbl}: {clean_commercial_text(inv.estimated_duration)}",
+                f"{inv_range_lbl}: {clean_commercial_text(inv.tcv_range)}",
             ],
             color_rgb=RGBColor(46, 64, 77),
             bold_prefix=True,
         )
         p_act = doc.add_paragraph()
-        r_act = p_act.add_run("Plan de Activación Inmediata:")
+        r_act = p_act.add_run(t("commercial_activation_plan", locale=lang))
         r_act.bold = True
         r_act.font.color.rgb = RGBColor(46, 64, 77)
         p_act.paragraph_format.space_after = Pt(4)
@@ -825,21 +833,23 @@ def render_commercial_report(
     doc = Document(str(template_path))
     clear_document_body(doc)
 
-    if doc.sections:
-        create_page_number_footer(doc.sections[0])
+    lang = getattr(payload.meta, "doc_lang", "en").lower()
 
-    render_commercial_cover(doc, payload)
+    if doc.sections:
+        create_page_number_footer(doc.sections[0], doc_lang=lang)
+
+    render_commercial_cover(doc, payload, doc_lang=lang)
 
     if payload.commercial_summary:
         render_commercial_summary(
-            doc, payload.commercial_summary, payload.stakeholder_matrix
+            doc, payload.commercial_summary, payload.stakeholder_matrix, doc_lang=lang
         )
     if payload.gtm_strategy:
-        render_gtm_strategy(doc, payload.gtm_strategy)
+        render_gtm_strategy(doc, payload.gtm_strategy, doc_lang=lang)
     if payload.opportunities_pipeline:
-        render_opportunities_pipeline(doc, payload.opportunities_pipeline)
+        render_opportunities_pipeline(doc, payload.opportunities_pipeline, doc_lang=lang)
     if payload.proactive_proposals:
-        render_proactive_proposals(doc, payload.proactive_proposals)
+        render_proactive_proposals(doc, payload.proactive_proposals, lang=lang)
 
     process_footnotes(doc, payload.intelligence_dossier)
     doc.save(str(output_path))

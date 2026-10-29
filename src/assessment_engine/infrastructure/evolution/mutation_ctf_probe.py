@@ -70,7 +70,7 @@ class MutationSiteCollector(ast.NodeVisitor):
                 "lineno": node.lineno,
                 "type": "Compare",
                 "replacement": mutated_op,
-                "desc": f"ROR: {desc_suffix} en línea {node.lineno}",
+                "desc": f"ROR: {desc_suffix} at line {node.lineno}",
             })
             self._counter += 1
 
@@ -82,13 +82,13 @@ class MutationSiteCollector(ast.NodeVisitor):
         desc = ""
         if isinstance(node.op, ast.Add):
             mutated_op = ast.Sub()
-            desc = f"AOR: '+' invertido a '-' en línea {node.lineno}"
+            desc = f"AOR: '+' inverted to '-' at line {node.lineno}"
         elif isinstance(node.op, ast.Sub):
             mutated_op = ast.Add()
-            desc = f"AOR: '-' invertido a '+' en línea {node.lineno}"
+            desc = f"AOR: '-' inverted to '+' at line {node.lineno}"
         elif isinstance(node.op, ast.Mult):
             mutated_op = ast.FloorDiv()
-            desc = f"AOR: '*' invertido a '//' en línea {node.lineno}"
+            desc = f"AOR: '*' inverted to '//' at line {node.lineno}"
 
         if mutated_op is not None:
             self.sites.append({
@@ -108,10 +108,10 @@ class MutationSiteCollector(ast.NodeVisitor):
         desc = ""
         if isinstance(node.op, ast.And):
             mutated_op = ast.Or()
-            desc = f"LCR: 'and' invertido a 'or' en línea {node.lineno}"
+            desc = f"LCR: 'and' inverted to 'or' at line {node.lineno}"
         elif isinstance(node.op, ast.Or):
             mutated_op = ast.And()
-            desc = f"LCR: 'or' invertido a 'and' en línea {node.lineno}"
+            desc = f"LCR: 'or' inverted to 'and' at line {node.lineno}"
 
         if mutated_op is not None:
             self.sites.append({
@@ -133,7 +133,7 @@ class MutationSiteCollector(ast.NodeVisitor):
                 "lineno": node.lineno,
                 "type": "Constant",
                 "replacement": not node.value,
-                "desc": f"COR: booleano '{node.value}' invertido a '{not node.value}' en línea {node.lineno}",
+                "desc": f"COR: boolean '{node.value}' inverted to '{not node.value}' at line {node.lineno}",
             })
             self._counter += 1
         self.generic_visit(node)
@@ -229,13 +229,13 @@ def run_mutation_ctf(
     try:
         base_tree = ast.parse(original_code)
     except SyntaxError as e:
-        logger.error(f"[MutationCTF] Error sintáctico en {target_p}: {e}")
+        logger.error(f"[MutationCTF] Syntax error in {target_p}: {e}")
         return MutationProbeResult(
             total_mutants=0,
             killed_mutants=0,
             survived_mutants=0,
             mutation_score=0.0,
-            survived_details=[f"Error sintáctico: {e}"],
+            survived_details=[f"Syntax error: {e}"],
             passed=False,
         )
 

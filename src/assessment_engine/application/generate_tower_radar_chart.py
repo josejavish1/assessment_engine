@@ -67,7 +67,7 @@ def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Pa
     values = [safe_float(p.get("score_display")) for p in pillars]
 
     if not labels or not any(v is not None for v in values):
-        raise ValueError("No hay datos suficientes para generar el radar chart.")
+        raise ValueError("Insufficient data points to generate radar chart.")
 
     values = [v if v is not None else 0.0 for v in values]
 

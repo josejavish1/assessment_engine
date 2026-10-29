@@ -64,9 +64,9 @@ def run_shadow_compilation() -> None:
     )
     args = parser.parse_args()
 
-    print("🛰️  [V4 AST Shadow Compiler] Iniciando ejecución en sombra para:")
+    print("🛰️  [V4 AST Shadow Compiler] Starting shadow execution for:")
     print(f"   ├─ Blueprint: {args.blueprint_payload}")
-    print(f"   ├─ Síntesis: {args.approved_annex}")
+    print(f"   ├─ Synthesis: {args.approved_annex}")
 
     start_time = time.time()
 
@@ -76,7 +76,7 @@ def run_shadow_compilation() -> None:
 
     conversion_time = time.time() - start_time
     print(
-        f"   ├─ Conversión a AST completada en memoria en {conversion_time * 1000:.2f} ms"
+        f"   ├─ In-memory AST conversion completed in {conversion_time * 1000:.2f} ms"
     )
 
     # Execute the standard, full compilation process to generate the canonical DOCX output. This serves as the baseline reference for all shadow compilations.
@@ -157,10 +157,10 @@ def run_shadow_compilation() -> None:
     total_time = time.time() - start_time
 
     print(
-        f"   ├─ Compilación física de DOCX completada en {compilation_time * 1000:.2f} ms"
+        f"   ├─ Physical DOCX compilation completed in {compilation_time * 1000:.2f} ms"
     )
     print(
-        f"🎉 ¡Compilación en Sombra V4 Completada con Éxito en {total_time * 1000:.2f} ms!"
+        f"🎉 V4 Shadow Compilation Completed Successfully in {total_time * 1000:.2f} ms!"
     )
     print(f"   ├─ Archivo Generado (Full): {args.output}")
     print(f"   ├─ Archivo Generado (Minimal): {minimal_output}")

@@ -146,10 +146,10 @@ def resolve_matrix_file_name(tower_id: str) -> str | None:
 
 
 def build_question_text(kpi_name: str) -> str:
-    """Generate a Spanish maturity assessment question for a given KPI."""
+    """Generate a maturity assessment question for a given KPI."""
     return (
-        f"Evaluación de madurez para '{kpi_name}'. "
-        "La respuesta debe valorarse en escala 1-5."
+        f"Maturity assessment for '{kpi_name}'. "
+        "The response must be rated on a 1-5 scale."
     )
 
 
@@ -259,13 +259,20 @@ def build_case_input(args: argparse.Namespace) -> dict:
                 }
             )
 
-    source_documents = [
-        "0. Framework metodológico de Madurez de infraestructura v1.0.docx",
-        "1. Taxonomía y gobierno de las Torres Tecnológicas v1.0.docx",
-        "12. Template Documento Anexos Alpha v.05.docx",
-        context_path.name,
-        responses_path.name,
-    ]
+    framework_docs = sorted(
+        p.name
+        for p in (ROOT / "source_docs").glob("*.docx")
+        if p.name.startswith(("0.", "1.", "12."))
+    )
+    source_documents = (
+        framework_docs
+        if framework_docs
+        else [
+            "0. Framework Methodology.docx",
+            "1. Tower Taxonomy.docx",
+            "12. Template Annexes.docx",
+        ]
+    ) + [context_path.name, responses_path.name]
     matrix_file_name = resolve_matrix_file_name(args.tower)
     if matrix_file_name:
         source_documents.insert(2, matrix_file_name)
@@ -280,11 +287,18 @@ def build_case_input(args: argparse.Namespace) -> dict:
             target_maturity = get_target_maturity(intel, args.tower, 4.0)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     storage_dir = Path(f"working/{client_slug}")
     vault_path = storage_dir / "evidence_vault.json"
     tree_path = storage_dir / "raptor_tree.json"
+
+    context_text = ""
+    if context_path.exists():
+        try:
+            context_text = read_text(context_path)
+        except Exception as ex:
+            logger.debug(f"[CaseInput] Error leyendo context_path: {ex}")
 
     context_summary = ""
     if tree_path.exists():
@@ -309,8 +323,7 @@ def build_case_input(args: argparse.Namespace) -> dict:
         except (OSError, json.JSONDecodeError) as ex:
             logger.debug(f"[CaseInput] Error leyendo evidence_vault: {ex}")
 
-    if not context_summary and context_path.exists():
-        context_text = read_text(context_path)
+    if not context_summary and context_text:
         context_summary = context_text[:40000]
     client_context = (
         build_client_context_packet(intel, tower_id=args.tower) if intel else {}

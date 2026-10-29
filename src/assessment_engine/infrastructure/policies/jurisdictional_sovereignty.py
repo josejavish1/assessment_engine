@@ -71,18 +71,19 @@ def infer_jurisdiction_code(
 ) -> str:
     """Infers the ISO region code based on country, regulatory frameworks, or document language."""
     if country:
-        c_clean = country.strip().upper()
+        import unicodedata
+        c_clean = unicodedata.normalize("NFKD", country.strip().upper()).encode("ASCII", "ignore").decode("utf-8")
         if c_clean in ("DE", "GERMANY", "DEUTSCHLAND", "DACH"):
             return "DE"
-        if c_clean in ("ES", "SPAIN", "ESPAÑA"):
+        if c_clean in ("ES", "SPAIN", "ESPANA"):
             return "ES"
         if c_clean in ("US", "USA", "UNITED STATES", "ESTADOS UNIDOS"):
             return "US"
         if c_clean in ("BR", "BRAZIL", "BRASIL"):
             return "BR"
-        if c_clean in ("MX", "MEXICO", "MÉXICO"):
+        if c_clean in ("MX", "MEXICO"):
             return "MX"
-        if c_clean in ("JP", "JAPAN", "JAPÓN"):
+        if c_clean in ("JP", "JAPAN", "JAPON"):
             return "JP"
         if c_clean in ("SA", "SAUDI ARABIA", "ARABIA SAUDITA", "KSA"):
             return "SA"
@@ -127,16 +128,14 @@ def infer_jurisdiction_code(
         return "CO"
 
     # Fallback to language hints
-    lang = (language or "es").strip().lower()
-    if lang == "de":
-        return "DE"
-    if lang == "ja":
-        return "JP"
-    if lang == "en":
-        return "US"
-    if lang == "pt":
-        return "BR"
-    return "ES"
+    lang_to_jurisdiction = {
+        "de": "DE",
+        "ja": "JP",
+        "en": "US",
+        "pt": "BR",
+    }
+    normalized_code = (language or "en").strip().lower()
+    return lang_to_jurisdiction.get(normalized_code, "ES")
 
 
 def synthesize_jurisdiction_profile_jit(
@@ -248,7 +247,7 @@ class JurisdictionalSovereigntyPolicy(BaseSovereignPolicy):
             for proj in pillar.get("projects_todo", []):
                 deliverables = proj.setdefault("deliverables", [])
                 invariant = profile.architectural_invariants[0]
-                d_item = f"Verificación de Soberanía Arquitectónica: {invariant}"
+                d_item = f"Architectural Sovereignty Verification: {invariant}"
                 if d_item not in deliverables:
                     deliverables.append(d_item)
 

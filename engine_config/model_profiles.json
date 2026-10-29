@@ -33,20 +33,20 @@
       "model": "gemini-3.8-flash"
     },
     "global_refiner": {
-      "tier": "fast",
+      "tier": "reasoning",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192,
-      "model": "gemini-3.8-flash"
+      "model": "gemini-4-argon"
     },
     "global_refiner_strict": {
-      "tier": "fast",
+      "tier": "reasoning",
       "temperature": 0.2,
       "top_p": 0.9,
       "seed": 17,
       "max_output_tokens": 8192,
-      "model": "gemini-3.8-flash"
+      "model": "gemini-4-argon"
     },
     "review_strict": {
       "tier": "reasoning",

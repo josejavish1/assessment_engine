@@ -57,7 +57,7 @@ export default function CommandPalette() {
             </CommandItem>
             <CommandItem className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
-              <span>Configuración</span>
+              <span>Settings</span>
             </CommandItem>
           </CommandGroup>
         </CommandList>

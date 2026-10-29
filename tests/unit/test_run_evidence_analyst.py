@@ -65,8 +65,8 @@ def test_format_answers_summary_structure():
         {"kpi_id": "T1.P1.K1.PR2", "score": 2.0, "question_text": "¿Existe CMDB actualizada?"},
     ]
     summary = _format_answers_summary(answers)
-    assert "KPI T1.P1.K1.PR1 (Autoservicio): Score 4.0 | Pregunta/Info: Portal Jira" in summary
-    assert "KPI T1.P1.K1.PR2: Score 2.0 | Pregunta/Info: ¿Existe CMDB actualizada?" in summary
+    assert "KPI T1.P1.K1.PR1 (Autoservicio): Score 4.0 | Question/Context: Portal Jira" in summary
+    assert "KPI T1.P1.K1.PR2: Score 2.0 | Question/Context: ¿Existe CMDB actualizada?" in summary
 
 
 @pytest.mark.asyncio

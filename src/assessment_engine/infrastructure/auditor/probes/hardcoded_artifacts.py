@@ -51,26 +51,26 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
                 self.findings.append(AuditFinding(
                     category="ENV_LEAK", severity="CRITICAL", file_path=self.rel_path, line_number=node.lineno,
                     rule_id="CWE-200_HARDCODED_PATH", message=f"Ruta de host local absoluta detectada: '{val[:30]}...'",
-                    recommendation="Usar anclaje relativo con Path(__file__).resolve().parents o inyección de variable de entorno."
+                    recommendation="Use relative anchoring via Path(__file__).resolve().parents or environment variable injection."
                 ))
             if PII_EMAIL_REGEX.search(val) and "example.com" not in val.lower() and "test" not in val.lower():
                 self.findings.append(AuditFinding(
                     category="PII_LEAK", severity="HIGH", file_path=self.rel_path, line_number=node.lineno,
                     rule_id="RGPD_ART5_HARDCODED_PII", message=f"Posible PII detectado en literal de cadena: '{val}'",
-                    recommendation="Evitar PII real. Usar faker, example.com o resolución de DB dinámica."
+                    recommendation="Avoid actual PII. Use faker, example.com, or dynamic database resolution."
                 ))
             if ("core/primitives" in self.rel_path or "core/auditor" in self.rel_path) and "test_" not in self.rel_path:
                 if any(kw in val for kw in DOMAIN_LEAK_KEYWORDS):
                     if "hardcoded_artifacts.py" not in self.rel_path:
                         self.findings.append(AuditFinding(
                             category="DOMAIN_LEAK", severity="MEDIUM", file_path=self.rel_path, line_number=node.lineno,
-                            rule_id="ARCH_DOMAIN_LEAK", message=f"Fuga de dominio detectada en paquete agnóstico: '{val}'",
-                            recommendation="Desacoplar la entidad específica usando configuración de esquema genérico."
+                            rule_id="ARCH_DOMAIN_LEAK", message=f"Domain leak detected in agnostic core package: '{val}'",
+                            recommendation="Decouple domain-specific entity into schema configuration catalog."
                         ))
             if AI_MODEL_REGEX.match(val) and not any(p in self.rel_path for p in ("genai_client.py", "ai_client.py", "test_", "hardcoded_artifacts.py")):
                 self.findings.append(AuditFinding(
                     category="MODEL_LEAK", severity="HIGH", file_path=self.rel_path, line_number=node.lineno,
-                    rule_id="ARCH_HARDCODED_AI_MODEL", message=f"Modelo de IA hardcodeado en literal de cadena: '{val}'.",
+                    rule_id="ARCH_HARDCODED_AI_MODEL", message=f"AI model hardcoded in string literal: '{val}'.",
                     recommendation="Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de assessment_engine.infrastructure.genai_client."
                 ))
         self.generic_visit(node)
@@ -90,7 +90,7 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
         if entropy > 3.8:
             self.findings.append(AuditFinding(
                 category="SECRET_LEAK", severity="CRITICAL", file_path=self.rel_path, line_number=node.lineno,
-                rule_id="CWE-798_HARDCODED_SECRET", message=f"Secreto estático de alta entropía ({entropy:.2f}) en '{target.id}'.",
+                rule_id="CWE-798_HARDCODED_SECRET", message=f"High-entropy static secret ({entropy:.2f}) in '{target.id}'.",
                 recommendation="Usar os.environ.get() o secrets.token_hex() para fallbacks locales."
             ))
 
@@ -126,8 +126,8 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
         if any(s in key_name for s in ("secret", "password", "token_key")) and "mock" not in fallback_val.lower():
             self.findings.append(AuditFinding(
                 category="FALLBACK_SECRET_LEAK", severity="CRITICAL", file_path=self.rel_path, line_number=node.lineno,
-                rule_id="CWE-1188_INSECURE_DEFAULT_SECRET", message=f"Secreto estático por defecto en entorno para '{node.args[0].value}'.",
-                recommendation="Usar resolve_secret() para aplicar Fail-Fast o generar token en memoria."
+                rule_id="CWE-1188_INSECURE_DEFAULT_SECRET", message=f"Insecure default static secret in environment for '{node.args[0].value}'.",
+                recommendation="Use resolve_secret() to enforce Fail-Fast or generate in-memory token."
             ))
 
     def _check_raw_sleep(self, node: ast.Call) -> None:
@@ -138,8 +138,8 @@ class PythonHardcodedVisitor(ast.NodeVisitor):
         if any(p in self.rel_path for p in ("daemon_supervisor", "core/primitives")):
             self.findings.append(AuditFinding(
                 category="RAW_SLEEP_LITERAL", severity="MEDIUM", file_path=self.rel_path, line_number=node.lineno,
-                rule_id="SRE_RAW_SLEEP_MAGIC_NUMBER", message=f"Pausa con número mágico '{node.args[0].value}' en lugar de constante SRE.",
-                recommendation="Usar constantes semánticas de core.config.sre_constants (ej. DEFAULT_RETRY_BACKOFF_SEC)."
+                rule_id="SRE_RAW_SLEEP_MAGIC_NUMBER", message=f"Raw sleep with magic number '{node.args[0].value}' instead of SRE constant.",
+                recommendation="Use semantic constants from sre_constants (e.g. DEFAULT_RETRY_BACKOFF_SEC)."
             ))
 
     def visit_Call(self, node: ast.Call):
@@ -173,13 +173,13 @@ def _scan_single_ts_line(line: str, i: int, rel_path: str) -> list[AuditFinding]
         findings.append(AuditFinding(
             category="ENV_LEAK", severity="CRITICAL", file_path=rel_path, line_number=i,
             rule_id="CWE-200_HARDCODED_PATH", message="Ruta de host local absoluta detectada.",
-            recommendation="Usar configuración inyectada (ej. variable de entorno) o ruta relativa."
+            recommendation="Use injected configuration (e.g. environment variable) or relative path."
         ))
     if PII_EMAIL_REGEX.search(line) and "example.com" not in line.lower() and "test" not in line.lower():
         findings.append(AuditFinding(
             category="PII_LEAK", severity="HIGH", file_path=rel_path, line_number=i,
-            rule_id="RGPD_ART5_HARDCODED_PII", message="PII real detectado en código fuente.",
-            recommendation="Usar variables de sesión, un .env o un proveedor de Auth."
+            rule_id="RGPD_ART5_HARDCODED_PII", message="Actual personal identifiable information (PII) detected in source code.",
+            recommendation="Use session variables, environment secrets, or Auth identity provider."
         ))
     match = SECRET_ASSIGN_REGEX.search(line)
     if match:
@@ -189,7 +189,7 @@ def _scan_single_ts_line(line: str, i: int, rel_path: str) -> list[AuditFinding]
             if entropy > 3.8:
                 findings.append(AuditFinding(
                     category="SECRET_LEAK", severity="CRITICAL", file_path=rel_path, line_number=i,
-                    rule_id="CWE-798_HARDCODED_SECRET", message=f"Asignación de secreto de alta entropía ({entropy:.2f}).",
+                    rule_id="CWE-798_HARDCODED_SECRET", message=f"High-entropy secret assignment detected ({entropy:.2f}).",
                     recommendation="Usar variables de entorno (VITE_ / process.env)."
                 ))
     return findings

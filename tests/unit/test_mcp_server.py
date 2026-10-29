@@ -1,6 +1,7 @@
 # golden-path: ignore
 from __future__ import annotations
 
+from pathlib import Path
 import pytest
 from mcp.server.fastmcp import FastMCP
 
@@ -82,7 +83,10 @@ async def test_mcp_abort_and_revert_execution() -> None:
         first_msg = result_content[0]
         data = json.loads(first_msg.text)
         assert data["success"] is True
-        assert "Abortado y código revertido" in data["message"]
+        assert (
+            "Abortado y código revertido" in data["message"]
+            or "Aborted and working tree reverted" in data["message"]
+        )
 
         # Ensure subprocess.run was called twice with Git parameters
         assert mock_run.call_count == 2
@@ -113,7 +117,6 @@ async def test_mcp_abort_and_revert_execution() -> None:
 def test_inspect_payload_artifact_blueprint_mutation_gate(tmp_path: Path) -> None:
     """Verify that _inspect_payload_artifact correctly accesses attributes for Blueprint schemas."""
     from assessment_engine.mcp_server import _inspect_payload_artifact
-    from pathlib import Path
 
     class MockMeta:
         tower_code = "T1"

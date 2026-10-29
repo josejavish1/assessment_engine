@@ -20,13 +20,13 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
 
   const startExecution = async () => {
     setExecutionState('running');
-    setLogs("Iniciando Pipeline de Ejecución Autónoma...\nCalculando Blast Radius...\nAsignando Agentes...\n\n");
+    setLogs("Starting Autonomous Execution Pipeline...\nCalculating Blast Radius...\nAssigning Agents...\n\n");
 
     const res = await startPlanExecution(requestDir, altIndex);
     if (res.success && res.jobId) {
       const poll = setInterval(async () => {
         const statusRes = await checkExecutionStatus(res.jobId);
-        if (statusRes.result) setLogs(prev => "Iniciando Pipeline de Ejecución Autónoma...\nCalculando Blast Radius...\nAsignando Agentes...\n\n" + statusRes.result);
+        if (statusRes.result) setLogs(prev => "Starting Autonomous Execution Pipeline...\nCalculating Blast Radius...\nAssigning Agents...\n\n" + statusRes.result);
         if (statusRes.status === 'completed') {
           clearInterval(poll);
           setExecutionState('completed');
@@ -53,14 +53,14 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
   };
 
   const handleKillSwitch = async () => {
-    if (!confirm("⚠️ ATENCIÓN: ¿Estás seguro de querer abortar la ejecución? El sistema ejecutará un 'git reset --hard' para revertir todos los cambios y asegurar el repositorio.")) return;
+    if (!confirm("⚠️ ATTENTION: Are you sure you want to abort execution? System will execute 'git reset --hard' to roll back all changes.")) return;
 
-    setLogs(prev => prev + "\n\n🚨 ABORTANDO EJECUCIÓN...\nEjecutando git reset --hard...");
+    setLogs(prev => prev + "\n\n🚨 ABORTING EXECUTION...\nExecuting git reset --hard...");
     const res = await abortAndRevert();
     setExecutionState('error');
     if (res.success) {
       setLogs(prev => prev + "\n✅ Repositorio revertido a su estado seguro.");
-      alert("Ejecución abortada. El repositorio ha sido revertido a su estado seguro.");
+      alert("Execution aborted. Repository successfully reverted to clean baseline.");
     } else {
       setLogs(prev => prev + `\n❌ Error en el rollback: ${res.error}`);
     }
@@ -72,7 +72,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
     setExecutionState('running');
     const res = await authorizeActionGate(requestDir, altIndex);
     if (res.success) {
-      setLogs(prev => prev + "✅ Action Gate autorizado. Reintentando ejecución...\n");
+      setLogs(prev => prev + "✅ Action Gate approved. Retrying execution...\n");
       const runRes = await startPlanExecution(requestDir, altIndex);
       if (runRes.success && runRes.jobId) {
         const poll = setInterval(async () => {
@@ -120,12 +120,12 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
             disabled={executionState === 'running'}
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors disabled:opacity-50"
           >
-            <ArrowLeft className="h-4 w-4" /> Volver a Planificación
+            <ArrowLeft className="h-4 w-4" /> Back to Planning
           </button>
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-3">
               <Activity className="h-6 w-6 text-primary" />
-              Centro de Mando de Ejecución
+              Execution Command Center
             </h2>
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
               {executionState === 'running' ? 'Live Execution' : executionState === 'completed' ? 'Success' : executionState === 'error' ? 'Halted' : 'Ready'}
@@ -154,7 +154,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
             className="px-6 py-2.5 rounded-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-lg disabled:opacity-50 flex items-center gap-2"
           >
             {executionState === 'running' ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5" />}
-            {executionState === 'running' ? 'Ejecutando...' : executionState === 'idle' ? 'Iniciar Ejecución Autónoma' : 'Reintentar'}
+            {executionState === 'running' ? 'Executing...' : executionState === 'idle' ? 'Start Autonomous Execution' : 'Retry'}
           </button>
         </div>
       </div>
@@ -187,13 +187,13 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
                <Terminal className="h-4 w-4" /> Liability Logs (Immutable)
              </h3>
              {executionState === 'completed' && (
-               <button className="text-xs text-primary hover:underline">Exportar PDF de Auditoría</button>
+               <button className="text-xs text-primary hover:underline">Export Audit PDF</button>
              )}
           </div>
           <div className="flex-1 p-4 overflow-y-auto font-mono text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">
             {logs || (
               <div className="h-full flex items-center justify-center text-slate-600 italic">
-                Esperando inicio de ejecución...
+                Awaiting execution start...
               </div>
             )}
           </div>
@@ -212,8 +212,8 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
 
             <div className="p-6 space-y-6 text-slate-300">
               <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Diagnóstico del Doctor Agent</h3>
-                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate?.diagnosis?.diagnosis || "Diagnóstico no disponible"}</p>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Doctor Agent Diagnosis</h3>
+                <p className="bg-slate-900 p-3 rounded border border-slate-800 text-sm">{actionGate?.diagnosis?.diagnosis || "Diagnosis unavailable"}</p>
               </div>
 
               {actionGate?.diagnosis?.required_invariant_breach && (
@@ -238,8 +238,8 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-orange-400 mb-2">Impacto Secundario (Riesgo)</h3>
-                <p className="bg-orange-500/10 p-3 rounded border border-orange-500/30 text-sm text-orange-200">{actionGate?.diagnosis?.second_order_impact || "Riesgo no evaluado"}</p>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-orange-400 mb-2">Impact Secundario (Risk)</h3>
+                <p className="bg-orange-500/10 p-3 rounded border border-orange-500/30 text-sm text-orange-200">{actionGate?.diagnosis?.second_order_impact || "Risk no evaluado"}</p>
               </div>
             </div>
 
@@ -254,7 +254,7 @@ export function ExecutiveExecutionDashboard({ plan, requestDir, altIndex, onBack
                 onClick={handleAuthorizeActionGate}
                 className="px-6 py-2 rounded font-bold bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors shadow-lg"
               >
-                Autorizar Excepción
+                Authorize Exception
               </button>
             </div>
           </div>

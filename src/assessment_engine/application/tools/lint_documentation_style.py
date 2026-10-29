@@ -13,8 +13,8 @@ BANNED_HYPE_PATTERNS = [
     re.compile(r"\bSOTA\b", re.IGNORECASE),
     re.compile(r"Top Mundial", re.IGNORECASE),
     re.compile(r"\b100%\s+perfect", re.IGNORECASE),
-    re.compile(r"\bc[oó]digo perfecto\b", re.IGNORECASE),
-    re.compile(r"\bInterfaz Gr[aá]fica Definitiva\b", re.IGNORECASE),
+    re.compile(r"\bperfect code\b", re.IGNORECASE),
+    re.compile(r"\bdefinitive gui\b", re.IGNORECASE),
 ]
 
 

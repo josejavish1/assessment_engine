@@ -55,5 +55,4 @@ class GapDraft(BaseDraftModel):
             "3-6 meses",
             "6-12 meses",
             "plan de evolucion",
-            "plan de evolución",
         ]

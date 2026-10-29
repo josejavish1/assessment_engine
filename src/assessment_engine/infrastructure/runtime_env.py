@@ -7,6 +7,7 @@ from typing import Any
 
 from assessment_engine.infrastructure.genai_client import (
     ModelTier,
+    get_fallback_model,
     get_model,
 )
 
@@ -98,7 +99,7 @@ def _read_positive_float_env(
         value = float(raw_value)
     except ValueError as exc:
         raise RuntimeError(
-            f"{name} debe ser un número positivo. Valor recibido: {raw_value!r}"
+            f"{name} must be a positive number. Received: {raw_value!r}"
         ) from exc
 
     if value <= 0:
@@ -180,9 +181,9 @@ def run_vertex_ai_preflight(
     project, location = get_google_cloud_project_location(target)  # type: ignore
 
     if not project:
-        raise RuntimeError("GOOGLE_CLOUD_PROJECT no está definido.")
+        raise RuntimeError("GOOGLE_CLOUD_PROJECT is not set.")
     if not location:
-        raise RuntimeError("GOOGLE_CLOUD_LOCATION no está definido.")
+        raise RuntimeError("GOOGLE_CLOUD_LOCATION is not set.")
 
     resolved_model = (
         model_name
@@ -191,13 +192,38 @@ def run_vertex_ai_preflight(
     )
     resolved_timeout = timeout_seconds or get_vertex_preflight_timeout_seconds(target)  # type: ignore
 
+    use_vertex = (
+        str(target.get("GOOGLE_GENAI_USE_VERTEXAI", "1")).strip().lower()
+        not in ("0", "false", "no")
+    )
+    api_key = str(target.get("GEMINI_API_KEY", "")).strip()
+
+    if not use_vertex and api_key:
+        try:
+            from google import genai
+
+            ai_client = genai.Client(api_key=api_key)
+            m_info = ai_client.models.get(model=resolved_model)
+            return {
+                "project": "google-ai-studio",
+                "location": "global",
+                "detected_project": "google-ai-studio",
+                "model": resolved_model,
+                "publisher_model_name": m_info.name,
+                "timeout_seconds": resolved_timeout,
+            }
+        except Exception as exc:
+            raise RuntimeError(
+                f"Google AI Studio preflight failed (model={resolved_model}): {exc}"
+            ) from exc
+
     try:
         from google.auth import default
         from google.auth.transport.requests import Request
         from google.cloud.aiplatform_v1 import ModelGardenServiceClient
     except ImportError as exc:
         raise RuntimeError(
-            "No se pudieron importar las dependencias de Vertex AI necesarias para el preflight."
+            "Failed to import Vertex AI dependencies required for preflight check."
         ) from exc
 
     try:
@@ -216,10 +242,35 @@ def run_vertex_ai_preflight(
         )
 
         publisher_model_name = client.publisher_model_path("google", resolved_model)
-        client.get_publisher_model(
-            name=publisher_model_name,
-            timeout=resolved_timeout,
-        )
+        try:
+            client.get_publisher_model(
+                name=publisher_model_name,
+                timeout=resolved_timeout,
+            )
+        except Exception:
+            candidates = [
+                get_fallback_model(resolved_model),
+                "gemini-2.5-pro",
+                "gemini-1.5-pro",
+            ]
+            verified = False
+            for cand in candidates:
+                if not cand:
+                    continue
+                cand_path = client.publisher_model_path("google", cand)
+                try:
+                    client.get_publisher_model(
+                        name=cand_path,
+                        timeout=resolved_timeout,
+                    )
+                    resolved_model = cand
+                    publisher_model_name = cand_path
+                    verified = True
+                    break
+                except Exception:
+                    continue
+            if not verified:
+                raise
     except Exception as exc:
         raise RuntimeError(
             "Vertex AI preflight failed "

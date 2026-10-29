@@ -68,86 +68,19 @@ def _claim_type_for_v2(value: Any) -> str:
     return "inference"
 
 
-_TOWER_KEYWORDS: dict[str, tuple[str, ...]] = {
-    "T1": (
-        "strategy",
-        "estrategia",
-        "arquitectura",
-        "architecture",
-        "enterprise",
-        "soberanía",
-        "sovereignty",
-        "gobierno ti",
-    ),
-    "T2": (
-        "compute",
-        "plataforma",
-        "cloud",
-        "híbrida",
-        "hybrid",
-        "hosting",
-        "virtualización",
-    ),
-    "T3": (
-        "network",
-        "red",
-        "connectivity",
-        "sd-wan",
-        "conectividad",
-        "carrier",
-        "telecom",
-    ),
-    "T4": (
-        "data",
-        "datos",
-        "ai",
-        "ia",
-        "analytics",
-        "governance",
-        "dama",
-        "lakehouse",
-        "warehouse",
-        "bi",
-    ),
-    "T5": (
-        "resilience",
-        "continuity",
-        "recovery",
-        "dr",
-        "resiliencia",
-        "continuidad",
-        "backup",
-    ),
-    "T6": ("security", "zero trust", "identity", "ciber", "seguridad", "iam", "soc"),
-    "T7": (
-        "itsm",
-        "operaciones",
-        "service desk",
-        "observability",
-        "observabilidad",
-        "sre",
-        "monitoring",
-    ),
-    "T8": ("finops", "governance", "gobierno", "coste", "cost", "tco", "inversión"),
-    "T9": (
-        "workplace",
-        "employee",
-        "puesto",
-        "colaboración",
-        "dex",
-        "digital workplace",
-    ),
-    "T10": (
-        "apps",
-        "aplicaciones",
-        "legacy",
-        "modernización",
-        "mainframe",
-        "monolito",
-        "erp",
-        "crm",
-    ),
-}
+def _load_tower_keywords() -> dict[str, tuple[str, ...]]:
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    path = ROOT / "engine_config/tower_classification_keywords.json"
+    if path.exists():
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            return {k: tuple(v) for k, v in raw.items()}
+        except Exception:
+            pass
+    return {}
+
+
+_TOWER_KEYWORDS: dict[str, tuple[str, ...]] = _load_tower_keywords()
 
 
 def infer_related_towers(*texts: str) -> list[str]:
@@ -218,7 +151,7 @@ def _source_refs(
 
 def _source_type_for_legacy_payload(data: dict[str, Any]) -> str:
     evidence_text = " ".join(_as_list_of_strings(data.get("evidences", []))).lower()
-    if "sintétic" in evidence_text or "smoke" in evidence_text:
+    if "synthetic" in evidence_text or "sintetic" in evidence_text or "smoke" in evidence_text:
         return "synthetic"
     return "public"
 
@@ -656,7 +589,7 @@ def build_client_context_packet(
             within the input `data` is of an incorrect, non-iterable type.
     """
     packet: dict[str, Any] = {
-        "_EPISTEMIC_WARNING": "ESTOS DATOS SON OSINT (PUBLICOS). SON TANGENCIALES. SI CONTRADICEN EL DOCUMENTO DE CONTEXTO INTERNO DEL CLIENTE, EL DOCUMENTO INTERNO ES LA UNICA VERDAD ABSOLUTA.",
+        "_EPISTEMIC_WARNING": "THIS OSINT DATA IS TANGENTIAL. IF CONTRADICTING CLIENT INTERNAL CONTEXT, INTERNAL DOCUMENTATION PREVAILS AS GROUND TRUTH.",
         "confidence_level": "LOW_TO_MEDIUM (External OSINT)",
     }
 
@@ -1007,7 +940,7 @@ def _enrich_v3_metadata(client_name: str, data: dict[str, Any]) -> dict[str, Any
     metadata.setdefault("created_at", _now_iso())
     metadata.setdefault("modified_at", metadata["created_at"])
     metadata.setdefault("generated_by", "assessment_engine")
-    metadata.setdefault("lang", "es")
+    metadata.setdefault("lang", "en")
     dossier["metadata"] = metadata
     return ClientDossierV3.model_validate(dossier).model_dump(mode="json")
 
@@ -1052,7 +985,7 @@ def _generate_v3_claims(
         _append_claim(
             generated_claims,
             claim_id=f"regulatory_{index}",
-            claim=f"El cliente opera bajo presión regulatoria de {framework}.",
+            claim=f"Enterprise operates under regulatory compliance obligations for {framework}.",
             claim_type="fact",
             sources=legacy_sources,
             source_reliability_score=65 if legacy_source_type == "public" else 55,
@@ -1067,9 +1000,9 @@ def _generate_v3_claims(
             generated_claims,
             claim_id="business_focus_1",
             claim=(
-                "La prioridad estratégica combina foco en "
+                "Strategic focus balances "
                 f"{', '.join(priority_markets[:3]) or 'mercados prioritarios'} y "
-                f"crecimiento en {', '.join(business_lines[:4]) or 'líneas clave de negocio'}."
+                f"growth across {', '.join(business_lines[:4]) or 'core business lines'}."
             ),
             claim_type="inference",
             sources=legacy_sources,
@@ -1183,7 +1116,7 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
             "created_at": now,
             "modified_at": now,
             "last_verified_at": None,
-            "lang": "es",
+            "lang": "en",
             "generated_by": "assessment_engine",
             "prompt_version": None,
             "timeliness": {
@@ -1318,8 +1251,8 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                     70 if tower_data.get("change_urgency") == "high" else 50
                 ),
                 "rationale": (
-                    f"Target derivado del contexto del cliente para {tower_id.upper()} "
-                    f"teniendo en cuenta prioridades, restricciones y señales operativas."
+                    f"Target derived from enterprise context for {tower_id.upper()} "
+                    f"accounting for operational signals, constraints, and strategic priorities."
                 ),
                 "constraints": _as_list_of_strings(tower_data.get("constraints", [])),
                 "related_claim_ids": [],
@@ -1429,7 +1362,7 @@ def verify_dossier_integrity(data: dict[str, Any]) -> bool:
         or not data["metadata"]["integrity"]
     ):
         logger.warning(
-            "Dossier sin bloque de integridad. Saltando verificación (Modo Legacy)."
+            "Dossier missing integrity block. Bypassing verification (Legacy Mode)."
         )
         return True
 
@@ -1438,7 +1371,7 @@ def verify_dossier_integrity(data: dict[str, Any]) -> bool:
 
     if signed_hash != current_hash:
         logger.error(
-            f"FALLO DE INTEGRIDAD: El hash firmado ({signed_hash}) no coincide con el real ({current_hash})."
+            f"INTEGRITY FAILURE: Signed hash ({signed_hash}) does not match current hash ({current_hash})."
         )
         return False
 

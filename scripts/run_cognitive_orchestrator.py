@@ -3,14 +3,14 @@
 The Cognitive Arbiter — Flight Deck CLI (RFC-015 SOTA Master Pipeline).
 
 5 Fases Deterministas de Meta-Consciencia:
-[1/6] Sandbox Efímero en Git Worktree (Aislamiento de Riesgo Cero).
-[2/6] Destilador Epistémico (Fase 1: Minería SOTA & Matriz de los 3 Cubos).
-[3/6] Muro de Firmas AST del Baseline (Prevención de Rompimiento de Contratos).
-[4/6] Bucle Dialéctico Asimétrico (Sintetizador + Escéptico Grounded en RFCs).
-[5/6] Tribunal Determinista y Forense de Cierre (AST, Radon, Mutación CTF, Paridad Cubo 1).
-[6/6] Presentación de Veredicto, Diff Preview y Auto-Merge Seguro.
+[1/6] Ephemeral Git Worktree Sandbox (Zero-Risk Blast Radius Isolation).
+[2/6] Epistemic Distiller (Phase 1: SOTA Mining & 3-Bucket Matrix).
+[3/6] AST Baseline Signature Wall (Contract Breakage Prevention).
+[4/6] Asymmetric Dialectical Loop (Synthesizer + RFC-Grounded Skeptic).
+[5/6] Deterministic Forensic Closure Tribunal (AST, Radon, Mutation CTF, Bucket-1 Parity).
+[6/6] Verdict Presentation, Diff Preview, and Safe Merge.
 
-Soporta transacciones atómicas mono-archivo (--target-file) y multi-archivo (--target-files).
+Supports atomic single-file (--target-file) and multi-file (--target-files) transactions.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-# Asegurar raíz del repositorio en sys.path para ejecución standalone
+# Ensure repository root on sys.path for standalone execution
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
@@ -51,7 +51,7 @@ _ACTIVE_WORKTREE: EphemeralWorktree | None = None
 def _signal_handler(signum: int, frame: Any) -> None:
     global _ACTIVE_WORKTREE
     sig_name = "SIGTERM" if signum == signal.SIGTERM else "SIGINT"
-    print(f"\n[ABORTADO] 🛑 Señal de interrupción detectada ({sig_name}). Limpiando sandbox git worktree...")
+    print(f"\n[ABORTED] 🛑 Interrupt signal caught ({sig_name}). Cleaning up ephemeral git worktree...")
     if _ACTIVE_WORKTREE:
         try:
             _ACTIVE_WORKTREE.cleanup()
@@ -80,7 +80,7 @@ class OrchestratorPresenter:
             targets_str = ", ".join(str(p) for p in target_rels)
             print("\n" + "=" * 78)
             print("  THE COGNITIVE ARBITER — PIPELINE MAESTRO DE META-CONSCIENCIA TIER-1")
-            print(f"  Misión: {task}")
+            print(f"  Mission: {task}")
             print(f"  Objetivos ({len(target_rels)}): {targets_str}")
             print("=" * 78 + "\n")
 
@@ -111,9 +111,9 @@ def _setup_worktree(
     test_rel: Path | None = None,
 ) -> tuple[EphemeralWorktree | None, Path]:
     if not use_worktree:
-        presenter.log("[1/6] 📦 Sandbox desactivado (ejecución directa en árbol local)... OK")
+        presenter.log("[1/6] 📦 Sandbox disabled (executing directly in local tree)... OK")
         return None, repo_root
-    presenter.log("[1/6] 📦 Creando Sandbox Efímero en Git Worktree...", end="", flush=True)
+    presenter.log("[1/6] 📦 Creating Ephemeral Git Worktree Sandbox...", end="", flush=True)
     worktree = worktree_runner.create_worktree(repo_root=repo_root, branch_prefix="arb_master_")
 
     sync_files = list(target_rels or [])
@@ -159,7 +159,7 @@ def _run_epistemic_phase(
     presenter: OrchestratorPresenter,
     target_file: str | None = None,
 ) -> Any:
-    presenter.log("[2/6] 🧠 Destilador Epistémico (Fase 1: Análisis SOTA & Matriz de los 3 Cubos)...", end="", flush=True)
+    presenter.log("[2/6] 🧠 Epistemic Distiller (Phase 1: SOTA Analysis & 3-Bucket Matrix)...", end="", flush=True)
     dossier = epistemic_distiller.distill(
         task_description=task,
         sector=sector,
@@ -167,9 +167,9 @@ def _run_epistemic_phase(
         target_file=target_file,
     )
     leaders_str = ", ".join(dossier.leaders_analyzed[:3])
-    presenter.log(f" OK\n      - Líderes SOTA auditados: {leaders_str}")
+    presenter.log(f" OK\n      - SOTA Leaders Audited: {leaders_str}")
     presenter.log(f"      - Cubo 1 (Invariantes Obligatorios): {len(dossier.must_have_invariants)} identificados")
-    presenter.log(f"      - Cubo 2 (Ventajas Asimétricas $0.00): {len(dossier.unfair_advantages)} identificadas")
+    presenter.log(f"      - Bucket 2 (Asymmetric Zero-Cost Advantages): {len(dossier.unfair_advantages)} identified")
     presenter.log(f"      - Cubo 3 (Anti-Features Prohibidas): {len(dossier.deliberate_anti_features)} vetadas")
     return dossier
 
@@ -184,7 +184,7 @@ def _log_baseline_signatures(baseline_paths: list[Path], presenter: Orchestrator
                 tracked_count += snap.get_symbol_count()
             except (SyntaxError, OSError, ValueError) as ex:
                 logger.debug(f"[CognitiveArbiter] Error capturando firma de {p}: {ex}")
-    presenter.log(f" OK ({tracked_count} símbolos rastreados en {len(baseline_paths)} archivo(s))")
+    presenter.log(f" OK ({tracked_count} symbols tracked across {len(baseline_paths)} file(s))")
 
 
 def _arbitrate_single_target(
@@ -229,24 +229,24 @@ def _run_dialectical_phase(
     presenter: OrchestratorPresenter,
     dossier: Any = None,
 ) -> tuple[Any, SynthesizerRole]:
-    presenter.log("[4/6] 🔄 Ejecutando Bucle Dialéctico Asimétrico (Sintetizador + Escéptico Grounded)...")
+    presenter.log("[4/6] 🔄 Running Asymmetric Dialectical Loop (Synthesizer + Grounded Skeptic)...")
     genai_client = None
     if not offline_only:
         try:
             from assessment_engine.infrastructure.genai_client import create_genai_client
             genai_client = create_genai_client()
         except (RuntimeError, ValueError, KeyError, OSError, TypeError) as ex:
-            logger.debug(f"[Orchestrator] Inicialización GenAI omitida: {ex}")
+            logger.debug(f"[Orchestrator] GenAI initialization skipped: {ex}")
 
     skeptic = SkepticRole(
         client=genai_client,
-        search_fn=lambda q: "Estándares y especificaciones técnicas verificadas en modo offline."
+        search_fn=lambda q: "Technical standards and specifications verified in offline mode."
     ) if offline_only else SkepticRole(client=genai_client)
     synthesizer = SynthesizerRole(client=genai_client)
 
     query = f"RFC/W3C standards, concurrency edge cases for: {task}"
     _ = skeptic.query_web_standards(query)
-    presenter.log(f"      - Skeptic consultó estándares: '{query[:48]}...'")
+    presenter.log(f"      - Skeptic queried standards: '{query[:48]}...'")
 
     from assessment_engine.infrastructure.evolution.reflexion_ledger import reflexion_ledger
 
@@ -254,7 +254,7 @@ def _run_dialectical_phase(
     joined_preflight = "\n".join(m for m in preflight_memories if m)
     dossier_brief = dossier.to_markdown_brief() if dossier and hasattr(dossier, "to_markdown_brief") else ""
 
-    elevated_parts = [f"### MISIÓN DEL PRODUCT OWNER:\n{task}"]
+    elevated_parts = [f"### PRODUCT OWNER MISSION:\n{task}"]
     if dossier_brief:
         elevated_parts.append(dossier_brief)
     if joined_preflight:
@@ -284,7 +284,7 @@ def _run_dialectical_phase(
             presenter.log(f"      - ❌ Target '{target_rel}' rechazado con estado: {report.status.value}")
             return report, synthesizer
 
-    presenter.log("      - Synthesizer refinó la propuesta técnica con especificación enriquecida.")
+    presenter.log("      - Synthesizer refined technical specification with enriched requirements.")
     return last_report, synthesizer
 
 
@@ -304,7 +304,7 @@ def _retry_closure_refinement(
     current_retry = 0
     while not closure_report.approved and closure_report.surgical_ticket and current_retry < max_retries:
         current_retry += 1
-        presenter.log(f"      - ⚠️ Tribunal Forense emitió Ticket Quirúrgico (Intento {current_retry}/{max_retries}): {closure_report.surgical_ticket.ticket_id}")
+        presenter.log(f"      - ⚠️ Forensic Tribunal issued Surgical Correction Ticket (Attempt {current_retry}/{max_retries}): {closure_report.surgical_ticket.ticket_id}")
         for inst in closure_report.surgical_ticket.actionable_instructions:
             presenter.log(f"        • {inst}")
         presenter.log(f"      - Ejecutando auto-reintento prescriptivo en Fase 2 (Intento {current_retry}/{max_retries})...")
@@ -326,7 +326,7 @@ def _retry_closure_refinement(
             rel_path=str(target_rel),
         )
         if closure_report.approved:
-            presenter.log(f"      - ✔️ Auto-recuperación exitosa en Intento {current_retry}: Tribunal Forense APROBADO.")
+            presenter.log(f"      - ✔️ Successful auto-recovery in Attempt {current_retry}: Forensic Tribunal PASSED.")
             break
     return closure_report
 
@@ -355,7 +355,7 @@ def _evaluate_single_target_closure(
 
     prefix = f"[{target_rel.name}] " if multi_targets else ""
     p_str = "CUMPLE 100%" if closure_report.parity_cubo_1_passed else "INCOMPLETO"
-    v_str = "0 ANTI-FEATURES (LIMPIO)" if closure_report.veto_cubo_3_passed else "VIOLACIÓN DETECTADA"
+    v_str = "0 ANTI-FEATURES (CLEAN)" if closure_report.veto_cubo_3_passed else "VIOLATION DETECTED"
     s_str = "0 VULNERABILIDADES (OWASP OK)" if closure_report.forensic_security_passed else "HALLAZGOS DE SEGURIDAD"
     b_str = "100% LIMPIO" if closure_report.target_scoped_audit_passed else "FALLADO"
     presenter.log(f"      - {prefix}Tribunal Forense (Paridad Cubo 1): {p_str}")
@@ -389,12 +389,12 @@ def _run_closure_phase(
 ) -> Any:
     presenter.log("[5/6] ⚖️  Ejecutando Tribunal Determinista y Forense de Cierre:")
     py_status = "PASADOS (0 roturas)" if report.regression_tests_passed else "FALLIDOS"
-    presenter.log(f"      - Pytest Regresión: {py_status}")
+    presenter.log(f"      - Pytest Regression: {py_status}")
     presenter.log(f"      - Firmas AST: {len(report.ast_violations)} violaciones detectadas")
-    presenter.log(f"      - Complejidad: V(G) máx = {report.max_cyclomatic_complexity} (Límite <= 10)")
+    presenter.log(f"      - Complexity: Max V(G) = {report.max_cyclomatic_complexity} (Threshold <= 10)")
     mut_pct = int(report.mutation_score * 100)
-    presenter.log(f"      - Sonda de Mutación CTF: {mut_pct}% mutantes eliminados (Umbral >= 80%)")
-    presenter.log("      - Dependencias Externas: 0 añadidas sin autorización")
+    presenter.log(f"      - Mutation CTF Probe: {mut_pct}% mutants killed (Threshold >= 80%)")
+    presenter.log("      - External Dependencies: 0 unauthorized dependencies added")
 
     test_work_file = work_dir / test_rel
     last_closure = None
@@ -438,11 +438,11 @@ def _print_diff_preview(worktree: EphemeralWorktree, repo_root: Path, target_rel
     diff_output = diff_res.stdout.strip()
     if diff_output:
         diff_lines = len(diff_output.splitlines())
-        print(f"\nDiff generado ({diff_lines} líneas en {len(target_rels)} archivo(s)):")
+        print(f"\nGenerated Diff ({diff_lines} lines across {len(target_rels)} file(s)):")
         preview = "\n".join(diff_output.splitlines()[:20])
         print(preview)
         if diff_lines > 20:
-            print(f"... ({diff_lines - 20} líneas adicionales)")
+            print(f"... ({diff_lines - 20} additional lines)")
 
 
 def _handle_merge_interaction(
@@ -454,7 +454,7 @@ def _handle_merge_interaction(
     should_merge = auto_merge
     if not auto_merge and sys.stdin.isatty():
         try:
-            ans = input("\n¿Deseas fusionar este cambio certificado en master? (s/n): ").strip().lower()
+            ans = input("\nDo you wish to merge this certified change into main? (y/n): ").strip().lower()
             should_merge = (ans in ("s", "si", "y"))
         except (EOFError, KeyboardInterrupt):
             should_merge = False
@@ -469,11 +469,11 @@ def _handle_merge_interaction(
             check=False,
         )
         if res_merge.returncode == 0:
-            print("[Merge] Fusión completada con éxito. Master actualizado.")
+            print("[Merge] Merge completed successfully. Main branch updated.")
         else:
             print(f"[Merge] Aviso fast-forward: {res_merge.stderr.strip()}")
 
-        # Sincronización física de seguridad para archivos certificados
+        # Physical safety synchronization for certified files
         if target_rels:
             for rel in target_rels:
                 src = worktree.worktree_path / rel
@@ -482,7 +482,7 @@ def _handle_merge_interaction(
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
     else:
-        print("[Cancelado] Fusión cancelada por el usuario. Master preservado intacto.")
+        print("[Cancelled] Merge cancelled by user. Main branch preserved intact.")
 
 
 
@@ -546,7 +546,7 @@ def run_orchestrator(
     repo_root = Path.cwd().resolve()
     target_inputs = target_files_list or target_file_str
     if not target_inputs:
-        raise ValueError("Debe especificarse al menos un archivo objetivo vía target_file_str o target_files_list.")
+        raise ValueError("Must specify at least one target file via target_file_str or target_files_list.")
 
     target_rels, test_rel = _resolve_target_and_test_paths(target_inputs, test_file_str)
     baseline_paths = [repo_root / p for p in target_rels]
@@ -586,13 +586,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="The Cognitive Arbiter — Pipeline Maestro de 5 Fases SOTA (RFC-015)."
     )
-    parser.add_argument("--task", required=True, help="Descripción detallada de la tarea a sintetizar y auditar.")
+    parser.add_argument("--task", required=True, help="Detailed description of task to synthesize and audit.")
     parser.add_argument("--target-file", default=None, help="Ruta relativa del archivo a modificar.")
-    parser.add_argument("--target-files", nargs="+", default=None, help="Lista de rutas relativas de archivos a modificar de forma atómica.")
-    parser.add_argument("--test-file", default=None, help="Ruta relativa del archivo de tests unitarios o integración.")
-    parser.add_argument("--sector", default="SaaS Infrastructure", help="Sector de la aplicación.")
+    parser.add_argument("--target-files", nargs="+", default=None, help="List of relative file paths to modify atomically.")
+    parser.add_argument("--test-file", default=None, help="Relative path of unit or integration test file.")
+    parser.add_argument("--sector", default="SaaS Infrastructure", help="Application business sector.")
     parser.add_argument("--no-worktree", action="store_true", help="Desactiva el sandbox git worktree.")
-    parser.add_argument("--auto-merge", action="store_true", help="Fusiona automáticamente en master si pasa.")
+    parser.add_argument("--auto-merge", action="store_true", help="Automatically merge into main branch if all gates pass.")
     parser.add_argument("--json", action="store_true", help="Imprime el veredicto en formato JSON.")
     parser.add_argument("--offline", action="store_true", help="Fuerza modo offline sin llamadas externas.")
 

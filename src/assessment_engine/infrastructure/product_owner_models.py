@@ -5,56 +5,56 @@ from pydantic import BaseModel, Field
 
 
 class ProductOwnerRiskItem(BaseModel):
-    """Representa un elemento de la matriz de riesgos ejecutiva de un plan."""
+    """Represents an item within the executive risk matrix of an architectural plan."""
 
-    structural_risk: str = Field(default="", description="Riesgo estructural o desventaja identificado")
-    mitigation_strategy: str = Field(default="", description="Estrategia técnica para mitigar el riesgo")
-    second_order_impact: str = Field(default="", description="Impacto de segundo orden o coste asociado a la cura")
-    reversibility: str = Field(default="Two-Way Door", description="Facilidad de reversión: 'Two-Way Door' o 'One-Way Door'")
-    mitigation_effort: str = Field(default="Medium", description="Esfuerzo de mitigación: 'Small', 'Medium', 'Large'")
-    confidence_score: str = Field(default="High", description="Nivel de confianza en la mitigación: 'High', 'Low'")
+    structural_risk: str = Field(default="", description="Identified structural risk or architectural drawback")
+    mitigation_strategy: str = Field(default="", description="Technical strategy to mitigate the risk")
+    second_order_impact: str = Field(default="", description="Second-order operational impact or cost")
+    reversibility: str = Field(default="Two-Way Door", description="Reversibility classification: 'Two-Way Door' or 'One-Way Door'")
+    mitigation_effort: str = Field(default="Medium", description="Mitigation effort: 'Small', 'Medium', 'Large'")
+    confidence_score: str = Field(default="High", description="Mitigation confidence score: 'High', 'Low'")
 
 
 class ProductOwnerTask(BaseModel):
-    """Representa una tarea técnica atómica ejecutable por un agente especializado."""
+    """Represents an atomic technical task executable by a specialized agent."""
 
-    id: str = Field(..., description="Identificador único de la tarea (ej. 'task_1')")
-    title: str = Field(..., description="Título técnico conciso de la tarea")
-    objective: str = Field(..., description="Objetivo concreto y verificable")
-    in_scope: List[str] = Field(default_factory=list, description="Archivos o componentes dentro de alcance")
-    source_of_truth: List[str] = Field(default_factory=list, description="Documentos o archivos que actúan como fuente de verdad")
-    invariants: List[str] = Field(default_factory=list, description="Reglas y restricciones inmutables")
-    validation: List[str] = Field(default_factory=list, description="Comandos o pruebas para validar la tarea")
+    id: str = Field(..., description="Unique task identifier (e.g. 'task_1')")
+    title: str = Field(..., description="Concise technical title of the task")
+    objective: str = Field(..., description="Concrete, verifiable objective")
+    in_scope: List[str] = Field(default_factory=list, description="Files or components within scope")
+    source_of_truth: List[str] = Field(default_factory=list, description="Canonical source of truth files")
+    invariants: List[str] = Field(default_factory=list, description="Immutable rules and constraints")
+    validation: List[str] = Field(default_factory=list, description="Commands or test suites to validate task")
 
 
 class ProductOwnerPlan(BaseModel):
-    """Representa un enfoque arquitectónico alternativo completo para resolver una petición."""
+    """Represents a complete alternative architectural approach to resolve a request."""
 
-    approach_name: str = Field(..., description="Nombre del enfoque (ej. 'Opción 1: Parsing Topológico con BeautifulSoup')")
-    recommendation_use_case: str = Field(default="", description="Criterio de recomendación ejecutiva ('Elígelo si...')")
-    pros: List[str] = Field(default_factory=list, description="Ventajas técnicas y operativas del enfoque")
-    risks: List[ProductOwnerRiskItem] = Field(default_factory=list, description="Matriz de riesgos, impacto de segundo orden y mitigaciones")
-    request_title: str = Field(..., description="Título de la petición técnica")
-    problem: str = Field(..., description="Descripción del problema técnico a resolver")
-    value_expected: str = Field(..., description="Valor esperado de la solución")
-    in_scope: List[str] = Field(default_factory=list, description="Alcance de archivos a modificar o crear")
-    out_of_scope: List[str] = Field(default_factory=list, description="Elementos explícitamente fuera de alcance")
-    source_of_truth: List[str] = Field(default_factory=list, description="Archivos o documentos canónicos de referencia")
-    invariants: List[str] = Field(default_factory=list, description="Invariantes del repositorio a respetar")
-    validation_plan: List[str] = Field(default_factory=list, description="Comandos de validación a ejecutar")
-    risk_level: str = Field(default="medium", description="Nivel de riesgo ('low', 'medium', 'high')")
-    branch_name: str = Field(default="", description="Nombre de la rama git sugerida")
-    pr_title: str = Field(default="", description="Título del pull request")
-    commit_title: str = Field(default="", description="Título del commit")
-    tasks: List[ProductOwnerTask] = Field(default_factory=list, description="Lista ordenada de tareas técnicas ejecutables")
+    approach_name: str = Field(..., description="Name of the approach")
+    recommendation_use_case: str = Field(default="", description="Executive recommendation criteria")
+    pros: List[str] = Field(default_factory=list, description="Technical and operational advantages")
+    risks: List[ProductOwnerRiskItem] = Field(default_factory=list, description="Risk matrix, second-order impacts, and mitigations")
+    request_title: str = Field(..., description="Technical request title")
+    problem: str = Field(..., description="Problem description")
+    value_expected: str = Field(..., description="Expected solution value")
+    in_scope: List[str] = Field(default_factory=list, description="Files to modify or create")
+    out_of_scope: List[str] = Field(default_factory=list, description="Explicitly out-of-scope items")
+    source_of_truth: List[str] = Field(default_factory=list, description="Canonical reference files")
+    invariants: List[str] = Field(default_factory=list, description="Repository invariants to preserve")
+    validation_plan: List[str] = Field(default_factory=list, description="Validation commands to execute")
+    risk_level: str = Field(default="medium", description="Risk level ('low', 'medium', 'high')")
+    branch_name: str = Field(default="", description="Suggested git branch name")
+    pr_title: str = Field(default="", description="Pull request title")
+    commit_title: str = Field(default="", description="Commit message title")
+    tasks: List[ProductOwnerTask] = Field(default_factory=list, description="Ordered list of executable technical tasks")
 
 
 class ProductOwnerAlternatives(BaseModel):
-    """Contenedor de planes alternativos y validaciones de ambigüedad/rechazo."""
+    """Container of alternative architectural plans and ambiguity/refusal validations."""
 
-    is_ambiguous: bool = Field(default=False, description="True si la petición es ambigua y requiere aclaración")
-    clarification_question: Optional[str] = Field(default=None, description="Pregunta de aclaración si is_ambiguous es True")
-    refused: bool = Field(default=False, description="True si la petición no puede ser atendida por ser destructiva")
-    refusal_reason: Optional[str] = Field(default=None, description="Motivo del rechazo de la petición")
-    best_index: int = Field(default=0, description="Índice de la alternativa recomendada (0-based)")
-    alternatives: List[ProductOwnerPlan] = Field(default_factory=list, description="Lista de planes alternativos estructurados")
+    is_ambiguous: bool = Field(default=False, description="True if the request is ambiguous and requires clarification")
+    clarification_question: Optional[str] = Field(default=None, description="Clarification question when ambiguous")
+    refused: bool = Field(default=False, description="True if the request is destructive or violates policy")
+    refusal_reason: Optional[str] = Field(default=None, description="Reason for request refusal")
+    best_index: int = Field(default=0, description="0-based index of recommended alternative")
+    alternatives: List[ProductOwnerPlan] = Field(default_factory=list, description="List of structured alternative plans")

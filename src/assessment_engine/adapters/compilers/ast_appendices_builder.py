@@ -18,8 +18,22 @@ from assessment_engine.domain.schemas.ast import (
     TableNode,
     TableRowNode,
 )
+from assessment_engine.infrastructure.localization import get_localized_list, t
 
 logger = logging.getLogger(__name__)
+
+
+def _get_appendix_strip_regex() -> str:
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    p = ROOT / "engine_config/locales_asis_annex.json"
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8")).get(
+                "appendix_strip_regex", r"^Appendix\s+[A-Z]:\s*"
+            )
+        except Exception:
+            pass
+    return r"^Appendix\s+[A-Z]:\s*"
 
 
 def build_appendix_a_glossary(
@@ -30,19 +44,21 @@ def build_appendix_a_glossary(
     case_dir = ctx["case_dir"]
     meta_lang = ctx["meta_lang"]
 
+    default_title = t("appendix_a_default_title", locale=meta_lang)
     app_a_title = re.sub(
-        r"^(Apéndice|Appendix)\s+[A-Z]:\s*",
+        _get_appendix_strip_regex(),
         "",
-        vocab.get("appendix_a_title", "Lista de Abreviaturas"),
+        vocab.get("appendix_a_title", default_title),
     )
     nodes.append(
         HeadingNode(text=app_a_title, level=1, primary_color_rgb=primary_color_rgb)
     )
+    default_intro = t("appendix_a_default_intro", locale=meta_lang)
     nodes.append(
         ParagraphNode(
             text=vocab.get(
                 "appendix_a_intro",
-                "A continuación se definen los términos técnicos utilizados:",
+                default_intro,
             )
         )
     )
@@ -64,12 +80,14 @@ def build_appendix_a_glossary(
                         else:
                             full_glossary[lang] = terms
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                logger.debug(f"[Fallback] Handled exception: {ex}")
 
-        lang_key = "en" if meta_lang.startswith("en") else "es"
-        glossary = full_glossary.get(lang_key, full_glossary.get("es", {}))
+        candidate_keys = [meta_lang, "en"]
+        lang_key = next((k for k in candidate_keys if k in full_glossary), "en")
+        glossary = full_glossary.get(lang_key, full_glossary.get("en", {}))
 
-        headers = vocab.get("appendix_a_headers", ["Término", "Definición"])
+        default_headers = get_localized_list("appendix_a_headers", locale=meta_lang)
+        headers = vocab.get("appendix_a_headers") or default_headers
         rows = [
             TableRowNode(
                 cells=[
@@ -104,12 +122,12 @@ def build_appendix_b_disclaimer(
 ) -> None:
     """Builds Appendix B: Regulatory & Liability Disclaimer."""
     vocab = ctx["vocab"]
+    meta_lang = ctx.get("meta_lang", "en")
+    default_title = t("appendix_b_default_title", locale=meta_lang)
     app_b_title = re.sub(
-        r"^(Apéndice|Appendix)\s+[A-Z]:\s*",
+        _get_appendix_strip_regex(),
         "",
-        vocab.get(
-            "appendix_b_title", "Cláusula de Limitación de Responsabilidad"
-        ),
+        vocab.get("appendix_b_title", default_title),
     )
     nodes.append(
         HeadingNode(text=app_b_title, level=1, primary_color_rgb=primary_color_rgb)
@@ -126,21 +144,22 @@ def build_appendix_c_custody(
 ) -> None:
     """Builds Appendix C: Chain of Custody & Document Provenance Registry."""
     vocab = ctx["vocab"]
+    meta_lang = ctx.get("meta_lang", "en")
+    default_title = t("appendix_c_default_title", locale=meta_lang)
     app_c_title = re.sub(
-        r"^(Apéndice|Appendix)\s+[A-Z]:\s*",
+        _get_appendix_strip_regex(),
         "",
-        vocab.get(
-            "appendix_c_title", "Registro de Custodia de Fuentes de Información"
-        ),
+        vocab.get("appendix_c_title", default_title),
     )
     nodes.append(
         HeadingNode(text=app_c_title, level=1, primary_color_rgb=primary_color_rgb)
     )
+    default_intro = t("appendix_c_default_intro", locale=meta_lang)
     nodes.append(
         ParagraphNode(
             text=vocab.get(
                 "appendix_c_intro",
-                "Registro formal de trazabilidad e inmutabilidad de fuentes de evidencia.",
+                default_intro,
             )
         )
     )
@@ -160,12 +179,13 @@ def build_appendix_d_methodology(
     tower_id = ctx["tower_id"]
     blueprint_data = ctx["blueprint_data"]
 
+    default_d_title = t("methodology_default_chapter_title", locale=meta_lang)
     app_d_title = re.sub(
-        r"^(Apéndice|Appendix)\s+[A-Z]:\s*",
+        _get_appendix_strip_regex(),
         "",
         vocab.get(
             "methodology_chapter_title",
-            "Objetivo, Alcance y Marco Metodológico",
+            default_d_title,
         ),
     )
     nodes.append(
@@ -174,37 +194,31 @@ def build_appendix_d_methodology(
 
     nodes.append(
         HeadingNode(
-            text="Metodología de Valoración de Madurez",
+            text=t("maturity_methodology_title", locale=meta_lang),
             level=2,
             primary_color_rgb=primary_color_rgb,
         )
     )
     nodes.append(
         ParagraphNode(
-            text="La madurez se califica en una escala analítica del 1,00 al 5,00, donde cada nivel determina un estadio de control:"
+            text=t("maturity_scale_intro", locale=meta_lang)
         )
     )
-    levels = [
-        "**Nivel 1 - Inicial (1.0-1.8):** Prácticas ad-hoc, inestables o dependientes del esfuerzo heroico de personas clave.",
-        "**Nivel 2 - Básico (1.8-2.6):** Prácticas funcionales de manera parcial o irregular, sin consistencia organizativa.",
-        "**Nivel 3 - Estandarizado (2.6-3.4):** Procesos formalizados e implantados de manera coherente en toda la organización.",
-        "**Nivel 4 - Optimizado (3.4-4.2):** Capacidades industrializadas, gobernadas predictivamente y sustentadas en métricas.",
-        "**Nivel 5 - Avanzado (4.2-5.0):** Procesos dinámicos impulsados por automatización inteligente y mejora continua.",
-    ]
+    levels = get_localized_list("maturity_scale_levels", locale=meta_lang)
     for lvl in levels:
         nodes.append(ParagraphNode(text=lvl, style="List Bullet"))
 
     nodes.append(SpacerNode(points=10))
     nodes.append(
         HeadingNode(
-            text="Capacidades Evaluadas y Cálculo del Score",
+            text=t("evaluated_capabilities_title", locale=meta_lang),
             level=2,
             primary_color_rgb=primary_color_rgb,
         )
     )
     nodes.append(
         ParagraphNode(
-            text="El nivel de madurez técnica y el score global de la torre se consolidan mediante el promedio ponderado de las calificaciones obtenidas en las siguientes dimensiones y KPIs evaluados:"
+            text=t("evaluated_capabilities_intro", locale=meta_lang)
         )
     )
 
@@ -226,7 +240,7 @@ def build_appendix_d_methodology(
             with open(tower_def_file, "r", encoding="utf-8-sig") as tdf:
                 t_def = json.load(tdf)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     pillars_list = t_def.get("pillars", []) if isinstance(t_def, dict) else []
     if not pillars_list:
@@ -242,16 +256,22 @@ def build_appendix_d_methodology(
                 k_name = k_name[0].lower() + k_name[1:]
             kpi_names.append(k_name)
 
+        and_str = t("connector_and", locale=meta_lang)
         if len(kpi_names) > 1:
-            kpi_str = ", ".join(kpi_names[:-1]) + " y " + kpi_names[-1]
+            kpi_str = ", ".join(kpi_names[:-1]) + and_str + kpi_names[-1]
         elif kpi_names:
             kpi_str = kpi_names[0]
         else:
-            kpi_str = "las capacidades operativas del pilar"
+            kpi_str = t("lbl_default_pillar_kpis", locale=meta_lang)
 
-        p_bullet_text = (
-            f"**{p_name} (Peso: {p_weight}%)**: Evalúa de manera integral la madurez operativa "
-            f"y los baselines técnicos de la infraestructura, analizando críticamente factores clave como {kpi_str}."
+        weight_lbl = t("lbl_weight", locale=meta_lang)
+        p_bullet_text = t(
+            "pillar_bullet_template",
+            locale=meta_lang,
+            name=p_name,
+            weight_lbl=weight_lbl,
+            weight=p_weight,
+            kpi_str=kpi_str,
         )
         nodes.append(ParagraphNode(text=p_bullet_text, style="List Bullet"))
 
@@ -259,21 +279,13 @@ def build_appendix_d_methodology(
     nodes.append(SpacerNode(points=15))
     nodes.append(
         HeadingNode(
-            text="Metodología Cuantitativa de Riesgos (FAIR)",
+            text=t("appendix_fair_title", locale=meta_lang),
             level=2,
             primary_color_rgb=primary_color_rgb,
         )
     )
-    nodes.append(
-        ParagraphNode(
-            text="Este diagnóstico técnico aplica el estándar internacional **O-FAIR (Factor Analysis of Information Risk)** de *The Open Group* para modelar, cuantificar y priorizar la exposición al riesgo de infraestructura en términos financieros reales."
-        )
-    )
-    nodes.append(
-        ParagraphNode(
-            text='Para evitar la "Falacia de los Promedios" (donde las estimaciones fijas e individuales distorsionan el riesgo real), el motor de la plataforma aplica un algoritmo de simulación actuarial de Monte Carlo de 10.000 iteraciones para cada hallazgo detectado, basado en los siguientes principios científicos:'
-        )
-    )
+    nodes.append(ParagraphNode(text=t("appendix_fair_intro", locale=meta_lang)))
+    nodes.append(ParagraphNode(text=t("appendix_fair_fallacy", locale=meta_lang)))
 
     is_critical = brand_data.get("styling", {}).get("is_critical", None)
     if is_critical is None:
@@ -287,7 +299,7 @@ def build_appendix_d_methodology(
 
     nodes.append(
         HeadingNode(
-            text="Criterios de Frecuencia de Amenazas (TEF)",
+            text=t("tef_scale_title", locale=meta_lang),
             level=3,
             primary_color_rgb=primary_color_rgb,
         )
@@ -297,7 +309,7 @@ def build_appendix_d_methodology(
     nodes.append(SpacerNode(points=10))
     nodes.append(
         HeadingNode(
-            text="Criterios de Magnitud de Pérdida Financiera (LM)",
+            text=t("lm_scale_title", locale=meta_lang),
             level=3,
             primary_color_rgb=primary_color_rgb,
         )
@@ -311,23 +323,12 @@ def build_appendix_d_methodology(
     nodes.append(SpacerNode(points=10))
     nodes.append(
         HeadingNode(
-            text="Indicadores Avanzados de Resiliencia Sistémica",
+            text=t("systemic_resilience_indicators_title", locale=meta_lang),
             level=3,
             primary_color_rgb=primary_color_rgb,
         )
     )
-    nodes.append(
-        ParagraphNode(
-            text="Para medir la resiliencia cruzada de la plataforma e identificar riesgos que trascienden el perímetro de una única torre, el motor de la plataforma calcula y califica los siguientes indicadores decisionales avanzados utilizando modelos de decisión multicriterio y propagación en red:"
-        )
-    )
-    indicators = [
-        "1. **Criticidad de Negocio (MCDA) [Rango 0% a 100%]:** Un valor superior al 80% (Extrema - Pilar Crítico) indica que el dominio tecnológico soporta directamente un servicio esencial de alta criticidad para la organización. Calificaciones de 50% a 79% representan un impacto alto pero de carácter secundario o diferido en el tiempo, y valores menores al 50% corresponden a un impacto medio de soporte operacional estándar.",
-        "2. **Presión Regulatoria (MCDA) [Rango 0% a 100%]:** Un valor mayor al 80% (Crítica) determina que la infraestructura está sujeta a normativas y regulaciones obligatorias severas (como la directiva europea NIS2, DORA o normativas sectoriales aplicables) con alto impacto penal o financiero ante incumplimientos. Rangos de 50% a 79% indican presiones sectoriales moderadas, y valores inferiores al 50% corresponden a regulaciones básicas.",
-        "3. **Viabilidad Operativa (MCDA) [Rango 0% a 100%]:** Mide la facilidad técnica y humana para ejecutar los proyectos propuestos (a mayor porcentaje, mayor facilidad). Un porcentaje superior al 60% representa proyectos viables y estándar. Valores inferiores al 60% indican una alta complejidad operacional, fuerte herencia de plataformas obsoletas (legacy), ventanas de mantenimiento críticas o falta de perfiles especializados.",
-        "4. **Índice de Consistencia del Diagnóstico (DII) [Rango 0% a 100%]:** Cuantifica la volatilidad o sensibilidad del diagnóstico ante variaciones en las evidencias documentales recopiladas (a menor porcentaje, mayor robustez). Un valor por debajo del 15% (Estable - Diagnóstico Robusto) garantiza que la calificación es sólida matemáticamente y representativa frente a discrepancias técnicas. Rangos de 15% a 30% reflejan una consistencia moderada, y superiores al 30% representan una alta volatilidad.",
-        "5. **Índice de Propagación de Fallos en Cascada (ERC) [Rango: 0,000 a 1,000]:** Utiliza un algoritmo de centralidad en red tipo PageRank para medir la capacidad de la torre de actuar como difusor de fallos técnicos hacia el resto de la plataforma corporativa. Valores mayores a 0,500 indican una Alta Influencia, donde cualquier incidente arrastrará de forma inmediata al resto de torres de TI. Rangos de 0,200 a 0,499 indican una influencia media, e inferiores a 0,200 representan componentes aislados con bajo riesgo de afectación colateral.",
-        "6. **Punto Único de Fallo (SPOF) [SÍ / NO]:** Clasificación lógica de redundancia estructural. La condición 'SÍ' alerta sobre la presencia de activos o procesos de infraestructura críticos que carecen de balanceo activo, redundancia geográfica o alternativas operativas de respaldo, representando un riesgo material directo de interrupción total ante fallos individuales.",
-    ]
+    nodes.append(ParagraphNode(text=t("systemic_resilience_intro", locale=meta_lang)))
+    indicators = get_localized_list("systemic_resilience_indicators_list", locale=meta_lang)
     for ind in indicators:
         nodes.append(ParagraphNode(text=ind, style="List Bullet"))

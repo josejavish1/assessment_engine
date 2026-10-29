@@ -58,10 +58,10 @@ class TraceDiagnosticReport:
             return ""
 
         md_lines = [
-            f"### ⏱️ DIAGNÓSTICO FORENSE DE TELEMETRÍA W3C (Trace ID: `{self.trace_id}`)",
-            f"- **Latencia Total Medida:** {self.total_latency_ms:.2f} ms (Presupuesto Límite: {self.budget_latency_ms:.2f} ms)",
+            f"### ⏱️ W3C FORENSIC TELEMETRY DIAGNOSIS (Trace ID: `{self.trace_id}`)",
+            f"- **Measured Total Latency:** {self.total_latency_ms:.2f} ms (Budget Limit: {self.budget_latency_ms:.2f} ms)",
             f"- **Burn-Rate del Error Budget:** {self.burn_rate:.2f}x de consumo",
-            f"- **Diagnóstico Prescriptivo:** {self.prescriptive_hint}",
+            f"- **Prescriptive Remediation:** {self.prescriptive_hint}",
         ]
         if self.bottlenecks:
             md_lines.append("- **Cuellos de Botella Detectados:**")
@@ -88,7 +88,7 @@ class TraceConditioner:
         is_exceeded = total_latency_ms > budget_latency_ms
 
         bottlenecks_list: list[TraceBottleneckSpan] = []
-        hint = "Rendimiento dentro de los márgenes SRE."
+        hint = "Performance within acceptable SRE thresholds."
 
         if spans_breakdown:
             for s in spans_breakdown:
@@ -99,11 +99,11 @@ class TraceConditioner:
 
                 recom = "Optimizar algoritmo o aislar I/O"
                 if comp in ("database", "sqlite", "db"):
-                    recom = "Inyectar índice compuesto B-Tree o usar paginación Keyset O(1)."
+                    recom = "Inject B-Tree composite index or use Keyset O(1) pagination."
                 elif comp in ("network", "http", "api"):
-                    recom = "Configurar timeout estricto o implementar Circuit Breaker con caché SWR."
+                    recom = "Configure strict timeout or implement Circuit Breaker with SWR cache."
                 elif comp in ("json", "serialization"):
-                    recom = "Usar serializador rápido o reducir tamaño de payload."
+                    recom = "Use fast serializer or reduce payload size."
 
                 if pct >= 30.0 or dur > 50.0:
                     bottlenecks_list.append(TraceBottleneckSpan(
@@ -118,9 +118,9 @@ class TraceConditioner:
         if is_exceeded:
             if bottlenecks_list:
                 slowest = max(bottlenecks_list, key=lambda x: x.duration_ms)
-                hint = f"Saturación en '{slowest.component}::{slowest.operation}' ({slowest.duration_ms}ms). {slowest.recommendation}"
+                hint = f"Saturation in '{slowest.component}::{slowest.operation}' ({slowest.duration_ms}ms). {slowest.recommendation}"
             else:
-                hint = f"Latencia total ({total_latency_ms:.1f}ms) superó el presupuesto ({budget_latency_ms:.1f}ms). Delegar I/O síncrono a hilo worker."
+                hint = f"Total latency ({total_latency_ms:.1f}ms) exceeded budget ({budget_latency_ms:.1f}ms). Offload synchronous I/O to worker thread."
 
         return TraceDiagnosticReport(
             trace_id=trace_id,

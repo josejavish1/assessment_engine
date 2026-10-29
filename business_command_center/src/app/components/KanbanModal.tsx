@@ -22,7 +22,7 @@ const KanbanModal: React.FC<KanbanModalProps> = ({ isOpen, onClose, children, ti
           <h2 className="text-xl font-bold text-white">{title}</h2>
           <button
             onClick={onClose}
-            aria-label="Cerrar modal"
+            aria-label="Close modal"
             className="text-gray-400 hover:text-white"
           >
             <svg

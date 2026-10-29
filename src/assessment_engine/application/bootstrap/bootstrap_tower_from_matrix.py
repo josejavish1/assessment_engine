@@ -67,7 +67,10 @@ def normalize_dash(value: str) -> str:
 
 
 def comparable_text(value: str) -> str:
-    """Generates a canonical, alphanumeric representation of a string for comparison. This function transforms a string into a simplified form suitable for tasks like case-insensitive and diacritic-insensitive matching. The normalization pipeline consists of several steps: applying NFKD Unicode normalization to decompose composite characters, converting to a lowercase ASCII representation by discarding non-ASCII characters, and finally removing all non-alphanumeric characters. For example, the input "Héllö-Wörld_123!" becomes "helloworld123". Args: value (str): The input string to be normalized. Returns: str: A normalized string containing only lowercase ASCII letters and digits."""
+    """Generates a canonical, alphanumeric representation of a string for comparison.
+
+    Normalizes Unicode characters, removes punctuation and diacritics, and returns lowercase ASCII digits and letters.
+    """
     normalized = unicodedata.normalize("NFKD", normalize_dash(value))
     ascii_value = normalized.encode("ascii", "ignore").decode("ascii")
     return re.sub(r"[^a-z0-9]+", "", ascii_value.lower())
@@ -108,63 +111,76 @@ def extract_tower_name(paragraphs: list[str], tower_id: str) -> str:
             candidate = re.sub(r"\d+$", "", candidate).strip(" -:")
             if candidate:
                 return normalize_text(candidate)
-    raise RuntimeError(f"No se pudo extraer tower_name para {tower_id}")
+    raise RuntimeError(f"Failed to extract tower_name for {tower_id}")
 
 
 def extract_purpose(paragraphs: list[str]) -> str:
-    """Extract the tower's purpose statement from a list of text paragraphs. This function locates the "Definición de la torre" section header within the provided list of paragraphs. It then searches the subsequent 11 paragraphs for a sentence that begins with "la torre " and contains the substring " cubre " (case-insensitive). The first matching paragraph found is considered the purpose statement and is returned after normalization. Args: paragraphs (list[str]): A list of strings, where each string represents a paragraph from the source document. Returns: str: The normalized text of the purpose statement. Raises: RuntimeError: If the "Definición de la torre" section header is not found, or if a purpose statement matching the expected pattern cannot be located within the 11 paragraphs following the header."""
+    """Extract the tower's purpose statement from a list of text paragraphs."""
+    tokens = _get_legacy_ingestion_tokens("definition_section_header_tokens", ["tower definition"])
     try:
-        start = paragraphs.index("Definición de la torre")
-    except ValueError as exc:
+        start = next(
+            i
+            for i, p in enumerate(paragraphs)
+            if any(tok in p.lower() for tok in tokens)
+        )
+    except StopIteration as exc:
         raise RuntimeError(
-            "No se encontró la sección 'Definición de la torre'"
+            "Tower definition section not found in document"
         ) from exc
 
     for text in paragraphs[start + 1 : start + 12]:
         normalized = text.lower()
         if normalized.startswith("la torre ") and " cubre " in normalized:
             return normalize_text(text)
-    raise RuntimeError("No se pudo extraer purpose desde la sección de definición")
+    raise RuntimeError("Failed to extract purpose from definition section")
+
+
+def _get_legacy_ingestion_tokens(key: str, default: list[str]) -> list[str]:
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    import json
+    p = ROOT / "engine_config/locales_asis_annex.json"
+    if p.exists():
+        try:
+            cfg = json.loads(p.read_text(encoding="utf-8")).get(
+                "legacy_word_ingestion_cleaning", {}
+            )
+            return cfg.get(key, default)
+        except Exception:
+            pass
+    return default
+
+
+def _get_legacy_ingestion_cleaner() -> tuple[str, str]:
+    from assessment_engine.infrastructure.runtime_paths import ROOT
+    import json
+    p = ROOT / "engine_config/locales_asis_annex.json"
+    if p.exists():
+        try:
+            cfg = json.loads(p.read_text(encoding="utf-8")).get(
+                "legacy_word_ingestion_cleaning", {}
+            )
+            return cfg.get("repeated_phrase_regex", ""), cfg.get(
+                "repeated_phrase_replacement", ""
+            )
+        except Exception:
+            pass
+    return "", ""
 
 
 def clean_repeated_phrase(value: str) -> str:
-    """Rectifies a specific, duplicated Spanish phrase found within an input string.
-
-    This function identifies and replaces redundant variations of the phrase "Seguridad Física y Control de Accesos y Control de Accesos" with its corrected form, "Seguridad Física y Control de Accesos". It accounts for variations in accentuation (e.g., "Física" versus "Fisica") and the letter case of the final word. The input string undergoes normalization prior to replacement; the resulting string is subsequently normalized again before being returned.
-
-    Args:
-        value: The input string to be processed.
-
-    Returns:
-        A cleaned and normalized string with the redundant phrase corrected."""
+    """Rectifies redundant phrases found within legacy matrix input documents."""
     text = normalize_text(value)
-    patterns = [
-        (
-            "Seguridad Física y Control de Accesos y Control de Accesos",
-            "Seguridad Física y Control de Accesos",
-        ),
-        (
-            "Seguridad Fisica y Control de Accesos y Control de Accesos",
-            "Seguridad Fisica y Control de Accesos",
-        ),
-        (
-            "Seguridad Física y Control de Accesos y accesos",
-            "Seguridad Física y Control de Accesos",
-        ),
-        (
-            "Seguridad Fisica y Control de Accesos y accesos",
-            "Seguridad Fisica y Control de Accesos",
-        ),
-    ]
-    for source, target in patterns:
-        text = text.replace(source, target)
+    pattern, replacement = _get_legacy_ingestion_cleaner()
+    if pattern:
+        import re
+        text = re.sub(pattern, replacement, text)
     return normalize_text(text)
 
 
 def build_pillar_name_map(
     paragraphs: list[str], tower_id: str, warnings: list[str]
 ) -> dict[str, str]:
-    r"""{'docstring': 'Parses text paragraphs to extract a mapping of pillar IDs to names.\n\n    This function scans a list of paragraphs for lines that match a case-\n    insensitive regular expression, typically in the format:\n    \'Pilar <num> - <tower_id>.P<num> - <Pillar Name>\'.\n\n    The extracted pillar name is post-processed to remove common artifacts,\n    such as repeated phrases, trailing digits, and leading/trailing punctuation.\n    If multiple distinct names are found for the same pillar ID, the first one\n    encountered is retained and a warning message is appended to the `warnings`\n    list.\n\n    Args:\n        paragraphs: A list of strings representing text paragraphs to be parsed.\n        tower_id: The expected tower identifier, used to construct the regex\n            pattern for validation.\n        warnings: A list to which warning messages are appended. This argument\n            is mutated by the function to report conflicting pillar names.\n\n    Returns:\n        A dictionary mapping uppercased, full pillar IDs (e.g., "TOWER1.P123")\n        to their corresponding cleaned pillar names.\n\n    Raises:\n        RuntimeError: If no pillar information matching the expected format is\n            found in any of the paragraphs.'}."""
+    """Parses text paragraphs to extract a mapping of pillar IDs to names."""
     pillar_name_map: dict[str, str] = {}
     pattern = re.compile(
         rf"\bPilar\s+(\d+)\s*-\s*({re.escape(tower_id)}\.P\d+)\s*-\s*(.+)$",
@@ -180,15 +196,15 @@ def build_pillar_name_map(
         pillar_name = re.sub(r"\d+$", "", pillar_name).strip(" -:")
         if pillar_id in pillar_name_map and pillar_name_map[pillar_id] != pillar_name:
             warnings.append(
-                f"Nombre de pilar conflictivo para {pillar_id}: "
-                f"'{pillar_name_map[pillar_id]}' vs '{pillar_name}'. Se conserva el primero."
+                f"Conflicting pillar name for {pillar_id}: "
+                f"'{pillar_name_map[pillar_id]}' vs '{pillar_name}'. Retaining first occurrence."
             )
             continue
         pillar_name_map[pillar_id] = pillar_name
 
     if not pillar_name_map:
         raise RuntimeError(
-            "No se pudieron extraer pilares desde los encabezados del documento"
+            "Failed to extract pillars from document headers"
         )
     return pillar_name_map
 
@@ -241,15 +257,15 @@ def extract_weights(
     section_end = None
 
     for index, text in enumerate(paragraphs):
-        if "Factores de Importancia" in text:
+        if "Factores de Importancia" in text or "Importance Factors" in text:
             section_start = index
             continue
-        if section_start is not None and "Matriz de madurez" in text:
+        if section_start is not None and any(k in text.lower() for k in ["matriz", "matrix"]):
             section_end = index
             break
 
     if section_start is None:
-        raise RuntimeError("No se encontró la sección 'Factores de Importancia'")
+        raise RuntimeError("Section 'Importance Factors' not found")
 
     scan = paragraphs[section_start : section_end or len(paragraphs)]
 
@@ -301,7 +317,7 @@ def extract_weights(
             if weight is not None:
                 break
         if weight is None:
-            warnings.append(f"No se encontró peso para {pillar_id} ({pillar_name})")
+            warnings.append(f"No weight found for {pillar_id} ({pillar_name})")
             continue
         weights[pillar_id] = weight
 
@@ -388,7 +404,7 @@ def extract_kpis(
 
         if kpi_id in seen_kpi_ids:
             warnings.append(
-                f"KPI duplicado en documento: {kpi_id}. Se ignora la aparición repetida."
+                f"Duplicate KPI in document: {kpi_id}. Ignoring duplicate occurrence."
             )
             continue
         seen_kpi_ids.add(kpi_id)
@@ -397,7 +413,7 @@ def extract_kpis(
         )
 
     if not kpis_by_pillar:
-        raise RuntimeError("No se pudieron extraer KPIs desde la sección de madurez")
+        raise RuntimeError("Failed to extract KPIs from maturity matrix section")
     return kpis_by_pillar
 
 
@@ -428,14 +444,17 @@ def collect_section_items(
     """
     start = None
     end = len(paragraphs)
+    norm_sec = comparable_text(section_title)
     for index, text in enumerate(paragraphs):
-        if text == section_title:
+        if comparable_text(text) == norm_sec or text == section_title:
             start = index + 1
             break
     if start is None:
         return []
+    norm_next = [comparable_text(nt) for nt in next_titles]
     for index in range(start, len(paragraphs)):
-        if paragraphs[index] in next_titles:
+        cand_comp = comparable_text(paragraphs[index])
+        if any(cand_comp == nt or paragraphs[index] in next_titles for nt in norm_next):
             end = index
             break
     return [
@@ -460,12 +479,13 @@ def extract_scope_summary(paragraphs: list[str]) -> list[str]:
     Returns:
         list[str]: A list of the extracted, cleaned, and standardized scope
             summary labels."""
+    next_titles = _get_legacy_ingestion_tokens(
+        "scope_next_titles", ["Why this tower is foundational"]
+    )
     items = collect_section_items(
         paragraphs,
-        section_title="Alcance típico:",
-        next_titles=[
-            "Por qué esta torre es fundamental en el modelo global de madurez"
-        ],
+        section_title="Alcance tipico:",
+        next_titles=next_titles,
     )
     out = []
     for item in items:
@@ -510,10 +530,10 @@ def extract_related_towers(paragraphs: list[str], tower_id: str) -> list[str]:
 
 
 def extract_boundary_notes(paragraphs: list[str]) -> list[str]:
-    """Extracts and formats boundary exclusion notes from a list of paragraphs. Searches for the sentinel header "No incluye / se evalúa en otras torres:" within the input paragraphs. Upon finding the header, this function processes up to the next three subsequent paragraphs to identify exclusion notes. The processing of these subsequent paragraphs terminates prematurely if a normalized paragraph ends with a colon. Each identified note is normalized, potentially split into clauses based on specific delimiters (e.g., ", la "), and reconstructed into one or more complete sentences. Each resulting sentence is cleaned of repeated phrases and formatted with a terminal period. Args: paragraphs: A list of strings, where each string represents a paragraph of text to be analyzed. Returns: A list of cleaned and formatted boundary note sentences. Returns an empty list if the sentinel header is not found."""
+    """Extracts and formats boundary exclusion notes from a list of paragraphs."""
     notes = []
     for index, text in enumerate(paragraphs):
-        if text == "No incluye / se evalúa en otras torres:":
+        if "no incluye" in text.lower() or "not included" in text.lower():
             for candidate in paragraphs[index + 1 : index + 4]:
                 normalized = normalize_text(candidate)
                 if normalized.endswith(":"):
@@ -729,7 +749,7 @@ def validate_tower_definition(definition: dict) -> list[str]:
 
     total_weight = sum(int(pillar.get("weight_pct", 0)) for pillar in pillars)
     if total_weight != 100:
-        errors.append(f"La suma de weight_pct es {total_weight}, no 100.")
+        errors.append(f"Sum of weight_pct is {total_weight}, expected 100.")
 
     known_pillars = set(pillar_ids)
     kpi_ids: list[str] = []
@@ -941,7 +961,7 @@ def bootstrap_tower(
     )
     errors = validate_tower_definition(tower_definition)
     if errors:
-        raise RuntimeError("Validación fallida:\n- " + "\n- ".join(errors))
+        raise RuntimeError("Validation failed:\n- " + "\n- ".join(errors))
 
     manifest = build_manifest(
         matrix_file=matrix_file,

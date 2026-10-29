@@ -82,8 +82,8 @@ def run_security_dast_probe(target_dir: Path) -> ProbeResult:
             file_path=rel_path,
             line_number=None,
             rule_id="DAST-SQLI-EXPLOITED",
-            message="La API devolvió HTTP 500 con traza de error de SQL ante payload inyectado (' OR 1=1)",
-            recommendation="Sanitizar parámetros de consulta y usar SQLite parametrizado."
+            message="API returned HTTP 500 with SQL trace on injected payload (' OR 1=1)",
+            recommendation="Sanitize query parameters and use parameterized SQLite queries."
         ))
     else:
         repelled_attacks += 1
@@ -98,7 +98,7 @@ def run_security_dast_probe(target_dir: Path) -> ProbeResult:
             file_path=rel_path,
             line_number=None,
             rule_id="DAST-XSS-REFLECTED",
-            message="El payload XSS se reflejó sin escapar en el cuerpo de la respuesta HTML",
+            message="XSS payload reflected unescaped in HTML response body",
             recommendation="Escapar caracteres HTML o servir respuestas bajo 'application/json'."
         ))
     else:
@@ -115,8 +115,8 @@ def run_security_dast_probe(target_dir: Path) -> ProbeResult:
             file_path=rel_path,
             line_number=None,
             rule_id="DAST-AUTH-BYPASS",
-            message=f"Endpoint protegido devolvió código inesperado ({res_jwt.status_code}) ante token falso",
-            recommendation="Asegurar que los tokens inválidos devuelven estrictamente HTTP 401 Unauthorized."
+            message=f"Protected endpoint returned unexpected code ({res_jwt.status_code}) on forged token",
+            recommendation="Ensure invalid tokens strictly return HTTP 401 Unauthorized."
         ))
 
     total_attacks += 1
@@ -133,8 +133,8 @@ def run_security_dast_probe(target_dir: Path) -> ProbeResult:
             file_path=rel_path,
             line_number=None,
             rule_id="DAST-MISSING-SECURITY-HEADERS",
-            message="La API en runtime carece de cabeceras de endurecimiento (HSTS o X-Content-Type-Options: nosniff)",
-            recommendation="Añadir SecurityHeadersMiddleware para inyectar cabeceras OWASP ASVS V14."
+            message="Runtime API missing security hardening headers (HSTS or X-Content-Type-Options: nosniff)",
+            recommendation="Add SecurityHeadersMiddleware to inject OWASP ASVS V14 security headers."
         ))
 
     score = round((repelled_attacks / total_attacks) * 100.0, 1) if total_attacks > 0 else 100.0

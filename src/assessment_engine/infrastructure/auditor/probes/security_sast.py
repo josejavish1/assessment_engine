@@ -21,7 +21,7 @@ SECRET_KNOWN_PATTERNS = [
     (re.compile(r"sk_live_[0-9a-zA-Z]{24,}"), "Stripe Live Secret Key", "CRITICAL"),
     (re.compile(r"ghp_[0-9a-zA-Z]{36}"), "GitHub Personal Access Token", "CRITICAL"),
     (re.compile(r"AIza[0-9A-Za-z-_]{35}"), "Google Cloud API Key", "HIGH"),
-    (re.compile(r"-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----"), "Clave Privada Criptográfica", "CRITICAL"),
+    (re.compile(r"-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----"), "Cryptographic Private Key", "CRITICAL"),
 ]
 
 UUID_REGEX = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
@@ -76,8 +76,8 @@ def is_high_entropy_secret(token: str) -> bool:
 
 class ASTSecurityTaintVisitor(ast.NodeVisitor):
     """
-    Rastreador de Taint en el AST: detecta sumideros vulnerables (SQL sinks, eval, exec, subprocess).
-    Discrimina consultas parametrizadas con '?' y comandos DDL de SQLite.
+    AST Taint Tracker: detects dangerous execution sinks (SQL sinks, eval, exec, subprocess).
+    Discriminates parameterized queries with '?' and SQLite DDL commands.
     """
 
     def __init__(self, rel_path: str) -> None:
@@ -139,8 +139,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                     file_path=self.rel_path,
                     line_number=node.lineno,
                     rule_id="CWE-89-SQLI-FSTRING",
-                    message="Inyección SQL (CWE-89): Consulta SQL construida mediante f-string dinámico sin parámetros '?'",
-                    recommendation="Usar consultas SQL parametrizadas con '?' y tupla de parámetros."
+                    message="SQL Injection (CWE-89): Dynamic SQL query constructed via f-string without parameterized '?'",
+                    recommendation="Use parameterized SQL queries with '?' and parameter tuple."
                 ))
         self.generic_visit(node)
 
@@ -159,8 +159,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                     file_path=self.rel_path,
                     line_number=node.lineno,
                     rule_id="CWE-89-SQLI-FSTRING",
-                    message=f"Inyección SQL (CWE-89): Consulta en '{func_name}' construida con f-string dinámico sin parametrizar",
-                    recommendation="Usar consultas parametrizadas con '?' y tupla de parámetros seguros."
+                    message=f"SQL Injection (CWE-89): Query in '{func_name}' constructed with dynamic f-string without parameters",
+                    recommendation="Use parameterized queries with '?' and bound parameter tuple."
                 ))
         elif isinstance(sql_arg, ast.BinOp) and isinstance(sql_arg.op, ast.Add):
             self.findings.append(AuditFinding(
@@ -169,8 +169,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="CWE-89-SQLI-CONCAT",
-                message=f"Inyección SQL (CWE-89): Consulta en '{func_name}' construida mediante concatenación '+'",
-                recommendation="Usar consultas parametrizadas con '?' y tupla de parámetros seguros."
+                message=f"SQL Injection (CWE-89): Query in '{func_name}' constructed via string concatenation '+'",
+                recommendation="Use parameterized queries with '?' and bound parameter tuple."
             ))
         elif isinstance(sql_arg, ast.BinOp) and isinstance(sql_arg.op, ast.Mod):
             self.findings.append(AuditFinding(
@@ -179,8 +179,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="CWE-89-SQLI-MOD-FORMAT",
-                message=f"Inyección SQL (CWE-89): Consulta en '{func_name}' construida mediante formateo '%'",
-                recommendation="Usar consultas parametrizadas con '?' y tupla de parámetros seguros."
+                message=f"SQL Injection (CWE-89): Query in '{func_name}' constructed via string formatting '%'",
+                recommendation="Use parameterized queries with '?' and bound parameter tuple."
             ))
         elif isinstance(sql_arg, ast.Call) and isinstance(sql_arg.func, ast.Attribute) and sql_arg.func.attr == "format":
             self.findings.append(AuditFinding(
@@ -189,8 +189,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="CWE-89-SQLI-STR-FORMAT",
-                message=f"Inyección SQL (CWE-89): Consulta en '{func_name}' construida con .format()",
-                recommendation="Usar consultas parametrizadas con '?' y tupla de parámetros seguros."
+                message=f"SQL Injection (CWE-89): Query in '{func_name}' constructed with dynamic .format()",
+                recommendation="Use parameterized queries with '?' and bound parameter tuple."
             ))
 
     def _check_dynamic_code(self, node: ast.Call, func_name: str) -> None:
@@ -201,8 +201,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="CWE-94-CODE-INJECTION",
-                message="Uso de eval() detectado: riesgo de ejecución arbitraria de código (CWE-94)",
-                recommendation="Usar ast.literal_eval() o serialización tipada con Pydantic/JSON."
+                message="Use of eval() detected: arbitrary code execution risk (CWE-94)",
+                recommendation="Use ast.literal_eval() or typed serialization via Pydantic/JSON."
             ))
         elif func_name == "exec":
             self.findings.append(AuditFinding(
@@ -211,8 +211,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="CWE-95-CODE-INJECTION",
-                message="Uso de exec() detectado: riesgo crítico de inyección dinámica de código (CWE-95)",
-                recommendation="Eliminar compilación dinámica de código en tiempo de ejecución."
+                message="Use of exec() detected: dynamic code injection risk (CWE-95)",
+                recommendation="Eliminate dynamic runtime code execution."
             ))
 
     def _check_os_and_deserialization(self, node: ast.Call, func_name: str) -> None:
@@ -224,8 +224,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                     file_path=self.rel_path,
                     line_number=node.lineno,
                     rule_id="CWE-78-OS-SYSTEM",
-                    message="Uso de os.system() detectado: vulnerable a inyección de comandos del SO",
-                    recommendation="Usar subprocess.run(..., shell=False) con lista explícita de argumentos."
+                    message="Use of os.system() detected: vulnerable to OS command injection (CWE-78)",
+                    recommendation="Use subprocess.run(..., shell=False) with an explicit argument list."
                 ))
         elif func_name in ("load", "loads") and isinstance(node.func, ast.Attribute):
             if isinstance(node.func.value, ast.Name) and node.func.value.id == "pickle":
@@ -235,8 +235,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                     file_path=self.rel_path,
                     line_number=node.lineno,
                     rule_id="CWE-502-DESERIALIZATION",
-                    message="Uso de pickle.loads() detectado: riesgo de ejecución remota de código (RCE)",
-                    recommendation="Sustituir por formatos seguros como JSON o Protocol Buffers."
+                    message="Use of pickle.loads() detected: insecure deserialization risk (CWE-502 / RCE)",
+                    recommendation="Replace with secure serialization formats such as JSON or Protocol Buffers."
                 ))
         elif func_name in ("run", "Popen", "call", "check_call"):
             for kw in node.keywords:
@@ -247,8 +247,8 @@ class ASTSecurityTaintVisitor(ast.NodeVisitor):
                         file_path=self.rel_path,
                         line_number=node.lineno,
                         rule_id="CWE-78-SHELL-TRUE",
-                        message="Ejecución con sub-shell activada ('shell=True') en subprocess",
-                        recommendation="Pasar comando como lista de argumentos con 'shell=False'."
+                        message="Subshell execution enabled ('shell=True') in subprocess call",
+                        recommendation="Pass command as argument list with 'shell=False'."
                     ))
 
     def visit_Call(self, node: ast.Call) -> None:
@@ -297,8 +297,8 @@ def _scan_entropy_secrets(tree: ast.AST, rel_path: str) -> list[AuditFinding]:
                     file_path=rel_path,
                     line_number=node.lineno,
                     rule_id="CWE-798-HIGH-ENTROPY-SECRET",
-                    message=f"Constante de alta entropía (H={round(calculate_shannon_entropy(val), 2)} bits/char): posible clave privada hardcodeada",
-                    recommendation="Externalizar la clave a variables de entorno (os.environ)."
+                    message=f"High-entropy constant (H={round(calculate_shannon_entropy(val), 2)} bits/char): possible hardcoded private key",
+                    recommendation="Externalize secret keys to environment variables (os.environ)."
                 ))
     return findings
 

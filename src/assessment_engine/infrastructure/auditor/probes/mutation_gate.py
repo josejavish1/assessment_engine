@@ -31,8 +31,8 @@ def run_mutation_gate_probe(target_dir: Path, max_samples: int = 6) -> ProbeResu
                 file_path=str(target_dir),
                 line_number=None,
                 rule_id="MUT-NO-TESTS",
-                message="El proyecto no contiene archivos de pruebas unitarias (test_*.py)",
-                recommendation="Añadir suite de pruebas unitarias para proteger la lógica de negocio."
+                message="Project contains zero unit test files (test_*.py)",
+                recommendation="Add unit test suite to protect business domain logic."
             )]
         )
 
@@ -77,8 +77,8 @@ def run_mutation_gate_probe(target_dir: Path, max_samples: int = 6) -> ProbeResu
                     file_path=rel_path,
                     line_number=None,
                     rule_id=rule_id,
-                    message=f"Mutante en '{py_file.name}' sobrevivió ({res.mutation_description}): los tests no detectaron la corrupción.",
-                    recommendation="Añadir aserciones directas sobre los operadores aritméticos o lógicos evaluados."
+                    message=f"Mutant in '{py_file.name}' survived ({res.mutation_description}): test suite failed to catch corruption.",
+                    recommendation="Add direct assertions over arithmetic or logical operators evaluated."
                 ))
         except (OSError, UnicodeDecodeError, SyntaxError):
             continue

@@ -204,7 +204,7 @@
     "priority_low": "Baja",
     "coi_3y_ord": "~{amount} en 3 años",
     "coi_3y_ext": "~{amount} (peor caso en 3 años)",
-    "disclaimer_text": "Este informe de diagnóstico técnico (el Documento) ha sido preparado por la consultora únicamente para el uso interno y exclusivo de la organización cliente, sobre una base estrictamente confidencial. El Documento constituye un ejercicio de evaluación rápida (Fast Assessment) fundamentado exclusivamente en la información, explicaciones y autoevaluaciones facilitadas por el personal del cliente durante las entrevistas técnicas mantenidas, asumiendo su total veracidad, sin que proceda validación o auditoría de campo independiente por nuestra parte. En consecuencia, el Documento se entrega 'tal cual' (AS-IS) y no constituye una garantía explícita o implícita de rendimiento, seguridad continua, ni indemnidad frente a incidentes operacionales o regulatorios.\n\nLas proyecciones de impacto financiero, simulación actuarial de riesgos, y los valores de Expectativa de Pérdida Anualizada (ALE) y peor caso (P90) calculados mediante la metodología estándar de Open FAIR™ y modelos stocásticos de Monte Carlo, representan únicamente estimaciones estadísticas y modelos matemáticos de probabilidad basados en distribuciones de incertidumbre. Dichas valoraciones monetarias constituyen herramientas analíticas exclusivas de priorización estratégica de inversiones y coste de inacción (Business Case). Bajo ninguna circunstancia deben interpretarse, utilizarse ni asimilarse a auditorías financieras o contables formales, provisiones de pasivos contables, garantías de impacto directo o indirecto en el balance de la compañía, ni como compromisos de pasivos exigibles legalmente o judicialmente.\n\nCualquier referencia contenida en el Documento a normativas, leyes, regulaciones o esquemas de cumplimiento sectorial (tales como regulaciones de ciberseguridad, resiliencia operacional y normativas sectoriales aplicables) se expone con un propósito estrictamente ilustrativo, técnico y de buenas prácticas de ingeniería para mitigar la superficie de exposición al riesgo. Dichas menciones no constituyen, bajo ningún concepto, asesoramiento legal, jurídico, fiscal o regulatorio formal. La interpretación, implantación, verificación y cumplimiento final de las obligaciones normativas y requerimientos legales aplicables recaen de manera estricta, directa e intransferible en los administradores, asesores legales, oficiales de cumplimiento y directivos de la organización cliente.\n\nExclusión de Terceros y Límite de Responsabilidad (Liability Cap): Queda prohibido distribuir, citar o facilitar el acceso a este Documento, de forma total o parcial, a cualquier tercero sin el consentimiento previo de la consultora. La consultora no asume responsabilidad alguna frente a ningún tercero que acceda al contenido de este Documento, asumiendo dicho tercero todo el riesgo de forma exclusiva. En la medida máxima permitida por la legislación aplicable de la jurisdicción correspondiente, y con exclusión de dolo o negligencia grave, la responsabilidad total y agregada de la consultora por cualquier reclamación, daño, perjuicio, pérdida o sanción derivada de o relacionada con la preparación, contenido, conclusiones o uso de este Documento (ya sea por responsabilidad contractual, extracontractual, de garantía o cualquier otra teoría de responsabilidad legal) estará limitada cuantitativamente, en todo caso y de forma conjunta, al importe neto de los honorarios efectivamente percibidos por la consultora de la organización cliente por la prestación del servicio de este assessment específico. En ningún caso la consultora será responsable por daños indirectos, incidentales, consecuenciales, lucro cesante, pérdida de ingresos, interrupción de negocio o daños reputacionales.",
+    "disclaimer_text": "This diagnostic document has been prepared for the exclusive use of the client based on technical interviews and self-assessments. Actuarial risk simulations (O-FAIR) and financial projections are strategic estimation tools for business casing, not formal financial or legal audits.",
     "default_classification": "Confidencial",
     "title": "Informe de Situación Actual (AS-IS)",
     "project": "Consultoría para el rediseño de infraestructura tecnológica",
@@ -690,7 +690,7 @@
     "priority_low": "Low",
     "coi_3y_ord": "~{amount} in 3 years",
     "coi_3y_ext": "~{amount} (worst case in 3 years)",
-    "disclaimer_text": "This technical diagnostic report (the Document) has been prepared by the consultant solely for the internal and exclusive use of the client organization on a strictly confidential basis. The Document constitutes a fast assessment exercise based exclusively on the information, explanations, and self-assessments provided by the client's staff during the technical interviews held, assuming their complete truthfulness, without any independent validation or field audit by our team. Consequently, the Document is delivered 'as is' (AS-IS) and does not constitute an explicit or implicit guarantee of performance, continuous security, or indemnification against operational or regulatory incidents.\n\nFinancial impact projections, actuarial risk simulations, and the values of Annual Loss Exposure (ALE) and worst-case (P90) calculated through the standard Open FAIR™ methodology and stochastic Monte Carlo models represent only statistical estimates and mathematical probability models based on uncertainty distributions. These monetary valuations constitute analytical tools exclusive to strategic prioritization of investments and cost of inaction (Business Case). Under no circumstances should they be interpreted, used, or assimilated as formal financial or accounting audits, provisions of accounting liabilities, guarantees of direct or indirect impact on the company's balance sheet, or as legally or judicially enforceable liabilities.\n\nAny reference in the Document to standards, laws, regulations, or sector-specific compliance frameworks (such as applicable cybersecurity frameworks, operational resilience regulations, and industry standards) is presented for strictly illustrative, technical, and engineering best practices purposes to mitigate risk exposure. These mentions do not constitute under any circumstances formal legal, regulatory, or tax advice. The interpretation, implementation, verification, and final compliance with applicable regulatory obligations and legal requirements rest strictly, directly, and non-transferably with the directors, legal advisors, compliance officers, and managers of the client organization.\n\nExclusion of Third Parties and Liability Cap Clause: It is forbidden to distribute, cite, or facilitate access to this Document, in whole or in part, to any third party without the prior consent of the consultant. The consultant does not assume any liability to any third party who accesses the content of this Document, with such third party assuming all risk exclusively. To the maximum extent permitted by applicable law under the relevant jurisdiction, and excluding cases of willful misconduct or gross negligence, the total and aggregate liability of the consultant for any claim, damage, loss, or penalty arising out of or related to the preparation, content, conclusions, or use of this Document (whether in contract, tort, warranty, or any other theory of legal liability) shall be quantitatively limited, in all cases and collectively, to the net amount of fees actually received by the consultant from the client organization for the provision of this specific assessment service. In no event shall the consultant be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, loss of revenue, business interruption, or loss of reputation.",
+    "disclaimer_text": "This diagnostic document has been prepared for the exclusive use of the client based on technical interviews and self-assessments. Actuarial risk simulations (O-FAIR) and financial projections are strategic estimation tools for business casing, not formal financial or legal audits.",
     "default_classification": "Confidential",
     "title": "Current State Assessment Report (AS-IS)",
     "project": "Technology infrastructure redesign consultancy",
@@ -1177,7 +1177,7 @@
     "priority_low": "Baixa",
     "coi_3y_ord": "~{amount} em 3 anos",
     "coi_3y_ext": "~{amount} (pior cenário em 3 anos)",
-    "disclaimer_text": "Este documento constitui um relatório técnico e de diagnóstico elaborado pela consultoria baseando-se exclusivamente nos dados, entrevistas e configurações fornecidos pelo cliente, os quais não foram submetidos a uma auditoria formal externa por nossa parte. A consultoria não assume responsabilidade jurídica sobre decisões de investimento ou alterações de design que o cliente implemente baseado neste diagnóstico sem validações prévias em ambientes controlados.",
+    "disclaimer_text": "This diagnostic document has been prepared for the exclusive use of the client based on technical interviews and self-assessments. Actuarial risk simulations (O-FAIR) and financial projections are strategic estimation tools for business casing, not formal financial or legal audits.",
     "default_classification": "Confidencial",
     "title": "Relatório de Situação Atual (AS-IS)",
     "project": "Technology infrastructure redesign consultancy",
@@ -1664,7 +1664,7 @@
     "priority_low": "Basse",
     "coi_3y_ord": "~{amount} sur 3 ans",
     "coi_3y_ext": "~{amount} (pire des cas sur 3 ans)",
-    "disclaimer_text": "Ce document constitue un rapport technique et de diagnostic élaboré par le cabinet de conseil basé exclusivement sur les données, entretiens et configurations fournis par le client, qui n'ont pas fait l'objet d'un audit externe formel de notre part. Le cabinet de conseil n'assume aucune responsabilité légale quant aux décisions d'investissement ou aux modifications de conception que le client mettrait en œuvre sur la base de ce diagnostic sans validation préalable dans des environnements contrôlés.",
+    "disclaimer_text": "This diagnostic document has been prepared for the exclusive use of the client based on technical interviews and self-assessments. Actuarial risk simulations (O-FAIR) and financial projections are strategic estimation tools for business casing, not formal financial or legal audits.",
     "default_classification": "Confidentiel",
     "title": "Rapport d'Évaluation de l'État des Lieux (AS-IS)",
     "project": "Technology infrastructure redesign consultancy",
@@ -2151,7 +2151,7 @@
     "priority_low": "低",
     "coi_3y_ord": "~3年間で{amount}",
     "coi_3y_ext": "~3年間で{amount}（ワーストケース）",
-    "disclaimer_text": "本文書は、クライアントから提供されたデータ、インタビュー、および構成のみに基づいて当社が作成した技術的な診断レポートであり、当社による正式な外部監査の対象とはなっていません。当社は、クライアントが管理された環境での事前の検証なしに本診断に基づいて実施する投資決定または設計変更について、いかなる法的責任も負いません。",
+    "disclaimer_text": "This diagnostic document has been prepared for the exclusive use of the client based on technical interviews and self-assessments. Actuarial risk simulations (O-FAIR) and financial projections are strategic estimation tools for business casing, not formal financial or legal audits.",
     "default_classification": "極秘",
     "title": "現状評価レポート（AS-IS）",
     "project": "Technology infrastructure redesign consultancy",
@@ -2639,7 +2639,7 @@
     "coi_3y_ord": "~{amount} in 3 Jahren",
     "coi_3y_ext": "~{amount} (Worst-Case in 3 Jahren)",
     "default_classification": "Vertraulich",
-    "disclaimer_text": "This technical diagnostic report (the Document) has been prepared by the consultant solely for the internal and exclusive use of the client organization on a strictly confidential basis. The Document constitutes a fast assessment exercise based exclusively on the information, explanations, and self-assessments provided by the client's staff during the technical interviews held, assuming their complete truthfulness, without any independent validation or field audit by our team. Consequently, the Document is delivered 'as is' (AS-IS) and does not constitute an explicit or implicit guarantee of performance, continuous security, or indemnification against operational or regulatory incidents.\n\nFinancial impact projections, actuarial risk simulations, and the values of Annual Loss Exposure (ALE) and worst-case (P90) calculated through the standard Open FAIR™ methodology and stochastic Monte Carlo models represent only statistical estimates and mathematical probability models based on uncertainty distributions. These monetary valuations constitute analytical tools exclusive to strategic prioritization of investments and cost of inaction (Business Case). Under no circumstances should they be interpreted, used, or assimilated as formal financial or accounting audits, provisions of accounting liabilities, guarantees of direct or indirect impact on the company's balance sheet, or as legally or judicially enforceable liabilities.\n\nAny reference in the Document to standards, laws, regulations, or sector-specific compliance frameworks (such as applicable cybersecurity frameworks, operational resilience regulations, and industry standards) is presented for strictly illustrative, technical, and engineering best practices purposes to mitigate risk exposure. These mentions do not constitute under any circumstances formal legal, regulatory, or tax advice. The interpretation, implementation, verification, and final compliance with applicable regulatory obligations and legal requirements rest strictly, directly, and non-transferably with the directors, legal advisors, compliance officers, and managers of the client organization.\n\nExclusion of Third Parties and Liability Cap Clause: It is forbidden to distribute, cite, or facilitate access to this Document, in whole or in part, to any third party without the prior consent of the consultant. The consultant does not assume any liability to any third party who accesses the content of this Document, with such third party assuming all risk exclusively. To the maximum extent permitted by applicable law under the relevant jurisdiction, and excluding cases of willful misconduct or gross negligence, the total and aggregate liability of the consultant for any claim, damage, loss, or penalty arising out of or related to the preparation, content, conclusions, or use of this Document (whether in contract, tort, warranty, or any other theory of legal liability) shall be quantitatively limited, in all cases and collectively, to the net amount of fees actually received by the consultant from the client organization for the provision of this specific assessment service. In no event shall the consultant be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, loss of revenue, business interruption, or loss of reputation.",
+    "disclaimer_text": "This diagnostic document has been prepared for the exclusive use of the client based on technical interviews and self-assessments. Actuarial risk simulations (O-FAIR) and financial projections are strategic estimation tools for business casing, not formal financial or legal audits.",
     "title": "Ist-Zustands-Bewertungsbericht (AS-IS)",
     "project": "Technology infrastructure redesign consultancy",
     "client_lbl": "Client:\n",
@@ -2929,5 +2929,713 @@
     "table_header_maturity_level": "Maturity Level",
     "table_header_pillar_capacity": "Pillar / Evaluated Technical Capability",
     "table_header_score_asis": "AS-IS Score"
-  }
+  },
+  "capability_keyword_maps": {
+    "es": [
+      [
+        [
+          "high availability",
+          "availability"
+        ],
+        "Validación Continua de la Alta Disponibilidad"
+      ],
+      [
+        [
+          "observability",
+          "monitoring"
+        ],
+        "Observabilidad Centralizada y Telemetría"
+      ],
+      [
+        [
+          "provision",
+          "self-service"
+        ],
+        "Autoservicio de Provisión y Automatización de Despliegue"
+      ],
+      [
+        [
+          "identity",
+          "access"
+        ],
+        "Seguridad de Identidad y Gobierno de Accesos"
+      ],
+      [
+        [
+          "backup",
+          "recovery"
+        ],
+        "Respaldo Automatizado y Recuperación ante Desastres"
+      ],
+      [
+        [
+          "hybrid cloud",
+          "cloud"
+        ],
+        "Gobernanza de Nube Híbrida y Consistencia Operativa"
+      ]
+    ],
+    "en": [
+      [
+        [
+          "high availability",
+          "availability"
+        ],
+        "Continuous High Availability Validation"
+      ],
+      [
+        [
+          "observability",
+          "monitoring"
+        ],
+        "Centralized Observability and Telemetry"
+      ],
+      [
+        [
+          "provision",
+          "self-service"
+        ],
+        "Self-Service Provisioning and Automated Deployment"
+      ],
+      [
+        [
+          "identity",
+          "access"
+        ],
+        "Identity Security and Access Governance"
+      ],
+      [
+        [
+          "backup",
+          "recovery"
+        ],
+        "Automated Backup and Disaster Recovery"
+      ],
+      [
+        [
+          "hybrid cloud",
+          "cloud"
+        ],
+        "Hybrid Cloud Governance and Operational Consistency"
+      ]
+    ]
+  },
+  "high_maturity_catalog": {
+    "es": {
+      "labels": [
+        "Liderazgo Tecnológico y Estabilidad",
+        "Oportunidades de Optimización Continua",
+        "Calibración Analítica de Excelencia"
+      ],
+      "p1_caps": "La plataforma demuestra un liderazgo tecnológico sobresaliente en este dominio, sustentado por procesos optimizados y mejores prácticas en capacidades clave como {caps}.",
+      "p1_fallback": "Las capacidades evaluadas reflejan una madurez operativa excelente y consistente en todo el perímetro.",
+      "p2": "No se han detectado brechas de madurez ni vulnerabilidades críticas. Las oportunidades se centran exclusivamente en el mantenimiento proactivo y la innovación tecnológica continua.",
+      "p3": "La calificación excelente refleja un comportamiento maduro y homogéneo, posicionando a este pilar como un habilitador estratégico de resiliencia y escalabilidad."
+    },
+    "en": {
+      "labels": [
+        "Technological Leadership and Stability",
+        "Continuous Optimization Opportunities",
+        "Analytical Excellence Calibration"
+      ],
+      "p1_caps": "The platform demonstrates outstanding technological leadership in this domain, sustained by optimized processes and industry best practices in key capabilities such as {caps}.",
+      "p1_fallback": "Evaluated capabilities reflect an excellent and consistent operational maturity across the perimeter.",
+      "p2": "No maturity gaps or critical vulnerabilities have been detected. Opportunities focus exclusively on proactive maintenance and continuous technological innovation.",
+      "p3": "The excellent rating reflects mature and consistent behavior, positioning this pillar as a strategic enabler of resilience and scalability."
+    }
+  },
+  "balanced_maturity_catalog": {
+    "es": {
+      "labels": [
+        "Fortalezas Operativas y Estabilidad",
+        "Brechas de Control y Vulnerabilidades",
+        "Calibración Analítica del Diagnóstico"
+      ],
+      "variants": [
+        {
+          "labels": [
+            "Fortalezas Operativas y Estabilidad",
+            "Brechas de Control y Vulnerabilidades",
+            "Calibración Analítica de Madurez"
+          ],
+          "p1_caps": "Se constata un nivel de madurez consolidado en capacidades clave como {caps}, garantizando la continuidad operativa y el soporte a las demandas actuales de la organización.",
+          "p1_fallback": "Se identifican oportunidades de consolidación generalizadas en las capacidades evaluadas de este dominio.",
+          "p2": "En contraposición, se identifican brechas de madurez relevantes en {gaps_caps}. El análisis evidencia que {gaps_str_joined}. En consecuencia, esto genera una exposición operativa directa caracterizada por {risks_str_joined}.",
+          "p3": "La calificación final del pilar se encuentra sustentada por las capacidades de soporte, pero se ve penalizada de forma directa por las deficiencias detectadas en '{worst_cap}', que actúa como el factor limitante para la evolución del dominio."
+        },
+        {
+          "labels": [
+            "Capacidades Consolidadas",
+            "Riesgos Operativos y Deuda Técnica",
+            "Calibración Analítica de Madurez"
+          ],
+          "p1_caps": "La infraestructura presenta solidez y estabilidad en componentes críticos como {caps}, mitigando riesgos de fallo y proporcionando una base funcional adecuada.",
+          "p1_fallback": "Se requiere un esfuerzo de estandarización estructural en todo el perímetro del dominio evaluado.",
+          "p2": "Sin embargo, existen áreas de mejora prioritarias en {gaps_caps}. El análisis revela que {gaps_str_joined}. Esto genera un impacto operativo directo manifestado en {risks_str_joined}.",
+          "p3": "La puntuación refleja un equilibrio entre las fortalezas de la plataforma y el lastre de las brechas en '{worst_cap}', que reducen la resiliencia y limitan la escalabilidad operativa global."
+        },
+        {
+          "labels": [
+            "Línea Base Operativa",
+            "Áreas de Mejora y Retos de Continuidad",
+            "Calibración Analítica de Madurez"
+          ],
+          "p1_caps": "Se aprecia un nivel de control adecuado y procesos establecidos en capacidades como {caps}, aportando resiliencia a las operaciones diarias de infraestructura.",
+          "p1_fallback": "Las capacidades actuales muestran un comportamiento elemental con necesidad clara de redefinición de procesos.",
+          "p2": "Por el contrario, el entorno presenta desafíos operativos materiales en {gaps_caps}. Se constata una brecha material en {gaps_str_joined}, lo que expone a la organización a consecuencias de negocio como {risks_str_joined}.",
+          "p3": "El score consolidado del pilar se ve severamente condicionado por la inmadurez de la capacidad '{worst_cap}', que actúa como el obstáculo principal para alcanzar el estado objetivo de control."
+        }
+      ]
+    },
+    "en": {
+      "labels": [
+        "Operational Strengths and Stability",
+        "Control Gaps and Vulnerabilities",
+        "Analytical Diagnostic Calibration"
+      ],
+      "variants": [
+        {
+          "labels": [
+            "Operational Strengths and Stability",
+            "Control Gaps and Vulnerabilities",
+            "Analytical Maturity Calibration"
+          ],
+          "p1_caps": "A consolidated maturity level is confirmed in key capabilities such as {caps}, ensuring operational continuity and supporting current organizational demands.",
+          "p1_fallback": "Widespread consolidation opportunities are identified across the evaluated capabilities of this domain.",
+          "p2": "Conversely, relevant maturity gaps are identified in {gaps_caps}. Analysis reveals that {gaps_str_joined}. Consequently, this drives direct operational exposure characterized by {risks_str_joined}.",
+          "p3": "The final pillar score is anchored by supporting capabilities, but is directly penalized by deficiencies in '{worst_cap}', which acts as the governing bottleneck for domain evolution."
+        },
+        {
+          "labels": [
+            "Consolidated Capabilities",
+            "Operational Risks and Technical Debt",
+            "Analytical Maturity Calibration"
+          ],
+          "p1_caps": "Infrastructure exhibits stability in critical components such as {caps}, mitigating failure risk and providing a resilient baseline.",
+          "p1_fallback": "A structural standardization effort is required across the perimeter of the evaluated domain.",
+          "p2": "Nonetheless, there are key weaknesses and priority areas for improvement in {gaps_caps}. The analysis reveals that {gaps_str_joined}. Consequently, this generates direct operational exposure characterized by {risks_str_joined}.",
+          "p3": "The score reflects a balance between the strengths of the platform and the burden of the gaps in '{worst_cap}', which reduce resilience and limit global operational scalability."
+        },
+        {
+          "labels": [
+            "Operational Baseline",
+            "Improvement Areas and Continuity Challenges",
+            "Analytical Maturity Calibration"
+          ],
+          "p1_caps": "An adequate control level and consistent processes are noted in capabilities such as {caps}, adding resilience to daily infrastructure operations.",
+          "p1_fallback": "Current capabilities show basic behavior with a clear need for process redefinition.",
+          "p2": "In contrast, the environment presents material operational challenges in {gaps_caps}. A material gap is noted in {gaps_str_joined}, which exposes the organization to business consequences such as {risks_str_joined}.",
+          "p3": "The consolidated pillar score is severely conditioned by the immaturity of the '{worst_cap}' capability, which acts as the main obstacle to reach the target control state."
+        }
+      ]
+    }
+  },
+  "low_maturity_catalog": {
+    "es": {
+      "labels": [
+        "Diagnóstico de Deficiencias y Estado Crítico",
+        "Exposición al Riesgo e Impacto Operativo",
+        "Calibración Analítica de Penalización"
+      ],
+      "p1_caps": "El diagnóstico revela un estado de inmadurez estructural crítico y generalizado, caracterizado por la ausencia de estandarización y control formal en capacidades esenciales como {caps}.",
+      "p1_fallback": "El dominio muestra una postura operativa elemental o no documentada, requiriendo una intervención prioritaria.",
+      "p2": "El análisis técnico revela que {gaps_str_joined}. La carencia de automatizaciones avanzadas y la alta dependencia de procesos manuales exponen de forma inmediata a la organización a {risks_str_joined}.",
+      "p3": "La puntuación crítica asignada se encuentra severamente lastrada por la debilidad estructural detectada en '{worst_cap}', que representa el cuello de botella principal de la torre y anula la efectividad de cualquier control adyacente."
+    },
+    "en": {
+      "labels": [
+        "Deficiency Diagnosis and Critical State",
+        "Risk Exposure and Operational Impact",
+        "Analytical Penalty Calibration"
+      ],
+      "p1_caps": "The diagnosis reveals a critical and widespread structural immaturity, characterized by the absence of standardization and formal control in essential capabilities such as {caps}.",
+      "p1_fallback": "The domain shows a basic or undocumented operational posture, requiring priority intervention.",
+      "p2": "Technical analysis reveals that {gaps_str_joined}. The lack of advanced automation and high dependence on manual processes directly exposes the organization to {risks_str_joined}.",
+      "p3": "The assigned critical score is severely burdened by the systemic weakness detected in '{worst_cap}', which represents the main bottleneck of the tower and negates the effectiveness of any adjacent control."
+    }
+  },
+  "strength_templates": {
+    "es": {
+      "low": "Capacidad consolidada en '{cap}' ({p_name}), operando con niveles de riesgo controlados y sirviendo como anclaje de estabilidad operativa.",
+      "norm": "La capacidad de '{cap}' ({p_name}) conforma la línea base operativa funcional de la plataforma, asegurando el soporte continuo a los servicios de negocio actuales.",
+      "fallback": "El entorno tecnológico evaluado requiere una modernización y estandarización integral en todos sus frentes operativos."
+    },
+    "en": {
+      "low": "Consolidated capability in '{cap}' ({p_name}), operating with controlled risk levels and serving as an operational stability anchor.",
+      "norm": "The '{cap}' capability ({p_name}) forms the current operational baseline of the platform, ensuring continuous support for critical business services.",
+      "fallback": "The evaluated technological environment requires comprehensive modernization and standardization across all operational fronts."
+    }
+  },
+  "initiative_title_filler_regexes": [
+    "^programa de implantaci[oó]n de metodolog[ií]a de\\s+",
+    "^programa de transformaci[oó]n del?\\s+",
+    "^programa de gobernanza operativa y\\s+",
+    "^programa de excelencia operativa,\\s+",
+    "^programa de gobierno, conciliaci[oó]n y\\s+",
+    "^programa de inteligencia operativa y\\s+",
+    "^programa corporativo de\\s+",
+    "^programa estrat[eé]gico de\\s+",
+    "^programa de\\s+",
+    "^plan director de\\s+",
+    "^sistema automatizado de\\s+",
+    "^plataforma integral de\\s+",
+    "^marco estrat[eé]gico de\\s+",
+    "^garant[ií]a de\\s+"
+  ],
+  "legacy_docx_template_tags": {
+    "num_pillars_tag": "[número de pilares]",
+    "list_towers_bullet_tag": "-[Lista de torres evaluadas]",
+    "list_towers_tag": "[Lista de torres evaluadas]",
+    "tower_code_tag": "T[X]",
+    "tower_name_bracket_tag": "[Nombre de la Torre]",
+    "tower_code_bracket_tag": "[Código]",
+    "tower_name_lower_bracket_tag": "[Nombre de la torre]",
+    "domain_desc_tag": "[descripción del dominio]",
+    "tech_domain_desc_tag": "descripción del dominio tecnológico",
+    "maturity_result_tag_1": "Nivel de madurez obtenido: [Nivel de madurez de la torre]",
+    "maturity_result_tag_2": "El resultado de [X.X] sitúa la torre en Nivel [X] – [Descripción].",
+    "target_level_tag": "Nivel objetivo:\n[Nivel objetivo recomendado]",
+    "instruction_agent_tag": "[INSTRUCCIÓN PARA EL AGENTE:Hazlo extenso y bien estructurado mediante bullets]",
+    "resilience_current_state_tag": "El análisis del estado actual del dominio Resilience & Continuity permite concluir que la infraestructura presenta un nivel de madurez [nivel de madurez], caracterizado por:",
+    "strength_tag": "[fortaleza identificada]",
+    "limitation_tag": "[limitación identificada]",
+    "risk_tag": "[riesgo identificado]",
+    "pillar_name_tag": "Pilar [Nombre del pilar]",
+    "current_state_desc_tag": "[Descripción del estado actual basada en las respuestas del cuestionario. Hazla extensa y estructurada por bullets]",
+    "target_capability_tag": "[capacidad objetivo]",
+    "evolution_line_tag": "[línea de evolución]",
+    "date_bracket_tag": "[Fecha]"
+  },
+  "chapter_01_intro_templates": {
+    "es": "# Objetivo, Alcance y Marco Metodológico\n\n## Objetivos y Alcance\nEste documento técnico anexo detalla el diagnóstico de la situación actual (AS-IS) de la torre tecnológica de **{tower_name}** para la organización **{client_name}**, desarrollado bajo un marco de evaluación ágil (*Fast Assessment*). El propósito principal de este análisis es proporcionar a la dirección de tecnología una radiografía clara, objetiva y priorizada de las capacidades operativas del perímetro evaluado.\n\nEl diagnóstico se enfoca específicamente en lograr tres resultados ejecutivos:\n*   **Identificación de brechas de resiliencia:** Localizar ineficiencias de infraestructura y cuellos de botella que comprometan la continuidad de los servicios de producción.\n*   **Determinación de obsolescencia técnica:** Evaluar el ciclo de vida de los activos tecnológicos y su alineación con los estándares actuales de soporte, seguridad y costes de mantenimiento.\n*   **Priorización racional de inversiones:** Establecer una hoja de ruta de transformación donde cada iniciativa propuesta esté justificada por su capacidad real para mitigar riesgos y mejorar la eficiencia del servicio.\n\nEl alcance técnico de esta evaluación comprende el análisis detallado de los siguientes pilares de capacidad del dominio de **{tower_name}**:\n\n{pillars_list_md}\nLa determinación de la madurez operativa y la postura de riesgo de estos pilares se realiza contrastando las prácticas actuales de **{client_name}** frente a los baselines estándar de la industria del **{industry_name}** y los marcos regulatorios aplicables.\n\n## Marco Metodológico del Diagnóstico\nLa solidez de este análisis radica en un método de **calibración objetiva cruzada**, diseñado para mitigar sesgos de percepción y asegurar que las recomendaciones correspondan a la realidad operativa de la organización. El proceso se desarrolla en tres fases de análisis secuenciales:\n\n1.  **Ingesta de Datos y Contraste de Evidencias:** Se recopila la información base mediante sesiones técnicas estructuradas y el análisis de la arquitectura física y lógica con los equipos especialistas de **{client_name}**. Esta autoevaluación inicial se contrasta y calibra con evidencias documentales de configuración y operación.\n2.  **Análisis de Interdependencias Críticas:** El diagnóstico no evalúa componentes aislados. Se modelan las relaciones de dependencia lógica entre la infraestructura evaluada y el resto de los servicios de la organización, identificando de manera analítica cómo la fragilidad de un componente puede propagar riesgos a toda la cadena de valor de negocio.\n3.  **Modelado Cuantitativo de Riesgos:** Para dotar al informe de rigor financiero, los riesgos técnicos identificados se evalúan utilizando el estándar internacional **OpenFAIR (Factor Analysis of Information Risk)**. Este marco traduce la probabilidad de fallos operativos y su impacto técnico en métricas cuantitativas de exposición económica y operativa, permitiendo fundamentar la urgencia de las acciones correctoras con criterios estrictamente de negocio.\n",
+    "en": "# Objective, Scope, and Methodological Framework\n\n## Objectives and Scope\nThis technical annex document details the current situation diagnostic (AS-IS) of the **{tower_name}** technology tower for **{client_name}**, developed within a fast-track assessment framework (*Fast Assessment*). The primary purpose of this analysis is to provide the technology leadership with a clear, objective, and prioritized overview of the operational capabilities of the evaluated perimeter.\n\nThe diagnostic specifically focuses on achieving three executive outcomes:\n*   **Identification of resilience gaps:** Pinpoint infrastructure bottlenecks and inefficiencies compromising production service continuity.\n*   **Technical obsolescence assessment:** Evaluate technology asset lifecycles and alignment with modern security, support, and maintenance baselines.\n*   **Rational investment prioritization:** Formulate a prioritized transformation roadmap where each proposed initiative is substantiated by its capacity to compress operational risk and elevate delivery velocity.\n\nThe technical perimeter of this assessment encompasses detailed analysis across the following capability pillars for **{tower_name}**:\n\n{pillars_list_md}\nOperational maturity and risk posture are determined by benchmarking **{client_name}**'s observed baseline against **{industry_name}** industry standards and applicable statutory frameworks.\n\n## Methodological Framework\nThe analytical integrity of this assessment is grounded in an objective **cross-calibration methodology**, engineered to eliminate perceptual bias and ensure findings reflect ground-truth reality across three sequential phases:\n\n1.  **Data Ingestion and Evidence Grounding:** Baseline evidence is gathered through structured technical workshops and physical/logical architecture inspections with specialist teams from **{client_name}**, verified against configuration and telemetry artifacts.\n2.  **Critical Interdependency Analysis:** The assessment models structural dependencies between evaluated infrastructure components and dependent business services, mapping cascade failure topologies.\n3.  **Quantitative Risk Modeling:** Identified technical deficiencies are evaluated via the international **Open FAIR™ (Factor Analysis of Information Risk)** standard, translating threat event frequency and loss magnitude into defensible financial metrics.\n"
+  },
+  "pillar_bullet_template": {
+    "es": {
+      "weighted": "* **{p_name} (Peso: {p_weight}%)**: Evalúa de manera integral la madurez operativa y los baselines técnicos de la infraestructura, analizando críticamente factores clave como {kpi_str}.\n",
+      "standard": "* **{p_name}**: Evaluación técnica y análisis de brechas operativas en la torre.\n"
+    },
+    "en": {
+      "weighted": "* **{p_name} (Weight: {p_weight}%)**: Evaluates operational maturity and technical baselines across key capabilities such as {kpi_str}.\n",
+      "standard": "* **{p_name}**: Technical assessment and operational gap analysis across the tower perimeter.\n"
+    }
+  },
+  "chapter_04_templates": {
+    "es": {
+      "title": "# Descripción de la Plataforma de Infraestructura Actual\n",
+      "intro": "A continuación, se define de manera consolidada y unificada el inventario técnico, arquitectura y estado operativo general del entorno. Esta descripción unifica el contexto tecnológico general para evitar repeticiones innecesarias entre dominios:\n\n",
+      "fallback": "Descripción técnica de la plataforma no disponible."
+    },
+    "en": {
+      "title": "# Current Platform Infrastructure Description\n",
+      "intro": "The following section provides a consolidated inventory, architectural baseline, and operational profile of the platform environment:\n\n",
+      "fallback": "Technical description of the platform is currently unavailable."
+    }
+  },
+  "chapter_05_templates": {
+    "es": {
+      "title": "# Análisis Transversal de Capacidades\n"
+    },
+    "en": {
+      "title": "# Cross-Domain Capabilities Analysis\n"
+    }
+  },
+  "tower_maturity_executive_paragraph": {
+    "es": "La torre presenta un perfil de madurez cuantitativo de **{formatted_score} sobre 5,00** (Nivel **'{exact_band}'**), evidenciando procesos operativos formalizados pero con una dispersión de prácticas entre sus sub-dominios. En términos económicos, esta falta de cohesión operativa se traduce en una fuga de capital medida en una **Expectativa de Pérdida Anualizada (ALE) de {true_ale_str}**, provocada por la acumulación de dependencias manuales, silos de configuración y la ausencia de automatizaciones avanzadas de recuperación. En un escenario de disrupción severa o estrés acumulado en el percentil 90 (P90), la exposición de la plataforma escalaría de forma abrupta hasta los **{formatted_p90} {currency}**, con una pérdida máxima estimada de hasta **{formatted_max} {currency}** ante eventos extremos de indisponibilidad concurrentes.",
+    "en": "The tower demonstrates a quantitative maturity profile of **{formatted_score} out of 5.00** (Level **'{exact_band}'**), exhibiting formalized operational processes with capability variance across sub-domains. In financial terms, this variance drives an annual economic drag measured by an **Annual Loss Exposure (ALE) of {currency}{true_ale_str}**, resulting from accumulated manual toil, configuration drift, and unmitigated recovery dependencies. Under a severe 90th percentile stress scenario (P90), platform exposure surges to **{currency}{formatted_p90}**, with an estimated maximum potential tail loss of up to **{currency}{formatted_max}** under extreme concurrent outage conditions."
+  },
+  "conclusion_tobe_templates": {
+    "es": {
+      "intro": "La calibración de los rangos de Magnitud de Pérdida (LM) para {client_name} se realiza bajo el criterio riguroso de operador de {industry_name}. Bajo esta base de calibración, se identifican las siguientes iniciativas prioritarias y grupos estratégicos críticos, cuya ejecución inmediata desbloqueará la resiliencia operativa y mitigará la exposición financiera acumulada de la organización:\n",
+      "coverage_tiers": {
+        "p80": "la práctica totalidad de la exposición financiera al riesgo identificada",
+        "p65": "más de las dos terceras partes de la exposición financiera al riesgo identificada",
+        "p40": "aproximadamente la mitad de la exposición financiera al riesgo identificada",
+        "default": "una parte muy relevante de la exposición financiera al riesgo identificada"
+      },
+      "value_prop_tail": "Esta iniciativa mitiga de forma consolidada **{formatted_g_ale} {currency}** ({pct:.1f}% del ALE total) de exposición financiera latente."
+    },
+    "en": {
+      "intro": "Calibration of Loss Magnitude (LM) ranges for {client_name} reflects rigorous {industry_name} operating baselines. On this calibrated foundation, the following strategic programs are prioritized to unlock operational resilience and mitigate aggregated financial exposure:\n",
+      "coverage_tiers": {
+        "p80": "virtually the totality of identified financial risk exposure",
+        "p65": "more than two-thirds of identified financial risk exposure",
+        "p40": "approximately half of identified financial risk exposure",
+        "default": "a highly significant portion of identified financial risk exposure"
+      },
+      "value_prop_tail": "This initiative consolidates mitigation for **{currency}{formatted_g_ale}** ({pct:.1f}% of total ALE) in latent financial exposure."
+    }
+  },
+  "risk_fallback_strings": {
+    "es": {
+      "surface": "un incremento de la superficie de ataque y del tiempo de exposición a vulnerabilidades críticas",
+      "incidents": [
+        "un elevado riesgo de incidentes operativos y una limitada agilidad frente al crecimiento de la demanda"
+      ]
+    },
+    "en": {
+      "surface": "an expanded attack surface and prolonged exposure to critical vulnerabilities",
+      "incidents": [
+        "heightened operational incident frequency and constrained agility under demand growth"
+      ]
+    }
+  },
+  "metric_unification_regexes": [
+    "(?:La torre presenta|El perfil de madurez|El análisis de madurez|La evaluación de madurez).*?(?:Expectativa|Exposición|Pérdida|ALE).*?[\\d,.]+\\s*[€$].*?\\.",
+    "El análisis cuantitativo sitúa.*?\\.\\s*"
+  ],
+  "default_gaps_catalog": {
+    "es": [
+      "se registran carencias en la automatización y predictibilidad de las operaciones de infraestructura"
+    ],
+    "en": [
+      "gaps are registered in the automation and predictability of infrastructure operations"
+    ]
+  },
+  "default_risks_catalog": {
+    "es": [
+      "un elevado riesgo de incidentes operativos y una limitada agilidad frente al crecimiento de la demanda"
+    ],
+    "en": [
+      "increased risk of operational incidents and limited agility in the face of demand growth"
+    ]
+  },
+  "default_worst_cap_catalog": {
+    "es": "las capacidades críticas",
+    "en": "critical capabilities"
+  },
+  "cta_catalog": {
+    "es": {
+      "p80": "la práctica totalidad de la exposición financiera al riesgo identificada",
+      "p65": "más de las dos terceras partes de la exposición financiera al riesgo identificada",
+      "p40": "aproximadamente la mitad de la exposición financiera al riesgo identificada",
+      "default": "una parte muy relevante de la exposición financiera al riesgo identificada",
+      "action": "La adopción inmediata de este plan de transformación mitigará {phrase}, reduciendo de forma proporcional el coste de inacción operativo, resolviendo la sobrecarga operativa de ingeniería e impulsando la conformidad con normativas europeas, lo cual habilitará la agilidad y escalabilidad requerida para soportar las demandas estratégicas del negocio en el mediano plazo."
+    },
+    "en": {
+      "p80": "practically all of the identified financial risk exposure",
+      "p65": "more than two-thirds of the identified financial risk exposure",
+      "p40": "approximately half of the identified financial risk exposure",
+      "default": "a very substantial portion of the identified financial risk exposure",
+      "action": "Immediate adoption of this transformation roadmap will mitigate {phrase}, proportionally reducing operational cost of inaction, resolving engineering operational toil, and driving compliance with regulatory frameworks, which will enable the agility and scalability required to support mid-term strategic business demands."
+    }
+  },
+  "transversal_analysis_templates": {
+    "es": {
+      "title": "# Análisis Transversal de Capacidades\n",
+      "tech_debt_heading": "### Deuda Técnica Crítica",
+      "patterns_heading": "### Patrones Transversales de Ineficiencia y Deuda Estructural",
+      "refactored_tech_debt": "La deuda técnica más relevante identificada en la plataforma se concentra en tres vectores principales de atención:\n\n* **Fragmentación en la capa de virtualización:** Coexistencia de múltiples plataformas de virtualización e infraestructura física remanente, lo que incrementa el esfuerzo de gestión técnica y la complejidad de la administración unificada de la capacidad computacional.\n* **Adopción gradual de arquitecturas de contenedores:** Conveniencia de consolidar un plano de control homogéneo y un catálogo de servicios estándar para facilitar la agilidad operativa y agilizar los despliegues de microservicios.\n* **Estandarización de la automatización:** Prevalencia de aprovisionamiento manual y procesos tradicionales que representan una excelente oportunidad para la adopción progresiva de Infraestructura como Código (IaC), impulsando la consistencia y seguridad en el entorno híbrido."
+    },
+    "en": {
+      "title": "# Cross-Domain Capabilities Analysis\n",
+      "tech_debt_heading": "### Critical Technical Debt",
+      "patterns_heading": "### Cross-Domain Inefficiency Patterns and Structural Debt",
+      "refactored_tech_debt": "The most relevant technical debt identified across the platform concentrates in three primary vectors:\n\n* **Virtualization Layer Fragmentation:** Coexistence of heterogeneous virtualization platforms and legacy physical assets, increasing operational overhead and unified capacity management complexity.\n* **Gradual Container Architecture Adoption:** Need for a consolidated control plane and standardized service catalog to accelerate microservice velocity.\n* **Automation Standardization:** Prevalence of manual provisioning representing an immediate opportunity for progressive Infrastructure-as-Code (IaC) adoption."
+    }
+  },
+  "legacy_cleaning_keywords": [
+    "pérdida anualizada",
+    "coste de inacción",
+    "fuga de capital",
+    "exposición",
+    "pérdida",
+    "madurez"
+  ],
+  "appendix_strip_regex": "^(?:Apéndice|Appendix)\\s+[A-Z]:\\s*",
+  "linguistic_substitution_rules": {
+    "es": {
+      "tal vez": "con certeza técnica",
+      "quizás": "los datos evidencian que",
+      "posiblemente": "el análisis de riesgos confirma que",
+      "podría ser": "es necesario",
+      "industrialización": "automatización avanzada",
+      "automatización": "automatización integral",
+      "excelente postura": "Sólida postura de partida y alineamiento inicial para facilitar la conformidad continua con marcos normativos y estándares aplicables (NIS2, ISO 27001) en el estado objetivo.",
+      "buena base": "Base técnica establecida para la futura codificación y automatización de procedimientos operativos (Runbooks-as-Code) de forma estructurada."
+    },
+    "en": {
+      "maybe": "with technical certainty",
+      "perhaps": "empirical data indicates that",
+      "possibly": "risk analysis confirms that",
+      "could be": "is strictly required",
+      "industrialization": "advanced automation",
+      "automation": "end-to-end automation",
+      "excellent posture": "Solid baseline posture to enable continuous compliance with applicable standards (NIS2, ISO 27001) in target state.",
+      "good foundation": "Technical foundation established for structured runbook-as-code automation."
+    }
+  },
+  "default_structural_bottlenecks": {
+    "es": [
+      "**Cuellos de botella estructurales:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
+      "**Detección tardía de incidentes técnicos:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de fallos críticos.",
+      "**Desalineación y Desviación de Configuraciones:** El mantenimiento manual provoca que los entornos se desvíen continuamente del estado técnico aprobado, dificultando demostrar el cumplimiento normativo en tiempo real de {reg_frameworks}."
+    ],
+    "en": [
+      "**Structural Bottlenecks:** Manual infrastructure provisioning limits delivery velocity for strategic business initiatives.",
+      "**Delayed Incident Detection:** Absence of correlated telemetry inflates Mean Time to Resolution (MTTR) during critical platform failures.",
+      "**Configuration Drift:** Manual changes cause environments to diverge from approved baselines, complicating real-time compliance auditability for {reg_frameworks}."
+    ]
+  },
+  "strategic_mitigation_catalog": {
+    "es": {
+      "iac": {
+        "key": "Estandarización hacia Infraestructura como Código (IaC)",
+        "prop": "Transicionar de la gestión manual y fragmentada a un modelo operativo basado en código, consolidando plataformas y asegurando la conformidad continua con directivas de seguridad como **NIS2**."
+      },
+      "k8s": {
+        "key": "Orquestación Unificada de Contenedores",
+        "prop": "Establecer un modelo operativo corporativo en *Kubernetes* para eliminar silos tecnológicos, gobernar el ciclo de vida y habilitar el despliegue ágil de microservicios en producción."
+      },
+      "obs": {
+        "key": "Observabilidad Predictiva y Telemetría Centralizada",
+        "prop": "Evolucionar de la monitorización reactiva tradicional a la observabilidad avanzada basada en *Objetivos de Nivel de Servicio (SLOs)* para predecir fallos y garantizar los niveles de acuerdo de negocio."
+      },
+      "cloud": {
+        "key": "Landing Zones y Arquitectura Cloud Híbrida",
+        "prop": "Diseñar e implementar zonas de aterrizaje seguras y estandarizadas para habilitar el consumo ágil y controlado de servicios cloud, mitigando el Shadow IT."
+      },
+      "fallback": {
+        "automation": "Automatización y Autoservicio de Plataformas",
+        "compute": "Modernización de Cómputo Híbrido",
+        "prefix": "Optimización y Estandarización de {name}",
+        "base_prop": "Modernizar de forma estratégica el pilar de {p_name} mediante la remediación de vulnerabilidades de configuración, gobernando de manera estricta el ciclo de vida tecnológico y erradicando silos de operación."
+      }
+    },
+    "en": {
+      "iac": {
+        "key": "Standardization towards Infrastructure-as-Code (IaC)",
+        "prop": "Transition from fragmented manual toil to a code-based operating model, consolidating platforms and ensuring continuous compliance with statutory frameworks like **NIS2**."
+      },
+      "k8s": {
+        "key": "Unified Container Orchestration",
+        "prop": "Establish an enterprise operating model on *Kubernetes* to eliminate technological silos, govern lifecycles, and accelerate microservice deployment velocity."
+      },
+      "obs": {
+        "key": "Predictive Observability and Centralized Telemetry",
+        "prop": "Evolve from traditional reactive monitoring to advanced observability based on *Service Level Objectives (SLOs)* to preempt incidents and defend business SLAs."
+      },
+      "cloud": {
+        "key": "Landing Zones and Hybrid Cloud Architecture",
+        "prop": "Architect secure, standardized landing zones to enable agile and governed consumption of hybrid cloud services while eliminating Shadow IT."
+      },
+      "fallback": {
+        "automation": "Platform Automation and Self-Service",
+        "compute": "Hybrid Compute Modernization",
+        "prefix": "Optimization and Standardization of {name}",
+        "base_prop": "Strategically modernize the {p_name} pillar through configuration vulnerability remediation, strict technology lifecycle governance, and silo elimination."
+      }
+    }
+  },
+  "default_finding_descriptions": {
+    "es": {
+      "lifecycle": "los procesos para la gestión del ciclo de vida del cómputo (parcheado, actualizaciones) están estructurados pero su ejecución es predominantemente manual",
+      "virtualization": "se observa una base de estandarización funcional en la configuración de la virtualización, pero el mantenimiento de la consistencia se apoya en procesos con un alto componente manual",
+      "availability": "la consistencia y verificación de esquemas de alta disponibilidad se apoyan en pruebas operativas no automatizadas ni continuas",
+      "fallback": "carencias de automatización de procedimientos y soporte manual predominante en el ciclo de vida"
+    },
+    "en": {
+      "lifecycle": "compute lifecycle management processes (patching, upgrades) are structured but execution remains predominantly manual",
+      "virtualization": "functional standardization baseline observed across virtualization, but consistency maintenance relies on manual toil",
+      "availability": "high availability verification relies on periodic non-automated manual testing",
+      "fallback": "automation gaps and manual toil across operating lifecycles"
+    }
+  },
+  "industry_display_names": {
+    "es": {
+      "Energy & Critical Infrastructure": "Sectores de Energía e Infraestructura Crítica",
+      "Utilities": "Servicios Públicos e Infraestructura Crítica",
+      "Financial Services": "Sector Financiero y Banca",
+      "Retail": "Sector de Distribución y Retail",
+      "Healthcare": "Sector Salud y Hospitalario",
+      "Telecommunications": "Sector Telecomunicaciones y Redes",
+      "default": "Sector Empresarial e Infraestructura"
+    },
+    "en": {
+      "Energy & Critical Infrastructure": "Energy & Critical Infrastructure Sector",
+      "Utilities": "Utilities & Critical Services Sector",
+      "Financial Services": "Financial Services & Banking Sector",
+      "Retail": "Retail & Distribution Sector",
+      "Healthcare": "Healthcare & Life Sciences Sector",
+      "Telecommunications": "Telecommunications Sector",
+      "default": "Enterprise Infrastructure Sector"
+    }
+  },
+  "paragraph_split_markers": [
+    ". Más importante",
+    ".  Más importante",
+    ". More importantly",
+    ".  More importantly"
+  ],
+  "canonical_tower_names": {
+    "T1": [
+      "01",
+      "Data_Center"
+    ],
+    "T2": [
+      "02",
+      "Computo_Hibrido"
+    ],
+    "T3": [
+      "03",
+      "Redes"
+    ],
+    "T4": [
+      "04",
+      "Datos_Storage"
+    ],
+    "T5": [
+      "05",
+      "Resiliencia"
+    ],
+    "T6": [
+      "06",
+      "Seguridad_Identidad"
+    ],
+    "T7": [
+      "07",
+      "Operaciones_ITSM"
+    ],
+    "T8": [
+      "08",
+      "FinOps_Gobernanza"
+    ],
+    "T9": [
+      "09",
+      "Puesto_Trabajo"
+    ],
+    "T10": [
+      "10",
+      "Mainframe_Core"
+    ]
+  },
+  "linguistic_linter_translations": {
+    "\\bproactive capacity assurance\\b": "Gestión Proactiva de Capacidad",
+    "\\bfor business continuity\\b": "para la Continuidad de Negocio",
+    "\\bnetwork foundation\\b": "Fundamentos de Red",
+    "\\blanding zone\\b": "Zona de Aterrizaje Cloud (Landing Zone)",
+    "\\bbranch connectivity\\b": "Conectividad de Sedes y Plantas",
+    "\\bwork breakdown structure\\b": "Estructura de Desglose de Trabajo",
+    "\\bcloud guard\\b": "Gobernanza Cloud y Seguridad Continua",
+    "\\bsecure-ai\\b": "Inteligencia y Seguridad Operativa",
+    "\\bdigital core\\b": "Núcleo Digital",
+    "\\bglobal connect\\b": "Conectividad Global"
+  },
+  "executive_editorial_linter": {
+    "bureaucratic_openers": [
+      "^a fecha de [a-záéíóú0-9\\s]+,\\s*(?:en plena vigencia del ciclo estratégico corporativo [0-9\\-]+ de [a-záéíóú\\s]+,)?\\s*",
+      "^a fecha de hoy,?\\s*",
+      "^en el plano cuantitativo,\\s*",
+      "^es menester señalar que\\s*",
+      "^cabe destacar que\\s*",
+      "^resulta relevante indicar que\\s*",
+      "^la presente torre evidencia\\s*",
+      "^en el contexto actual,\\s*"
+    ],
+    "buzzword_replacements": {
+      "\\bcaptura de sinergias fabriles\\b": "reducción de costes e integración de operaciones",
+      "\\bsinergias fabriles\\b": "ahorros operativos e integración de operaciones",
+      "\\bcaptura de sinergias corporativas\\b": "reducción de costes e integración de operaciones",
+      "\\bsinergias corporativas\\b": "ahorros operativos e integración de operaciones",
+      "\\bcaptura de sinergias\\b": "reducción de costes e integración de operaciones",
+      "\\bsinergias\\b": "ahorros e integraciones operativas",
+      "\\bparadigma\\b": "modelo",
+      "\\bpalancas de valor\\b": "beneficios directos",
+      "\\bpalanca de valor\\b": "beneficio directo",
+      "\\bholístico\\b": "integral",
+      "\\bholística\\b": "integral",
+      "\\bapalancar\\b": "aprovechar",
+      "\\bapalancando\\b": "aprovechando",
+      "\\binercia de gasto\\b": "gasto descontrolado"
+    }
+  },
+  "generic_deliverable_triggers": [
+    "diseno",
+    "design",
+    "plan de pruebas",
+    "test plan"
+  ],
+  "legacy_word_ingestion_cleaning": {
+    "repeated_phrase_regex": "(?i)seguridad f[ií]sica y control de accesos(?:\\s+y\\s+(?:control de\\s+)?accesos)+",
+    "repeated_phrase_replacement": "Physical Security and Access Control",
+    "definition_section_header_tokens": [
+      "definicion de la torre",
+      "tower definition"
+    ],
+    "scope_section_header_tokens": [
+      "alcance tipico:",
+      "typical scope:"
+    ],
+    "exclusion_section_header_tokens": [
+      "no incluye",
+      "not included"
+    ],
+    "scope_next_titles": [
+      "Why this tower is foundational",
+      "Por que esta torre es fundamental"
+    ]
+  },
+  "impact_shading_keywords": {
+    "critical": [
+      "critical",
+      "high",
+      "severe",
+      "material",
+      "critico",
+      "alto"
+    ],
+    "moderate": [
+      "medium",
+      "moderate",
+      "medio",
+      "moderado"
+    ]
+  },
+  "duration_priority_keywords": {
+    "short_term": [
+      "corto",
+      "horizonte 1",
+      "h1",
+      "inmediato",
+      "mes 1",
+      "mes 2",
+      "mes 3",
+      "month 1",
+      "month 2",
+      "month 3",
+      "kickoff"
+    ],
+    "long_term": [
+      "horizonte 3",
+      "h3",
+      "largo plazo",
+      "long term",
+      "mes 18",
+      "mes 24",
+      "month 18",
+      "month 24"
+    ]
+  },
+  "sentence_clause_split_rules": [
+    {
+      "pattern": ",\\s+generando\\s+",
+      "prefix": "Esto genera "
+    },
+    {
+      "pattern": ",\\s+lo que deriva en\\s+",
+      "prefix": "Esto deriva en "
+    },
+    {
+      "pattern": ",\\s+lo que incrementa\\s+",
+      "prefix": "Esto incrementa "
+    },
+    {
+      "pattern": ",\\s+lo que situa\\s+",
+      "prefix": "Esto situa "
+    },
+    {
+      "pattern": ",\\s+pero\\s+",
+      "prefix": "Sin embargo, "
+    }
+  ]
 }

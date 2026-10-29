@@ -145,16 +145,16 @@ def build_scoring(case_input: dict, tower_definition: dict) -> dict:
             "label": band["label"],
             "reading": (lambda b_label: next(
                 (
-                    "Las prácticas operativas del dominio son ad-hoc, inestables o dependientes de esfuerzos individuales."
-                    if "inicial" in b_label.lower()
-                    else "Las capacidades operativas del dominio se aplican de forma parcial o irregular en silos, sin consistencia transversal."
-                    if "básico" in b_label.lower()
-                    else "Los procesos y controles de la plataforma están formalizados, documentados e implantados de manera coherente."
-                    if "estandarizado" in b_label.lower() or "definido" in b_label.lower()
-                    else "Las operaciones y capacidades del dominio se encuentran industrializadas, gobernadas de forma predictiva y sustentadas en métricas."
-                    if "optimizado" in b_label.lower() or "gestionado" in b_label.lower()
-                    else "El dominio tecnológico se rige por un estado de optimización y evolución continua, impulsado por automatización inteligente."
-                    if "avanzado" in b_label.lower()
+                    "Domain operational practices are ad-hoc, unstable, or dependent on individual heroics."
+                    if any(k in b_label.lower() for k in ["init", "inici"])
+                    else "Domain operational capabilities are applied inconsistently across silos without enterprise standard."
+                    if any(k in b_label.lower() for k in ["basic", "repet", "basico"])
+                    else "Platform processes and controls are formalized, documented, and consistently implemented."
+                    if any(k in b_label.lower() for k in ["standard", "defin", "estandariz"])
+                    else "Domain operations and capabilities are industrialized, predictively governed, and substantiated by metrics."
+                    if any(k in b_label.lower() for k in ["optim", "manag", "gestion"])
+                    else "The technical domain operates in continuous optimization and evolution, powered by intelligent automation."
+                    if any(k in b_label.lower() for k in ["advanc", "avanz"])
                     else level["operational_reading"]
                 )
                 for level in tower_definition.get("maturity_scale", [])
@@ -162,8 +162,8 @@ def build_scoring(case_input: dict, tower_definition: dict) -> dict:
             ))(band["label"]),
         },
         "proposed_reporting_note": (
-            "El score mostrado se redondea a una decimal, pero la banda cualitativa se determina "
-            "con el score exacto interno para evitar saltos artificiales por redondeo."
+            "Reported score is rounded to one decimal place, while qualitative band alignment "
+            "is determined from exact internal score to prevent artificial rounding jumps."
         ),
         "target_maturity_default": target_maturity_default,
         "gap_to_target_exact": round(target_maturity_default - tower_score, 4),

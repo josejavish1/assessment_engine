@@ -160,7 +160,7 @@ def test_build_tower_payload_tool():
     """Verify build_tower_payload MCP tool formats output."""
     with patch("assessment_engine.mcp_server._run_script", return_value="Synthesizer output OK") as mock_run:
         res = mcp_mod.build_tower_payload("input.json", "output.json", "Client Acme", "short")
-        assert "Payload construido con éxito" in res
+        assert "Payload construido con éxito" in res or "Payload successfully built" in res
         assert "Synthesizer output OK" in res
         mock_run.assert_called_once_with(
             "assessment_engine.application.run_executive_annex_synthesizer",
@@ -172,21 +172,21 @@ def test_render_tower_docx_tool():
     """Verify render_tower_docx MCP tool delegates to renderer."""
     with patch("assessment_engine.mcp_server._run_script", return_value="Rendered OK"):
         res = mcp_mod.render_tower_docx("payload.json", "template.docx", "out.docx")
-        assert "Documento de Torre renderizado con éxito" in res
+        assert "Documento de Torre renderizado con éxito" in res or "Tower Document successfully rendered" in res
 
 
 def test_generate_radar_chart_tool():
     """Verify generate_radar_chart MCP tool calls chart generator."""
     with patch("assessment_engine.mcp_server._run_script", return_value="Chart OK"):
         res = mcp_mod.generate_radar_chart("payload.json")
-        assert "Gráfico generado con éxito" in res
+        assert "Gráfico generado con éxito" in res or "Chart successfully generated" in res
 
 
 def test_render_commercial_docx_tool():
     """Verify render_commercial_docx MCP tool delegates to commercial reporter."""
     with patch("assessment_engine.mcp_server._run_script", return_value="Commercial OK"):
         res = mcp_mod.render_commercial_docx("payload.json", "template.docx", "out.docx")
-        assert "Reporte comercial renderizado" in res
+        assert "Reporte comercial renderizado" in res or "Commercial report rendered" in res
 
 
 def test_get_tower_state_nonexistent_and_valid(tmp_path: Path):
@@ -314,7 +314,10 @@ def test_authorize_action_gate_flow(tmp_path: Path):
     # Verify authorized_feedback was written
     fb = json.loads((tmp_path / "authorized_feedback.json").read_text(encoding="utf-8"))
     assert fb["task_id"] == "TASK-001"
-    assert "CURA AUTORIZADA" in fb["feedback"]
+    assert (
+        "CURA AUTORIZADA" in fb["feedback"]
+        or "AUTHORIZED REMEDIATION" in fb["feedback"]
+    )
 
     # Verify plan.json patched
     patched_plan = json.loads((tmp_path / "plan.json").read_text(encoding="utf-8"))

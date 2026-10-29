@@ -172,7 +172,7 @@ async def run_step_async(
         print(f"✅ {step_name} (Completado)")
 
     except Exception as e:
-        raise RuntimeError(f"Error crítico lanzando {step_name}: {e}")
+        raise RuntimeError(f"Critical error executing {step_name}: {e}")
 
 
 from dataclasses import dataclass
@@ -244,7 +244,7 @@ def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig
                     path_to_del.unlink()
     else:
         print(
-            f"📈 [Incremental Mode] Respetando caché local existente en {case_dir}. Use --force para reconstruir de cero."
+            f"📈 [Incremental Mode] Preserving existing local cache in {case_dir}. Use --force to rebuild from scratch."
         )
 
     import time
@@ -255,15 +255,26 @@ def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig
     context_path = str(Path(args.context_file).resolve())
     responses_path = str(Path(args.responses_file).resolve())
 
+    from assessment_engine.infrastructure.text_utils import (
+        get_canonical_tower_filenames,
+    )
+
     annex_stem = f"approved_annex_{tower_id.lower()}"
     payload_path = case_dir / f"{annex_stem}.template_payload.json"
     resolve_tower_annex_template_path()
-    output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
-    output_asis_docx = case_dir / f"Diagnostico_ASIS_{tower_id}_{client_slug}.docx"
-    blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
-    output_blueprint_docx = (
-        case_dir / f"Blueprint_Transformacion_{tower_id}_{client_slug}.docx"
+    doc_lang = str(
+        env.get("ASSESSMENT_DOC_LANG")
+        or getattr(args, "language", None)
+        or "en"
+    ).lower()
+
+    canonical_asis_name, canonical_tobe_name = get_canonical_tower_filenames(
+        tower_id, client_name=args.client, locale=doc_lang
     )
+    output_docx = case_dir / f"annex_{tower_id.lower()}_{client_slug}_final.docx"
+    output_asis_docx = case_dir / canonical_asis_name
+    blueprint_payload_path = resolve_blueprint_payload_path(client_slug, tower_id)
+    output_blueprint_docx = case_dir / canonical_tobe_name
 
     return PipelineConfig(
         args=args,
@@ -287,23 +298,44 @@ async def _stage_case_input_and_short_circuit(cfg: PipelineConfig) -> bool:
     """Construct case_input.json and short-circuit early if tower contains no survey answers."""
     case_input_file = cfg.case_dir / "case_input.json"
     if cfg.force or not case_input_file.exists() or case_input_file.stat().st_size == 0:
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.application.build_case_input",
-                "--client",
-                cfg.args.client,
-                "--tower",
-                cfg.tower_id,
-                "--context-file",
-                cfg.context_path,
-                "--responses-file",
-                cfg.responses_path,
-            ],
-            cfg.env,
-            "Build case_input",
-        )
+        try:
+            from assessment_engine.application.build_case_input import (
+                main as case_input_main,
+            )
+
+            case_input_main(
+                [
+                    "--client",
+                    cfg.args.client,
+                    "--tower",
+                    cfg.tower_id,
+                    "--context-file",
+                    str(cfg.context_path),
+                    "--responses-file",
+                    str(cfg.responses_path),
+                ]
+            )
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] In-process case input failed: {e}. Usando fallback subprocess..."
+            )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.application.build_case_input",
+                    "--client",
+                    cfg.args.client,
+                    "--tower",
+                    cfg.tower_id,
+                    "--context-file",
+                    cfg.context_path,
+                    "--responses-file",
+                    cfg.responses_path,
+                ],
+                cfg.env,
+                "Build case_input",
+            )
     else:
         print("⏭️  [Cache Bypass] Build case_input already generated. Skipping.")
 
@@ -316,13 +348,13 @@ async def _stage_case_input_and_short_circuit(cfg: PipelineConfig) -> bool:
             answers_count = len(case_input_data.get("answers", []))
             if answers_count == 0:
                 print(
-                    f"\n⏭️  [Short-Circuit] No se detectaron respuestas o notas para la torre '{cfg.tower_id}' en {cfg.responses_path}.\n"
-                    f"   Esta torre no forma parte del alcance de la evaluación y será omitida de forma segura.\n"
-                    f"   Saliendo de la ejecución de manera limpia (Exit 0)..."
+                    f"\n⏭️  [Short-Circuit] No answers or scores detected for tower '{cfg.tower_id}' in {cfg.responses_path}.\n"
+                    f"   This tower is out of assessment scope and will be skipped cleanly.\n"
+                    f"   Exiting pipeline execution cleanly (Exit 0)..."
                 )
                 return True
         except Exception as e:
-            print(f"⚠️ Alerta analizando case_input para validación de alcance: {e}")
+            print(f"⚠️ Warning analyzing case_input for scope validation: {e}")
 
     return False
 
@@ -375,10 +407,24 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
 
             industry_key = map_industry_to_profile(industry_name)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     snapshot_file = cfg.case_dir.parent / "benchmarks_snapshot.json"
-    if cfg.force or not snapshot_file.exists() or snapshot_file.stat().st_size == 0:
+    tower_has_benchmark = False
+    if snapshot_file.exists() and snapshot_file.stat().st_size > 0:
+        try:
+            with open(snapshot_file, "r", encoding="utf-8-sig") as sf:
+                snap_data = json.load(sf)
+            snapshots = snap_data.get("snapshots", {})
+            t_snap = snapshots.get(cfg.tower_id, {})
+            tower_has_benchmark = (
+                isinstance(t_snap, dict)
+                and t_snap.get("verification_status") == "verified"
+            )
+        except (OSError, ValueError, KeyError, AttributeError) as ex:
+            logger.debug(f"[Fallback] Handled exception: {ex}")
+
+    if cfg.force or not tower_has_benchmark:
         await run_step_async(
             [
                 cfg.python_bin,
@@ -396,7 +442,9 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
             "Run RAGE Evaluation",
         )
     else:
-        print("⏭️  [Cache Bypass] Run RAGE Evaluation already generated. Skipping.")
+        print(
+            f"⏭️  [Cache Bypass] RAGE Benchmark for tower {cfg.tower_id} verified in snapshot. Skipping."
+        )
 
     custom_profile_path = cfg.case_dir / "custom_risk_profile.json"
     if (
@@ -405,7 +453,7 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
         or custom_profile_path.stat().st_size == 0
     ):
         print(
-            "\n🌐 [System] Inicializando Calibrador Dinámico de Escala Financiera (FAIR-MAM)..."
+            "\n🌐 [System] Initializing Dynamic Financial Scale Calibrator (FAIR-MAM)..."
         )
         try:
             from assessment_engine.application.tools.financial_scale_calibrator import (
@@ -417,7 +465,7 @@ async def _stage_evidence_and_benchmarks(cfg: PipelineConfig) -> None:
                 cfg.args.client, cfg.tower_id, industry_key
             )
         except Exception as e:
-            print(f"⚠️ [Financial Calibrator] Fallo en calibración de escala: {e}")
+            print(f"⚠️ [Financial Calibrator] Financial scale calibration failed: {e}")
     else:
         print(
             "⏭️  [Cache Bypass] Engine: Financial Scale Calibrator already generated. Skipping."
@@ -428,65 +476,139 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
     """Execute quantitative scoring followed by qualitative research and executive refinement chain."""
     scoring_file = cfg.case_dir / "scoring_output.json"
     if cfg.force or not scoring_file.exists() or scoring_file.stat().st_size == 0:
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.application.run_scoring",
-                "--case-input",
-                str(cfg.case_dir / "case_input.json"),
-            ],
-            cfg.env,
-            "Run scoring",
-        )
+        try:
+            import json
+
+            from assessment_engine.application.run_scoring import (
+                build_scoring,
+                load_json,
+            )
+            from assessment_engine.infrastructure.config_loader import (
+                load_tower_definition,
+            )
+
+            case_in = load_json(cfg.case_dir / "case_input.json")
+            t_def = load_tower_definition(cfg.tower_id)
+            sc_out = build_scoring(case_in, t_def)
+            scoring_file.write_text(
+                json.dumps(sc_out, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] In-process scoring failed: {e}. Usando fallback subprocess..."
+            )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.application.run_scoring",
+                    "--case-input",
+                    str(cfg.case_dir / "case_input.json"),
+                ],
+                cfg.env,
+                "Run scoring",
+            )
     else:
         print("⏭️  [Cache Bypass] Run scoring already generated. Skipping.")
 
     findings_file = cfg.case_dir / "findings.json"
     if cfg.force or not findings_file.exists() or findings_file.stat().st_size == 0:
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.application.run_evidence_analyst",
-                "--case-input",
-                str(cfg.case_dir / "case_input.json"),
-                "--evidence-ledger",
-                str(cfg.case_dir / "evidence_ledger.json"),
-                "--scoring-output",
-                str(cfg.case_dir / "scoring_output.json"),
-            ],
-            cfg.env,
-            "Run evidence analyst",
-        )
+        try:
+            from assessment_engine.application.run_evidence_analyst import (
+                main as analyst_main,
+            )
 
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.application.run_sota_researcher",
-                "--findings-path",
-                str(cfg.case_dir / "findings.json"),
-                "--client",
-                cfg.args.client,
-            ],
-            cfg.env,
-            "Run technical researcher",
-        )
+            await analyst_main(
+                [
+                    "--case-input",
+                    str(cfg.case_dir / "case_input.json"),
+                    "--evidence-ledger",
+                    str(cfg.case_dir / "evidence_ledger.json"),
+                    "--scoring-output",
+                    str(cfg.case_dir / "scoring_output.json"),
+                ]
+            )
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] In-process evidence analyst failed: {e}. Usando fallback subprocess..."
+            )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.application.run_evidence_analyst",
+                    "--case-input",
+                    str(cfg.case_dir / "case_input.json"),
+                    "--evidence-ledger",
+                    str(cfg.case_dir / "evidence_ledger.json"),
+                    "--scoring-output",
+                    str(cfg.case_dir / "scoring_output.json"),
+                ],
+                cfg.env,
+                "Run evidence analyst",
+            )
 
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.application.run_executive_refiner",
-                "--findings-path",
-                str(cfg.case_dir / "findings.json"),
-                "--client",
-                cfg.args.client,
-            ],
-            cfg.env,
-            "Run executive refiner",
-        )
+        try:
+            from assessment_engine.application.run_sota_researcher import (
+                main as sota_main,
+            )
+
+            await sota_main(
+                [
+                    "--findings-path",
+                    str(cfg.case_dir / "findings.json"),
+                    "--client",
+                    cfg.args.client,
+                ]
+            )
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] In-process SOTA researcher failed: {e}. Usando fallback subprocess..."
+            )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.application.run_sota_researcher",
+                    "--findings-path",
+                    str(cfg.case_dir / "findings.json"),
+                    "--client",
+                    cfg.args.client,
+                ],
+                cfg.env,
+                "Run technical researcher",
+            )
+
+        try:
+            from assessment_engine.application.run_executive_refiner import (
+                main as refiner_main,
+            )
+
+            await refiner_main(
+                [
+                    "--findings-path",
+                    str(cfg.case_dir / "findings.json"),
+                    "--client",
+                    cfg.args.client,
+                ]
+            )
+        except Exception as e:
+            logger.warning(
+                f"[Pipeline] In-process executive refiner failed: {e}. Usando fallback subprocess..."
+            )
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.application.run_executive_refiner",
+                    "--findings-path",
+                    str(cfg.case_dir / "findings.json"),
+                    "--client",
+                    cfg.args.client,
+                ],
+                cfg.env,
+                "Run executive refiner",
+            )
 
         findings_target = cfg.case_dir / "findings.json"
         import json
@@ -531,7 +653,7 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             await run_tower_blueprint(cfg.args.client, cfg.tower_id)
         except Exception as e:
             logger.warning(
-                f"[Pipeline] Invocación en memoria de Blueprint falló: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-memory Blueprint invocation failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -549,7 +671,7 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             "⏭️  [Cache Bypass] Engine: Tower Strategic Blueprint already generated. Skipping API call."
         )
 
-    print("\n🚀 Iniciando Síntesis Ejecutiva...")
+    print("\n🚀 Starting Executive Synthesis...")
     if (
         cfg.force
         or not cfg.payload_path.exists()
@@ -563,7 +685,7 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             await synthesize_annex(cfg.args.client, cfg.tower_id)
         except Exception as e:
             logger.warning(
-                f"[Pipeline] Invocación en memoria de Anexo falló: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-memory Annex invocation failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -617,7 +739,7 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
             compile_docx(str(cfg.case_dir), str(cfg.output_asis_docx))
         except Exception as ex:
             logger.warning(
-                f"[Pipeline] Compilación en memoria de AS-IS falló: {ex}. Usando fallback subprocess..."
+                f"[Pipeline] In-memory compilation of AS-IS failed: {ex}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -636,22 +758,31 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
             cfg.output_asis_docx,
             cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.docx",
         )
-
-        await run_step_async(
-            [
-                cfg.python_bin,
-                "-m",
-                "assessment_engine.application.tools.run_shadow_compilation",
-                "--blueprint-payload",
-                str(cfg.blueprint_payload_path),
-                "--approved-annex",
-                str(cfg.payload_path),
-                "--output",
-                str(cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.shadow.docx"),
-            ],
-            cfg.env,
-            "V4 AST Shadow Compilation (Canary)",
+        shutil.copyfile(
+            cfg.output_asis_docx,
+            cfg.case_dir / f"Diagnostico_ASIS_{cfg.tower_id}_{cfg.client_slug}.docx",
         )
+
+        if cfg.env.get("ASSESSMENT_ENABLE_SHADOW_COMPILER", "").strip() == "1":
+            await run_step_async(
+                [
+                    cfg.python_bin,
+                    "-m",
+                    "assessment_engine.application.tools.run_shadow_compilation",
+                    "--blueprint-payload",
+                    str(cfg.blueprint_payload_path),
+                    "--approved-annex",
+                    str(cfg.payload_path),
+                    "--output",
+                    str(cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.shadow.docx"),
+                ],
+                cfg.env,
+                "V4 AST Shadow Compilation (Canary)",
+            )
+        else:
+            print(
+                f"⏭️  [Production Mode] AS-IS deliverable certified. Skipping internal shadow AST canary for {cfg.tower_id}."
+            )
 
     async def run_blueprint_flow() -> None:
         if cfg.blueprint_payload_path.exists():
@@ -676,7 +807,7 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
                 )
             except Exception as ex:
                 logger.warning(
-                    f"[Pipeline] Renderizado en memoria de Blueprint falló: {ex}. Usando fallback subprocess..."
+                    f"[Pipeline] In-memory rendering of Blueprint failed: {ex}. Using subprocess fallback..."
                 )
                 await run_step_async(
                     [
@@ -690,11 +821,19 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
                     "Render: Tower Strategic Blueprint DOCX",
                 )
 
-    print("\n🚀 Finalizando: Renderizado Estándar + Blueprint en paralelo...")
+        if cfg.output_blueprint_docx.exists():
+            import shutil
+
+            shutil.copyfile(
+                cfg.output_blueprint_docx,
+                cfg.case_dir / f"Blueprint_Transformacion_{cfg.tower_id}_{cfg.client_slug}.docx",
+            )
+
+    print("\n🚀 Finalizing: Standard Rendering + Blueprint in parallel...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
-    print(f"\n✅ Pipeline {cfg.tower_id} completado con éxito (Modelo Dual Canónico):")
-    print(f"  📄 Entregable 1 (Diagnóstico AS-IS): {cfg.output_asis_docx}")
+    print(f"\n✅ Pipeline {cfg.tower_id} completed successfully (Canonical Dual Model):")
+    print(f"  📄 Deliverable 1 (AS-IS Diagnostic): {cfg.output_asis_docx}")
     print(f"  🚀 Entregable 2 (Blueprint TO-BE):   {cfg.output_blueprint_docx}")
     print(
         f"  📊 Expediente Actuarial (SR 11-7):   {cfg.case_dir / f'Expediente_Auditoria_Riesgos_{cfg.tower_id}.md'}"

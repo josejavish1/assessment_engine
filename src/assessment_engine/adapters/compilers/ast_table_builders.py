@@ -8,87 +8,106 @@ from assessment_engine.domain.schemas.ast import (
     TableNode,
     TableRowNode,
 )
+from assessment_engine.infrastructure.localization import get_localized_list, t
 
 
-def build_criticality_bullet(business_criticality: float) -> ParagraphNode:
+def build_criticality_bullet(
+    business_criticality: float, locale: str
+) -> ParagraphNode:
     """Builds the MCDA business criticality bullet node."""
+    val_str = f"{business_criticality:.1f}"
     if business_criticality >= 80.0:
         return ParagraphNode(
-            text=f"* **Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Extrema]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. En este caso, este valor extremo confirma que los procesos operativos core de la organización dependen críticamente de esta plataforma, y su indisponibilidad causaría una interrupción inmediata de servicios esenciales."
+            text=f"* {t('gloss_mcda_crit_extrema', locale=locale, val=val_str)}"
         )
     elif business_criticality >= 50.0:
         return ParagraphNode(
-            text=f"* **Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Alta]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. El score alto refleja una fuerte dependencia operativa, si bien existe un margen de tolerancia temporal antes de que impacte directamente en la continuidad del negocio."
+            text=f"* {t('gloss_mcda_crit_alta', locale=locale, val=val_str)}"
         )
     return ParagraphNode(
-        text=f"* **Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Media]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. El impacto medio sugiere que la torre provee servicios de soporte o back-office cuya indisponibilidad temporal es asumible mediante planes de contingencia estándar."
+        text=f"* {t('gloss_mcda_crit_media', locale=locale, val=val_str)}"
     )
 
 
-def build_regulatory_bullet(regulatory_compliance: float) -> ParagraphNode:
+def build_regulatory_bullet(
+    regulatory_compliance: float, locale: str
+) -> ParagraphNode:
     """Builds the MCDA regulatory pressure bullet node."""
+    val_str = f"{regulatory_compliance:.1f}"
     if regulatory_compliance >= 80.0:
         return ParagraphNode(
-            text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa."
+            text=f"* {t('gloss_mcda_reg_critica', locale=locale, val=val_str)}"
         )
     elif regulatory_compliance >= 50.0:
         return ParagraphNode(
-            text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Moderada]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Existen requerimientos de cumplimiento y políticas de seguridad corporativas estrictas, requiriendo auditorías periódicas de los controles de TI."
+            text=f"* {t('gloss_mcda_reg_moderada', locale=locale, val=val_str)}"
         )
     return ParagraphNode(
-        text=f"* **Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo."
+        text=f"* {t('gloss_mcda_reg_estandar', locale=locale, val=val_str)}"
     )
 
 
-def build_feasibility_bullet(implementation_feasibility: float) -> ParagraphNode:
+def build_feasibility_bullet(
+    implementation_feasibility: float, locale: str
+) -> ParagraphNode:
     """Builds the MCDA operational feasibility bullet node."""
+    val_str = f"{implementation_feasibility:.1f}"
     if implementation_feasibility >= 60.0:
         return ParagraphNode(
-            text=f"* **Viabilidad Operativa (MCDA) [{implementation_feasibility:.1f}% - Favorable]:** Estima el nivel de complejidad operativa y facilidad técnica para ejecutar los proyectos del plan de acción propuesto, considerando recursos, ventanas de mantenimiento y dependencias previas. La viabilidad de transformación es favorable. Los proyectos de modernización se pueden abordar con tecnologías maduras y recursos disponibles en el mercado sin generar disrupciones críticas."
+            text=f"* {t('gloss_mcda_viab_fav', locale=locale, val=val_str)}"
         )
     return ParagraphNode(
-        text=f"* **Viabilidad Operativa (MCDA) [{implementation_feasibility:.1f}% - Compleja]:** Estima el nivel de complejidad operativa y facilidad técnica para ejecutar los proyectos del plan de acción propuesto, considerando recursos, ventanas de mantenimiento y dependencias previas. La baja calificación actual refleja que existe una alta complejidad para la transformación debido a la presencia de deudas estructurales profundas, cuellos de botella en el mantenimiento o falta de talento especializado."
+        text=f"* {t('gloss_mcda_viab_comp', locale=locale, val=val_str)}"
     )
 
 
-def build_dii_bullet(dii_pct: float) -> ParagraphNode:
+def build_dii_bullet(
+    dii_pct: float, locale: str
+) -> ParagraphNode:
     """Builds the Decision Instability Index (DII) bullet node."""
+    val_str = f"{dii_pct:.1f}"
     if dii_pct < 15.0:
         return ParagraphNode(
-            text=f"* **Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Alta Estabilidad]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). En este caso, el índice extremadamente bajo garantiza de forma objetiva que el diagnóstico es altamente robusto y representativo de la realidad de la plataforma, impidiendo que fluctuaciones puntuales alteren las conclusiones estratégicas."
+            text=f"* {t('gloss_dii_alta', locale=locale, val=val_str)}"
         )
     elif dii_pct < 30.0:
         return ParagraphNode(
-            text=f"* **Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Estabilidad Moderada]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). El índice registrado indica una sensibilidad moderada; el diagnóstico es sustancialmente estable, si bien ciertas puntuaciones dependen en parte de interpretaciones técnicas que requieren consolidación técnica futura."
+            text=f"* {t('gloss_dii_mod', locale=locale, val=val_str)}"
         )
     return ParagraphNode(
-        text=f"* **Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Sensibilidad Alta (Volátil)]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). El valor registrado muestra una sensibilidad alta, sugiriendo que la escasez de evidencias o variaciones de criterio podrían alterar la nota asignada, por lo que se recomienda un análisis de contraste de evidencias confirmatorio."
+        text=f"* {t('gloss_dii_vol', locale=locale, val=val_str)}"
     )
 
 
-def build_erc_bullet(erc_val_num: float) -> ParagraphNode:
+def build_erc_bullet(
+    erc_val_num: float, locale: str
+) -> ParagraphNode:
     """Builds the Error Propagation Index (ERC) bullet node."""
+    val_str = f"{erc_val_num:.3f}"
     if erc_val_num >= 0.50:
         return ParagraphNode(
-            text=f"* **Propagación de Fallos (ERC) [{erc_val_num:.3f} - Alta]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor elevado indica que un incidente crítico en este perímetro se propagaría con gran facilidad hacia otras áreas conectadas. El índice confirma una influencia estructural alta, donde una degradación de servicio desestabilizaría de manera en cadena gran parte de la plataforma corporativa."
+            text=f"* {t('gloss_erc_alta', locale=locale, val=val_str)}"
         )
     elif erc_val_num >= 0.20:
         return ParagraphNode(
-            text=f"* **Propagación de Fallos (ERC) [{erc_val_num:.3f} - Media]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor elevado indica que un incidente crítico en este perímetro se propagaría con gran facilidad hacia otras áreas conectadas. La influencia estructural registrada es media; un incidente tendría un efecto moderado o contenido, afectando solo a sistemas inmediatamente adyacentes."
+            text=f"* {t('gloss_erc_media', locale=locale, val=val_str)}"
         )
     return ParagraphNode(
-        text=f"* **Propagación de Fallos (ERC) [{erc_val_num:.3f} - Baja/Aislada]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor de propagación bajo indica una influencia estructural baja; un fallo técnico se contendría dentro de su propio perímetro sin arrastrar a otras torres tecnológicas clave."
+        text=f"* {t('gloss_erc_baja', locale=locale, val=val_str)}"
     )
 
 
-def build_spof_bullet(spof_status: str) -> ParagraphNode:
+def build_spof_bullet(
+    spof_status: str, locale: str
+) -> ParagraphNode:
     """Builds the Single Point of Failure (SPOF) bullet node."""
-    if spof_status == "SÍ":
+    is_spof = str(spof_status).strip().upper() in ("YES", "TRUE", "1", "SI")
+    if is_spof:
         return ParagraphNode(
-            text=f"* **Punto Único de Fallo (SPOF) [SÍ - Crítico]:** Identifica si el dominio tecnológico actúa como un cuello de botella o eslabón débil de la infraestructura que, en caso de caída o compromiso técnico, detendría inmediatamente los flujos de servicio esenciales de la organización. La evaluación alerta de manera inequívoca que esta plataforma representa un cuello de botella o eslabón débil crítico sin redundancia suficiente, requiriendo acción de mitigación inmediata."
+            text=f"* {t('gloss_spof_crit', locale=locale)}"
         )
     return ParagraphNode(
-        text=f"* **Punto Único de Fallo (SPOF) [NO - Estable]:** Identifica si el dominio tecnológico actúa como un cuello de botella o eslabón débil de la infraestructura que, en caso de caída o compromiso técnico, detendría inmediatamente los flujos de servicio esenciales de la organización. La evaluación confirma que esta torre no actúa como un cuello de botella o eslabón débil único en la topología de la red operativa general."
+        text=f"* {t('gloss_spof_stable', locale=locale)}"
     )
 
 
@@ -148,11 +167,11 @@ def build_heatmap_mosaic(risks_data_list: list[dict[str, Any]]) -> TableNode:
 
 TEF_SCALE_DEFINITIONS: dict[str, list[tuple[str, str]]] = {
     "es": [
-        ("Muy Bajo", "< 0,1 eventos/año (menos de una vez cada 10 años)"),
-        ("Bajo", "0,1 - 0,5 eventos/año (una vez cada 4 años)"),
-        ("Medio", "0,5 - 2,0 eventos/año (una vez al año)"),
-        ("Alto", "2,0 - 10 eventos/año (una vez al trimestre)"),
-        ("Muy Alto", "> 10 eventos/año (una vez al mes)"),
+        ("Very Low", "< 0.1 events/year (less than once per decade)"),
+        ("Low", "0.1 - 0.5 events/year (once per 4 years)"),
+        ("Medium", "0.5 - 2.0 events/year (once per year)"),
+        ("High", "2.0 - 10 events/year (quarterly)"),
+        ("Very High", "> 10 events/year (monthly or higher)"),
     ],
     "en": [
         ("Very Low", "< 0.1 events/year (less than once every 10 years)"),
@@ -166,12 +185,13 @@ TEF_SCALE_DEFINITIONS: dict[str, list[tuple[str, str]]] = {
 
 def build_tef_scale_table(vocab: dict[str, Any], meta_lang: str, alt_row_hex: str) -> TableNode:
     """Builds the Threat Event Frequency (TEF) criteria scale TableNode."""
-    tef_headers = vocab.get("tef_headers") or [
-        "Nivel TEF",
-        "Denominación",
-        "Frecuencia Anualizada Estimada",
-    ]
-    tef_tuples = TEF_SCALE_DEFINITIONS.get(meta_lang, TEF_SCALE_DEFINITIONS["es"])
+    tef_headers = vocab.get("tef_headers") or get_localized_list(
+        "tef_headers", locale=meta_lang
+    )
+    tef_tuples = TEF_SCALE_DEFINITIONS.get(
+        meta_lang,
+        TEF_SCALE_DEFINITIONS.get("en", TEF_SCALE_DEFINITIONS.get("es", [])),
+    )
     tef_data = [(f"TEF {i+1}", tef_tuples[i][0], tef_tuples[i][1]) for i in range(5)]
     tef_rows = [
         TableRowNode(
@@ -200,42 +220,30 @@ def build_lm_scale_table(
     vocab: dict[str, Any], meta_lang: str, currency: str, is_critical: bool, alt_row_hex: str
 ) -> TableNode:
     """Builds the Loss Magnitude (LM) criteria scale TableNode."""
-    lm_headers = vocab.get("lm_headers") or [
-        "Nivel LM",
-        "Clasificación de Impacto",
-        "Límite de Pérdida Financiera",
-    ]
-    labels_es = ["Muy Bajo", "Bajo", "Medio", "Alto", "Muy Alto"]
-    labels_en = ["Very Low", "Low", "Medium", "High", "Very High"]
-    labels = labels_es if meta_lang == "es" else labels_en
+    lm_headers = vocab.get("lm_headers") or get_localized_list(
+        "lm_headers", locale=meta_lang
+    )
+    labels = get_localized_list("lm_labels", locale=meta_lang)
+    if not labels or len(labels) < 5:
+        labels = get_localized_list("lm_labels", locale="en")
+
+    from assessment_engine.infrastructure.localization import format_number
 
     if is_critical:
         limits = [
-            f"< 1.000 {currency}",
-            f"1.000 {currency} - 10.000 {currency}",
-            f"10.000 {currency} - 50.000 {currency}",
-            f"50.000 {currency} - 300.000 {currency}",
-            f"250.000 {currency} - 1.500.000 {currency}",
-        ] if meta_lang == "es" else [
-            f"< 1,000 {currency}",
-            f"1,000 {currency} - 10,000 {currency}",
-            f"10,000 {currency} - 50,000 {currency}",
-            f"50,000 {currency} - 300,000 {currency}",
-            f"250,000 {currency} - 1,500,000 {currency}",
+            f"< {format_number(1000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(1000, locale=meta_lang, decimals=0)} {currency} - {format_number(10000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(10000, locale=meta_lang, decimals=0)} {currency} - {format_number(50000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(50000, locale=meta_lang, decimals=0)} {currency} - {format_number(300000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(250000, locale=meta_lang, decimals=0)} {currency} - {format_number(1500000, locale=meta_lang, decimals=0)} {currency}",
         ]
     else:
         limits = [
-            f"< 1.000 {currency}",
-            f"1.000 {currency} - 5.000 {currency}",
-            f"5.000 {currency} - 25.000 {currency}",
-            f"25.000 {currency} - 100.000 {currency}",
-            f"100.000 {currency} - 500.000 {currency}",
-        ] if meta_lang == "es" else [
-            f"< 1,000 {currency}",
-            f"1,000 {currency} - 5,000 {currency}",
-            f"5,000 {currency} - 25,000 {currency}",
-            f"25,000 {currency} - 100,000 {currency}",
-            f"100,000 {currency} - 500,000 {currency}",
+            f"< {format_number(1000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(1000, locale=meta_lang, decimals=0)} {currency} - {format_number(5000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(5000, locale=meta_lang, decimals=0)} {currency} - {format_number(25000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(25000, locale=meta_lang, decimals=0)} {currency} - {format_number(100000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(100000, locale=meta_lang, decimals=0)} {currency} - {format_number(500000, locale=meta_lang, decimals=0)} {currency}",
         ]
 
     lm_data = [(f"LM {i+1}", labels[i], limits[i]) for i in range(5)]

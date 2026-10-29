@@ -44,7 +44,7 @@ class SovereignHttpClient:
     ) -> None:
         if default_timeout > MAX_ALLOWED_TIMEOUT_SECONDS:
             raise TimeoutBoundExceededError(
-                f"Timeout {default_timeout}s excede el límite arquitectónico ({MAX_ALLOWED_TIMEOUT_SECONDS}s)."
+                f"Timeout {default_timeout}s exceeds architectural limit ({MAX_ALLOWED_TIMEOUT_SECONDS}s)."
             )
         self.default_timeout = max(0.1, default_timeout)
         self.session = requests.Session()

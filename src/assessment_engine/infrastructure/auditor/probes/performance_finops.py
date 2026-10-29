@@ -82,8 +82,8 @@ class PerformanceASTVisitor(ast.NodeVisitor):
                     file_path=self.rel_path,
                     line_number=node.lineno,
                     rule_id="PERF-N-PLUS-ONE",
-                    message=f"Antipatrón N+1 detectado: Consulta SELECT '{func_name}()' invocada dentro de bucle repetitivo",
-                    recommendation="Extraer la consulta fuera del bucle usando cláusula 'IN (?, ...)' o un JOIN relacional optimizado."
+                    message=f"N+1 query anti-pattern detected: SELECT query in '{func_name}()' invoked inside loop",
+                    recommendation="Hoist query outside loop using parameterized 'IN (?, ...)' or relational JOIN."
                 ))
 
         self.generic_visit(node)
@@ -109,7 +109,7 @@ def audit_sqlite_wal_tuning(db_path: Path) -> list[AuditFinding]:
                 line_number=None,
                 rule_id="PERF-SQLITE-NO-WAL",
                 message=f"Base de datos SQLite en modo '{journal_mode}': bloquea lectores durante escrituras concurrentes",
-                recommendation="Activar 'PRAGMA journal_mode = WAL;' para soportar lecturas y escrituras simultáneas."
+                recommendation="Enable 'PRAGMA journal_mode = WAL;' to support concurrent reads and writes."
             ))
         conn.close()
     except (sqlite3.Error, OSError):

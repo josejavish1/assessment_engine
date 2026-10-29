@@ -17,16 +17,16 @@ class MaturityBandDefinition(TypedDict, total=False):
 
 
 ANNEX_MATURITY_BANDS: tuple[MaturityBandDefinition, ...] = (
-    {"min": 4.5, "max": float("inf"), "label": "Optimizado", "band_key": "band_optimized"},
-    {"min": 3.5, "max": 4.5, "label": "Gestionado", "band_key": "band_managed"},
-    {"min": 2.5, "max": 3.5, "label": "Definido", "band_key": "band_defined"},
-    {"min": 1.5, "max": 2.5, "label": "Repetible", "band_key": "band_repeatable"},
-    {"min": float("-inf"), "max": 1.5, "label": "Inicial", "band_key": "band_initial"},
+    {"min": 4.5, "max": float("inf"), "label": "Optimized", "band_key": "band_optimized"},
+    {"min": 3.5, "max": 4.5, "label": "Managed", "band_key": "band_managed"},
+    {"min": 2.5, "max": 3.5, "label": "Defined", "band_key": "band_defined"},
+    {"min": 1.5, "max": 2.5, "label": "Repeatable", "band_key": "band_repeatable"},
+    {"min": float("-inf"), "max": 1.5, "label": "Initial", "band_key": "band_initial"},
 )
 
 GLOBAL_MATURITY_BANDS: tuple[MaturityBandDefinition, ...] = (
-    {"min": 3.5, "max": float("inf"), "label": "Optimizada", "band_key": "band_optimized"},
-    {"min": float("-inf"), "max": 3.5, "label": "Básica", "band_key": "band_initial"},
+    {"min": 3.5, "max": float("inf"), "label": "Optimized", "band_key": "band_optimized"},
+    {"min": float("-inf"), "max": 3.5, "label": "Basic", "band_key": "band_initial"},
 )
 
 
@@ -63,7 +63,7 @@ def resolve_maturity_band(
             band_key = "band_managed"
         elif "definid" in raw_lbl or "estandarizad" in raw_lbl:
             band_key = "band_defined"
-        elif "repetib" in raw_lbl or "básic" in raw_lbl:
+        elif any(k in raw_lbl for k in ["repetib", "basic"]):
             band_key = "band_repeatable"
         else:
             band_key = "band_initial"
@@ -81,7 +81,7 @@ def resolve_maturity_band(
             if localized_label:
                 band_dict["label"] = localized_label
         except (KeyError, ValueError, AttributeError, OSError) as ex:
-            logger.debug(f"[MaturityBand] Localización omitida: {ex}")
+            logger.debug(f"[MaturityBand] Localization skipped: {ex}")
 
     return cast(MaturityBandDefinition, band_dict)
 

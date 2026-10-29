@@ -95,7 +95,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
         try:
             profiles = load_policy_file("fair_risk_profiles")
         except Exception as e:
-            logger.error(f"Fallo cargando fair_risk_profiles de políticas: {e}")
+            logger.error(f"Failed loading fair_risk_profiles from policies: {e}")
             profiles = {}
 
         # Load client metadata to ascertain the industry sector for sector-lock policy enforcement.
@@ -153,7 +153,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                     val_fine = custom_calibration.get("reg_max_fine_eur")
                     if val_fine is not None:
                         reg_max_fine = float(val_fine)
-                    logger.info(f"🎯 [Policy Engine] Cargando calibración financiera dinámica desde: {custom_profile_path}")
+                    logger.info(f"🎯 [Policy Engine] Loading dynamic financial calibration from: {custom_profile_path}")
             except Exception as e:
                 logger.warning(f"Error loading custom risk profile: {e}")
 
@@ -178,7 +178,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
             try:
                 with open(controls_path, "r", encoding="utf-8-sig") as cf:
                     controls_catalog = json.load(cf).get("security_controls", {})
-                    logger.info(f"🎯 [Policy Engine] Cargando catálogo de controles de ciberseguridad desde: {controls_path}")
+                    logger.info(f"🎯 [Policy Engine] Loading cybersecurity controls catalog from: {controls_path}")
             except Exception as e:
                 logger.warning(f"Error loading security controls catalog: {e}")
                 logger.warning(f"Error loading custom risk profile: {e}")
@@ -196,7 +196,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 else:
                     cost = 5000.0
             except (ValueError, TypeError):
-                logger.warning("🎯 [Policy Engine] Calibración de coste horario con formato no numérico. Aplicando fallback seguro.")
+                logger.warning("🎯 [Policy Engine] Hourly cost calibration non-numeric. Applying safe fallback.")
                 cost = 5000.0
 
             lm_map = {
@@ -307,7 +307,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
         sev_raw = str(finding.get("severity", "")).lower()
 
         if tef == 0:
-            if sev_raw in ["critical", "crítica"]:
+            if sev_raw in ["critical", "critica"] or "critic" in sev_raw:
                 tef = 5 if ("internet" in text or "ransomware" in text) else 4
             elif sev_raw in ["high", "alta"]:
                 tef = 4 if p_score < 3.0 else 3
@@ -325,7 +325,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
         # Falls back to deterministic mapping from calibrated severity if not available in the payload
         lm = int(finding.get("_elicited_lm", 0) or 0)
         if lm == 0:
-            if sev_raw in ["critical", "crítica"]:
+            if sev_raw in ["critical", "critica"] or "critic" in sev_raw:
                 lm = 5
             elif sev_raw in ["high", "alta"]:
                 lm = 4
@@ -334,9 +334,9 @@ class FairRiskPolicy(BaseSovereignPolicy):
             elif sev_raw in ["low", "baja", "informativa"]:
                 lm = 2
             else:
-                if "parada total" in text or "caída catastrófica" in text:
+                if "parada total" in text or "caida catastrofica" in text or "catastrophic" in text or "outage" in text:
                     lm = 5
-                elif any(k in text for k in ["nis2", "ens", "multa", "sanción"]):
+                elif any(k in text for k in ["nis2", "ens", "multa", "sancion", "penalty"]):
                     lm = 4
                 else:
                     lm = 3
@@ -761,7 +761,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                         reg_max_fine = 15000000.0 # DORA compliance cap
                     elif "hipaa" in reg_context_str:
                         reg_max_fine = 5000000.0 # HIPAA compliance cap
-                    elif any(c in client_country for c in ["brasil", "brazil", "mexico", "méxico", "chile", "colombia", "argentina", "peru", "perú"]) or any(k in reg_context_str for k in ["lgpd", "lfpd", "1581", "21.663"]):
+                    elif any(c in client_country for c in ["brasil", "brazil", "mexico", "chile", "colombia", "argentina", "peru"]) or any(k in reg_context_str for k in ["lgpd", "lfpd", "1581", "21.663"]):
                         reg_max_fine = 2000000.0 # LatAm statutory baseline cap (LGPD / LFPDPPP / SIC / INAI)
                     else:
                         reg_max_fine = 10000000.0 # EU statutory baseline cap (NIS2 / GDPR / ISO)
@@ -893,7 +893,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
         )
 
         doc_lang = str(
-            payload.get("document_meta", {}).get("language", "es")
+            payload.get("document_meta", {}).get("language", "en")
         ).lower()
         curr_code = str(
             payload.get("document_meta", {}).get("currency")
@@ -1007,11 +1007,11 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 if custom_calibration and "reg_max_fine_eur" in custom_calibration:
                     m_threshold = float(custom_calibration.get("reg_max_fine_eur", 10000000.0)) * 0.1
                 
-                plt.axvline(x=m_threshold / 1000.0, color="#b91c1c", linestyle="--", linewidth=1.5, label=f"Umbral de Materialidad ({m_threshold:,.0f} €)")
+                plt.axvline(x=m_threshold / 1000.0, color="#b91c1c", linestyle="--", linewidth=1.5, label=f"Materiality Threshold ({m_threshold:,.0f} €)")
 
-                plt.title("Curva de Excedencia de Pérdidas (LEC) - Value-at-Risk", fontsize=11, fontweight="bold", pad=12)
-                plt.xlabel("Pérdida Operativa Anual Excedente (Miles de Euros, k€)", fontsize=9.5)
-                plt.ylabel("Probabilidad de Excedencia (%)", fontsize=9.5)
+                plt.title("Loss Exceedance Curve (LEC) - Value-at-Risk", fontsize=11, fontweight="bold", pad=12)
+                plt.xlabel("Annual Operational Loss Exceedance (Thousands of Euros, k€)", fontsize=9.5)
+                plt.ylabel("Exceedance Probability (%)", fontsize=9.5)
                 plt.grid(True, linestyle=":", alpha=0.6)
                 plt.legend(fontsize=8.5, loc="upper right")
                 
@@ -1021,7 +1021,7 @@ class FairRiskPolicy(BaseSovereignPolicy):
                 chart_path = case_dir / "loss_exceedance_curve.png"
                 plt.savefig(chart_path, format="png", dpi=300)
                 plt.close()
-                logger.info(f"🎨 [Policy Engine] Gráfico oficial de Curva de Excedencia de Pérdidas (LEC) generado en: {chart_path}")
+                logger.info(f"🎨 [Policy Engine] Official Loss Exceedance Curve (LEC) chart generated at: {chart_path}")
                 
             except Exception as chart_err:
                 logger.warning(f"Error generating Loss Exceedance Curve chart: {chart_err}")

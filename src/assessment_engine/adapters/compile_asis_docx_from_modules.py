@@ -25,6 +25,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
 from assessment_engine.infrastructure.text_utils import clean_text_for_word, format_date_spanish
 from assessment_engine.infrastructure.localization import (
     format_currency,
+    format_date_localized,
     format_number,
     t,
 )
@@ -65,7 +66,7 @@ def _compile_cover_and_toc(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Render Section 0 (Corporate Cover Page) and Section 0.1 (Table of Contents)."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]
-    doc_lang = ctx.get("doc_lang", "es")
+    doc_lang = ctx.get("doc_lang", "en")
 
     add_spacer(doc, 200)
 
@@ -154,7 +155,7 @@ def _compile_introduction_and_scope(doc: Any, ctx: DocumentCompilationContext) -
     # Assemble and render Chapter 2: Objective, Scope, and Assessment Methodology.
     add_heading(
         doc,
-        vocab.get("methodology_chapter_title", "Marco de Referencia, Objetivos y Alcance del Assessment"),
+        vocab.get("methodology_chapter_title", "Reference Framework, Objectives, and Assessment Scope"),
         level=1,
         primary_color_rgb=p_color_rgb,
     )
@@ -198,7 +199,7 @@ def compile_docx(tower_dir: str, output_path: str):
     tower_dir_obj = Path(tower_dir)
     modules_dir = tower_dir_obj / "asis_modules"
 
-    logger.info(f"📦 Compilando Anexo Técnico AS-IS Word desde módulos en: {modules_dir}")
+    logger.info(f"📦 Compiling AS-IS Technical Annex Word document from modules in: {modules_dir}")
 
     # Dynamically load corporate brand profiles based on the operational context.
     from assessment_engine.infrastructure.config_loader import load_brand_profile
@@ -231,13 +232,13 @@ def compile_docx(tower_dir: str, output_path: str):
         logger.info("   ├─ Plantilla Word pre-estilizada cargada correctamente.")
     except Exception:
         doc = Document()
-        logger.info("   ⚠️ No se encontró plantilla. Inicializando documento en blanco.")
+        logger.info("   ⚠️ Template not found. Initializing blank document.")
 
     # Initialize the document by removing all placeholder paragraphs and tables from the template.
     for p in list(doc.paragraphs):
         p._element.getparent().remove(p._element)
-    for t in list(doc.tables):
-        t._element.getparent().remove(t._element)
+    for tbl in list(doc.tables):
+        tbl._element.getparent().remove(tbl._element)
 
     # The `blueprint_payload` file path is resolved dynamically to support a multi-tenant architecture.
     payload_path = next(tower_dir_obj.glob("blueprint_*_payload.json"), None)
@@ -246,19 +247,20 @@ def compile_docx(tower_dir: str, output_path: str):
 
     scoring_path = tower_dir_obj / "scoring_output.json"
 
-    tower_name = "Desconocida"
-    client_name = "Cliente"
+    tower_name = "Unknown"
+    client_name = "Client"
     global_fair_ale = 0.0
     global_score = 3.0
-    global_band = "Definido"
-    global_reading = "Prácticas operativas consolidadas."
+    global_band = "Defined"
+    global_reading = ""
     client_group = None
     custom_overview_intro = None
     b_data: dict[str, Any] = {}
 
     #
-    doc_lang = "es"  #
-    doc_date = format_date_spanish()
+    doc_lang = "en"
+    from assessment_engine.infrastructure.localization import format_date_localized
+    doc_date = format_date_localized(locale="en")
     doc_version = "1.0"
     currency = "€"
     is_critical = False
@@ -322,14 +324,14 @@ def compile_docx(tower_dir: str, output_path: str):
             )
 
             # Load internationalization (i18n) parameters from the input payload. The implementation avoids using default or hardcoded locales.
-            doc_lang = tower_meta.get("language", "es").lower()
+            doc_lang = tower_meta.get("language", "en").lower()
 
-            vocab_fallback = _load_asis_vocab().get(doc_lang, _load_asis_vocab().get("es", {}))
+            vocab_fallback = _load_asis_vocab().get(doc_lang, _load_asis_vocab().get("en", {}))
             from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
             vocab_loaded = resolve_localized_vocabulary(doc_lang)
             vocab = {**vocab_fallback, **vocab_loaded}
 
-            doc_date = format_date_spanish(tower_meta.get("date"))
+            doc_date = format_date_localized(tower_meta.get("date"), locale=doc_lang)
             doc_version = tower_meta.get("version", doc_version)
             currency = tower_meta.get("currency", currency)
 
@@ -341,6 +343,7 @@ def compile_docx(tower_dir: str, output_path: str):
             disclaimer_text = canonical_brand_vocab.get(
                 "disclaimer_text", disclaimer_text
             )
+            global_reading = t("default_global_reading", locale=doc_lang)
 
     # Load client_intelligence.json
     intel_data = {}
@@ -355,33 +358,16 @@ def compile_docx(tower_dir: str, output_path: str):
                 intel_data = json.load(cif)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     profile_sec = intel_data.get("profile", {}) if isinstance(intel_data, dict) else {}
     industry = profile_sec.get("industry", "Standard")
-    industry_name = (
-        profile_sec.get("industry_type_es", "Sector Estándar")
-        if doc_lang == "es"
-        else profile_sec.get("industry_type_en", "Standard Industry")
-    )
-
-    from assessment_engine.infrastructure.localization import (
-        format_currency,
-        t,
-    )
+    industry_name = profile_sec.get(f"industry_type_{doc_lang}") or profile_sec.get("industry_type_en") or t("standard_sector_label", locale=doc_lang)
 
     # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     # The regulatory framework narrative is mapped dynamically to the client's industry sector.
     if "Financial" in industry or "Banking" in industry:
-        reg_name = t(
-            "reg_desc_financial",
-            locale=doc_lang,
-            default=(
-                "las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA o normativas de banca central)"
-                if doc_lang == "es"
-                else "financial operational resilience regulations (e.g. DORA or central bank mandates)"
-            ),
-        )
+        reg_name = t("reg_desc_financial", locale=doc_lang)
         reg_fine_limit = format_currency(
             15000000.0,
             currency_code="EUR",
@@ -390,15 +376,7 @@ def compile_docx(tower_dir: str, output_path: str):
             decimals=0,
         )
     elif "Energy" in industry or "Critical Infrastructure" in industry:
-        reg_name = t(
-            "reg_desc_critical_infra",
-            locale=doc_lang,
-            default=(
-                "los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2 o leyes de seguridad nacional)"
-                if doc_lang == "es"
-                else "critical infrastructure protection frameworks (e.g. NIS2 Directive or national security laws)"
-            ),
-        )
+        reg_name = t("reg_desc_critical_infra", locale=doc_lang)
         reg_fine_limit = format_currency(
             10000000.0,
             currency_code="EUR",
@@ -407,15 +385,7 @@ def compile_docx(tower_dir: str, output_path: str):
             decimals=0,
         )
     elif "Telecommunications" in industry or "Media" in industry:
-        reg_name = t(
-            "reg_desc_telecom",
-            locale=doc_lang,
-            default=(
-                "los marcos regulatorios sectoriales de Telecomunicaciones, Media y soberanía de datos"
-                if doc_lang == "es"
-                else "sectoral regulatory frameworks for Telecommunications, Media, and data sovereignty"
-            ),
-        )
+        reg_name = t("reg_desc_telecom", locale=doc_lang)
         reg_fine_limit = format_currency(
             5000000.0,
             currency_code="EUR",
@@ -424,15 +394,7 @@ def compile_docx(tower_dir: str, output_path: str):
             decimals=0,
         )
     elif "Healthcare" in industry:
-        reg_name = t(
-            "reg_desc_healthcare",
-            locale=doc_lang,
-            default=(
-                "las regulaciones de protección de datos de salud y privacidad (v.g. HIPAA o marcos locales equivalentes)"
-                if doc_lang == "es"
-                else "healthcare data protection and privacy regulations (e.g. HIPAA or equivalent local frameworks)"
-            ),
-        )
+        reg_name = t("reg_desc_healthcare", locale=doc_lang)
         reg_fine_limit = format_currency(
             5000000.0,
             currency_code="EUR",
@@ -441,15 +403,7 @@ def compile_docx(tower_dir: str, output_path: str):
             decimals=0,
         )
     else:
-        reg_name = t(
-            "reg_desc_general",
-            locale=doc_lang,
-            default=(
-                "los marcos generales de protección de datos y privacidad (v.g. RGPD o legislación sectorial estándar)"
-                if doc_lang == "es"
-                else "general data protection and privacy frameworks (e.g. GDPR or standard sectoral legislation)"
-            ),
-        )
+        reg_name = t("reg_desc_general", locale=doc_lang)
         reg_fine_limit = format_currency(
             2000000.0,
             currency_code="EUR",
@@ -463,15 +417,13 @@ def compile_docx(tower_dir: str, output_path: str):
             s_data = json.load(f)
             global_score = s_data.get("tower_score_exact", 3.0)
             global_band = s_data.get("maturity_band_from_exact", {}).get(
-                "label", "Definido"
+                "label", t("band_defined", locale=doc_lang)
             )
             global_reading = s_data.get("maturity_band_from_exact", {}).get(
-                "reading", "Gobernanza estándar."
-            )
+                "reading"
+            ) or t("default_pillar_reading", locale=doc_lang)
 
-    org_label = (
-        "holding" if client_group else ("group" if doc_lang == "en" else "organización")
-    )
+    org_label = t("lbl_holding", locale=doc_lang) if client_group else t("lbl_organization", locale=doc_lang)
 
     doc_ctx: dict[str, Any] = {
         "p_color_rgb": p_color_rgb,
@@ -527,7 +479,7 @@ def compile_docx(tower_dir: str, output_path: str):
     output_path_obj.parent.mkdir(parents=True, exist_ok=True)
     doc.save(output_path)
     logger.info(
-        f"🎉 ¡Anexo Técnico AS-IS COMPILADO modularmente con éxito en: {output_path}!"
+        f"🎉 AS-IS Technical Annex Word document COMPILED successfully at: {output_path}!"
     )
 
 

@@ -115,7 +115,7 @@ def _inspect_test_function(
             asserts_found += 1
             if _is_tautological_test(node.test):
                 findings.append(
-                    f"Aserción tautológica trivial en '{fn_node.name}': 'assert True' no verifica comportamiento real."
+                    f"Tautological trivial assertion in '{fn_node.name}': 'assert True' does not verify empirical behavior."
                 )
         elif isinstance(node, ast.Call):
             if _is_raises_call(node):
@@ -128,7 +128,7 @@ def _inspect_test_function(
 
     if asserts_found == 0:
         findings.append(
-            f"El test '{fn_node.name}' no contiene aserciones reales (ast.Assert o pytest.raises)."
+            f"Test '{fn_node.name}' contains no empirical assertions (ast.Assert or pytest.raises)."
         )
 
     return asserts_found, findings
@@ -227,13 +227,13 @@ def apply_surgical_patch(baseline_code: str, patch_text: str) -> str:
                 modified_code = fuzzy_replaced
                 continue
             raise SurgicalPatchError(
-                f"Bloque quirúrgico #{idx} no encontrado en el archivo objetivo (0 coincidencias). "
-                f"Verifica la coincidencia exacta de líneas y sangría."
+                f"Surgical patch #{idx} not found in target file (0 matches). "
+                f"Verify exact line matching and indentation."
             )
         if occurrences > 1:
             raise SurgicalPatchError(
-                f"Bloque quirúrgico #{idx} es ambiguo ({occurrences} coincidencias encontradas). "
-                f"Añade más líneas de contexto circundante para garantizar unicidad estricta."
+                f"Surgical patch #{idx} is ambiguous ({occurrences} matches found). "
+                f"Add more surrounding context lines to guarantee strict uniqueness."
             )
 
         modified_code = modified_code.replace(old_block, new_block, 1)
@@ -245,35 +245,35 @@ def _build_synthesizer_system_instruction(line_count: int) -> str:
     """Build canonical system instruction, requiring surgical patches only for files exceeding 500 lines."""
     if line_count > 500:
         return (
-            "Eres el Sintetizador de Código Autónomo Tier-1 de Autonomuos.\n"
-            f"El archivo objetivo es extenso ({line_count} líneas). Queda TERMINANTEMENTE PROHIBIDO reescribir el archivo completo.\n"
-            "DEBES emitir un parche quirúrgico atómico con formato SEARCH/REPLACE unívoco:\n"
+            "You are the Tier-1 Autonomous Code Synthesizer.\n"
+            f"Target file is large ({line_count} lines). Full file rewrite is STRICTLY FORBIDDEN.\n"
+            "You MUST emit an atomic surgical SEARCH/REPLACE patch matching exact lines:\n"
             "```python\n"
             "<<<< SEARCH\n"
-            "# Incluye siempre la cabecera de la función/clase circundante y 3 a 5 líneas de contexto para garantizar coincidencia única\n"
+            "# Always include surrounding class/function header and 3-5 context lines for uniqueness\n"
             "====\n"
-            "# nuevo código refinado\n"
+            "# new refined code\n"
             ">>>>\n"
             "```\n"
-            "REGLA CRÍTICA DE UNICIDAD: Cada bloque SEARCH debe coincidir EXACTAMENTE UNA SOLA VEZ en el archivo. "
-            "Prohibido buscar líneas cortas genéricas aisladas (como 'return False' o pass). Añade siempre el contexto circundante de la función o clase.\n"
-            "Devuelve EXACTAMENTE dos bloques de código en Markdown:\n"
-            "1. El primer bloque con los reemplazos quirúrgicos SEARCH/REPLACE.\n"
-            "2. El segundo bloque con la suite de pruebas unitarias pytest completa.\n"
-            "Cumple con tipado estricto, McCabe V(G) <= 10, Zero-Print y máxima cobertura.\n"
-            "REGLA DE ARQUITECTURA PLANA (Anti-Nesting): Prohibido anidar más de 3 niveles (if/try/while/for). Usa cláusulas de guardia y extrae funciones auxiliares."
+            "STRICT UNIQUENESS RULE: Each SEARCH block must match EXACTLY ONCE in the target file. "
+            "Do not search for isolated generic lines. Always include surrounding function or class context.\n"
+            "Return EXACTLY two Markdown code blocks:\n"
+            "1. First block with SEARCH/REPLACE surgical substitutions.\n"
+            "2. Second block with full pytest unit test suite.\n"
+            "Comply strictly with static typing, McCabe V(G) <= 10, Zero-Print, and maximum coverage.\n"
+            "FLAT ARCHITECTURE RULE (Anti-Nesting): Nesting > 3 levels prohibited. Use guard clauses and extract helper functions."
         )
 
     return (
-        "Eres el Sintetizador de Código Autónomo Tier-1 de Autonomuos.\n"
-        f"El archivo objetivo es compacto ({line_count} líneas). DEBES emitir el CÓDIGO DE PRODUCCIÓN COMPLETO REFINADO desde cero "
+        "You are the Tier-1 Autonomous Code Synthesizer.\n"
+        f"Target file is compact ({line_count} lines). Emit FULL REFINED PRODUCTION CODE from scratch "
         "(queda terminantemente prohibido emitir parches parciales SEARCH/REPLACE).\n"
-        "Si se proporciona EXISTING_TEST_ORACLE, tu código DEBE satisfacer el 100% de las pruebas y contratos definidos en dicho oráculo.\n"
-        "Devuelve EXACTAMENTE dos bloques de código en Markdown:\n"
-        "1. El primer bloque con el código de producción completo en Python.\n"
-        "2. El segundo bloque con la suite de pruebas unitarias pytest completa.\n"
-        "Cumple con tipado estricto, McCabe V(G) <= 10, Zero-Print y máxima cobertura.\n"
-        "REGLA DE ARQUITECTURA PLANA (Anti-Nesting): Prohibido anidar más de 3 niveles (if/try/while/for). Usa cláusulas de guardia y extrae funciones auxiliares."
+        "If EXISTING_TEST_ORACLE is provided, your code MUST pass 100% of contracts defined in oracle.\n"
+        "Return EXACTLY two Markdown code blocks:\n"
+        "1. First block with full production Python code.\n"
+        "2. Second block with full pytest unit test suite.\n"
+        "Comply strictly with static typing, McCabe V(G) <= 10, Zero-Print, and maximum test coverage.\n"
+        "FLAT ARCHITECTURE RULE (Anti-Nesting): Nesting > 3 levels prohibited. Use guard clauses and extract helper functions."
     )
 
 
@@ -284,8 +284,8 @@ def _validate_response_truncation(resp: Any) -> None:
     cand = resp.candidates[0]
     finish_reason = getattr(cand, "finish_reason", None)
     if finish_reason and "MAX_TOKENS" in str(finish_reason).upper():
-        logger.error("[Synthesizer] Respuesta truncada por límite de tokens de salida (finish_reason=MAX_TOKENS).")
-        raise LLMTruncationError("Respuesta de LLM truncada por límite de tokens de salida (finish_reason=MAX_TOKENS).")
+        logger.error("[Synthesizer] Response truncated by max token limit (finish_reason=MAX_TOKENS).")
+        raise LLMTruncationError("LLM response truncated due to output token limit (finish_reason=MAX_TOKENS).")
 
 
 def _is_test_block(b_clean: str) -> bool:
@@ -364,7 +364,7 @@ def _invoke_single_model(
         config=cfg,
     )
     _validate_response_truncation(resp)
-    logger.info(f"[Heartbeat] 💓 Inferencia {model_name} completada con éxito.")
+    logger.info(f"[Heartbeat] 💓 Inference {model_name} completed successfully.")
     return resp.text or ""
 
 
@@ -480,7 +480,7 @@ class SynthesizerRole:
         if raw:
             return self._safe_parse_with_disambiguation(raw, baseline_code, fallback_test_code, sys_inst)
 
-        # Fallback determinista cuando no hay LLM mock o API externa
+        # Deterministic fallback when mock LLM or external API unavailable
         return {
             "candidate_code": baseline_code,
             "test_code": fallback_test_code,
@@ -497,12 +497,12 @@ class SynthesizerRole:
         try:
             return self._parse_llm_output(raw_text, code_to_patch, fallback_test_code=fallback_test_code)
         except SurgicalPatchError as patch_err:
-            logger.warning(f"[Synthesizer] Ambigüedad en parche quirúrgico: {patch_err}. Solicitando desambiguación...")
+            logger.warning(f"[Synthesizer] Ambiguity in surgical patch: {patch_err}. Requesting disambiguation...")
             retry_prompt = (
                 f"{raw_text}\n\n"
-                f"ERROR EN PARCHE QUIRÚRGICO: {patch_err}\n"
-                "Por favor, reemite el parche SEARCH/REPLACE incluyendo la cabecera de la función/clase circundante "
-                "y 3 a 5 líneas de código de contexto para que cada bloque SEARCH coincida EXACTAMENTE UNA SOLA VEZ en el archivo."
+                f"ERROR IN SURGICAL PATCH: {patch_err}\n"
+                "Please re-emit SEARCH/REPLACE patch including surrounding function/class header "
+                "and 3-5 lines of context so each SEARCH block matches EXACTLY ONCE in target file."
             )
             raw_retry = self._invoke_llm(retry_prompt, system_instruction=sys_inst, temperature=self.refine_temperature)
             if raw_retry:
@@ -521,25 +521,25 @@ class SynthesizerRole:
         if line_count > 500:
             prompt = (
                 f"TASK: {task_description}\n"
-                f"CURRENT_CODE (EXTENSO: {line_count} líneas, PROHIBIDO reescribir completo):\n{current_code}\n"
+                f"CURRENT_CODE (EXTENSIVE: {line_count} lines, FULL REWRITE FORBIDDEN):\n{current_code}\n"
                 f"CURRENT_TEST:\n{current_test_code}\n"
                 f"SKEPTIC_CRITIQUE_OR_SURGICAL_TICKET:\n{skeptic_critique}\n"
-                "Refina el código mediante parches quirúrgicos SEARCH/REPLACE (<<<< SEARCH / ==== / >>>>) para resolver los tickets.\n"
-                "Devuelve exactamente dos bloques de código en Markdown: el primero con las sustituciones SEARCH/REPLACE y el segundo con los tests."
+                "Refine code using surgical SEARCH/REPLACE patches (<<<< SEARCH / ==== / >>>>) to resolve tickets.\n"
+                "Return exactly two code blocks in Markdown: the first with SEARCH/REPLACE substitutions and the second with unit tests."
             )
-            sys_inst = "Eres el Sintetizador de Código Autónomo Tier-1. Emite parches quirúrgicos SEARCH/REPLACE unívocos y mantén V(G) <= 10."
+            sys_inst = "You are the Tier-1 Autonomous Code Synthesizer. Emit unique SEARCH/REPLACE patches and maintain V(G) <= 10."
         else:
             prompt = (
                 f"TASK: {task_description}\n"
                 f"CURRENT_CODE:\n{current_code}\n"
                 f"CURRENT_TEST:\n{current_test_code}\n"
                 f"SKEPTIC_CRITIQUE_OR_SURGICAL_TICKET:\n{skeptic_critique}\n"
-                "Refina el código de producción y la suite de tests para resolver TODAS las objeciones y tickets forenses.\n"
-                "Devuelve exactamente dos bloques de código en Markdown:\n"
-                "1. El primer bloque con el código de producción COMPLETO REFINADO (queda estrictamente prohibido emitir parches SEARCH/REPLACE).\n"
-                "2. El segundo bloque con la suite de tests completa (con funciones 'def test_...')."
+                "Refine production code and test suite to resolve ALL forensic objections and tickets.\n"
+                "Return exactly two code blocks in Markdown:\n"
+                "1. First block with FULL REFINED production code (SEARCH/REPLACE patches strictly forbidden).\n"
+                "2. Second block with full test suite (containing 'def test_...' functions)."
             )
-            sys_inst = "Eres el Sintetizador de Código Autónomo Tier-1. Emite el código de producción completo refinado sin anidamientos > 3 y mantén V(G) <= 10."
+            sys_inst = "You are the Tier-1 Autonomous Code Synthesizer. Emit full refined production code without nesting > 3 and maintain V(G) <= 10."
 
         raw = self._invoke_llm(prompt, system_instruction=sys_inst, temperature=self.refine_temperature)
         if raw:
@@ -617,7 +617,7 @@ class SkepticRole:
         if self.client and hasattr(self.client, "models"):
             try:
                 from google.genai import types
-                logger.info("[Heartbeat] 💓 Skeptic consultando estándares web...")
+                logger.info("[Heartbeat] 💓 Skeptic checking web standards...")
                 resp = self.client.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=f"Technical inquiry on current RFC or standards: {query}",
@@ -626,16 +626,16 @@ class SkepticRole:
                         http_options=types.HttpOptions(timeout=20000),
                     ),
                 )
-                res = resp.text or "Sin resultados de búsqueda."
+                res = resp.text or "No search results found."
                 self._search_cache[query] = res
                 return res
             except Exception as e:
                 logger.debug(f"[Skeptic] Web grounding search note: {e}")
-                res = f"Nota de búsqueda: {e}"
+                res = f"Search note: {e}"
                 self._search_cache[query] = res
                 return res
 
-        res = f"Estándar simulado para: {query}"
+        res = f"Simulated standard for: {query}"
         self._search_cache[query] = res
         return res
 
@@ -650,18 +650,18 @@ class SkepticRole:
         prompt = (
             f"TAREA: {task_description}\n"
             f"DIFF PROPUESTO:\n{trimmed_diff}\n"
-            f"CONTEXTO WEB (RFCs/Estándares):\n{search_context}\n"
+            f"WEB STANDARDS CONTEXT (RFCs/Standards):\n{search_context}\n"
             "Eres un Consejo de Expertos Tier-1 (Staff UI Perf, Lead Accesibilidad, Principal Security). "
-            "Emite una crítica implacable señalando sobreingeniería, riesgos de carrera o casos borde. "
-            "Si el código es React/UI, exige: 1. useMemo/useDeferredValue para no bloquear el hilo principal. "
-            "2. AbortController en useEffects. 3. WAI-ARIA (aria-live, roles semánticos). 4. Virtualización si hay listas largas."
+            "Emit a rigorous technical critique identifying overengineering, race conditions, or edge cases. "
+            "If React/UI code, require: 1. useMemo/useDeferredValue to prevent main thread blocking. "
+            "2. AbortController in useEffects. 3. WAI-ARIA (aria-live, semantic roles). 4. Virtualization for large lists."
         )
         if self.llm_fn:
             return self.llm_fn(prompt)
         if self.client and hasattr(self.client, "models"):
             try:
                 from google.genai import types
-                logger.info("[Heartbeat] 💓 Skeptic generando crítica técnica...")
+                logger.info("[Heartbeat] 💓 Skeptic generating technical critique...")
                 resp = self.client.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=prompt,
@@ -672,11 +672,11 @@ class SkepticRole:
                 )
                 return resp.text or ""
             except Exception as ex:
-                logger.debug(f"[Skeptic] Error en crítica GenAI: {ex}")
+                logger.debug(f"[Skeptic] Error in GenAI critique: {ex}")
 
         return (
-            "CRÍTICA DEL ESCÉPTICO: Verificar idempotencia ante reintentos de red, "
-            "manejo de timeouts en operaciones externas y ausencia de mutaciones en firmas públicas."
+            "SKEPTIC CRITIQUE: Verify idempotency under network retries, "
+            "timeout handling on external calls, and zero public signature mutations."
         )
 
     def audit_test_oracle(
@@ -691,7 +691,7 @@ class SkepticRole:
         except SyntaxError as ex:
             return OracleAuditReport(
                 passed=False,
-                findings=[f"Error sintáctico en el oráculo de pruebas: {ex}"],
+                findings=[f"Syntax error in test oracle: {ex}"],
                 assertions_count=0,
                 test_functions_count=0,
             )
@@ -715,7 +715,7 @@ class SkepticRole:
                 all_findings.extend(fnds)
 
         if total_test_fns == 0:
-            all_findings.append("No se detectó ninguna función de prueba que comience con 'test_'.")
+            all_findings.append("No test functions starting with 'test_' detected in oracle.")
 
         passed = len(all_findings) == 0
         return OracleAuditReport(
@@ -740,8 +740,8 @@ def _audit_ast_nesting_depth(tree: ast.AST, max_depth: int = 3) -> list[str]:
                     lineno = getattr(child, "lineno", 0)
                     node_type = type(child).__name__
                     violations.append(
-                        f"ARCH-DEEP-NESTING en función '{fn_name}' (línea {lineno}): anidamiento {d} > {max_depth} (bloque {node_type}). "
-                        f"Extrae la lógica a una función auxiliar atómica o usa retornos tempranos."
+                        f"ARCH-DEEP-NESTING in function '{fn_name}' (line {lineno}): nesting {d} > {max_depth} (block {node_type}). "
+                        f"Extract logic to an atomic helper function or use early returns."
                     )
                 _check(child, d, fn_name)
             else:
@@ -790,7 +790,7 @@ class DeterministicHarnessEvaluator:
                 ast.parse(candidate_test_code)
             except SyntaxError as syn_err:
                 first_lines = "\n".join(candidate_code.splitlines()[:5])
-                logger.warning(f"[Harness] Error sintáctico en candidato: {syn_err}\n--- PRIMERAS LÍNEAS ---\n{first_lines}\n--- FIN ---")
+                logger.warning(f"[Harness] Syntax error in candidate: {syn_err}\n--- FIRST LINES ---\n{first_lines}\n--- END ---")
                 return (
                     VerdictStatus.REJECTED_AST_SIGNATURE,
                     [SignatureViolation(symbol_name="<syntax>", violation_type="SYNTAX_ERROR", details=str(syn_err))],
@@ -816,7 +816,7 @@ class DeterministicHarnessEvaluator:
             ast_violations = diff_module_signatures(baseline_code, candidate_code, allow_additive=True)
             if ast_violations:
                 logger.warning(f"[Harness] Violaciones AST detectadas: {len(ast_violations)}")
-                return (VerdictStatus.REJECTED_AST_SIGNATURE, ast_violations, 1, 0.0, False, "Violación de firmas AST públicas")
+                return (VerdictStatus.REJECTED_AST_SIGNATURE, ast_violations, 1, 0.0, False, "Public AST signature violation")
 
             comp_rep = audit_code_complexity(candidate_code, max_allowed=MAX_CYCLOMATIC_COMPLEXITY_THRESHOLD)
             if not comp_rep.passed:
@@ -830,16 +830,16 @@ class DeterministicHarnessEvaluator:
 
                 if worsened_violations:
                     first_v = worsened_violations[0]
-                    logger.warning(f"[Harness] Complejidad excesiva introducida en función '{first_v.function_name}': {first_v.complexity} > 10")
+                    logger.warning(f"[Harness] Excessive complexity introduced in function '{first_v.function_name}': {first_v.complexity} > 10")
                     return (
                         VerdictStatus.REJECTED_COMPLEXITY,
                         [],
                         comp_rep.max_complexity,
                         0.0,
                         False,
-                        f"Complejidad CC {first_v.complexity} > 10 introducida en función '{first_v.function_name}'",
+                        f"CC complexity {first_v.complexity} > 10 introduced in function '{first_v.function_name}'",
                     )
-                logger.info(f"[Harness] Deuda técnica heredada en baseline permitida (Boy Scout Rule): max_c={comp_rep.max_complexity}")
+                logger.info(f"[Harness] Baseline legacy technical debt allowed (Boy Scout Rule): max_c={comp_rep.max_complexity}")
         else:
             try:
                 ast.parse(candidate_test_code)
@@ -866,7 +866,7 @@ class DeterministicHarnessEvaluator:
             critical_sre = [f for f in visitor.findings if f.severity in ("CRITICAL", "HIGH")]
             if critical_sre:
                 first = critical_sre[0]
-                logger.warning(f"[Harness] Violación SRE detectada ({first.rule_id}): {first.message}")
+                logger.warning(f"[Harness] SRE violation detected ({first.rule_id}): {first.message}")
                 return (
                     VerdictStatus.REJECTED_COMPLEXITY,
                     [SignatureViolation(symbol_name=first.rule_id, violation_type="SRE_VIOLATION", details=first.message)],
@@ -905,7 +905,7 @@ class DeterministicHarnessEvaluator:
 
         if not tests_passed:
             err_out = (res_test.stdout + "\n" + res_test.stderr).strip()
-            logger.warning(f"[Harness] Falló la suite de tests (Exit Code {res_test.returncode}):\n{err_out}")
+            logger.warning(f"[Harness] Test suite failed (Exit Code {res_test.returncode}):\n{err_out}")
             return (VerdictStatus.REJECTED_REGRESSION, [], target_max_c, 0.0, False, err_out)
 
         if is_python_target:
@@ -916,7 +916,7 @@ class DeterministicHarnessEvaluator:
                 work_dir=work_dir,
             )
             if not mut_res.passed:
-                logger.warning(f"[Harness] Mutación CTF suspensa: Score={mut_res.mutation_score:.2f}")
+                logger.warning(f"[Harness] Mutation CTF failed: Score={mut_res.mutation_score:.2f}")
                 return (
                     VerdictStatus.REJECTED_MUTATION_SCORE,
                     [],
@@ -940,7 +940,7 @@ def _setup_arbiter_workspace(root: Path, use_worktree: bool) -> tuple[EphemeralW
         worktree = worktree_runner.create_worktree(repo_root=root, branch_prefix="arb_task_")
         return worktree, worktree.worktree_path
     except (RuntimeError, ValueError, KeyError, OSError, TypeError) as e:
-        logger.warning(f"[CognitiveArbiter] Falló worktree, operando localmente: {e}")
+        logger.warning(f"[CognitiveArbiter] Worktree failed, operating locally: {e}")
         return None, root
 
 
@@ -963,7 +963,7 @@ def _resolve_infringing_function_name(
 ) -> str | None:
     """Identify the offending function name from harness diagnostic or violation list."""
     if err_detail:
-        m = re.search(r"función ['\"]([a-zA-Z0-9_]+)['\"]", err_detail)
+        m = re.search(r"(?i)(?:function|funcion) ['\"]([a-zA-Z0-9_]+)['\"]", err_detail)
         if m:
             return m.group(1)
     if violations:
@@ -971,7 +971,7 @@ def _resolve_infringing_function_name(
             if v.symbol_name and v.symbol_name != "ARCH-DEEP-NESTING" and not v.symbol_name.startswith("Bloque"):
                 return v.symbol_name
             if v.details:
-                m_det = re.search(r"función ['\"]([a-zA-Z0-9_]+)['\"]", v.details)
+                m_det = re.search(r"(?i)(?:function|funcion) ['\"]([a-zA-Z0-9_]+)['\"]", v.details)
                 if m_det:
                     return m_det.group(1)
     return None
@@ -997,18 +997,18 @@ def _attempt_focal_ast_refactoring(
     )
 
     prompt = (
-        f"FUNCIÓN OBJETIVO A REFACTORIZAR: '{target_fn_name}'\n"
-        f"CÓDIGO DE LA FUNCIÓN ({loc_fn} líneas):\n```python\n{fn_segment}\n```\n"
-        f"CRÍTICA DEL HARNESS:\n{err_detail}\n\n"
-        "Refactoriza ÚNICAMENTE esta función para eliminar el anidamiento profundo y la complejidad ciclomática.\n"
+        f"TARGET FUNCTION TO REFACTOR: '{target_fn_name}'\n"
+        f"FUNCTION CODE ({loc_fn} lines):\n```python\n{fn_segment}\n```\n"
+        f"HARNESS CRITIQUE:\n{err_detail}\n\n"
+        "Refactor EXCLUSIVELY this function to eliminate deep nesting and cyclomatic complexity.\n"
         "REGLAS OBLIGATORIAS:\n"
-        "1. Anidamiento máximo <= 2 niveles en cualquier bloque if/for/try.\n"
-        "2. Complejidad ciclomática McCabe V(G) <= 6 por función.\n"
-        "3. Si necesitas descomponer la lógica, extrae funciones auxiliares a nivel de módulo y llámalas desde la función principal.\n"
-        "4. Devuelve EXACTAMENTE un bloque de código Markdown ```python ... ``` con las funciones resultantes listas para reemplazar el nodo original."
+        "1. Maximum nesting <= 2 levels in any block.\n"
+        "2. McCabe cyclomatic complexity V(G) <= 6 per function.\n"
+        "3. If decomposing logic, extract module-level helper functions and call them from main function.\n"
+        "4. Return EXACTLY one Markdown code block ```python ... ``` with resulting functions."
     )
     sys_inst = (
-        "Eres el Optimizador AST Quirúrgico Tier-1. Reescribe exclusivamente la función dada con arquitectura plana y V(G) <= 6."
+        "You are the Tier-1 Surgical AST Optimizer. Rewrite exclusively the given function with flat architecture and V(G) <= 6."
     )
 
     raw = synthesizer._invoke_llm(prompt, system_instruction=sys_inst) if hasattr(synthesizer, "_invoke_llm") else ""
@@ -1031,7 +1031,7 @@ def _attempt_focal_ast_refactoring(
     try:
         ast.parse(new_candidate)
         logger.info(
-            f"[Focal AST] ✅ Nodo '{target_fn_name}' refactorizado y ensamblado con éxito en el módulo."
+            f"[Focal AST] ✅ Node '{target_fn_name}' refactored and assembled successfully into module."
         )
         return new_candidate
     except SyntaxError:
@@ -1060,9 +1060,9 @@ def _attempt_mcts_refactoring(
         searcher = MCRefactoringSearch(
             get_actions=lambda code: ["decompose_functions", "extract_helpers"],
             apply_action=lambda code, act: synthesizer.refine_patch(
-                task_description=f"Refactorizar y aplanar funciones descomponiendo en helpers puros con V(G) <= 5: {act}",
+                task_description=f"Refactor and flatten functions by decomposing into pure helpers with V(G) <= 5: {act}",
                 current_code=code,
-                skeptic_critique="Complejidad ciclomática excesiva (V(G) > 10). Extrae funciones auxiliares pequeñas y elimina anidamientos.",
+                skeptic_critique="Excessive cyclomatic complexity (V(G) > 10). Extract small helper functions and eliminate nesting.",
                 current_test_code=test_code,
             ).get("candidate_code", code),
             reward_function=default_reward_function,
@@ -1071,7 +1071,7 @@ def _attempt_mcts_refactoring(
         best_code = searcher.search(candidate_code)
         return best_code if (best_code and best_code != candidate_code) else None
     except Exception as mcts_ex:
-        logger.debug(f"[CognitiveArbiter][MCTS] Búsqueda MCTS omitida: {mcts_ex}")
+        logger.debug(f"[CognitiveArbiter][MCTS] MCTS search skipped: {mcts_ex}")
         return None
 
 
@@ -1079,26 +1079,26 @@ def _format_prescriptive_instructions(status: VerdictStatus) -> str:
     """Format prescriptive architectural instructions based on the harness failure mode."""
     if status == VerdictStatus.REJECTED_COMPLEXITY:
         return (
-            "\n[INSTRUCCIÓN PRESCRIPTIVA DE COMPLEJIDAD RADON / AST]:\n"
-            "- Identifica la función o método con V(G) > 10 o anidamiento > 3.\n"
-            "- DEBES descomponerla extrayendo la lógica interna en funciones auxiliares independientes a nivel de módulo con V(G) <= 6.\n"
-            "- Usa retornos tempranos (cláusulas de guardia) para aplanar los bloques 'if' y 'for' a un anidamiento máximo de 2 niveles.\n"
-            "- La función principal debe limitarse a orquestar las llamadas a los helpers sin anidamiento profundo.\n"
+            "\n[PRESCRIPTIVE AST / RADON COMPLEXITY DIRECTIVE]:\n"
+            "- Identify function or method with V(G) > 10 or nesting > 3.\n"
+            "- You MUST decompose by extracting logic into independent module-level helpers with V(G) <= 6.\n"
+            "- Use early returns (guard clauses) to flatten blocks to maximum 2 nesting levels.\n"
+            "- Main function orchestrates helper calls without deep nesting.\n"
         )
     if status == VerdictStatus.REJECTED_AST_SIGNATURE:
         return (
-            "\n[INSTRUCCIÓN PRESCRIPTIVA DE FIRMAS AST / SINTAXIS]:\n"
-            "- Se han detectado violaciones de firmas o errores de sintaxis en el código generado.\n"
-            "- Si el archivo se reescribe completo, ASEGÚRATE de incluir TODAS las clases, funciones, dataclasses y constantes originales del archivo sin omitir ninguna.\n"
-            "- Si utilizas parches SEARCH/REPLACE, incluye la cabecera de la función/clase y 3 a 5 líneas de contexto circundante para garantizar unicidad estricta.\n"
+            "\n[PRESCRIPTIVE AST SIGNATURE / SYNTAX DIRECTIVE]:\n"
+            "- Signature violations or syntax errors detected in generated code.\n"
+            "- If rewriting file, ensure ALL original classes, functions, dataclasses, and constants are preserved.\n"
+            "- If emitting SEARCH/REPLACE patches, include function/class header and 3-5 lines of context for uniqueness.\n"
             "- Queda PROHIBIDO emitir formato git diff (--- a/ +++ b/).\n"
         )
     if status == VerdictStatus.REJECTED_REGRESSION:
         return (
-            "\n[INSTRUCCIÓN PRESCRIPTIVA DE REGRESIÓN / TESTS]:\n"
-            "- El oráculo de pruebas original provisto en EXISTING_TEST_ORACLE es INMUTABLE y define los criterios de aceptación.\n"
-            "- Céntrate en reparar el código de producción para que satisfaga el oráculo sin romper pruebas existentes.\n"
-            "- Si añades nuevas pruebas unitarias, éstas deben complementar el oráculo sin sustituirlo ni eliminar aserciones.\n"
+            "\n[PRESCRIPTIVE REGRESSION / TEST DIRECTIVE]:\n"
+            "- Original test oracle in EXISTING_TEST_ORACLE is IMMUTABLE and defines acceptance criteria.\n"
+            "- Focus on repairing production code to pass oracle without regressing existing tests.\n"
+            "- New tests must complement oracle without substituting or dropping assertions.\n"
         )
     return ""
 
@@ -1113,7 +1113,7 @@ def _enrich_feedback_with_diagnostics(
     """Enrich skeptic critique with deterministic harness diagnostics, SBFL Ochiai bug localization and W3C traces."""
     enriched = feedback
     if err_detail:
-        enriched += f"\n[DIAGNÓSTICO DETERMINISTA DEL HARNESS ({status.value})]:\n{err_detail[:2000]}\n"
+        enriched += f"\n[DETERMINISTIC HARNESS DIAGNOSIS ({status.value})]:\n{err_detail[:2000]}\n"
 
     enriched += _format_prescriptive_instructions(status)
 
@@ -1123,12 +1123,12 @@ def _enrich_feedback_with_diagnostics(
             sbfl = fault_localizer.localize_from_pytest(target_file, test_file)
             if sbfl.most_likely_line:
                 enriched += (
-                    f"\n[DIAGNÓSTICO SBFL OCHIAI]: Máxima probabilidad de bug concentrada "
-                    f"en línea {sbfl.most_likely_line} ({target_file.name}): "
+                    f"\n[OCHIAI SBFL DIAGNOSIS]: Peak fault localization probability concentrated "
+                    f"at line {sbfl.most_likely_line} ({target_file.name}): "
                     f"'{sbfl.most_likely_snippet}'."
                 )
         except Exception as sbfl_ex:
-            logger.debug(f"[CognitiveArbiter][SBFL] Diagnóstico omitido: {sbfl_ex}")
+            logger.debug(f"[CognitiveArbiter][SBFL] Diagnosis skipped: {sbfl_ex}")
 
     try:
         from assessment_engine.infrastructure.evolution.trace_conditioner import trace_conditioner
@@ -1141,7 +1141,7 @@ def _enrich_feedback_with_diagnostics(
         if trace_md:
             enriched += f"\n{trace_md}\n"
     except Exception as trace_ex:
-        logger.debug(f"[CognitiveArbiter][Trace] Telemetría omitida: {trace_ex}")
+        logger.debug(f"[CognitiveArbiter][Trace] Telemetry skipped: {trace_ex}")
 
     return enriched
 
@@ -1180,7 +1180,7 @@ class CognitiveArbiter:
         )
 
         if status == VerdictStatus.CERTIFIED:
-            logger.info(f"[CognitiveArbiter] Certificado en la iteración {iteration}!")
+            logger.info(f"[CognitiveArbiter] Certified in iteration {iteration}!")
             return current_candidate, status, violations, comp, mut_score, test_ok, ""
 
         search_ctx = (
@@ -1210,7 +1210,7 @@ class CognitiveArbiter:
                 return refined_candidate, status, violations, comp, mut_score, test_ok, skeptic_feedback
             except SurgicalPatchError as sp_err:
                 logger.warning(f"[CognitiveArbiter] Fallo aplicando parche en ronda {iteration}: {sp_err}")
-                patch_err_feedback = f"{skeptic_feedback}\n\n[ERROR EN PARCHE ANTERIOR]: {sp_err}\nReemite el parche SEARCH/REPLACE copiando el bloque exacto con 3-5 líneas de contexto."
+                patch_err_feedback = f"{skeptic_feedback}\n\n[ERROR IN PREVIOUS PATCH]: {sp_err}\nRe-emit SEARCH/REPLACE patch copying exact block with 3-5 context lines."
                 return current_candidate, status, violations, comp, mut_score, test_ok, patch_err_feedback
 
         return current_candidate, status, violations, comp, mut_score, test_ok, skeptic_feedback
@@ -1238,16 +1238,16 @@ class CognitiveArbiter:
         for iteration in range(1, self.max_rounds + 1):
             iterations_used = iteration
             if progress_callback:
-                progress_callback(f"      - [Ronda {iteration}/{self.max_rounds}] Evaluando compuertas deterministas...")
+                progress_callback(f"      - [Round {iteration}/{self.max_rounds}] Evaluating deterministic gates...")
             current_candidate, final_status, ast_violations, max_complexity, mutation_score, regression_passed, skeptic_feedback = self._run_dialectic_iteration(
                 iteration, current_candidate, task_description, baseline_code, target_file, test_file, search_context=frozen_search_ctx
             )
             if progress_callback:
-                progress_callback(f"      - [Ronda {iteration}/{self.max_rounds}] Veredicto: {final_status.value} (CC={max_complexity}, Mutación={mutation_score:.2f})")
+                progress_callback(f"      - [Round {iteration}/{self.max_rounds}] Verdict: {final_status.value} (CC={max_complexity}, Mutation={mutation_score:.2f})")
             if final_status == VerdictStatus.CERTIFIED:
                 break
             if iteration < self.max_rounds and progress_callback:
-                progress_callback(f"      - [Ronda {iteration}/{self.max_rounds}] Refinando propuesta con objeciones del Escéptico...")
+                progress_callback(f"      - [Round {iteration}/{self.max_rounds}] Refining proposal with Skeptic critique...")
 
         return iterations_used, final_status, ast_violations, max_complexity, mutation_score, regression_passed
 
@@ -1271,7 +1271,7 @@ class CognitiveArbiter:
         test_file = work_dir / test_rel_path
 
         if progress_callback:
-            progress_callback("      - Invocando propuesta inicial del Sintetizador (Gemini 3.1 Pro)...")
+            progress_callback("      - Invoking initial Synthesizer proposal (Gemini 3.1 Pro)...")
 
         existing_test = test_file.read_text(encoding="utf-8") if test_file.exists() else "def test_baseline(): assert True\n"
         fallback_test = initial_candidate.get("test_code", "") if (initial_candidate and initial_candidate.get("test_code")) else existing_test
@@ -1299,7 +1299,7 @@ class CognitiveArbiter:
                 current_candidate, task_description, baseline_code, target_file, test_file, progress_callback
             )
         except (LLMTruncationError, SurgicalPatchError) as err:
-            logger.error(f"[CognitiveArbiter] Fallo en síntesis de parche: {err}")
+            logger.error(f"[CognitiveArbiter] Patch synthesis failed: {err}")
             iterations_used = 1
             is_trunc = isinstance(err, LLMTruncationError)
             final_status = VerdictStatus.REJECTED_TRUNCATION if is_trunc else VerdictStatus.REJECTED_AST_SIGNATURE

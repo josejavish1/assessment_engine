@@ -156,7 +156,7 @@ def load_sobriety_policy() -> str:
             return content[:3000]  # Return the first 3000 chars for core context
     except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+        logger.debug(f"[Fallback] Handled exception: {ex}")
     return (
         "All code comments, module descriptions, class/method docstrings and variables "
         "must be written in formal, aseptic, precise technical English. "

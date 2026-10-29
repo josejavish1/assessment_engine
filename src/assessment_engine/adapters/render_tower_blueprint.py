@@ -31,7 +31,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     set_cell_text,
     shade_cell,
 )
-from assessment_engine.infrastructure.localization import get_localized_string
+from assessment_engine.infrastructure.localization import get_localized_string, t
 from assessment_engine.infrastructure.runtime_paths import (
     resolve_tower_annex_template_path,
 )
@@ -147,7 +147,7 @@ def add_bullet_p(container, text, color_rgb=BASE_TEXT_COLOR) -> Any:
     return p
 
 
-def create_page_number_footer(section, doc_lang: str = "es") -> Any:
+def create_page_number_footer(section, doc_lang: str) -> Any:
     """Adds a 'Page X of Y' footer to a docx section with localization support."""
     section.different_first_page_header_footer = True
     footer = section.footer
@@ -177,15 +177,13 @@ def create_page_number_footer(section, doc_lang: str = "es") -> Any:
         fld_char_end.set(ns.qn("w:fldCharType"), "end")
         run._r.append(fld_char_end)
 
-    from assessment_engine.infrastructure.localization import t
-
-    prefix_str = t("page_prefix", locale=doc_lang, default="Página " if doc_lang == "es" else "Page ")
+    prefix_str = t("page_prefix", locale=doc_lang)
     prefix = paragraph.add_run(prefix_str)
     prefix.font.size = Pt(9)
     prefix.font.name = "Arial"
     prefix.font.color.rgb = RGBColor(127, 127, 127)
     add_field(paragraph, "PAGE")
-    mid_str = t("of_page_connector", locale=doc_lang, default=" de " if doc_lang == "es" else " of ")
+    mid_str = t("of_page_connector", locale=doc_lang)
     middle = paragraph.add_run(mid_str)
     middle.font.size = Pt(9)
     middle.font.name = "Arial"
@@ -267,13 +265,13 @@ def _list_or_default(value, default=None) -> Any:
     return default or []
 
 
-def _string_or_default(value, default="") -> Any:
+def _string_or_default(value: Any, default: str = "") -> str:
     if isinstance(value, str):
         return value
     return default
 
 
-def _derive_executive_snapshot(data: dict, annex_data: dict) -> dict:
+def _derive_executive_snapshot(data: dict, annex_data: dict, doc_lang: str) -> dict:
     snapshot = data.get("executive_snapshot") or {}
     annex_summary = annex_data.get("executive_summary", {})
     annex_sections = annex_data.get("sections", {})
@@ -290,16 +288,16 @@ def _derive_executive_snapshot(data: dict, annex_data: dict) -> dict:
         "bottom_line": _string_or_default(snapshot.get("bottom_line"))
         or summary_body
         or _string_or_default(annex_summary.get("headline"))
-        or "La torre requiere una transformación priorizada para reducir riesgo y habilitar el negocio.",
+        or t("bp_fallback_bottom_line", locale=doc_lang),
         "decisions": _list_or_default(snapshot.get("decisions"))
         or [
             clean_text_for_render(item.get("initiative", ""))
             for item in todo_items[:4]
             if item.get("initiative")
         ]
-        or ["Validar el backlog priorizado y su secuencia de ejecución."],
+        or [t("bp_fallback_decision", locale=doc_lang)],
         "cost_of_inaction": _string_or_default(snapshot.get("cost_of_inaction"))
-        or "Mantener el estado actual prolonga el riesgo operativo, la deuda técnica y la incapacidad de escalar con control.",
+        or t("bp_fallback_cost_of_inaction", locale=doc_lang),
         "structural_risks": _list_or_default(snapshot.get("structural_risks"))
         or [
             clean_text_for_render(item.get("risk", ""))
@@ -307,17 +305,17 @@ def _derive_executive_snapshot(data: dict, annex_data: dict) -> dict:
             if item.get("risk")
         ],
         "business_impact": _string_or_default(snapshot.get("business_impact"))
-        or "La modernización de la torre reduce exposición al riesgo y mejora la capacidad de ejecución del negocio.",
+        or t("bp_fallback_business_impact", locale=doc_lang),
         "operational_benefits": _list_or_default(snapshot.get("operational_benefits"))
         or [clean_text_for_render(item) for item in target_capabilities[:4]],
         "transformation_complexity": _string_or_default(
             snapshot.get("transformation_complexity")
         )
-        or "La transformación exige coordinación de arquitectura, operación y gobierno, pero es abordable por fases.",
+        or t("bp_fallback_complexity", locale=doc_lang),
     }
 
 
-def _derive_cross_capabilities_analysis(data: dict) -> dict:
+def _derive_cross_capabilities_analysis(data: dict, doc_lang: str) -> dict:
     cca = data.get("cross_capabilities_analysis") or {}
     pillars = _list_or_default(data.get("pillars_analysis"))
     low_score_pillars = [
@@ -332,28 +330,26 @@ def _derive_cross_capabilities_analysis(data: dict) -> dict:
             "transformation_paradigm": _string_or_default(
                 cca.get("transformation_paradigm")
             )
-            or "La torre requiere una evolución por dominios, priorizando estabilización, gobierno y posterior industrialización.",
+            or t("bp_fallback_paradigm", locale=doc_lang),
             "critical_technical_debt": _string_or_default(
                 cca.get("critical_technical_debt")
             )
-            or "La deuda técnica limita la resiliencia y la capacidad de operar con consistencia.",
+            or t("bp_fallback_technical_debt", locale=doc_lang),
         }
 
     deficiency_patterns = []
     if low_score_pillars:
         deficiency_patterns.append(
-            "Las mayores brechas se concentran en: "
-            + ", ".join(low_score_pillars)
-            + "."
+            t("bp_fallback_major_gaps", locale=doc_lang, pillars=", ".join(low_score_pillars))
         )
 
     return {
         "common_deficiency_patterns": deficiency_patterns
         or [
-            "Persisten carencias repetidas en estandarización, automatización y gobierno técnico."
+            t("bp_fallback_deficiencies", locale=doc_lang)
         ],
-        "transformation_paradigm": "La transformación debe ejecutarse de forma incremental, combinando quick wins con capacidades fundacionales de largo recorrido.",
-        "critical_technical_debt": "La deuda técnica acumulada incrementa el riesgo operativo y reduce la velocidad de adopción de nuevos servicios.",
+        "transformation_paradigm": t("bp_fallback_paradigm", locale=doc_lang),
+        "critical_technical_debt": t("bp_fallback_technical_debt", locale=doc_lang),
     }
 
 
@@ -404,10 +400,13 @@ def normalize_blueprint_payload_dict(data: dict, annex_data: dict) -> dict:
         KeyError: If a required key is missing from `data` or `annex_data` and is
             needed by an internal derivation function.
     """
+    meta = data.get("document_meta", {})
+    doc_lang = str(meta.get("language") or meta.get("doc_lang") or "en").lower()
+
     normalized = dict(data)
-    normalized["executive_snapshot"] = _derive_executive_snapshot(data, annex_data)
+    normalized["executive_snapshot"] = _derive_executive_snapshot(data, annex_data or {}, doc_lang=doc_lang)
     normalized["cross_capabilities_analysis"] = _derive_cross_capabilities_analysis(
-        data
+        data, doc_lang=doc_lang
     )
     normalized["roadmap"] = _derive_roadmap(data)
     normalized["external_dependencies"] = _list_or_default(
@@ -451,22 +450,13 @@ def load_payload(
     return BlueprintPayload.model_validate(normalized_data)
 
 
-def render_cover(doc, payload: BlueprintPayload) -> Any:
-    """Constructs the cover page for a technology maturity report.
-
-    This function populates a `docx.Document` object with a formatted cover page, including a title, client name, version details, and a confidentiality disclaimer. Each element is styled with specific fonts, sizes, colors, and paragraph spacing. A page break is appended to ensure subsequent content begins on a new page.
-
-    Args:
-        doc (docx.document.Document): An instance of a python-docx Document to be modified in place.
-        payload (BlueprintPayload): A data object containing metadata for the report, such as `tower_name`, `client_name`, `tower_code`, and `transformation_horizon`.
-
-    Returns:
-        None: The `doc` object is modified by side effect.
-    """
+def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
+    """Constructs the cover page for a technology maturity report."""
     meta = payload.document_meta
     doc.add_paragraph().paragraph_format.space_after = Pt(60)
     title_p = doc.add_paragraph()
-    run = title_p.add_run(f"{meta.tower_name}\nInforme de Madurez Tecnológica")
+    report_title = t("blueprint_cover_report_title", locale=doc_lang, tower_name=meta.tower_name)
+    run = title_p.add_run(report_title)
     run.font.size = Pt(34)
     run.font.name = "Georgia"
     run.font.color.rgb = RGBColor(0, 114, 188)
@@ -480,8 +470,10 @@ def render_cover(doc, payload: BlueprintPayload) -> Any:
 
     doc.add_paragraph().paragraph_format.space_after = Pt(100)
     version_p = doc.add_paragraph()
+    tech_tower_lbl = t("lbl_technical_tower", locale=doc_lang)
+    horizon_lbl = t("lbl_horizon", locale=doc_lang)
     version_text = (
-        f"Torre Técnica: {meta.tower_code}\nHorizonte: {meta.transformation_horizon}"
+        f"{tech_tower_lbl}: {meta.tower_code}\n{horizon_lbl}: {meta.transformation_horizon}"
     )
     version_run = version_p.add_run(version_text)
     version_run.font.size = Pt(14)
@@ -491,7 +483,8 @@ def render_cover(doc, payload: BlueprintPayload) -> Any:
     add_spacer(doc, 150)
     disclaimer = doc.add_paragraph()
     disclaimer.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    title_run = disclaimer.add_run("Confidencialidad: ")
+    conf_lbl = t("lbl_confidentiality", locale=doc_lang)
+    title_run = disclaimer.add_run(conf_lbl)
     title_run.bold = True
     title_run.font.size = Pt(8)
     title_run.font.color.rgb = RGBColor(127, 127, 127)
@@ -500,22 +493,24 @@ def render_cover(doc, payload: BlueprintPayload) -> Any:
     )
 
     company = get_consultant_company_name()
-    text_run = disclaimer.add_run(
-        f"Este documento técnico es propiedad de {company} y el cliente. Contiene "
-        "información estratégica y de arquitectura sujeta a acuerdos de confidencialidad."
-    )
+    disc_text = t("blueprint_cover_disclaimer", locale=doc_lang, company=company)
+    text_run = disclaimer.add_run(disc_text)
     text_run.font.size = Pt(8)
     text_run.font.color.rgb = RGBColor(127, 127, 127)
     doc.add_page_break()
 
 
 def _render_snapshot_scores_table(
-    doc, global_score_val: str, global_band_val: str, target_score_val: str
+    doc, global_score_val: str, global_band_val: str, target_score_val: str, doc_lang: str
 ) -> None:
     """Render the 3-column scores and maturity summary table."""
     table = doc.add_table(rows=2, cols=3)
     finalize_table(table)
-    headers = ["SCORE ACTUAL", "NIVEL DE MADUREZ", "MADUREZ OBJETIVO"]
+    headers = [
+        t("header_current_score", locale=doc_lang),
+        t("header_maturity_level", locale=doc_lang),
+        t("header_target_maturity", locale=doc_lang),
+    ]
     values = [global_score_val, global_band_val or "N/A", target_score_val]
 
     for i, header in enumerate(headers):
@@ -547,16 +542,18 @@ def _render_snapshot_scores_table(
         tbl_w.set(ns.qn("w:w"), "5000")
 
 
-def _resolve_snapshot_business_angles(client_intelligence: dict) -> list[str]:
+def _resolve_snapshot_business_angles(client_intelligence: dict, doc_lang: str) -> list[str]:
     """Extract relevant business driver bullets from client intelligence."""
     business_angles = []
     ceo_agenda = clean_text_for_render(client_intelligence.get("ceo_agenda", ""))
     if ceo_agenda:
-        business_angles.append("Agenda de negocio prioritaria: " + ceo_agenda)
+        prefix = t("business_driver_agenda_prefix", locale=doc_lang)
+        business_angles.append(f"{prefix} {ceo_agenda}")
     regulatory = client_intelligence.get("regulatory_frameworks", []) or []
     if regulatory:
+        prefix = t("business_driver_reg_prefix", locale=doc_lang)
         business_angles.append(
-            "Presión regulatoria material: " + ", ".join(str(x) for x in regulatory)
+            f"{prefix} " + ", ".join(str(x) for x in regulatory)
         )
     drivers = client_intelligence.get("technological_drivers", []) or []
     for text in drivers:
@@ -569,7 +566,7 @@ def _resolve_snapshot_business_angles(client_intelligence: dict) -> list[str]:
 
     if not business_angles:
         business_angles.append(
-            "La transformación tecnológica propuesta asegura la competitividad, fortalece la resiliencia operativa y garantiza el cumplimiento normativo."
+            t("bp_fallback_business_driver", locale=doc_lang)
         )
     return business_angles
 
@@ -579,34 +576,9 @@ def render_snapshot_page(
     payload: BlueprintPayload,
     client_intelligence: dict,
     annex_data: dict,
+    doc_lang: str,
 ):
-    """Constructs and appends the Executive Snapshot section to a document object.
-
-    This function generates the 'Executive Snapshot' section of a report. It
-    begins by creating a summary table with the current score, maturity level,
-    and target maturity. It then adds a series of subsections detailing the
-    business context, material risks, cost of inaction, expected business
-    impact, operational benefits, transformation complexity, and key decisions.
-    Data for these sections is sourced from the `payload`,
-    `client_intelligence`, and `annex_data` arguments.
-
-    Args:
-        doc (docx.document.Document): The document object to which the snapshot
-            section will be appended.
-        payload (BlueprintPayload): An object containing the primary data for the
-            executive snapshot, including narratives for risks, impacts, and
-            decisions.
-        client_intelligence (dict): A dictionary containing client-specific
-            contextual data. Expected keys include 'ceo_agenda',
-            'regulatory_frameworks', and 'technological_drivers'.
-        annex_data (dict): A dictionary containing supplementary data. The function
-            accesses `annex_data['executive_summary']` for 'global_score',
-            'global_band', and 'target_maturity' values.
-
-    Raises:
-        AttributeError: If `payload` or its `executive_snapshot` attribute is
-            missing required fields (e.g., `bottom_line`, `decisions`).
-    """
+    """Constructs and appends the Executive Snapshot section to a document object."""
     snap = payload.executive_snapshot
     exec_sum = annex_data.get("executive_summary", {})
     global_score_val = exec_sum.get("global_score", "N/A")
@@ -615,96 +587,134 @@ def render_snapshot_page(
     )
     target_score_val = exec_sum.get("target_maturity", "N/A")
 
-    add_heading_paragraph(doc, "1. Executive Snapshot (Resumen ejecutivo)", level=1)
+    title = t("section_executive_snapshot", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=1)
 
     _render_snapshot_scores_table(
-        doc, str(global_score_val), str(global_band_val or "N/A"), str(target_score_val)
+        doc, str(global_score_val), str(global_band_val or "N/A"), str(target_score_val), doc_lang=doc_lang
     )
     add_spacer(doc, 15)
     add_body_paragraph(doc, snap.bottom_line, color_rgb=BASE_TEXT_COLOR)
 
-    business_angles = _resolve_snapshot_business_angles(client_intelligence)
-    add_heading_paragraph(doc, "Por qué importa al negocio", level=2)
+    business_angles = _resolve_snapshot_business_angles(client_intelligence, doc_lang=doc_lang)
+    add_heading_paragraph(
+        doc,
+        t("section_why_it_matters", locale=doc_lang),
+        level=2,
+    )
     for item in business_angles[:4]:
         add_bullet_p(doc, item)
 
     if snap.structural_risks:
-        add_heading_paragraph(doc, "Riesgos de negocio más materiales", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_material_business_risks", locale=doc_lang),
+            level=2,
+        )
         for risk in snap.structural_risks:
             add_bullet_p(doc, risk)
 
-    add_heading_paragraph(doc, "Coste de Inacción (Do Nothing)", level=2)
+    add_heading_paragraph(
+        doc,
+        t("section_cost_of_inaction", locale=doc_lang),
+        level=2,
+    )
     add_body_paragraph(doc, snap.cost_of_inaction, color_rgb=BASE_TEXT_COLOR)
 
     if snap.business_impact:
-        add_heading_paragraph(doc, "Impacto Esperado en Negocio", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_expected_business_impact", locale=doc_lang),
+            level=2,
+        )
         add_body_paragraph(doc, snap.business_impact, color_rgb=BASE_TEXT_COLOR)
 
     if snap.operational_benefits:
-        add_heading_paragraph(doc, "Beneficios Operativos Target", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_target_operational_benefits", locale=doc_lang),
+            level=2,
+        )
         for benefit in snap.operational_benefits:
             add_bullet_p(doc, benefit)
 
     if snap.transformation_complexity:
-        add_heading_paragraph(doc, "Complejidad de la Transformación", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_transformation_complexity", locale=doc_lang),
+            level=2,
+        )
         add_body_paragraph(
             doc,
             snap.transformation_complexity,
             color_rgb=BASE_TEXT_COLOR,
         )
 
-    add_heading_paragraph(doc, "Decisiones prioritarias", level=2)
+    add_heading_paragraph(
+        doc,
+        t("section_priority_strategic_decisions", locale=doc_lang),
+        level=2,
+    )
     for decision in snap.decisions:
         add_bullet_p(doc, decision)
 
 
-def render_cross_capabilities_analysis(doc, payload: BlueprintPayload) -> Any:
-    """Renders the cross-capabilities analysis section into a document object.
-
-    This function populates a document object with content from the
-    `cross_capabilities_analysis` attribute of the provided payload. If this
-    attribute is not present or is falsy, the function returns immediately without
-    modifying the document. Otherwise, it adds a structured section including
-    headings for the transformation paradigm, critical technical debt, and
-    common deficiency patterns, followed by their corresponding content and a
-    bulleted list.
-
-    Args:
-        doc (Any): The document object to be populated. It is modified in-place.
-        payload (BlueprintPayload): The data transfer object containing the
-            cross-capabilities analysis data.
-
-    Returns:
-        None.
-    """
+def render_cross_capabilities_analysis(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
+    """Renders the cross-capabilities analysis section into a document object."""
     cca = payload.cross_capabilities_analysis
     if not cca:
         return
 
-    add_heading_paragraph(doc, "Análisis Transversal de Capacidades", level=1)
-    add_heading_paragraph(doc, "El Paradigma de Transformación", level=2)
+    add_heading_paragraph(
+        doc,
+        t("section_cross_capabilities_analysis", locale=doc_lang),
+        level=1,
+    )
+    add_heading_paragraph(
+        doc,
+        t("section_transformation_paradigm", locale=doc_lang),
+        level=2,
+    )
     add_body_paragraph(doc, cca.transformation_paradigm, color_rgb=BASE_TEXT_COLOR)
 
-    add_heading_paragraph(doc, "Deuda Técnica Crítica", level=2)
+    add_heading_paragraph(
+        doc,
+        t("section_critical_technical_debt", locale=doc_lang),
+        level=2,
+    )
     add_body_paragraph(doc, cca.critical_technical_debt, color_rgb=BASE_TEXT_COLOR)
 
     add_heading_paragraph(
-        doc, "Patrones Transversales de Ineficiencia y Deuda Estructural", level=2
+        doc,
+        t("section_cross_cutting_inefficiencies", locale=doc_lang),
+        level=2,
     )
     for item in cca.common_deficiency_patterns:
         add_bullet_p(doc, item)
 
 
-def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
-    """Renders a consolidated 'AS-IS' technology diagnosis section into a document. This function adds a main heading for the consolidated diagnosis. It then iterates through each technology pillar in the provided payload, creating a subsection and a summary table for each. The table details the technical capability, specific findings or evidence, and the resulting business risk. A key feature is the conditional background shading of the 'Business Risk' cell to visually indicate severity. The cell is shaded light red for high-impact risks (e.g., containing 'crítico', 'alto') and light amber for medium-impact risks (e.g., containing 'medio'). Args: doc: The `python-docx` Document object to which the content will be added. payload (BlueprintPayload): An object containing the aggregated technology pillar analysis and as-is health check data. Returns: None. The function modifies the input `doc` object in-place."""
-    add_heading_paragraph(doc, "Diagnóstico Tecnológico Consolidado (AS-IS)", level=1)
+def render_consolidated_asis(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
+    """Renders a consolidated 'AS-IS' technology diagnosis section into a document."""
+    add_heading_paragraph(
+        doc,
+        t("section_consolidated_asis", locale=doc_lang),
+        level=1,
+    )
 
     for pilar in payload.pillars_analysis:
-        add_heading_paragraph(doc, f"Capacidad: {pilar.pilar_name}", level=2)
+        add_heading_paragraph(
+            doc,
+            t("lbl_capability_prefix", locale=doc_lang, pillar_name=pilar.pilar_name),
+            level=2,
+        )
 
         table = doc.add_table(rows=1, cols=3)
         finalize_table(table)
-        headers = ["Capacidad Técnica", "Hallazgo / Evidencia", "Riesgo de Negocio"]
+        headers = [
+            t("header_technical_capability", locale=doc_lang),
+            t("header_finding_evidence", locale=doc_lang),
+            t("header_business_risk", locale=doc_lang),
+        ]
         for i, header in enumerate(headers):
             set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
             shade_cell(table.rows[0].cells[i], "D9EAF7")
@@ -717,14 +727,24 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
             #
             impact_text = row_data.impact
             impact_lower = impact_text.lower()
-            if any(
-                k in impact_lower
-                for k in ["crítico", "alto", "crítica", "alta", "severo", "material"]
-            ):
+            from assessment_engine.infrastructure.runtime_paths import ROOT
+            import json
+            shading_cfg = {}
+            p_shading = ROOT / "engine_config/locales_asis_annex.json"
+            if p_shading.exists():
+                try:
+                    shading_cfg = json.loads(p_shading.read_text(encoding="utf-8")).get("impact_shading_keywords", {})
+                except Exception:
+                    pass
+
+            crit_keys = shading_cfg.get("critical", ["critical", "high", "severe"])
+            mod_keys = shading_cfg.get("moderate", ["medium", "moderate"])
+
+            if any(k in impact_lower for k in crit_keys):
                 shade_cell(
                     row.cells[2], "FADBD8"
                 )  # Defines the RGB value for the Light Red color state.
-            elif any(k in impact_lower for k in ["medio", "moderado"]):
+            elif any(k in impact_lower for k in mod_keys):
                 shade_cell(
                     row.cells[2], "FCF3CF"
                 )  # Defines the RGB value for the Light Amber color state.
@@ -738,15 +758,15 @@ def render_consolidated_asis(doc, payload: BlueprintPayload) -> Any:
         add_spacer(doc, 10)
 
 
-def _render_fair_5x5_table(doc, matrix: dict) -> None:
+def _render_fair_5x5_table(doc, matrix: dict, doc_lang: str) -> None:
     """Render the 5x5 FAIR risk heatmap grid table."""
     table = doc.add_table(rows=6, cols=6)
     finalize_table(table)
 
-    #
+    header_corner = t("header_frequency_impact", locale=doc_lang)
     set_cell_text(
         table.rows[0].cells[0],
-        "Frecuencia \\ Impacto",
+        header_corner,
         bold=True,
         font_size=9,
         align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -754,7 +774,7 @@ def _render_fair_5x5_table(doc, matrix: dict) -> None:
     for c in range(1, 6):
         set_cell_text(
             table.rows[0].cells[c],
-            f"Nivel {c}",
+            t("lbl_level_prefix", locale=doc_lang, level=c),
             bold=True,
             font_size=9,
             align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -806,25 +826,23 @@ def _render_fair_5x5_table(doc, matrix: dict) -> None:
     autofit_table_to_contents(table)
     add_spacer(doc, 15)
 
-    #
-
 
 def _render_fair_details_table(
-    doc, risk_details: list[dict], currency_symbol: str
+    doc, risk_details: list[dict], currency_symbol: str, doc_lang: str
 ) -> None:
     """Render the detailed FAIR risk register table."""
-    # Sorts risks in descending order by Annualized Loss Expectancy (ALE) to prioritize the most significant threats.
     risk_details.sort(key=lambda x: x["ale"], reverse=True)
 
-    add_heading_paragraph(doc, "Detalle de Exposición al Riesgo (FAIR)", level=2)
+    title = t("section_fair_risk_details", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=2)
     risk_table = doc.add_table(rows=1, cols=5)
     finalize_table(risk_table)
     headers = [
         "ID",
-        "Dominio",
-        "Hallazgo / Brecha",
-        "Coordenadas (Freq x Imp)",
-        "Exposición de Riesgo (ALE)",
+        t("header_domain", locale=doc_lang),
+        t("header_finding_deficiency", locale=doc_lang),
+        t("header_coordinates_freq_imp", locale=doc_lang),
+        t("header_risk_exposure_ale", locale=doc_lang),
     ]
     for i, header in enumerate(headers):
         set_cell_text(risk_table.rows[0].cells[i], header, bold=True, font_size=9)
@@ -850,17 +868,16 @@ def _render_fair_details_table(
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )
 
-        # Determines the appropriate cell background color based on the calculated Annualized Loss Expectancy (ALE) risk level.
         risk_score = detail["risk_score"]
-        color = "D9F2D9"  # Defines the RGB value for the Green color state.
+        color = "D9F2D9"
         if risk_score >= 20:
-            color = "C00000"  # Defines the RGB value for the Dark Red color state.
+            color = "C00000"
         elif risk_score >= 15:
-            color = "FF0000"  # Defines the RGB value for the Red color state.
+            color = "FF0000"
         elif risk_score >= 10:
-            color = "FFC000"  # Defines the RGB value for the Amber color state.
+            color = "FFC000"
         elif risk_score >= 5:
-            color = "FFFF00"  # Defines the RGB value for the Yellow color state.
+            color = "FFFF00"
 
         ale_val = detail["ale"]
         from assessment_engine.infrastructure.localization import (
@@ -869,14 +886,14 @@ def _render_fair_details_table(
 
         set_cell_text(
             row.cells[4],
-            format_currency(ale_val, currency_symbol=currency_symbol, locale="es"),
+            format_currency(ale_val, currency_symbol=currency_symbol, locale=doc_lang),
             font_size=8,
             align=WD_ALIGN_PARAGRAPH.RIGHT,
         )
         shade_cell(row.cells[4], color)
         if (
             risk_score >= 15
-        ):  # A specific text color (white) is required for high contrast against Red or Dark Red backgrounds to maintain readability.
+        ):
             for paragraph in row.cells[4].paragraphs:
                 for run in paragraph.runs:
                     run.font.color.rgb = RGBColor(255, 255, 255)
@@ -886,15 +903,18 @@ def _render_fair_details_table(
 
 
 def render_fair_risk_heatmap(
-    doc, payload: BlueprintPayload, currency_symbol: str = "€"
+    doc, payload: BlueprintPayload, doc_lang: str, currency_symbol: str = "€"
 ) -> Any:
-    r"""{'docstring': 'Renders a FAIR quantitative risk heatmap and details table into a document.\n\n    This function processes Factor Analysis of Information Risk (FAIR) data from\n    the provided payload to generate two primary components within the given\n    Word document: a risk matrix and a detailed risk register.\n\n    First, a 5x5 heatmap is constructed where rows represent Threat Event\n    Frequency (TEF) and columns represent Loss Magnitude (LM). Each cell is\n    color-coded based on the calculated risk score (TEF * LM), mapping to a\n    severity scale from low (green) to critical (dark red). Cells are\n    populated with unique identifiers (e.g., "R01", "R02") for each risk that\n    falls within that specific TEF/LM coordinate.\n\n    Second, a detailed table is generated that lists each identified risk. This\n    table includes the risk\'s identifier, its domain, a description of the\n    finding, its coordinates on the heatmap, and its calculated Annualized Loss\n    Expectancy (ALE). The risks in this table are sorted in descending order of\n    their ALE to prioritize the most significant financial exposures.\n\n    If the payload contains no findings with valid FAIR data (where both TEF > 0\n    and LM > 0), the function appends a notification message to the document\n    instead of the heatmap and table.\n\n    Args:\n        doc (docx.document.Document): The python-docx Document object to which\n            the generated content will be appended.\n        payload (BlueprintPayload): A data object containing analysis results. It is\n            expected to have a `pillars_analysis` attribute, which is an\n            iterable of objects each containing a `health_check_asis` list of\n            findings. Each finding may have `threat_event_frequency`,\n            `loss_magnitude`, and `fair_ale_score` attributes.\n\n    Returns:\n        None: The function modifies the input `doc` object in place.'}."""
-    add_heading_paragraph(doc, "Coste Estimado del Riesgo de No Actuar", level=1)
+    """Renders a FAIR quantitative risk heatmap and details table into a document."""
+    add_heading_paragraph(
+        doc,
+        t("section_estimated_cost_inaction", locale=doc_lang),
+        level=1,
+    )
+    intro_p = t("fair_heatmap_intro", locale=doc_lang)
     add_body_paragraph(
         doc,
-        "Esta sección analiza cuánto le costaría a la empresa NO resolver los fallos detectados en caso de avería, parada o problemas operativos. "
-        "En lugar de una cifra contable cerrada, calculamos el coste económico potencial considerando la probabilidad de fallo y el entorno afectado (operaciones críticas de negocio, plataformas centrales de gestión o soporte interno). "
-        "Su objetivo es permitir que la Dirección compare el coste de ejecutar los proyectos propuestos frente al riesgo económico de no hacer nada.",
+        intro_p,
         color_rgb=BASE_TEXT_COLOR,
     )
 
@@ -931,42 +951,21 @@ def render_fair_risk_heatmap(
     if not has_fair_data:
         add_body_paragraph(
             doc,
-            "No hay datos cuantitativos FAIR suficientes para renderizar el mapa de calor.",
+            t("msg_insufficient_fair_data", locale=doc_lang),
             color_rgb=BASE_TEXT_COLOR,
         )
         return
 
-    _render_fair_5x5_table(doc, matrix)
-    _render_fair_details_table(doc, risk_details, currency_symbol)
+    _render_fair_5x5_table(doc, matrix, doc_lang=doc_lang)
+    _render_fair_details_table(doc, risk_details, currency_symbol, doc_lang=doc_lang)
 
 
-def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
-    """Populates a document object with the 'TO-BE' architecture section.
-
-    This function constructs the target architecture overview by adding a main
-    heading, a paragraph on the transformation paradigm, a static statement
-    on the sovereign agnostic model, and a list of unified design principles.
-    Content is primarily sourced from the `payload` object, and some static
-    text is rendered in Spanish.
-
-    Args:
-        doc: A document-like object that exposes methods for content
-            manipulation, such as `add_heading_paragraph`, `add_body_paragraph`,
-            and `add_bullet_p`.
-        payload (BlueprintPayload): A data object containing the blueprint
-            definition. The function accesses
-            `payload.cross_capabilities_analysis.transformation_paradigm` and
-            `payload.design_principles`.
-
-    Returns:
-        None. This function modifies the `doc` object in-place.
-
-    Raises:
-        AttributeError: If `payload` is missing the `cross_capabilities_analysis`
-            attribute.
-    """
+def render_consolidated_tobe(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
+    """Populates a document object with the 'TO-BE' architecture section."""
     add_heading_paragraph(
-        doc, "Arquitectura Objetivo y Visión Soberana (TO-BE)", level=1
+        doc,
+        t("section_target_architecture", locale=doc_lang),
+        level=1,
     )
 
     if payload.cross_capabilities_analysis:
@@ -976,14 +975,19 @@ def render_consolidated_tobe(doc, payload: BlueprintPayload) -> Any:
             color_rgb=BASE_TEXT_COLOR,
         )
 
+    tobe_intro = t("tobe_architecture_intro", locale=doc_lang)
     add_body_paragraph(
         doc,
-        "La arquitectura objetivo propuesta se rige por un modelo soberano agnóstico, evitando el vendor lock-in e integrando las infraestructuras críticas con los ecosistemas Cloud de mayor innovación tecnológica (e.g. AWS).",
+        tobe_intro,
         color_rgb=BASE_TEXT_COLOR,
     )
 
     if hasattr(payload, "design_principles") and payload.design_principles:
-        add_heading_paragraph(doc, "Principios de Diseño Unificados", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_unified_design_principles", locale=doc_lang),
+            level=2,
+        )
         for principle in payload.design_principles:
             add_bullet_p(doc, principle)
 
@@ -1000,18 +1004,19 @@ def _find_mitigated_risk_text(project: Any, payload: BlueprintPayload) -> str:
     return "N/A"
 
 
-def _format_wbs_breakdown(wbs_items: Any) -> str:
+def _format_wbs_breakdown(wbs_items: Any, doc_lang: str) -> str:
     """Format Work Breakdown Structure items into bulleted list."""
     if not wbs_items:
-        return "Desglose no disponible."
+        return t("msg_wbs_breakdown_unavailable", locale=doc_lang)
+    profile_lbl = t("lbl_wbs_role", locale=doc_lang)
     try:
         return "\n".join(
-            [f"• {w.task_name} (Perfil: {w.required_profile})" for w in wbs_items]
+            [f"• {w.task_name} ({profile_lbl}: {w.required_profile})" for w in wbs_items]
         )
     except Exception:
         return "\n".join(
             [
-                f"• {w.get('task_name')} (Perfil: {w.get('required_profile')})"
+                f"• {w.get('task_name')} ({profile_lbl}: {w.get('required_profile')})"
                 for w in wbs_items
                 if isinstance(w, dict)
             ]
@@ -1019,7 +1024,7 @@ def _format_wbs_breakdown(wbs_items: Any) -> str:
 
 
 def _resolve_project_charter_data(
-    project: Any, payload: BlueprintPayload
+    project: Any, payload: BlueprintPayload, doc_lang: str
 ) -> dict[str, str]:
     """Extract and sanitize all textual fields and financial estimates for a project charter."""
     deps = [
@@ -1027,24 +1032,21 @@ def _resolve_project_charter_data(
         for d in payload.external_dependencies
         if d.project == project.initiative
     ]
-    deps_text = " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+    deps_text = " • ".join(deps) if deps else (
+        t("lbl_independent_enabler", locale=doc_lang)
+    )
 
-    #
     mitigated_risk_text = _find_mitigated_risk_text(project, payload)
-    # Performs FinOps resolution by sanitizing financial data to exclude internal cost margins from client-facing documents.
     capex = getattr(project, "capex_estimate", "N/A") or "N/A"
     opex = getattr(project, "opex_estimate", "N/A") or "N/A"
 
-    # The OPEX value is sanitized to strip any internal margin calculations, ensuring only the client-facing cost is presented.
-    # The financial data is filtered to retain only the final selling price for this context.
     clean_opex = opex
     if isinstance(opex, str) and "(Margen" in opex:
         clean_opex = opex.split("(Margen")[0].strip()
 
-    finops_text = f"Inversión de Implantación: {clean_opex}\nInversión de Licencias/Hardware: {capex}"
+    finops_text = t("finops_charter_estimate", locale=doc_lang, clean_opex=clean_opex, capex=capex)
 
-    #
-    wbs_text = _format_wbs_breakdown(getattr(project, "wbs_breakdown", []))
+    wbs_text = _format_wbs_breakdown(getattr(project, "wbs_breakdown", []), doc_lang=doc_lang)
     proj_desc = getattr(project, "project_description", "N/A") or "N/A"
     smart_obj = getattr(project, "smart_objectives", "N/A") or "N/A"
     in_scope_list = getattr(project, "in_scope", []) or []
@@ -1079,13 +1081,16 @@ def _render_single_project_charter(
     pilar_name: str,
     project: Any,
     payload: BlueprintPayload,
+    doc_lang: str,
 ) -> None:
     """Render a formatted engineering charter table for a single project."""
     add_heading_paragraph(
-        doc, f"Iniciativa {project_idx}: {project.initiative}", level=3
+        doc,
+        t("lbl_initiative_prefix", locale=doc_lang, index=project_idx, name=project.initiative),
+        level=3,
     )
 
-    data = _resolve_project_charter_data(project, payload)
+    data = _resolve_project_charter_data(project, payload, doc_lang=doc_lang)
     deps_text = data["deps_text"]
     mitigated_risk_text = data["mitigated_risk_text"]
     finops_text = data["finops_text"]
@@ -1097,27 +1102,22 @@ def _render_single_project_charter(
     gov_roles = data["gov_roles"]
     crit_risks = data["crit_risks"]
     roi_just = data["roi_just"]
+    sizing_text = t("charter_val_sizing", locale=doc_lang, sizing=project.sizing, duration=project.duration)
     rows = [
-        ("Dominio Arquitectónico", pilar_name),
-        ("Descripción Ejecutiva", proj_desc),
-        ("Objetivo SMART", smart_obj),
-        ("Riesgo AS-IS Mitigado (Trazabilidad)", mitigated_risk_text),
-        ("Alcance (In-Scope)", in_scope),
-        ("Fuera de Alcance (Out-of-Scope)", out_scope),
-        ("Dependencias Técnicas (Predecesores)", deps_text),
-        (
-            "Entregables Técnicos Duros (DoD)",
-            "\n".join([f"• {item}" for item in project.deliverables]),
-        ),
-        ("Work Breakdown Structure (LLD Fases)", wbs_text),
-        (
-            "Sizing & Cronograma",
-            f"Complejidad Técnica: {project.sizing}\nHorizonte de Ejecución: {project.duration}",
-        ),
-        ("Estimación FinOps & TCO (3 Años)", finops_text),
-        ("Justificación de ROI & Valor", roi_just),
-        ("Perfiles y Gobernanza (RACI)", gov_roles),
-        ("Riesgos de Ejecución y Mitigación", crit_risks),
+        (t("charter_row_architecture_domain", locale=doc_lang), pilar_name),
+        (t("charter_row_executive_description", locale=doc_lang), proj_desc),
+        (t("charter_row_smart_objective", locale=doc_lang), smart_obj),
+        (t("charter_row_mitigated_risk", locale=doc_lang), mitigated_risk_text),
+        (t("charter_row_in_scope", locale=doc_lang), in_scope),
+        (t("charter_row_out_scope", locale=doc_lang), out_scope),
+        (t("charter_row_dependencies", locale=doc_lang), deps_text),
+        (t("charter_row_deliverables", locale=doc_lang), "\n".join([f"• {item}" for item in project.deliverables])),
+        (t("charter_row_wbs", locale=doc_lang), wbs_text),
+        (t("charter_row_sizing", locale=doc_lang), sizing_text),
+        (t("charter_row_finops", locale=doc_lang), finops_text),
+        (t("charter_row_roi", locale=doc_lang), roi_just),
+        (t("charter_row_governance", locale=doc_lang), gov_roles),
+        (t("charter_row_risks", locale=doc_lang), crit_risks),
     ]
 
     project_table = doc.add_table(rows=len(rows) + 1, cols=2)
@@ -1126,7 +1126,7 @@ def _render_single_project_charter(
     merged = project_table.rows[0].cells[0].merge(project_table.rows[0].cells[1])
     set_cell_text(
         merged,
-        "FICHA TÉCNICA DE PROYECTO DE INGENIERÍA",
+        t("charter_banner_title", locale=doc_lang),
         bold=True,
         font_size=11,
     )
@@ -1146,14 +1146,12 @@ def _render_single_project_charter(
     project_idx += 1
 
 
-def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
-    r"""{'docstring': 'Renders a technical appendix of detailed project charters into a document.\n\n    Generates and appends a series of formatted tables, representing detailed\n    project charters, to a document object. The function processes projects\n    from the input payload, first grouping them by their `transformation_typology`.\n    For each project, it aggregates comprehensive details including an executive\n    summary, S.M.A.R.T. objectives, scope definitions, technical dependencies,\n    financial estimates, Work Breakdown Structure (WBS), and risk analysis.\n\n    Financial data (OPEX) is sanitized to remove internal margin calculations\n    before rendering. The function is robust to variations in the payload\n    structure, using default values for missing attributes and handling potential\n    type inconsistencies in WBS data.\n\n    Args:\n        doc: A document object, typically from a library like `python-docx`, to\n            which the appendix is added. This object is modified in-place.\n        payload (BlueprintPayload): A data object containing the project blueprint,\n            including architectural pillars, project definitions, dependencies,\n            and financial data.\n\n    Returns:\n        None. The function modifies the `doc` object directly.\n\n    Raises:\n        AttributeError: If the `payload` object or its nested structures do not\n            conform to the expected schema (e.g., missing `pillars_analysis`).'}."""
+def render_deep_project_charters(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
+    """Renders a technical appendix of detailed project charters into a document."""
     doc.add_page_break()
-    add_heading_paragraph(
-        doc, "Anexo Técnico: Fichas Profundas de Proyectos (Charters)", level=1
-    )
+    title = t("section_deep_charters_annex", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=1)
 
-    # Projects are first grouped by their transformation typology to structure the subsequent rendering stages.
     from collections import defaultdict
 
     grouped_projects = defaultdict(list)
@@ -1163,58 +1161,33 @@ def render_deep_project_charters(doc, payload: BlueprintPayload) -> Any:
             typology = getattr(project, "transformation_typology", "Iniciativas Core")
             grouped_projects[typology].append((pilar.pilar_name, project))
 
-    #
     project_idx = 1
     for typology, projects_in_group in grouped_projects.items():
-        add_heading_paragraph(doc, f"Vector de Transformación: {typology}", level=2)
+        add_heading_paragraph(
+            doc,
+            t("lbl_transformation_vector", locale=doc_lang, typology=typology),
+            level=2,
+        )
         add_spacer(doc, 10)
 
         for pilar_name, project in projects_in_group:
             _render_single_project_charter(
-                doc, project_idx, pilar_name, project, payload
+                doc, project_idx, pilar_name, project, payload, doc_lang=doc_lang
             )
             project_idx += 1
 
 
-def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> Any:
-    """Constructs and appends a strategic roadmap page to a document object.
+def render_roadmap_page(
+    doc, payload: BlueprintPayload, output_path: Path, doc_lang: str
+) -> Any:
+    """Constructs and appends a strategic roadmap page to a document object."""
+    title = t("section_strategic_roadmap", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=1)
 
-    This function builds a comprehensive roadmap section within a provided
-    `python-docx` document. It first attempts to generate and embed a visual
-    Gantt chart from the payload data, using a temporary image file as an
-    intermediary. Following the chart, it constructs a detailed table that
-    maps each engineering initiative to its execution wave and lists its
-    technical dependencies. Dependencies are programmatically classified as
-    either internal to the engineering tower or cross-tower, and are
-    color-coded within the table to visually distinguish their origin.
-
-    Args:
-        doc (docx.document.Document): The document object to which the roadmap
-            content will be appended.
-        payload (BlueprintPayload): A data structure containing all necessary data,
-            including roadmap waves, project definitions, and dependency mappings.
-        output_path (pathlib.Path): The filesystem path for the final output file.
-            This path is used to derive a location for transient assets, such
-            as the generated Gantt chart image.
-
-    Returns:
-        None. The function modifies the `doc` object in place.
-
-    Raises:
-        ImportError: If the `application.generate_mermaid_gantt` dependency
-            cannot be imported.
-        FileNotFoundError: If Gantt chart generation is reported as successful but
-            the resulting image file cannot be found on disk.
-        AttributeError: If the `payload` object lacks expected attributes, such
-            as `roadmap` or `external_dependencies`, indicating malformed input.
-    """
-    add_heading_paragraph(
-        doc, "Roadmap Estratégico y Matriz de Dependencias Técnicas", level=1
-    )
-
+    intro_body = t("roadmap_intro_matrix", locale=doc_lang)
     add_body_paragraph(
         doc,
-        "La siguiente matriz establece la ruta crítica de ejecución (Gantt). Las iniciativas no son compartimentos estancos; su secuenciación matemática garantiza que los habilitadores técnicos (dependencias) se desplieguen antes de la construcción de las capas superiores.",
+        intro_body,
         color_rgb=BASE_TEXT_COLOR,
     )
 
@@ -1242,9 +1215,9 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
     table = doc.add_table(rows=1, cols=3)
     finalize_table(table)
     headers = [
-        "Horizonte / Fase",
-        "Iniciativa de Ingeniería",
-        "Dependencias Técnicas (Predecesores)",
+        t("header_horizon_phase", locale=doc_lang),
+        t("header_engineering_initiative", locale=doc_lang),
+        t("header_technical_dependencies", locale=doc_lang),
     ]
     for i, header in enumerate(headers):
         set_cell_text(table.rows[0].cells[i], header, bold=True, font_size=10)
@@ -1258,20 +1231,21 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
 
     for wave in payload.roadmap:
         for project_name in wave.projects:
-            #
             deps = []
             for d in payload.external_dependencies:
                 if d.project == project_name:
                     dep_name = d.depends_on
                     tag = (
-                        "[Interna]"
+                        t("lbl_tag_internal", locale=doc_lang)
                         if dep_name in internal_projects
-                        else "[Cross-Tower]"
+                        else t("lbl_tag_cross_tower", locale=doc_lang)
                     )
                     deps.append(f"{tag} {dep_name}")
 
             deps_text = (
-                " • ".join(deps) if deps else "Independiente (Habilitador Fase 0)"
+                " • ".join(deps)
+                if deps
+                else (t("lbl_independent_enabler", locale=doc_lang))
             )
 
             row = table.add_row()
@@ -1283,14 +1257,10 @@ def render_roadmap_page(doc, payload: BlueprintPayload, output_path: Path) -> An
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
                         run.font.color.rgb = BASE_TEXT_COLOR
-                        if "[Cross-Tower]" in run.text:
-                            run.font.color.rgb = RGBColor(
-                                192, 0, 0
-                            )  # Defines the RGB value for Dark Red, used to signify cross-tower project dependencies.
-                        elif "[Interna]" in run.text:
-                            run.font.color.rgb = RGBColor(
-                                0, 112, 192
-                            )  # Defines the RGB value for Blue, used to signify internal project dependencies.
+                        if "[Cross-Tower]" in run.text or "[Cross-Domain]" in run.text:
+                            run.font.color.rgb = RGBColor(192, 0, 0)
+                        elif "[Interna]" in run.text or "[Internal]" in run.text:
+                            run.font.color.rgb = RGBColor(0, 112, 192)
 
     autofit_table_to_contents(table)
     add_spacer(doc, 15)
@@ -1303,16 +1273,16 @@ def _render_maturity_pillars_table(doc, pillars: list[dict], doc_lang: str) -> N
         finalize_table(table)
         headers = [
             get_localized_string(
-                "table_header_pillar", locale=doc_lang, default="Pilar"
+                "table_header_pillar", locale=doc_lang
             ),
             get_localized_string(
-                "table_header_score", locale=doc_lang, default="Score"
+                "table_header_score", locale=doc_lang
             ),
             get_localized_string(
-                "table_header_level", locale=doc_lang, default="Nivel"
+                "table_header_level", locale=doc_lang
             ),
             get_localized_string(
-                "table_header_reading", locale=doc_lang, default="Lectura ejecutiva"
+                "table_header_reading", locale=doc_lang
             ),
         ]
         for i, header in enumerate(headers):
@@ -1345,9 +1315,10 @@ def _render_maturity_pillars_table(doc, pillars: list[dict], doc_lang: str) -> N
         add_spacer(doc, 10)
 
 
-def _render_maturity_asis_table(doc, asis: dict) -> None:
+def _render_maturity_asis_table(doc, asis: dict, doc_lang: str) -> None:
     """Render the AS-IS strengths, gaps, and operational impacts in maturity profile."""
-    add_heading_paragraph(doc, "AS-IS resumido", level=2)
+    title = t("section_asis_summary", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=2)
     add_body_paragraph(doc, asis.get("narrative", ""), color_rgb=BASE_TEXT_COLOR)
 
     strengths = asis.get("strengths", [])
@@ -1355,12 +1326,14 @@ def _render_maturity_asis_table(doc, asis: dict) -> None:
     if strengths or gaps:
         sg_table = doc.add_table(rows=2, cols=2)
         finalize_table(sg_table)
+        str_lbl = t("header_key_strengths", locale=doc_lang)
+        gap_lbl = t("header_key_deficiencies", locale=doc_lang)
         set_cell_text(
-            sg_table.rows[0].cells[0], "Fortalezas clave", bold=True, font_size=10
+            sg_table.rows[0].cells[0], str_lbl, bold=True, font_size=10
         )
         shade_cell(sg_table.rows[0].cells[0], "D9EAF7")
         set_cell_text(
-            sg_table.rows[0].cells[1], "Brechas clave", bold=True, font_size=10
+            sg_table.rows[0].cells[1], gap_lbl, bold=True, font_size=10
         )
         shade_cell(sg_table.rows[0].cells[1], "D9EAF7")
 
@@ -1391,7 +1364,8 @@ def _render_maturity_asis_table(doc, asis: dict) -> None:
 
     impacts = asis.get("operational_impacts", [])
     if impacts:
-        add_heading_paragraph(doc, "Implicaciones operativas clave", level=2)
+        imp_lbl = t("section_key_operational_implications", locale=doc_lang)
+        add_heading_paragraph(doc, imp_lbl, level=2)
         for impact in impacts:
             p = doc.add_paragraph(f"• {impact}")
             p.paragraph_format.left_indent = Pt(20)
@@ -1400,14 +1374,16 @@ def _render_maturity_asis_table(doc, asis: dict) -> None:
                 run.font.color.rgb = BASE_TEXT_COLOR
 
 
-def render_maturity_profile(doc, annex_data: dict) -> Any:
-    r"""{'docstring': "Renders a detailed maturity profile section into a `docx.document.Document`.\n\nConstructs and appends a formatted maturity profile to the provided document. The profile consists of an introductory text, an optional radar chart image, a table detailing pillar scores and executive summaries, and an AS-IS analysis including strengths, gaps, and operational impacts. If `annex_data` is empty, a placeholder message is added instead.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to be modified in-place.\n    annex_data (dict): Data for the maturity profile. An empty dictionary results in a placeholder message. Expected structure includes top-level keys 'pillar_score_profile' and 'sections'. The 'pillar_score_profile' dictionary should contain textual introductions and a list of 'pillars' dictionaries. The 'sections' dictionary should contain an 'asis' dictionary with lists of 'strengths', 'gaps', and 'operational_impacts'.\n\nReturns:\n    None. The function modifies the `doc` object directly.\n\nRaises:\n    ValueError: If the image file path provided under the 'radar_chart' key within `annex_data` is invalid or refers to an unsupported image format."}."""
-    add_heading_paragraph(doc, "Perfil de madurez por pilar", level=1)
+def render_maturity_profile(doc, annex_data: dict, doc_lang: str) -> Any:
+    """Renders a detailed maturity profile section into a docx.document.Document."""
+    title = t("section_maturity_profile_by_pillar", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=1)
 
     if not annex_data:
+        not_found = t("msg_maturity_profile_not_found", locale=doc_lang)
         add_body_paragraph(
             doc,
-            "No se ha encontrado el perfil de madurez detallado para esta torre.",
+            not_found,
             color_rgb=BASE_TEXT_COLOR,
         )
         return
@@ -1427,18 +1403,10 @@ def render_maturity_profile(doc, annex_data: dict) -> Any:
             run.font.color.rgb = RGBColor(127, 127, 127)
 
     radar_path = profile.get("radar_chart", "")
-    from assessment_engine.infrastructure.localization import get_localized_string
+    doc_lang_resolved = doc_lang or str(annex_data.get("document_meta", {}).get("language", "en")).lower()
 
-    doc_lang = str(annex_data.get("document_meta", {}).get("language", "es")).lower()
-
-    radar_heading = get_localized_string(
-        "radar_chart_heading", locale=doc_lang, default="Gráfico radial"
-    )
-    compact_heading = get_localized_string(
-        "compact_pillar_detail_heading",
-        locale=doc_lang,
-        default="Detalle compacto por pilar",
-    )
+    radar_heading = t("radar_chart_heading", locale=doc_lang_resolved)
+    compact_heading = t("compact_pillar_detail_heading", locale=doc_lang_resolved)
 
     if radar_path and Path(radar_path).exists():
         add_heading_paragraph(doc, radar_heading, level=2)
@@ -1449,53 +1417,20 @@ def render_maturity_profile(doc, annex_data: dict) -> Any:
 
     pillars = profile.get("pillars", [])
     add_heading_paragraph(doc, compact_heading, level=2)
-    _render_maturity_pillars_table(doc, pillars, doc_lang)
-    _render_maturity_asis_table(doc, asis)
+    _render_maturity_pillars_table(doc, pillars, doc_lang_resolved)
+    _render_maturity_asis_table(doc, asis, doc_lang=doc_lang_resolved)
 
 
-def render_conclusion(doc, annex_data: dict) -> Any:
-    """Appends a formatted conclusion section to a python-docx Document.
-
-    This function adds a primary level-1 heading ("5. Conclusion") and populates
-    the section with content extracted from the `annex_data` dictionary.
-    Subsections are added with level-2 headings for the final assessment,
-    executive message, priority focus areas, and a closing statement. Priority
-    focus areas are rendered as a bulleted list with specific indentation.
-
-    If the required conclusion data is not found within `annex_data`, a
-    placeholder message is inserted into the document instead.
-
-    Args:
-        doc (docx.document.Document): The document object to which the conclusion
-            section will be appended. This object is modified in-place.
-        annex_data (dict): A dictionary containing the report data. The function
-            expects a specific nested structure for the conclusion content, as
-            shown below:
-            {
-                'sections': {
-                    'conclusion': {
-                        'final_assessment': str,
-                        'executive_message': str,
-                        'priority_focus_areas': list[str],
-                        'closing_statement': str
-                    }
-                }
-            }
-
-    Returns:
-        None. The function modifies the `doc` object directly.
-
-    Raises:
-        AttributeError: If `doc` is not a valid `docx.document.Document` object
-            lacking the required `add_paragraph` method.
-        TypeError: If the 'priority_focus_areas' key is present in the
-            conclusion data but its value is not an iterable."""
-    add_heading_paragraph(doc, "5. Conclusión", level=1)
+def render_conclusion(doc, annex_data: dict, doc_lang: str) -> Any:
+    """Appends a formatted conclusion section to a python-docx Document."""
+    title = t("section_conclusion", locale=doc_lang)
+    add_heading_paragraph(doc, title, level=1)
 
     if not annex_data:
+        not_found = t("msg_conclusion_not_found", locale=doc_lang)
         add_body_paragraph(
             doc,
-            "No se ha encontrado información de conclusión para esta torre.",
+            not_found,
             color_rgb=BASE_TEXT_COLOR,
         )
         return
@@ -1503,20 +1438,30 @@ def render_conclusion(doc, annex_data: dict) -> Any:
     conclusion = annex_data.get("sections", {}).get("conclusion", {})
 
     if conclusion.get("final_assessment"):
-        add_heading_paragraph(doc, "Evaluación final", level=2)
+        add_heading_paragraph(
+            doc, t("section_final_assessment", locale=doc_lang), level=2
+        )
         add_body_paragraph(
             doc, conclusion.get("final_assessment"), color_rgb=BASE_TEXT_COLOR
         )
 
     if conclusion.get("executive_message"):
-        add_heading_paragraph(doc, "Mensaje para el responsable técnico", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_executive_message", locale=doc_lang),
+            level=2,
+        )
         add_body_paragraph(
             doc, conclusion.get("executive_message"), color_rgb=BASE_TEXT_COLOR
         )
 
     priority_areas = conclusion.get("priority_focus_areas", [])
     if priority_areas:
-        add_heading_paragraph(doc, "Áreas de foco prioritarias", level=2)
+        add_heading_paragraph(
+            doc,
+            t("section_priority_focus_areas", locale=doc_lang),
+            level=2,
+        )
         for area in priority_areas:
             p = doc.add_paragraph(f"• {area}")
             p.paragraph_format.left_indent = Pt(20)
@@ -1525,7 +1470,9 @@ def render_conclusion(doc, annex_data: dict) -> Any:
                 run.font.color.rgb = BASE_TEXT_COLOR
 
     if conclusion.get("closing_statement"):
-        add_heading_paragraph(doc, "Próximos pasos", level=2)
+        add_heading_paragraph(
+            doc, t("section_next_steps", locale=doc_lang), level=2
+        )
         add_body_paragraph(
             doc, conclusion.get("closing_statement"), color_rgb=BASE_TEXT_COLOR
         )
@@ -1537,22 +1484,22 @@ def render_blueprint(
     client_dir: Path,
     template_path: Path = DEFAULT_TEMPLATE_PATH,
 ) -> Path:
-    r"""{'docstring': 'Renders a tower blueprint Word document from a structured data payload.\n\nOrchestrates the generation of a multi-section Word document from a\ntemplate. The function loads a specified .docx template, clears its\nexisting body content, and then sequentially populates it by invoking\ndedicated rendering functions for each document section. It aggregates data\nfrom the primary `payload` with supplementary client-specific information\n(e.g., annex data) before saving the final document to the output path.\n\nArgs:\n    payload: An object containing the structured data for all blueprint\n        sections.\n    output_path: The file system path where the generated .docx file will be\n        saved. Parent directories are created automatically if they do not\n        exist.\n    client_dir: The directory path containing client-specific supplementary\n        data files, such as annex and intelligence reports.\n    template_path: Path to the base .docx template file. If not provided,\n        a default system path is used.\n\nReturns:\n    The path to the newly created document, identical to `output_path`.\n\nRaises:\n    FileNotFoundError: If the template file or required client data files\n        do not exist at their specified paths.\n    IOError: If writing the output file to `output_path` fails due to\n        file system errors, such as insufficient permissions.'}."""
+    """Renders a tower blueprint Word document from a structured data payload."""
     annex_data = load_annex_data(client_dir, payload.document_meta.tower_code)
     client_intelligence = load_client_intelligence(client_dir)
 
     doc = Document(str(template_path))
     clear_document_body(doc)
-    doc_lang = getattr(payload.document_meta, "language", None) or getattr(payload.document_meta, "doc_lang", "es")
+    doc_lang = getattr(payload.document_meta, "language", None) or getattr(payload.document_meta, "doc_lang", "en")
     if doc.sections:
         create_page_number_footer(doc.sections[0], doc_lang=doc_lang)
 
-    render_cover(doc, payload)
-    render_snapshot_page(doc, payload, client_intelligence, annex_data)
-    render_maturity_profile(doc, annex_data)
-    render_cross_capabilities_analysis(doc, payload)
+    render_cover(doc, payload, doc_lang=doc_lang)
+    render_snapshot_page(doc, payload, client_intelligence, annex_data, doc_lang=doc_lang)
+    render_maturity_profile(doc, annex_data, doc_lang=doc_lang)
+    render_cross_capabilities_analysis(doc, payload, doc_lang=doc_lang)
 
-    render_consolidated_asis(doc, payload)
+    render_consolidated_asis(doc, payload, doc_lang=doc_lang)
 
     # Load currency symbol dynamically from document_meta or custom_risk_profile.json (FAIR-MAM)
     currency_symbol = getattr(payload.document_meta, "currency", "") or ""
@@ -1567,16 +1514,16 @@ def render_blueprint(
                 with open(custom_profile_path, "r", encoding="utf-8-sig") as cpf:
                     currency_symbol = json.load(cpf).get("currency_symbol", "€")
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                logger.debug(f"[Fallback] Handled exception: {ex}")
     if not currency_symbol:
         currency_symbol = "€"
 
-    render_fair_risk_heatmap(doc, payload, currency_symbol=currency_symbol)
-    render_consolidated_tobe(doc, payload)
-    render_roadmap_page(doc, payload, output_path)
-    render_deep_project_charters(doc, payload)
+    render_fair_risk_heatmap(doc, payload, currency_symbol=currency_symbol, doc_lang=doc_lang)
+    render_consolidated_tobe(doc, payload, doc_lang=doc_lang)
+    render_roadmap_page(doc, payload, output_path, doc_lang=doc_lang)
+    render_deep_project_charters(doc, payload, doc_lang=doc_lang)
 
-    render_conclusion(doc, annex_data)
+    render_conclusion(doc, annex_data, doc_lang=doc_lang)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))

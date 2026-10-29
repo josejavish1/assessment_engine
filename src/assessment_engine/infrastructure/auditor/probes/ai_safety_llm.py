@@ -42,8 +42,8 @@ class AISafetyASTVisitor(ast.NodeVisitor):
                             file_path=self.rel_path,
                             line_number=node.lineno,
                             rule_id="LLM01-PROMPT-INJECTION-RISK",
-                            message="Interpolación directa de variables en prompt del sistema: vulnerable a Prompt Injection (LLM01:2026)",
-                            recommendation="Usar el parámetro explícito 'system_instruction' de la API de GenAI para aislar el contexto del sistema."
+                            message="Direct variable interpolation in system prompt: vulnerable to Prompt Injection (LLM01:2026)",
+                            recommendation="Use the explicit 'system_instruction' parameter of GenAI API to isolate system context."
                         ))
                         break
         self.generic_visit(node)
@@ -98,8 +98,8 @@ def _calculate_ai_safety_score(
             file_path="core/config/",
             line_number=None,
             rule_id="LLM06-UNBOUNDED-CONSUMPTION",
-            message="Llamadas a LLM sin presupuesto FinOps ni límite estricto de tokens de salida (Denial of Wallet)",
-            recommendation="Fijar 'max_cost_usd' y 'max_output_tokens' en la configuración de llamada."
+            message="LLM invocation without FinOps budget guardrail or output token bounding (Denial of Wallet)",
+            recommendation="Enforce 'max_cost_usd' and 'max_output_tokens' in client configuration."
         ))
 
     score = max(0.0, min(100.0, round(score, 1)))
@@ -148,7 +148,7 @@ def run_ai_safety_llm_probe(target_dir: Path) -> ProbeResult:
                         file_path=rel_path,
                         line_number=1,
                         rule_id="LLM03-EXCESSIVE-AGENCY",
-                        message="Ejecución de shell por código agéntico sin enjaulamiento en sandbox Bubblewrap (LLM03:2026 Agencia Excesiva)",
+                        message="Shell execution by agentic code without Bubblewrap container isolation (LLM03:2026 Excessive Agency)",
                         recommendation="Enjaular todo comando bash con 'bwrap --unshare-all --ro-bind /' y aplicar ExecutionGuard."
                     ))
             except SyntaxError:

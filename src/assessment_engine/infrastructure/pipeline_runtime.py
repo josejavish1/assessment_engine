@@ -123,7 +123,7 @@ def validate_runtime_environment(env: dict[str, str]) -> None:
         if not env.get(name, "").strip()
     ]
     if missing_vars:
-        raise RuntimeError("Falta configuración de entorno para Vertex AI.")
+        raise RuntimeError("Missing environment configuration for Vertex AI.")
 
 
 def resolve_ai_step_timeout_seconds(
@@ -166,7 +166,7 @@ def resolve_ai_step_timeout_seconds(
         timeout_seconds = float(raw_value)
     except ValueError as exc:
         raise RuntimeError(
-            f"{AI_STEP_TIMEOUT_ENV} debe ser un número positivo."
+            f"{AI_STEP_TIMEOUT_ENV} must be a positive number."
         ) from exc
 
     if timeout_seconds <= 0:
@@ -195,7 +195,7 @@ def run_module_step(cmd_args: list[str], step_name: str, env: dict[str, str]) ->
             mod = importlib.import_module(module_name)
             importlib.reload(mod)
             if not hasattr(mod, "main"):
-                raise RuntimeError(f"El módulo {module_name} no tiene función main()")
+                raise RuntimeError(f"Module {module_name} lacks main() entrypoint")
 
             result = mod.main()
             if asyncio.iscoroutine(result):
@@ -203,7 +203,7 @@ def run_module_step(cmd_args: list[str], step_name: str, env: dict[str, str]) ->
     except SystemExit as exc:
         if exc.code not in (0, None):
             raise RuntimeError(
-                f"Fallo nativo (SystemExit) en {step_name} con código: {exc.code}"
+                f"Native step failure (SystemExit) in {step_name} with code: {exc.code}"
             ) from exc
         logger.info(f"[{step_name}] Finalizado con exit(0)")
     except Exception as exc:

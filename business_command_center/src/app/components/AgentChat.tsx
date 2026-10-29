@@ -20,7 +20,7 @@ interface AgentChatProps {
 
 export function AgentChat({ messages, isSubmitting, onSendMessage }: AgentChatProps) {
   const [inputValue, setInputValue] = useState('');
-  const [traceMsg, setTraceMsg] = useState('Analizando contexto y rediseñando el plan...');
+  const [traceMsg, setTraceMsg] = useState('Analyzing context and revising plan...');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -93,9 +93,9 @@ export function AgentChat({ messages, isSubmitting, onSendMessage }: AgentChatPr
         <div className="bg-popover border border-border shadow-sm rounded-xl flex items-end p-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
           <TextareaAutosize
             className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground px-2 py-2 min-h-[44px] max-h-[250px] resize-none text-sm"
-            placeholder="Sugiere cambios (ej. Falta añadir un test de seguridad...)"
+            placeholder="Suggest changes (e.g. Add an automated security test...)"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isSubmitting}
             autoFocus
@@ -112,7 +112,7 @@ export function AgentChat({ messages, isSubmitting, onSendMessage }: AgentChatPr
           </button>
         </div>
         <p className="text-[10px] text-center text-muted-foreground mt-2">
-          Presiona <kbd className="font-mono bg-muted px-1 rounded">Enter</kbd> para enviar, <kbd className="font-mono bg-muted px-1 rounded">Shift+Enter</kbd> para nueva línea.
+          Press <kbd className="font-mono bg-muted px-1 rounded">Enter</kbd> to send, <kbd className="font-mono bg-muted px-1 rounded">Shift+Enter</kbd> for newline.
         </p>
       </div>
     </div>

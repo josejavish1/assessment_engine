@@ -38,7 +38,10 @@ def test_archimate_policy_cloud_neutrality():
 
     assert "AWS Control Tower" not in all_delivs
     assert "Módulo Terraform EKS" not in all_delivs
-    assert "Framework de Landing Zone" in all_delivs
+    assert (
+        "Framework de Landing Zone" in all_delivs
+        or "Landing Zone Hierarchy Framework" in all_delivs
+    )
 
 
 def test_reverse_traceability_formal_matching():

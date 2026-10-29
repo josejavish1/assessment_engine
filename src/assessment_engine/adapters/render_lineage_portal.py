@@ -93,7 +93,7 @@ def render_lineage_portal(client_name: str) -> Path:
     global_payload_path = resolve_global_report_payload_path(client_name)
     if not global_payload_path.exists():
         logger.warning(
-            f"⚠️ Payload global no encontrado en {global_payload_path}. Generando con dict vacío."
+            f"⚠️ Global payload not found at {global_payload_path}. Generating with empty dict."
         )
         global_payload = {}
     else:
@@ -103,7 +103,7 @@ def render_lineage_portal(client_name: str) -> Path:
     dto_state_path = client_dir / "digital_twin_state.json"
     if not dto_state_path.exists():
         logger.warning(
-            f"⚠️ Digital Twin State no encontrado en {dto_state_path}. Generando con dict vacío."
+            f"⚠️ Digital Twin State not found at {dto_state_path}. Generating with empty dict."
         )
         dto_state = {}
     else:
@@ -115,7 +115,7 @@ def render_lineage_portal(client_name: str) -> Path:
     #
     if not TEMPLATE_PATH.exists():
         raise FileNotFoundError(
-            f"No se encuentra la plantilla del portal en: {TEMPLATE_PATH}"
+            f"Portal HTML template not found at: {TEMPLATE_PATH}"
         )
 
     template_content = TEMPLATE_PATH.read_text(encoding="utf-8")

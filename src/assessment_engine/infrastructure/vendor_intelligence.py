@@ -24,25 +24,25 @@ DYNAMIC_BLUEPRINTS_DIR.mkdir(parents=True, exist_ok=True)
 
 class SynthesizedBlueprintPayload(BaseModel):
     vendor_id: str = Field(
-        description="Identificador único en snake_case del fabricante"
+        description="Unique snake_case vendor identifier"
     )
     display_name: str = Field(
-        description="Nombre comercial oficial de la solución o fabricante"
+        description="Official commercial name of the vendor or solution"
     )
     official_domains: List[str] = Field(
-        description="Dominios oficiales de documentación y soporte técnico"
+        description="Official domains for technical documentation and support"
     )
     coverage_domain_id: str = Field(
-        description="Identificador del dominio técnico principal en mayúsculas"
+        description="Principal technical domain identifier in uppercase"
     )
     coverage_domain_name: str = Field(
-        description="Nombre descriptivo de la arquitectura de referencia"
+        description="Descriptive name of the reference architecture"
     )
     search_query: str = Field(
-        description="Query de búsqueda técnica para datasheets y whitepapers"
+        description="Technical search query for datasheets and official whitepapers"
     )
     expected_entities: List[str] = Field(
-        description="Componentes, protocolos o características clave de la solución"
+        description="Key components, protocols, or architecture features"
     )
 
 
@@ -64,24 +64,24 @@ class DynamicVendorSynthesizer:
                 with open(out_file, encoding="utf-8") as f:
                     return yaml.safe_load(f)
             except Exception as exc:
-                logger.warning("Fallo al leer blueprint dinámico %s: %s", out_file, exc)
+                logger.warning("Failed to read dynamic blueprint %s: %s", out_file, exc)
 
         logger.info(
-            "Sintetizando Blueprint Just-In-Time para tecnología/fabricante: '%s'...",
+            "Synthesizing Just-In-Time Blueprint for technology/vendor: '%s'...",
             vendor_name,
         )
 
         # Build prompt for structured synthesis
-        prompt = f"""Eres un Ingeniero Principal de Ciberseguridad e Infraestructura Tier-1.
-Se ha identificado una tecnología o fabricante '{vendor_name}' en el entorno del cliente (Contexto: '{context_clue}').
-Este fabricante no se encuentra en el catálogo pre-existente.
+        prompt = f"""You are a Principal Cybersecurity and Tier-1 Infrastructure Engineer.
+Identified uncataloged technology or vendor '{vendor_name}' in client environment (Context: '{context_clue}').
+This vendor is missing from pre-existing catalog.
 
-Tu misión es investigar y sintetizar el Blueprint formal de este fabricante:
-1. Deduce su identificador único (vendor_id en snake_case).
-2. Nombre oficial de la solución o suite empresarial (display_name).
-3. Dominios oficiales de ingeniería y soporte (official_domains, ej. docs.{clean_name}.com, support.{clean_name}.com).
-4. Formula la consulta técnica estricta (search_query) con filetype:pdf para localizar whitepapers oficiales.
-5. Lista 4 a 6 entidades clave, protocolos o capacidades nativas esperadas (expected_entities).
+Your mission is to research and synthesize the formal vendor blueprint:
+1. Deduce unique identifier (vendor_id in snake_case).
+2. Official commercial name of solution or suite (display_name).
+3. Official documentation and support domains (official_domains).
+4. Formulate technical search query with filetype:pdf to retrieve official whitepapers.
+5. List 4 to 6 key technical entities, protocols, or native capabilities (expected_entities).
 """
         try:
             from assessment_engine.infrastructure.ai_client import run_agent
@@ -94,7 +94,7 @@ Tu misión es investigar y sintetizar el Blueprint formal de este fabricante:
             )
         except Exception as e:
             logger.warning(
-                "Error invocando AI para blueprint de %s: %s. Aplicando plantilla heurística.",
+                "Error invoking AI for blueprint of %s: %s. Applying heuristic fallback template.",
                 vendor_name,
                 e,
             )
@@ -103,7 +103,7 @@ Tu misión es investigar y sintetizar el Blueprint formal de este fabricante:
                 display_name=f"{vendor_name.capitalize()} Enterprise Solutions",
                 official_domains=[f"docs.{clean_name}.com", f"{clean_name}.com"],
                 coverage_domain_id="CORE_SOLUTION_SPECS",
-                coverage_domain_name=f"Especificaciones Técnicas Oficiales de {vendor_name}",
+                coverage_domain_name=f"Official Technical Specifications of {vendor_name}",
                 search_query=f"{vendor_name} technical architecture whitepaper filetype:pdf",
                 expected_entities=[
                     vendor_name,
@@ -133,10 +133,10 @@ Tu misión es investigar y sintetizar el Blueprint formal de este fabricante:
         try:
             with open(out_file, "w", encoding="utf-8") as f:
                 yaml.dump(bp_dict, f, allow_unicode=True, sort_keys=False, indent=2)
-            logger.info("Blueprint dinámico guardado exitosamente: %s", out_file)
+            logger.info("Dynamic blueprint saved successfully: %s", out_file)
         except Exception as io_err:
             logger.error(
-                "Error persistiendo blueprint dinámico %s: %s", out_file, io_err
+                "Error saving dynamic blueprint %s: %s", out_file, io_err
             )
 
         return bp_dict
@@ -174,7 +174,7 @@ class VendorRegistry:
                         cls._STATIC_REGISTRY[data["vendor_id"].lower()] = data
                 except Exception as e:
                     logger.debug(
-                        "Error cargando blueprint dinámico %s: %s", yaml_file, e
+                        "Error loading dynamic blueprint %s: %s", yaml_file, e
                     )
 
         cls._INITIALIZED = True
@@ -240,22 +240,22 @@ class VendorRegistry:
             return ""
 
         lines = [
-            "\n### CAPACIDADES TÉCNICAS OFICIALES DE FABRICANTES DETECTADOS (ARQUITECTURA DE REFERENCIA):",
-            "Aprovecha las capacidades nativas ya existentes en el equipamiento del cliente antes de prescribir licencias de terceros:",
+            "\n### OFFICIAL VENDOR REFERENCE ARCHITECTURE CAPABILITIES:",
+            "Leverage native capabilities present in client tooling before prescribing third-party licenses:",
         ]
 
         for bp in vendors:
-            v_name = bp.get("display_name", bp.get("vendor_id", "Fabricante"))
+            v_name = bp.get("display_name", bp.get("vendor_id", "Vendor"))
             domains = bp.get("coverage_domains", [])
-            lines.append(f"\n- **Fabricante: {v_name}**")
+            lines.append(f"\n- **Vendor: {v_name}**")
             for dom in domains:
                 dom_name = dom.get("name", "")
                 entities = ", ".join(dom.get("expected_entities", []))
-                lines.append(f"  • {dom_name}: Capacidades clave [{entities}]")
+                lines.append(f"  • {dom_name}: Key capabilities [{entities}]")
 
         lines.append(
-            "\nREGLA MANDATORIA DE PRESCRIPCIÓN:\n"
-            "Si propones modernización sobre estos componentes, cita las funciones nativas oficiales indicadas arriba "
-            "(ej. WORM, SnapLock, Active IQ, FortKnox, SpanFS, Cloud Tiering, MetroCluster, etc.) para justificar el máximo retorno de inversión."
+            "\nMANDATORY PRESCRIPTION DIRECTIVE:\n"
+            "If proposing modernization across these components, cite the official native capabilities indicated above "
+            "(e.g. WORM, SnapLock, Active IQ, FortKnox, SpanFS, Cloud Tiering, MetroCluster, etc.) to substantiate maximum return on investment."
         )
         return "\n".join(lines)

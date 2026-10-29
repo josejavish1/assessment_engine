@@ -8,7 +8,10 @@ from pathlib import Path
 from typing import Any, List
 
 from assessment_engine.infrastructure.localization import (
+    apply_vocabulary_substitutions,
     format_date_localized,
+    format_number,
+    get_localized_list,
     t,
 )
 
@@ -79,7 +82,7 @@ class PayloadToASTBridge:
     ):
         self.brand_profile_path = Path(brand_profile_path)
         self.locales_path = Path(locales_path)
-        self.meta_lang = "es"
+        self.meta_lang = "en"
 
         # Load brand profiles, using fallback values to ensure required assets are present.
         self.company_name = "Consultora"
@@ -91,7 +94,7 @@ class PayloadToASTBridge:
         self.brand_data = {}
         from assessment_engine.infrastructure.config_loader import load_brand_profile
 
-        self.meta_lang = "es"
+        self.meta_lang = "en"
         try:
             brand = load_brand_profile()
             self.brand_data = brand
@@ -111,7 +114,7 @@ class PayloadToASTBridge:
             self.primary_color_rgb = [r, g, b]
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
 
     def convert(
@@ -120,7 +123,7 @@ class PayloadToASTBridge:
         """Consolidates information from input JSON files and associated Markdown/CSV modules
         to generate a complete Document Abstract Syntax Tree (AST)."""
         ctx = self._extract_conversion_context(blueprint_payload_path, approved_annex_path)
-        self.meta_lang = ctx.get("meta_lang", "es")
+        self.meta_lang = ctx.get("meta_lang", "en")
 
         nodes: List[Any] = []
         self._build_cover_and_toc(ctx, nodes)
@@ -165,10 +168,10 @@ class PayloadToASTBridge:
                     json.load(f)
             except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                logger.debug(f"[Fallback] Handled exception: {ex}")
 
         tower_meta = blueprint_data.get("document_meta", {})
-        meta_lang = tower_meta.get("language", "es").lower()
+        meta_lang = tower_meta.get("language", "en").lower()
         from assessment_engine.infrastructure.config_loader import (
             resolve_localized_vocabulary,
         )
@@ -217,12 +220,12 @@ class PayloadToASTBridge:
             .split()[0]
         )
         global_band = exact_band if exact_band is not None else blueprint_data.get("executive_summary", {}).get(
-            "global_band", "Definido"
+            "global_band", t("band_defined", locale=meta_lang)
         )
         global_reading = (
             blueprint_data.get("pillar_score_profile", {})
             .get("pillars", [{}])[0]
-            .get("executive_reading", "Gobernanza estándar.")
+            .get("executive_reading", "Standard Governance.")
         )
 
         try:
@@ -230,14 +233,9 @@ class PayloadToASTBridge:
         except Exception:
             gs_val = 3.0
 
-        formatted_global_score = (
-            f"{gs_val:.2f}".replace(".", ",") if meta_lang == "es" else f"{gs_val:.2f}"
-        )
-        display_score_str = (
-            f"{formatted_global_score} / 5,00"
-            if meta_lang == "es"
-            else f"{formatted_global_score} / 5.00"
-        )
+        formatted_global_score = format_number(gs_val, locale=meta_lang, decimals=2)
+        max_score_formatted = format_number(5.0, locale=meta_lang, decimals=2)
+        display_score_str = f"{formatted_global_score} / {max_score_formatted}" 
 
         nodes: List[Any] = []
 
@@ -284,11 +282,11 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=120))
 
         # Title and Subtitle
-        title_text = vocab.get("title", "Informe de Situación Actual (AS-IS)")
+        title_text = vocab.get("title", "Current State Assessment Report (AS-IS)")
         nodes.append(ParagraphNode(text=title_text, bold=True, space_after=12))
         nodes.append(
             HeadingNode(
-                text=f"Anexo Técnico: {tower_name}",
+                text=f"Technical Annex: {tower_name}",
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -309,7 +307,7 @@ class PayloadToASTBridge:
         # Date and classification
         nodes.append(
             ParagraphNode(
-                text=f"{date_str} | Versión {version} | {classification_clean}",
+                text=f"{date_str} | Version {version} | {classification_clean}",
                 italic=True,
                 text_color_rgb=[150, 150, 150],
             )
@@ -329,22 +327,8 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=10))
         
         # Build an elegant, highly polished, static-rendered executive Table of Contents
-        if meta_lang == "es":
-            nodes.append(ParagraphNode(text="**1. Resumen Ejecutivo** .................................................................................................... **Pág. 3**"))
-            nodes.append(ParagraphNode(text="**2. Objetivo, Alcance y Marco Metodológico** ........................................................................ **Pág. 4**"))
-            nodes.append(ParagraphNode(text="**3. Evaluación y Madurez Tecnológica** ............................................................................................ **Pág. 5**"))
-            nodes.append(ParagraphNode(text="**4. Riesgos** ............................................................................................................ **Pág. 10**"))
-            nodes.append(ParagraphNode(text="**Conclusiones y Coste de Inacción** ............................................................................ **Pág. 12**"))
-            nodes.append(ParagraphNode(text="**6. Registro de Custodia de Fuentes de Información** .................................................................. **Pág. 14**"))
-            nodes.append(ParagraphNode(text="**Metodología Cuantitativa de Riesgos (O-FAIR)** ............................................................................ **Pág. 15**"))
-        else:
-            nodes.append(ParagraphNode(text="**1. Executive Summary** .................................................................................................... **Pág. 3**"))
-            nodes.append(ParagraphNode(text="**2. Objective and Scope of the Assessment** ................................................................................ **Pág. 4**"))
-            nodes.append(ParagraphNode(text="**3. Technology Maturity and Evaluation** ............................................................ **Pág. 6**"))
-            nodes.append(ParagraphNode(text="**4. Risks** ............................................................................................................ **Pág. 10**"))
-            nodes.append(ParagraphNode(text="**Conclusions and Cost of Inaction** ............................................................................ **Pág. 12**"))
-            nodes.append(ParagraphNode(text="**6. Custody Register of Information Sources** .......................................................................... **Pág. 14**"))
-            nodes.append(ParagraphNode(text="**Quantitative Risk Methodology (O-FAIR)** ............................................................................ **Pág. 15**"))
+        for entry in get_localized_list("static_toc_entries", locale=meta_lang):
+            nodes.append(ParagraphNode(text=entry))
         
         nodes.append(PageBreakNode())
 
@@ -368,13 +352,13 @@ class PayloadToASTBridge:
         else:
             nodes.append(
                 HeadingNode(
-                    text="1. Resumen Ejecutivo" if meta_lang == "es" else "1. Executive Summary",
+                    text=t("chapter_1_exec_summary", locale=meta_lang),
                     level=1,
                     primary_color_rgb=self.primary_color_rgb,
                 )
             )
             nodes.append(
-                ParagraphNode(text="Módulo de resumen ejecutivo no disponible.")
+                ParagraphNode(text=t("module_exec_summary_unavailable", locale=meta_lang))
             )
 
         #
@@ -382,7 +366,7 @@ class PayloadToASTBridge:
         #
         nodes.append(
             HeadingNode(
-                text="2. Objetivo, Alcance y Marco Metodológico" if meta_lang == "es" else "2. Objective, Scope, and Methodological Framework",
+                text=t("chapter_2_methodology", locale=meta_lang),
                 level=1,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -393,7 +377,7 @@ class PayloadToASTBridge:
             nodes.extend(self._parse_markdown_to_nodes(intro_path, skip_level_1=True))
         else:
             nodes.append(
-                ParagraphNode(text="Módulo de introducción y alcance no disponible.")
+                ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))
             )
 
         # Section 2.3 (Strategic Business Context) has been symmetrically removed from tower-specific reports, as strategic alignment and traceability registry belong exclusively in the Global Consolidated Report, per Gartner standards.
@@ -403,17 +387,14 @@ class PayloadToASTBridge:
         #
         nodes.append(
             HeadingNode(
-                text="3. Diagnóstico Técnico y Análisis Transversal" if meta_lang == "es" else "3. Technical Diagnosis and Cross-Cutting Analysis",
+                text=t("chapter_3_diagnosis_cross_cutting", locale=meta_lang),
                 level=1,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
 
         # 3.0 Direct Introduction (Consulting-grade synthesis)
-        if meta_lang == "es":
-            intro_ch3 = "El siguiente diagnóstico técnico desglosa los hallazgos operativos de la plataforma, contraponiendo las capacidades funcionales establecidas frente a las brechas estructurales que limitan el estado objetivo de la organización:"
-        else:
-            intro_ch3 = "The following technical diagnosis breaks down the operational findings of the platform, contrasting the established functional capabilities against the structural gaps limiting the organization's target state:"
+        intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
@@ -426,7 +407,7 @@ class PayloadToASTBridge:
         #
         nodes.append(
             HeadingNode(
-                text="Evaluación y Madurez Tecnológica" if meta_lang == "es" else "Technology Maturity and Evaluation",
+                text=t("section_evaluation_maturity", locale=meta_lang),
                 level=1,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -435,17 +416,14 @@ class PayloadToASTBridge:
         # 4.1 Global Dashboard
         nodes.append(
             HeadingNode(
-                text=vocab.get("dashboard_title", "Cuadro de Mando de Madurez"),
+                text=t("dashboard_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
         nodes.append(
             ParagraphNode(
-                text=vocab.get(
-                    "dashboard_intro",
-                    "La evaluación integral del estado actual consolida una valoración cuantitativa:",
-                )
+                text=t("dashboard_intro", locale=meta_lang)
             )
         )
 
@@ -456,14 +434,14 @@ class PayloadToASTBridge:
                     TableRowNode(
                         cells=[
                             CellNode(
-                                text=vocab.get("score_lbl", "PUNTUACIÓN AS-IS"),
+                                text=t("score_lbl", locale=meta_lang),
                                 bold=True,
                                 bg_color="0072BC",
                                 text_color_rgb=[255, 255, 255],
                                 align="CENTER",
                             ),
                             CellNode(
-                                text=vocab.get("maturity_lbl", "NIVEL DE MADUREZ"),
+                                text=t("maturity_lbl", locale=meta_lang),
                                 bold=True,
                                 bg_color="0072BC",
                                 text_color_rgb=[255, 255, 255],
@@ -496,7 +474,7 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=5))
         nodes.append(
             ParagraphNode(
-                text="*Escala de Madurez: 1-Inicial | 2-Repetible | 3-Definido | 4-Gestionado | 5-Optimizado*",
+                text=t("maturity_scale_legend", locale=meta_lang),
                 align="CENTER",
                 italic=True,
             )
@@ -504,11 +482,11 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=10))
 
         # Read resilience data.
-        res_reading = vocab.get("resilience_reading", "Lectura de Resiliencia:")
+        res_reading = t("resilience_reading", locale=meta_lang)
         nodes.append(ParagraphNode(text=f"**{res_reading}** {global_reading}"))
         nodes.append(SpacerNode(points=15))
 
-        health_title = "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico" if meta_lang == "es" else "Diagnosis and Performance Matrix by Technology Domain"
+        health_title = t("health_matrix_title", locale=meta_lang)
         nodes.append(
             HeadingNode(
                 text=health_title,
@@ -518,15 +496,15 @@ class PayloadToASTBridge:
         )
         nodes.append(
             ParagraphNode(
-                text="A continuación, se detalla el perfil de desempeño operativo y de gobierno para cada uno de los sub-dominios técnicos evaluados dentro de esta torre:",
+                text=t("maturity_matrix_section_intro", locale=meta_lang),
                 italic=True,
             )
         )
         nodes.append(SpacerNode(points=10))
 
-        col_1_hdr = t("table_header_pillar_capacity", locale=meta_lang, default="Pilar / Capacidad Tecnológica Evaluada")
-        col_2_hdr = t("table_header_score_asis", locale=meta_lang, default="Score AS-IS")
-        col_3_hdr = t("table_header_status_level", locale=meta_lang, default="Estado y Nivel de Desempeño" if meta_lang == "es" else "Performance State and Level")
+        col_1_hdr = t("table_header_pillar_capacity", locale=meta_lang)
+        col_2_hdr = t("table_header_score_asis", locale=meta_lang)
+        col_3_hdr = t("table_header_status_level", locale=meta_lang)
 
         health_rows = [
             TableRowNode(
@@ -544,23 +522,23 @@ class PayloadToASTBridge:
             p_name = p.get("pilar_name", "Pilar")
             p_score = float(p.get("score", 3.0))
             
-            score_formatted = f"{p_score:.2f}".replace(".", ",") if meta_lang == "es" else f"{p_score:.2f}"
+            score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
             
             # Map score to status and color
             if p_score >= 4.20:
-                p_status = "Excelente (A)"
+                p_status = "Excellent (A)"
                 p_bg_color = "D9F2D9"
             elif p_score >= 3.40:
-                p_status = "Estable (B)"
+                p_status = "Stable (B)"
                 p_bg_color = "E2F0D9"
             elif p_score >= 2.60:
-                p_status = "Estandarizado (C)"
+                p_status = "Standardized (C)"
                 p_bg_color = "FFF3CD"
             elif p_score >= 1.80:
-                p_status = "Básico (D)"
+                p_status = "Basic (D)"
                 p_bg_color = "FCE4D6"
             else:
-                p_status = "Crítico (F)"
+                p_status = "Critical (F)"
                 p_bg_color = "F2D9D9"
 
             health_rows.append(
@@ -582,7 +560,7 @@ class PayloadToASTBridge:
         modules_dir = ctx["modules_dir"]
         intel_data = ctx["intel_data"]
         tower_id = ctx["tower_id"]
-        transversal_title = "Análisis Transversal de Deuda Tecnológica y Patrones de Riesgo Estructural" if meta_lang == "es" else "Cross-Cutting Analysis of Technological Debt and Structural Risk Patterns"
+        transversal_title = t("transversal_analysis_title", locale=meta_lang)
         nodes.append(HeadingNode(text=transversal_title, level=2, primary_color_rgb=self.primary_color_rgb))
         trans_path = modules_dir / "05_transversal.md"
         if trans_path.exists():
@@ -615,109 +593,118 @@ class PayloadToASTBridge:
                     # Add heading for Systemic Risk Metrics
                     nodes.append(
                         HeadingNode(
-                            text="Análisis de Interdependencias Tecnológicas y Negocio" if meta_lang == "es" else "Technology and Business Interdependence Analysis",
+                            text=t("section_interdependence_analysis", locale=meta_lang),
                             level=2,
                             primary_color_rgb=self.primary_color_rgb,
                         )
                     )
                     
-                    if meta_lang == "es":
-                        intro_text_inter = (
-                            "La infraestructura tecnológica no opera de manera aislada; un evento en un dominio específico puede "
-                            "propagar riesgos y afectar la continuidad de los servicios de negocio de forma inmediata. Por ello, "
-                            "esta sección conecta el diagnóstico técnico de la plataforma con su impacto estratégico real. Para lograrlo, "
-                            "el motor de evaluación analiza de forma integrada tres dimensiones clave:"
-                        )
-                    else:
-                        intro_text_inter = (
-                            "Technology infrastructure does not operate in isolation; an event in a specific domain can propagate "
-                            "risks and immediately impact business service continuity. Therefore, this section connects the technical "
-                            "diagnosis of the platform with its real strategic impact. To achieve this, the evaluation engine integrates "
-                            "three key dimensions:"
-                        )
-
+                    intro_text_inter = t("interdep_intro_text", locale=meta_lang)
                     nodes.append(ParagraphNode(text=intro_text_inter))
                     
-                    # Add three clear bullet points in AST
-                    if meta_lang == "es":
-                        nodes.append(ParagraphNode(text="Criticidad Operativa y Presión Regulatoria: Determina el nivel de dependencia directa de los procesos de negocio y la exigencia de conformidad legal y normativa (v.g. NIS2, DORA o ISO 27001) sobre este dominio.", style="List Bullet"))
-                        nodes.append(ParagraphNode(text="Viabilidad de la Transformación: Estima la complejidad técnica y facilidad operativa para ejecutar los proyectos del plan de acción propuesto.", style="List Bullet"))
-                        nodes.append(ParagraphNode(text="Propagación Topológica y SPOF: Cuantifica el riesgo de que un incidente crítico se propague en cascada a otras torres y determina si el dominio actúa como un Punto Único de Fallo.", style="List Bullet"))
+                    for b_text in get_localized_list("interdep_key_bullets", locale=meta_lang):
+                        nodes.append(ParagraphNode(text=b_text, style="List Bullet"))
                         
-                        concl_text = "Estos indicadores proporcionan un contexto de decisión cuantitativo y objetivo, permitiendo priorizar las inversiones de transformación en base a su retorno estratégico y resiliencia para la organización:"
-                    else:
-                        nodes.append(ParagraphNode(text="Operational Criticality and Regulatory Pressure: Assesses the level of direct business process dependency and legal compliance requirements (e.g., NIS2, DORA, or ISO 27001) on this domain.", style="List Bullet"))
-                        nodes.append(ParagraphNode(text="Transformation Feasibility: Estimates the technical complexity and operational ease of executing the projects in the proposed action plan.", style="List Bullet"))
-                        nodes.append(ParagraphNode(text="Topological Propagation and SPOF: Quantifies the risk of critical incident cascade propagation to other towers and determines if the domain acts as a Single Point of Failure.", style="List Bullet"))
-                        
-                        concl_text = "These indicators provide an objective, quantitative decision context, allowing strategic investments to be prioritized based on transformation viability and overall resilience:"
+                    concl_text = t("interdep_concl_text", locale=meta_lang)
 
                     nodes.append(ParagraphNode(text=concl_text))
                     nodes.append(SpacerNode(points=10))
 
                     # Build the metrics table
-                    spof_status = "SÍ" if (tower_id == spof_by_cascade or tower_id == spof_by_centrality) else "NO"
-                    spof_status_text = t("interdep_spof_yes", locale=meta_lang, default="YES") if spof_status == "SÍ" else t("interdep_spof_no", locale=meta_lang, default="NO")
+                    is_spof = (tower_id == spof_by_cascade or tower_id == spof_by_centrality)
+                    spof_status = "YES" if is_spof else "NO"
+                    spof_status_text = t("interdep_spof_yes", locale=meta_lang) if is_spof else t("interdep_spof_no", locale=meta_lang)
                     dii_val = f"{dii_03:.1f}%" if dii_03 is not None else "0,0%"
                     erc_val = f"{erc:.3f}" if erc is not None else "0,000"
 
-                    crit_lbl = t("interdep_status_extreme", locale=meta_lang, default="Extreme (Critical Pillar)") if business_criticality >= 80.0 else (t("interdep_status_high", locale=meta_lang, default="High") if business_criticality >= 50.0 else t("interdep_status_medium", locale=meta_lang, default="Medium"))
-                    reg_lbl = t("interdep_status_critical", locale=meta_lang, default="Critical (Strict Regulation)") if regulatory_compliance >= 80.0 else (t("interdep_status_moderate", locale=meta_lang, default="Moderate") if regulatory_compliance >= 50.0 else t("interdep_status_standard", locale=meta_lang, default="Standard"))
-                    viab_lbl = t("interdep_status_viable", locale=meta_lang, default="Feasible") if implementation_feasibility >= 60.0 else t("interdep_status_complex", locale=meta_lang, default="Complex")
-                    dii_lbl = t("interdep_status_stable_diag", locale=meta_lang, default="Stable (Robust Diagnostic)") if (dii_03 or 0) < 15.0 else (t("interdep_status_mod_diag", locale=meta_lang, default="Moderate") if (dii_03 or 0) < 30.0 else t("interdep_status_volatile_diag", locale=meta_lang, default="Volatile"))
-                    erc_lbl = t("interdep_status_high_influence", locale=meta_lang, default="High Influence") if (erc or 0) >= 0.50 else (t("interdep_status_moderate", locale=meta_lang, default="Moderate") if (erc or 0) >= 0.20 else t("interdep_status_low_influence", locale=meta_lang, default="Low / Isolated"))
-                    spof_lbl = t("interdep_status_bottleneck", locale=meta_lang, default="Structural Bottleneck") if spof_status == "SÍ" else t("interdep_status_not_bottleneck", locale=meta_lang, default="Stable in Causal Network")
+                    if business_criticality >= 80.0:
+                        crit_lbl = t("interdep_status_extreme", locale=meta_lang)
+                    elif business_criticality >= 50.0:
+                        crit_lbl = t("interdep_status_high", locale=meta_lang)
+                    else:
+                        crit_lbl = t("interdep_status_medium", locale=meta_lang)
+
+                    if regulatory_compliance >= 80.0:
+                        reg_lbl = t("interdep_status_critical", locale=meta_lang)
+                    elif regulatory_compliance >= 50.0:
+                        reg_lbl = t("interdep_status_moderate", locale=meta_lang)
+                    else:
+                        reg_lbl = t("interdep_status_standard", locale=meta_lang)
+
+                    if implementation_feasibility >= 60.0:
+                        viab_lbl = t("interdep_status_viable", locale=meta_lang)
+                    else:
+                        viab_lbl = t("interdep_status_complex", locale=meta_lang)
+
+                    if (dii_03 or 0) < 15.0:
+                        dii_lbl = t("interdep_status_stable_diag", locale=meta_lang)
+                    elif (dii_03 or 0) < 30.0:
+                        dii_lbl = t("interdep_status_mod_diag", locale=meta_lang)
+                    else:
+                        dii_lbl = t("interdep_status_volatile_diag", locale=meta_lang)
+
+                    if (erc or 0) >= 0.50:
+                        erc_lbl = t("interdep_status_high_influence", locale=meta_lang)
+                    elif (erc or 0) >= 0.20:
+                        erc_lbl = t("interdep_status_moderate", locale=meta_lang)
+                    else:
+                        erc_lbl = t("interdep_status_low_influence", locale=meta_lang)
+
+                    if is_spof:
+                        spof_lbl = t("interdep_status_bottleneck", locale=meta_lang)
+                    else:
+                        spof_lbl = t("interdep_status_not_bottleneck", locale=meta_lang)
 
                     nodes.append(
                         TableNode(
                             rows=[
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_header_indicator", locale=meta_lang, default="Strategic Indicator"), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255]),
-                                        CellNode(text=t("interdep_header_value", locale=meta_lang, default="Metric / Score"), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
-                                        CellNode(text=t("interdep_header_status", locale=meta_lang, default="State and Classification"), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
+                                        CellNode(text=t("interdep_header_indicator", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255]),
+                                        CellNode(text=t("interdep_header_value", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
+                                        CellNode(text=t("interdep_header_status", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
                                     ],
                                     is_header=True,
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_business_criticality_title", locale=meta_lang, default="Business Criticality (MCDA)")),
+                                        CellNode(text=t("interdep_business_criticality_title", locale=meta_lang)),
                                         CellNode(text=f"{business_criticality:.1f}%", align="CENTER"),
                                         CellNode(text=crit_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_reg_pressure_title", locale=meta_lang, default="Regulatory Pressure (MCDA)")),
+                                        CellNode(text=t("interdep_reg_pressure_title", locale=meta_lang)),
                                         CellNode(text=f"{regulatory_compliance:.1f}%", align="CENTER"),
                                         CellNode(text=reg_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_op_viability_title", locale=meta_lang, default="Operational Feasibility (MCDA)")),
+                                        CellNode(text=t("interdep_op_viability_title", locale=meta_lang)),
                                         CellNode(text=f"{implementation_feasibility:.1f}%", align="CENTER"),
                                         CellNode(text=viab_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_dii_title", locale=meta_lang, default="Diagnostic Consistency (DII)")),
+                                        CellNode(text=t("interdep_dii_title", locale=meta_lang)),
                                         CellNode(text=dii_val, align="CENTER"),
                                         CellNode(text=dii_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_erc_title", locale=meta_lang, default="Cascading Fault Propagation (ERC)")),
+                                        CellNode(text=t("interdep_erc_title", locale=meta_lang)),
                                         CellNode(text=erc_val, align="CENTER"),
                                         CellNode(text=erc_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text=t("interdep_spof_title", locale=meta_lang, default="Single Point of Failure (SPOF)")),
-                                        CellNode(text=spof_status_text, bold=True, align="CENTER", bg_color="F2D9D9" if spof_status == "SÍ" else "D9F2D9"),
+                                        CellNode(text=t("interdep_spof_title", locale=meta_lang)),
+                                        CellNode(text=spof_status_text, bold=True, align="CENTER", bg_color="F2D9D9" if is_spof else "D9F2D9"),
                                         CellNode(text=spof_lbl, align="CENTER"),
                                     ]
                                 ),
@@ -727,22 +714,29 @@ class PayloadToASTBridge:
                     nodes.append(SpacerNode(points=10))
 
                     # Add Glossary / Legend
-                    nodes.append(ParagraphNode(text="**Análisis Ejecutivo de Indicadores de Interdependencia:**", bold=True))
-                    
-                    nodes.append(_build_criticality_bullet(business_criticality))
-                    nodes.append(_build_regulatory_bullet(regulatory_compliance))
-                    nodes.append(_build_feasibility_bullet(implementation_feasibility))
+                    legend_title = t("interdep_gloss_title", locale=meta_lang)
+                    nodes.append(ParagraphNode(text=f"**{legend_title}**", bold=True))
+
+                    nodes.append(_build_criticality_bullet(business_criticality, locale=meta_lang))
+                    nodes.append(_build_regulatory_bullet(regulatory_compliance, locale=meta_lang))
+                    nodes.append(_build_feasibility_bullet(implementation_feasibility, locale=meta_lang))
                     dii_pct = dii_03 if dii_03 is not None else 0.0
-                    nodes.append(_build_dii_bullet(dii_pct))
+                    nodes.append(_build_dii_bullet(dii_pct, locale=meta_lang))
                     erc_val_num = erc if erc is not None else 0.0
-                    nodes.append(_build_erc_bullet(erc_val_num))
-                    nodes.append(_build_spof_bullet(spof_status))
+                    nodes.append(_build_erc_bullet(erc_val_num, locale=meta_lang))
+                    nodes.append(_build_spof_bullet(spof_status, locale=meta_lang))
                     nodes.append(SpacerNode(points=20))
             except Exception as e:
                 logger.info(f"⚠️ Error injecting systemic risk metrics in AST Bridge: {e}")
 
 
     def _build_maturity_and_benchmarks(self, ctx: dict[str, Any], nodes: List[Any]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        from assessment_engine.infrastructure.localization import (
+            format_number,
+            get_localized_list,
+            t,
+        )
+
         vocab = ctx["vocab"]
         gs_val = ctx["gs_val"]
         case_dir = ctx["case_dir"]
@@ -757,7 +751,7 @@ class PayloadToASTBridge:
         # 4.2 Radar Chart
         nodes.append(
             HeadingNode(
-                text=vocab.get("radar_title", "Análisis Comparativo de Madurez por Pilar"),
+                text=t("radar_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -788,37 +782,40 @@ class PayloadToASTBridge:
                     if valid_snapshots:
                         nodes.append(
                             HeadingNode(
-                                text="Justificación de Estándares Sectoriales (Trazabilidad RAGE)",
+                                text=t("rage_traceability_heading", locale=meta_lang),
                                 level=2,
                                 primary_color_rgb=self.primary_color_rgb,
                             )
                         )
-                        intro_text = (
-                            "Los estándares de mercado del gráfico radial anterior se han calibrado y verificado en tiempo "
-                            "de ejecución mediante el motor RAGE (Runtime Agentic Grounding & Evaluation). Cada benchmark "
-                            "está respaldado por evidencias factoperativas y copias de seguridad de documentos oficiales:"
-                        )
+                        intro_text = t("rage_traceability_intro", locale=meta_lang)
                         nodes.append(ParagraphNode(text=intro_text))
                         nodes.append(SpacerNode(points=10))
 
                         for t_id, t_snap in valid_snapshots:
                             framework_name = t_snap.get(
-                                "framework_name", "Estándar Sectorial"
+                                "framework_name",
+                                t("rage_framework_fallback", locale=meta_lang),
                             )
                             score = t_snap.get("dynamic_score", 4.0)
                             quote = t_snap.get("evidence_quote", "")
                             url = t_snap.get("evidence_source_url", "")
                             local_path = t_snap.get("local_snapshot_path", "")
 
-                            header_p = f"**Torre {t_id} ({framework_name}) - Estándar: {score:,.1f}**"
+                            header_p = t(
+                                "rage_tower_header",
+                                locale=meta_lang,
+                                tower_id=t_id,
+                                framework_name=framework_name,
+                                score=f"{score:,.1f}",
+                            )
                             nodes.append(ParagraphNode(text=header_p))
 
-                            quote_p = f'*✓ Evidencia extraída:* "{quote}"'
+                            quote_p = t("rage_evidence_extracted", locale=meta_lang, quote=quote)
                             nodes.append(ParagraphNode(text=quote_p))
 
-                            source_p = f"*Referencia:* {url}"
+                            source_p = t("rage_reference_source", locale=meta_lang, url=url)
                             if local_path:
-                                    source_p += f" | *Bóveda local:* `{local_path}`"
+                                source_p += t("rage_local_vault", locale=meta_lang, local_path=local_path)
                             nodes.append(ParagraphNode(text=source_p))
                             nodes.append(SpacerNode(points=10))
             except Exception as ex:
@@ -828,11 +825,7 @@ class PayloadToASTBridge:
         csv_mat_path = modules_dir / "04_matriz_madurez.csv"
         if csv_mat_path.exists():
             # Ensure header collections are not empty to prevent the generation of malformed tables.
-            mat_headers = vocab.get("justification_table_headers") or [
-                "Pilar / Capacidad Tecnológica Evaluada",
-                "Score AS-IS",
-                "Análisis de Brechas y Calibración del Diagnóstico",
-            ]
+            mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
             nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers))
 
         nodes.append(PageBreakNode())
@@ -842,7 +835,7 @@ class PayloadToASTBridge:
         #
         nodes.append(
             HeadingNode(
-                text="4. Exposición Financiera al Riesgo y Resiliencia Operativa" if meta_lang == "es" else "4. Financial Risk Exposure and Operational Resilience",
+                text=t("chapter_4_fair_resilience", locale=meta_lang),
                 level=1,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -862,7 +855,7 @@ class PayloadToASTBridge:
                         }
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
         # Read the CSV risks first so we have the data for the executive overview
         csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
@@ -896,12 +889,7 @@ class PayloadToASTBridge:
                         }
                         risks_data_list.append(r_item)
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
-
-        from assessment_engine.infrastructure.localization import (
-            format_number,
-        )
+                logger.debug(f"[Fallback] Handled exception: {ex}")
 
         formatted_ale = format_number(
             total_fair_ale, locale=meta_lang, decimals=0
@@ -930,25 +918,35 @@ class PayloadToASTBridge:
                 highest_risk_ale, locale=meta_lang, decimals=0
             )
             
-            executive_risk_summary = (
-                f"**Resumen Ejecutivo de Exposición al Riesgo (FAIR):**\n"
-                f"El análisis cuantitativo de riesgos de la plataforma de la torre identifica una exposición financiera agregada (Expectativa de Pérdida Anualizada - ALE) de **{formatted_ale} {currency}**. "
-                f"Esta cifra representa el impacto económico estimado al que se enfrenta **{client_name}** de forma anualizada debido a ineficiencias de continuidad, dependencias de soporte manual y vulnerabilidades operativas no mitigadas exclusivamente dentro de este perímetro tecnológico.\n\n"
-                f"De los **{len(risks_data_list)}** riesgos registrados, la mayor concentración de pérdidas se localiza en el pilar de **{highest_pilar}** (con una exposición de **{formatted_pilar_ale} {currency}**), impulsada principalmente por la inmadurez en **{highest_risk_cap}** (Riesgo **{highest_risk_id}** con **{formatted_risk_ale} {currency}**), la cual acumula por sí sola el **{highest_risk_pct:.1f}%** de la exposición global de la torre."
+            executive_risk_summary = t(
+                "fair_risk_summary_detailed",
+                locale=meta_lang,
+                formatted_ale=formatted_ale,
+                currency=currency,
+                client_name=client_name,
+                num_risks=len(risks_data_list),
+                highest_pilar=highest_pilar,
+                formatted_pilar_ale=formatted_pilar_ale,
+                highest_risk_cap=highest_risk_cap,
+                highest_risk_id=highest_risk_id,
+                formatted_risk_ale=formatted_risk_ale,
+                highest_risk_pct=highest_risk_pct,
             )
         else:
-            executive_risk_summary = (
-                f"**Resumen Ejecutivo de Exposición al Riesgo (FAIR):**\n"
-                f"La evaluación de riesgos financieros mediante simulación probabilística estima una exposición anualizada al riesgo de **{formatted_ale} {currency}** para **{client_name}**. "
-                f"Esta cifra representa el impacto económico potencial por ineficiencias o brechas operativas detectadas exclusivamente en el perímetro de esta torre."
+            executive_risk_summary = t(
+                "fair_risk_summary_basic",
+                locale=meta_lang,
+                formatted_ale=formatted_ale,
+                currency=currency,
+                client_name=client_name,
             )
 
         nodes.append(ParagraphNode(text=executive_risk_summary))
 
-        # Insert an inline executive methodological note referencing Appendix D.
+        # Insert an inline executive methodological note referencing Appendix A.
         nodes.append(
             ParagraphNode(
-                text="**Nota Metodológica:** Para garantizar el máximo rigor directivo, la estimación del riesgo anualizado proyectado (ALE) y la priorización de vulnerabilidades técnicas en este informe se basan estrictamente en el estándar internacional **O-FAIR** y en simulaciones actuariales probabilísticas de Monte Carlo. Esto permite cuantificar con transparencia la exposición al riesgo en términos financieros reales del negocio. La explicación técnica, parámetros de calibración de pérdidas y las fórmulas estadísticas aplicadas se detallan en el **Apéndice D** de este reporte.",
+                text=t("fair_methodology_note", locale=meta_lang),
                 italic=True,
                 space_after=12,
             )
@@ -968,10 +966,7 @@ class PayloadToASTBridge:
         # 5.1 Generate 5x5 Heatmap (Word-native mosaic)
         nodes.append(
             HeadingNode(
-                text=vocab.get(
-                    "exposure_summary_title",
-                    "Exposición financiera y Mapa de Calor de Riesgo",
-                ),
+                text=t("exposure_summary_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -982,7 +977,7 @@ class PayloadToASTBridge:
         # 5.2 Methodological Legends (TEF & LM Scales)
         nodes.append(
             HeadingNode(
-                text="Leyendas Metodológicas",
+                text=t("methodological_legends_title", locale=meta_lang),
                 level=3,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -990,9 +985,7 @@ class PayloadToASTBridge:
 
         nodes.append(
             HeadingNode(
-                text=vocab.get(
-                    "tef_title", "Criterios de Frecuencia de la Amenaza (TEF)"
-                ),
+                text=t("tef_title", locale=meta_lang),
                 level=4,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -1002,7 +995,7 @@ class PayloadToASTBridge:
 
         nodes.append(
             HeadingNode(
-                text=vocab.get("lm_title", "Criterios de Magnitud de Pérdidas (LM)"),
+                text=t("lm_title", locale=meta_lang),
                 level=4,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -1013,7 +1006,7 @@ class PayloadToASTBridge:
         if is_critical:
             nodes.append(
                 ParagraphNode(
-                    text="*Nota de Calibración de Sector:* Este rango de pérdidas (LM 5) está estrictamente alineado con el estudio de referencia mundial **ITIC Global Server Hardware Downtime Report**, el cual determina que para el 98% de los operadores de infraestructuras críticas y grandes corporaciones, el coste de una sola hora de indisponibilidad de sistemas core supera el millón de euros debido a la interrupción de procesos, penalizaciones por acuerdos de nivel de servicio (SLA) y remediación forense urgente.",
+                    text=t("sector_calibration_note", locale=meta_lang),
                     italic=True,
                     space_after=12,
                 )
@@ -1032,10 +1025,7 @@ class PayloadToASTBridge:
         if risks_data_list:
             nodes.append(
                 HeadingNode(
-                    text=vocab.get(
-                        "detailed_risks_title",
-                        "Registro Detallado de Hallazgos Forenses",
-                    ),
+                    text=t("detailed_risks_title", locale=meta_lang),
                     level=2,
                     primary_color_rgb=self.primary_color_rgb,
                 )
@@ -1055,12 +1045,7 @@ class PayloadToASTBridge:
                 if not pilar_risks_filtered:
                     continue
 
-                pilar_header = (
-                    vocab.get(
-                        "detailed_risks_pilar_title", "Análisis de Vulnerabilidades: "
-                    )
-                    + p_name
-                )
+                pilar_header = t("detailed_risks_pilar_title", locale=meta_lang) + p_name
                 nodes.append(
                     HeadingNode(
                         text=pilar_header,
@@ -1069,11 +1054,7 @@ class PayloadToASTBridge:
                     )
                 )
 
-                headers_table = vocab.get("detailed_risks_headers") or [
-                    "ID",
-                    "Vulnerabilidad y Evidencias",
-                    "Exposición y Riesgo",
-                ]
+                headers_table = get_localized_list("detailed_risks_headers", locale=meta_lang)
                 risk_rows = [
                     TableRowNode(
                         cells=[
@@ -1107,14 +1088,11 @@ class PayloadToASTBridge:
                         elif ev_clean[:35].lower() == find_clean[:35].lower() or ev_clean[-35:].lower() == find_clean[-35:].lower():
                             is_redundant = True
 
-                    from assessment_engine.infrastructure.localization import (
-                        apply_vocabulary_substitutions,
-                        format_number,
-                    )
-
+                    v_lbl = t("vulnerability_identified_label", locale=meta_lang)
+                    imp_lbl = t("it_operational_impact_label", locale=meta_lang)
                     desc_raw = (
-                        f"**Vulnerabilidad Identificada:**\n{find_clean}\n\n"
-                        f"**Impacto de TI / Operativo:**\n{hc['business_risk']}"
+                        f"**{v_lbl}**\n{find_clean}\n\n"
+                        f"**{imp_lbl}**\n{hc['business_risk']}"
                     )
                     desc_text = apply_vocabulary_substitutions(
                         desc_raw, locale=meta_lang
@@ -1149,13 +1127,13 @@ class PayloadToASTBridge:
                     bg_severe = bg
                     if ale and ale > 0:
                         calc_txt = (
-                            f"**Exposición Cuantitativa (FAIR):**\n"
-                            f"• Frecuencia (TEF): {tef:.1f} / 5,0\n"
-                            f"• Magnitud (LM): {lm:.1f} / 5,0\n\n"
-                            f"**Exposición Financiera Proyectada:**\n"
-                            f"• Pérdida Anualizada (ALE): **{formatted_ale_item} {currency}**\n"
-                            f"• Peor Caso (P90): {formatted_p90} {currency}\n"
-                            f"• Rango Probabilístico: {formatted_min} {currency} a {formatted_max} {currency}"
+                            f"**{t('calc_quant_exposure_title', locale=meta_lang)}**\n"
+                            f"• {t('calc_tef_lbl', locale=meta_lang)}: {tef:.1f} / 5.0\n"
+                            f"• {t('calc_lm_lbl', locale=meta_lang)}: {lm:.1f} / 5.0\n\n"
+                            f"**{t('calc_projected_exposure_title', locale=meta_lang)}**\n"
+                            f"• {t('calc_ale_lbl', locale=meta_lang)}: **{formatted_ale_item} {currency}**\n"
+                            f"• {t('calc_worst_case_lbl', locale=meta_lang)}: {formatted_p90} {currency}\n"
+                            f"• {t('calc_loss_range_lbl', locale=meta_lang)}: {formatted_min} {currency} - {formatted_max} {currency}"
                         )
 
                         risk_score = tef * lm
@@ -1205,19 +1183,23 @@ class PayloadToASTBridge:
         )
 
     def _build_conclusions_chapter(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        from assessment_engine.infrastructure.localization import t
+
         blueprint_data = ctx["blueprint_data"]
         client_name = ctx["client_name"]
         modules_dir = ctx["modules_dir"]
+        meta_lang = ctx["meta_lang"]
         # 5.1 Transformation Paradigm (Promoted here from Chapter 4 as it represents a TO-BE vision)
         nodes.append(
             HeadingNode(
-                text="El Paradigma de Transformación: Platform as a Product",
+                text=t("transformation_paradigm_heading", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
         cca_data = blueprint_data.get("cross_capabilities_analysis", {}) if isinstance(blueprint_data, dict) else {}
-        paradigm_text = cca_data.get("transformation_paradigm", "No definido.") if isinstance(cca_data, dict) else "No definido."
+        not_def_lbl = t("lbl_not_defined", locale=meta_lang)
+        paradigm_text = cca_data.get("transformation_paradigm", not_def_lbl) if isinstance(cca_data, dict) else not_def_lbl
         nodes.append(ParagraphNode(text=paradigm_text, italic=True))
         nodes.append(SpacerNode(points=15))
 
@@ -1245,13 +1227,9 @@ class PayloadToASTBridge:
                 continue
 
             # Sanitization: Replace non-standard vocabulary with canonical terms
-            from assessment_engine.infrastructure.localization import (
-                apply_vocabulary_substitutions,
-            )
-
             if isinstance(cleaned, str):
                 cleaned = apply_vocabulary_substitutions(
-                    cleaned, locale=getattr(self, "meta_lang", "es")
+                    cleaned, locale=getattr(self, "meta_lang", "en")
                 )
 
             # Exclude special markers for table and mosaic directives from the content processing stream.
@@ -1376,23 +1354,21 @@ class PayloadToASTBridge:
                     
                     val_str = str(val)
                     if isinstance(val_str, str):
-                        from assessment_engine.infrastructure.localization import (
-                            apply_vocabulary_substitutions,
-                        )
-
+                        meta_l = getattr(self, "meta_lang", "en")
                         val_str = apply_vocabulary_substitutions(
-                            val_str, locale=getattr(self, "meta_lang", "es")
+                            val_str, locale=meta_l
                         )
 
                     if c_idx == 2:
+                        just_hdr = t("asis_header_score_justification", locale=getattr(self, "meta_lang", "en"))
                         val_str = re.sub(
-                            r"\*\*Justificación de la Nota\s*\(\d+[,.]\d+\):\*\*",
-                            "**Justificación de la Nota:**",
+                            r"\*\*.*?(?:Nota|Score|Evaluation)\s*\(\d+[,.]\d+\):\*\*",
+                            f"**{just_hdr}**",
                             val_str
                         )
                         val_str = re.sub(
-                            r"Justificación de la Nota\s*\(\d+[,.]\d+\):",
-                            "Justificación de la Nota:",
+                            r".*?(?:Nota|Score|Evaluation)\s*\(\d+[,.]\d+\):",
+                            just_hdr,
                             val_str
                         )
                         

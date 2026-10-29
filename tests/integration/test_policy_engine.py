@@ -21,6 +21,7 @@ def test_sovereign_policy_engine_compilation():
                 "client_name": "REDEIA",
                 "tower_code": "T2",
                 "tower_name": "Hybrid Compute & Platforms",
+                "language": "es",
             },
             "pillars_analysis": [
                 {

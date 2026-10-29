@@ -93,3 +93,172 @@ def test_no_spanish_in_yaml_prompts_registry() -> None:
     assert not violations, f"Found Spanish sentences in YAML prompts:\n" + "\n".join(violations)
 
 
+def test_no_inline_language_ternaries_in_document_adapters() -> None:
+    """ASSERTS that core document adapters contain zero inline language conditionals or ternaries."""
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine" / "adapters"
+    cleansed_files = [
+        "render_tower_blueprint.py",
+        "render_commercial_report.py",
+        "render_global_report_from_template.py",
+        "render_tower_annex_from_template.py",
+        "compilers/ast_table_builders.py",
+        "compilers/payload_to_ast.py",
+        "compilers/asis_fair_chapter.py",
+        "compilers/asis_appendices_chapter.py",
+        "compilers/asis_conclusions_chapter.py",
+        "compilers/asis_maturity_chapter.py",
+        "compile_asis_docx_from_modules.py",
+        "generate_asis_markdown_modules.py",
+    ]
+    banned_patterns = [
+        re.compile(r"\b(doc_lang|lang|meta_lang)\s*==\s*[\"'][a-zA-Z_\-]+[\"']"),
+        re.compile(r"if\s+.*?(doc_lang|lang|meta_lang)\b.*?else"),
+    ]
+
+    violations = []
+    for rel_path in cleansed_files:
+        p = root / rel_path
+        if not p.exists():
+            continue
+        text = p.read_text(encoding="utf-8")
+        for idx, line in enumerate(text.splitlines(), start=1):
+            sline = line.strip()
+            if sline.startswith("#"):
+                continue
+            for pat in banned_patterns:
+                if pat.search(sline):
+                    violations.append(f"{rel_path}:L{idx} -> {sline}")
+
+    assert not violations, f"Found inline language conditionals in document adapters:\n" + "\n".join(violations)
+
+
+def test_no_optional_language_defaults_in_adapters() -> None:
+    """Quality Gate AST: Verify no adapter or compiler function defines optional default language parameters."""
+    import ast
+
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine"
+    violations = []
+
+    for rel_dir in ["adapters", "adapters/compilers"]:
+        target_dir = root / rel_dir
+        if not target_dir.exists():
+            continue
+        for p in target_dir.glob("*.py"):
+            try:
+                tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+            except Exception:
+                continue
+
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    args = node.args.args
+                    defaults = node.args.defaults
+                    num_defaults = len(defaults)
+                    if num_defaults > 0:
+                        default_args = args[-num_defaults:]
+                        for arg, default in zip(default_args, defaults):
+                            if arg.arg in ("doc_lang", "lang", "locale", "meta_lang", "target_lang"):
+                                if isinstance(default, ast.Constant) and isinstance(default.value, str):
+                                    rel_path = p.relative_to(root)
+                                    violations.append(
+                                        f"{rel_path}:{node.lineno} -> def {node.name}(..., {arg.arg} = '{default.value}')"
+                                    )
+
+    assert not violations, (
+        f"Found forbidden optional language defaults in adapters/compilers (language must be mandatory):\n"
+        + "\n".join(violations)
+    )
+
+
+def test_no_default_string_literals_in_translation_calls() -> None:
+    """Quality Gate AST: Verify no t() or get_localized_string() call defines hardcoded default strings."""
+    import ast
+
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine"
+    violations = []
+
+    for p in root.rglob("*.py"):
+        try:
+            tree = ast.parse(p.read_text(encoding="utf-8"), filename=str(p))
+        except Exception:
+            continue
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                func_name = ""
+                if isinstance(node.func, ast.Name):
+                    func_name = node.func.id
+                elif isinstance(node.func, ast.Attribute):
+                    func_name = node.func.attr
+
+                if func_name in ("t", "get_localized_string"):
+                    for kw in node.keywords:
+                        if kw.arg == "default" and isinstance(kw.value, (ast.Constant, ast.JoinedStr)):
+                            rel_path = p.relative_to(root)
+                            violations.append(
+                                f"{rel_path}:{node.lineno} -> {func_name}(..., default=...)"
+                            )
+
+    assert not violations, (
+        f"Found forbidden hardcoded string defaults in translation calls (truth must reside in locales.json):\n"
+        + "\n".join(violations)
+    )
+
+
+def test_no_hardcoded_locale_es_in_src() -> None:
+    """ASSERTS that zero Python files in src/assessment_engine hardcode fallback to 'es'."""
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine"
+    pat = re.compile(
+        r"""(?:locale|doc_lang|language)\s*[:=]\s*["']es["']|or\s+["']es["']|default\s*=\s*["']es["']|Field\(["']es["']"""
+    )
+    violations = []
+    for p in root.rglob("*.py"):
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        for idx, line in enumerate(text.splitlines(), start=1):
+            sline = line.strip()
+            if not (sline.startswith("#") or sline.startswith('"""') or sline.startswith("'''")):
+                if pat.search(sline):
+                    violations.append(f"{p.relative_to(root)}:L{idx} -> {sline}")
+
+    assert not violations, (
+        f"Found hardcoded 'es' fallback in src/assessment_engine (must default to 'en' or use variable):\n"
+        + "\n".join(violations)
+    )
+
+
+def test_no_spanish_characters_in_python_code() -> None:
+    """ASSERTS that production code in src/assessment_engine contains zero Spanish accented characters."""
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine"
+    spanish_accents = re.compile(r"[áéíóúñÁÉÍÓÚÑ¿¡]")
+    
+    # Exclude files where Spanish accents are intentional probe regexes, regional formatters, or legacy maturity bands
+    whitelisted_files = {
+        "comment_quality.py",
+        "localization.py",
+        "enforce_english_comments.py",
+        "code_hygiene.py",
+        "maturity_band.py",
+    }
+
+    violations = []
+    for p in root.rglob("*.py"):
+        if p.name in whitelisted_files:
+            continue
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        for idx, line in enumerate(text.splitlines(), start=1):
+            sline = line.strip()
+            if sline.startswith("#") or sline.startswith('"""') or sline.startswith("'''"):
+                continue
+            if spanish_accents.search(sline):
+                # Ignore character-set regexes like [áéíóúñ]
+                if not ("[áéíóúñ" in sline or "a-zá" in sline or "a-zà" in sline):
+                    violations.append(f"{p.relative_to(root)}:L{idx} -> {sline}")
+
+    assert not violations, (
+        f"Found Spanish accented characters in Python production code:\n"
+        + "\n".join(violations)
+    )
+
+
+
+

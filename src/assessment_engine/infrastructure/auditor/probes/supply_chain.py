@@ -99,8 +99,8 @@ def _parse_requirements_file(req_file: Path) -> tuple[int, int, list[dict[str, A
                 file_path="requirements.txt",
                 line_number=line_idx,
                 rule_id="SCA-UNPINNED-DEP",
-                message=f"Dependencia sin versión fija: '{line_str}'",
-                recommendation="Fijar versión exacta con '==' para garantizar reproducibilidad y evitar ataques de sustitución."
+                message=f"Unpinned dependency: '{line_str}'",
+                recommendation="Pin exact version with '==' to ensure deterministic reproducibility."
             ))
 
     return deps_count, pinned_count, components, osv_queries, findings
@@ -139,7 +139,7 @@ def _parse_package_json_file(pkg_file: Path, target_dir: Path) -> tuple[int, int
                     line_number=None,
                     rule_id="SCA-LOOSE-SEMVER",
                     message=f"Dependencia npm '{dep_name}' usa rango flotante '{version}'",
-                    recommendation="Usar pnpm-lock.yaml o fijar versión exacta para compilaciones reproducibles."
+                    recommendation="Use pnpm-lock.yaml or pin exact versions for reproducible builds."
                 ))
     except (json.JSONDecodeError, OSError):
         pass
@@ -217,7 +217,7 @@ def _check_osv_vulnerabilities(osv_queries: list[dict[str, Any]]) -> tuple[int, 
                     line_number=None,
                     rule_id=f"SCA-{vuln_id}",
                     message=f"Vulnerabilidad conocida en {p_name}=={p_ver}: {summary} ({aliases})",
-                    recommendation=f"Actualizar {p_name} a una versión parcheada según el aviso {vuln_id}."
+                    recommendation=f"Upgrade {p_name} to patched version according to advisory {vuln_id}."
                 ))
     return known_cves_count, findings
 

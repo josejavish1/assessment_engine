@@ -298,7 +298,7 @@ class EpistemicGraph:
         if not truth:
             return ""
 
-        lines = ["=== CONTEXTO ESTRATÉGICO RESOLVIDO (ABSOLUTE GROUND TRUTH) ==="]
+        lines = ["=== RESOLVED STRATEGIC CONTEXT (ABSOLUTE GROUND TRUTH) ==="]
         for subj, predicates in truth.items():
             lines.append(f"ENTIDAD: {subj}")
             for pred, data_raw in predicates.items():

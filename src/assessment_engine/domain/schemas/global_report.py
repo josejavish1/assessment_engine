@@ -154,7 +154,17 @@ class EvolutionPrinciple(BaseModel):
     """Represents a single evolution principle, containing its title and description."""
 
     principle: str
-    description: str
+    description: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_string_or_dict(cls, data: Any) -> Any:
+        if isinstance(data, str):
+            parts = data.split(":", 1)
+            if len(parts) == 2:
+                return {"principle": parts[0].strip(), "description": parts[1].strip()}
+            return {"principle": data.strip(), "description": ""}
+        return data
 
 
 class StrategicPillar(BaseModel):
@@ -170,7 +180,17 @@ class StrategicPillar(BaseModel):
     """
 
     pillar: str
-    description: str
+    description: str = ""
+
+    @model_validator(mode="before")
+    @classmethod
+    def parse_string_or_dict(cls, data: Any) -> Any:
+        if isinstance(data, str):
+            parts = data.split(":", 1)
+            if len(parts) == 2:
+                return {"pillar": parts[0].strip(), "description": parts[1].strip()}
+            return {"pillar": data.strip(), "description": ""}
+        return data
 
 
 class TargetVisionDraft(BaseModel):

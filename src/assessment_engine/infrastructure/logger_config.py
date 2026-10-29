@@ -2,13 +2,13 @@ from typing import Any
 
 # golden-path: ignore
 """
-Configuración centralizada de Logging Estructurado (JSON)
+Centralized Structured Logging Configuration (JSON)
 
-Este módulo configura la librería estándar de logging para que
-escupa logs en formato JSON. Esta es la base para la observabilidad
-"Zero-Code" en entornos como Google Cloud Ops Agent, ya que permite
-la correlación automática con trazas (ej. trace_id) y la indexación nativa
-sin requerir librerías de OpenTelemetry en el código de negocio.
+Configures Python standard logging library to output structured logs
+outputs structured JSON logs. Foundation for Zero-Code observability
+in enterprise cloud monitoring environments, enabling automated trace correlation.
+with automatic trace correlation (e.g. trace_id) and native indexing
+without requiring OpenTelemetry dependencies in business logic.
 """
 
 import logging
@@ -53,7 +53,7 @@ def setup_structured_logging(level=logging.INFO) -> Any:
         # Provides a fallback processor for environments where the `opentelemetry-api` package is not installed.
         # This is necessary for local testing or in environments where OpenTelemetry is not configured or instrumentation is disabled.
         logging.basicConfig(level=level)
-        logging.warning("python-json-logger no encontrado. Usando formato estándar.")
+        logging.warning("python-json-logger not found. Using standard formatter.")
         return
 
     # Defines the standard field set to be included in every structured log record, establishing a consistent log schema.

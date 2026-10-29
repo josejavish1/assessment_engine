@@ -63,67 +63,73 @@ async def call_commercial_agent(
         )
         return result
     except Exception as e:
-        print(f"Error parseando sección de {agent_role}: {e}")
+        print(f"Error parsing section for {agent_role}: {e}")
         return {}
 
 
 async def build_proactive_proposal(
-    model_name, opp, payload_str, client_name, target_language="Spanish"
+    model_name, opp, payload_str, client_name, target_language="English"
 ):
-    """Asynchronously orchestrates multiple AI agents to generate a commercial proposal."""
-    opp_name = opp.get("initiative", "Iniciativa Estratégica")
+    """Asynchronously orchestrates multiple AI agents to generate a commercial proposal in parallel."""
+    opp_name = opp.get("initiative", "Strategic Initiative")
     print(
-        f"    -> 🟢 Agente A1 (Engagement Manager): Contexto y Valor para '{opp_name}'..."
+        f"    -> 🚀 Orchestrating agents (A1, A2, A3, A4) in parallel for '{opp_name}'..."
     )
-    ag1 = await call_commercial_agent(
+
+    from assessment_engine.infrastructure.config_loader import (
+        get_consultant_company_name,
+    )
+
+    company = get_consultant_company_name()
+
+    t_ag1 = call_commercial_agent(
         model_name,
         "ENGAGEMENT MANAGER",
-        f"Genera el contexto y visión para la oportunidad '{opp_name}'.",
+        f"Generate executive context and vision for opportunity '{opp_name}'.",
         payload_str,
         EngagementManagerOutput,
         client_name,
         target_language=target_language,
     )
-
-    print(
-        f"    -> 🔵 Agente A2 (Lead Solutions Architect): Alcance Técnico para '{opp_name}'..."
-    )
-    ag2 = await call_commercial_agent(
+    t_ag2 = call_commercial_agent(
         model_name,
         "LEAD SOLUTIONS ARCHITECT",
-        f"Genera el alcance y equipo de delivery para la oportunidad '{opp_name}'.",
+        f"Generate delivery scope and required engineering team for opportunity '{opp_name}'.",
         payload_str,
         LeadSolutionsArchitectOutput,
         client_name,
         target_language=target_language,
     )
-
-    print(
-        f"    -> 🟠 Agente A3 (Delivery & Risk Director): Gobierno y Riesgos para '{opp_name}'..."
-    )
-    ag3 = await call_commercial_agent(
+    t_ag3 = call_commercial_agent(
         model_name,
         "DELIVERY & RISK DIRECTOR",
-        f"Genera el modelo de gobierno, asunciones y riesgos para la oportunidad '{opp_name}'.",
+        f"Generate governance model, critical assumptions, and risk matrix for opportunity '{opp_name}'.",
         payload_str,
         DeliveryAndRiskDirectorOutput,
         client_name,
         target_language=target_language,
     )
-
-    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
-    company = get_consultant_company_name()
-
-    print(f"    -> 🔴 Agente A4 (Sales Partner): Pitch Final para '{opp_name}'...")
-    ag4 = await call_commercial_agent(
+    t_ag4 = call_commercial_agent(
         model_name,
         "SALES PARTNER",
-        f"Genera los diferenciadores de {company} y el timeline de inversión para la oportunidad '{opp_name}'.",
+        f"Generate {company} differentiators and investment timeline for opportunity '{opp_name}'.",
         payload_str,
         SalesPartnerOutput,
         client_name,
         target_language=target_language,
     )
+
+    ag1, ag2, ag3, ag4 = await asyncio.gather(t_ag1, t_ag2, t_ag3, t_ag4)
+
+    why_data = ag4.get("why_partner") or ag4.get("why_ntt_data") or {}
+    if not isinstance(why_data, dict):
+        why_data = {}
+    if not why_data.get("accelerators"):
+        why_data["accelerators"] = ["Sovereign Acceleration and Adoption Framework"]
+    if not why_data.get("partnerships"):
+        why_data["partnerships"] = (
+            "Strategic global enterprise alliances and certified centers of excellence."
+        )
 
     proposal = {
         "initiative_name": opp_name,
@@ -135,7 +141,7 @@ async def build_proactive_proposal(
         "governance_and_assumptions": ag3.get("governance_and_assumptions", {}),
         "risk_management": ag3.get("risk_management", []),
         "activation_plan": ag3.get("activation_plan", []),
-        "why_ntt_data": ag4.get("why_ntt_data", {}),
+        "why_ntt_data": why_data,
         "investment_and_timeline": ag4.get("investment_and_timeline", {}),
         "executive_synthesis": ag4.get("executive_synthesis", ""),
     }
@@ -257,21 +263,23 @@ async def refine_commercial_payload(
         },
     }
 
-    from assessment_engine.infrastructure.localization import resolve_target_language_name
+    from assessment_engine.infrastructure.localization import (
+        resolve_target_language_name,
+    )
     doc_lang = (
         payload.get("meta", {}).get("language")
         or payload.get("meta", {}).get("doc_lang")
-        or "es"
+        or "en"
     )
     target_language = resolve_target_language_name(doc_lang)
 
     print(
-        "\nFase 1: Estrategia de Cuenta (Agente 1: Global Account Director) ----------"
+        "\nPhase 1: Account Strategy (Agent 1: Global Account Director) ----------"
     )
     strategy = await call_commercial_agent(
         model_name,
         "GLOBAL ACCOUNT DIRECTOR",
-        f"Diseña el Executive Summary Comercial, la Estrategia Go-to-Market y el Mapa de Stakeholders basándote en la visión estratégica global.",
+        "Design the Commercial Executive Summary, Go-To-Market Strategy, and Stakeholder Matrix based on the global strategic vision.",
         payload_str,
         AccountDirectorOutput,
         client_name,
@@ -280,12 +288,12 @@ async def refine_commercial_payload(
     final_payload.update(strategy)
 
     print(
-        "\nFase 2: Calificación de Pipeline (Agente 2: Presales Architect) ----------"
+        "\nPhase 2: Pipeline Qualification (Agent 2: Presales Architect) ----------"
     )
     pipeline = await call_commercial_agent(
         model_name,
         "ENTERPRISE PRESALES ARCHITECT",
-        "Analiza el Roadmap Global y CRÚZALO con el catálogo 'tactical_tower_blueprints'. Genera un pipeline de oportunidades combinando las grandes iniciativas con los Quick Wins técnicos detectados en las torres (como pruebas de resiliencia, automatizaciones, análisis BIA, etc.). Evalúa: vendor, revenue type, TCV y Manejo de Objeciones.",
+        "Analyze the Global Roadmap against tactical tower blueprints. Formulate an opportunities pipeline combining strategic programs with technical quick wins (such as resilience testing, automation pipelines, and BIA assessments). Evaluate: vendor, revenue type, TCV, and objection handling.",
         payload_str,
         PresalesArchitectOutput,
         client_name,
@@ -294,20 +302,27 @@ async def refine_commercial_payload(
     final_payload["opportunities_pipeline"] = pipeline.get("opportunities_pipeline", [])
 
     print(
-        "\nFase 3: Propuestas Proactivas (Orquestación Multi-Agente) ----------------"
+        "\nPhase 3: Proactive Proposals (Multi-Agent Parallel Orchestration) ----------------"
     )
     opps = final_payload.get("opportunities_pipeline", [])
     top_opps = opps[:2]
-    proposals = []
 
-    for idx, opp in enumerate(top_opps, start=1):
-        print(f"\n  [Orquestando Proposal {idx}/2]")
-        proposal = await build_proactive_proposal(
-            model_name, opp, payload_str, client_name, target_language=target_language
-        )
-        proposals.append(proposal)
+    if top_opps:
+        proposal_tasks = [
+            build_proactive_proposal(
+                model_name,
+                opp,
+                payload_str,
+                client_name,
+                target_language=target_language,
+            )
+            for opp in top_opps
+        ]
+        proposals = await asyncio.gather(*proposal_tasks)
+    else:
+        proposals = []
 
-    final_payload["proactive_proposals"] = proposals
+    final_payload["proactive_proposals"] = list(proposals)
 
     return final_payload
 
@@ -339,7 +354,7 @@ def main(argv: list[str] | None = None) -> None:
             context files (blueprints, client intelligence) contain malformed JSON.
     """
     if len(argv if argv is not None else sys.argv) < 2:
-        print("Uso: python run_commercial_refiner.py <global_payload_json>")
+        print("Usage: python run_commercial_refiner.py <global_payload_json>")
         sys.exit(1)
 
     payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
@@ -351,7 +366,7 @@ def main(argv: list[str] | None = None) -> None:
     #
     blueprint_paths = list(client_dir.glob("T*/blueprint_*_payload.json"))
     print(
-        f"🔍 Encontrados {len(blueprint_paths)} blueprints técnicos para el contexto híbrido."
+        f"🔍 Discovered {len(blueprint_paths)} technical blueprints for hybrid context."
     )
     catalog = aggregate_blueprint_catalogs(blueprint_paths)
     intelligence_path = client_dir / "client_intelligence.json"
@@ -373,7 +388,7 @@ def main(argv: list[str] | None = None) -> None:
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(final_payload, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅ Payload comercial refinado guardado en: {output_path}")
+    print(f"\n✅ Refined commercial payload saved to: {output_path}")
 
 
 if __name__ == "__main__":

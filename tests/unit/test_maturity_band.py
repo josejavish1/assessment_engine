@@ -47,10 +47,17 @@ def test_resolve_maturity_band_uses_first_matching_range_and_last_fallback() -> 
 
 
 def test_resolve_maturity_band_supports_shared_annex_and_global_policies() -> None:
-    assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS)["label"] == "Inicial"
-    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS)["label"] == "Gestionado"
-    assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS)["label"] == "Básica"
-    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS)["label"] == "Optimizada"
+    # Baseline English
+    assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS)["label"] == "Initial"
+    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS)["label"] == "Managed"
+    assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS)["label"] == "Basic"
+    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS)["label"] == "Optimized"
+
+    # Localized Spanish
+    assert resolve_maturity_band(1.49, ANNEX_MATURITY_BANDS, locale="es")["label"] == "Inicial"
+    assert resolve_maturity_band(3.5, ANNEX_MATURITY_BANDS, locale="es")["label"] == "Gestionado"
+    assert resolve_maturity_band(3.49, GLOBAL_MATURITY_BANDS, locale="es")["label"] in ("Inicial", "Básica", "Basica")
+    assert resolve_maturity_band(3.5, GLOBAL_MATURITY_BANDS, locale="es")["label"] in ("Optimizado", "Optimizada")
 
 
 def test_resolve_maturity_band_requires_at_least_one_band() -> None:

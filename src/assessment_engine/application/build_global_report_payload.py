@@ -21,19 +21,18 @@ from assessment_engine.infrastructure.global_maturity_policy import (
     band_for_score,
     status_color_for_score,
 )
-from assessment_engine.infrastructure.text_utils import slugify
 from assessment_engine.infrastructure.localization import t
+from assessment_engine.infrastructure.text_utils import slugify
 
 logger = logging.getLogger(__name__)
 
-def get_tower_name(tid: str, doc_lang: str = "es") -> str:
+def get_tower_name(tid: str, doc_lang: str) -> str:
     """Resolve canonical tower name dynamically through localization."""
     from assessment_engine.infrastructure.localization import t
 
     return t(
         f"tower_{tid.lower()}_name",
         locale=doc_lang,
-        default=f"Domain {tid.upper()}",
     )
 
 
@@ -67,7 +66,7 @@ def _build_source_version(blueprint_towers: list[str]) -> str:
 
 def _aggregate_tower_blueprints(
     blueprint_files: list[Path],
-    doc_lang: str = "es",
+    doc_lang: str,
 ) -> tuple[list[dict], list[dict], list[dict], list[str], list[str], list[str]]:
     """Parse and aggregate tower blueprint files into consolidated metrics and initiative lists."""
     from assessment_engine.infrastructure.localization import t
@@ -116,19 +115,19 @@ def _aggregate_tower_blueprints(
             for hc in pilar.get("health_check_asis", []):
                 vuln = hc.get("vulnerability_level", 3)
                 impact_label = (
-                    t("critical_severity_lbl", locale=doc_lang, default="Critical")
+                    t("critical_severity_lbl", locale=doc_lang)
                     if vuln >= 5
                     else (
-                        t("high_severity_lbl", locale=doc_lang, default="High")
+                        t("high_severity_lbl", locale=doc_lang)
                         if vuln >= 4
-                        else t("medium_severity_lbl", locale=doc_lang, default="Medium")
+                        else t("medium_severity_lbl", locale=doc_lang)
                     )
                 )
                 strategic_risks.append(
                     {
                         "id": f"R-{tid}-{r_idx:02d}",
                         "title": hc.get("capability")
-                        or hc.get("target_state", t("capability_default_lbl", locale=doc_lang, default="Capability")),
+                        or hc.get("target_state", t("capability_default_lbl", locale=doc_lang)),
                         "tower": tname,
                         "impact_level": impact_label,
                         "description": hc.get("finding"),
@@ -142,10 +141,10 @@ def _aggregate_tower_blueprints(
                         "id": f"INIT-{tid}-{p_idx:02d}",
                         "tower": tname,
                         "title": proj.get("name")
-                        or proj.get("initiative", t("initiative_default_lbl", locale=doc_lang, default="Initiative")),
+                        or proj.get("initiative", t("initiative_default_lbl", locale=doc_lang)),
                         "objective": proj.get("tech_objective")
                         or proj.get("objective", ""),
-                        "priority": proj.get("priority", t("high_severity_lbl", locale=doc_lang, default="High")),
+                        "priority": proj.get("priority", t("high_severity_lbl", locale=doc_lang)),
                         "expected_outcome": proj.get("business_case")
                         or proj.get("expected_outcome", ""),
                         "capex_estimate": str(
@@ -174,7 +173,7 @@ def _aggregate_tower_blueprints(
     )
 
 
-def _get_cross_tower_nexus_rules(doc_lang: str = "es") -> list[dict[str, str]]:
+def _get_cross_tower_nexus_rules(doc_lang: str) -> list[dict[str, str]]:
     """Declarative cross-tower nexus dependency rules resolved through i18n."""
     from assessment_engine.infrastructure.localization import t
 
@@ -231,13 +230,28 @@ def _parse_currency_amount_to_float(val_str: Any) -> float:
         .strip()
     )
     if "," in s and "." in s:
-        s = s.replace(".", "").replace(",", ".")
+        if s.find(",") < s.rfind("."):
+            # US format: 19,200.00
+            s = s.replace(",", "")
+        else:
+            # EU format: 19.200,00
+            s = s.replace(".", "").replace(",", ".")
     elif "," in s and "." not in s:
         s = s.replace(",", ".")
-    import re
+    elif "." in s and "," not in s:
+        # It might be 12.500 (12500) or 12.50 (12.5)
+        if len(s) - s.rfind(".") == 4:
+            s = s.replace(".", "")
 
-    m = re.search(r"[-+]?\d*\.?\d+", s)
-    return float(m.group()) if m else 0.0
+    import re
+    # We remove all periods except the last one if it's a decimal
+    m = re.search(r"[-+]?\d*\.?\d+", s.replace(" ", ""))
+    if m:
+        try:
+            return float(m.group())
+        except ValueError:
+            return 0.0
+    return 0.0
 
 
 def _build_stratified_financial_case(
@@ -245,7 +259,7 @@ def _build_stratified_financial_case(
     client_dir: Path | None,
     towers_data: list[dict],
     blueprint_files: list[Path],
-    doc_lang: str = "es",
+    doc_lang: str,
 ) -> dict[str, Any]:
     """Constructs a Tier-1 3-Layer Financial Risk & ROI Stratification model.
 
@@ -322,7 +336,7 @@ def _build_stratified_financial_case(
                 for pr in pil.get("projects_todo", []):
                     op_val = _parse_currency_amount_to_float(pr.get("opex_estimate"))
                     total_opex_inv += op_val
-                    if any(h in str(pr.get("horizon", "")) for h in ["H1", "H2", "1", "2"]):
+                    if any(h in str(pr.get("duration", "")) for h in ["H1", "H2", "1", "2"]):
                         year_1_opex += op_val
                     cap_val = _parse_currency_amount_to_float(pr.get("capex_estimate"))
                     total_capex_inv += cap_val
@@ -349,11 +363,12 @@ def _build_stratified_financial_case(
     l3_max_fmt = format_currency(layer_3_max, currency_code=currency_code, locale=doc_lang, decimals=0)
     layer_3_display = f"{l3_min_fmt} - {l3_max_fmt}"
 
-    # Payback & ROI
+    # Payback & ROI (TCO = OpEx + CapEx)
+    total_inv = year_1_opex + total_capex_inv
     payback_months = (
-        round((year_1_opex / layer_1_amount) * 12, 1) if layer_1_amount > 0 else 6.0
+        round((total_inv / layer_1_amount) * 12, 1) if layer_1_amount > 0 else 6.0
     )
-    roi_ratio = round(layer_1_amount / year_1_opex, 1) if year_1_opex > 0 else 1.0
+    roi_ratio = round(layer_1_amount / total_inv, 1) if total_inv > 0 else 1.0
 
     hourly_cost_fmt = format_currency(hourly_downtime_cost, currency_code=currency_code, locale=doc_lang, decimals=0)
     reg_fine_fmt = format_currency(reg_max_fine, currency_code=currency_code, locale=doc_lang, decimals=0)
@@ -393,7 +408,7 @@ def _build_stratified_financial_case(
         },
         "layer_3_actuarial_tail_risk": {
             "title": t("layer_3_title", locale=doc_lang),
-            "amount_display": f"~{layer_3_display} ({t('actuarial_p90_label', locale=doc_lang, default='Riesgo Latente P90')})",
+            "amount_display": f"~{layer_3_display} ({t('actuarial_p90_label', locale=doc_lang)})",
             "bullets": [
                 t("layer_3_bullet_1", locale=doc_lang, **placeholders),
                 t("layer_3_bullet_2", locale=doc_lang, **placeholders),
@@ -416,8 +431,8 @@ def _build_board_memo(
     towers_data: list[dict],
     blueprint_files: list[Path],
     client_name: str,
+    doc_lang: str,
     client_dir: Path | None = None,
-    doc_lang: str = "es",
 ) -> dict[str, Any]:
     from assessment_engine.infrastructure.localization import format_currency, t
 
@@ -444,7 +459,7 @@ def _build_board_memo(
         band = t_item.get("band", "")
         status_color = t_item.get("status_color", "E06666")
 
-        coi_text = t("parametric_evaluation_lbl", locale=doc_lang, default="Evaluación paramétrica")
+        coi_text = t("parametric_evaluation_lbl", locale=doc_lang)
         opex_tower = 0.0
         capex_tower = 0.0
         top_project_name = None
@@ -477,7 +492,7 @@ def _build_board_memo(
         total_holding_capex += capex_tower
         total_inv_tower = opex_tower + capex_tower
 
-        fallback_budget_lbl = t("budget_subscription_fallback", locale=doc_lang, default="Suscripción / Inversión de Fase")
+        fallback_budget_lbl = t("budget_subscription_fallback", locale=doc_lang)
         if total_inv_tower > 0:
             if capex_tower > 0:
                 tot_fmt = format_currency(total_inv_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
@@ -489,7 +504,6 @@ def _build_board_memo(
                     total_inv=tot_fmt,
                     capex=cap_fmt,
                     opex=op_fmt,
-                    default=f"~{tot_fmt} (~{cap_fmt} CapEx / ~{op_fmt} OpEx)",
                 )
             else:
                 op_fmt = format_currency(opex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
@@ -497,7 +511,6 @@ def _build_board_memo(
                     "budget_pure_opex_format",
                     locale=doc_lang,
                     opex=op_fmt,
-                    default=f"~{op_fmt} (100% OpEx)",
                 )
         else:
             budget_display = fallback_budget_lbl
@@ -508,10 +521,9 @@ def _build_board_memo(
                 locale=doc_lang,
                 project_name=top_project_name,
                 tower_name=tname,
-                default=f"Aprobar la ejecución prioritaria de '{top_project_name}' para el dominio de {tname}.",
             )
         else:
-            default_dec = t("decision_default_template", locale=doc_lang, tower_name=tname, default=f"Aprobar plan director de modernización para {tname}.")
+            default_dec = t("decision_default_template", locale=doc_lang, tower_name=tname)
             crit_dec = t(f"decision_{tid}", locale=doc_lang, default=default_dec)
 
         items.append({
@@ -530,17 +542,14 @@ def _build_board_memo(
         "board_memo_headline",
         locale=doc_lang,
         client_name=client_name,
-        default=f"Board Memo: Resumen de Decisión Ejecutiva para el Consejo de Administración de {client_name}",
     )
     memo_summary = t(
         "board_memo_summary",
         locale=doc_lang,
-        default="Este memorando sintetiza en una sola página la postura de madurez tecnológica, la exposición financiera actuarial (Open FAIR) a 3 años y las decisiones críticas de inversión requeridas del Consejo para el ciclo 2026-2029.",
     )
     memo_consolidated_exposure = t(
         "board_memo_consolidated_exposure",
         locale=doc_lang,
-        default="Exposición financiera agregada calibrada bajo estándar FAIR en expedientes actuariales.",
     )
 
     tot_holding_all = total_holding_opex + total_holding_capex
@@ -554,7 +563,6 @@ def _build_board_memo(
         total_inv=tot_all_fmt,
         total_capex=tot_cap_fmt,
         total_opex=tot_op_fmt,
-        default=f"Inversión Total Agregada (3 Años): ~{tot_all_fmt} (~{tot_cap_fmt} CapEx / ~{tot_op_fmt} OpEx)",
     )
 
     return {
@@ -568,7 +576,7 @@ def _build_board_memo(
 
 
 def _build_cross_tower_nexus(
-    towers_data: list[dict], blueprint_files: list[Path], doc_lang: str = "es"
+    towers_data: list[dict], blueprint_files: list[Path], doc_lang: str
 ) -> dict[str, Any]:
     gen_tids = {t["id"].upper() for t in towers_data}
     all_rules = _get_cross_tower_nexus_rules(doc_lang=doc_lang)
@@ -585,12 +593,10 @@ def _build_cross_tower_nexus(
         "title": t(
             "nexus_matrix_title",
             locale=doc_lang,
-            default="Matriz de Interdependencias Cruzadas (Cross-Tower Nexus)",
         ),
         "description": t(
             "nexus_matrix_description",
             locale=doc_lang,
-            default="La transformación de infraestructura no opera en silos estancos. La siguiente matriz ilustra las dependencias críticas donde las decisiones o retrasos en un dominio condicionan directamente la viabilidad de los demás.",
         ),
         "dependencies": active_rules if active_rules else all_rules,
     }
@@ -599,8 +605,8 @@ def _build_cross_tower_nexus(
 def _build_executive_callouts(
     client_name: str,
     towers_data: list[dict],
+    doc_lang: str,
     client_dir: Path | None = None,
-    doc_lang: str = "es",
 ) -> list[dict[str, str]]:
     from assessment_engine.infrastructure.localization import format_currency, t
 
@@ -622,7 +628,7 @@ def _build_executive_callouts(
     currency_symbol = "€"
     hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
     reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
-    industry_name = t("default_industry_name", locale=doc_lang, default="infraestructura empresarial")
+    industry_name = t("default_industry_name", locale=doc_lang)
 
     if client_dir:
         for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
@@ -689,11 +695,11 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     ]
 
     if not blueprint_files:
-        logger.warning(f"No se encontraron archivos de torre en {client_dir}")
+        logger.warning(f"No tower payload files found in {client_dir}")
         return None
 
     intelligence_dossier = {}
-    doc_lang = "es"
+    doc_lang: str
     intelligence_path = Path(client_dir) / "client_intelligence.json"
     if intelligence_path.exists():
         try:
@@ -703,7 +709,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 raw_int.get("language")
                 or raw_int.get("locale")
                 or raw_int.get("doc_lang")
-                or "es"
+                or "en"
             ).lower()
         except Exception:
             intelligence_dossier = {}
@@ -753,7 +759,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         # Update towers_data with propagated (effective) maturity scores
         for item in towers_data:
             tid = item["id"].upper()
-            eff_score = propagated_scores.get(tid, float(item["score"]))
+            eff_score = propagated_audited.get(tid, float(item["score"]))
             item["effective_score"] = f"{eff_score:.1f}"
             item["effective_band"] = band_for_score(eff_score, doc_lang=doc_lang)
             item["effective_status_color"] = status_color_for_score(eff_score)
@@ -844,7 +850,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             init_def = {
                 "program": wave_label,
                 "title": human_name,
-                "business_case": t("quick_win_objective_default", locale=doc_lang, default="Mitigación de deuda técnica identificada en el grafo."),
+                "business_case": t("quick_win_objective_default", locale=doc_lang),
                 "start_month": 0
                 if "0" in wave_label
                 else 6
@@ -863,7 +869,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     unique_waves = list(set(w["wave"] for w in strategic_roadmap))
     for uw in unique_waves:
         final_roadmap_programs.append(
-            {"name": uw, "description": f"Fase de {uw} de la estrategia."}
+            {"name": uw, "description": f"{uw} execution phase of the strategic roadmap."}
         )
 
     avg_score = round(sum(float(t["score"]) for t in towers_data) / len(towers_data), 1)
@@ -891,19 +897,19 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "client": client_name,
             "date": dynamic_date_str,
             "version": "v6.0 - Sovereign DTO",
+            "language": doc_lang,
         },
         "executive_summary": {
             "headline": t(
                 "maturity_pulse_headline_template",
                 locale=doc_lang,
                 avg_score=f"{avg_score:.1f}",
-                default=f"Índice de Madurez Tecnológica Global: {avg_score:.1f}/5.0",
             ),
-            "narrative": "PENDIENTE DE REFINADO ESTRATÉGICO",
+            "narrative": "PENDING STRATEGIC REFINEMENT",
             "key_business_impacts": [
-                t("impact_time_to_market", locale=doc_lang, default="Aceleración del time-to-market"),
-                t("impact_operational_risk", locale=doc_lang, default="Reducción de riesgo operacional"),
-                t("impact_cost_optimization", locale=doc_lang, default="Optimización de costes cloud"),
+                t("impact_time_to_market", locale=doc_lang),
+                t("impact_operational_risk", locale=doc_lang),
+                t("impact_cost_optimization", locale=doc_lang),
             ],
             "top_strategic_risks": strategic_risks[:5],
             "maturity_pulse": {
@@ -916,21 +922,19 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "asis_summary": t(
                 "strategic_overview_asis_default",
                 locale=doc_lang,
-                default="El ecosistema tecnológico actual muestra una fragmentación estructural entre silos operativos y una dependencia de procesos manuales que limita la escalabilidad.",
             ),
             "tobe_vision": t(
                 "strategic_overview_tobe_default",
                 locale=doc_lang,
-                default="Evolución hacia un modelo de plataforma automatizada y soberana (Sovereign DTO) que habilite la resiliencia operativa y la eficiencia económica.",
             ),
             "value_targets": unique_implications[:5],
         },
         "burning_platform": [
             {
-                "theme": risk.get("title", t("risk_theme_default", locale=doc_lang, default="Riesgo Técnico")),
-                "business_risk": risk.get("business_impact", t("risk_business_impact_default", locale=doc_lang, default="Impacto no cuantificado")),
+                "theme": risk.get("title", t("risk_theme_default", locale=doc_lang)),
+                "business_risk": risk.get("business_impact", t("risk_business_impact_default", locale=doc_lang)),
                 "root_causes": [
-                    risk.get("description", t("risk_root_cause_default", locale=doc_lang, default="Causa raíz bajo investigación"))
+                    risk.get("description", t("risk_root_cause_default", locale=doc_lang))
                 ],
             }
             for risk in strategic_risks[:5]
@@ -953,19 +957,18 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "value_proposition": t(
                 "target_vision_value_prop_default",
                 locale=doc_lang,
-                default="Transformación hacia un modelo de plataforma soberana y automatizada.",
             ),
             "evolution_principles": [
                 {
                     "principle": p,
-                    "description": t("evolution_principle_desc_default", locale=doc_lang, default="Principio de diseño estratégico."),
+                    "description": t("evolution_principle_desc_default", locale=doc_lang),
                 }
                 for p in unique_principles[:5]
             ],
             "strategic_pillars": [
                 {
                     "pillar": p,
-                    "description": t("strategic_pillar_desc_default", locale=doc_lang, default="Pilar de transformación."),
+                    "description": t("strategic_pillar_desc_default", locale=doc_lang),
                 }
                 for p in unique_implications[:5]
             ],
@@ -977,9 +980,9 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         "executive_decisions": {
             "immediate_decisions": [
                 {
-                    "decision_type": t("decision_type_investment", locale=doc_lang, default="Inversión"),
-                    "action_required": t("immediate_decision_wave0_action", locale=doc_lang, default="Aprobar presupuesto para Wave 0"),
-                    "impact_if_delayed": t("immediate_decision_wave0_delay", locale=doc_lang, default="Retraso crítico en el plan de transformación"),
+                    "decision_type": t("decision_type_investment", locale=doc_lang),
+                    "action_required": t("immediate_decision_wave0_action", locale=doc_lang),
+                    "impact_if_delayed": t("immediate_decision_wave0_delay", locale=doc_lang),
                 }
             ]
         },
@@ -995,7 +998,6 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "program_modernization_template",
             locale=doc_lang,
             tower_name=t_item["name"],
-            default=f"Programa: Modernización de {t_item['name']}",
         )
         payload["execution_roadmap"]["programs"].append(
             {
@@ -1057,7 +1059,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 intel_headline = exec_sum.get("headline")
                 intel_narrative = exec_sum.get("narrative")
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     if intel_headline:
         payload["executive_summary"]["headline"] = intel_headline
@@ -1066,13 +1068,12 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "global_report_headline_template",
             locale=doc_lang,
             client_name=client_name,
-            default=f"{client_name}: Estrategia de Modernización de Infraestructura",
         )
 
     if intel_narrative:
         payload["executive_summary"]["narrative"] = intel_narrative
 
-    doc_lang = "es"
+    doc_lang: str
     if intelligence_path.exists():
         try:
             raw_int = json.loads(intelligence_path.read_text(encoding="utf-8-sig"))
@@ -1080,7 +1081,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
                 raw_int.get("language")
                 or raw_int.get("locale")
                 or raw_int.get("doc_lang")
-                or "es"
+                or "en"
             ).lower()
         except Exception:
             pass
@@ -1127,7 +1128,7 @@ def main(argv: list[str] | None = None) -> None:
     payload = build_global_payload(client_dir, client_name)
     if payload:
         Path(raw_args[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2))
-        logger.info("Payload dinámico generado con éxito.")
+        logger.info("Dynamic payload generated successfully.")
 
 
 if __name__ == "__main__":

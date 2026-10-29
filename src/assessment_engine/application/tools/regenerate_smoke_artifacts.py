@@ -226,7 +226,7 @@ def main(argv: list[str] | None = None) -> None:
             run_step(cmd_args, step_name, env, args.dry_run)
 
     if args.local_only:
-        logger.info("\n✅ Regeneración local completada hasta findings.json.")
+        logger.info("\n✅ Local regeneration completed through findings.json.")
         return
 
     if args.skip_vertex_preflight:
@@ -311,7 +311,7 @@ def main(argv: list[str] | None = None) -> None:
             args.dry_run,
         )
 
-    logger.info("\n✅ Regeneración smoke finalizada.")
+    logger.info("\n✅ Smoke regeneration finished.")
 
 
 if __name__ == "__main__":

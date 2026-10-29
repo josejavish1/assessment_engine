@@ -21,6 +21,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     shade_cell,
 )
 from assessment_engine.infrastructure.localization import (
+    get_localized_list,
     format_currency,
     format_number,
     t,
@@ -61,10 +62,10 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     tower_dir_obj = ctx["tower_dir_obj"]
     payload_path = ctx["payload_path"]
     client_name = ctx["client_name"]
-    reg_name = ctx.get("reg_name", "las regulaciones aplicables")
+    reg_name = ctx.get("reg_name", t("applicable_regulations_default", locale=doc_lang))
     industry_name = ctx.get(
         "industry_name",
-        "Sector Estándar" if doc_lang == "es" else "Standard Sector",
+        t("standard_sector_label", locale=doc_lang),
     )
 
     total_p90 = 0.0
@@ -104,7 +105,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                 custom_calibration = json.load(cf)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     from assessment_engine.infrastructure.config_loader import load_rate_card
     base_sre_rate = float(load_rate_card().get("tarifas_hora", {}).get("tecnico_medio", 36.0))
@@ -127,84 +128,16 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                 total_max += hc.get("fair_max_score", 0.0) or 0.0
     except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+        logger.debug(f"[Fallback] Handled exception: {ex}")
     
     formatted_p90 = format_currency_custom(total_p90, t_sep, d_sep).split(d_sep)[0]
     formatted_max = format_currency_custom(total_max, t_sep, d_sep).split(d_sep)[0]
 
-    if doc_lang == "es":
-        intro_prose_p1 = (
-            f"Los riesgos identificados en este análisis han sido modelados y evaluados utilizando el modelo de "
-            f"**Análisis Cuantitativo de Riesgo Tecnológico** basado en el estándar internacional **O-FAIR (Open Factor Analysis of Information Risk)**, "
-            f"una metodología estándar reconocida globalmente para traducir deudas técnicas en impacto financiero real para el negocio."
-        )
-        intro_prose_p2 = (
-            f"El análisis cuantitativo del estado actual establece que las deudas técnicas operativas y las vulnerabilidades detectadas exclusivamente "
-            f"dentro del perímetro de esta torre tecnológica exponen a {client_name} a una **Expectativa de Pérdida Anualizada (ALE - Annual Loss Exposure)** "
-            f"de **{formatted_ale} {currency}** anuales. Es fundamental entender que esta métrica representa el impacto económico promedio latente (fricción operativa, "
-            f"coste de horas de ticketing manual e ineficiencias de procesos rutinarios) que la organización asume de manera ordinaria como el 'coste de hacer negocio' si decide mantener el statu quo."
-        )
-        intro_prose_p3 = (
-            f"Por el contrario, el verdadero caso de negocio y la justificación de la inversión tecnológica no reside en mitigar esa ineficiencia promedio, "
-            f"sino en proteger el balance frente a escenarios de estrés operativo y regulatorio severo. Para ello, el modelo calcula los escenarios más "
-            f"extremos en la cola de la distribución mediante el llamado **Déficit Esperado Condicional o CVaR al 97.5% (Expected Shortfall)**. "
-            f"En un escenario de alta adversidad anual (donde los procesos manuales colapsen por saturación de incidentes concurrentes o se active la exposición "
-            f"a sanciones bajo {reg_name}), la exposición de la plataforma podría promediar los **{formatted_p90} {currency}**, "
-            f"llegando a un límite máximo estimado (P99) de **{formatted_max} {currency}**."
-        )
-        intro_prose_p4 = (
-            f"Es crítico destacar que, ante esta exposición, la opción de añadir recursos humanos adicionales (tales como la incorporación de "
-            f"personal de soporte operativo extraordinario) no mitiga el riesgo, sino que multiplica la probabilidad de error humano, el cual constituye "
-            f"estadísticamente la causa raíz de más del 80% de los fallos de configuración. Adicionalmente, las intervenciones manuales no escalan físicamente "
-            f"ante picos de demanda o incidentes de gran escala (provocando la violación de los RTOs exigidos por la red de transporte eléctrico), "
-            f"y mantener un proceso crítico sin controles automatizados puede ser catalogado como negligencia regulatoria estructural bajo las estrictas "
-            f"exigencias de debida diligencia de la directiva {reg_name}, exponiendo a la compañía a sanciones de rango máximo. Por tanto, estas cifras reflejan "
-            f"la asunción de riesgo implícita de mantener el estado actual (coste de inacción)."
-        )
-        intro_prose_p5 = (
-            f"*(Nota: Para garantizar que estas proyecciones financieras sean objetivas y auditables, el modelo de cálculo no emplea estimaciones subjetivas "
-            f"arbitrarias, sino que opera bajo un proceso riguroso de tres etapas: 1) Los rangos iniciales se calibran con bases de datos de siniestralidad reales del sector de "
-            f"infraestructuras críticas (específicamente el **Verizon Data Breach Investigations Report - DBIR** y el estudio **IBM Cost of a Data Breach** de Ponemon Institute); "
-            f"2) Estos rangos promedio se ajustan aplicando un factor de escala bayesiano derivado de la madurez real de {client_name} y de vuestra tarifa horaria de convenio en `rate_card.json` ({sre_rate} {currency}/hora); "
-            f"y 3) Se ejecuta una simulación estocástica de Monte Carlo de 10.000 iteraciones truncada al percentil 99.0% para descartar outliers por causas de fuerza mayor. "
-            f"Para una comprensión detallada de los principios estadísticos, se recomienda consultar el Apéndice Metodológico situado al final de este informe).*"
-        )
-    else:
-        intro_prose_p1 = (
-            f"The risks identified in this assessment have been modeled and evaluated using the **Quantitative Technology Risk Analysis** "
-            f"model based on the international **O-FAIR (Open Factor Analysis of Information Risk)** standard, a globally recognized methodology "
-            f"to translate technical debts directly into real financial impact for the business."
-        )
-        intro_prose_p2 = (
-            f"The quantitative current state analysis establishes that the technical operational debts and identified vulnerabilities exclusively "
-            f"within the perimeter of this technological tower expose {client_name} to a real **Annual Loss Exposure (ALE)** "
-            f"of **{formatted_ale} {currency}** annually. It is crucial to understand that this metric represents the average latent economic "
-            f"impact (operational friction, manual ticketing support salary costs, and routine process inefficiencies) that the organization assumes ordinarily as the 'cost of doing business' "
-            f"if it chooses to maintain the status quo."
-        )
-        intro_prose_p3 = (
-            f"On the contrary, the true business case and justification for technological investment does not lie in mitigating that average inefficiency, "
-            f"but in protecting the balance sheet against severe operational and regulatory stress scenarios. To do this, the model calculates extreme tail scenarios using "
-            f"**Conditional Value at Risk (CVaR) or Expected Shortfall at 97.5%**. In a highly adverse annual scenario (where manual processes "
-            f"collapse under the strain of concurrent incidents or exposure to severe penalties under {reg_name} is triggered), the financial "
-            f"exposure of the platform will average **{formatted_p90} {currency}**, potentially reaching an estimated maximum plausible limit (P99) of up to **{formatted_max} {currency}**."
-        )
-        intro_prose_p4 = (
-            f"It is critical to note that, in the face of this exposure, the option of adding additional human resources (such as the incorporation of "
-            f"extraordinary operational support personnel) does not mitigate the risk, but rather multiplies the probability of human error, which statistically constitutes the "
-            f"root cause of over 80% of configuration failures. Additionally, manual interventions do not physically scale under stress or large-scale "
-            f"incidents (leading to the violation of RTOs required by the electrical grid), and maintaining a critical process without automated controls "
-            f"can be classified as structural regulatory negligence under the strict due diligence requirements of the {reg_name} directive, exposing the company to maximum-range "
-            f"sancions. Therefore, these figures reflect the implicit risk assumption of maintaining the status quo (cost of inaction)."
-        )
-        intro_prose_p5 = (
-            f"*(Note: To ensure these financial projections are objective and auditable, the calculation model does not employ subjective estimates "
-            f"arbitrarily, but operates under a rigorous three-stage process: 1) Initial ranges are calibrated with actual loss databases of the "
-            f"critical infrastructure sector, specifically the **Verizon Data Breach Investigations Report - DBIR** and the **IBM Cost of a Data Breach** study; "
-            f"2) These average industry ranges are adjusted using a Bayesian scale factor derived from {client_name}'s real maturity and your agreement hourly rate in `rate_card.json` ({sre_rate} {currency}/hour); "
-            f"and 3) A Monte Carlo stochastic simulation of 10,000 iterations truncated at the 99.0th percentile is run to discard extreme force majeure outliers. "
-            f"For a detailed understanding of the statistical principles, please refer to the Methodological Appendix at the end of this report).*"
-        )
+    intro_prose_p1 = t("fair_intro_prose_p1", locale=doc_lang)
+    intro_prose_p2 = t("fair_intro_prose_p2", locale=doc_lang, client_name=client_name, formatted_ale=formatted_ale, currency=currency)
+    intro_prose_p3 = t("fair_intro_prose_p3", locale=doc_lang, reg_name=reg_name, formatted_p90=formatted_p90, formatted_max=formatted_max, currency=currency)
+    intro_prose_p4 = t("fair_intro_prose_p4", locale=doc_lang, reg_name=reg_name)
+    intro_prose_p5 = t("fair_intro_prose_p5", locale=doc_lang, client_name=client_name, sre_rate=sre_rate, currency=currency)
 
     add_body_paragraph(doc, intro_prose_p1, text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, intro_prose_p2, text_color_rgb=text_color_rgb)
@@ -215,86 +148,11 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     def add_markdown_bullet_local(text: str, space_after: int = 4) -> Any:
         return _add_markdown_bullet(doc, text, text_color_rgb, space_after)
 
-    add_appendix_subheading(doc, "El Hexágono de Valor: Palancas de Retorno de Resiliencia y Eficiencia (RoRE)", primary_color_rgb=p_color_rgb)
-    
-    if doc_lang == "es":
-        lever_intro = (
-            "Para proporcionar una visión empresarial de 360 grados que justifique las decisiones de modernización tecnológica, "
-            "este diagnóstico complementa la cuantificación de riesgos de Open FAIR con el marco internacional de gestión de valor "
-            "**TBM (Technology Business Management)** y **FinOps**. Toda ineficiencia o proceso manual identificado en esta torre "
-            "se analiza de manera agregada bajo seis dimensiones o palancas de valor diferenciadas:"
-        )
-        add_body_paragraph(doc, lever_intro, text_color_rgb=text_color_rgb)
-        
-        add_markdown_bullet_local(
-            "Palanca 1 - Recuperación de Capital Laboral (Lean IT): Cuantifica el coste salarial directo perdido de forma recurrente "
-            "por los ingenieros sénior al ejecutar tareas manuales rutinarias que un sistema programático realizaría en segundos.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Palanca 2 - Coste de Oportunidad del Talento: El valor marginal que la organización deja de percibir al mantener a sus "
-            "arquitectos e ingenieros sénior haciendo mantenimiento reactivo en lugar de dedicarlos a proyectos de innovación estratégica.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Palanca 3 - Coste de Demora de Proyectos (Demora de Proyectos): La pérdida económica indirecta que sufre el negocio debido a que "
-            "los proyectos estratégicos se retrasan semanas esperando el aprovisionamiento o la configuración manual de Sistemas.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Palanca 4 - Eliminación de Desperdicio de Infraestructura (Capacity Waste): El sobrecoste derivado de la sobredimensión "
-            "de almacenamiento o servidores 'por si acaso' en procesos manuales, así como la acumulación de recursos huérfanos encendidos.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Palanca 5 - Evitación de Costes de Soporte por Obsolescencia: El sobreprecio extraordinario de mantenimiento (Extended Support) "
-            "que se paga a fabricantes para mantener con vida asistida hardware o software legacy que carece de soporte estándar.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Palanca 6 - Mitigación de Riesgos de Cola de Balance: La reducción real de la probabilidad de sufrir incidentes catastróficos "
-            "por error humano (causa del 80% de caídas de red) o severas sanciones legales por negligencia regulatoria bajo NIS2 (CVaR P99).",
-            space_after=12
-        )
-    else:
-        lever_intro = (
-            "To provide a 360-degree business view that justifies technological modernization decisions, "
-            "this diagnosis complements Open FAIR risk quantification with the international value management frameworks "
-            "**TBM (Technology Business Management)** and **FinOps**. Every technical debt or manual process identified in this tower "
-            "is analyzed in an aggregated manner under six distinct value levers:"
-        )
-        add_body_paragraph(doc, lever_intro, text_color_rgb=text_color_rgb)
-        
-        add_markdown_bullet_local(
-            "Lever 1 - Labor Capital Recovery (Lean IT): Quantifies the direct salary cost lost on a recurring basis "
-            "by senior engineers executing routine manual tasks that a programmatic system would perform in seconds.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Lever 2 - Talent Opportunity Cost: The marginal value that the organization fails to realize by keeping "
-            "its senior architects and engineers on reactive maintenance instead of dedicating them to strategic innovation projects.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Lever 3 - Project Cost of Delay: The indirect financial loss suffered by the business due to "
-            "strategic projects being delayed for weeks waiting for manual provisioning or systems configuration.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Lever 4 - Capacity Waste Elimination (FinOps): The extra cost derived from overprovisioning "
-            "storage or servers 'just in case' in manual processes, as well as the accumulation of running orphaned resources.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Lever 5 - Extended Support Avoidance: The extraordinary maintenance premium paid to vendors "
-            "to keep legacy hardware or software on life support when it lacks standard official support.",
-            space_after=3
-        )
-        add_markdown_bullet_local(
-            "Lever 6 - Tail Risk Balance Sheet Mitigation: The real reduction in the probability of suffering catastrophic "
-            "incidents due to human error (root cause of 80% of outages) or severe NIS2 penalties under stress (CVaR P99).",
-            space_after=12
-        )
+    add_appendix_subheading(doc, t("value_hexagon_heading", locale=doc_lang), primary_color_rgb=p_color_rgb)
+    lever_intro = t("value_hexagon_intro", locale=doc_lang)
+    add_body_paragraph(doc, lever_intro, text_color_rgb=text_color_rgb)
+    for l_idx, lever_text in enumerate(get_localized_list("value_hexagon_bullets", locale=doc_lang)):
+        add_markdown_bullet_local(lever_text, space_after=12 if l_idx == 5 else 3)
 
     #
     csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
@@ -335,36 +193,9 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             doc, vocab["exposure_summary_title"], level=2, primary_color_rgb=p_color_rgb
         )
 
-        if doc_lang == "es":
-            sec_intro_p1 = (
-                f"Para facilitar la visualización y priorización de las deudas técnicas y vulnerabilidades identificadas, se presenta a continuación la "
-                f"**Matriz de Riesgo Cuantitativa (Mosaico 5x5)**. Este mapa de calor distribuye los riesgos detectados interrelacionando la "
-                f"**Frecuencia de Eventos de Amenaza (TEF)** (estimación anualizada de ocurrencias) con la **Magnitud de la Pérdida (LM)** (el impacto financiero de cada evento)."
-            )
-            sec_intro_p2 = (
-                f"La calibración de los rangos de esta Magnitud de Pérdida (LM) para {client_name} se realiza bajo el criterio riguroso de operador de "
-                f"{industry_name}. De acuerdo con el estudio de referencia mundial *ITIC Global Server Hardware Downtime Report*, el coste promedio de indisponibilidad "
-                f"de sistemas core supera el millón de euros por hora para el 98% de los operadores de su sector, debido a la interrupción en cadena de procesos operativos, "
-                f"las severas penalizaciones por acuerdos de nivel de servicio (SLA) y los costes de remediación forense urgente."
-            )
-            sec_intro_p3 = (
-                f"Bajo esta base empírica, los umbrales de pérdida financiera de la matriz se bareman de forma escalonada para modelar con precisión el impacto directivo real en los siguientes cuadrantes:"
-            )
-        else:
-            sec_intro_p1 = (
-                f"To facilitate the visualization and prioritization of the identified technical vulnerabilities, the **Quantitative Risk Matrix (5x5 Heatmap)** "
-                f"is presented below. This heatmap distributes the risks by cross-referencing the **Threat Event Frequency (TEF)** (annualized frequency of occurrence) "
-                f"with the **Loss Magnitude (LM)** (the financial impact of each event)."
-            )
-            sec_intro_p2 = (
-                f"The calibration of these Loss Magnitude (LM) ranges for {client_name} is performed under the rigorous criteria of a "
-                f"{industry_name} operator. According to the global benchmark study *ITIC Global Server Hardware Downtime Report*, the average cost "
-                f"of core system downtime exceeds one million euros per hour for 98% of operators in its sector, due to cascading process interruptions, "
-                f"severe Service Level Agreement (SLA) penalties, and urgent forensic remediation costs."
-            )
-            sec_intro_p3 = (
-                f"Based on this empirical foundation, the financial loss thresholds of the matrix are graduated to accurately model the real management impact across the following quadrants:"
-            )
+        sec_intro_p1 = t("fair_heatmap_sec_p1", locale=doc_lang)
+        sec_intro_p2 = t("fair_heatmap_sec_p2", locale=doc_lang, client_name=client_name, industry_name=industry_name)
+        sec_intro_p3 = t("fair_heatmap_sec_p3", locale=doc_lang)
             
         add_body_paragraph(doc, sec_intro_p1, text_color_rgb=text_color_rgb)
         add_body_paragraph(doc, sec_intro_p2, text_color_rgb=text_color_rgb)
@@ -434,11 +265,11 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         # Populate the 5x5 data matrix with content, ensuring it fills the full width of the table.
         for row_idx, tef_val in enumerate(range(5, 0, -1), 1):
             tef_ranges = {
-                5: f"> 10/año" if doc_lang == "es" else f"> 10/year",
-                4: f"2,0 - 10/año" if doc_lang == "es" else f"2.0 - 10/year",
-                3: f"0,5 - 2,0/año" if doc_lang == "es" else f"0.5 - 2.0/year",
-                2: f"0,1 - 0,5/año" if doc_lang == "es" else f"0.1 - 0.5/year",
-                1: f"< 0,1/año" if doc_lang == "es" else f"< 0.1/year",
+                5: t("tef_annual_freq_5", locale=doc_lang),
+                4: t("tef_annual_freq_4", locale=doc_lang),
+                3: t("tef_annual_freq_3", locale=doc_lang),
+                2: t("tef_annual_freq_2", locale=doc_lang),
+                1: t("tef_annual_freq_1", locale=doc_lang),
             }
             tef_lbl = f"TEF {tef_val}\n({tef_ranges[tef_val]})"
             cell_header = heatmap_table.rows[row_idx].cells[0]
@@ -502,43 +333,20 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                         }
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     # Assemble and render Section 5.3: Detailed Risk Register; left-aligned content per requirement 4.2.
     add_heading(
         doc, vocab["detailed_risks_title"], level=2, primary_color_rgb=p_color_rgb
     )
 
-    if doc_lang == "es":
-        detailed_risks_intro = (
-            "El inventario analítico se presenta estructurado en **Portafolios de Priorización de Deuda Técnica** (conforme al estándar Open FAIR™), "
-            "agrupando los hallazgos según su impacto económico relativo dentro de la propia torre. Esta clasificación dinámica "
-            "establece tres niveles de prioridad basados en la desviación de cada riesgo respecto al coste de inacción promedio de la plataforma."
-        )
-        guide_intro = "Adicionalmente, para facilitar la lectura y comprensión del impacto financiero en las fichas detalladas, las métricas de exposición proyectada representan:"
-    else:
-        detailed_risks_intro = (
-            "The analytical inventory is structured into **Technical Debt Prioritization Portfolios** (in accordance with the Open FAIR™ standard), "
-            "grouping findings based on their relative economic impact within the tower itself. This dynamic classification "
-            "establishes three priority levels based on each risk's deviation from the platform's average cost of inaction."
-        )
-        guide_intro = "Additionally, to facilitate reading and understanding the financial impact in the detailed cards, the projected exposure metrics represent:"
-
+    detailed_risks_intro = t("fair_detailed_risks_intro", locale=doc_lang)
+    guide_intro = t("fair_guide_intro", locale=doc_lang)
     add_body_paragraph(doc, detailed_risks_intro, text_color_rgb=text_color_rgb)
     add_body_paragraph(doc, guide_intro, text_color_rgb=text_color_rgb)
 
-    if doc_lang == "es":
-        b1_text = "Pérdida Anualizada (ALE): El coste económico promedio esperado cada año. Constituye el valor base del coste de inacción operativo."
-        b2_text = "Peor Caso (CVaR): El promedio económico del 10% de los peores escenarios posibles. Indica la magnitud del desastre financiero si las amenazas más graves se materializan de forma simultánea en un mismo año."
-        b3_text = "Rango Probabilístico: El abanico estadístico de pérdidas posibles, desde un impacto menor hasta el máximo teórico si se detonan sanciones regulatorias o incumplimientos de SLA."
-    else:
-        b1_text = "Annualized Loss Expectancy (ALE): The average economic cost expected each year. It constitutes the baseline value of the operational cost of inaction."
-        b2_text = "Worst Case (CVaR): The economic average of the 10% worst-case scenarios. It indicates the magnitude of the financial disaster if the most severe threats materialize simultaneously in a single year."
-        b3_text = "Probabilistic Range: The statistical spectrum of possible losses, from a minor impact up to the theoretical maximum if regulatory sanctions or SLA breaches are triggered."
-
-    add_body_paragraph(doc, b1_text, style="List Bullet", text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, b2_text, style="List Bullet", text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, b3_text, style="List Bullet", text_color_rgb=text_color_rgb)
+    for g_bullet in get_localized_list("fair_guide_bullets", locale=doc_lang):
+        add_body_paragraph(doc, g_bullet, style="List Bullet", text_color_rgb=text_color_rgb)
 
     add_spacer(doc, 15)
 
@@ -563,34 +371,23 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     
     tiers_config = [
         (
-            "Tier 1: Prioridad de Modernización",
-            "Tier 1: Modernization Priority",
+            t("tier1_portfolio_title", locale=doc_lang),
             tier1_risks,
-            f"Hallazgos de alto impacto (outliers estadísticos con exposición mayor o igual a {t_sep1} {currency}/año) que concentran la mayor ineficiencia financiera relativa dentro de esta plataforma. Representan las principales prioridades de modernización para mitigar el riesgo de la torre."
-            if doc_lang == "es" else
-            f"High-impact findings (statistical outliers with exposure greater than or equal to {t_sep1} {currency}/year) that concentrate the highest relative financial inefficiency within this platform. They represent the main modernization priorities to mitigate the tower's risk."
+            t("tier1_portfolio_desc", locale=doc_lang, t_sep1=t_sep1, currency=currency),
         ),
         (
-            "Tier 2: Optimización Operativa",
-            "Tier 2: Operational Optimization",
+            t("tier2_portfolio_title", locale=doc_lang),
             tier2_risks,
-            f"Ineficiencias operativas que se sitúan en torno a la exposición promedio de la torre (entre {t_sep2} y {t_sep1} {currency}/año). Constituyen la fricción técnica y operativa normalizada del ecosistema actual."
-            if doc_lang == "es" else
-            f"Operational inefficiencies situated around the tower's average exposure (between {t_sep2} and {t_sep1} {currency}/year). They constitute the normalized technical and operational friction of the current ecosystem."
+            t("tier2_portfolio_desc", locale=doc_lang, t_sep2=t_sep2, t_sep1=t_sep1, currency=currency),
         ),
         (
-            "Tier 3: Backlog de Mantenimiento",
-            "Tier 3: Maintenance Backlog",
+            t("tier3_portfolio_title", locale=doc_lang),
             tier3_risks,
-            f"Desviaciones menores (exposición menor a {t_sep2} {currency}/año) cuyo peso estadístico es marginal frente a la deuda técnica total de la torre, representando oportunidades de mejora o mantenimiento ordinario."
-            if doc_lang == "es" else
-            f"Minor deviations (exposure under {t_sep2} {currency}/year) whose statistical weight is marginal against the tower's total technical debt, representing ordinary maintenance or improvement opportunities."
+            t("tier3_portfolio_desc", locale=doc_lang, t_sep2=t_sep2, currency=currency),
         ),
     ]
 
-    for title_es, title_en, p_risks, p_desc in tiers_config:
-        title = title_es if doc_lang == "es" else title_en
-        
+    for title, p_risks, p_desc in tiers_config:
         add_heading(
             doc,
             title,
@@ -601,11 +398,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         add_spacer(doc, 10)
 
         if not p_risks:
-            empty_msg = (
-                "No se registran vulnerabilidades de esta prioridad de exposición en la evaluación actual."
-                if doc_lang == "es" else
-                "No vulnerabilities of this exposure priority are registered in the current assessment."
-            )
+            empty_msg = t("msg_no_tier_vulnerabilities", locale=doc_lang)
             add_body_paragraph(doc, empty_msg, text_color_rgb=text_color_rgb)
             add_spacer(doc, 15)
             continue
@@ -707,7 +500,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             raw_client_name = ctx.get("raw_client_name", client_name)
 
             clean_finding_text = apply_vocabulary_substitutions(
-                clean_text_for_word(parts_f[0]), locale="es"
+                clean_text_for_word(parts_f[0]), locale=doc_lang
             )
             clean_finding_text = re.sub(
                 re.escape(raw_client_name),
@@ -717,7 +510,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             ).strip()
 
             clean_biz_text = apply_vocabulary_substitutions(
-                clean_text_for_word(biz_risk), locale="es"
+                clean_text_for_word(biz_risk), locale=doc_lang
             )
             clean_biz_text = re.sub(
                 re.escape(raw_client_name),
@@ -726,7 +519,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                 flags=re.IGNORECASE,
             ).strip()
 
-            run_obs = p_desc_lbl.add_run("Vulnerabilidad Identificada:")
+            run_obs = p_desc_lbl.add_run(t("vulnerability_identified_label", locale=doc_lang))
             run_obs.bold = True
             run_obs.font.name = "Arial"
             run_obs.font.size = Pt(8.5)
@@ -741,7 +534,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             p_biz_lbl = cell_desc.add_paragraph()
             p_biz_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_biz_lbl.paragraph_format.space_after = Pt(2)
-            run_biz = p_biz_lbl.add_run("Impacto de TI / Operativo:")
+            run_biz = p_biz_lbl.add_run(t("it_operational_impact_label", locale=doc_lang))
             run_biz.bold = True
             run_biz.font.name = "Arial"
             run_biz.font.size = Pt(8.5)
@@ -761,7 +554,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             p_fair_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_fair_lbl.paragraph_format.space_after = Pt(2)
             
-            fair_lbl_txt = "Exposición Cuantitativa (FAIR):" if doc_lang == "es" else "Quantitative Exposure (FAIR):"
+            fair_lbl_txt = t("lbl_quantitative_fair_exposure", locale=doc_lang)
             run_fair_lbl = p_fair_lbl.add_run(fair_lbl_txt)
             run_fair_lbl.bold = True
 
@@ -778,15 +571,23 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             p_fair_val = cell_risk.add_paragraph()
             p_fair_val.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_fair_val.paragraph_format.space_after = Pt(6)
-            if doc_lang == "es":
-                p_fair_val.add_run(f"• Frecuencia (TEF): {tef:.1f} / 5,0\n• Magnitud (LM): {lm:.1f} / 5,0")
-            else:
-                p_fair_val.add_run(f"• Frequency (TEF): {tef:.1f} / 5.0\n• Magnitude (LM): {lm:.1f} / 5.0")
+            from assessment_engine.infrastructure.localization import format_number
+            max_val_str = format_number(5.0, locale=doc_lang, decimals=1)
+            p_fair_val.add_run(
+                t(
+                    "fair_freq_mag_template",
+                    locale=doc_lang,
+                    tef=format_number(tef, locale=doc_lang, decimals=1),
+                    max_tef=max_val_str,
+                    lm=format_number(lm, locale=doc_lang, decimals=1),
+                    max_lm=max_val_str,
+                )
+            )
 
             p_exp_lbl = cell_risk.add_paragraph()
             p_exp_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_exp_lbl.paragraph_format.space_after = Pt(2)
-            exp_lbl_txt = "Exposición Financiera Proyectada:" if doc_lang == "es" else "Projected Financial Exposure:"
+            exp_lbl_txt = t("lbl_projected_financial_exposure", locale=doc_lang)
             run_exp_lbl = p_exp_lbl.add_run(exp_lbl_txt)
             run_exp_lbl.bold = True
 
@@ -799,18 +600,14 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             formatted_max = format_currency_custom(max_val, t_sep, d_sep).split(d_sep)[0]
             formatted_ale_item = format_currency_custom(ale, t_sep, d_sep).split(d_sep)[0]
 
-            ale_lbl_txt = "• Pérdida Anualizada (ALE): " if doc_lang == "es" else "• Annual Loss Exposure (ALE): "
+            ale_lbl_txt = t("lbl_ale_bullet", locale=doc_lang)
             p_exp_val.add_run(ale_lbl_txt)
             run_ale_val = p_exp_val.add_run(f"{formatted_ale_item} {currency}\n")
             run_ale_val.bold = True
             run_ale_val.font.color.rgb = RGBColor(180, 0, 0)
             
-            if doc_lang == "es":
-                p_exp_val.add_run(f"• Peor Caso (CVaR): {formatted_p90} {currency}\n")
-                p_exp_val.add_run(f"• Rango Probabilístico: {formatted_min} {currency} a {formatted_max} {currency}")
-            else:
-                p_exp_val.add_run(f"• Worst Case (CVaR): {formatted_p90} {currency}\n")
-                p_exp_val.add_run(f"• Probabilistic Range: {formatted_min} {currency} to {formatted_max} {currency}")
+            p_exp_val.add_run(t("lbl_cvar_bullet", locale=doc_lang, p90=formatted_p90, currency=currency))
+            p_exp_val.add_run(t("lbl_probabilistic_range_bullet", locale=doc_lang, min_val=formatted_min, max_val=formatted_max, currency=currency))
 
             # Apply fonts to all runs in the third cell
             for p_item in cell_risk.paragraphs:

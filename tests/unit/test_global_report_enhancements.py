@@ -20,7 +20,7 @@ def test_build_board_memo_structure() -> None:
     mock_towers = [
         {"id": "T6", "name": "Seguridad de Infraestructura", "score": "2.8", "band": "Definido", "status_color": "E06666"}
     ]
-    memo_dict = _build_board_memo(mock_towers, [], "Molins")
+    memo_dict = _build_board_memo(mock_towers, [], "Molins", doc_lang="es")
     memo = BoardMemoDraft.model_validate(memo_dict)
 
     assert len(memo.items) == 1
@@ -35,7 +35,7 @@ def test_build_cross_tower_nexus_structure() -> None:
         {"id": "T6", "name": "Seguridad", "score": "2.8", "band": "Definido", "status_color": "E06666"},
         {"id": "T2", "name": "Cómputo", "score": "2.5", "band": "Definido", "status_color": "E06666"},
     ]
-    nexus_dict = _build_cross_tower_nexus(mock_towers, [])
+    nexus_dict = _build_cross_tower_nexus(mock_towers, [], doc_lang="es")
     nexus = CrossTowerNexusDraft.model_validate(nexus_dict)
 
     assert len(nexus.dependencies) >= 1
@@ -44,7 +44,7 @@ def test_build_cross_tower_nexus_structure() -> None:
 
 def test_build_executive_callouts_structure() -> None:
     """Verify that _build_executive_callouts constructs valid ExecutiveCalloutItem schemas."""
-    callouts_list = _build_executive_callouts("Molins", [])
+    callouts_list = _build_executive_callouts("Molins", [], doc_lang="es")
     callouts = [ExecutiveCalloutItem.model_validate(c) for c in callouts_list]
 
     assert len(callouts) == 3

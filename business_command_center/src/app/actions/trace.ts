@@ -7,7 +7,7 @@ export async function readLiveTrace() {
   try {
     const tracePath = path.resolve(process.cwd(), '../../working/live_trace.txt');
     if (!fs.existsSync(tracePath)) {
-      return "Inicializando agente...";
+      return "Initializando agente...";
     }
 
     const content = fs.readFileSync(tracePath, 'utf-8');
@@ -15,7 +15,7 @@ export async function readLiveTrace() {
     if (lines.length > 0) {
       return lines[lines.length - 1]; // Return the last trace event
     }
-    return "Analizando contexto y rediseñando el plan...";
+    return "Analyzing context and refining plan...";
   } catch (e) {
     return "Explorando repositorio...";
   }

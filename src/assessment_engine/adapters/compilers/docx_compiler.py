@@ -517,7 +517,7 @@ class DocxCompiler(DocumentCompiler):
             pass
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
-        if "índice de contenidos" in node.text.lower() or "[índice de contenidos" in node.text.lower():
+        if any(tok in node.text.lower() for tok in ["table of contents", "indice de contenidos", "[indice"]):
             # Inject native Word TOC field (simple field xml)
             from docx.oxml import OxmlElement
             from docx.oxml.ns import qn
@@ -559,7 +559,7 @@ class DocxCompiler(DocumentCompiler):
         )
 
     def _compile_heading(self, doc: Document, node: HeadingNode) -> None:
-        is_appendix_main = node.text.startswith("Apéndice") or node.text.startswith("Appendix")
+        is_appendix_main = node.text.startswith("Appendix") or node.text.startswith("Apendice")
         import re
         is_appendix_sub = bool(re.match(r"^[A-Z]\.\d+\s", node.text))
         
@@ -578,7 +578,7 @@ class DocxCompiler(DocumentCompiler):
                     p.style = "Appendix Heading 2"
             except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-                logger.debug(f"[Fallback] Excepción controlada: {ex}")
+                logger.debug(f"[Fallback] Handled exception: {ex}")
 
         #
         if node.primary_color_rgb and p:

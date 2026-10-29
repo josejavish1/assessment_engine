@@ -46,11 +46,11 @@ class FidelitySentinel:
         violations = []
         if raw_data and not final_list:
             violations.append(
-                f"Estructura Crítica: El campo '{field_name}' está VACÍO en el resultado, pero contenía datos en el material bruto."
+                f"Critical Structure: Field '{field_name}' is EMPTY in result, but contained raw data."
             )
         elif len(raw_data) > 0 and len(final_list) < (len(raw_data) * 0.5):
             violations.append(
-                f"Densidad Insuficiente: El campo '{field_name}' ha sufrido una dilución de datos superior al 50%."
+                f"Insufficient Density: Field '{field_name}' suffered data dilution exceeding 50%."
             )
         return violations
 
@@ -68,7 +68,7 @@ class FidelitySentinel:
             entity_norm = entity.lower().strip()
             if entity_norm not in text_lower:
                 violations.append(
-                    f"[{context}] Fuga de Atributo: La entidad '{entity}' se ha perdido o diluido en la redacción final."
+                    f"[{context}] Attribute leakage: Entity '{entity}' missing or diluted in final deliverable."
                 )
         return violations
 
@@ -77,21 +77,21 @@ class StructuralIntegrityGate:
     r"""{'check_text_recursive': "Recursively traverses a data structure to apply tonal analysis to string values.\n\n    Walks through a nested structure of dictionaries and lists. When a string\n    value is encountered, it is delegated to `_check_sober_tone` for\n    validation against tonal policies. The function operates by side effect,\n    appending any detected violation messages to the `violations` list defined\n    in the parent scope. The `path` argument is constructed during traversal to\n    provide a precise location for each violation.\n\n    Args:\n        obj: The data structure (e.g., dict, list) or scalar value to inspect.\n        path: A dot-notation string representing the current location within the\n            top-level data structure, used for precise error reporting (e.g.,\n            'dossier.summary[0]')."}."""
 
     FORBIDDEN_TONE_TERMS = [
-        "engañosa",
+        "deceptive",
         "terrible",
         "desastroso",
         "fallo fatal",
         "acusatorio",
         "culpable",
         "negligencia",
-        "increíble",
+        "incredible",
         "excepcional",
         "malo",
         "pobre",
-        "ridículo",
+        "ridiculous",
         "nosotros mismos",
-        "puntuación engañosa",
-        "valor engañoso",
+        "misleading score",
+        "misleading value",
     ]
 
     @classmethod
@@ -140,7 +140,7 @@ class StructuralIntegrityGate:
         check_text_recursive(data, "dossier")
 
         if violations:
-            msg = "❌ VIOLACIÓN DE PROTOCOLO DIPLOMÁTICO TIER 1:\n" + "\n".join(
+            msg = "❌ TIER 1 DIPLOMATIC PROTOCOL VIOLATION:\n" + "\n".join(
                 violations
             )
             logger.error(msg)
@@ -159,7 +159,7 @@ class StructuralIntegrityGate:
             status = claim.get("status")
             if status == "broken":
                 violations.append(
-                    f"Evidencia [Claim {i}] '{url}' está rota o no disponible."
+                    f"Evidence [Claim {i}] '{url}' is broken or unavailable."
                 )
             if status == "verified" and not claim.get("local_snapshot"):
                 violations.append(
@@ -173,11 +173,12 @@ class StructuralIntegrityGate:
         for term in cls.FORBIDDEN_TONE_TERMS:
             if re.search(rf"\b{re.escape(term)}\b", text_norm):
                 violations.append(
-                    f"[{context}] Tono inapropiado: El término '{term}' vulnera la sobriedad ejecutiva."
+                    f"[{context}] Inappropriate tone: Term '{term}' violates executive sobriety."
                 )
 
-        # Removes conversational artifacts, such as model self-corrections or response refusals, to ensure the final output is strictly declarative and content-focused.
-        if "engaño" in text_norm or "engañoso" in text_norm:
+        import unicodedata
+        text_norm_ascii = unicodedata.normalize("NFKD", text.lower()).encode("ASCII", "ignore").decode("utf-8")
+        if "engano" in text_norm_ascii or "misleading" in text_norm_ascii:
             violations.append(
-                f"[{context}] Error de lógica: Nunca califiques los datos del informe como engañosos."
+                f"[{context}] Analytical error: Never describe report telemetry as misleading."
             )

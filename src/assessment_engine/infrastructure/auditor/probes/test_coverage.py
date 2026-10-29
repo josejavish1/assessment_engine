@@ -27,7 +27,7 @@ def run_test_coverage_probe(target_dir: Path) -> ProbeResult:
             cov_data = json.loads(cov_file.read_text(encoding="utf-8"))
             files_data = cov_data.get("files", {})
             if files_data:
-                # Filtrado determinista según .coveragerc
+                # Deterministic filtering aligned with .coveragerc
                 prod_stmts = 0
                 prod_covered = 0
                 for fpath, fdata in files_data.items():
@@ -64,8 +64,8 @@ def run_test_coverage_probe(target_dir: Path) -> ProbeResult:
                 file_path=str(target_dir / "src"),
                 line_number=None,
                 rule_id="COV-BELOW-TIER1",
-                message=f"Cobertura de código ({line_cov}%) por debajo del umbral corporativo Tier-1 (65.0%).",
-                recommendation="Incorporar oráculos y pruebas de integración para alcanzar al menos el 65.0% de líneas productivas.",
+                message=f"Code coverage ({line_cov}%) below Tier-1 corporate threshold (65.0%).",
+                recommendation="Add test oracles and integration tests to achieve at least 65.0% production coverage.",
             )
         )
 

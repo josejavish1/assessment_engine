@@ -166,7 +166,7 @@ def update_ui_components(layout: Layout) -> None:
         active_task = UI_STATE["active_task"]
         if active_task:
             status_color = "green" if "Running" in active_task["status"] else "yellow"
-            mission_text = f"[bold cyan]ID:[/] {active_task['id']}  [bold {status_color}]STATUS:[/] {active_task['status']}\n[bold white]MISIÓN:[/] {active_task['title'][:80]}"
+            mission_text = f"[bold cyan]ID:[/] {active_task['id']}  [bold {status_color}]STATUS:[/] {active_task['status']}\n[bold white]MISSION:[/] {active_task['title'][:80]}"
             layout["active_mission"].update(
                 Panel(
                     mission_text,
@@ -353,7 +353,7 @@ def parse_backlog() -> List[Task]:
     tasks: List[Task] = []
     for match in matches:
         p, area, title, desc = [m.strip().replace("*", "") for m in match]
-        if "Área" in area or "Prioridad" in p:
+        if "area" in area.lower() or "priority" in p.lower() or "prioridad" in p.lower():
             continue
         task: Task = {
             "id": f"T{len(tasks) + 1}",
@@ -415,7 +415,7 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
         )
         prompt = task.get("instruction")
         if not prompt:
-            prompt = f"Implementa: {task['title']}\nDescripción: {task.get('description', '')}"
+            prompt = f"Implement: {task['title']}\nDescription: {task.get('description', '')}"
 
         success, logs = await run_po_orchestrator(prompt)
         if success:
@@ -477,11 +477,11 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
                     f"🛑 CRITICAL: Fallo en pre-requisito EMG ({task['id']}). Deteniendo orquestador."
                 )
                 print(
-                    f"\n[!] ERROR CRÍTICO: La tarea de emergencia {task['id']} ha sido bloqueada (HARD_BLOCK)."
+                    f"\n[!] CRITICAL ERROR: Emergency task {task['id']} blocked by HARD_BLOCK."
                 )
-                print(f"Razón: {debate.reasoning}")
+                print(f"Reason: {debate.reasoning}")
                 print(
-                    "Como es una tarea de infraestructura crítica, no es seguro continuar. Abortando."
+                    "Mission-critical task blocked; unsafe to proceed. Aborting."
                 )
                 sys.exit(1)
             return False

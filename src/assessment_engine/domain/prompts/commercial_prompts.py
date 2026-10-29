@@ -1,12 +1,12 @@
 REFERENCE_CATALOG = """
-Catálogo de Referencia de TCV (Total Contract Value) y Tiempos de Consultoría (Mercado Enterprise/Mid-Market):
-- Assessment Ciberseguridad / Ransomware (Wedge): 3-5 semanas, 30k€ - 50k€.
-- Identidad Zero Trust (Microsoft Entra ID / CyberArk): 3-6 meses, 150k€ - 350k€.
-- Migración Cloud Landing Zone (AWS/Azure): 2-4 meses, 80k€ - 150k€.
-- Modernización de Red (SD-WAN / Cisco / Fortinet): 4-8 meses, 200k€ - 600k€.
-- Operación y FinOps (Servicios Gestionados MRR): Contrato a 3 años, 150k€ - 400k€/año.
-- Transformación ITSM (ServiceNow): 6-12 meses, 300k€ - 800k€.
-- Resiliencia / Disaster Recovery (Commvault / Rubrik): 3-6 meses, 100k€ - 250k€.
+Reference Catalog for TCV (Total Contract Value) and Delivery Timelines (Enterprise/Mid-Market):
+- Cybersecurity / Ransomware Assessment (Wedge): 3-5 weeks, €30k - €50k.
+- Zero Trust Identity Architecture (Microsoft Entra ID / CyberArk): 3-6 months, €150k - €350k.
+- Cloud Landing Zone Migration (AWS/Azure): 2-4 months, €80k - €150k.
+- Network Modernization (SD-WAN / Cisco / Fortinet): 4-8 months, €200k - €600k.
+- Operations & FinOps (MRR Managed Services): 3-year contract, €150k - €400k/year.
+- ITSM Modernization (ServiceNow): 6-12 months, €300k - €800k.
+- Resilience / Disaster Recovery (Commvault / Rubrik): 3-6 months, €100k - €250k.
 """
 
 CONSULTING_WIN_THEMES = """
@@ -50,26 +50,26 @@ def get_commercial_agent_prompt(
     from assessment_engine.infrastructure.config_loader import get_consultant_company_name
     company = get_consultant_company_name()
     return f"""
-ACTÚA COMO UN {agent_role} DE {company} DE NIVEL PARTNER/DIRECTOR CON VISIÓN SISTÉMICA.
-ANALIZA LA INFORMACIÓN Y GENERA TU PARTE DEL ACCOUNT ACTION PLAN ESTRATÉGICO EXCLUSIVAMENTE EN {target_language}.
+ACT AS A {agent_role} AT {company} WITH PARTNER/DIRECTOR C-LEVEL STRATEGIC RIGOR.
+ANALYZE ENTERPRISE TELEMETRY AND GENERATE STRATEGIC ACCOUNT ACTION PLAN IN {target_language}.
 
 REGLAS DE ORO COMERCIALES:
-1. URGENCIA (Compelling Events): Asocia los problemas a normativas (DORA, NIS2, GDPR) o Fin de Soporte (EOS) para crear urgencia real.
-2. REALISMO FINANCIERO: Basa tus estimaciones estrictamente en este Catálogo de Referencia:
+1. URGENCY (Compelling Events): Anchor pain points to regulations (DORA, NIS2, GDPR) or End of Support (EOS) to drive urgency.
+2. FINANCIAL REALISM: Anchor all estimates strictly in this Reference Catalog:
 {REFERENCE_CATALOG}
-3. VENTAJA COMPETITIVA: Usa estos 'Win Themes' para justificar por qué {company} es la mejor opción:
+3. COMPETITIVE ADVANTAGE: Leverage these Win Themes to substantiate {company} positioning:
 {CONSULTING_WIN_THEMES}
-4. MARCO EXECUTIVE: Aplica rigurosamente estos principios para asegurar la autoridad del informe:
+4. EXECUTIVE FRAMEWORK: Rigorously apply these strategic principles to establish analytical authority:
 {EXECUTIVE_CONSULTING_FRAMEWORK}
 5. TONO: Lenguaje B2B Enterprise. Directo, financiero, consultivo y sin "paja".
-6. REDACCIÓN ESTRICTA: PROHIBIDO el uso de guiones largos (— o ─) y puntos y comas (;). Usa siempre frases directas separadas por punto y seguido o comas.
-7. CONTEXTO OBLIGATORIO: Conecta iniciativas con la agenda del CEO, líneas de negocio y restricciones operativas del `client_intelligence`.
+6. STRICT WRITING STYLE: Long em-dashes and semicolons are strictly prohibited. Use concise, direct active-voice sentences.
+7. MANDATORY CONTEXT: Connect initiatives to CEO agenda, strategic business lines, and operational constraints from client intelligence.
 
-INSTRUCCIÓN ESPECÍFICA PARA ESTA FASE:
+SPECIFIC INSTRUCTIONS FOR THIS PHASE:
 {instruction}
 
 REGLA ESTRICTA DE FORMATO:
-- Devuelve ÚNICAMENTE un objeto JSON válido, sin markdown ni explicaciones adicionales.
+- Return EXCLUSIVELY a valid JSON object matching schema, without markdown conversational wrapping.
 
 DATOS DE ENTRADA:
 {payload_str}

@@ -1,0 +1,27 @@
+{
+  "framework_id": "microsoft_dwg",
+  "framework_name": "Microsoft Digital Workplace Governance (M365 & Azure Landing Zones)",
+  "description": "Marco de gobierno, cumplimiento y arquitectura empresarial de Microsoft para entornos de puesto de trabajo digital moderno y zonas de aterrizaje en la nube, orientado a garantizar la seguridad, prevención de pérdida de datos y administración de identidades de forma transversal.",
+  "rules": [
+    {
+      "tower_id": "T3",
+      "query_template": "\"Microsoft 365\" OR \"Digital Workplace Governance\" OR \"Azure Landing Zones\" enterprise adoption compliance percentage rate statistics report",
+      "evaluation_variable": "adoption",
+      "thresholds": [
+        {
+          "condition": "adoption >= 60.0",
+          "score": 4.5
+        },
+        {
+          "condition": "adoption >= 40.0",
+          "score": 4.0
+        },
+        {
+          "condition": "adoption >= 20.0",
+          "score": 3.5
+        }
+      ],
+      "default_score": 3.0
+    }
+  ]
+}

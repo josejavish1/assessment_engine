@@ -115,70 +115,70 @@ class ReflexionLedger:
                 "TS2307_CANNOT_FIND_MODULE",
                 ".tsx",
                 "@tanstack/react-virtual",
-                "Prohibido importar dependencias de terceros no listadas en package.json (ej. @tanstack/react-virtual). Usar primitivas y hooks nativos a coste $0.00.",
+                "Prohibited from importing third-party libraries missing from package.json. Use native primitives at $0.00 marginal cost.",
             ),
             (
                 "AUTHORITY_TAMPERING",
                 "CLIENT_SIDE_STATE_TAMPERING",
                 ".tsx",
                 "localStorage.setItem('xp', ...)",
-                "Prohibido mutar o persistir balances, niveles o XP en localStorage. El backend es el único autoritativo; el cliente solo refleja el estado.",
+                "Prohibited from mutating balances or XP in localStorage. Backend is sole authoritative source; client only renders state.",
             ),
             (
                 "SYNTAX_CORRUPTION",
                 "SYNTAX_MEMO_CLOSURE_ERROR",
                 ".tsx",
                 "React.memo(...); };",
-                "En TypeScript/React, todo componente o función envuelta en React.memo debe cerrarse estrictamente con '});' y nunca con '};'.",
+                "In TypeScript/React, components or functions wrapped in React.memo must terminate with '});' and never '};'.",
             ),
             (
                 "ARCH_NESTING",
                 "JSX_NESTING_FALSE_POSITIVE",
                 ".tsx",
                 "<Badge><div...",
-                "El marcado JSX anidado en componentes React no constituye complejidad ciclomática de flujo; no aplicar guard clauses a etiquetas visuales JSX.",
+                "Nested JSX in React components does not constitute cyclomatic control-flow complexity; do not apply guard clauses to visual tags.",
             ),
             (
                 "CODE_HYGIENE",
                 "PYTHON_COMMENT_IN_TYPESCRIPT",
                 ".tsx",
                 "# comment in tsx",
-                "Usar estrictamente '//' y '/* ... */' para comentarios en TypeScript/JavaScript, y '#' exclusivamente en archivos Python.",
+                "Strictly use '//' and '/* ... */' for comments in TypeScript/JavaScript, and '#' exclusively in Python.",
             ),
             (
                 "AUTH_SECURITY",
                 "AUTH_STRING_MATCHING_BYPASS",
                 ".py",
                 "request.url.path.startswith(...) for auth",
-                "Prohibido proteger rutas de backend parseando strings con request.url.path en middlewares. En FastAPI, la seguridad debe ser declarativa mediante dependencies=[Depends(guard)] en app.include_router().",
+                "Prohibited from protecting backend routes by string parsing request.url.path in middlewares. In FastAPI, security must be declarative via dependencies=[Depends(guard)] in app.include_router().",
             ),
             (
                 "TEST_DRIFT",
                 "TEST_MOCK_ENDPOINT_DRIFT",
                 ".py",
                 "client.get('/api/fake/endpoint')",
-                "Prohibido evaluar seguridad o autorizaciones contra endpoints ficticios en tests. Las aserciones deben contrastarse obligatoriamente contra las rutas reales registradas en app.routes.",
+                "Prohibited from evaluating security or authorizations against fictitious endpoints in tests. Assertions must strictly target real routes registered in app.routes.",
             ),
             (
                 "PERF_CWV",
                 "CWV_LCP_SLOW_IMAGE",
                 ".tsx",
                 'loading="lazy" on hero',
-                "Para garantizar LCP ≤ 2.5s, las imágenes críticas de cabecera (Hero/LCP) deben llevar fetchpriority='high' y nunca loading='lazy'.",
+                "To guarantee LCP <= 2.5s, critical above-the-fold hero images must declare fetchpriority='high' and never loading='lazy'.",
             ),
             (
                 "PERF_CWV",
                 "CWV_CLS_UNSIZED_MEDIA",
                 ".tsx",
                 "<img without dimensions>",
-                "Todo elemento visual <img> o iframe debe declarar atributos explícitos width y height o contenedor con aspect-ratio para garantizar CLS ≤ 0.1.",
+                "Every visual <img> or iframe must declare explicit width and height attributes or aspect-ratio container to enforce CLS <= 0.1.",
             ),
             (
                 "PERF_CWV",
                 "CWV_INP_LONG_TASK",
                 ".tsx",
                 "synchronous blocking loop > 50ms",
-                "Fragmentar cálculos pesados en el hilo principal usando scheduler.yield() o Web Workers para mantener tareas < 50ms e INP ≤ 200ms.",
+                "Break down heavy main-thread compute via scheduler.yield() or Web Workers to keep tasks < 50ms and INP <= 200ms.",
             ),
         ]
 
@@ -218,7 +218,7 @@ class ReflexionLedger:
                     updated_at = excluded.updated_at;
             """, (category, error_signature, ext, culprit_pattern, corrective_axiom, now, now))
             conn.commit()
-            logger.info(f"[ReflexionLedger] Anti-patrón '{error_signature}' registrado/actualizado en memoria.")
+            logger.info(f"[ReflexionLedger] Anti-pattern '{error_signature}' recorded/updated in memory.")
 
     def record_antipattern(
         self,
@@ -292,7 +292,7 @@ class ReflexionLedger:
 
         axioms: list[str] = []
         for cat, axiom, freq in rows:
-            axioms.append(f"[{cat}] {axiom} (Frecuencia histórica: {freq})")
+            axioms.append(f"[{cat}] {axiom} (Historical frequency: {freq})")
 
         return axioms
 
@@ -348,16 +348,16 @@ class ReflexionLedger:
 
         lines: list[str] = []
         if axioms:
-            lines.append("### AXIOMAS DE APRENDIZAJE EMPÍRICO PREVIO (REFLEXION LEDGER - NO REPETIR):")
+            lines.append("### PRIOR EMPIRICAL LEARNING AXIOMS (REFLEXION LEDGER - DO NOT REPEAT):")
             for idx, ax in enumerate(axioms, 1):
                 lines.append(f"{idx}. {ax}")
-            lines.append("Todo código generado debe acatar estrictamente estos axiomas antes de compilar.\n")
+            lines.append("All synthesized code must strictly adhere to these axioms before compilation.\n")
 
         if exemplars:
-            lines.append("### EJEMPLARES CONTRASTIVOS PREVIOS DE PARCHE QUIRÚRGICO (FEW-SHOT REAL):")
+            lines.append("### PRIOR CONTRASTIVE SURGICAL PATCH EXEMPLARS (GROUND-TRUTH FEW-SHOT):")
             for ex in exemplars:
                 lines.append(f"// Caso: {ex.category} en '{ex.task_hint}'")
-                lines.append(f"// Diff Quirúrgico Verificado que superó las compuertas:\n{ex.verified_diff}\n")
+                lines.append(f"// Verified Surgical Diff passing quality gates:\n{ex.verified_diff}\n")
 
         return "\n".join(lines)
 

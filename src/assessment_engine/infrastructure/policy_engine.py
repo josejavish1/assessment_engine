@@ -65,7 +65,7 @@ class SovereignPolicyEngine:
             if policy_cls:
                 self.policies.append(policy_cls())
             else:
-                logger.warning(f"Política no registrada en POLICY_REGISTRY: '{name}'")
+                logger.warning(f"Policy not registered in POLICY_REGISTRY: '{name}'")
 
     def compile(self, blueprint_payload: Dict[str, Any]) -> Dict[str, Any]:
         """Applies the full policy chain sequentially to a configuration payload."""
@@ -75,7 +75,7 @@ class SovereignPolicyEngine:
             try:
                 payload = policy.evaluate_and_patch(self.graph, payload)
             except Exception as e:
-                logger.error(f"Error evaluando política {policy.__class__.__name__}: {e}")
+                logger.error(f"Error evaluating policy {policy.__class__.__name__}: {e}")
                 raise e
 
         return payload

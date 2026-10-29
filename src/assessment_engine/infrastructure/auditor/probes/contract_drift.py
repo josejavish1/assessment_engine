@@ -150,8 +150,8 @@ def run_contract_drift_probe(target_dir: Path) -> ProbeResult:
                                 file_path=rel_path,
                                 line_number=lineno,
                                 rule_id="DRIFT-COLUMN-MISMATCH",
-                                message=f"Deriva de Esquema: Columna '{col}' referenciada en INSERT pero no existe en tabla '{table_name}'",
-                                recommendation=f"Añadir '{col}' a la tabla '{table_name}' en SQLite o corregir la sentencia SQL."
+                                message=f"Schema Drift: Column '{col}' referenced in INSERT missing from table '{table_name}'",
+                                recommendation=f"Add '{col}' to table '{table_name}' in SQLite or correct SQL statement."
                             ))
 
             tree = ast.parse(content)
@@ -175,8 +175,8 @@ def run_contract_drift_probe(target_dir: Path) -> ProbeResult:
             file_path="docs/",
             line_number=None,
             rule_id="DRIFT-NO-VERSIONED-CONTRACT",
-            message="No se encontró contrato OpenAPI/Domain Contract versionado en docs/ (ej. openapi.json)",
-            recommendation="Exportar y versionar el contrato formal para garantizar la sincronización frontend/backend."
+            message="Versioned OpenAPI/Domain Contract missing from docs/ (e.g. openapi.json)",
+            recommendation="Export and version formal API contract to ensure frontend/backend synchronization."
         ))
 
     score = 100.0

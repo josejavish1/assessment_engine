@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from assessment_engine.adapters.compilers.payload_to_ast import PayloadToASTBridge
 from assessment_engine.domain.schemas.ast import DocumentAST, ParagraphNode, TableNode
+import pytest
 
 
+@pytest.mark.xdist_group(name="locales")
 def test_payload_to_ast_bridge_conversion(tmp_path: Path):
     """Verify that PayloadToASTBridge successfully parses payloads and builds a valid DocumentAST.
 
@@ -184,11 +187,97 @@ def test_systemic_risk_bullets_mutation_gate() -> None:
         _build_regulatory_bullet,
     )
 
-    node_dii = _build_dii_bullet(5.0)
+    node_dii = _build_dii_bullet(5.0, locale="es")
     assert "Alta Estabilidad" in node_dii.text
 
-    node_crit = _build_criticality_bullet(90.0)
+    node_crit = _build_criticality_bullet(90.0, locale="es")
     assert "Extrema" in node_crit.text
 
-    node_reg = _build_regulatory_bullet(85.0)
+    node_reg = _build_regulatory_bullet(85.0, locale="es")
     assert "Crítica" in node_reg.text
+
+
+@pytest.mark.xdist_group(name="locales")
+def test_english_ast_bullets_and_appendices() -> None:
+    """Verify that systemic risk bullet formatters and appendices support English without Spanish leakages."""
+    from assessment_engine.adapters.compilers.ast_appendices_builder import (
+        build_appendix_d_methodology,
+    )
+    from assessment_engine.adapters.compilers.payload_to_ast import (
+        _build_criticality_bullet,
+        _build_dii_bullet,
+        _build_erc_bullet,
+        _build_feasibility_bullet,
+        _build_regulatory_bullet,
+        _build_spof_bullet,
+    )
+    from assessment_engine.domain.schemas.ast import HeadingNode, ParagraphNode
+
+    # 1. Assert English bullets
+    en_crit = _build_criticality_bullet(90.0, locale="en")
+    assert "Business Criticality (MCDA)" in en_crit.text
+    assert "Extreme" in en_crit.text
+    assert "Extrema" not in en_crit.text
+
+    en_reg = _build_regulatory_bullet(85.0, locale="en")
+    assert "Regulatory Pressure (MCDA)" in en_reg.text
+    assert "Critical" in en_reg.text
+    assert "Crítica" not in en_reg.text
+
+    en_viab = _build_feasibility_bullet(75.0, locale="en")
+    assert "Operational Feasibility (MCDA)" in en_viab.text
+    assert "Feasible" in en_viab.text
+
+    en_dii = _build_dii_bullet(5.0, locale="en")
+    assert "Diagnostic Consistency (DII)" in en_dii.text
+    assert "High Stability" in en_dii.text
+
+    en_erc = _build_erc_bullet(0.65, locale="en")
+    assert "Cascading Fault Propagation (ERC)" in en_erc.text
+    assert "High" in en_erc.text
+
+    en_spof = _build_spof_bullet("YES", locale="en")
+    assert "Single Point of Failure (SPOF)" in en_spof.text
+    assert "Critical" in en_spof.text
+    assert "SÍ - Crítico" not in en_spof.text
+
+    # 2. Assert English Appendix D Methodology Nodes
+    ctx = {
+        "vocab": {},
+        "meta_lang": "en",
+        "currency": "EUR",
+        "tower_id": "T6",
+        "blueprint_data": {
+            "pillars_analysis": [
+                {
+                    "pillar_name": "Security Architecture",
+                    "weight_pct": 25,
+                    "kpis": [{"kpi_name": "Zero Trust Core"}],
+                }
+            ]
+        },
+    }
+    nodes: list[Any] = []
+    build_appendix_d_methodology(
+        ctx=ctx,
+        nodes=nodes,
+        primary_color_rgb=[0, 114, 188],
+        brand_data={"styling": {"is_critical": False}},
+        alt_row_hex="F2F2F2",
+    )
+
+    headings = [n.text for n in nodes if isinstance(n, HeadingNode)]
+    assert "Maturity Assessment Methodology" in headings
+    assert "Evaluated Capabilities and Score Calculation" in headings
+    assert "Quantitative Risk Methodology" in headings
+    assert "Threat Event Frequency Criteria (TEF)" in headings
+    assert "Direct/Indirect Loss Magnitude Criteria (LM)" in headings
+    assert "Advanced Systemic Resilience Indicators" in headings
+
+    paragraphs = [n.text for n in nodes if isinstance(n, ParagraphNode)]
+    corpus = " \n ".join(paragraphs)
+    assert "Metodología Cuantitativa de Riesgos" not in corpus
+    assert "Falacia de los Promedios" not in corpus
+    assert "Flaw of Averages" in corpus
+    assert "O-FAIR (Factor Analysis of Information Risk)" in corpus
+

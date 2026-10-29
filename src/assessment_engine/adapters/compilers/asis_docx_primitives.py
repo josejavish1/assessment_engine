@@ -209,12 +209,14 @@ def add_body_paragraph(
     space_after: int = 6,
     text_color_rgb: tuple[int, int, int] = (46, 64, 77),
     style: str = "Normal",
+    locale: str | None = None,
 ) -> Any:
     """Adds a sanitized and formatted paragraph to a docx.Document object."""
     from assessment_engine.infrastructure.localization import apply_vocabulary_substitutions
 
+    loc = locale or "en"
     if isinstance(text, str):
-        text = apply_vocabulary_substitutions(text, locale="es")
+        text = apply_vocabulary_substitutions(text, locale=loc)
 
     clean_txt = str(text).replace("**", "").replace("*", "")
     is_bullet = style in ("List Bullet", "Bullet")
@@ -447,11 +449,7 @@ def parse_and_append_markdown_section(
             )
         elif cleaned.startswith("> "):
             text_val = cleaned[2:]
-            if "Métricas de Diagnóstico Clave" in text_val:
-                text_val = text_val.replace(
-                    "Métricas de Diagnóstico Clave",
-                    "Resumen de Exposición y Madurez Operativa",
-                )
+            if "diagnostic" in text_val.lower() or "diagnostico" in text_val.lower():
                 add_callout_box(
                     doc, text_val, bg_color_hex="F4F8FA", border_color_hex="0072BC", bold=True
                 )
@@ -459,8 +457,15 @@ def parse_and_append_markdown_section(
                 add_callout_box(
                     doc, text_val, bg_color_hex="F4F8FA", border_color_hex="0072BC", bold=False
                 )
-        elif "Bottom Line (Mensaje de Impacto):" in cleaned:
-            text_val = cleaned.replace("Bottom Line (Mensaje de Impacto):", "").strip()
+        elif (
+            "Bottom Line (Mensaje de Impacto):" in cleaned
+            or "Bottom Line:" in cleaned
+        ):
+            text_val = (
+                cleaned.replace("Bottom Line (Mensaje de Impacto):", "")
+                .replace("Bottom Line:", "")
+                .strip()
+            )
             add_callout_box(
                 doc, text_val, bg_color_hex="EAEAEA", border_color_hex=None, bold=True
             )
@@ -474,7 +479,7 @@ def add_appendix_heading(doc: Any, text: str, primary_color_rgb: Any) -> Any:
     try:
         p.style = "Appendix Heading 1"
     except (OSError, ValueError, KeyError, AttributeError) as ex:
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+        logger.debug(f"[Fallback] Handled exception: {ex}")
     p.paragraph_format.space_before = Pt(18)
     p.paragraph_format.space_after = Pt(6)
     p.paragraph_format.keep_with_next = True
@@ -495,7 +500,7 @@ def add_appendix_subheading(doc: Any, text: str, primary_color_rgb: Any) -> Any:
     try:
         p.style = "Appendix Heading 2"
     except (OSError, ValueError, KeyError, AttributeError) as ex:
-        logger.debug(f"[Fallback] Excepción controlada: {ex}")
+        logger.debug(f"[Fallback] Handled exception: {ex}")
     p.paragraph_format.space_before = Pt(14)
     p.paragraph_format.space_after = Pt(6)
     p.paragraph_format.keep_with_next = True

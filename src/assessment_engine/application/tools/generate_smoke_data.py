@@ -31,41 +31,41 @@ DEFAULT_TOWER_TARGETS: dict[str, tuple[float, float]] = {
     "T9": (2.5, 3.5),
 }
 DEFAULT_CONTEXT_TEXT = """
-Notas de la reunión de Assessment Tecnológico de IVIRMA (Smoke Test).
+Technology Assessment Workshop Notes for IVIRMA (Smoke Test).
 
-Contexto de Negocio:
-La compañía está en fase de expansión inorgánica internacional impulsada por KKR, con el objetivo de duplicar la facturación a 1.300M€.
-La principal preocupación del CEO es asegurar la integración rápida de nuevas clínicas manteniendo el nivel de excelencia clínica y operativa.
+Business Context:
+The enterprise is in an international inorganic expansion phase backed by KKR, targeting revenue expansion to €1,300M.
+The CEO's priority is ensuring accelerated integration of newly acquired clinics while preserving clinical and operational excellence.
 
-Tecnología:
-El proveedor estratégico cloud es Microsoft Azure. Sin embargo, el crecimiento ha fragmentado la red de comunicaciones.
-El almacenamiento de imágenes médicas e historiales clínicos es el core absoluto del negocio, pero no existe una estrategia inmutable de recuperación (Vault).
+Technology:
+Microsoft Azure is the designated strategic cloud hyperscaler. However, rapid acquisition has fragmented enterprise wide-area networking.
+Medical imaging archives and electronic health records represent mission-critical business assets, yet lack an air-gapped immutable recovery vault.
 
-Seguridad y Normativa:
-El CISO está alarmado por el aumento de incidentes de ransomware en el sector salud. Además, son conscientes de que la inminente aplicación de la directiva NIS2 en Europa les afecta directamente como operadores esenciales de salud, y actualmente su infraestructura no garantiza el cumplimiento.
+Security and Governance:
+The CISO highlights heightened ransomware risk within the healthcare sector. Furthermore, the mandatory EU NIS2 directive directly impacts the enterprise as an essential service entity, with current infrastructure failing audit gates.
 
-Operaciones:
-El soporte a usuarios (médicos y embriólogos) es muy manual, con un ITSM básico. Faltan procesos industrializados y visibilidad de los activos (CMDB inexistente), lo que choca con la agilidad necesaria para la expansión.
+Operations:
+Clinical and medical staff IT support relies on manual procedures and rudimentary ITSM workflows. Standardized industrial automation and centralized CMDB asset visibility are absent, impeding scalable M&A integration.
 """
 
 VODAFONE_PUBLIC_CONTEXT_TEXT = """
-Workshop sintético de assessment tecnológico para un gran operador telco paneuropeo inspirado en información pública de Vodafone.
+Synthetic technology assessment workshop for a pan-European telecommunications operator modeled on public disclosures.
 
-Contexto de Negocio:
-La compañía opera servicios móviles, fijo, cloud, IoT y ciberseguridad para clientes residenciales, empresas y administraciones públicas.
-La agenda de dirección combina simplificación operativa, monetización B2B digital, mejora del cash-flow y aceleración del crecimiento en servicios convergentes y plataformas de conectividad.
+Business Context:
+The organization delivers enterprise, consumer, and public sector services across mobile, fixed broadband, cloud, IoT, and cybersecurity.
+Executive strategy prioritizes operational simplification, B2B digital service monetization, cash-flow expansion, and high-margin connectivity platforms.
 
-Tecnología:
-La estrategia tecnológica prioriza plataformas comunes, automatización de operaciones, modernización de red, observabilidad extremo a extremo y una evolución progresiva hacia entornos híbridos consistentes.
-La presión sobre T2, T3 y T5 es especialmente alta porque la experiencia de cliente depende de plataformas resilientes, conectividad estable y capacidad de recuperación demostrable ante incidencias mayores.
+Technology:
+Technology strategy mandates common core platforms, automated operations, access network modernization, end-to-end observability, and hybrid cloud consistency.
+Architecture domains T2, T3, and T5 face acute reliability pressure as customer SLA depends on resilient platforms, deterministic throughput, and rapid disaster recovery.
 
-Seguridad y Normativa:
-El contexto regulatorio está marcado por NIS2, resiliencia operativa, privacidad, continuidad de servicio y escrutinio reforzado sobre infraestructuras críticas y cadenas de suministro.
-La organización necesita demostrar gobierno, trazabilidad y tiempos de recuperación alineados con servicios de misión crítica.
+Security and Governance:
+Regulatory posture is governed by NIS2, operational resilience frameworks, consumer privacy regulations, service continuity mandates, and supply-chain governance.
+The enterprise must prove rigorous technical governance, audit traceability, and sub-hour RTO/RPO metrics aligned with mission-critical infrastructure standards.
 
-Operaciones:
-Existen capacidades maduras en grandes dominios, pero persisten heterogeneidades por país, legado operativo, herramientas duplicadas y variabilidad en procesos de soporte, cambios y respuesta ante incidentes.
-El objetivo del assessment es identificar una hoja de ruta realista para consolidar plataformas, reducir complejidad y mejorar resiliencia sin comprometer la operación diaria.
+Operations:
+Core engineering domains demonstrate high maturity, but regional fragmentation, legacy operational toil, redundant toolchains, and varied incident triage processes persist.
+The assessment objective is establishing a pragmatic transformation roadmap to consolidate platforms, eliminate architectural complexity, and reinforce operational resilience.
 """
 
 SCENARIOS: dict[str, dict[str, Any]] = {
@@ -83,65 +83,63 @@ SCENARIOS: dict[str, dict[str, Any]] = {
             "T5": (2.8, 3.7),
         },
         "client_dossier": {
-            "industry": "Telecomunicaciones",
+            "industry": "Telecommunications",
             "financial_tier": "Tier 1",
-            "priority_markets": ["Alemania", "Reino Unido", "España", "Italia"],
+            "priority_markets": ["Germany", "United Kingdom", "Spain", "Italy"],
             "business_lines": [
-                "B2C convergente",
-                "B2B digital",
+                "Convergent B2C",
+                "Digital B2B",
                 "IoT",
-                "Cloud y ciberseguridad",
+                "Cloud & Cybersecurity",
             ],
             "active_transformations": [
-                "Consolidación de plataformas comunes entre países",
-                "Automatización de operaciones y observabilidad extremo a extremo",
-                "Programa de resiliencia para servicios críticos",
+                "Cross-country core platform consolidation",
+                "Automated operations and end-to-end observability",
+                "Mission-critical resilience program",
             ],
             "business_constraints": [
-                "Presión de margen y disciplina de cash-flow",
-                "Limitada tolerancia a interrupciones de servicio en operación 24x7",
+                "Margin pressure and cash-flow discipline",
+                "Zero tolerance for service outages in 24x7 operations",
             ],
             "regulatory_pressures": [
-                "Necesidad de demostrar resiliencia y continuidad en infraestructuras críticas",
-                "Mayor escrutinio sobre trazabilidad operativa y cadena de suministro",
+                "Requirement to demonstrate critical infrastructure resilience and continuity",
+                "Heightened scrutiny on operational traceability and supply chain governance",
             ],
             "regulatory_frameworks": [
                 "NIS2",
                 "GDPR",
-                "Telecom Security Act / normativa sectorial local",
+                "Telecom Security Act / local sectoral directives",
                 "ISO 22301",
             ],
             "ceo_agenda": (
-                "Simplificar operaciones, proteger margen, acelerar servicios B2B "
-                "digitales y sostener una experiencia de cliente consistente en "
-                "mercados con alta presión competitiva."
+                "Simplify operations, protect margins, accelerate B2B digital services, "
+                "and ensure consistent customer experience in competitive markets."
             ),
             "technological_drivers": [
-                "Automatización de operaciones de red y plataforma",
-                "Consolidación de tooling y observabilidad extremo a extremo",
-                "Resiliencia operativa para servicios críticos",
-                "Modernización híbrida de plataformas de soporte al negocio",
+                "Network and platform operations automation",
+                "Toolchain consolidation and end-to-end observability",
+                "Operational resilience for mission-critical services",
+                "Hybrid modernization of core business support platforms",
             ],
             "vendor_dependencies": [
-                "Hyperscalers para cargas híbridas y analítica",
-                "Vendors de red y seguridad en múltiples países",
+                "Hyperscalers for hybrid workloads and analytics",
+                "Multi-country network and security vendors",
             ],
             "operating_constraints": [
-                "Herramientas duplicadas y legado operativo por país",
-                "Ventanas de cambio restringidas para servicios de misión crítica",
+                "Duplicated toolchains and regional operational legacy",
+                "Restricted change windows for mission-critical services",
             ],
             "recent_incident_signals": [
-                "La resiliencia y recuperación ante incidencias mayores es un foco explícito del escenario",
-                "La dependencia de continuidad de servicio eleva la sensibilidad ante outages de red y plataforma",
+                "Major incident recovery and operational resilience are explicit executive focus areas",
+                "High sensitivity to network and platform outages due to strict service continuity dependencies",
             ],
             "osint_footprint": (
-                "Huella tecnológica distribuida, fuerte dependencia de plataformas "
-                "comunes, operaciones multinacionales y necesidades elevadas de "
-                "estandarización entre países y dominios."
+                "Distributed footprint with strong platform dependencies, multinational operations, "
+                "and high demand for cross-domain standardization."
             ),
             "transformation_horizon": (
-                "Programa de transformación escalonado a 24-36 meses con quick wins "
-                "operativos y consolidación estructural de plataformas."
+                "Phased 24-36 month transformation program pairing operational quick wins "
+                "with foundational platform consolidation."
             ),
             "target_maturity_matrix": {
                 "T1": 3.4,
@@ -156,8 +154,8 @@ SCENARIOS: dict[str, dict[str, Any]] = {
                 "T10": 3.2,
             },
             "evidences": [
-                "Caso sintético basado en señales públicas de operadores telco paneuropeos.",
-                "Contexto operativo orientado a conectividad, plataformas comunes y resiliencia.",
+                "Synthetic scenario derived from public pan-European telco disclosures.",
+                "Operating context focused on connectivity, common platforms, and resilience.",
             ],
         },
     },

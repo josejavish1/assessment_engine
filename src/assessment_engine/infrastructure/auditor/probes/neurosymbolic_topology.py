@@ -127,8 +127,8 @@ def run_neurosymbolic_topology_probe(target_dir: Path) -> ProbeResult:
                     file_path=str(src_dir / node),
                     line_number=None,
                     rule_id="TOPOLOGY-DEAD-CODE-ORPHAN",
-                    message=f"Módulo huérfano confirmado '{node}': 0 referencias entrantes y 0 salientes (código muerto).",
-                    recommendation="Eliminar el módulo para mantener la arquitectura de entropía cero.",
+                    message=f"Confirmed orphan module '{node}': 0 incoming and 0 outgoing references (dead code).",
+                    recommendation="Delete module to preserve zero-entropy architecture.",
                 )
             )
         else:

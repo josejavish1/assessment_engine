@@ -675,6 +675,7 @@ def set_cell_text(
     font_size=10.5,
     vertical=WD_ALIGN_VERTICAL.CENTER,
     space_after=2,
+    locale: str = "en",
 ):
     """Clears and populates a table cell with formatted text.
 
@@ -699,6 +700,7 @@ def set_cell_text(
             WD_ALIGN_VERTICAL.CENTER.
         space_after (Union[int, float], optional): The spacing in points (pt) to
             add after the paragraph. Defaults to 2.
+        locale (str, optional): Target locale code for vocabulary substitutions.
 
     Returns:
         None
@@ -717,7 +719,7 @@ def set_cell_text(
     )
 
     if isinstance(text, str):
-        text = apply_vocabulary_substitutions(text, locale="es")
+        text = apply_vocabulary_substitutions(text, locale=locale)
 
     cell.text = ""
     paragraph = cell.paragraphs[0]
@@ -854,7 +856,7 @@ def render_note_box(doc, placeholder: Any, text: Any) -> Any:
 
 
 def render_pillar_score_table(
-    doc, placeholder: Any, rows: Any, locale: str = "es"
+    doc, placeholder: Any, rows: Any, locale: str
 ) -> Any:
     """Replaces a placeholder paragraph in a .docx document with a formatted table.
 
@@ -895,16 +897,16 @@ def render_pillar_score_table(
 
     headers = [
         get_localized_string(
-            "table_header_pillar", locale=locale, default="Pilar"
+            "table_header_pillar", locale=locale
         ),
         get_localized_string(
-            "table_header_score", locale=locale, default="Score"
+            "table_header_score", locale=locale
         ),
         get_localized_string(
-            "table_header_level", locale=locale, default="Nivel"
+            "table_header_level", locale=locale
         ),
         get_localized_string(
-            "table_header_reading", locale=locale, default="Lectura ejecutiva"
+            "table_header_reading", locale=locale
         ),
     ]
     for idx, header in enumerate(headers):
@@ -956,8 +958,10 @@ def render_pillar_score_table(
     remove_paragraph(paragraph)
 
 
-def render_risks_table(doc, placeholder: Any, rows: Any) -> Any:
-    """Renders and inserts a project risks and mitigations table into a document. Locates the first paragraph containing the `placeholder` text and inserts a formatted table immediately after it. The table is populated with data from `rows` and features fixed Spanish headers for 'Riesgo', 'Impacto', 'Probabilidad', and 'Mitigación resumida'. The original paragraph containing the placeholder is subsequently removed. If the placeholder is not found, the document remains unmodified. Args: doc (docx.document.Document.Document): The `python-docx` Document object to be modified. placeholder (str): The text content of the paragraph that serves as the insertion point for the table. rows (List[Dict[str, str]]): A list of dictionaries, where each dictionary represents a single risk and populates a table row. Each dictionary is expected to contain the keys 'risk', 'impact', 'probability', and 'mitigation_summary'. Missing keys will result in empty cells for that row. Returns: None: This function modifies the `doc` object in place and does not return a value. Raises: AttributeError: If `doc` is not a valid `python-docx` Document object and lacks the expected methods."""
+def render_risks_table(
+    doc, placeholder: Any, rows: Any, doc_lang: str
+) -> Any:
+    """Renders and inserts a project risks and mitigations table into a document."""
     paragraph = find_first_paragraph(doc, placeholder)
     if not paragraph:
         return
@@ -966,7 +970,13 @@ def render_risks_table(doc, placeholder: Any, rows: Any) -> Any:
     finalize_table(table)
     move_table_after_paragraph(paragraph, table)
 
-    headers = ["Riesgo", "Impacto", "Probabilidad", "Mitigación resumida"]
+    from assessment_engine.infrastructure.localization import get_localized_list
+
+    headers = get_localized_list(
+        "risk_table_headers",
+        locale=doc_lang,
+        default=["Risk", "Impact", "Probability", "Mitigation Summary"],
+    )
     for idx, header in enumerate(headers):
         set_cell_text(
             table.rows[0].cells[idx],
@@ -1017,7 +1027,7 @@ def render_risks_table(doc, placeholder: Any, rows: Any) -> Any:
 
 
 def render_gap_table(
-    doc, placeholder: Any, rows: Any, locale: str = "es"
+    doc, placeholder: Any, rows: Any, locale: str
 ) -> Any:
     r"""Inserts a styled gap analysis table into a python-docx Document object.
 
@@ -1053,16 +1063,16 @@ def render_gap_table(
 
     headers = [
         get_localized_string(
-            "table_header_pillar", locale=locale, default="Pilar"
+            "table_header_pillar", locale=locale
         ),
         get_localized_string(
-            "table_header_asis", locale=locale, default="Situación actual"
+            "table_header_asis", locale=locale
         ),
         get_localized_string(
-            "table_header_tobe", locale=locale, default="Estado objetivo"
+            "table_header_tobe", locale=locale
         ),
         get_localized_string(
-            "table_header_gap", locale=locale, default="Brecha clave"
+            "table_header_gap", locale=locale
         ),
     ]
     for idx, header in enumerate(headers):

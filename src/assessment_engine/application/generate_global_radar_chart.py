@@ -94,7 +94,7 @@ def main(argv: list[str] | None = None) -> None:
 
     towers = payload.get("heatmap", [])
     if not towers:
-        logger.warning("No hay datos de torres en el payload.")
+        logger.warning("Zero tower data points in global payload.")
         sys.exit(1)
 
     # Enforces a strict numerical sort on tower labels (e.g., T1, T2, ..., T10) to guarantee a logical and consistent axis order, preventing lexicographical sorting artifacts such as 'T10' preceding 'T2'.
@@ -168,7 +168,7 @@ def main(argv: list[str] | None = None) -> None:
 
     # Configures the primary chart title with a 24pt font size and center alignment to establish a clear visual hierarchy.
     plt.suptitle(
-        "Mapa de Madurez Tecnológica Global",
+        "Global Technology Maturity Map",
         size=24,
         color="#1f77b4",
         x=0.5,
@@ -179,7 +179,7 @@ def main(argv: list[str] | None = None) -> None:
     plt.savefig(out_path, dpi=200, bbox_inches="tight")
     plt.close()
 
-    logger.info(f"Gráfico radar global generado en: {out_path}")
+    logger.info(f"Global radar chart generated at: {out_path}")
 
 
 if __name__ == "__main__":

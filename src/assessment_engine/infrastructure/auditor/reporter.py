@@ -52,7 +52,7 @@ def render_html_certificate(report: UniversalAuditReport) -> str:
         all_findings.extend(p.findings)
 
     if not all_findings:
-        findings_html = "<div class='no-findings'>✓ Cero vulnerabilidades ni defectos críticos detectados.</div>"
+        findings_html = "<div class='no-findings'>✓ Zero vulnerabilities or critical defects detected.</div>"
     else:
         for f in all_findings[:15]:
             findings_html += f"""
@@ -65,11 +65,11 @@ def render_html_certificate(report: UniversalAuditReport) -> str:
             """
 
     return f"""<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificado de Calidad y Seguridad — {report.project_name}</title>
+    <title>Quality and Security Certificate — {report.project_name}</title>
     <style>
         :root {{
             --bg: #090d16;
@@ -234,7 +234,7 @@ def render_html_certificate(report: UniversalAuditReport) -> str:
         <div class="summary-stats">
             <div class="stat-card">
                 <div class="stat-val">{report.global_score}%</div>
-                <div class="stat-label">Puntuación Global</div>
+                <div class="stat-label">Global Score</div>
             </div>
             <div class="stat-card">
                 <div class="stat-val">{len(report.probes)}</div>
@@ -246,14 +246,14 @@ def render_html_certificate(report: UniversalAuditReport) -> str:
             </div>
         </div>
 
-        <h3 style="margin-bottom: 16px;">Resultados por Dimensión de Calidad</h3>
+        <h3 style="margin-bottom: 16px;">Quality Dimension Results</h3>
         {probes_html}
 
         <h3 style="margin-top: 36px; margin-bottom: 16px;">Registro Forense de Desviaciones</h3>
         {findings_html}
 
         <div class="seal-footer">
-            <span>SELLO CRIPTOGRÁFICO SHA-256: {seal_hash[:32]}...</span>
+            <span>CRYPTOGRAPHIC SHA-256 SEAL: {seal_hash[:32]}...</span>
             <span>AUDITADO BAJO NORMA ISO/IEC 25010 & IEEE 29119</span>
         </div>
     </div>

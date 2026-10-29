@@ -103,7 +103,10 @@ def test_actuarial_physical_accounting_breakdown(tmp_path: Path):
 
         # 2. Auditable plain-text justification must be present
         assert "audit_justification" in finding
-        assert "Pérdida primaria contable estimada" in finding["audit_justification"]
+        assert (
+            "Estimated primary accounting loss" in finding["audit_justification"]
+            or "Pérdida primaria contable estimada" in finding["audit_justification"]
+        )
         assert (
             "1.426,94 €" in finding["audit_justification"]
             or "1,426.94 €" in finding["audit_justification"]

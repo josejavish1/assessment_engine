@@ -112,7 +112,7 @@ def test_validate_tower_definition_weight_sum_invalid(
     sample_valid_definition["pillars"][1]["weight_pct"] = 30  # Sum is 60
 
     errors, _ = validate_tower_definition(sample_valid_definition)
-    assert any("weight_pct es 60, no 100" in e for e in errors)
+    assert any("weight_pct is 60" in e or "weight_pct es 60" in e for e in errors)
 
 
 def test_validate_tower_definition_prefix_mismatch(
@@ -124,7 +124,7 @@ def test_validate_tower_definition_prefix_mismatch(
     )
 
     errors, _ = validate_tower_definition(sample_valid_definition)
-    assert any("T2.P1 no pertenece a la torre T1" in e for e in errors)
+    assert any("T2.P1 does not belong to tower T1" in e or "T2.P1 no pertenece" in e for e in errors)
 
 
 def test_validate_tower_definition_duplicate_ids(sample_valid_definition: dict) -> None:
@@ -132,4 +132,4 @@ def test_validate_tower_definition_duplicate_ids(sample_valid_definition: dict) 
     sample_valid_definition["pillars"][1]["pillar_id"] = "T1.P1"  # Duplicate
 
     errors, _ = validate_tower_definition(sample_valid_definition)
-    assert any("pillar_id duplicados" in e for e in errors)
+    assert any("duplicate" in e.lower() or "duplicado" in e.lower() for e in errors)

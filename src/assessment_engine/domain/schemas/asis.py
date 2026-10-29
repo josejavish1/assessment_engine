@@ -50,9 +50,9 @@ class AsIsDraft(BaseDraftModel):
         """Return a list of phrases forbidden in AS-IS documents."""
         return [
             "TO-BE",
-            "estado objetivo",
-            "capacidades objetivo",
+            "target state",
+            "target capabilities",
             "roadmap",
-            "recomendamos",
-            "plan de accion",
+            "we recommend",
+            "action plan",
         ]

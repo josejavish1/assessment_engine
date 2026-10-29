@@ -254,7 +254,7 @@ def ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
 
     if git_status_has_relevant_changes():
         raise RuntimeError(
-            "El worktree no está limpio. Usa --allow-dirty solo si entiendes el riesgo."
+            "Worktree is not clean. Use --allow-dirty only if you understand the risk."
         )
 
 
@@ -314,7 +314,7 @@ def save_plan_bundle(
         encoding="utf-8",
     )
 
-    md_content = f"# Petición: {request_text[:50]}...\n\n"
+    md_content = f"# Request: {request_text[:50]}...\n\n"
     if plan_bundle.get("is_ambiguous"):
         md_content += f"## AMBIGUITY DETECTED\n- **Clarification required:** {plan_bundle.get('clarification_question')}\n"
     else:
@@ -390,7 +390,7 @@ def run_json_command(args: list[str]) -> Any:
         return json.loads(result.stdout)
     except json.JSONDecodeError as exc:
         raise RuntimeError(
-            f"Respuesta JSON inválida para {' '.join(args)}: {result.stdout.strip()}"
+            f"Invalid JSON response for {' '.join(args)}: {result.stdout.strip()}"
         ) from exc
 
 
@@ -552,7 +552,7 @@ def read_git_status_lines() -> list[str]:
     )
     if result.returncode != 0:
         raise RuntimeError(
-            result.stderr.strip() or "No se pudo inspeccionar el estado del worktree."
+            result.stderr.strip() or "Unable to inspect worktree status."
         )
     return [line for line in result.stdout.splitlines() if line.strip()]
 
@@ -693,20 +693,20 @@ def build_command_failure_message(
         A formatted string in Spanish detailing the command failure.
     """
     prefix = {
-        "executor_auth": "Fallo de autenticación del executor.",
-        "executor_config": "Configuración inválida del executor.",
-        "executor_missing": "El comando del executor no está disponible en este entorno.",
-        "timeout": "El comando del orquestador superó el tiempo máximo permitido.",
-        "validation": "Falló una validación estándar del repo.",
-        "command_failure": "Falló un comando del orquestador.",
-    }.get(category, "Falló un comando del orquestador.")
+        "executor_auth": "Executor authentication failure.",
+        "executor_config": "Invalid executor configuration.",
+        "executor_missing": "Executor command unavailable in current environment.",
+        "timeout": "Orchestrator command exceeded maximum timeout.",
+        "validation": "Standard repository validation failed.",
+        "command_failure": "Orchestrator command failed.",
+    }.get(category, "Orchestrator command failed.")
     timeout_suffix = (
         f" Timeout: {timeout_seconds}s."
         if category == "timeout" and timeout_seconds
         else ""
     )
     return (
-        f"{prefix} Categoría: {category}. "
+        f"{prefix} Category: {category}. "
         f"Comando: {' '.join(command)}. "
         f"Log: {output_path}."
         f"{timeout_suffix}"
@@ -927,7 +927,7 @@ def validate_executor_configuration(command_template: str) -> None:
 
     if vertex_selector in {"0", "false", "no"} and not gca_selector and not has_api_key:
         raise RuntimeError(
-            "El executor de Gemini requiere GEMINI_API_KEY, GOOGLE_API_KEY o habilitar autenticación Google."
+            "Gemini executor requires GEMINI_API_KEY, GOOGLE_API_KEY, or Google auth."
         )
 
 
@@ -1018,7 +1018,7 @@ def create_commit(
                 )
                 if "[zk-Liability-Proof]" not in log_result.stdout:
                     print(
-                        f"⚠️  Warning: Detectados commits de agente sin firma de gobernanza. Aplicando soft reset hasta {base_sha[:7]} para unificar y firmar..."
+                        f"⚠️  Warning: Unsigned agent commits detected. Applying soft reset to {base_sha[:7]} for signed consolidation..."
                     )
                     subprocess.run(["git", "reset", "--soft", base_sha], cwd=ROOT)
     except Exception as e:
@@ -1032,7 +1032,7 @@ def create_commit(
     )
     if not status_result.stdout.strip():
         print(
-            "⚠️  Warning: No hay cambios para commitear. El working tree está limpio. Saltando commit de gobernanza."
+            "⚠️  Warning: Working tree clean; zero staged changes. Skipping governance commit."
         )
         return
 
@@ -1090,7 +1090,7 @@ def repository_coordinates() -> tuple[str, str]:
     owner = payload.get("owner", {}).get("login")
     repo = payload.get("name")
     if not owner or not repo:
-        raise RuntimeError("No se pudo resolver el repositorio actual en GitHub.")
+        raise RuntimeError("Failed to resolve current GitHub repository context.")
     return owner, repo
 
 
@@ -1949,7 +1949,7 @@ def reconcile_pull_request(
                 repair_rounds += 1
                 if repair_rounds > max_rounds:
                     raise RuntimeError(
-                        "La PR sigue bloqueada tras agotar la reconciliación automática."
+                        "PR remains blocked after exhausting automated reconciliation."
                     )
                 repair_pull_request(
                     request_dir,
@@ -1958,7 +1958,7 @@ def reconcile_pull_request(
                     pr_state=pr_state,
                     round_number=repair_rounds,
                     additional_feedback=(
-                        f"La sincronización con {pr_state['base_ref']} dejó validaciones "
+                        f"Sync with {pr_state['base_ref']} left pending validations "
                         f"locales fallando: {sync_feedback}"
                     ),
                 )
@@ -2019,7 +2019,7 @@ def reconcile_pull_request(
             repair_rounds += 1
             if repair_rounds > max_rounds:
                 raise RuntimeError(
-                    "La PR sigue bloqueada tras agotar la reconciliación automática."
+                    "PR remains blocked after exhausting automated reconciliation."
                 )
             repair_pull_request(
                 request_dir,
@@ -2044,7 +2044,7 @@ def reconcile_pull_request(
         },
     )
     raise RuntimeError(
-        "La PR no llegó a un estado mergeable dentro del tiempo de reconciliación."
+        "PR did not achieve mergeable state within reconciliation timeout."
     )
 
 
@@ -2234,10 +2234,10 @@ def execute_plan(
                 ["git", "checkout", original_branch], cwd=original_root, check=False
             )
             logger.info(
-                f"Shadow Workspace limpiado y rama {original_branch} restaurada en el origen."
+                f"Shadow workspace cleaned and branch {original_branch} restored at origin."
             )
         except Exception as e:
-            logger.error(f"Error limpiando shadow worktree: {e}")
+            logger.error(f"Error cleaning shadow worktree: {e}")
 
     atexit.register(cleanup_worktree)
 
@@ -2257,7 +2257,7 @@ def execute_plan(
                 missing_ok=True
             )  # The file is deleted immediately post-read to maintain a clean filesystem state and prevent residual artifacts.
             logger.info(
-                "Se ha detectado y cargado feedback autorizado por el humano para esta ejecución."
+                "Human-authorized feedback detected and loaded for execution."
             )
         except Exception as e:
             logger.warning(f"No se pudo cargar el feedback autorizado: {e}")
@@ -2316,22 +2316,22 @@ def execute_plan(
                     )
 
                     raise RuntimeError(
-                        f"ACTION GATE TRIGGERED: El Agente Doctor ha bloqueado la auto-curación.\n"
-                        f"Diagnóstico: {diagnosis.diagnosis}\n"
+                        f"ACTION GATE TRIGGERED: Doctor Agent blocked self-healing.\n"
+                        f"Diagnosis: {diagnosis.diagnosis}\n"
                         f"Invariante Comprometido: {diagnosis.required_invariant_breach}\n"
                         f"Cura: {diagnosis.proposed_cure}\n"
                         f"Impacto: {diagnosis.second_order_impact}\n"
                         f"Archivos a tocar: {diagnosis.blast_radius}"
                     )
 
-                feedback = f"SÍNTOMA:\n{raw_error}\n\nCURA PROPUESTA POR EL DOCTOR:\n{diagnosis.proposed_cure}"
+                feedback = f"SYMPTOM:\n{raw_error}\n\nPROPOSED REMEDIATION:\n{diagnosis.proposed_cure}"
 
                 if attempt == max_attempts:
                     raise RuntimeError(
-                        f"La tarea {task['id']} agotó sus reintentos tras la última cura del Doctor: {exc}"
+                        f"Task {task['id']} exhausted retries following Doctor diagnosis: {exc}"
                     ) from exc
         else:
-            raise RuntimeError(f"No se pudo completar la tarea {task['id']}.")
+            raise RuntimeError(f"Task {task['id']} failed to complete successfully.")
 
     # Captures the pre-commit diff, which serves as the input for generating the commit signature.
     diff_result = subprocess.run(
@@ -2482,14 +2482,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "resume-pr":
         request_dir = resume_pull_request(args, policy=policy)
-        logger.info(f"Reconciliación completada en {request_dir}")
+        logger.info(f"Reconciliation completed in {request_dir}")
         return 0
 
     if args.command == "execute":
         request_dir = Path(args.request_dir).resolve()
         plan_path = request_dir / "plan.json"
         if not plan_path.exists():
-            raise FileNotFoundError(f"No se encontró plan.json en {request_dir}")
+            raise FileNotFoundError(f"plan.json not found in {request_dir}")
 
         plan_bundle_model = ProductOwnerAlternatives.model_validate_json(
             plan_path.read_text(encoding="utf-8")
@@ -2498,13 +2498,13 @@ def main(argv: list[str] | None = None) -> int:
 
         if plan_bundle.get("is_ambiguous"):
             logger.error(
-                f"Petición ambigua. Pregunta del planificador: {plan_bundle.get('clarification_question', 'Sin pregunta')}"
+                f"Ambiguous request. Planner question: {plan_bundle.get('clarification_question', 'No question provided')}"
             )
             return 1
 
         if plan_bundle.get("refused"):
             logger.error(
-                f"El planificador rechazó la petición: {plan_bundle.get('refusal_reason', 'Sin razón proporcionada')}"
+                f"Planner rejected request: {plan_bundle.get('refusal_reason', 'No reason provided')}"
             )
             return 1
 
@@ -2531,7 +2531,7 @@ def main(argv: list[str] | None = None) -> int:
             skip_pr=args.skip_pr,
             skip_auto_merge=args.skip_auto_merge,
         )
-        logger.info(f"Orquestación completada en {request_dir}")
+        logger.info(f"Orchestration completed in {request_dir}")
         return 0
 
     request_text = load_request_text(args)
@@ -2560,19 +2560,19 @@ def main(argv: list[str] | None = None) -> int:
 
     if plan.get("is_ambiguous"):
         logger.error(
-            f"Petición ambigua. Pregunta del planificador: {plan.get('clarification_question', 'Sin pregunta')}"
+            f"Ambiguous request. Planner question: {plan.get('clarification_question', 'No question provided')}"
         )
         return 1
 
     if plan.get("refused"):
         logger.error(
-            f"El planificador rechazó la petición: {plan.get('refusal_reason', 'Sin razón proporcionada')}"
+            f"Planner rejected request: {plan.get('refusal_reason', 'No reason provided')}"
         )
         return 1
 
     if "alternatives" in plan:
         if not plan["alternatives"]:
-            logger.error("El planificador no devolvió ninguna alternativa ejecutable.")
+            logger.error("Planner did not return any executable alternatives.")
             return 1
         active_plan = plan["alternatives"][0]
     else:
@@ -2585,7 +2585,7 @@ def main(argv: list[str] | None = None) -> int:
         skip_pr=args.skip_pr,
         skip_auto_merge=args.skip_auto_merge,
     )
-    logger.info(f"Orquestación completada en {request_dir}")
+    logger.info(f"Orchestration completed in {request_dir}")
     return 0
 
 

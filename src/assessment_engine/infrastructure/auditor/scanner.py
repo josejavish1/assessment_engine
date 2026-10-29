@@ -35,8 +35,8 @@ from assessment_engine.infrastructure.auditor.reporter import render_html_certif
 
 class SoverikQualityEngine:
     """
-    Motor Soberano Universal de Calidad y Certificación.
-    Agnóstico de framework: audita cualquier workspace o repositorio contra las 12 dimensiones SOTA.
+    Universal Sovereign Quality & Certification Engine.
+    Framework-agnostic: audits any workspace or repository against the 12 SOTA dimensions.
     """
 
     def __init__(self, output_subdir: str = "docs/audits") -> None:

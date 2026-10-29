@@ -62,12 +62,12 @@ class SurgicalCorrectionTicket:
         trace_section = f"\n{self.trace_diagnostic_md}\n" if self.trace_diagnostic_md else ""
 
         return (
-            f"### TICKET DE CORRECCIÓN QUIRÚRGICA (FASE 4: TRIBUNAL FORENSE DE CIERRE)\n"
-            f"**ID Ticket:** {self.ticket_id} | **Estado:** {self.gate_status}\n\n"
-            f"#### DEFICIENCIAS DETECTADAS POR EL AUDITOR FORENSE\n{findings_md}\n"
+            f"### SURGICAL CORRECTION TICKET (PHASE 4: FORENSIC CLOSURE TRIBUNAL)\n"
+            f"**Ticket ID:** {self.ticket_id} | **Gate Status:** {self.gate_status}\n\n"
+            f"#### DEFICIENCIES DETECTED BY FORENSIC AUDITOR\n{findings_md}\n"
             f"{trace_section}\n"
-            f"#### INSTRUCCIONES ACCIONABLES OBLIGATORIAS\n{inst_md}\n\n"
-            f"#### ACCIONES ESTRICTAMENTE PROHIBIDAS (ANTI-REGRESIÓN)\n{forb_md}\n"
+            f"#### MANDATORY ACTIONABLE INSTRUCTIONS\n{inst_md}\n\n"
+            f"#### STRICTLY PROHIBITED ACTIONS (ANTI-REGRESSION)\n{forb_md}\n"
         )
 
 
@@ -120,7 +120,7 @@ class ForensicASTSecurityVisitor(ast.NodeVisitor):
             and len(node.values) > 1
         ):
             self.findings.append(
-                f"Inyección SQL (CWE-89) en línea {node.lineno}: Consulta SQL dinámica construida con f-string sin parámetros '?'"
+                f"SQL Injection (CWE-89) at line {node.lineno}: Dynamic SQL query constructed via f-string without parameterized '?'"
             )
         self.generic_visit(node)
 
@@ -135,22 +135,22 @@ class ForensicASTSecurityVisitor(ast.NodeVisitor):
             if isinstance(node.func.value, ast.Name):
                 caller_name = node.func.value.id.lower()
 
-        # Peligro de ejecución arbitraria (CWE-95)
+        # Arbitrary code execution vulnerability (CWE-95)
         if func_name in ("eval", "exec"):
             self.findings.append(
-                f"Ejecución arbitraria de código (CWE-95) en línea {node.lineno}: Uso prohibido de '{func_name}()'"
+                f"Arbitrary code execution (CWE-95) at line {node.lineno}: Prohibited use of '{func_name}()'"
             )
 
-        # Inyección de comandos del sistema operativo (CWE-78)
+        # OS command injection vulnerability (CWE-78)
         if func_name == "system" and caller_name == "os":
             self.findings.append(
-                f"Inyección de comandos de SO (CWE-78) en línea {node.lineno}: Uso de 'os.system()'"
+                f"OS command injection (CWE-78) at line {node.lineno}: Prohibited use of 'os.system()'"
             )
         elif func_name in ("run", "Popen", "call") and caller_name == "subprocess":
             for kw in node.keywords:
                 if kw.arg == "shell" and isinstance(kw.value, ast.Constant) and kw.value.value is True:
                     self.findings.append(
-                        f"Inyección de comandos de SO (CWE-78) en línea {node.lineno}: Subprocess ejecutado con 'shell=True'"
+                        f"OS command injection (CWE-78) at line {node.lineno}: Subprocess executed with 'shell=True'"
                     )
 
         # Llamadas HTTP sin timeout (RESIL-UNBOUNDED-TIMEOUT)
@@ -158,7 +158,7 @@ class ForensicASTSecurityVisitor(ast.NodeVisitor):
             has_timeout = any(kw.arg == "timeout" for kw in node.keywords)
             if caller_name in ("requests", "httpx", "http", "client", "session", "aiohttp") and not has_timeout:
                 self.findings.append(
-                    f"Fallo de resiliencia (RESIL-UNBOUNDED-TIMEOUT) en línea {node.lineno}: Llamada HTTP '{caller_name}.{func_name}()' sin parámetro 'timeout' finito"
+                    f"Resilience violation (RESIL-UNBOUNDED-TIMEOUT) at line {node.lineno}: HTTP call '{caller_name}.{func_name}()' without finite 'timeout' parameter"
                 )
 
         self.generic_visit(node)
@@ -170,7 +170,7 @@ class ForensicASTSecurityVisitor(ast.NodeVisitor):
             first = node.body[0]
             if isinstance(first, ast.Pass) or (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and first.value.value is Ellipsis):
                 self.findings.append(
-                    f"Higiene de código (CWE-391) en línea {node.lineno}: Captura de excepción genérica silenciada con pass/..."
+                    f"Code hygiene violation (CWE-391) at line {node.lineno}: Generic exception silently swallowed via pass/..."
                 )
         self.generic_visit(node)
 
@@ -191,7 +191,7 @@ class ForensicASTSecurityVisitor(ast.NodeVisitor):
                 d = depth + 1
                 if d > 3:
                     self.findings.append(
-                        f"Complejidad arquitectónica (ARCH-DEEP-NESTING) en línea {getattr(child, 'lineno', 0)}: Anidamiento excesivo ({d} niveles > 3)"
+                        f"Architectural complexity (ARCH-DEEP-NESTING) at line {getattr(child, 'lineno', 0)}: Excessive nesting ({d} levels > 3)"
                     )
                 self._check_nesting(child, d)
             else:
@@ -210,21 +210,21 @@ def audit_cubo_1_parity(code: str, test_code: str, invariants: tuple[str, ...]) 
         "hmac": ("hmac", "signature", "sha256", "sign"),
         "idempotency": ("idempotenc", "idempotent", "idempotency_key", "deduplicat"),
         "utc": ("utc", "iso", "timezone", "timestamp", "datetime"),
-        "céntimos": ("cent", "cents", "céntimo", "amount_cents", "integer"),
+        "centimos": ("cent", "cents", "centimo", "amount_cents", "integer"),
         "luhn": ("luhn", "pci", "card", "subtle", "digest"),
         "overbooking": ("hold", "lease", "atomic", "lock", "concurrency"),
         "concurrencia": ("etag", "if-match", "match", "version", "precondition"),
         "anonimizacion": ("hash", "sha256", "anonymiz", "redact"),
         "tipado": ("int", "str", "float", "bool", "dict", "list", "tuple", "return", "type", ":", "->"),
         "pura": ("def ", "return", "assert", "multiply", "add"),
-        "numéric": ("int", "float", "number", "multiply", "amount", "return"),
-        "señuelo": ("honeypot", "_hp", "hidden", "tabindex", "aria", "label", "input"),
+        "numeric": ("int", "float", "number", "multiply", "amount", "return"),
+        "honeypot": ("honeypot", "_hp", "hidden", "tabindex", "aria", "label", "input"),
         "speed trap": ("token", "hmac", "timestamp", "time", "speed", "trap", "elapsed"),
         "caducidad": ("expire", "max_seconds", "elapsed", "timeout", "valid", "expired"),
         "oklch": ("oklch", "token", "theme", "css", "variable", "color", "palette", "hex"),
         "wcag": ("wcag", "aria", "contrast", "axe", "accessibility", "label", "main", "h1"),
         "saliency": ("saliency", "prominenc", "foveal", "attention", "fixation", "contrast", "fitts", "crowding"),
-        "atención": ("attention", "atencion", "fixation", "foveal", "saliency", "focus"),
+        "attention": ("attention", "atencion", "fixation", "foveal", "saliency", "focus"),
         "prominencia": ("prominenc", "saliency", "contrast", "pop-out", "feature", "foveal"),
         "multimodal": ("multimodal", "vision", "screenshot", "prompt", "image", "defect", "aesthetic", "trust"),
         "visual": ("visual", "defect", "screenshot", "clipping", "overlapping", "distortion", "aesthetic", "trust"),
@@ -234,7 +234,7 @@ def audit_cubo_1_parity(code: str, test_code: str, invariants: tuple[str, ...]) 
         "fotograf": ("image", "photo", "unsplash", "asset", "src", "img", "fotograf"),
         "atmosfer": ("gradient", "radial", "glow", "depth", "glass", "backdrop", "shadow"),
         "mockup": ("mockup", "preview", "device", "simulator", "perspective", "widget"),
-        "fricción": ("friction", "rage_click", "hesitation", "dropoff", "beacon", "conversion", "variant"),
+        "friction": ("friction", "rage_click", "hesitation", "dropoff", "beacon", "conversion", "variant"),
         "friccion": ("friction", "rage_click", "hesitation", "dropoff", "beacon", "conversion", "variant"),
         "rage": ("rage_click", "click", "clicks", "rapid", "threshold", "friction"),
         "hesitation": ("hesitation", "focus", "dwell", "timer", "delay", "friction"),
@@ -253,16 +253,16 @@ def audit_cubo_1_parity(code: str, test_code: str, invariants: tuple[str, ...]) 
         "darwiniano": ("darwin", "distiller", "contrastive", "exemplar", "reflexion"),
         "reflexion": ("reflexion", "ledger", "antipattern", "exemplar", "axiom"),
         "sombra": ("shadow", "diffuse", "rgba", "multicapa", "sombra", "atenuacion", "decay"),
-        "borde": ("border", "inset", "translucent", "translúcid", "micro", "stroke"),
+        "border": ("border", "inset", "translucent", "translucid", "micro", "stroke"),
         "craft": ("craft", "taste", "polish", "linear", "kowalski", "estetic", "calidad"),
         "taste": ("taste", "craft", "polish", "linear", "kowalski", "slop", "antipattern"),
-        "reparación": ("repair", "remediat", "fix", "replace", "sub", "morph", "reparacion"),
+        "repair": ("repair", "remediat", "fix", "replace", "sub", "morph", "reparacion"),
         "eslint": ("lint", "ast", "rule", "violation", "pattern", "audit", "linter", "check"),
         "ast": ("ast", "tree", "node", "re", "pattern", "parse", "visitor", "lint"),
-        "física": ("active", "scale", "spring", "físic", "fisic", "transición", "duration"),
+        "physics": ("active", "scale", "spring", "fisic", "transition", "duration"),
         "resorte": ("spring", "bounce", "damping", "active", "scale"),
-        "micro-interacción": ("active", "scale", "transition", "hover", "interact", "touch"),
-        "itu": ("itu", "e164", "e.164", "phone", "telefono", "teléfono", "regex", "email"),
+        "microinteraction": ("active", "scale", "transition", "hover", "interact", "touch"),
+        "itu": ("itu", "e164", "e.164", "phone", "telefono", "regex", "email"),
         "5322": ("5322", "email", "correo", "regex"),
         "magic": ("magic", "uint8array", "canvas", "webp", "blob", "file", "image", "photo"),
     }
@@ -309,7 +309,7 @@ def audit_cubo_3_anti_features(code: str, anti_features: tuple[str, ...]) -> tup
         af_low = af.lower()
         for trigger, patterns in veto_patterns.items():
             if trigger in af_low and _matches_veto_patterns(patterns, low_code):
-                forbidden_detected.append(f"Anti-Feature detectada ({trigger.upper()}): Violación de '{af}'")
+                forbidden_detected.append(f"Anti-Feature detected ({trigger.upper()}): Violation of '{af}'")
 
     return (len(forbidden_detected) == 0, forbidden_detected)
 
@@ -321,7 +321,7 @@ def audit_forensic_security(code: str, rel_path: str = "candidate.py") -> tuple[
     try:
         tree = ast.parse(code)
     except SyntaxError as e:
-        return (False, [f"Error sintáctico fatal: {e}"])
+        return (False, [f"Fatal syntax error: {e}"])
 
     visitor = ForensicASTSecurityVisitor(rel_path=rel_path)
     visitor.visit(tree)
@@ -332,11 +332,11 @@ def audit_forensic_security(code: str, rel_path: str = "candidate.py") -> tuple[
         if clean.startswith("#") or " #" in line:
             if INFORMAL_SLANG_PATTERN.search(clean):
                 findings.append(
-                    f"Higiene de código (HYGIENE-UNPROFESSIONAL-COMMENT) en línea {line_idx}: Comentario informal o vibe-coding detectado"
+                    f"Code hygiene violation (HYGIENE-UNPROFESSIONAL-COMMENT) at line {line_idx}: Informal or non-technical comment detected"
                 )
             if EMOJI_PATTERN.search(clean):
                 findings.append(
-                    f"Higiene de código (HYGIENE-EMOJI-IN-CODE) en línea {line_idx}: Emojis no permitidos en código de producción"
+                    f"Code hygiene violation (HYGIENE-EMOJI-IN-CODE) at line {line_idx}: Emojis prohibited in production code"
                 )
 
     return (len(findings) == 0, findings)
@@ -347,16 +347,16 @@ def audit_react_structural_patterns(code: str) -> tuple[bool, list[str]]:
     findings = []
     
     if "useEffect" in code and "fetch(" in code and "AbortController" not in code:
-        findings.append("Memory Leak / Race Condition: Uso de fetch() dentro de useEffect sin AbortController para cancelar la petición al desmontar.")
+        findings.append("Memory Leak / Race Condition: fetch() inside useEffect without AbortController for cleanup on unmount.")
         
     if "filter(" in code and "map(" in code and "useMemo" not in code and "filtered" in code.lower():
-        findings.append("Main Thread Jank: Filtrado/transformación de arrays (.filter) en el cuerpo del render sin useMemo. Bloquea la UI a los 60 FPS.")
+        findings.append("Main Thread Jank: Array filtering/transformation in render body without useMemo. Blocks UI at 60 FPS.")
 
     if "onClick" in code and "aria-" not in code and "role=" not in code and re.search(r"<div[^>]*onClick", code):
-        findings.append("Accesibilidad Pésima (WCAG): Elemento <div> interactivo con onClick pero sin role='button' ni atributos aria-.")
+        findings.append("Accessibility Failure (WCAG): Interactive <div> with onClick lacks role='button' or aria-* attributes.")
             
     if "any" in code and "as any" in code:
-        findings.append("Herejía de Tipado (TS): Uso explícito de 'as any' o ': any' que anula la seguridad AOT.")
+        findings.append("Typing Violation (TS): Explicit 'as any' or ': any' voids compile-time AOT type safety.")
 
     return (len(findings) == 0, findings)
 
@@ -406,7 +406,7 @@ def _evaluate_workspace_report_attribution(
     if baseline_score is not None and current_score < baseline_score:
         regression = True
         target_ws_findings.append(
-            f"Regresión Global (RATCHET-VIOLATION): La puntuación del proyecto cayó de {baseline_score}% a {current_score}%."
+            f"Global Regression (RATCHET-VIOLATION): Project quality score decreased from {baseline_score}% to {current_score}%."
         )
 
     return target_ws_findings, unrelated_count, regression
@@ -434,9 +434,9 @@ def audit_target_scoped_quality(
 
     target_clean = len(target_findings) == 0 and not regression
     summary = (
-        f"Auditoría Diferencial: Archivo '{target_rel_path}' 100% limpio (0 hallazgos). {unrelated_count} defectos ajenos aislados en otros módulos."
+        f"Differential Audit: Target file '{target_rel_path}' 100% clean (0 findings). {unrelated_count} unrelated defects isolated."
         if target_clean
-        else f"Auditoría Diferencial VETO: {len(target_findings)} deficiencias en '{target_rel_path}'. {unrelated_count} defectos ajenos omitidos."
+        else f"Differential Audit VETO: {len(target_findings)} defects in '{target_rel_path}'. {unrelated_count} unrelated defects omitted."
     )
 
     return TargetScopedAuditReport(
@@ -458,23 +458,23 @@ class ClosureTribunal:
         ticket_id = f"TICK-{uuid.uuid4().hex[:8].upper()}"
         actionable_instructions: list[str] = []
         forbidden_actions: list[str] = [
-            "NO reescribir de cero las funciones que ya pasaron las compuertas AST.",
-            "NO introducir librerías externas en requirements.txt o package.json sin justificación.",
-            "Mantener la complejidad ciclomática por debajo de V(G) <= 10.",
+            "Do not rewrite from scratch functions that already passed AST gates.",
+            "Do not introduce external libraries into requirements.txt or package.json without architectural justification.",
+            "Maintain cyclomatic complexity strictly below V(G) <= 10.",
         ]
 
         if not p_passed:
             for inv in missing_invs:
-                actionable_instructions.append(f"Implementar soporte explícito para: {inv}")
+                actionable_instructions.append(f"Implement explicit support for: {inv}")
         if not v_passed:
             for af in forbidden_afs:
-                actionable_instructions.append(f"Eliminar dependencia o patrón prohibido: {af}")
+                actionable_instructions.append(f"Eliminate prohibited dependency or pattern: {af}")
         if not s_passed:
             for sec in security_findings:
-                actionable_instructions.append(f"Corregir vulnerabilidad de seguridad o calidad: {sec}")
+                actionable_instructions.append(f"Remediate security vulnerability or quality defect: {sec}")
         if not react_passed:
             for rf in react_findings:
-                actionable_instructions.append(f"Corregir anti-patrón Frontend: {rf}")
+                actionable_instructions.append(f"Fix frontend anti-pattern: {rf}")
 
         return SurgicalCorrectionTicket(
             ticket_id=ticket_id, timestamp=time.time(), gate_status="REJECTED_CLOSURE_GAP",
@@ -521,7 +521,7 @@ class ClosureTribunal:
                 veto_cubo_3_passed=True,
                 forensic_security_passed=True,
                 react_structural_passed=True,
-                summary="Aprobado con honores por el Tribunal Forense Tier-1. Cumple 100% de invariantes, 0 anti-features y 0 vulnerabilidades.",
+                summary="Certified by Tier-1 Forensic Tribunal: 100% invariants passed, 0 anti-features, 0 vulnerabilities.",
                 surgical_ticket=None,
                 target_scoped_audit_passed=True,
                 unrelated_findings_count=scoped_audit.unrelated_findings_count,

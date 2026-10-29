@@ -121,7 +121,7 @@ def load_locales_catalog() -> dict[str, Any]:
                     with open(loc_file, "r", encoding="utf-8-sig") as lf:
                         _LOCALES_CACHE[lang_code] = json.load(lf)
                 except Exception as ex:
-                    logger.debug("Error leyendo locale dinámico %s: %s", loc_file, ex)
+                    logger.debug("Error reading dynamic locale %s: %s", loc_file, ex)
 
     return _LOCALES_CACHE or {}
 
@@ -129,7 +129,7 @@ def load_locales_catalog() -> dict[str, Any]:
 def normalize_locale(locale: str | None) -> tuple[str, str]:
     """Normalize a locale tag into a tuple of (full_normalized_tag, base_language_code)."""
     if not locale:
-        return "es", "es"
+        return "en", "en"
     cleaned = str(locale).strip().lower().replace("-", "_")
     base = cleaned.split("_")[0]
     return cleaned, base
@@ -140,7 +140,7 @@ def resolve_base_locale(locale: str | None) -> str:
     return normalize_locale(locale)[1]
 
 
-def format_number(value: float, locale: str = "es", decimals: int = 2) -> str:
+def format_number(value: float, locale: str = "en", decimals: int = 2) -> str:
     """Format a numerical value according to ICU regional standards without external dependencies."""
     norm_loc, base_loc = normalize_locale(locale)
     val_float = float(value)
@@ -157,20 +157,24 @@ def format_number(value: float, locale: str = "es", decimals: int = 2) -> str:
         int_str = int_str[:-3]
     groups.reverse()
 
+    COMMA_DECIMAL_LOCALES = {
+        "es", "de", "fr", "pt", "it", "pl", "nl", "ru", "sv", "da", "no", "fi", "tr", "el", "cs", "ro", "hu", "uk"
+    }
+
     if norm_loc in ["de_ch", "fr_ch", "it_ch", "chf"]:
         # Swiss standard: "'" thousands separator, '.' decimal point
         formatted_int = "'".join(groups)
         return f"{sign}{formatted_int}.{decimal_part}" if decimals > 0 else f"{sign}{formatted_int}"
-    elif base_loc in ["es", "de"]:
-        # Continental Europe: '.' thousands separator, ',' decimal point
-        formatted_int = ".".join(groups)
-        return f"{sign}{formatted_int},{decimal_part}" if decimals > 0 else f"{sign}{formatted_int}"
     elif base_loc == "fr":
         # French: ' ' thousands separator, ',' decimal point
         formatted_int = " ".join(groups)
         return f"{sign}{formatted_int},{decimal_part}" if decimals > 0 else f"{sign}{formatted_int}"
+    elif base_loc in COMMA_DECIMAL_LOCALES:
+        # Continental European & Latin American standard: '.' thousands separator, ',' decimal point
+        formatted_int = ".".join(groups)
+        return f"{sign}{formatted_int},{decimal_part}" if decimals > 0 else f"{sign}{formatted_int}"
     else:
-        # Anglo-American & Default: ',' thousands separator, '.' decimal point
+        # Anglo-American & Asian standard (en, ja, zh, ko, etc.): ',' thousands separator, '.' decimal point
         formatted_int = ",".join(groups)
         return f"{sign}{formatted_int}.{decimal_part}" if decimals > 0 else f"{sign}{formatted_int}"
 
@@ -179,7 +183,7 @@ def format_currency(
     value: float,
     currency_code: str = "EUR",
     currency_symbol: str | None = None,
-    locale: str = "es",
+    locale: str = "en",
     decimals: int = 2,
 ) -> str:
     """Format monetary figures with regional currency placement and symbols according to ICU standards."""
@@ -198,17 +202,17 @@ def format_currency(
 
     if code == "CHF" or norm_loc in ["de_ch", "fr_ch", "it_ch"]:
         return f"CHF {formatted_num}"
-    elif base_loc in ["es", "de", "fr"]:
-        # Suffix format: '1.426,94 €'
-        return f"{formatted_num} {sym}"
-    else:
-        # Prefix format: '$1,426.94', '£1,426.94'
+    elif base_loc in ("en", "ja", "zh", "ko") and sym in ("$", "£", "¥"):
+        # Prefix notation standard for Anglo-American and East Asian conventions
         return f"{sym}{formatted_num}"
+    else:
+        # Continental & International standard: suffix placement (e.g. '1.426,94 €', '1.426,94 $')
+        return f"{formatted_num} {sym}"
 
 
 def get_localized_string(
     key: str,
-    locale: str = "es",
+    locale: str = "en",
     default: str | None = None,
     **kwargs: Any,
 ) -> str:
@@ -217,14 +221,14 @@ def get_localized_string(
     base_loc = resolve_base_locale(locale)
 
     # JIT Synthesis: If the requested language is uncataloged, dynamically generate it on the fly
-    if base_loc not in catalog and base_loc not in ["es", "en"]:
+    if base_loc not in catalog:
         dynamic_dict = DynamicLocaleSynthesizer().synthesize_locale(base_loc)
         if dynamic_dict:
             catalog[base_loc] = dynamic_dict
 
-    # Resolution hierarchy: exact locale -> base language -> 'en' -> fallback
+    # Resolution hierarchy: exact locale -> base language -> ontological root ('en')
     text_template = None
-    for loc in [locale, base_loc, "en", "es"]:
+    for loc in [locale, base_loc, "en"]:
         if loc in catalog and isinstance(catalog[loc], dict):
             if key in catalog[loc]:
                 text_template = catalog[loc][key]
@@ -251,57 +255,55 @@ t = get_localized_string
 
 def get_localized_list(
     key: str,
-    locale: str = "es",
-    default: list[str] | None = None,
-) -> list[str]:
-    """Retrieve a localized list of strings using locale fallback resolution."""
+    locale: str = "en",
+    default: list[Any] | None = None,
+) -> list[Any]:
+    """Retrieve a localized list using locale fallback resolution."""
     catalog = load_locales_catalog()
     base_loc = resolve_base_locale(locale)
 
-    for loc in [locale, base_loc, "en", "es"]:
+    for loc in [locale, base_loc, "en"]:
         if loc in catalog and isinstance(catalog[loc], dict):
             val = catalog[loc].get(key)
             if isinstance(val, list):
-                return [str(item) for item in val]
+                return [item if isinstance(item, (list, tuple, dict)) else str(item) for item in val]
 
     return default if default is not None else []
 
 
-def get_archimate_catalog(locale: str = "es") -> dict[str, list[str]]:
+def get_archimate_catalog(locale: str = "en") -> dict[str, list[str]]:
     """Retrieve the localized ArchiMate technical deliverables catalog for a given locale."""
     catalog = load_locales_catalog()
     base_loc = resolve_base_locale(locale)
 
-    for loc in [base_loc, "en", "es"]:
+    for loc in [base_loc, "en"]:
         if loc in catalog and "archimate_catalog" in catalog[loc]:
             return catalog[loc]["archimate_catalog"]
 
     return {}
 
 
-def get_archimate_fallback_deliverables(locale: str = "es") -> list[str]:
+def get_archimate_fallback_deliverables(locale: str = "en") -> list[str]:
     """Retrieve default architecture deliverables when no catalog keywords match."""
     catalog = load_locales_catalog()
     base_loc = resolve_base_locale(locale)
 
-    for loc in [base_loc, "en", "es"]:
+    for loc in [base_loc, "en"]:
         if loc in catalog and "archimate_fallback_deliverables" in catalog[loc]:
             return catalog[loc]["archimate_fallback_deliverables"]
 
-    if base_loc == "en":
-        return [
-            "Infrastructure as Code (IaC / Terraform) Manifests",
-            "Parameterized Operational Runbook and RACI Matrix",
-            "Observability, Telemetry, and Alerting Dashboard",
-        ]
+    en_cat = catalog.get("en", {})
+    if "archimate_fallback_deliverables" in en_cat:
+        return en_cat["archimate_fallback_deliverables"]
+
     return [
-        "Manifiestos de Infraestructura como Código (IaC / Terraform)",
-        "Runbook Operativo Parametrizado y Matriz RACI",
-        "Cuadro de Mando de Observabilidad, Telemetría y Alertas",
+        "Infrastructure as Code (IaC / Terraform) Manifests",
+        "Parameterized Operational Runbook and RACI Matrix",
+        "Observability, Telemetry, and Alerting Dashboard",
     ]
 
 
-def apply_vocabulary_substitutions(text: str, locale: str = "es") -> str:
+def apply_vocabulary_substitutions(text: str, locale: str = "en") -> str:
     """Applies declarative style and vocabulary normalizations using regex word boundaries."""
     if not text:
         return text
@@ -347,7 +349,22 @@ def resolve_target_language_name(locale_code: str | None) -> str:
     """Resolves an ISO-639-1 / BCP-47 locale code to its standardized English name for generative prompt projection."""
     if not locale_code:
         return "Spanish"
-    base_loc = resolve_base_locale(locale_code)
+    cleaned, base_loc = normalize_locale(locale_code)
+    regional_overrides = {
+        "en_gb": "British English",
+        "en_uk": "British English",
+        "en_us": "American English",
+        "es_es": "European Spanish (Spain)",
+        "es_mx": "Mexican Spanish",
+        "es_latam": "Latin American Spanish",
+        "pt_br": "Brazilian Portuguese",
+        "pt_pt": "European Portuguese",
+        "de_ch": "Swiss German",
+        "de_at": "Austrian German",
+        "fr_ca": "Canadian French",
+    }
+    if cleaned in regional_overrides:
+        return regional_overrides[cleaned]
     return ISO_LANGUAGE_NAMES.get(base_loc, base_loc.capitalize())
 
 
@@ -390,7 +407,7 @@ MONTH_NAMES: dict[str, dict[int, str]] = {
 }
 
 
-def format_date_localized(date_val: str | None = None, locale: str = "es") -> str:
+def format_date_localized(date_val: str | None = None, locale: str = "en") -> str:
     """Formats a date string or ISO date into localized 'Month Year' conforming to regional grammar standards."""
     from datetime import datetime
 

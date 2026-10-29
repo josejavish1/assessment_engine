@@ -72,8 +72,8 @@ def _audit_copyleft_dependencies(req_file: Path) -> tuple[dict[str, str], list[s
                 file_path="requirements.txt",
                 line_number=line_idx,
                 rule_id="LEGAL-COPYLEFT-CONTAMINATION",
-                message=f"Dependencia '{pkg_name}' sujeta a licencia viral Copyleft (GPL/AGPL): obliga a liberar el código propietario",
-                recommendation="Reemplazar por una alternativa con licencia permisiva comercial (MIT / Apache-2.0 / BSD)."
+                message=f"Dependency '{pkg_name}' subject to viral Copyleft license (GPL/AGPL): restricts proprietary distribution",
+                recommendation="Replace with permissive commercial alternative (MIT / Apache-2.0 / BSD)."
             ))
             continue
 
@@ -89,8 +89,8 @@ def _audit_copyleft_dependencies(req_file: Path) -> tuple[dict[str, str], list[s
                         file_path="requirements.txt",
                         line_number=line_idx,
                         rule_id="LEGAL-COPYLEFT-CONTAMINATION",
-                        message=f"Licencia viral detectada en '{pkg_name}': {lic_meta} (Riesgo de contaminación de IP)",
-                        recommendation="Sustituir por una librería con licencia permisiva para uso comercial."
+                        message=f"Copyleft/viral license detected in '{pkg_name}': {lic_meta} (IP contamination risk)",
+                        recommendation="Replace with a permissive library (MIT, Apache-2.0, BSD) for enterprise compliance."
                     ))
 
     return analyzed_licenses, copyleft_violations, findings
@@ -127,8 +127,8 @@ def _audit_rgpd_compliance(target_dir: Path) -> tuple[bool, bool, bool, bool, li
                 file_path="api/src/main.py",
                 line_number=None,
                 rule_id="LEGAL-GDPR-ART17-MISSING",
-                message="No se detectó mecanismo técnico de supresión irreversible de datos personales (RGPD Art. 17 Derecho al Olvido)",
-                recommendation="Integrar la primitiva 'data_erasure_cascade' para purgar PII y anonimizar compras."
+                message="Technical mechanism for irreversible erasure of personal data missing (GDPR Art. 17 Right to Erasure)",
+                recommendation="Integrate 'data_erasure_cascade' primitive to purge PII and anonymize transactions."
             ))
         if not has_art20_portability:
             findings.append(AuditFinding(
@@ -137,7 +137,7 @@ def _audit_rgpd_compliance(target_dir: Path) -> tuple[bool, bool, bool, bool, li
                 file_path="api/src/main.py",
                 line_number=None,
                 rule_id="LEGAL-GDPR-ART20-MISSING",
-                message="No se detectó mecanismo técnico de exportación estructurada de datos (RGPD Art. 20 Portabilidad)",
+                message="Technical mechanism for structured data export missing (GDPR Art. 20 Portability)",
                 recommendation="Integrar la primitiva 'data_portability_exporter' para emitir paquetes JSON interoperables."
             ))
 
@@ -181,8 +181,8 @@ def run_legal_compliance_probe(target_dir: Path) -> ProbeResult:
             file_path="LICENSE",
             line_number=None,
             rule_id="LEGAL-NO-ROOT-LICENSE",
-            message="El proyecto no incluye un archivo 'LICENSE' en su raíz",
-            recommendation="Definir la licencia del software (ej. Propietaria o MIT) para seguridad jurídica."
+            message="Repository root lacks a 'LICENSE' file",
+            recommendation="Define software license (e.g. Proprietary or MIT) for legal certainty."
         ))
 
     has_pii, has_art17, has_art20, has_enc, rgpd_finds = _audit_rgpd_compliance(target_dir)

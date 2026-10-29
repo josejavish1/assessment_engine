@@ -23,6 +23,11 @@ def test_universal_iso_language_resolution():
     assert resolve_target_language_name("pt") == "Portuguese"
     assert resolve_target_language_name("sv") == "Swedish"
     assert resolve_target_language_name("pl") == "Polish"
+    assert resolve_target_language_name("en_gb") == "British English"
+    assert resolve_target_language_name("en_us") == "American English"
+    assert resolve_target_language_name("es_es") == "European Spanish (Spain)"
+    assert resolve_target_language_name("es_mx") == "Mexican Spanish"
+    assert resolve_target_language_name("pt_br") == "Brazilian Portuguese"
     assert resolve_target_language_name(None) == "Spanish"
 
 

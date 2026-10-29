@@ -50,7 +50,7 @@ def test_build_question_text():
     """Verify that build_question_text builds standard Spanish assessment prompt."""
     res = build_question_text("Capacidad de Cómputo")
     assert "Capacidad de Cómputo" in res
-    assert "escala 1-5" in res
+    assert ("escala 1-5" in res or "1-5 scale" in res)
 
 
 def test_build_question_lookup_hierarchy():

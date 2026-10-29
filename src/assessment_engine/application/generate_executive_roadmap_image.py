@@ -63,7 +63,7 @@ def main(argv: list[str] | None = None) -> None:
     roadmap_data = payload.get("execution_roadmap", {})
     horizons = roadmap_data.get("horizons", {})
     if not horizons:
-        logger.warning("No hay roadmap de ejecución en el payload.")
+        logger.warning("Execution roadmap missing from payload.")
         sys.exit(0)
 
     initiatives = []
@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None) -> None:
         "year_2_12_24_months",
         "year_3_24_36_months",
     ]
-    labels = ["Quick Wins (0-3m)", "Año 1 (4-12m)", "Año 2 (13-24m)", "Año 3 (25-36m)"]
+    labels = ["Quick Wins (0-3m)", "Year 1 (4-12m)", "Year 2 (13-24m)", "Year 3 (25-36m)"]
     colors = ["#e06666", "#f6b26b", "#ffd966", "#93c47d"]
 
     for idx, horizon_key in enumerate(order):
@@ -91,7 +91,7 @@ def main(argv: list[str] | None = None) -> None:
             )
 
     if not initiatives:
-        logger.warning("No hay iniciativas válidas.")
+        logger.warning("No valid initiatives found.")
         sys.exit(0)
 
     # Inverts the Y-axis to adhere to the conventional top-to-bottom display order for initiatives. This correction is necessary because Matplotlib's default plotting behavior places the first data series at the bottom of the axis.
@@ -149,13 +149,13 @@ def main(argv: list[str] | None = None) -> None:
         ha="center",
     )
     ax.text(
-        7.5, -0.8, "Año 1", color="#f6b26b", fontsize=11, fontweight="bold", ha="center"
+        7.5, -0.8, "Year 1", color="#f6b26b", fontsize=11, fontweight="bold", ha="center"
     )
     ax.text(
-        18, -0.8, "Año 2", color="#ffd966", fontsize=11, fontweight="bold", ha="center"
+        18, -0.8, "Year 2", color="#ffd966", fontsize=11, fontweight="bold", ha="center"
     )
     ax.text(
-        30, -0.8, "Año 3", color="#93c47d", fontsize=11, fontweight="bold", ha="center"
+        30, -0.8, "Year 3", color="#93c47d", fontsize=11, fontweight="bold", ha="center"
     )
 
     # Removes the chart's bounding box (spines) to achieve a less cluttered and more modern visualization.
@@ -164,7 +164,7 @@ def main(argv: list[str] | None = None) -> None:
     ax.spines["bottom"].set_visible(False)
 
     plt.title(
-        "Plan de Implementación y Horizontes Temporales (36 Meses)",
+        "Implementation Plan and Time Horizons (36 Months)",
         size=16,
         color="#004b87",
         pad=30,

@@ -157,11 +157,12 @@ def test_english_annex_compilation_purity(tmp_path: Path) -> None:
         "Self-Assessment Questionnaire",
         "Enterprise Context Dossier",
         "Platform Intelligence Layer",
+        "The quantitative score of",
     ]
     for en_phrase in expected_en:
         assert en_phrase in corpus, f"Expected English phrase '{en_phrase}' not found in compiled DOCX"
 
-    # Check that legacy Spanish headers do NOT appear in the English document
+    # Check that legacy Spanish headers and sentences do NOT appear in the English document
     banned_es = [
         "Nivel de Madurez",
         "Descripción de Estado de Prácticas",
@@ -178,6 +179,13 @@ def test_english_annex_compilation_purity(tmp_path: Path) -> None:
         "Capa de Inteligencia de la Plataforma",
         "Pérdida Anualizada (ALE - Annual Loss Exposure):",
         "Déficit Esperado Condicional",
+        "La calificación cuantitativa obtenida de",
+        "sitúa a la plataforma en la banda de",
+        "Prácticas operativas consolidadas",
+        "Gobernanza estándar",
+        "Justificación de Estándares Sectoriales",
+        "Evidencia extraída",
+        "Bóveda local",
     ]
     for es_phrase in banned_es:
         assert es_phrase not in corpus, f"Banned Spanish phrase '{es_phrase}' leaked into English DOCX"

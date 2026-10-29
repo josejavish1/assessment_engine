@@ -61,8 +61,8 @@ def run_k6_load_test(
             file_path=script_rel_path,
             line_number=None,
             rule_id="STRESS-K6-EXECUTION-WARNING",
-            message=f"Aviso durante la ejecución de Grafana k6: {ex}",
-            recommendation="Verificar que el servidor objetivo esté activo antes de lanzar k6."
+            message=f"Warning during Grafana k6 execution: {ex}",
+            recommendation="Verify target server is active before launching k6 stress tests."
         ))
     finally:
         summary_path.unlink(missing_ok=True)
@@ -179,8 +179,8 @@ Verify that WAL configuration and busy_timeout prevent 'database is locked' erro
                 file_path="sqlite_engine",
                 line_number=None,
                 rule_id="STRESS-SQLITE-LOCK-CONTENTION",
-                message=f"Detectados {lock_errors_count} fallos de contención 'database is locked' bajo {num_workers} escritores concurrentes",
-                recommendation="Configurar 'PRAGMA busy_timeout = 5000;' y 'PRAGMA journal_mode = WAL;' con pool de conexiones optimista."
+                message=f"Detected {lock_errors_count} contention failures 'database is locked' under {num_workers} concurrent writers",
+                recommendation="Configure 'PRAGMA busy_timeout = 5000;' and 'PRAGMA journal_mode = WAL;' with optimistic connection pool."
             ))
 
         return total_txns, lock_errors_count, all_latencies, findings
@@ -256,8 +256,8 @@ Measure response times and verify the absence of 5xx errors under concurrent loa
             file_path="server.py",
             line_number=None,
             rule_id="STRESS-HTTP-ERROR-BURST",
-            message=f"Detectados {error_count} errores HTTP 5xx durante la ráfaga de {total_requests} peticiones concurrentes",
-            recommendation="Aislar operaciones bloqueantes con asyncio.to_thread para evitar saturación del event loop."
+            message=f"Detected {error_count} HTTP 5xx errors during burst of {total_requests} concurrent requests",
+            recommendation="Offload blocking operations to worker threads via asyncio.to_thread."
         ))
 
     pcts = calculate_percentiles(latencies)
@@ -269,7 +269,7 @@ Measure response times and verify the absence of 5xx errors under concurrent loa
             line_number=None,
             rule_id="STRESS-TAIL-LATENCY-P99",
             message=f"Latencia de cola P99 excesiva: {pcts['p99_ms']:.1f}ms (umbral recomendado <= 1000ms en local)",
-            recommendation="Optimizar endpoints de salud y desacoplar cómputo síncrono pesado."
+            recommendation="Optimize health probes and decouple synchronous compute workloads."
         ))
 
     return total_requests, error_count, latencies, findings
@@ -300,8 +300,8 @@ def run_concurrency_stress_probe(target_dir: Path) -> ProbeResult:
             file_path="sqlite_engine",
             line_number=None,
             rule_id="STRESS-SQLITE-FAILURE",
-            message=f"Fallo crítico al ejecutar prueba de contención SQLite: {ex}",
-            recommendation="Verificar permisos de escritura y compatibilidad con motor WAL."
+            message=f"Critical failure running SQLite contention stress probe: {ex}",
+            recommendation="Verify write permissions and SQLite WAL engine compatibility."
         ))
 
     app = _resolve_target_asgi_app(target_dir)
@@ -323,8 +323,8 @@ def run_concurrency_stress_probe(target_dir: Path) -> ProbeResult:
                 file_path="server.py",
                 line_number=None,
                 rule_id="STRESS-ASGI-FAILURE",
-                message=f"Fallo al ejecutar ráfaga ASGI sobre la aplicación: {ex}",
-                recommendation="Verificar que el endpoint /api/health responda de forma no bloqueante."
+                message=f"Failure executing ASGI burst stress probe against application: {ex}",
+                recommendation="Ensure /api/health probe responds non-blockingly."
             ))
 
     # 3. Compute percentile metrics
@@ -358,7 +358,7 @@ def run_concurrency_stress_probe(target_dir: Path) -> ProbeResult:
             "p95_latency_ms": pcts["p95_ms"],
             "p99_latency_ms": pcts["p99_ms"],
             "tail_amplification_ratio": tail_ratio,
-            "concurrency_status": "Resiliente y Escalable" if passed else "Contención Detectada"
+            "concurrency_status": "Resilient and Scalable" if passed else "Contention Detected"
         },
         findings=findings
     )

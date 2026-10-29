@@ -75,7 +75,7 @@ class EvidenceSnapshotter:
                 claims.append(snapshot)
             else:
                 logger.error(
-                    f"❌ RECHAZADA: Evidencia externa rota o protegida: {url}. No se incluirá en el Dossier."
+                    f"❌ REJECTED: External evidence broken or unreachable: {url}. Omitted from Dossier."
                 )
 
         return claims
@@ -175,7 +175,7 @@ class EvidenceSnapshotter:
             from playwright.async_api import async_playwright
         except ImportError:
             logger.error(
-                "Playwright no está instalado. No se puede renderizar la página HTML."
+                "Playwright is not installed. Unable to render HTML snapshot."
             )
             return {
                 "source_type": "EXTERNAL_DOCUMENT",

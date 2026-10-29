@@ -38,15 +38,15 @@ async def run_ingestion(
         print(f"⚠️ [Ingest] Archivo de respuestas no encontrado: {responses_file}")
 
     fragments_count = len(evidence_engine.ledger.fragments)
-    print(f"✅ [Ingest] Total fragmentos extraídos: {fragments_count}")
+    print(f"✅ [Ingest] Total chunks extracted: {fragments_count}")
 
     if fragments_count > 0:
-        print("🌲 [Ingest] Inicializando Raptor Engine para indización jerárquica...")
+        print("🌲 [Ingest] Initializing Raptor Engine for hierarchical indexing...")
         raptor = RaptorEngine(client_id=client_id, storage_dir=resolved_storage)
         await raptor.build_tree(evidence_engine.ledger.fragments)
-        print(f"🚀 [Ingest] Ingesta completada con éxito en {resolved_storage}")
+        print(f"🚀 [Ingest] Ingestion completed successfully at {resolved_storage}")
     else:
-        print("⚠️ [Ingest] Cero fragmentos extraídos. Omitiendo construcción de árbol Raptor.")
+        print("⚠️ [Ingest] Zero chunks extracted. Skipping Raptor tree construction.")
 
 
 def main() -> None:

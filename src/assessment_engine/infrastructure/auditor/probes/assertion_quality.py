@@ -62,8 +62,8 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
                 file_path=str(test_dir),
                 line_number=None,
                 rule_id="ASSERT-WEAK-COMPLACENCY",
-                message=f"Ratio de aserciones fuertes ({ratio}%) por debajo del umbral Tier-1 (80.0%).",
-                recommendation="Reemplazar comprobaciones de existencia ('len > 0', 'is not None') por invariantes exactos de dominio.",
+                message=f"Strong assertion ratio ({ratio}%) below Tier-1 threshold (80.0%).",
+                recommendation="Replace loose existence checks ('len > 0', 'is not None') with domain invariants.",
             )
         )
 

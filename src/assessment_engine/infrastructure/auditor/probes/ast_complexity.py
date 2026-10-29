@@ -175,8 +175,8 @@ def _audit_file_sloc_and_god_module(
                 file_path=rel_path,
                 line_number=1,
                 rule_id="ARCH-GOD-MODULE",
-                message=f"Archivo monolito detectado: '{py_file.name}' tiene {file_sloc} SLOC (límite recomendado <= {sloc_limit})",
-                recommendation="Desacoplar en submódulos de dominio cohesivos para reducir la entropía.",
+                message=f"Monolithic file detected: '{py_file.name}' has {file_sloc} SLOC (recommended threshold <= {sloc_limit})",
+                recommendation="Decouple into cohesive domain submodules to reduce structural entropy.",
             )
         )
 
@@ -291,8 +291,8 @@ def _audit_single_function(
                     file_path=rel_path,
                     line_number=node.lineno,
                     rule_id="MCCABE-RANGE-D",
-                    message=f"Función '{node.name}' excede límite crítico ciclomático: V(G) = {vg} (Rango D > {vg_limit})",
-                    recommendation="Aplicar 'Extract Method' para descomponer en subfunciones de Rango A/B (V(G) <= 10).",
+                    message=f"Function '{node.name}' exceeds critical cyclomatic limit: V(G) = {vg} (Rank D > {vg_limit})",
+                    recommendation="Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10).",
                 )
             )
 
@@ -314,8 +314,8 @@ def _audit_single_function(
                     file_path=rel_path,
                     line_number=node.lineno,
                     rule_id="ARCH-DEEP-NESTING",
-                    message=f"Anidamiento excesivo en '{node.name}': {max_nesting} niveles de profundidad (límite <= {nesting_limit})",
-                    recommendation="Usar 'Guard Clauses' (retorno temprano) para aplanar la estructura del código.",
+                    message=f"Excessive nesting in '{node.name}': {max_nesting} depth levels (threshold <= {nesting_limit})",
+                    recommendation="Use 'Guard Clauses' (early return) to flatten code structure.",
                 )
             )
 
@@ -331,8 +331,8 @@ def _audit_single_function(
                     file_path=rel_path,
                     line_number=node.lineno,
                     rule_id="ARCH-COGNITIVE-OVERLOAD",
-                    message=f"Sobrecarga cognitiva en '{node.name}': CoC = {coc} (límite cognitivo <= {coc_limit})",
-                    recommendation="Dividir flujo lógico para evitar agotamiento de la memoria de trabajo humana o de la IA.",
+                    message=f"Cognitive complexity overload in '{node.name}': CoC = {coc} (cognitive limit <= {coc_limit})",
+                    recommendation="Decompose logical flow to prevent cognitive working memory exhaustion.",
                 )
             )
 
@@ -456,8 +456,8 @@ def run_ast_complexity_probe(target_dir: Path) -> ProbeResult:
                     file_path=rel_path,
                     line_number=e.lineno,
                     rule_id="SYNTAX-ERR",
-                    message=f"Error sintáctico de análisis en Python: {e}",
-                    recommendation="Corregir sintaxis para permitir análisis de AST.",
+                    message=f"Python syntax analysis error: {e}",
+                    recommendation="Fix syntax error to enable AST analysis.",
                 )
             )
             continue

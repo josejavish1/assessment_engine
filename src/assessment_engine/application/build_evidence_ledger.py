@@ -10,8 +10,8 @@ from assessment_engine.infrastructure.runtime_paths import ROOT
 logger = logging.getLogger(__name__)
 
 """
-Módulo build_evidence_ledger.py.
-Contiene la lógica y utilidades principales para el pipeline de Assessment Engine.
+Module build_evidence_ledger.py.
+Contains core orchestration and rendering logic for Assessment Engine pipeline.
 """
 
 
@@ -28,7 +28,7 @@ def split_sentences(text: str) -> list[str]:
 
 def tokenize(text: str) -> set[str]:
     """Tokenize a string into a set of unique, lowercased tokens."""
-    return set(re.findall(r"[a-z0-9áéíóúüñ&/+-]+", text.lower()))
+    return set(re.findall(r"[a-z0-9&/+-]+", text.lower()))
 
 
 def pillar_keywords(pillar: dict) -> set[str]:

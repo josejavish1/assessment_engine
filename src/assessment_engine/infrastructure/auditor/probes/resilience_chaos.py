@@ -97,8 +97,8 @@ class ResilienceASTVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="RESIL-UNBOUNDED-TIMEOUT",
-                message=f"Llamada HTTP '{caller_name}.{func_attr}()' sin parámetro 'timeout': riesgo de bloqueo indefinido de hilos (Fallo Metastable)",
-                recommendation="Añadir siempre un límite finito de reloj (ej. 'timeout=10.0') a toda llamada de red externa."
+                message=f"HTTP call '{caller_name}.{func_attr}()' without 'timeout' parameter: thread exhaustion risk (Metastable failure)",
+                recommendation="Always configure a finite timeout (e.g. 'timeout=10.0') on external network calls."
             ))
             return
 
@@ -111,8 +111,8 @@ class ResilienceASTVisitor(ast.NodeVisitor):
                         file_path=self.rel_path,
                         line_number=node.lineno,
                         rule_id="RESIL-EXCESSIVE-TIMEOUT",
-                        message=f"Timeout de {kw.value.value}s en '{caller_name}.{func_attr}()' excede el límite recomendado (<= 30s)",
-                        recommendation="Reducir timeout a <= 10.0s o desacoplar en tarea asíncrona de fondo."
+                        message=f"Timeout {kw.value.value}s in '{caller_name}.{func_attr}()' exceeds recommended threshold (<= 30s)",
+                        recommendation="Reduce timeout to <= 10.0s or offload to asynchronous background worker."
                     ))
 
     def visit_Call(self, node: ast.Call) -> None:

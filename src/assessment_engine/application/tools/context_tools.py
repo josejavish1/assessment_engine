@@ -40,7 +40,7 @@ def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
             error message string is returned.
     """
     _log_trace(
-        f"Ejecutando Búsqueda de Élite Google (Tier 1): {query} (Domains: {authority_domains})"
+        f"Executing Tier 1 Google Search: {query} (Domains: {authority_domains})"
     )
 
     cse_id = os.environ.get("GOOGLE_CSE_ID")
@@ -84,7 +84,7 @@ def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
         return "\n".join(output)
     except Exception as e:
         return (
-            f"ERROR DEL SISTEMA OSINT: {e}. Basate exclusivamente en el Vault interno."
+            f"OSINT SYSTEM ERROR: {e}. Base analysis strictly on internal knowledge vault."
         )
 
 
@@ -93,7 +93,7 @@ def search_google_vertex_sovereign(
 ) -> str:
     r"""{'docstring': 'Executes a query against the Google Cloud Discovery Engine API.\n\n    This function constructs and sends a search request to a pre-configured\n    Discovery Engine data store. If `authority_domains` are specified, the\n    query is augmented with `site:` operators to constrain the search scope.\n\n    The function includes a fallback mechanism for resilience. If any exception\n    is encountered during the primary API call, it logs the error and delegates\n    the request to the `search_google_tier1` function, passing along the\n    original arguments.\n\n    Args:\n        query (str): The search term or question to execute.\n        authority_domains (list[str], optional): A list of domain names to which\n            the search should be restricted. Defaults to None.\n\n    Returns:\n        str: A formatted, newline-separated string containing up to five search\n            results, each with a title, URL, and snippet. If no results are\n            found, a corresponding message is returned. If the primary API call\n            fails, this will be the output of the fallback function.'}."""
     _log_trace(
-        f"Ejecutando Búsqueda Soberana Vertex AI Search: {query} (Domains: {authority_domains})"
+        f"Executing Sovereign Vertex AI Search: {query} (Domains: {authority_domains})"
     )
 
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT", "sub403o4u0q5")
@@ -134,7 +134,7 @@ def search_google_vertex_sovereign(
         for result in response.results:
             count += 1
             data = result.document.derived_struct_data
-            title = data.get("title", "Sin título")
+            title = data.get("title", "Untitled")
             link = data.get("link", "Sin URL")
             snippet = data.get("snippets", [{}])[0].get("snippet", "Sin resumen")
             output.append(f"\n{count}. {title}")
@@ -142,12 +142,12 @@ def search_google_vertex_sovereign(
             output.append(f"Resumen: {snippet}")
 
         if count == 0:
-            return f"No se encontraron resultados soberanos para: {query}. Intenta una consulta más general."
+            return f"No sovereign results found for: {query}. Try a more general query."
 
         return "\n".join(output)
     except Exception as e:
         _log_trace(
-            f"Fallo en Vertex AI Search: {e}. Intentando fallback a Google Search API estándar..."
+            f"Vertex AI Search failure: {e}. Attempting fallback to standard Google Search API..."
         )
         # Fallback to the standard search API if the primary search mechanism fails, preserving the authentication context.
         return search_google_tier1(query, authority_domains)
@@ -173,7 +173,7 @@ def inspect_module(file_path: str) -> str:
             file cannot be found, is not a Python file, or contains syntax
             errors, a string detailing the specific error is returned instead.
     """
-    _log_trace(f"Inspeccionando AST del módulo: {file_path}")
+    _log_trace(f"Inspecting module AST: {file_path}")
     path = ROOT / file_path
     if not path.exists():
         return f"Error: File '{file_path}' not found."
@@ -209,7 +209,7 @@ def inspect_module(file_path: str) -> str:
 
 def list_architecture_docs() -> str:
     r"""{'docstring': 'List all markdown files within the repository\'s `docs/` directory.\n\n    Recursively scans the project\'s `docs/` directory for all files with a\n    `.md` extension. The discovered file paths are formatted relative to the\n    project root. This utility is intended for discovery operations, such as\n    populating content for analysis or retrieval.\n\n    Returns:\n        A newline-separated string listing the relative paths of all located\n        markdown files, prefixed with a header. If the `docs/` directory does\n        not exist, returns the literal string "No docs folder found.".'}."""
-    _log_trace("Explorando el índice de documentación del repositorio...")
+    _log_trace("Exploring repository documentation index...")
     docs_dir = ROOT / "docs"
     if not docs_dir.exists():
         return "No docs folder found."

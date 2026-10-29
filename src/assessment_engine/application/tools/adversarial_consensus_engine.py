@@ -157,7 +157,7 @@ class AdversarialConsensusEngine:
                     
         # Execute debates concurrently
         if tasks:
-            logger.info(f"🥊 Iniciando {len(tasks)} debates adversariales de controles en paralelo para {tower_id}...")
+            logger.info(f"🥊 Launching {len(tasks)} parallel adversarial control debates for {tower_id}...")
             results = await asyncio.gather(*tasks)
             
             # Map the evaluated controls back to the payload
@@ -185,71 +185,71 @@ class AdversarialConsensusEngine:
         if not finding_text:
             return None
             
-        context_str = f"Capacidad: {cap}\nVulnerabilidad / Deuda Técnica Identificada: {finding_text}\nNivel de Severidad FAIR Inicial: {finding.get('loss_magnitude')} / 5"
+        context_str = f"Capability: {cap}\nIdentified Vulnerability / Technical Debt: {finding_text}\nBaseline FAIR Severity: {finding.get('loss_magnitude')} / 5"
         
         # Build controls catalog string to inject as context
-        catalog_str = "CATÁLOGO DE CONTROLES DE CIBERSEGURIDAD DISPONIBLES:\n"
+        catalog_str = "AVAILABLE CYBERSECURITY AND RESILIENCE CONTROLS CATALOG:\n"
         for c_id, c_data in self.controls_catalog.items():
-            catalog_str += f"- {c_id}: {c_data['name']}. {c_data['description']}\n  Rangos de Mitigación: Frecuencia (TEF) {c_data['tef_mitigation_range']}, Severidad (LM) {c_data['lm_mitigation_range']}\n"
+            catalog_str += f"- {c_id}: {c_data['name']}. {c_data['description']}\n  Mitigation Ranges: Frequency (TEF) {c_data['tef_mitigation_range']}, Severity (LM) {c_data['lm_mitigation_range']}\n"
 
-        history = f"CONTEXTO DE AUDITORÍA:\n{context_str}\n\n{catalog_str}\n\n"
+        history = f"AUDIT CONTEXT:\n{context_str}\n\n{catalog_str}\n\n"
         
         cfo_prompt_base = f"""
-        Actúa como un CFO/CISO de una gran compañía de infraestructura crítica.
-        Estás debatiendo si las vulnerabilidades de la torre técnica están mitigadas por algún control del catálogo proporcionado.
-        Tu objetivo es atacar escépticamente la gravedad del riesgo, argumentando que existen procesos, automatizaciones tácticas, 
-        herramientas de virtualización u otros controles compensatorios reales que reducen la probabilidad y la severidad. 
-        Exige que la atenuación se califique como 'Implementado' o 'Parcial' basándote en las evidencias del cliente.
-        Sé duro, pragmático y ve directo al grano en un solo párrafo.
+        Act as the Chief Financial Officer (CFO) and Chief Risk Officer of an enterprise critical infrastructure organization.
+        You are debating whether technical vulnerabilities are mitigated by compensating controls within the catalog.
+        Your objective is to skeptically challenge risk severity, establishing that operational runbooks, tactical automation,
+        virtualization guardrails, or existing compensating controls measurably compress threat frequency and loss magnitude.
+        Advocate for qualifying mitigations as 'Implemented' or 'Partial' based strictly on empirical evidence.
+        Be rigorous, pragmatic, and direct in a single analytical paragraph.
         """
         
         actuary_prompt_base = f"""
-        Actúa como un Analista de Riesgos Cuantitativos experto en FAIR-CAM y Basilea III.
-        Estás debatiendo con un CFO escéptico. Tu objetivo es defender el rigor, admitiendo solo las atenuaciones 
-        que estén plenamente justificadas por evidencias y controles reales del cliente. Si el control está en pañales, 
-        ausente o descoordinado, insiste en calificarlo como 'Ausente' o 'Parcial' para proteger el 'Fat Tail' regulatorio y catastrófico.
-        Sé riguroso, frío y responde en un solo párrafo.
+        Act as a Principal Quantitative Risk Actuary specializing in Open FAIR-CAM and Basel III stress testing.
+        You are debating a skeptical enterprise CFO. Your mandate is defending actuarial rigor, admitting mitigation credit
+        only when conclusively substantiated by verifiable telemetry and operational evidence. If controls are nascent,
+        uncoordinated, or absent, firmly qualify them as 'Absent' or 'Partial' to protect tail risk (CVaR/P99).
+        Be mathematically rigorous, sober, and concise in a single analytical paragraph.
         """
         
         try:
             # Iteration 1: CFO adversarial critique
-            history += "--- RONDA 1: ATAQUE DEL CFO ---\n"
-            cfo_prompt = cfo_prompt_base + "\n" + history + "\nEscribe tu primer ataque:"
+            history += "--- ROUND 1: CFO CHALLENGE ---\n"
+            cfo_prompt = cfo_prompt_base + "\n" + history + "\nFormulate your initial challenge:"
             cfo_resp1 = await self._generate_text_with_retry(cfo_prompt)
             history += f"👔 CFO: {cfo_resp1}\n\n"
             
             # Iteration 2: Actuary statistical defense
-            history += "--- RONDA 2: DEFENSA DEL ACTUARIO ---\n"
-            act_prompt = actuary_prompt_base + "\n" + history + "\nEscribe tu defensa basada en la falta de control robusto:"
+            history += "--- ROUND 2: ACTUARY DEFENSE ---\n"
+            act_prompt = actuary_prompt_base + "\n" + history + "\nState your defense based on the absence of robust operational controls:"
             act_resp1 = await self._generate_text_with_retry(act_prompt)
-            history += f"🧮 ACTUARIO: {act_resp1}\n\n"
+            history += f"🧮 ACTUARY: {act_resp1}\n\n"
             
             # Iteration 3: CFO fiscal counter-attack
-            history += "--- RONDA 3: CONTRA-ATAQUE DEL CFO ---\n"
-            cfo_prompt2 = cfo_prompt_base + "\n" + history + "\nResponde al Actuario, defendiendo los controles compensatorios locales de la empresa:"
+            history += "--- ROUND 3: CFO COUNTER-ARGUMENT ---\n"
+            cfo_prompt2 = cfo_prompt_base + "\n" + history + "\nRespond to the Actuary, defending local compensating controls and operational workarounds:"
             cfo_resp2 = await self._generate_text_with_retry(cfo_prompt2)
             history += f"👔 CFO: {cfo_resp2}\n\n"
             
             # Iteration 4: Actuary consensus synthesis
-            history += "--- RONDA 4: DEFENSA FINAL DEL ACTUARIO ---\n"
-            act_prompt2 = actuary_prompt_base + "\n" + history + "\nResponde al CFO, cediendo y consensuando el estado fáctico real del control (Implementado/Parcial/Ausente):"
+            history += "--- ROUND 4: FINAL ACTUARY SYNTHESIS ---\n"
+            act_prompt2 = actuary_prompt_base + "\n" + history + "\nRespond to the CFO, converging on the empirical state of the control (Implemented/Partial/Absent):"
             act_resp2 = await self._generate_text_with_retry(act_prompt2)
-            history += f"🧮 ACTUARIO: {act_resp2}\n\n"
+            history += f"🧮 ACTUARY: {act_resp2}\n\n"
             
             # Iteration 5: Consensus extraction to Pydantic
-            history += "--- RONDA 5: EXTRACCIÓN DE RACIONAL SR 11-7 (FAIR-CAM GROUNDING) ---\n"
+            history += "--- ROUND 5: SR 11-7 RATIONALE EXTRACTION (FAIR-CAM GROUNDING) ---\n"
             final_prompt = f"""
-            Basándote en el debate de 4 rondas, debes clasificar el nivel de implantación de cada control de seguridad relevante del catálogo para esta vulnerabilidad, y justificarlo bajo el estándar de validación de modelos SR 11-7.
+            Based on the 4-round adversarial debate, classify the implementation maturity of each relevant control from the catalog for this vulnerability, substantiated under model risk governance standard SR 11-7.
             
-            REGLAS CRÍTICAS DE EXTRACCIÓN:
-            1. Solo evalúa controles que pertenezcan estrictamente al catálogo proporcionado.
-            2. El campo 'implementation_status' solo acepta tres opciones exactas de string: 'Implementado', 'Parcial' o 'Ausente'. No uses otros términos.
-            3. En el racional de justificación ('evidence_grounding' y 'justification'), queda estrictamente prohibido mencionar términos como 'IA', 'debate', 'agentes', 'CFO' o 'Actuario'. Redacta como una justificación técnica formal de juicio de expertos (SME Elicitation).
+            CRITICAL EXTRACTION MANDATES:
+            1. Only evaluate controls strictly present in the provided catalog.
+            2. The 'implementation_status' field only accepts three exact string options: 'Implemented', 'Partial', or 'Absent'.
+            3. In the justification rationale ('evidence_grounding' and 'justification'), it is strictly forbidden to mention terms like 'AI', 'debate', 'agents', 'CFO', or 'Actuary'. Draft exclusively as formal Subject Matter Expert Elicitation (SME Elicitation).
             
-            DEBATE PREVIO A SINTETIZAR:
+            PRIOR DEBATE TRANSCRIPT:
             {history}
             
-            Extrae de forma estructurada los controles evaluados mediante el esquema ConsensusAdjustment.
+            Extract the assessed controls into the structured ConsensusAdjustment schema.
             """
             
             adjustment = await self._generate_pydantic_with_retry(
@@ -259,12 +259,12 @@ class AdversarialConsensusEngine:
             
             with open(transcript_file, "a", encoding="utf-8") as f:
                 f.write(f"\n======================================================\n")
-                f.write(f"--- DEBATE COMPLETO PARA CAPACIDAD: {cap} ---\n")
+                f.write(f"--- COMPLETE DEBATE FOR CAPABILITY: {cap} ---\n")
                 f.write(history)
-                f.write(f"\n⚙️ CONSENSO ADVERSARIAL DE CONTROLES EXTRAÍDO:\n")
+                f.write(f"\n⚙️ ADVERSARIAL CONTROLS CONSENSUS EXTRACTED:\n")
                 for c in adjustment.controls_assessed:
-                    f.write(f"- Control: {c.control_id} | Estado: {c.implementation_status}\n  Justificación: {c.evidence_grounding}\n")
-                f.write(f"- Racional General: {adjustment.justification}\n")
+                    f.write(f"- Control: {c.control_id} | Status: {c.implementation_status}\n  Justification: {c.evidence_grounding}\n")
+                f.write(f"- General Rationale: {adjustment.justification}\n")
                 f.write("======================================================\n")
                 
             return (p_idx, h_idx, adjustment)

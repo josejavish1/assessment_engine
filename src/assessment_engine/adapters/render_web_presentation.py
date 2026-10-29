@@ -40,7 +40,7 @@ def _load_global_payload(path: Path) -> dict[str, Any]:
         GlobalReportPayload.model_validate(payload)
     except Exception as e:
         logger.warning(
-            f"⚠️ Error de validación de Pydantic en GlobalReportPayload (procediendo con fallback): {e}"
+            f"⚠️ Pydantic validation error in GlobalReportPayload (proceeding with fallback): {e}"
         )
     return payload
 
@@ -51,7 +51,7 @@ def _load_blueprint_payload(path: Path) -> dict[str, Any]:
         BlueprintPayload.model_validate(payload)
     except Exception as e:
         logger.warning(
-            f"⚠️ Error de validación de Pydantic en BlueprintPayload (procediendo con fallback): {e}"
+            f"⚠️ Pydantic validation error in BlueprintPayload (proceeding with fallback): {e}"
         )
     return payload
 
@@ -179,7 +179,7 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
                 dto_state = json.load(f)
         except (OSError, ValueError, KeyError, AttributeError) as ex:
 
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+            logger.debug(f"[Fallback] Handled exception: {ex}")
 
     return {
         "meta": {"client": client_id.upper(), "version": "v6.0 Digital Twin (DTO)"},
@@ -212,76 +212,67 @@ def _build_strategy(global_payload: dict[str, Any], client_id: str) -> dict[str,
 def _default_proposals() -> list[dict[str, Any]]:
     return [
         {
-            "initiative_name": "Programa de Choque NIS2 & Ciber-Resiliencia",
+            "initiative_name": "NIS2 & Cyber-Resilience Accelerator Program",
             "executive_synthesis": (
-                "Plan de remediación acelerada para cerrar las brechas críticas de "
-                "seguridad perimetral, desplegar inmutabilidad de backups frente a "
-                "ransomware y establecer un marco de gobierno auditable."
+                "Accelerated remediation plan to close critical perimeter security gaps, "
+                "deploy immutable backup vaults resilient against ransomware, "
+                "and establish an auditable governance framework."
             ),
             "context_and_why": {
                 "cost_of_inaction": (
-                    "Incumplimiento de normativas (NIS2/GDPR) con riesgo de sanciones "
-                    "millonarias e incapacidad de recuperar las operaciones ante un ataque."
+                    "Non-compliance with regulatory frameworks (NIS2/GDPR) risking major penalties "
+                    "and operational downtime during catastrophic cyber events."
                 )
             },
             "solution_and_what": {
                 "target_state": (
-                    "Postura defensiva validada, MFA ubicuo, y capacidad demostrable "
-                    "de recuperación (Cyber Vault)."
+                    "Validated defensive posture, ubiquitous MFA, and demonstrable recovery capacity (Cyber Vault)."
                 )
             },
-            "investment_and_timeline": {"tcv_range": "3-6 Meses"},
+            "investment_and_timeline": {"tcv_range": "3-6 Months"},
             "deep_dive": {
                 "deliverables": [
-                    "Arquitectura Zero Trust Perimeter",
-                    "Bóveda de Backups Inmutable (Air-gapped)",
-                    "Plan Director de Seguridad (PDS) para cumplimiento NIS2",
+                    "Zero Trust Perimeter Architecture",
+                    "Air-gapped Immutable Backup Vault",
+                    "Security Master Plan for NIS2 Compliance",
                 ],
                 "roi": (
-                    "Evita multas regulatorias de hasta el 2% de la facturación "
-                    "global y mitiga el lucro cesante por paradas operativas "
-                    "superiores a 24h."
+                    "Mitigates regulatory fines up to 2% of annual turnover "
+                    "and eliminates business interruption losses exceeding 24 hours."
                 ),
                 "prerequisites": (
-                    "Aprobación de presupuesto CAPEX extraordinario y disponibilidad "
-                    "del equipo de cumplimiento corporativo."
+                    "Extraordinary CAPEX budget authorization and core compliance team engagement."
                 ),
             },
         },
         {
-            "initiative_name": "Estabilización Core Network & SD-WAN",
+            "initiative_name": "Core Network & SD-WAN Stabilization",
             "executive_synthesis": (
-                "Saneamiento de la arquitectura de red corporativa para eliminar "
-                "puntos únicos de fallo (SPOF) y migrar hacia un modelo SD-WAN "
-                "que garantice el rendimiento de aplicaciones críticas."
+                "Remediation of enterprise network architecture to eliminate single points of failure (SPOF) "
+                "and transition to an SD-WAN topology ensuring critical application performance."
             ),
             "context_and_why": {
                 "cost_of_inaction": (
-                    "Caídas de servicio impredecibles y lentitud que paraliza la "
-                    "operativa del personal y la atención clínica/cliente."
+                    "Unpredictable service outages and network latency paralyzing operational workflow."
                 )
             },
             "solution_and_what": {
                 "target_state": (
-                    "Red de alta disponibilidad, monitorización proactiva y ancho "
-                    "de banda garantizado para SaaS."
+                    "High-availability network topology, proactive observability, and guaranteed SaaS bandwidth."
                 )
             },
-            "investment_and_timeline": {"tcv_range": "6-9 Meses"},
+            "investment_and_timeline": {"tcv_range": "6-9 Months"},
             "deep_dive": {
                 "deliverables": [
-                    "Renovación de electrónica de red core",
-                    "Despliegue de SD-WAN en sedes principales",
-                    "Plataforma de Monitorización Proactiva (NPM)",
+                    "Core routing and switching hardware lifecycle refresh",
+                    "SD-WAN deployment across primary regional sites",
+                    "Proactive Network Performance Monitoring (NPM)",
                 ],
                 "roi": (
-                    "Reducción del 80% en los tiempos de caída de sedes. Incremento "
-                    "directo en la productividad de los empleados y mejora en la "
-                    "experiencia del paciente."
+                    "80% reduction in site outage occurrences and direct productivity stabilization."
                 ),
                 "prerequisites": (
-                    "Ventanas de mantenimiento aprobadas para cortes controlados "
-                    "durante la migración de la electrónica."
+                    "Approved maintenance windows for scheduled migration cutovers."
                 ),
             },
         },

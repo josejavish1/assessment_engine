@@ -252,7 +252,7 @@ Compute the complete Ochiai diagnosis in milliseconds."""
             )
 
             if not dump_json.exists():
-                logger.warning("[SBFL] No se generó el volcado de trazas de cobertura.")
+                logger.warning("[SBFL] Coverage trace dump was not generated.")
                 return FaultLocalizationReport(
                     target_file=str(target_p),
                     total_passed_tests=0,

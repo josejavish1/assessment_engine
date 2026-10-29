@@ -53,8 +53,8 @@ class StructuralSmellVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="SMELL-GOD-CLASS",
-                message=f"Antipatrón God Class detectado en '{node.name}': {len(methods)} métodos (límite recomendado <= 40)",
-                recommendation="Aplicar Principio de Responsabilidad Única (SRP) y descomponer en clases especializadas."
+                message=f"God Class anti-pattern detected in '{node.name}': {len(methods)} methods (recommended threshold <= 40)",
+                recommendation="Apply Single Responsibility Principle (SRP) and decompose into specialized classes."
             ))
         self.generic_visit(node)
 
@@ -90,8 +90,8 @@ class StructuralSmellVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="SMELL-LONG-PARAMETER-LIST",
-                message=f"Función pública '{node.name}' declara {num_required} parámetros obligatorios sin valor por defecto (límite recomendado <= 5)",
-                recommendation="Aplicar 'Introduce Parameter Object' (Martin Fowler): agrupar parámetros en una dataclass tipada o modelo Pydantic."
+                message=f"Public function '{node.name}' declares {num_required} required parameters without default (recommended threshold <= 5)",
+                recommendation="Apply 'Introduce Parameter Object' (Martin Fowler): encapsulate parameters in a typed Pydantic model."
             ))
 
 
@@ -118,8 +118,8 @@ def run_structural_smells_probe(target_dir: Path) -> ProbeResult:
                     file_path=rel_d,
                     line_number=None,
                     rule_id="SMELL-REPO-ENTROPY-DIR",
-                    message=f"Carpeta de backup prohibida detectada: '{rel_d}' (Violación de Cero Entropía)",
-                    recommendation="Eliminar carpetas de backup manuales; Git es la única máquina del tiempo autorizada."
+                    message=f"Prohibited backup folder detected: '{rel_d}' (Zero-Entropy Violation)",
+                    recommendation="Remove manual backup folders; Git is the sole authorized time machine."
                 ))
         for f in files:
             if MANUAL_VERSION_FILE_REGEX.search(f):
@@ -132,7 +132,7 @@ def run_structural_smells_probe(target_dir: Path) -> ProbeResult:
                     line_number=None,
                     rule_id="SMELL-REPO-ENTROPY-FILE",
                     message=f"Nombre de archivo con versionado manual prohibido: '{f}'",
-                    recommendation="Usar nombres canónicos sin sufijos como '_v2' o '_final'; versionar mediante commits en Git."
+                    recommendation="Use canonical filenames without '_v2' or '_final' suffixes; track history via Git commits."
                 ))
 
     for py_file in find_target_files(target_dir, (".py",)):
@@ -159,8 +159,8 @@ def run_structural_smells_probe(target_dir: Path) -> ProbeResult:
                             file_path=rel_path,
                             line_number=line_idx - 3,
                             rule_id="SMELL-ZOMBIE-CODE",
-                            message="Bloque de código muerto comentado detectado (>= 4 líneas de sintaxis comentada)",
-                            recommendation="Eliminar el código zombi; el historial de Git preserva el código anterior."
+                            message="Commented dead code block detected (>= 4 lines of commented syntax)",
+                            recommendation="Remove dead code; Git version control preserves history."
                         ))
                 else:
                     consecutive_commented_code = 0

@@ -195,8 +195,12 @@ class DeliveryAndRiskDirectorOutput(BaseModel):
 class WhyPartner(BaseModel):
     """Represent the 'Why Partner' value proposition section of a commercial document."""
 
-    accelerators: list[str]
-    partnerships: str
+    accelerators: list[str] = Field(
+        default_factory=lambda: ["Sovereign Cloud Acceleration and Adoption Framework"]
+    )
+    partnerships: str = Field(
+        default="Certified Global Strategic Alliances and Centers of Excellence."
+    )
 
 
 class InvestmentAndTimeline(BaseModel):
@@ -249,14 +253,14 @@ class CommercialDocumentMeta(BaseModel):
         date: The publication date of the document in ISO 8601 format (YYYY-MM-DD).
         version: The document version string, preferably following semantic
             versioning (e.g., "1.0.0").
-        doc_lang: The ISO 639-1 language code for document rendering (default "es").
+        doc_lang: The ISO 639-1 language code for document rendering (default "en").
         currency_symbol: The localized currency symbol (default "€").
     """
 
     client: str
     date: str
     version: str
-    doc_lang: str = "es"
+    doc_lang: str = "en"
     currency_symbol: str = "€"
 
 

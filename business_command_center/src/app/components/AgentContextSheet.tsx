@@ -42,7 +42,7 @@ export default function AgentContextSheet({ task, isOpen, onClose }: AgentContex
             )}
           </div>
           <SheetDescription className="text-slate-400">
-            Inspector de contexto y auditoría de la IA.
+            AI Context Inspector & Audit Trace.
           </SheetDescription>
         </SheetHeader>
 
@@ -53,9 +53,9 @@ export default function AgentContextSheet({ task, isOpen, onClose }: AgentContex
                 <Terminal className="h-4 w-4" /> Reasoning Trace
               </h4>
               <div className="bg-slate-950 rounded-md p-3 text-xs font-mono text-slate-400 border border-slate-800">
-                <p>&gt; Analizando petición...</p>
+                <p>&gt; Analyzing request...</p>
                 <p className="text-emerald-400">&gt; Golden Path detectado: fastapi_endpoint</p>
-                <p>&gt; Generando código basado en plantilla...</p>
+                <p>&gt; Synthesizing code from template...</p>
               </div>
             </div>
 
@@ -91,7 +91,7 @@ export default function AgentContextSheet({ task, isOpen, onClose }: AgentContex
 
         <div className="p-6 border-t border-slate-800 bg-slate-900/50">
            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
-              Aprobar y Continuar
+              Aprobar y Continue
            </button>
         </div>
       </SheetContent>

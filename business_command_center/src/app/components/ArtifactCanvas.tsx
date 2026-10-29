@@ -20,10 +20,10 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
     return (
       <div className="flex-1 flex flex-col h-full bg-background items-center justify-center p-8 text-center animate-in fade-in duration-300">
           <Bot className="h-16 w-16 text-primary mb-6 animate-pulse" />
-          <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Aclaración Necesaria</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground mb-4">Clarification Required</h2>
           <p className="text-muted-foreground max-w-lg mb-8 text-lg">{plan.clarification_question}</p>
           <p className="text-sm text-muted-foreground bg-muted/30 p-4 rounded-lg border border-border/50">
-            Responde a la pregunta en el chat lateral para que el Agente pueda generar el plan arquitectónico.
+            Please answer the question in the side chat so the Agent can generate the architectural plan.
           </p>
       </div>
     );
@@ -38,8 +38,8 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
       <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-in fade-in duration-300">
         <div className="border-b border-border/50 bg-muted/10 p-8 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">Matriz de Decisión Estratégica</h2>
-            <p className="text-muted-foreground">Selecciona el enfoque arquitectónico que mejor se adapte a tus necesidades de negocio.</p>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">Strategic Decision Matrix</h2>
+            <p className="text-muted-foreground">Select the architectural approach best aligned with enterprise business requirements.</p>
           </div>
           <button onClick={onReject} className="px-6 py-2.5 rounded-lg font-medium border border-border hover:bg-muted text-muted-foreground transition-colors">
             Descartar Plan
@@ -54,11 +54,11 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
 
                 <div className="p-6 border-b border-border/50">
                   <Badge variant="outline" className={`mb-3 ${alt.risk_level === 'high' ? 'text-destructive border-destructive/30 bg-destructive/10' : alt.risk_level === 'medium' ? 'text-amber-500 border-amber-500/30 bg-amber-500/10' : 'text-emerald-500 border-emerald-500/30 bg-emerald-500/10'}`}>
-                    Riesgo: {alt.risk_level}
+                    Risk: {alt.risk_level}
                   </Badge>
                   <h3 className="text-xl font-bold text-foreground mb-2">{alt.approach_name}</h3>
                   <div className="p-3 bg-muted/30 rounded-lg border border-border/50 mt-4">
-                    <p className="text-sm font-medium text-foreground flex items-center gap-2"><Bot className="h-4 w-4 text-primary"/> Elígelo si...</p>
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2"><Bot className="h-4 w-4 text-primary"/> Select this if...</p>
                     <p className="text-sm text-muted-foreground mt-1">{alt.recommendation_use_case}</p>
                   </div>
                 </div>
@@ -77,7 +77,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👎 Matriz de Riesgos Ejecutiva</h4>
+                    <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">👎 Matriz de Risks Ejecutiva</h4>
                     <div className="space-y-4">
                       {alt.risks?.map((risk: any, i: number) => (
                         <div key={i} className="bg-muted/30 border border-border/50 rounded-lg p-3">
@@ -86,8 +86,8 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
                             <span>{risk.structural_risk}</span>
                           </p>
                           <div className="pl-6 space-y-2">
-                            <p className="text-xs text-foreground flex items-center gap-1.5"><ShieldAlert className="h-3 w-3 text-primary"/> <span className="font-medium text-muted-foreground">Mitigación:</span> {risk.mitigation_strategy}</p>
-                            <p className="text-xs text-foreground flex items-center gap-1.5"><Target className="h-3 w-3 text-amber-500"/> <span className="font-medium text-muted-foreground">Impacto:</span> {risk.second_order_impact}</p>
+                            <p className="text-xs text-foreground flex items-center gap-1.5"><ShieldAlert className="h-3 w-3 text-primary"/> <span className="font-medium text-muted-foreground">Mitigation:</span> {risk.mitigation_strategy}</p>
+                            <p className="text-xs text-foreground flex items-center gap-1.5"><Target className="h-3 w-3 text-amber-500"/> <span className="font-medium text-muted-foreground">Impact:</span> {risk.second_order_impact}</p>
 
                             <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-border/50">
                               <Badge variant="secondary" className="text-[10px] bg-background">
@@ -135,7 +135,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
             onClick={() => setShowTechnical(false)}
             className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" /> Volver a la Matriz de Decisión
+            <ArrowLeft className="h-4 w-4" /> Back to Decision Matrix
           </button>
           <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">{currentPlan.approach_name}: {currentPlan.pr_title || currentPlan.request_title}</h2>
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -167,7 +167,7 @@ export function ArtifactCanvas({ plan, onApprove, onReject }: ArtifactCanvasProp
           <div className="lg:col-span-1 space-y-8">
             <section>
               <h3 className="text-lg font-semibold flex items-center gap-2 mb-4 border-b border-border/50 pb-2">
-                <Target className="h-5 w-5 text-primary" /> Spec Mínima
+                <Target className="h-5 w-5 text-primary" /> Minimum Spec
               </h3>
               <div className="space-y-4">
                 <div>

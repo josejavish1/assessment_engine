@@ -182,18 +182,18 @@ def get_default_blueprint_payload(
             ),
         },
         "executive_snapshot": {
-            "bottom_line": "Análisis estratégico pendiente de consolidación por el orquestador.",
+            "bottom_line": "Strategic analysis pending consolidation by orchestrator.",
             "decisions": [],
-            "cost_of_inaction": "El retraso en la transformación mantiene los riesgos operativos actuales.",
+            "cost_of_inaction": "Deferred transformation perpetuates baseline operational risk.",
             "structural_risks": [],
-            "business_impact": "Pendiente de determinar impacto detallado.",
+            "business_impact": "Detailed business impact pending final consolidation.",
             "operational_benefits": [],
-            "transformation_complexity": "Media (estimación base)",
+            "transformation_complexity": "Medium (baseline estimation)",
         },
         "cross_capabilities_analysis": {
             "common_deficiency_patterns": [],
-            "transformation_paradigm": "Evolución por dominios técnicos.",
-            "critical_technical_debt": "Deuda técnica identificada en los pilares individuales.",
+            "transformation_paradigm": "Target domain evolution.",
+            "critical_technical_debt": "Technical debt localized in individual pillar domains.",
         },
         "roadmap": [],
         "external_dependencies": [],
@@ -250,7 +250,7 @@ async def process_pilar_blueprint(
     refined = pilar_data.get("refined_findings", {})
     refined_str = json.dumps(refined, indent=2, ensure_ascii=False) if refined else ""
 
-    context_enhanced = f"{context_str}\n\n### ANÁLISIS REFINADO Y EVIDENCIAS DISPONIBLES:\n{refined_str}"
+    context_enhanced = f"{context_str}\n\n### REFINED ANALYSIS AND AVAILABLE EVIDENCE:\n{refined_str}"
 
     answers_json = json.dumps(pilar_data["answers"], indent=2, ensure_ascii=False)
     prompt = get_pilar_architect_prompt(
@@ -264,13 +264,13 @@ async def process_pilar_blueprint(
         target_language=target_language,
     )
 
-    # Inject Single-Turn Self-Reflection directive (standard 2026) directly into the prompt to halve API roundtrips
+    # Inject Single-Turn Self-Reflection directive directly into the prompt
     prompt += (
-        "\n\n### DIRECTIVA DE AUTO-REFLEXIÓN Y CALIDAD (SINGLE-TURN SELF-REFLECTION):\n"
-        "Antes de emitir el esquema JSON final, debes realizar un análisis crítico e interno de consistencia en tu campo "
-        "'thought_process' (Chain-of-Thought). Evalúa si tus iniciativas contradicen el peso On-Premise exigido o si hay alucinaciones "
-        "en las citas de evidencias frente al corpus. Corrige cualquier desviación de manera autónoma y genera únicamente el "
-        "resultado consolidado y pulido de nivel Socio Consultor."
+        "\n\n### QUALITY AND SELF-REFLECTION DIRECTIVE (SINGLE-TURN SELF-REFLECTION):\n"
+        "Before emitting the final JSON schema, perform a critical internal consistency check in your "
+        "'thought_process' field (Chain-of-Thought). Evaluate whether proposed initiatives align with on-premise vs cloud constraints "
+        "and verify that evidence citations match the corpus without hallucinations. Autonomously remediate any deviations "
+        "and output only the finalized Partner-grade deliverable."
     )
 
     # Phase 1: Generate the initial set of findings from the source context.
@@ -353,7 +353,7 @@ async def _resolve_gravity_profile(
         profiler_agent = Agent(
             name="gravity_profiler",
             model=model_name,
-            instruction="Eres un analista experto que genera perfiles JSON matemáticos basados en contexto. Responde siempre con el JSON pedido.",
+            instruction="You are an expert systems analyst generating mathematical JSON profiles based on context. Return exclusively valid JSON.",
             output_schema=ArchitecturalGravityProfile,
         )
         app_profiler = AdkApp(agent=profiler_agent)
@@ -373,27 +373,27 @@ async def _resolve_gravity_profile(
             reg_strict = gravity_profile.get("regulatory_strictness", "Media")
             lockin_tol = gravity_profile.get("vendor_lockin_tolerance", "Media")
             strat_dir = gravity_profile.get(
-                "strategic_directive", "Adoptar mejor esfuerzo tecnológico"
+                "strategic_directive", "Adopt best architectural effort"
             )
 
             gravity_constraint = (
-                "\n\n⚠️ MANDATO DE GRAVEDAD ARQUITECTÓNICA (COMPLIANCE STRICTO):\n"
-                "El análisis de este cliente dicta la siguiente gravedad matemática:\n"
-                f"- Peso On-Premise Obligatorio: {on_prem}%\n"
-                f"- Viabilidad Cloud-Native: {cloud_nat}%\n"
-                f"- Rigurosidad Regulatoria: {reg_strict}\n"
-                f"- Tolerancia a Vendor Lock-in: {lockin_tol}\n"
-                f"DIRECTIVA DE DISEÑO: {strat_dir}\n"
-                f"MADUREZ OBJETIVO RECOMENDADA: {dynamic_target_maturity}\n\n"
-                "DEBES respetar esta gravedad de forma absoluta. Prohibido proponer arquitecturas Cloud-Native "
-                "si el peso On-Premise o la rigurosidad regulatoria lo desaconsejan."
+                "\n\n⚠️ ARCHITECTURAL GRAVITY MANDATE (STRICT COMPLIANCE):\n"
+                "Client context analysis establishes the following architectural gravity directive:\n"
+                f"- Mandatory On-Premise Weight: {on_prem}%\n"
+                f"- Cloud-Native Viability: {cloud_nat}%\n"
+                f"- Regulatory Strictness: {reg_strict}\n"
+                f"- Vendor Lock-in Tolerance: {lockin_tol}\n"
+                f"DESIGN DIRECTIVE: {strat_dir}\n"
+                f"RECOMMENDED TARGET MATURITY: {dynamic_target_maturity}\n\n"
+                "You MUST adhere to this gravity directive strictly. Cloud-Native architectures are forbidden "
+                "if on-premise weighting or regulatory strictness advises against them."
             )
             print(
-                f"✅ Perfil de Gravedad Calculado: {strat_dir} (Target: {dynamic_target_maturity})"
+                f"✅ Calculated Gravity Profile: {strat_dir} (Target: {dynamic_target_maturity})"
             )
     except Exception as e:
         print(
-            f"⚠️ Error calculando Perfil de Gravedad: {e}. Se usará contexto estándar."
+            f"⚠️ Error calculating Gravity Profile: {e}. Standard context fallback will be used."
         )
     return dynamic_target_maturity, gravity_constraint
 
@@ -446,7 +446,7 @@ def _validate_evidence_grounding(
 
     for finding in blueprint_analysis.get("health_check_asis", []):
         evidence = str(finding.get("literal_evidence", "")).strip()
-        if not evidence or evidence == "No se proporcionó evidencia literal.":
+        if not evidence or "no literal evidence" in evidence.lower() or "no se proporcion" in evidence.lower():
             if verified_gaps:
                 finding["literal_evidence"] = verified_gaps[0]
                 finding["evidence_grounding_type"] = "verified_gap"
@@ -466,13 +466,16 @@ def _map_candidate_initiatives_to_sota_projects(
     seen_topics: set[tuple[str, ...]] = set()
 
     for idx, init in enumerate(initiatives):
-        raw_title = init.get("title", f"Iniciativa Estratégica {idx + 1}").strip()
+        raw_title = init.get("title", f"Strategic Initiative {idx + 1}").strip()
         if deduplicate_topics:
             key_words = [
                 w
                 for w in raw_title.lower().split()
                 if len(w) > 3
-                and w not in ["iniciativa", "programa", "proyecto", "para"]
+                and w not in [
+                    "initiative", "program", "project", "for",
+                    "plan", "strategy", "roadmap"
+                ]
             ]
             topic_sig = tuple(sorted(key_words[:3])) if key_words else (raw_title,)
             if topic_sig in seen_topics:
@@ -481,12 +484,12 @@ def _map_candidate_initiatives_to_sota_projects(
 
         h_val = str(init.get("horizon", "")).lower()
         p_val = str(init.get("priority", "")).lower()
-        if "short" in h_val or "quick" in h_val or "h1" in h_val or p_val == "crítica":
-            proj_sizing, proj_duration = "S", "H1 (Mes 1-3)"
+        if "short" in h_val or "quick" in h_val or "h1" in h_val or p_val in ("critica", "critical"):
+            proj_sizing, proj_duration = "S", "H1 (Month 1-3)"
         elif "long" in h_val or "h3" in h_val:
-            proj_sizing, proj_duration = "L", "H3 (Mes 12-24)"
+            proj_sizing, proj_duration = "L", "H3 (Month 12-24)"
         else:
-            proj_sizing, proj_duration = "M", "H2 (Mes 3-12)"
+            proj_sizing, proj_duration = "M", "H2 (Month 3-12)"
 
         sota_projects.append(
             {
@@ -494,15 +497,15 @@ def _map_candidate_initiatives_to_sota_projects(
                 "transformation_typology": init.get("typology", "Core Modernization"),
                 "business_case": init.get(
                     "business_case",
-                    "Impacto estratégico basado en la validación del Estado del Arte 2026.",
+                    "Strategic impact based on Tier 1 industry validation.",
                 ),
-                "tech_objective": init.get("rationale", "Evolución técnica."),
+                "tech_objective": init.get("rationale", "Technical capability evolution."),
                 "deliverables": init.get(
                     "deliverables",
                     [
-                        "Diseño de arquitectura de referencia.",
-                        "Despliegue de Piloto controlado.",
-                        "Evaluación de resultados y plan de escalado.",
+                        "Target architecture blueprint.",
+                        "Controlled pilot deployment.",
+                        "Outcomes evaluation and scaling roadmap.",
                     ],
                 ),
                 "sizing": proj_sizing,
@@ -591,7 +594,7 @@ async def _execute_pillar_mapreduce(
         logger.warning("Pillars without valid response: %s", ", ".join(failed_pillars))
     if not blueprint_payload["pillars_analysis"]:
         raise RuntimeError(
-            "No se pudo generar ningún análisis de pilar para el blueprint."
+            "Failed to generate any valid pillar analysis for the blueprint."
         )
 
 
@@ -691,7 +694,7 @@ async def _orchestrate_closing_agent(
         try:
             msg = closing_prompt
             if last_error:
-                msg += f"\n\n🚨 VIOLACIÓN DE PROTOCOLO EN INTENTO ANTERIOR:\n{last_error}\nCorrige el texto inmediatamente.\n"
+                msg += f"\n\n🚨 PROTOCOL VIOLATION IN PREVIOUS ATTEMPT:\n{last_error}\nCorrect the text immediately.\n"
             closing_data = await run_agent(
                 app_orchestrator,
                 user_id="master_orchestrator",
@@ -708,12 +711,12 @@ async def _orchestrate_closing_agent(
         except Exception as e:
             last_error = str(e)
             print(
-                f"    🚨 VIOLACIÓN DIPLOMÁTICA O ERROR: {e}. Reintentando Orquestador (Intento {attempt + 1})..."
+                f"    🚨 DIPLOMATIC PROTOCOL VIOLATION: {e}. Retrying Orchestrator (Attempt {attempt + 1})..."
             )
 
     if last_error and closing_data:
         print(
-            "⚠️ Fallo crítico en el Orquestador tras 3 intentos. Aplicando Degradación Elegante..."
+            "⚠️ Critical failure in Orchestrator after 3 attempts. Applying Graceful Degradation..."
         )
         valid_deps = [
             d
@@ -756,7 +759,7 @@ def _resolve_mitigated_risk_context(
                     cap = hc.get("capability") or hc.get("target_state", "")
                     find = hc.get("finding") or hc.get("risk_observed", "")
                     risk = hc.get("business_risk") or hc.get("impact", "")
-                    mitigated_risk_text = f"[{cap}] {find} -> Riesgo: {risk}"
+                    mitigated_risk_text = f"[{cap}] {find} -> Risk: {risk}"
                     fair_ale = hc.get("fair_ale_score", 0.0)
                     break
     if fair_ale > 0:
@@ -800,6 +803,7 @@ def _apply_deterministic_finops(
             except Exception:
                 country_mult = 1.0
 
+        doc_lang = str(blueprint_payload.get("document_meta", {}).get("language", "en")).lower()
         opex_str, capex_str = DeterministicFinOpsEngine.calculate_project_costs(
             wbs_tasks=wbs,
             rate_card=rate_data,
@@ -808,6 +812,7 @@ def _apply_deterministic_finops(
             sizing=p_sz,
             currency_symbol=curr_sym,
             country_rate_multiplier=country_mult,
+            doc_lang=doc_lang,
         )
         enrichment_data["opex_estimate"] = opex_str
 
@@ -852,7 +857,7 @@ async def _enrich_projects_finops(
         bid_manager_agent = Agent(
             name="bid_manager_architect",
             model=model_name,
-            instruction=f"Eres el Bid Manager de {company}. Devuelve estrictamente el JSON pedido.",
+            instruction=f"You are the Strategic Bid Manager for {company}. Return strictly valid JSON.",
             output_schema=ProjectCharterEnrichment,
         )
         app_bid_manager = AdkApp(agent=bid_manager_agent)
@@ -922,7 +927,7 @@ async def _enrich_projects_finops(
             _resolve_project_deliverables,
         )
 
-        doc_lang_meta = blueprint_payload.get("document_meta", {}).get("language", "es")
+        doc_lang_meta = blueprint_payload.get("document_meta", {}).get("language", "en")
         for p_analysis in blueprint_payload.get("pillars_analysis", []):
             for pr in p_analysis.get("projects_todo", []):
                 if pr.get("name"):
@@ -1006,11 +1011,11 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         else json.dumps(intel_data, indent=2, ensure_ascii=False)
     )
     intel_str = (
-        f"--- VERDAD EPISTÉMICA RESUELTA DEL GRAFO ---\n{resolved_truth}\n\n"
-        f"--- CONTEXTO ESTRATÉGICO Y DE NEGOCIO ---\n{client_context_str}"
+        f"--- RESOLVED EPISTEMIC GRAPH GROUND TRUTH ---\n{resolved_truth}\n\n"
+        f"--- STRATEGIC AND BUSINESS CONTEXT ---\n{client_context_str}"
     )
 
-    doc_lang = str(case_data.get("language") or "es").lower()
+    doc_lang = str(case_data.get("language") or "en").lower()
     from assessment_engine.infrastructure.localization import (
         resolve_target_language_name,
     )
@@ -1111,7 +1116,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         generate_actuarial_ledger(tower_id, blueprint_payload)
     except Exception as policy_err:
         raise RuntimeError(
-            f"Fallo crítico en SovereignPolicyEngine: {policy_err}"
+            f"Critical failure in SovereignPolicyEngine: {policy_err}"
         ) from policy_err
 
     total_ale = _calculate_total_fair_ale(blueprint_payload)
@@ -1158,7 +1163,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         final_payload_dict = validated_model.model_dump(by_alias=True)
     except Exception as val_err:
         raise RuntimeError(
-            f"Error de validación en payload final del blueprint: {val_err}"
+            f"Validation error in final blueprint payload: {val_err}"
         ) from val_err
 
     output_path = resolve_blueprint_payload_path(client_name, tower_id)
@@ -1168,6 +1173,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     )
 
     content = apply_vocabulary_substitutions(content, locale=doc_lang)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(content, encoding="utf-8-sig")
     logger.info("Blueprint payload generated and validated at %s", output_path)
 

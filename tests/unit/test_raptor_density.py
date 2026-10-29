@@ -50,8 +50,12 @@ async def test_raptor_summarize_group_injects_hard_metric_retention(
         assert (
             "INVARIANTE DE PRESERVACIÓN DE ENTIDADES Y MÉTRICAS DURAS"
             in contents
+            or "HARD ENTITY AND METRIC PRESERVATION" in contents
         )
-        assert "auditor forense de sistemas" in system_instruction
+        assert (
+            "auditor forense de sistemas" in system_instruction.lower()
+            or "forensic systems auditor" in system_instruction.lower()
+        )
 
 
 @pytest.mark.asyncio
@@ -88,7 +92,10 @@ async def test_raptor_deterministic_metric_retention_rescues_dropped_metrics(
         summary = await engine._summarize_group(nodes)
 
         # Verify the deterministic gate rescued and appended the exact missing metrics
-        assert "[Métricas Críticas Preservadas]:" in summary
+        assert (
+            "[Métricas Críticas Preservadas]:" in summary
+            or "[Preserved Critical Metrics]:" in summary
+        )
         assert "12 ms" in summary
         assert "99.9%" in summary
         assert "500 tb" in summary.lower() or "500 TB" in summary

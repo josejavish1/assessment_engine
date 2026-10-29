@@ -64,8 +64,8 @@ class SilentExceptionVisitor(ast.NodeVisitor):
                 file_path=self.rel_path,
                 line_number=node.lineno,
                 rule_id="HYGIENE-CWE391-SILENT-PASS",
-                message=f"Captura de excepción genérica '{exc_type}' silenciada con 'pass' ciego: enmascara errores silenciosos (CWE-391)",
-                recommendation="Registrar el fallo con 'logger.warning/debug' o relanzar la excepción ('raise')."
+                message=f"Generic exception '{exc_type}' silenced with blind 'pass': masks silent errors (CWE-391)",
+                recommendation="Log failure with 'logger.warning/debug' or re-raise the exception ('raise')."
             ))
 
         self.generic_visit(node)
@@ -91,7 +91,7 @@ def _audit_file_hygiene(
                         line_number=line_idx,
                         rule_id="HYGIENE-UNPROFESSIONAL-COMMENT",
                         message=f"Comentario informal o vibe-coding detectado: '{clean_line[:60]}...'",
-                        recommendation="Mantener un tono técnico, sobrio y frío sin expresiones coloquiales."
+                        recommendation="Maintain sober, objective, and professional technical tone without informal vernacular."
                     ))
 
                 if EMOJI_PATTERN.search(clean_line):
@@ -102,8 +102,8 @@ def _audit_file_hygiene(
                         file_path=rel_path,
                         line_number=line_idx,
                         rule_id="HYGIENE-EMOJI-IN-CODE",
-                        message="Uso de emojis en comentarios de código de producción",
-                        recommendation="Eliminar emojis; el código de producción empresarial debe ser estrictamente sobrio."
+                        message="Emojis detected in production code comments",
+                        recommendation="Remove emojis; enterprise production codebase requires strict sobriety."
                     ))
 
         if SUPPRESSION_DIRECTIVES.search(line):
@@ -144,11 +144,11 @@ def run_code_hygiene_probe(target_dir: Path) -> ProbeResult:
                     file_path=rel_path,
                     line_number=None,
                     rule_id="HYGIENE-SUPPRESSION-SPAM",
-                    message=f"Abuso de directivas de supresión ({file_supp} directivas # noqa o # type: ignore)",
-                    recommendation="Resolver los tipos y advertencias estructurales en vez de silenciar masivamente los linters."
+                    message=f"Excessive suppression directives ({file_supp} directives # noqa or # type: ignore)",
+                    recommendation="Resolve structural types and warnings directly instead of mass-suppressing linters."
                 ))
 
-        # 2. Análisis AST de Excepciones Silenciadas (CWE-391)
+        # 2. AST Analysis of Silenced Exceptions (CWE-391)
         if not is_test:
             try:
                 tree = ast.parse(content)
@@ -190,7 +190,7 @@ def run_code_hygiene_probe(target_dir: Path) -> ProbeResult:
                         line_number=err.get("location", {}).get("row"),
                         rule_id=f"STATIC-{rule}",
                         message=f"Ruff {rule}: {err.get('message')}",
-                        recommendation="Corregir la excepción ciega o nombre indefinido antes de certificar la release."
+                        recommendation="Resolve blind exceptions or undefined symbols before certifying release."
                     ))
         except (json.JSONDecodeError, OSError, subprocess.SubprocessError):
             pass

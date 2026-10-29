@@ -26,15 +26,15 @@ class DeterministicFinOpsEngine:
     def infer_typology(project_name: str, objective: str) -> str:
         """Infer typology according to technical specification."""
         text = f"{project_name} {objective}".lower()
-        if any(w in text for w in ["gobernanza", "marco", "proceso", "política", "estandarización", "auditoría", "capacitación"]):
+        if any(w in text for w in ["governance", "framework", "policy", "standardiz", "audit", "training"]):
             return "governance_process"
-        if any(w in text for w in ["sd-wan", "conmutador", "switch", "enlace", "dci", "red ", "fibra", "lan"]):
+        if any(w in text for w in ["sd-wan", "switch", "link", "dci", "network", "fiber", "lan"]):
             return "network_telecom"
-        if any(w in text for w in ["climatización", "eléctric", "cpd", "data center", "rack", "ups", "sai", "servidor"]):
+        if any(w in text for w in ["cooling", "electric", "cpd", "data center", "rack", "ups", "server"]):
             return "hardware_infrastructure"
-        if any(w in text for w in ["seguridad", "firewall", "perímetro", "ciberseguridad", "nis2", "sase"]):
+        if any(w in text for w in ["security", "firewall", "perimeter", "cybersecurity", "nis2", "sase"]):
             return "security_operations"
-        if any(w in text for w in ["nube", "cloud", "landing zone", "azure", "aws", "gcp"]):
+        if any(w in text for w in ["cloud", "landing zone", "azure", "aws", "gcp"]):
             return "cloud_enablement"
         return "software_platform"
 
@@ -48,6 +48,7 @@ class DeterministicFinOpsEngine:
         sizing: str = "M",
         currency_symbol: str = "€",
         country_rate_multiplier: float = 1.0,
+        doc_lang: str = "en",
     ) -> tuple[str, str]:
         """Calculates precise (OpEx, CapEx) formatted strings via deterministic accounting."""
         rates = rate_card.get("tarifas_hora", {
@@ -77,7 +78,7 @@ class DeterministicFinOpsEngine:
         )
 
         formatted_opex = format_currency(
-            sell_price_opex, currency_symbol=currency_symbol, locale="es"
+            sell_price_opex, currency_symbol=currency_symbol, locale=doc_lang
         )
 
         # 2. Deterministic CapEx based on Typology and Scale
@@ -95,16 +96,17 @@ class DeterministicFinOpsEngine:
         final_ratio = ratio * ratio_mult
 
         if final_ratio <= 0.05 or typology == "governance_process":
-            formatted_capex = "Bajo / Nulo (Suscripción OpEx o servicios de consultoría)"
+            from assessment_engine.infrastructure.localization import t
+            formatted_capex = t("capex_low_subscription", locale=doc_lang)
         else:
             raw_capex = round(sell_price_opex * final_ratio, -3)
             # Bound between 15k and 200k for enterprise sanity
             raw_capex = max(15000.0, min(250000.0, raw_capex))
             capex_val_str = format_currency(
-                raw_capex, currency_symbol=currency_symbol, locale="es"
+                raw_capex, currency_symbol=currency_symbol, locale=doc_lang
             )
             formatted_capex = (
-                f"~{capex_val_str} (Inversión paramétrica de equipamiento y licencias base)"
+                f"~{capex_val_str} (Parametric equipment and core licensing CapEx baseline)"
             )
 
         return formatted_opex, formatted_capex
@@ -114,15 +116,15 @@ class MeceClusteringEngine:
     """Consolidates overlapping or redundant initiatives within the same architectural pillar."""
 
     STOPWORDS = {
-        "de", "la", "el", "en", "y", "a", "los", "las", "del", "para", "por",
-        "con", "un", "una", "iniciativa", "programa", "proyecto", "estrategia",
-        "plan", "estratégico", "estratégica", "operacional", "operativa",
+        "of", "the", "in", "and", "to", "for", "by", "with", "a", "an",
+        "initiative", "program", "project", "strategy", "plan",
+        "strategic", "operational",
     }
 
     @classmethod
     def get_token_signature(cls, text: str) -> set[str]:
         """Get token signature according to technical specification."""
-        words = re.findall(r"\b[a-záéíóúñ]{4,}\b", text.lower())
+        words = re.findall(r"\b[a-z]{4,}\b", text.lower())
         return {w for w in words if w not in cls.STOPWORDS}
 
     @classmethod
@@ -197,24 +199,30 @@ class MeceClusteringEngine:
 class LinguisticLinter:
     """Enforces European Spanish executive quality and eliminates English technical naming leaks."""
 
-    TRANSLATION_MAP: Dict[str, str] = {
-        r"\bproactive capacity assurance\b": "Gestión Proactiva de Capacidad",
-        r"\bfor business continuity\b": "para la Continuidad de Negocio",
-        r"\bnetwork foundation\b": "Fundamentos de Red",
-        r"\blanding zone\b": "Zona de Aterrizaje Cloud (Landing Zone)",
-        r"\bbranch connectivity\b": "Conectividad de Sedes y Plantas",
-        r"\bwork breakdown structure\b": "Estructura de Desglose de Trabajo",
-        r"\bcloud guard\b": "Gobernanza Cloud y Seguridad Continua",
-        r"\bsecure-ai\b": "Inteligencia y Seguridad Operativa",
-        r"\bdigital core\b": "Núcleo Digital",
-        r"\bglobal connect\b": "Conectividad Global",
-    }
+    @classmethod
+    def _load_translation_map(cls) -> Dict[str, str]:
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        import json
+        p = ROOT / "engine_config/locales_asis_annex.json"
+        if p.exists():
+            try:
+                return json.loads(p.read_text(encoding="utf-8")).get(
+                    "linguistic_linter_translations", {}
+                )
+            except Exception:
+                pass
+        return {}
+
+    TRANSLATION_MAP: Dict[str, str] = {}
 
     @classmethod
     def sanitize_title(cls, text: str, max_words: int = 8) -> str:
         """Translates known English leakage, removes markdown artifacts, and enforces punchy executive length (<= 8 words)."""
         if not text:
             return ""
+
+        if not cls.TRANSLATION_MAP:
+            cls.TRANSLATION_MAP = cls._load_translation_map()
 
         cleaned = text.strip()
         # Remove markdown asterisks
@@ -235,22 +243,14 @@ class LinguisticLinter:
                 cleaned = parts[1].strip()
 
         # Strip redundant filler prefixes to leave high-impact action + subject
-        fillers = [
-            r"^programa de implantaci[oó]n de metodolog[ií]a de\s+",
-            r"^programa de transformaci[oó]n del?\s+",
-            r"^programa de gobernanza operativa y\s+",
-            r"^programa de excelencia operativa,\s+",
-            r"^programa de gobierno, conciliaci[oó]n y\s+",
-            r"^programa de inteligencia operativa y\s+",
-            r"^programa corporativo de\s+",
-            r"^programa estrat[eé]gico de\s+",
-            r"^programa de\s+",
-            r"^plan director de\s+",
-            r"^sistema automatizado de\s+",
-            r"^plataforma integral de\s+",
-            r"^marco estrat[eé]gico de\s+",
-            r"^garant[ií]a de\s+",
-        ]
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        annex_config = ROOT / "engine_config/locales_asis_annex.json"
+        fillers = []
+        if annex_config.exists():
+            try:
+                fillers = json.loads(annex_config.read_text(encoding="utf-8")).get("initiative_title_filler_regexes", [])
+            except Exception:
+                pass
         for f in fillers:
             cleaned = re.sub(f, "", cleaned, flags=re.IGNORECASE)
 
@@ -258,9 +258,8 @@ class LinguisticLinter:
         words = cleaned.split()
         if len(words) > max_words:
             words = words[:max_words]
-            while words and words[-1].lower() in [
-                "de", "y", "en", "para", "con", "del", "a", "la", "los", "el", "las", "por", "marco"
-            ]:
+            trailing_stop_words = ["and", "or", "for", "with", "in", "to", "of", "the", "on", "by", "at"]
+            while words and words[-1].lower() in trailing_stop_words:
                 words.pop()
             cleaned = " ".join(words)
 

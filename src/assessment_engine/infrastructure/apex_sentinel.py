@@ -100,7 +100,7 @@ class ApexSentinel:
 
         if self.total_cost > self.budget_limit:
             raise RuntimeError(
-                f"CIRCUIT BREAKER: El presupuesto de Apex (${self.budget_limit}) ha sido superado. Deteniendo ejecución por seguridad."
+                f"CIRCUIT BREAKER: Apex budget limit (${self.budget_limit}) exceeded. Halting execution for safety."
             )
 
     def get_task_status(self, task_id: str) -> Optional[str]:

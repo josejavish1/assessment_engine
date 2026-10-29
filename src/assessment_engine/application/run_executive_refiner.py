@@ -32,7 +32,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
 async def refine_findings(client_name: str, findings: dict) -> dict:
     r"""{'docstring': "Refines a findings dictionary using an AI agent to meet content and structure protocols.\n\n    This asynchronous function orchestrates a multi-attempt process to rewrite a raw\n    findings dictionary into a standardized format. The function first infers the\n    report type ('global' or 'tower') based on the key structure of the input\n    `findings`. It then loads optional client-specific grounding data to provide\n    context to the AI agent. A retry mechanism with a maximum of three attempts\n    is implemented to handle recoverable errors, such as protocol violations\n    (`SecurityIntegrityViolation`) or malformed JSON responses from the agent.\n    On each subsequent attempt, the previous error is included in the prompt to\n    guide the agent toward a valid output.\n\n    Args:\n        client_name: The client's identifier, used to locate and load a\n            corresponding JSON file with contextual grounding data.\n        findings: The raw dictionary of findings. Its key structure is used to\n            determine the refinement strategy (e.g., 'global' if keys like\n            'executive_summary' are present).\n\n    Returns:\n        A dictionary containing the refined findings, parsed from the AI agent's\n        JSON output.\n\n    Raises:\n        RuntimeError: If the agent fails to produce a valid, protocol-compliant\n            dictionary within three attempts."}."""
-    print("    -> [Refinado Ejecutivo] Aplicando Estándares Tier 1...")
+    print("    -> [Executive Refiner] Applying Tier 1 standards...")
 
     intel_path = resolve_client_intelligence_path(client_name)
     grounding_data = {}
@@ -47,7 +47,7 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     agent = Agent(
         name="executive_refiner",
         model=model_name,
-        instruction="Eres un Partner de una firma de consultoría estratégica. Tu tono es frío, profesional e impecable. Devuelve ÚNICAMENTE JSON.",
+        instruction="You are a Partner at an elite strategic consultancy. Your tone is sober, professional, and rigorous. Return EXCLUSIVELY JSON.",
     )
     app = AdkApp(agent=agent)
 
@@ -64,7 +64,7 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
         try:
             message = prompt_func(json.dumps(findings), json.dumps(grounding_data))
             if last_error:
-                message += f"\n\n🚨 VIOLACIÓN DE PROTOCOLO DETECTADA:\n{last_error}\nPor favor, corrige el texto para que sea 100% neutral y profesional."
+                message += f"\n\n🚨 PROTOCOL VIOLATION DETECTED:\n{last_error}\nPlease correct the text to be 100% objective, neutral, and professional."
 
             refined_findings = await run_agent(
                 app, user_id="exec_refiner", message=message
@@ -74,11 +74,11 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
         except (SecurityIntegrityViolation, json.JSONDecodeError) as e:
             last_error = str(e)
             print(
-                f"    ⚠️ Fallo de protocolo diplomático (Intento {attempt + 1}). Re-refinando..."
+                f"    ⚠️ Diplomatic protocol failure (Attempt {attempt + 1}). Re-refining..."
             )
 
     raise RuntimeError(
-        f"Fallo crítico: El Refinador no ha logrado cumplir el protocolo Tier 1 tras 3 intentos. Error: {last_error}"
+        f"Critical failure: Refiner failed to satisfy Tier 1 protocol after 3 attempts. Error: {last_error}"
     )
 
 
@@ -158,19 +158,44 @@ def _normalize_target_vision(refined: dict[str, Any]) -> None:
         if "evolution_principles" in target_v and isinstance(
             target_v["evolution_principles"], list
         ):
+            norm_principles = []
             for item in target_v["evolution_principles"]:
-                if (
-                    isinstance(item, dict)
-                    and "title" in item
-                    and "principle" not in item
-                ):
-                    item["principle"] = item["title"]
+                if isinstance(item, str):
+                    parts = item.split(":", 1)
+                    if len(parts) == 2:
+                        norm_principles.append(
+                            {"principle": parts[0].strip(), "description": parts[1].strip()}
+                        )
+                    else:
+                        norm_principles.append({"principle": item.strip(), "description": ""})
+                elif isinstance(item, dict):
+                    if "title" in item and "principle" not in item:
+                        item["principle"] = item["title"]
+                    if "description" not in item:
+                        item["description"] = ""
+                    norm_principles.append(item)
+            target_v["evolution_principles"] = norm_principles
+
         if "strategic_pillars" in target_v and isinstance(
             target_v["strategic_pillars"], list
         ):
+            norm_pillars = []
             for item in target_v["strategic_pillars"]:
-                if isinstance(item, dict) and "title" in item and "pillar" not in item:
-                    item["pillar"] = item["title"]
+                if isinstance(item, str):
+                    parts = item.split(":", 1)
+                    if len(parts) == 2:
+                        norm_pillars.append(
+                            {"pillar": parts[0].strip(), "description": parts[1].strip()}
+                        )
+                    else:
+                        norm_pillars.append({"pillar": item.strip(), "description": ""})
+                elif isinstance(item, dict):
+                    if "title" in item and "pillar" not in item:
+                        item["pillar"] = item["title"]
+                    if "description" not in item:
+                        item["description"] = ""
+                    norm_pillars.append(item)
+            target_v["strategic_pillars"] = norm_pillars
 
 
 def _normalize_roadmap_horizon_item(item: Any, h_key: str) -> Any:
@@ -200,7 +225,7 @@ def _normalize_roadmap_horizon_item(item: Any, h_key: str) -> Any:
             or item_copy.get("description")
             or item_copy.get("business_impact")
             or item_copy.get("impact")
-            or "Mitigación de deuda técnica."
+            or "Technical debt mitigation."
         )
     item_copy.pop("objective", None)
 
@@ -239,7 +264,7 @@ def _normalize_programs_list(roadmap: dict[str, Any]) -> None:
                 p_copy["description"] = (
                     p_copy.get("name")
                     or p_copy.get("id")
-                    or "Programa de transformación tecnológica."
+                    or "Technology transformation program."
                 )
             normalized_programs.append(p_copy)
         else:
@@ -336,7 +361,7 @@ async def main(argv: list[str] | None = None) -> None:
     findings_path.write_text(
         json.dumps(final_refined, indent=2, ensure_ascii=False), encoding="utf-8-sig"
     )
-    print(f"✅ Hallazgos refinados con éxito: {findings_path}")
+    print(f"✅ Findings refined successfully: {findings_path}")
 
 
 if __name__ == "__main__":

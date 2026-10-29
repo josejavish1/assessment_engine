@@ -92,16 +92,10 @@ def test_derive_maturity_band_scores_integration() -> None:
             locales_data = json.load(lf)
 
         for lang in ["es", "en", "pt", "fr", "ja"]:
-            locales_data[lang]
+            vocab = locales_data[lang]
             for score, key in test_cases:
-                res = derive_maturity_band(score)
-                expected = {
-                    "band_initial": "Inicial",
-                    "band_repeatable": "Repetible",
-                    "band_defined": "Definido",
-                    "band_managed": "Gestionado",
-                    "band_optimized": "Optimizado",
-                }[key]
+                res = derive_maturity_band(score, locale=lang)
+                expected = vocab[key]
                 assert res == expected, (
                     f"Discrepancy for score {score} in language {lang}: expected {repr(expected)}, obtained {repr(res)}"
                 )
