@@ -78,3 +78,18 @@ def test_no_raw_tower_dictionaries_in_global_payload_builder() -> None:
     assert "TOWER_NAMES_MAP" not in text, "Found legacy hardcoded TOWER_NAMES_MAP in build_global_report_payload.py"
     assert "TOWER_CRITICAL_DECISIONS" not in text, "Found legacy hardcoded TOWER_CRITICAL_DECISIONS in build_global_report_payload.py"
 
+
+def test_no_spanish_in_yaml_prompts_registry() -> None:
+    """ASSERTS that all YAML prompts in registry are 100% technical English."""
+    prompts_dir = Path(__file__).resolve().parents[2] / "src" / "assessment_engine" / "domain" / "prompts" / "registry"
+    spanish_char_pattern = re.compile(r'[\"\'][^\"\'\n]*[áéíóúÁÉÍÓÚñÑ¿¡][^\"\'\n]*[\"\']')
+
+    violations = []
+    for y in sorted(prompts_dir.glob("*.yaml")):
+        for idx, l in enumerate(y.read_text(encoding="utf-8").splitlines(), 1):
+            if spanish_char_pattern.search(l) and "CLICH" not in l.upper():
+                violations.append(f"{y.name}:L{idx} -> {l.strip()}")
+
+    assert not violations, f"Found Spanish sentences in YAML prompts:\n" + "\n".join(violations)
+
+

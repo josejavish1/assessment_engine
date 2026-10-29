@@ -254,9 +254,9 @@ class ExecutionRoadmapDraft(BaseModel):
 class ExecutiveDecisionItem(BaseModel):
     """Represent a single item requiring an executive decision."""
 
-    decision_type: str = "Decisión Estratégica"
+    decision_type: str = "Strategic Decision"
     action_required: str = ""
-    impact_if_delayed: str = "Impacto en cronograma de transformación."
+    impact_if_delayed: str = "Impact on strategic transformation roadmap."
     decision: Optional[str] = None
 
     @model_validator(mode="before")
@@ -264,9 +264,9 @@ class ExecutiveDecisionItem(BaseModel):
     def _coerce_flat_string(cls, data: Any) -> Any:
         if isinstance(data, str):
             return {
-                "decision_type": "Decisión Estratégica",
+                "decision_type": "Strategic Decision",
                 "action_required": data,
-                "impact_if_delayed": "Impacto en cronograma de transformación.",
+                "impact_if_delayed": "Impact on strategic transformation roadmap.",
                 "decision": data,
             }
         if isinstance(data, dict):
@@ -276,12 +276,12 @@ class ExecutiveDecisionItem(BaseModel):
             if not d.get("decision") and d.get("action_required"):
                 d["decision"] = d["action_required"]
             if not d.get("decision_type"):
-                d["decision_type"] = d.get("type") or "Decisión Estratégica"
+                d["decision_type"] = d.get("type") or "Strategic Decision"
             if not d.get("impact_if_delayed"):
                 d["impact_if_delayed"] = (
                     d.get("delay_impact")
                     or d.get("impact")
-                    or "Impacto en cronograma de transformación."
+                    or "Impact on strategic transformation roadmap."
                 )
             return d
         return data

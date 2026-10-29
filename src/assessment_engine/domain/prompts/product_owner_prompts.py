@@ -51,14 +51,14 @@ def build_product_owner_planner_prompt(
     """Build product owner planner prompt according to architectural specification."""
     context_block = ""
     if repo_context:
-        context_block = f"Contexto del Repositorio:\n{repo_context}\n\n"
+        context_block = f"Repository Context:\n{repo_context}\n\n"
 
     return (
-        "Convierte esta petición de product owner en un plan estructurado.\n\n"
+        "Convert this product owner request into a structured execution plan.\n\n"
         f"{context_block}"
-        "Petición:\n"
+        "Request:\n"
         f"{request_text.strip()}\n\n"
-        "Devuelve solo JSON válido conforme al schema requerido."
+        "Return only valid JSON conforming strictly to the required schema."
     )
 
 
@@ -70,7 +70,7 @@ def get_product_owner_doctor_instruction() -> str:
 {config["context"]}
 {config["mission"]}
 
-REGLAS:
+RULES:
 {rules}
 """.strip()
 
@@ -85,12 +85,12 @@ def build_product_owner_doctor_prompt(plan: dict, task: dict, error_log: str) ->
         "task_invariants": task.get("invariants", []),
     }
     return (
-        "Evalúa este fallo de ejecución y emite un diagnóstico.\n\n"
-        "Contexto del Plan Aprobado:\n"
+        "Evaluate this execution failure and formulate an architectural diagnosis.\n\n"
+        "Approved Plan Context:\n"
         f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n\n"
-        "Log de Error del Quality Gate:\n"
+        "Quality Gate Error Log:\n"
         f"{error_log}\n\n"
-        "Devuelve tu diagnóstico en formato JSON conforme al schema."
+        "Return your diagnosis strictly in JSON conforming to the schema."
     )
 
 

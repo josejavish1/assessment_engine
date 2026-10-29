@@ -59,11 +59,11 @@ class ExecutiveSummaryAnnex(BaseModel):
         default=None,
         description="Structured financial metrics representing the Cost of Inaction (COI)."
     )
-    message_strength: str = "Fortalezas clave identificadas en el entorno."
-    message_gap: str = "Principales áreas de mejora y deuda técnica."
-    message_bottleneck: str = "Cuellos de botella operativos que limitan el negocio."
+    message_strength: str = "Key operational strengths identified across the platform."
+    message_gap: str = "Key areas of improvement and structural technical debt."
+    message_bottleneck: str = "Operational bottlenecks restricting business velocity."
     key_business_impacts: List[str] = Field(
-        description="Lista de los principales impactos de negocio de las deficiencias actuales. Cada elemento debe redactarse estrictamente en términos del impacto operativo o riesgo real del estado actual (AS-IS) sobre el negocio (ej. 'La fragmentación de controles limita la velocidad...', 'La falta de automatización perpetúa altos costes...'), en lugar de describirlo como objetivos, metas o beneficios futuros de una transformación."
+        description="List of core business impacts from current deficiencies. Each element must articulate real operational impact or risk of the current AS-IS state on business continuity."
     )
 
 

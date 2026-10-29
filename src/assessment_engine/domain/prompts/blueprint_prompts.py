@@ -30,7 +30,7 @@ def load_prompt_config(filename: str) -> dict[str, Any]:
     registry_dir = Path(__file__).resolve().parent / "registry"
     filepath = registry_dir / filename
     if not filepath.exists():
-        raise FileNotFoundError(f"No se encontró el archivo de prompt: {filepath}")
+        raise FileNotFoundError(f"Prompt configuration file not found: {filepath}")
 
     with filepath.open("r", encoding="utf-8") as f:
         return cast(dict[str, Any], yaml.safe_load(f))
@@ -119,16 +119,16 @@ def get_pilar_architect_prompt(
     prompt += "CONTEXTO DEL NEGOCIO:\n"
     prompt += f"{context_str}\n\n"
 
-    prompt += "ADN ESTRATÉGICO (Minuto Cero):\n"
+    prompt += "STRATEGIC DNA (Zero-Minute Baseline):\n"
     prompt += f"{intel_str}\n\n"
 
-    prompt += "HALLAZGOS TÉCNICOS (Respuestas del cliente):\n"
+    prompt += "TECHNICAL FINDINGS (Client Responses):\n"
     prompt += f"{answers_json}\n\n"
 
-    prompt += "TAREA:\n"
+    prompt += "TASK:\n"
     prompt += f"{config['task']}\n\n"
 
-    prompt += "REGLAS DE ORO:\n"
+    prompt += "GOLDEN RULES:\n"
     for idx, rule in enumerate(config["golden_rules"], 1):
         rule_formatted = (
             rule.format(target_language=target_language)
@@ -138,54 +138,32 @@ def get_pilar_architect_prompt(
         prompt += f"{idx}. {rule_formatted}\n"
 
     if "golden_exemplar" in config:
-        prompt += "\nEJEMPLAR DE ORO DE REFERENCIA (ESTÁNDAR TIER-1 / MISIÓN CRÍTICA - FNMT CERES):\n"
-        prompt += "Este es el estándar exacto de profundidad técnica, rigor regulatorio y nivel de detalle esperado:\n"
+        prompt += "\nGOLDEN REFERENCE EXEMPLAR (TIER-1 / MISSION-CRITICAL STANDARD):\n"
+        prompt += "This is the exact standard of technical depth, regulatory rigor, and detail expected:\n"
         prompt += (
             json.dumps(config["golden_exemplar"], indent=2, ensure_ascii=False) + "\n\n"
         )
 
     prompt += f"\n{config.get('handover', '')}\n"
-    prompt += "Devuelve la informacion en formato JSON estructurado.\n"
+    prompt += "Return the information strictly in structured JSON format.\n"
 
     return str(prompt)
 
 
 def get_critic_prompt(pilar_label: str, client_name: str, raw_output_json: str) -> Any:
-    """Constructs a prompt for an AI model to critique a blueprint draft.
-
-    Loads a prompt configuration from `blueprint_critic_prompt.yaml`, formats it
-    with client and pillar-specific details, and appends the raw JSON draft
-    for review. The resulting string provides a structured set of instructions for
-    an AI model tasked with improving the initial draft.
-
-    Args:
-        pilar_label (str): The label of the blueprint pillar being reviewed.
-        client_name (str): The name of the client for whom the blueprint is being
-            created.
-        raw_output_json (str): A string containing the JSON draft to be reviewed by
-            the critic model.
-
-    Returns:
-        str: The fully formatted prompt string ready to be sent to the AI model.
-
-    Raises:
-        FileNotFoundError: If the `blueprint_critic_prompt.yaml` configuration
-            file cannot be found by the `load_prompt_config` dependency.
-        KeyError: If the loaded YAML configuration lacks a required key, such as
-            'role', 'mission', 'review_objectives', or 'handover_instruction'.
-    """
+    """Constructs a prompt for an AI model to critique a blueprint draft."""
     config = load_prompt_config("blueprint_critic_prompt.yaml")
 
     prompt = (
-        f"Eres el {config['role']} del blueprint del pilar '{pilar_label}' para el cliente {client_name}.\n\n"
-        f"Recibirás un borrador JSON ya generado. Tu trabajo no es reescribirlo desde cero, sino {config['mission']}\n\n"
+        f"You are the {config['role']} for the blueprint of pillar '{pilar_label}' for client {client_name}.\n\n"
+        f"You will receive a generated draft JSON. Your job is not to rewrite from scratch, but {config['mission']}\n\n"
     )
 
-    prompt += "OBJETIVOS DE REVISIÓN:\n"
+    prompt += "REVIEW OBJECTIVES:\n"
     for idx, objective in enumerate(config["review_objectives"], 1):
         prompt += f"{idx}. {objective}\n"
 
-    prompt += f"\nBORRADOR A REVISAR:\n{raw_output_json}\n\n"
+    prompt += f"\nDRAFT TO REVIEW:\n{raw_output_json}\n\n"
     prompt += config["handover_instruction"]
 
     return str(prompt)
@@ -194,18 +172,18 @@ def get_critic_prompt(pilar_label: str, client_name: str, raw_output_json: str) 
 def get_closing_orchestrator_prompt(
     tower_name: str, pillars_analysis_json: str, intel_str: str, total_ale: float = 0.0
 ) -> Any:
-    r"""{'docstring': "Assembles the final orchestrator prompt for blueprint generation.\n\n    This function constructs a detailed prompt for a large language model by\n    integrating multiple data sources. It combines a consolidated analysis of\n    technology pillars, customer-specific intelligence, and an optional financial\n    mandate derived from the Annualized Loss Expectancy (ALE). The role, tone,\n    and structural requirements for the prompt are externally defined and loaded\n    from a YAML configuration file.\n\n    Args:\n        tower_name: The name of the technology tower being analyzed.\n        pillars_analysis_json: A JSON-formatted string containing the\n            consolidated analysis for all pillars within the specified tower.\n        intel_str: A string containing customer-specific intelligence or context.\n        total_ale: The consolidated Annualized Loss Expectancy (ALE) for the\n            tower. If greater than 0, this value is included as a financial\n            mandate ('Cost of Inaction') in the prompt. Defaults to 0.0.\n\n    Returns:\n        A single string containing the fully constructed prompt, ready for\n        submission to a language model.\n\n    Raises:\n        FileNotFoundError: If the `blueprint_closing_orchestrator_prompt.yaml`\n            configuration file is not found.\n        KeyError: If the loaded YAML configuration is missing required keys\n            such as 'role', 'task_and_tone', or 'structure_requirements'."}."""
+    """Assembles the final orchestrator prompt for blueprint generation."""
     config = load_prompt_config("blueprint_closing_orchestrator_prompt.yaml")
 
-    prompt = f"Eres el {config['role']}. Aquí tienes el análisis de todos los pilares de la torre {tower_name}:\n"
+    prompt = f"You are the {config['role']}. Here is the consolidated technical analysis of all pillars for tower {tower_name}:\n"
     prompt += f"{pillars_analysis_json}\n\n"
 
-    prompt += f"Basado en esto y en el ADN del cliente: {intel_str}\n\n"
+    prompt += f"Based on this and the client strategic DNA: {intel_str}\n\n"
 
     if total_ale > 0:
-        prompt += f"MANDATO FINANCIERO (FAIR ALE): La Expectativa de Pérdida Anualizada (ALE) consolidada para los riesgos de esta torre es de {total_ale:,.2f} €. DEBES utilizar este valor explícitamente en el texto del 'Cost of Inaction' (cost_of_inaction) para cuantificar financieramente el riesgo ante el Comité de Dirección.\n\n"
+        prompt += f"FINANCIAL MANDATE (FAIR ALE): The consolidated Annual Loss Expectancy (ALE) for this tower is {total_ale:,.2f} €. You MUST use this exact value in 'cost_of_inaction' to financially substantiate the risk before the Executive Committee.\n\n"
 
-    prompt += "TAREA Y REGLAS DE TONO:\n"
+    prompt += "TASK AND TONE RULES:\n"
     for rule in config["task_and_tone"]:
         prompt += f"- {rule}\n"
 
@@ -213,7 +191,7 @@ def get_closing_orchestrator_prompt(
     for step, desc in config["structure_requirements"].items():
         prompt += f"{step}. {desc}\n"
 
-    prompt += "\nDevuelve la informacion en formato JSON estructurado.\n"
+    prompt += "\nReturn the information strictly in structured JSON format.\n"
     return str(prompt)
 
 

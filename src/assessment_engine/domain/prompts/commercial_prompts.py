@@ -10,19 +10,19 @@ Catálogo de Referencia de TCV (Total Contract Value) y Tiempos de Consultoría 
 """
 
 CONSULTING_WIN_THEMES = """
-Aceleradores y Fortalezas del Partner de Consultoría para justificar 'Por qué nosotros':
-- Cloud & Infra: Framework 'Cloud Ascent', certificaciones máximas (Azure Expert MSP, AWS Premier).
-- Ciberseguridad: Red Global de SOCs, inteligencia de amenazas propia, metodologías Zero Trust contrastadas.
-- Redes (Edge to Cloud): Liderazgo global en SD-WAN y redes híbridas, alianzas top tier con Cisco/Fortinet/Palo Alto.
-- Operaciones/ITSM: Modelos operativos AIOps, factorías de automatización, partnership Principal con ServiceNow.
-- Resiliencia: Metodologías de Cyber Recovery aisladas (Vaults), cumplimiento normativo DORA/NIS2.
+Consulting Partner Accelerators and Differentiators ('Why Choose Us'):
+- Cloud & Infrastructure: 'Cloud Ascent' Framework, maximum cloud certifications (Azure Expert MSP, AWS Premier Tier).
+- Cybersecurity: Global SOC Network, proprietary threat intelligence, field-proven Zero Trust architectures.
+- Networks (Edge to Cloud): Global leadership in SD-WAN and hybrid networks, top-tier alliances with Cisco/Fortinet/Palo Alto.
+- Digital Operations / ITSM: AIOps operating models, automation factories, Principal partnership with ServiceNow.
+- Resilience & Continuity: Isolated Cyber Recovery Vaults, full regulatory compliance with DORA/NIS2/ISO 22301.
 """
 
 EXECUTIVE_CONSULTING_FRAMEWORK = """
-MARCO DE CONSULTORÍA EXECUTIVE (STRATEGIC VIABILITY & AUTHORITY):
-1. SYSTEMIC KNOWLEDGE DEBT: Sustituir el enfoque centrado en personas por el análisis de 'Entropía de la Memoria Sistémica'. El riesgo no es la rotación, sino la 'Opacidad en la Transferencia de Estado Operativo' y la 'Dependencia de Lógica No Codificada'.
-2. FINANCIAL SENSITIVITY MODELS (VaR): Evitar cifras especulativas. Presentar el impacto como 'Modelos de Sensibilidad'. Relacionar la indisponibilidad con la degradación del Free Cash Flow y los tramos sancionadores de leyes aplicables (NIS2, GDPR, DORA).
-3. JURISDICTIONAL SOVEREIGNTY: Evaluar la inmunidad ante legislaciones extraterritoriales. Priorizar la 'Soberanía por Diseño' mediante regiones locales y gestión externa de claves (HYOK) en sectores de alta regulación.
+EXECUTIVE CONSULTING FRAMEWORK (STRATEGIC VIABILITY & AUTHORITY):
+1. SYSTEMIC KNOWLEDGE DEBT: Replace person-centric blame with analysis of 'Systemic Memory Entropy'. The true risk is 'Operational State Transfer Opacity' and 'Dependency on Uncoded Tribal Logic'.
+2. FINANCIAL SENSITIVITY MODELS (VaR): Avoid speculative numbers. Frame impact as 'Financial Sensitivity Models'. Correlate downtime with Free Cash Flow degradation and statutory regulatory fines (NIS2, GDPR, DORA).
+3. JURISDICTIONAL SOVEREIGNTY: Evaluate immunity against extraterritorial regulations. Prioritize 'Sovereignty by Design' via sovereign local regions and Hold-Your-Own-Key (HYOK) key management in highly regulated sectors.
 """
 
 
@@ -30,17 +30,17 @@ def get_commercial_orchestrator_instruction(target_language: str = "Spanish") ->
     """Return the base instruction prompt for the commercial orchestrator AI agent."""
     from assessment_engine.infrastructure.config_loader import get_consultant_company_name
     company = get_consultant_company_name()
-    return f"""Eres un ecosistema de agentes de Ventas, Arquitectura y Riesgos de {company} elaborando un Account Action Plan estratégico.
+    return f"""You are an ecosystem of Senior Sales, Architecture, and Risk Partners at {company} preparing a strategic Account Action Plan.
 
 ### CRITICAL LANGUAGE MANDATE:
 You MUST generate all proposal narratives, solution architectures, delivery teams, and executive syntheses EXCLUSIVELY in {target_language}.
 Do not default to Spanish unless {target_language} is Spanish.
 
-REGLAS DE ORO DE CALIDAD CONSULTIVA (NIVEL STAFF/PARTNER):
-1. PRIORIZACIÓN ESTRATÉGICA: Si el ADN del cliente indica marcos de alta exigencia (ej. NIS2, DORA, ISO 27001 o regulaciones sectoriales locales), prioriza las iniciativas de Resiliencia y Seguridad en el TOP del Roadmap, independientemente de la nota técnica.
-2. LENGUAJE DE AUTORIDAD SISTÉMICA: No hables de 'mejorar la IT'. Habla de 'blindaje de la continuidad de negocio' o 'mitigación de la entropía operativa'. Aplica el {EXECUTIVE_CONSULTING_FRAMEWORK}.
-3. ESTRATEGIA PRAGMÁTICA (RIGHT-FIT TRANSFORMATION): Adapta el discurso a la madurez del cliente. Revisa el 'transformation_horizon' del ADN. Si necesitan 'Brilliant Basics', vende consolidación y seguridad core.
-4. IRREFUTABILIDAD ECONÓMICA: No inventes pérdidas. Usa modelos de sensibilidad que el cliente pueda validar con sus propios datos financieros."""
+GOLDEN RULES FOR CONSULTATIVE EXCELLENCE (STAFF/PARTNER LEVEL):
+1. STRATEGIC PRIORITIZATION: If client DNA indicates strict regulatory frameworks (e.g., NIS2, DORA, ISO 27001), prioritize Resilience and Security initiatives at the top of the roadmap, regardless of raw technical score.
+2. SYSTEMIC AUTHORITY: Do not speak of 'improving IT'. Speak of 'shielding business continuity' or 'mitigating operational entropy'. Apply the {EXECUTIVE_CONSULTING_FRAMEWORK}.
+3. PRAGMATIC STRATEGY (RIGHT-FIT TRANSFORMATION): Adapt the narrative to client maturity. If they need 'Brilliant Basics', prescribe core consolidation and baseline security.
+4. ECONOMIC VALIDITY: Do not invent loss figures. Use sensitivity models that the client can validate against their own corporate P&L."""
 
 
 def get_commercial_agent_prompt(

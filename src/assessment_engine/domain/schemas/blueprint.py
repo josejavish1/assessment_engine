@@ -157,20 +157,19 @@ class TargetArchitectureToBe(BaseModel):
     vision: str = Field(
         ...,
         description=(
-            "Visión arquitectónica To-Be a largo plazo para este pilar. "
-            "MANDATO DE SOBERANÍA Y ANTI-LOCK-IN: Para clientes de Infraestructura Crítica con huella on-premise mayoritaria, "
-            "la arquitectura DEBE ser un modelo 'Sovereign Hybrid Edge'. Se prohíbe proponer una migración "
-            "del 100% al Cloud público. Se debe diseñar una capa agnóstica (e.g., Kubernetes/OpenShift/Tanzu) "
-            "que mantenga las cargas críticas on-premise por latencia y soberanía, utilizando el Hyperscaler (e.g. AWS) "
-            "como extensión elástica, plano de control unificado y habilitador de analítica, sin generar vendor lock-in estructural."
+            "Long-term To-Be architectural vision for this pillar. "
+            "SOVEREIGNTY & ANTI-LOCK-IN MANDATE: For critical infrastructure clients with a predominantly on-premises footprint, "
+            "the architecture MUST follow a 'Sovereign Hybrid Edge' model. A 100% public cloud migration is prohibited. "
+            "An agnostic layer (e.g., Kubernetes/OpenShift/Tanzu) must retain critical workloads on-premise for latency and sovereignty, "
+            "utilizing hyperscalers for elastic scale and unified telemetry without structural vendor lock-in."
         ),
     )
     vision_3_years: str = Field(
-        default="Visión a 3 años no definida.",
+        default="3-year architectural vision not defined.",
         description="A description of the maturity and capability objectives to be achieved within a 3-year tactical horizon, such as reaching Basic Level 5.",
     )
     vision_5_years: str = Field(
-        default="Visión a 5 años no definida.",
+        default="5-year architectural vision not defined.",
         description="A description of the 5-year aspirational strategic vision, such as Consolidation or AIOps.",
     )
     levers_technology: list[str] = Field(
@@ -433,7 +432,7 @@ class PillarBlueprintDraft(BaseModel):
     score: float = 0.0
     target_score: float = 4.0
     asis_architecture_description: str = Field(
-        default="Descripción no disponible.",
+        default="Architecture description not available.",
         description="A comprehensive technical narrative (minimum 3 paragraphs) detailing the current state (AS-IS) architecture, inventory, and topology for the pillar, preceding the risk enumeration.",
     )
     health_check_asis: list[HealthCheckAsIs]
@@ -503,10 +502,9 @@ class RoadmapWave(BaseModel):
     projects: list[str] = Field(
         ...,
         description=(
-            "Lista de nombres de proyectos asignados a esta Ola. "
-            "CONTRATO DE EXTRACCIÓN CERRADA (MANDATORIO): Debe contener ÚNICAMENTE nombres de proyectos "
-            "explicitados de forma idéntica en projects_todo de los pilares analizados. "
-            "ESTRICTAMENTE PROHIBIDO inventar o añadir proyectos nuevos al roadmap que no tengan su respectiva ficha de proyecto en projects_todo."
+            "List of project names assigned to this wave. "
+            "CLOSED EXTRACTION CONTRACT (MANDATORY): Must strictly contain project names "
+            "identically stated in projects_todo of analyzed pillars. Strictly prohibited from inventing projects."
         ),
     )
 

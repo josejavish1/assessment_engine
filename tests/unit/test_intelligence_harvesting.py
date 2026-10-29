@@ -52,31 +52,31 @@ def test_intelligence_harvesting_prompt_security():
     grounding_prompt = get_grounding_harvester_prompt("test_context_text")
     assert "<ground_truth_fragments>" in grounding_prompt
     assert "</ground_truth_fragments>" in grounding_prompt
-    assert "⚠️ NOTA DE SEGURIDAD" in grounding_prompt
+    assert any(w in grounding_prompt for w in ["⚠️ SECURITY ADVISORY", "⚠️ NOTA DE SEGURIDAD"])
 
     # 2. Business prompt
     business_prompt = get_business_harvester_prompt("test_client", "test_context_text")
     assert "<untrusted_rag_context>" in business_prompt
     assert "</untrusted_rag_context>" in business_prompt
-    assert "⚠️ NOTA DE SEGURIDAD" in business_prompt
+    assert any(w in business_prompt for w in ["⚠️ SECURITY ADVISORY", "⚠️ NOTA DE SEGURIDAD"])
 
     # 3. Tech prompt
     tech_prompt = get_tech_harvester_prompt("test_client", "test_context_text")
     assert "<untrusted_rag_context>" in tech_prompt
     assert "</untrusted_rag_context>" in tech_prompt
-    assert "⚠️ NOTA DE SEGURIDAD" in tech_prompt
+    assert any(w in tech_prompt for w in ["⚠️ SECURITY ADVISORY", "⚠️ NOTA DE SEGURIDAD"])
 
     # 4. Regulatory prompt
     regulatory_prompt = get_regulatory_harvester_prompt("test_client", "test_context_text")
     assert "<untrusted_rag_context>" in regulatory_prompt
     assert "</untrusted_rag_context>" in regulatory_prompt
-    assert "⚠️ NOTA DE SEGURIDAD" in regulatory_prompt
+    assert any(w in regulatory_prompt for w in ["⚠️ SECURITY ADVISORY", "⚠️ NOTA DE SEGURIDAD"])
 
     # 5. Technical Analyst prompt
     analyst_prompt = get_technical_analyst_prompt("T1", "Pillar 1", 3.5, "Context", "Evidence Text")
     assert "<untrusted_evidence_fragments>" in analyst_prompt
     assert "</untrusted_evidence_fragments>" in analyst_prompt
-    assert "⚠️ NOTA DE SEGURIDAD" in analyst_prompt
+    assert any(w in analyst_prompt for w in ["⚠️ SECURITY ADVISORY", "⚠️ NOTA DE SEGURIDAD"])
 
 
 def test_ast_bridge_systemic_risk_table(tmp_path: Path):

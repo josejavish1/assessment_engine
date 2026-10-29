@@ -101,7 +101,7 @@ def _aggregate_tower_blueprints(
                 "id": tid,
                 "name": tname,
                 "score": f"{avg_score:.1f}",
-                "band": band_for_score(avg_score),
+                "band": band_for_score(avg_score, doc_lang=doc_lang),
                 "status_color": status_color_for_score(avg_score),
                 "executive_message": data.get("executive_snapshot", {}).get(
                     "bottom_line", ""
@@ -752,10 +752,10 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
 
         # Update towers_data with propagated (effective) maturity scores
         for item in towers_data:
-            tid = item["id"]
-            eff_score = propagated_audited.get(tid, float(item["score"]))
+            tid = item["id"].upper()
+            eff_score = propagated_scores.get(tid, float(item["score"]))
             item["effective_score"] = f"{eff_score:.1f}"
-            item["effective_band"] = band_for_score(eff_score)
+            item["effective_band"] = band_for_score(eff_score, doc_lang=doc_lang)
             item["effective_status_color"] = status_color_for_score(eff_score)
 
         avg_effective_score = round(
@@ -908,7 +908,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "top_strategic_risks": strategic_risks[:5],
             "maturity_pulse": {
                 "score": avg_score,
-                "band": band_for_score(avg_score),
+                "band": band_for_score(avg_score, doc_lang=doc_lang),
                 "trend": "Stable",
             },
         },

@@ -72,9 +72,9 @@ def average_pillar_target(
     )
 
 
-def band_for_score(score: float) -> str:
-    """Return the maturity band label for a score using the global band configuration."""
-    return resolve_maturity_band(score, GLOBAL_MATURITY_BANDS)["label"]
+def band_for_score(score: float, doc_lang: str | None = None) -> str:
+    """Return the maturity band label for a score using the global band configuration with i18n support."""
+    return resolve_maturity_band(score, GLOBAL_MATURITY_BANDS, locale=doc_lang)["label"]
 
 
 def status_color_for_score(score: float) -> str:
