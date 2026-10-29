@@ -1,13 +1,19 @@
-import logging
+"""Provides the core orchestration logic for the Assessment Engine pipeline.
 
-logger = logging.getLogger(__name__)
-"""Provides the core orchestration logic for the Assessment Engine pipeline. The module defines a Directed Acyclic Graph (DAG) of stages, where each stage is executed in an isolated subprocess to prevent state interference and resource contention between steps."""
+The module defines a Directed Acyclic Graph (DAG) of stages, where each stage is executed
+in an isolated subprocess to prevent state interference and resource contention between steps.
+"""
+
+from __future__ import annotations
 
 import argparse
 import asyncio
+import logging
 import os
 import unicodedata
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 from assessment_engine.infrastructure.pipeline_runtime import (
     build_runtime_env,
@@ -651,6 +657,7 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
         if cfg.blueprint_payload_path.exists():
             try:
                 import json
+
                 from assessment_engine.adapters.render_tower_blueprint import (
                     render_blueprint,
                 )

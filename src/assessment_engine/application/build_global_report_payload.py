@@ -451,17 +451,16 @@ def _build_board_memo(
                         for pr in pil.get("projects_todo", []):
                             if not top_project_name and pr.get("name"):
                                 top_project_name = pr.get("name")
-                            opex_str = str(pr.get("opex_estimate", "0"))
-                            digits = "".join(c for c in opex_str.split("€")[0] if c.isdigit() or c == ".")
-                            if digits:
-                                try:
-                                    budget_tower += float(digits)
-                                except Exception as err:
-                                    logger.debug("Error convirtiendo opex_estimate: %s", err)
+                            budget_tower += _parse_currency_amount_to_float(pr.get("opex_estimate"))
                 except Exception as err:
                     logger.debug("Error leyendo blueprint para budget: %s", err)
 
-        budget_display = f"~{budget_tower:,.0f} € (OpEx/CapEx)" if budget_tower > 0 else "Suscripción / Inversión de Fase"
+        currency_symbol = "€"
+        budget_display = (
+            f"~{budget_tower:,.0f} {currency_symbol} (OpEx)"
+            if budget_tower > 0
+            else "Suscripción / Inversión de Fase"
+        )
         if top_project_name:
             crit_dec = f"Aprobar la ejecución prioritaria de '{top_project_name}' para el dominio de {tname}."
         else:
@@ -587,8 +586,12 @@ def _build_executive_callouts(
 
 def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] | None:
     r"""{'docstring': "Aggregates client data into a consolidated global report payload.\n\n    This function orchestrates the construction of a comprehensive dictionary by\n    collating data from multiple sources within a client's directory. It parses\n    and merges tower-specific blueprint files (`T*/blueprint_*_payload.json`),\n    prioritizing data from higher-numbered towers. The aggregated data is then\n    enriched with contextual information from `client_intelligence.json` and a\n    dynamically generated strategic roadmap from an orchestration process.\n\n    The process involves calculating maturity scores, extracting strategic risks,\n    compiling initiatives, and resolving identifiers against an epistemic graph\n    to produce human-readable labels. The final output is a structured payload\n    intended for generating a global client report, with provisions for executive\n    summary content to be overridden by the client intelligence file.\n\n    Args:\n        client_dir: The filesystem path to the root directory for a specific\n            client. This directory is expected to contain tower-specific\n            subdirectories (e.g., 'T1', 'T2') which hold blueprint JSON files.\n        client_name: The canonical name of the client. This identifier is used\n            for lookups within the epistemic graph and is embedded in the final\n            payload metadata.\n\n    Returns:\n        A dictionary representing the complete global report payload if successful.\n        Returns None if no blueprint files are found in the specified `client_dir`\n        or if the discovered files yield no processable data.\n\n    Raises:\n        FileNotFoundError: If the `client_dir` path does not exist.\n        json.JSONDecodeError: If a blueprint or client intelligence file contains\n            malformed JSON.\n        KeyError: If a required key is missing from the input JSON data\n            structures, particularly in sections not accessed with a `.get()`\n            fallback.\n        TypeError: If data in an input file has an unexpected type, causing a\n            failure in downstream operations such as numerical conversions."}."""
-    # The loading process prioritizes new Blueprints to ensure that the most recent configurations are applied, establishing a clear override precedence for legacy versions.
-    blueprint_files = list(client_dir.glob("T*/blueprint_*_payload.json"))
+    # The loading process prioritizes canonical Blueprints (T1 to T10) to ensure exact adherence to the 10 core domains.
+    blueprint_files = [
+        bp
+        for bp in client_dir.glob("T*/blueprint_*_payload.json")
+        if re.match(r"^T(10|[1-9])$", bp.parent.name)
+    ]
 
     if not blueprint_files:
         logger.warning(f"No se encontraron archivos de torre en {client_dir}")
