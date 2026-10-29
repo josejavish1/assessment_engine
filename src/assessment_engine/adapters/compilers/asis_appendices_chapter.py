@@ -56,62 +56,79 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
         return _add_markdown_bullet(doc, text, text_color_rgb, space_after)
 
     # Assemble and render Appendix A: Quantitative Risk Methodology
-    #
-    add_appendix_heading(doc, "Metodología Cuantitativa de Riesgos", primary_color_rgb=p_color_rgb)
-    add_body_paragraph(
-        doc,
-        "Este apéndice detalla el rigor metodológico, las ecuaciones estadísticas y los supuestos actuariales de "
-        "calibración aplicados para sustentar las evaluaciones de riesgo de este informe. El objetivo de esta sección "
-        "es blindar la validez de las proyecciones de costes frente a cualquier proceso de auditoría y, a la vez, "
-        "explicar de manera sencilla y transparente cómo se conectan las deudas tecnológicas con el impacto financiero real.",
-        text_color_rgb=text_color_rgb
+    appendix_a_title = t("appendix_fair_title", locale=doc_lang, default="Metodología Cuantitativa de Riesgos" if doc_lang == "es" else "Quantitative Risk Methodology")
+    add_appendix_heading(doc, appendix_a_title, primary_color_rgb=p_color_rgb)
+    appendix_a_intro = t(
+        "appendix_fair_intro",
+        locale=doc_lang,
+        default=(
+            "Este apéndice detalla el rigor metodológico, las ecuaciones estadísticas y los supuestos actuariales de "
+            "calibración aplicados para sustentar las evaluaciones de riesgo de este informe."
+            if doc_lang == "es"
+            else "This appendix substantiates the methodological rigor, statistical formulations, and actuarial calibration models applied to support the risk projections in this report."
+        ),
     )
+    add_body_paragraph(doc, appendix_a_intro, text_color_rgb=text_color_rgb)
 
     # Detect if the organization operates in a regulated critical sector to apply custom parameters
     is_critical_client = is_critical if is_critical is not None else True
     
     # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
-    # The regulatory framework narrative is mapped dynamically to the client's industry sector.
     if "Financial" in industry or "Banking" in industry:
-        reg_name = "las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA o normativas de banca central)"
-        reg_fine_limit = f"15.000.000 {currency}"
+        reg_name = t("reg_financial_banking", locale=doc_lang, default="las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA)" if doc_lang == "es" else "applicable operational resilience statutory regulations (e.g. DORA)")
+        reg_fine_limit = f"15.000.000 {currency}" if doc_lang == "es" else f"{currency}15,000,000"
     elif "Energy" in industry or "Critical Infrastructure" in industry:
-        reg_name = "los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2 o leyes de seguridad nacional)"
-        reg_fine_limit = f"10.000.000 {currency}"
+        reg_name = t("reg_energy_infra", locale=doc_lang, default="los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2)" if doc_lang == "es" else "critical national infrastructure protection frameworks (e.g. NIS2 Directive)")
+        reg_fine_limit = f"10.000.000 {currency}" if doc_lang == "es" else f"{currency}10,000,000"
     elif "Telecommunications" in industry or "Media" in industry:
-        reg_name = "los marcos regulatorios sectoriales de Telecomunicaciones, Media y soberanía de datos"
-        reg_fine_limit = f"5.000.000 {currency}"
+        reg_name = t("reg_telecom_media", locale=doc_lang, default="los marcos regulatorios sectoriales de Telecomunicaciones y soberanía" if doc_lang == "es" else "telecommunications and data sovereignty mandates")
+        reg_fine_limit = f"5.000.000 {currency}" if doc_lang == "es" else f"{currency}5,000,000"
     elif "Healthcare" in industry:
-        reg_name = "las regulaciones de protección de datos de salud y privacidad (v.g. HIPAA o marcos locales equivalentes)"
-        reg_fine_limit = f"5.000.000 {currency}"
+        reg_name = t("reg_healthcare", locale=doc_lang, default="las regulaciones de protección de datos de salud y privacidad" if doc_lang == "es" else "health data protection and patient safety regulations")
+        reg_fine_limit = f"5.000.000 {currency}" if doc_lang == "es" else f"{currency}5,000,000"
     else:
-        reg_name = "los marcos generales de protección de datos y privacidad (v.g. RGPD o legislación sectorial estándar)"
-        reg_fine_limit = f"2.000.000 {currency}"
+        reg_name = t("reg_general_privacy", locale=doc_lang, default="los marcos generales de protección de datos y privacidad (v.g. RGPD)" if doc_lang == "es" else "general data protection and privacy statutory frameworks (e.g. GDPR)")
+        reg_fine_limit = f"2.000.000 {currency}" if doc_lang == "es" else f"{currency}2,000,000"
 
     # Section 1: Quantitative Rationale
-    add_appendix_subheading(doc, "Limitaciones del Análisis Cualitativo frente a Open FAIR™", primary_color_rgb=p_color_rgb)
-    p_why = (
-        "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de "
-        "impacto y probabilidad (como las matrices de rango alto/medio/bajo), constituyen un valioso punto de partida para "
-        "identificar y clasificar de forma temprana las superficies de vulnerabilidad de una organización. No obstante, para "
-        "facilitar la toma de decisiones presupuestarias y justificar la rentabilidad de las inversiones tecnológicas (ROI), "
-        "es necesario complementar estos marcos de referencia con un enfoque cuantitativo avanzado. Este diagnóstico "
-        "adopta de forma complementaria la metodología estándar **Open FAIR™ (Factor Analysis of Information Risk)** "
-        "(reconocida por *The Open Group* e incorporada en marcos normativos como ISO/IEC 27005), aportando una metodología "
-        "rigurosa para modelar e identificar la exposición financiera real de la plataforma ante eventos de riesgo."
-    )
+    sub_1_title = t("appendix_fair_qualitative_limitations_title", locale=doc_lang, default="Limitaciones del Análisis Cualitativo frente a Open FAIR™" if doc_lang == "es" else "Limitations of Qualitative Risk Matrices vs. Open FAIR™")
+    add_appendix_subheading(doc, sub_1_title, primary_color_rgb=p_color_rgb)
+    if doc_lang == "es":
+        p_why = (
+            "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de "
+            "impacto y probabilidad (como las matrices de rango alto/medio/bajo), constituyen un valioso punto de partida para "
+            "identificar y clasificar de forma temprana las superficies de vulnerabilidad de una organización. No obstante, para "
+            "facilitar la toma de decisiones presupuestarias y justificar la rentabilidad de las inversiones tecnológicas (ROI), "
+            "es necesario complementar estos marcos de referencia con un enfoque cuantitativo avanzado. Este diagnóstico "
+            "adopta de forma complementaria la metodología estándar **Open FAIR™ (Factor Analysis of Information Risk)** "
+            "(reconocida por *The Open Group* e incorporada en marcos normativos como ISO/IEC 27005), aportando una metodología "
+            "rigurosa para modelar e identificar la exposición financiera real de la plataforma ante eventos de riesgo."
+        )
+    else:
+        p_why = (
+            "Traditional qualitative risk matrices (High/Medium/Low) provide an initial surface categorization but lack the "
+            "actuarial precision required for executive capital allocation and ROI justification. To substantiate technical investments, "
+            "this assessment adopts the international Open FAIR™ (Factor Analysis of Information Risk) standard, recognized by The Open "
+            "Group and embedded in ISO/IEC 27005, quantitatively modeling annualized financial exposure."
+        )
     add_body_paragraph(doc, p_why, text_color_rgb=text_color_rgb)
 
     # Section 2: Dual-Layer Calibration Model
-    add_appendix_subheading(doc, "El Modelo de Calibración Actuarial de Doble Capa", primary_color_rgb=p_color_rgb)
-    p_layer_intro = (
-        "Con el fin de comprender de forma intuitiva cómo una deficiencia técnica se propaga hasta impactar en el "
-        "balance de la compañía, resulta de gran utilidad seguir paso a paso la cronología de un único evento de amenaza. "
-        "A este recorrido lo denominamos 'La Biografía del Incidente'. Imaginemos, a modo de ejemplo ilustrativo, "
-        f"un escenario de crisis en la torre de {tower_name}: un fallo operativo severo originado por una "
-        "debilidad técnica previamente diagnosticada en esta auditoría. La propagación financiera "
-        "de este incidente se rige por un modelo actuarial de doble capa:"
-    )
+    sub_2_title = t("appendix_fair_dual_layer_title", locale=doc_lang, default="El Modelo de Calibración Actuarial de Doble Capa" if doc_lang == "es" else "Dual-Layer Actuarial Calibration Model")
+    add_appendix_subheading(doc, sub_2_title, primary_color_rgb=p_color_rgb)
+    if doc_lang == "es":
+        p_layer_intro = (
+            "Con el fin de comprender de forma intuitiva cómo una deficiencia técnica se propaga hasta impactar en el "
+            "balance de la compañía, resulta de gran utilidad seguir paso a paso la cronología de un único evento de amenaza. "
+            "A este recorrido lo denominamos 'La Biografía del Incidente'. Imaginemos, a modo de ejemplo ilustrativo, "
+            "un incidente donde un fallo en la infraestructura de copia de seguridad o una brecha de ransomware afecta "
+            "a un repositorio crítico de la plataforma. El modelo divide las consecuencias en dos capas claramente diferenciadas:"
+        )
+    else:
+        p_layer_intro = (
+            "To trace how technical vulnerabilities propagate into balance sheet impact, the assessment reconstructs threat scenarios "
+            "step by step ('The Biography of an Incident'). The actuarial model segments financial consequences into two distinct layers:"
+        )
     add_body_paragraph(doc, p_layer_intro, text_color_rgb=text_color_rgb)
 
     # Local inline Markdown parser to cleanly render bold (**) and italics (_) inside Appendix D bullet points,
@@ -148,13 +165,21 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     )
 
     # Section 3: Actuarial Simulation Core
-    add_appendix_subheading(doc, "El Núcleo de Simulación Actuarial", primary_color_rgb=p_color_rgb)
-    p_mc_intro = (
-        "Más allá de la lógica conceptual, el verdadero valor diferencial de este diagnóstico reside en su arquitectura matemática. "
-        "El motor de riesgo no emplea promedios estáticos, sino que ejecuta una **Simulación de Monte Carlo de 10.000 iteraciones** "
-        "impulsada por un **Proceso de Riesgo Colectivo Compuesto de Dos Etapas**. Este núcleo de cálculo, diseñado bajo los "
-        "estándares de la banca de inversión (Basilea III), modela la complejidad real del ciberespacio:"
-    )
+    sub_3_title = t("appendix_fair_sim_kernel_title", locale=doc_lang, default="El Núcleo de Simulación Actuarial" if doc_lang == "es" else "The Actuarial Simulation Kernel")
+    add_appendix_subheading(doc, sub_3_title, primary_color_rgb=p_color_rgb)
+    if doc_lang == "es":
+        p_mc_intro = (
+            "Más allá de la lógica conceptual, el verdadero valor diferencial de este diagnóstico reside en su arquitectura matemática. "
+            "El motor de riesgo no emplea promedios estáticos, sino que ejecuta una **Simulación de Monte Carlo de 10.000 iteraciones** "
+            "impulsada por un **Proceso de Riesgo Colectivo Compuesto de Dos Etapas**. Este núcleo de cálculo, diseñado bajo los "
+            "estándares de la banca de inversión (Basilea III), modela la complejidad real del ciberespacio:"
+        )
+    else:
+        p_mc_intro = (
+            "Beyond conceptual logic, the core differentiator of this assessment resides in its mathematical architecture. "
+            "The risk engine executes a **10,000-iteration Monte Carlo simulation** driven by a compound two-stage risk process "
+            "modeling real cyberspace complexity:"
+        )
     add_body_paragraph(doc, p_mc_intro, text_color_rgb=text_color_rgb)
 
     add_markdown_bullet_local(
@@ -197,12 +222,19 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     )
 
     # Section 4: Decision Metrics
-    add_appendix_subheading(doc, "Definición de Métricas Decisionales de Exposición Financiera", primary_color_rgb=p_color_rgb)
-    p_metrics_intro = (
-        "Al integrar y ordenar los resultados de las 10.000 iteraciones de simulación virtual, el motor genera la distribución "
-        "acumulada de pérdidas de la plataforma. De esta distribución se derivan matemáticamente las tres métricas decisionales "
-        "que permiten al Consejo justificar las inversiones de mitigación:"
-    )
+    sub_4_title = t("appendix_fair_decision_metrics_title", locale=doc_lang, default="Definición de Métricas Decisionales de Exposición Financiera" if doc_lang == "es" else "Financial Exposure Decision Metrics Definition")
+    add_appendix_subheading(doc, sub_4_title, primary_color_rgb=p_color_rgb)
+    if doc_lang == "es":
+        p_metrics_intro = (
+            "Al integrar y ordenar los resultados de las 10.000 iteraciones de simulación virtual, el motor genera la distribución "
+            "acumulada de pérdidas de la plataforma. De esta distribución se derivan matemáticamente las tres métricas decisionales "
+            "que permiten al Consejo justificar las inversiones de mitigación:"
+        )
+    else:
+        p_metrics_intro = (
+            "By integrating and ranking the outputs of the 10,000 virtual simulation iterations, the engine computes the cumulative "
+            "loss distribution. From this curve, three decisive actuarial metrics are mathematically derived to support executive mitigation investment:"
+        )
     add_body_paragraph(doc, p_metrics_intro, text_color_rgb=text_color_rgb)
 
     p_m1 = add_markdown_bullet_local(
@@ -411,8 +443,8 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
         for p in doc.paragraphs:
             if p.text:
                 all_text_elements.append(p.text)
-        for t in doc.tables:
-            for row in t.rows:
+        for tbl in doc.tables:
+            for row in tbl.rows:
                 for cell in row.cells:
                     if cell.text:
                         all_text_elements.append(cell.text)

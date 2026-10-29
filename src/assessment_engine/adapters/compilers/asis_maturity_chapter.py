@@ -137,13 +137,16 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
 
     # Insert a structured, compact reference table detailing the maturity levels, with the client's current level highlighted dynamically.
     add_spacer(doc, 10)
-    add_heading(doc, "Marco de Referencia de Niveles de Madurez", level=3, primary_color_rgb=p_color_rgb)
+    add_heading(
+        doc,
+        t("maturity_ref_framework_title", locale=doc_lang, default="Marco de Referencia de Niveles de Madurez"),
+        level=3,
+        primary_color_rgb=p_color_rgb,
+    )
 
     p_ref_intro = add_body_paragraph(
         doc,
-        "La evaluación del nivel de madurez de las capacidades técnicas se fundamenta en un marco de cinco niveles "
-        "escalonados (escala de 1,00 a 5,00), alineados con las mejores prácticas de la industria y la ingeniería de software. "
-        "La siguiente tabla describe los criterios de valoración y resalta el estado operativo actual de la organización:",
+        t("cmmi_table_intro", locale=doc_lang, default="La evaluación del nivel de madurez de las capacidades técnicas se fundamenta en un marco de 5 estadios escalonados."),
         text_color_rgb=text_color_rgb
     )
     add_spacer(doc, 5)
@@ -152,17 +155,21 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
     ref_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     ref_table.style = "Table Grid"
     
-    headers_ref = ["Nivel de Madurez", "Rango", "Descripción de Estado de Prácticas"]
+    headers_ref = [
+        t("cmmi_table_header_level", locale=doc_lang, default="Nivel de Madurez"),
+        t("cmmi_table_header_range", locale=doc_lang, default="Rango"),
+        t("cmmi_table_header_desc", locale=doc_lang, default="Descripción de Estado de Prácticas"),
+    ]
     for i, h_txt in enumerate(headers_ref):
         set_cell_text_custom(ref_table.rows[0].cells[i], h_txt, bold=True, font_size=8.5, color_rgb=RGBColor(255, 255, 255), align=WD_ALIGN_PARAGRAPH.CENTER)
         shade_cell(ref_table.rows[0].cells[i], p_color_hex)
         
     levels_data = [
-        ("Nivel 1 - Inicial", "1,00 a 1,79", "Procesos ad-hoc, manuales e individualizados. No existe consistencia en la ejecución ni documentación de soporte."),
-        ("Nivel 2 - Repetible", "1,80 a 2,59", "Las tareas básicas se repiten pero dependen del conocimiento de personas clave. Bajo nivel de estandarización."),
-        ("Nivel 3 - Definido", "2,60 a 3,39", "Procesos formalizados, documentados e implantados de manera coherente en toda la organización."),
-        ("Nivel 4 - Gestionado", "3,40 a 4,19", "Existencia de monitorización continua, telemetrías y KPIs cuantitativos de rendimiento y calidad para controlar el servicio."),
-        ("Nivel 5 - Optimizado", "4,20 a 5,00", "Mejora continua automatizada, autorremediación de desviaciones y optimización proactiva de la infraestructura.")
+        (t("cmmi_level_1_title", locale=doc_lang, default="Nivel 1 - Inicial"), t("cmmi_level_1_range", locale=doc_lang, default="1,00 a 1,79"), t("cmmi_level_1_desc", locale=doc_lang, default="Procesos ad-hoc...")),
+        (t("cmmi_level_2_title", locale=doc_lang, default="Nivel 2 - Repetible"), t("cmmi_level_2_range", locale=doc_lang, default="1,80 a 2,59"), t("cmmi_level_2_desc", locale=doc_lang, default="Tareas básicas...")),
+        (t("cmmi_level_3_title", locale=doc_lang, default="Nivel 3 - Definido"), t("cmmi_level_3_range", locale=doc_lang, default="2,60 a 3,39"), t("cmmi_level_3_desc", locale=doc_lang, default="Procesos formalizados...")),
+        (t("cmmi_level_4_title", locale=doc_lang, default="Nivel 4 - Gestionado"), t("cmmi_level_4_range", locale=doc_lang, default="3,40 a 4,19"), t("cmmi_level_4_desc", locale=doc_lang, default="Monitorización continua...")),
+        (t("cmmi_level_5_title", locale=doc_lang, default="Nivel 5 - Optimizado"), t("cmmi_level_5_range", locale=doc_lang, default="4,20 a 5,00"), t("cmmi_level_5_desc", locale=doc_lang, default="Mejora continua...")),
     ]
     
     try:
@@ -189,7 +196,8 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
         if is_active_lvl:
             # Highlight the active maturity level row to represent the current state dynamically
             row_bg_color = "FFF3CD" if gs_val < 3.4 else "D9F2D9"  # Dynamically synchronized with previous table score band color
-            set_cell_text_custom(row.cells[0], f"{lvl_name} (ACTUAL)", bold=True, font_size=8, color_rgb=RGBColor(*p_color_rgb), align=WD_ALIGN_PARAGRAPH.LEFT)
+            actual_badge = t("current_state_badge", locale=doc_lang, default="(ACTUAL)" if doc_lang == "es" else "(CURRENT)")
+            set_cell_text_custom(row.cells[0], f"{lvl_name} {actual_badge}", bold=True, font_size=8, color_rgb=RGBColor(*p_color_rgb), align=WD_ALIGN_PARAGRAPH.LEFT)
             set_cell_text_custom(row.cells[1], lvl_range, bold=True, font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
             set_cell_text_custom(row.cells[2], lvl_desc, font_size=8, align=WD_ALIGN_PARAGRAPH.LEFT)
             for cell in row.cells:
@@ -534,6 +542,7 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
                 add_spacer(doc, 5)
 
                 spof_status = "SÍ" if (tower_id == spof_by_cascade or tower_id == spof_by_centrality) else "NO"
+                spof_status_text = t("interdep_spof_yes", locale=doc_lang, default="YES") if spof_status == "SÍ" else t("interdep_spof_no", locale=doc_lang, default="NO")
                 dii_val = f"{dii_03:.1f}%" if dii_03 is not None else "0,0%"
                 erc_val = f"{erc:.3f}" if erc is not None else "0,000"
 
@@ -541,27 +550,40 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
                 inter_table.alignment = WD_TABLE_ALIGNMENT.CENTER
                 inter_table.style = "Table Grid"
 
-                headers_inter = ["Indicador Estratégico", "Valor / Score", "Estado y Clasificación"]
+                headers_inter = [
+                    t("interdep_header_indicator", locale=doc_lang, default="Indicador Estratégico"),
+                    t("interdep_header_value", locale=doc_lang, default="Valor / Score"),
+                    t("interdep_header_status", locale=doc_lang, default="Estado y Clasificación"),
+                ]
                 for i, h_txt in enumerate(headers_inter):
                     set_cell_text_custom(
                         inter_table.rows[0].cells[i], h_txt, bold=True, font_size=10, color_rgb=RGBColor(255, 255, 255), align=WD_ALIGN_PARAGRAPH.CENTER
                     )
                     shade_cell(inter_table.rows[0].cells[i], p_color_hex)
 
+                crit_label = t("interdep_status_extreme", locale=doc_lang, default="Extrema (Pilar Crítico)") if business_criticality >= 80.0 else (t("interdep_status_high", locale=doc_lang, default="Alta") if business_criticality >= 50.0 else t("interdep_status_medium", locale=doc_lang, default="Media"))
+                reg_label = t("interdep_status_critical", locale=doc_lang, default="Crítica (Regulación Estricta)") if regulatory_compliance >= 80.0 else (t("interdep_status_moderate", locale=doc_lang, default="Moderada") if regulatory_compliance >= 50.0 else t("interdep_status_standard", locale=doc_lang, default="Estándar"))
+                viab_label = t("interdep_status_viable", locale=doc_lang, default="Viable") if implementation_feasibility >= 60.0 else t("interdep_status_complex", locale=doc_lang, default="Complejo (Requiere mitigación)")
+                dii_label = t("interdep_status_stable_diag", locale=doc_lang, default="Estable (Diagnóstico Robusto)") if (dii_03 or 0) < 15.0 else (t("interdep_status_mod_diag", locale=doc_lang, default="Moderado") if (dii_03 or 0) < 30.0 else t("interdep_status_volatile_diag", locale=doc_lang, default="Sensible"))
+                erc_label = t("interdep_status_high_influence", locale=doc_lang, default="Alta Influencia") if (erc or 0) >= 0.50 else (t("interdep_status_moderate", locale=doc_lang, default="Media") if (erc or 0) >= 0.20 else t("interdep_status_low_influence", locale=doc_lang, default="Baja/Aislada"))
+                spof_label = t("interdep_status_bottleneck", locale=doc_lang, default="Cuello de Botella Estructural") if spof_status == "SÍ" else t("interdep_status_not_bottleneck", locale=doc_lang, default="Estable en Red Causal")
+
+                spof_row_title = t("interdep_spof_title", locale=doc_lang, default="Punto Único de Fallo (SPOF)")
+
                 inter_data = [
-                    ("Criticidad de Negocio (MCDA)", f"{business_criticality:.1f}%", "Extrema (Pilar Crítico)" if business_criticality >= 80.0 else "Alta" if business_criticality >= 50.0 else "Media"),
-                    ("Presión Regulatoria (MCDA)", f"{regulatory_compliance:.1f}%", "Crítica (Regulación Estricta)" if regulatory_compliance >= 80.0 else "Alta" if regulatory_compliance >= 50.0 else "Estándar"),
-                    ("Viabilidad Operativa (MCDA)", f"{implementation_feasibility:.1f}%", "Viable" if implementation_feasibility >= 60.0 else "Complejo (Requiere mitigación)"),
-                    ("Consistencia del Diagnóstico (DII)", dii_val, "Estable (Diagnóstico Robusto)" if (dii_03 or 0) < 15.0 else "Moderado" if (dii_03 or 0) < 30.0 else "Sensible"),
-                    ("Propagación de Fallos en Cascada (ERC)", erc_val, "Alta Influencia" if (erc or 0) >= 0.50 else "Media" if (erc or 0) >= 0.20 else "Baja/Aislada"),
-                    ("Punto Único de Fallo (SPOF)", spof_status, "Cuello de Botella Estructural" if spof_status == "SÍ" else "Estable en Red Causal")
+                    (t("interdep_business_criticality_title", locale=doc_lang, default="Criticidad de Negocio (MCDA)"), f"{business_criticality:.1f}%", crit_label),
+                    (t("interdep_reg_pressure_title", locale=doc_lang, default="Presión Regulatoria (MCDA)"), f"{regulatory_compliance:.1f}%", reg_label),
+                    (t("interdep_op_viability_title", locale=doc_lang, default="Viabilidad Operativa (MCDA)"), f"{implementation_feasibility:.1f}%", viab_label),
+                    (t("interdep_dii_title", locale=doc_lang, default="Consistencia del Diagnóstico (DII)"), dii_val, dii_label),
+                    (t("interdep_erc_title", locale=doc_lang, default="Propagación de Fallos en Cascada (ERC)"), erc_val, erc_label),
+                    (spof_row_title, spof_status_text, spof_label)
                 ]
 
                 for r_idx, row_vals in enumerate(inter_data):
                     row = inter_table.add_row()
                     set_cell_text_custom(row.cells[0], row_vals[0], bold=True, font_size=10)
                     
-                    if row_vals[0] == "Punto Único de Fallo (SPOF)":
+                    if row_vals[0] == spof_row_title:
                         set_cell_text_custom(row.cells[1], row_vals[1], bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
                         shade_cell(row.cells[1], "F2D9D9" if spof_status == "SÍ" else "D9F2D9")
                     else:
@@ -571,7 +593,7 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
 
                     if r_idx % 2 == 0:
                         for cell in row.cells:
-                            if cell != row.cells[1] or row_vals[0] != "Punto Único de Fallo (SPOF)":
+                            if cell != row.cells[1] or row_vals[0] != spof_row_title:
                                 shade_cell(cell, alt_row_hex)
 
                 autofit_table_to_contents(inter_table)
@@ -581,7 +603,7 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
                 p_gloss = doc.add_paragraph()
                 p_gloss.paragraph_format.space_before = Pt(8)
                 p_gloss.paragraph_format.space_after = Pt(2)
-                run_g_title = p_gloss.add_run("Análisis Ejecutivo de Indicadores de Interdependencia:")
+                run_g_title = p_gloss.add_run(t("interdep_gloss_title", locale=doc_lang, default="Análisis Ejecutivo de Indicadores de Interdependencia:"))
                 run_g_title.bold = True
                 run_g_title.font.name = "Arial"
                 run_g_title.font.size = Pt(10)
@@ -590,76 +612,44 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
                 glossary_items = []
                 
                 if business_criticality >= 80.0:
-                    glossary_items.append(
-                        f"**Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Extrema]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. En este caso, este valor extremo confirma que los procesos operativos core de la organización dependen críticamente de esta plataforma, y su indisponibilidad causaría una interrupción inmediata de servicios esenciales."
-                    )
+                    glossary_items.append(t("gloss_mcda_crit_extrema", locale=doc_lang, val=f"{business_criticality:.1f}"))
                 elif business_criticality >= 50.0:
-                    glossary_items.append(
-                        f"**Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Alta]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. El score alto refleja una fuerte dependencia operativa, si bien existe un margen de tolerancia temporal antes de que impacte directamente en la continuidad del negocio."
-                    )
+                    glossary_items.append(t("gloss_mcda_crit_alta", locale=doc_lang, val=f"{business_criticality:.1f}"))
                 else:
-                    glossary_items.append(
-                        f"**Criticidad de Negocio (MCDA) [{business_criticality:.1f}% - Media]:** Evalúa el nivel de dependencia directa que tienen los procesos operativos clave de la organización sobre esta torre, determinando el impacto de negocio en caso de indisponibilidad del servicio. El impacto medio sugiere que la torre provee servicios de soporte o back-office cuya indisponibilidad temporal es asumible mediante planes de contingencia estándar."
-                    )
+                    glossary_items.append(t("gloss_mcda_crit_media", locale=doc_lang, val=f"{business_criticality:.1f}"))
 
                 if regulatory_compliance >= 80.0:
-                    glossary_items.append(
-                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Crítica]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Este score revela una exposición regulatoria crítica, donde las brechas de seguridad se traducen directamente en riesgo de sanciones económicas elevadas y responsabilidad legal corporativa."
-                    )
+                    glossary_items.append(t("gloss_mcda_reg_critica", locale=doc_lang, val=f"{regulatory_compliance:.1f}"))
                 elif regulatory_compliance >= 50.0:
-                    glossary_items.append(
-                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Moderada]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Existen requerimientos de cumplimiento y políticas de seguridad corporativas estrictas, requiriendo auditorías periódicas de los controles de TI."
-                    )
+                    glossary_items.append(t("gloss_mcda_reg_moderada", locale=doc_lang, val=f"{regulatory_compliance:.1f}"))
                 else:
-                    glossary_items.append(
-                        f"**Presión Regulatoria (MCDA) [{regulatory_compliance:.1f}% - Estándar]:** Mide la exigencia de conformidad legal y normativa obligatoria (bajo marcos normativos o directivas aplicables como NIS2, DORA o ISO 27001) que aplica sobre el perímetro de esta plataforma. Exposición regulatoria estándar basada en el cumplimiento de buenas prácticas de ingeniería sin un escrutinio normativo crítico directo."
-                    )
+                    glossary_items.append(t("gloss_mcda_reg_estandar", locale=doc_lang, val=f"{regulatory_compliance:.1f}"))
 
                 if implementation_feasibility >= 60.0:
-                    glossary_items.append(
-                        f"**Viabilidad Operativa (MCDA) [{implementation_feasibility:.1f}% - Favorable]:** Estima el nivel de complejidad operativa y facilidad técnica para ejecutar los proyectos del plan de acción propuesto, considerando recursos, ventanas de mantenimiento y dependencias previas. La viabilidad de transformación es favorable. Los proyectos de modernización se pueden abordar con tecnologías maduras y recursos disponibles en el mercado sin generar disrupciones críticas."
-                    )
+                    glossary_items.append(t("gloss_mcda_viab_fav", locale=doc_lang, val=f"{implementation_feasibility:.1f}"))
                 else:
-                    glossary_items.append(
-                        f"**Viabilidad Operativa (MCDA) [{implementation_feasibility:.1f}% - Compleja]:** Estima el nivel de complejidad operativa y facilidad técnica para ejecutar los proyectos del plan de acción propuesto, considerando recursos, ventanas de mantenimiento y dependencias previas. La baja calificación actual refleja que existe una alta complejidad para la transformación debido a la presencia de deudas estructurales profundas, cuellos de botella en el mantenimiento o falta de talento especializado."
-                    )
+                    glossary_items.append(t("gloss_mcda_viab_comp", locale=doc_lang, val=f"{implementation_feasibility:.1f}"))
 
                 dii_pct = dii_03 if dii_03 is not None else 0.0
                 if dii_pct < 15.0:
-                    glossary_items.append(
-                        f"**Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Alta Estabilidad]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). En este caso, el índice extremadamente bajo garantiza de forma objetiva que el diagnóstico es altamente robusto y representativo de la realidad de la plataforma, impidiendo que fluctuaciones puntuales alteren las conclusiones estratégicas."
-                    )
+                    glossary_items.append(t("gloss_dii_alta", locale=doc_lang, val=f"{dii_pct:.1f}"))
                 elif dii_pct < 30.0:
-                    glossary_items.append(
-                        f"**Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Estabilidad Moderada]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). El índice registrado indica una sensibilidad moderada; el diagnóstico es sustancialmente estable, si bien ciertas puntuaciones dependen en parte de interpretaciones técnicas que requieren consolidación técnica futura."
-                    )
+                    glossary_items.append(t("gloss_dii_mod", locale=doc_lang, val=f"{dii_pct:.1f}"))
                 else:
-                    glossary_items.append(
-                        f"**Consistencia del Diagnóstico (Índice DII) [{dii_pct:.1f}% - Sensibilidad Alta (Volátil)]:** Este indicador (Decision Instability Index) mide la robustez matemática del diagnóstico frente a cambios en la información de partida. Evalúa cuál es la probabilidad de que una variación menor en las evidencias documentales o en las respuestas de las entrevistas provoque una alteración o inestabilidad en la calificación final de madurez de la torre (valores bajos garantizan un diagnóstico altamente consistente y fiable). El valor registrado muestra una sensibilidad alta, sugiriendo que la escasez de evidencias o variaciones de criterio podrían alterar la nota asignada, por lo que se recomienda un análisis de contraste de evidencias confirmatorio."
-                    )
+                    glossary_items.append(t("gloss_dii_vol", locale=doc_lang, val=f"{dii_pct:.1f}"))
 
                 erc_val_num = erc if erc is not None else 0.0
                 if erc_val_num >= 0.50:
-                    glossary_items.append(
-                        f"**Propagación de Fallos (ERC) [{erc_val_num:.3f} - Alta]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor elevado indica que un incidente crítico en este perímetro se propagaría con gran facilidad hacia otras áreas conectadas. El índice confirma una influencia estructural alta, donde una degradación de servicio desestabilizaría de manera en cadena gran parte de la plataforma corporativa."
-                    )
+                    glossary_items.append(t("gloss_erc_alta", locale=doc_lang, val=f"{erc_val_num:.3f}"))
                 elif erc_val_num >= 0.20:
-                    glossary_items.append(
-                        f"**Propagación de Fallos (ERC) [{erc_val_num:.3f} - Media]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor elevado indica que un incidente crítico en este perímetro se propagaría con gran facilidad hacia otras áreas conectadas. La influencia estructural registrada es media; un incidente tendría un efecto moderado o contenido, afectando solo a sistemas inmediatamente adyacentes."
-                    )
+                    glossary_items.append(t("gloss_erc_media", locale=doc_lang, val=f"{erc_val_num:.3f}"))
                 else:
-                    glossary_items.append(
-                        f"**Propagación de Fallos (ERC) [{erc_val_num:.3f} - Baja/Aislada]:** Cuantifica el grado de influencia de esta torre sobre el resto de dominios tecnológicos. Un valor de propagación bajo indica una influencia estructural baja; un fallo técnico se contendría dentro de su propio perímetro sin arrastrar a otras torres tecnológicas clave."
-                    )
+                    glossary_items.append(t("gloss_erc_baja", locale=doc_lang, val=f"{erc_val_num:.3f}"))
 
                 if spof_status == "SÍ":
-                    glossary_items.append(
-                        "**Punto Único de Fallo (SPOF) [SÍ - Crítico]:** Identifica si el dominio tecnológico actúa como un cuello de botella o eslabón débil de la infraestructura que, en caso de caída o compromiso técnico, detendría inmediatamente los flujos de servicio esenciales de la organización. La evaluación alerta de manera inequívoca que esta plataforma representa un cuello de botella o eslabón débil crítico sin redundancia suficiente, requiriendo acción de mitigación inmediata."
-                    )
+                    glossary_items.append(t("gloss_spof_crit", locale=doc_lang))
                 else:
-                    glossary_items.append(
-                        "**Punto Único de Fallo (SPOF) [NO - Estable]:** Identifica si el dominio tecnológico actúa como un cuello de botella o eslabón débil de la infraestructura que, en caso de caída o compromiso técnico, detendría inmediatamente los flujos de servicio esenciales de la organización. La evaluación confirma que esta torre no actúa como un cuello de botella o eslabón débil único en la topología de la red operativa general."
-                    )
+                    glossary_items.append(t("gloss_spof_stable", locale=doc_lang))
                 
                 for item in glossary_items:
                     add_body_paragraph(doc, item, style="Bullet", text_color_rgb=text_color_rgb)

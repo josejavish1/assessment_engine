@@ -38,6 +38,7 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     alt_row_hex = ctx["alt_row_hex"]
     modules_dir = ctx["modules_dir"]
     currency = ctx["currency"]
+    doc_lang = ctx.get("doc_lang", "es")
     global_fair_ale = ctx["global_fair_ale"]
     total_p90 = ctx.get("total_p90", 0.0)
     formatted_ale_item = ctx.get("formatted_ale_item", "0")
@@ -45,12 +46,23 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     t_sep = ctx.get("t_sep", ".")
     d_sep = ctx.get("d_sep", ",")
 
+    from assessment_engine.infrastructure.localization import t
+
     # Assemble and render Chapter 5: Conclusions and Cost of Inaction.
-    #
-    add_heading(doc, "Conclusiones y Coste de Inacción", level=1, primary_color_rgb=p_color_rgb)
+    add_heading(
+        doc,
+        t("conclusions_chapter_title", locale=doc_lang, default="Conclusiones y Coste de Inacción" if doc_lang == "es" else "Conclusions and Cost of Inaction"),
+        level=1,
+        primary_color_rgb=p_color_rgb,
+    )
 
     # 5.1 Current Situation Diagnostic Conclusions
-    add_heading(doc, "Conclusiones del Diagnóstico de Situación", level=2, primary_color_rgb=p_color_rgb)
+    add_heading(
+        doc,
+        t("conclusions_diagnosis_title", locale=doc_lang, default="Conclusiones del Diagnóstico de Situación" if doc_lang == "es" else "Current Situation Assessment Conclusions"),
+        level=2,
+        primary_color_rgb=p_color_rgb,
+    )
     parse_and_append_markdown_section(
         doc,
         modules_dir / "07_conclusiones.md",
@@ -61,13 +73,75 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     )
 
     # 5.2 Decision Dilemma: Strategic Contrast Matrix
-    add_heading(doc, "El Dilema del Decisor: Matriz de Contraste Estratégico", level=2, primary_color_rgb=p_color_rgb)
+    matrix_title = t("decision_matrix_title", locale=doc_lang, default="El Dilema del Decisor: Matriz de Contraste Estratégico" if doc_lang == "es" else "Decision Dilemma: Strategic Contrast Matrix")
+    add_heading(doc, matrix_title, level=2, primary_color_rgb=p_color_rgb)
     
-    matrix_intro = (
-        "Para confrontar de manera clara y directa el impacto de las decisiones de gobierno técnico sobre la plataforma, "
-        "se presenta la Matriz de Contraste del Decisor. Esta tabla comparativa expone la bifurcación operativa y de negocio "
-        "que asume la organización al optar por el inmovilismo frente a un proceso estructurado de modernización técnica:"
-    )
+    if doc_lang == "es":
+        matrix_intro = (
+            "Para confrontar de manera clara y directa el impacto de las decisiones de gobierno técnico sobre la plataforma, "
+            "se presenta la Matriz de Contraste del Decisor. Esta tabla comparativa expone la bifurcación operativa y de negocio "
+            "que asume la organización al optar por el inmovilismo frente a un proceso estructurado de modernización técnica:"
+        )
+        dec_headers = [
+            "Dimensión de Negocio",
+            "Camino A: Inacción (Do Nothing)",
+            "Camino B: Modernización Estructural"
+        ]
+        matrix_data = [
+            (
+                "Exposición Económica",
+                f"• Consumo anual de la Expectativa de Pérdida Anualizada (**{formatted_ale_item} {currency}** de ALE).\n• Vulnerabilidad latente a pérdidas por Déficit Esperado Condicional de hasta **{formatted_p90} {currency}**.\n• Acumulación de deuda técnica inasumible e incremento exponencial de ineficiencias operativas en 5 años.",
+                "• Amortización progresiva de la deuda técnica.\n• Recuperación de la eficiencia operativa y reducción de la exposición al riesgo en un **80%**.\n• Retorno de inversión claro basado en la eliminación de pérdidas."
+            ),
+            (
+                "Resiliencia y SLA",
+                "• Operación reactiva en silos técnicos con procesos manuales.\n• Incremento constante del tiempo de resolución de fallos (MTTR).\n• Detección tardía de incidentes críticos por usuarios finales.",
+                "• Observabilidad unificada y capacidades proactivas (AIOps).\n• Reducción radical del MTTR y prevención de fallos antes del impacto.\n• Estabilidad y fiabilidad garantizadas mediante SLOs técnicos."
+            ),
+            (
+                "Gobernanza y Cumplimiento",
+                "• Incapacidad estructural para demostrar cumplimiento normativo en tiempo real.\n• Exposición activa a contingencias operacionales y sanciones administrativas bajo normativas aplicables (como NIS2, RGPD o estándares sectoriales).",
+                "• Cumplimiento continuo y auditable por diseño mediante gobernanza programática (*Policy-as-Code*).\n• Conformidad nativa y automática de la infraestructura."
+            ),
+            (
+                "Talento y Evolución",
+                "• Sobrecarga de los equipos de sistemas en tareas repetitivas y manuales.\n• Desgaste del talento, aumento de la rotación y estancamiento del Time-to-Market de proyectos estratégicos.",
+                "• Autoservicio unificado (*Platform Self-Service*) que elimina la fricción para desarrolladores.\n• Liberación de la sobrecarga del equipo de IT para centrar el talento en tareas de alto valor estratégico."
+            )
+        ]
+    else:
+        matrix_intro = (
+            "To contrast the strategic outcomes of IT governance decisions, the following matrix compares the organizational "
+            "fork between maintaining the status quo (inaction) versus executing structured technical modernization:"
+        )
+        dec_headers = [
+            "Business Dimension",
+            "Path A: Inaction (Status Quo)",
+            "Path B: Structural Modernization"
+        ]
+        matrix_data = [
+            (
+                "Financial Exposure",
+                f"• Annual consumption of Annual Loss Expectancy (**{currency}{formatted_ale_item}** ALE).\n• Latent vulnerability to tail risk (CVaR) up to **{currency}{formatted_p90}**.\n• Compound technical debt accumulation and recurring operational inefficiency over 5 years.",
+                "• Progressive technical debt amortization.\n• Recaptured operational efficiency and risk exposure reduction by **80%**.\n• Proven investment return based on loss avoidance."
+            ),
+            (
+                "Resilience & SLAs",
+                "• Reactive operations in technical silos with manual firefighting.\n• Persistent escalation in Mean Time to Repair (MTTR).\n• Late detection of critical outages reported by end users.",
+                "• Unified full-stack observability and predictive AIOps telemetry.\n• Radical MTTR reduction and automated pre-failure containment.\n• Guaranteed stability and reliability governed by technical SLOs."
+            ),
+            (
+                "Governance & Compliance",
+                "• Structural inability to demonstrate regulatory compliance in real time.\n• Active exposure to operational contingencies and statutory fines under applicable mandates (NIS2, GDPR, DORA).",
+                "• Continuous audit-readiness and compliance-by-design via Policy-as-Code.\n• Native, automated platform governance and infrastructure compliance."
+            ),
+            (
+                "Talent & Velocity",
+                "• Engineering overload on repetitive manual toil and emergency patching.\n• High team attrition, turnover, and stagnation of strategic project Time-to-Market.",
+                "• Unified Platform Self-Service removing developer toil and friction.\n• Elimination of operational overhead, focusing engineering on high-value initiatives."
+            )
+        ]
+
     add_body_paragraph(doc, matrix_intro, text_color_rgb=text_color_rgb)
 
     # Render decision matrix table
@@ -80,11 +154,6 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     dec_col_widths = [Cm(3.0), Cm(6.71), Cm(6.71)] # Sums to 16.42 cm, standard page content area
     
     # Header cells
-    dec_headers = [
-        "Dimensión de Negocio",
-        "Camino A: Inacción (Do Nothing)",
-        "Camino B: Modernización Estructural"
-    ]
     for i, h_txt in enumerate(dec_headers):
         cell = dec_table.rows[0].cells[i]
         set_cell_text_custom(

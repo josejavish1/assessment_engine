@@ -344,7 +344,11 @@ def compile_docx(tower_dir: str, output_path: str):
 
     # Load client_intelligence.json
     intel_data = {}
-    client_intel_file = tower_dir_obj.parent / "client_intelligence.json"
+    client_intel_file = (
+        tower_dir_obj / "client_intelligence.json"
+        if (tower_dir_obj / "client_intelligence.json").exists()
+        else tower_dir_obj.parent / "client_intelligence.json"
+    )
     if client_intel_file.exists():
         try:
             with open(client_intel_file, "r", encoding="utf-8-sig") as cif:
