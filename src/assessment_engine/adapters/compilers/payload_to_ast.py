@@ -9,6 +9,7 @@ from typing import Any, List
 
 from assessment_engine.infrastructure.localization import (
     format_date_localized,
+    t,
 )
 
 from assessment_engine.domain.schemas.ast import (
@@ -523,12 +524,16 @@ class PayloadToASTBridge:
         )
         nodes.append(SpacerNode(points=10))
 
+        col_1_hdr = t("table_header_pillar_capacity", locale=meta_lang, default="Pilar / Capacidad Tecnológica Evaluada")
+        col_2_hdr = t("table_header_score_asis", locale=meta_lang, default="Score AS-IS")
+        col_3_hdr = t("table_header_status_level", locale=meta_lang, default="Estado y Nivel de Desempeño" if meta_lang == "es" else "Performance State and Level")
+
         health_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text="Pilar / Capacidad Tecnológica Evaluada", bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255]),
-                    CellNode(text="Score AS-IS", bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text="Estado y Nivel de Desempeño" if meta_lang == "es" else "Performance State and Level", bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=col_1_hdr, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255]),
+                    CellNode(text=col_2_hdr, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=col_3_hdr, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
                 ],
                 is_header=True,
             )
@@ -652,60 +657,68 @@ class PayloadToASTBridge:
 
                     # Build the metrics table
                     spof_status = "SÍ" if (tower_id == spof_by_cascade or tower_id == spof_by_centrality) else "NO"
+                    spof_status_text = t("interdep_spof_yes", locale=meta_lang, default="YES") if spof_status == "SÍ" else t("interdep_spof_no", locale=meta_lang, default="NO")
                     dii_val = f"{dii_03:.1f}%" if dii_03 is not None else "0,0%"
                     erc_val = f"{erc:.3f}" if erc is not None else "0,000"
-                    
+
+                    crit_lbl = t("interdep_status_extreme", locale=meta_lang, default="Extreme (Critical Pillar)") if business_criticality >= 80.0 else (t("interdep_status_high", locale=meta_lang, default="High") if business_criticality >= 50.0 else t("interdep_status_medium", locale=meta_lang, default="Medium"))
+                    reg_lbl = t("interdep_status_critical", locale=meta_lang, default="Critical (Strict Regulation)") if regulatory_compliance >= 80.0 else (t("interdep_status_moderate", locale=meta_lang, default="Moderate") if regulatory_compliance >= 50.0 else t("interdep_status_standard", locale=meta_lang, default="Standard"))
+                    viab_lbl = t("interdep_status_viable", locale=meta_lang, default="Feasible") if implementation_feasibility >= 60.0 else t("interdep_status_complex", locale=meta_lang, default="Complex")
+                    dii_lbl = t("interdep_status_stable_diag", locale=meta_lang, default="Stable (Robust Diagnostic)") if (dii_03 or 0) < 15.0 else (t("interdep_status_mod_diag", locale=meta_lang, default="Moderate") if (dii_03 or 0) < 30.0 else t("interdep_status_volatile_diag", locale=meta_lang, default="Volatile"))
+                    erc_lbl = t("interdep_status_high_influence", locale=meta_lang, default="High Influence") if (erc or 0) >= 0.50 else (t("interdep_status_moderate", locale=meta_lang, default="Moderate") if (erc or 0) >= 0.20 else t("interdep_status_low_influence", locale=meta_lang, default="Low / Isolated"))
+                    spof_lbl = t("interdep_status_bottleneck", locale=meta_lang, default="Structural Bottleneck") if spof_status == "SÍ" else t("interdep_status_not_bottleneck", locale=meta_lang, default="Stable in Causal Network")
+
                     nodes.append(
                         TableNode(
                             rows=[
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Indicador Estratégico", bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255]),
-                                        CellNode(text="Valor / Score", bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
-                                        CellNode(text="Estado y Clasificación", bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
+                                        CellNode(text=t("interdep_header_indicator", locale=meta_lang, default="Strategic Indicator"), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255]),
+                                        CellNode(text=t("interdep_header_value", locale=meta_lang, default="Metric / Score"), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
+                                        CellNode(text=t("interdep_header_status", locale=meta_lang, default="State and Classification"), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER"),
                                     ],
                                     is_header=True,
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Criticidad de Negocio (MCDA)"),
+                                        CellNode(text=t("interdep_business_criticality_title", locale=meta_lang, default="Business Criticality (MCDA)")),
                                         CellNode(text=f"{business_criticality:.1f}%", align="CENTER"),
-                                        CellNode(text="Extrema (Pilar Crítico)" if business_criticality >= 80.0 else "Alta" if business_criticality >= 50.0 else "Media", align="CENTER"),
+                                        CellNode(text=crit_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Presión Regulatoria (MCDA)"),
+                                        CellNode(text=t("interdep_reg_pressure_title", locale=meta_lang, default="Regulatory Pressure (MCDA)")),
                                         CellNode(text=f"{regulatory_compliance:.1f}%", align="CENTER"),
-                                        CellNode(text="Crítica (Regulación Estricta)" if regulatory_compliance >= 80.0 else "Alta" if regulatory_compliance >= 50.0 else "Estándar", align="CENTER"),
+                                        CellNode(text=reg_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Viabilidad Operativa (MCDA)"),
+                                        CellNode(text=t("interdep_op_viability_title", locale=meta_lang, default="Operational Feasibility (MCDA)")),
                                         CellNode(text=f"{implementation_feasibility:.1f}%", align="CENTER"),
-                                        CellNode(text="Viable" if implementation_feasibility >= 60.0 else "Complejo (Requiere mitigación)", align="CENTER"),
+                                        CellNode(text=viab_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Consistencia del Diagnóstico (DII)"),
+                                        CellNode(text=t("interdep_dii_title", locale=meta_lang, default="Diagnostic Consistency (DII)")),
                                         CellNode(text=dii_val, align="CENTER"),
-                                        CellNode(text="Estable (Diagnóstico Robusto)" if (dii_03 or 0) < 15.0 else "Moderado" if (dii_03 or 0) < 30.0 else "Sensible", align="CENTER"),
+                                        CellNode(text=dii_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Propagación de Fallos en Cascada (ERC)"),
+                                        CellNode(text=t("interdep_erc_title", locale=meta_lang, default="Cascading Fault Propagation (ERC)")),
                                         CellNode(text=erc_val, align="CENTER"),
-                                        CellNode(text="Alta Influencia" if (erc or 0) >= 0.50 else "Media" if (erc or 0) >= 0.20 else "Baja/Aislada", align="CENTER"),
+                                        CellNode(text=erc_lbl, align="CENTER"),
                                     ]
                                 ),
                                 TableRowNode(
                                     cells=[
-                                        CellNode(text="Punto Único de Fallo (SPOF)"),
-                                        CellNode(text=spof_status, bold=True, align="CENTER", bg_color="F2D9D9" if spof_status == "SÍ" else "D9F2D9"),
-                                        CellNode(text="Cuello de Botella Estructural" if spof_status == "SÍ" else "Estable en Red Causal", align="CENTER"),
+                                        CellNode(text=t("interdep_spof_title", locale=meta_lang, default="Single Point of Failure (SPOF)")),
+                                        CellNode(text=spof_status_text, bold=True, align="CENTER", bg_color="F2D9D9" if spof_status == "SÍ" else "D9F2D9"),
+                                        CellNode(text=spof_lbl, align="CENTER"),
                                     ]
                                 ),
                             ]

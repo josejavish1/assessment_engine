@@ -84,7 +84,7 @@ def extract_signatures_from_code(code: str, module_path: str = "") -> dict[str, 
     try:
         tree = ast.parse(code)
     except SyntaxError as e:
-        logger.warning(f"Error sintáctico analizando código para firmas AST: {e}")
+        logger.warning(f"Syntax error parsing code for AST signatures: {e}")
         return {"functions": {}, "classes": {}, "syntax_error": str(e)}
 
     functions: dict[str, FunctionSignature] = {}
@@ -211,7 +211,7 @@ def _normalize_to_snapshot(
         snap = extract_module_signatures(obj)
         return snap.functions, snap.classes, snap.syntax_error
 
-    raise TypeError(f"Tipo no soportado para análisis de firmas AST: {type(obj)}")
+    raise TypeError(f"Unsupported type for AST signature analysis: {type(obj)}")
 
 
 def _diff_argument_type_annotations(
@@ -231,7 +231,7 @@ def _diff_argument_type_annotations(
                     SignatureViolation(
                         symbol_name=symbol_name,
                         violation_type="ARG_TYPE_MUTATED",
-                        details=f"Tipo de argumento {kw_prefix}'{arg_name}' alterado en '{symbol_name}': Esperaba '{base_type}', recibió '{curr_type}'",
+                        details=f"Argument type {kw_prefix}'{arg_name}' altered in '{symbol_name}': Expected '{base_type}', got '{curr_type}'",
                     )
                 )
         elif arg_name in curr_args_container:
@@ -239,7 +239,7 @@ def _diff_argument_type_annotations(
                 SignatureViolation(
                     symbol_name=symbol_name,
                     violation_type="ARG_TYPE_MUTATED",
-                    details=f"Anotación de tipo del argumento {kw_prefix}'{arg_name}' eliminada en '{symbol_name}'",
+                    details=f"Type annotation for argument {kw_prefix}'{arg_name}' removed in '{symbol_name}'",
                 )
             )
     return violations
@@ -252,19 +252,19 @@ def _diff_function_signatures(
     is_method: bool = False,
 ) -> list[SignatureViolation]:
     violations: list[SignatureViolation] = []
-    scope_str = f" en '{symbol_name}'" if is_method else ""
+    scope_str = f" in '{symbol_name}'" if is_method else ""
 
     if base_sig.args != curr_sig.args:
-        details = f"Argumentos alterados{scope_str}: Esperaba {base_sig.args}, recibió {curr_sig.args}"
+        details = f"Arguments altered{scope_str}: Expected {base_sig.args}, got {curr_sig.args}"
         violations.append(SignatureViolation(symbol_name=symbol_name, violation_type="ARGS_MUTATED", details=details))
     elif base_sig.kwonlyargs != curr_sig.kwonlyargs:
-        details = f"Argumentos keyword-only alterados{scope_str}: Esperaba {base_sig.kwonlyargs}, recibió {curr_sig.kwonlyargs}" if not is_method else f"Argumentos keyword-only alterados en '{symbol_name}'"
+        details = f"Keyword-only arguments altered{scope_str}: Expected {base_sig.kwonlyargs}, got {curr_sig.kwonlyargs}" if not is_method else f"Keyword-only arguments altered in '{symbol_name}'"
         violations.append(SignatureViolation(symbol_name=symbol_name, violation_type="ARGS_MUTATED", details=details))
     elif base_sig.vararg != curr_sig.vararg:
-        details = f"Parámetro *args alterado{scope_str}: Esperaba {base_sig.vararg}, recibió {curr_sig.vararg}" if not is_method else f"Parámetro *args alterado en '{symbol_name}'"
+        details = f"Parameter *args altered{scope_str}: Expected {base_sig.vararg}, got {curr_sig.vararg}" if not is_method else f"Parameter *args altered in '{symbol_name}'"
         violations.append(SignatureViolation(symbol_name=symbol_name, violation_type="ARGS_MUTATED", details=details))
     elif base_sig.kwarg != curr_sig.kwarg:
-        details = f"Parámetro **kwargs alterado{scope_str}: Esperaba {base_sig.kwarg}, recibió {curr_sig.kwarg}" if not is_method else f"Parámetro **kwargs alterado en '{symbol_name}'"
+        details = f"Parameter **kwargs altered{scope_str}: Expected {base_sig.kwarg}, got {curr_sig.kwarg}" if not is_method else f"Parameter **kwargs altered in '{symbol_name}'"
         violations.append(SignatureViolation(symbol_name=symbol_name, violation_type="ARGS_MUTATED", details=details))
 
     if base_sig.is_async != curr_sig.is_async:
@@ -272,7 +272,7 @@ def _diff_function_signatures(
             SignatureViolation(
                 symbol_name=symbol_name,
                 violation_type="ASYNC_MUTATED",
-                details=f"Sincronía alterada en '{symbol_name}': is_async cambió de {base_sig.is_async} a {curr_sig.is_async}",
+                details=f"Synchrony altered in '{symbol_name}': is_async changed from {base_sig.is_async} to {curr_sig.is_async}",
             )
         )
 
@@ -281,7 +281,7 @@ def _diff_function_signatures(
             SignatureViolation(
                 symbol_name=symbol_name,
                 violation_type="RETURN_MUTATED",
-                details=f"Anotación de retorno eliminada en '{symbol_name}'",
+                details=f"Return annotation removed in '{symbol_name}'",
             )
         )
     elif (
@@ -293,7 +293,7 @@ def _diff_function_signatures(
             SignatureViolation(
                 symbol_name=symbol_name,
                 violation_type="RETURN_TYPE_MUTATED",
-                details=f"Tipo de retorno alterado en '{symbol_name}': Esperaba '{base_sig.return_annotation}', recibió '{curr_sig.return_annotation}'",
+                details=f"Return type altered in '{symbol_name}': Expected '{base_sig.return_annotation}', got '{curr_sig.return_annotation}'",
             )
         )
 
@@ -315,7 +315,7 @@ def _diff_classes_signatures(
                 SignatureViolation(
                     symbol_name=cls_name,
                     violation_type="CLASS_MUTATED",
-                    details=f"La clase pública '{cls_name}' fue eliminada.",
+                    details=f"Public class '{cls_name}' was removed.",
                 )
             )
         else:
@@ -326,7 +326,7 @@ def _diff_classes_signatures(
                         SignatureViolation(
                             symbol_name=f"{cls_name}.{m_name}",
                             violation_type="MISSING_FUNCTION",
-                            details=f"El método público '{m_name}' de '{cls_name}' fue eliminado.",
+                            details=f"Public method '{m_name}' of '{cls_name}' was removed.",
                         )
                     )
                 else:
@@ -348,7 +348,7 @@ def _diff_additive_symbols(
                 SignatureViolation(
                     symbol_name=fn_name,
                     violation_type="ADDITIVE_FUNCTION_FORBIDDEN",
-                    details=f"Función pública '{fn_name}' añadida en modo sellado (allow_additive=False).",
+                    details=f"Public function '{fn_name}' added in sealed mode (allow_additive=False).",
                 )
             )
 
@@ -358,7 +358,7 @@ def _diff_additive_symbols(
                 SignatureViolation(
                     symbol_name=cls_name,
                     violation_type="ADDITIVE_CLASS_FORBIDDEN",
-                    details=f"Clase pública '{cls_name}' añadida en modo sellado (allow_additive=False).",
+                    details=f"Public class '{cls_name}' added in sealed mode (allow_additive=False).",
                 )
             )
         else:
@@ -368,7 +368,7 @@ def _diff_additive_symbols(
                         SignatureViolation(
                             symbol_name=f"{cls_name}.{m_name}",
                             violation_type="ADDITIVE_METHOD_FORBIDDEN",
-                            details=f"Método público '{m_name}' de '{cls_name}' añadido en modo sellado.",
+                            details=f"Public method '{m_name}' of '{cls_name}' added in sealed mode.",
                         )
                     )
     return violations
@@ -397,7 +397,7 @@ def diff_module_signatures(
             SignatureViolation(
                 symbol_name="<module>",
                 violation_type="SYNTAX_ERROR",
-                details=f"Error sintáctico al analizar el módulo actual: {curr_syntax_err}",
+                details=f"Syntax error analyzing current module: {curr_syntax_err}",
             )
         )
 
@@ -408,7 +408,7 @@ def diff_module_signatures(
                 SignatureViolation(
                     symbol_name=fn_name,
                     violation_type="MISSING_FUNCTION",
-                    details=f"La función pública '{fn_name}' fue eliminada o renombrada.",
+                    details=f"Public function '{fn_name}' was removed or renamed.",
                 )
             )
         else:
@@ -418,8 +418,6 @@ def diff_module_signatures(
 
     if not allow_additive:
         violations.extend(_diff_additive_symbols(base_fns, curr_fns, base_classes, curr_classes))
-
-    return violations
 
     return violations
 
@@ -447,7 +445,7 @@ def diff_directory_snapshots(
                 SignatureViolation(
                     symbol_name=mod_path,
                     violation_type="MISSING_MODULE",
-                    details=f"El módulo completo '{mod_path}' fue eliminado o movido.",
+                    details=f"Entire module '{mod_path}' was removed or moved.",
                 )
             ]
         else:
@@ -463,7 +461,7 @@ def diff_directory_snapshots(
                     SignatureViolation(
                         symbol_name=mod_path,
                         violation_type="ADDITIVE_MODULE_FORBIDDEN",
-                        details=f"Módulo '{mod_path}' añadido en modo sellado (allow_additive=False).",
+                        details=f"Module '{mod_path}' added in sealed mode (allow_additive=False).",
                     )
                 ]
 

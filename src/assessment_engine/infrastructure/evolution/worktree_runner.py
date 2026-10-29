@@ -80,7 +80,7 @@ Leave no trace in git status or git worktree list."""
     def run_command(self, cmd: list[str], timeout: int = 60, check: bool = False, **kwargs) -> subprocess.CompletedProcess:
         """Execute a command with cwd set to the ephemeral worktree."""
         if not self._active:
-            raise RuntimeError(f"El worktree efímero {self.worktree_path} ya ha sido desmantelado.")
+            raise RuntimeError(f"Ephemeral worktree {self.worktree_path} has already been dismantled.")
         return subprocess.run(
             cmd,
             cwd=str(self.worktree_path),
@@ -132,26 +132,26 @@ Automatically create a unique temporary branch."""
 
         try:
             subprocess.run(cmd, cwd=str(root), capture_output=True, text=True, check=True)
-            logger.info(f"[Worktree] Creado espacio efímero en {target_path} (rama {branch_name})")
+            logger.info(f"[Worktree] Created ephemeral space at {target_path} (branch {branch_name})")
 
-            # Enlazar dependencias pesadas mediante symlinks inmutables (Zero-Copy Dependency Mount)
+            # Link heavy dependencies via immutable symlinks (Zero-Copy Dependency Mount)
             host_nm = root / "templates" / "golden_polyglot_starter" / "web" / "node_modules"
             target_nm = target_path / "templates" / "golden_polyglot_starter" / "web" / "node_modules"
             if host_nm.exists() and not target_nm.exists():
                 target_nm.parent.mkdir(parents=True, exist_ok=True)
                 os.symlink(str(host_nm.resolve()), str(target_nm))
-                logger.debug("[Worktree] Enlazado node_modules vía symlink zero-copy.")
+                logger.debug("[Worktree] Linked node_modules via zero-copy symlink.")
 
             host_venv = root / "venv"
             target_venv = target_path / "venv"
             if host_venv.exists() and not target_venv.exists():
                 os.symlink(str(host_venv.resolve()), str(target_venv))
-                logger.debug("[Worktree] Enlazado venv vía symlink zero-copy.")
+                logger.debug("[Worktree] Linked venv via zero-copy symlink.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"[Worktree] Falló la creación del worktree: {e.stderr}")
-            raise RuntimeError(f"No se pudo crear el worktree de Git: {e.stderr}") from e
+            logger.error(f"[Worktree] Failed creating worktree: {e.stderr}")
+            raise RuntimeError(f"Could not create Git worktree: {e.stderr}") from e
         except (OSError, RuntimeError) as sym_err:
-            logger.debug(f"[Worktree] Aviso al montar symlinks de dependencias: {sym_err}")
+            logger.debug(f"[Worktree] Warning mounting dependency symlinks: {sym_err}")
 
         return EphemeralWorktree(repo_root=root, worktree_path=target_path, branch_name=branch_name)
 

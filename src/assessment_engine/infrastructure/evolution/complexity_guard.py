@@ -107,7 +107,7 @@ def _evaluate_function_complexity(
                     lineno=stmt.lineno,
                     complexity=comp,
                     max_allowed=max_allowed,
-                    details=f"La función '{fn_name}' tiene V(G)={comp}, superando el límite de {max_allowed}",
+                    details=f"Function '{fn_name}' has V(G)={comp}, exceeding limit of {max_allowed}",
                     rule_id="CYCLOMATIC_COMPLEXITY_EXCEEDED",
                 )
             )
@@ -122,7 +122,7 @@ def _evaluate_function_complexity(
                 lineno=stmt.lineno,
                 complexity=comp,
                 max_allowed=max_allowed,
-                details=f"Anidamiento excesivo en '{fn_name}': {max_nesting} niveles de profundidad (límite <= 3)",
+                details=f"Excessive nesting in '{fn_name}': {max_nesting} levels of depth (limit <= 3)",
                 rule_id="DEEP_NESTING_EXCEEDED",
             )
         )
@@ -134,7 +134,7 @@ def _evaluate_function_complexity(
                 lineno=stmt.lineno,
                 complexity=comp,
                 max_allowed=max_allowed,
-                details=f"Sobrecarga cognitiva en '{fn_name}': CoC={coc} (límite <= 15)",
+                details=f"Cognitive overload in '{fn_name}': CoC={coc} (limit <= 15)",
                 rule_id="COGNITIVE_OVERLOAD_EXCEEDED",
             )
         )
@@ -146,7 +146,7 @@ def _evaluate_function_complexity(
                 lineno=stmt.lineno,
                 complexity=comp,
                 max_allowed=14,
-                details=f"La función '{fn_name}' tiene V(G)={comp}, superando el límite de 14",
+                details=f"Function '{fn_name}' has V(G)={comp}, exceeding limit of 14",
                 rule_id="CYCLOMATIC_COMPLEXITY_EXCEEDED",
             )
         )
@@ -157,7 +157,7 @@ def _evaluate_function_complexity(
                 lineno=stmt.lineno,
                 complexity=comp,
                 max_allowed=10,
-                details=f"La función '{fn_name}' tiene V(G)={comp}, superando el límite de 10",
+                details=f"Function '{fn_name}' has V(G)={comp}, exceeding limit of 10",
                 rule_id="CYCLOMATIC_COMPLEXITY_EXCEEDED",
             )
         )
@@ -174,7 +174,7 @@ def audit_code_complexity(
     try:
         tree = ast.parse(code)
     except SyntaxError as e:
-        logger.warning(f"[ComplexityGuard] Error sintáctico al auditar complejidad: {e}")
+        logger.warning(f"[ComplexityGuard] Syntax error auditing complexity: {e}")
         return ComplexityReport(
             passed=False,
             max_complexity=999,
@@ -185,7 +185,7 @@ def audit_code_complexity(
                     lineno=e.lineno or 1,
                     complexity=999,
                     max_allowed=max_allowed,
-                    details=f"Error sintáctico: {e.msg}",
+                    details=f"Syntax error: {e.msg}",
                     rule_id="PYTHON_SYNTAX_ERROR",
                 )
             ],

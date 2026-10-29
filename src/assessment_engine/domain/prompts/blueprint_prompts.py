@@ -218,51 +218,33 @@ def get_closing_orchestrator_prompt(
 
 
 def get_gravity_profiler_prompt(intel_str: str, client_name: str) -> str:
-    """Generates a Spanish-language prompt for an LLM to deduce a client's architectural profile.
-
-    This function populates a predefined Spanish-language template to create a prompt
-    for a Large Language Model (LLM). The prompt instructs the LLM to assume the
-    persona of a 'Tier 1 Mission Critical Architect' and analyze the provided
-    client information. The goal is to deduce and extract the client's 'Architectural
-    Gravity Profile' into a structured JSON object. This profile includes metrics such as
-    on-premise weight, cloud-native weight, regulatory strictness, vendor lock-in
-    tolerance, a strategic directive summary, and a recommended target maturity score.
-
-    Args:
-        intel_str: A string containing strategic information, technical context,
-            or other relevant intelligence about the client.
-        client_name: The name of the client, used for contextualization within
-            the prompt.
-
-    Returns:
-        A formatted, Spanish-language string ready to be used as a prompt for an LLM.
-    """
+    """Format and return a technical English prompt for an LLM to deduce a client's 'Architectural Gravity Profile'."""
     prompt = (
-        f"Eres un Arquitecto de Misión Crítica (Tier 1) analizando el contexto de {client_name}.\n"
-        f"Basándote en este ADN Estratégico:\n{intel_str}\n\n"
-        "Debes deducir el 'Perfil de Gravedad Arquitectónica' del cliente. Extrae los siguientes valores:\n"
-        "- on_premise_weight: 0.0 a 1.0 (Qué porcentaje de carga debe quedarse On-Premise por latencia, regulación o legado SCADA/OT).\n"
-        "- cloud_native_weight: 0.0 a 1.0 (Qué porcentaje puede ir a Cloud Público).\n"
-        "- regulatory_strictness: 'Alta', 'Media' o 'Baja' (Ej. Operadores críticos como energía o banca son 'Alta').\n"
-        "- vendor_lockin_tolerance: 'Alta', 'Media' o 'Baja' (Operadores críticos suelen tener tolerancia 'Baja').\n"
-        "- strategic_directive: La directiva resultante en pocas palabras (Ej. 'Sovereign Hybrid Edge', 'Cloud-First Agnostic', 'Strict On-Premise').\n"
-        "- recommended_target_maturity: Un número flotante (ej. 4.0, 4.2, 4.5) que represente el nivel de madurez objetivo recomendado basado en la criticidad del negocio y la ambición del cliente.\n"
-        "\nDevuelve la información en formato JSON estricto."
+        f"You are a Tier-1 Mission-Critical Infrastructure Architect analyzing the enterprise context of {client_name}.\n"
+        f"Based on this Strategic DNA:\n{intel_str}\n\n"
+        "Deduce the client's 'Architectural Gravity Profile'. Extract the following metrics:\n"
+        "- on_premise_weight: 0.0 to 1.0 (Percentage of workload that must remain On-Premise due to latency, regulation, or OT/SCADA).\n"
+        "- cloud_native_weight: 0.0 to 1.0 (Percentage suitable for Public Cloud).\n"
+        "- regulatory_strictness: 'High', 'Medium', or 'Low' (Critical operators like energy/banking are 'High').\n"
+        "- vendor_lockin_tolerance: 'High', 'Medium', or 'Low' (Critical infrastructure operators typically have 'Low').\n"
+        "- strategic_directive: Resulting directive in few words (e.g., 'Sovereign Hybrid Edge', 'Cloud-First Agnostic', 'Strict On-Premise').\n"
+        "- recommended_target_maturity: Float (e.g. 4.0, 4.2, 4.5) representing target maturity based on criticality and client ambition.\n"
+        "\nReturn the information strictly in the requested JSON format."
     )
     return prompt
 
 
 def get_dependency_resolver_prompt(projects_json: str) -> str:
-    """Embed a JSON string of projects into a Spanish-language prompt template for AI dependency resolution."""
+    """Construct an AI dependency mapping prompt in technical English."""
     prompt = (
-        "Eres un Arquitecto de Soluciones y Dependencias Topológicas.\n"
-        "Tu única misión es mapear las dependencias técnicas entre esta lista cerrada de proyectos.\n"
-        f"PROYECTOS APROBADOS:\n{projects_json}\n\n"
-        "REGLAS ESTRICTAS:\n"
-        "1. NO PUEDES inventar proyectos nuevos. Solo puedes usar los nombres exactos proporcionados.\n"
-        "2. Identifica si un proyecto es habilitador técnico de otro. (Ej: 'Landing Zone' habilita a 'Kubernetes').\n"
-        "3. Devuelve una lista de 'ExternalDependency' con campos: 'project' (el que depende), 'depends_on' (el habilitador previo exacto), y 'reason' (razón técnica).\n"
-        "\nDevuelve la información en formato JSON estructurado."
+        "You are a Solutions and Topological Dependency Architect.\n"
+        "Your single mandate is to map technical dependencies among this closed list of approved initiatives.\n"
+        f"APPROVED PROJECTS:\n{projects_json}\n\n"
+        "STRICT RULES:\n"
+        "1. DO NOT invent new projects. Use only exact provided project names.\n"
+        "2. Identify if a project is a technical enabler of another (e.g., 'Landing Zone' enables 'Container Platform').\n"
+        "3. Return a list of 'ExternalDependency' objects with fields: 'project', 'depends_on', and 'reason'.\n"
+        "\nReturn the information strictly in structured JSON."
     )
     return prompt
 
@@ -273,32 +255,31 @@ def get_bid_manager_prompt(
     project_objective: str,
     project_sizing: str,
     mitigated_risk_impact: str,
+    target_language: str = "Spanish",
 ) -> str:
-    r"""{'docstring': "Constructs a Spanish-language prompt to generate a project charter JSON.\n\n    The generated prompt instructs a language model to act as a senior Bid Manager\n    and Solution Architect from the consulting organization. It provides the model with specific\n    project details and a strict set of rules for generating a comprehensive\n    project charter in a JSON format.\n\n    Args:\n        client_name: The name of the client for whom the project is intended.\n        project_name: The internal or generic name of the project.\n        project_objective: A high-level description of the project's goal.\n        project_sizing: The estimated size or scale of the project (e.g., 'Small').\n        mitigated_risk_impact: The business or technical risk the project is\n            designed to mitigate.\n\n    Returns:\n        A complete prompt string in Spanish, ready for use with a generative AI."}."""
+    """Constructs a Tier-1 prompt to generate an executive project charter JSON."""
     from assessment_engine.infrastructure.config_loader import (
         get_consultant_company_name,
     )
 
     company = get_consultant_company_name()
     prompt = (
-        f"Eres un Bid Manager y Solution Architect Senior de {company} preparando un 'Project Charter' a nivel de Comité de Dirección para el cliente {client_name}.\n"
-        f"PROYECTO: {project_name}\n"
-        f"OBJETIVO: {project_objective}\n"
-        f"TALLA (Sizing): {project_sizing}\n"
-        f"RIESGO A MITIGAR: {mitigated_risk_impact}\n\n"
-        "REGLAS ESTRICTAS DE CUMPLIMIENTO:\n"
-        "1. commercial_name: Reescribe el nombre del proyecto para que sea un título formal y ejecutivo EXCLUSIVAMENTE EN ESPAÑOL (prohibido mantener o generar títulos en inglés).\n"
-        "2. project_description: Escribe una descripción ejecutiva en lenguaje llano de 3-4 líneas. Explica al CIO exactamente DE QUÉ TRATA el proyecto, sin usar acrónimos técnicos incomprensibles.\n"
-        "3. smart_objectives: Escribe un objetivo SMART cuantificable.\n"
-        f"4. in_scope / out_of_scope: Define los límites estrictos de ingeniería. En out_of_scope, añade cláusulas defensivas para {company} (ej. Licencias a cargo del cliente, migraciones legacy complejas excluidas).\n"
-        "5. governance_roles: Define 3-4 roles RACI críticos, INCLUYENDO OBLIGATORIAMENTE los deberes del cliente (ej. 'Cliente: Sponsor y provisión de accesos').\n"
-        "6. critical_risks: Identifica 2 riesgos de ejecución y su mitigación.\n"
-        "7. wbs_breakdown: Genera un Work Breakdown Structure (WBS) exhaustivo con Fases reales de delivery (ej. Fase 1: HLD, Fase 2: LLD & Build, Fase 3: Migración, Fase 4: Hypercare). "
-        "Asigna un esfuerzo en horas realista basado en la talla del proyecto. OBLIGATORIO: Debes incluir al menos una tarea de Gestión de Proyecto (PMO/QA). "
-        "OBLIGATORIO: El perfil debe ser estrictamente uno de estos: 'gerente_cuenta', 'arquitecto', 'experto', 'project_manager', 'tecnico_medio', 'tecnico_junior'.\n"
-        "8. capex_estimate: Estima con rigor técnico y de forma diferenciada la inversión inicial (CapEx) en equipamiento de red, servidores, appliances o licenciamiento inicial necesario para el alcance del proyecto. Formatea en Euros y añade justificación paramétrica breve (ej. '~45.000,00 € (Equipamiento de conmutación)', '~85.000,00 € (Licenciamiento enterprise)', o 'Bajo / Nulo (Suscripción cloud/OpEx)'). PROHIBIDO clonar la misma estimación en todos los proyectos.\n"
-        "9. roi_justification: Redacta un ROI profundo basado en el Riesgo a Mitigar (Hard/Soft savings). Tienes el dato del ALE (Annualized Loss Expectancy) en el riesgo a mitigar si aplica.\n"
-        "10. deliverables: OBLIGATORIO generar 3-4 entregables técnicos o de gobernanza tangibles y específicos para este proyecto concreto. PROHIBIDO generar generalidades vacías como 'Documento de Diseño Técnico (HLD/LLD)' o 'Plan de Pruebas y Validación'. Si el proyecto es FinOps, entrega artefactos como 'Modelo de Imputación de Costes (Showback/Chargeback)' o 'Guía de Tagging Cloud y Políticas de Rightsizing'; si es de Arquitectura/ARB, entrega 'Estatutos del Comité de Arquitectura (ARB Charter)' o 'Catálogo de Estándares Tecnológicos Homologados'; si es de gestión de demanda, entrega 'Marco de Priorización y Evaluación de Demanda TI'; si es de infraestructura técnica, entrega 'Manifiestos Terraform' o 'Playbooks Ansible'.\n"
-        "\nDevuelve la información en el formato JSON estricto."
+        f"You are a Senior Bid Manager and Principal Solution Architect at {company} preparing a C-Level 'Project Charter' for client {client_name}.\n"
+        f"PROJECT: {project_name}\n"
+        f"OBJECTIVE: {project_objective}\n"
+        f"SIZING: {project_sizing}\n"
+        f"MITIGATED RISK: {mitigated_risk_impact}\n\n"
+        "STRICT EXECUTION RULES:\n"
+        f"1. commercial_name: Rewrite the project name to be a concise, executive charter title EXCLUSIVELY IN {target_language} (maximum 8 words).\n"
+        f"2. project_description: Write an executive plain-language description (3-4 lines) explaining clearly what the project delivers EXCLUSIVELY IN {target_language}.\n"
+        f"3. smart_objectives: Formulate a quantifiable SMART objective EXCLUSIVELY IN {target_language}.\n"
+        f"4. in_scope / out_of_scope: Define strict engineering boundaries. In out_of_scope, include defensive clauses for {company} (e.g. software licenses by client, complex legacy migrations excluded).\n"
+        f"5. governance_roles: Define 3-4 critical RACI roles, including client duties (e.g. 'Client: Executive Sponsor and privileged access provisioning').\n"
+        f"6. critical_risks: Identify 2 delivery risks and concrete mitigations in {target_language}.\n"
+        "7. wbs_breakdown: Generate a comprehensive Work Breakdown Structure (WBS) with delivery phases. Assign realistic effort hours based on project size. MANDATORY: The engineering profile must be strictly one of: 'gerente_cuenta', 'arquitecto', 'experto', 'project_manager', 'tecnico_medio', 'tecnico_junior'.\n"
+        "8. capex_estimate: Rigorously estimate initial capital expenditure (CapEx) in network gear, servers, appliances, or baseline licensing. Differentiate from OpEx subscriptions. Prohibit cloning the same estimate across all projects.\n"
+        "9. roi_justification: Articulate quantitative ROI based on the mitigated risk (hard/soft operational savings and ALE avoidance).\n"
+        f"10. deliverables: MANDATORY to generate 3-4 tangible, operational technical deliverables written in {target_language}. STRICTLY PROHIBITED from generating empty clichés like 'Design Document' or 'Test Plan'. For FinOps deliver 'Cost Allocation Model (Showback/Chargeback)' or 'Cloud Tagging and Rightsizing Policy'; for Architecture deliver 'ARB Governance Charter'; for Infrastructure deliver 'Terraform Manifests' or 'Ansible Playbooks'.\n"
+        "\nReturn the information strictly in the requested JSON schema."
     )
     return prompt

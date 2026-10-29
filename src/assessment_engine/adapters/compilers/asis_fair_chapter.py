@@ -760,7 +760,9 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             p_fair_lbl = cell_risk.paragraphs[0]
             p_fair_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_fair_lbl.paragraph_format.space_after = Pt(2)
-            run_fair_lbl = p_fair_lbl.add_run("Exposición Cuantitativa (FAIR):")
+            
+            fair_lbl_txt = "Exposición Cuantitativa (FAIR):" if doc_lang == "es" else "Quantitative Exposure (FAIR):"
+            run_fair_lbl = p_fair_lbl.add_run(fair_lbl_txt)
             run_fair_lbl.bold = True
 
             tef = r["tef"]
@@ -776,12 +778,16 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             p_fair_val = cell_risk.add_paragraph()
             p_fair_val.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_fair_val.paragraph_format.space_after = Pt(6)
-            p_fair_val.add_run(f"• Frecuencia (TEF): {tef:.1f} / 5,0\n• Magnitud (LM): {lm:.1f} / 5,0")
+            if doc_lang == "es":
+                p_fair_val.add_run(f"• Frecuencia (TEF): {tef:.1f} / 5,0\n• Magnitud (LM): {lm:.1f} / 5,0")
+            else:
+                p_fair_val.add_run(f"• Frequency (TEF): {tef:.1f} / 5.0\n• Magnitude (LM): {lm:.1f} / 5.0")
 
             p_exp_lbl = cell_risk.add_paragraph()
             p_exp_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
             p_exp_lbl.paragraph_format.space_after = Pt(2)
-            run_exp_lbl = p_exp_lbl.add_run("Exposición Financiera Proyectada:")
+            exp_lbl_txt = "Exposición Financiera Proyectada:" if doc_lang == "es" else "Projected Financial Exposure:"
+            run_exp_lbl = p_exp_lbl.add_run(exp_lbl_txt)
             run_exp_lbl.bold = True
 
             p_exp_val = cell_risk.add_paragraph()
@@ -793,13 +799,18 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             formatted_max = format_currency_custom(max_val, t_sep, d_sep).split(d_sep)[0]
             formatted_ale_item = format_currency_custom(ale, t_sep, d_sep).split(d_sep)[0]
 
-            p_exp_val.add_run("• Pérdida Anualizada (ALE): ")
+            ale_lbl_txt = "• Pérdida Anualizada (ALE): " if doc_lang == "es" else "• Annual Loss Exposure (ALE): "
+            p_exp_val.add_run(ale_lbl_txt)
             run_ale_val = p_exp_val.add_run(f"{formatted_ale_item} {currency}\n")
             run_ale_val.bold = True
             run_ale_val.font.color.rgb = RGBColor(180, 0, 0)
             
-            p_exp_val.add_run(f"• Peor Caso (CVaR): {formatted_p90} {currency}\n")
-            p_exp_val.add_run(f"• Rango Probabilístico: {formatted_min} {currency} a {formatted_max} {currency}")
+            if doc_lang == "es":
+                p_exp_val.add_run(f"• Peor Caso (CVaR): {formatted_p90} {currency}\n")
+                p_exp_val.add_run(f"• Rango Probabilístico: {formatted_min} {currency} a {formatted_max} {currency}")
+            else:
+                p_exp_val.add_run(f"• Worst Case (CVaR): {formatted_p90} {currency}\n")
+                p_exp_val.add_run(f"• Probabilistic Range: {formatted_min} {currency} to {formatted_max} {currency}")
 
             # Apply fonts to all runs in the third cell
             for p_item in cell_risk.paragraphs:

@@ -1,17 +1,14 @@
 prompt_details:
-  description: Orquesta la fase final de la generación del Blueprint, consolidando
-    el análisis de todos los pilares para crear una visión global, un roadmap de transformación
-    y las dependencias entre torres.
-  template: 'Eres el {role}. Aquí tienes el análisis de todos los pilares de la torre
-    {tower_name}:
+  description: Orchestrates the closing phase of Blueprint generation, consolidating analysis across all pillars to construct the global executive snapshot, transformation roadmap, and cross-tower dependencies.
+  template: 'You are the {role}. Here is the consolidated technical analysis of all pillars for tower {tower_name}:
 
     {pillars_analysis_json}
 
 
-    Basado en esto y en el ADN del cliente: {intel_str}
+    Based on this and the client strategic DNA: {intel_str}
 
 
-    TAREA Y REGLAS DE TONO:
+    TASK AND TONE RULES:
 
     {task_and_tone_list}
 
@@ -19,57 +16,31 @@ prompt_details:
     {structure_requirements_list}
 
 
-    Devuelve la informacion en formato JSON estructurado.
+    Return the information strictly in the requested structured JSON format.
 
     '
   variables:
-  - description: El nombre de la torre que se está orquestando.
+  - description: The name of the architecture tower being orchestrated.
     name: tower_name
-  - description: JSON con el análisis consolidado de todos los pilares de la torre.
+  - description: JSON with consolidated analysis across all pillars of the tower.
     name: pillars_analysis_json
-  - description: Texto con el ADN estratégico y la inteligencia del cliente.
+  - description: Text with client strategic DNA and intelligence.
     name: intel_str
+  - description: Target output language (e.g. 'Spanish', 'English', 'German', 'Japanese').
+    name: target_language
 role: Master Enterprise Orchestrator
 structure_requirements:
-  1: 'Genera el ''executive_snapshot'': - ''bottom_line'': Un párrafo con el diagnóstico
-    estructural y técnico global de la torre. - ''cost_of_inaction'': Las implicaciones
-    operativas y técnicas graves de no acometer la transformación. - ''decisions'':
-    Copia EXACTAMENTE 2-3 nombres de las iniciativas (projects_todo) más críticas
-    definidas en el JSON de pilares. No inventes nombres nuevos. - ''structural_risks'':
-    2-3 Los mayores riesgos de arquitectura o de diseño actuales. - ''business_impact'':
-    Cómo esta transformación ayudará a los objetivos de negocio del cliente (M&A,
-    Time-to-market, etc.). - ''operational_benefits'': Mejoras clave en la operación
-    IT que se esperan conseguir (ej. automatización, resiliencia). - ''transformation_complexity'':
-    Estimación cualitativa global del esfuerzo y complejidad técnica de esta transformación
-    (ej. ''Alta complejidad debido a la deuda técnica'', ''Media, muy centrada en
-    estandarización'').'
-  2: 'Genera el ''cross_capabilities_analysis'': Una visión integral de la arquitectura
-    antes de entrar al detalle por pilar. - ''common_deficiency_patterns'': 2-3 viñetas
-    sobre los problemas transversales que afectan a varios pilares (ej. silos, procesos
-    manuales). - ''transformation_paradigm'': Un párrafo explicando el ''hilo conductor''
-    del cambio para esta torre (ej. ''Pasar de artesanal a infraestructura inmutable'').
-    - ''critical_technical_debt'': Un párrafo resumiendo qué elementos del AS-IS están
-    bloqueando el futuro técnico.'
-  3: 'Genera los ''design_principles'': Deduce un set transversal de 3 a 7 Principios de Diseño Maestro (ej. "Security by Design", "Sovereign Edge") que rijan toda la torre, basados en el perfil del cliente.'
-  4: 'Genera el ''roadmap'': Ordena TODOS los proyectos de los pilares en 3 Waves (Wave 1: 0-6m, Wave 2: 6-12m, Wave 3: 12-24m). REGLA INQUEBRANTABLE: DEBES INCLUIR ABSOLUTAMENTE TODOS LOS PROYECTOS del análisis de pilares. Está ESTRICTAMENTE PROHIBIDO omitir proyectos.'
-  5: 'Genera las ''external_dependencies'': Mapea qué proyectos exactos de la torre dependen de otros proyectos exactos.'
+  1: 'Generate ''executive_snapshot'': - ''bottom_line'': A comprehensive paragraph with the global technical diagnosis of the tower. - ''cost_of_inaction'': Severe operational and technical implications of maintaining the status quo. - ''decisions'': Copy EXACTLY 2-3 names of the most critical initiatives (projects_todo) defined in the pillars JSON. Do not invent new names. - ''structural_risks'': 2-3 major current architectural design risks. - ''business_impact'': How this modernization drives client business outcomes (M&A, Time-to-Market, etc.). - ''operational_benefits'': Key operational improvements expected (automation, resilience). - ''transformation_complexity'': Qualitative estimation of modernization effort and complexity (e.g. ''High complexity due to structural technical debt'', ''Medium, focused on operational standardization'').'
+  2: 'Generate ''cross_capabilities_analysis'': Comprehensive architectural posture before pillar deep-dives. - ''common_deficiency_patterns'': 2-3 bullet points on transversal deficiencies spanning multiple pillars (silos, manual toil). - ''transformation_paradigm'': A paragraph explaining the architectural north star of this tower. - ''critical_technical_debt'': A paragraph summarizing which legacy elements are blocking modernization.'
+  3: 'Generate ''design_principles'': Deduce a transversal set of 3 to 7 Master Design Principles (e.g. "Security by Design", "Sovereign Edge") governing the tower.'
+  4: 'Generate ''roadmap'': Sequence ALL pillar initiatives across 3 Waves (Wave 1: 0-6m, Wave 2: 6-12m, Wave 3: 12-24m). UNBREAKABLE MANDATE: YOU MUST INCLUDE ABSOLUTELY EVERY INITIATIVE from the pillar analysis without omission.'
+  5: 'Generate ''external_dependencies'': Map exact initiative-to-initiative dependencies.'
 task_and_tone:
-- 'EXPANDE TUS EXPLICACIONES EN UN 50%: Desarrolla ampliamente la justificación de
-  negocio, el diagnóstico y el impacto, generando párrafos robustos.'
-- 'PÚBLICO OBJETIVO: Responsables Técnicos (Head of IT, Arquitectura, Operaciones).'
-- 'PROHIBIDA LA PRIMERA PERSONA: Nunca uses ''nuestro/a'', ''nosotros'' ni ''nuestra
-  infraestructura''. El sujeto siempre es ''el entorno del cliente'', ''la arquitectura
-  actual'', etc.'
-- 'TONO: Consultoría técnica objetiva, analítica y sin tintes comerciales o puramente
-  financieros.'
-- 'FORMATO ESTRICTO: ESTRICTAMENTE PROHIBIDO el uso de diccionarios JSON dentro de
-  las listas. ESTRICTAMENTE PROHIBIDO usar formato Markdown con asteriscos (**texto**)
-  para las negritas. No uses asteriscos en ningún momento. Las listas deben contener
-  EXCLUSIVAMENTE strings simples.'
-- 'ALINEACIÓN ESTRATÉGICA DE VENDOR: Identifica el Hyperscaler (AWS, Azure, Google
-  Cloud, etc.) dominante del cliente basándote exclusivamente en el CONTEXTO DEL NEGOCIO
-  y las TRANSFORMACIONES ACTIVAS proporcionadas. Toda recomendación técnica o de gobierno
-  (normativas de seguridad y resiliencia aplicables) debe orientarse al ecosistema detectado como estratégico para el cliente.'
-- 'DIPLOMACIA DE ÉLITE (Tier 1): Prohibido usar adjetivos agresivos (ej. inaceptable,
-  desastroso). Describe los riesgos de forma objetiva como "exposición material" o
-  "desviación estructural". Nunca acuses al cliente.'
+- 'EXPAND YOUR EXPLANATIONS BY 50%: Extensively develop business justifications, technical diagnoses, and operational impacts in robust paragraphs.'
+- 'TARGET AUDIENCE: Technical Decision-Makers (Head of IT, Enterprise Architecture, Infrastructure Operations).'
+- 'THIRD PERSON OBJECTIVITY: Never use first-person pronouns (''we'', ''our''). The subject is always ''the client platform'', ''the current architecture'', etc.'
+- 'TONE: Objective, analytical, and authoritative engineering consulting.'
+- 'OUTPUT LANGUAGE MANDATE: You MUST generate all narratives, descriptions, and structural summaries EXCLUSIVELY in the target language ({target_language}).'
+- 'STRICT FORMATTING: STRICTLY PROHIBITED from using Markdown asterisks (**text**) for bolding. Lists must contain simple strings.'
+- 'STRATEGIC VENDOR ALIGNMENT: Identify and align with the primary client cloud hyperscaler and enterprise technology ecosystem based strictly on business context.'
+- 'ELITE DIPLOMACY (Tier 1): Avoid accusatory adjectives. Describe risks objectively as ''material exposure'' or ''structural deviations''.'
