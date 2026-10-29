@@ -25,7 +25,6 @@ This file serves as the unified AI Sitemap index for Large Language Models (LLMs
 - [docs/contracts/tower_blueprint_payload.md](docs/contracts/tower_blueprint_payload.md) — Technical Pydantic model contracts for single-tower blueprint JSON objects.
 - [docs/contracts/tower_annex_payload.md](docs/contracts/tower_annex_payload.md) — Pydantic schema contracts for executive annex synthesis JSON objects.
 - [docs/contracts/tower_annex_design.md](docs/contracts/tower_annex_design.md) — Structure, rules, and layout constraints of Microsoft Word Tower Annex documents.
-- [docs/contracts/tower_main_report_long_template.md](docs/contracts/tower_main_report_long_template.md) — Strict visual guidelines for long-form Tower Main Reports.
 
 ## Operations & DevOps
 
