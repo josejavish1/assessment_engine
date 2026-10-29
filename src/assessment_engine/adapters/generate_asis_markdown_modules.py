@@ -2,6 +2,8 @@ import logging
 logger = logging.getLogger(__name__)
 import csv
 import json
+import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -331,6 +333,53 @@ def sanitize_semantic_prose(text: str, doc_lang: str = "es") -> str:
     return t
 
 
+def resolve_client_currency_context(
+    client_id: str, tower_dir: Path | None = None
+) -> tuple[str, float]:
+    """Dynamically resolves (currency_symbol, exchange_rate) from profiles, never by language guessing."""
+    currency = ""
+    rate_mult = 1.0
+
+    paths_to_check: list[Path] = []
+    if tower_dir:
+        paths_to_check.append(tower_dir / "custom_risk_profile.json")
+    paths_to_check.append(Path(f"working/{client_id}/custom_risk_profile.json"))
+    for t_code in ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
+        paths_to_check.append(Path(f"working/{client_id}/{t_code}/custom_risk_profile.json"))
+
+    for p in paths_to_check:
+        if p.exists():
+            try:
+                data = json.loads(p.read_text(encoding="utf-8-sig"))
+                sym = data.get("currency_symbol")
+                code = data.get("currency_code")
+                if sym:
+                    currency = sym
+                elif code:
+                    currency = {"USD": "$", "EUR": "€", "GBP": "£", "BRL": "R$", "MXN": "$", "CHF": "CHF", "JPY": "¥"}.get(code.upper(), code)
+                rate_mult = float(data.get("exchange_rate", rate_mult))
+                if currency:
+                    break
+            except Exception:
+                pass
+
+    if not currency:
+        intel_file = Path(f"working/{client_id}/client_intelligence.json")
+        if intel_file.exists():
+            try:
+                data = json.loads(intel_file.read_text(encoding="utf-8-sig"))
+                curr = data.get("financial", {}).get("currency") or data.get("currency")
+                if curr:
+                    currency = {"USD": "$", "EUR": "€", "GBP": "£", "BRL": "R$", "MXN": "$", "CHF": "CHF", "JPY": "¥"}.get(curr.upper(), curr)
+            except Exception:
+                pass
+
+    if not currency:
+        currency = "€"
+
+    return currency, rate_mult
+
+
 def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, total_fair_ale: float, doc_lang: str, total_p90: float = 0.0, total_max: float = 0.0) -> str:
     """Sanitize and unify metrics according to technical specification."""
     import re
@@ -338,42 +387,8 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
     if not text:
         return text
 
-    # Set default values
-    currency = "€" if doc_lang == "es" else "$"
-    rate_mult = 1.0
-
-    # Load dynamic exchange rate and currency symbol from custom calibration if exists (FAIR-MAM)
     client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
-    custom_profile_path = Path(f"working/{client_id}/custom_risk_profile.json")
-    for t_code in ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"]:
-        temp_path = Path(f"working/{client_id}/{t_code}/custom_risk_profile.json")
-        if temp_path.exists():
-            custom_profile_path = temp_path
-            break
-
-    custom_calibration = {}
-    if custom_profile_path.exists():
-        try:
-            with open(custom_profile_path, "r", encoding="utf-8-sig") as cf:
-                custom_calibration = json.load(cf)
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
-
-    currency = custom_calibration.get("currency_symbol", "")
-    if not currency:
-        intel_file = Path(f"working/{client_id}/client_intelligence.json")
-        if intel_file.exists():
-            try:
-                with open(intel_file, "r", encoding="utf-8-sig") as inf:
-                    c_curr = json.load(inf).get("financial", {}).get("currency")
-                    if c_curr:
-                        currency = {"USD": "$", "EUR": "€", "GBP": "£", "BRL": "R$", "MXN": "$", "CHF": "CHF"}.get(c_curr.upper(), c_curr)
-            except Exception as ex:
-                logger.debug("Error leyendo client_intelligence currency: %s", ex)
-    if not currency:
-        currency = "€" if doc_lang == "es" else "$"
-    rate_mult = float(custom_calibration.get("exchange_rate", rate_mult))
+    currency, rate_mult = resolve_client_currency_context(client_id)
 
     from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
     vocab = resolve_localized_vocabulary(doc_lang)
@@ -819,18 +834,8 @@ def _write_module_02_resumen_ejecutivo(modules_dir: Path, ctx: dict[str, Any]) -
         re_content.append("\n\n".join(cleaned_paragraphs) + "\n")
 
     # Load dynamic exchange rate and currency symbol from custom calibration if exists (FAIR-MAM)
-    currency = "€" if doc_lang == "es" else "$"
-    rate_mult = 1.0
-    custom_profile_path = tower_dir / "custom_risk_profile.json"
-    if custom_profile_path.exists():
-        try:
-            with open(custom_profile_path, "r", encoding="utf-8-sig") as cf:
-                custom_cal = json.load(cf)
-                currency = custom_cal.get("currency_symbol", currency)
-                rate_mult = float(custom_cal.get("exchange_rate", rate_mult))
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-            logger.debug(f"[Fallback] Excepción controlada: {ex}")
+    client_id = ctx.get("client_id") or os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
+    currency, rate_mult = resolve_client_currency_context(client_id, tower_dir=tower_dir)
 
     # Collect and sort all health check risks from all pillars to identify the top 3
     all_risks = []

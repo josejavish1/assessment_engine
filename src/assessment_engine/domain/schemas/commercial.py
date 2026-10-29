@@ -199,9 +199,6 @@ class WhyPartner(BaseModel):
     partnerships: str
 
 
-WhyNttData = WhyPartner
-
-
 class InvestmentAndTimeline(BaseModel):
     """Model the estimated duration and Total Contract Value (TCV) range for a project."""
 
@@ -217,46 +214,13 @@ class SalesPartnerOutput(BaseModel):
     summary.
     """
 
-    why_partner: WhyPartner = Field(default=None, alias="why_ntt_data")
+    why_partner: WhyPartner = Field(default=None, validation_alias="why_ntt_data")
     investment_and_timeline: InvestmentAndTimeline
     executive_synthesis: str
 
-    @property
-    def why_ntt_data(self) -> WhyPartner:
-        return self.why_partner
-
 
 class ProposalDraft(BaseModel):
-    """Represents the structured data model for a commercial proposal draft.
-
-    This Pydantic model defines all the required sections and their corresponding
-    data structures to ensure a complete and valid proposal document is generated.
-
-    Attributes:
-        initiative_name (str): The official name of the proposed initiative.
-        context_and_why (ContextAndWhy): Section detailing the background, problem,
-            and rationale.
-        solution_and_what (SolutionAndWhat): Section describing the proposed
-            solution's components.
-        scope_and_how (ScopeAndHow): Section defining the project's boundaries and
-            methodology.
-        delivery_team (DeliveryTeam): Details of the team proposed to execute the
-            project.
-        ai_transformation_strategy (str): The strategy for leveraging AI within the
-            initiative.
-        governance_and_assumptions (GovernanceAndAssumptions): The governance
-            framework and key assumptions.
-        risk_management (list[RiskManagementItem]): A list of identified risks and
-            their mitigation plans.
-        activation_plan (list[str]): A high-level plan or list of steps for project
-            activation.
-        why_ntt_data (WhyNttData): The value proposition for choosing NTT DATA as
-            the partner.
-        investment_and_timeline (InvestmentAndTimeline): The required financial
-            investment and project timeline.
-        executive_synthesis (str): A concise summary of the proposal for
-            executives.
-    """
+    """Represents the structured data model for a commercial proposal draft."""
 
     initiative_name: str
     context_and_why: ContextAndWhy
@@ -267,9 +231,14 @@ class ProposalDraft(BaseModel):
     governance_and_assumptions: GovernanceAndAssumptions
     risk_management: list[RiskManagementItem]
     activation_plan: list[str]
-    why_ntt_data: WhyNttData
+    why_partner: WhyPartner = Field(default=None, validation_alias="why_ntt_data")
     investment_and_timeline: InvestmentAndTimeline
     executive_synthesis: str
+
+    @property
+    def why_ntt_data(self) -> WhyPartner:
+        """Backward-compatibility alias."""
+        return self.why_partner
 
 
 class CommercialDocumentMeta(BaseModel):

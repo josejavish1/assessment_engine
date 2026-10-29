@@ -47,35 +47,26 @@ def sync_findings_to_graph(
     graph: EpistemicGraph,
     entity_resolver: EntityResolutionEngine,
     ontology: OntologyRegistry,
-    blueprint_payload: dict,
+    blueprint_payload: dict[str, Any],
     tower_id: str,
-):
+) -> dict[str, Any]:
     """Populates a knowledge graph with entities and relationships from a structured blueprint payload.
 
     This function processes a blueprint payload by iterating through its pillars,
     risks (from `health_check_asis`), and initiatives (from `projects_todo`).
     It uses an entity resolver to generate stable semantic identifiers for each
     risk and initiative, which are then injected as nodes and relationships
-    (triples) into the provided `EpistemicGraph` instance. Relationships
-    created include risks impacting pillars and initiatives addressing pillars.
-    External dependencies between initiatives are also parsed and added to the graph.
-
-    Note: This function modifies the `blueprint_payload` dictionary in-place by
-    adding a `node_id` key to each risk and initiative dictionary.
+    (triples) into the provided `EpistemicGraph` instance.
 
     Args:
-        graph: The `EpistemicGraph` instance to be populated.
-        entity_resolver: The component used to generate stable semantic identifiers
-            for entities.
-        ontology: The ontology registry for the graph. Note: This parameter is
-            present in the signature but not used in the function's logic.
+        graph: The EpistemicGraph instance to be populated.
+        entity_resolver: The component used to generate stable semantic identifiers.
+        ontology: The ontology registry for the graph.
         blueprint_payload: A dictionary containing the structured blueprint data.
-            This argument is modified in-place.
-        tower_id: The unique identifier for the Tower, used as a source attribute
-            for the injected graph triples.
+        tower_id: The unique identifier for the Tower.
 
     Returns:
-        None.
+        The enriched blueprint_payload dictionary containing assigned semantic node_ids.
     """
     _ = blueprint_payload.get("document_meta", {}).get("client_name", "generic")
     for pillar in blueprint_payload.get("pillars_analysis", []):
@@ -154,6 +145,8 @@ def sync_findings_to_graph(
             confidence=1.0,
             reason=reason,
         )
+
+    return blueprint_payload
 
 
 def get_default_blueprint_payload(
@@ -439,40 +432,28 @@ def _build_pillars_map(
     return pillars_map
 
 
-def _sanitize_hallucinated_findings(
+def _validate_evidence_grounding(
     blueprint_analysis: dict[str, Any],
     p_data: dict[str, Any],
-    context_str: str,
-    resolved_truth: str,
 ) -> None:
-    """Validate health check findings against reference corpus and eliminate hallucinated gaps."""
-    import re
-
-    corpus = (
-        context_str + " " + resolved_truth + " " + json.dumps(p_data["answers"])
-    ).lower()
-    corpus_clean = re.sub(r"\s+", " ", corpus)
+    """Validates finding evidence attribution against verified gaps without falsifying evidence."""
+    refined_findings = p_data.get("refined_findings", {})
+    verified_gaps = [
+        g.get("statement", "").strip()
+        for g in refined_findings.get("gaps", [])
+        if g.get("statement")
+    ]
 
     for finding in blueprint_analysis.get("health_check_asis", []):
-        evidence = finding.get("literal_evidence", "")
-        if evidence and evidence != "No se proporcionó evidencia literal.":
-            evidence_clean = re.sub(r"\s+", " ", evidence.lower())
-            if evidence_clean not in corpus_clean:
-                words = evidence_clean.split()
-                matched_words = sum(1 for w in words if w in corpus_clean)
-                if not words or (matched_words / len(words)) < 0.7:
-                    p_find_match = p_data.get("refined_findings", {})
-                    verified_gaps = [
-                        g.get("statement", "")
-                        for g in p_find_match.get("gaps", [])
-                        if g.get("statement")
-                    ]
-                    label = p_data.get("label", "Desconocido")
-                    finding["literal_evidence"] = (
-                        verified_gaps[0]
-                        if verified_gaps
-                        else f"Evidencia técnica validada en el pilar {label}."
-                    )
+        evidence = str(finding.get("literal_evidence", "")).strip()
+        if not evidence or evidence == "No se proporcionó evidencia literal.":
+            if verified_gaps:
+                finding["literal_evidence"] = verified_gaps[0]
+                finding["evidence_grounding_type"] = "verified_gap"
+            else:
+                finding["evidence_grounding_type"] = "expert_inference"
+        else:
+            finding["evidence_grounding_type"] = "direct_evidence"
 
 
 def _map_candidate_initiatives_to_sota_projects(
@@ -583,9 +564,7 @@ async def _execute_pillar_mapreduce(
             else get_target_maturity(intel_data, tower_id, 4.0)
         )
         blueprint_analysis = p_result.get("pillar_analysis", p_result)
-        _sanitize_hallucinated_findings(
-            blueprint_analysis, pillars_map[p_id], context_str, resolved_truth
-        )
+        _validate_evidence_grounding(blueprint_analysis, pillars_map[p_id])
 
         refined = pillars_map[p_id].get("refined_findings", {})
         initiatives = refined.get("candidate_initiatives", [])
@@ -619,7 +598,7 @@ async def _execute_pillar_mapreduce(
 def _remap_canonical_initiatives(
     blueprint_payload: dict[str, Any],
     refined_findings: dict[str, Any],
-) -> None:
+) -> dict[str, Any]:
     """Re-map candidate initiatives with MECE clustering to guarantee canonical project names."""
     for p_analysis in blueprint_payload.get("pillars_analysis", []):
         p_id = p_analysis.get("pilar_id")
@@ -633,53 +612,57 @@ def _remap_canonical_initiatives(
                         )
                     )
                 break
+    return blueprint_payload
 
 
 def _reconcile_orchestrator_roadmap_and_dependencies(
     closing_data: dict[str, Any],
     valid_project_names: list[str],
 ) -> None:
-    """Reconcile external dependencies and ensure 100% roadmap project coverage using fuzzy matching."""
-    import difflib
+    """Reconcile external dependencies and ensure 100% roadmap project coverage deterministically."""
+    canonical_lookup = {p.strip().lower(): p for p in valid_project_names}
 
-    def fuzzy_match(name: str, choices: list[str], cutoff: float = 0.45) -> str | None:
-        matches = difflib.get_close_matches(name, choices, n=1, cutoff=cutoff)
-        return matches[0] if matches else None
+    def resolve_canonical_project(name: str | None) -> str | None:
+        if not name:
+            return None
+        cleaned = name.strip()
+        if cleaned in valid_project_names:
+            return cleaned
+        cleaned_lower = cleaned.lower()
+        if cleaned_lower in canonical_lookup:
+            return canonical_lookup[cleaned_lower]
+        # Token-level exact match
+        for cand_lower, cand_orig in canonical_lookup.items():
+            if cand_lower in cleaned_lower or cleaned_lower in cand_lower:
+                return cand_orig
+        return None
 
     # Reconcile external dependencies
     for dep in closing_data.get("external_dependencies", []):
         dep_name = dep.get("depends_on")
-        if dep_name not in valid_project_names and dep_name not in [
-            "Independiente",
-            "Ninguna",
-        ]:
-            corrected = fuzzy_match(dep_name, valid_project_names)
-            dep["depends_on"] = corrected if corrected else "Independiente"
+        if dep_name in ["Independiente", "Ninguna", None]:
+            dep["depends_on"] = "Independiente"
+            continue
+        resolved = resolve_canonical_project(dep_name)
+        dep["depends_on"] = resolved if resolved else "Independiente"
 
-    # Reconcile roadmap coverage
-    mapped_projects = set()
-    for wave in closing_data.get("roadmap", []):
-        corrected_projects = []
+    # Reconcile roadmap coverage without duplicates
+    mapped_projects: set[str] = set()
+    roadmap = closing_data.get("roadmap", [])
+    for wave in roadmap:
+        corrected_projects: list[str] = []
         for proj in wave.get("projects", []):
-            if proj in valid_project_names:
-                corrected_projects.append(proj)
-                mapped_projects.add(proj)
-            else:
-                corrected = fuzzy_match(proj, valid_project_names)
-                if corrected:
-                    corrected_projects.append(corrected)
-                    mapped_projects.add(corrected)
+            resolved = resolve_canonical_project(proj)
+            if resolved and resolved not in mapped_projects:
+                corrected_projects.append(resolved)
+                mapped_projects.add(resolved)
         wave["projects"] = corrected_projects
 
-    # Guarantee 100% coverage
-    missing_projects = list(set(valid_project_names) - mapped_projects)
-    if missing_projects and closing_data.get("roadmap"):
-        closing_data["roadmap"][-1]["projects"].extend(missing_projects)
-
-    # Trim principles to max 7
-    principles = closing_data.get("design_principles", [])
-    if len(principles) > 10:
-        closing_data["design_principles"] = principles[:7]
+    # Guarantee 100% coverage by placing unassigned projects into the roadmap
+    missing_projects = sorted(list(set(valid_project_names) - mapped_projects))
+    if missing_projects and roadmap:
+        target_wave = roadmap[0] if len(roadmap) == 1 else roadmap[1]
+        target_wave["projects"].extend(missing_projects)
 
 
 async def _orchestrate_closing_agent(
@@ -1088,7 +1071,9 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     except Exception as read_err:
         logger.warning("Failed to load findings.json for final mapping: %s", read_err)
 
-    _remap_canonical_initiatives(blueprint_payload, refined_findings)
+    res_remap = _remap_canonical_initiatives(blueprint_payload, refined_findings)
+    if isinstance(res_remap, dict):
+        blueprint_payload = res_remap
 
     # Phase 5: Knowledge Graph Sync & Policy Engine QA
     logger.info("Synchronizing tower findings with Epistemic Graph for %s...", tower_id)

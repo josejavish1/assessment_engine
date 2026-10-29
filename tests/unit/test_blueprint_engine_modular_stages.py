@@ -13,9 +13,37 @@ from assessment_engine.application.run_tower_blueprint_engine import (
     _reconcile_orchestrator_roadmap_and_dependencies,
     _remap_canonical_initiatives,
     _resolve_mitigated_risk_context,
-    _sanitize_hallucinated_findings,
     _scrub_client_placeholders,
+    _validate_evidence_grounding,
 )
+
+
+def test_validate_evidence_grounding_preserves_verified_evidence():
+    """Verify that _validate_evidence_grounding classifies direct vs unverified evidence deterministically."""
+    blueprint_analysis = {
+        "health_check_asis": [
+            {"finding": "F1", "literal_evidence": "Logs confirman caída de enlace"},
+            {"finding": "F2", "literal_evidence": ""},
+        ]
+    }
+    p_data = {
+        "refined_findings": {
+            "gaps": [{"statement": "Obsolescencia de switches principales"}]
+        }
+    }
+    _validate_evidence_grounding(blueprint_analysis, p_data)
+    assert (
+        blueprint_analysis["health_check_asis"][0]["evidence_grounding_type"]
+        == "direct_evidence"
+    )
+    assert (
+        blueprint_analysis["health_check_asis"][1]["evidence_grounding_type"]
+        == "verified_gap"
+    )
+    assert (
+        blueprint_analysis["health_check_asis"][1]["literal_evidence"]
+        == "Obsolescencia de switches principales"
+    )
 
 
 def test_build_pillars_map_averaging():

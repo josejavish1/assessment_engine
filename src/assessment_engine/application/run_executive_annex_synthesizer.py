@@ -650,15 +650,18 @@ def enrich_annex_payload(
         format_number,
         t,
     )
+    from assessment_engine.adapters.generate_asis_markdown_modules import resolve_client_currency_context
 
     str_ale = format_number(ale_rounded, locale=doc_lang, decimals=0)
     str_p10 = format_number(ale_p10, locale=doc_lang, decimals=0)
     str_p90 = format_number(ale_p90, locale=doc_lang, decimals=0)
-    currency_sym = (
-        getattr(blueprint.document_meta, "currency_symbol", None)
-        or getattr(blueprint.document_meta, "currency", None)
-        or "€"
-    )
+    
+    client_name = getattr(blueprint.document_meta, "client", "generic_client")
+    currency_sym, _ = resolve_client_currency_context(client_name)
+    if hasattr(blueprint.document_meta, "currency_symbol") and blueprint.document_meta.currency_symbol:
+        currency_sym = blueprint.document_meta.currency_symbol
+    elif hasattr(blueprint.document_meta, "currency") and blueprint.document_meta.currency:
+        currency_sym = blueprint.document_meta.currency
     fmt_ale = f"~{str_ale} {currency_sym}/año (Rango habitual: {str_p10} {currency_sym} a {str_p90} {currency_sym})"
 
     cost_3y_ord = format_currency(

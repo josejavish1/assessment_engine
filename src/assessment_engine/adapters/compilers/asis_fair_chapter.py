@@ -106,12 +106,16 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
             logger.debug(f"[Fallback] Excepción controlada: {ex}")
 
-    sre_rate = round(float(custom_calibration.get("hourly_rate_sre_eur", 36.0)))
+    from assessment_engine.infrastructure.config_loader import load_rate_card
+    base_sre_rate = float(load_rate_card().get("tarifas_hora", {}).get("tecnico_medio", 36.0))
+    sre_rate = round(float(custom_calibration.get("hourly_rate_sre_eur", base_sre_rate)))
     currency = (
         ctx.get("currency")
         or custom_calibration.get("currency_symbol")
-        or ("€" if doc_lang == "es" else "$")
     )
+    if not currency:
+        from assessment_engine.adapters.generate_asis_markdown_modules import resolve_client_currency_context
+        currency, _ = resolve_client_currency_context(client_id)
 
     # Calculate aggregate Tail Risk (P90 and Max Probable Loss)
     total_p90 = 0.0

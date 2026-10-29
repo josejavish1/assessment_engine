@@ -292,7 +292,7 @@ def render_cover(doc, payload: GlobalReportPayload) -> Any:
             p_text_fmt = (
                 p_text.format(company_name=company)
                 if "{company_name}" in p_text
-                else p_text.replace("NTT DATA", company)
+                else p_text
             )
             if idx == 0:
                 r = disclaimer_p1.add_run(p_text_fmt)
@@ -420,9 +420,11 @@ def render_executive_callout(
 
 
 def render_board_memo(
-    doc: Any, board_memo: BoardMemoDraft, client_name: str = ""
+    doc: Any, board_memo: BoardMemoDraft, client_name: str = "", doc_lang: str = "es"
 ) -> Any:
     """Renders a self-contained 1-page Board Memo table for Executive Committee / Board."""
+    from assessment_engine.infrastructure.localization import t
+
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)
     add_heading_paragraph(doc, "Board Memo: Resumen de Decisión Ejecutiva para el Consejo", level=1)
     add_body_paragraph(
@@ -497,6 +499,89 @@ def render_board_memo(
                     r.font.color.rgb = BASE_TEXT_COLOR
 
     autofit_table_to_contents(table)
+    add_spacer(doc, 10)
+
+    fin_strat = getattr(board_memo, "financial_stratification", None)
+    if fin_strat and isinstance(fin_strat, dict):
+        add_spacer(doc, 14)
+        add_heading_paragraph(
+            doc,
+            fin_strat.get("title", t("financial_stratification_title", locale=doc_lang)),
+            level=2,
+        )
+
+        strat_table = doc.add_table(rows=1, cols=3)
+        finalize_table(strat_table)
+
+        headers_strat = [
+            t("strat_header_layer", locale=doc_lang),
+            t("strat_header_amount", locale=doc_lang),
+            t("strat_header_nature", locale=doc_lang),
+        ]
+        for i, h in enumerate(headers_strat):
+            set_cell_text(
+                strat_table.rows[0].cells[i],
+                h,
+                bold=True,
+                font_size=9.5,
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+            )
+            shade_cell(strat_table.rows[0].cells[i], "0072BC")
+            for r in strat_table.rows[0].cells[i].paragraphs[0].runs:
+                r.font.color.rgb = RGBColor(255, 255, 255)
+
+        layers_keys = [
+            ("layer_1_cash_inefficiency", "F4CCCC"),
+            ("layer_2_operational_friction", "FFF2CC"),
+            ("layer_3_actuarial_tail_risk", "F2F2F2"),
+        ]
+
+        for l_key, shade_col in layers_keys:
+            layer_data = fin_strat.get(l_key, {})
+            if layer_data:
+                s_row = strat_table.add_row()
+                set_cell_text(
+                    s_row.cells[0],
+                    layer_data.get("title", ""),
+                    bold=True,
+                    font_size=9.0,
+                    align=WD_ALIGN_PARAGRAPH.LEFT,
+                )
+                shade_cell(s_row.cells[0], shade_col)
+
+                set_cell_text(
+                    s_row.cells[1],
+                    layer_data.get("amount_display", "-"),
+                    bold=True,
+                    font_size=9.5,
+                    align=WD_ALIGN_PARAGRAPH.CENTER,
+                )
+
+                bullets_txt = " • ".join(layer_data.get("bullets", []))
+                set_cell_text(
+                    s_row.cells[2],
+                    bullets_txt,
+                    font_size=8.5,
+                    align=WD_ALIGN_PARAGRAPH.LEFT,
+                )
+
+        autofit_table_to_contents(strat_table)
+        add_spacer(doc, 8)
+
+        roi_data = fin_strat.get("return_on_investment", {})
+        if roi_data:
+            p_roi = doc.add_paragraph()
+            p_roi.paragraph_format.space_before = Pt(6)
+            p_roi.paragraph_format.space_after = Pt(8)
+            run_roi_lbl = p_roi.add_run(roi_data.get("title", t("roi_statement_label", locale=doc_lang)))
+            run_roi_lbl.bold = True
+            run_roi_lbl.font.size = Pt(9.5)
+            run_roi_lbl.font.color.rgb = RGBColor(0, 114, 188)
+
+            run_roi = p_roi.add_run(roi_data.get("body", ""))
+            run_roi.font.size = Pt(9.5)
+            run_roi.font.color.rgb = BASE_TEXT_COLOR
+
     add_spacer(doc, 10)
     doc.add_page_break()
 
@@ -1671,14 +1756,7 @@ def load_payload(payload_path: Path) -> GlobalReportPayload:
     """Loads, normalizes, and validates a global report payload from a JSON file."""
     payload_dict = load_json(payload_path)
     _normalize_global_report_dict(payload_dict)
-
-    try:
-        return GlobalReportPayload.model_validate(payload_dict)
-    except ValidationError as e:
-        logger.info(
-            f"⚠️ Warning: Error de validación de Pydantic en {payload_path} (procediendo con fallback model_construct robustecido): {e}"
-        )
-        return _construct_fallback_payload(payload_dict)
+    return GlobalReportPayload.model_validate(payload_dict)
 
 
 def render_global_report(
@@ -1722,8 +1800,9 @@ def render_global_report(
     render_cover(doc, payload)
     client_name = payload.meta.client
 
+    doc_lang = getattr(payload.meta, "language", "es") or "es"
     if getattr(payload, "board_memo", None):
-        render_board_memo(doc, payload.board_memo, client_name=client_name)
+        render_board_memo(doc, payload.board_memo, client_name=client_name, doc_lang=doc_lang)
 
     if payload.executive_summary:
         render_executive_summary(

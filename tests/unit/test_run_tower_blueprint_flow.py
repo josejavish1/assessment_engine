@@ -93,7 +93,7 @@ async def test_run_tower_blueprint_lifecycle(tmp_path: Path):
             payload["target_state_vision"] = "Arquitectura Cloud Soberana"
             payload["roadmap"] = [{"wave": "Ola 1", "projects": ["Proyecto 1"]}]
             payload["external_dependencies"] = []
-            payload["design_principles"] = ["Principio 1", "Principio 2"]
+            payload["design_principles"] = ["Principio 1", "Principio 2", "Principio 3"]
 
         # 2. Act: Execute with mocked AI generation and external services
         with patch(

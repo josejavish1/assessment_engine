@@ -1,0 +1,71 @@
+"""Automated Governance & Hygiene Test Suite.
+
+Prevents technical debt, hardcoded magic numbers, client/brand leaks, and language guessing.
+"""
+
+from __future__ import annotations
+
+import ast
+import re
+from pathlib import Path
+
+
+def test_no_hardcoded_consulting_brands() -> None:
+    """ASSERTS that zero legacy consulting brands (NTT DATA, Everis) are hardcoded in src/."""
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine"
+    banned_brands = [r"\bNTT DATA\b", r"\bEveris\b", r"\bWhyNttData\b"]
+    
+    violations = []
+    for p in root.rglob("*.py"):
+        # Skip audit probes and tests
+        if "auditor" in p.parts:
+            continue
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        for idx, line in enumerate(text.splitlines(), start=1):
+            sline = line.strip()
+            if sline.startswith("#"):
+                continue
+            for pat in banned_brands:
+                if re.search(pat, sline, re.IGNORECASE):
+                    violations.append(f"{p.relative_to(root)}:L{idx} -> {sline}")
+
+    assert not violations, f"Found hardcoded consulting brands in codebase:\n" + "\n".join(violations)
+
+
+def test_no_currency_guessing_by_language() -> None:
+    """ASSERTS that no file guesses currency based on whether doc_lang == 'es'."""
+    root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine"
+    bad_patterns = [
+        r'currency\s*=\s*["\']€["\']\s+if\s+doc_lang\s*==\s*["\']es["\']',
+        r'if\s+doc_lang\s*==\s*["\']es["\']:\s*currency\s*=\s*["\']€["\']',
+    ]
+
+    violations = []
+    for p in root.rglob("*.py"):
+        if "auditor" in p.parts:
+            continue
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        for idx, line in enumerate(text.splitlines(), start=1):
+            sline = line.strip()
+            for pat in bad_patterns:
+                if re.search(pat, sline):
+                    violations.append(f"{p.relative_to(root)}:L{idx} -> {sline}")
+
+    assert not violations, f"Found currency guessing by language antipattern:\n" + "\n".join(violations)
+
+
+def test_no_hardcoded_client_entities_in_prompts() -> None:
+    """ASSERTS that generic prompts do not contain specific client names or plant locations."""
+    prompts_dir = Path(__file__).resolve().parents[2] / "src" / "assessment_engine" / "domain" / "prompts"
+    banned_entities = [r"\bmolins\b", r"\bsecil\b", r"\bsant vicen[çc]\b"]
+
+    violations = []
+    for p in prompts_dir.rglob("*.yaml"):
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        for idx, line in enumerate(text.splitlines(), start=1):
+            sline = line.strip()
+            for pat in banned_entities:
+                if re.search(pat, sline, re.IGNORECASE):
+                    violations.append(f"{p.name}:L{idx} -> {sline}")
+
+    assert not violations, f"Found client-specific entities in generic prompts:\n" + "\n".join(violations)

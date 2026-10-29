@@ -561,6 +561,8 @@ class OrchestratorBlueprintDraft(VersionedPayload):
     executive_snapshot: ExecutiveSnapshot
     design_principles: list[str] = Field(
         ...,
+        min_length=3,
+        max_length=7,
         description="A set of 3 to 7 cross-cutting architectural design principles governing the solution. These principles must align with the client's established Architectural Profile (e.g., Sovereign Cloud, Cloud-Native).",
     )
     cross_capabilities_analysis: CrossCapabilitiesAnalysis

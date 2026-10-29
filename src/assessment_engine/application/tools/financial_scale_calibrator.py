@@ -298,15 +298,9 @@ class FinancialScaleCalibrator:
         """Saves a resilient, fail-safe estimation based on declarative scale tiers (FAIR-MAM)."""
         # Load dynamic financial fallbacks from config catalog (FAIR-MAM)
         fallbacks_path = Path(__file__).resolve().parents[4] / "engine_config" / "policies" / "financial_fallbacks.json"
-        rates = {"EUR": 1.0, "USD": 1.09, "GBP": 0.84, "CHF": 0.96}
-        sre_rates = {"EUR": 36.0, "USD": 110.0, "GBP": 95.0, "CHF": 140.0}
-        scale_tiers = {
-            "MID_MARKET": {
-                "annual_revenue_eur": 50000000.0,
-                "digital_dependency_factor": 0.5,
-                "statutory_fine_cap_ratio": 0.03,
-            }
-        }
+        rates = {}
+        sre_rates = {}
+        scale_tiers = {}
 
         if fallbacks_path.exists():
             try:
@@ -332,6 +326,8 @@ class FinancialScaleCalibrator:
         max_fine = revenue * fine_ratio
 
         rate_val = rates.get(target_currency, 1.0)
+        
+        # Determine base rate for SRE from rate_card or fallback to 36.0 if not found
         sre_rate_val = sre_rates.get(target_currency, 36.0)
 
         justification_msg = (

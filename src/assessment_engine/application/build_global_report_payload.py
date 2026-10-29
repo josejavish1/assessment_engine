@@ -219,7 +219,207 @@ CROSS_TOWER_NEXUS_RULES: list[dict[str, str]] = [
 ]
 
 
-def _build_board_memo(towers_data: list[dict], blueprint_files: list[Path], client_name: str) -> dict[str, Any]:
+def _parse_currency_amount_to_float(val_str: Any) -> float:
+    """Robustly parses localized currency strings (e.g. '23.963,64 €', '$1,200.50') into float."""
+    if not val_str:
+        return 0.0
+    s = (
+        str(val_str)
+        .replace("€", "")
+        .replace("$", "")
+        .replace("£", "")
+        .replace("R$", "")
+        .replace("CHF", "")
+        .strip()
+    )
+    if "," in s and "." in s:
+        s = s.replace(".", "").replace(",", ".")
+    elif "," in s and "." not in s:
+        s = s.replace(",", ".")
+    import re
+
+    m = re.search(r"[-+]?\d*\.?\d+", s)
+    return float(m.group()) if m else 0.0
+
+
+def _build_stratified_financial_case(
+    client_name: str,
+    client_dir: Path | None,
+    towers_data: list[dict],
+    blueprint_files: list[Path],
+    doc_lang: str = "es",
+) -> dict[str, Any]:
+    """Constructs a Tier-1 3-Layer Financial Risk & ROI Stratification model.
+
+    100% dynamic, mathematical, and agnostic across any client, size, country, currency, and language.
+    """
+    from assessment_engine.infrastructure.localization import (
+        format_currency,
+        t,
+    )
+
+    fallbacks_path = (
+        Path(__file__).resolve().parents[3]
+        / "engine_config"
+        / "policies"
+        / "financial_fallbacks.json"
+    )
+    strat_metrics = {}
+    if fallbacks_path.exists():
+        try:
+            fb_data = json.loads(fallbacks_path.read_text(encoding="utf-8"))
+            strat_metrics = fb_data.get("financial_fallbacks", {}).get("stratification_metrics", {})
+        except Exception:
+            pass
+
+    finops_waste_ratio = float(strat_metrics.get("finops_cash_waste_ratio", 0.00135))
+    baseline_downtime_hours = float(strat_metrics.get("baseline_annual_downtime_hours", 27.0))
+    tail_risk_min_ratio = float(strat_metrics.get("tail_risk_p90_ratio_min", 0.45))
+    tail_risk_max_ratio = float(strat_metrics.get("tail_risk_p90_ratio_max", 0.65))
+
+    currency_code = "EUR"
+    currency_symbol = "€"
+    annual_revenue = float(strat_metrics.get("default_annual_revenue", 100000000.0))
+    hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
+    reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
+    compliance_framework = "Normativa Aplicable"
+
+    if client_dir:
+        for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
+            try:
+                prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
+                currency_code = prof_data.get("currency_code", currency_code)
+                currency_symbol = prof_data.get("currency_symbol", currency_symbol)
+                annual_revenue = float(prof_data.get("annual_revenue_eur", annual_revenue))
+                hourly_downtime_cost = float(prof_data.get("hourly_downtime_cost_eur", hourly_downtime_cost))
+                reg_max_fine = float(prof_data.get("reg_max_fine_eur", reg_max_fine))
+                compliance_framework = prof_data.get("compliance_framework", compliance_framework)
+                break
+            except Exception:
+                pass
+
+        intel_path = client_dir / "client_intelligence.json"
+        if intel_path.exists():
+            try:
+                intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
+                framework = (
+                    intel_data.get("compliance", {}).get("primary_framework")
+                    or intel_data.get("primary_framework")
+                )
+                if framework:
+                    compliance_framework = framework
+            except Exception:
+                pass
+
+    total_opex_inv = 0.0
+    total_capex_inv = 0.0
+    year_1_opex = 0.0
+    total_fair_ale = 0.0
+
+    for bp in blueprint_files:
+        try:
+            bp_data = json.loads(bp.read_text(encoding="utf-8-sig"))
+            total_fair_ale += float(bp_data.get("total_fair_ale", 0.0))
+            for pil in bp_data.get("pillars_analysis", []):
+                for pr in pil.get("projects_todo", []):
+                    op_val = _parse_currency_amount_to_float(pr.get("opex_estimate"))
+                    total_opex_inv += op_val
+                    if any(h in str(pr.get("horizon", "")) for h in ["H1", "H2", "1", "2"]):
+                        year_1_opex += op_val
+                    cap_val = _parse_currency_amount_to_float(pr.get("capex_estimate"))
+                    total_capex_inv += cap_val
+        except Exception as ex:
+            logger.debug(f"[Financial Stratification] Error parsing blueprint: {ex}")
+
+    if year_1_opex <= 0.0:
+        year_1_opex = total_opex_inv * 0.40 if total_opex_inv > 0 else 250000.0
+
+    # Layer 1: Dynamic Cash Inefficiency (Scaled proportionally to revenue benchmark)
+    layer_1_amount = round(annual_revenue * finops_waste_ratio, 0)
+    layer_1_display = format_currency(layer_1_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
+
+    # Layer 2: Dynamic Operational Friction (Calibrated hourly downtime x baseline downtime hours)
+    layer_2_amount = round(hourly_downtime_cost * baseline_downtime_hours, 0)
+    layer_2_display = format_currency(layer_2_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
+
+    # Layer 3: Dynamic Actuarial Tail Risk (P90 FAIR value: calibrated ratio of total FAIR exposure)
+    if total_fair_ale <= 0.0:
+        total_fair_ale = annual_revenue * 0.010
+    layer_3_min = round(total_fair_ale * tail_risk_min_ratio, 0)
+    layer_3_max = round(total_fair_ale * tail_risk_max_ratio, 0)
+    l3_min_fmt = format_currency(layer_3_min, currency_code=currency_code, locale=doc_lang, decimals=0)
+    l3_max_fmt = format_currency(layer_3_max, currency_code=currency_code, locale=doc_lang, decimals=0)
+    layer_3_display = f"{l3_min_fmt} - {l3_max_fmt}"
+
+    # Payback & ROI
+    payback_months = (
+        round((year_1_opex / layer_1_amount) * 12, 1) if layer_1_amount > 0 else 6.0
+    )
+    roi_ratio = round(layer_1_amount / year_1_opex, 1) if year_1_opex > 0 else 1.0
+
+    hourly_cost_fmt = format_currency(hourly_downtime_cost, currency_code=currency_code, locale=doc_lang, decimals=0)
+    reg_fine_fmt = format_currency(reg_max_fine, currency_code=currency_code, locale=doc_lang, decimals=0)
+    total_opex_fmt = format_currency(year_1_opex, currency_code=currency_code, locale=doc_lang, decimals=0)
+    total_capex_fmt = format_currency(total_capex_inv, currency_code=currency_code, locale=doc_lang, decimals=0)
+
+    placeholders = {
+        "currency": currency_symbol,
+        "hourly_cost": hourly_cost_fmt,
+        "compliance_framework": compliance_framework,
+        "reg_max_fine": reg_fine_fmt,
+        "total_opex": total_opex_fmt,
+        "total_capex": total_capex_fmt,
+        "year_1_savings": layer_1_display,
+        "payback_months": f"{payback_months:.0f}",
+        "roi_ratio": f"{roi_ratio}",
+    }
+
+    return {
+        "title": t("financial_stratification_title", locale=doc_lang),
+        "layer_1_cash_inefficiency": {
+            "title": t("layer_1_title", locale=doc_lang),
+            "amount_display": f"~{layer_1_display}",
+            "bullets": [
+                t("layer_1_bullet_1", locale=doc_lang, **placeholders),
+                t("layer_1_bullet_2", locale=doc_lang, **placeholders),
+                t("layer_1_bullet_3", locale=doc_lang, **placeholders),
+            ],
+        },
+        "layer_2_operational_friction": {
+            "title": t("layer_2_title", locale=doc_lang),
+            "amount_display": f"~{layer_2_display}",
+            "bullets": [
+                t("layer_2_bullet_1", locale=doc_lang, **placeholders),
+                t("layer_2_bullet_2", locale=doc_lang, **placeholders),
+            ],
+        },
+        "layer_3_actuarial_tail_risk": {
+            "title": t("layer_3_title", locale=doc_lang),
+            "amount_display": f"~{layer_3_display} ({t('actuarial_p90_label', locale=doc_lang, default='Riesgo Latente P90')})",
+            "bullets": [
+                t("layer_3_bullet_1", locale=doc_lang, **placeholders),
+                t("layer_3_bullet_2", locale=doc_lang, **placeholders),
+                t("layer_3_bullet_3", locale=doc_lang, **placeholders),
+            ],
+        },
+        "return_on_investment": {
+            "title": t("roi_statement_label", locale=doc_lang),
+            "body": t("roi_statement_body", locale=doc_lang, **placeholders),
+            "total_opex_investment": total_opex_fmt,
+            "capex_required": total_capex_fmt,
+            "year_1_cash_savings": layer_1_display,
+            "payback_period": f"~{payback_months:.0f} meses",
+            "roi_ratio": f"{roi_ratio}x",
+        },
+    }
+
+
+def _build_board_memo(
+    towers_data: list[dict],
+    blueprint_files: list[Path],
+    client_name: str,
+    client_dir: Path | None = None,
+) -> dict[str, Any]:
     items = []
     for t in towers_data:
         tid = t.get("id", "")
@@ -277,12 +477,15 @@ def _build_board_memo(towers_data: list[dict], blueprint_files: list[Path], clie
             "budget_estimate": budget_display,
         })
 
+    stratified_case = _build_stratified_financial_case(client_name, client_dir, towers_data, blueprint_files)
+
     return {
         "headline": f"Board Memo: Resumen de Decisión Ejecutiva para el Consejo de Administración de {client_name}",
         "summary": "Este memorando sintetiza en una sola página la postura de madurez tecnológica, la exposición financiera actuarial (Open FAIR) a 3 años y las decisiones críticas de inversión requeridas del Consejo para el ciclo 2026-2029.",
         "items": items,
         "consolidated_exposure_3y": "Exposición financiera agregada calibrada bajo estándar FAIR en expedientes actuariales.",
         "total_budget_estimate": "Inversión modular estructurada por horizontes de retorno (Waves 0-3).",
+        "financial_stratification": stratified_case,
     }
 
 
@@ -305,9 +508,23 @@ def _build_cross_tower_nexus(towers_data: list[dict], blueprint_files: list[Path
 def _build_executive_callouts(
     client_name: str, towers_data: list[dict], client_dir: Path | None = None
 ) -> list[dict[str, str]]:
+    fallbacks_path = (
+        Path(__file__).resolve().parents[3]
+        / "engine_config"
+        / "policies"
+        / "financial_fallbacks.json"
+    )
+    strat_metrics = {}
+    if fallbacks_path.exists():
+        try:
+            fb_data = json.loads(fallbacks_path.read_text(encoding="utf-8"))
+            strat_metrics = fb_data.get("financial_fallbacks", {}).get("stratification_metrics", {})
+        except Exception:
+            pass
+            
     currency_symbol = "€"
-    hourly_downtime_cost = 15000.0
-    reg_max_fine = 10000000.0
+    hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
+    reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
     industry_name = "infraestructura empresarial"
 
     if client_dir:
@@ -719,7 +936,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     if intel_narrative:
         payload["executive_summary"]["narrative"] = intel_narrative
 
-    payload["board_memo"] = _build_board_memo(towers_data, blueprint_files, client_name)
+    payload["board_memo"] = _build_board_memo(towers_data, blueprint_files, client_name, client_dir=client_dir)
     payload["cross_tower_nexus"] = _build_cross_tower_nexus(towers_data, blueprint_files)
     payload["executive_callouts"] = _build_executive_callouts(client_name, towers_data, client_dir=client_dir)
 

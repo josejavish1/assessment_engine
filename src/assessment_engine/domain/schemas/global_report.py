@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .common import VersionedPayload
 
@@ -144,7 +144,7 @@ class TowerBottomLineItem(BaseModel):
 
     id: str
     name: str
-    score: str
+    score: Union[str, float]
     band: str
     status_color: str
     bottom_line: str
@@ -254,9 +254,37 @@ class ExecutionRoadmapDraft(BaseModel):
 class ExecutiveDecisionItem(BaseModel):
     """Represent a single item requiring an executive decision."""
 
-    decision_type: str
-    action_required: str
-    impact_if_delayed: str
+    decision_type: str = "Decisión Estratégica"
+    action_required: str = ""
+    impact_if_delayed: str = "Impacto en cronograma de transformación."
+    decision: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _coerce_flat_string(cls, data: Any) -> Any:
+        if isinstance(data, str):
+            return {
+                "decision_type": "Decisión Estratégica",
+                "action_required": data,
+                "impact_if_delayed": "Impacto en cronograma de transformación.",
+                "decision": data,
+            }
+        if isinstance(data, dict):
+            d = data.copy()
+            if not d.get("action_required") and d.get("decision"):
+                d["action_required"] = d["decision"]
+            if not d.get("decision") and d.get("action_required"):
+                d["decision"] = d["action_required"]
+            if not d.get("decision_type"):
+                d["decision_type"] = d.get("type") or "Decisión Estratégica"
+            if not d.get("impact_if_delayed"):
+                d["impact_if_delayed"] = (
+                    d.get("delay_impact")
+                    or d.get("impact")
+                    or "Impacto en cronograma de transformación."
+                )
+            return d
+        return data
 
 
 class ExecutiveDecisionsDraft(BaseModel):
@@ -285,6 +313,7 @@ class BoardMemoDraft(BaseModel):
     items: list[BoardMemoItem]
     consolidated_exposure_3y: str
     total_budget_estimate: str
+    financial_stratification: Optional[dict[str, Any]] = None
 
 
 class CrossTowerDependencyItem(BaseModel):

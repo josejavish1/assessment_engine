@@ -118,9 +118,9 @@ def _normalize_burning_platform(refined: dict[str, Any]) -> None:
 def _normalize_tower_bottom_lines(
     refined: dict[str, Any], raw_findings: dict[str, Any]
 ) -> None:
-    """Ensure all tower bottom lines have scores, bands, and status colors."""
+    """Ensure all tower bottom lines have id, name, score (as string), band, and status colors."""
     original_tbl = {
-        orig.get("tower_id") or orig.get("tower_name"): orig
+        (orig.get("id") or orig.get("tower_id") or orig.get("name") or orig.get("tower_name")): orig
         for orig in raw_findings.get("tower_bottom_lines", [])
         if isinstance(orig, dict)
     }
@@ -130,16 +130,24 @@ def _normalize_tower_bottom_lines(
     ):
         for item in refined["tower_bottom_lines"]:
             if isinstance(item, dict):
-                key = item.get("tower_id") or item.get("tower_name")
+                key = item.get("id") or item.get("tower_id") or item.get("name") or item.get("tower_name")
                 orig_match = original_tbl.get(key, {})
+                if "id" not in item:
+                    item["id"] = item.get("tower_id") or orig_match.get("id") or "T1"
+                if "name" not in item:
+                    item["name"] = item.get("tower_name") or orig_match.get("name") or "Infraestructura General"
                 if "score" not in item or item["score"] is None:
                     item["score"] = orig_match.get("score", 0.0)
                 if "band" not in item or item["band"] is None:
                     item["band"] = orig_match.get("band", "Unassessed")
                 if "status_color" not in item or item["status_color"] is None:
+                    try:
+                        score_val = float(item["score"])
+                    except ValueError:
+                        score_val = 0.0
                     item["status_color"] = orig_match.get(
                         "status_color",
-                        "amber" if float(item.get("score", 0.0)) < 3.0 else "green",
+                        "amber" if score_val < 3.0 else "green",
                     )
 
 

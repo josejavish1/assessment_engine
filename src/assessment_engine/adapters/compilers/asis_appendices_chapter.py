@@ -495,7 +495,7 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
                 formatted_p = (
                     p_text.strip().format(company_name=company_name)
                     if "{company_name}" in p_text
-                    else p_text.strip().replace("NTT DATA", company_name)
+                    else p_text.strip()
                 )
                 add_body_paragraph(
                     doc,

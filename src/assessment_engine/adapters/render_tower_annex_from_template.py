@@ -53,17 +53,17 @@ from assessment_engine.infrastructure.localization import load_locales_catalog, 
 WORD_RENDER_MODE_ENV = "AE_WORD_RENDER_MODE"
 
 ANNEX_CANONICAL_HEADING_SPECS = [
-    ("Resumen ejecutivo de la torre", "annex_heading_executive_summary", 1),
-    ("Perfil de madurez por pilar", "annex_heading_maturity_profile", 1),
-    ("AS-IS resumido", "annex_heading_asis_summary", 1),
-    ("Riesgos principales", "annex_heading_risks_summary", 1),
-    ("Estado objetivo y brechas", "annex_heading_target_vision_gap", 1),
-    ("Iniciativas prioritarias", "annex_heading_initiatives", 1),
-    ("Conclusión", "annex_heading_conclusion", 1),
-    ("Gráfico radial", "annex_heading_radar_chart", 2),
-    ("Detalle compacto por pilar", "annex_heading_compact_pillar_detail", 2),
-    ("Tabla de brechas por pilar", "annex_heading_gap_matrix", 2),
-    ("Fichas de iniciativas priorizadas", "annex_heading_initiative_fact_sheets", 2),
+    ("annex_heading_executive_summary", 1),
+    ("annex_heading_maturity_profile", 1),
+    ("annex_heading_asis_summary", 1),
+    ("annex_heading_risks_summary", 1),
+    ("annex_heading_target_vision_gap", 1),
+    ("annex_heading_initiatives", 1),
+    ("annex_heading_conclusion", 1),
+    ("annex_heading_radar_chart", 2),
+    ("annex_heading_compact_pillar_detail", 2),
+    ("annex_heading_gap_matrix", 2),
+    ("annex_heading_initiative_fact_sheets", 2),
 ]
 
 
@@ -343,34 +343,11 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
     enable_update_fields_on_open(doc)
 
     catalog = load_locales_catalog()
-    heading_level_1 = {
-        "Desarrollo ampliado",
-        "1. AS-IS detallado",
-        "2. Riesgos detallados",
-        "3. Estado objetivo detallado",
-        "4. Brechas detalladas",
-        "5. Iniciativas priorizadas detalladas",
-        "6. Cierre ampliado",
-    }
-    heading_level_2 = {
-        "Fortaleza principal",
-        "Brecha principal",
-        "Cuello de botella",
-        "Fortalezas clave",
-        "Brechas clave",
-        "Implicaciones operativas clave",
-        "Principios / capacidades objetivo",
-        "Mensaje ejecutivo final",
-        "Áreas prioritarias de actuación",
-        "Fortalezas observadas",
-        "Brechas observadas",
-        "Implicaciones operativas",
-        "Lectura transversal de gaps",
-        "Principios de arquitectura y operación",
-        "Implicaciones para el modelo operativo",
-    }
+    heading_level_1 = set()
+    heading_level_2 = set()
 
-    for template_es_title, loc_key, level in ANNEX_CANONICAL_HEADING_SPECS:
+    for loc_key, level in ANNEX_CANONICAL_HEADING_SPECS:
+        template_es_title = t(loc_key, "es")
         if level == 1:
             heading_level_1.add(template_es_title)
             for lang_code in catalog:
@@ -534,9 +511,10 @@ def clean_brackets_and_consultant_notes(doc, payload: dict) -> Any:
 
     doc_lang = str(meta.get("language") or meta.get("doc_lang") or "es").lower()
     if doc_lang != "es":
-        for template_es_title, loc_key, _level in ANNEX_CANONICAL_HEADING_SPECS:
+        for loc_key, _level in ANNEX_CANONICAL_HEADING_SPECS:
+            template_es_title = t(loc_key, "es")
             translated_title = t(loc_key, doc_lang)
-            if translated_title and translated_title != loc_key:
+            if translated_title and translated_title != loc_key and template_es_title:
                 replacements[template_es_title] = translated_title
 
     source_client = (
