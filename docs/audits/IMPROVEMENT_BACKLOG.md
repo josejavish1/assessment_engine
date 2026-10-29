@@ -15,38 +15,27 @@ verification_mode: editorial
 
 ## 1. Introducción
 
-Este documento contiene el backlog priorizado de tareas de mejora, derivado de los hallazgos de la auditoría en [`AUDIT_RESULTS.md`](./AUDIT_RESULTS.md). Cada elemento de esta lista ha sido clasificado por prioridad, asociando notas de resolución para aquellos hitos **completamente cerrados y validados** durante nuestra gran campaña de saneamiento masivo.
-
-## 2. Prioridades
-
-La priorización se basa en el impacto y el esfuerzo estimado:
-
-*   **P1 (Crítico):** Arreglos que desbloquean la velocidad de desarrollo, corrigen información peligrosamente incorrecta o mejoran significativamente la incorporación de nuevos miembros.
-*   **P2 (Importante):** Mejoras que aumentan la claridad y completitud de la documentación core.
-*   **P3 (Recomendado):** Tareas de pulido y completitud que mejoran la calidad de vida del desarrollador.
+Este documento contiene exclusivamente el backlog activo de tareas de ingeniería pendientes del motor `assessment_engine`, derivado de la evaluación formal en [`AUDIT_RESULTS.md`](./AUDIT_RESULTS.md). Todas las tareas cerradas han sido verificadas en el histórico de commits.
 
 ---
 
-## 3. Backlog de Ingeniería y Resoluciones
+## 2. Backlog Activo de Tareas Pendientes
 
-| Prioridad | Área | Título de la Tarea | Descripción / Estado de Resolución | Hallazgo Relacionado |
-|---|---|---|---|---|
-| **P1** | FinOps | Context Caching Nativo (Vertex AI) | Implementar caché de contexto para el ADN estratégico y contexto de negocio en `run_tower_pipeline.py`. | Roadmap Fase 1 |
-| **P1** | FinOps | Token Throttling por Rol | **[RESOLVED & CLOSED]** Configurados límites estrictos de `max_output_tokens` en `model_profiles.json` según el rol de agente para evitar alucinaciones. | Roadmap Fase 1 |
-| **P1** | Seguridad | Sandboxing Estricto de Ejecución | Migrar el agente ejecutor para que las herramientas (`run_command`) se ejecuten dentro de contenedores efímeros sin red (Docker/gVisor). | Estrategia DevSecOps 2026 |
-| **P1** | Documentación | Actualizar las instrucciones de instalación en `docs/operations/installation.md` | **[RESOLVED & CLOSED]** Unificadas de forma aséptica todas las instrucciones de instalación con `.venv` y `pyproject.toml`, eliminando `PYTHONPATH`. | `AUDIT_RESULTS.md` |
-| **P1** | Código | Añadir Docstrings a los Pipelines Principales | **[RESOLVED & CLOSED]** Añadidos y normalizados todos los docstrings de módulo y función en `run_tower_pipeline.py`, `run_global_pipeline.py`, y `run_commercial_pipeline.py` en formato PEP 257 / Google-style limpio. | `AUDIT_RESULTS.md` |
-| **P2** | Operaciones | Resiliencia de Arranque (Boot Persistence) | Configurar `loginctl enable-linger` para que los servicios arranquen automáticamente en el boot sin requerir login interactivo. | Fiabilidad de Infraestructura |
-| **P2** | Robustez de la Plataforma | Resiliencia de Pipeline y Contratos Estrictos | Implementar Checkpointing, exponential backoff, y contratos estrictos con Pydantic para el output de la IA. | Escalabilidad de Día 2 |
-| **P2** | Clean Architecture | Erradicación de Entropía y Convenciones Estrictas | **[RESOLVED & CLOSED]** Purgados backups manuales `.tar.gz`, eliminada carpeta `scripts/`, renombradas plantillas `.docx` sin números de versión e inyección aislada en `working/`. | Análisis de Entropía |
-| **P2** | Clean Code | Refactorización Sistémica Incremental | Refactorizar `src/` aplicando "Boy Scout Rule", eliminando "God Scripts" y código zombi. | Análisis de Deuda Técnica |
-| **P2** | Clean Code | Erradicación de "Swallowed Exceptions" | Reemplazar bloques `except Exception` vacíos por excepciones tipadas e integradas con Structured Logging JSON. | Análisis de Deuda Técnica |
-| **P2** | DevSecOps | Auto-Curación de Vulnerabilidades SAST | Integrar Bandit en `VerificationAgent` y conectar alertas al `Agente Doctor` para auto-reparación en `Shadow Workspace`. | Estrategia DevSecOps 2026 |
-| **P2** | DevSecOps | Bloqueo Estricto de Secretos | Integrar TruffleHog en el validador del orquestador para bloquear commits que filtren credenciales. | Estrategia DevSecOps 2026 |
-| **P2** | Documentación | Completar el README en `docs/architecture/README.md` | **[RESOLVED & CLOSED]** Rediseñado por completo el README para indexar la arquitectura actual con el formato estructurado Diataxis y mapas de lectura. | `AUDIT_RESULTS.md` |
-| **P2** | Documentación | Validar y anotar el diagrama en `docs/SYSTEM_ARCHITECTURE.md` | **[RESOLVED & CLOSED]** Actualizada la cabecera Front-Matter, anotado el diagrama con RAGE e infraestructuras latentes de forma aséptica. | `AUDIT_RESULTS.md` |
-| **P2** | Código | Mejorar el Manejo de Errores en los Pipelines | Implementar manejo de errores robusto en los scripts de pipelines ante falta de artefactos de entrada. | `AUDIT_RESULTS.md` |
-| **P3** | DevSecOps | Escudo Anti-Inyección (Prompt Shield) | Añadir middleware de sanitización (NeMo Guardrails ligero) en la carga de documentos para prevenir Jailbreaks. | Estrategia DevSecOps 2026 |
-| **P3** | Documentación | Renderizado de Documentación | Configurar MkDocs Material para la carpeta `docs/` para mejorar la lectura visual corporativa. | Deuda Estética |
-| **P3** | Documentación | Añadir metadatos de propiedad a los documentos | **[RESOLVED & CLOSED]** Auditados todos los Markdown activos de la plataforma para asegurar que cuentan con Front-Matter estricto en estado Verified. | `AUDIT_RESULTS.md` |
-| **P3** | Código | Añadir Docstrings a `config_loader.py` | **[RESOLVED & CLOSED]** Agregados docstrings de alto nivel, type annotations y especificaciones completas a todas las funciones de `config_loader.py`. | `AUDIT_RESULTS.md` |
+| Prioridad | Área | Título de la Tarea | Alcance Técnico Requerido | Impacto en la Plataforma |
+| :---: | :--- | :--- | :--- | :--- |
+| **P1** | Seguridad | **Sandboxing Estricto de Ejecución de Herramientas** | Encapsular la ejecución de subprocesos y herramientas CLI (`run_command`) dentro de micro-contenedores efímeros sin acceso a red (Docker/gVisor). | Aislamiento estricto y mitigación de escape de entorno en ejecuciones multi-tenant. |
+| **P2** | Operaciones | **Resiliencia de Arranque (Boot Persistence)** | Configurar `loginctl enable-linger` en el host Linux para que los daemons supervisores en segundo plano persistan automáticamente tras reinicios del sistema sin requerir sesión interactiva. | Continuidad operativa 24/7 y SLA en entornos de producción. |
+| **P2** | DevSecOps | **Auto-Curación SAST (Bandit)** | Integrar el escáner de seguridad estática `bandit` en la compuerta de CI y acoplarlo al agente de verificación para auto-reparación asistida. | Prevención proactiva de patrones de código vulnerables en Python. |
+| **P2** | DevSecOps | **Bloqueo Estricto de Secretos (TruffleHog)** | Integrar TruffleHog en el hook de pre-commit y en el pipeline de CI para bloquear de forma determinista la inserción accidental de credenciales o tokens. | Blindaje criptográfico de la cadena de suministro. |
+| **P2** | Clean Code | **Erradicación de "Swallowed Exceptions"** | Sustituir bloques residuales `except Exception: pass` por excepciones fuertemente tipadas y trazabilidad con structured logging JSON. | Observabilidad forense y eliminación de fallos silenciosos. |
+| **P2** | Robustez | **Manejo de Errores de Entrada en Pipelines** | Añadir validación temprana y mensajes de diagnóstico específicos ante la ausencia de archivos de entrada (`case_input.json`, `findings.json`). | Experiencia de operador y diagnóstico inmediato de fallos de entrada. |
+| **P3** | DevSecOps | **Escudo Anti-Inyección (Prompt Shield)** | Implementar un middleware de sanitización semántica ligero en la ingesta de documentos para bloquear intentos de inyección de prompts (*Jailbreaks*). | Protección perimetral de modelos cognitivos frente a documentos no confiables. |
+| **P3** | Documentación | **Renderizado Web Corporativo (MkDocs Material)** | Configurar el generador estático MkDocs Material para compilar el árbol `/docs` en un portal HTML interactivo y navegable. | Mejora de lectura ejecutiva y experiencia de auditoría externa. |
+
+---
+
+## 3. Iniciativas Desestimadas por Arquitectura Soberana
+
+| Prioridad | Área | Título de la Iniciativa | Razón Técnica de Desestimación |
+| :---: | :--- | :--- | :--- |
+| **P1** | FinOps | **Context Caching Nativo (Google Vertex AI)** | **[DECLINED BY ARCHITECTURE]** Descartado formalmente para preservar la **Soberanía y Portabilidad Tecnológica (Zero Lock-in)**. Acoplar el pipeline a la API propietaria `cachedContent` violaría la neutralidad del motor frente a otros proveedores (OpenAI, Anthropic, vLLM local). |
