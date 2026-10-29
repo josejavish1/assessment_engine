@@ -160,15 +160,27 @@ def main(argv: list[str] | None = None) -> None:
             weight="bold",
         )
 
+    from assessment_engine.infrastructure.localization import t
+    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
+
+    doc_lang = str(payload.get("meta", {}).get("language") or "en").lower()
+
     # Positions the legend, containing tower names, to the right of the chart and sets an optimized font size to ensure maximum readability without obscuring data points.
-    tower_names = [f"{t.get('id')}: {t.get('name')}" for t in towers]
+    tower_names = []
+    for t_item in towers:
+        t_id = t_item.get("id", "")
+        num, dom = CANONICAL_TOWER_NAMES.get(t_id, ("", t_item.get("name", "")))
+        dom_clean = dom.replace("_", " ") if dom else t_item.get("name", "")
+        tower_names.append(f"{t_id}: {dom_clean}")
+
     plt.figtext(
         0.72, 0.5, "\n\n".join(tower_names), fontsize=13, color="#333333", va="center"
     )
 
+    chart_title = t("global_radar_chart_title", locale=doc_lang)
     # Configures the primary chart title with a 24pt font size and center alignment to establish a clear visual hierarchy.
     plt.suptitle(
-        "Global Technology Maturity Map",
+        chart_title,
         size=24,
         color="#1f77b4",
         x=0.5,

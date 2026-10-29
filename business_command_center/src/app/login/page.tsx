@@ -178,6 +178,7 @@ export default function LoginPage() {
                   <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                   <input
                     type="text"
+                    aria-label="Full Name"
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -196,6 +197,7 @@ export default function LoginPage() {
                 <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                 <input
                   type="email"
+                  aria-label="Corporate Email"
                   required
                   autoFocus
                   value={email}
@@ -214,6 +216,7 @@ export default function LoginPage() {
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                 <input
                   type="password"
+                  aria-label="Password"
                   required
                   minLength={8}
                   value={password}

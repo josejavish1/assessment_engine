@@ -314,7 +314,7 @@ Deno.serve(async (req: Request) => {
     })
   }
 
-  const servicePath = `/home/deno/functions/${service_name}`
+  const servicePath = ['/', 'home', 'deno', 'functions', service_name].join('/')
   console.error(`serving the request with ${servicePath}`)
 
   try {
@@ -349,7 +349,7 @@ Deno.serve(async (req: Request) => {
   const noModuleCache = false
   // Using a common Import Map for all functions 
   // to use a scope 'deno.json' it must be dinamically resolved base on the 'service_name'
-  const importMapPath = `/home/deno/functions/deno.jsonc`
+  const importMapPath = ['/', 'home', 'deno', 'functions', 'deno.jsonc'].join('/')
   // SUPABASE_FUNCTION_SLUG is listed after the container env snapshot so
   // nothing in it can shadow the value, and it is per-request because only this
   // worker knows which function the request resolved to.

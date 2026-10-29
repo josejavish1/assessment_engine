@@ -1,9 +1,9 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793311139,
-  "global_grade": "A",
-  "global_score": 99.1,
+  "timestamp": 1793312077,
+  "global_grade": "A+",
+  "global_score": 100.0,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
@@ -35,10 +35,10 @@
       "score_pct": 99.6,
       "passed": true,
       "metrics": {
-        "prod_sloc": 46489,
+        "prod_sloc": 46603,
         "test_sloc": 19860,
         "test_to_code_ratio": 0.43,
-        "maintainability_index_sei": 33.4,
+        "maintainability_index_sei": 33.3,
         "typed_functions_pct": 90.6,
         "docstring_coverage_pct": 80.0,
         "max_cognitive_complexity": 227,
@@ -115,7 +115,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 1258,
+          "line_number": 1315,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'render_tobe_domain_architectures': CoC = 54 (cognitive limit <= 45)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -414,7 +414,7 @@
           "file_path": "src/assessment_engine/application/generate_executive_roadmap_image.py",
           "line_number": 21,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'main': CoC = 18 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'main': CoC = 19 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -531,7 +531,7 @@
           "file_path": "src/assessment_engine/application/generate_global_radar_chart.py",
           "line_number": 49,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'main': CoC = 19 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'main': CoC = 23 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -682,7 +682,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/docx_render_utils.py",
-          "line_number": 1461,
+          "line_number": 1465,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'remove_page_break_only_paragraphs': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -729,7 +729,7 @@
           "file_path": "src/assessment_engine/infrastructure/runtime_env.py",
           "line_number": 138,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'run_vertex_ai_preflight': CoC = 22 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'run_vertex_ai_preflight': CoC = 21 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -817,7 +817,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/text_utils.py",
-          "line_number": 229,
+          "line_number": 235,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'compress_executive_paragraph': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -826,7 +826,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/infrastructure/text_utils.py",
-          "line_number": 229,
+          "line_number": 235,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'compress_executive_paragraph': CoC = 27 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -1149,187 +1149,15 @@
     },
     "browser_accessibility": {
       "probe_name": "Accessibility & UI Standards (WCAG 2.2 AA / EAA)",
-      "score_pct": 47.2,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "ui_files_scanned": 95,
-        "findings_count": 19,
-        "high_severity_a11y_count": 5,
-        "wcag_compliance_level": "No Conforme"
+        "findings_count": 0,
+        "high_severity_a11y_count": 0,
+        "wcag_compliance_level": "WCAG 2.2 AA Conforme"
       },
-      "findings": [
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/page.tsx",
-          "line_number": 451,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/page.tsx",
-          "line_number": 942,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/app/page.tsx",
-          "line_number": 987,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='range'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/app/page.tsx",
-          "line_number": 1005,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='range'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/(admin)/admin/page.tsx",
-          "line_number": 166,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/(admin)/admin/page.tsx",
-          "line_number": 183,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/login/page.tsx",
-          "line_number": 179,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/login/page.tsx",
-          "line_number": 197,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='email'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/app/login/page.tsx",
-          "line_number": 215,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='password'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/features/reports/ReportViewer.tsx",
-          "line_number": 293,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/features/clients/NewClientModal.tsx",
-          "line_number": 127,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/features/clients/NewClientModal.tsx",
-          "line_number": 144,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/features/clients/NewClientModal.tsx",
-          "line_number": 104,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Interactive <button> lacks accessible text or 'aria-label' attribute",
-          "recommendation": "Add visible text or 'aria-label=\"Action\"' attribute for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/components/ClientPortalView.tsx",
-          "line_number": 523,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/components/ClientHubView.tsx",
-          "line_number": 160,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='text'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/components/NttDataAuthGate.tsx",
-          "line_number": 138,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='email'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "LOW",
-          "file_path": "business_command_center/src/components/NttDataAuthGate.tsx",
-          "line_number": 154,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='password'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/components/KnowledgeHubModal.tsx",
-          "line_number": 215,
-          "rule_id": "A11Y-INPUT-NO-LABEL",
-          "message": "Form control <input type='file'> lacks associated <label> or 'aria-label' attribute",
-          "recommendation": "Link with '<label htmlFor=\"id\">' or provide 'aria-label=\"Description\"' for screen readers."
-        },
-        {
-          "category": "ACCESSIBILITY",
-          "severity": "HIGH",
-          "file_path": "business_command_center/src/components/KnowledgeHubModal.tsx",
-          "line_number": 188,
-          "rule_id": "A11Y-BUTTON-NO-NAME",
-          "message": "Interactive <button> lacks accessible text or 'aria-label' attribute",
-          "recommendation": "Add visible text or 'aria-label=\"Action\"' attribute for screen readers."
-        }
-      ]
+      "findings": []
     },
     "contract_drift": {
       "probe_name": "Contract Integrity & Schema Drift (OpenAPI 3.1 / Pydantic)",
@@ -1386,44 +1214,16 @@
     },
     "structural_smells": {
       "probe_name": "Structural Smells & Zero-Entropy (SWEBOK v4 / Clean Code)",
-      "score_pct": 60.0,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "scanned_files": 355,
-        "entropy_violations_count": 2,
-        "long_parameter_funcs_count": 1,
+        "entropy_violations_count": 0,
+        "long_parameter_funcs_count": 0,
         "god_classes_count": 0,
         "zombie_code_blocks_count": 0
       },
-      "findings": [
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "HIGH",
-          "file_path": "engine_config/frameworks/itil_v4.json",
-          "line_number": null,
-          "rule_id": "SMELL-REPO-ENTROPY-FILE",
-          "message": "Nombre de archivo con versionado manual prohibido: 'itil_v4.json'",
-          "recommendation": "Use canonical filenames without '_v2' or '_final' suffixes; track history via Git commits."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "HIGH",
-          "file_path": "docs/audits/user_journey_final.png",
-          "line_number": null,
-          "rule_id": "SMELL-REPO-ENTROPY-FILE",
-          "message": "Nombre de archivo con versionado manual prohibido: 'user_journey_final.png'",
-          "recommendation": "Use canonical filenames without '_v2' or '_final' suffixes; track history via Git commits."
-        },
-        {
-          "category": "STRUCTURAL_SMELL",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 673,
-          "rule_id": "SMELL-LONG-PARAMETER-LIST",
-          "message": "Public function 'render_executive_summary' declares 6 required parameters without default (recommended threshold <= 5)",
-          "recommendation": "Apply 'Introduce Parameter Object' (Martin Fowler): encapsulate parameters in a typed Pydantic model."
-        }
-      ]
+      "findings": []
     },
     "concurrency_stress": {
       "probe_name": "Stress & Tail Latency Contention (Dean & Barroso / Google SRE)",
@@ -1436,50 +1236,31 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.43,
-        "p95_latency_ms": 84.71,
-        "p99_latency_ms": 181.85,
-        "tail_amplification_ratio": 127.17,
+        "p50_latency_ms": 1.46,
+        "p95_latency_ms": 54.95,
+        "p99_latency_ms": 105.16,
+        "tail_amplification_ratio": 72.03,
         "concurrency_status": "Resilient and Scalable"
       },
       "findings": []
     },
     "documentation_quality": {
       "probe_name": "Documentation Quality & Architectural Traceability (ISO 26514 / Google)",
-      "score_pct": 73.5,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "markdown_files_scanned": 62,
         "internal_links_evaluated": 575,
-        "dead_links_count": 1,
+        "dead_links_count": 0,
         "architectural_references_evaluated": 0,
         "architectural_drift_count": 0,
-        "bare_code_fences_count": 1,
+        "bare_code_fences_count": 0,
         "openapi_endpoints_evaluated": 0,
         "openapi_documented_endpoints": 0,
         "openapi_documentation_coverage_pct": 0.0,
-        "documentation_status": "Deriva o Enlaces Rotos"
+        "documentation_status": "Certificada y Sincronizada"
       },
-      "findings": [
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/audits/AUDIT_FRAMEWORK.md",
-          "line_number": 48,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "CRITICAL",
-          "file_path": "infrastructure/docker/supabase/CONFIG.md",
-          "line_number": null,
-          "rule_id": "DOC-DEAD-LINK",
-          "message": "Broken link detected pointing to 'github.com/Logflare/logflare': target file missing from disk",
-          "recommendation": "Update or correct relative path to existing target file."
-        }
-      ]
+      "findings": []
     },
     "sre_observability": {
       "probe_name": "SRE, Observability & W3C Tracing (RFC-016)",
@@ -1496,90 +1277,26 @@
     },
     "hardcoded_artifacts": {
       "probe_name": "Hardcoded Artifacts & Secrets (CWE-798 / 12-Factor)",
-      "score_pct": 65.0,
-      "passed": false,
+      "score_pct": 100.0,
+      "passed": true,
       "metrics": {
         "scanned_files": 417,
-        "hardcoded_issues": 7
+        "hardcoded_issues": 0
       },
-      "findings": [
-        {
-          "category": "MODEL_LEAK",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/runtime_env.py",
-          "line_number": 256,
-          "rule_id": "ARCH_HARDCODED_AI_MODEL",
-          "message": "AI model hardcoded in string literal: 'gemini-2.5-pro'.",
-          "recommendation": "Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de assessment_engine.infrastructure.genai_client."
-        },
-        {
-          "category": "MODEL_LEAK",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/runtime_env.py",
-          "line_number": 257,
-          "rule_id": "ARCH_HARDCODED_AI_MODEL",
-          "message": "AI model hardcoded in string literal: 'gemini-1.5-pro'.",
-          "recommendation": "Usar get_model(ModelTier.REASONING) o get_model(ModelTier.FAST) de assessment_engine.infrastructure.genai_client."
-        },
-        {
-          "category": "ENV_LEAK",
-          "severity": "CRITICAL",
-          "file_path": "business_command_center/src/app/page.tsx",
-          "line_number": 866,
-          "rule_id": "CWE-200_HARDCODED_PATH",
-          "message": "Ruta de host local absoluta detectada.",
-          "recommendation": "Use injected configuration (e.g. environment variable) or relative path."
-        },
-        {
-          "category": "ENV_LEAK",
-          "severity": "CRITICAL",
-          "file_path": "business_command_center/src/features/reports/ReportViewer.tsx",
-          "line_number": 138,
-          "rule_id": "CWE-200_HARDCODED_PATH",
-          "message": "Ruta de host local absoluta detectada.",
-          "recommendation": "Use injected configuration (e.g. environment variable) or relative path."
-        },
-        {
-          "category": "ENV_LEAK",
-          "severity": "CRITICAL",
-          "file_path": "business_command_center/src/components/ClientPortalView.tsx",
-          "line_number": 418,
-          "rule_id": "CWE-200_HARDCODED_PATH",
-          "message": "Ruta de host local absoluta detectada.",
-          "recommendation": "Use injected configuration (e.g. environment variable) or relative path."
-        },
-        {
-          "category": "ENV_LEAK",
-          "severity": "CRITICAL",
-          "file_path": "infrastructure/docker/supabase/volumes/functions/main/index.ts",
-          "line_number": 317,
-          "rule_id": "CWE-200_HARDCODED_PATH",
-          "message": "Ruta de host local absoluta detectada.",
-          "recommendation": "Use injected configuration (e.g. environment variable) or relative path."
-        },
-        {
-          "category": "ENV_LEAK",
-          "severity": "CRITICAL",
-          "file_path": "infrastructure/docker/supabase/volumes/functions/main/index.ts",
-          "line_number": 352,
-          "rule_id": "CWE-200_HARDCODED_PATH",
-          "message": "Ruta de host local absoluta detectada.",
-          "recommendation": "Use injected configuration (e.g. environment variable) or relative path."
-        }
-      ]
+      "findings": []
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 99.7,
+      "score_pct": 99.6,
       "passed": true,
       "metrics": {
         "files_scanned": 412,
         "inline_rationale_score": 99.6,
-        "contract_coverage_score": 99.5,
+        "contract_coverage_score": 99.4,
         "linguistic_sovereignty_score": 100.0,
         "comment_smells_count": 13,
-        "missing_docstrings_count": 6,
-        "cqi_score": 99.7,
+        "missing_docstrings_count": 7,
+        "cqi_score": 99.6,
         "grade": "A+",
         "status": "Tier-1 Certified"
       },
@@ -1588,10 +1305,19 @@
           "category": "CODE_HYGIENE",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 1288,
+          "line_number": 1345,
           "rule_id": "COMMENT-ECHO-REDUNDANT",
           "message": "Redundant echo comment: literally rephrases adjacent code logic",
           "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
+        },
+        {
+          "category": "CODE_HYGIENE",
+          "severity": "MEDIUM",
+          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
+          "line_number": 729,
+          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
+          "message": "Public function 'render_executive_summary' lacks formal contract docstring",
+          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
         },
         {
           "category": "CODE_HYGIENE",
@@ -1796,5 +1522,5 @@
       "findings": []
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A (99.1%). Sondas pasadas: 17/21."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A+ (100.0%). Sondas pasadas: 21/21."
 }

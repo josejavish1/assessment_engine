@@ -1026,7 +1026,13 @@
     "global_tobe_domain_architectures_intro": "Esta sección detalla las especificaciones técnicas y los estándares de vanguardia necesarios para la modernización integral de las capacidades tecnológicas.",
     "global_todo_project_catalog_heading": "Catalogo Consolidado de Proyectos de Transformacion",
     "global_todo_project_catalog_intro": "A continuación se presenta el catálogo de fichas técnicas ejecutables, las cuales incluyen el alcance SMART, el desglose analítico de tareas (WBS) y el presupuesto FinOps.",
-    "global_ch7_decisions_intro": "Las siguientes decisiones estratégicas requieren aprobación inmediata por parte del Comité de Dirección para desbloquear la ejecución del programa y mitigar los riesgos identificados."
+    "global_ch7_decisions_intro": "Las siguientes decisiones estratégicas requieren aprobación inmediata por parte del Comité de Dirección para desbloquear la ejecución del programa y mitigar los riesgos identificados.",
+    "global_radar_chart_title": "Mapa Radial de Madurez Tecnológica Global",
+    "roadmap_image_title": "Plan de Implementación y Horizontes Temporales (36 Meses)",
+    "roadmap_horizon_quick_wins": "Iniciativas Tácticas (0-3m)",
+    "roadmap_horizon_year_1": "Año 1 (4-12m)",
+    "roadmap_horizon_year_2": "Año 2 (13-24m)",
+    "roadmap_horizon_year_3": "Año 3 (25-36m)"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2046,7 +2052,13 @@
     "global_tobe_domain_architectures_intro": "This section details the technical specifications and state-of-the-art standards required for modernizing corporate technology capabilities.",
     "global_todo_project_catalog_heading": "Consolidated Transformation Project Portfolio",
     "global_todo_project_catalog_intro": "The following portfolio presents actionable technical charters, which feature SMART scope, WBS task breakdowns, and analytical FinOps budgeting.",
-    "global_ch7_decisions_intro": "The following strategic decision gates must be approved by Executive Leadership to unlock program execution and mitigate identified risks."
+    "global_ch7_decisions_intro": "The following strategic decision gates must be approved by Executive Leadership to unlock program execution and mitigate identified risks.",
+    "global_radar_chart_title": "Global Technology Maturity Radar Map",
+    "roadmap_image_title": "Implementation Plan and Time Horizons (36 Months)",
+    "roadmap_horizon_quick_wins": "Quick Wins (0-3m)",
+    "roadmap_horizon_year_1": "Year 1 (4-12m)",
+    "roadmap_horizon_year_2": "Year 2 (13-24m)",
+    "roadmap_horizon_year_3": "Year 3 (25-36m)"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -3066,7 +3078,13 @@
     "global_tobe_domain_architectures_intro": "Esta seção detalha as especificações técnicas e os padrões de ponta necessários para a modernização das capacidades tecnológicas.",
     "global_todo_project_catalog_heading": "Portfolio Consolidado de Projetos de Transformacao",
     "global_todo_project_catalog_intro": "O portfólio a seguir apresenta fichas técnicas acionáveis, que incluem escopo SMART, WBS e orçamento analítico.",
-    "global_ch7_decisions_intro": "As seguintes decisões estratégicas devem ser aprovadas pela Diretoria para desbloquear a execução do programa e mitigar os riscos identificados."
+    "global_ch7_decisions_intro": "As seguintes decisões estratégicas devem ser aprovadas pela Diretoria para desbloquear a execução do programa e mitigar os riscos identificados.",
+    "global_radar_chart_title": "Mapa Radar Global de Maturidade Tecnologica",
+    "roadmap_image_title": "Plano de Implementacao e Horizontes Temporais (36 Meses)",
+    "roadmap_horizon_quick_wins": "Iniciativas Rapidas (0-3m)",
+    "roadmap_horizon_year_1": "Ano 1 (4-12m)",
+    "roadmap_horizon_year_2": "Ano 2 (13-24m)",
+    "roadmap_horizon_year_3": "Ano 3 (25-36m)"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -4086,7 +4104,13 @@
     "global_tobe_domain_architectures_intro": "Cette section détaille les spécifications techniques et les normes de pointe nécessaires à la modernisation des capacités technologiques.",
     "global_todo_project_catalog_heading": "Portefeuille Consolide de Projets de Transformation",
     "global_todo_project_catalog_intro": "Le portefeuille suivant présente des fiches techniques actionnables, comprenant le périmètre SMART, le WBS et la budgétisation analytique.",
-    "global_ch7_decisions_intro": "Les décisions stratégiques suivantes doivent être approuvées par la Direction pour débloquer l exécution du programme et atténuer les risques."
+    "global_ch7_decisions_intro": "Les décisions stratégiques suivantes doivent être approuvées par la Direction pour débloquer l exécution du programme et atténuer les risques.",
+    "global_radar_chart_title": "Carte Radar Globale de Maturite Technologique",
+    "roadmap_image_title": "Plan de Mise en Oeuvre et Horizons Temporels (36 Mois)",
+    "roadmap_horizon_quick_wins": "Actions Rapides (0-3m)",
+    "roadmap_horizon_year_1": "Annee 1 (4-12m)",
+    "roadmap_horizon_year_2": "Annee 2 (13-24m)",
+    "roadmap_horizon_year_3": "Annee 3 (25-36m)"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -5106,7 +5130,13 @@
     "global_tobe_domain_architectures_intro": "This section details the technical specifications and state-of-the-art standards required for modernizing corporate technology capabilities.",
     "global_todo_project_catalog_heading": "Consolidated Transformation Project Portfolio",
     "global_todo_project_catalog_intro": "The following portfolio presents actionable technical charters, which feature SMART scope, WBS task breakdowns, and analytical FinOps budgeting.",
-    "global_ch7_decisions_intro": "The following strategic decision gates must be approved by Executive Leadership to unlock program execution and mitigate identified risks."
+    "global_ch7_decisions_intro": "The following strategic decision gates must be approved by Executive Leadership to unlock program execution and mitigate identified risks.",
+    "global_radar_chart_title": "Global Technology Maturity Radar Map",
+    "roadmap_image_title": "Implementation Plan and Time Horizons (36 Months)",
+    "roadmap_horizon_quick_wins": "Quick Wins (0-3m)",
+    "roadmap_horizon_year_1": "Year 1 (4-12m)",
+    "roadmap_horizon_year_2": "Year 2 (13-24m)",
+    "roadmap_horizon_year_3": "Year 3 (25-36m)"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -6126,6 +6156,12 @@
     "global_tobe_domain_architectures_intro": "Dieser Abschnitt beschreibt die technischen Spezifikationen und modernsten Standards zur Modernisierung der Technologiekapazitäten.",
     "global_todo_project_catalog_heading": "Konsolidiertes Transformationsprojektportfolio",
     "global_todo_project_catalog_intro": "Das folgende Portfolio präsentiert umsetzbare technische Projektsteckbriefe, die den SMART-Umfang, WBS und Finanzplanung umfassen.",
-    "global_ch7_decisions_intro": "Die folgenden strategischen Entscheidungen müssen von der Geschäftsführung genehmigt werden, um die Programmausführung zu starten und Risiken zu mindern."
+    "global_ch7_decisions_intro": "Die folgenden strategischen Entscheidungen müssen von der Geschäftsführung genehmigt werden, um die Programmausführung zu starten und Risiken zu mindern.",
+    "global_radar_chart_title": "Globales Technologiereifegrad-Radardiagramm",
+    "roadmap_image_title": "Implementierungsplan und Zeithorizonte (36 Monate)",
+    "roadmap_horizon_quick_wins": "Quick Wins (0-3m)",
+    "roadmap_horizon_year_1": "Jahr 1 (4-12m)",
+    "roadmap_horizon_year_2": "Jahr 2 (13-24m)",
+    "roadmap_horizon_year_3": "Jahr 3 (25-36m)"
   }
 }

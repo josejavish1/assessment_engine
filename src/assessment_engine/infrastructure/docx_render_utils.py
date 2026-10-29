@@ -782,10 +782,14 @@ def prevent_row_break(row: Any) -> Any:
 
 
 def finalize_table(table: Any) -> Any:
-    """Set the 'Table Grid' style, left alignment, and autofit on a Table object."""
+    """Set the 'Table Grid' style, left alignment, autofit, repeated headers, and prevent split rows."""
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
     table.autofit = True
+    if len(table.rows) > 0:
+        set_repeat_table_header(table.rows[0])
+        for row in table.rows:
+            prevent_row_break(row)
 
 
 def autofit_table_to_contents(table: Any) -> Any:

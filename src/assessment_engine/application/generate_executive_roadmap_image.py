@@ -68,13 +68,22 @@ def main(argv: list[str] | None = None) -> None:
 
     initiatives = []
 
+    from assessment_engine.infrastructure.localization import t
+
+    doc_lang = str(payload.get("meta", {}).get("language") or "en").lower()
+
     order = [
         "quick_wins_0_3_months",
         "year_1_3_12_months",
         "year_2_12_24_months",
         "year_3_24_36_months",
     ]
-    labels = ["Quick Wins (0-3m)", "Year 1 (4-12m)", "Year 2 (13-24m)", "Year 3 (25-36m)"]
+    labels = [
+        t("roadmap_horizon_quick_wins", locale=doc_lang),
+        t("roadmap_horizon_year_1", locale=doc_lang),
+        t("roadmap_horizon_year_2", locale=doc_lang),
+        t("roadmap_horizon_year_3", locale=doc_lang),
+    ]
     colors = ["#e06666", "#f6b26b", "#ffd966", "#93c47d"]
 
     for idx, horizon_key in enumerate(order):
@@ -142,20 +151,38 @@ def main(argv: list[str] | None = None) -> None:
     ax.text(
         1.5,
         -0.8,
-        "Quick Wins",
+        t("roadmap_horizon_quick_wins", locale=doc_lang).split("(")[0].strip(),
         color="#e06666",
         fontsize=11,
         fontweight="bold",
         ha="center",
     )
     ax.text(
-        7.5, -0.8, "Year 1", color="#f6b26b", fontsize=11, fontweight="bold", ha="center"
+        7.5,
+        -0.8,
+        t("roadmap_horizon_year_1", locale=doc_lang).split("(")[0].strip(),
+        color="#f6b26b",
+        fontsize=11,
+        fontweight="bold",
+        ha="center",
     )
     ax.text(
-        18, -0.8, "Year 2", color="#ffd966", fontsize=11, fontweight="bold", ha="center"
+        18,
+        -0.8,
+        t("roadmap_horizon_year_2", locale=doc_lang).split("(")[0].strip(),
+        color="#ffd966",
+        fontsize=11,
+        fontweight="bold",
+        ha="center",
     )
     ax.text(
-        30, -0.8, "Year 3", color="#93c47d", fontsize=11, fontweight="bold", ha="center"
+        30,
+        -0.8,
+        t("roadmap_horizon_year_3", locale=doc_lang).split("(")[0].strip(),
+        color="#93c47d",
+        fontsize=11,
+        fontweight="bold",
+        ha="center",
     )
 
     # Removes the chart's bounding box (spines) to achieve a less cluttered and more modern visualization.
@@ -164,7 +191,7 @@ def main(argv: list[str] | None = None) -> None:
     ax.spines["bottom"].set_visible(False)
 
     plt.title(
-        "Implementation Plan and Time Horizons (36 Months)",
+        t("roadmap_image_title", locale=doc_lang),
         size=16,
         color="#004b87",
         pad=30,

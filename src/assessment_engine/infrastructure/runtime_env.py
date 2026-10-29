@@ -251,15 +251,10 @@ def run_vertex_ai_preflight(
                 timeout=resolved_timeout,
             )
         except Exception:
-            candidates = [
-                get_fallback_model(resolved_model),
-                "gemini-2.5-pro",
-                "gemini-1.5-pro",
-            ]
+            fallback = get_fallback_model(resolved_model)
+            candidates = [fallback] if fallback else []
             verified = False
             for cand in candidates:
-                if not cand:
-                    continue
                 cand_path = client.publisher_model_path("google", cand)
                 try:
                     client.get_publisher_model(

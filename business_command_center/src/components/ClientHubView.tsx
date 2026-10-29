@@ -159,6 +159,7 @@ export function ClientHubView({ onSelectClient, activeClientId }: ClientHubViewP
           <Search className="h-4 w-4 text-slate-500 absolute left-3.5 top-2.5" />
           <input
             type="text"
+            aria-label="Search by legal entity, regulation, country, or sector"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by legal entity, regulation (ENS, NIS2, DORA), country, or sector..."

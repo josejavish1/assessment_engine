@@ -299,7 +299,7 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
 
 
 def render_global_toc(doc: Document, doc_lang: str, scope: str | None = None) -> None:
-    """Renders a formal Table of Contents (TOC) section immediately following the cover page."""
+    """Renders a formal Table of Contents (TOC) with pre-populated fallback entries."""
     from assessment_engine.adapters.compilers.asis_docx_primitives import (
         add_heading,
         add_toc,
@@ -308,6 +308,62 @@ def render_global_toc(doc: Document, doc_lang: str, scope: str | None = None) ->
 
     toc_title = t("toc_title", locale=doc_lang)
     add_heading(doc, toc_title, level=1, primary_color_rgb=(0, 114, 188))
+
+    entries_map = {
+        "asis": [
+            ("1. Executive Summary of Current State", "4"),
+            ("2. Maturity Profile by Domain", "6"),
+            ("3. Actuarial Risk Quantification (O-FAIR)", "10"),
+            ("4. Gap Matrix and Single Points of Failure (SPOF)", "15"),
+            ("5. Critical Ecosystem Interdependencies", "22"),
+        ],
+        "tobe": [
+            ("1. Strategic Vision and Modernization Principles", "4"),
+            ("2. Reference Architecture and Technology Sovereignty", "8"),
+            ("3. Target Architecture Model by Domain", "14"),
+            ("4. Core Evolution Levers and Business Impact", "38"),
+            ("5. Expected Benefits and Risk Mitigation", "45"),
+        ],
+        "todo": [
+            ("1. Implementation Plan and Time Horizons", "4"),
+            ("2. Transversal 36-Month Roadmap", "8"),
+            ("3. Consolidated Transformation Project Portfolio", "12"),
+            ("4. Analytical Financial Budgeting (CapEx and OpEx)", "55"),
+            ("5. Strategic Decision Gates and Governance Framework", "62"),
+        ],
+        "master": [
+            ("1. Executive Summary and Board Recommendations", "3"),
+            ("2. Comprehensive Technology Maturity Map", "5"),
+            ("3. Quantitative Risk Exposure (Open FAIR)", "8"),
+            ("4. Consolidated Diagnostic of Current State (AS-IS)", "12"),
+            ("5. Target State Architecture Vision (TO-BE)", "16"),
+            ("6. Transformation Plan and Investment Horizons (TO-DO)", "20"),
+            ("7. Program Leadership Decisions and Governance", "24"),
+        ],
+    }
+
+    selected_scope = scope if scope in entries_map else "master"
+    entries = entries_map[selected_scope]
+
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
+
+    for title_text, page_hint in entries:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.space_before = Pt(2)
+        display_title = apply_vocabulary_substitutions(title_text, locale=doc_lang)
+        r_title = p.add_run(display_title)
+        r_title.font.name = "Arial"
+        r_title.font.size = Pt(10.5)
+        r_title.font.color.rgb = RGBColor(46, 64, 77)
+
+        r_dots = p.add_run(f"  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  {page_hint}")
+        r_dots.font.name = "Arial"
+        r_dots.font.size = Pt(9.5)
+        r_dots.font.color.rgb = RGBColor(127, 127, 127)
+
     add_toc(doc)
     set_update_fields(doc)
     doc.add_page_break()
@@ -673,12 +729,13 @@ def render_cross_tower_nexus(
 def render_executive_summary(
     doc,
     data: ExecutiveSummaryDraft,
-    heatmap: list,
-    visuals: dict,
-    client_dir,
-    doc_lang: str,
-    client_name="",
-):
+    heatmap: list | None = None,
+    visuals: dict | None = None,
+    client_dir: Any = None,
+    doc_lang: str | None = None,
+    client_name: str = "",
+) -> None:
+    loc = doc_lang or "en"
     """Renders the executive summary section into a `docx.document.Document` object.
 
     Constructs and populates the executive summary by sequentially adding several

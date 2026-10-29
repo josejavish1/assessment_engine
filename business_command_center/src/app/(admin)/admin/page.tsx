@@ -165,6 +165,7 @@ export default function AdminDashboardPage() {
               </label>
               <input
                 type="text"
+                aria-label="Legal Entity Name / Organization"
                 required
                 value={newOrgName}
                 onChange={(e) => {
@@ -182,6 +183,7 @@ export default function AdminDashboardPage() {
               </label>
               <input
                 type="text"
+                aria-label="Slug Identificador"
                 required
                 value={newOrgSlug}
                 onChange={(e) => setNewOrgSlug(e.target.value)}

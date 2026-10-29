@@ -1484,7 +1484,7 @@ def render_conclusion(doc, annex_data: dict, doc_lang: str) -> Any:
 
 
 def render_blueprint_toc(doc: Document, doc_lang: str) -> None:
-    """Renders a formal Table of Contents (TOC) section in the blueprint report."""
+    """Renders a formal Table of Contents (TOC) section in the blueprint report with pre-populated fallback entries."""
     from assessment_engine.adapters.compilers.asis_docx_primitives import (
         add_heading,
         add_toc,
@@ -1493,6 +1493,38 @@ def render_blueprint_toc(doc: Document, doc_lang: str) -> None:
 
     toc_title = t("toc_title", locale=doc_lang)
     add_heading(doc, toc_title, level=1, primary_color_rgb=(0, 114, 188))
+
+    entries = [
+        ("1. Executive Summary and Domain Snapshot", "3"),
+        ("2. Maturity Profile by Technical Capability", "5"),
+        ("3. Cross-Dependencies and Interdependencies Analysis", "8"),
+        ("4. Consolidated Current State Diagnostic (AS-IS)", "11"),
+        ("5. Actuarial Risk Quantification (O-FAIR)", "15"),
+        ("6. Target Architecture and State-of-the-Art Standards (TO-BE)", "18"),
+        ("7. Deployment Roadmap and Timeline", "25"),
+        ("8. SMART Project Charters with WBS Breakdown and Budget", "28"),
+        ("9. Conclusions and Next Decision Gates", "42"),
+    ]
+
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
+
+    for title_text, page_hint in entries:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.space_before = Pt(2)
+        display_title = apply_vocabulary_substitutions(title_text, locale=doc_lang)
+        r_title = p.add_run(display_title)
+        r_title.font.name = "Arial"
+        r_title.font.size = Pt(10.5)
+        r_title.font.color.rgb = RGBColor(46, 64, 77)
+
+        r_dots = p.add_run(f"  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  {page_hint}")
+        r_dots.font.name = "Arial"
+        r_dots.font.size = Pt(9.5)
+        r_dots.font.color.rgb = RGBColor(127, 127, 127)
+
     add_toc(doc)
     set_update_fields(doc)
     doc.add_page_break()

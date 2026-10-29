@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 """Centralized text-processing utilities for sanitization and normalization.
 
@@ -86,8 +87,12 @@ def clean_text_for_word(value: str) -> str:
     text = "".join(ch for ch in str(value) if ch in "\n\t\r" or ord(ch) >= 32)
 
     # Strip common Markdown artifacts to produce clean text for OpenXML rendering.
-    # The current implementation only strips Markdown bold syntax, as it is the most common artifact.
-    text = text.replace("**", "")
+    text = text.replace("**", "").replace("__", "")
+    text = re.sub(r"^[#]+\s*", "", text, flags=re.MULTILINE)
+
+    # Replace raw null or unassigned indicators with an elegant em-dash
+    if text.strip().lower() in ("none", "null", "undefined", "tbd", "pending", "nan"):
+        return "-"
 
     return text.strip()
 
@@ -211,8 +216,9 @@ class ExecutiveStyleCompressor:
 
     @classmethod
     def _load_editorial_linter(cls) -> tuple[list[str], dict[str, str]]:
-        from assessment_engine.infrastructure.runtime_paths import ROOT
         import json
+
+        from assessment_engine.infrastructure.runtime_paths import ROOT
         p = ROOT / "engine_config/locales_asis_annex.json"
         if p.exists():
             try:
@@ -259,8 +265,9 @@ class ExecutiveStyleCompressor:
                 continue
 
             # Split long run-on sentences on logical clause boundaries
-            from assessment_engine.infrastructure.runtime_paths import ROOT
             import json
+
+            from assessment_engine.infrastructure.runtime_paths import ROOT
             split_rules = []
             p_split = ROOT / "engine_config/locales_asis_annex.json"
             if p_split.exists():
@@ -308,8 +315,9 @@ def _load_canonical_tower_names() -> dict[str, tuple[str, str]]:
         "T9": ("09", "Digital_Workplace"),
         "T10": ("10", "Mainframe_Core"),
     }
-    from assessment_engine.infrastructure.runtime_paths import ROOT
     import json
+
+    from assessment_engine.infrastructure.runtime_paths import ROOT
 
     p = ROOT / "engine_config/locales_asis_annex.json"
     if p.exists():

@@ -103,6 +103,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
 
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
           >
             <X className="h-5 w-5" />
@@ -126,6 +127,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
               </label>
               <input
                 type="text"
+                aria-label="Legal Entity Name"
                 autoFocus
                 placeholder="Ej. Banco Santander Spain"
                 {...register('name', { onChange: onNameInput })}
@@ -143,6 +145,7 @@ export function NewClientModal({ isOpen, onClose, onClientCreated }: NewClientMo
               </label>
               <input
                 type="text"
+                aria-label="System Physical Slug"
                 {...register('slug')}
                 placeholder="banco_santander_es"
                 className="w-full bg-[#080b12] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-mono"

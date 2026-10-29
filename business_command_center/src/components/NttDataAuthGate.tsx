@@ -137,6 +137,7 @@ export function NttDataAuthGate({ onSuccess }: NttDataAuthGateProps) {
                 <Mail className="h-4 w-4 absolute left-3 top-2.5 text-stone-400" />
                 <input
                   type="email"
+                  aria-label="Corporate Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@nttdata.com"
@@ -153,6 +154,7 @@ export function NttDataAuthGate({ onSuccess }: NttDataAuthGateProps) {
                 <Lock className="h-4 w-4 absolute left-3 top-2.5 text-stone-400" />
                 <input
                   type="password"
+                  aria-label="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"

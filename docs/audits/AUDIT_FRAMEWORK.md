@@ -45,7 +45,7 @@ python -m assessment_engine.application.cli audit [--target RUTA_PROYECTO] [--ou
 
 Cuando se invoca `python -m assessment_engine.application.cli audit`, el sistema ejecuta la siguiente secuencia determinista:
 
-```
+```text
 [CLI audit] ──> [SoverikQualityEngine.audit_project()]
                      ├── 1. Recorrido AST y detección segura de archivos (excluyendo .git, .venv, etc.)
                      ├── 2. Ejecución secuencial de las 21 sondas automatizadas

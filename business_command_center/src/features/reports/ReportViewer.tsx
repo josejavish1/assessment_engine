@@ -135,7 +135,7 @@ export function ReportViewer({ clientSlug, clientName }: ReportViewerProps) {
 
           {report.has_docx ? (
             <a
-              href={`/api/download?path=/home/jsanchhi/assessment_engine/working/out/simulations/${clientSlug}/Anexo_Tecnico_${clientSlug}.docx`}
+              href={`/api/download?path=working/out/simulations/${clientSlug}/Anexo_Tecnico_${clientSlug}.docx`}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#0072BC] hover:bg-[#0086dd] active:bg-[#00609e] text-white transition-all shadow-sm shadow-[#0072BC]/20"
             >
               <Download className="h-4 w-4" /> Descargar Word Oficial (.docx)
@@ -292,6 +292,7 @@ export function ReportViewer({ clientSlug, clientName }: ReportViewerProps) {
             <form onSubmit={handleSendSuggestion} className="flex gap-2">
               <input
                 type="text"
+                aria-label="Chapter adjustment feedback"
                 value={suggestionInput}
                 onChange={(e) => setSuggestionInput(e.target.value)}
                 placeholder="e.g. Prioritize VMware migration to OpenShift in H1 roadmap..."

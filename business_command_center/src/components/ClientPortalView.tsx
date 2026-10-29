@@ -415,7 +415,7 @@ export function ClientPortalView({ currentClient, onOpenUploadModal }: ClientPor
               </div>
 
               <a
-                href={`/api/download?path=/home/jsanchhi/assessment_engine/working/out/simulations/${currentClient.client_slug || currentClient.archetype_id}/Anexo_Tecnico_${currentClient.client_slug || currentClient.archetype_id}.docx`}
+                href={`/api/download?path=working/out/simulations/${currentClient.client_slug || currentClient.archetype_id}/Anexo_Tecnico_${currentClient.client_slug || currentClient.archetype_id}.docx`}
                 className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#0072BC] hover:bg-[#0086dd] active:bg-[#00609e] text-white transition-all shadow-sm shadow-[#0072BC]/20"
               >
                 <Download className="h-4 w-4" /> Descargar Memoria Oficial (.docx)
@@ -522,6 +522,7 @@ export function ClientPortalView({ currentClient, onOpenUploadModal }: ClientPor
                 </label>
                 <input
                   type="text"
+                  aria-label="Nombre de la Sociedad / Filial"
                   required
                   placeholder="Ej. Nordic Grid Renovables Iberia S.L."
                   value={newSocietyName}

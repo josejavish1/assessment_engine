@@ -450,6 +450,7 @@ export default function UnifiedCommandCenterPage() {
                   <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-stone-400" />
                   <input
                     type="text"
+                    aria-label="Search client, country, or sector"
                     value={searchFilter}
                     onChange={(e) => setSearchFilter(e.target.value)}
                     placeholder="Search client, country, or sector..."
@@ -863,7 +864,7 @@ export default function UnifiedCommandCenterPage() {
                         <span className="text-[11px] font-mono text-emerald-700 font-semibold">Physical Isolation Active</span>
                       </div>
                       <div className="font-mono text-xs text-stone-700 bg-[#fbfbfa] p-3 rounded-xl border border-stone-200">
-                        /home/jsanchhi/assessment_engine/source_docs/{activeOpp?.client_slug || activeOpp?.archetype_id}/
+                        source_docs/{activeOpp?.client_slug || activeOpp?.archetype_id}/
                       </div>
                       <p className="text-xs text-stone-600 leading-relaxed font-sans">
                         Evidence deposited in this dossier is automatically processed by engine extractors to calibrate Beta-Binomial vulnerability distributions and Gamma-Poisson conjugate priors for Open FAIR modeling.
@@ -941,6 +942,7 @@ export default function UnifiedCommandCenterPage() {
                       <form onSubmit={handleSendWarRoomChat} className="flex gap-2">
                         <input
                           type="text"
+                          aria-label="Enter tactical constraint"
                           value={chatInput}
                           onChange={(e) => setChatInput(e.target.value)}
                           placeholder="Enter tactical constraint (e.g. Enforce ISO 27001 certification and client-managed KMS encryption)..."
@@ -986,6 +988,7 @@ export default function UnifiedCommandCenterPage() {
                           </div>
                           <input
                             type="range"
+                            aria-label="Threat Event Frequency (TEF)"
                             min="0.01"
                             max="1.50"
                             step="0.01"
@@ -1004,6 +1007,7 @@ export default function UnifiedCommandCenterPage() {
                           </div>
                           <input
                             type="range"
+                            aria-label="Vulnerability (VULN)"
                             min="1.0"
                             max="50.0"
                             step="0.5"

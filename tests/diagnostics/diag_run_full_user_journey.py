@@ -89,7 +89,7 @@ def run_full_user_journey():
         time.sleep(1.0)
 
         # Capturar screenshot final de la jornada
-        screenshot_path = REPO_ROOT / "docs" / "audits" / "user_journey_final.png"
+        screenshot_path = REPO_ROOT / "docs" / "audits" / "user_journey_map.png"
         page.screenshot(path=str(screenshot_path), full_page=True)
         print(f"\n[PASS] Captura final de jornada guardada en {screenshot_path}")
 

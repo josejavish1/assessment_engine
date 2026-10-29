@@ -187,6 +187,7 @@ export function KnowledgeHubModal({
 
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
           >
             <X className="h-5 w-5" />
@@ -215,6 +216,7 @@ export function KnowledgeHubModal({
           <input
             ref={fileInputRef}
             type="file"
+            aria-label="Upload evidence files"
             multiple
             accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.txt,.csv,.json,.png,.jpg,.jpeg,.zip"
             onChange={(e) => e.target.files && handleFilesAdded(e.target.files)}
