@@ -28,6 +28,8 @@ from assessment_engine.infrastructure.localization import (
 from assessment_engine.infrastructure.text_utils import clean_text_for_word
 from assessment_engine.adapters.compilers.asis_docx_primitives import (
     COLOR_BLUE,
+    Chapter4Result,
+    DocumentCompilationContext,
     _add_markdown_bullet,
     add_appendix_subheading,
     add_body_paragraph,
@@ -42,7 +44,7 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
 
 logger = logging.getLogger(__name__)
 
-def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: dict[str, Any]) -> dict[str, Any]:
+def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContext) -> Chapter4Result:
     """Assemble and render Chapter 4: Quantitative Risk Matrix."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]

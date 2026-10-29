@@ -35,6 +35,8 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
     COLOR_HEADER_BG,
     COLOR_ROW_ALT,
     LANG_VOCAB,
+    Chapter4Result,
+    DocumentCompilationContext,
     _add_markdown_bullet,
     _load_asis_vocab,
     add_appendix_heading,
@@ -59,7 +61,7 @@ from assessment_engine.adapters.compilers.asis_fair_chapter import _compile_chap
 from assessment_engine.adapters.compilers.asis_conclusions_chapter import _compile_chapter_5_conclusions
 from assessment_engine.adapters.compilers.asis_appendices_chapter import _compile_appendices
 
-def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
+def _compile_cover_and_toc(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Render Section 0 (Corporate Cover Page) and Section 0.1 (Table of Contents)."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]
@@ -137,7 +139,7 @@ def _compile_cover_and_toc(doc: Any, ctx: dict[str, Any]) -> None:
     add_toc(doc)
 
 
-def _compile_introduction_and_scope(doc: Any, ctx: dict[str, Any]) -> None:
+def _compile_introduction_and_scope(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Render Chapter 1 (Executive Summary intro) and Chapter 2 (Methodology, Scope, Objectives)."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]

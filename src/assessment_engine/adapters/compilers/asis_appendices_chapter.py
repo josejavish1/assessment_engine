@@ -20,6 +20,7 @@ from assessment_engine.infrastructure.localization import (
     t,
 )
 from assessment_engine.adapters.compilers.asis_docx_primitives import (
+    DocumentCompilationContext,
     _add_markdown_bullet,
     add_appendix_heading,
     add_appendix_subheading,
@@ -32,7 +33,7 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
 
 logger = logging.getLogger(__name__)
 
-def _compile_appendices(doc: Any, ctx: dict[str, Any]) -> None:
+def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Assemble and render Appendices A, B, C, and D."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]

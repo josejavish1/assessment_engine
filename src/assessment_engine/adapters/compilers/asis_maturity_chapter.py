@@ -24,6 +24,7 @@ from assessment_engine.infrastructure.localization import (
     t,
 )
 from assessment_engine.adapters.compilers.asis_docx_primitives import (
+    DocumentCompilationContext,
     _add_markdown_bullet,
     add_body_paragraph,
     add_callout_box,
@@ -38,7 +39,7 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
 
 logger = logging.getLogger(__name__)
 
-def _compile_chapter_3_maturity_profile(doc: Any, ctx: dict[str, Any]) -> None:
+def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Assemble and render Chapter 3: Maturity Profile and General Evaluation."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]

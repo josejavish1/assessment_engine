@@ -17,6 +17,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     shade_cell,
 )
 from assessment_engine.adapters.compilers.asis_docx_primitives import (
+    DocumentCompilationContext,
     add_body_paragraph,
     add_callout_box,
     add_heading,
@@ -29,7 +30,7 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
 
 logger = logging.getLogger(__name__)
 
-def _compile_chapter_5_conclusions(doc: Any, ctx: dict[str, Any]) -> None:
+def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Assemble and render Chapter 5: Conclusions and Cost of Inaction."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]

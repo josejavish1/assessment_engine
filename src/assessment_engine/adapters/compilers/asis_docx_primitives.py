@@ -7,7 +7,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -25,6 +25,48 @@ logger = logging.getLogger(__name__)
 COLOR_BLUE = "0072BC"
 COLOR_HEADER_BG = "D9EAF7"
 COLOR_ROW_ALT = "F2F2F2"
+
+
+class DocumentCompilationContext(TypedDict, total=False):
+    """Strongly-typed compilation context passed across DOCX chapter generators."""
+    p_color_rgb: tuple[int, int, int]
+    text_color_rgb: tuple[int, int, int]
+    p_color_hex: str
+    alt_row_hex: str
+    vocab: dict[str, Any]
+    tower_name: str
+    client_name: str
+    client_group: str | None
+    classification: str
+    doc_date: str
+    doc_version: str
+    modules_dir: Path
+    currency: str
+    is_critical: bool
+    industry: str
+    industry_name: str
+    doc_lang: str
+    company_name: str
+    tower_dir_obj: Path
+    payload_path: Path
+    global_fair_ale: float
+    total_p90: float
+    formatted_ale_item: str
+    formatted_p90: str
+    b_data: dict[str, Any]
+    disclaimer_text: str
+    t_sep: str
+    d_sep: str
+    raw_client_name: str
+
+
+class Chapter4Result(TypedDict, total=False):
+    """Deterministic output metrics returned by Chapter 4 actuarial risk compilation."""
+    total_p90: float
+    formatted_ale_item: str
+    formatted_p90: str
+    t_sep: str
+    d_sep: str
 
 
 def format_currency_custom(value: float, thousands_sep: str, decimal_sep: str) -> str:
