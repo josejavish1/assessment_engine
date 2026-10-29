@@ -69,3 +69,12 @@ def test_no_hardcoded_client_entities_in_prompts() -> None:
                     violations.append(f"{p.name}:L{idx} -> {sline}")
 
     assert not violations, f"Found client-specific entities in generic prompts:\n" + "\n".join(violations)
+
+
+def test_no_raw_tower_dictionaries_in_global_payload_builder() -> None:
+    """ASSERTS that build_global_report_payload does not contain hardcoded Spanish tower maps."""
+    p = Path(__file__).resolve().parents[2] / "src" / "assessment_engine" / "application" / "build_global_report_payload.py"
+    text = p.read_text(encoding="utf-8")
+    assert "TOWER_NAMES_MAP" not in text, "Found legacy hardcoded TOWER_NAMES_MAP in build_global_report_payload.py"
+    assert "TOWER_CRITICAL_DECISIONS" not in text, "Found legacy hardcoded TOWER_CRITICAL_DECISIONS in build_global_report_payload.py"
+

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -21,21 +22,19 @@ from assessment_engine.infrastructure.global_maturity_policy import (
     status_color_for_score,
 )
 from assessment_engine.infrastructure.text_utils import slugify
+from assessment_engine.infrastructure.localization import t
 
 logger = logging.getLogger(__name__)
 
-TOWER_NAMES_MAP = {
-    "T1": "Infraestructura Física y CPD",
-    "T2": "Cómputo Híbrido y Plataformas",
-    "T3": "Redes y Conectividad",
-    "T4": "Servicios de Datos y Almacenamiento",
-    "T5": "Resiliencia y Continuidad (DR)",
-    "T6": "Seguridad de Infraestructura",
-    "T7": "Operaciones Digitales (ITSM)",
-    "T8": "Estrategia, Gobierno y FinOps",
-    "T9": "Puesto de Trabajo Digital (DEX)",
-    "T10": "Sistemas Legacy y Mainframe",
-}
+def get_tower_name(tid: str, doc_lang: str = "es") -> str:
+    """Resolve canonical tower name dynamically through localization."""
+    from assessment_engine.infrastructure.localization import t
+
+    return t(
+        f"tower_{tid.lower()}_name",
+        locale=doc_lang,
+        default=f"Domain {tid.upper()}",
+    )
 
 
 def load_json(path: Path) -> dict[str, Any] | None:
@@ -68,8 +67,11 @@ def _build_source_version(blueprint_towers: list[str]) -> str:
 
 def _aggregate_tower_blueprints(
     blueprint_files: list[Path],
+    doc_lang: str = "es",
 ) -> tuple[list[dict], list[dict], list[dict], list[str], list[str], list[str]]:
     """Parse and aggregate tower blueprint files into consolidated metrics and initiative lists."""
+    from assessment_engine.infrastructure.localization import t
+
     towers_data: list[dict] = []
     strategic_risks: list[dict] = []
     all_initiatives: list[dict] = []
@@ -87,9 +89,8 @@ def _aggregate_tower_blueprints(
 
         tid = data.get("document_meta", {}).get("tower_code", bp.parent.name).upper()
         blueprint_towers.append(tid)
-        tname = TOWER_NAMES_MAP.get(
-            tid, data.get("document_meta", {}).get("tower_name", tid)
-        )
+        doc_tname = data.get("document_meta", {}).get("tower_name")
+        tname = doc_tname if doc_tname else get_tower_name(tid, doc_lang=doc_lang)
 
         pillars_analysis = data.get("pillars_analysis", [])
         avg_score = average_pillar_score(pillars_analysis, default=0.0)
@@ -115,13 +116,19 @@ def _aggregate_tower_blueprints(
             for hc in pilar.get("health_check_asis", []):
                 vuln = hc.get("vulnerability_level", 3)
                 impact_label = (
-                    "Crítico" if vuln >= 5 else ("Alto" if vuln >= 4 else "Medio")
+                    t("critical_severity_lbl", locale=doc_lang, default="Critical")
+                    if vuln >= 5
+                    else (
+                        t("high_severity_lbl", locale=doc_lang, default="High")
+                        if vuln >= 4
+                        else t("medium_severity_lbl", locale=doc_lang, default="Medium")
+                    )
                 )
                 strategic_risks.append(
                     {
                         "id": f"R-{tid}-{r_idx:02d}",
                         "title": hc.get("capability")
-                        or hc.get("target_state", "Capacidad"),
+                        or hc.get("target_state", t("capability_default_lbl", locale=doc_lang, default="Capability")),
                         "tower": tname,
                         "impact_level": impact_label,
                         "description": hc.get("finding"),
@@ -135,10 +142,10 @@ def _aggregate_tower_blueprints(
                         "id": f"INIT-{tid}-{p_idx:02d}",
                         "tower": tname,
                         "title": proj.get("name")
-                        or proj.get("initiative", "Iniciativa"),
+                        or proj.get("initiative", t("initiative_default_lbl", locale=doc_lang, default="Initiative")),
                         "objective": proj.get("tech_objective")
                         or proj.get("objective", ""),
-                        "priority": proj.get("priority", "Alta"),
+                        "priority": proj.get("priority", t("high_severity_lbl", locale=doc_lang, default="High")),
                         "expected_outcome": proj.get("business_case")
                         or proj.get("expected_outcome", ""),
                         "capex_estimate": str(
@@ -167,56 +174,47 @@ def _aggregate_tower_blueprints(
     )
 
 
-TOWER_CRITICAL_DECISIONS: dict[str, str] = {
-    "T1": "Aprobar plan de renovación de infraestructura crítica y climatización para eliminar puntos únicos de fallo.",
-    "T2": "Autorizar modernización de cargas computacionales y adopción del modelo híbrido optimizado.",
-    "T3": "Aprobar despliegue de arquitectura de red redundante con control centralizado para garantizar conectividad.",
-    "T4": "Activar políticas de retención inmutable y nivelado de datos en almacenamiento existente.",
-    "T5": "Ratificar formalmente SLAs/RTO/RPO por criticidad de negocio y aprobar calendario de simulacros anuales.",
-    "T6": "Aprobar implantación inmediata de gestión de accesos privilegiados (PAM) y segmentación de red.",
-    "T7": "Estandarizar el catálogo de servicios operativos y centralizar la observabilidad unificada.",
-    "T8": "Instituir la oficina de gobierno FinOps y el marco de decisiones de inversión plurianual.",
-    "T9": "Desplegar el puesto de trabajo digital seguro con autenticación robusta para el personal.",
-    "T10": "Aprobar el plan director de desacoplamiento y modernización de aplicativos centrales.",
-}
+def _get_cross_tower_nexus_rules(doc_lang: str = "es") -> list[dict[str, str]]:
+    """Declarative cross-tower nexus dependency rules resolved through i18n."""
+    from assessment_engine.infrastructure.localization import t
 
-CROSS_TOWER_NEXUS_RULES: list[dict[str, str]] = [
-    {
-        "source_tower": "T6: Seguridad de Infraestructura e Identidad",
-        "target_tower": "T2: Cómputo Híbrido y Plataformas",
-        "dependency_type": "Prerrequisito Crítico (Bloqueante)",
-        "architectural_rationale": "El blindaje del plano de control administrativo (PAM/Tier-0) y la segregación de privilegios es condición obligatoria antes de expandir el entorno de cómputo híbrido y multi-cloud.",
-        "delay_impact": "Exposición crítica del plano de administración y riesgo de movimiento lateral entre dominios.",
-    },
-    {
-        "source_tower": "T5: Resiliencia y Continuidad (DR)",
-        "target_tower": "T4: Servicios de Datos y Almacenamiento",
-        "dependency_type": "Prerrequisito Tecnológico",
-        "architectural_rationale": "La arquitectura de recuperación limpia (Cyber Recovery Vault) requiere activar capacidades de inmutabilidad y aislamiento lógico en las plataformas de datos subyacentes.",
-        "delay_impact": "Imposibilidad de certificar el punto de recuperación confiable ante ataques de cifrado o corrupción de datos.",
-    },
-    {
-        "source_tower": "T3: Redes y Conectividad",
-        "target_tower": "T1: Infraestructura Física y CPD",
-        "dependency_type": "Habilitador de Resiliencia",
-        "architectural_rationale": "La redundancia y conmutación de centros de proceso requiere un transporte de red mallado y enlaces de baja latencia entre sedes y centros de datos.",
-        "delay_impact": "Pérdida de conectividad y caída operativa de sedes remotas ante contingencias en el centro de datos principal.",
-    },
-    {
-        "source_tower": "T6: Seguridad de Infraestructura e Identidad",
-        "target_tower": "T7: Operaciones Digitales (ITSM)",
-        "dependency_type": "Integración Operativa",
-        "architectural_rationale": "La telemetría de seguridad y detección de anomalías debe integrarse en los flujos operativos de gestión de incidentes y monitorización 24/7.",
-        "delay_impact": "Tiempos ciegos de respuesta y falta de trazabilidad forense ante incidentes operativos.",
-    },
-    {
-        "source_tower": "T8: Estrategia, Gobierno y FinOps",
-        "target_tower": "T2: Cómputo Híbrido y Plataformas",
-        "dependency_type": "Gobernanza Financiera",
-        "architectural_rationale": "El marco de asignación presupuestaria y etiquetado FinOps debe preceder al aprovisionamiento elástico de recursos computacionales.",
-        "delay_impact": "Descontrol presupuestario y sobrecostes recurrentes en consumo de infraestructura.",
-    },
-]
+    return [
+        {
+            "source_tower": "T6: Security & Identity",
+            "target_tower": "T2: Compute & Cloud",
+            "dependency_type": t("nexus_dep_type_critical", locale=doc_lang),
+            "architectural_rationale": t("nexus_rule_1_rationale", locale=doc_lang),
+            "delay_impact": t("nexus_rule_1_delay", locale=doc_lang),
+        },
+        {
+            "source_tower": "T5: Resilience & DR",
+            "target_tower": "T4: Storage & Data",
+            "dependency_type": t("nexus_dep_type_tech", locale=doc_lang),
+            "architectural_rationale": t("nexus_rule_2_rationale", locale=doc_lang),
+            "delay_impact": t("nexus_rule_2_delay", locale=doc_lang),
+        },
+        {
+            "source_tower": "T3: Network & Connectivity",
+            "target_tower": "T1: Physical Infrastructure",
+            "dependency_type": t("nexus_dep_type_resilience", locale=doc_lang),
+            "architectural_rationale": t("nexus_rule_3_rationale", locale=doc_lang),
+            "delay_impact": t("nexus_rule_3_delay", locale=doc_lang),
+        },
+        {
+            "source_tower": "T6: Security & Identity",
+            "target_tower": "T7: Digital Operations",
+            "dependency_type": t("nexus_dep_type_ops", locale=doc_lang),
+            "architectural_rationale": t("nexus_rule_4_rationale", locale=doc_lang),
+            "delay_impact": t("nexus_rule_4_delay", locale=doc_lang),
+        },
+        {
+            "source_tower": "T8: Strategy & FinOps",
+            "target_tower": "T2: Compute & Cloud",
+            "dependency_type": t("nexus_dep_type_finops", locale=doc_lang),
+            "architectural_rationale": t("nexus_rule_5_rationale", locale=doc_lang),
+            "delay_impact": t("nexus_rule_5_delay", locale=doc_lang),
+        },
+    ]
 
 
 def _parse_currency_amount_to_float(val_str: Any) -> float:
@@ -419,17 +417,36 @@ def _build_board_memo(
     blueprint_files: list[Path],
     client_name: str,
     client_dir: Path | None = None,
+    doc_lang: str = "es",
 ) -> dict[str, Any]:
-    items = []
-    for t in towers_data:
-        tid = t.get("id", "")
-        tname = t.get("name", "")
-        score = t.get("score", "0.0")
-        band = t.get("band", "")
-        status_color = t.get("status_color", "E06666")
+    from assessment_engine.infrastructure.localization import format_currency, t
 
-        coi_text = "Evaluación paramétrica"
-        budget_tower = 0.0
+    currency_code = "EUR"
+    currency_symbol = "€"
+    if client_dir:
+        for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
+            try:
+                prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
+                currency_code = prof_data.get("currency_code", currency_code)
+                currency_symbol = prof_data.get("currency_symbol", currency_symbol)
+                break
+            except Exception:
+                pass
+
+    items = []
+    total_holding_opex = 0.0
+    total_holding_capex = 0.0
+
+    for t_item in towers_data:
+        tid = t_item.get("id", "")
+        tname = t_item.get("name", "")
+        score = t_item.get("score", "0.0")
+        band = t_item.get("band", "")
+        status_color = t_item.get("status_color", "E06666")
+
+        coi_text = t("parametric_evaluation_lbl", locale=doc_lang, default="Evaluación paramétrica")
+        opex_tower = 0.0
+        capex_tower = 0.0
         top_project_name = None
 
         for bp in blueprint_files:
@@ -451,20 +468,51 @@ def _build_board_memo(
                         for pr in pil.get("projects_todo", []):
                             if not top_project_name and pr.get("name"):
                                 top_project_name = pr.get("name")
-                            budget_tower += _parse_currency_amount_to_float(pr.get("opex_estimate"))
+                            opex_tower += _parse_currency_amount_to_float(pr.get("opex_estimate"))
+                            capex_tower += _parse_currency_amount_to_float(pr.get("capex_estimate"))
                 except Exception as err:
                     logger.debug("Error leyendo blueprint para budget: %s", err)
 
-        currency_symbol = "€"
-        budget_display = (
-            f"~{budget_tower:,.0f} {currency_symbol} (OpEx)"
-            if budget_tower > 0
-            else "Suscripción / Inversión de Fase"
-        )
-        if top_project_name:
-            crit_dec = f"Aprobar la ejecución prioritaria de '{top_project_name}' para el dominio de {tname}."
+        total_holding_opex += opex_tower
+        total_holding_capex += capex_tower
+        total_inv_tower = opex_tower + capex_tower
+
+        fallback_budget_lbl = t("budget_subscription_fallback", locale=doc_lang, default="Suscripción / Inversión de Fase")
+        if total_inv_tower > 0:
+            if capex_tower > 0:
+                tot_fmt = format_currency(total_inv_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
+                cap_fmt = format_currency(capex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
+                op_fmt = format_currency(opex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
+                budget_display = t(
+                    "budget_capex_opex_format",
+                    locale=doc_lang,
+                    total_inv=tot_fmt,
+                    capex=cap_fmt,
+                    opex=op_fmt,
+                    default=f"~{tot_fmt} (~{cap_fmt} CapEx / ~{op_fmt} OpEx)",
+                )
+            else:
+                op_fmt = format_currency(opex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
+                budget_display = t(
+                    "budget_pure_opex_format",
+                    locale=doc_lang,
+                    opex=op_fmt,
+                    default=f"~{op_fmt} (100% OpEx)",
+                )
         else:
-            crit_dec = TOWER_CRITICAL_DECISIONS.get(tid, f"Aprobar plan director de modernización para {tname}.")
+            budget_display = fallback_budget_lbl
+
+        if top_project_name:
+            crit_dec = t(
+                "decision_priority_project_template",
+                locale=doc_lang,
+                project_name=top_project_name,
+                tower_name=tname,
+                default=f"Aprobar la ejecución prioritaria de '{top_project_name}' para el dominio de {tname}.",
+            )
+        else:
+            default_dec = t("decision_default_template", locale=doc_lang, tower_name=tname, default=f"Aprobar plan director de modernización para {tname}.")
+            crit_dec = t(f"decision_{tid}", locale=doc_lang, default=default_dec)
 
         items.append({
             "domain": f"{tid}: {tname}",
@@ -476,37 +524,86 @@ def _build_board_memo(
             "budget_estimate": budget_display,
         })
 
-    stratified_case = _build_stratified_financial_case(client_name, client_dir, towers_data, blueprint_files)
+    stratified_case = _build_stratified_financial_case(client_name, client_dir, towers_data, blueprint_files, doc_lang=doc_lang)
+
+    memo_headline = t(
+        "board_memo_headline",
+        locale=doc_lang,
+        client_name=client_name,
+        default=f"Board Memo: Resumen de Decisión Ejecutiva para el Consejo de Administración de {client_name}",
+    )
+    memo_summary = t(
+        "board_memo_summary",
+        locale=doc_lang,
+        default="Este memorando sintetiza en una sola página la postura de madurez tecnológica, la exposición financiera actuarial (Open FAIR) a 3 años y las decisiones críticas de inversión requeridas del Consejo para el ciclo 2026-2029.",
+    )
+    memo_consolidated_exposure = t(
+        "board_memo_consolidated_exposure",
+        locale=doc_lang,
+        default="Exposición financiera agregada calibrada bajo estándar FAIR en expedientes actuariales.",
+    )
+
+    tot_holding_all = total_holding_opex + total_holding_capex
+    tot_all_fmt = format_currency(tot_holding_all, currency_code=currency_code, locale=doc_lang, decimals=0)
+    tot_cap_fmt = format_currency(total_holding_capex, currency_code=currency_code, locale=doc_lang, decimals=0)
+    tot_op_fmt = format_currency(total_holding_opex, currency_code=currency_code, locale=doc_lang, decimals=0)
+
+    memo_budget_estimate_txt = t(
+        "total_holding_budget_summary",
+        locale=doc_lang,
+        total_inv=tot_all_fmt,
+        total_capex=tot_cap_fmt,
+        total_opex=tot_op_fmt,
+        default=f"Inversión Total Agregada (3 Años): ~{tot_all_fmt} (~{tot_cap_fmt} CapEx / ~{tot_op_fmt} OpEx)",
+    )
 
     return {
-        "headline": f"Board Memo: Resumen de Decisión Ejecutiva para el Consejo de Administración de {client_name}",
-        "summary": "Este memorando sintetiza en una sola página la postura de madurez tecnológica, la exposición financiera actuarial (Open FAIR) a 3 años y las decisiones críticas de inversión requeridas del Consejo para el ciclo 2026-2029.",
+        "headline": memo_headline,
+        "summary": memo_summary,
         "items": items,
-        "consolidated_exposure_3y": "Exposición financiera agregada calibrada bajo estándar FAIR en expedientes actuariales.",
-        "total_budget_estimate": "Inversión modular estructurada por horizontes de retorno (Waves 0-3).",
+        "consolidated_exposure_3y": memo_consolidated_exposure,
+        "total_budget_estimate": memo_budget_estimate_txt,
         "financial_stratification": stratified_case,
     }
 
 
-def _build_cross_tower_nexus(towers_data: list[dict], blueprint_files: list[Path]) -> dict[str, Any]:
+def _build_cross_tower_nexus(
+    towers_data: list[dict], blueprint_files: list[Path], doc_lang: str = "es"
+) -> dict[str, Any]:
     gen_tids = {t["id"].upper() for t in towers_data}
+    all_rules = _get_cross_tower_nexus_rules(doc_lang=doc_lang)
     active_rules = []
-    for r in CROSS_TOWER_NEXUS_RULES:
+    for r in all_rules:
         src_id = r["source_tower"].split(":")[0].strip().upper()
         tgt_id = r["target_tower"].split(":")[0].strip().upper()
         if src_id in gen_tids or tgt_id in gen_tids or len(gen_tids) >= 3:
             active_rules.append(r)
 
+    from assessment_engine.infrastructure.localization import t
+
     return {
-        "title": "Matriz de Interdependencias Cruzadas (Cross-Tower Nexus)",
-        "description": "La transformación de infraestructura no opera en silos estancos. La siguiente matriz ilustra las dependencias críticas donde las decisiones o retrasos en un dominio condicionan directamente la viabilidad de los demás.",
-        "dependencies": active_rules if active_rules else CROSS_TOWER_NEXUS_RULES,
+        "title": t(
+            "nexus_matrix_title",
+            locale=doc_lang,
+            default="Matriz de Interdependencias Cruzadas (Cross-Tower Nexus)",
+        ),
+        "description": t(
+            "nexus_matrix_description",
+            locale=doc_lang,
+            default="La transformación de infraestructura no opera en silos estancos. La siguiente matriz ilustra las dependencias críticas donde las decisiones o retrasos en un dominio condicionan directamente la viabilidad de los demás.",
+        ),
+        "dependencies": active_rules if active_rules else all_rules,
     }
 
 
 def _build_executive_callouts(
-    client_name: str, towers_data: list[dict], client_dir: Path | None = None
+    client_name: str,
+    towers_data: list[dict],
+    client_dir: Path | None = None,
+    doc_lang: str = "es",
 ) -> list[dict[str, str]]:
+    from assessment_engine.infrastructure.localization import format_currency, t
+
     fallbacks_path = (
         Path(__file__).resolve().parents[3]
         / "engine_config"
@@ -520,19 +617,21 @@ def _build_executive_callouts(
             strat_metrics = fb_data.get("financial_fallbacks", {}).get("stratification_metrics", {})
         except Exception:
             pass
-            
+
+    currency_code = "EUR"
     currency_symbol = "€"
     hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
     reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
-    industry_name = "infraestructura empresarial"
+    industry_name = t("default_industry_name", locale=doc_lang, default="infraestructura empresarial")
 
     if client_dir:
         for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
             try:
                 prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
+                currency_code = prof_data.get("currency_code", currency_code)
                 currency_symbol = prof_data.get("currency_symbol", currency_symbol)
-                hourly_downtime_cost = prof_data.get("hourly_downtime_cost_eur", hourly_downtime_cost)
-                reg_max_fine = prof_data.get("reg_max_fine_eur", reg_max_fine)
+                hourly_downtime_cost = float(prof_data.get("hourly_downtime_cost_eur", hourly_downtime_cost))
+                reg_max_fine = float(prof_data.get("reg_max_fine_eur", reg_max_fine))
                 break
             except Exception as ex:
                 logger.debug("Error leyendo custom_risk_profile: %s", ex)
@@ -547,39 +646,35 @@ def _build_executive_callouts(
             except Exception as ex:
                 logger.debug("Error leyendo client_intelligence industry: %s", ex)
 
+    reg_fine_fmt = format_currency(reg_max_fine, currency_code=currency_code, locale=doc_lang, decimals=0)
+    hourly_cost_fmt = format_currency(hourly_downtime_cost, currency_code=currency_code, locale=doc_lang, decimals=0)
+
+    placeholders = {
+        "client_name": client_name,
+        "industry_name": industry_name,
+        "reg_max_fine": reg_fine_fmt,
+        "hourly_downtime_cost": hourly_cost_fmt,
+        "currency": currency_symbol,
+    }
+
     return [
         {
             "callout_type": "legal",
-            "title": "ADVERTENCIA DE CUMPLIMIENTO REGULATORIO Y GOBERNANZA",
-            "message": (
-                f"Conforme al marco normativo aplicable para el sector de {industry_name}, las deficiencias no mitigadas "
-                f"en el plano de control, la trazabilidad forense o la notificación de incidentes pueden acarrear sanciones de hasta "
-                f"{reg_max_fine:,.0f} {currency_symbol} o el porcentaje legal estipulado sobre la facturación consolidada, "
-                f"con responsabilidad directa de supervisión atribuida al Consejo de Administración."
-            ),
-            "key_metric": f"Exposición sancionadora máxima estimada: {reg_max_fine:,.0f} {currency_symbol}",
+            "title": t("callout_regulatory_title", locale=doc_lang),
+            "message": t("callout_regulatory_message", locale=doc_lang, **placeholders),
+            "key_metric": t("callout_regulatory_metric", locale=doc_lang, **placeholders),
         },
         {
             "callout_type": "factory",
-            "title": "CONTINUIDAD OPERATIVA: PROTECCIÓN DE LÍNEAS Y PROCESOS CRÍTICOS",
-            "message": (
-                f"El coste de indisponibilidad técnica en los procesos de negocio centrales de {client_name} está calibrado en "
-                f"~{hourly_downtime_cost:,.0f} {currency_symbol} por hora de parada no programada. La arquitectura directiva prohíbe "
-                f"intervenciones invasivas sobre plataformas heredadas sin un perímetro de aislamiento compensatorio previo "
-                f"que garantice la operación continua."
-            ),
-            "key_metric": f"Coste de inactividad estimado: ~{hourly_downtime_cost:,.0f} {currency_symbol}/hora",
+            "title": t("callout_continuity_title", locale=doc_lang),
+            "message": t("callout_continuity_message", locale=doc_lang, **placeholders),
+            "key_metric": t("callout_continuity_metric", locale=doc_lang, **placeholders),
         },
         {
             "callout_type": "decision",
-            "title": "MANDATO DE DECISIÓN DEL COMITÉ: APROBACIÓN DE WAVE 0 (TRIAGE INMEDIATO)",
-            "message": (
-                "Se solicita al Comité de Dirección la ratificación de las intervenciones de choque para los primeros 90 días naturales "
-                "(Wave 0): 1) Control y custodia estricta de accesos administrativos privilegiados, 2) Activación de retención inmutable "
-                "en copias de seguridad de plataformas críticas, y 3) Formalización de acuerdos de nivel de servicio (SLA/RTO/RPO) "
-                "vinculados a impacto en cuenta de resultados."
-            ),
-            "key_metric": "Ventana de ejecución inmediata: 90 días naturales (Wave 0)",
+            "title": t("callout_wave0_title", locale=doc_lang),
+            "message": t("callout_wave0_message", locale=doc_lang, **placeholders),
+            "key_metric": t("callout_wave0_metric", locale=doc_lang, **placeholders),
         },
     ]
 
@@ -598,12 +693,18 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         return None
 
     intelligence_dossier = {}
+    doc_lang = "es"
     intelligence_path = Path(client_dir) / "client_intelligence.json"
     if intelligence_path.exists():
         try:
-            intelligence_dossier = build_client_context_packet(
-                load_client_intelligence(intelligence_path)
-            )
+            raw_int = json.loads(intelligence_path.read_text(encoding="utf-8-sig"))
+            intelligence_dossier = build_client_context_packet(raw_int)
+            doc_lang = (
+                raw_int.get("language")
+                or raw_int.get("locale")
+                or raw_int.get("doc_lang")
+                or "es"
+            ).lower()
         except Exception:
             intelligence_dossier = {}
 
@@ -614,7 +715,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         all_principles,
         all_implications,
         blueprint_towers,
-    ) = _aggregate_tower_blueprints(blueprint_files)
+    ) = _aggregate_tower_blueprints(blueprint_files, doc_lang=doc_lang)
 
     if not towers_data:
         return None
@@ -743,7 +844,7 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             init_def = {
                 "program": wave_label,
                 "title": human_name,
-                "business_case": "Mitigación de deuda técnica identificada en el grafo.",
+                "business_case": t("quick_win_objective_default", locale=doc_lang, default="Mitigación de deuda técnica identificada en el grafo."),
                 "start_month": 0
                 if "0" in wave_label
                 else 6
@@ -792,12 +893,17 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             "version": "v6.0 - Sovereign DTO",
         },
         "executive_summary": {
-            "headline": f"Índice de Madurez Tecnológica Global: {avg_score}/5.0",
+            "headline": t(
+                "maturity_pulse_headline_template",
+                locale=doc_lang,
+                avg_score=f"{avg_score:.1f}",
+                default=f"Índice de Madurez Tecnológica Global: {avg_score:.1f}/5.0",
+            ),
             "narrative": "PENDIENTE DE REFINADO ESTRATÉGICO",
             "key_business_impacts": [
-                "Aceleración del time-to-market",
-                "Reducción de riesgo operacional",
-                "Optimización de costes cloud",
+                t("impact_time_to_market", locale=doc_lang, default="Aceleración del time-to-market"),
+                t("impact_operational_risk", locale=doc_lang, default="Reducción de riesgo operacional"),
+                t("impact_cost_optimization", locale=doc_lang, default="Optimización de costes cloud"),
             ],
             "top_strategic_risks": strategic_risks[:5],
             "maturity_pulse": {
@@ -807,16 +913,24 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
             },
         },
         "strategic_overview": {
-            "asis_summary": "El ecosistema tecnológico actual muestra una fragmentación estructural entre silos operativos y una dependencia de procesos manuales que limita la escalabilidad.",
-            "tobe_vision": "Evolución hacia un modelo de plataforma automatizada y soberana (Sovereign DTO) que habilite la resiliencia operativa y la eficiencia económica.",
+            "asis_summary": t(
+                "strategic_overview_asis_default",
+                locale=doc_lang,
+                default="El ecosistema tecnológico actual muestra una fragmentación estructural entre silos operativos y una dependencia de procesos manuales que limita la escalabilidad.",
+            ),
+            "tobe_vision": t(
+                "strategic_overview_tobe_default",
+                locale=doc_lang,
+                default="Evolución hacia un modelo de plataforma automatizada y soberana (Sovereign DTO) que habilite la resiliencia operativa y la eficiencia económica.",
+            ),
             "value_targets": unique_implications[:5],
         },
         "burning_platform": [
             {
-                "theme": risk.get("title", "Riesgo Técnico"),
-                "business_risk": risk.get("business_impact", "Impacto no cuantificado"),
+                "theme": risk.get("title", t("risk_theme_default", locale=doc_lang, default="Riesgo Técnico")),
+                "business_risk": risk.get("business_impact", t("risk_business_impact_default", locale=doc_lang, default="Impacto no cuantificado")),
                 "root_causes": [
-                    risk.get("description", "Causa raíz bajo investigación")
+                    risk.get("description", t("risk_root_cause_default", locale=doc_lang, default="Causa raíz bajo investigación"))
                 ],
             }
             for risk in strategic_risks[:5]
@@ -826,23 +940,33 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         "heatmap": towers_data,
         "tower_bottom_lines": [
             {
-                "id": t["id"],
-                "name": t["name"],
-                "score": t["score"],
-                "band": t["band"],
-                "status_color": t["status_color"],
-                "bottom_line": t["executive_message"],
+                "id": t_item["id"],
+                "name": t_item["name"],
+                "score": t_item["score"],
+                "band": t_item["band"],
+                "status_color": t_item["status_color"],
+                "bottom_line": t_item["executive_message"],
             }
-            for t in towers_data
+            for t_item in towers_data
         ],
         "target_vision": {
-            "value_proposition": "Transformación hacia un modelo de plataforma soberana y automatizada.",
+            "value_proposition": t(
+                "target_vision_value_prop_default",
+                locale=doc_lang,
+                default="Transformación hacia un modelo de plataforma soberana y automatizada.",
+            ),
             "evolution_principles": [
-                {"principle": p, "description": "Principio de diseño estratégico."}
+                {
+                    "principle": p,
+                    "description": t("evolution_principle_desc_default", locale=doc_lang, default="Principio de diseño estratégico."),
+                }
                 for p in unique_principles[:5]
             ],
             "strategic_pillars": [
-                {"pillar": p, "description": "Pilar de transformación."}
+                {
+                    "pillar": p,
+                    "description": t("strategic_pillar_desc_default", locale=doc_lang, default="Pilar de transformación."),
+                }
                 for p in unique_implications[:5]
             ],
         },
@@ -853,9 +977,9 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
         "executive_decisions": {
             "immediate_decisions": [
                 {
-                    "decision_type": "Inversión",
-                    "action_required": "Aprobar presupuesto para Wave 0",
-                    "impact_if_delayed": "Retraso crítico en el plan de transformación",
+                    "decision_type": t("decision_type_investment", locale=doc_lang, default="Inversión"),
+                    "action_required": t("immediate_decision_wave0_action", locale=doc_lang, default="Aprobar presupuesto para Wave 0"),
+                    "impact_if_delayed": t("immediate_decision_wave0_delay", locale=doc_lang, default="Retraso crítico en el plan de transformación"),
                 }
             ]
         },
@@ -866,13 +990,19 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     }
 
     # Populates the Programs-by-Tower data structure, a prerequisite for enabling the 'To-Do' deep dive analysis feature in the final report.
-    for t in towers_data:
+    for t_item in towers_data:
+        prog_name = t(
+            "program_modernization_template",
+            locale=doc_lang,
+            tower_name=t_item["name"],
+            default=f"Programa: Modernización de {t_item['name']}",
+        )
         payload["execution_roadmap"]["programs"].append(
             {
-                "id": t["id"],
-                "name": f"Programa: Modernización de {t['name']}",
-                "description": t["executive_message"],
-                "projects": [i for i in all_initiatives if i["tower"] == t["name"]],
+                "id": t_item["id"],
+                "name": prog_name,
+                "description": t_item["executive_message"],
+                "projects": [i for i in all_initiatives if i["tower"] == t_item["name"]],
             }
         )
 
@@ -932,16 +1062,38 @@ def build_global_payload(client_dir: Path, client_name: str) -> dict[str, Any] |
     if intel_headline:
         payload["executive_summary"]["headline"] = intel_headline
     else:
-        payload["executive_summary"]["headline"] = (
-            f"{client_name}: Estrategia de Modernización de Infraestructura"
+        payload["executive_summary"]["headline"] = t(
+            "global_report_headline_template",
+            locale=doc_lang,
+            client_name=client_name,
+            default=f"{client_name}: Estrategia de Modernización de Infraestructura",
         )
 
     if intel_narrative:
         payload["executive_summary"]["narrative"] = intel_narrative
 
-    payload["board_memo"] = _build_board_memo(towers_data, blueprint_files, client_name, client_dir=client_dir)
-    payload["cross_tower_nexus"] = _build_cross_tower_nexus(towers_data, blueprint_files)
-    payload["executive_callouts"] = _build_executive_callouts(client_name, towers_data, client_dir=client_dir)
+    doc_lang = "es"
+    if intelligence_path.exists():
+        try:
+            raw_int = json.loads(intelligence_path.read_text(encoding="utf-8-sig"))
+            doc_lang = (
+                raw_int.get("language")
+                or raw_int.get("locale")
+                or raw_int.get("doc_lang")
+                or "es"
+            ).lower()
+        except Exception:
+            pass
+
+    payload["board_memo"] = _build_board_memo(
+        towers_data, blueprint_files, client_name, client_dir=client_dir, doc_lang=doc_lang
+    )
+    payload["cross_tower_nexus"] = _build_cross_tower_nexus(
+        towers_data, blueprint_files, doc_lang=doc_lang
+    )
+    payload["executive_callouts"] = _build_executive_callouts(
+        client_name, towers_data, client_dir=client_dir, doc_lang=doc_lang
+    )
 
     return payload
 

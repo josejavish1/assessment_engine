@@ -227,6 +227,8 @@ def run_lockin_test() -> int:
             ".mypy_cache",
             ".ruff_cache",
             ".artifacts",
+            "node_modules",
+            ".next",
         )
 
         # Copy tree
@@ -239,6 +241,8 @@ def run_lockin_test() -> int:
                 ".pytest_cache",
                 ".mypy_cache",
                 ".ruff_cache",
+                "infrastructure",
+                "business_command_center",
             ):
                 continue
             if item.is_dir():
