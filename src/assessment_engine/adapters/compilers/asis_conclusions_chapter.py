@@ -175,29 +175,6 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
         tcPr.append(tcW)
         shade_cell(cell, p_color_hex)
 
-    matrix_data = [
-        (
-            "Exposición Económica",
-            f"• Consumo anual de la Expectativa de Pérdida Anualizada (**{formatted_ale_item} {currency}** de ALE).\n• Vulnerabilidad latente a pérdidas por Déficit Esperado Condicional de hasta **{formatted_p90} {currency}**.\n• Acumulación de deuda técnica inasumible e incremento exponencial de ineficiencias operativas en 5 años.",
-            "• Amortización progresiva de la deuda técnica.\n• Recuperación de la eficiencia operativa y reducción de la exposición al riesgo en un **80%**.\n• Retorno de inversión claro basado en la eliminación de pérdidas."
-        ),
-        (
-            "Resiliencia y SLA",
-            "• Operación reactiva en silos técnicos con procesos manuales.\n• Incremento constante del tiempo de resolución de fallos (MTTR).\n• Detección tardía de incidentes críticos por usuarios finales.",
-            "• Observabilidad unificada y capacidades proactivas (AIOps).\n• Reducción radical del MTTR y prevención de fallos antes del impacto.\n• Estabilidad y fiabilidad garantizadas mediante SLOs técnicos."
-        ),
-        (
-            "Gobernanza y Cumplimiento",
-            "• Incapacidad estructural para demostrar cumplimiento normativo en tiempo real.\n• Exposición activa a contingencias operacionales y sanciones administrativas bajo normativas aplicables (como NIS2, RGPD o estándares sectoriales).",
-            "• Cumplimiento continuo y auditable por diseño mediante gobernanza programática (*Policy-as-Code*).\n• Conformidad nativa y automática de la infraestructura."
-        ),
-        (
-            "Talento y Evolución",
-            "• Sobrecarga de los equipos de sistemas en tareas repetitivas y manuales.\n• Desgaste del talento, aumento de la rotación y estancamiento del Time-to-Market de proyectos estratégicos.",
-            "• Autoservicio unificado (*Platform Self-Service*) que elimina la fricción para desarrolladores.\n• Liberación de la sobrecarga del equipo de IT para centrar el talento en tareas de alto valor estratégico."
-        )
-    ]
-
     for r_idx, row_data in enumerate(matrix_data):
         row = dec_table.add_row()
         row_bg = alt_row_hex if r_idx % 2 == 1 else "FFFFFF"

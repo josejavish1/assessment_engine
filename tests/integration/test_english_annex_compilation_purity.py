@@ -154,6 +154,9 @@ def test_english_annex_compilation_purity(tmp_path: Path) -> None:
         "Projected Financial Exposure:",
         "Annual Loss Exposure (ALE):",
         "Worst Case (CVaR):",
+        "Self-Assessment Questionnaire",
+        "Enterprise Context Dossier",
+        "Platform Intelligence Layer",
     ]
     for en_phrase in expected_en:
         assert en_phrase in corpus, f"Expected English phrase '{en_phrase}' not found in compiled DOCX"
@@ -170,6 +173,11 @@ def test_english_annex_compilation_purity(tmp_path: Path) -> None:
         "Exposición Financiera Proyectada:",
         "Pérdida Anualizada (ALE):",
         "Peor Caso (CVaR):",
+        "Cuestionario de Autoevaluación",
+        "Dossier de Contexto",
+        "Capa de Inteligencia de la Plataforma",
+        "Pérdida Anualizada (ALE - Annual Loss Exposure):",
+        "Déficit Esperado Condicional",
     ]
     for es_phrase in banned_es:
         assert es_phrase not in corpus, f"Banned Spanish phrase '{es_phrase}' leaked into English DOCX"

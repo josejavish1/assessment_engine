@@ -237,34 +237,60 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
         )
     add_body_paragraph(doc, p_metrics_intro, text_color_rgb=text_color_rgb)
 
-    p_m1 = add_markdown_bullet_local(
-        "Pérdida Anualizada (ALE - Annual Loss Exposure): Representa la media aritmética de todos los escenarios de pérdida anualizada agregados. "
-        "Es el impacto económico promedio latente que la organización experimenta cada año si decide mantener el statu quo (coste de inacción).",
-        space_after=4
-    )
+    if doc_lang == "es":
+        p_m1 = add_markdown_bullet_local(
+            "Pérdida Anualizada (ALE - Annual Loss Exposure): Representa la media aritmética de todos los escenarios de pérdida anualizada agregados. "
+            "Es el impacto económico promedio latente que la organización experimenta cada año si decide mantener el statu quo (coste de inacción).",
+            space_after=4
+        )
 
-    p_m2 = add_markdown_bullet_local(
-        "Déficit Esperado Condicional (CVaR / Expected Shortfall): Representa el promedio matemático del 2.5% de los peores escenarios de la distribución de pérdidas (Expected Shortfall al 97.5%). "
-        "Se define como una métrica de riesgo matemáticamente coherente (coherent risk measure) y de referencia bajo los más estrictos estándares internacionales de gestión financiera (como la Fundamental Review of the Trading Book - FRTB de Basilea III), "
-        "capturando con rigor la verdadera magnitud de las pérdidas extremas en la cola de la distribución sin sufrir el efecto de dilución de eventos de baja frecuencia. Al agregar los valores, ilustramos el peor caso estructural absoluto "
-        "donde las mayores vulnerabilidades convergen simultáneamente, proporcionando el requerimiento de capital de resiliencia necesario para proteger el Valor de la Empresa (Enterprise Value).",
-        space_after=4
-    )
+        p_m2 = add_markdown_bullet_local(
+            "Déficit Esperado Condicional (CVaR / Expected Shortfall): Representa el promedio matemático del 2.5% de los peores escenarios de la distribución de pérdidas (Expected Shortfall al 97.5%). "
+            "Se define como una métrica de riesgo matemáticamente coherente (coherent risk measure) y de referencia bajo los más estrictos estándares internacionales de gestión financiera (como la Fundamental Review of the Trading Book - FRTB de Basilea III), "
+            "capturando con rigor la verdadera magnitud de las pérdidas extremas en la cola de la distribución sin sufrir el efecto de dilución de eventos de baja frecuencia. Al agregar los valores, ilustramos el peor caso estructural absoluto "
+            "donde las mayores vulnerabilidades convergen simultáneamente, proporcionando el requerimiento de capital de resiliencia necesario para proteger el Valor de la Empresa (Enterprise Value).",
+            space_after=4
+        )
 
-    p_m3 = add_markdown_bullet_local(
-        f"Rango Probabilístico de Pérdidas: Muestra la volatilidad de la exposición del riesgo, ilustrando desde un año virtual benigno (Mín) hasta "
-        f"un año catastrófico (Máx) provocado por la ineficiencia acumulada de múltiples fallos y sanciones regulatorias de {reg_name} concurrentes.",
-        space_after=12
-    )
+        p_m3 = add_markdown_bullet_local(
+            f"Rango Probabilístico de Pérdidas: Muestra la volatilidad de la exposición del riesgo, ilustrando desde un año virtual benigno (Mín) hasta "
+            f"un año catastrófico (Máx) provocado por la ineficiencia acumulada de múltiples fallos y sanciones regulatorias de {reg_name} concurrentes.",
+            space_after=12
+        )
 
-    p_convergence = (
-        "*(Nota de Estabilidad y Exposición de Riesgo Bruto: El volumen de 10.000 iteraciones simuladas garantiza la plena convergencia "
-        "y estabilidad matemática de los indicadores económicos bajo el Teorema del Límite Central, proporcionando un estimador de exposición "
-        "financiero de alta precisión y máxima fidelidad estadística. Asimismo, todos los valores monetarios aquí expuestos (ALE y CVaR) representan "
-        "el Riesgo Bruto Latente (Gross Exposure) antes de la aplicación de posibles mitigaciones de transferencia financiera (como franquicias o topes de pólizas de ciberseguro). "
-        "Por consiguiente, deben interpretarse como indicadores de magnitud probabilística para la priorización ejecutiva de inversiones tecnológicas (Business Case), "
-        "no como límites absolutos o provisiones directas de pasivos en el balance contable de la organización).*"
-    )
+        p_convergence = (
+            "*(Nota de Estabilidad y Exposición de Riesgo Bruto: El volumen de 10.000 iteraciones simuladas garantiza la plena convergencia "
+            "y estabilidad matemática de los indicadores económicos bajo el Teorema del Límite Central, proporcionando un estimador de exposición "
+            "financiero de alta precisión y máxima fidelidad estadística. Asimismo, todos los valores monetarios aquí expuestos (ALE y CVaR) representan "
+            "el Riesgo Bruto Latente (Gross Exposure) antes de la aplicación de posibles mitigaciones de transferencia financiera (como franquicias o topes de pólizas de ciberseguro). "
+            "Por consiguiente, deben interpretarse como indicadores de magnitud probabilística para la priorización ejecutiva de inversiones tecnológicas (Business Case), "
+            "no como límites absolutos o provisiones directas de pasivos en el balance contable de la organización).*"
+        )
+    else:
+        p_m1 = add_markdown_bullet_local(
+            "Annual Loss Exposure (ALE): Represents the arithmetic mean across all aggregated annualized loss scenarios. "
+            "It is the latent baseline economic drag experienced annually under the status quo (Cost of Inaction).",
+            space_after=4
+        )
+
+        p_m2 = add_markdown_bullet_local(
+            "Conditional Value at Risk (CVaR / Expected Shortfall): Represents the mathematical average of the worst 2.5% tail loss scenarios (Expected Shortfall at 97.5%). "
+            "Recognized as a coherent risk measure under international banking standards (FRTB Basel III), rigorously capturing severe tail risk without low-frequency dilution. "
+            "By aggregating across pillars, it models the absolute worst-case scenario where primary and secondary losses converge concurrently, defining the resilience capital required to protect Enterprise Value.",
+            space_after=4
+        )
+
+        p_m3 = add_markdown_bullet_local(
+            f"Probabilistic Loss Range: Illustrates risk volatility from a benign baseline year (Min) to a catastrophic tail scenario (Max) "
+            f"driven by compounded technical outages and concurrent statutory fines under {reg_name}.",
+            space_after=12
+        )
+
+        p_convergence = (
+            "*(Note on Convergence and Gross Risk: 10,000 iterations guarantee full mathematical convergence under the Central Limit Theorem. "
+            "Monetary figures represent Gross Latent Exposure before financial risk transfer mitigations, serving as an executive prioritization "
+            "indicator for technology investment, not an accounting liability reserve).*"
+        )
     add_body_paragraph(doc, p_convergence, text_color_rgb=text_color_rgb)
     
         # Disable the `autofit` property to enforce a fixed table width of 6.5 inches.
@@ -320,63 +346,121 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     else:
         # Dynamically generate a context-aware bibliography based on the specified technology stack to avoid invalid source file references.
         client_name_slug = client_name.lower().replace(" ", "_")
-        src_data = [
-            (
-                "[Cuestionario de Autoevaluación]",
-                f"preguntas_{client_name_slug}.txt",
-                f"Cuestionario estructurado de autoevaluación técnica de la torre de {tower_name}, recopilando "
-                f"las respuestas oficiales, notas y telemetrías declaradas de buena fe por el equipo de ingeniería de {client_name}.",
-            ),
-            (
-                "[Dossier de Contexto]",
-                f"contexto_{client_name_slug}.docx",
-                f"Dossier estratégico de contexto de arquitectura de {client_name} que define la volumetría del "
-                f"patrimonio, distribución de centros de datos, dependencias y criticidad operativa general.",
-            ),
-            (
-                "[Capa de Inteligencia de la Plataforma]",
-                "client_intelligence.json",
-                f"Módulo de ingesta y análisis semántico asistido por IA de la plataforma que recopila de forma automatizada "
-                f"las regulaciones de cumplimiento (como NIS2, RGPD o DORA), requerimientos corporativos y baselines del sector (ITIC) "
-                f"para calibrar y enriquecer los hallazgos técnicos con métricas cuantitativas de riesgo de negocio.",
-            ),
-            (
-                "[ITIC-DOWNTIME]",
-                "ITIC Global Server Hardware Downtime Report",
-                "Estudio de referencia mundial y métrica estadística industrial que barema el coste promedio por hora de "
-                "indisponibilidad de infraestructura core en grandes corporaciones y servicios críticos, utilizado como baseline de calibración de pérdidas primarias.",
-            ),
-            (
-                "[CISA-KEV]",
-                "CISA Known Exploited Vulnerabilities Catalog",
-                "Catálogo internacional de vulnerabilidades explotadas activamente por agentes de amenaza, mantenido por la Cybersecurity "
-                "and Infrastructure Security Agency (CISA) y utilizado como baseline para calibrar la Frecuencia de Eventos de Amenaza (TEF).",
-            ),
-            (
-                "[DIRECTIVA-NIS2]",
-                "Directiva (UE) 2022/2555 (NIS2)",
-                "Directiva del Parlamento Europeo y del Consejo relativa a medidas destinadas a garantizar un elevado nivel común de ciberseguridad "
-                "en toda la Unión, utilizada para calibrar el límite máximo legal de sanciones administrativas por negligencia (pérdidas secundarias).",
-            ),
-            (
-                "[ISO-27001]",
-                "Norma Internacional ISO/IEC 27001",
-                "Estándar internacional de sistemas de gestión de seguridad de la información (SGSI), utilizado como marco de referencia "
-                "universal para evaluar los controles de seguridad técnica, gobernanza y resiliencia operacional.",
-            ),
-            (
-                "[DAMA-DMBOK]",
-                "DAMA Data Management Body of Knowledge (DAMA-DMBOK v2)",
-                "Marco metodológico estándar internacional para la evaluación de madurez del gobierno y gestión de datos corporativos, "
-                "utilizado para modelar y auditar la consistencia del pilar de gobierno de datos de la plataforma.",
-            ),
-            (
-                "[GOOGLE-DORA]",
-                "Google DevOps Research and Assessment (DORA) Framework",
-                "Estándar industrial internacional utilizado para evaluar la madurez de la automatización, entrega continua, "
-                "y fiabilidad operacional (SRE) en ecosistemas modernos de desarrollo e infraestructura híbrida.",
-            )
-        ]
+        if doc_lang == "es":
+            src_data = [
+                (
+                    "[Cuestionario de Autoevaluación]",
+                    f"preguntas_{client_name_slug}.txt",
+                    f"Cuestionario estructurado de autoevaluación técnica de la torre de {tower_name}, recopilando "
+                    f"las respuestas oficiales, notas y telemetrías declaradas de buena fe por el equipo de ingeniería de {client_name}.",
+                ),
+                (
+                    "[Dossier de Contexto]",
+                    f"contexto_{client_name_slug}.docx",
+                    f"Dossier estratégico de contexto de arquitectura de {client_name} que define la volumetría del "
+                    f"patrimonio, distribución de centros de datos, dependencias y criticidad operativa general.",
+                ),
+                (
+                    "[Capa de Inteligencia de la Plataforma]",
+                    "client_intelligence.json",
+                    f"Módulo de ingesta y análisis semántico asistido por IA de la plataforma que recopila de forma automatizada "
+                    f"las regulaciones de cumplimiento (como NIS2, RGPD o DORA), requerimientos corporativos y baselines del sector (ITIC) "
+                    f"para calibrar y enriquecer los hallazgos técnicos con métricas cuantitativas de riesgo de negocio.",
+                ),
+                (
+                    "[ITIC-DOWNTIME]",
+                    "ITIC Global Server Hardware Downtime Report",
+                    "Estudio de referencia mundial y métrica estadística industrial que barema el coste promedio por hora de "
+                    "indisponibilidad de infraestructura core en grandes corporaciones y servicios críticos, utilizado como baseline de calibración de pérdidas primarias.",
+                ),
+                (
+                    "[CISA-KEV]",
+                    "CISA Known Exploited Vulnerabilities Catalog",
+                    "Catálogo internacional de vulnerabilidades explotadas activamente por agentes de amenaza, mantenido por la Cybersecurity "
+                    "and Infrastructure Security Agency (CISA) y utilizado como baseline para calibrar la Frecuencia de Eventos de Amenaza (TEF).",
+                ),
+                (
+                    "[DIRECTIVA-NIS2]",
+                    "Directiva (UE) 2022/2555 (NIS2)",
+                    "Directiva del Parlamento Europeo y del Consejo relativa a medidas destinadas a garantizar un elevado nivel común de ciberseguridad "
+                    "en toda la Unión, utilizada para calibrar el límite máximo legal de sanciones administrativas por negligencia (pérdidas secundarias).",
+                ),
+                (
+                    "[ISO-27001]",
+                    "Norma Internacional ISO/IEC 27001",
+                    "Estándar internacional de sistemas de gestión de seguridad de la información (SGSI), utilizado como marco de referencia "
+                    "universal para evaluar los controles de seguridad técnica, gobernanza y resiliencia operacional.",
+                ),
+                (
+                    "[DAMA-DMBOK]",
+                    "DAMA Data Management Body of Knowledge (DAMA-DMBOK v2)",
+                    "Marco metodológico estándar internacional para la evaluación de madurez del gobierno y gestión de datos corporativos, "
+                    "utilizado para modelar y auditar la consistencia del pilar de gobierno de datos de la plataforma.",
+                ),
+                (
+                    "[GOOGLE-DORA]",
+                    "Google DevOps Research and Assessment (DORA) Framework",
+                    "Estándar industrial internacional utilizado para evaluar la madurez de la automatización, entrega continua, "
+                    "y fiabilidad operacional (SRE) en ecosistemas modernos de desarrollo e infraestructura híbrida.",
+                )
+            ]
+        else:
+            src_data = [
+                (
+                    "[Self-Assessment Questionnaire]",
+                    f"questions_{client_name_slug}.txt",
+                    f"Structured self-assessment technical questionnaire for the {tower_name} tower, compiling official responses, "
+                    f"notes, and operational telemetry declared in good faith by the {client_name} engineering team.",
+                ),
+                (
+                    "[Enterprise Context Dossier]",
+                    f"context_{client_name_slug}.docx",
+                    f"Strategic enterprise architecture context dossier for {client_name} defining platform footprint, "
+                    f"datacenter distribution, dependencies, and overall operational criticality.",
+                ),
+                (
+                    "[Platform Intelligence Layer]",
+                    "client_intelligence.json",
+                    "AI-assisted semantic ingestion and analysis module gathering statutory compliance mandates (such as NIS2, GDPR, or DORA), "
+                    "corporate requirements, and industry baselines to enrich technical findings with quantitative business risk metrics.",
+                ),
+                (
+                    "[ITIC-DOWNTIME]",
+                    "ITIC Global Server Hardware Downtime Report",
+                    "Global industry benchmark calibrating average hourly cost of downtime for core enterprise infrastructure in "
+                    "large corporations and critical infrastructure operators, utilized as a baseline for primary financial loss calibration.",
+                ),
+                (
+                    "[CISA-KEV]",
+                    "CISA Known Exploited Vulnerabilities Catalog",
+                    "Catalog of vulnerabilities actively exploited in the wild, maintained by the Cybersecurity and Infrastructure Security "
+                    "Agency (CISA) to calibrate Threat Event Frequency (TEF).",
+                ),
+                (
+                    "[DIRECTIVE-NIS2]",
+                    "Directive (EU) 2022/2555 (NIS2)",
+                    "European Directive on measures for a high common level of cybersecurity across the Union, used to calibrate "
+                    "statutory maximum administrative fines for negligence.",
+                ),
+                (
+                    "[ISO-27001]",
+                    "International Standard ISO/IEC 27001",
+                    "International standard for information security management systems (ISMS), used as an authoritative benchmark for "
+                    "technical security controls, governance, and operational resilience.",
+                ),
+                (
+                    "[DAMA-DMBOK]",
+                    "DAMA Data Management Body of Knowledge (DAMA-DMBOK v2)",
+                    "International standard framework for corporate data management and governance maturity assessment, used to evaluate "
+                    "the data governance pillar.",
+                ),
+                (
+                    "[GOOGLE-DORA]",
+                    "Google DevOps Research and Assessment (DORA) Framework",
+                    "International industry framework used to evaluate DevOps maturity, continuous delivery, and Site Reliability Engineering "
+                    "(SRE) capabilities in hybrid development ecosystems.",
+                )
+            ]
 
     for s_idx, row_vals in enumerate(src_data):
         row = source_table.add_row()
