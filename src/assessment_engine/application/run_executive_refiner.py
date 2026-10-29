@@ -60,7 +60,7 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     prompt_func = get_global_refiner_prompt if is_global else get_tower_refiner_prompt
 
     from assessment_engine.infrastructure.localization import resolve_target_language_name
-    doc_lang_code = findings.get("meta", {}).get("language") or findings.get("document_meta", {}).get("language") or "es"
+    doc_lang_code = findings.get("meta", {}).get("language") or findings.get("document_meta", {}).get("language") or "en"
     target_language = resolve_target_language_name(doc_lang_code)
 
     last_error = ""

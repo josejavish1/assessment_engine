@@ -67,9 +67,11 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
             )
         )
 
+    score = 100.0 if passed else round((ratio / 80.0) * 100.0, 1)
+
     return ProbeResult(
         probe_name="assertion_quality",
-        score_pct=ratio,
+        score_pct=score,
         passed=passed,
         metrics={
             "total_tests": total_tests,
