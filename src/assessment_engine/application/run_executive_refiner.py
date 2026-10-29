@@ -59,10 +59,18 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     )
     prompt_func = get_global_refiner_prompt if is_global else get_tower_refiner_prompt
 
+    from assessment_engine.infrastructure.localization import resolve_target_language_name
+    doc_lang_code = findings.get("meta", {}).get("language") or findings.get("document_meta", {}).get("language") or "es"
+    target_language = resolve_target_language_name(doc_lang_code)
+
     last_error = ""
     for attempt in range(3):
         try:
-            message = prompt_func(json.dumps(findings), json.dumps(grounding_data))
+            message = prompt_func(
+                findings_json=json.dumps(findings),
+                grounding_json=json.dumps(grounding_data),
+                target_language=target_language,
+            )
             if last_error:
                 message += f"\n\n🚨 PROTOCOL VIOLATION DETECTED:\n{last_error}\nPlease correct the text to be 100% objective, neutral, and professional."
 
@@ -218,7 +226,6 @@ def _normalize_roadmap_horizon_item(item: Any, h_key: str) -> Any:
         )
     item_copy.pop("program_id", None)
 
-    # Stage 2: Consolidate business case
     if "business_case" not in item_copy or not item_copy["business_case"]:
         item_copy["business_case"] = (
             item_copy.get("objective")

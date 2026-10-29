@@ -25,6 +25,7 @@ class DynamicLocaleSynthesizer:
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     def synthesize_locale(self, target_locale: str) -> dict[str, Any]:
+        """Synthesizes or retrieves cached localized dictionary for the target language code."""
         import json
         import re
 

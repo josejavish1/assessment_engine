@@ -115,7 +115,6 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     for b_idx, b_txt in enumerate(bullets_sim):
         add_markdown_bullet_local(b_txt, space_after=12 if b_idx == len(bullets_sim) - 1 else 4)
 
-    # Section 4: Decision Metrics
     sub_4_title = t("appendix_fair_decision_metrics_title", locale=doc_lang)
     add_appendix_subheading(doc, sub_4_title, primary_color_rgb=p_color_rgb)
     p_metrics_intro = t("appendix_fair_metrics_intro", locale=doc_lang)

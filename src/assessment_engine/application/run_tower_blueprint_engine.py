@@ -640,7 +640,6 @@ def _reconcile_orchestrator_roadmap_and_dependencies(
                 return cand_orig
         return None
 
-    # Reconcile external dependencies
     for dep in closing_data.get("external_dependencies", []):
         dep_name = dep.get("depends_on")
         if dep_name in ["Independiente", "Ninguna", None]:
@@ -1033,7 +1032,6 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
         model_name = get_model(ModelTier.REASONING)
 
-    # Phase 2: Architectural Gravity Profile
     logger.info("Pre-flight: Calculating Architectural Gravity Profile for %s...", client_name)
     dynamic_target_maturity, gravity_constraint = await _resolve_gravity_profile(
         model_name, intel_str, client_name
@@ -1121,7 +1119,6 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     total_ale = _calculate_total_fair_ale(blueprint_payload)
 
-    # Phase 6: Orchestrator Snapshot & Roadmap
     logger.info("Generating Executive Snapshot and Strategic Roadmap...")
     closing_prompt = get_closing_orchestrator_prompt(
         tower_name=tower_name,

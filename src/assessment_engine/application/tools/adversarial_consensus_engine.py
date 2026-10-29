@@ -212,31 +212,26 @@ class AdversarialConsensusEngine:
         """
         
         try:
-            # Iteration 1: CFO adversarial critique
             history += "--- ROUND 1: CFO CHALLENGE ---\n"
             cfo_prompt = cfo_prompt_base + "\n" + history + "\nFormulate your initial challenge:"
             cfo_resp1 = await self._generate_text_with_retry(cfo_prompt)
             history += f"👔 CFO: {cfo_resp1}\n\n"
             
-            # Iteration 2: Actuary statistical defense
             history += "--- ROUND 2: ACTUARY DEFENSE ---\n"
             act_prompt = actuary_prompt_base + "\n" + history + "\nState your defense based on the absence of robust operational controls:"
             act_resp1 = await self._generate_text_with_retry(act_prompt)
             history += f"🧮 ACTUARY: {act_resp1}\n\n"
             
-            # Iteration 3: CFO fiscal counter-attack
             history += "--- ROUND 3: CFO COUNTER-ARGUMENT ---\n"
             cfo_prompt2 = cfo_prompt_base + "\n" + history + "\nRespond to the Actuary, defending local compensating controls and operational workarounds:"
             cfo_resp2 = await self._generate_text_with_retry(cfo_prompt2)
             history += f"👔 CFO: {cfo_resp2}\n\n"
             
-            # Iteration 4: Actuary consensus synthesis
             history += "--- ROUND 4: FINAL ACTUARY SYNTHESIS ---\n"
             act_prompt2 = actuary_prompt_base + "\n" + history + "\nRespond to the CFO, converging on the empirical state of the control (Implemented/Partial/Absent):"
             act_resp2 = await self._generate_text_with_retry(act_prompt2)
             history += f"🧮 ACTUARY: {act_resp2}\n\n"
             
-            # Iteration 5: Consensus extraction to Pydantic
             history += "--- ROUND 5: SR 11-7 RATIONALE EXTRACTION (FAIR-CAM GROUNDING) ---\n"
             final_prompt = f"""
             Based on the 4-round adversarial debate, classify the implementation maturity of each relevant control from the catalog for this vulnerability, substantiated under model risk governance standard SR 11-7.

@@ -347,11 +347,11 @@ def _build_stratified_financial_case(
     if year_1_opex <= 0.0:
         year_1_opex = total_opex_inv * 0.40 if total_opex_inv > 0 else 250000.0
 
-    # Layer 1: Dynamic Cash Inefficiency (Scaled proportionally to revenue benchmark)
+    # Layer 1: Cash Inefficiency modeling
     layer_1_amount = round(annual_revenue * finops_waste_ratio, 0)
     layer_1_display = format_currency(layer_1_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
 
-    # Layer 2: Dynamic Operational Friction (Calibrated hourly downtime x baseline downtime hours)
+    # Operational downtime friction component
     layer_2_amount = round(hourly_downtime_cost * baseline_downtime_hours, 0)
     layer_2_display = format_currency(layer_2_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
 

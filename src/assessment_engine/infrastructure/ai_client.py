@@ -43,6 +43,7 @@ class TokenBucketRateLimiter:
         self._lock = asyncio.Lock()
 
     async def acquire(self) -> None:
+        """Acquires a single token from the bucket, throttling asynchronously if bucket is exhausted."""
         async with self._lock:
             now = time.monotonic()
             elapsed = now - self.last_update

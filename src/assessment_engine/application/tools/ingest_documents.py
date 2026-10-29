@@ -23,14 +23,12 @@ async def run_ingestion(
     print(f"📦 [Ingest] Inicializando Evidence Engine para cliente '{client_id}'...")
     evidence_engine = EvidenceEngine(client_id=client_id, storage_dir=resolved_storage)
 
-    # Ingest context file if provided
     if context_file and context_file.is_file():
         print(f"📄 [Ingest] Ingestando contexto: {context_file}...")
         evidence_engine.ingest_file(context_file)
     elif context_file:
         print(f"⚠️ [Ingest] Archivo de contexto no encontrado: {context_file}")
 
-    # Ingest responses file if provided
     if responses_file and responses_file.is_file():
         print(f"📝 [Ingest] Ingestando respuestas: {responses_file}...")
         evidence_engine.ingest_file(responses_file)
@@ -50,6 +48,7 @@ async def run_ingestion(
 
 
 def main() -> None:
+    """CLI entrypoint for document ingestion and hierarchical knowledge graph indexing."""
     parser = argparse.ArgumentParser(
         description="Universal CLI for Document Ingestion and Raptor Indexing."
     )

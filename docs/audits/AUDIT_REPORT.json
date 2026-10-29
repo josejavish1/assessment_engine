@@ -1,7 +1,7 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1793312077,
+  "timestamp": 1793312555,
   "global_grade": "A+",
   "global_score": 100.0,
   "probes": {
@@ -35,12 +35,12 @@
       "score_pct": 99.6,
       "passed": true,
       "metrics": {
-        "prod_sloc": 46603,
-        "test_sloc": 19860,
+        "prod_sloc": 46608,
+        "test_sloc": 19862,
         "test_to_code_ratio": 0.43,
         "maintainability_index_sei": 33.3,
         "typed_functions_pct": 90.6,
-        "docstring_coverage_pct": 80.0,
+        "docstring_coverage_pct": 80.3,
         "max_cognitive_complexity": 227,
         "rango_d_functions_count": 2,
         "god_modules_count": 0,
@@ -115,7 +115,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 1315,
+          "line_number": 1314,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'render_tobe_domain_architectures': CoC = 54 (cognitive limit <= 45)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -691,7 +691,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 152,
+          "line_number": 153,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_execute_query_with_retry': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -700,7 +700,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 152,
+          "line_number": 153,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_execute_query_with_retry': CoC = 29 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -709,7 +709,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 245,
+          "line_number": 246,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in '_robust_unwrap_and_validate': 5 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -718,7 +718,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 245,
+          "line_number": 246,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_robust_unwrap_and_validate': CoC = 24 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -835,7 +835,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/localization.py",
-          "line_number": 92,
+          "line_number": 93,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'load_locales_catalog': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -844,7 +844,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/localization.py",
-          "line_number": 92,
+          "line_number": 93,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'load_locales_catalog': CoC = 17 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -853,7 +853,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/infrastructure/localization.py",
-          "line_number": 213,
+          "line_number": 214,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'get_localized_string': CoC = 17 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -862,7 +862,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/localization.py",
-          "line_number": 256,
+          "line_number": 257,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'get_localized_list': 4 depth levels (threshold <= 3)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -1236,10 +1236,10 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.46,
-        "p95_latency_ms": 54.95,
-        "p99_latency_ms": 105.16,
-        "tail_amplification_ratio": 72.03,
+        "p50_latency_ms": 1.37,
+        "p95_latency_ms": 81.46,
+        "p99_latency_ms": 181.72,
+        "tail_amplification_ratio": 132.64,
         "concurrency_status": "Resilient and Scalable"
       },
       "findings": []
@@ -1287,201 +1287,20 @@
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 99.6,
+      "score_pct": 100.0,
       "passed": true,
       "metrics": {
         "files_scanned": 412,
-        "inline_rationale_score": 99.6,
-        "contract_coverage_score": 99.4,
+        "inline_rationale_score": 100.0,
+        "contract_coverage_score": 100.0,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 13,
-        "missing_docstrings_count": 7,
-        "cqi_score": 99.6,
+        "comment_smells_count": 0,
+        "missing_docstrings_count": 0,
+        "cqi_score": 100.0,
         "grade": "A+",
         "status": "Tier-1 Certified"
       },
-      "findings": [
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 1345,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/render_global_report_from_template.py",
-          "line_number": 729,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'render_executive_summary' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 59,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/compile_asis_docx_from_modules.py",
-          "line_number": 338,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/adapters/compilers/asis_appendices_chapter.py",
-          "line_number": 118,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_executive_refiner.py",
-          "line_number": 221,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 643,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1036,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/run_tower_blueprint_engine.py",
-          "line_number": 1124,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/build_global_report_payload.py",
-          "line_number": 354,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/adversarial_consensus_engine.py",
-          "line_number": 221,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/adversarial_consensus_engine.py",
-          "line_number": 233,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/corporate_project_aggregator.py",
-          "line_number": 175,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'aggregate_corporate_projects' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/ingest_documents.py",
-          "line_number": 26,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/ingest_documents.py",
-          "line_number": 33,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/application/tools/ingest_documents.py",
-          "line_number": 52,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'main' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/schemas/global_report.py",
-          "line_number": 161,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'parse_string_or_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/schemas/global_report.py",
-          "line_number": 187,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'parse_string_or_dict' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/ai_client.py",
-          "line_number": 45,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'acquire' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/localization.py",
-          "line_number": 27,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'synthesize_locale' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        }
-      ]
+      "findings": []
     },
     "test_coverage": {
       "probe_name": "test_coverage",

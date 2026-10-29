@@ -735,7 +735,6 @@ def render_executive_summary(
     doc_lang: str | None = None,
     client_name: str = "",
 ) -> None:
-    loc = doc_lang or "en"
     """Renders the executive summary section into a `docx.document.Document` object.
 
     Constructs and populates the executive summary by sequentially adding several
@@ -1342,7 +1341,6 @@ def render_tobe_domain_architectures(
         dom_display = dom_name.replace("_", " ")
         add_heading_paragraph(doc, f"{num}. {dom_display}", level=2)
 
-        # 1. Executive Snapshot & Principles
         snap = bp_data.get("executive_snapshot", {})
         bottom_line = snap.get("bottom_line", "") if isinstance(snap, dict) else ""
         if bottom_line:

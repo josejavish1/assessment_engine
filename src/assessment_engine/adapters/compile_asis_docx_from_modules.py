@@ -56,7 +56,6 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
     set_update_fields,
 )
 
-# Import decoupled chapter compilers
 from assessment_engine.adapters.compilers.asis_maturity_chapter import _compile_chapter_3_maturity_profile
 from assessment_engine.adapters.compilers.asis_fair_chapter import _compile_chapter_4_fair_risk_matrix
 from assessment_engine.adapters.compilers.asis_conclusions_chapter import _compile_chapter_5_conclusions
@@ -335,7 +334,6 @@ def compile_docx(tower_dir: str, output_path: str):
             doc_version = tower_meta.get("version", doc_version)
             currency = tower_meta.get("currency", currency)
 
-            # Resolve localized brand attributes from canonical vocabulary
             canonical_brand_vocab = resolve_localized_vocabulary(doc_lang)
             classification = canonical_brand_vocab.get(
                 "default_classification", classification

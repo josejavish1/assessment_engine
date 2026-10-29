@@ -176,6 +176,7 @@ def aggregate_corporate_projects(
     initiatives: list[StrategicInitiative | dict[str, Any]],
     program_resolver: Callable[[str], str | None] | None = None,
 ) -> dict[str, Any]:
+    """Aggregates and clusters corporate initiatives into strategic programs and standalone tracks."""
     if not initiatives:
         return {"programs": [], "standalone_initiatives": []}
 

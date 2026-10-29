@@ -159,6 +159,7 @@ class EvolutionPrinciple(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def parse_string_or_dict(cls, data: Any) -> Any:
+        """Parse raw string or mapping into validated principle model attributes."""
         if isinstance(data, str):
             parts = data.split(":", 1)
             if len(parts) == 2:
@@ -185,6 +186,7 @@ class StrategicPillar(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def parse_string_or_dict(cls, data: Any) -> Any:
+        """Parse raw string or mapping into validated principle model attributes."""
         if isinstance(data, str):
             parts = data.split(":", 1)
             if len(parts) == 2:
