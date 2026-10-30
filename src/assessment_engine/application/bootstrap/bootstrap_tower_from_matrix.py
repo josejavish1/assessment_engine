@@ -136,8 +136,9 @@ def extract_purpose(paragraphs: list[str]) -> str:
 
 
 def _get_legacy_ingestion_tokens(key: str, default: list[str]) -> list[str]:
-    from assessment_engine.infrastructure.runtime_paths import ROOT
     import json
+
+    from assessment_engine.infrastructure.runtime_paths import ROOT
     p = ROOT / "engine_config/locales_asis_annex.json"
     if p.exists():
         try:
@@ -151,8 +152,9 @@ def _get_legacy_ingestion_tokens(key: str, default: list[str]) -> list[str]:
 
 
 def _get_legacy_ingestion_cleaner() -> tuple[str, str]:
-    from assessment_engine.infrastructure.runtime_paths import ROOT
     import json
+
+    from assessment_engine.infrastructure.runtime_paths import ROOT
     p = ROOT / "engine_config/locales_asis_annex.json"
     if p.exists():
         try:
@@ -399,7 +401,7 @@ def extract_kpis(
                 kpi_name = candidate
                 break
             if not kpi_name:
-                warnings.append(f"No se pudo extraer kpi_name para {kpi_id}")
+                warnings.append(f"Could not extract kpi_name for {kpi_id}")
                 continue
 
         if kpi_id in seen_kpi_ids:
@@ -617,7 +619,7 @@ def extract_questions(
             question_text = clean_repeated_phrase(candidate)
             break
         if not question_text:
-            warnings.append(f"No se pudo extraer question_text para {question_id}")
+            warnings.append(f"Could not extract question_text for {question_id}")
             continue
         if question_id in seen:
             warnings.append(f"Pregunta duplicada en documento: {question_id}")
@@ -919,11 +921,11 @@ def bootstrap_tower(
 
     missing_weight_pillars = sorted(set(pillar_name_map) - set(weights))
     if missing_weight_pillars:
-        raise RuntimeError(f"Faltan pesos para: {', '.join(missing_weight_pillars)}")
+        raise RuntimeError(f"Missing weights for: {', '.join(missing_weight_pillars)}")
 
     missing_kpi_pillars = sorted(set(pillar_name_map) - set(kpis_by_pillar))
     if missing_kpi_pillars:
-        raise RuntimeError(f"Faltan KPIs para: {', '.join(missing_kpi_pillars)}")
+        raise RuntimeError(f"Missing KPIs for: {', '.join(missing_kpi_pillars)}")
 
     extra_kpi_pillars = sorted(set(kpis_by_pillar) - set(pillar_name_map))
     if extra_kpi_pillars:

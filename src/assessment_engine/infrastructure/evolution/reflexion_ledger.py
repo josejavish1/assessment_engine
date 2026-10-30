@@ -311,7 +311,7 @@ class ReflexionLedger:
                 VALUES (?, ?, ?, ?, ?);
             """, (category, task_hint, failed_snippet[:2000], verified_diff[:3000], now))
             conn.commit()
-            logger.info(f"[ReflexionLedger] Par contrastivo archivado para '{task_hint}' ({category}).")
+            logger.info(f"[ReflexionLedger] Contrastive pair archived for '{task_hint}' ({category}).")
 
     def get_contrastive_exemplars(self, task_hint: str, limit: int = 2) -> list[ContrastiveExemplar]:
         """Retrieve the most recent contrastive surgical diffs related to the task or component."""

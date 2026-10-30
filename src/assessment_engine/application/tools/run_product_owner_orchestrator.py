@@ -234,7 +234,7 @@ def ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
         return
 
     # Defines a whitelist of idempotent, non-destructive commands authorized for execution during system remediation.
-    logger.info(f"Evaluando modo saneamiento para: '{request_text}'")
+    logger.info(f"Evaluating sanitization mode for: '{request_text}'")
     remediation_keywords = [
         "git reset",
         "git clean",
@@ -248,7 +248,7 @@ def ensure_clean_worktree(*, allow_dirty: bool, request_text: str = "") -> None:
     ]
     if any(keyword in request_text.lower() for keyword in remediation_keywords):
         logger.info(
-            "Modo Saneamiento detectado: permitiendo worktree sucio para comandos de limpieza."
+            "Sanitization mode detected: allowing dirty worktree for cleanup commands."
         )
         return
 
@@ -364,11 +364,11 @@ def run_git_command(args: list[str]) -> subprocess.CompletedProcess[str]:
             timeout=300,  # A 5-minute timeout is enforced to prevent indefinite blocking of the operation.
         )
     except subprocess.TimeoutExpired:
-        raise RuntimeError(f"Timeout excedido ejecutando: {' '.join(args)}")
+        raise RuntimeError(f"Timeout exceeded executing: {' '.join(args)}")
 
     if result.returncode != 0:
         raise RuntimeError(
-            result.stderr.strip() or f"Fallo ejecutando: {' '.join(args)}"
+            result.stderr.strip() or f"Failure executing: {' '.join(args)}"
         )
     return result
 
@@ -836,7 +836,7 @@ def run_command(
             category=category,
             command=command,
             output_path=output_path,
-            raw_output=output.strip() or f"Fallo ejecutando {' '.join(command)}",
+            raw_output=output.strip() or f"Failure executing {' '.join(command)}",
         )
 
 
@@ -2260,17 +2260,17 @@ def execute_plan(
                 "Human-authorized feedback detected and loaded for execution."
             )
         except Exception as e:
-            logger.warning(f"No se pudo cargar el feedback autorizado: {e}")
+            logger.warning(f"Could not load authorized feedback: {e}")
 
     for task in plan.get("tasks", []):
-        logger.info(f"=== INICIANDO TAREA: {task['id']} ===")
+        logger.info(f"=== STARTING TASK: {task['id']} ===")
         feedback: str | None = None
 
         # Injects human-provided feedback into the initial execution context if the feedback is pertinent to the current task.
         if authorized_feedback_data.get("task_id") == task["id"]:
             feedback = authorized_feedback_data.get("feedback")
             logger.info(
-                f"Inyectando feedback autorizado al Worker para la tarea {task['id']}"
+                f"Injecting authorized feedback to Worker for task {task['id']}"
             )
 
         for attempt in range(1, max_attempts + 1):

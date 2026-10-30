@@ -86,7 +86,7 @@ def render_lineage_portal(client_name: str) -> Path:
     output_path = output_dir / "index.html"
 
     logger.info(
-        f"🎨 [Lineage Portal] Generando Lineage Matrix Explorer para {client_name}..."
+        f"🎨 [Lineage Portal] Generating Lineage Matrix Explorer for {client_name}..."
     )
 
     # Load the global state payload, containing system-wide configuration and metadata required for template hydration.
@@ -167,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         render_lineage_portal(client_name)
         return 0
     except Exception:
-        logger.exception("❌ Fallo al renderizar el Lineage Matrix Explorer:")
+        logger.exception("❌ Failed to render Lineage Matrix Explorer:")
         return 1
 
 

@@ -92,8 +92,9 @@ def infer_initiative_priority(
     is_direct_mitigation = (
         "direct mitigation" in b_case.lower() or "critical vulnerability" in b_case.lower() or "mitigacion" in b_case.lower()
     )
-    from assessment_engine.infrastructure.runtime_paths import ROOT
     import json
+
+    from assessment_engine.infrastructure.runtime_paths import ROOT
     dur_cfg = {}
     p_dur = ROOT / "engine_config/locales_asis_annex.json"
     if p_dur.exists():
@@ -911,7 +912,7 @@ async def synthesize_annex(client_name: str, tower_id: str):
     """Coordinates the complete synthesis process for the executive annex. This function serves as the primary entry point, handling all I/O operations and orchestrating the data processing pipeline."""
     run_id = f"run_{uuid.uuid4()}"
     print(
-        f"🧠 [Top-Down] Sintetizando Anexo Ejecutivo para {tower_id} (Run ID: {run_id})..."
+        f"🧠 [Top-Down] Synthesizing Executive Annex for {tower_id} (Run ID: {run_id})..."
     )
 
     client_dir = resolve_client_dir(client_name)

@@ -110,9 +110,9 @@ class EvidenceSnapshotter:
                     # Perform an HTTP HEAD request to resolve the final destination of the URL without downloading the entire response body. This is an efficient method for checking redirects and headers.
                     r = await client.head(url)
                     final_human_url = str(r.url)
-                    logger.info(f"      🔗 [REDIRECT] URL real detectada: {final_human_url}")
+                    logger.info(f"      🔗 [REDIRECT] Target URL detected: {final_human_url}")
             except Exception as e:
-                logger.warning(f"No se pudo resolver redirect para {url}: {e}")
+                logger.warning(f"Could not resolve redirect for {url}: {e}")
 
         url_hash = hashlib.sha256(final_human_url.encode()).hexdigest()[:12]
 
@@ -163,11 +163,11 @@ class EvidenceSnapshotter:
                         }
                     else:
                         logger.warning(
-                            f"Fallo descarga directa de {final_human_url} (HTTP {r_bin.status_code})"
+                            f"Direct download failed for {final_human_url} (HTTP {r_bin.status_code})"
                         )
                         return None
             except Exception as e:
-                logger.warning(f"Fallo descarga directa de {final_human_url}: {e}")
+                logger.warning(f"Direct download failed for {final_human_url}: {e}")
                 return None
 
         # 3. PATH A: For standard web pages, utilize Playwright to render dynamic content and handle interactive elements.

@@ -6,7 +6,6 @@ Enforce a strict two-iteration limit and validate against deterministic certific
 """
 from __future__ import annotations
 
-
 import ast
 import logging
 import os
@@ -25,10 +24,17 @@ from assessment_engine.infrastructure.evolution.ast_signature_guard import (
     VerdictStatus,
     diff_module_signatures,
 )
-from assessment_engine.infrastructure.evolution.complexity_guard import audit_code_complexity
-from assessment_engine.infrastructure.evolution.mutation_ctf_probe import run_mutation_ctf
+from assessment_engine.infrastructure.evolution.complexity_guard import (
+    audit_code_complexity,
+)
+from assessment_engine.infrastructure.evolution.mutation_ctf_probe import (
+    run_mutation_ctf,
+)
+from assessment_engine.infrastructure.evolution.worktree_runner import (
+    EphemeralWorktree,
+    worktree_runner,
+)
 from assessment_engine.infrastructure.genai_client import ModelTier, get_model
-from assessment_engine.infrastructure.evolution.worktree_runner import EphemeralWorktree, worktree_runner
 
 logger = logging.getLogger("assessment_engine.infrastructure.evolution.cognitive_arbiter")
 
@@ -464,7 +470,9 @@ class SynthesizerRole:
         prompt_parts.append(f"TASK:\n{task_description}")
         if target_file_rel and "REFLEXION LEDGER" not in task_description:
             try:
-                from assessment_engine.infrastructure.evolution.reflexion_ledger import reflexion_ledger
+                from assessment_engine.infrastructure.evolution.reflexion_ledger import (
+                    reflexion_ledger,
+                )
                 preflight_memory = reflexion_ledger.format_preflight_prompt_block(target_file_rel)
                 if preflight_memory:
                     prompt_parts.append(preflight_memory)
@@ -858,7 +866,9 @@ class DeterministicHarnessEvaluator:
             return (VerdictStatus.REJECTED_DEPENDENCY_DRIFT, [], comp_rep.max_complexity, 0.0, False, "Deriva de dependencias externas no autorizadas")
 
         # 4.5 SRE and async-blocking gate (ASYNC221, zero-print, blind exceptions).
-        from assessment_engine.infrastructure.auditor.probes.sre_observability import SREObservabilityVisitor
+        from assessment_engine.infrastructure.auditor.probes.sre_observability import (
+            SREObservabilityVisitor,
+        )
         try:
             tree_cand = ast.parse(candidate_code)
             visitor = SREObservabilityVisitor(target_file.name)
@@ -954,7 +964,7 @@ def _extract_target_function_node(code: str, target_fn_name: str) -> tuple[str, 
                 if seg:
                     return seg, node
     except (SyntaxError, ValueError, TypeError) as ex:
-        logger.debug(f"[CognitiveArbiter] Fallo al aislar nodo focal '{target_fn_name}': {ex}")
+        logger.debug(f"[CognitiveArbiter] Failed to isolate target focal node '{target_fn_name}': {ex}")
     return None
 
 
@@ -1055,8 +1065,11 @@ def _attempt_mcts_refactoring(
             return focal_res
 
     try:
-        from assessment_engine.infrastructure.evolution.mcts_refactor_engine import MCRefactoringSearch, default_reward_function
-        logger.info("[CognitiveArbiter] 🌲 Disparando MCTS Refactor Engine sobre AST para resolver complejidad...")
+        from assessment_engine.infrastructure.evolution.mcts_refactor_engine import (
+            MCRefactoringSearch,
+            default_reward_function,
+        )
+        logger.info("[CognitiveArbiter] 🌲 Triggering MCTS Refactor Engine over AST to resolve complejidad...")
         searcher = MCRefactoringSearch(
             get_actions=lambda code: ["decompose_functions", "extract_helpers"],
             apply_action=lambda code, act: synthesizer.refine_patch(
@@ -1119,7 +1132,9 @@ def _enrich_feedback_with_diagnostics(
 
     if status == VerdictStatus.REJECTED_REGRESSION:
         try:
-            from assessment_engine.infrastructure.evolution.fault_localizer import fault_localizer
+            from assessment_engine.infrastructure.evolution.fault_localizer import (
+                fault_localizer,
+            )
             sbfl = fault_localizer.localize_from_pytest(target_file, test_file)
             if sbfl.most_likely_line:
                 enriched += (
@@ -1131,8 +1146,12 @@ def _enrich_feedback_with_diagnostics(
             logger.debug(f"[CognitiveArbiter][SBFL] Diagnosis skipped: {sbfl_ex}")
 
     try:
-        from assessment_engine.infrastructure.evolution.trace_conditioner import trace_conditioner
-        from assessment_engine.infrastructure.chassis.context import get_current_trace_id
+        from assessment_engine.infrastructure.chassis.context import (
+            get_current_trace_id,
+        )
+        from assessment_engine.infrastructure.evolution.trace_conditioner import (
+            trace_conditioner,
+        )
         trace_diag = trace_conditioner.analyze_trace_profile(
             trace_id=get_current_trace_id(),
             total_latency_ms=0.0,
@@ -1209,7 +1228,7 @@ class CognitiveArbiter:
                 )
                 return refined_candidate, status, violations, comp, mut_score, test_ok, skeptic_feedback
             except SurgicalPatchError as sp_err:
-                logger.warning(f"[CognitiveArbiter] Fallo aplicando parche en ronda {iteration}: {sp_err}")
+                logger.warning(f"[CognitiveArbiter] Patch application failed in round {iteration}: {sp_err}")
                 patch_err_feedback = f"{skeptic_feedback}\n\n[ERROR IN PREVIOUS PATCH]: {sp_err}\nRe-emit SEARCH/REPLACE patch copying exact block with 3-5 context lines."
                 return current_candidate, status, violations, comp, mut_score, test_ok, patch_err_feedback
 

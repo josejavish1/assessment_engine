@@ -185,7 +185,7 @@ def main(argv: list[str] | None = None) -> None:
         asyncio.run(_render_all_tomos_concurrently())
     except Exception as exc:
         logger.warning(
-            f"[GlobalPipeline] Error compiling strategic volumes in-memory ({exc}). Usando fallback CLI..."
+            f"[GlobalPipeline] Error compiling strategic volumes in-memory ({exc}). Using CLI fallback..."
         )
         run_module_step(
             [

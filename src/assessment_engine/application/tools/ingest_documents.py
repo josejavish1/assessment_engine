@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import os
-import sys
 from pathlib import Path
 
 from assessment_engine.infrastructure.evidence_engine import EvidenceEngine
@@ -20,7 +19,7 @@ async def run_ingestion(
     resolved_storage = storage_dir or (Path("working") / client_id)
     resolved_storage.mkdir(parents=True, exist_ok=True)
 
-    print(f"📦 [Ingest] Inicializando Evidence Engine para cliente '{client_id}'...")
+    print(f"📦 [Ingest] Initializing Evidence Engine for client '{client_id}'...")
     evidence_engine = EvidenceEngine(client_id=client_id, storage_dir=resolved_storage)
 
     if context_file and context_file.is_file():

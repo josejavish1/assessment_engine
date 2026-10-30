@@ -59,15 +59,30 @@ async def refine_findings(client_name: str, findings: dict) -> dict:
     )
     prompt_func = get_global_refiner_prompt if is_global else get_tower_refiner_prompt
 
-    from assessment_engine.infrastructure.localization import resolve_target_language_name
+    from assessment_engine.infrastructure.localization import (
+        resolve_target_language_name,
+    )
     doc_lang_code = findings.get("meta", {}).get("language") or findings.get("document_meta", {}).get("language") or "en"
     target_language = resolve_target_language_name(doc_lang_code)
+
+    # Focus the global findings payload on narrative sections to prevent exceeding LLM max output tokens
+    if is_global:
+        findings_payload = {
+            "meta": findings.get("meta", {}),
+            "executive_summary": findings.get("executive_summary", {}),
+            "burning_platform": findings.get("burning_platform", []),
+            "target_vision": findings.get("target_vision", {}),
+            "executive_decisions": findings.get("executive_decisions", {}),
+            "tower_bottom_lines": findings.get("tower_bottom_lines", []),
+        }
+    else:
+        findings_payload = findings
 
     last_error = ""
     for attempt in range(3):
         try:
             message = prompt_func(
-                findings_json=json.dumps(findings),
+                findings_json=json.dumps(findings_payload),
                 grounding_json=json.dumps(grounding_data),
                 target_language=target_language,
             )
@@ -98,11 +113,14 @@ def _preserve_sovereign_blocks(
         "_generation_metadata",
         "meta",
         "intelligence_dossier",
-        "heatmap",
         "visuals",
-        "tower_bottom_lines",
+        "execution_roadmap",
+        "board_memo",
+        "cross_tower_nexus",
+        "executive_callouts",
+        "target_vision",
     ]:
-        if key in raw_findings and key not in refined:
+        if key in raw_findings:
             refined[key] = raw_findings[key]
 
     if "heatmap" in raw_findings and (
@@ -361,7 +379,7 @@ async def main(argv: list[str] | None = None) -> None:
     findings_path = Path(args.findings_path)
     findings = load_json(findings_path)
 
-    print(f"🚀 Iniciando Refinado Ejecutivo para {args.client}...")
+    print(f"🚀 Starting Executive Refinement for {args.client}...")
     refined = await refine_findings(args.client, findings)
     final_refined = postprocess_refined_findings(refined, findings)
 

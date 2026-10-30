@@ -34,7 +34,7 @@ def run_strategic_orchestration(client_name: str) -> Dict[str, Any]:
         'graph_stats': A dictionary with 'nodes' and 'edges' counts for the
             derived graph.
     """
-    print(f"🚀 [Strategic Orchestrator] Resolviendo Grafo Global para {client_name}...")
+    print(f"🚀 [Strategic Orchestrator] Resolving Global Graph for {client_name}...")
 
     graph = EpistemicGraph(client_id=slugify(client_name))
     analyzer = NetworkXAnalyzer()

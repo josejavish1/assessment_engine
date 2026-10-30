@@ -163,7 +163,7 @@ class StructuralIntegrityGate:
                 )
             if status == "verified" and not claim.get("local_snapshot"):
                 violations.append(
-                    f"Evidencia [Claim {i}] '{url}' verificada pero sin snapshot local."
+                    f"Evidence [Claim {i}] '{url}' verified but missing local snapshot."
                 )
 
     @classmethod

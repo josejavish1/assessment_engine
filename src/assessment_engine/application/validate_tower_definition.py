@@ -144,7 +144,7 @@ def _validate_top_level_questions(
     if not questions:
         return
     if not isinstance(questions, list):
-        errors.append("questions debe ser lista cuando existe.")
+        errors.append("questions must be a list when present.")
         return
 
     known_pillars = set(pillar_ids)

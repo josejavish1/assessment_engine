@@ -291,7 +291,7 @@ async def perform_apex_debate(
         pydantic.ValidationError: If the response from the language model does
             not conform to the `ApexDebateResponse` schema.
     """
-    UI_STATE["debate_transcript"].append(("SENTINEL", "Iniciando debate..."))
+    UI_STATE["debate_transcript"].append(("SENTINEL", "Starting debate..."))
     doctor_config = load_apex_prompt("apex_doctor.yaml")
     architect_config = load_apex_prompt("apex_architect.yaml")
     doctor_prompt = doctor_config["prompt_details"]["template"].format(
@@ -430,7 +430,7 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
         attempts += 1
         task["status"] = "Rescuing"
         debate = await perform_apex_debate(logs, "\n".join(previous_failures))
-        previous_failures.append(f"Fallo {attempts}: {debate.reasoning}")
+        previous_failures.append(f"Failure {attempts}: {debate.reasoning}")
 
         if debate.decision == "INJECT_PREREQUISITE":
             # A rescue counter is employed to prevent infinite loops during task recovery sequences.
@@ -474,7 +474,7 @@ async def process_task(task: Task, queue: List[Task], idx: int) -> bool:
             UI_STATE["completed_count"] += 1
             if task.get("priority") == "EMG":
                 UI_STATE["last_event"] = (
-                    f"🛑 CRITICAL: Fallo en pre-requisito EMG ({task['id']}). Deteniendo orquestador."
+                    f"🛑 CRITICAL: Failure in prerequisite EMG ({task['id']}). Halting orchestrator."
                 )
                 print(
                     f"\n[!] CRITICAL ERROR: Emergency task {task['id']} blocked by HARD_BLOCK."

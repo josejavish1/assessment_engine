@@ -7,7 +7,6 @@ import logging
 import os
 import re
 import sys
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +22,7 @@ from assessment_engine.infrastructure.global_maturity_policy import (
     status_color_for_score,
 )
 from assessment_engine.infrastructure.localization import t
-from assessment_engine.infrastructure.text_utils import slugify
+from assessment_engine.infrastructure.text_utils import clean_text_for_word, slugify
 
 logger = logging.getLogger(__name__)
 
@@ -175,41 +174,50 @@ def _aggregate_tower_blueprints(
 
 
 def _get_cross_tower_nexus_rules(doc_lang: str) -> list[dict[str, str]]:
-    """Declarative cross-tower nexus dependency rules resolved through i18n."""
+    """Declarative cross-tower nexus dependency rules resolved dynamically through i18n."""
     from assessment_engine.infrastructure.localization import t
+
+    t1_name = f"T1: {get_tower_name('T1', doc_lang=doc_lang)}"
+    t2_name = f"T2: {get_tower_name('T2', doc_lang=doc_lang)}"
+    t3_name = f"T3: {get_tower_name('T3', doc_lang=doc_lang)}"
+    t4_name = f"T4: {get_tower_name('T4', doc_lang=doc_lang)}"
+    t5_name = f"T5: {get_tower_name('T5', doc_lang=doc_lang)}"
+    t6_name = f"T6: {get_tower_name('T6', doc_lang=doc_lang)}"
+    t7_name = f"T7: {get_tower_name('T7', doc_lang=doc_lang)}"
+    t8_name = f"T8: {get_tower_name('T8', doc_lang=doc_lang)}"
 
     return [
         {
-            "source_tower": "T6: Security & Identity",
-            "target_tower": "T2: Compute & Cloud",
+            "source_tower": t6_name,
+            "target_tower": t2_name,
             "dependency_type": t("nexus_dep_type_critical", locale=doc_lang),
             "architectural_rationale": t("nexus_rule_1_rationale", locale=doc_lang),
             "delay_impact": t("nexus_rule_1_delay", locale=doc_lang),
         },
         {
-            "source_tower": "T5: Resilience & DR",
-            "target_tower": "T4: Storage & Data",
+            "source_tower": t5_name,
+            "target_tower": t4_name,
             "dependency_type": t("nexus_dep_type_tech", locale=doc_lang),
             "architectural_rationale": t("nexus_rule_2_rationale", locale=doc_lang),
             "delay_impact": t("nexus_rule_2_delay", locale=doc_lang),
         },
         {
-            "source_tower": "T3: Network & Connectivity",
-            "target_tower": "T1: Physical Infrastructure",
+            "source_tower": t3_name,
+            "target_tower": t1_name,
             "dependency_type": t("nexus_dep_type_resilience", locale=doc_lang),
             "architectural_rationale": t("nexus_rule_3_rationale", locale=doc_lang),
             "delay_impact": t("nexus_rule_3_delay", locale=doc_lang),
         },
         {
-            "source_tower": "T6: Security & Identity",
-            "target_tower": "T7: Digital Operations",
+            "source_tower": t6_name,
+            "target_tower": t7_name,
             "dependency_type": t("nexus_dep_type_ops", locale=doc_lang),
             "architectural_rationale": t("nexus_rule_4_rationale", locale=doc_lang),
             "delay_impact": t("nexus_rule_4_delay", locale=doc_lang),
         },
         {
-            "source_tower": "T8: Strategy & FinOps",
-            "target_tower": "T2: Compute & Cloud",
+            "source_tower": t8_name,
+            "target_tower": t2_name,
             "dependency_type": t("nexus_dep_type_finops", locale=doc_lang),
             "architectural_rationale": t("nexus_rule_5_rationale", locale=doc_lang),
             "delay_impact": t("nexus_rule_5_delay", locale=doc_lang),
@@ -226,6 +234,7 @@ def _parse_currency_amount_to_float(val_str: Any) -> float:
         .replace("€", "")
         .replace("$", "")
         .replace("£", "")
+        .replace("¥", "")
         .replace("R$", "")
         .replace("CHF", "")
         .strip()
@@ -253,6 +262,23 @@ def _parse_currency_amount_to_float(val_str: Any) -> float:
         except ValueError:
             return 0.0
     return 0.0
+
+
+def _format_executive_currency(val: float, currency_symbol: str = "€", doc_lang: str = "es") -> str:
+    """Formats numeric amounts elegantly for C-Level executives respecting international locale conventions."""
+    is_comma_decimal = doc_lang in ("es", "de", "fr", "it", "pt")
+    is_prefix_symbol = doc_lang in ("en", "ja") and currency_symbol in ("$", "£", "¥")
+
+    if val >= 1_000_000:
+        num_str = f"{val/1_000_000:.1f}"
+        if is_comma_decimal:
+            num_str = num_str.replace(".", ",")
+        return f"{currency_symbol}{num_str}M" if is_prefix_symbol else f"{num_str}M {currency_symbol}"
+    elif val >= 1_000:
+        num_str = f"{val/1000:.0f}"
+        return f"{currency_symbol}{num_str}K" if is_prefix_symbol else f"{num_str}K {currency_symbol}"
+    num_str = f"{val:.0f}"
+    return f"{currency_symbol}{num_str}" if is_prefix_symbol else f"{num_str} {currency_symbol}"
 
 
 def _build_stratified_financial_case(
@@ -290,14 +316,50 @@ def _build_stratified_financial_case(
     tail_risk_min_ratio = float(strat_metrics.get("tail_risk_p90_ratio_min", 0.45))
     tail_risk_max_ratio = float(strat_metrics.get("tail_risk_p90_ratio_max", 0.65))
 
+    CURRENCY_SYMBOLS = {
+        "USD": "$",
+        "EUR": "€",
+        "GBP": "£",
+        "JPY": "¥",
+        "BRL": "R$",
+        "MXN": "$",
+        "CHF": "CHF",
+        "CAD": "$",
+        "AUD": "$",
+    }
+
     currency_code = "EUR"
     currency_symbol = "€"
     annual_revenue = float(strat_metrics.get("default_annual_revenue", 100000000.0))
     hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
     reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
-    compliance_framework = "Normativa Aplicable"
+    compliance_framework = t("default_compliance_framework", locale=doc_lang)
 
     if client_dir:
+        intel_path = client_dir / "client_intelligence.json"
+        if intel_path.exists():
+            try:
+                intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
+                c_code = (
+                    intel_data.get("currency")
+                    or intel_data.get("currency_code")
+                    or intel_data.get("profile", {}).get("currency")
+                )
+                if c_code:
+                    currency_code = str(c_code).upper().strip()
+                    currency_symbol = CURRENCY_SYMBOLS.get(currency_code, currency_code)
+                c_sym = intel_data.get("currency_symbol")
+                if c_sym:
+                    currency_symbol = str(c_sym).strip()
+                framework = (
+                    intel_data.get("compliance", {}).get("primary_framework")
+                    or intel_data.get("primary_framework")
+                )
+                if framework:
+                    compliance_framework = framework
+            except (OSError, ValueError, KeyError) as ex:
+                logger.debug("[GlobalPayload] Intelligence currency/framework loading fallback: %s", ex)
+
         for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
             try:
                 prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
@@ -310,19 +372,6 @@ def _build_stratified_financial_case(
                 break
             except (OSError, ValueError, KeyError) as ex:
                 logger.debug("[GlobalPayload] Risk profile loading fallback: %s", ex)
-
-        intel_path = client_dir / "client_intelligence.json"
-        if intel_path.exists():
-            try:
-                intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
-                framework = (
-                    intel_data.get("compliance", {}).get("primary_framework")
-                    or intel_data.get("primary_framework")
-                )
-                if framework:
-                    compliance_framework = framework
-            except (OSError, ValueError, KeyError) as ex:
-                logger.debug("[GlobalPayload] Intelligence framework loading fallback: %s", ex)
 
     total_opex_inv = 0.0
     total_capex_inv = 0.0
@@ -356,25 +405,32 @@ def _build_stratified_financial_case(
     layer_2_display = format_currency(layer_2_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
 
     # Layer 3: Dynamic Actuarial Tail Risk (P90 FAIR value: calibrated ratio of total FAIR exposure)
-    if total_fair_ale <= 0.0:
-        total_fair_ale = annual_revenue * 0.010
+    minimum_executive_ale = annual_revenue * 0.015
+    if total_fair_ale < minimum_executive_ale:
+        total_fair_ale = minimum_executive_ale
+        
     layer_3_min = round(total_fair_ale * tail_risk_min_ratio, 0)
     layer_3_max = round(total_fair_ale * tail_risk_max_ratio, 0)
     l3_min_fmt = format_currency(layer_3_min, currency_code=currency_code, locale=doc_lang, decimals=0)
     l3_max_fmt = format_currency(layer_3_max, currency_code=currency_code, locale=doc_lang, decimals=0)
     layer_3_display = f"{l3_min_fmt} - {l3_max_fmt}"
 
-    # Payback & ROI (TCO = OpEx + CapEx)
+    # Payback & ROI (TCO = OpEx + CapEx vs Total Financial Exposure Mitigated over 3 years)
     total_inv = year_1_opex + total_capex_inv
+    # The true 'savings' is the cash inefficiency + downtime friction + expected actuarial loss avoided, projected over a 3-year strategic cycle
+    annual_value_protected = layer_1_amount + layer_2_amount + layer_3_max
+    total_value_protected = annual_value_protected * 3.0
+    
     payback_months = (
-        round((total_inv / layer_1_amount) * 12, 1) if layer_1_amount > 0 else 6.0
+        round((total_inv / annual_value_protected) * 12, 1) if annual_value_protected > 0 else 6.0
     )
-    roi_ratio = round(layer_1_amount / total_inv, 1) if total_inv > 0 else 1.0
+    roi_ratio = round(total_value_protected / total_inv, 1) if total_inv > 0 else 1.0
 
     hourly_cost_fmt = format_currency(hourly_downtime_cost, currency_code=currency_code, locale=doc_lang, decimals=0)
     reg_fine_fmt = format_currency(reg_max_fine, currency_code=currency_code, locale=doc_lang, decimals=0)
-    total_opex_fmt = format_currency(year_1_opex, currency_code=currency_code, locale=doc_lang, decimals=0)
-    total_capex_fmt = format_currency(total_capex_inv, currency_code=currency_code, locale=doc_lang, decimals=0)
+    total_opex_fmt = _format_executive_currency(year_1_opex, currency_symbol=currency_symbol, doc_lang=doc_lang)
+    total_capex_fmt = _format_executive_currency(total_capex_inv, currency_symbol=currency_symbol, doc_lang=doc_lang)
+    total_value_fmt = _format_executive_currency(total_value_protected, currency_symbol=currency_symbol, doc_lang=doc_lang)
 
     placeholders = {
         "currency": currency_symbol,
@@ -383,7 +439,7 @@ def _build_stratified_financial_case(
         "reg_max_fine": reg_fine_fmt,
         "total_opex": total_opex_fmt,
         "total_capex": total_capex_fmt,
-        "year_1_savings": layer_1_display,
+        "year_1_savings": total_value_fmt,
         "payback_months": f"{payback_months:.0f}",
         "roi_ratio": f"{roi_ratio}",
     }
@@ -437,9 +493,39 @@ def _build_board_memo(
 ) -> dict[str, Any]:
     from assessment_engine.infrastructure.localization import format_currency, t
 
+    CURRENCY_SYMBOLS = {
+        "USD": "$",
+        "EUR": "€",
+        "GBP": "£",
+        "JPY": "¥",
+        "BRL": "R$",
+        "MXN": "$",
+        "CHF": "CHF",
+        "CAD": "$",
+        "AUD": "$",
+    }
+
     currency_code = "EUR"
     currency_symbol = "€"
     if client_dir:
+        intel_path = client_dir / "client_intelligence.json"
+        if intel_path.exists():
+            try:
+                intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
+                c_code = (
+                    intel_data.get("currency")
+                    or intel_data.get("currency_code")
+                    or intel_data.get("profile", {}).get("currency")
+                )
+                if c_code:
+                    currency_code = str(c_code).upper().strip()
+                    currency_symbol = CURRENCY_SYMBOLS.get(currency_code, currency_code)
+                c_sym = intel_data.get("currency_symbol")
+                if c_sym:
+                    currency_symbol = str(c_sym).strip()
+            except Exception as ex:
+                logger.debug("Error leyendo client_intelligence currency: %s", ex)
+
         for prof_path in client_dir.glob("T*/custom_risk_profile.json"):
             try:
                 prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
@@ -456,6 +542,10 @@ def _build_board_memo(
     for t_item in towers_data:
         tid = t_item.get("id", "")
         tname = t_item.get("name", "")
+        if not tname or tname == "Computo Hibrido":
+            tower_loc = t(f"tower_{tid.lower()}_name", locale=doc_lang)
+            if tower_loc and tower_loc != f"tower_{tid.lower()}_name":
+                tname = tower_loc
         score = t_item.get("score", "0.0")
         band = t_item.get("band", "")
         status_color = t_item.get("status_color", "E06666")
@@ -472,12 +562,15 @@ def _build_board_memo(
                     try:
                         ax_data = json.loads(cand.read_text(encoding="utf-8-sig"))
                         fin_coi = ax_data.get("executive_summary", {}).get("financial_coi", {})
-                        coi_text = fin_coi.get("coi_3y_ordinary") or fin_coi.get("annual_loss_exposure") or coi_text
-                        inits = ax_data.get("sections", {}).get("todo", {}).get("priority_initiatives", [])
-                        if inits and inits[0].get("initiative"):
-                            top_project_name = inits[0].get("initiative")
+                        raw_ext = fin_coi.get("coi_3y_extreme") or fin_coi.get("coi_3y_ordinary")
+                        if raw_ext:
+                            digits = re.sub(r"[^\d]", "", str(raw_ext).split()[0].replace(",", "").replace(".", ""))
+                            if digits:
+                                ext_num = float(digits)
+                                ext_fmt = _format_executive_currency(ext_num, currency_symbol, doc_lang)
+                                coi_text = t("coi_3y_ext", locale=doc_lang, amount=ext_fmt)
                     except Exception as err:
-                        logger.debug("Error leyendo anexo para coi_text: %s", err)
+                        logger.debug("Error reading annex for coi_text: %s", err)
                 try:
                     bp_data = json.loads(bp.read_text(encoding="utf-8-sig"))
                     for pil in bp_data.get("pillars_analysis", []):
@@ -487,7 +580,7 @@ def _build_board_memo(
                             opex_tower += _parse_currency_amount_to_float(pr.get("opex_estimate"))
                             capex_tower += _parse_currency_amount_to_float(pr.get("capex_estimate"))
                 except Exception as err:
-                    logger.debug("Error leyendo blueprint para budget: %s", err)
+                    logger.debug("Error reading blueprint for budget: %s", err)
 
         total_holding_opex += opex_tower
         total_holding_capex += capex_tower
@@ -495,10 +588,10 @@ def _build_board_memo(
 
         fallback_budget_lbl = t("budget_subscription_fallback", locale=doc_lang)
         if total_inv_tower > 0:
-            if capex_tower > 0:
-                tot_fmt = format_currency(total_inv_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
-                cap_fmt = format_currency(capex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
-                op_fmt = format_currency(opex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
+            if capex_tower >= 1000:
+                tot_fmt = _format_executive_currency(total_inv_tower, currency_symbol, doc_lang)
+                cap_fmt = _format_executive_currency(capex_tower, currency_symbol, doc_lang)
+                op_fmt = _format_executive_currency(opex_tower, currency_symbol, doc_lang)
                 budget_display = t(
                     "budget_capex_opex_format",
                     locale=doc_lang,
@@ -507,7 +600,7 @@ def _build_board_memo(
                     opex=op_fmt,
                 )
             else:
-                op_fmt = format_currency(opex_tower, currency_code=currency_code, locale=doc_lang, decimals=0)
+                op_fmt = _format_executive_currency(total_inv_tower, currency_symbol, doc_lang)
                 budget_display = t(
                     "budget_pure_opex_format",
                     locale=doc_lang,
@@ -516,7 +609,11 @@ def _build_board_memo(
         else:
             budget_display = fallback_budget_lbl
 
-        if top_project_name:
+        # Board Decisions must remain strictly at the executive program level (C-Suite altitude)
+        strat_dec = t(f"decision_{tid}", locale=doc_lang)
+        if strat_dec and strat_dec != f"decision_{tid}":
+            crit_dec = strat_dec
+        elif top_project_name:
             crit_dec = t(
                 "decision_priority_project_template",
                 locale=doc_lang,
@@ -524,8 +621,7 @@ def _build_board_memo(
                 tower_name=tname,
             )
         else:
-            default_dec = t("decision_default_template", locale=doc_lang, tower_name=tname)
-            crit_dec = t(f"decision_{tid}", locale=doc_lang, default=default_dec)
+            crit_dec = t("decision_default_template", locale=doc_lang, tower_name=tname)
 
         items.append({
             "domain": f"{tid}: {tname}",
@@ -649,7 +745,11 @@ def _build_executive_callouts(
                 intel_data = json.loads(intel_path.read_text(encoding="utf-8-sig"))
                 ind = intel_data.get("profile", {}).get("industry") or intel_data.get("industry")
                 if ind:
-                    industry_name = ind
+                    ind_clean = str(ind).lower().strip()
+                    if "enterprise" in ind_clean or "default" in ind_clean or "industrial" in ind_clean:
+                        industry_name = t("default_industry_name", locale=doc_lang)
+                    else:
+                        industry_name = ind
             except Exception as ex:
                 logger.debug("Error leyendo client_intelligence industry: %s", ex)
 
@@ -702,7 +802,7 @@ def build_global_payload(
         return None
 
     intelligence_dossier = {}
-    resolved_lang = os.environ.get("ASSESSMENT_DOC_LANG") or os.environ.get("ASSESSMENT_LANGUAGE")
+    resolved_lang = doc_lang or os.environ.get("ASSESSMENT_DOC_LANG") or os.environ.get("ASSESSMENT_LANGUAGE")
     intelligence_path = Path(client_dir) / "client_intelligence.json"
     if intelligence_path.exists():
         try:
@@ -830,6 +930,25 @@ def build_global_payload(
             or node_id
         )
 
+    # Collect approved priority initiatives across towers for clean executive horizons
+    approved_initiatives = []
+    if client_dir:
+        for bp in blueprint_files:
+            cand = bp.parent / f"approved_annex_{bp.parent.name.lower()}.template_payload.json"
+            if cand.exists():
+                try:
+                    ax = json.loads(cand.read_text(encoding="utf-8-sig"))
+                    inits = ax.get("sections", {}).get("todo", {}).get("priority_initiatives", [])
+                    for it in inits:
+                        approved_initiatives.append({
+                            "tower": bp.parent.name,
+                            "initiative": it.get("initiative", ""),
+                            "objective": it.get("objective", ""),
+                            "priority": it.get("priority", "Medium"),
+                        })
+                except Exception as ex:
+                    logger.debug("Error leyendo approved_annex: %s", ex)
+
     final_roadmap_programs = []
     final_horizons = {
         "quick_wins_0_3_months": [],
@@ -838,45 +957,49 @@ def build_global_payload(
         "year_3_24_36_months": [],
     }
 
-    seen_labels = set()
-    for wave in strategic_roadmap:
-        wave_label = wave["wave"]
-        for node_id in wave["projects"]:
-            human_name = get_label(node_id)
+    wave_0_lbl = t("wave_0_title", locale=doc_lang)
+    wave_1_lbl = t("wave_1_title", locale=doc_lang)
+    wave_2_lbl = t("wave_2_title", locale=doc_lang)
+    wave_3_lbl = t("wave_3_title", locale=doc_lang)
 
-            # Executes a case-insensitive deduplication process to maintain data integrity by canonicalizing entries that differ only in character casing.
-            norm_label = human_name.strip().upper()
-            if norm_label in seen_labels:
-                continue
-            seen_labels.add(norm_label)
+    for idx, item in enumerate(approved_initiatives):
+        proj_name = clean_text_for_word(item.get("initiative", f"Iniciativa {idx+1}"))
+        obj_text = clean_text_for_word(item.get("objective", "")) or t("quick_win_objective_default", locale=doc_lang)
+        prio = str(item.get("priority", "")).lower()
 
-            # Truncates description fields that are repurposed as titles to a maximum length, preventing text overflow and maintaining visual layout consistency in the generated report.
-            if len(human_name) > 120:
-                human_name = human_name[:117] + "..."
+        if "high" in prio or "alta" in prio or idx < 12:
+            h_key = "quick_wins_0_3_months"
+            w_lbl = wave_0_lbl
+            s_m = 0
+            d_m = 3
+        elif idx < 28:
+            h_key = "year_1_3_12_months"
+            w_lbl = wave_1_lbl
+            s_m = 3
+            d_m = 9
+        elif idx < 44:
+            h_key = "year_2_12_24_months"
+            w_lbl = wave_2_lbl
+            s_m = 12
+            d_m = 12
+        else:
+            h_key = "year_3_24_36_months"
+            w_lbl = wave_3_lbl
+            s_m = 24
+            d_m = 12
 
-            init_def = {
-                "program": wave_label,
-                "title": human_name,
-                "business_case": t("quick_win_objective_default", locale=doc_lang),
-                "start_month": 0
-                if "0" in wave_label
-                else 6
-                if "1" in wave_label
-                else 12,
-                "duration_months": 6,
-            }
-            if "0" in wave_label:
-                final_horizons["quick_wins_0_3_months"].append(init_def)
-            elif "1" in wave_label:
-                final_horizons["year_1_3_12_months"].append(init_def)
-            else:
-                final_horizons["year_2_12_24_months"].append(init_def)
+        init_def = {
+            "program": w_lbl,
+            "title": proj_name,
+            "business_case": obj_text,
+            "start_month": s_m,
+            "duration_months": d_m,
+        }
+        final_horizons[h_key].append(init_def)
 
-    # Aggregates a distinct set of all programs to ensure data integrity and prevent redundant entries in subsequent processing stages.
-    unique_waves = list(set(w["wave"] for w in strategic_roadmap))
-    for uw in unique_waves:
+    for w_name in [wave_0_lbl, wave_1_lbl, wave_2_lbl, wave_3_lbl]:
         final_roadmap_programs.append(
-            {"name": uw, "description": f"{uw} execution phase of the strategic roadmap."}
+            {"name": w_name, "description": t("roadmap_program_desc_default", locale=doc_lang, program_name=w_name)}
         )
 
     avg_score = round(sum(float(t["score"]) for t in towers_data) / len(towers_data), 1)
@@ -885,13 +1008,10 @@ def build_global_payload(
     unique_principles = list(dict.fromkeys(all_principles))
     unique_implications = list(dict.fromkeys(all_implications))
 
-    now = datetime.now()
-    spanish_months = {
-        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
-        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
-        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
-    }
-    dynamic_date_str = f"{now.day} de {spanish_months.get(now.month, 'Enero')} de {now.year}"
+    from assessment_engine.infrastructure.localization import format_date_localized
+
+    dynamic_date_str = format_date_localized(locale=doc_lang)
+    version_str = t("report_version_dto", locale=doc_lang)
 
     # Serializes the resolved data into the final `GlobalReportPayload` Pydantic schema for validation and downstream consumption.
     payload = {
@@ -903,7 +1023,7 @@ def build_global_payload(
         "meta": {
             "client": client_name,
             "date": dynamic_date_str,
-            "version": "v6.0 - Sovereign DTO",
+            "version": version_str,
             "language": doc_lang,
         },
         "executive_summary": {
@@ -1001,16 +1121,27 @@ def build_global_payload(
 
     # Populates the Programs-by-Tower data structure, a prerequisite for enabling the 'To-Do' deep dive analysis feature in the final report.
     for t_item in towers_data:
+        tid = t_item.get("id", "")
+        actual_tname = t_item.get("name", "")
+        if not actual_tname or actual_tname == "Computo Hibrido":
+            loc_tname = t(f"tower_{tid.lower()}_name", locale=doc_lang)
+            if loc_tname and loc_tname != f"tower_{tid.lower()}_name":
+                actual_tname = loc_tname
         prog_name = t(
             "program_modernization_template",
             locale=doc_lang,
-            tower_name=t_item["name"],
+            tower_name=actual_tname,
         )
+        
+        exec_msg = t_item.get("executive_message", "")
+        sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z\u00C0-\u017F])", exec_msg.strip())
+        prog_desc = sentences[0] if sentences else exec_msg
+        
         payload["execution_roadmap"]["programs"].append(
             {
                 "id": t_item["id"],
                 "name": prog_name,
-                "description": t_item["executive_message"],
+                "description": prog_desc,
                 "projects": [i for i in all_initiatives if i["tower"] == t_item["name"]],
             }
         )
@@ -1079,19 +1210,6 @@ def build_global_payload(
 
     if intel_narrative:
         payload["executive_summary"]["narrative"] = intel_narrative
-
-    doc_lang: str
-    if intelligence_path.exists():
-        try:
-            raw_int = json.loads(intelligence_path.read_text(encoding="utf-8-sig"))
-            doc_lang = (
-                raw_int.get("language")
-                or raw_int.get("locale")
-                or raw_int.get("doc_lang")
-                or "en"
-            ).lower()
-        except (OSError, ValueError, KeyError, AttributeError) as ex:
-            logger.debug("[Fallback] Handled exception: %s", ex)
 
     payload["board_memo"] = _build_board_memo(
         towers_data, blueprint_files, client_name, client_dir=client_dir, doc_lang=doc_lang

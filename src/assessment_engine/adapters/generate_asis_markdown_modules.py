@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 import csv
 import json
@@ -24,7 +25,6 @@ def clean_client_name(client_name: str) -> str:
     """
     if not client_name:
         return "Cliente"
-    import re
     # Remove version endings like _v3, _V2, -v4, etc.
     cleaned = re.sub(r'[_-][vV]\d+\b', '', client_name)
     # Replace underscores/hyphens with spaces
@@ -315,7 +315,6 @@ def resolve_client_currency_context(
 
 def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, total_fair_ale: float, doc_lang: str, total_p90: float = 0.0, total_max: float = 0.0) -> str:
     """Sanitize and unify metrics according to technical specification."""
-    import re
     import os
     if not text:
         return text
@@ -323,7 +322,9 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
     client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
     currency, rate_mult = resolve_client_currency_context(client_id)
 
-    from assessment_engine.infrastructure.config_loader import resolve_localized_vocabulary
+    from assessment_engine.infrastructure.config_loader import (
+        resolve_localized_vocabulary,
+    )
     vocab = resolve_localized_vocabulary(doc_lang)
 
     # Scale computed metrics by exchange rate in origin for presentation clarity
@@ -352,12 +353,16 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
         text = re.sub(millones_pattern, f"{formatted_ale} {currency}", text)
         
     # 3. Clean up any mention of global score/band
-    score_pattern = r"\b\d+[,.]\d+\s*sobre\s*5(?:[.,]0+)?\b"
-    text = re.sub(score_pattern, f"{formatted_score} sobre 5,00", text)
+    score_pattern = r"\b\d+[,.]\d+\s*(?:sobre|out of|von|sur)\s*5(?:[.,]0+)?\b"
+    out_of_map = {"es": "sobre 5,00", "fr": "sur 5,00", "de": "von 5,00", "en": "out of 5.00"}
+    out_of_str = out_of_map.get(doc_lang, "out of 5.00")
+    text = re.sub(score_pattern, f"{formatted_score} {out_of_str}", text)
     
     # Match band patterns inside quotes or parentheses and align with the true band
-    band_pattern = r"Nivel\s*\d+\s*\([^)]+\)"
-    true_band_str = f"Nivel {exact_score:.1f}".replace(".", ",") + f" ({exact_band})"
+    band_pattern = r"(?:Nivel|Level|Niveau|Stufe)\s*\d+[,.]?\d*\s*\([^)]+\)"
+    band_prefix_map = {"es": "Nivel", "fr": "Niveau", "de": "Stufe", "en": "Level"}
+    band_prefix = band_prefix_map.get(doc_lang, "Level")
+    true_band_str = f"{band_prefix} {format_number(exact_score, locale=doc_lang, decimals=1)} ({exact_band})"
     text = re.sub(band_pattern, true_band_str, text)
     
     # 6. Inject Cost of Delay (Gap A)
@@ -649,7 +654,8 @@ def _write_module_02_resumen_ejecutivo(modules_dir: Path, ctx: dict[str, Any]) -
     # Revises section titles to align with formal reporting terminology.
     #
     re_content = []
-    re_content.append("# Resumen Ejecutivo\n")
+    exec_header = t("global_ch1_exec_summary", locale=doc_lang)
+    re_content.append(f"# {exec_header}\n")
 
     body_text = exec_sum.get("summary_body", "") if exec_sum else snap.get("bottom_line", "")
     cleaned_paragraphs = []

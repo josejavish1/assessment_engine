@@ -58,7 +58,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
     """
     import asyncio
 
-    print(f"        * Investigando vanguardia (CON INTERNET) para: {p_name}")
+    print(f"        * Researching state-of-the-art (ONLINE) for: {p_name}")
     prompt = get_sota_researcher_prompt(p_name, gap_text, grounding_json)
 
     config = types.GenerateContentConfig(
@@ -96,7 +96,7 @@ async def research_pillar(client, p_name, gap_text, grounding_json):
             sota_result = {}
     except Exception as e:
         print(
-            f"        ⚠️ [SOTA Parser] Error extrayendo JSON estructurado para {p_name}: {e}"
+            f"        ⚠️ [SOTA Parser] Error extracting structured JSON for {p_name}: {e}"
         )
         sota_result = {}
 

@@ -123,7 +123,9 @@ class DigitalTwinExporter:
         self.industry_name = industry_name
 
         # Step 2: Map the raw industry name to its canonical profile key
-        from assessment_engine.infrastructure.config_loader import map_industry_to_profile
+        from assessment_engine.infrastructure.config_loader import (
+            map_industry_to_profile,
+        )
         profile_key = map_industry_to_profile(industry_name)
 
         # Step 3: Try to load dynamic benchmarks from RAGE benchmarks_snapshot.json
@@ -206,7 +208,7 @@ class DigitalTwinExporter:
                 output is missing the 'roadmap' key, or if a predicate dictionary
                 used to form an edge lacks the 'value' key.
         """
-        logger.info(f"📦 [DTO Exporter] Compilando State Object para {self.client_name}...")
+        logger.info(f"📦 [DTO Exporter] Compiling State Object for {self.client_name}...")
 
         # Resolve the directed acyclic graph (DAG) that represents the strategic topology, including wave sequencing and inter-node dependencies.
         strategic_data = run_strategic_orchestration(self.client_name)

@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import logging
+
 logger = logging.getLogger(__name__)
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -86,7 +88,7 @@ def run_pipeline(
     os.environ["ASSESSMENT_DOC_LANG"] = resolved_lang
 
     print("========================================================")
-    print(f" INICIANDO PIPELINE DE ASSESSMENT - CLIENTE: {client} [{resolved_lang.upper()}]")
+    print(f" STARTING ASSESSMENT PIPELINE - CLIENT: {client} [{resolved_lang.upper()}]")
     print("========================================================")
 
     if force and working_dir.exists():
@@ -151,7 +153,7 @@ def run_pipeline(
             client_id = os.environ.get("ASSESSMENT_CLIENT_ID", "generic_client")
             alt_rag_cache = repo_root / f"working/{client_id}/{slug}/raptor_tree.json"
             if alt_rag_cache.exists() and alt_rag_cache.stat().st_size > 0:
-                print("⏭️ FASE 0: Reutilizando RAG previo.")
+                print("⏭️ PHASE 0: Reusing prior RAG artifacts.")
                 res = subprocess.CompletedProcess(args=[], returncode=0)
             else:
                 print(
@@ -278,13 +280,13 @@ def run_pipeline(
                 and blueprint_payload.stat().st_size > 0
             ):
                 print(
-                    f"⏭️  FASE 2: [Cache Bypass] Torre {tower_id} ya completada previamente. Saltando."
+                    f"⏭️  PHASE 2: [Cache Bypass] Tower {tower_id} already completed. Skipping."
                 )
                 return TowerExecutionResult(
                     tower_id=tower_id, success=True, duration_seconds=0.0
                 )
 
-            print(f"\n▶️ PROCESANDO TORRE {tower_id} (Dynamic Dispatcher)...")
+            print(f"\n▶️ PROCESSING TOWER {tower_id} (Dynamic Dispatcher)...")
             cmd = [
                 python_bin,
                 str(tower_script),
@@ -352,7 +354,7 @@ def run_pipeline(
         and global_payload.stat().st_size > 0
     ):
         print(
-            "⏭️  FASE 3: [Cache Bypass] Reporte Global Consolidado ya generado previamente. Saltando."
+            "⏭️  PHASE 3: [Cache Bypass] Consolidated Global Report already generated. Skipping."
         )
     else:
         print("🎛️ FASE 3: Generating Global Consolidated Report...")
@@ -368,7 +370,7 @@ def run_pipeline(
     comm_payload = working_dir / "commercial_report_payload.json"
     web_presentation = working_dir / "presentation" / "index.html"
 
-    print("\n🚀 FASES 4 & 5: Ejecutando Plan Comercial y Dashboard Web en paralelo...")
+    print("\n🚀 PHASES 4 & 5: Executing Commercial Plan and Web Dashboard in parallel...")
 
     def _execute_phase_4() -> int:
         if (
@@ -379,7 +381,7 @@ def run_pipeline(
             and comm_payload.stat().st_size > 0
         ):
             print(
-                "⏭️  FASE 4: [Cache Bypass] Plan Comercial ya generado previamente. Saltando."
+                "⏭️  PHASE 4: [Cache Bypass] Commercial Plan already generated. Skipping."
             )
             return 0
         print("📊 FASE 4: Executing Internal Commercial Plan Refiner...")
@@ -395,7 +397,7 @@ def run_pipeline(
     def _execute_phase_5() -> int:
         if not force and web_presentation.exists() and web_presentation.stat().st_size > 0:
             print(
-                "⏭️  FASE 5: [Cache Bypass] Dashboard Web interactivo ya generado previamente. Saltando."
+                "⏭️  PHASE 5: [Cache Bypass] Interactive Web Dashboard already generated. Skipping."
             )
             return 0
         print("🖥️ FASE 5: Composing Interactive Web Dashboard...")
@@ -563,9 +565,9 @@ def manage_po_batch(daemon: bool, monitor: bool) -> int:
                     start_new_session=True,
                 )
             pid_file.write_text(str(process.pid), encoding="utf-8")
-            print(f"[+] Proceso lanzado con PID {process.pid}.")
+            print(f"[+] Process launched with PID {process.pid}.")
             print(
-                "Puedes desconectarte tranquilamente. Para monitorizar, usa: assessment-engine po-batch --monitor"
+                "Background daemon active. To monitor execution, run: assessment-engine po-batch --monitor"
             )
             return 0
         except Exception as e:
@@ -674,7 +676,7 @@ def run_rage_command(client: str, industry: str, tower_filter: str | None = None
     from assessment_engine.infrastructure.text_utils import slugify
 
     print("========================================================")
-    print(f" INICIANDO PIPELINE DE RAGE - CLIENTE: {client} | INDUSTRIA: {industry}")
+    print(f" STARTING RAGE PIPELINE - CLIENT: {client} | INDUSTRY: {industry}")
     print("========================================================")
 
     repo_root = Path(__file__).resolve().parents[3]

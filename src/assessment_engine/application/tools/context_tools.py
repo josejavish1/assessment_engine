@@ -67,14 +67,14 @@ def search_google_tier1(query: str, authority_domains: list[str] = None) -> str:
         if api_key:
             params["key"] = api_key
         else:
-            return "ERROR: No hay API Key para Google Search."
+            return "ERROR: Google Search API key not configured."
 
         res = http_client.get(url, params=params, headers=headers, timeout=10.0)
         res.raise_for_status()
         results = res.json().get("items", [])
 
         if not results:
-            return f"No se encontraron resultados oficiales para: {query}."
+            return f"No official results found for: {query}."
 
         output = ["--- RESULTADOS OFICIALES GOOGLE SEARCH ---"]
         for idx, item in enumerate(results, 1):

@@ -173,7 +173,7 @@ def _run_script(module_name: str, args: list[str]) -> str:
     result = subprocess.run(cmd, env=env, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(
-            f"Error ejecutando {module_name}:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
+            f"Error executing {module_name}:\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
         )
     # Redirects stderr to stdout, ensuring a single, unified stream captures all subprocess output for comprehensive logging, as critical errors are often routed to stderr.
     combined_output = f"{result.stdout}\n{result.stderr}".strip()
@@ -364,7 +364,7 @@ async def _background_run_plan(job_id: str, request_text: str):
         job_status[job_id] = "completed"
     except Exception as e:
         job_status[job_id] = "error"
-        job_results[job_id] = f"❌ Error ejecutando orquestador: {e}"
+        job_results[job_id] = f"❌ Error executing orchestrator: {e}"
 
 
 @mcp.tool()
@@ -569,7 +569,7 @@ def authorize_action_gate(request_dir: str, alt_index: int = 0) -> str:
                     inv for inv in active_plan["invariants"] if inv != invariant_breach
                 ]
                 active_plan["invariants"].append(
-                    f"EXCEPTION AUTHORIZED BY HUMAN: Se permite romper el invariante previo respecto a: {invariant_breach}"
+                    f"EXCEPTION AUTHORIZED BY HUMAN: Waiver granted to break prior invariant regarding: {invariant_breach}"
                 )
 
             with open(plan_path, "w", encoding="utf-8") as f:

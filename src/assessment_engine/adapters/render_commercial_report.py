@@ -492,7 +492,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem], 
         )
         set_cell_text(
             table.rows[2].cells[1],
-            f"Cost of Inaction (COI) para Cliente:\n{clean_commercial_text(opp.cost_of_inaction)}",
+            f"{t('commercial_coi_label', locale=doc_lang)}:\n{clean_commercial_text(opp.cost_of_inaction)}",
             font_size=10.5,
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )

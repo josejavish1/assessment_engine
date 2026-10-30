@@ -205,10 +205,10 @@ def run_module_step(cmd_args: list[str], step_name: str, env: dict[str, str]) ->
             raise RuntimeError(
                 f"Native step failure (SystemExit) in {step_name} with code: {exc.code}"
             ) from exc
-        logger.info(f"[{step_name}] Finalizado con exit(0)")
+        logger.info(f"[{step_name}] Completed with exit(0)")
     except Exception as exc:
-        logger.exception(f"Fallo nativo en {step_name} con error: {exc}")
-        raise RuntimeError(f"Fallo nativo en {step_name} con error: {exc}") from exc
+        logger.exception(f"Native failure in {step_name} with error: {exc}")
+        raise RuntimeError(f"Native failure in {step_name} with error: {exc}") from exc
     finally:
         os.environ.clear()
         os.environ.update(original_env)

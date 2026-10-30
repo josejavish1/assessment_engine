@@ -169,8 +169,8 @@ def build_evidence_entries(
                     "source_type": "questionnaire_response",
                     "source_name": responses_path.name,
                     "excerpt": (
-                        f"{answer['question_id']} = {score:.1f}/5 en '{kpi['kpi_name']}' "
-                        f"para el pilar '{pillar['pillar_name']}'."
+                        f"{answer['question_id']} = {score:.1f}/5 in '{kpi['kpi_name']}' "
+                        f"for pillar '{pillar['pillar_name']}'."
                     ),
                     "pillar_ids": [p_id],
                     "kpi_ids": [kpi["kpi_id"]],

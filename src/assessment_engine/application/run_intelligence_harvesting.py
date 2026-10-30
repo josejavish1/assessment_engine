@@ -890,7 +890,7 @@ async def run_market_intelligence(
     client_name: str, output_path: Path, context_file: Path = None
 ) -> None:
     """Orchestrates an asynchronous, multi-stage market intelligence pipeline."""
-    print(f"\n🚀 Iniciando Pipeline V35.0 (The Purist) para: {client_name}")
+    print(f"\n🚀 Starting Pipeline V35.0 (The Purist) for: {client_name}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     vault = SourceVault(client_name)
 
