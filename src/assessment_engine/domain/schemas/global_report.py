@@ -371,6 +371,7 @@ class GlobalReportDocumentMeta(BaseModel):
     client: str
     date: str
     version: str
+    language: str = "en"
 
 
 class GlobalReportPayload(VersionedPayload):

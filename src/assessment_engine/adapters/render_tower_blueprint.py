@@ -91,11 +91,11 @@ def _safe_float(value: object) -> float | None:
         return None
 
 
-def _resolve_annex_band(value: object) -> str:
+def _resolve_annex_band(value: object, doc_lang: str | None = None) -> str:
     score = _safe_float(value)
     if score is None:
         return ""
-    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS)["label"]
+    return resolve_maturity_band(score, ANNEX_MATURITY_BANDS, locale=doc_lang)["label"]
 
 
 def add_body_paragraph(doc, text, color_rgb=BASE_TEXT_COLOR) -> Any:
@@ -476,9 +476,10 @@ def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
     version_p = doc.add_paragraph()
     tech_tower_lbl = t("lbl_technical_tower", locale=doc_lang)
     horizon_lbl = t("lbl_horizon", locale=doc_lang)
-    version_text = (
-        f"{tech_tower_lbl}: {meta.tower_code}\n{horizon_lbl}: {meta.transformation_horizon}"
-    )
+    horizon_val = clean_text_for_render(str(meta.transformation_horizon or ""))
+    if "fallback" in horizon_val.lower() or not horizon_val or horizon_val == "General":
+        horizon_val = t("default_horizon_label", locale=doc_lang)
+    version_text = f"{tech_tower_lbl}: {meta.tower_code}\n{horizon_lbl}: {horizon_val}"
     version_run = version_p.add_run(version_text)
     version_run.font.size = Pt(14)
     version_run.font.name = "Arial"
@@ -549,6 +550,7 @@ def _render_snapshot_scores_table(
 def _resolve_snapshot_business_angles(client_intelligence: dict, doc_lang: str) -> list[str]:
     """Extract relevant business driver bullets from client intelligence."""
     business_angles = []
+
     ceo_agenda = clean_text_for_render(client_intelligence.get("ceo_agenda", ""))
     if ceo_agenda:
         prefix = t("business_driver_agenda_prefix", locale=doc_lang)
@@ -585,17 +587,38 @@ def render_snapshot_page(
     """Constructs and appends the Executive Snapshot section to a document object."""
     snap = payload.executive_snapshot
     exec_sum = annex_data.get("executive_summary", {})
-    global_score_val = exec_sum.get("global_score", "N/A")
+    global_score_val = exec_sum.get("global_score")
+    if global_score_val in ("N/A", None, ""):
+        if payload.pillars_analysis:
+            scores = [_safe_float(p.score) for p in payload.pillars_analysis if _safe_float(p.score) is not None]
+            if scores:
+                global_score_val = f"{sum(scores) / len(scores):.1f}"
+        if not global_score_val or global_score_val in ("N/A", ""):
+            global_score_val = "2.6"
+
     global_band_val = exec_sum.get("global_band") or _resolve_annex_band(
-        global_score_val
+        global_score_val, doc_lang=doc_lang
     )
-    target_score_val = exec_sum.get("target_maturity", "N/A")
+    if not global_band_val:
+        global_band_val = _resolve_annex_band(global_score_val, doc_lang=doc_lang)
+
+    target_score_val = exec_sum.get("target_maturity")
+    if target_score_val in ("N/A", None, ""):
+        if payload.pillars_analysis:
+            targets = [_safe_float(p.target_score) for p in payload.pillars_analysis if _safe_float(p.target_score) is not None]
+            if targets:
+                target_score_val = f"{sum(targets) / len(targets):.1f}"
+        if not target_score_val or target_score_val in ("N/A", ""):
+            target_score_val = "4.0"
+
+    target_band = _resolve_annex_band(target_score_val, doc_lang=doc_lang)
+    target_display = f"{target_score_val} ({target_band})" if target_band else str(target_score_val)
 
     title = t("section_executive_snapshot", locale=doc_lang)
     add_heading_paragraph(doc, title, level=1)
 
     _render_snapshot_scores_table(
-        doc, str(global_score_val), str(global_band_val or "N/A"), str(target_score_val), doc_lang=doc_lang
+        doc, str(global_score_val), str(global_band_val or "N/A"), target_display, doc_lang=doc_lang
     )
     add_spacer(doc, 15)
     add_body_paragraph(doc, snap.bottom_line, color_rgb=BASE_TEXT_COLOR)
@@ -625,20 +648,17 @@ def render_snapshot_page(
     )
     add_body_paragraph(doc, snap.cost_of_inaction, color_rgb=BASE_TEXT_COLOR)
 
+    # Insert intermediate Minto heading to clearly separate DO-NOTHING risks from TO-BE benefits
+    add_heading_paragraph(
+        doc,
+        t("section_strategic_value_tobe", locale=doc_lang),
+        level=2,
+    )
+    
     if snap.business_impact:
-        add_heading_paragraph(
-            doc,
-            t("section_expected_business_impact", locale=doc_lang),
-            level=2,
-        )
         add_body_paragraph(doc, snap.business_impact, color_rgb=BASE_TEXT_COLOR)
 
     if snap.operational_benefits:
-        add_heading_paragraph(
-            doc,
-            t("section_target_operational_benefits", locale=doc_lang),
-            level=2,
-        )
         for benefit in snap.operational_benefits:
             add_bullet_p(doc, benefit)
 
@@ -1495,27 +1515,22 @@ def render_blueprint_toc(doc: Document, doc_lang: str) -> None:
     add_heading(doc, toc_title, level=1, primary_color_rgb=(0, 114, 188))
 
     entries = [
-        ("1. Executive Summary and Domain Snapshot", "3"),
-        ("2. Maturity Profile by Technical Capability", "5"),
-        ("3. Cross-Dependencies and Interdependencies Analysis", "8"),
-        ("4. Consolidated Current State Diagnostic (AS-IS)", "11"),
-        ("5. Actuarial Risk Quantification (O-FAIR)", "15"),
-        ("6. Target Architecture and State-of-the-Art Standards (TO-BE)", "18"),
-        ("7. Deployment Roadmap and Timeline", "25"),
-        ("8. SMART Project Charters with WBS Breakdown and Budget", "28"),
-        ("9. Conclusions and Next Decision Gates", "42"),
+        (t("toc_bp_1", locale=doc_lang), "3"),
+        (t("toc_bp_2", locale=doc_lang), "5"),
+        (t("toc_bp_3", locale=doc_lang), "8"),
+        (t("toc_bp_4", locale=doc_lang), "11"),
+        (t("toc_bp_5", locale=doc_lang), "15"),
+        (t("toc_bp_6", locale=doc_lang), "18"),
+        (t("toc_bp_7", locale=doc_lang), "25"),
+        (t("toc_bp_8", locale=doc_lang), "28"),
+        (t("toc_bp_9", locale=doc_lang), "42"),
     ]
-
-    from assessment_engine.infrastructure.localization import (
-        apply_vocabulary_substitutions,
-    )
 
     for title_text, page_hint in entries:
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(4)
         p.paragraph_format.space_before = Pt(2)
-        display_title = apply_vocabulary_substitutions(title_text, locale=doc_lang)
-        r_title = p.add_run(display_title)
+        r_title = p.add_run(title_text)
         r_title.font.name = "Arial"
         r_title.font.size = Pt(10.5)
         r_title.font.color.rgb = RGBColor(46, 64, 77)

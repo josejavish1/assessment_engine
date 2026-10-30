@@ -150,7 +150,7 @@ def sync_findings_to_graph(
 
 
 def get_default_blueprint_payload(
-    client_name, tower_name, tower_id, intel_data
+    client_name, tower_name, tower_id, intel_data, doc_lang: str = "en"
 ) -> dict:
     """Constructs a default, schema-compliant dictionary for a blueprint payload.
 
@@ -165,11 +165,14 @@ def get_default_blueprint_payload(
         intel_data (dict): A dictionary containing supplementary intelligence
             data. Expected keys include 'financial_tier' and
             'transformation_horizon'.
+        doc_lang (str): The document language code (e.g. 'es', 'en').
 
     Returns:
         dict: A dictionary representing the default blueprint payload, conforming
             to the required schema.
     """
+    from assessment_engine.infrastructure.localization import t
+
     return {
         "document_meta": {
             "client_name": client_name,
@@ -180,20 +183,22 @@ def get_default_blueprint_payload(
             "transformation_horizon": intel_data.get(
                 "transformation_horizon", "General"
             ),
+            "language": doc_lang,
+            "doc_lang": doc_lang,
         },
         "executive_snapshot": {
-            "bottom_line": "Strategic analysis pending consolidation by orchestrator.",
+            "bottom_line": t("bp_default_bottom_line", locale=doc_lang),
             "decisions": [],
-            "cost_of_inaction": "Deferred transformation perpetuates baseline operational risk.",
+            "cost_of_inaction": t("bp_default_cost_of_inaction", locale=doc_lang),
             "structural_risks": [],
-            "business_impact": "Detailed business impact pending final consolidation.",
+            "business_impact": t("bp_default_business_impact", locale=doc_lang),
             "operational_benefits": [],
-            "transformation_complexity": "Medium (baseline estimation)",
+            "transformation_complexity": t("bp_default_complexity", locale=doc_lang),
         },
         "cross_capabilities_analysis": {
             "common_deficiency_patterns": [],
-            "transformation_paradigm": "Target domain evolution.",
-            "critical_technical_debt": "Technical debt localized in individual pillar domains.",
+            "transformation_paradigm": t("bp_default_paradigm", locale=doc_lang),
+            "critical_technical_debt": t("bp_default_tech_debt", locale=doc_lang),
         },
         "roadmap": [],
         "external_dependencies": [],
@@ -762,7 +767,10 @@ def _resolve_mitigated_risk_context(
                     fair_ale = hc.get("fair_ale_score", 0.0)
                     break
     if fair_ale > 0:
-        mitigated_risk_text += f" | FAIR ALE: {fair_ale:,.2f} €"
+        curr = (
+            blueprint_payload.get("document_meta", {}).get("currency", "€") or "€"
+        )
+        mitigated_risk_text += f" | FAIR ALE: {fair_ale:,.2f} {curr}"
     return mitigated_risk_text
 
 
@@ -1014,11 +1022,18 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
         f"--- STRATEGIC AND BUSINESS CONTEXT ---\n{client_context_str}"
     )
 
-    doc_lang = str(case_data.get("language") or "en").lower()
+    raw_lang = (
+        case_data.get("language")
+        or os.environ.get("ASSESSMENT_DOC_LANG")
+        or os.environ.get("ASSESSMENT_LANGUAGE")
+        or "en"
+    )
     from assessment_engine.infrastructure.localization import (
+        resolve_base_locale,
         resolve_target_language_name,
     )
 
+    doc_lang = resolve_base_locale(raw_lang)
     target_language = resolve_target_language_name(doc_lang)
 
     try:
@@ -1046,7 +1061,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     logger.info("Generating Transformation Blueprint for %s (%s)...", tower_name, tower_id)
     blueprint_payload = get_default_blueprint_payload(
-        client_name, tower_name, tower_id, intel_data
+        client_name, tower_name, tower_id, intel_data, doc_lang=doc_lang
     )
     if intel_packet:
         blueprint_payload["client_context"] = intel_packet

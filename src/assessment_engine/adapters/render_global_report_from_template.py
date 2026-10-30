@@ -78,28 +78,9 @@ def clean_t_codes(text) -> Any:
 
 
 def sanitize_client_name(text, client_name, doc_lang: str) -> Any:
-    """Replaces a specific client's name in a string with a generic term."""
-    if not isinstance(text, str) or not client_name:
+    """Ensures clean vocabulary and formatting for client-facing narratives."""
+    if not isinstance(text, str):
         return text
-
-    # Sanitizes the client name to create a valid, filesystem-safe filename by replacing spaces and special characters with underscores.
-    clean_name = client_name.replace("_", " ")
-
-    # Removes client-specific possessive prepositions (e.g., 'of [Client]', 'by [Client]') from the narrative as the first step in text generalization.
-    text = re.sub(
-        rf"\s+del?\s+{re.escape(client_name)}\b", "", text, flags=re.IGNORECASE
-    )
-    text = re.sub(
-        rf"\s+del?\s+{re.escape(clean_name)}\b", "", text, flags=re.IGNORECASE
-    )
-
-    # Replaces direct client name mentions with the generic term 'the organization' to produce a client-agnostic narrative.
-    text = re.sub(
-        rf"\b{re.escape(client_name)}\b", "the organization", text, flags=re.IGNORECASE
-    )
-    text = re.sub(
-        rf"\b{re.escape(clean_name)}\b", "the organization", text, flags=re.IGNORECASE
-    )
 
     from assessment_engine.infrastructure.localization import (
         apply_vocabulary_substitutions,
@@ -311,50 +292,45 @@ def render_global_toc(doc: Document, doc_lang: str, scope: str | None = None) ->
 
     entries_map = {
         "asis": [
-            ("1. Executive Summary of Current State", "4"),
-            ("2. Maturity Profile by Domain", "6"),
-            ("3. Actuarial Risk Quantification (O-FAIR)", "10"),
-            ("4. Gap Matrix and Single Points of Failure (SPOF)", "15"),
-            ("5. Critical Ecosystem Interdependencies", "22"),
+            (t("toc_asis_1", locale=doc_lang), "4"),
+            (t("toc_asis_2", locale=doc_lang), "6"),
+            (t("toc_asis_3", locale=doc_lang), "10"),
+            (t("toc_asis_4", locale=doc_lang), "15"),
+            (t("toc_asis_5", locale=doc_lang), "22"),
         ],
         "tobe": [
-            ("1. Strategic Vision and Modernization Principles", "4"),
-            ("2. Reference Architecture and Technology Sovereignty", "8"),
-            ("3. Target Architecture Model by Domain", "14"),
-            ("4. Core Evolution Levers and Business Impact", "38"),
-            ("5. Expected Benefits and Risk Mitigation", "45"),
+            (t("toc_tobe_1", locale=doc_lang), "4"),
+            (t("toc_tobe_2", locale=doc_lang), "8"),
+            (t("toc_tobe_3", locale=doc_lang), "14"),
+            (t("toc_tobe_4", locale=doc_lang), "38"),
+            (t("toc_tobe_5", locale=doc_lang), "45"),
         ],
         "todo": [
-            ("1. Implementation Plan and Time Horizons", "4"),
-            ("2. Transversal 36-Month Roadmap", "8"),
-            ("3. Consolidated Transformation Project Portfolio", "12"),
-            ("4. Analytical Financial Budgeting (CapEx and OpEx)", "55"),
-            ("5. Strategic Decision Gates and Governance Framework", "62"),
+            (t("toc_todo_1", locale=doc_lang), "4"),
+            (t("toc_todo_2", locale=doc_lang), "8"),
+            (t("toc_todo_3", locale=doc_lang), "12"),
+            (t("toc_todo_4", locale=doc_lang), "55"),
+            (t("toc_todo_5", locale=doc_lang), "62"),
         ],
         "master": [
-            ("1. Executive Summary and Board Recommendations", "3"),
-            ("2. Comprehensive Technology Maturity Map", "5"),
-            ("3. Quantitative Risk Exposure (Open FAIR)", "8"),
-            ("4. Consolidated Diagnostic of Current State (AS-IS)", "12"),
-            ("5. Target State Architecture Vision (TO-BE)", "16"),
-            ("6. Transformation Plan and Investment Horizons (TO-DO)", "20"),
-            ("7. Program Leadership Decisions and Governance", "24"),
+            (t("toc_master_1", locale=doc_lang), "3"),
+            (t("toc_master_2", locale=doc_lang), "5"),
+            (t("toc_master_3", locale=doc_lang), "8"),
+            (t("toc_master_4", locale=doc_lang), "12"),
+            (t("toc_master_5", locale=doc_lang), "16"),
+            (t("toc_master_6", locale=doc_lang), "20"),
+            (t("toc_master_7", locale=doc_lang), "24"),
         ],
     }
 
     selected_scope = scope if scope in entries_map else "master"
     entries = entries_map[selected_scope]
 
-    from assessment_engine.infrastructure.localization import (
-        apply_vocabulary_substitutions,
-    )
-
     for title_text, page_hint in entries:
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(4)
         p.paragraph_format.space_before = Pt(2)
-        display_title = apply_vocabulary_substitutions(title_text, locale=doc_lang)
-        r_title = p.add_run(display_title)
+        r_title = p.add_run(title_text)
         r_title.font.name = "Arial"
         r_title.font.size = Pt(10.5)
         r_title.font.color.rgb = RGBColor(46, 64, 77)
@@ -395,25 +371,25 @@ def render_executive_callout(
             "border": "C00000",
             "fill": "FFF5F5",
             "title_color": RGBColor(192, 0, 0),
-            "icon": "⚠️",
+            "prefix_key": "callout_legal_prefix",
         },
         "factory": {
             "border": "0072BC",
             "fill": "F2F6FA",
             "title_color": RGBColor(0, 114, 188),
-            "icon": "🏭",
+            "prefix_key": "callout_factory_prefix",
         },
         "decision": {
             "border": "7030A0",
             "fill": "F9F5FF",
             "title_color": RGBColor(112, 48, 160),
-            "icon": "📌",
+            "prefix_key": "callout_decision_prefix",
         },
         "strategic": {
             "border": "1F497D",
             "fill": "F2F4F7",
             "title_color": RGBColor(31, 73, 125),
-            "icon": "🎯",
+            "prefix_key": "callout_strategic_prefix",
         },
     }
     style = color_styles.get(callout.callout_type, color_styles["strategic"])
@@ -430,9 +406,12 @@ def render_executive_callout(
     p_title.paragraph_format.left_indent = Pt(10)
     p_title.paragraph_format.right_indent = Pt(10)
 
-    r_icon = p_title.add_run(f"{style['icon']} ")
-    r_icon.font.name = "Arial"
-    r_icon.font.size = Pt(10.5)
+    prefix_text = t(style["prefix_key"], locale=doc_lang)
+    r_prefix = p_title.add_run(prefix_text)
+    r_prefix.font.name = "Arial"
+    r_prefix.font.size = Pt(10.0)
+    r_prefix.bold = True
+    r_prefix.font.color.rgb = style["title_color"]
 
     r_title = p_title.add_run(
         sanitize_client_name(clean_t_codes(callout.title), client_name, doc_lang=doc_lang)
@@ -511,9 +490,10 @@ def render_board_memo(
     for item in board_memo.items:
         row = table.add_row()
         cell_0 = row.cells[0]
+        score_lbl = t("lbl_score_prefix", locale=doc_lang)
         set_cell_text(
             cell_0,
-            f"{item.domain}\nScore: {item.score} ({item.band})",
+            f"{item.domain}\n{score_lbl} {item.score} ({item.band})",
             bold=True,
             font_size=9.5,
             align=WD_ALIGN_PARAGRAPH.LEFT,
@@ -830,25 +810,21 @@ def render_executive_summary(
 
     add_spacer(doc, 15)
 
-    # The narrative and associated bullet points are rendered externally to the main table structure. This architectural choice improves document flow and readability.
+    # The narrative is rendered cleanly as cohesive executive paragraphs
     narrative = sanitize_client_name(clean_t_codes(data.narrative), client_name, doc_lang=doc_lang)
-    sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z])", narrative.strip())
-
-    if sentences:
-        # The first sentence of the narrative is semantically treated as the executive summary or 'Bottom Line' and is styled accordingly.
-        p_intro = doc.add_paragraph()
-        p_intro.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r_intro = p_intro.add_run(sentences[0])
-        r_intro.font.size = Pt(10.5)
-        r_intro.font.color.rgb = BASE_TEXT_COLOR
-        p_intro.paragraph_format.space_before = Pt(12)
-        p_intro.paragraph_format.space_after = Pt(6)
-
-        # Renders all sentences subsequent to the first as a bulleted list to enhance readability and structure.
-        if len(sentences) > 1:
-            add_smart_bullet_list(
-                doc, sentences[1:], color_rgb=BASE_TEXT_COLOR, bold_prefix=False
-            )
+    for paragraph_block in narrative.split("\n\n"):
+        clean_block = paragraph_block.strip()
+        if not clean_block:
+            continue
+        p_block = doc.add_paragraph()
+        p_block.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        p_block.paragraph_format.space_before = Pt(6)
+        p_block.paragraph_format.space_after = Pt(6)
+        p_block.paragraph_format.line_spacing = 1.15
+        r_block = p_block.add_run(clean_block)
+        r_block.font.name = "Arial"
+        r_block.font.size = Pt(10.5)
+        r_block.font.color.rgb = BASE_TEXT_COLOR
 
     add_spacer(doc, 15)
 
@@ -859,7 +835,7 @@ def render_executive_summary(
     header_cell = impact_table.rows[0].cells[0]
     set_cell_text(
         header_cell,
-        "Principales impactos de negocio",
+        t("key_business_impacts_lbl", locale=doc_lang),
         bold=True,
         font_size=10.5,
         align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -1134,7 +1110,7 @@ def render_execution_roadmap(
     """Renders the execution roadmap section into a Word document. This function constructs the "Implementation Plan and Time Horizons" section of the report. It first generates a table listing the defined transversal programs and their descriptions. It then iterates through the time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1"). For each horizon that contains initiatives, a detailed table is created, listing each initiative's associated program, title, business case, start month, and duration. Args: doc (docx.document.Document): The python-docx Document object to be modified. roadmap (ExecutionRoadmapDraft): A data object containing the structured roadmap information, including programs and initiatives per time horizon. visuals (dict): This parameter is currently unused. client_dir (str): This parameter is currently unused. client_name (str): The client's name, used for placeholder substitution in text content. Defaults to an empty string. Returns: None: The function modifies the `doc` object in place."""
     BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
     add_heading_paragraph(
-        doc, "6. Implementation Plan and Time Horizons", level=1
+        doc, t("global_ch6_roadmap_title", locale=doc_lang), level=1
     )
     add_body_paragraph(
         doc,
@@ -1148,7 +1124,7 @@ def render_execution_roadmap(
     p_cell_header = table_p.rows[0].cells[0]
     set_cell_text(
         p_cell_header,
-        "Programas transversales definidos",
+        t("header_transversal_programs", locale=doc_lang),
         bold=True,
         font_size=10.5,
         align=WD_ALIGN_PARAGRAPH.CENTER,
@@ -1181,13 +1157,16 @@ def render_execution_roadmap(
 
         program_name = clean_t_codes(p.name)
         program_desc = sanitize_client_name(clean_t_codes(p.description), client_name, doc_lang=doc_lang)
+        # Avoid massive walls of text in table cells by taking concise executive summary sentences
+        sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z\u00C0-\u017F])", program_desc.strip())
+        concise_desc = " ".join(sentences[:2]) if len(sentences) > 2 else program_desc
 
         r_name = p_bull.add_run(f"{program_name}: ")
         r_name.bold = True
         r_name.font.size = Pt(10.5)
         r_name.font.color.rgb = BASE_TEXT_COLOR
 
-        r_desc = p_bull.add_run(program_desc)
+        r_desc = p_bull.add_run(concise_desc)
         r_desc.bold = False
         r_desc.font.size = Pt(10.5)
         r_desc.font.color.rgb = BASE_TEXT_COLOR
@@ -1195,10 +1174,10 @@ def render_execution_roadmap(
     add_spacer(doc, 15)
     horizons = roadmap.horizons
     mapping = [
-        ("Quick Wins (0-3 meses)", horizons.quick_wins_0_3_months),
-        ("Year 1 (4-12 months)", horizons.year_1_3_12_months),
-        ("Year 2 (13-24 months)", horizons.year_2_12_24_months),
-        ("Year 3 (25-36 months)", horizons.year_3_24_36_months),
+        (t("roadmap_horizon_quick_wins", locale=doc_lang), horizons.quick_wins_0_3_months),
+        (t("roadmap_horizon_year_1", locale=doc_lang), horizons.year_1_3_12_months),
+        (t("roadmap_horizon_year_2", locale=doc_lang), horizons.year_2_12_24_months),
+        (t("roadmap_horizon_year_3", locale=doc_lang), horizons.year_3_24_36_months),
     ]
     for title, initiatives in mapping:
         if not initiatives:
@@ -1338,13 +1317,29 @@ def render_tobe_domain_architectures(
             continue
 
         num, dom_name = CANONICAL_TOWER_NAMES.get(t_id, (str(i).zfill(2), t_id))
-        dom_display = dom_name.replace("_", " ")
+        tower_loc = t(f"tower_{t_id.lower()}_name", locale=doc_lang)
+        dom_display = tower_loc if tower_loc and tower_loc != f"tower_{t_id.lower()}_name" else dom_name.replace("_", " ")
         add_heading_paragraph(doc, f"{num}. {dom_display}", level=2)
 
         snap = bp_data.get("executive_snapshot", {})
         bottom_line = snap.get("bottom_line", "") if isinstance(snap, dict) else ""
         if bottom_line:
-            add_body_paragraph(doc, sanitize_client_name(bottom_line, client_name, doc_lang=doc_lang), color_rgb=BASE_TEXT_COLOR)
+            clean_bl = sanitize_client_name(bottom_line, client_name, doc_lang=doc_lang)
+            sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z\u00C0-\u017F])", clean_bl.strip())
+            if len(sentences) > 2:
+                p1_text = " ".join(sentences[:2])
+                p2_text = " ".join(sentences[2:])
+                add_body_paragraph(doc, p1_text, color_rgb=BASE_TEXT_COLOR)
+                add_body_paragraph(doc, p2_text, color_rgb=BASE_TEXT_COLOR)
+            else:
+                add_body_paragraph(doc, clean_bl, color_rgb=BASE_TEXT_COLOR)
+
+        add_heading_paragraph(doc, t("tobe_transitional_horizons_heading", locale=doc_lang), level=3)
+        trans_bullets = [
+            t("tobe_transitional_h1", locale=doc_lang),
+            t("tobe_transitional_h2", locale=doc_lang),
+        ]
+        add_smart_bullet_list(doc, trans_bullets, color_rgb=BASE_TEXT_COLOR)
 
         principles = bp_data.get("design_principles", [])
         if principles:
@@ -1373,50 +1368,52 @@ def render_tobe_domain_architectures(
             if vis_3y or vis_5y:
                 h_table = doc.add_table(rows=3, cols=2)
                 finalize_table(h_table)
-                set_cell_text(h_table.rows[0].cells[0], "Horizonte Temporal", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                set_cell_text(h_table.rows[0].cells[0], t("tobe_horizon_table_horizon_header", locale=doc_lang), bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
                 shade_cell(h_table.rows[0].cells[0], "0072BC")
-                set_cell_text(h_table.rows[0].cells[1], "Objetivos de Modernizacion", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                set_cell_text(h_table.rows[0].cells[1], t("tobe_horizon_table_objectives_header", locale=doc_lang), bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
                 shade_cell(h_table.rows[0].cells[1], "0072BC")
 
-                set_cell_text(h_table.rows[1].cells[0], "Objetivo a 3 Anos", bold=True, font_size=9.5)
+                set_cell_text(h_table.rows[1].cells[0], t("tobe_horizon_table_3y_label", locale=doc_lang), bold=True, font_size=9.5)
                 shade_cell(h_table.rows[1].cells[0], "F2F2F2")
                 set_cell_text(h_table.rows[1].cells[1], sanitize_client_name(vis_3y, client_name, doc_lang=doc_lang), font_size=9.5)
 
-                set_cell_text(h_table.rows[2].cells[0], "Vision a 5 Anos", bold=True, font_size=9.5)
+                set_cell_text(h_table.rows[2].cells[0], t("tobe_horizon_table_5y_label", locale=doc_lang), bold=True, font_size=9.5)
                 shade_cell(h_table.rows[2].cells[0], "F2F2F2")
                 set_cell_text(h_table.rows[2].cells[1], sanitize_client_name(vis_5y, client_name, doc_lang=doc_lang), font_size=9.5)
 
                 autofit_table_to_contents(h_table)
                 add_spacer(doc, 10)
 
+            tech_prefix = t("tobe_levers_technology_prefix", locale=doc_lang)
+            proc_prefix = t("tobe_levers_process_prefix", locale=doc_lang)
             all_levers = []
             if isinstance(levers_tech, list):
-                all_levers.extend([f"Tecnologia: {lev}" for lev in levers_tech])
+                all_levers.extend([f"{tech_prefix}{lev}" for lev in levers_tech])
             elif isinstance(levers_tech, str):
-                all_levers.append(f"Tecnologia: {levers_tech}")
+                all_levers.append(f"{tech_prefix}{levers_tech}")
 
             if isinstance(levers_proc, list):
-                all_levers.extend([f"Procesos: {lev}" for lev in levers_proc])
+                all_levers.extend([f"{proc_prefix}{lev}" for lev in levers_proc])
             elif isinstance(levers_proc, str):
-                all_levers.append(f"Procesos: {levers_proc}")
+                all_levers.append(f"{proc_prefix}{levers_proc}")
 
             if all_levers:
-                add_heading_paragraph(doc, "Palancas Clave de Evolucion", level=4)
+                add_heading_paragraph(doc, t("tobe_evolution_levers_heading", locale=doc_lang), level=4)
                 add_smart_bullet_list(doc, [sanitize_client_name(lev_item, client_name, doc_lang=doc_lang) for lev_item in all_levers[:4]], color_rgb=BASE_TEXT_COLOR)
 
             if benefits or risks_inaction:
                 b_table = doc.add_table(rows=2, cols=2)
                 finalize_table(b_table)
-                set_cell_text(b_table.rows[0].cells[0], "Beneficios Esperados", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                set_cell_text(b_table.rows[0].cells[0], t("tobe_benefits_table_benefits_header", locale=doc_lang), bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
                 shade_cell(b_table.rows[0].cells[0], "0072BC")
-                set_cell_text(b_table.rows[0].cells[1], "Risk of Inaction (Cost of Delay)", bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+                set_cell_text(b_table.rows[0].cells[1], t("tobe_benefits_table_risks_header", locale=doc_lang), bold=True, font_size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
                 shade_cell(b_table.rows[0].cells[1], "0072BC")
 
                 b_text = "\n* ".join([str(b) for b in benefits]) if isinstance(benefits, list) else str(benefits)
                 r_text = "\n* ".join([str(r) for r in risks_inaction]) if isinstance(risks_inaction, list) else str(risks_inaction)
 
-                set_cell_text(b_table.rows[1].cells[0], ("* " + sanitize_client_name(b_text, client_name, doc_lang=doc_lang)) if b_text else "Optimizacion", font_size=9.5)
-                set_cell_text(b_table.rows[1].cells[1], ("* " + sanitize_client_name(r_text, client_name, doc_lang=doc_lang)) if r_text else "Deuda tecnica", font_size=9.5)
+                set_cell_text(b_table.rows[1].cells[0], ("* " + sanitize_client_name(b_text, client_name, doc_lang=doc_lang)) if b_text else t("tobe_benefits_table_optimization_fallback", locale=doc_lang), font_size=9.5)
+                set_cell_text(b_table.rows[1].cells[1], ("* " + sanitize_client_name(r_text, client_name, doc_lang=doc_lang)) if r_text else t("tobe_benefits_table_tech_debt_fallback", locale=doc_lang), font_size=9.5)
                 autofit_table_to_contents(b_table)
                 add_spacer(doc, 10)
 
@@ -1451,7 +1448,8 @@ def render_todo_detailed_project_charters(
             continue
 
         num, dom_name = CANONICAL_TOWER_NAMES.get(t_id, (str(i).zfill(2), t_id))
-        dom_display = dom_name.replace("_", " ")
+        tower_loc = t(f"tower_{t_id.lower()}_name", locale=doc_lang)
+        dom_display = tower_loc if tower_loc and tower_loc != f"tower_{t_id.lower()}_name" else dom_name.replace("_", " ")
 
         projects = []
         for p in bp_data.get("pillars_analysis", []):
@@ -1460,7 +1458,14 @@ def render_todo_detailed_project_charters(
         if not projects:
             continue
 
-        add_heading_paragraph(doc, f"Program {num}: {dom_display} ({len(projects)} Projects)", level=2)
+        program_heading = t(
+            "program_projects_heading_template",
+            locale=doc_lang,
+            num=num,
+            name=dom_display,
+            count=len(projects),
+        )
+        add_heading_paragraph(doc, program_heading, level=2)
 
         for proj in projects:
             p_name = proj.get("name", f"Initiative {proj_counter}")
@@ -1478,13 +1483,26 @@ def render_todo_detailed_project_charters(
             c_table = doc.add_table(rows=6, cols=2)
             finalize_table(c_table)
 
+            sizing_horizon_lbl = t(
+                "sizing_horizon_template",
+                locale=doc_lang,
+                typology=typology,
+                sizing=sizing,
+                horizon=horizon,
+            )
+            wbs_phases_lbl = t(
+                "wbs_phases_coordinated_template",
+                locale=doc_lang,
+                count=len(proj.get("wbs_tasks", [])),
+            )
+
             rows_data = [
-                ("Typology & Sizing", f"{typology} | Sizing: {sizing} | Horizon: {horizon}"),
-                ("Technical SMART Objective", sanitize_client_name(t_obj, client_name, doc_lang=doc_lang)),
-                ("Business Case / Mitigation", sanitize_client_name(b_case, client_name, doc_lang=doc_lang)),
-                ("FinOps Budget", f"CapEx: {capex} | OpEx: {opex}"),
-                ("ROI & Justification", sanitize_client_name(roi, client_name, doc_lang=doc_lang)),
-                ("Work Breakdown Structure (WBS)", f"{len(proj.get('wbs_tasks', []))} execution phases coordinated"),
+                (t("charter_row_typology_sizing", locale=doc_lang), sizing_horizon_lbl),
+                (t("charter_row_smart_objective", locale=doc_lang), sanitize_client_name(t_obj, client_name, doc_lang=doc_lang)),
+                (t("charter_row_business_case", locale=doc_lang), sanitize_client_name(b_case, client_name, doc_lang=doc_lang)),
+                (t("charter_row_finops_budget", locale=doc_lang), f"CapEx: {capex} | OpEx: {opex}"),
+                (t("charter_row_roi", locale=doc_lang), sanitize_client_name(roi, client_name, doc_lang=doc_lang)),
+                (t("charter_row_wbs", locale=doc_lang), wbs_phases_lbl),
             ]
 
             for r_idx, (k, v) in enumerate(rows_data):
@@ -2032,10 +2050,11 @@ def render_global_report(
     render_tobe = render_all or scope == "tobe"
     render_todo = render_all or scope == "todo"
 
-    if render_asis:
+    if render_all:
         if getattr(payload, "board_memo", None):
             render_board_memo(doc, payload.board_memo, client_name=client_name, doc_lang=doc_lang)
 
+    if render_asis:
         if payload.executive_summary:
             render_executive_summary(
                 doc,

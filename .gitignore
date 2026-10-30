@@ -72,5 +72,6 @@ commercial_report_payload.json
 global_report_payload.json
 sa-key.json
 !tests/test_data/**
+tests/test_data/*.generated.png
 __pycache__/
 .evolution/

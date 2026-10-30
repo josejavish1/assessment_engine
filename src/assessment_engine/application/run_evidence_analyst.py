@@ -7,6 +7,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any, cast
 
@@ -161,11 +162,18 @@ async def build_findings(
         resolve_model_for_role,
     )
     from assessment_engine.infrastructure.localization import (
+        resolve_base_locale,
         resolve_target_language_name,
     )
 
     company = get_consultant_company_name()
-    doc_lang = case_input.get("language") or "en"
+    raw_lang = (
+        case_input.get("language")
+        or os.environ.get("ASSESSMENT_DOC_LANG")
+        or os.environ.get("ASSESSMENT_LANGUAGE")
+        or "en"
+    )
+    doc_lang = resolve_base_locale(raw_lang)
     target_lang = resolve_target_language_name(doc_lang)
 
     agent = Agent(

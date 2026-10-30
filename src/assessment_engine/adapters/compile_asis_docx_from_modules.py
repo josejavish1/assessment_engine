@@ -143,7 +143,7 @@ def _compile_introduction_and_scope(doc: Any, ctx: DocumentCompilationContext) -
     """Render Chapter 1 (Executive Summary intro) and Chapter 2 (Methodology, Scope, Objectives)."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]
-    vocab = ctx["vocab"]
+    doc_lang = ctx.get("doc_lang", "en")
     modules_dir = ctx["modules_dir"]
 
     # Assemble and render Chapter 1: Executive Summary and Business Context.
@@ -154,7 +154,7 @@ def _compile_introduction_and_scope(doc: Any, ctx: DocumentCompilationContext) -
     # Assemble and render Chapter 2: Objective, Scope, and Assessment Methodology.
     add_heading(
         doc,
-        vocab.get("methodology_chapter_title", "Reference Framework, Objectives, and Assessment Scope"),
+        t("methodology_chapter_title", locale=doc_lang),
         level=1,
         primary_color_rgb=p_color_rgb,
     )
@@ -362,13 +362,18 @@ def compile_docx(tower_dir: str, output_path: str):
     industry = profile_sec.get("industry", "Standard")
     industry_name = profile_sec.get(f"industry_type_{doc_lang}") or profile_sec.get("industry_type_en") or t("standard_sector_label", locale=doc_lang)
 
+    curr_code = (
+        tower_meta.get("currency_code")
+        or ("USD" if currency == "$" else "GBP" if currency == "£" else "JPY" if currency == "¥" else "CHF" if currency == "CHF" else "EUR")
+    )
+
     # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     # The regulatory framework narrative is mapped dynamically to the client's industry sector.
     if "Financial" in industry or "Banking" in industry:
         reg_name = t("reg_desc_financial", locale=doc_lang)
         reg_fine_limit = format_currency(
             15000000.0,
-            currency_code="EUR",
+            currency_code=curr_code,
             currency_symbol=currency,
             locale=doc_lang,
             decimals=0,
@@ -377,7 +382,7 @@ def compile_docx(tower_dir: str, output_path: str):
         reg_name = t("reg_desc_critical_infra", locale=doc_lang)
         reg_fine_limit = format_currency(
             10000000.0,
-            currency_code="EUR",
+            currency_code=curr_code,
             currency_symbol=currency,
             locale=doc_lang,
             decimals=0,
@@ -386,7 +391,7 @@ def compile_docx(tower_dir: str, output_path: str):
         reg_name = t("reg_desc_telecom", locale=doc_lang)
         reg_fine_limit = format_currency(
             5000000.0,
-            currency_code="EUR",
+            currency_code=curr_code,
             currency_symbol=currency,
             locale=doc_lang,
             decimals=0,
@@ -395,7 +400,7 @@ def compile_docx(tower_dir: str, output_path: str):
         reg_name = t("reg_desc_healthcare", locale=doc_lang)
         reg_fine_limit = format_currency(
             5000000.0,
-            currency_code="EUR",
+            currency_code=curr_code,
             currency_symbol=currency,
             locale=doc_lang,
             decimals=0,
@@ -404,7 +409,7 @@ def compile_docx(tower_dir: str, output_path: str):
         reg_name = t("reg_desc_general", locale=doc_lang)
         reg_fine_limit = format_currency(
             2000000.0,
-            currency_code="EUR",
+            currency_code=curr_code,
             currency_symbol=currency,
             locale=doc_lang,
             decimals=0,

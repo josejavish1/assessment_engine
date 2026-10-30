@@ -74,7 +74,7 @@ def test_generate_modules_full_flow(tmp_path: Path):
 
     # Invariantes de contenido semántico no vacío y trazabilidad
     mod2_text = (modules_dir / "02_resumen_ejecutivo.md").read_text(encoding="utf-8")
-    assert "Resumen Ejecutivo" in mod2_text
+    assert any(h in mod2_text for h in ("Resumen Ejecutivo", "Executive Summary"))
     assert "Hybrid Compute & Platforms" in mod2_text
 
     mod1_text = (modules_dir / "01_introduccion.md").read_text(encoding="utf-8")

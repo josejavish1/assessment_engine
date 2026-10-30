@@ -350,8 +350,14 @@ def get_canonical_tower_filenames(
     doc_lang = (locale or os.environ.get("ASSESSMENT_DOC_LANG") or "en").lower()
     prefix = t("file_prefix_annex", locale=doc_lang)
 
-    num, name = CANONICAL_TOWER_NAMES.get(
+    num, fallback_name = CANONICAL_TOWER_NAMES.get(
         tower_id, (tower_id.replace("T", "").zfill(2), tower_id)
+    )
+    localized_slug = t(f"tower_{tower_id.lower()}_file_slug", locale=doc_lang)
+    name = (
+        localized_slug
+        if localized_slug and localized_slug != f"tower_{tower_id.lower()}_file_slug"
+        else fallback_name
     )
 
     if client_name:

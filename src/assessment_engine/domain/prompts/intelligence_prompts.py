@@ -165,7 +165,9 @@ def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}", ta
     2. REDUNDANCY PURGE: Ensure 'Single Message Uniqueness'. Do not repeat executive summaries in business implications.
     3. OPERATIONAL PRAGMATISM: For short-term roadmaps (Wave 1 / 0-6 months), use operational verbs ('Design', 'PoC', 'Standards Definition', 'Pilot'). Prohibit massive disruptive rollouts in critical infrastructure within 6 months.
     4. TARGET LANGUAGE MANDATE: Draft all executive summaries, headlines, decision rationales, and roadmaps EXCLUSIVELY in {target_language}.
-    5. EXACT CITATIONS: If making a market assertion or metric claim, PRESERVE exact URLs or citations.
+    5. C-LEVEL REGISTER (BOARD & CEO LEVEL): For the CEO/Board narrative, DO NOT list low-level engineering inventory, hardware models, or technical acronyms (e.g., avoid mentioning specific cables, chipsets, or database versions like 'Oracle 10g' or 'HPE SimpliVity'). Instead, synthesize into executive business categories: Plant Continuity & Logistics Risk, Core Platform Obsolescence, and Regulatory/Licensing Exposure (NIS2).
+    6. MINTO PYRAMID: Conclude first with the strategic business action, followed by supporting financial and operational arguments. Keep sentences concise (under 30 words per sentence).
+    7. EXACT CITATIONS: If making a market assertion or metric claim, PRESERVE exact URLs or citations.
 
     OUTPUT JSON STRUCTURE:
     Return an object strictly containing the canonical GlobalReportPayload keys:

@@ -61,7 +61,10 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     roadmap_data = payload.get("execution_roadmap", {})
-    horizons = roadmap_data.get("horizons", {})
+    if isinstance(roadmap_data, dict):
+        horizons = roadmap_data.get("horizons", {})
+    else:
+        horizons = {}
     if not horizons:
         logger.warning("Execution roadmap missing from payload.")
         sys.exit(0)
