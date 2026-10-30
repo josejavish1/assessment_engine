@@ -1,4 +1,5 @@
 import json
+from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 from typing import Any, cast
 
@@ -26,7 +27,6 @@ def load_prompt_config(filename: str) -> dict[str, Any]:
     """
     import yaml
 
-    # Constructs a path to the 'registry' directory relative to the current module's location. This ensures that prompt blueprint YAML files are resolved reliably, independent of the process's current working directory.
     registry_dir = Path(__file__).resolve().parent / "registry"
     filepath = registry_dir / filename
     if not filepath.exists():
@@ -81,7 +81,7 @@ def get_pilar_architect_prompt(
 ) -> Any:
     """Constructs a structured prompt for a generative model from various inputs.
 
-    This function assembles a detailed, multi-section prompt in Spanish by
+    This function assembles a detailed, multi-section prompt by
     integrating business context, strategic intelligence, and technical findings.
     The prompt's structural template, role definition, and rules are loaded
     from the `blueprint_pilar_architect_prompt.yaml` configuration file.
@@ -107,16 +107,21 @@ def get_pilar_architect_prompt(
         KeyError: If the configuration file is missing a required key.
     """
     config = load_prompt_config("blueprint_pilar_architect_prompt.yaml")
+    quantized_score = Decimal(str(pilar_score)).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_EVEN
+    )
 
-    prompt = f"Eres un {config['role']}.\n"
+    prompt = f"You are a {config['role']}.\n"
     prompt += (
         config["context_description"].format(
-            tower_name=tower_name, pilar_label=pilar_label, pilar_score=pilar_score
+            tower_name=tower_name,
+            pilar_label=pilar_label,
+            pilar_score=quantized_score,
         )
         + "\n\n"
     )
 
-    prompt += "CONTEXTO DEL NEGOCIO:\n"
+    prompt += "BUSINESS CONTEXT:\n"
     prompt += f"{context_str}\n\n"
 
     prompt += "STRATEGIC DNA (Zero-Minute Baseline):\n"
@@ -172,7 +177,12 @@ def get_critic_prompt(pilar_label: str, client_name: str, raw_output_json: str) 
 def get_closing_orchestrator_prompt(
     tower_name: str, pillars_analysis_json: str, intel_str: str, total_ale: float = 0.0
 ) -> Any:
-    """Assembles the final orchestrator prompt for blueprint generation."""
+    """Assembles the final orchestrator prompt for blueprint generation.
+
+    Monetary amounts (total_ale) are processed strictly using decimal.Decimal with
+    ROUND_HALF_EVEN and integer minor currency units (cents) to prohibit unbounded
+    IEEE 754 floating-point drift.
+    """
     config = load_prompt_config("blueprint_closing_orchestrator_prompt.yaml")
 
     prompt = f"You are the {config['role']}. Here is the consolidated technical analysis of all pillars for tower {tower_name}:\n"
@@ -180,8 +190,16 @@ def get_closing_orchestrator_prompt(
 
     prompt += f"Based on this and the client strategic DNA: {intel_str}\n\n"
 
-    if total_ale > 0:
-        prompt += f"FINANCIAL MANDATE (FAIR ALE): The consolidated Annual Loss Expectancy (ALE) for this tower is {total_ale:,.2f} €. You MUST use this exact value in 'cost_of_inaction' to financially substantiate the risk before the Executive Committee.\n\n"
+    ale_decimal = Decimal(str(total_ale)).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_EVEN
+    )
+    ale_cents = int(
+        (ale_decimal * Decimal("100")).to_integral_value(rounding=ROUND_HALF_EVEN)
+    )
+
+    if ale_cents > 0:
+        formatted_ale = f"{ale_decimal:,.2f}"
+        prompt += f"FINANCIAL MANDATE (FAIR ALE): The consolidated Annual Loss Expectancy (ALE) for this tower is {formatted_ale} €. You MUST use this exact value in 'cost_of_inaction' to financially substantiate the risk before the Executive Committee.\n\n"
 
     prompt += "TASK AND TONE RULES:\n"
     for rule in config["task_and_tone"]:

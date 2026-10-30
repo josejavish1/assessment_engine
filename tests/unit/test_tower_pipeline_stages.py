@@ -85,14 +85,22 @@ async def test_short_circuit_bypassed_with_answers(tmp_path: Path):
 
 def test_parse_and_prepare_pipeline_arguments():
     """Verify CLI argument parsing and configuration path initialization."""
-    from assessment_engine.application.run_tower_pipeline import _parse_and_prepare_pipeline
+    from assessment_engine.application.run_tower_pipeline import (
+        _parse_and_prepare_pipeline,
+    )
 
-    cfg = _parse_and_prepare_pipeline([
-        "--tower", "T2",
-        "--client", "Iberdrola Renovable",
-        "--context-file", "ctx.docx",
-        "--responses-file", "resp.xlsx",
-    ])
+    cfg = _parse_and_prepare_pipeline(
+        [
+            "--tower",
+            "T2",
+            "--client",
+            "Iberdrola Renovable",
+            "--context-file",
+            "ctx.docx",
+            "--responses-file",
+            "resp.xlsx",
+        ]
+    )
     assert cfg.tower_id == "T2"
     assert cfg.client_slug == "iberdrola_renovable"
     assert "T2" in str(cfg.case_dir)
@@ -104,6 +112,7 @@ def test_parse_and_prepare_pipeline_arguments():
 async def test_run_step_async_execution():
     """Verify that run_step_async executes a real non-blocking subprocess successfully."""
     import sys
+
     from assessment_engine.application.run_tower_pipeline import run_step_async
 
     cmd = [sys.executable, "-c", "import sys; sys.exit(0)"]
@@ -115,7 +124,10 @@ async def test_run_step_async_execution():
 async def test_stage_scoring_and_qualitative_chain_mock(tmp_path: Path):
     """Verify that _stage_scoring_and_qualitative_chain triggers pipeline stages when files are absent."""
     from unittest.mock import AsyncMock, patch
-    from assessment_engine.application.run_tower_pipeline import _stage_scoring_and_qualitative_chain
+
+    from assessment_engine.application.run_tower_pipeline import (
+        _stage_scoring_and_qualitative_chain,
+    )
 
     case_dir = tmp_path / "T1"
     case_dir.mkdir(parents=True, exist_ok=True)
@@ -151,7 +163,10 @@ async def test_stage_scoring_and_qualitative_chain_mock(tmp_path: Path):
 async def test_stage_evidence_and_benchmarks_mock(tmp_path: Path):
     """Verify that _stage_evidence_and_benchmarks executes evidence ledger and benchmark stages."""
     from unittest.mock import AsyncMock, patch
-    from assessment_engine.application.run_tower_pipeline import _stage_evidence_and_benchmarks
+
+    from assessment_engine.application.run_tower_pipeline import (
+        _stage_evidence_and_benchmarks,
+    )
 
     case_dir = tmp_path / "T1"
     case_dir.mkdir(parents=True, exist_ok=True)
@@ -181,3 +196,26 @@ async def test_stage_evidence_and_benchmarks_mock(tmp_path: Path):
         (case_dir / "evidence_ledger.json").write_text("{}", encoding="utf-8")
         await _stage_evidence_and_benchmarks(cfg)
         assert mock_step.call_count >= 1
+
+
+def test_tower_pipeline_telemetry_language_decoupling():
+    """Verify that run_tower_pipeline source code has zero Spanish strings in telemetry or error messages."""
+    pipeline_path = (
+        Path(__file__).resolve().parent.parent.parent
+        / "src/assessment_engine/application/run_tower_pipeline.py"
+    )
+    content = pipeline_path.read_text(encoding="utf-8")
+    forbidden = [
+        "Reanudando en:",
+        "Saltando:",
+        "Purgando razonamiento previo",
+        "Usando fallback",
+        "Ejecutando preflight",
+        "Entregable 2",
+        "Expediente Actuarial",
+        "El motor sigue trabajando",
+    ]
+    for pattern in forbidden:
+        assert pattern not in content, (
+            f"Found forbidden Spanish string '{pattern}' in run_tower_pipeline.py"
+        )

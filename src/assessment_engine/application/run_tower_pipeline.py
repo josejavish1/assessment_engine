@@ -3,8 +3,8 @@
 The module defines a Directed Acyclic Graph (DAG) of stages, where each stage is executed
 in an isolated subprocess to prevent state interference and resource contention between steps.
 """
-from __future__ import annotations
 
+from __future__ import annotations
 
 import argparse
 import asyncio
@@ -77,12 +77,12 @@ async def run_step_async(
     if SKIP_MODE:
         if START_FROM and step_name == START_FROM:
             SKIP_MODE = False
-            print(f"\n▶️  Reanudando en: {step_name}")
+            print(f"\n▶️  Resuming at: {step_name}")
         else:
-            print(f"⏭️  Saltando: {step_name}")
+            print(f"⏭️  Skipping: {step_name}")
             return
 
-    print(f"\n=== {step_name} (Iniciado) ===")
+    print(f"\n=== {step_name} (Started) ===")
 
     process_env = os.environ.copy()
     process_env.update(env)
@@ -122,7 +122,7 @@ async def run_step_async(
 
                 # Print progress heartbeat and keep waiting
                 print(
-                    "⏳ [Heartbeat] El motor sigue trabajando en segundo plano...",
+                    "⏳ [Heartbeat] Engine working in background...",
                     flush=True,
                 )
 
@@ -148,11 +148,11 @@ async def run_step_async(
                 out_msg = stdout.decode("utf-8").strip() if stdout else ""
                 err_msg = stderr.decode("utf-8").strip() if stderr else ""
                 if out_msg:
-                    print(f"\n📢 [STDOUT antes del Timeout en {step_name}]:\n{out_msg}")
+                    print(f"\n📢 [STDOUT before Timeout in {step_name}]:\n{out_msg}")
                 if err_msg:
-                    print(f"\n📢 [STDERR antes del Timeout en {step_name}]:\n{err_msg}")
+                    print(f"\n📢 [STDERR before Timeout in {step_name}]:\n{err_msg}")
                 raise RuntimeError(
-                    f"Timeout en {step_name} tras {timeout_seconds:.0f}s."
+                    f"Timeout in {step_name} after {timeout_seconds:.0f}s."
                 ) from exc
         else:
             stdout, stderr = await _communicate_with_heartbeat(process)
@@ -164,12 +164,12 @@ async def run_step_async(
             out_msg = stdout.decode("utf-8").strip() if stdout else ""
             err_msg = stderr.decode("utf-8").strip() if stderr else ""
             if out_msg and not stdout:
-                print(f"\n📢 [STDOUT antes del Error en {step_name}]:\n{out_msg}")
+                print(f"\n📢 [STDOUT before Error in {step_name}]:\n{out_msg}")
             raise RuntimeError(
-                f"Fallo nativo en {step_name} (Exit {process.returncode}):\n{err_msg}"
+                f"Native failure in {step_name} (Exit {process.returncode}):\n{err_msg}"
             )
 
-        print(f"✅ {step_name} (Completado)")
+        print(f"✅ {step_name} (Completed)")
 
     except Exception as e:
         raise RuntimeError(f"Critical error executing {step_name}: {e}")
@@ -225,7 +225,7 @@ def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig
     case_dir = prepare_case_runtime(env, client_id=client_slug, tower_id=tower_id)
 
     if args.force:
-        print(f"🔄 [Cognitive Reset] Purgando razonamiento previo para {tower_id}...")
+        print(f"🔄 [Cognitive Reset] Purging prior reasoning for {tower_id}...")
         if case_dir.exists():
             for f in [
                 "findings.json",
@@ -263,9 +263,7 @@ def _parse_and_prepare_pipeline(argv: list[str] | None = None) -> PipelineConfig
     payload_path = case_dir / f"{annex_stem}.template_payload.json"
     resolve_tower_annex_template_path()
     doc_lang = str(
-        env.get("ASSESSMENT_DOC_LANG")
-        or getattr(args, "language", None)
-        or "en"
+        env.get("ASSESSMENT_DOC_LANG") or getattr(args, "language", None) or "en"
     ).lower()
 
     canonical_asis_name, canonical_tobe_name = get_canonical_tower_filenames(
@@ -317,7 +315,7 @@ async def _stage_case_input_and_short_circuit(cfg: PipelineConfig) -> bool:
             )
         except Exception as e:
             logger.warning(
-                f"[Pipeline] In-process case input failed: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-process case input failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -495,7 +493,7 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
             )
         except Exception as e:
             logger.warning(
-                f"[Pipeline] In-process scoring failed: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-process scoring failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -530,7 +528,7 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
             )
         except Exception as e:
             logger.warning(
-                f"[Pipeline] In-process evidence analyst failed: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-process evidence analyst failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -563,7 +561,7 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
             )
         except Exception as e:
             logger.warning(
-                f"[Pipeline] In-process SOTA researcher failed: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-process SOTA researcher failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -594,7 +592,7 @@ async def _stage_scoring_and_qualitative_chain(cfg: PipelineConfig) -> None:
             )
         except Exception as e:
             logger.warning(
-                f"[Pipeline] In-process executive refiner failed: {e}. Usando fallback subprocess..."
+                f"[Pipeline] In-process executive refiner failed: {e}. Using subprocess fallback..."
             )
             await run_step_async(
                 [
@@ -639,10 +637,10 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
         or cfg.blueprint_payload_path.stat().st_size == 0
     ):
         if cfg.env.get("ASSESSMENT_SKIP_VERTEX_PREFLIGHT", "").strip() != "1":
-            print("🔎 Ejecutando preflight de Vertex AI...")
+            print("🔎 Running Vertex AI preflight...")
             preflight = run_vertex_ai_preflight(env=cfg.env)
             print(
-                f"✅ Vertex AI listo (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
+                f"✅ Vertex AI ready (project={preflight['project']}, location={preflight['location']}, model={preflight['model']})"
             )
 
         try:
@@ -774,7 +772,9 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
                     "--approved-annex",
                     str(cfg.payload_path),
                     "--output",
-                    str(cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.shadow.docx"),
+                    str(
+                        cfg.case_dir / f"AS-IS_Anexo_Tecnico_{cfg.tower_id}.shadow.docx"
+                    ),
                 ],
                 cfg.env,
                 "V4 AST Shadow Compilation (Canary)",
@@ -826,17 +826,20 @@ async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
 
             shutil.copyfile(
                 cfg.output_blueprint_docx,
-                cfg.case_dir / f"Blueprint_Transformacion_{cfg.tower_id}_{cfg.client_slug}.docx",
+                cfg.case_dir
+                / f"Blueprint_Transformacion_{cfg.tower_id}_{cfg.client_slug}.docx",
             )
 
     print("\n🚀 Finalizing: Standard Rendering + Blueprint in parallel...")
     await asyncio.gather(render_standard_report(), run_blueprint_flow())
 
-    print(f"\n✅ Pipeline {cfg.tower_id} completed successfully (Canonical Dual Model):")
-    print(f"  📄 Deliverable 1 (AS-IS Diagnostic): {cfg.output_asis_docx}")
-    print(f"  🚀 Entregable 2 (Blueprint TO-BE):   {cfg.output_blueprint_docx}")
     print(
-        f"  📊 Expediente Actuarial (SR 11-7):   {cfg.case_dir / f'Expediente_Auditoria_Riesgos_{cfg.tower_id}.md'}"
+        f"\n✅ Pipeline {cfg.tower_id} completed successfully (Canonical Dual Model):"
+    )
+    print(f"  📄 Deliverable 1 (AS-IS Diagnostic): {cfg.output_asis_docx}")
+    print(f"  🚀 Deliverable 2 (Blueprint TO-BE):   {cfg.output_blueprint_docx}")
+    print(
+        f"  📊 Actuarial Ledger (SR 11-7):   {cfg.case_dir / f'Expediente_Auditoria_Riesgos_{cfg.tower_id}.md'}"
     )
 
 
