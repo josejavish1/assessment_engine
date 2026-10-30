@@ -163,11 +163,15 @@ async def _execute_query_with_retry(
     if isinstance(app, AdkApp) and not use_vertex and api_key:
         from google import genai
 
-        from assessment_engine.infrastructure.genai_client import get_fallback_model
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_fallback_model,
+            get_model,
+        )
 
         client = genai.Client(api_key=api_key)
         agent_obj = getattr(app, "_agent", None) or getattr(app, "_tmpl_attrs", {}).get("agent")
-        current_model = getattr(agent_obj, "model", "gemini-3.8-flash")
+        current_model = getattr(agent_obj, "model", None) or get_model(ModelTier.FAST)
         instruction = getattr(agent_obj, "instruction", None)
         output_schema = getattr(agent_obj, "output_schema", None)
 
