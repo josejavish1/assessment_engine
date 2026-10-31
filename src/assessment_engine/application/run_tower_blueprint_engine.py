@@ -1140,13 +1140,8 @@ async def run_tower_blueprint(
         from assessment_engine.domain.synthesis.oracle import SynthesisContext
 
         async def legacy_fallback(context: Any, payload: Any, **kwargs: Any) -> Any:
-            from assessment_engine.application.tools.adversarial_consensus_engine import (
-                AdversarialConsensusEngine,
-            )
-            consensus_engine = AdversarialConsensusEngine(env={})
-            return await consensus_engine.process_payload(
-                tower_id, payload, client_name=client_name
-            )
+            # Standalone fallback when operating outside active CEGAR mode
+            return payload
 
         doc_meta = blueprint_payload.get("document_meta", {})
         doc_lang = str(doc_meta.get("language") or doc_meta.get("doc_lang") or doc_lang or "en").strip()

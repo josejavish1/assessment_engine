@@ -116,10 +116,6 @@ async def test_run_tower_blueprint_lifecycle(tmp_path: Path):
         ), patch(
             "assessment_engine.application.run_tower_blueprint_engine.sync_findings_to_graph",
         ), patch(
-            "assessment_engine.application.tools.adversarial_consensus_engine.AdversarialConsensusEngine.process_payload",
-            new_callable=AsyncMock,
-            side_effect=lambda tid, payload, **kwargs: payload,
-        ), patch(
             "assessment_engine.infrastructure.policy_engine.SovereignPolicyEngine.compile",
             side_effect=lambda payload: payload,
         ), patch(

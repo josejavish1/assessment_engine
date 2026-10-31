@@ -261,5 +261,24 @@ def test_no_spanish_characters_in_python_code() -> None:
     )
 
 
+def test_no_conversational_multi_agent_debate_loops() -> None:
+    """ASSERTS that legacy multi-agent persona debate loops remain permanently eradicated (RFC-009 / PR-5)."""
+    app_root = Path(__file__).resolve().parents[2] / "src" / "assessment_engine" / "application"
+
+    # 1. Assert physical file does not exist
+    dead_file = app_root / "tools" / "adversarial_consensus_engine.py"
+    assert not dead_file.exists(), "adversarial_consensus_engine.py must remain permanently excised."
+
+    # 2. Assert no references across application layer
+    violations = []
+    for py_file in app_root.rglob("*.py"):
+        content = py_file.read_text(encoding="utf-8")
+        if "AdversarialConsensusEngine" in content or "adversarial_consensus_engine" in content:
+            violations.append(str(py_file.relative_to(app_root)))
+
+    assert not violations, f"Forbidden legacy debate references found in application layer: {violations}"
+
+
+
 
 
