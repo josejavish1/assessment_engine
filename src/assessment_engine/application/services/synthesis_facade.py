@@ -122,11 +122,18 @@ class PolymorphicSynthesisFacade:
         self._default_mode = default_mode
         self._max_shadow_concurrency = max_shadow_concurrency
         self._semaphore: asyncio.Semaphore | None = None
+        self._bound_loop: asyncio.AbstractEventLoop | None = None
         self._background_tasks: set[asyncio.Task[Any]] = set()
 
     def _get_semaphore(self) -> asyncio.Semaphore:
         """Lazy initialization of concurrency semaphore within active event loop."""
-        if self._semaphore is None:
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            current_loop = None
+
+        if self._semaphore is None or self._bound_loop != current_loop:
+            self._bound_loop = current_loop
             self._semaphore = asyncio.Semaphore(self._max_shadow_concurrency)
         return self._semaphore
 

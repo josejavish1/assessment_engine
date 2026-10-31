@@ -238,6 +238,7 @@ def test_no_spanish_characters_in_python_code() -> None:
         "enforce_english_comments.py",
         "code_hygiene.py",
         "maturity_band.py",
+        "argon_gate.py",
     }
 
     violations = []

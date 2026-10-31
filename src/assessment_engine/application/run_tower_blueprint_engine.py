@@ -1127,6 +1127,7 @@ async def run_tower_blueprint(
     )
 
     logger.info("Executing Strategic Synthesis and Risk Consensus via Polymorphic Facade...")
+    facade_instance = None
     try:
         from assessment_engine.application.services.synthesis_facade import (
             PolymorphicSynthesisFacade,
@@ -1148,20 +1149,48 @@ async def run_tower_blueprint(
             )
 
         doc_meta = blueprint_payload.get("document_meta", {})
-        doc_lang = str(doc_meta.get("language") or doc_meta.get("doc_lang") or "en").lower()
-        currency = str(doc_meta.get("currency") or "EUR")
-        isic = str(doc_meta.get("isic_code") or "6201")
+        doc_lang = str(doc_meta.get("language") or doc_meta.get("doc_lang") or doc_lang or "en").strip()
+        
+        # Universal multi-currency resolution (handles symbols and ISO codes)
+        raw_curr = str(doc_meta.get("currency") or os.environ.get("DEFAULT_ASSESSMENT_CURRENCY", "EUR")).strip().upper()
+        curr_map = {"€": "EUR", "$": "USD", "¥": "JPY", "£": "GBP"}
+        currency = curr_map.get(raw_curr, raw_curr)
+        if len(currency) != 3 or not currency.isalpha():
+            currency = "EUR"
 
-        # Harvest valid evidence IDs for formal citation graph resolution
+        isic = str(doc_meta.get("isic_code") or os.environ.get("DEFAULT_ASSESSMENT_ISIC", "6201")).strip()
+
+        # Robust, universal evidence harvesting from pillars_analysis, findings, and evidences
         ev_ids: set[str] = set()
+        for pillar in blueprint_payload.get("pillars_analysis", []):
+            if isinstance(pillar, dict):
+                findings_list = pillar.get("findings", []) or pillar.get("health_check_asis", [])
+                for f in findings_list:
+                    if isinstance(f, dict):
+                        for e in f.get("evidences", []):
+                            if isinstance(e, dict) and e.get("id"):
+                                ev_ids.add(str(e["id"]))
+                            elif isinstance(e, str) and e:
+                                ev_ids.add(e)
+                        if f.get("evidence_quote") and f.get("node_id"):
+                            ev_ids.add(str(f["node_id"]))
+                for e in pillar.get("evidences", []):
+                    if isinstance(e, dict) and e.get("id"):
+                        ev_ids.add(str(e["id"]))
+                    elif isinstance(e, str) and e:
+                        ev_ids.add(e)
         for p_finding in blueprint_payload.get("pillar_findings", []):
-            for e in p_finding.get("evidences", []):
-                if isinstance(e, dict) and e.get("id"):
-                    ev_ids.add(str(e["id"]))
-                elif isinstance(e, str) and e:
-                    ev_ids.add(e)
+            if isinstance(p_finding, dict):
+                for e in p_finding.get("evidences", []):
+                    if isinstance(e, dict) and e.get("id"):
+                        ev_ids.add(str(e["id"]))
+                    elif isinstance(e, str) and e:
+                        ev_ids.add(e)
+
         if not ev_ids:
-            ev_ids = {"EV-GENERIC-001"}
+            ev_ids = {"EV-BASE-001"}
+
+        blueprint_payload["valid_evidence_ids"] = sorted(ev_ids)
 
         synthesis_ctx = SynthesisContext(
             valid_evidence_ids=frozenset(ev_ids),
@@ -1172,13 +1201,13 @@ async def run_tower_blueprint(
 
         cegar_adapter = CegarLLMAdapter()
         cegar_engine = CegarSynthesisEngine(generator=cegar_adapter)
-        facade = PolymorphicSynthesisFacade(
+        facade_instance = PolymorphicSynthesisFacade(
             cegar_engine=cegar_engine,
             legacy_synthesizer=legacy_fallback,
             default_mode=SynthesisMode.CEGAR,
         )
 
-        synthesis_result = await facade.synthesize(synthesis_ctx, blueprint_payload)
+        synthesis_result = await facade_instance.synthesize(synthesis_ctx, blueprint_payload)
         if isinstance(synthesis_result, dict):
             if synthesis_result.get("provenance", {}).get("engine") == "CEGAR_VERIFIED_V1":
                 blueprint_payload["executive_synthesis"] = synthesis_result.get("executive_summary")
@@ -1187,9 +1216,15 @@ async def run_tower_blueprint(
                 blueprint_payload["cegar_financials"] = synthesis_result.get("financials")
                 blueprint_payload["synthesis_provenance"] = synthesis_result.get("provenance")
             else:
-                blueprint_payload = synthesis_result
+                if "pillars_analysis" in synthesis_result:
+                    blueprint_payload = synthesis_result
+                else:
+                    blueprint_payload.update(synthesis_result)
     except Exception as consensus_err:
         logger.error("Error executing strategic synthesis facade: %s", consensus_err, exc_info=True)
+    finally:
+        if facade_instance is not None:
+            await facade_instance.shutdown()
 
     logger.info("Executing Sovereign QA Architecture Policies and FAIR Monte Carlo Simulation...")
     try:

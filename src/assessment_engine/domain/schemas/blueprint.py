@@ -613,7 +613,7 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
         pillars_analysis: A list of `PillarBlueprintDraft` objects, where each
             object contains the detailed analysis for a specific pillar.
         total_fair_ale: The consolidated Annualized Loss Expectancy (ALE)
-            calculated from all pillars, denominated in Euros (EUR). This
+            calculated from all pillars, denominated in the target assessment currency. This
             value is `None` if the calculation has not been performed.
     """
 
@@ -621,15 +621,15 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
     pillars_analysis: list[PillarBlueprintDraft]
     total_fair_ale: Optional[float] = Field(
         None,
-        description="The consolidated Annualized Loss Expectancy (ALE), denominated in Euros (EUR).",
+        description="The consolidated Annualized Loss Expectancy (ALE), denominated in the target assessment currency.",
     )
     total_fair_p90: Optional[float] = Field(
         None,
-        description="The consolidated Conditional Value-at-Risk (CVaR / P90), denominated in Euros (EUR).",
+        description="The consolidated Conditional Value-at-Risk (CVaR / P90), denominated in the target assessment currency.",
     )
     total_fair_max: Optional[float] = Field(
         None,
-        description="The maximum plausible annual loss (P99), denominated in Euros (EUR).",
+        description="The maximum plausible annual loss (P99), denominated in the target assessment currency.",
     )
     executive_synthesis: Optional[str] = Field(
         None, description="CEGAR synthesized executive thesis."
