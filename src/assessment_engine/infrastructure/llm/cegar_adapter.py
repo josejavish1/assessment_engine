@@ -30,10 +30,25 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
         model_tier: ModelTier = ModelTier.REASONING,
         custom_caller: Callable[..., Any] | None = None,
     ) -> None:
-        """Initialize adapter with GenAI client, model tier, or optional mock caller."""
-        self._client = client or genai.Client()
-        self._model_tier = model_tier
+        """Initialize adapter with GenAI client, model tier, or optional mock caller.
+
+        Defers default genai.Client instantiation if a custom caller is provided to ensure
+        clean test isolation in environments without API keys.
+        """
         self._custom_caller = custom_caller
+        self._model_tier = model_tier
+        if client is not None:
+            self._client: genai.Client | None = client
+        elif custom_caller is not None:
+            self._client = None
+        else:
+            self._client = genai.Client()
+
+    def _get_active_client(self) -> genai.Client:
+        """Return the active GenAI client or initialize lazily if not provided."""
+        if self._client is None:
+            self._client = genai.Client()
+        return self._client
 
     async def generate_candidate(
         self, context: SynthesisContext, evidence_payload: dict[str, Any]
@@ -57,8 +72,10 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
             f"2. Ensure exact accounting identities: total_cost_of_ownership == capex_allocation + opex_allocation.\n"
             f"3. Ensure FAIR risk monotonicity: risk_exposure_p10 <= risk_exposure_p50 <= risk_exposure_p90.\n"
             f"4. Ensure sum of allocated_budget across execution_roadmap equals the selected option's total_cost_of_ownership.\n"
-            f"5. All evidentiary citations MUST strictly match IDs present in input evidence.\n"
-            f"6. Emit output conforming strictly to the requested JSON schema."
+            f"5. All evidentiary citations MUST strictly match IDs present in 'valid_evidence_ids'.\n"
+            f"6. Emit output conforming strictly to the requested JSON schema.\n"
+            f"7. Write all narrative and descriptive string fields strictly in the language specified by TARGET LANGUAGE / LOCALE ({context.target_locale}), "
+            f"tailored to the scale and domain of INDUSTRY ISIC CODE ({context.target_isic_code}), while keeping all JSON property keys and enum identifiers in exact English schema format."
         )
 
         user_content = json.dumps(
@@ -67,7 +84,7 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
                     "locale": context.target_locale,
                     "currency": context.target_currency,
                     "isic_code": context.target_isic_code,
-                    "valid_evidence_ids": list(context.valid_evidence_ids),
+                    "valid_evidence_ids": sorted(context.valid_evidence_ids),
                 },
                 "evidence_payload": evidence_payload,
             },
@@ -75,7 +92,8 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
             indent=2,
         )
 
-        response = await self._client.aio.models.generate_content(
+        client = self._get_active_client()
+        response = await client.aio.models.generate_content(
             model=get_model(self._model_tier),
             contents=user_content,
             config=types.GenerateContentConfig(
@@ -121,19 +139,28 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
             f"SURGICAL REPAIR MANDATE:\n"
             f"Your previous synthesis attempt contained formal invariant violations.\n"
             f"Perform targeted delta mutations at the specified 'json_path' nodes to satisfy every remediation directive.\n"
-            f"Hold all valid nodes invariant while resolving all mathematical, accounting, and citation defects."
+            f"Hold all valid nodes invariant while resolving all mathematical, accounting, and citation defects.\n"
+            f"Write all updated narrative and descriptive string fields strictly in the language specified by TARGET LANGUAGE / LOCALE ({context.target_locale}), "
+            f"tailored to the scale and domain of INDUSTRY ISIC CODE ({context.target_isic_code}), while keeping all JSON property keys and enum identifiers in exact English schema format."
         )
 
         repair_payload = json.dumps(
             {
                 "candidate_attempt_1": candidate.model_dump(mode="json"),
                 "formal_violations": violations_summary,
+                "context": {
+                    "locale": context.target_locale,
+                    "currency": context.target_currency,
+                    "isic_code": context.target_isic_code,
+                    "valid_evidence_ids": sorted(context.valid_evidence_ids),
+                },
             },
             ensure_ascii=False,
             indent=2,
         )
 
-        response = await self._client.aio.models.generate_content(
+        client = self._get_active_client()
+        response = await client.aio.models.generate_content(
             model=get_model(self._model_tier),
             contents=repair_payload,
             config=types.GenerateContentConfig(
@@ -147,17 +174,18 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
     @staticmethod
     def _parse_candidate_response(raw: Any) -> CandidateEnterpriseDeliverable:
         """Deserialize raw response or dict into validated CandidateEnterpriseDeliverable."""
+        if raw is None or (isinstance(raw, str) and not raw.strip()):
+            raise ValueError("Empty or None candidate response received from generator.")
         if isinstance(raw, CandidateEnterpriseDeliverable):
             return raw
         if isinstance(raw, dict):
             return CandidateEnterpriseDeliverable.model_validate(raw)
         if isinstance(raw, str):
             clean_str = raw.strip()
-            if clean_str.startswith("```json"):
-                clean_str = clean_str[7:]
-            if clean_str.startswith("```"):
-                clean_str = clean_str[3:]
-            if clean_str.endswith("```"):
-                clean_str = clean_str[:-3]
-            return CandidateEnterpriseDeliverable.model_validate_json(clean_str.strip())
+            # Extract JSON block between first { and last } to tolerate preambles or code fences
+            start_idx = clean_str.find("{")
+            end_idx = clean_str.rfind("}")
+            if start_idx != -1 and end_idx != -1 and end_idx >= start_idx:
+                clean_str = clean_str[start_idx : end_idx + 1]
+            return CandidateEnterpriseDeliverable.model_validate_json(clean_str)
         raise ValueError(f"Unsupported candidate response type: {type(raw)}")
