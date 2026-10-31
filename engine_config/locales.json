@@ -1292,7 +1292,7 @@
     "rore_value_hexagon_bullets": [
       "**1. Recuperación de Capital Laboral (Lean IT):** Eliminación del trabajo manual reactivo en rondas y mediciones físicas, reasignando horas de ingeniería a proyectos de innovación de negocio.",
       "**2. Reducción del Coste de Demora (Cost of Delay):** Aceleración en el aprovisionamiento de capacidad e integración fluida de infraestructuras corporativas procedentes de adquisiciones (M&A).",
-      "**3. Optimización de Capacidad y Eficiencia Energética:** Supresión de puntos calientes y recirculación de aire, reduciendo el ratio PUE y el consumo eléctrico en climatización hasta un 28%.",
+      "**3. Optimización de Capacidad y Eficiencia Operativa:** Eliminación de cuellos de botella, sobreaprovisionamiento y desperdicio de recursos, reduciendo costes operativos y consumo energético de plataforma hasta un 28%.",
       "**4. Evitación de Costes de Soporte por Obsolescencia:** Reemplazo programado de activos al final de ciclo de vida (EoL), evitando tarifas punitivas de mantenimiento extendido fuera de garantía.",
       "**5. Mitigación de Pérdidas de Balance y Riesgo de Cola (CVaR):** Blindaje contra eventos catastróficos de indisponibilidad prolongada que amenazan los ingresos diarios y la continuidad de las operaciones.",
       "**6. Aseguramiento de Cumplimiento Regulatorio y de Gobernanza:** Trazabilidad documental y técnica continua que garantiza la alineación con marcos internacionales de resiliencia y evita sanciones administrativas severas."
@@ -1379,7 +1379,10 @@
       "FORTALEZAS_CLAVE:",
       "BRECHAS_CLAVE:",
       "--- FIN TABLA"
-    ]
+    ],
+    "methodology_approach_title": "Enfoque Metodológico de la Evaluación",
+    "maturity_scale_title": "Escala Analítica de Madurez CMMI",
+    "roi_payback_dynamic": "Payback < {months} meses"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2665,7 +2668,7 @@
     "rore_value_hexagon_bullets": [
       "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
       "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
-      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**3. Capacity Optimization & Operational Efficiency:** Eliminating throughput bottlenecks, over-provisioning, and resource waste, reducing operational platform overhead and infrastructure energy consumption by up to 28%.",
       "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
       "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
       "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
@@ -2756,7 +2759,10 @@
       "FORTALEZAS_CLAVE:",
       "BRECHAS_CLAVE:",
       "--- FIN TABLA"
-    ]
+    ],
+    "methodology_approach_title": "Assessment Methodological Approach",
+    "maturity_scale_title": "CMMI Analytical Maturity Scale",
+    "roi_payback_dynamic": "Payback < {months} months"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -4039,7 +4045,7 @@
     "rore_value_hexagon_bullets": [
       "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
       "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
-      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**3. Capacity Optimization & Operational Efficiency:** Eliminating throughput bottlenecks, over-provisioning, and resource waste, reducing operational platform overhead and infrastructure energy consumption by up to 28%.",
       "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
       "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
       "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
@@ -4130,7 +4136,10 @@
       "FORTALEZAS_CLAVE:",
       "BRECHAS_CLAVE:",
       "--- FIN TABLA"
-    ]
+    ],
+    "methodology_approach_title": "Assessment Methodological Approach",
+    "maturity_scale_title": "CMMI Analytical Maturity Scale",
+    "roi_payback_dynamic": "Payback < {months} months"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -5413,7 +5422,7 @@
     "rore_value_hexagon_bullets": [
       "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
       "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
-      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**3. Capacity Optimization & Operational Efficiency:** Eliminating throughput bottlenecks, over-provisioning, and resource waste, reducing operational platform overhead and infrastructure energy consumption by up to 28%.",
       "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
       "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
       "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
@@ -5504,7 +5513,10 @@
       "FORTALEZAS_CLAVE:",
       "BRECHAS_CLAVE:",
       "--- FIN TABLA"
-    ]
+    ],
+    "methodology_approach_title": "Assessment Methodological Approach",
+    "maturity_scale_title": "CMMI Analytical Maturity Scale",
+    "roi_payback_dynamic": "Payback < {months} months"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -6787,7 +6799,7 @@
     "rore_value_hexagon_bullets": [
       "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
       "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
-      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**3. Capacity Optimization & Operational Efficiency:** Eliminating throughput bottlenecks, over-provisioning, and resource waste, reducing operational platform overhead and infrastructure energy consumption by up to 28%.",
       "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
       "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
       "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
@@ -6878,7 +6890,10 @@
       "FORTALEZAS_CLAVE:",
       "BRECHAS_CLAVE:",
       "--- FIN TABLA"
-    ]
+    ],
+    "methodology_approach_title": "Assessment Methodological Approach",
+    "maturity_scale_title": "CMMI Analytical Maturity Scale",
+    "roi_payback_dynamic": "Payback < {months} months"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -8161,7 +8176,7 @@
     "rore_value_hexagon_bullets": [
       "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
       "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
-      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**3. Capacity Optimization & Operational Efficiency:** Eliminating throughput bottlenecks, over-provisioning, and resource waste, reducing operational platform overhead and infrastructure energy consumption by up to 28%.",
       "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
       "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
       "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
@@ -8252,6 +8267,9 @@
       "FORTALEZAS_CLAVE:",
       "BRECHAS_CLAVE:",
       "--- FIN TABLA"
-    ]
+    ],
+    "methodology_approach_title": "Assessment Methodological Approach",
+    "maturity_scale_title": "CMMI Analytical Maturity Scale",
+    "roi_payback_dynamic": "Payback < {months} months"
   }
 }

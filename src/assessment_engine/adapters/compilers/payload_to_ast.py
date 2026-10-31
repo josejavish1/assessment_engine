@@ -480,78 +480,78 @@ class PayloadToASTBridge:
                 nodes.append(ParagraphNode(text=tech_dom))
             if meth:
                 nodes.append(SpacerNode(points=6))
-                nodes.append(HeadingNode(text=t("maturity_methodology_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
+                nodes.append(HeadingNode(text=t("methodology_approach_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
                 nodes.append(ParagraphNode(text=meth))
-
-            # 2.4 Methodological and Regulatory Framework Table (driven dynamically per tower domain)
-            tower_id = str(ctx.get("tower_id") or "T1")
-            norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
-            norm_fw_desc = (
-                t("norm_row_ashrae_desc", locale=meta_lang)
-                if tower_id == "T1"
-                else t("norm_row_iso_desc", locale=meta_lang)
-            )
-            norm_fw_purp = (
-                t("norm_row_ashrae_purp", locale=meta_lang)
-                if tower_id == "T1"
-                else t("norm_row_iso_purp", locale=meta_lang)
-            )
-            headers_norm = [
-                CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
-                CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
-                CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
-            ]
-            norm_rows = [
-                TableRowNode(cells=headers_norm, is_header=True),
-                TableRowNode(cells=[
-                    CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF"),
-                    CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF"),
-                    CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
-                ]),
-                TableRowNode(cells=[
-                    CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex),
-                    CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER"),
-                ]),
-                TableRowNode(cells=[
-                    CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF"),
-                    CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF"),
-                    CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
-                ]),
-            ]
-            nodes.append(SpacerNode(points=10))
-            nodes.append(TableNode(rows=norm_rows))
-
-            # 2.5 Three Executive Outcomes of the Assessment
-            nodes.append(SpacerNode(points=12))
-            nodes.append(
-                HeadingNode(
-                    text=t("methodology_three_outcomes_title", locale=meta_lang),
-                    level=2,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            for b in get_localized_list("methodology_three_outcomes_bullets", locale=meta_lang):
-                nodes.append(ParagraphNode(text=b, style="List Bullet"))
-
-            # 2.6 Three-Phase Ground-Truth Methodology
-            nodes.append(SpacerNode(points=6))
-            nodes.append(
-                HeadingNode(
-                    text=t("methodology_three_phases_title", locale=meta_lang),
-                    level=2,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            for b in get_localized_list("methodology_three_phases_bullets", locale=meta_lang):
-                nodes.append(ParagraphNode(text=b, style="List Bullet", space_after=1, font_size=8.5))
-
-            # 2.7 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
-            _build_cmmi_methodology_and_capabilities_fn(ctx, nodes, self.primary_color_rgb)
         else:
             nodes.append(
                 ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))
             )
+
+        # 2.4 Methodological and Regulatory Framework Table (driven dynamically per tower domain)
+        tower_id = str(ctx.get("tower_id") or "T1")
+        norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
+        norm_fw_desc = (
+            t("norm_row_ashrae_desc", locale=meta_lang)
+            if tower_id == "T1"
+            else t("norm_row_iso_desc", locale=meta_lang)
+        )
+        norm_fw_purp = (
+            t("norm_row_ashrae_purp", locale=meta_lang)
+            if tower_id == "T1"
+            else t("norm_row_iso_purp", locale=meta_lang)
+        )
+        headers_norm = [
+            CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+            CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+            CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+        ]
+        norm_rows = [
+            TableRowNode(cells=headers_norm, is_header=True),
+            TableRowNode(cells=[
+                CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF"),
+                CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF"),
+                CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
+            ]),
+            TableRowNode(cells=[
+                CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex),
+                CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex),
+                CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER"),
+            ]),
+            TableRowNode(cells=[
+                CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF"),
+                CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF"),
+                CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
+            ]),
+        ]
+        nodes.append(SpacerNode(points=10))
+        nodes.append(TableNode(rows=norm_rows))
+
+        # 2.5 Three Executive Outcomes of the Assessment
+        nodes.append(SpacerNode(points=12))
+        nodes.append(
+            HeadingNode(
+                text=t("methodology_three_outcomes_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        for b in get_localized_list("methodology_three_outcomes_bullets", locale=meta_lang):
+            nodes.append(ParagraphNode(text=b, style="List Bullet"))
+
+        # 2.6 Three-Phase Ground-Truth Methodology
+        nodes.append(SpacerNode(points=6))
+        nodes.append(
+            HeadingNode(
+                text=t("methodology_three_phases_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        for b in get_localized_list("methodology_three_phases_bullets", locale=meta_lang):
+            nodes.append(ParagraphNode(text=b, style="List Bullet", space_after=1, font_size=8.5))
+
+        # 2.7 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
+        _build_cmmi_methodology_and_capabilities_fn(ctx, nodes, self.primary_color_rgb)
 
         # Chapter 2 ends cleanly with dedicated page
         nodes.append(PageBreakNode())
@@ -1487,7 +1487,6 @@ class PayloadToASTBridge:
         capex_ratio = float(blueprint_data.get("capex_ale_ratio") or 0.20)
         capex_val = float(blueprint_data.get("modernization_capex") or blueprint_data.get("capex_budget") or (total_fair_ale * capex_ratio))
         annual_risk_reduction_ratio = float(blueprint_data.get("risk_reduction_ratio") or 0.80)
-        h5_scale_factor = float(blueprint_data.get("h5_p90_scale_factor") or 3.79)
 
         import math
         # Actuarial Square-Root of Time Rule for multi-year extreme tail risk (Basel/FAIR standard)
@@ -1495,12 +1494,15 @@ class PayloadToASTBridge:
         p90_h3_val = p90_loss * math.sqrt(3.0)
         p90_h5_val = p90_loss * math.sqrt(5.0)
 
+        annual_risk_reduction = total_fair_ale * annual_risk_reduction_ratio
+        payback_months = max(1, int(math.ceil(12.0 * capex_val / annual_risk_reduction))) if annual_risk_reduction > 0 else 12
+
         # 1-Year Horizon
         ale_h1 = format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)
         p90_h1 = format_currency(p90_h1_val, currency_symbol=currency, locale=meta_lang, decimals=0)
         capex_h1 = format_currency(capex_val, currency_symbol=currency, locale=meta_lang, decimals=0)
-        roi_h1_pct = int(round((total_fair_ale * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
-        roi_h1_str = f"{roi_h1_pct} % ({t('roi_payback_quarter', locale=meta_lang)})"
+        roi_h1_pct = int(round((annual_risk_reduction) / capex_val * 100)) if capex_val > 0 else 0
+        roi_h1_str = f"{roi_h1_pct} % ({t('roi_payback_dynamic', locale=meta_lang, months=payback_months)})"
 
         # 3-Year Horizon
         ale_h3 = format_currency(total_fair_ale * 3.0, currency_symbol=currency, locale=meta_lang, decimals=0)
@@ -1582,10 +1584,6 @@ class PayloadToASTBridge:
                     "KEY_STRENGTHS:",
                     "KEY_GAPS:",
                     "--- END TABLE",
-                    "--- TABLA COMPARATIVA",
-                    "FORTALEZAS_CLAVE:",
-                    "BRECHAS_CLAVE:",
-                    "--- FIN TABLA",
                 ],
             )
             if any(marker in cleaned for marker in skip_directives):

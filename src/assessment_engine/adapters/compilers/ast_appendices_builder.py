@@ -29,15 +29,18 @@ def _get_appendix_strip_regex() -> str:
     if p.exists():
         try:
             return json.loads(p.read_text(encoding="utf-8")).get(
-                "appendix_strip_regex", r"^Appendix\s+[A-Z]:\s*"
+                "appendix_strip_regex", r"^(?:Appendix|Ap\u00e9ndice|Annexe|Anhang|\u4ed8\u9332)\s*[A-Z][.:]\s*"
             )
         except (OSError, ValueError, KeyError, AttributeError) as ex:
             logger.debug("[Fallback] Handled exception: %s", ex)
-    return r"^Appendix\s+[A-Z]:\s*"
+    return r"^(?:Appendix|Ap\u00e9ndice|Annexe|Anhang|\u4ed8\u9332)\s*[A-Z][.:]\s*"
 
 
 def build_cmmi_methodology_and_capabilities(
-    ctx: dict[str, Any], nodes: List[Any], primary_color_rgb: Any
+    ctx: dict[str, Any],
+    nodes: List[Any],
+    primary_color_rgb: Any,
+    heading_key: str = "maturity_scale_title",
 ) -> None:
     """Builds CMMI 5-Level Maturity Scale and Evaluated Capabilities Allocation for Chapter 2."""
     meta_lang = ctx["meta_lang"]
@@ -48,7 +51,7 @@ def build_cmmi_methodology_and_capabilities(
     nodes.append(SpacerNode(points=4))
     nodes.append(
         HeadingNode(
-            text=t("maturity_methodology_title", locale=meta_lang),
+            text=t(heading_key, locale=meta_lang),
             level=2,
             primary_color_rgb=primary_color_rgb,
         )
@@ -184,12 +187,13 @@ def build_appendix_a_custody(
     ]
     rows = [TableRowNode(cells=headers, is_header=True)]
 
+    client_slug = re.sub(r"[^a-z0-9]+", "_", client_name.lower()).strip("_")
     raw_items = get_localized_list("custody_sources_items", locale=meta_lang)
     for idx, item in enumerate(raw_items):
         bg = alt_row_hex if idx % 2 == 1 else "FFFFFF"
         if isinstance(item, dict):
             c_code = item.get("code", "")
-            c_src = item.get("source", "").replace("{client_slug}", client_name.lower())
+            c_src = item.get("source", "").replace("{client_slug}", client_slug)
             c_desc = item.get("desc", "").replace("{tower_name}", tower_name).replace("{client_name}", client_name)
         else:
             c_code, c_src, c_desc = "", "", ""
@@ -385,5 +389,7 @@ def build_appendix_d_methodology(
     alt_row_hex: str,
 ) -> None:
     """Builds Appendix D: Assessment Methodology (both CMMI Maturity and Open FAIR standards)."""
-    build_cmmi_methodology_and_capabilities(ctx, nodes, primary_color_rgb)
+    build_cmmi_methodology_and_capabilities(
+        ctx, nodes, primary_color_rgb, heading_key="maturity_methodology_title"
+    )
     build_appendix_b_fair_methodology(ctx, nodes, primary_color_rgb, brand_data, alt_row_hex)
