@@ -361,12 +361,17 @@ def safe_set_cell_text(
                 )
 
             # Heuristic to detect and structure list items that follow a '• Title: Description' pattern.
-            if ":" in clean_line:
-                label, desc = clean_line.split(":", 1)
-                clean_label = label.strip().strip("*").strip("_").strip()
-                clean_desc = desc.strip()
+            colon_pos = clean_line.find(":")
+            is_short_label = (
+                colon_pos != -1
+                and not clean_line.startswith("http")
+                and colon_pos <= 60
+                and "." not in clean_line[:colon_pos]
+            )
+            if is_short_label:
+                clean_label = clean_line[:colon_pos].strip().strip("*").strip("_").strip()
+                clean_desc = clean_line[colon_pos + 1:].strip()
 
-                #
                 run_lbl = p.add_run(f"{bullet_prefix}{clean_label}: ")
                 run_lbl.bold = True
                 set_run_font_comprehensive(run_lbl, font_name="Arial")
@@ -374,7 +379,6 @@ def safe_set_cell_text(
                 if color_rgb:
                     run_lbl.font.color.rgb = RGBColor(*color_rgb)
 
-                #
                 add_markdown_runs(
                     p, clean_desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
                 )
@@ -399,10 +403,16 @@ def safe_set_cell_text(
         p.text = ""
 
         # Heuristic to detect and structure paragraphs that follow a 'Title: Description' pattern.
-        if ":" in clean_txt and not clean_txt.startswith("http"):
-            label, desc = clean_txt.split(":", 1)
-            clean_label = label.strip().strip("*").strip("_").strip()
-            clean_desc = desc.strip()
+        colon_pos = clean_txt.find(":")
+        is_short_label = (
+            colon_pos != -1
+            and not clean_txt.startswith("http")
+            and colon_pos <= 60
+            and "." not in clean_txt[:colon_pos]
+        )
+        if is_short_label:
+            clean_label = clean_txt[:colon_pos].strip().strip("*").strip("_").strip()
+            clean_desc = clean_txt[colon_pos + 1:].strip()
             run_lbl = p.add_run(f"{clean_label}: ")
             run_lbl.bold = True
             set_run_font_comprehensive(run_lbl, font_name="Arial")
@@ -458,6 +468,10 @@ class DocxCompiler(DocumentCompiler):
                 during the AST traversal.
         """
         #
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.oxml import OxmlElement
+        from docx.oxml.ns import qn
+        from docx.shared import Inches, Pt, RGBColor
         from assessment_engine.infrastructure.runtime_paths import (
             resolve_tower_annex_template_path,
         )
@@ -479,6 +493,39 @@ class DocxCompiler(DocumentCompiler):
         font = style_normal.font
         font.name = "Arial"
         font.size = Pt(10.5)
+
+        # Configure corporate footer with native page number field
+        try:
+            from assessment_engine.infrastructure.localization import t
+            section = doc.sections[0]
+            section.different_first_page_header_footer = True
+
+            # Clear pre-existing first page footer from template (ensures cover page is pristine)
+            first_foot = section.first_page_footer
+            for p in list(first_foot.paragraphs):
+                p._element.getparent().remove(p._element)
+            for t_item in list(first_foot.tables):
+                t_item._element.getparent().remove(t_item._element)
+
+            footer = section.footer
+            p_foot = footer.paragraphs[0]
+            p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            p_foot.paragraph_format.space_before = Pt(8)
+
+            doc_locale = str(ast.metadata.get("language") or "en").lower()
+            client_name = str(ast.metadata.get("client_name") or ast.metadata.get("client") or "CLIENT").upper()
+            footer_prefix_str = t("corporate_footer_prefix", locale=doc_locale)
+            full_footer = f"{client_name} - {footer_prefix_str} "
+            r_text = p_foot.add_run(full_footer)
+            r_text.font.name = "Arial"
+            r_text.font.size = Pt(8.5)
+            r_text.font.color.rgb = RGBColor(148, 163, 184)
+
+            fldSimple = OxmlElement('w:fldSimple')
+            fldSimple.set(qn('w:instr'), 'PAGE')
+            p_foot._p.append(fldSimple)
+        except Exception as ex:
+            logger.debug(f"[Footer] Handled exception: {ex}")
 
         # Sequentially compiles all AST nodes using a Visitor design pattern.
         for node in ast.nodes:
@@ -695,6 +742,10 @@ class DocxCompiler(DocumentCompiler):
 
             for c_idx in range(num_cols):
                 cell = table.rows[r_idx].cells[c_idx]
+
+                # Vertical Centering (C-Level Table Hygiene)
+                from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+                cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
                 #
                 if c_idx < len(row_node.cells):

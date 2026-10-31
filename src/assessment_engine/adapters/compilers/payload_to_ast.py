@@ -466,6 +466,33 @@ class PayloadToASTBridge:
                 nodes.append(SpacerNode(points=6))
                 nodes.append(HeadingNode(text=t("maturity_methodology_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
                 nodes.append(ParagraphNode(text=meth))
+
+            # 2.4 Methodological and Regulatory Framework Table (fills Page 4 with C-Level authority)
+            headers_norm = [
+                CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+                CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+                CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+            ]
+            norm_rows = [
+                TableRowNode(cells=headers_norm, is_header=True),
+                TableRowNode(cells=[
+                    CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF"),
+                    CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF"),
+                    CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
+                ]),
+                TableRowNode(cells=[
+                    CellNode(text="ASHRAE TC 9.9", bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=t("norm_row_ashrae_desc", locale=meta_lang), bg_color=self.alt_row_hex),
+                    CellNode(text=t("norm_row_ashrae_purp", locale=meta_lang), bg_color=self.alt_row_hex, align="CENTER"),
+                ]),
+                TableRowNode(cells=[
+                    CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF"),
+                    CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF"),
+                    CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
+                ]),
+            ]
+            nodes.append(SpacerNode(points=10))
+            nodes.append(TableNode(rows=norm_rows))
         else:
             nodes.append(
                 ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))
@@ -1038,7 +1065,10 @@ class PayloadToASTBridge:
             formatted_risk_ale = format_number(
                 highest_risk_ale, locale=meta_lang, decimals=0
             )
-            
+            formatted_risk_pct = format_number(
+                highest_risk_pct, locale=meta_lang, decimals=1
+            )
+
             executive_risk_summary = t(
                 "fair_risk_summary_detailed",
                 locale=meta_lang,
@@ -1051,7 +1081,7 @@ class PayloadToASTBridge:
                 highest_risk_cap=highest_risk_cap,
                 highest_risk_id=highest_risk_id,
                 formatted_risk_ale=formatted_risk_ale,
-                highest_risk_pct=highest_risk_pct,
+                highest_risk_pct=formatted_risk_pct,
             )
         else:
             executive_risk_summary = t(
@@ -1175,8 +1205,8 @@ class PayloadToASTBridge:
                     v_lbl = t("vulnerability_identified_label", locale=meta_lang)
                     imp_lbl = t("it_operational_impact_label", locale=meta_lang)
                     desc_raw = (
-                        f"**{v_lbl}**\n{find_clean}\n\n"
-                        f"**{imp_lbl}**\n{hc['business_risk']}"
+                        f"{v_lbl}\n{find_clean}\n\n"
+                        f"{imp_lbl}\n{hc['business_risk']}"
                     )
                     desc_text = apply_vocabulary_substitutions(
                         desc_raw, locale=meta_lang
