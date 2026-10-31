@@ -48,6 +48,7 @@ service_account.json
 # Salidas de Ejecución y Logs
 *.log
 execution_*.log
+.amo/
 run_t*.log
 help.log
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Turnkey Resilient Autonomous Execution Daemon for Master Implementation Blueprint.
 
-Consumes docs/architecture/MASTER_IMPLEMENTATION_BLUEPRINT.md task-by-task.
+Consumes docs/architecture/MASTER_ENTERPRISE_REMEDIATION_ROADMAP.md task-by-task.
+Synthesizes and applies actual code changes via ModelTier.REASONING.
 Enforces ArgonIroncladQualityGate (gemini-4-argon) with zero bypass.
 Resilient: Quarantines failed tasks without aborting, resumes cleanly, and generates
 a comprehensive final execution report.
@@ -21,6 +22,9 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+from google.genai import types
+from pydantic import BaseModel, Field
 
 from assessment_engine.infrastructure.genai_client import (
     ModelTier,
@@ -57,6 +61,26 @@ class TaskStatus(str, Enum):
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETED = "COMPLETED"
     QUARANTINED = "QUARANTINED"
+
+
+class CodeFilePatch(BaseModel):
+    file_path: str = Field(
+        ...,
+        description="Relative path from repository root (e.g. src/assessment_engine/...)",
+    )
+    file_content: str = Field(
+        ...,
+        description="Complete, production-ready source code for the file. Zero placeholders, zero ellipses, zero TODOs.",
+    )
+
+
+class SynthesisPatchBatch(BaseModel):
+    patches: List[CodeFilePatch] = Field(
+        ..., description="List of all files created or modified for this task."
+    )
+    commit_summary: str = Field(
+        ..., description="Technical English summary of changes made."
+    )
 
 
 @dataclass
@@ -147,9 +171,9 @@ class PersistentStateLedger:
         return list(self._state.values())
 
 
-def parse_tasks_from_blueprint(blueprint_path: Path) -> List[RemediationTask]:
-    """Extracts atomic task blocks from MASTER_IMPLEMENTATION_BLUEPRINT.md."""
-    content = blueprint_path.read_text(encoding="utf-8")
+def parse_tasks_from_roadmap(roadmap_path: Path) -> List[RemediationTask]:
+    """Extracts atomic task blocks from MASTER_ENTERPRISE_REMEDIATION_ROADMAP.md."""
+    content = roadmap_path.read_text(encoding="utf-8")
     task_pattern = re.compile(
         r"^(?:#{1,3}\s+)?(?:Task\s+)?(\d+\.\d+)[:\s-]+([^\n]+)", re.MULTILINE
     )
@@ -175,15 +199,15 @@ def parse_tasks_from_blueprint(blueprint_path: Path) -> List[RemediationTask]:
             )
         )
 
-    logger.info("Parsed %d atomic tasks from %s", len(tasks), blueprint_path)
+    logger.info("Parsed %d atomic tasks from %s", len(tasks), roadmap_path)
     return tasks
 
 
 class ResilientAutonomousRunner:
     """Orchestrates unattended task execution with circuit breakers, recovery, and reporting."""
 
-    def __init__(self, blueprint_file: Path) -> None:
-        self.blueprint_file = blueprint_file
+    def __init__(self, roadmap_file: Path) -> None:
+        self.roadmap_file = roadmap_file
         self.secret_key = secrets.token_bytes(32)
         self.ledger = PersistentStateLedger(STATE_DIR / "execution_state.json")
         self.gate = ArgonIroncladQualityGate(
@@ -191,7 +215,7 @@ class ResilientAutonomousRunner:
             secret_key=self.secret_key,
             max_remediation_attempts=5,
         )
-        self.tasks = parse_tasks_from_blueprint(blueprint_file)
+        self.tasks = parse_tasks_from_roadmap(roadmap_file)
 
     def execute_all(self) -> None:
         """Executes all tasks sequentially, skipping completed ones and quarantining failures."""
@@ -209,7 +233,6 @@ class ResilientAutonomousRunner:
 
             self._execute_single_task_resilient(task)
 
-        # Generate final comprehensive execution report
         report_path = self._generate_final_report()
         logger.info("=" * 80)
         logger.info("EXECUTION COMPLETE. Final report generated at %s", report_path)
@@ -221,15 +244,13 @@ class ResilientAutonomousRunner:
         logger.info("-" * 60)
 
         self.ledger.update(task, TaskStatus.IN_PROGRESS)
-
-        # Ensure base repo is at clean HEAD
         subprocess.run(["git", "checkout", "main"], cwd=REPO_ROOT, check=True)
 
         def coder_callback(remediation_prompt: str) -> None:
             self._invoke_coder_agent(task, remediation_prompt)
 
         try:
-            # 1. Initial synthesis invocation
+            # 1. Initial synthesis and file application
             self._invoke_coder_agent(task, "")
 
             # 2. Enforce Ironclad Quality Gate (gemini-4-argon)
@@ -261,7 +282,6 @@ class ResilientAutonomousRunner:
             logger.info("[%s] CERTIFIED & COMMITTED: %s", task.task_id, commit_hash[:8])
 
         except QualityGateExhaustedError as exc:
-            # CIRCUIT BREAKER: Quarantine task failure, reset working tree, and continue pipeline
             logger.critical("[%s] QUALITY GATE EXHAUSTED: %s", task.task_id, exc)
             self._handle_quarantine(task, str(exc))
 
@@ -270,7 +290,6 @@ class ResilientAutonomousRunner:
             self._handle_quarantine(task, f"Unexpected runtime exception: {exc}")
 
     def _handle_quarantine(self, task: RemediationTask, error_msg: str) -> None:
-        """Rolls back the working tree to pristine main and records the forensic failure."""
         logger.warning("[%s] Rolling back working tree to maintain main branch purity.", task.task_id)
         subprocess.run(["git", "reset", "--hard", "HEAD"], cwd=REPO_ROOT, check=True)
         subprocess.run(["git", "clean", "-fd"], cwd=REPO_ROOT, check=True)
@@ -287,9 +306,16 @@ class ResilientAutonomousRunner:
         logger.warning("[%s] Quarantined. Continuing execution with next task...", task.task_id)
 
     def _invoke_coder_agent(self, task: RemediationTask, remediation_prompt: str) -> None:
-        """Synthesizes task changes via reasoning LLM."""
+        """Synthesizes task changes via reasoning LLM and applies them directly to files."""
         client = create_genai_client()
         model_name = get_model(ModelTier.REASONING)
+
+        system_instruction = (
+            "You are a Principal Software Engineer (Google Tier-1 Infrastructure). "
+            "Implement the requested task strictly in 100% Technical English. "
+            "Zero Spanish words or diacritics. Zero hardcoded mocks, magic numbers, or stubs. "
+            "Return complete file contents ready to be written to disk in the SynthesisPatchBatch schema."
+        )
 
         prompt_parts = [
             f"### TASK: {task.task_id} - {task.title}\n\n",
@@ -307,6 +333,29 @@ class ResilientAutonomousRunner:
             )
 
         logger.info("[%s] Synthesizing changes via %s...", task.task_id, model_name)
+
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents="".join(prompt_parts),
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.1,
+                    response_mime_type="application/json",
+                    response_schema=SynthesisPatchBatch,
+                ),
+            )
+            if response.text:
+                batch = SynthesisPatchBatch.model_validate_json(response.text)
+                for patch in batch.patches:
+                    clean_path = patch.file_path.strip().lstrip("/")
+                    full_path = REPO_ROOT / clean_path
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(patch.file_content, encoding="utf-8")
+                    logger.info("[%s] Wrote %d bytes to %s", task.task_id, len(patch.file_content), clean_path)
+        except Exception as ex:
+            logger.error("[%s] Synthesis generation or file write error: %s", task.task_id, ex)
+
         # Pre-validate with pytest
         subprocess.run(
             [sys.executable, "-m", "pytest", "tests/", "-q", "--tb=line"],
@@ -383,12 +432,12 @@ class ResilientAutonomousRunner:
 
 
 def main() -> None:
-    blueprint_path = REPO_ROOT / "docs" / "architecture" / "MASTER_IMPLEMENTATION_BLUEPRINT.md"
-    if not blueprint_path.exists():
-        logger.error("Blueprint file not found at %s", blueprint_path)
+    roadmap_path = REPO_ROOT / "docs" / "architecture" / "MASTER_ENTERPRISE_REMEDIATION_ROADMAP.md"
+    if not roadmap_path.exists():
+        logger.error("Roadmap file not found at %s", roadmap_path)
         sys.exit(1)
 
-    runner = ResilientAutonomousRunner(blueprint_path)
+    runner = ResilientAutonomousRunner(roadmap_path)
     runner.execute_all()
 
 
