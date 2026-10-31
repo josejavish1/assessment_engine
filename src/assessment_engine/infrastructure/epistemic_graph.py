@@ -6,6 +6,7 @@ import sqlite3
 import time
 import unicodedata
 import uuid
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, cast
 
@@ -20,6 +21,36 @@ WORKSPACE_ROOT: Path = Path(
 
 class PathTraversalError(ValueError, AssertionError):
     """Raised when a resolved filesystem path escapes the canonical workspace boundary."""
+
+
+class ReplayPolicy(str, Enum):
+    """Defines the execution policy when encountering corrupted ledger entries during replay."""
+
+    STRICT = "STRICT"
+    RECOVERY = "RECOVERY"
+
+
+class LedgerCorruptionError(RuntimeError, ValueError):
+    """Raised in STRICT mode when a ledger line fails syntax or schema validation during replay."""
+
+    def __init__(
+        self,
+        client_id: str,
+        line_no: int,
+        raw_payload: str,
+        cause: Optional[BaseException] = None,
+    ) -> None:
+        self.client_id = client_id
+        self.line_no = line_no
+        self.raw_payload = raw_payload
+        self.cause = cause
+        message = (
+            f"Ledger corruption detected for client '{client_id}' at line {line_no}: "
+            f"payload={raw_payload!r}"
+        )
+        if cause is not None:
+            message = f"{message} (cause: {cause})"
+        super().__init__(message)
 
 
 class WorkspaceConfig(BaseModel):
@@ -92,21 +123,38 @@ class GraphEvent(BaseModel):
 
 
 class EpistemicGraph:
-    r"""['Manages an evolving knowledge graph using Event Sourcing and CQRS patterns.\n\n    This class models facts as subject-predicate-object triples and is designed\n    to handle evolving information where assertions can be updated or contradicted\n    over time. The architecture separates command and query responsibilities:\n\n    -   **Write-Side (Commands)**: New information is captured as immutable\n        `GraphEvent` objects and appended to a persistent, append-only ledger file.\n        This ledger constitutes the definitive history of all changes.\n    -   **Read-Side (Queries)**: For efficient querying, events from the ledger\n        are projected into an in-memory SQLite database, which serves as a\n        materialized view of the graph\'s current state.\n\n    The primary function is to resolve the canonical "truth" for any\n    subject-predicate pair by selecting the object from the source with the\n    highest confidence score that is valid at a specified point in time. This\n    approach provides resilience to noisy or conflicting data sources.\n\n    Attributes:\n        client_id: The unique identifier for this graph instance, used to\n            namespace the persistent event ledger on disk.\n        ledger_path: The `pathlib.Path` object for the append-only event ledger.\n        conn: The `sqlite3.Connection` object for the in-memory database that\n            serves as the read model.', 'Initializes the EpistemicGraph instance and reconstructs its state.\n\n        Sets up the path to the persistent event ledger file based on the client ID,\n        ensuring parent directories exist. It also initializes an in-memory SQLite\n        database and its schema to serve as the read model. If a ledger file\n        already exists, all historical events are replayed to reconstruct the\n        current state of the materialized view.\n\n        Args:\n            client_id: A unique identifier used to namespace the persistent event\n                ledger on disk.\n\n        Raises:\n            PermissionError: If directories for the ledger path cannot be created.\n            sqlite3.Error: If the database cannot be initialized or the schema\n                cannot be created.\n            IOError: If an existing ledger file cannot be read during replay.\n            json.JSONDecodeError: If a line in the ledger file is not valid JSON.', "Creates the 'knowledge' table schema in the in-memory database.", 'Populates the in-memory read model by replaying events from the ledger file.\n\n        This method reads the append-only event ledger from disk, line by line.\n        Each line, representing a serialized `GraphEvent`, is parsed and applied to\n        the in-memory SQLite database. This process reconstructs the materialized\n        view to its current state. The method is idempotent and is typically called\n        during initialization. Corrupted or unparseable lines in the ledger are\n        skipped to ensure robust state recovery.', 'Applies a single graph event to the materialized view in the SQLite database.', "Creates and persists a `GraphEvent` for a new knowledge triple.\n\n        This method constitutes the write-side of the CQRS architecture. It\n        constructs a `GraphEvent` from the provided triple data, appends its\n        serialized JSON representation to the persistent ledger file, and then\n        applies the event to the in-memory materialized view for immediate querying.\n\n        Args:\n            subject: The subject node of the graph triple.\n            predicate: The predicate or relationship of the triple.\n            object_val: The object node of the graph triple.\n            source: The system or document providing this information.\n            confidence: A numerical score representing confidence in the triple's\n                accuracy.\n            timestamp: The POSIX timestamp of when the event occurred. If None,\n                the current system time is used.\n            **kwargs: Additional key-value metadata to store with the event.\n\n        Raises:\n            IOError: If the event cannot be written to the ledger file.\n            FileNotFoundError: If the directory for the ledger file does not exist.", 'Resolves the most authoritative state of the graph for a given point in time.\n\n        For each unique subject-predicate pair, this query identifies the object\n        assertion with the highest confidence score that was valid at `at_timestamp`.\n        If `at_timestamp` is None, it resolves the current state, considering only\n        facts that are presently valid. Ties in confidence are broken by selecting\n        the assertion with the most recent event timestamp.\n\n        Args:\n            at_timestamp: A POSIX timestamp for time-travel queries. If provided,\n                resolves the state of the graph as it was at that moment. If None,\n                resolves the current state.\n\n        Returns:\n            A nested dictionary representing the resolved state of the graph, structured\n            as `{subject: {predicate: {"value": object, "source": source,\n            "confidence": confidence}}}`.\n\n        Raises:\n            sqlite3.Error: If the underlying database query fails.', 'Serializes the currently resolved graph state into a formatted string.\n\n        This method first calls `resolve_truth()` to get the current state of the\n        graph. It then formats this state into a multi-line string with a\n        standardized header and entity-predicate-value structure, suitable for\n        consumption by external systems like Large Language Models.\n\n        Returns:\n            A formatted, multi-line string representing the resolved graph state,\n            or an empty string if the graph contains no resolved facts.']."""
+    r"""['Manages an evolving knowledge graph using Event Sourcing and CQRS patterns.\n\n    This class models facts as subject-predicate-object triples and is designed\n    to handle evolving information where assertions can be updated or contradicted\n    over time. The architecture separates command and query responsibilities:\n\n    -   **Write-Side (Commands)**: New information is captured as immutable\n        `GraphEvent` objects and appended to a persistent, append-only ledger file.\n        This ledger constitutes the definitive history of all changes.\n    -   **Read-Side (Queries)**: For efficient querying, events from the ledger\n        are projected into an in-memory SQLite database, which serves as a\n        materialized view of the graph\'s current state.\n\n    The primary function is to resolve the canonical "truth" for any\n    subject-predicate pair by selecting the object from the source with the\n    highest confidence score that is valid at a specified point in time. This\n    approach provides resilience to noisy or conflicting data sources.\n\n    Attributes:\n        client_id: The unique identifier for this graph instance, used to\n            namespace the persistent event ledger on disk.\n        ledger_path: The `pathlib.Path` object for the append-only event ledger.\n        conn: The `sqlite3.Connection` object for the in-memory database that\n            serves as the read model.', 'Initializes the EpistemicGraph instance and reconstructs its state.\n\n        Sets up the path to the persistent event ledger file based on the client ID,\n        ensuring parent directories exist. It also initializes an in-memory SQLite\n        database and its schema to serve as the read model. If a ledger file\n        already exists, all historical events are replayed to reconstruct the\n        current state of the materialized view.\n\n        Args:\n            client_id: A unique identifier used to namespace the persistent event\n                ledger on disk.\n\n        Raises:\n            PermissionError: If directories for the ledger path cannot be created.\n            sqlite3.Error: If the database cannot be initialized or the schema\n                cannot be created.\n            IOError: If an existing ledger file cannot be read during replay.\n            json.JSONDecodeError: If a line in the ledger file is not valid JSON.', "Creates the 'knowledge' table schema in the in-memory database.", 'Populates the in-memory read model by replaying events from the ledger file.\n\n        This method reads the append-only event ledger from disk, line by line.\n        Each line, representing a serialized `GraphEvent`, is parsed and applied to\n        the in-memory SQLite database. This process reconstructs the materialized\n        view to its current state. The method is idempotent and is typically called\n        during initialization. Corrupted or unparseable lines in the ledger are\n        handled according to the configured ReplayPolicy.', 'Applies a single graph event to the materialized view in the SQLite database.', "Creates and persists a `GraphEvent` for a new knowledge triple.\n\n        This method constitutes the write-side of the CQRS architecture. It\n        constructs a `GraphEvent` from the provided triple data, appends its\n        serialized JSON representation to the persistent ledger file, and then\n        applies the event to the in-memory materialized view for immediate querying.\n\n        Args:\n            subject: The subject node of the graph triple.\n            predicate: The predicate or relationship of the triple.\n            object_val: The object node of the graph triple.\n            source: The system or document providing this information.\n            confidence: A numerical score representing confidence in the triple's\n                accuracy.\n            timestamp: The POSIX timestamp of when the event occurred. If None,\n                the current system time is used.\n            **kwargs: Additional key-value metadata to store with the event.\n\n        Raises:\n            IOError: If the event cannot be written to the ledger file.\n            FileNotFoundError: If the directory for the ledger file does not exist.", 'Resolves the most authoritative state of the graph for a given point in time.\n\n        For each unique subject-predicate pair, this query identifies the object\n        assertion with the highest confidence score that was valid at `at_timestamp`.\n        If `at_timestamp` is None, it resolves the current state, considering only\n        facts that are presently valid. Ties in confidence are broken by selecting\n        the assertion with the most recent event timestamp.\n\n        Args:\n            at_timestamp: A POSIX timestamp for time-travel queries. If provided,\n                resolves the state of the graph as it was at that moment. If None,\n                resolves the current state.\n\n        Returns:\n            A nested dictionary representing the resolved state of the graph, structured\n            as `{subject: {predicate: {"value": object, "source": source,\n            "confidence": confidence}}}`.\n\n        Raises:\n            sqlite3.Error: If the underlying database query fails.', 'Serializes the currently resolved graph state into a formatted string.\n\n        This method first calls `resolve_truth()` to get the current state of the\n        graph. It then formats this state into a multi-line string with a\n        standardized header and entity-predicate-value structure, suitable for\n        consumption by external systems like Large Language Models.\n\n        Returns:\n            A formatted, multi-line string representing the resolved graph state,\n            or an empty string if the graph contains no resolved facts.']."""
 
     def __init__(
         self,
         client_id: str = "generic",
         config: Optional[WorkspaceConfig] = None,
+        replay_policy: Union[ReplayPolicy, str] = ReplayPolicy.STRICT,
     ):
-        r"""{'docstring': 'Initializes the EpistemicGraph instance.\n\nThis method sets up the graph\'s persistence and in-memory state. It\nestablishes a path to an append-only event ledger file on disk, namespaced\nby the `client_id` (e.g., \'working/my_client/epistemic_ledger.jsonl\'),\nand ensures the parent directories exist. An in-memory SQLite database is\nthen initialized to serve as a read model. Finally, the graph\'s state is\nreconstructed by replaying all events from the ledger file, if it exists.\n\nArgs:\n    client_id (str): A unique identifier used to namespace the persistent event\n        ledger on disk. Defaults to "generic".\n    config (Optional[WorkspaceConfig]): Validated workspace configuration object\n        providing an absolute, canonicalized workspace_root.\n\nRaises:\n    PathTraversalError: If the resolved ledger path escapes the canonical workspace root.\n    PermissionError: If the directories for the ledger path cannot be\n        created due to filesystem permissions.\n    sqlite3.Error: If the in-memory database or its schema fails to\n        initialize.\n    IOError: If reading from an existing ledger file fails during the replay\n        process.\n    json.JSONDecodeError: If a line in the ledger file contains invalid JSON.'}."""
+        r"""{'docstring': 'Initializes the EpistemicGraph instance.\n\nThis method sets up the graph\'s persistence and in-memory state. It\nestablishes a path to an append-only event ledger file on disk, namespaced\nby the `client_id` (e.g., \'working/my_client/epistemic_ledger.jsonl\'),\nand ensures the parent directories exist. An in-memory SQLite database is\nthen initialized to serve as a read model. Finally, the graph\'s state is\nreconstructed by replaying all events from the ledger file, if it exists.\n\nArgs:\n    client_id (str): A unique identifier used to namespace the persistent event\n        ledger on disk. Defaults to "generic".\n    config (Optional[WorkspaceConfig]): Validated workspace configuration object\n        providing an absolute, canonicalized workspace_root.\n    replay_policy (Union[ReplayPolicy, str]): Policy governing handling of corrupted\n        ledger entries during replay. Defaults to ReplayPolicy.STRICT.\n\nRaises:\n    PathTraversalError: If the resolved ledger path escapes the canonical workspace root.\n    LedgerCorruptionError: If replay_policy is STRICT and a corrupted ledger entry is encountered.\n    PermissionError: If the directories for the ledger path cannot be\n        created due to filesystem permissions.\n    sqlite3.Error: If the in-memory database or its schema fails to\n        initialize.\n    IOError: If reading from an existing ledger file fails during the replay\n        process.'}."""
         if config is None:
             config = WorkspaceConfig()
         elif not isinstance(config, WorkspaceConfig):
             config = WorkspaceConfig(workspace_root=config)
 
+        if isinstance(replay_policy, str):
+            try:
+                resolved_policy = ReplayPolicy(replay_policy.upper().strip())
+            except ValueError as exc:
+                raise ValueError(
+                    f"Invalid replay_policy '{replay_policy}'. Must be one of: "
+                    f"{[p.value for p in ReplayPolicy]}"
+                ) from exc
+        elif isinstance(replay_policy, ReplayPolicy):
+            resolved_policy = replay_policy
+        else:
+            raise TypeError(f"replay_policy must be a ReplayPolicy or str, got {type(replay_policy).__name__}")
+
         self.config: WorkspaceConfig = config
         self.client_id = client_id
+        self.replay_policy: ReplayPolicy = resolved_policy
+        self.audit_integrity: str = "VERIFIED"
+        self.deliverable_metadata: Dict[str, Any] = {"audit_integrity": self.audit_integrity}
 
         if not isinstance(client_id, str) or not client_id.strip():
             raise PathTraversalError("client_id must be a non-empty string.")
@@ -114,9 +162,11 @@ class EpistemicGraph:
         working_root = (config.workspace_root / "working").resolve()
         candidate_client_dir = (working_root / client_id).resolve()
         resolved_path = (candidate_client_dir / "epistemic_ledger.jsonl").resolve()
+        resolved_corrupted_path = (candidate_client_dir / "epistemic_ledger.corrupted.jsonl").resolve()
 
         if (
             not resolved_path.is_relative_to(config.workspace_root)
+            or not resolved_corrupted_path.is_relative_to(config.workspace_root)
             or not candidate_client_dir.is_relative_to(working_root)
             or candidate_client_dir == working_root
         ):
@@ -129,6 +179,7 @@ class EpistemicGraph:
 
         # Handles the persistence of the append-only event ledger to a durable storage medium.
         self.ledger_path = resolved_path
+        self.corrupted_ledger_path = resolved_corrupted_path
         self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Implementation of the Read Model as a materialized view, backed by an in-memory SQLite database.
@@ -159,14 +210,42 @@ class EpistemicGraph:
             return
 
         with open(self.ledger_path, "r", encoding="utf-8") as f:
-            for line in f:
+            for line_no, line in enumerate(f, start=1):
+                raw_payload = line.rstrip("\r\n")
+                if not raw_payload.strip():
+                    continue
                 try:
-                    event_data = json.loads(line)
+                    event_data = json.loads(raw_payload)
+                    if not isinstance(event_data, dict):
+                        raise TypeError("Deserialized ledger payload must be a JSON object.")
                     event = GraphEvent(**event_data)
                     self._materialize(event)
                 except (json.JSONDecodeError, TypeError, ValidationError) as ex:
-                    logger.debug(f"[EpistemicGraph] Corrupted event in ledger ignored: {ex}")
-                    continue
+                    if self.replay_policy == ReplayPolicy.STRICT:
+                        raise LedgerCorruptionError(
+                            client_id=self.client_id,
+                            line_no=line_no,
+                            raw_payload=raw_payload,
+                            cause=ex,
+                        ) from ex
+
+                    self.audit_integrity = "DEGRADED"
+                    self.deliverable_metadata["audit_integrity"] = "DEGRADED"
+                    logger.critical(
+                        "[EpistemicGraph] Ledger corruption detected in RECOVERY mode for client '%s' "
+                        "at line %d: %s. Routing corrupted entry to dead-letter sink '%s' and marking "
+                        "audit_integrity='DEGRADED'.",
+                        self.client_id,
+                        line_no,
+                        ex,
+                        self.corrupted_ledger_path,
+                    )
+                    with open(self.corrupted_ledger_path, "a", encoding="utf-8") as dlq_file:
+                        dlq_file.write(raw_payload + "\n")
+
+    def get_deliverable_metadata(self) -> Dict[str, Any]:
+        """Returns a copy of the deliverable metadata including the current audit_integrity status."""
+        return dict(self.deliverable_metadata)
 
     def _materialize(self, event: GraphEvent) -> None:
         """Applies a single event to the materialized view, updating the queryable state."""
