@@ -2,7 +2,8 @@
 
 Maps client regulatory environments and country contexts to concrete territorial
 architectural invariants, sovereign cloud stacks, and direct connectivity standards,
-featuring Just-In-Time (JIT) dynamic synthesis and caching for unlisted jurisdictions.
+featuring Just-In-Time (JIT) dynamic synthesis and out-of-tree atomic caching for
+unlisted jurisdictions.
 """
 from __future__ import annotations
 
@@ -10,9 +11,10 @@ import json
 import logging
 import os
 import re
+import tempfile
 import unicodedata
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Protocol, runtime_checkable
 
 from pydantic import ValidationError
 
@@ -32,10 +34,16 @@ CONFIG_PATH = Path(
         str(ROOT / "engine_config" / "policies" / "jurisdictional_sovereignty.json"),
     )
 )
+RUNTIME_STATE_DIR = Path(
+    os.environ.get(
+        "ENGINE_RUNTIME_STATE_DIR",
+        str(Path(tempfile.gettempdir()) / "sovereign_cache"),
+    )
+)
 DYNAMIC_DIR = Path(
     os.environ.get(
         "SOVEREIGN_DYNAMIC_JURISDICTION_DIR",
-        str(ROOT / "engine_config" / "policies" / "jurisdictions_dynamic"),
+        str(RUNTIME_STATE_DIR / "jurisdictions_dynamic"),
     )
 )
 JIT_PROMPT_PATH = Path(
@@ -60,7 +68,201 @@ def _validate_profile_invariants(code: str, profile: JurisdictionSovereigntyProf
         )
 
 
-def load_verified_registry_fail_closed(path: Path | None = None) -> JurisdictionalRegistry:
+def _is_within_repository_tree(target_dir: Path, repo_root: Path | None = None) -> bool:
+    """Return True if target_dir resolves inside the immutable application repository tree."""
+    resolved_root = (repo_root or ROOT).resolve()
+    resolved_target = target_dir.resolve()
+    return resolved_target == resolved_root or resolved_root in resolved_target.parents
+
+
+@runtime_checkable
+class SynthesizedPolicyStorePort(Protocol):
+    """Port interface for out-of-tree persistence and retrieval of JIT-synthesized jurisdiction policies."""
+
+    def get(self, code: str) -> JurisdictionSovereigntyProfile | None:
+        """Retrieve a previously synthesized jurisdiction profile by ISO region code."""
+        ...
+
+    def put(self, code: str, profile: JurisdictionSovereigntyProfile) -> Path:
+        """Atomically persist a synthesized jurisdiction profile and return its storage path."""
+        ...
+
+    def list_all(self) -> Dict[str, JurisdictionSovereigntyProfile]:
+        """Load and validate all synthesized jurisdiction profiles from the backing store."""
+        ...
+
+
+class OutOfTreeSynthesizedPolicyStore:
+    """Out-of-tree filesystem adapter for JIT-synthesized policies using POSIX atomic replacement."""
+
+    def __init__(
+        self,
+        state_dir: Path | None = None,
+        *,
+        allow_in_tree_override: bool = False,
+    ) -> None:
+        resolved_dir = Path(state_dir).resolve() if state_dir is not None else self._resolve_default_dir()
+        if not allow_in_tree_override and _is_within_repository_tree(resolved_dir):
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Synthesized policy store directory '{resolved_dir}' "
+                f"resides inside immutable repository root '{ROOT.resolve()}'. "
+                "Configure ENGINE_RUNTIME_STATE_DIR to an isolated out-of-tree volume."
+            )
+        self._state_dir = resolved_dir
+
+    @staticmethod
+    def _resolve_default_dir() -> Path:
+        """Resolve the active out-of-tree dynamic policy directory from runtime configuration."""
+        env_state_dir = os.environ.get("ENGINE_RUNTIME_STATE_DIR")
+        env_dyn_dir = os.environ.get("SOVEREIGN_DYNAMIC_JURISDICTION_DIR")
+        if env_dyn_dir:
+            candidate = Path(env_dyn_dir).resolve()
+        elif env_state_dir:
+            candidate = (Path(env_state_dir) / "jurisdictions_dynamic").resolve()
+        else:
+            candidate = Path(DYNAMIC_DIR).resolve()
+
+        if _is_within_repository_tree(candidate):
+            fallback_root = Path(
+                os.environ.get(
+                    "ENGINE_RUNTIME_STATE_DIR",
+                    str(Path(tempfile.gettempdir()) / "sovereign_cache"),
+                )
+            ).resolve()
+            candidate = (fallback_root / "jurisdictions_dynamic").resolve()
+        return candidate
+
+    @property
+    def state_dir(self) -> Path:
+        """Return the resolved out-of-tree storage directory path."""
+        return self._state_dir
+
+    def _cache_file_for(self, code: str) -> Path:
+        clean_code = code.strip().lower()
+        if not clean_code or not re.fullmatch(r"[a-z0-9_\-]+", clean_code):
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Invalid jurisdiction code '{code}' for policy store."
+            )
+        return self._state_dir / f"{clean_code}.json"
+
+    def get(self, code: str) -> JurisdictionSovereigntyProfile | None:
+        """Read and validate a cached jurisdiction profile in fail-closed mode."""
+        clean_code = code.strip().upper()
+        cache_file = self._cache_file_for(clean_code)
+        if not cache_file.exists():
+            return None
+        if not cache_file.is_file():
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Cached dynamic jurisdiction path '{cache_file}' is not a regular file."
+            )
+        try:
+            cached_data = json.loads(cache_file.read_text(encoding="utf-8"))
+            profile = JurisdictionSovereigntyProfile.model_validate(cached_data, strict=True)
+        except (OSError, json.JSONDecodeError, ValidationError) as exc:
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Corrupted cached dynamic jurisdiction at '{cache_file}': {exc}"
+            ) from exc
+        _validate_profile_invariants(clean_code, profile, cache_file)
+        return profile
+
+    def put(self, code: str, profile: JurisdictionSovereigntyProfile) -> Path:
+        """Atomically write a validated jurisdiction profile via tempfile.mkstemp and os.replace."""
+        clean_code = code.strip().upper()
+        if _is_within_repository_tree(self._state_dir):
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Refusing runtime write into repository tree at '{self._state_dir}'."
+            )
+        try:
+            self._state_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Unable to create dynamic jurisdiction directory '{self._state_dir}': {exc}"
+            ) from exc
+
+        cache_file = self._cache_file_for(clean_code)
+        _validate_profile_invariants(clean_code, profile, cache_file)
+        serialized = json.dumps(profile.model_dump(), indent=2, ensure_ascii=False).encode("utf-8")
+
+        fd: int | None = None
+        tmp_path: str | None = None
+        try:
+            fd, tmp_path = tempfile.mkstemp(
+                prefix=f".{clean_code.lower()}_",
+                suffix=".tmp",
+                dir=str(self._state_dir),
+            )
+            with os.fdopen(fd, "wb") as tmp_file:
+                fd = None
+                tmp_file.write(serialized)
+                tmp_file.flush()
+                os.fsync(tmp_file.fileno())
+            os.replace(tmp_path, cache_file)
+            tmp_path = None
+        except OSError as exc:
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Failed atomic write for synthesized jurisdiction cache '{cache_file}': {exc}"
+            ) from exc
+        finally:
+            if fd is not None:
+                try:
+                    os.close(fd)
+                except OSError:
+                    pass
+            if tmp_path is not None and os.path.exists(tmp_path):
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+
+        return cache_file
+
+    def list_all(self) -> Dict[str, JurisdictionSovereigntyProfile]:
+        """Load and strictly validate all cached dynamic jurisdiction profiles from state_dir."""
+        if not self._state_dir.exists():
+            return {}
+        if not self._state_dir.is_dir():
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Dynamic jurisdiction path '{self._state_dir}' is not a directory."
+            )
+        profiles: Dict[str, JurisdictionSovereigntyProfile] = {}
+        for dyn_file in sorted(self._state_dir.glob("*.json")):
+            if not dyn_file.is_file():
+                raise ConfigurationError(
+                    f"Fatal Fail-Closed Policy Error: Dynamic jurisdiction entry '{dyn_file}' is not a regular file."
+                )
+            code = dyn_file.stem.upper()
+            try:
+                raw_dyn = dyn_file.read_text(encoding="utf-8")
+            except OSError as exc:
+                raise ConfigurationError(
+                    f"Fatal Fail-Closed Policy Error: Unable to read dynamic jurisdiction file '{dyn_file}': {exc}"
+                ) from exc
+            try:
+                p_data = json.loads(raw_dyn)
+            except json.JSONDecodeError as exc:
+                raise ConfigurationError(
+                    f"Fatal Fail-Closed Policy Error: Malformed JSON in dynamic jurisdiction file '{dyn_file}': {exc}"
+                ) from exc
+            try:
+                profile = JurisdictionSovereigntyProfile.model_validate(p_data, strict=True)
+            except ValidationError as exc:
+                raise ConfigurationError(
+                    f"Fatal Fail-Closed Policy Error: Schema validation failed for dynamic jurisdiction '{dyn_file}': {exc}"
+                ) from exc
+            _validate_profile_invariants(code, profile, dyn_file)
+            profiles[code] = profile
+        return profiles
+
+
+def get_default_policy_store() -> SynthesizedPolicyStorePort:
+    """Instantiate the default out-of-tree policy store adapter."""
+    return OutOfTreeSynthesizedPolicyStore()
+
+
+def load_verified_registry_fail_closed(
+    path: Path | None = None,
+    policy_store: SynthesizedPolicyStorePort | None = None,
+) -> JurisdictionalRegistry:
     """Load and strictly validate the canonical JurisdictionalRegistry in fail-closed mode.
 
     Raises:
@@ -68,7 +270,7 @@ def load_verified_registry_fail_closed(path: Path | None = None) -> Jurisdiction
             fails strict Pydantic schema validation, or defines an empty jurisdiction set.
     """
     global _REGISTRY_CACHE
-    if _REGISTRY_CACHE is not None and path is None:
+    if _REGISTRY_CACHE is not None and path is None and policy_store is None:
         return _REGISTRY_CACHE
 
     target = Path(path).resolve() if path is not None else CONFIG_PATH.resolve()
@@ -111,49 +313,22 @@ def load_verified_registry_fail_closed(path: Path | None = None) -> Jurisdiction
     for code, profile in registry.jurisdictions.items():
         _validate_profile_invariants(code, profile, target)
 
-    # Strict fail-closed loading of any dynamically synthesized and cached jurisdictions
-    dynamic_path = Path(DYNAMIC_DIR).resolve()
-    if dynamic_path.exists():
-        if not dynamic_path.is_dir():
-            raise ConfigurationError(
-                f"Fatal Fail-Closed Policy Error: Dynamic jurisdiction path '{dynamic_path}' is not a directory."
-            )
-        for dyn_file in sorted(dynamic_path.glob("*.json")):
-            if not dyn_file.is_file():
-                raise ConfigurationError(
-                    f"Fatal Fail-Closed Policy Error: Dynamic jurisdiction entry '{dyn_file}' is not a regular file."
-                )
-            code = dyn_file.stem.upper()
-            if code not in registry.jurisdictions:
-                try:
-                    raw_dyn = dyn_file.read_text(encoding="utf-8")
-                except OSError as exc:
-                    raise ConfigurationError(
-                        f"Fatal Fail-Closed Policy Error: Unable to read dynamic jurisdiction file '{dyn_file}': {exc}"
-                    ) from exc
-                try:
-                    p_data = json.loads(raw_dyn)
-                except json.JSONDecodeError as exc:
-                    raise ConfigurationError(
-                        f"Fatal Fail-Closed Policy Error: Malformed JSON in dynamic jurisdiction file '{dyn_file}': {exc}"
-                    ) from exc
-                try:
-                    profile = JurisdictionSovereigntyProfile.model_validate(p_data, strict=True)
-                except ValidationError as exc:
-                    raise ConfigurationError(
-                        f"Fatal Fail-Closed Policy Error: Schema validation failed for dynamic jurisdiction '{dyn_file}': {exc}"
-                    ) from exc
-                _validate_profile_invariants(code, profile, dyn_file)
-                registry.jurisdictions[code] = profile
+    store = policy_store or get_default_policy_store()
+    for code, profile in store.list_all().items():
+        if code not in registry.jurisdictions:
+            registry.jurisdictions[code] = profile
 
-    if path is None:
+    if path is None and policy_store is None:
         _REGISTRY_CACHE = registry
     return registry
 
 
-def load_jurisdictional_registry(path: Path | None = None) -> JurisdictionalRegistry:
+def load_jurisdictional_registry(
+    path: Path | None = None,
+    policy_store: SynthesizedPolicyStorePort | None = None,
+) -> JurisdictionalRegistry:
     """Load and cache the canonical JurisdictionalRegistry from disk using fail-closed enforcement."""
-    return load_verified_registry_fail_closed(path=path)
+    return load_verified_registry_fail_closed(path=path, policy_store=policy_store)
 
 
 def _normalize_token(value: str) -> str:
@@ -280,6 +455,7 @@ def synthesize_jurisdiction_profile_jit(
     frameworks: List[str] | None = None,
     region_code: str | None = None,
     registry: JurisdictionalRegistry | None = None,
+    policy_store: SynthesizedPolicyStorePort | None = None,
 ) -> JurisdictionSovereigntyProfile | None:
     """Synthesize at runtime a formal JurisdictionSovereigntyProfile for an unlisted jurisdiction."""
     if not country or len(country.strip()) < 2:
@@ -287,30 +463,11 @@ def synthesize_jurisdiction_profile_jit(
             "Fatal Fail-Closed Policy Error: Country identifier for JIT synthesis must contain at least 2 characters."
         )
     clean_code = (region_code or country.strip()[:2]).strip().upper()
-    dynamic_dir = Path(DYNAMIC_DIR).resolve()
-    try:
-        dynamic_dir.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        raise ConfigurationError(
-            f"Fatal Fail-Closed Policy Error: Unable to create dynamic jurisdiction directory '{dynamic_dir}': {exc}"
-        ) from exc
+    store = policy_store or get_default_policy_store()
 
-    cache_file = dynamic_dir / f"{clean_code.lower()}.json"
-
-    if cache_file.exists():
-        if not cache_file.is_file():
-            raise ConfigurationError(
-                f"Fatal Fail-Closed Policy Error: Cached dynamic jurisdiction path '{cache_file}' is not a regular file."
-            )
-        try:
-            cached_data = json.loads(cache_file.read_text(encoding="utf-8"))
-            profile = JurisdictionSovereigntyProfile.model_validate(cached_data, strict=True)
-        except (OSError, json.JSONDecodeError, ValidationError) as exc:
-            raise ConfigurationError(
-                f"Fatal Fail-Closed Policy Error: Corrupted cached dynamic jurisdiction at '{cache_file}': {exc}"
-            ) from exc
-        _validate_profile_invariants(clean_code, profile, cache_file)
-        return profile
+    cached_profile = store.get(clean_code)
+    if cached_profile is not None:
+        return cached_profile
 
     prompt_template = _load_jit_prompt_template(registry=registry)
     prompt = prompt_template.format(
@@ -354,17 +511,7 @@ def synthesize_jurisdiction_profile_jit(
             f"Fatal Fail-Closed Policy Error: Synthesized JIT profile for '{country}' failed validation: {exc}"
         ) from exc
 
-    _validate_profile_invariants(clean_code, profile, cache_file)
-
-    try:
-        cache_file.write_text(
-            json.dumps(profile.model_dump(), indent=2, ensure_ascii=False),
-            encoding="utf-8",
-        )
-    except OSError as exc:
-        raise ConfigurationError(
-            f"Fatal Fail-Closed Policy Error: Failed writing synthesized jurisdiction cache '{cache_file}': {exc}"
-        ) from exc
+    store.put(clean_code, profile)
 
     logger.info(
         "Successfully synthesized and cached JIT jurisdiction profile for '%s' (%s).",
@@ -377,8 +524,13 @@ def synthesize_jurisdiction_profile_jit(
 class JurisdictionalSovereigntyPolicy(BaseSovereignPolicy):
     """Enforces territorial architectural sovereignty across knowledge graphs and deliverables."""
 
-    def __init__(self, registry: JurisdictionalRegistry | None = None) -> None:
-        self.registry = registry or load_verified_registry_fail_closed()
+    def __init__(
+        self,
+        registry: JurisdictionalRegistry | None = None,
+        policy_store: SynthesizedPolicyStorePort | None = None,
+    ) -> None:
+        self.policy_store: SynthesizedPolicyStorePort = policy_store or get_default_policy_store()
+        self.registry = registry or load_verified_registry_fail_closed(policy_store=self.policy_store)
         if not self.registry.jurisdictions:
             raise ConfigurationError(
                 "Fatal Fail-Closed Policy Error: JurisdictionalSovereigntyPolicy initialized with an empty registry."
@@ -420,6 +572,7 @@ class JurisdictionalSovereigntyPolicy(BaseSovereignPolicy):
                 frameworks,
                 region_code=code,
                 registry=self.registry,
+                policy_store=self.policy_store,
             )
             if profile is not None:
                 self.registry.jurisdictions[code] = profile
