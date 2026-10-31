@@ -5,21 +5,25 @@ This module provides an API that exposes core assessment, rendering, and plan ex
 
 import asyncio
 import atexit
+import collections.abc
 import concurrent.futures
 import contextlib
+import enum
 import importlib
 import io
 import json
 import logging
 import os
+import sqlite3
 import subprocess
 import sys
 import threading
+import time
 import uuid
 from dataclasses import dataclass
 from json import JSONDecodeError
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from mcp.server.fastmcp import FastMCP
 from pydantic import ValidationError
@@ -49,9 +53,391 @@ BLUEPRINT_DOCX_PATTERN = os.environ.get(
 ANNEX_DOCX_PATTERN = os.environ.get("MCP_ANNEX_DOCX_PATTERN", "annex_*_final.docx")
 PLAN_GENERATED_MARKER = "Plan generated in "
 
+DEFAULT_JOBS_DB_PATH = Path(
+    os.environ.get("MCP_JOBS_DB_PATH", str(ROOT / "jobs.db"))
+)
+DEFAULT_JOB_TTL_SECONDS = int(os.environ.get("MCP_JOB_TTL_SECONDS", "86400"))
+SQLITE_BUSY_TIMEOUT_MS = int(os.environ.get("MCP_SQLITE_BUSY_TIMEOUT_MS", "5000"))
+
 _IN_PROCESS_EXEC_LOCK = threading.RLock()
 _POOL_LOCK = threading.Lock()
 _PROCESS_POOL: concurrent.futures.ProcessPoolExecutor | None = None
+
+
+class JobState(str, enum.Enum):
+    """Finite state machine states for asynchronous MCP jobs."""
+
+    PENDING = "PENDING"
+    RUNNING = "RUNNING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+_VALID_STATE_TRANSITIONS: dict[JobState, frozenset[JobState]] = {
+    JobState.PENDING: frozenset({JobState.RUNNING, JobState.FAILED}),
+    JobState.RUNNING: frozenset({JobState.COMPLETED, JobState.FAILED}),
+    JobState.COMPLETED: frozenset(),
+    JobState.FAILED: frozenset(),
+}
+
+_LEGACY_TO_FSM_STATE: dict[str, JobState] = {
+    "pending": JobState.PENDING,
+    "started": JobState.PENDING,
+    "running": JobState.RUNNING,
+    "completed": JobState.COMPLETED,
+    "error": JobState.FAILED,
+    "failed": JobState.FAILED,
+    "PENDING": JobState.PENDING,
+    "RUNNING": JobState.RUNNING,
+    "COMPLETED": JobState.COMPLETED,
+    "FAILED": JobState.FAILED,
+}
+
+_FSM_TO_LEGACY_STATUS: dict[JobState, str] = {
+    JobState.PENDING: "pending",
+    JobState.RUNNING: "running",
+    JobState.COMPLETED: "completed",
+    JobState.FAILED: "error",
+}
+
+
+@dataclass(frozen=True)
+class JobRecord:
+    """Immutable snapshot of a persisted job record in the SQLite store."""
+
+    job_id: str
+    state: JobState
+    result: str
+    created_at: float
+    updated_at: float
+
+    @property
+    def legacy_status(self) -> str:
+        """Returns the backwards-compatible lowercase status string."""
+        return _FSM_TO_LEGACY_STATUS[self.state]
+
+
+class PersistentJobStore:
+    """Persistent SQLite job state machine operating in Write-Ahead Logging (WAL) mode.
+
+    Enforces the finite state machine: PENDING -> RUNNING -> COMPLETED | FAILED,
+    performs automatic TTL eviction for records older than the configured threshold,
+    and ensures crash-only durability across process restarts.
+    """
+
+    def __init__(
+        self,
+        db_path: Path | str = DEFAULT_JOBS_DB_PATH,
+        ttl_seconds: int = DEFAULT_JOB_TTL_SECONDS,
+    ) -> None:
+        self._db_path = Path(db_path)
+        self._ttl_seconds = ttl_seconds
+        self._lock = threading.RLock()
+        self._initialize_database()
+        self.evict_expired_jobs()
+
+    @property
+    def db_path(self) -> Path:
+        return self._db_path
+
+    def _connect(self) -> sqlite3.Connection:
+        self._db_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(
+            str(self._db_path),
+            timeout=SQLITE_BUSY_TIMEOUT_MS / 1000.0,
+            isolation_level=None,
+            check_same_thread=False,
+        )
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA synchronous=NORMAL;")
+        conn.execute(f"PRAGMA busy_timeout={SQLITE_BUSY_TIMEOUT_MS};")
+        return conn
+
+    def _initialize_database(self) -> None:
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS jobs (
+                        job_id TEXT PRIMARY KEY,
+                        state TEXT NOT NULL CHECK(state IN ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED')),
+                        result TEXT NOT NULL DEFAULT '',
+                        created_at REAL NOT NULL,
+                        updated_at REAL NOT NULL
+                    );
+                    """
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_jobs_updated_at ON jobs (updated_at);"
+                )
+
+    def evict_expired_jobs(self, now: float | None = None) -> int:
+        """Purges jobs whose last update timestamp is older than the configured TTL."""
+        current_time = time.time() if now is None else now
+        cutoff = current_time - self._ttl_seconds
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                cursor = conn.execute(
+                    "DELETE FROM jobs WHERE updated_at < ?;",
+                    (cutoff,),
+                )
+                deleted = cursor.rowcount if cursor.rowcount is not None else 0
+                if deleted > 0:
+                    logger.info(
+                        f"Purged {deleted} expired job(s) older than {self._ttl_seconds}s from {self._db_path}."
+                    )
+                return deleted
+
+    def create_job(self, job_id: str | None = None, result: str = "") -> JobRecord:
+        """Creates a new job initialized strictly in the PENDING state."""
+        resolved_id = job_id or str(uuid.uuid4())
+        now = time.time()
+        with self._lock:
+            self.evict_expired_jobs(now=now)
+            with contextlib.closing(self._connect()) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO jobs (job_id, state, result, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?);
+                    """,
+                    (resolved_id, JobState.PENDING.value, result, now, now),
+                )
+        return JobRecord(
+            job_id=resolved_id,
+            state=JobState.PENDING,
+            result=result,
+            created_at=now,
+            updated_at=now,
+        )
+
+    def transition_state(
+        self,
+        job_id: str,
+        target_state: JobState | str,
+        result: str | None = None,
+        append_result: bool = False,
+    ) -> JobRecord:
+        """Transitions a job to `target_state`, enforcing FSM transition invariants."""
+        normalized_target = self._normalize_state(target_state)
+        now = time.time()
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                conn.execute("BEGIN IMMEDIATE;")
+                try:
+                    row = conn.execute(
+                        "SELECT job_id, state, result, created_at, updated_at FROM jobs WHERE job_id = ?;",
+                        (job_id,),
+                    ).fetchone()
+                    if row is None:
+                        raise KeyError(f"Job '{job_id}' does not exist in store.")
+
+                    current_state = JobState(row["state"])
+                    if current_state != normalized_target:
+                        allowed = _VALID_STATE_TRANSITIONS.get(
+                            current_state, frozenset()
+                        )
+                        if normalized_target not in allowed:
+                            raise ValueError(
+                                f"Invalid job state transition for {job_id}: "
+                                f"{current_state.value} -> {normalized_target.value}"
+                            )
+
+                    existing_result: str = row["result"] or ""
+                    if result is None:
+                        updated_result = existing_result
+                    elif append_result:
+                        updated_result = existing_result + result
+                    else:
+                        updated_result = result
+
+                    conn.execute(
+                        "UPDATE jobs SET state = ?, result = ?, updated_at = ? WHERE job_id = ?;",
+                        (normalized_target.value, updated_result, now, job_id),
+                    )
+                    conn.execute("COMMIT;")
+                    return JobRecord(
+                        job_id=job_id,
+                        state=normalized_target,
+                        result=updated_result,
+                        created_at=float(row["created_at"]),
+                        updated_at=now,
+                    )
+                except Exception:
+                    conn.execute("ROLLBACK;")
+                    raise
+
+    def upsert_with_fsm(
+        self,
+        job_id: str,
+        target_state: JobState | str,
+        result: str | None = None,
+    ) -> JobRecord:
+        """Upserts a job while respecting the finite state machine transitions.
+
+        If a job does not exist, it is created in PENDING and stepped through intermediate
+        states if required (e.g., PENDING -> RUNNING -> COMPLETED/FAILED) so callers
+        mutating state via dictionary-style interfaces remain compliant with FSM rules.
+        """
+        normalized_target = self._normalize_state(target_state)
+        with self._lock:
+            existing = self.get_job(job_id)
+            if existing is None:
+                record = self.create_job(
+                    job_id=job_id, result=result if result is not None else ""
+                )
+                if normalized_target == JobState.PENDING:
+                    return record
+                if normalized_target == JobState.RUNNING:
+                    return self.transition_state(
+                        job_id, JobState.RUNNING, result=result
+                    )
+                self.transition_state(job_id, JobState.RUNNING)
+                return self.transition_state(
+                    job_id, normalized_target, result=result
+                )
+
+            if (
+                existing.state == JobState.PENDING
+                and normalized_target == JobState.COMPLETED
+            ):
+                self.transition_state(job_id, JobState.RUNNING)
+            return self.transition_state(job_id, normalized_target, result=result)
+
+    def set_result(
+        self, job_id: str, result: str, append: bool = False
+    ) -> JobRecord:
+        """Updates the result payload of an existing job or initializes a PENDING job."""
+        now = time.time()
+        with self._lock:
+            existing = self.get_job(job_id)
+            if existing is None:
+                return self.create_job(job_id=job_id, result=result)
+            updated_result = (existing.result + result) if append else result
+            with contextlib.closing(self._connect()) as conn:
+                conn.execute(
+                    "UPDATE jobs SET result = ?, updated_at = ? WHERE job_id = ?;",
+                    (updated_result, now, job_id),
+                )
+            return JobRecord(
+                job_id=existing.job_id,
+                state=existing.state,
+                result=updated_result,
+                created_at=existing.created_at,
+                updated_at=now,
+            )
+
+    def get_job(self, job_id: str) -> JobRecord | None:
+        """Retrieves a single job record by ID, or None if not found."""
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                row = conn.execute(
+                    "SELECT job_id, state, result, created_at, updated_at FROM jobs WHERE job_id = ?;",
+                    (job_id,),
+                ).fetchone()
+                if row is None:
+                    return None
+                return JobRecord(
+                    job_id=str(row["job_id"]),
+                    state=JobState(row["state"]),
+                    result=str(row["result"]),
+                    created_at=float(row["created_at"]),
+                    updated_at=float(row["updated_at"]),
+                )
+
+    def delete_job(self, job_id: str) -> None:
+        """Deletes a job record from the SQLite store."""
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                cursor = conn.execute(
+                    "DELETE FROM jobs WHERE job_id = ?;", (job_id,)
+                )
+                if cursor.rowcount == 0:
+                    raise KeyError(job_id)
+
+    def clear(self) -> None:
+        """Deletes all job records from the SQLite store."""
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                conn.execute("DELETE FROM jobs;")
+
+    def list_job_ids(self) -> list[str]:
+        """Returns all persisted job identifiers ordered by creation time."""
+        with self._lock:
+            with contextlib.closing(self._connect()) as conn:
+                rows = conn.execute(
+                    "SELECT job_id FROM jobs ORDER BY created_at ASC;"
+                ).fetchall()
+                return [str(r["job_id"]) for r in rows]
+
+    @staticmethod
+    def _normalize_state(state: JobState | str) -> JobState:
+        if isinstance(state, JobState):
+            return state
+        key = str(state).strip()
+        if key in _LEGACY_TO_FSM_STATE:
+            return _LEGACY_TO_FSM_STATE[key]
+        upper_key = key.upper()
+        if upper_key in _LEGACY_TO_FSM_STATE:
+            return _LEGACY_TO_FSM_STATE[upper_key]
+        raise ValueError(f"Unsupported job state: {state!r}")
+
+
+class _PersistentStatusMapProxy(collections.abc.MutableMapping[str, str]):
+    """MutableMapping proxy backed by PersistentJobStore for backwards-compatible status access."""
+
+    def __init__(self, store: PersistentJobStore, return_fsm_names: bool = False) -> None:
+        self._store = store
+        self._return_fsm_names = return_fsm_names
+
+    def __getitem__(self, job_id: str) -> str:
+        record = self._store.get_job(job_id)
+        if record is None:
+            raise KeyError(job_id)
+        return record.state.value if self._return_fsm_names else record.legacy_status
+
+    def __setitem__(self, job_id: str, status: str | JobState) -> None:
+        self._store.upsert_with_fsm(job_id, status)
+
+    def __delitem__(self, job_id: str) -> None:
+        self._store.delete_job(job_id)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._store.list_job_ids())
+
+    def __len__(self) -> int:
+        return len(self._store.list_job_ids())
+
+    def clear(self) -> None:
+        self._store.clear()
+
+
+class _PersistentResultMapProxy(collections.abc.MutableMapping[str, str]):
+    """MutableMapping proxy backed by PersistentJobStore for backwards-compatible result access."""
+
+    def __init__(self, store: PersistentJobStore) -> None:
+        self._store = store
+
+    def __getitem__(self, job_id: str) -> str:
+        record = self._store.get_job(job_id)
+        if record is None:
+            raise KeyError(job_id)
+        return record.result
+
+    def __setitem__(self, job_id: str, result: str) -> None:
+        self._store.set_result(job_id, result, append=False)
+
+    def __delitem__(self, job_id: str) -> None:
+        self._store.delete_job(job_id)
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._store.list_job_ids())
+
+    def __len__(self) -> int:
+        return len(self._store.list_job_ids())
+
+    def clear(self) -> None:
+        self._store.clear()
 
 
 def _shutdown_process_pool() -> None:
@@ -506,15 +892,22 @@ def get_tower_state(case_dir: str) -> str:
     return json.dumps(state, indent=2, ensure_ascii=False)
 
 
-# Maintains the in-memory state of all asynchronous jobs, mapping job IDs to their current status, logs, and final results.
-job_status: dict[str, str] = {}
-job_results: dict[str, str] = {}
+# Persistent SQLite WAL job store and backwards-compatible mapping proxies.
+_JOB_STORE = PersistentJobStore(
+    db_path=DEFAULT_JOBS_DB_PATH, ttl_seconds=DEFAULT_JOB_TTL_SECONDS
+)
+job_status: collections.abc.MutableMapping[str, str] = _PersistentStatusMapProxy(
+    _JOB_STORE
+)
+job_results: collections.abc.MutableMapping[str, str] = _PersistentResultMapProxy(
+    _JOB_STORE
+)
 
 
-async def _background_run_plan(job_id: str, request_text: str):
+async def _background_run_plan(job_id: str, request_text: str) -> None:
     loop = asyncio.get_running_loop()
 
-    def run_sync():
+    def run_sync() -> str:
         """Synchronously execute the 'plan' command of the product owner orchestrator module."""
         return _run_script(
             "assessment_engine.application.tools.run_product_owner_orchestrator",
@@ -522,8 +915,16 @@ async def _background_run_plan(job_id: str, request_text: str):
         )
 
     try:
+        record = _JOB_STORE.get_job(job_id)
+        if record is None:
+            _JOB_STORE.create_job(job_id=job_id)
+            _JOB_STORE.transition_state(job_id, JobState.RUNNING)
+        elif record.state == JobState.PENDING:
+            _JOB_STORE.transition_state(job_id, JobState.RUNNING)
+
         out = await loop.run_in_executor(None, run_sync)
         found_plan = False
+        result_payload = ""
         for line in out.splitlines():
             try:
                 log_data = json.loads(line)
@@ -533,7 +934,7 @@ async def _background_run_plan(job_id: str, request_text: str):
                     plan_path = Path(request_dir) / "plan.json"
                     if plan_path.exists():
                         plan_data = plan_path.read_text(encoding="utf-8")
-                        job_results[job_id] = (
+                        result_payload = (
                             f"Plan successfully generated.\nREQUEST_DIR={request_dir}\n{plan_data}"
                         )
                         found_plan = True
@@ -542,13 +943,16 @@ async def _background_run_plan(job_id: str, request_text: str):
                 logger.debug(f"[PO-Orchestrator] Log line unparseable as plan: {ex}")
                 continue
         if not found_plan:
-            job_results[job_id] = (
+            result_payload = (
                 f"Error: Plan generated but path not found in logs.\nLogs: {out}"
             )
-        job_status[job_id] = "completed"
+        _JOB_STORE.transition_state(
+            job_id, JobState.COMPLETED, result=result_payload
+        )
     except Exception as e:
-        job_status[job_id] = "error"
-        job_results[job_id] = f"Error executing orchestrator: {e}"
+        _JOB_STORE.transition_state(
+            job_id, JobState.FAILED, result=f"Error executing orchestrator: {e}"
+        )
 
 
 @mcp.tool()
@@ -570,7 +974,8 @@ async def start_plan_generation(request_text: str) -> str:
         Example: '{"job_id": "...", "status": "started"}'
     """
     job_id = str(uuid.uuid4())
-    job_status[job_id] = "running"
+    _JOB_STORE.create_job(job_id=job_id)
+    _JOB_STORE.transition_state(job_id, JobState.RUNNING)
 
     asyncio.create_task(_background_run_plan(job_id, request_text))
 
@@ -580,11 +985,15 @@ async def start_plan_generation(request_text: str) -> str:
 @mcp.tool()
 def check_plan_status(job_id: str) -> str:
     """Return the status of a plan generation job as a JSON-formatted string."""
-    status = job_status.get(job_id, "not_found")
-    if status == "completed" or status == "error":
-        result = job_results.get(job_id, "")
-        return json.dumps({"status": status, "result": result})
-    return json.dumps({"status": status})
+    record = _JOB_STORE.get_job(job_id)
+    if record is None:
+        return json.dumps({"status": "not_found"})
+    status = record.legacy_status
+    if record.state in {JobState.COMPLETED, JobState.FAILED}:
+        return json.dumps(
+            {"status": status, "state": record.state.value, "result": record.result}
+        )
+    return json.dumps({"status": status, "state": record.state.value})
 
 
 @mcp.tool()
@@ -607,10 +1016,10 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
         status of "started".
     """
     job_id = str(uuid.uuid4())
-    job_status[job_id] = "running"
-    job_results[job_id] = ""
+    _JOB_STORE.create_job(job_id=job_id, result="")
+    _JOB_STORE.transition_state(job_id, JobState.RUNNING)
 
-    async def _background_run_execution():
+    async def _background_run_execution() -> None:
         exec_args = [
             "execute",
             "--request-dir",
@@ -628,11 +1037,19 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
                 "assessment_engine.application.tools.run_product_owner_orchestrator",
                 exec_args,
             )
-            job_results[job_id] += out + "\nExecution completed."
-            job_status[job_id] = "completed"
+            _JOB_STORE.transition_state(
+                job_id,
+                JobState.COMPLETED,
+                result=out + "\nExecution completed.",
+                append_result=True,
+            )
         except Exception as e:
-            job_status[job_id] = "error"
-            job_results[job_id] += f"\nExecution error: {e}"
+            _JOB_STORE.transition_state(
+                job_id,
+                JobState.FAILED,
+                result=f"\nExecution error: {e}",
+                append_result=True,
+            )
 
     asyncio.create_task(_background_run_execution())
     return json.dumps({"job_id": job_id, "status": "started"})
@@ -641,9 +1058,16 @@ async def start_plan_execution(request_dir: str, alt_index: int = 0) -> str:
 @mcp.tool()
 def check_execution_status(job_id: str) -> str:
     """Return the status and result of an execution job as a JSON-serialized string."""
-    status = job_status.get(job_id, "not_found")
-    result = job_results.get(job_id, "")
-    return json.dumps({"status": status, "result": result})
+    record = _JOB_STORE.get_job(job_id)
+    if record is None:
+        return json.dumps({"status": "not_found", "result": ""})
+    return json.dumps(
+        {
+            "status": record.legacy_status,
+            "state": record.state.value,
+            "result": record.result,
+        }
+    )
 
 
 @mcp.tool()
