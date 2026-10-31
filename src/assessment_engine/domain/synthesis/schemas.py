@@ -23,7 +23,6 @@ class StrictDomainModel(BaseModel):
 
     model_config = ConfigDict(
         strict=True,
-        extra="forbid",
         frozen=True,
         validate_default=True,
         ser_json_inf_nan="constants",
@@ -114,6 +113,31 @@ class FinancialProjection(StrictDomainModel):
         return _safe_coerce_to_decimal(v)
 
 
+class SimplexUtilityWeights(StrictDomainModel):
+    """Weight assignment for the 3 Pareto optimization axes, structured without additionalProperties."""
+
+    capital_efficiency: Annotated[float, Field(ge=0.0, le=1.0, description="Weight on capital efficiency [0.0, 1.0]")]
+    operational_resilience: Annotated[float, Field(ge=0.0, le=1.0, description="Weight on operational resilience [0.0, 1.0]")]
+    execution_velocity: Annotated[float, Field(ge=0.0, le=1.0, description="Weight on execution velocity [0.0, 1.0]")]
+
+    def __getitem__(self, item: Any) -> float:
+        key = item.value if isinstance(item, OptimizationAxis) else str(item).upper()
+        if key == "CAPITAL_EFFICIENCY":
+            return self.capital_efficiency
+        if key == "OPERATIONAL_RESILIENCE":
+            return self.operational_resilience
+        if key == "EXECUTION_VELOCITY":
+            return self.execution_velocity
+        raise KeyError(item)
+
+    def items(self) -> list[tuple[OptimizationAxis, float]]:
+        return [
+            (OptimizationAxis.CAPITAL_EFFICIENCY, self.capital_efficiency),
+            (OptimizationAxis.OPERATIONAL_RESILIENCE, self.operational_resilience),
+            (OptimizationAxis.EXECUTION_VELOCITY, self.execution_velocity),
+        ]
+
+
 class StrategicOption(StrictDomainModel):
     """Represents a single vertex on the Pareto Frontier."""
 
@@ -130,22 +154,30 @@ class StrategicOption(StrictDomainModel):
         list[str],
         Field(min_length=1, description="Foreign keys mapping to the input Evidence Registry."),
     ]
-    utility_weights: dict[OptimizationAxis, float]
+    utility_weights: SimplexUtilityWeights
 
-    @field_validator("utility_weights")
+    @field_validator("utility_weights", mode="before")
     @classmethod
-    def validate_simplex_weights(cls, v: dict[OptimizationAxis, float]) -> dict[OptimizationAxis, float]:
-        """Verify weights cover all simplex axes and are bounded within [0.0, 1.0]."""
-        required_axes = set(OptimizationAxis)
-        if set(v.keys()) != required_axes:
-            raise ValueError(f"SIMPLEX_AXIS_ERR: Must contain exactly {required_axes}.")
-        for axis, weight in v.items():
-            if math.isnan(weight) or math.isinf(weight) or not (0.0 <= weight <= 1.0):
-                raise ValueError(f"SIMPLEX_BOUND_ERR: Weight for {axis} ({weight}) outside [0.0, 1.0].")
-        total = sum(v.values())
+    def coerce_simplex_weights(cls, v: Any) -> SimplexUtilityWeights:
+        """Coerce dictionary inputs to SimplexUtilityWeights while validating simplex invariants."""
+        if isinstance(v, SimplexUtilityWeights):
+            weights_obj = v
+        elif isinstance(v, dict):
+            ce = float(v.get(OptimizationAxis.CAPITAL_EFFICIENCY, v.get("CAPITAL_EFFICIENCY", v.get("capital_efficiency", 0.0))))
+            op = float(v.get(OptimizationAxis.OPERATIONAL_RESILIENCE, v.get("OPERATIONAL_RESILIENCE", v.get("operational_resilience", 0.0))))
+            ev = float(v.get(OptimizationAxis.EXECUTION_VELOCITY, v.get("EXECUTION_VELOCITY", v.get("execution_velocity", 0.0))))
+            weights_obj = SimplexUtilityWeights(
+                capital_efficiency=ce,
+                operational_resilience=op,
+                execution_velocity=ev,
+            )
+        else:
+            raise ValueError(f"SIMPLEX_TYPE_ERR: Cannot coerce {type(v)} to SimplexUtilityWeights.")
+
+        total = weights_obj.capital_efficiency + weights_obj.operational_resilience + weights_obj.execution_velocity
         if not math.isclose(total, 1.0, abs_tol=1e-4):
             raise ValueError(f"SIMPLEX_SUM_ERR: Utility weights must sum to 1.0 (Actual: {total:.6f}).")
-        return v
+        return weights_obj
 
 
 class ExecutiveRoadmapPhase(StrictDomainModel):

@@ -8,7 +8,7 @@ from typing import Any
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt
+from docx.shared import Pt, RGBColor
 
 from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
 from assessment_engine.domain.theme_registry import SemanticColorRole
@@ -33,6 +33,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
     apply_table_style,
     clean_text,
     clear_cell_shading,
+    shade_cell,
     clear_paragraph,
     clear_paragraph_properties,
     enable_update_fields_on_open,
@@ -304,23 +305,28 @@ def polish_semantic_tables(doc) -> None:
             "NTTFutureBluetable",
             "Table Grid",
         )
+        is_header_table = len(table.columns) >= 3 or len(table.rows) >= 5
         for row_idx, row in enumerate(table.rows):
             for cell in row.cells:
-                clear_cell_shading(cell)
+                if row_idx == 0 and is_header_table:
+                    shade_cell(cell, "0F172A")
+                    text_color = RGBColor(0xFF, 0xFF, 0xFF)
+                else:
+                    clear_cell_shading(cell)
+                    text_color = RGBColor(0x1A, 0x1A, 0x1A)
                 cell.vertical_alignment = WD_ALIGN_VERTICAL.TOP
                 for paragraph in cell.paragraphs:
                     paragraph.paragraph_format.space_before = Pt(0)
                     paragraph.paragraph_format.space_after = Pt(2)
                     paragraph.paragraph_format.line_spacing = 1.0
-                    if row_idx == 0:
+                    if row_idx == 0 and is_header_table:
                         if paragraph.alignment == WD_ALIGN_PARAGRAPH.JUSTIFY:
                             paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
                     elif paragraph.alignment == WD_ALIGN_PARAGRAPH.JUSTIFY:
                         paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
                     for run in paragraph.runs:
                         run.font.size = Pt(10)
-                        if row_idx == 0:
-                            run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
+                        run.font.color.rgb = text_color
 
 
 def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
