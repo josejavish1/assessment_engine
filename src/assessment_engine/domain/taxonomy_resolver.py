@@ -219,25 +219,14 @@ class PureTaxonomyResolver:
     def __init__(
         self,
         catalog: Mapping[str, TaxonomyConcept | Mapping[str, Any]] | None = None,
-        config_path: Any = None,
     ) -> None:
-        """Initialize resolver from an injected multilingual taxonomy concept catalog or config path."""
+        """Initialize resolver from an injected multilingual taxonomy concept catalog."""
         self._concepts: Mapping[str, TaxonomyConcept] = MappingProxyType({})
         self._taxonomy: dict[str, Any] = {}
         self._canonical_name_to_id: dict[str, tuple[str, str]] = {}
         self._localized_name_to_id: dict[str, tuple[str, str]] = {}
         self._scoped_name_to_id: dict[tuple[str, str], tuple[str, str]] = {}
         self._capabilities_index: dict[str, dict[str, str]] = {}
-
-        if catalog is None and config_path is not None:
-            import json
-            from pathlib import Path
-            p = Path(config_path)
-            if p.exists():
-                try:
-                    catalog = json.loads(p.read_text(encoding="utf-8"))
-                except Exception:
-                    pass
 
         if catalog is not None and isinstance(catalog, Mapping):
             self._concepts, self._taxonomy = normalize_taxonomy_catalog(catalog)
@@ -401,31 +390,31 @@ class PureTaxonomyResolver:
 
 
 TaxonomyResolver = PureTaxonomyResolver
+_DEFAULT_EMPTY_SINGLETON: PureTaxonomyResolver | None = None
 
 
 def register_taxonomy_catalog_loader(loader: TaxonomyCatalogLoaderPort) -> None:
     """Register infrastructure catalog loader port and reset cached singleton."""
-    global _CATALOG_LOADER_PROVIDER, _RESOLVER_INSTANCE
+    global _CATALOG_LOADER_PROVIDER, _RESOLVER_INSTANCE, _DEFAULT_EMPTY_SINGLETON
     with _RESOLVER_LOCK:
         _CATALOG_LOADER_PROVIDER = loader
         _RESOLVER_INSTANCE = None
+        _DEFAULT_EMPTY_SINGLETON = None
 
 
 def set_taxonomy_resolver(resolver: PureTaxonomyResolver | None) -> None:
     """Explicitly inject or reset the shared PureTaxonomyResolver singleton instance."""
-    global _RESOLVER_INSTANCE
+    global _RESOLVER_INSTANCE, _DEFAULT_EMPTY_SINGLETON
     with _RESOLVER_LOCK:
         _RESOLVER_INSTANCE = resolver
+        _DEFAULT_EMPTY_SINGLETON = None
 
 
 def get_taxonomy_resolver(
     catalog: Mapping[str, TaxonomyConcept | Mapping[str, Any]] | None = None,
 ) -> PureTaxonomyResolver:
-    """Retrieve shared thread-safe singleton instance of PureTaxonomyResolver.
-
-    Does not cache an empty singleton if invoked prior to catalog loader registration.
-    """
-    global _RESOLVER_INSTANCE
+    """Retrieve shared thread-safe singleton instance of PureTaxonomyResolver."""
+    global _RESOLVER_INSTANCE, _DEFAULT_EMPTY_SINGLETON
     if catalog is not None:
         return PureTaxonomyResolver(catalog=catalog)
 
@@ -439,5 +428,6 @@ def get_taxonomy_resolver(
             loaded_catalog = _CATALOG_LOADER_PROVIDER.load_taxonomy_catalog()
             _RESOLVER_INSTANCE = PureTaxonomyResolver(catalog=loaded_catalog)
             return _RESOLVER_INSTANCE
-        _RESOLVER_INSTANCE = PureTaxonomyResolver(catalog={})
-        return _RESOLVER_INSTANCE
+        if _DEFAULT_EMPTY_SINGLETON is None:
+            _DEFAULT_EMPTY_SINGLETON = PureTaxonomyResolver(catalog={})
+        return _DEFAULT_EMPTY_SINGLETON

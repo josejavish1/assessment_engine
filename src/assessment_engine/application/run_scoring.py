@@ -252,7 +252,7 @@ def _resolve_operational_reading(
     for level in maturity_scale:
         if level.label.lower() in normalized_band:
             configured_reading = level.operational_reading.strip()
-            if configured_reading and configured_reading.isascii():
+            if configured_reading:
                 return configured_reading
             fallback = _fallback_reading_for_label(normalized_band)
             return fallback if fallback else configured_reading

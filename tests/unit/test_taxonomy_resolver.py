@@ -77,7 +77,8 @@ def synthetic_taxonomy_file(tmp_path: Path) -> Path:
 @pytest.fixture
 def isolated_resolver(synthetic_taxonomy_file: Path) -> TaxonomyResolver:
     """Fixture providing isolated TaxonomyResolver using synthetic multilingual catalog."""
-    return TaxonomyResolver(config_path=synthetic_taxonomy_file)
+    catalog = json.loads(synthetic_taxonomy_file.read_text(encoding="utf-8"))
+    return TaxonomyResolver(catalog=catalog)
 
 
 def test_resolve_tower_names_across_locales(isolated_resolver: TaxonomyResolver) -> None:

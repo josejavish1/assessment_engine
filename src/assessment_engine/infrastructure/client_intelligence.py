@@ -851,12 +851,10 @@ def build_client_context_text(data: dict[str, Any], tower_id: str | None = None)
         TypeError: If the data packet constructed for the JSON payload contains
             non-serializable objects.
     """
-    client_name = data.get("client_name", "generic")
+    client_name = data.get("client_name") or "generic"
     from assessment_engine.infrastructure.text_utils import slugify
 
     graph = EpistemicGraph(client_id=slugify(client_name))
-
-    client_name = "CLIENT_ENTITY"
 
     if is_client_dossier_v3(data):
         tech_context = data.get("technology_context", {})

@@ -17,13 +17,18 @@ from assessment_engine.domain.schemas.evidence import (
     RaptorNode,
     RaptorTree,
 )
-from assessment_engine.infrastructure.genai_client import ModelTier, get_model
+from assessment_engine.infrastructure.genai_client import (
+    ModelTier,
+    create_genai_client,
+    get_model,
+)
 
 logger = logging.getLogger(__name__)
 
 MAX_CONCURRENT_CHUNKS: int = int(os.environ.get("RAPTOR_MAX_CONCURRENT_CHUNKS", "8"))
 DEFAULT_RPM_QUOTA: int = int(os.environ.get("RAPTOR_RPM_QUOTA", "60"))
 DEFAULT_TPM_QUOTA: int = int(os.environ.get("RAPTOR_TPM_QUOTA", "250000"))
+DEFAULT_RAPTOR_MAX_RETRY_ATTEMPTS: int = int(os.environ.get("RAPTOR_MAX_RETRY_ATTEMPTS", "3"))
 CHARS_PER_TOKEN_ESTIMATE: int = 4
 SECONDS_PER_MINUTE: float = 60.0
 ADAPTIVE_BACKOFF_MULTIPLIER: float = 0.5
@@ -316,13 +321,12 @@ class RaptorEngine:
         """
 
         estimated_tokens = self._estimate_token_count(prompt)
-        max_attempts = 3
+        max_attempts = DEFAULT_RAPTOR_MAX_RETRY_ATTEMPTS
+        client = create_genai_client()
 
         for attempt in range(1, max_attempts + 1):
             await self._rate_limiter.acquire(estimated_tokens)
             try:
-                api_key = os.environ.get("GEMINI_API_KEY")
-                client = genai.Client(api_key=api_key)
                 response = await client.aio.models.generate_content(
                     model=get_model(ModelTier.FAST),
                     contents=prompt,
@@ -359,7 +363,7 @@ class RaptorEngine:
         If the generative model dropped any metric, it is appended in an immutable audit block.
         """
         metric_pattern = re.compile(
-            r"\b\d+(?:[\.,]\d+)*(?:\s*(?:ms|s|h|hours|gbps|mbps|tb|pb|gb)\b|\s*[%€\$])",
+            r"(?:[\$€£¥₹₩]\s*\d+(?:[\.,]\d+)*(?:\s*(?:k|m|b|t))?\b|\b\d+(?:[\.,]\d+)*(?:\s*(?:ms|s|h|hours|gbps|mbps|tb|pb|gb)\b|\s*[%€\$£¥₹₩]|\s*(?:USD|EUR|GBP|JPY|CHF|SAR|AED|BRL|SGD|CAD|AUD|CNY|INR|KRW)\b))",
             re.IGNORECASE,
         )
 
