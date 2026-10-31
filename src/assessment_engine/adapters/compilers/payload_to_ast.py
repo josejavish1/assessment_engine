@@ -1095,48 +1095,6 @@ class PayloadToASTBridge:
         nodes.append(_build_heatmap_mosaic(risks_data_list))
         nodes.append(SpacerNode(points=15))
 
-        # 5.2 Methodological Legends (TEF & LM Scales)
-        nodes.append(
-            HeadingNode(
-                text=t("methodological_legends_title", locale=meta_lang),
-                level=3,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-
-        nodes.append(
-            HeadingNode(
-                text=t("tef_title", locale=meta_lang),
-                level=4,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(_build_tef_scale_table(vocab, meta_lang, self.alt_row_hex))
-        nodes.append(SpacerNode(points=15))
-
-        nodes.append(
-            HeadingNode(
-                text=t("lm_title", locale=meta_lang),
-                level=4,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(_build_lm_scale_table(vocab, meta_lang, currency, is_critical, self.alt_row_hex))
-        nodes.append(SpacerNode(points=10))
-
-        if is_critical:
-            nodes.append(
-                ParagraphNode(
-                    text=t("sector_calibration_note", locale=meta_lang),
-                    italic=True,
-                    space_after=12,
-                )
-            )
-            nodes.append(SpacerNode(points=10))
-        else:
-            nodes.append(SpacerNode(points=10))
-
-
     def _build_detailed_findings_log(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]], fair_lookup: dict[str, Any]) -> None:
         vocab = ctx["vocab"]
         gs_val = ctx["gs_val"]
@@ -1340,6 +1298,9 @@ class PayloadToASTBridge:
         concl_path = modules_dir / "07_conclusiones.md"
         if concl_path.exists():
             nodes.extend(self._parse_markdown_to_nodes(concl_path))
+        else:
+            inaction_text = cca_data.get("next_steps_inaction", not_def_lbl) if isinstance(cca_data, dict) else not_def_lbl
+            nodes.append(ParagraphNode(text=inaction_text))
 
         #
 

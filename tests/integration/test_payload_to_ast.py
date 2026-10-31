@@ -153,15 +153,6 @@ def test_payload_to_ast_bridge_conversion(tmp_path: Path):
         "FAIR CSV risk matrix was not compiled into TableNode in AST."
     )
 
-    # Invariante de calibración sectorial: cuando is_critical=True, inyecta la nota regulatoria
-    has_critical_note = any(
-        isinstance(node, ParagraphNode) and "Nota de Calibración de Sector" in node.text
-        for node in ast.nodes
-    )
-    assert has_critical_note, (
-        "Compilación con is_critical=True debe inyectar la nota de sector crítico."
-    )
-
     # Invariante de aislamiento: cuando is_critical=False o ausente (None), no debe inyectar la nota (Aniquilador COR)
     mock_default_styling = dict(mock_brand_data)
     mock_default_styling["styling"] = {}  # styling sin la clave is_critical
@@ -272,7 +263,6 @@ def test_english_ast_bullets_and_appendices() -> None:
     assert "Quantitative Risk Methodology" in headings
     assert "Threat Event Frequency Criteria (TEF)" in headings
     assert "Direct/Indirect Loss Magnitude Criteria (LM)" in headings
-    assert "Advanced Systemic Resilience Indicators" in headings
 
     paragraphs = [n.text for n in nodes if isinstance(n, ParagraphNode)]
     corpus = " \n ".join(paragraphs)

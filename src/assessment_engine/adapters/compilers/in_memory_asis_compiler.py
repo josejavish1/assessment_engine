@@ -56,9 +56,9 @@ def derive_in_memory_fair_risks(
             raw_cap = str(hc.get("target_state") or hc.get("capability") or "General Capability")
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
 
-            tef_val = float(hc.get("threat_event_frequency") or 3.0)
-            lm_val = float(hc.get("loss_magnitude") or 3.0)
-            raw_ale = float(hc.get("fair_ale_score") or (tef_val * lm_val * 1000.0))
+            tef_val = float(hc.get("threat_event_frequency") or hc.get("tef") or 3.0)
+            lm_val = float(hc.get("loss_magnitude") or hc.get("lm") or 3.0)
+            raw_ale = float(hc.get("fair_ale_score") or hc.get("ale") or (tef_val * lm_val * 1000.0))
             raw_p90 = float(hc.get("fair_p90_score") or (raw_ale * 2.5))
 
             calibrated_ale = raw_ale * rate_mult

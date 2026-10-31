@@ -333,14 +333,4 @@ def build_appendix_d_methodology(
     )
 
     nodes.append(SpacerNode(points=10))
-    nodes.append(
-        HeadingNode(
-            text=t("systemic_resilience_indicators_title", locale=meta_lang),
-            level=3,
-            primary_color_rgb=primary_color_rgb,
-        )
-    )
-    nodes.append(ParagraphNode(text=t("systemic_resilience_intro", locale=meta_lang)))
-    indicators = get_localized_list("systemic_resilience_indicators_list", locale=meta_lang)
-    for ind in indicators:
-        nodes.append(ParagraphNode(text=ind, style="List Bullet"))
+    # (CFO Zero-Fluff Rule): Removed systemic_resilience_indicators_title and list since they are not used in Molins T1 body.
