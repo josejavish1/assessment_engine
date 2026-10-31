@@ -81,14 +81,19 @@ def build_cmmi_methodology_and_capabilities(
         )
     )
 
+    from assessment_engine.infrastructure.runtime_paths import ROOT
     tower_def_file = (
-        Path("engine_config/towers")
+        ROOT
+        / "engine_config"
+        / "towers"
         / tower_id
         / f"tower_definition_{tower_id.lower()}.json"
     )
     if not tower_def_file.exists():
         tower_def_file = (
-            Path("engine_config/towers")
+            ROOT
+            / "engine_config"
+            / "towers"
             / tower_id
             / f"tower_definition_{tower_id}.json"
         )

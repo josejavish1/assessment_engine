@@ -82,8 +82,8 @@ class PayloadToASTBridge:
         self.meta_lang = "en"
 
         # Load brand profiles, using fallback values to ensure required assets are present.
-        self.company_name = "Consultora"
-        self.classification = "Confidencial"
+        self.company_name = "Consulting Firm"
+        self.classification = "Confidential"
         self.disclaimer = ""
         self.primary_color_rgb = [0, 114, 188]  # Primary corporate brand color code.
         self.alt_row_hex = "F2F2F2"
@@ -93,7 +93,7 @@ class PayloadToASTBridge:
 
         self.meta_lang = "en"
         try:
-            brand = load_brand_profile()
+            brand = load_brand_profile(brand_profile_path=self.brand_profile_path)
             self.brand_data = brand
             self.company_name = brand.get("company_name", self.company_name)
             self.classification = brand.get(
@@ -217,16 +217,14 @@ class PayloadToASTBridge:
         # Load scoring and global ALE data for interpolation.
         total_fair_ale = blueprint_data.get("total_fair_ale", 0.0)
 
-        # Load scoring output to get exact score and band deterministically
+        # Load scoring output to get exact score deterministically
         scoring_file = case_dir / "scoring_output.json"
         exact_score = None
-        exact_band = None
         if scoring_file.exists():
             try:
                 with open(scoring_file, "r", encoding="utf-8-sig") as sf:
                     score_data = json.load(sf)
                     exact_score = score_data.get("tower_score_exact")
-                    exact_band = score_data.get("maturity_band_from_exact", {}).get("label")
             except Exception as e:
                 logger.info(f"⚠️ Error loading scoring_output in AST Bridge: {e}")
 
@@ -288,7 +286,7 @@ class PayloadToASTBridge:
             "is_critical": is_critical,
             "total_fair_ale": total_fair_ale,
             "exact_score": exact_score,
-            "exact_band": exact_band,
+            "exact_band": global_band,
             "global_score": global_score,
             "global_band": global_band,
             "global_reading": global_reading,
@@ -387,7 +385,7 @@ class PayloadToASTBridge:
         #
         nodes.append(
             HeadingNode(
-                text=vocab.get("toc_title", "Contenido"),
+                text=t("toc_title", locale=meta_lang),
                 level=1,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -765,9 +763,9 @@ class PayloadToASTBridge:
             try:
                 overrides = intel_data.get("tower_overrides", {}).get(tower_id, {})
                 metrics = overrides.get("metrics", {}) if isinstance(overrides, dict) else {}
-                business_criticality = metrics.get("business_criticality") if isinstance(metrics, dict) else None
-                regulatory_compliance = metrics.get("regulatory_compliance") if isinstance(metrics, dict) else None
-                implementation_feasibility = metrics.get("implementation_feasibility") if isinstance(metrics, dict) else None
+                business_criticality = float(metrics.get("business_criticality")) if isinstance(metrics, dict) and metrics.get("business_criticality") is not None else None
+                regulatory_compliance = float(metrics.get("regulatory_compliance") or 0.0) if isinstance(metrics, dict) else 0.0
+                implementation_feasibility = float(metrics.get("implementation_feasibility") or 0.0) if isinstance(metrics, dict) else 0.0
                 
                 sensitivity = overrides.get("sensitivity_analysis", {}) if isinstance(overrides, dict) else {}
                 dii_03 = None
@@ -807,8 +805,10 @@ class PayloadToASTBridge:
                     is_spof = (tower_id == spof_by_cascade or tower_id == spof_by_centrality)
                     spof_status = "YES" if is_spof else "NO"
                     spof_status_text = t("interdep_spof_yes", locale=meta_lang) if is_spof else t("interdep_spof_no", locale=meta_lang)
-                    dii_val = f"{dii_03:.1f}%" if dii_03 is not None else "0,0%"
-                    erc_val = f"{erc:.3f}" if erc is not None else "0,000"
+                    dii_num = float(dii_03) if dii_03 is not None else 0.0
+                    dii_val = f"{format_number(dii_num, locale=meta_lang, decimals=1)}%"
+                    erc_num = float(erc) if erc is not None else 0.0
+                    erc_val = format_number(erc_num, locale=meta_lang, decimals=3)
 
                     if business_criticality >= 80.0:
                         crit_lbl = t("interdep_status_extreme", locale=meta_lang)
@@ -969,7 +969,8 @@ class PayloadToASTBridge:
                             continue
                         verif_status = t_snap.get("verification_status", "failed")
                         quote = t_snap.get("evidence_quote", "")
-                        if verif_status == "verified" and quote and "no se encontraron" not in quote.lower() and "no se ha encontrado" not in quote.lower():
+                        neg_filters = [f.lower() for f in get_localized_list("negative_evidence_filters", locale=meta_lang, default=["no evidence", "not found"])]
+                        if verif_status == "verified" and quote and not any(nf in quote.lower() for nf in neg_filters):
                             valid_snapshots.append((t_id, t_snap))
 
                     if valid_snapshots:
@@ -1015,7 +1016,8 @@ class PayloadToASTBridge:
                 logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
         # 4.3 Score Justification Matrix (from CSV or in-memory payload) with fallback mechanism
-        csv_mat_path = modules_dir / "04_matriz_madurez.csv"
+        csv_mat_candidates = list(modules_dir.glob("*maturity*.csv")) if modules_dir.exists() else []
+        csv_mat_path = csv_mat_candidates[0] if csv_mat_candidates else (modules_dir / "maturity_matrix.csv")
         if csv_mat_path.exists():
             # Ensure header collections are not empty to prevent the generation of malformed tables.
             mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
@@ -1121,7 +1123,7 @@ class PayloadToASTBridge:
                 derive_in_memory_fair_risks,
             )
             rate_mult = float(ctx.get("rate_mult", 1.0))
-            currency = ctx.get("currency", "€")
+            currency = str(ctx.get("currency") or blueprint_data.get("currency") or "")
             risks_data_list, _ = derive_in_memory_fair_risks(
                 blueprint_data, doc_lang=meta_lang, currency=currency, rate_mult=rate_mult
             )
@@ -1236,8 +1238,8 @@ class PayloadToASTBridge:
         )
         total_fair_ale = float(ctx.get("total_fair_ale") or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list))
         sorted_risks = sorted(risks_data_list, key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0), reverse=True)
-        t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 50000.0
-        t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 10000.0
+        t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
+        t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 0.0
 
         t1_risks = [r for r in sorted_risks if float(r.get("ale") or r.get("ale_val") or 0.0) >= t1_threshold]
         if not t1_risks and sorted_risks:
@@ -1273,6 +1275,7 @@ class PayloadToASTBridge:
         gs_val = ctx["gs_val"]
         currency = ctx["currency"]
         meta_lang = ctx["meta_lang"]
+        total_fair_ale = float(ctx.get("total_fair_ale") or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list))
         # 5.3 Detailed Log Segmented by Domain (in multiple independent tables)
         if risks_data_list:
             nodes.append(
@@ -1331,19 +1334,9 @@ class PayloadToASTBridge:
                 for s_idx, hc in enumerate(pillar_risks_filtered):
                     bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
 
-                    # Deduplicate or clean up repetitive prose between finding and evidence to improve readability
+                    # Clean up repetitive prose between finding and evidence to improve readability
                     find_clean = (hc['finding'] or "").strip()
                     ev_clean = (hc.get("evidence") or "").strip()
-                    
-                    # Heuristic check for high redundancy: prefix/suffix overlap or substring
-                    is_redundant = False
-                    if ev_clean and find_clean:
-                        ev_lower = ev_clean.lower()
-                        find_lower = find_clean.lower()
-                        if ev_lower in find_lower or find_lower in ev_lower:
-                            is_redundant = True
-                        elif ev_clean[:35].lower() == find_clean[:35].lower() or ev_clean[-35:].lower() == find_clean[-35:].lower():
-                            is_redundant = True
 
                     v_lbl = t("vulnerability_identified_label", locale=meta_lang)
                     imp_lbl = t("it_operational_impact_label", locale=meta_lang)
@@ -1394,11 +1387,14 @@ class PayloadToASTBridge:
                         )
 
                         risk_score = tef * lm
-                        if risk_score >= 15 or ale >= 1000000:
+                        high_ale = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
+                        med_ale = total_fair_ale * 0.05 if total_fair_ale > 0 else 0.0
+                        low_ale = total_fair_ale * 0.01 if total_fair_ale > 0 else 0.0
+                        if risk_score >= 15 or ale >= high_ale:
                             bg_severe = "F8D7DA"  # Light Red
-                        elif risk_score >= 10 or ale >= 250000:
+                        elif risk_score >= 10 or ale >= med_ale:
                             bg_severe = "FFF3CD"  # Light Amber
-                        elif risk_score >= 5 or ale >= 50000:
+                        elif risk_score >= 5 or ale >= low_ale:
                             bg_severe = "E2E3E5"  # Light Gray
 
                     risk_rows.append(
@@ -1493,16 +1489,22 @@ class PayloadToASTBridge:
         annual_risk_reduction_ratio = float(blueprint_data.get("risk_reduction_ratio") or 0.80)
         h5_scale_factor = float(blueprint_data.get("h5_p90_scale_factor") or 3.79)
 
+        import math
+        # Actuarial Square-Root of Time Rule for multi-year extreme tail risk (Basel/FAIR standard)
+        p90_h1_val = p90_loss
+        p90_h3_val = p90_loss * math.sqrt(3.0)
+        p90_h5_val = p90_loss * math.sqrt(5.0)
+
         # 1-Year Horizon
         ale_h1 = format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)
-        p90_h1 = format_currency(p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
+        p90_h1 = format_currency(p90_h1_val, currency_symbol=currency, locale=meta_lang, decimals=0)
         capex_h1 = format_currency(capex_val, currency_symbol=currency, locale=meta_lang, decimals=0)
         roi_h1_pct = int(round((total_fair_ale * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
         roi_h1_str = f"{roi_h1_pct} % ({t('roi_payback_quarter', locale=meta_lang)})"
 
         # 3-Year Horizon
         ale_h3 = format_currency(total_fair_ale * 3.0, currency_symbol=currency, locale=meta_lang, decimals=0)
-        p90_h3 = format_currency(p90_loss + (total_fair_ale * 2.0), currency_symbol=currency, locale=meta_lang, decimals=0)
+        p90_h3 = format_currency(p90_h3_val, currency_symbol=currency, locale=meta_lang, decimals=0)
         savings_h3_num = (total_fair_ale * 3.0 * annual_risk_reduction_ratio) - capex_val
         savings_h3_str = format_currency(savings_h3_num, currency_symbol=currency, locale=meta_lang, decimals=0)
         roi_h3_pct = int(round((total_fair_ale * 3.0 * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
@@ -1510,7 +1512,7 @@ class PayloadToASTBridge:
 
         # 5-Year Horizon
         ale_h5 = format_currency(total_fair_ale * 5.0, currency_symbol=currency, locale=meta_lang, decimals=0)
-        p90_h5 = format_currency(p90_loss + (total_fair_ale * h5_scale_factor), currency_symbol=currency, locale=meta_lang, decimals=0)
+        p90_h5 = format_currency(p90_h5_val, currency_symbol=currency, locale=meta_lang, decimals=0)
         savings_h5_num = (total_fair_ale * 5.0 * annual_risk_reduction_ratio) - capex_val
         savings_h5_str = format_currency(savings_h5_num, currency_symbol=currency, locale=meta_lang, decimals=0)
         roi_h5_pct = int(round((total_fair_ale * 5.0 * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
@@ -1572,12 +1574,21 @@ class PayloadToASTBridge:
                 )
 
             # Exclude special markers for table and mosaic directives from the content processing stream.
-            if (
-                "--- TABLA COMPARATIVA" in cleaned
-                or "FORTALEZAS_CLAVE:" in cleaned
-                or "BRECHAS_CLAVE:" in cleaned
-                or "--- FIN TABLA" in cleaned
-            ):
+            skip_directives = get_localized_list(
+                "directive_markers_to_skip",
+                locale=getattr(self, "meta_lang", "en"),
+                default=[
+                    "--- COMPARATIVE TABLE",
+                    "KEY_STRENGTHS:",
+                    "KEY_GAPS:",
+                    "--- END TABLE",
+                    "--- TABLA COMPARATIVA",
+                    "FORTALEZAS_CLAVE:",
+                    "BRECHAS_CLAVE:",
+                    "--- FIN TABLA",
+                ],
+            )
+            if any(marker in cleaned for marker in skip_directives):
                 continue
 
             #
@@ -1630,32 +1641,6 @@ class PayloadToASTBridge:
 
         return nodes
 
-    def _extract_key_bullets_from_md(
-        self, md_path: Path, section_marker: str
-    ) -> List[str]:
-        """Parses the conclusions file to extract identified strengths and weaknesses, structuring them for inclusion in the SWOT analysis table."""
-        if not md_path.exists():
-            return []
-        with open(md_path, "r", encoding="utf-8") as f:
-            lines = [html.unescape(line) for line in f.readlines()]
-        bullets = []
-        recording = False
-        for line in lines:
-            cleaned = line.strip()
-            if section_marker in cleaned:
-                recording = True
-                continue
-            if recording:
-                if (
-                    cleaned.startswith("BRECHAS_CLAVE:")
-                    or cleaned.startswith("FORTALEZAS_CLAVE:")
-                    or "--- FIN TABLA" in cleaned
-                ):
-                    break
-                if cleaned.startswith("* ") or cleaned.startswith("- "):
-                    bullets.append(cleaned[2:])
-        return bullets
-
     def _parse_csv_generic(self, csv_path: Path, headers: List[str]) -> TableNode:
         rows = []
         #
@@ -1701,12 +1686,12 @@ class PayloadToASTBridge:
                     if c_idx == 2:
                         just_hdr = t("asis_header_score_justification", locale=getattr(self, "meta_lang", "en"))
                         val_str = re.sub(
-                            r"\*\*.*?(?:Nota|Score|Evaluation)\s*\(\d+[,.]\d+\):\*\*",
+                            r"\*\*.*?(?:Score|Rating|Evaluation)\s*\(\d+[,.]\d+\):\*\*",
                             f"**{just_hdr}**",
                             val_str
                         )
                         val_str = re.sub(
-                            r".*?(?:Nota|Score|Evaluation)\s*\(\d+[,.]\d+\):",
+                            r".*?(?:Score|Rating|Evaluation)\s*\(\d+[,.]\d+\):",
                             just_hdr,
                             val_str
                         )

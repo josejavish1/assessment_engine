@@ -67,16 +67,17 @@ def load_abbreviations_glossary() -> dict:
     return _load_json(ENGINE_CONFIG_DIR / "abbreviations_glossary.json")
 
 
-def load_brand_profile() -> dict:
+def load_brand_profile(brand_profile_path: Path | str | None = None) -> dict:
     """Load, parse, and normalize the corporate brand profile.
 
-    Reads `brand_profile.json` and ensures color strings are normalized (removing
+    Reads `brand_profile.json` (or custom path) and ensures color strings are normalized (removing
     any potential '#' prefix) to guarantee rendering safety in down-stream compilers.
 
     Returns:
         The normalized brand profile configuration dictionary.
     """
-    data = _load_json(ENGINE_CONFIG_DIR / "brand_profile.json")
+    target_path = Path(brand_profile_path) if brand_profile_path else (ENGINE_CONFIG_DIR / "brand_profile.json")
+    data = _load_json(target_path)
     styling = data.get("styling", {})
     if "primary_color_hex" in styling:
         styling["primary_color_hex"] = styling["primary_color_hex"].lstrip("#")
