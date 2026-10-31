@@ -26,6 +26,10 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+
 from google.genai import types
 from pydantic import BaseModel, Field
 
