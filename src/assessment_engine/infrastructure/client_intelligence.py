@@ -3,11 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import math
 import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Sequence, cast
 
 from assessment_engine.domain.schemas.intelligence import (
     ClientDossierV2,
@@ -16,6 +17,12 @@ from assessment_engine.domain.schemas.intelligence import (
 from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 
 logger = logging.getLogger(__name__)
+
+_JEFFREYS_PRIOR_ALPHA: float = 0.5
+_JEFFREYS_PRIOR_BETA: float = 0.5
+_DEFAULT_RELIABILITY_PERCENT: float = 50.0
+_PERCENT_SCALE: float = 100.0
+_SPECIFICITY_BONUS_WEIGHT: float = 0.15
 
 
 def _as_list_of_strings(values: Any) -> list[str]:
@@ -70,6 +77,7 @@ def _claim_type_for_v2(value: Any) -> str:
 
 def _load_tower_keywords() -> dict[str, tuple[str, ...]]:
     from assessment_engine.infrastructure.runtime_paths import ROOT
+
     path = ROOT / "engine_config/tower_classification_keywords.json"
     if path.exists():
         try:
@@ -118,21 +126,135 @@ def infer_related_towers(*texts: str) -> list[str]:
     return matches
 
 
+def _compute_binary_shannon_entropy(corroborated_mass: float, refuted_mass: float) -> float:
+    """Compute normalized binary Shannon entropy H(Sources) in [0.0, 1.0] for contradictory evidence."""
+    total_mass = corroborated_mass + refuted_mass
+    if total_mass <= 0.0:
+        return 0.0
+    p_corroborated = corroborated_mass / total_mass
+    p_refuted = refuted_mass / total_mass
+    if p_corroborated <= 0.0 or p_refuted <= 0.0:
+        return 0.0
+    return -(p_corroborated * math.log2(p_corroborated) + p_refuted * math.log2(p_refuted))
+
+
+def calibrate_bayesian_confidence(
+    *,
+    corroborated_weights: Sequence[float] = (),
+    refuted_weights: Sequence[float] = (),
+    prior_alpha: float = _JEFFREYS_PRIOR_ALPHA,
+    prior_beta: float = _JEFFREYS_PRIOR_BETA,
+) -> float:
+    """Compute continuous epistemic confidence in [0.0, 1.0] via a Bayesian Beta-Binomial model.
+
+    Initializes with a Jeffreys prior Beta(0.5, 0.5), updates posterior parameters
+    with corroborated and refuted reliability weights, and decays the posterior
+    mean by the binary Shannon entropy of contradictory source mass.
+    Strictly enforces the zero-evidence invariant: Confidence(empty) == 0.0.
+    """
+    valid_corroborated = [max(0.0, float(w)) for w in corroborated_weights if float(w) > 0.0]
+    valid_refuted = [max(0.0, float(w)) for w in refuted_weights if float(w) > 0.0]
+
+    sum_corroborated = sum(valid_corroborated)
+    sum_refuted = sum(valid_refuted)
+
+    if sum_corroborated == 0.0 and sum_refuted == 0.0:
+        return 0.0
+
+    alpha = prior_alpha + sum_corroborated
+    beta = prior_beta + sum_refuted
+    posterior_mean = alpha / (alpha + beta)
+    entropy = _compute_binary_shannon_entropy(sum_corroborated, sum_refuted)
+    calibrated = posterior_mean * (1.0 - entropy)
+    return max(0.0, min(1.0, calibrated))
+
+
 def estimate_confidence_score(
     *,
     source_count: int = 0,
-    source_reliability: int | None = None,
+    source_reliability: int | float | None = None,
     specificity_signals: int = 0,
-    uncertainty_penalty: int = 0,
+    uncertainty_penalty: int | float = 0,
+    sources: Sequence[dict[str, Any]] | None = None,
 ) -> int:
-    r"""{'docstring': 'Calculates an estimated confidence score from intelligence signals.\n\nThe score originates from a base value of 40 and is adjusted based on the\nquantity and reliability of sources, the number of specific signals, and\nany uncertainty penalties. The final score is clamped to the inclusive\nrange [15, 95]. All arguments are keyword-only.\n\nArgs:\n    source_count: The number of independent intelligence sources. Each of\n        the first three sources contributes 10 points to the score.\n    source_reliability: An optional average reliability score for the\n        sources, nominally on a 0-100 scale. A score of 50 is\n        neutral. The adjustment is `round((reliability - 50) / 5)`.\n    specificity_signals: The count of specific, verifiable signals or\n        details. Each of the first four signals contributes 5 points.\n    uncertainty_penalty: A penalty score to be subtracted from the total,\n        reflecting ambiguity or contradictory evidence.\n\nReturns:\n    An integer representing the final estimated confidence score, clamped\n    between 15 and 95, inclusive.'}."""
-    base = 40
-    base += min(source_count, 3) * 10
-    base += min(specificity_signals, 4) * 5
-    if source_reliability is not None:
-        base += round((source_reliability - 50) / 5)
-    base -= uncertainty_penalty
-    return max(15, min(95, base))
+    r"""Calculates an epistemic confidence score using a Bayesian Beta-Binomial conjugate model.
+
+    Initializes with an uninformative Jeffreys prior Beta(alpha_0=0.5, beta_0=0.5).
+    Updates posterior parameters based on verified source reliability weights:
+        alpha = alpha_0 + sum(w_i * I(corroborated))
+        beta = beta_0 + sum(w_i * I(refuted))
+    Computes posterior mean E[theta] = alpha / (alpha + beta), decaying confidence
+    by the Shannon entropy of contradictory claims: C = E[theta] * (1 - H(Sources)).
+
+    Invariant: Zero evidence strictly yields zero confidence (0).
+
+    Args:
+        source_count: Number of independent intelligence sources.
+        source_reliability: Optional reliability score on a 0-100 scale.
+        specificity_signals: Count of specific, verifiable signals.
+        uncertainty_penalty: Penalty reflecting ambiguity or contradictory evidence.
+        sources: Optional sequence of structured source dictionaries containing
+            reliability weights and corroboration/refutation status.
+
+    Returns:
+        An integer representing the calibrated confidence score on a [0, 100] scale.
+    """
+    corroborated_weights: list[float] = []
+    refuted_weights: list[float] = []
+
+    default_weight = (
+        max(0.0, min(1.0, float(source_reliability) / _PERCENT_SCALE))
+        if source_reliability is not None
+        else (_DEFAULT_RELIABILITY_PERCENT / _PERCENT_SCALE)
+    )
+
+    if sources:
+        for src in sources:
+            if not isinstance(src, dict):
+                continue
+            raw_rel = src.get("source_reliability_score", source_reliability)
+            if raw_rel is None:
+                weight = default_weight
+            else:
+                try:
+                    val = float(raw_rel)
+                    weight = val / _PERCENT_SCALE if val > 1.0 else val
+                except (TypeError, ValueError):
+                    weight = default_weight
+            weight = max(0.0, min(1.0, weight))
+            if weight <= 0.0:
+                continue
+
+            is_refuted = bool(
+                src.get("refuted")
+                or src.get("is_contradictory")
+                or str(src.get("stance", "")).strip().lower() in {"refuted", "contradicts", "negative"}
+            )
+            if is_refuted:
+                refuted_weights.append(weight)
+            else:
+                corroborated_weights.append(weight)
+    elif source_count > 0:
+        if default_weight > 0.0:
+            corroborated_weights.extend([default_weight] * int(source_count))
+
+    if not corroborated_weights and not refuted_weights:
+        return 0
+
+    if specificity_signals > 0 and corroborated_weights:
+        specificity_boost = max(0, int(specificity_signals)) * _SPECIFICITY_BONUS_WEIGHT * default_weight
+        corroborated_weights.append(specificity_boost)
+
+    if uncertainty_penalty and float(uncertainty_penalty) > 0.0:
+        penalty_val = float(uncertainty_penalty)
+        refuted_mass = penalty_val / _PERCENT_SCALE if penalty_val > 1.0 else penalty_val
+        refuted_weights.append(max(0.0, refuted_mass))
+
+    continuous_confidence = calibrate_bayesian_confidence(
+        corroborated_weights=corroborated_weights,
+        refuted_weights=refuted_weights,
+    )
+    return int(round(continuous_confidence * _PERCENT_SCALE))
 
 
 def _source_refs(
@@ -151,7 +273,7 @@ def _source_refs(
 
 def _source_type_for_legacy_payload(data: dict[str, Any]) -> str:
     evidence_text = " ".join(_as_list_of_strings(data.get("evidences", []))).lower()
-    if "synthetic" in evidence_text or "sintetic" in evidence_text or "smoke" in evidence_text:
+    if "synthetic" in evidence_text or "simulated" in evidence_text or "smoke" in evidence_text:
         return "synthetic"
     return "public"
 
@@ -195,7 +317,9 @@ def _append_claim(
                     source_reliability=source_reliability_score,
                     specificity_signals=specificity_signals,
                     uncertainty_penalty=uncertainty_penalty,
-                )
+                    sources=sources,
+                ),
+                method="bayesian_beta_binomial",
             ),
             "sources": sources,
             "source_reliability_score": source_reliability_score,
@@ -470,7 +594,6 @@ def client_intelligence_to_legacy(data: dict[str, Any]) -> dict[str, Any]:
     """
     profile = data.get("profile", {}) or {}
 
-    # Ensures native support for V3 schemas, allowing for direct data mapping without transformation or validation errors.
     if is_client_dossier_v3(data):
         business_context = data.get("business_context", {}) or {}
         technology_context = data.get("technology_context", {}) or {}
@@ -558,7 +681,7 @@ def _load_industry_profile(industry_name: str) -> dict[str, Any]:
     try:
         return load_industry_profile(profile_key)
     except Exception as e:
-        logger.warning(f"Error cargando perfil de industria {profile_key}: {e}")
+        logger.warning(f"Failed loading industry profile {profile_key}: {e}")
         return {}
 
 
@@ -597,13 +720,11 @@ def build_client_context_packet(
     if is_client_dossier_v3(data):
         profile = data.get("profile", {})
         industry_name = profile.get("industry", "")
-        #
     elif is_client_dossier_v2(data):
         industry_name = data.get("profile", {}).get("industry", "")
     else:
         industry_name = data.get("industry", "")
 
-    # Injects the loaded industry-specific analytical framework into the data structure.
     industry_profile = _load_industry_profile(industry_name)
     if industry_profile:
         packet["industry_enterprise_framework"] = industry_profile.get(
@@ -730,22 +851,17 @@ def build_client_context_text(data: dict[str, Any], tower_id: str | None = None)
         TypeError: If the data packet constructed for the JSON payload contains
             non-serializable objects.
     """
-    # Initializes the primary Epistemic Graph data structure.
     client_name = data.get("client_name", "generic")
     from assessment_engine.infrastructure.text_utils import slugify
 
     graph = EpistemicGraph(client_id=slugify(client_name))
 
-    # Injects Open-Source Intelligence (OSINT) data into the graph, explicitly classifying it as a low-confidence source.
-    # Extracts foundational assumptions and context from the aggregated Open-Source Intelligence (OSINT) data.
-    client_name = "CLIENTE"  # Implements a fallback mechanism to ensure graceful handling of processing failures or unavailable data.
+    client_name = "CLIENT_ENTITY"
 
-    # Heuristically extracts technology stack and vendor relationship data from Open-Source Intelligence (OSINT) sources.
     if is_client_dossier_v3(data):
         tech_context = data.get("technology_context", {})
         vendors = tech_context.get("vendor_dependencies", [])
         for vendor in vendors:
-            # Injects data from the third-party OSINT vendor, explicitly classifying it as a low-confidence source.
             graph.inject_triple(
                 subject=client_name,
                 predicate="CLOUD_PROVIDER_OSINT",
@@ -754,19 +870,12 @@ def build_client_context_text(data: dict[str, Any], tower_id: str | None = None)
                 confidence=0.4,
             )
 
-    # Injects ground truth data, derived from trusted internal sources, and classifies it as a high-confidence source.
-    # The context file is designated as the canonical ground truth, serving as the authoritative source for the primary Epistemic Graph resolution process.
-    # The initial processing stage involving the source DOCX is dynamically executed by the `run_tower_blueprint_engine.py` module.
-    # Alternatively, the designated pipeline engine handles this stage, passing the extracted raw text to the AI service for analysis.
-
-    # Performs conflict resolution on the graph nodes and edges, then exports the consolidated data structure.
     resolved_text = graph.get_resolved_context_string()
 
-    # The original JSON payload for non-graph fields is appended to preserve the raw input for downstream systems.
     packet = build_client_context_packet(data, tower_id=tower_id)
     json_str = json.dumps(packet, ensure_ascii=False, indent=2)
 
-    return f"{resolved_text}\n\n--- RESTO DE DATOS TANGENCIALES ---\n{json_str}"
+    return f"{resolved_text}\n\n--- ADDITIONAL TANGENTIAL DATA ---\n{json_str}"
 
 
 def load_client_intelligence(path: Path) -> dict[str, Any]:
@@ -794,10 +903,9 @@ def load_client_intelligence(path: Path) -> dict[str, Any]:
         return {}
     data = cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
 
-    # A validation gate to enforce the structural and semantic integrity of the dossier before further processing.
     if not verify_dossier_integrity(data):
         raise RuntimeError(
-            f"❌ SECURITY VIOLATION: Dossier integrity check failed for {path}. The file has been tampered with."
+            f"SECURITY VIOLATION: Dossier integrity check failed for {path}. The file has been tampered with."
         )
 
     return data
@@ -947,7 +1055,7 @@ def _enrich_v3_metadata(client_name: str, data: dict[str, Any]) -> dict[str, Any
 
 def _generate_v3_claims(
     evidence_register: list[Any],
-    legacy_sources: list[str],
+    legacy_sources: list[dict[str, Any]],
     legacy_source_type: str,
     regulatory_frameworks: list[str],
     regulatory_pressures: list[str],
@@ -996,13 +1104,14 @@ def _generate_v3_claims(
         )
 
     if priority_markets or business_lines:
+        markets_summary = ", ".join(priority_markets[:3]) or "priority markets"
+        lines_summary = ", ".join(business_lines[:4]) or "core business lines"
         _append_claim(
             generated_claims,
             claim_id="business_focus_1",
             claim=(
-                "Strategic focus balances "
-                f"{', '.join(priority_markets[:3]) or 'mercados prioritarios'} y "
-                f"growth across {', '.join(business_lines[:4]) or 'core business lines'}."
+                f"Strategic focus balances {markets_summary} and "
+                f"growth across {lines_summary}."
             ),
             claim_type="inference",
             sources=legacy_sources,
@@ -1032,7 +1141,7 @@ def _generate_v3_claims(
         _append_claim(
             generated_claims,
             claim_id=f"vendor_dependency_{index}",
-            claim=f"Existe dependencia relevante de {vendor}.",
+            claim=f"Material operational dependency on {vendor}.",
             claim_type="fact",
             sources=legacy_sources,
             source_reliability_score=60 if legacy_source_type == "public" else 50,
@@ -1061,7 +1170,21 @@ def _generate_v3_claims(
 
 
 def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str, Any]:
-    r"""{'docstring': "Coerces a client data dictionary into a canonical Client Dossier V3 format.\n\n    Transforms a raw client data dictionary, which may conform to a legacy, V2,\n    or V3 schema, into a validated and fully populated V3 client dossier.\n\n    The function first detects the input schema version. If the data is already\n    in V3 format, it performs minimal enrichment by setting default metadata\n    fields (e.g., dossier ID, timestamps) before re-validating.\n\n    For older V2 or legacy formats, a comprehensive transformation is executed.\n    This process involves:\n    1.  Coercing legacy data into an intermediate V2-like structure.\n    2.  Mapping fields from the V2 structure to the corresponding V3 context\n        sections (profile, business, technology, regulatory).\n    3.  Generating structured `Claim` objects from unstructured or\n        semi-structured evidence lists (e.g., `evidence_register`,\n        `regulatory_frameworks`, `vendor_dependencies`).\n    4.  Populating all required V3 fields with coerced data or defaults.\n    5.  Linking generated claims to relevant `tower_overrides`.\n\n    The final dictionary is validated against the `ClientDossierV3` Pydantic\n    model to ensure schema compliance.\n\n    Args:\n        client_name: The unique identifier for the client, used to populate the\n            dossier's name and generate a unique dossier ID.\n        data: A dictionary containing the client's data. The structure can\n            conform to a legacy format, Client Dossier V2, or Client Dossier V3.\n\n    Returns:\n        A JSON-serializable dictionary representing the client's dossier,\n        validated and structured according to the ClientDossierV3 schema.\n\n    Raises:\n        pydantic.ValidationError: If the final transformed data fails validation\n            against the ClientDossierV3 schema."}."""
+    r"""Coerces a client data dictionary into a canonical Client Dossier V3 format.
+
+    Transforms a raw client data dictionary, which may conform to a legacy, V2,
+    or V3 schema, into a validated and fully populated V3 client dossier.
+
+    Args:
+        client_name: The unique identifier for the client, used to populate the
+            dossier's name and generate a unique dossier ID.
+        data: A dictionary containing the client's data. The structure can
+            conform to a legacy format, Client Dossier V2, or Client Dossier V3.
+
+    Returns:
+        A JSON-serializable dictionary representing the client's dossier,
+        validated and structured according to the ClientDossierV3 schema.
+    """
     if is_client_dossier_v3(data):
         return _enrich_v3_metadata(client_name, data)
 
@@ -1142,7 +1265,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                         source_count=len(framework.get("sources", [])),
                         specificity_signals=1
                         + len(infer_related_towers(framework.get("name", ""))),
-                    )
+                        sources=framework.get("sources", []),
+                    ),
+                    method="bayesian_beta_binomial",
                 ),
                 "sources": framework.get("sources", []),
                 "impacted_domains": infer_related_towers(
@@ -1160,7 +1285,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                     estimate_confidence_score(
                         source_count=len(ceo_sources),
                         specificity_signals=len(priority_markets) + len(business_lines),
-                    )
+                        sources=ceo_sources,
+                    ),
+                    method="bayesian_beta_binomial",
                 ),
                 "sources": ceo_sources,
                 "evidence_strength": "medium",
@@ -1199,7 +1326,11 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                         ),
                         specificity_signals=len(active_transformations)
                         + len(business_constraints),
-                    )
+                        sources=business_context.get("transformation_horizon", {}).get(
+                            "sources", []
+                        ),
+                    ),
+                    method="bayesian_beta_binomial",
                 ),
                 "sources": business_context.get("transformation_horizon", {}).get(
                     "sources", []
@@ -1218,7 +1349,9 @@ def coerce_client_dossier_v3(client_name: str, data: dict[str, Any]) -> dict[str
                         source_count=len(osint_sources),
                         specificity_signals=len(vendor_dependencies)
                         + len(operating_constraints),
-                    )
+                        sources=osint_sources,
+                    ),
+                    method="bayesian_beta_binomial",
                 ),
                 "sources": osint_sources,
                 "evidence_strength": "medium",
@@ -1308,14 +1441,11 @@ def compute_dossier_hash(data: dict[str, Any]) -> str:
         TypeError: If the input `data` contains non-JSON-serializable types,
             which is raised during the internal serialization step.
     """
-    # Performs a deep copy of the input object to prevent unintended side effects by decoupling it from the original data structure.
     clean_data = json.loads(json.dumps(data))
 
-    # Purges any pre-existing integrity block from the data structure to ensure a stable and deterministic hash calculation.
     if "metadata" in clean_data and "integrity" in clean_data["metadata"]:
         del clean_data["metadata"]["integrity"]
 
-    # Serializes the data structure with sorted keys to ensure a deterministic and reproducible output.
     canonical_json = json.dumps(clean_data, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
@@ -1340,11 +1470,9 @@ def sign_dossier(data: dict[str, Any]) -> dict[str, Any]:
         TypeError: If `data` is not a dictionary-like object, or if
             `data["metadata"]` exists and is not a dictionary.
     """
-    # Initializes the metadata structure if it does not already exist.
     if "metadata" not in data:
         data["metadata"] = {}
 
-    # Computes the dossier hash, deliberately excluding any existing integrity block to ensure idempotent outcomes.
     dossier_hash = compute_dossier_hash(data)
 
     data["metadata"]["integrity"] = {
@@ -1355,7 +1483,22 @@ def sign_dossier(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def verify_dossier_integrity(data: dict[str, Any]) -> bool:
-    r"""{'docstring': "Verifies dossier integrity by comparing a stored hash with a computed hash.\n\n    This function validates the integrity of a dossier dictionary by calculating its\n    current hash and comparing it to a signed hash stored within the data\n    structure itself at `data['metadata']['integrity']['hash']`.\n\n    The hash computation, performed by the `compute_dossier_hash` utility,\n    must operate on a canonical representation of the dossier data, with the\n    `integrity` block itself being excluded from the input. This exclusion is\n    critical to prevent recursive hash mismatches.\n\n    If the `metadata` or `integrity` keys are missing, or if the `integrity`\n    block is empty (e.g., `None` or an empty dictionary), the check is bypassed\n    for backward compatibility with legacy dossiers. In this case, a warning\n    is logged, and the function returns `True`.\n\n    Args:\n        data: The dossier object, structured as a dictionary. It is expected\n            to contain a `metadata` key which in turn may hold an `integrity`\n            dictionary containing the signed `hash` string.\n\n    Returns:\n        True if the computed hash matches the stored hash, or if the integrity\n        check is skipped for legacy dossiers. False if the hashes do not\n        match, indicating potential data tampering or corruption.\n\n    Raises:\n        TypeError: If `data['metadata']` exists but is not a subscriptable type\n            (e.g., not a dictionary).\n        AttributeError: If `data['metadata']['integrity']` exists but is not a\n            dictionary-like object that supports the `.get()` method."}."""
+    r"""Verifies dossier integrity by comparing a stored hash with a computed hash.
+
+    This function validates the integrity of a dossier dictionary by calculating its
+    current hash and comparing it to a signed hash stored within the data
+    structure itself at `data['metadata']['integrity']['hash']`.
+
+    Args:
+        data: The dossier object, structured as a dictionary. It is expected
+            to contain a `metadata` key which in turn may hold an `integrity`
+            dictionary containing the signed `hash` string.
+
+    Returns:
+        True if the computed hash matches the stored hash, or if the integrity
+        check is skipped for legacy dossiers. False if the hashes do not
+        match, indicating potential data tampering or corruption.
+    """
     if (
         "metadata" not in data
         or "integrity" not in data["metadata"]
