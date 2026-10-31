@@ -1,8 +1,13 @@
 import asyncio
 import logging
+import os
+import re
+import time
+import uuid
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
+from google import genai
 from google.adk.agents import Agent
 from pydantic import ValidationError
 from vertexai.agent_engines import AdkApp
@@ -16,16 +21,143 @@ from assessment_engine.infrastructure.genai_client import ModelTier, get_model
 
 logger = logging.getLogger(__name__)
 
+MAX_CONCURRENT_CHUNKS: int = int(os.environ.get("RAPTOR_MAX_CONCURRENT_CHUNKS", "8"))
+DEFAULT_RPM_QUOTA: int = int(os.environ.get("RAPTOR_RPM_QUOTA", "60"))
+DEFAULT_TPM_QUOTA: int = int(os.environ.get("RAPTOR_TPM_QUOTA", "250000"))
+CHARS_PER_TOKEN_ESTIMATE: int = 4
+SECONDS_PER_MINUTE: float = 60.0
+ADAPTIVE_BACKOFF_MULTIPLIER: float = 0.5
+ADAPTIVE_RECOVERY_RATE: float = 1.05
+MIN_THROTTLE_SCALE: float = 0.1
+MAX_THROTTLE_SCALE: float = 1.0
+
+
+class AdaptiveTokenBucketRateLimiter:
+    """Adaptive dual token-bucket rate limiter enforcing upstream RPM and TPM quotas."""
+
+    def __init__(
+        self,
+        rpm_quota: int = DEFAULT_RPM_QUOTA,
+        tpm_quota: int = DEFAULT_TPM_QUOTA,
+    ) -> None:
+        if rpm_quota <= 0:
+            raise ValueError("rpm_quota must be strictly positive.")
+        if tpm_quota <= 0:
+            raise ValueError("tpm_quota must be strictly positive.")
+
+        self.base_rpm_quota = float(rpm_quota)
+        self.base_tpm_quota = float(tpm_quota)
+        self.throttle_scale = MAX_THROTTLE_SCALE
+
+        self.request_tokens = self.base_rpm_quota
+        self.token_budget = self.base_tpm_quota
+        self.last_refill_timestamp = time.monotonic()
+        self._lock = asyncio.Lock()
+
+    @property
+    def effective_rpm(self) -> float:
+        return max(1.0, self.base_rpm_quota * self.throttle_scale)
+
+    @property
+    def effective_tpm(self) -> float:
+        return max(1000.0, self.base_tpm_quota * self.throttle_scale)
+
+    def _refill_unlocked(self, now: float) -> None:
+        elapsed = max(0.0, now - self.last_refill_timestamp)
+        self.last_refill_timestamp = now
+
+        rpm_refill_rate = self.effective_rpm / SECONDS_PER_MINUTE
+        tpm_refill_rate = self.effective_tpm / SECONDS_PER_MINUTE
+
+        self.request_tokens = min(
+            self.effective_rpm,
+            self.request_tokens + elapsed * rpm_refill_rate,
+        )
+        self.token_budget = min(
+            self.effective_tpm,
+            self.token_budget + elapsed * tpm_refill_rate,
+        )
+
+    async def acquire(self, estimated_tokens: int) -> None:
+        """Acquires 1 request token and `estimated_tokens` from the TPM bucket."""
+        required_tokens = max(1.0, float(estimated_tokens))
+        while True:
+            async with self._lock:
+                now = time.monotonic()
+                self._refill_unlocked(now)
+                capped_required_tokens = min(required_tokens, self.effective_tpm)
+
+                if (
+                    self.request_tokens >= 1.0
+                    and self.token_budget >= capped_required_tokens
+                ):
+                    self.request_tokens -= 1.0
+                    self.token_budget -= capped_required_tokens
+                    return
+
+                rpm_deficit = max(0.0, 1.0 - self.request_tokens)
+                tpm_deficit = max(0.0, capped_required_tokens - self.token_budget)
+
+                rpm_wait = rpm_deficit / (self.effective_rpm / SECONDS_PER_MINUTE)
+                tpm_wait = tpm_deficit / (self.effective_tpm / SECONDS_PER_MINUTE)
+                wait_duration = max(rpm_wait, tpm_wait, 0.01)
+
+            await asyncio.sleep(wait_duration)
+
+    async def record_rate_limit_violation(self) -> None:
+        """Adaptively scales down throughput quotas upon detecting an HTTP 429 error."""
+        async with self._lock:
+            self.throttle_scale = max(
+                MIN_THROTTLE_SCALE,
+                self.throttle_scale * ADAPTIVE_BACKOFF_MULTIPLIER,
+            )
+            self.request_tokens = 0.0
+            self.token_budget = 0.0
+            self.last_refill_timestamp = time.monotonic()
+            logger.warning(
+                "[RAPTOR Throttler] Rate limit violation detected; scaling throughput factor to %.2f "
+                "(effective RPM=%.1f, effective TPM=%.1f).",
+                self.throttle_scale,
+                self.effective_rpm,
+                self.effective_tpm,
+            )
+
+    async def record_success(self) -> None:
+        """Gradually restores throughput capacity after successful upstream completions."""
+        async with self._lock:
+            if self.throttle_scale < MAX_THROTTLE_SCALE:
+                self.throttle_scale = min(
+                    MAX_THROTTLE_SCALE,
+                    self.throttle_scale * ADAPTIVE_RECOVERY_RATE,
+                )
+
 
 class RaptorEngine:
     r"""{'docstring': 'Asynchronously generates an abstractive summary for a group of nodes.\n\n    Invokes a configured Generative AI model (Gemini) to produce a concise\n    summary from the combined content of the input nodes. The prompt is\n    engineered to preserve critical entities like company names, projects,\n    and figures. This method includes internal error handling to gracefully\n    manage API failures.\n\n    Args:\n        nodes: A list of `RaptorNode` objects whose content will be combined\n            and summarized.\n\n    Returns:\n        The generated summary text. If the summarization API call fails for\n        any reason, a standard fallback error message is returned.'}."""
 
-    def __init__(self, client_id: str, storage_dir: Path):
+    def __init__(
+        self,
+        client_id: str,
+        storage_dir: Path,
+        max_concurrent_chunks: int = MAX_CONCURRENT_CHUNKS,
+        rpm_quota: int = DEFAULT_RPM_QUOTA,
+        tpm_quota: int = DEFAULT_TPM_QUOTA,
+    ):
         r"""{'docstring': "Initializes the RaptorEngine by loading its data from a storage directory.\n\n    This constructor sets up client-specific storage paths, loads the Raptor tree\n    structure from a `raptor_tree.json` file, and configures the underlying\n    summarization agent. The agent is instantiated with the 'gemini-3.8-flash'\n    model, tailored for technical summarization tasks.\n\n    Args:\n        client_id (str): The unique identifier for the client.\n        storage_dir (pathlib.Path): The path to the directory containing the\n            engine's data. This directory must contain the `raptor_tree.json`\n            file.\n\n    Raises:\n        FileNotFoundError: If `raptor_tree.json` is not found within the\n            provided `storage_dir`.\n        ValueError: If `raptor_tree.json` contains malformed JSON or data that\n            cannot be parsed into a valid tree structure."}."""
+        if max_concurrent_chunks <= 0:
+            raise ValueError("max_concurrent_chunks must be strictly positive.")
+
         self.client_id = client_id
         self.storage_dir = storage_dir
         self.tree_path = storage_dir / "raptor_tree.json"
         self.tree = self._load_tree()
+
+        self.max_concurrent_chunks = max_concurrent_chunks
+        self._concurrency_semaphore = asyncio.Semaphore(self.max_concurrent_chunks)
+        self._rate_limiter = AdaptiveTokenBucketRateLimiter(
+            rpm_quota=rpm_quota,
+            tpm_quota=tpm_quota,
+        )
 
         # Utilizes FlashAttention to optimize performance for high-throughput and large-scale summarization workloads.
         self.agent = Agent(
@@ -85,9 +217,10 @@ class RaptorEngine:
             len(current_level_nodes) > 1 and level < 3
         ):  # To manage computational complexity in the prototype implementation, the summarization hierarchy is constrained to a maximum of three levels.
             level += 1
-            logger.info(f"   -> [RAPTOR] Generating Level {level} (Parallel Summaries)...")
+            logger.info(
+                f"   -> [RAPTOR] Generating Level {level} (Throttled Parallel Summaries, max_concurrency={self.max_concurrent_chunks})..."
+            )
 
-            #
             groups = self._group_nodes_by_hierarchy(current_level_nodes)
 
             tasks = []
@@ -97,9 +230,9 @@ class RaptorEngine:
                 if not group_nodes:
                     continue
                 group_metadata.append((group_name, group_nodes))
-                tasks.append(self._summarize_group(group_nodes))
+                tasks.append(self._summarize_group_throttled(group_nodes))
 
-            # Executes multiple summarization requests concurrently using `asyncio.gather` to maximize throughput.
+            # Executes multiple summarization requests concurrently under semaphore and token-bucket rate limiting.
             summaries = await asyncio.gather(*tasks)
 
             next_level_nodes = []
@@ -122,6 +255,11 @@ class RaptorEngine:
         self._save_tree()
         logger.info(f"✅ [RAPTOR] Tree completed with {len(self.tree.nodes)} nodes.")
 
+    async def _summarize_group_throttled(self, nodes: List[RaptorNode]) -> str:
+        """Guards group summarization with concurrency semaphore and token-bucket rate limiting."""
+        async with self._concurrency_semaphore:
+            return await self._summarize_group(nodes)
+
     def _group_nodes_by_hierarchy(
         self, nodes: List[RaptorNode]
     ) -> Dict[str, List[RaptorNode]]:
@@ -137,6 +275,26 @@ class RaptorEngine:
             groups[key].append(n)
         return groups
 
+    @staticmethod
+    def _estimate_token_count(text: str) -> int:
+        """Estimates LLM token count from character length for TPM quota accounting."""
+        return max(1, len(text) // CHARS_PER_TOKEN_ESTIMATE)
+
+    @staticmethod
+    def _is_rate_limit_error(exc: Exception) -> bool:
+        """Detects HTTP 429 or upstream quota exhaustion exceptions."""
+        message = str(exc).lower()
+        status_code: Optional[int] = getattr(exc, "code", None) or getattr(
+            exc, "status_code", None
+        )
+        return (
+            status_code == 429
+            or "429" in message
+            or "rate limit" in message
+            or "resource_exhausted" in message
+            or "quota" in message
+        )
+
     async def _summarize_group(self, nodes: List[RaptorNode]) -> str:
         """Generates a concise, abstractive summary for a specified cluster of text nodes by invoking the configured Language Model."""
         context = "\n".join([f"- {n.content}" for n in nodes])
@@ -148,34 +306,51 @@ class RaptorEngine:
         2. HARD TECHNICAL ENTITIES: Preserve exact vendor trade names, hardware models, cloud services, and regulatory standards.
         3. ZERO VAPORWARE: Prohibited from replacing concrete data with vacuous corporate adjectives.
 
-        ### FRAGMENTOS ORIGINALES:
+        ### ORIGINAL FRAGMENTS:
         {context}
 
-        Reglas de Formato:
+        Formatting Rules:
         1. Be concise with high informational density.
         2. Do not hallucinate data outside context.
         3. Return EXCLUSIVELY plain text summary, without JSON or conversational wrapping.
         """
 
-        try:
-            import os
+        estimated_tokens = self._estimate_token_count(prompt)
+        max_attempts = 3
 
-            from google import genai
+        for attempt in range(1, max_attempts + 1):
+            await self._rate_limiter.acquire(estimated_tokens)
+            try:
+                api_key = os.environ.get("GEMINI_API_KEY")
+                client = genai.Client(api_key=api_key)
+                response = await client.aio.models.generate_content(
+                    model=get_model(ModelTier.FAST),
+                    contents=prompt,
+                    config={
+                        "system_instruction": "You are a data architect and forensic systems auditor. Generate high-density hierarchical summaries, retaining all quantitative metrics, infrastructure brand names, versions, and statutory acronyms without dilution."
+                    },
+                )
+                await self._rate_limiter.record_success()
+                raw_summary = str(response.text).strip()
+                return self._enforce_deterministic_metric_retention(
+                    context, raw_summary
+                )
+            except Exception as e:
+                if self._is_rate_limit_error(e):
+                    await self._rate_limiter.record_rate_limit_violation()
+                    if attempt < max_attempts:
+                        backoff_seconds = float(2 ** (attempt - 1))
+                        logger.warning(
+                            f"[RAPTOR] HTTP 429 rate limit encountered on attempt {attempt}/{max_attempts}; retrying in {backoff_seconds:.1f}s: {e}"
+                        )
+                        await asyncio.sleep(backoff_seconds)
+                        continue
+                logger.warning(
+                    f"Error generating Raptor summary (fallback applied): {e}"
+                )
+                return "Summary unavailable due to upstream processing error."
 
-            api_key = os.environ.get("GEMINI_API_KEY")
-            client = genai.Client(api_key=api_key)
-            response = await client.aio.models.generate_content(
-                model=get_model(ModelTier.FAST),
-                contents=prompt,
-                config={
-                    "system_instruction": "You are a data architect and forensic systems auditor. Generate high-density hierarchical summaries, retaining all quantitative metrics, infrastructure brand names, versions, and statutory acronyms without dilution."
-                },
-            )
-            raw_summary = str(response.text).strip()
-            return self._enforce_deterministic_metric_retention(context, raw_summary)
-        except Exception as e:
-            logger.warning(f"Error generando resumen Raptor (fallback aplicado): {e}")
-            return "Summary unavailable due to upstream processing error."
+        return "Summary unavailable due to upstream processing error."
 
     @staticmethod
     def _enforce_deterministic_metric_retention(context: str, summary: str) -> str:
@@ -183,10 +358,8 @@ class RaptorEngine:
         from the input context are retained in the abstractive summary.
         If the generative model dropped any metric, it is appended in an immutable audit block.
         """
-        import re
-
         metric_pattern = re.compile(
-            r"\b\d+(?:[\.,]\d+)*(?:\s*(?:ms|s|h|horas|gbps|mbps|tb|pb|gb)\b|\s*[%€\$])",
+            r"\b\d+(?:[\.,]\d+)*(?:\s*(?:ms|s|h|hours|gbps|mbps|tb|pb|gb)\b|\s*[%€\$])",
             re.IGNORECASE,
         )
 
@@ -211,8 +384,6 @@ class RaptorEngine:
         return summary
 
     def _save_tree(self) -> None:
-        import uuid
-
         tmp_path = self.tree_path.with_name(
             f"{self.tree_path.name}.{uuid.uuid4().hex[:8]}.tmp"
         )
@@ -282,5 +453,5 @@ class RaptorEngine:
 
         lines = ["--- RELEVANT EVIDENCE EXTRACTED FROM DOCUMENT (RAG) ---"]
         for n in top_nodes:
-            lines.append(f"[Fragmento UUID: {n.node_id}] {n.content}")
+            lines.append(f"[Fragment UUID: {n.node_id}] {n.content}")
         return "\n".join(lines)
