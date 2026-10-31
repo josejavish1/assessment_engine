@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import logging
 from typing import Any, Callable
@@ -55,11 +56,13 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
     ) -> CandidateEnterpriseDeliverable:
         """Synthesize initial unverified candidate deliverable via structured output."""
         if self._custom_caller:
-            raw_result = await self._custom_caller(
+            raw_result = self._custom_caller(
                 prompt="GENERATE",
                 context=context,
                 payload=evidence_payload,
             )
+            if inspect.isawaitable(raw_result):
+                raw_result = await raw_result
             return self._parse_candidate_response(raw_result)
 
         system_instruction = (
@@ -112,12 +115,14 @@ class CegarLLMAdapter(SynthesisGeneratorPort):
     ) -> CandidateEnterpriseDeliverable:
         """Perform surgical 1-shot AST/JSON mutation to rectify formal counterexamples."""
         if self._custom_caller:
-            raw_result = await self._custom_caller(
+            raw_result = self._custom_caller(
                 prompt="REPAIR",
                 candidate=candidate,
                 counterexamples=counterexamples,
                 context=context,
             )
+            if inspect.isawaitable(raw_result):
+                raw_result = await raw_result
             return self._parse_candidate_response(raw_result)
 
         violations_summary = [
