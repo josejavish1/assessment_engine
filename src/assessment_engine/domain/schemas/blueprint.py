@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -630,4 +630,19 @@ class BlueprintPayload(OrchestratorBlueprintDraft):
     total_fair_max: Optional[float] = Field(
         None,
         description="The maximum plausible annual loss (P99), denominated in Euros (EUR).",
+    )
+    executive_synthesis: Optional[str] = Field(
+        None, description="CEGAR synthesized executive thesis."
+    )
+    pareto_frontier: Optional[list[dict[str, Any]]] = Field(
+        None, description="CEGAR 3-axis Pareto frontier."
+    )
+    strategic_roadmap: Optional[list[dict[str, Any]]] = Field(
+        None, description="CEGAR reconciled strategic roadmap."
+    )
+    cegar_financials: Optional[dict[str, Any]] = Field(
+        None, description="CEGAR FinOps and FAIR financial projections."
+    )
+    synthesis_provenance: Optional[dict[str, Any]] = Field(
+        None, description="CEGAR formal provenance metadata."
     )

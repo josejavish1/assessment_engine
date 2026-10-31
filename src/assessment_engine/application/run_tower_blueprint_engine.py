@@ -1126,18 +1126,70 @@ async def run_tower_blueprint(
         tower_id=tower_id,
     )
 
-    logger.info("Running adversarial consensus risk mitigation debates...")
+    logger.info("Executing Strategic Synthesis and Risk Consensus via Polymorphic Facade...")
     try:
-        from assessment_engine.application.tools.adversarial_consensus_engine import (
-            AdversarialConsensusEngine,
+        from assessment_engine.application.services.synthesis_facade import (
+            PolymorphicSynthesisFacade,
+            SynthesisMode,
+        )
+        from assessment_engine.application.services.cegar_synthesis_engine import (
+            CegarSynthesisEngine,
+        )
+        from assessment_engine.infrastructure.llm.cegar_adapter import CegarLLMAdapter
+        from assessment_engine.domain.synthesis.oracle import SynthesisContext
+
+        async def legacy_fallback(context: Any, payload: Any, **kwargs: Any) -> Any:
+            from assessment_engine.application.tools.adversarial_consensus_engine import (
+                AdversarialConsensusEngine,
+            )
+            consensus_engine = AdversarialConsensusEngine(env={})
+            return await consensus_engine.process_payload(
+                tower_id, payload, client_name=client_name
+            )
+
+        doc_meta = blueprint_payload.get("document_meta", {})
+        doc_lang = str(doc_meta.get("language") or doc_meta.get("doc_lang") or "en").lower()
+        currency = str(doc_meta.get("currency") or "EUR")
+        isic = str(doc_meta.get("isic_code") or "6201")
+
+        # Harvest valid evidence IDs for formal citation graph resolution
+        ev_ids: set[str] = set()
+        for p_finding in blueprint_payload.get("pillar_findings", []):
+            for e in p_finding.get("evidences", []):
+                if isinstance(e, dict) and e.get("id"):
+                    ev_ids.add(str(e["id"]))
+                elif isinstance(e, str) and e:
+                    ev_ids.add(e)
+        if not ev_ids:
+            ev_ids = {"EV-GENERIC-001"}
+
+        synthesis_ctx = SynthesisContext(
+            valid_evidence_ids=frozenset(ev_ids),
+            target_currency=currency,
+            target_locale=doc_lang,
+            target_isic_code=isic,
         )
 
-        consensus_engine = AdversarialConsensusEngine(env={})
-        blueprint_payload = await consensus_engine.process_payload(
-            tower_id, blueprint_payload, client_name=client_name
+        cegar_adapter = CegarLLMAdapter()
+        cegar_engine = CegarSynthesisEngine(generator=cegar_adapter)
+        facade = PolymorphicSynthesisFacade(
+            cegar_engine=cegar_engine,
+            legacy_synthesizer=legacy_fallback,
+            default_mode=SynthesisMode.CEGAR,
         )
+
+        synthesis_result = await facade.synthesize(synthesis_ctx, blueprint_payload)
+        if isinstance(synthesis_result, dict):
+            if synthesis_result.get("provenance", {}).get("engine") == "CEGAR_VERIFIED_V1":
+                blueprint_payload["executive_synthesis"] = synthesis_result.get("executive_summary")
+                blueprint_payload["pareto_frontier"] = synthesis_result.get("pareto_frontier")
+                blueprint_payload["strategic_roadmap"] = synthesis_result.get("execution_roadmap")
+                blueprint_payload["cegar_financials"] = synthesis_result.get("financials")
+                blueprint_payload["synthesis_provenance"] = synthesis_result.get("provenance")
+            else:
+                blueprint_payload = synthesis_result
     except Exception as consensus_err:
-        logger.error("Error running adversarial consensus: %s", consensus_err, exc_info=True)
+        logger.error("Error executing strategic synthesis facade: %s", consensus_err, exc_info=True)
 
     logger.info("Executing Sovereign QA Architecture Policies and FAIR Monte Carlo Simulation...")
     try:
@@ -1166,8 +1218,8 @@ async def run_tower_blueprint(
     )
     valid_project_names = [
         proj["name"]
-        for pilar in blueprint_payload.get("pillars_analysis", [])
-        for proj in pilar.get("projects_todo", [])
+        for pillar in blueprint_payload.get("pillars_analysis", [])
+        for proj in pillar.get("projects_todo", [])
     ]
     await _orchestrate_closing_agent(
         model_name=model_name,
@@ -1219,7 +1271,7 @@ def main(argv: list[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     if len(argv if argv is not None else sys.argv) < 3:
         logger.error(
-            "Uso: python -m assessment_engine.application.run_tower_blueprint_engine <client> <tower_id>"
+            "Usage: python -m assessment_engine.application.run_tower_blueprint_engine <client> <tower_id>"
         )
         sys.exit(1)
     client_arg = (argv if argv is not None else sys.argv)[1]

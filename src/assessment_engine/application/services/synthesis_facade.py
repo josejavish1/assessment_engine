@@ -113,7 +113,7 @@ class PolymorphicSynthesisFacade:
         self,
         cegar_engine: CegarSynthesisEngine,
         legacy_synthesizer: Callable[..., Any] | None = None,
-        default_mode: SynthesisMode = SynthesisMode.LEGACY,
+        default_mode: SynthesisMode = SynthesisMode.CEGAR,
         max_shadow_concurrency: int = 16,
     ) -> None:
         """Initialize facade with CEGAR engine, optional legacy callable, and fallback mode."""
