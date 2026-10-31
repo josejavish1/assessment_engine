@@ -3,12 +3,13 @@ import logging
 import os
 import re
 import sqlite3
+import threading
 import time
 import unicodedata
 import uuid
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, Optional, Union, cast
+from typing import Any, ClassVar, Dict, Optional, Tuple, Union, cast
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
@@ -17,6 +18,13 @@ logger = logging.getLogger("assessment_engine.infrastructure.epistemic_graph")
 WORKSPACE_ROOT: Path = Path(
     os.environ.get("ASSESSMENT_WORKSPACE_ROOT", Path(__file__).resolve().parents[3])
 ).resolve()
+
+CacheKey = Tuple[str, float, int]
+CacheMetadata = Tuple[Path, "ReplayPolicy", str]
+
+_CONNECTION_CACHE: Dict[CacheKey, sqlite3.Connection] = {}
+_CACHE_METADATA: Dict[CacheKey, CacheMetadata] = {}
+_CACHE_LOCK = threading.RLock()
 
 
 class PathTraversalError(ValueError, AssertionError):
@@ -125,6 +133,9 @@ class GraphEvent(BaseModel):
 class EpistemicGraph:
     r"""['Manages an evolving knowledge graph using Event Sourcing and CQRS patterns.\n\n    This class models facts as subject-predicate-object triples and is designed\n    to handle evolving information where assertions can be updated or contradicted\n    over time. The architecture separates command and query responsibilities:\n\n    -   **Write-Side (Commands)**: New information is captured as immutable\n        `GraphEvent` objects and appended to a persistent, append-only ledger file.\n        This ledger constitutes the definitive history of all changes.\n    -   **Read-Side (Queries)**: For efficient querying, events from the ledger\n        are projected into an in-memory SQLite database, which serves as a\n        materialized view of the graph\'s current state.\n\n    The primary function is to resolve the canonical "truth" for any\n    subject-predicate pair by selecting the object from the source with the\n    highest confidence score that is valid at a specified point in time. This\n    approach provides resilience to noisy or conflicting data sources.\n\n    Attributes:\n        client_id: The unique identifier for this graph instance, used to\n            namespace the persistent event ledger on disk.\n        ledger_path: The `pathlib.Path` object for the append-only event ledger.\n        conn: The `sqlite3.Connection` object for the in-memory database that\n            serves as the read model.', 'Initializes the EpistemicGraph instance and reconstructs its state.\n\n        Sets up the path to the persistent event ledger file based on the client ID,\n        ensuring parent directories exist. It also initializes an in-memory SQLite\n        database and its schema to serve as the read model. If a ledger file\n        already exists, all historical events are replayed to reconstruct the\n        current state of the materialized view.\n\n        Args:\n            client_id: A unique identifier used to namespace the persistent event\n                ledger on disk.\n\n        Raises:\n            PermissionError: If directories for the ledger path cannot be created.\n            sqlite3.Error: If the database cannot be initialized or the schema\n                cannot be created.\n            IOError: If an existing ledger file cannot be read during replay.\n            json.JSONDecodeError: If a line in the ledger file is not valid JSON.', "Creates the 'knowledge' table schema in the in-memory database.", 'Populates the in-memory read model by replaying events from the ledger file.\n\n        This method reads the append-only event ledger from disk, line by line.\n        Each line, representing a serialized `GraphEvent`, is parsed and applied to\n        the in-memory SQLite database. This process reconstructs the materialized\n        view to its current state. The method is idempotent and is typically called\n        during initialization. Corrupted or unparseable lines in the ledger are\n        handled according to the configured ReplayPolicy.', 'Applies a single graph event to the materialized view in the SQLite database.', "Creates and persists a `GraphEvent` for a new knowledge triple.\n\n        This method constitutes the write-side of the CQRS architecture. It\n        constructs a `GraphEvent` from the provided triple data, appends its\n        serialized JSON representation to the persistent ledger file, and then\n        applies the event to the in-memory materialized view for immediate querying.\n\n        Args:\n            subject: The subject node of the graph triple.\n            predicate: The predicate or relationship of the triple.\n            object_val: The object node of the graph triple.\n            source: The system or document providing this information.\n            confidence: A numerical score representing confidence in the triple's\n                accuracy.\n            timestamp: The POSIX timestamp of when the event occurred. If None,\n                the current system time is used.\n            **kwargs: Additional key-value metadata to store with the event.\n\n        Raises:\n            IOError: If the event cannot be written to the ledger file.\n            FileNotFoundError: If the directory for the ledger file does not exist.", 'Resolves the most authoritative state of the graph for a given point in time.\n\n        For each unique subject-predicate pair, this query identifies the object\n        assertion with the highest confidence score that was valid at `at_timestamp`.\n        If `at_timestamp` is None, it resolves the current state, considering only\n        facts that are presently valid. Ties in confidence are broken by selecting\n        the assertion with the most recent event timestamp.\n\n        Args:\n            at_timestamp: A POSIX timestamp for time-travel queries. If provided,\n                resolves the state of the graph as it was at that moment. If None,\n                resolves the current state.\n\n        Returns:\n            A nested dictionary representing the resolved state of the graph, structured\n            as `{subject: {predicate: {"value": object, "source": source,\n            "confidence": confidence}}}`.\n\n        Raises:\n            sqlite3.Error: If the underlying database query fails.', 'Serializes the currently resolved graph state into a formatted string.\n\n        This method first calls `resolve_truth()` to get the current state of the\n        graph. It then formats this state into a multi-line string with a\n        standardized header and entity-predicate-value structure, suitable for\n        consumption by external systems like Large Language Models.\n\n        Returns:\n            A formatted, multi-line string representing the resolved graph state,\n            or an empty string if the graph contains no resolved facts.']."""
 
+    _CONNECTION_CACHE: ClassVar[Dict[CacheKey, sqlite3.Connection]] = _CONNECTION_CACHE
+    _CACHE_METADATA: ClassVar[Dict[CacheKey, CacheMetadata]] = _CACHE_METADATA
+
     def __init__(
         self,
         client_id: str = "generic",
@@ -182,10 +193,59 @@ class EpistemicGraph:
         self.corrupted_ledger_path = resolved_corrupted_path
         self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Implementation of the Read Model as a materialized view, backed by an in-memory SQLite database.
-        self.conn = sqlite3.connect(":memory:")
-        self._init_db()
-        self._replay_ledger()
+        self._cache_key: Optional[CacheKey] = None
+
+        with _CACHE_LOCK:
+            if self.ledger_path.exists():
+                stat_result = self.ledger_path.stat()
+                cache_key: CacheKey = (self.client_id, stat_result.st_mtime, stat_result.st_size)
+                cached_conn = self._CONNECTION_CACHE.get(cache_key)
+                if cached_conn is not None:
+                    cached_meta = self._CACHE_METADATA.get(cache_key)
+                    if cached_meta is None or (
+                        cached_meta[0] == self.ledger_path and cached_meta[1] == self.replay_policy
+                    ):
+                        self.conn = cached_conn
+                        self._cache_key = cache_key
+                        if cached_meta is not None:
+                            self.audit_integrity = cached_meta[2]
+                            self.deliverable_metadata["audit_integrity"] = self.audit_integrity
+                        return
+
+            # Implementation of the Read Model as a materialized view, backed by an in-memory SQLite database.
+            self.conn = sqlite3.connect(":memory:", check_same_thread=False)
+            self._init_db()
+            self._replay_ledger()
+
+            if self.ledger_path.exists():
+                stat_result = self.ledger_path.stat()
+                cache_key = (self.client_id, stat_result.st_mtime, stat_result.st_size)
+                self._evict_client_cache_entries()
+                self._CONNECTION_CACHE[cache_key] = self.conn
+                self._CACHE_METADATA[cache_key] = (
+                    self.ledger_path,
+                    self.replay_policy,
+                    self.audit_integrity,
+                )
+                self._cache_key = cache_key
+
+    def _evict_client_cache_entries(self) -> None:
+        """Evicts stale cache entries matching the current client_id and ledger_path."""
+        stale_keys = [
+            key
+            for key, meta in self._CACHE_METADATA.items()
+            if key[0] == self.client_id and meta[0] == self.ledger_path and meta[1] == self.replay_policy
+        ]
+        for key in stale_keys:
+            self._CONNECTION_CACHE.pop(key, None)
+            self._CACHE_METADATA.pop(key, None)
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clears all cached in-memory SQLite projection connections."""
+        with _CACHE_LOCK:
+            cls._CONNECTION_CACHE.clear()
+            cls._CACHE_METADATA.clear()
 
     def _init_db(self) -> None:
         cursor = self.conn.cursor()
@@ -358,12 +418,27 @@ class EpistemicGraph:
             **kwargs,
         )
 
-        # Defines the CQRS Write Model, which consists of a persistent, append-only event ledger.
-        with open(self.ledger_path, "a", encoding="utf-8") as f:
-            f.write(event.model_dump_json() + "\n")
+        with _CACHE_LOCK:
+            # Defines the CQRS Write Model, which consists of a persistent, append-only event ledger.
+            with open(self.ledger_path, "a", encoding="utf-8") as f:
+                f.write(event.model_dump_json() + "\n")
 
-        # Defines the CQRS Read Model, which projects events into an in-memory SQLite database for efficient querying.
-        self._materialize(event)
+            # Defines the CQRS Read Model, which projects events into an in-memory SQLite database for efficient querying.
+            self._materialize(event)
+
+            stat_result = self.ledger_path.stat()
+            new_cache_key: CacheKey = (self.client_id, stat_result.st_mtime, stat_result.st_size)
+            if self._cache_key is not None and self._cache_key != new_cache_key:
+                self._CONNECTION_CACHE.pop(self._cache_key, None)
+                self._CACHE_METADATA.pop(self._cache_key, None)
+            self._evict_client_cache_entries()
+            self._CONNECTION_CACHE[new_cache_key] = self.conn
+            self._CACHE_METADATA[new_cache_key] = (
+                self.ledger_path,
+                self.replay_policy,
+                self.audit_integrity,
+            )
+            self._cache_key = new_cache_key
 
     def resolve_truth(
         self, at_timestamp: Optional[int] = None
@@ -392,7 +467,7 @@ class EpistemicGraph:
 
         Raises:
             A database-specific error (e.g., sqlite3.Error) if the underlying
-            database query fails to execute.
+                database query fails to execute.
         """
         cursor = self.conn.cursor()
 
