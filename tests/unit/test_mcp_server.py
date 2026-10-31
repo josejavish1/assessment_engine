@@ -110,7 +110,7 @@ async def test_mcp_abort_and_revert_execution() -> None:
         first_msg = result_content[0]
         data = json.loads(first_msg.text)
         assert data["success"] is False
-        assert "Error al revertir" in data["message"]
+        assert "Error reverting" in data["message"]
         assert "Git repository locked" in data["message"]
 
 

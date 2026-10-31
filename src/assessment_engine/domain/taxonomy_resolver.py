@@ -219,14 +219,25 @@ class PureTaxonomyResolver:
     def __init__(
         self,
         catalog: Mapping[str, TaxonomyConcept | Mapping[str, Any]] | None = None,
+        config_path: Any = None,
     ) -> None:
-        """Initialize resolver from an injected multilingual taxonomy concept catalog."""
+        """Initialize resolver from an injected multilingual taxonomy concept catalog or config path."""
         self._concepts: Mapping[str, TaxonomyConcept] = MappingProxyType({})
         self._taxonomy: dict[str, Any] = {}
         self._canonical_name_to_id: dict[str, tuple[str, str]] = {}
         self._localized_name_to_id: dict[str, tuple[str, str]] = {}
         self._scoped_name_to_id: dict[tuple[str, str], tuple[str, str]] = {}
         self._capabilities_index: dict[str, dict[str, str]] = {}
+
+        if catalog is None and config_path is not None:
+            import json
+            from pathlib import Path
+            p = Path(config_path)
+            if p.exists():
+                try:
+                    catalog = json.loads(p.read_text(encoding="utf-8"))
+                except Exception:
+                    pass
 
         if catalog is not None and isinstance(catalog, Mapping):
             self._concepts, self._taxonomy = normalize_taxonomy_catalog(catalog)
@@ -317,17 +328,17 @@ class PureTaxonomyResolver:
 
         concept = self._concepts.get(norm_tid)
         if not concept:
-            return default or pillar_id
+            return default or ""
 
         p_concept = concept.pillars.get(norm_pid)
         if not p_concept:
-            return default or pillar_id
+            return default or ""
 
         if norm_locale in p_concept.locales:
             return p_concept.locales[norm_locale]
         if "en" in p_concept.locales:
             return p_concept.locales["en"]
-        return p_concept.canonical_name or default or pillar_id
+        return p_concept.canonical_name or default or ""
 
     def resolve_pillar_by_any_reference(
         self, name_or_id: str, default: str = "", locale: str = "en", tower_id: str = ""
@@ -428,9 +439,5 @@ def get_taxonomy_resolver(
             loaded_catalog = _CATALOG_LOADER_PROVIDER.load_taxonomy_catalog()
             _RESOLVER_INSTANCE = PureTaxonomyResolver(catalog=loaded_catalog)
             return _RESOLVER_INSTANCE
-
-    logger.debug(
-        "get_taxonomy_resolver called before TaxonomyCatalogLoaderPort registration; "
-        "returning uncached empty PureTaxonomyResolver instance."
-    )
-    return PureTaxonomyResolver(catalog={})
+        _RESOLVER_INSTANCE = PureTaxonomyResolver(catalog={})
+        return _RESOLVER_INSTANCE

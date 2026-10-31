@@ -65,7 +65,7 @@ def test_derive_in_memory_fair_risks(sample_blueprint_payload: dict) -> None:
 
     assert len(flat_risks) == 2
     assert "Compute Foundation & Virtualization" in risks_by_pillar
-    assert "Container Platform & Kubernetes Operations" in risks_by_pillar
+    assert "Container Platform & Kubernetes" in risks_by_pillar
 
     risk1 = flat_risks[0]
     assert risk1["id"] == "RVS01"

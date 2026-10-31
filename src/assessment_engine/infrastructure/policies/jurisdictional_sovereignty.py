@@ -279,6 +279,8 @@ class DeterministicJurisdictionResolver:
         (re.compile(r"\bPIPA\b"), "PIPA", "KR"),
         # Mexico (MX)
         (re.compile(r"\bLFPDPPP\b"), "LFPDPPP", "MX"),
+        (re.compile(r"\bCNBV\b"), "CNBV", "MX"),
+        (re.compile(r"\bSPEI\b"), "SPEI", "MX"),
     )
 
     _STATIC_COUNTRY_ALIASES: Dict[str, str] = {
@@ -365,6 +367,7 @@ class DeterministicJurisdictionResolver:
         "SINGAPORE": "SG",
         "SGP": "SG",
         "BRAZIL": "BR",
+        "BRASIL": "BR",
         "BRA": "BR",
         "MEXICO": "MX",
         "MEX": "MX",
@@ -671,6 +674,20 @@ class DeterministicJurisdictionResolver:
                         return str(mapped_code).upper()
             if lang_clean in self._registry.jurisdictions:
                 return lang_clean
+
+        default_langs = {
+            "ES": "ES",
+            "EN": "US",
+            "DE": "DE",
+            "JA": "JP",
+            "FR": "FR",
+            "IT": "IT",
+            "PT": "BR",
+        }
+        if lang_clean in default_langs:
+            target = default_langs[lang_clean]
+            if self._registry is None or target in self._registry.jurisdictions:
+                return target
         return None
 
     def _select_supranational_primary_code(

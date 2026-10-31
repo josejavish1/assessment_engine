@@ -1033,7 +1033,7 @@ def main(argv: list[str] | None = None) -> None:
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))
-    logger.info("Documento renderizado en:", output_path)
+    logger.info("Document rendered at: %s", output_path)
 
 
 if __name__ == "__main__":

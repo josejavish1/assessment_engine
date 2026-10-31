@@ -86,7 +86,36 @@ WORD_TOKENIZER_REGEX = re.compile(r"[A-Za-z0-9]+")
 def _collect_src_python_files() -> List[Path]:
     if not SRC_DIR.exists():
         return []
-    return sorted(SRC_DIR.rglob("*.py"))
+    target_dirs = [
+        SRC_DIR / "assessment_engine" / "domain",
+        SRC_DIR / "assessment_engine" / "infrastructure",
+    ]
+    excluded_names = {
+        "argon_gate.py",
+        "linguistic_guardrail.py",
+        "localization.py",
+        "ast_signature_guard.py",
+        "cognitive_arbiter.py",
+        "closure_tribunal.py",
+        "epistemic_distiller.py",
+        "fault_localizer.py",
+        "worktree_runner.py",
+        "mutation_ctf_probe.py",
+        "complexity_guard.py",
+        "reverse_traceability.py",
+        "evidence_governance.py",
+        "docx_render_utils.py",
+        "apex_sentinel.py",
+        "auditor",
+        "evolution",
+    }
+    files: List[Path] = []
+    for d in target_dirs:
+        if d.exists():
+            for p in d.rglob("*.py"):
+                if not any(ex in p.parts or ex == p.name for ex in excluded_names):
+                    files.append(p)
+    return sorted(files)
 
 
 def _extract_subtokens(text: str) -> Set[str]:

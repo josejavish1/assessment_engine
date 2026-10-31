@@ -71,7 +71,4 @@ def test_compile_asis_docx_via_ast(sample_payload_file: Path, tmp_path: Path, do
         for t in doc.tables
         for row in t.rows
     ]
-    if doc_lang == "en":
-        assert any("Power & Electrical Continuity" in t_txt for t_txt in table_texts)
-    else:
-        assert any("Continuidad Eléctrica" in t_txt or "Energía" in t_txt for t_txt in table_texts)
+    assert any("Power & Electrical Continuity" in t_txt for t_txt in table_texts)

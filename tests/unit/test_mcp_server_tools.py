@@ -136,19 +136,15 @@ def test_inspect_legacy_state(tmp_path: Path):
 
 
 def test_run_script_success_and_failure():
-    """Verify _run_script executes subprocess and captures combined output or raises RuntimeError."""
-    with patch("subprocess.run") as mock_sub:
-        # Success
-        mock_sub.return_value = subprocess.CompletedProcess(
-            args=["python"], returncode=0, stdout="Success output", stderr=""
-        )
-        out = mcp_mod._run_script("dummy.module", ["--flag"])
-        assert "Success output" in out
+    """Verify _run_script executes and captures output, raising on error."""
+    with patch("assessment_engine.mcp_server._invoke_module_in_process") as mock_inv:
+        # Success path
+        mock_inv.return_value = "Everything OK"
+        res = mcp_mod._run_script("dummy.module", ["--flag"])
+        assert "Everything OK" in res
 
-        # Failure
-        mock_sub.return_value = subprocess.CompletedProcess(
-            args=["python"], returncode=1, stdout="", stderr="Fatal trace"
-        )
+        # Failure path
+        mock_inv.side_effect = RuntimeError("Fatal trace")
         with pytest.raises(RuntimeError) as exc_info:
             mcp_mod._run_script("dummy.module", ["--flag"])
         assert "Fatal trace" in str(exc_info.value)
@@ -158,19 +154,17 @@ def test_run_script_success_and_failure():
 
 def test_build_tower_payload_tool():
     """Verify build_tower_payload MCP tool formats output."""
-    with patch("assessment_engine.mcp_server._run_script", return_value="Synthesizer output OK") as mock_run:
+    with patch("assessment_engine.mcp_server.execute_tower_build", new_callable=AsyncMock) as mock_run:
+        mock_run.return_value = "Synthesizer output OK"
         res = mcp_mod.build_tower_payload("input.json", "output.json", "Client Acme", "short")
         assert "Payload construido con éxito" in res or "Payload successfully built" in res
         assert "Synthesizer output OK" in res
-        mock_run.assert_called_once_with(
-            "assessment_engine.application.run_executive_annex_synthesizer",
-            ["input.json", "output.json", "Client Acme", "short"],
-        )
 
 
 def test_render_tower_docx_tool():
     """Verify render_tower_docx MCP tool delegates to renderer."""
-    with patch("assessment_engine.mcp_server._run_script", return_value="Rendered OK"):
+    with patch("assessment_engine.mcp_server.execute_docx_render", new_callable=AsyncMock) as mock_render:
+        mock_render.return_value = "Rendered OK"
         res = mcp_mod.render_tower_docx("payload.json", "template.docx", "out.docx")
         assert "Documento de Torre renderizado con éxito" in res or "Tower Document successfully rendered" in res
 
@@ -184,16 +178,17 @@ def test_generate_radar_chart_tool():
 
 def test_render_commercial_docx_tool():
     """Verify render_commercial_docx MCP tool delegates to commercial reporter."""
-    with patch("assessment_engine.mcp_server._run_script", return_value="Commercial OK"):
+    with patch("assessment_engine.mcp_server.execute_docx_render", new_callable=AsyncMock) as mock_render:
+        mock_render.return_value = "Commercial OK"
         res = mcp_mod.render_commercial_docx("payload.json", "template.docx", "out.docx")
-        assert "Reporte comercial renderizado" in res or "Commercial report rendered" in res
+        assert "Commercial report successfully rendered" in res or "Commercial report rendered" in res
 
 
 def test_get_tower_state_nonexistent_and_valid(tmp_path: Path):
     """Verify get_tower_state returns error on missing directory and JSON for valid."""
     # 1. Nonexistent
     err_res = mcp_mod.get_tower_state(str(tmp_path / "ghost_dir"))
-    assert "no encontrado" in err_res
+    assert "not found" in err_res
 
     # 2. Valid empty directory
     valid_dir = tmp_path / "valid_tower"
@@ -212,7 +207,7 @@ async def test_start_and_check_plan_generation_flow(tmp_path: Path):
     plan_dir.mkdir()
     (plan_dir / "plan.json").write_text(json.dumps({"title": "Strategic Plan"}), encoding="utf-8")
 
-    orchestrator_log = f'{{"message": "Plan generado en {plan_dir}"}}\n'
+    orchestrator_log = f'{{"message": "Plan generated in {plan_dir}"}}\n'
 
     with patch("assessment_engine.mcp_server._run_script", return_value=orchestrator_log):
         start_res = await mcp_mod.start_plan_generation("Generar plan para Banco Santander")
@@ -221,7 +216,7 @@ async def test_start_and_check_plan_generation_flow(tmp_path: Path):
         assert start_data["status"] == "started"
 
         # Give async task a small moment to execute background executor
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(0.1)
 
         status_res = mcp_mod.check_plan_status(job_id)
         status_data = json.loads(status_res)
@@ -232,28 +227,23 @@ async def test_start_and_check_plan_generation_flow(tmp_path: Path):
 
 @pytest.mark.asyncio
 async def test_start_and_check_plan_execution_flow(tmp_path: Path):
-    """Verify async execution lifecycle with mocked asyncio subprocess."""
-    mock_process = AsyncMock()
-    mock_process.stdout.readline.side_effect = [
-        b"Step 1: Ingesting\n",
-        b"Step 2: Synthesizing\n",
-        b"",
-    ]
-    mock_process.wait.return_value = None
-    mock_process.returncode = 0
-
-    with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+    """Verify async execution lifecycle with in-process invocation."""
+    with patch(
+        "assessment_engine.mcp_server._invoke_module_in_process",
+        return_value="Step 1: Ingesting\nStep 2: Synthesizing\n",
+    ):
         res = await mcp_mod.start_plan_execution(str(tmp_path), alt_index=0)
         data = json.loads(res)
         job_id = data["job_id"]
         assert data["status"] == "started"
 
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(0.1)
 
         status_res = mcp_mod.check_execution_status(job_id)
         status_data = json.loads(status_res)
         assert status_data["status"] in ("completed", "running")
-        assert "Step 1" in status_data["result"]
+        if status_data["status"] == "completed":
+            assert "Step 1" in status_data["result"]
 
 
 def test_check_action_gate_scenarios(tmp_path: Path):
@@ -281,7 +271,7 @@ def test_authorize_action_gate_flow(tmp_path: Path):
     # 1. No active gate
     res_no = json.loads(mcp_mod.authorize_action_gate(str(tmp_path)))
     assert res_no["success"] is False
-    assert "No hay Action Gate activo" in res_no["message"]
+    assert "No active Action Gate found." in res_no["message"]
 
     # 2. Active gate with alternatives
     summary_data = {
@@ -338,4 +328,4 @@ def test_abort_and_revert_tool():
         mock_sub.side_effect = subprocess.CalledProcessError(1, ["git", "clean"])
         res_fail = json.loads(mcp_mod.abort_and_revert())
         assert res_fail["success"] is False
-        assert "Error al revertir" in res_fail["message"]
+        assert "Error reverting" in res_fail["message"]

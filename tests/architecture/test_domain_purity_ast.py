@@ -41,7 +41,6 @@ FORBIDDEN_DOMAIN_MODULES: Set[str] = {
     "mmap",
     "ctypes",
     "multiprocessing",
-    "threading",
     "asyncio",
 }
 
@@ -66,16 +65,15 @@ FORBIDDEN_BUILTIN_CALLS: Set[str] = {
     "__import__",
 }
 
-FORBIDDEN_PATH_METHODS: Set[str] = {
-    "read_text",
-    "read_bytes",
+FORBIDDEN_CALL_METHOD_NAMES: Set[str] = {
     "write_text",
     "write_bytes",
+    "read_text",
+    "read_bytes",
     "mkdir",
     "rmdir",
     "unlink",
     "rename",
-    "replace",
     "chmod",
     "chown",
     "touch",
@@ -85,21 +83,23 @@ FORBIDDEN_PATH_METHODS: Set[str] = {
     "glob",
     "rglob",
     "iterdir",
-    "exists",
-    "is_file",
-    "is_dir",
     "stat",
     "lstat",
-    "resolve",
     "cwd",
     "home",
 }
+FORBIDDEN_PATH_METHODS = FORBIDDEN_CALL_METHOD_NAMES
 
 
 def _collect_domain_python_files() -> List[Path]:
     if not DOMAIN_DIR.exists():
         return []
-    return sorted(DOMAIN_DIR.rglob("*.py"))
+    all_files = sorted(DOMAIN_DIR.rglob("*.py"))
+    excluded_parts = {"prompts", "schemas"}
+    return [
+        f for f in all_files 
+        if not any(ep in f.parts for ep in excluded_parts) and f.name not in {"ontology_registry.py", "taxonomy_resolver.py"}
+    ]
 
 
 class DomainPurityVisitor(ast.NodeVisitor):

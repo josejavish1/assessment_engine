@@ -1,388 +1,537 @@
-"""Infrastructure configuration loader with environment override support.
+"""Implements the core logic and utility functions for the Assessment Engine pipeline."""
 
-Loads external JSON configuration files from the configs/ directory
-and provides typed accessors for localization vocabulary, model profiles,
-document profiles, and review policies.
-"""
-
-from __future__ import annotations
-
-from collections.abc import Mapping
-from functools import lru_cache
+import functools
 import json
 import logging
 import os
+import re
+import unicodedata
 from pathlib import Path
-from types import MappingProxyType
-from typing import Any
-
-from assessment_engine.core.errors import ConfigurationError
-from assessment_engine.domain.models import (
-    DocumentGenerationProfile,
-    ModelRoutingConfig,
-    ModelTier,
-    TaxonomyCatalogConfig,
-)
-from assessment_engine.domain.taxonomy_resolver import (
-    PureTaxonomyResolver,
-    TaxonomyCatalogLoaderPort,
-    TaxonomyConcept,
-    normalize_taxonomy_catalog,
-    register_taxonomy_catalog_loader,
-)
 
 logger = logging.getLogger(__name__)
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_CONFIGS_DIR = _REPO_ROOT / "configs"
+ROOT = Path(__file__).resolve().parents[3]
+ENGINE_CONFIG_DIR = ROOT / "engine_config"
 
 
-def get_configs_dir() -> Path:
-    """Return the canonical path to the configs directory."""
-    override = os.environ.get("ASSESSMENT_CONFIGS_DIR")
-    if override:
-        return Path(override)
-    return _CONFIGS_DIR
+from typing import Any, TypedDict
+
+from assessment_engine.infrastructure.exceptions import (
+    ConfigurationError,
+    ConfigurationFileNotFoundError,
+    ConfigurationKeyError,
+    ConfigurationParseError,
+    ConfigurationPermissionError,
+)
 
 
-def _load_json_file(file_path: Path) -> dict[str, Any]:
-    """Read and parse a JSON configuration file with error handling."""
-    if not file_path.exists():
-        raise ConfigurationError(
-            f"Configuration file not found: {file_path}",
-            config_path=file_path,
-        )
+class ModelProfile(TypedDict):
+    """TypedDict defining model configuration parameters like temperature and seed."""
+
+    model: str
+    temperature: float
+    top_p: float
+    seed: int
+    max_output_tokens: int
+
+
+def _load_json(path: Path) -> Any:
+    """Loads and deserializes a JSON file from disk with strict fail-fast error handling."""
+    if not path.exists() or not path.is_file():
+        raise ConfigurationFileNotFoundError(path)
     try:
-        with open(file_path, encoding="utf-8-sig") as f:
-            data = json.load(f)
-            if not isinstance(data, dict):
-                raise ConfigurationError(
-                    f"Expected JSON object at root of {file_path}",
-                    config_path=file_path,
-                )
-            return data
+        with path.open("r", encoding="utf-8-sig") as f:
+            return json.load(f)
+    except PermissionError as exc:
+        raise ConfigurationPermissionError(path, os_error=str(exc)) from exc
     except json.JSONDecodeError as exc:
+        raise ConfigurationParseError(
+            path,
+            parse_details=exc.msg,
+            line=exc.lineno,
+            column=exc.colno,
+        ) from exc
+    except OSError as exc:
         raise ConfigurationError(
-            f"Invalid JSON in configuration file {file_path}: {exc}",
-            config_path=file_path,
-            cause=exc,
+            f"OS I/O failure while reading configuration file '{path}': {exc}",
+            config_path=path,
         ) from exc
 
 
-@lru_cache(maxsize=8)
-def load_localization_config(config_path: Path | None = None) -> dict[str, Any]:
-    """Load localization.json containing UI vocabulary and abbreviations."""
-    path = config_path or (get_configs_dir() / "localization.json")
-    return _load_json_file(path)
+def load_abbreviations_glossary() -> dict:
+    """Load and parse the dynamic localized abbreviations glossary.
 
-
-def resolve_localized_vocabulary(
-    locale: str = "en",
-    config_path: Path | None = None,
-    synthesizer: Any | None = None,
-) -> dict[str, str]:
-    """Resolve UI vocabulary for a target locale with English fallback.
-
-    If the requested locale is not statically configured and a
-    DynamicLocaleSynthesizer is available, dynamically synthesizes and caches
-    the locale pack on the fly.
+    Returns:
+        The deserialized glossary terms dictionary.
     """
-    data = load_localization_config(config_path)
-    locales = data.get("locales", {})
-    en_vocab: dict[str, str] = dict(locales.get("en", {}))
-    norm_locale = locale.lower().split("_")[0].split("-")[0]
-
-    if norm_locale in locales:
-        target_vocab = locales.get(norm_locale, {})
-        merged = dict(en_vocab)
-        merged.update(target_vocab)
-        return merged
-
-    # Dynamic synthesis fallback for unconfigured locales (e.g., fr, pt, de, it, ja)
-    if norm_locale != "en":
-        try:
-            if synthesizer is None:
-                from assessment_engine.infrastructure.locale_synthesizer import (
-                    DynamicLocaleSynthesizer,
-                )
-
-                synthesizer = DynamicLocaleSynthesizer()
-            return synthesizer.resolve_vocabulary(
-                locale=norm_locale, base_en_vocab=en_vocab
-            )
-        except Exception as exc:
-            logger.warning(
-                "Dynamic locale synthesis failed for '%s': %s. Using English fallback.",
-                norm_locale,
-                exc,
-            )
-
-    return en_vocab
+    return _load_json(ENGINE_CONFIG_DIR / "abbreviations_glossary.json")
 
 
-def load_abbreviations_glossary(config_path: Path | None = None) -> dict[str, str]:
-    """Load standard technical abbreviations dictionary from localization.json."""
-    data = load_localization_config(config_path)
-    abbreviations: dict[str, str] = data.get("abbreviations", {})
-    return dict(abbreviations)
+def load_brand_profile() -> dict:
+    """Load, parse, and normalize the corporate brand profile.
 
+    Reads `brand_profile.json` and ensures color strings are normalized (removing
+    any potential '#' prefix) to guarantee rendering safety in down-stream compilers.
 
-def get_consultant_company_name(config_path: Path | None = None) -> str:
-    """Retrieve the configured consultant company name."""
-    data = load_localization_config(config_path)
-    return str(data.get("consultant_company", "Enterprise Architecture Advisory"))
-
-
-def get_localized_disclaimer(
-    locale: str = "en", config_path: Path | None = None
-) -> str:
-    """Retrieve localized legal and methodological disclaimer."""
-    data = load_localization_config(config_path)
-    disclaimers = data.get("disclaimers", {})
-    norm_locale = locale.lower().split("_")[0].split("-")[0]
-    result = disclaimers.get(norm_locale) or disclaimers.get("en", "")
-    return str(result)
-
-
-@lru_cache(maxsize=8)
-def load_model_profiles(config_path: Path | None = None) -> dict[str, Any]:
-    """Load model_profiles.json containing LLM routing configurations."""
-    path = config_path or (get_configs_dir() / "model_profiles.json")
-    return _load_json_file(path)
-
-
-def load_model_profile(
-    profile_name: str | None = None,
-    config_path: Path | None = None,
-) -> ModelRoutingConfig:
-    """Resolve a named model routing profile with environment variable overrides."""
-    data = load_model_profiles(config_path)
-    active_name = (
-        profile_name
-        or os.environ.get("ASSESSMENT_MODEL_PROFILE")
-        or data.get("default_profile", "balanced")
-    )
-    profiles = data.get("profiles", {})
-    if active_name not in profiles:
-        raise ConfigurationError(
-            f"Unknown model profile '{active_name}'. Available: {list(profiles.keys())}"
+    Returns:
+        The normalized brand profile configuration dictionary.
+    """
+    data = _load_json(ENGINE_CONFIG_DIR / "brand_profile.json")
+    styling = data.get("styling", {})
+    if "primary_color_hex" in styling:
+        styling["primary_color_hex"] = styling["primary_color_hex"].lstrip("#")
+    if "alternate_row_color_hex" in styling:
+        styling["alternate_row_color_hex"] = styling["alternate_row_color_hex"].lstrip(
+            "#"
         )
+    return data
 
-    raw = dict(profiles[active_name])
 
-    # Apply environment overrides per agent role if present
-    role_env_map = {
-        "principal_architect_model": "ASSESSMENT_MODEL_OVERRIDE_PRINCIPAL",
-        "finops_economist_model": "ASSESSMENT_MODEL_OVERRIDE_FINOPS",
-        "red_team_auditor_model": "ASSESSMENT_MODEL_OVERRIDE_AUDITOR",
-        "executive_Ghostwriter_model": "ASSESSMENT_MODEL_OVERRIDE_GHOSTWRITER",
-        "diagram_architect_model": "ASSESSMENT_MODEL_OVERRIDE_DIAGRAM",
-    }
-    for field_key, env_var in role_env_map.items():
-        env_val = os.environ.get(env_var)
-        if env_val:
-            raw[field_key] = env_val
-            logger.info("Overriding %s with %s=%s", field_key, env_var, env_val)
-
-    tier_str = raw.get("tier", active_name)
+def get_consultant_company_name(default: str = "Strategic Advisory") -> str:
+    """Returns the configured consultant company name from brand_profile.json."""
     try:
-        tier = ModelTier(tier_str)
-    except ValueError:
-        tier = ModelTier.BALANCED
+        brand = load_brand_profile()
+        return str(brand.get("company_name") or default).strip()
+    except (ConfigurationError, FileNotFoundError, json.JSONDecodeError) as ex:
+        logger.debug("Failed to load brand profile for company name, using default: %s", ex)
+        return default
 
-    return ModelRoutingConfig(
-        profile_name=active_name,
-        tier=tier,
-        principal_architect_model=raw["principal_architect_model"],
-        finops_economist_model=raw["finops_economist_model"],
-        red_team_auditor_model=raw["red_team_auditor_model"],
-        executive_Ghostwriter_model=raw["executive_Ghostwriter_model"],
-        diagram_architect_model=raw["diagram_architect_model"],
-        fallback_model=raw["fallback_model"],
-        temperature=float(raw.get("temperature", 0.1)),
-        max_output_tokens=int(raw.get("max_output_tokens", 8192)),
+
+def get_localized_disclaimer(lang: str = "en") -> str:
+    """Resolves the legal disclaimer text for the requested locale from locales.json."""
+    try:
+        vocab = resolve_localized_vocabulary(lang)
+        if "disclaimer_text" in vocab:
+            return vocab["disclaimer_text"]
+        brand = load_brand_profile()
+        return brand.get("disclaimer_text", "")
+    except (ConfigurationError, FileNotFoundError, KeyError, json.JSONDecodeError) as ex:
+        logger.debug("Failed to resolve localized disclaimer: %s", ex)
+        return ""
+
+
+def load_locales() -> dict:
+    """Load and parse the dynamic localization strings file.
+
+    Returns:
+        The deserialized locales dictionary.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "locales.json")
+
+
+def resolve_localized_vocabulary(lang: str) -> dict:
+    """Resolves and returns the localized vocabulary terms for a given language.
+
+    If uncataloged, dynamically synthesizes the dictionary JIT. Falls back to English or Spanish.
+    """
+    from assessment_engine.infrastructure.localization import (
+        DynamicLocaleSynthesizer,
+        load_locales_catalog,
+        resolve_base_locale,
     )
 
+    catalog = load_locales_catalog()
+    lang_key = resolve_base_locale(lang)
 
-@lru_cache(maxsize=8)
-def load_document_profiles(config_path: Path | None = None) -> dict[str, Any]:
-    """Load document_profiles.json containing generation depth profiles."""
-    path = config_path or (get_configs_dir() / "document_profiles.json")
-    return _load_json_file(path)
+    if lang_key not in catalog:
+        dynamic_dict = DynamicLocaleSynthesizer().synthesize_locale(lang_key)
+        if dynamic_dict:
+            catalog[lang_key] = dynamic_dict
+
+    return catalog.get(lang_key) or catalog.get("en", {})
 
 
-def load_document_profile(
-    profile_name: str | None = None,
-    config_path: Path | None = None,
-) -> DocumentGenerationProfile:
-    """Resolve a named document generation profile."""
-    data = load_document_profiles(config_path)
-    active_name = (
-        profile_name
-        or os.environ.get("ASSESSMENT_DOCUMENT_PROFILE")
-        or data.get("default_profile", "full")
-    )
+def load_runtime_manifest() -> Any:
+    """Load and parse the runtime manifest from its canonical location.
+
+    The manifest, a file named `runtime_manifest.json`, is expected to reside in
+    the engine's configuration directory (`ENGINE_CONFIG_DIR`). It contains
+    metadata about the runtime environment and its components.
+
+    Returns:
+        The deserialized content of the runtime manifest. The specific type
+        depends on the JSON document's root element, but is typically a dict.
+
+    Raises:
+        FileNotFoundError: If the manifest file cannot be found at the expected
+            location.
+        json.JSONDecodeError: If the manifest file contains malformed JSON.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "runtime_manifest.json")
+
+
+def load_model_profiles() -> Any:
+    """Load and parse the model profiles configuration file.
+
+    This function locates and reads the `model_profiles.json` file from the
+    engine's configuration directory and deserializes its JSON content.
+
+    Returns:
+        The deserialized JSON content of the `model_profiles.json` file.
+
+    Raises:
+        FileNotFoundError: If the `model_profiles.json` file cannot be found.
+        json.JSONDecodeError: If the file content is not valid JSON.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "model_profiles.json")
+
+
+def load_model_profile(profile_name: str) -> ModelProfile:
+    """Loads a model configuration profile by name, with environment override support.
+
+    Retrieves a specified model configuration profile and returns a mutable copy.
+    This function supports dynamic overriding of the 'model' key within the
+    profile via a corresponding environment variable.
+
+    The environment variable name is constructed by prefixing the `profile_name`
+    with `ASSESSMENT_MODEL_OVERRIDE_`, converting it to uppercase, and replacing
+    all non-alphanumeric characters with underscores. For example, a profile
+    named 'claude-3-sonnet' is overridden by the environment variable
+    `ASSESSMENT_MODEL_OVERRIDE_CLAUDE_3_SONNET`.
+
+    Args:
+        profile_name (str): The name of the model profile to load.
+
+    Returns:
+        Dict[str, Any]: A mutable dictionary containing the configuration for the
+            requested model profile. The 'model' key is replaced if a valid
+            environment variable override exists.
+
+    Raises:
+        KeyError: If `profile_name` does not exist in the available profiles.
+    """
+    data = load_model_profiles()
     profiles = data.get("profiles", {})
-    if active_name not in profiles:
-        raise ConfigurationError(
-            f"Unknown document profile '{active_name}'. Available: {list(profiles.keys())}"
+    if profile_name not in profiles:
+        raise ConfigurationKeyError(profile_name, "model_profiles.json")
+    profile = dict(profiles[profile_name])
+
+    # Dynamic Tier Resolution: if profile specifies tier, resolve canonical model
+    tier_name = profile.get("tier")
+    if tier_name:
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
         )
-    raw = dict(profiles[active_name])
-    raw["profile_name"] = active_name
-    return DocumentGenerationProfile.model_validate(raw)
+
+        if tier_name == "fast":
+            profile["model"] = get_model(ModelTier.FAST)
+        elif tier_name == "reasoning":
+            profile["model"] = get_model(ModelTier.REASONING)
+
+    override_env_name = "ASSESSMENT_MODEL_OVERRIDE_" + re.sub(
+        r"[^A-Z0-9]+", "_", profile_name.upper()
+    ).strip("_")
+    override_model = os.environ.get(override_env_name, "").strip()
+    if override_model:
+        profile["model"] = override_model
+    return profile
 
 
-@lru_cache(maxsize=16)
-def load_policy_file(
-    policy_filename: str, config_path: Path | None = None
-) -> dict[str, Any]:
-    """Load a policy JSON file from configs/policies/."""
-    path = config_path or (get_configs_dir() / "policies" / policy_filename)
-    return _load_json_file(path)
+def load_document_profile(profile_name: str) -> dict:
+    """Load a document profile configuration by its profile name."""
+    return _load_json(ENGINE_CONFIG_DIR / "document_profiles" / f"{profile_name}.json")
 
 
-def load_review_policy(config_path: Path | None = None) -> dict[str, Any]:
-    """Load review_policy.json containing Red Team auditor quality gates."""
-    return load_policy_file("review_policy.json", config_path)
+def load_policy_file(file_name: str) -> dict:
+    """Load a policy configuration file by its base name from the policies directory."""
+    return _load_json(ENGINE_CONFIG_DIR / "policies" / f"{file_name}.json")
 
 
-def load_target_maturity_policy(config_path: Path | None = None) -> dict[str, Any]:
-    """Load target_maturity.json containing benchmark targets."""
-    return load_policy_file("target_maturity.json", config_path)
+def load_target_maturity_policy() -> dict:
+    """Load the 'target_maturity_policy' configuration file."""
+    return load_policy_file("target_maturity_policy")
 
 
-def resolve_model_profile_for_role(
-    profile_name: str = "balanced",
-    config_path: Path | None = None,
-) -> ModelRoutingConfig:
-    """Backward-compatible alias for load_model_profile."""
-    return load_model_profile(profile_name=profile_name, config_path=config_path)
+def load_review_policy() -> dict:
+    """Load the 'review_policy' configuration."""
+    return load_policy_file("review_policy")
+
+
+def resolve_model_profile_for_role(role_name: str) -> ModelProfile:
+    """Resolve and load the model profile configuration for a specified role.
+
+    Loads the runtime manifest to identify the model profile name associated
+    with the given `role_name`. It then loads and returns the contents of that
+    specific model profile configuration file.
+
+    Args:
+        role_name (str): The identifier for the role whose model profile is to be
+            resolved and loaded.
+
+    Returns:
+        ModelProfile: The configuration dictionary loaded from the model profile file.
+
+    Raises:
+        KeyError: If the provided `role_name` does not map to a configured
+            model profile in the runtime manifest.
+        FileNotFoundError: If the runtime manifest file or the resolved model
+            profile file cannot be located on the filesystem.
+    """
+    manifest = load_runtime_manifest()
+    model_profiles = manifest.get("model_profiles", {})
+    profile_name = model_profiles.get(role_name)
+    if not profile_name:
+        raise ConfigurationKeyError(f"role '{role_name}'", "runtime_manifest.json model_profiles")
+    return load_model_profile(profile_name)
 
 
 def resolve_model_for_role(
-    role: str,
-    profile_name: str = "balanced",
-    config_path: Path | None = None,
+    role_name: str, default_model: str | None = None
 ) -> str:
-    """Resolve the specific LLM model identifier assigned to a given agent role."""
-    routing = load_model_profile(profile_name=profile_name, config_path=config_path)
-    role_map = {
-        "principal_architect": routing.principal_architect_model,
-        "finops_economist": routing.finops_economist_model,
-        "red_team_auditor": routing.red_team_auditor_model,
-        "executive_ghostwriter": routing.executive_Ghostwriter_model,
-        "diagram_architect": routing.diagram_architect_model,
-        "fallback": routing.fallback_model,
-    }
-    norm_role = role.strip().lower()
-    return role_map.get(norm_role, routing.principal_architect_model)
+    """Resolves and returns the canonical model name for a given role from active profiles.
 
-
-def resolve_document_profile(
-    profile_name: str = "full",
-    config_path: Path | None = None,
-) -> DocumentGenerationProfile:
-    """Backward-compatible alias for load_document_profile."""
-    return load_document_profile(profile_name=profile_name, config_path=config_path)
-
-
-@lru_cache(maxsize=8)
-def load_rate_card(config_path: Path | None = None) -> dict[str, Any]:
-    """Load rate_cards.json containing FinOps regional day rates and multipliers."""
-    path = config_path or (get_configs_dir() / "rate_cards.json")
-    return _load_json_file(path)
-
-
-@lru_cache(maxsize=8)
-def load_taxonomy_catalog(config_path: Path | None = None) -> TaxonomyCatalogConfig:
-    """Load and validate taxonomy_catalog.json containing authoritative tower/pillar definitions."""
-    path = config_path or (get_configs_dir() / "taxonomy_catalog.json")
-    raw = _load_json_file(path)
-    return TaxonomyCatalogConfig.model_validate(raw)
-
-
-@lru_cache(maxsize=8)
-def load_strategic_programs(config_path: Path | None = None) -> dict[str, Any]:
-    """Load strategic_programs.json containing canonical remediation programs and keyword mappings."""
-    return load_policy_file("strategic_programs.json", config_path)
-
-
-def resolve_canonical_program_id(
-    tower_id: str,
-    gap_text: str = "",
-    config_path: Path | None = None,
-) -> str:
-    """Deterministically resolve a canonical strategic program ID from tower and gap description."""
-    data = load_strategic_programs(config_path)
-    keyword_routes: list[dict[str, Any]] = data.get("keyword_routing", [])
-    tower_defaults: dict[str, str] = data.get("tower_defaults", {})
-    fallback_program: str = str(data.get("fallback_program_id", "PROG-FOUNDATION"))
-
-    norm_text = gap_text.lower()
-    norm_tower = tower_id.strip().upper()
-
-    for route in keyword_routes:
-        keywords = route.get("keywords", [])
-        target_prog = route.get("program_id", "")
-        if target_prog and any(kw.lower() in norm_text for kw in keywords):
-            return str(target_prog)
-
-    return str(tower_defaults.get(norm_tower, fallback_program))
-
-
-def _load_raw_taxonomy_multilingual_towers(
-    config_path: Path | None = None,
-) -> Mapping[str, Any]:
-    """Read raw towers mapping from taxonomy_multilingual.json without mutability leaks."""
-    path = config_path or (get_configs_dir() / "taxonomy_multilingual.json")
-    if not path.exists():
-        logger.warning(
-            "Multilingual taxonomy file not found at %s; using empty taxonomy catalog.",
-            path,
+    Bypasses any in-code hardcoding, falling back cleanly to the canonical reasoning model if the
+    profile loader fails or if the role isn't mapped.
+    """
+    if default_model is None:
+        from assessment_engine.infrastructure.genai_client import (
+            ModelTier,
+            get_model,
         )
-        return MappingProxyType({})
-    data = _load_json_file(path)
-    towers = data.get("towers", data)
-    if not isinstance(towers, Mapping):
-        return MappingProxyType({})
-    return MappingProxyType(dict(towers))
+
+        default_model = get_model(ModelTier.REASONING)
+    try:
+        try:
+            profile = resolve_model_profile_for_role(role_name)
+        except KeyError:
+            profile = load_model_profile(role_name)
+        return str(profile.get("model", default_model)).strip()
+    except (KeyError, ConfigurationError, FileNotFoundError, json.JSONDecodeError) as ex:
+        logger.debug("Failed to resolve model for role '%s', using fallback: %s", role_name, ex)
+        return default_model
 
 
-def load_taxonomy_multilingual(config_path: Path | None = None) -> dict[str, Any]:
-    """Load taxonomy_multilingual.json and return a fresh dictionary copy of tower definitions."""
-    concepts = load_default_taxonomy_catalog(config_path)
-    return {tid: concept.to_raw_dict() for tid, concept in concepts.items()}
+def resolve_document_profile() -> dict:
+    """Loads the document profile specified in the runtime manifest.
+
+    This function retrieves the active document profile name from the runtime
+    manifest and uses it to load the corresponding profile configuration.
+
+    Returns:
+        dict: The configuration dictionary of the resolved document profile.
+
+    Raises:
+        KeyError: If the 'document_profile' key is missing from the runtime
+            manifest or its value is empty.
+    """
+    manifest = load_runtime_manifest()
+    profile_name = manifest.get("document_profile")
+    if not profile_name:
+        raise ConfigurationKeyError("document_profile", "runtime_manifest.json")
+    return load_document_profile(profile_name)
 
 
-@lru_cache(maxsize=8)
-def load_default_taxonomy_catalog(
-    config_path: Path | None = None,
-) -> Mapping[str, TaxonomyConcept]:
-    """Load and normalize the default multilingual taxonomy catalog into immutable TaxonomyConcepts."""
-    raw_towers = _load_raw_taxonomy_multilingual_towers(config_path)
-    concepts, _ = normalize_taxonomy_catalog(raw_towers)
-    return concepts
+def resolve_target_maturity_defaults(document_profile_id: str) -> dict:
+    """Resolves the default target maturity configuration for a specified document profile.
+
+    This function loads the global target maturity policy via the
+    `load_target_maturity_policy()` helper. It then accesses the 'defaults'
+    section of the policy and retrieves the configuration dictionary
+    corresponding to the given `document_profile_id`.
+
+    Args:
+        document_profile_id: The unique identifier for the document profile,
+            used as the key for the lookup within the 'defaults' policy section.
+
+    Returns:
+        A dictionary containing the default target maturity settings.
+
+    Raises:
+        KeyError: If the 'defaults' section of the loaded policy does not
+            contain an entry for the provided `document_profile_id`.
+    """
+    policy = load_target_maturity_policy()
+    defaults = policy.get("defaults", {})
+    if document_profile_id not in defaults:
+        raise ConfigurationKeyError(
+            document_profile_id, "target_maturity_policy defaults"
+        )
+    return defaults[document_profile_id]
 
 
-class FileSystemTaxonomyCatalogLoader(TaxonomyCatalogLoaderPort):
-    """Infrastructure adapter implementing TaxonomyCatalogLoaderPort via filesystem JSON config."""
-
-    def __init__(self, config_path: Path | None = None) -> None:
-        """Initialize loader with an optional explicit path to taxonomy_multilingual.json."""
-        self._config_path = config_path
-
-    def load_taxonomy_catalog(self) -> Mapping[str, TaxonomyConcept]:
-        """Load and return an immutable mapping of tower IDs to TaxonomyConcept objects."""
-        return load_default_taxonomy_catalog(self._config_path)
+def resolve_review_rules() -> dict:
+    """{'docstring': "Extract the 'rules' dictionary from the main review policy configuration."}."""
+    policy = load_review_policy()
+    return policy.get("rules", {})
 
 
-def create_taxonomy_resolver(
-    config_path: Path | None = None,
-) -> PureTaxonomyResolver:
-    """Bootstrap a PureTaxonomyResolver injected with the filesystem taxonomy concept catalog."""
-    catalog = load_default_taxonomy_catalog(config_path)
-    return PureTaxonomyResolver(catalog=catalog)
+def load_rate_card() -> dict:
+    """Load and parse the dynamic rate card parameters.
+
+    Returns:
+        The deserialized rate card dictionary.
+    """
+    return _load_json(ENGINE_CONFIG_DIR / "rate_card.json")
 
 
-# Register the default infrastructure catalog loader port at module bootstrap
-register_taxonomy_catalog_loader(FileSystemTaxonomyCatalogLoader())
+def load_industry_profile(profile_key: str, allow_fallback: bool = True) -> dict:
+    """Load and parse an industry-specific configuration profile with automatic fallback to 'default'.
+
+    Guarantees absolute path resolution to support execution from any directory context.
+
+    Returns:
+        The deserialized industry profile dictionary.
+    """
+    key = str(profile_key or "default").replace(".json", "").strip().lower()
+    profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / f"{key}.json"
+    default_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
+
+    if not profile_file.exists():
+        if not allow_fallback:
+            raise ConfigurationFileNotFoundError(profile_file)
+        logger.debug("Industry profile '%s' not found on disk, falling back to default.", key)
+        return _load_json(default_file)
+
+    try:
+        return _load_json(profile_file)
+    except (json.JSONDecodeError, ConfigurationParseError) as exc:
+        if not allow_fallback:
+            raise
+        logger.warning(
+            "Corrupted industry profile '%s' detected on disk (%s). Falling back to default profile.",
+            key,
+            exc,
+        )
+        try:
+            return _load_json(default_file)
+        except Exception as fallback_exc:
+            raise ConfigurationError(
+                f"Failed to load default industry profile: {fallback_exc}",
+                config_path=default_file,
+            ) from fallback_exc
+
+
+def load_framework_rubric(framework_id: str) -> dict:
+    """Load and parse a dynamic RAGE framework evaluation rubric by its ID.
+
+    Guarantees absolute path resolution to support execution from any directory context.
+
+    Returns:
+        The deserialized framework rubric dictionary.
+    """
+    key = str(framework_id or "").strip().lower()
+    rubric_file = ENGINE_CONFIG_DIR / "frameworks" / f"{key}.json"
+    return _load_json(rubric_file)
+
+
+def map_industry_to_profile(raw_industry_name: str) -> str:
+    """Canonical multilingual mapper that translates and normalizes an industry vertical
+    name to its standardized profile key, bypassing accent and casing discrepancies.
+    """
+    if not raw_industry_name:
+        return "default"
+
+    import unicodedata
+
+    normalized = unicodedata.normalize("NFKD", str(raw_industry_name))
+    industry_clean = normalized.encode("ascii", "ignore").decode("ascii").lower()
+
+    mapping = {
+        # Spanish
+        "energia": "critical_infrastructure",
+        "electrico": "critical_infrastructure",
+        "infraestructura critica": "critical_infrastructure",
+        "transporte": "critical_infrastructure",
+        "retail": "retail",
+        "comercio": "retail",
+        "banca": "banking",
+        "finanzas": "banking",
+        "seguros": "banking",
+        "salud": "healthcare",
+        "hospital": "healthcare",
+        "manufactura": "default",
+        "fabricacion": "default",
+        "industrial": "default",
+        "construccion": "default",
+        "cemento": "default",
+        # English
+        "energy": "critical_infrastructure",
+        "electricity": "critical_infrastructure",
+        "power": "critical_infrastructure",
+        "utility": "critical_infrastructure",
+        "utilities": "critical_infrastructure",
+        "critical infrastructure": "critical_infrastructure",
+        "transport": "critical_infrastructure",
+        "commerce": "retail",
+        "banking": "banking",
+        "finance": "banking",
+        "insurance": "banking",
+        "healthcare": "healthcare",
+        "health": "healthcare",
+        "manufacturing": "default",
+        "construction": "default",
+        "building materials": "default",
+    }
+
+    for key, val in mapping.items():
+        if key in industry_clean:
+            return val
+    return "default"
+
+
+@functools.lru_cache(maxsize=1)
+def load_strategic_programs() -> dict[str, Any]:
+    """Loads canonical strategic programs configuration from declarative policy."""
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    file_path = (
+        repo_root / "engine_config" / "policies" / "strategic_programs.json"
+    )
+    if file_path.is_file():
+        try:
+            return json.loads(file_path.read_text(encoding="utf-8-sig"))
+        except (json.JSONDecodeError, OSError) as ex:
+            logger.warning("Error reading strategic_programs.json: %s", ex)
+    return {"programs": []}
+
+
+def _strip_diacritics(text: str) -> str:
+    return "".join(
+        c
+        for c in unicodedata.normalize("NFD", text)
+        if unicodedata.category(c) != "Mn"
+    )
+
+
+@functools.lru_cache(maxsize=1)
+def _get_compiled_programs_index() -> tuple[
+    dict[str, str], list[tuple[str, tuple[str, ...]]]
+]:
+    """Pre-computes exact ID map and normalized alias tuples for O(1) / fast O(M) lookup."""
+    programs = load_strategic_programs().get("programs", [])
+    exact_map: dict[str, str] = {}
+    alias_index: list[tuple[str, tuple[str, ...]]] = []
+
+    for p in programs:
+        pid = p.get("id", "")
+        if not pid:
+            continue
+        exact_map[pid.upper()] = pid
+        norm_aliases = tuple(
+            _strip_diacritics(a.lower()) for a in p.get("aliases", []) if a
+        )
+        if norm_aliases:
+            alias_index.append((pid, norm_aliases))
+
+    return exact_map, alias_index
+
+
+def resolve_canonical_program_id(raw_name_or_id: str) -> str | None:
+    """Resolves an initiative title or raw identifier to a canonical strategic program ID with boundary matching."""
+    if not raw_name_or_id:
+        return None
+
+    normalized = raw_name_or_id.strip()
+    exact_map, alias_index = _get_compiled_programs_index()
+
+    if matched_id := exact_map.get(normalized.upper()):
+        return matched_id
+
+    norm_lower = _strip_diacritics(normalized.lower())
+    for pid, aliases in alias_index:
+        for alias in aliases:
+            pattern = r"(?:^|\W)" + re.escape(alias) + r"(?:$|\W)"
+            if re.search(pattern, norm_lower):
+                return pid
+
+    return None
