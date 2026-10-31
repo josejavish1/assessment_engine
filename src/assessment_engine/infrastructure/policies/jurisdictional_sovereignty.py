@@ -6,12 +6,15 @@ featuring Just-In-Time (JIT) dynamic synthesis and caching for unlisted jurisdic
 """
 from __future__ import annotations
 
-
 import json
 import logging
+import os
 import re
+import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List
+
+from pydantic import ValidationError
 
 from assessment_engine.domain.schemas.jurisdiction import (
     JurisdictionSovereigntyProfile,
@@ -23,219 +26,413 @@ from assessment_engine.infrastructure.policies.base import BaseSovereignPolicy
 logger = logging.getLogger(__name__)
 
 ROOT = Path(__file__).resolve().parents[4]
-CONFIG_PATH = ROOT / "engine_config" / "policies" / "jurisdictional_sovereignty.json"
-DYNAMIC_DIR = ROOT / "engine_config" / "policies" / "jurisdictions_dynamic"
+CONFIG_PATH = Path(
+    os.environ.get(
+        "SOVEREIGN_JURISDICTION_CONFIG_PATH",
+        str(ROOT / "engine_config" / "policies" / "jurisdictional_sovereignty.json"),
+    )
+)
+DYNAMIC_DIR = Path(
+    os.environ.get(
+        "SOVEREIGN_DYNAMIC_JURISDICTION_DIR",
+        str(ROOT / "engine_config" / "policies" / "jurisdictions_dynamic"),
+    )
+)
+JIT_PROMPT_PATH = Path(
+    os.environ.get(
+        "SOVEREIGN_JIT_PROMPT_PATH",
+        str(ROOT / "engine_config" / "prompts" / "jurisdiction_jit_synthesis.txt"),
+    )
+)
 
 _REGISTRY_CACHE: JurisdictionalRegistry | None = None
 
 
-def load_jurisdictional_registry(path: Path | None = None) -> JurisdictionalRegistry:
-    """Load and cache the canonical JurisdictionalRegistry from disk, augmenting with dynamic JIT locales."""
+class ConfigurationError(RuntimeError):
+    """Raised when a mandatory sovereign governance configuration file is missing, unreadable, or malformed."""
+
+
+def _validate_profile_invariants(code: str, profile: JurisdictionSovereigntyProfile, source: Path) -> None:
+    """Verify that a loaded jurisdiction profile contains mandatory non-empty architectural invariants."""
+    if not profile.architectural_invariants:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Jurisdiction '{code}' in '{source}' defines zero architectural invariants."
+        )
+
+
+def load_verified_registry_fail_closed(path: Path | None = None) -> JurisdictionalRegistry:
+    """Load and strictly validate the canonical JurisdictionalRegistry in fail-closed mode.
+
+    Raises:
+        ConfigurationError: If the governance policy file is missing, unreadable, malformed,
+            fails strict Pydantic schema validation, or defines an empty jurisdiction set.
+    """
     global _REGISTRY_CACHE
     if _REGISTRY_CACHE is not None and path is None:
         return _REGISTRY_CACHE
 
-    target = path or CONFIG_PATH
-    if not target.exists():
-        target = Path("engine_config/policies/jurisdictional_sovereignty.json")
+    target = Path(path).resolve() if path is not None else CONFIG_PATH.resolve()
+    if not target.exists() or not target.is_file():
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Jurisdictional sovereignty registry not found or not a regular file at '{target}'."
+        )
 
     try:
-        data = json.loads(target.read_text(encoding="utf-8"))
-        registry = JurisdictionalRegistry.model_validate(data)
-    except Exception as ex:
-        logger.warning("Failed to load jurisdictional registry from %s: %s. Using empty fallback.", target, ex)
-        registry = JurisdictionalRegistry()
+        raw_text = target.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Unable to read jurisdictional registry at '{target}': {exc}"
+        ) from exc
 
-    # Auto-load any dynamically synthesized and cached jurisdictions
-    dynamic_path = Path(DYNAMIC_DIR)
+    try:
+        data = json.loads(raw_text)
+    except json.JSONDecodeError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Malformed JSON in jurisdictional registry '{target}': {exc}"
+        ) from exc
+
+    if not isinstance(data, dict):
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Root element of '{target}' must be a JSON object."
+        )
+
+    try:
+        registry = JurisdictionalRegistry.model_validate(data, strict=True)
+    except ValidationError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Schema validation failed for '{target}': {exc}"
+        ) from exc
+
+    if not registry.jurisdictions:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Jurisdictional registry '{target}' contains zero active jurisdictions."
+        )
+
+    for code, profile in registry.jurisdictions.items():
+        _validate_profile_invariants(code, profile, target)
+
+    # Strict fail-closed loading of any dynamically synthesized and cached jurisdictions
+    dynamic_path = Path(DYNAMIC_DIR).resolve()
     if dynamic_path.exists():
-        for dyn_file in dynamic_path.glob("*.json"):
+        if not dynamic_path.is_dir():
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Dynamic jurisdiction path '{dynamic_path}' is not a directory."
+            )
+        for dyn_file in sorted(dynamic_path.glob("*.json")):
+            if not dyn_file.is_file():
+                raise ConfigurationError(
+                    f"Fatal Fail-Closed Policy Error: Dynamic jurisdiction entry '{dyn_file}' is not a regular file."
+                )
             code = dyn_file.stem.upper()
             if code not in registry.jurisdictions:
                 try:
-                    p_data = json.loads(dyn_file.read_text(encoding="utf-8"))
-                    profile = JurisdictionSovereigntyProfile.model_validate(p_data)
-                    registry.jurisdictions[code] = profile
-                except Exception as ex:
-                    logger.debug("Error loading dynamic jurisdiction from %s: %s", dyn_file, ex)
+                    raw_dyn = dyn_file.read_text(encoding="utf-8")
+                except OSError as exc:
+                    raise ConfigurationError(
+                        f"Fatal Fail-Closed Policy Error: Unable to read dynamic jurisdiction file '{dyn_file}': {exc}"
+                    ) from exc
+                try:
+                    p_data = json.loads(raw_dyn)
+                except json.JSONDecodeError as exc:
+                    raise ConfigurationError(
+                        f"Fatal Fail-Closed Policy Error: Malformed JSON in dynamic jurisdiction file '{dyn_file}': {exc}"
+                    ) from exc
+                try:
+                    profile = JurisdictionSovereigntyProfile.model_validate(p_data, strict=True)
+                except ValidationError as exc:
+                    raise ConfigurationError(
+                        f"Fatal Fail-Closed Policy Error: Schema validation failed for dynamic jurisdiction '{dyn_file}': {exc}"
+                    ) from exc
+                _validate_profile_invariants(code, profile, dyn_file)
+                registry.jurisdictions[code] = profile
 
     if path is None:
         _REGISTRY_CACHE = registry
     return registry
 
 
+def load_jurisdictional_registry(path: Path | None = None) -> JurisdictionalRegistry:
+    """Load and cache the canonical JurisdictionalRegistry from disk using fail-closed enforcement."""
+    return load_verified_registry_fail_closed(path=path)
+
+
+def _normalize_token(value: str) -> str:
+    """Normalize a string token to uppercase ASCII without diacritics."""
+    return (
+        unicodedata.normalize("NFKD", value.strip().upper())
+        .encode("ASCII", "ignore")
+        .decode("utf-8")
+    )
+
+
 def infer_jurisdiction_code(
     country: str | None,
     frameworks: List[str] | None,
     language: str | None,
+    registry: JurisdictionalRegistry | None = None,
 ) -> str:
-    """Infers the ISO region code based on country, regulatory frameworks, or document language."""
+    """Infer the ISO region code dynamically from the verified JurisdictionalRegistry."""
+    active_registry = registry or load_verified_registry_fail_closed()
+    if not active_registry.jurisdictions:
+        raise ConfigurationError(
+            "Fatal Fail-Closed Policy Error: Cannot infer jurisdiction code from an empty registry."
+        )
+
+    extra_config: Dict[str, Any] = (
+        active_registry.model_extra if isinstance(active_registry.model_extra, dict) else {}
+    )
+    country_aliases: Dict[str, str] = getattr(active_registry, "country_aliases", None) or extra_config.get("country_aliases", {})
+    framework_mappings: Dict[str, str] = getattr(active_registry, "framework_mappings", None) or extra_config.get("framework_mappings", {})
+    language_mappings: Dict[str, str] = getattr(active_registry, "language_mappings", None) or extra_config.get("language_mappings", {})
+
     if country:
-        import unicodedata
-        c_clean = unicodedata.normalize("NFKD", country.strip().upper()).encode("ASCII", "ignore").decode("utf-8")
-        if c_clean in ("DE", "GERMANY", "DEUTSCHLAND", "DACH"):
-            return "DE"
-        if c_clean in ("ES", "SPAIN", "ESPANA"):
-            return "ES"
-        if c_clean in ("US", "USA", "UNITED STATES", "ESTADOS UNIDOS"):
-            return "US"
-        if c_clean in ("BR", "BRAZIL", "BRASIL"):
-            return "BR"
-        if c_clean in ("MX", "MEXICO"):
-            return "MX"
-        if c_clean in ("JP", "JAPAN", "JAPON"):
-            return "JP"
-        if c_clean in ("SA", "SAUDI ARABIA", "ARABIA SAUDITA", "KSA"):
-            return "SA"
-        if c_clean in ("SG", "SINGAPORE", "SINGAPUR"):
-            return "SG"
-        if c_clean in ("AU", "AUSTRALIA"):
-            return "AU"
-        if c_clean in ("CL", "CHILE"):
-            return "CL"
-        if c_clean in ("CO", "COLOMBIA"):
-            return "CO"
-        if c_clean in ("NO", "NORWAY", "NORUEGA"):
-            return "NO"
-        if c_clean in ("UK", "GB", "UNITED KINGDOM", "REINO UNIDO"):
-            return "GB"
+        c_clean = _normalize_token(country)
+        if c_clean in active_registry.jurisdictions:
+            return c_clean
+        if isinstance(country_aliases, dict) and c_clean in country_aliases:
+            return str(country_aliases[c_clean]).upper()
+        for code, profile in active_registry.jurisdictions.items():
+            if c_clean == _normalize_token(profile.region_code):
+                return code
+            name_tokens = [
+                t.strip()
+                for t in re.split(r"[/,\-()\s]+", _normalize_token(profile.name))
+                if t.strip()
+            ]
+            if c_clean in name_tokens or c_clean == _normalize_token(profile.name):
+                return code
         if len(c_clean) == 2 and c_clean.isalpha():
             return c_clean
 
-    # Analyze regulatory text tokens
-    tokens = " ".join(frameworks or []).lower()
-    if any(k in tokens for k in ("nis2", "bsi", "it-grundschutz", "iec 62443", "gaia-x")):
-        return "DE"
-    if any(k in tokens for k in ("ens", "ccn", "esquema nacional", "sara")):
-        return "ES"
-    if any(k in tokens for k in ("fedramp", "hipaa", "cmmc", "nist", "fda")):
-        return "US"
-    if any(k in tokens for k in ("bcb", "lgpd", "pix", "rsfn")):
-        return "BR"
-    if any(k in tokens for k in ("cnbv", "spei", "banxico", "inai")):
-        return "MX"
-    if any(k in tokens for k in ("fisc", "ismap", "zedi", "jcmvp")):
-        return "JP"
-    if any(k in tokens for k in ("sama", "nca", "ecc-1")):
-        return "SA"
-    if any(k in tokens for k in ("mas", "trm", "abs")):
-        return "SG"
-    if any(k in tokens for k in ("apra", "essential eight", "cps 234")):
-        return "AU"
-    if any(k in tokens for k in ("cmf", "ran 20-10")):
-        return "CL"
-    if any(k in tokens for k in ("sfc", "circular 007")):
-        return "CO"
+    if frameworks:
+        normalized_frameworks = [_normalize_token(fw) for fw in frameworks if fw and fw.strip()]
+        joined_tokens = " ".join(normalized_frameworks)
+        if isinstance(framework_mappings, dict):
+            for keyword, mapped_code in framework_mappings.items():
+                if _normalize_token(str(keyword)) in joined_tokens:
+                    return str(mapped_code).upper()
+        for code, profile in active_registry.jurisdictions.items():
+            corpus = " ".join(
+                [
+                    _normalize_token(profile.name),
+                    _normalize_token(profile.primary_hsm_standard),
+                    *(_normalize_token(inv) for inv in profile.architectural_invariants),
+                    *(_normalize_token(rule) for rule in profile.data_residency_rules),
+                    *(_normalize_token(std) for std in profile.connectivity_standards),
+                ]
+            )
+            for fw_token in normalized_frameworks:
+                if fw_token and fw_token in corpus:
+                    return code
 
-    # Fallback to language hints
-    lang_to_jurisdiction = {
-        "de": "DE",
-        "ja": "JP",
-        "en": "US",
-        "pt": "BR",
-    }
-    normalized_code = (language or "en").strip().lower()
-    return lang_to_jurisdiction.get(normalized_code, "ES")
+    if language:
+        lang_clean = _normalize_token(language)
+        if isinstance(language_mappings, dict):
+            for lang_key, mapped_code in language_mappings.items():
+                if _normalize_token(str(lang_key)) == lang_clean:
+                    return str(mapped_code).upper()
+        if lang_clean in active_registry.jurisdictions:
+            return lang_clean
+
+    default_code = (
+        getattr(active_registry, "default_jurisdiction", None)
+        or extra_config.get("default_jurisdiction")
+    )
+    if isinstance(default_code, str) and default_code.upper() in active_registry.jurisdictions:
+        return default_code.upper()
+
+    return next(iter(active_registry.jurisdictions.keys()))
+
+
+def _load_jit_prompt_template(registry: JurisdictionalRegistry | None = None) -> str:
+    """Load the JIT jurisdiction synthesis prompt template from external configuration."""
+    if registry is not None:
+        extra_config: Dict[str, Any] = (
+            registry.model_extra if isinstance(registry.model_extra, dict) else {}
+        )
+        inline_template = (
+            getattr(registry, "jit_synthesis_prompt_template", None)
+            or extra_config.get("jit_synthesis_prompt_template")
+        )
+        if isinstance(inline_template, str) and inline_template.strip():
+            return inline_template
+
+    prompt_file = JIT_PROMPT_PATH.resolve()
+    if not prompt_file.exists() or not prompt_file.is_file():
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: JIT synthesis prompt template file missing at '{prompt_file}'."
+        )
+    try:
+        content = prompt_file.read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Unable to read JIT synthesis prompt template at '{prompt_file}': {exc}"
+        ) from exc
+    if not content:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: JIT synthesis prompt template at '{prompt_file}' is empty."
+        )
+    return content
 
 
 def synthesize_jurisdiction_profile_jit(
     country: str,
     frameworks: List[str] | None = None,
     region_code: str | None = None,
+    registry: JurisdictionalRegistry | None = None,
 ) -> JurisdictionSovereigntyProfile | None:
-    """Synthesizes at runtime a formal JurisdictionSovereigntyProfile for an unlisted country/jurisdiction."""
-    clean_code = (region_code or country[:2]).strip().upper()
-    dynamic_dir = Path(DYNAMIC_DIR)
-    dynamic_dir.mkdir(parents=True, exist_ok=True)
+    """Synthesize at runtime a formal JurisdictionSovereigntyProfile for an unlisted jurisdiction."""
+    if not country or len(country.strip()) < 2:
+        raise ConfigurationError(
+            "Fatal Fail-Closed Policy Error: Country identifier for JIT synthesis must contain at least 2 characters."
+        )
+    clean_code = (region_code or country.strip()[:2]).strip().upper()
+    dynamic_dir = Path(DYNAMIC_DIR).resolve()
+    try:
+        dynamic_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Unable to create dynamic jurisdiction directory '{dynamic_dir}': {exc}"
+        ) from exc
+
     cache_file = dynamic_dir / f"{clean_code.lower()}.json"
 
     if cache_file.exists():
+        if not cache_file.is_file():
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Cached dynamic jurisdiction path '{cache_file}' is not a regular file."
+            )
         try:
             cached_data = json.loads(cache_file.read_text(encoding="utf-8"))
-            return JurisdictionSovereigntyProfile.model_validate(cached_data)
-        except Exception as ex:
-            logger.debug("Failed reading cached dynamic jurisdiction: %s", ex)
+            profile = JurisdictionSovereigntyProfile.model_validate(cached_data, strict=True)
+        except (OSError, json.JSONDecodeError, ValidationError) as exc:
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Corrupted cached dynamic jurisdiction at '{cache_file}': {exc}"
+            ) from exc
+        _validate_profile_invariants(clean_code, profile, cache_file)
+        return profile
+
+    prompt_template = _load_jit_prompt_template(registry=registry)
+    prompt = prompt_template.format(
+        country=country.strip(),
+        frameworks=json.dumps(frameworks or []),
+        clean_code=clean_code,
+    )
+
+    from assessment_engine.infrastructure.genai_client import (
+        ModelTier,
+        create_genai_client,
+        get_model,
+    )
+
+    client = create_genai_client()
+    model_name = get_model(ModelTier.FAST)
 
     try:
-        from assessment_engine.infrastructure.genai_client import (
-            ModelTier,
-            create_genai_client,
-            get_model,
+        response = client.models.generate_content(model=model_name, contents=prompt)
+    except RuntimeError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Model invocation failed during JIT synthesis for '{country}': {exc}"
+        ) from exc
+
+    raw_output = getattr(response, "text", None)
+    if not isinstance(raw_output, str) or not raw_output.strip():
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Empty model response during JIT synthesis for '{country}'."
         )
 
-        client = create_genai_client()
-        model_name = get_model(ModelTier.FAST)
+    text = raw_output.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\n?", "", text)
+        text = re.sub(r"\n?```$", "", text)
 
-        prompt = f"""You are a Principal Enterprise & Sovereign Cloud Architect specializing in global regulatory and territorial compliance.
-Synthesize the formal territorial architectural sovereignty profile for country/jurisdiction: '{country}'.
-Relevant regulatory frameworks: {json.dumps(frameworks or [])}.
-Region Code: '{clean_code}'.
-
-Return ONLY a valid JSON object matching the exact schema:
-{{
-  "name": "{country} / Regional Sovereign Cloud",
-  "region_code": "{clean_code}",
-  "sovereign_cloud_providers": ["List 2-4 primary qualified local or sovereign cloud datacenter providers"],
-  "architectural_invariants": ["List 3-4 mandatory technical, cryptographic, or operational invariants, e.g. local residency, specific banking/critical infra laws, certification schemes"],
-  "connectivity_standards": ["List 1-2 direct secure interconnection standards, national fiber backbones, or IXPs"],
-  "primary_hsm_standard": "Mandated HSM standard, e.g. FIPS 140-2 Level 3 or local standard",
-  "data_residency_rules": ["List 1-2 strict data boundary or judicial custody rules"]
-}}"""
-
-        response = client.models.generate_content(
-            model=model_name, contents=prompt
-        )
-        text = response.text.strip()
-        if text.startswith("```"):
-            text = re.sub(r"^```(?:json)?\n?", "", text)
-            text = re.sub(r"\n?```$", "", text)
-
+    try:
         synthesized = json.loads(text)
-        profile = JurisdictionSovereigntyProfile.model_validate(synthesized)
+        profile = JurisdictionSovereigntyProfile.model_validate(synthesized, strict=True)
+    except (json.JSONDecodeError, ValidationError) as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Synthesized JIT profile for '{country}' failed validation: {exc}"
+        ) from exc
+
+    _validate_profile_invariants(clean_code, profile, cache_file)
+
+    try:
         cache_file.write_text(
             json.dumps(profile.model_dump(), indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        logger.info("Successfully synthesized and cached JIT jurisdiction profile for '%s' (%s).", country, clean_code)
-        return profile
-    except Exception as ex:
-        logger.warning("JIT synthesis of jurisdiction '%s' skipped or unavailable: %s. Using default baseline.", country, ex)
-        return None
+    except OSError as exc:
+        raise ConfigurationError(
+            f"Fatal Fail-Closed Policy Error: Failed writing synthesized jurisdiction cache '{cache_file}': {exc}"
+        ) from exc
+
+    logger.info(
+        "Successfully synthesized and cached JIT jurisdiction profile for '%s' (%s).",
+        country,
+        clean_code,
+    )
+    return profile
 
 
 class JurisdictionalSovereigntyPolicy(BaseSovereignPolicy):
     """Enforces territorial architectural sovereignty across knowledge graphs and deliverables."""
 
     def __init__(self, registry: JurisdictionalRegistry | None = None) -> None:
-        self.registry = registry or load_jurisdictional_registry()
+        self.registry = registry or load_verified_registry_fail_closed()
+        if not self.registry.jurisdictions:
+            raise ConfigurationError(
+                "Fatal Fail-Closed Policy Error: JurisdictionalSovereigntyPolicy initialized with an empty registry."
+            )
 
     def evaluate_and_patch(
         self, graph: EpistemicGraph, payload: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Injects jurisdictional invariants into the epistemic graph and enriches document payload."""
-        meta = payload.get("document_meta", {})
+        """Inject jurisdictional invariants into the epistemic graph and enrich document payload."""
+        meta = payload.setdefault("document_meta", {})
         client_name = meta.get("client_name", "CLIENT")
         tower_code = meta.get("tower_code", "T0")
 
         # Extract context
-        country_hint = meta.get("country") or meta.get("region_code") or payload.get("jurisdiction")
-        frameworks = meta.get("regulatory_context") or meta.get("regulatory_frameworks") or []
+        country_hint = (
+            meta.get("country")
+            or meta.get("region_code")
+            or payload.get("jurisdiction")
+        )
+        frameworks = (
+            meta.get("regulatory_context")
+            or meta.get("regulatory_frameworks")
+            or []
+        )
         language = meta.get("language") or meta.get("doc_lang")
 
-        code = infer_jurisdiction_code(country_hint, frameworks, language)
+        code = infer_jurisdiction_code(
+            country=country_hint,
+            frameworks=frameworks,
+            language=language,
+            registry=self.registry,
+        )
         profile: JurisdictionSovereigntyProfile | None = self.registry.jurisdictions.get(code)
 
-        # Runtime JIT Resolution if unlisted
-        if not profile and country_hint:
-            profile = synthesize_jurisdiction_profile_jit(str(country_hint), frameworks, region_code=code)
-            if profile:
+        # Runtime JIT Resolution if unlisted and country_hint is provided
+        if profile is None and country_hint:
+            profile = synthesize_jurisdiction_profile_jit(
+                str(country_hint),
+                frameworks,
+                region_code=code,
+                registry=self.registry,
+            )
+            if profile is not None:
                 self.registry.jurisdictions[code] = profile
 
-        if not profile:
-            profile = self.registry.jurisdictions.get("ES")
+        if profile is None:
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: No verified JurisdictionSovereigntyProfile resolved for code '{code}'."
+            )
 
-        if not profile:
-            return payload
+        if not profile.architectural_invariants:
+            raise ConfigurationError(
+                f"Fatal Fail-Closed Policy Error: Resolved jurisdiction '{code}' contains zero architectural invariants."
+            )
 
         # 1. Enrich payload metadata
         meta["jurisdiction_code"] = code
@@ -243,11 +440,11 @@ class JurisdictionalSovereigntyPolicy(BaseSovereignPolicy):
         meta["jurisdictional_sovereignty"] = profile.model_dump()
 
         # 2. Augment target projects with jurisdictional deliverables
+        primary_invariant = profile.architectural_invariants[0]
         for pillar in payload.get("pillars_analysis", []):
             for proj in pillar.get("projects_todo", []):
                 deliverables = proj.setdefault("deliverables", [])
-                invariant = profile.architectural_invariants[0]
-                d_item = f"Architectural Sovereignty Verification: {invariant}"
+                d_item = f"Architectural Sovereignty Verification: {primary_invariant}"
                 if d_item not in deliverables:
                     deliverables.append(d_item)
 
