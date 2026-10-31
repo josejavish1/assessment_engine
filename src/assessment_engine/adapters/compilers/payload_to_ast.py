@@ -285,47 +285,81 @@ class PayloadToASTBridge:
 
     def _build_cover_and_toc(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         vocab = ctx["vocab"]
-        gs_val = ctx["gs_val"]
         tower_name = ctx["tower_name"]
-        blueprint_data = ctx["blueprint_data"]
-        client_name = ctx["client_name"]
         client_name = ctx["client_name"]
         date_str = ctx["date_str"]
         version = ctx["version"]
         meta_lang = ctx["meta_lang"]
-        # 1. Corporate Cover Page
-        #
-        nodes.append(SpacerNode(points=120))
+        blueprint_data = ctx.get("blueprint_data", {})
 
-        # Title and Subtitle
+        # 1. Corporate Executive Cover Page
+        nodes.append(SpacerNode(points=90))
+
         title_text = vocab.get("title", "Current State Assessment Report (AS-IS)")
-        nodes.append(ParagraphNode(text=title_text, bold=True, space_after=12))
         nodes.append(
-            HeadingNode(
-                text=f"Technical Annex: {tower_name}",
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
+            ParagraphNode(
+                text=title_text,
+                bold=True,
+                font_size=11.0,
+                text_color_rgb=[0, 114, 188],
+                space_after=16,
             )
         )
 
-        nodes.append(SpacerNode(points=120))
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        tower_code = blueprint_data.get("document_meta", {}).get("tower_code", "T1")
+        localized_tower_name = resolver.resolve_tower_name(tower_code, default=tower_name, locale=meta_lang)
 
-        # Client (Project info is removed)
-        client_lbl = vocab.get("client_lbl", "Cliente:\n")
+        annex_prefix = t("annex_technical_prefix", locale=meta_lang)
+        nodes.append(
+            HeadingNode(
+                text=f"{annex_prefix} {localized_tower_name}",
+                level=1,
+                primary_color_rgb=[15, 23, 42],
+            )
+        )
+
+        sub_text = t("cover_subtitle_text", locale=meta_lang)
         nodes.append(
             ParagraphNode(
-                text=f"{client_lbl}{client_name.upper()}", bold=True, space_after=120
+                text=sub_text,
+                italic=True,
+                font_size=12.0,
+                text_color_rgb=[100, 116, 139],
+                space_after=140,
+            )
+        )
+
+        client_lbl = t("client_lbl", locale=meta_lang)
+        nodes.append(
+            ParagraphNode(
+                text=f"**{client_lbl.strip()}** {client_name.upper()}",
+                bold=True,
+                font_size=11.5,
+                space_after=6,
+            )
+        )
+
+        facility_lbl = t("facility_label", locale=meta_lang)
+        facility_desc = t("facility_default_desc", locale=meta_lang)
+        nodes.append(
+            ParagraphNode(
+                text=f"**{facility_lbl.strip()}** {facility_desc}",
+                font_size=10.5,
+                text_color_rgb=[51, 65, 85],
+                space_after=6,
             )
         )
 
         classification_clean = self.classification.replace(" (Tier-1 Assessment)", "")
-
-        # Date and classification
+        version_lbl = t("version_label", locale=meta_lang)
         nodes.append(
             ParagraphNode(
-                text=f"{date_str} | Version {version} | {classification_clean}",
+                text=f"{date_str} | {version_lbl} {version} | {classification_clean}",
                 italic=True,
-                text_color_rgb=[150, 150, 150],
+                font_size=9.5,
+                text_color_rgb=[148, 163, 184],
             )
         )
         nodes.append(PageBreakNode())
@@ -340,12 +374,12 @@ class PayloadToASTBridge:
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
-        nodes.append(SpacerNode(points=10))
-        
-        # Build an elegant, highly polished, static-rendered executive Table of Contents
+        nodes.append(SpacerNode(points=14))
+
+        # Build native tab-separated executive Table of Contents
         for entry in get_localized_list("static_toc_entries", locale=meta_lang):
-            nodes.append(ParagraphNode(text=entry))
-        
+            nodes.append(ParagraphNode(text=entry, space_after=8))
+
         nodes.append(PageBreakNode())
 
         #
@@ -399,6 +433,9 @@ class PayloadToASTBridge:
                 ParagraphNode(text=t("module_exec_summary_unavailable", locale=meta_lang))
             )
 
+        # Respiro ejecutivo: Chapter 1 has its own dedicated page
+        nodes.append(PageBreakNode())
+
         #
         # CHAPTER 2: ASSESSMENT OBJECTIVE AND SCOPE
         #
@@ -434,10 +471,11 @@ class PayloadToASTBridge:
                 ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))
             )
 
-        # Section 2.3 (Strategic Business Context) has been symmetrically removed from tower-specific reports, as strategic alignment and traceability registry belong exclusively in the Global Consolidated Report, per Gartner standards.
+        # Chapter 2 ends cleanly with dedicated page
+        nodes.append(PageBreakNode())
 
         #
-        # CHAPTER 3: TECHNOLOGICAL DIAGNOSIS AND PLATFORM ANALYSIS
+        # CHAPTER 3: TECHNOLOGICAL DIAGNOSIS AND MATURITY DASHBOARD
         #
         nodes.append(
             HeadingNode(
@@ -447,27 +485,12 @@ class PayloadToASTBridge:
             )
         )
 
-        # 3.0 Direct Introduction (Consulting-grade synthesis)
+        # 3.1 Direct Introduction (Consulting-grade synthesis)
         intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
-        # We completely bypass dumping 03_descripcion_plataforma.md to prevent repetitive walls of text.
-
-        nodes.append(PageBreakNode())
-
-        #
-        # CHAPTER 4: MATURITY PROFILE AND GENERAL EVALUATION
-        #
-        nodes.append(
-            HeadingNode(
-                text=t("section_evaluation_maturity", locale=meta_lang),
-                level=1,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-
-        # 4.1 Global Dashboard
+        # 3.2 Global Dashboard
         nodes.append(
             HeadingNode(
                 text=t("dashboard_title", locale=meta_lang),
@@ -585,21 +608,21 @@ class PayloadToASTBridge:
             
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
             
-            # Map score to status and color
+            # Map score to status and color via localized keys
             if p_score >= 4.20:
-                p_status = "Excellent (A)"
+                p_status = t("status_excellent", locale=meta_lang)
                 p_bg_color = "D9F2D9"
             elif p_score >= 3.40:
-                p_status = "Stable (B)"
+                p_status = t("status_stable", locale=meta_lang)
                 p_bg_color = "E2F0D9"
             elif p_score >= 2.60:
-                p_status = "Standardized (C)"
+                p_status = t("status_standardized", locale=meta_lang)
                 p_bg_color = "FFF3CD"
             elif p_score >= 1.80:
-                p_status = "Basic (D)"
+                p_status = t("status_basic", locale=meta_lang)
                 p_bg_color = "FCE4D6"
             else:
-                p_status = "Critical (F)"
+                p_status = t("status_critical", locale=meta_lang)
                 p_bg_color = "F2D9D9"
 
             health_rows.append(
@@ -615,18 +638,18 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=health_rows))
         nodes.append(SpacerNode(points=15))
 
-
     def _build_systemic_risk_section(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         meta_lang = ctx["meta_lang"]
         modules_dir = ctx["modules_dir"]
         intel_data = ctx["intel_data"]
         tower_id = ctx["tower_id"]
-        transversal_title = t("transversal_analysis_title", locale=meta_lang)
-        nodes.append(HeadingNode(text=transversal_title, level=2, primary_color_rgb=self.primary_color_rgb))
+
         trans_path = modules_dir / "05_transversal.md"
         if trans_path.exists():
+            transversal_title = t("transversal_analysis_title", locale=meta_lang)
+            nodes.append(HeadingNode(text=transversal_title, level=2, primary_color_rgb=self.primary_color_rgb))
             nodes.extend(self._parse_markdown_to_nodes(trans_path, skip_level_1=True))
-        nodes.append(SpacerNode(points=20))
+            nodes.append(SpacerNode(points=15))
 
         # 3.5 Systemic Risk Indicators and Decision Context (MCDA + Monte Carlo + LCBN)
         if intel_data:
@@ -895,22 +918,29 @@ class PayloadToASTBridge:
             in_mem_rows = derive_in_memory_maturity_matrix(blueprint_data, doc_lang=meta_lang)
             mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
             header_cells = [
-                CellNode(text=h, bold=True, font_size=9.0, bg_color="0072BC", align="CENTER")
+                CellNode(
+                    text=h,
+                    bold=True,
+                    font_size=9.0,
+                    bg_color="0072BC",
+                    text_color_rgb=[255, 255, 255],
+                    align="CENTER",
+                )
                 for h in mat_headers
             ]
             table_rows = [TableRowNode(cells=header_cells, is_header=True)]
             for r_idx, r_item in enumerate(in_mem_rows):
                 bg = self.alt_row_hex if r_idx % 2 == 1 else "FFFFFF"
-                int_score = int(round(r_item["score"]))
+                score_val = float(r_item["score"])
+                formatted_score = f"{score_val:.2f}".replace(".", ",")
+                band_label = r_item.get("band_label", "")
                 row_cells = [
                     CellNode(text=r_item["pillar_name"], bold=True, font_size=8.5, bg_color=bg),
-                    CellNode(text=f"{int_score} ({r_item['band_label']})", font_size=8.5, bg_color=bg, align="CENTER"),
+                    CellNode(text=f"{formatted_score} ({band_label})", font_size=8.5, bg_color=bg, align="CENTER"),
                     CellNode(text=r_item["justification"], font_size=8.5, bg_color=bg),
                 ]
                 table_rows.append(TableRowNode(cells=row_cells))
             nodes.append(TableNode(rows=table_rows))
-
-        nodes.append(PageBreakNode())
 
         #
         # CHAPTER 4: QUANTITATIVE RISK MATRIX (O-FAIR)
@@ -1262,21 +1292,18 @@ class PayloadToASTBridge:
 
                 nodes.append(TableNode(rows=risk_rows))
 
-        nodes.append(PageBreakNode())
-
         #
         # CHAPTER 5: CONCLUSIONS AND COST OF INACTION
         #
 
     def _build_conclusions_and_appendices(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         self._build_conclusions_chapter(ctx, nodes)
-        nodes.append(PageBreakNode())
-        _build_appendix_a_glossary_fn(ctx, nodes, self.primary_color_rgb)
-        _build_appendix_b_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
         _build_appendix_c_custody_fn(ctx, nodes, self.primary_color_rgb)
         _build_appendix_d_methodology_fn(
             ctx, nodes, self.primary_color_rgb, self.brand_data, self.alt_row_hex
         )
+        _build_appendix_a_glossary_fn(ctx, nodes, self.primary_color_rgb)
+        _build_appendix_b_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
 
     def _build_conclusions_chapter(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         from assessment_engine.infrastructure.localization import t
@@ -1285,6 +1312,16 @@ class PayloadToASTBridge:
         client_name = ctx["client_name"]
         modules_dir = ctx["modules_dir"]
         meta_lang = ctx["meta_lang"]
+
+        # 5. Chapter Main Heading
+        nodes.append(
+            HeadingNode(
+                text=t("chapter_5_strategic_roadmap", locale=meta_lang),
+                level=1,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+
         # 5.1 Transformation Paradigm (Promoted here from Chapter 4 as it represents a TO-BE vision)
         nodes.append(
             HeadingNode(

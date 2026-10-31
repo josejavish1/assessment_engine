@@ -42,11 +42,11 @@ class MaturityBandDefinition(TypedDict, total=False):
 
 
 ANNEX_MATURITY_BANDS: tuple[MaturityBandDefinition, ...] = (
-    {"min": 4.5, "max": float("inf"), "label": "Optimized", "band_key": "band_optimized"},
-    {"min": 3.5, "max": 4.5, "label": "Managed", "band_key": "band_managed"},
-    {"min": 2.5, "max": 3.5, "label": "Defined", "band_key": "band_defined"},
-    {"min": 1.5, "max": 2.5, "label": "Repeatable", "band_key": "band_repeatable"},
-    {"min": float("-inf"), "max": 1.5, "label": "Initial", "band_key": "band_initial"},
+    {"min": 4.2, "max": float("inf"), "label": "Optimized", "band_key": "band_optimized"},
+    {"min": 3.4, "max": 4.2, "label": "Managed", "band_key": "band_managed"},
+    {"min": 2.6, "max": 3.4, "label": "Defined", "band_key": "band_defined"},
+    {"min": 1.8, "max": 2.6, "label": "Repeatable", "band_key": "band_repeatable"},
+    {"min": float("-inf"), "max": 1.8, "label": "Initial", "band_key": "band_initial"},
 )
 
 GLOBAL_MATURITY_BANDS: tuple[MaturityBandDefinition, ...] = (

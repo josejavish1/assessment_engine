@@ -532,11 +532,65 @@ class DocxCompiler(DocumentCompiler):
             p._p.append(fldSimple)
             return
 
+        # If node.text contains multiple lines, decompose into discrete paragraphs
+        # to prevent soft-break <w:br/> justification stretching ("white rivers")
+        if "\n" in node.text and not node.text.startswith("```"):
+            sub_paragraphs = [sp.strip() for sp in node.text.split("\n") if sp.strip()]
+            for sp_idx, sp_text in enumerate(sub_paragraphs):
+                sub_node = ParagraphNode(
+                    text=sp_text,
+                    bold=node.bold,
+                    italic=node.italic,
+                    style=node.style,
+                    space_after=node.space_after if sp_idx == len(sub_paragraphs) - 1 else 6,
+                    align=node.align,
+                    font_size=node.font_size,
+                    text_color_rgb=node.text_color_rgb,
+                )
+                self._compile_paragraph(doc, sub_node)
+            return
+
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(node.space_after)
 
-        # Map string alignment
-        align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
+        # Native right-aligned tab stop for TOC dot-leader entries
+        if "\t" in node.text:
+            from docx.enum.text import WD_TAB_ALIGNMENT, WD_TAB_LEADER
+            from docx.shared import Inches
+            parts = node.text.split("\t", 1)
+            p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p.paragraph_format.tab_stops.add_tab_stop(
+                Inches(6.4), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS
+            )
+            run_title = p.add_run(parts[0].strip())
+            run_title.bold = True
+            set_run_font_comprehensive(run_title, font_name="Arial")
+            run_title.font.size = Pt(10.0)
+            run_title.font.color.rgb = RGBColor(15, 23, 42)
+
+            run_tab = p.add_run("\t")
+            set_run_font_comprehensive(run_tab, font_name="Arial")
+
+            run_page = p.add_run(parts[1].strip())
+            run_page.bold = True
+            set_run_font_comprehensive(run_page, font_name="Arial")
+            run_page.font.size = Pt(10.0)
+            run_page.font.color.rgb = RGBColor(0, 114, 188)
+            return
+
+        # Map string alignment: headers, short labels and bullets must be left-aligned
+        clean_text_val = node.text.strip()
+        is_short_or_label = (
+            len(clean_text_val) < 85
+            or clean_text_val.endswith(":")
+            or clean_text_val.startswith("#")
+            or node.style in ("List Bullet", "Bullet")
+        )
+        if is_short_or_label:
+            align_const = WD_ALIGN_PARAGRAPH.LEFT
+        else:
+            align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
+
         align_str = node.align.upper()
         if align_str == "CENTER":
             align_const = WD_ALIGN_PARAGRAPH.CENTER
@@ -570,6 +624,18 @@ class DocxCompiler(DocumentCompiler):
         p = add_heading_paragraph(doc, node.text, level=node.level)
 
         if p:
+            # Level 1 headings start on a new page unless preceded by an explicit page break
+            if node.level == 1 and len(doc.paragraphs) > 5:
+                prev_has_br = False
+                if len(doc.paragraphs) >= 2:
+                    prev_p = doc.paragraphs[-2]
+                    for r in prev_p.runs:
+                        for child in r._r:
+                            if child.tag.endswith("br") and child.attrib.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type") == "page":
+                                prev_has_br = True
+                if not prev_has_br:
+                    p.paragraph_format.page_break_before = True
+
             # C-Level Typography Hygiene: Prevent orphaned headings at page bottom
             pPr = p._p.get_or_add_pPr()
             pPr.append(OxmlElement("w:keepNext"))
@@ -654,6 +720,8 @@ class DocxCompiler(DocumentCompiler):
                     fg_hex = f"{cell_node.text_color_rgb[0]:02X}{cell_node.text_color_rgb[1]:02X}{cell_node.text_color_rgb[2]:02X}"
                     safe_fg_hex = StyleInvariantGuard.enforce_safe_foreground(fg_hex, bg_hex)
                     safe_rgb = (int(safe_fg_hex[0:2], 16), int(safe_fg_hex[2:4], 16), int(safe_fg_hex[4:6], 16))
+                elif bg_hex and bg_hex.upper() in ("0072BC", "0F172A", "00205B", "1E3A8A"):
+                    safe_rgb = (255, 255, 255)
                 else:
                     safe_rgb = None
 

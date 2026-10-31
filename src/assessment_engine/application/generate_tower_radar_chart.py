@@ -76,19 +76,25 @@ def generate_radar_chart_from_pillars(pillars: list[dict], out_path: Path) -> Pa
     angles += angles[:1]
     values += values[:1]
 
-    fig = plt.figure(figsize=(8, 6.2))
+    fig = plt.figure(figsize=(9.5, 7.5))
     ax = plt.subplot(111, polar=True)
+    ax.set_position([0.20, 0.20, 0.60, 0.60])
 
     ax.set_theta_offset(math.pi / 2)  # type: ignore
     ax.set_theta_direction(-1)  # type: ignore
 
     ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(labels, fontsize=10)
+    ax.set_xticklabels(labels, fontsize=10.0, fontweight="bold")
+    ax.tick_params(axis="x", pad=42)
 
-    ax.set_rlabel_position(0)  # type: ignore
-    ax.set_ylim(1, 5)
+    # Deactivate the harsh outer polar spine to prevent crossing outer text labels
+    ax.spines["polar"].set_visible(False)
+
+    ax.set_rlabel_position(35)  # type: ignore
+    ax.set_ylim(0.5, 5.2)
     ax.set_yticks([2, 3, 4, 5])
-    ax.set_yticklabels(["2", "3", "4", "5"], fontsize=9)
+    ax.set_yticklabels(["2", "3", "4", "5"], fontsize=9, color="#64748B")
+    ax.grid(color="#CBD5E1", linestyle="--", linewidth=0.8)
 
     # Plot the radar line and filled polygon using a professional corporate blue with circle markers
     ax.plot(angles, values, linewidth=2, color="#0072BC", marker="o", markersize=6)

@@ -1292,25 +1292,26 @@ def add_heading_paragraph(doc, text: Any, level: Any = 1) -> Any:
 
     brand_rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_PRIMARY)
     if level == 1:
-        run.bold = False
+        run.bold = True
         paragraph.paragraph_format.space_before = Pt(18)
-        paragraph.paragraph_format.space_after = Pt(18)
+        paragraph.paragraph_format.space_after = Pt(14)
         paragraph.paragraph_format.page_break_before = False
-        run.font.name = "Georgia"
-        run.font.size = Pt(20)
+        run.font.name = "Arial"
+        run.font.size = Pt(18)
         run.font.color.rgb = brand_rgb
     elif level == 2:
-        run.bold = False
-        paragraph.paragraph_format.space_before = Pt(12)
-        paragraph.paragraph_format.space_after = Pt(12)
-        run.font.name = "Georgia"
-        run.font.size = Pt(14)
+        run.bold = True
+        paragraph.paragraph_format.space_before = Pt(14)
+        paragraph.paragraph_format.space_after = Pt(10)
+        run.font.name = "Arial"
+        run.font.size = Pt(13)
         run.font.color.rgb = brand_rgb
     else:
         run.bold = True
-        paragraph.paragraph_format.space_before = Pt(3)
+        paragraph.paragraph_format.space_before = Pt(8)
         paragraph.paragraph_format.space_after = Pt(4)
-        run.font.size = Pt(11.5)
+        run.font.name = "Arial"
+        run.font.size = Pt(11)
 
     return paragraph
 
