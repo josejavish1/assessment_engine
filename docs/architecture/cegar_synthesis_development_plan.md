@@ -97,7 +97,12 @@ To maintain strict separation of concerns and protect the core domain from infra
 
 ## 2. DOMAIN & SCHEMA DEFINITION
 
-All schemas are strictly implemented in **Pydantic v2** with `ConfigDict(strict=True, extra='forbid', frozen=True)`. Floating-point inaccuracies (IEEE-754 binary representation drift) are eliminated in financial calculations by enforcing `decimal.Decimal` or explicit tolerance bounds ($\epsilon = 10^{-4}$). All human-language strings are unconstrained by hardcoded locales; localization is enforced dynamically via structural context injection.
+All schemas are strictly implemented in **Pydantic v2** with `ConfigDict(strict=True, extra='forbid', frozen=True)`. To support provider-agnostic LLM Structured Outputs (which return JSON numbers as numerical floats or strings), all financial fields include a pre-validation coercion layer (`mode='before'`) mapping `str | int | float -> Decimal(str(v))`. Floating-point inaccuracies (IEEE-754 binary representation drift) are eliminated by enforcing `decimal.Decimal` and exact integer bounds.
+
+Crucially, **syntactic parsing is cleanly decoupled from semantic/mathematical invariant verification**:
+1. **Candidate Schema (`CandidateEnterpriseDeliverable`):** Enforces data types, string bounds, and structural presence so that any LLM emission can be instantiated as Candidate $\mathcal{A}_0$ in memory.
+2. **Deterministic Verification Oracle (`DeterministicVerificationOracle`):** Evaluates cross-aggregate business logic, accounting identities, and citation bipartite graphs. If an invariant is violated, it does **not** crash with an unhandled Python exception; instead, it compiles and returns a formal `CounterexampleVector` ($\mathcal{C}$) containing actionable remediation directives for the 1-Shot Optimizer.
+3. **Verified Entity (`VerifiedEnterpriseDeliverable`):** The sealed, certified aggregate emitted only when $\mathcal{C} = \emptyset$.
 
 ```python
 # src/domain/synthesis/schemas.py
@@ -106,13 +111,12 @@ from __future__ import annotations
 import math
 from decimal import Decimal
 from enum import Enum
-from typing import Annotated, Dict, List, Literal, Optional, Set
+from typing import Annotated, Any, Dict, List, Literal, Optional, Set
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
     field_validator,
-    model_validator,
 )
 
 
@@ -169,22 +173,23 @@ class FinancialProjection(StrictDomainModel):
     risk_exposure_p50: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
     risk_exposure_p90: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
 
-    @model_validator(mode="after")
-    def verify_financial_invariants(self) -> FinancialProjection:
-        # 1. Exact Accounting Identity: CAPEX + OPEX == TCO
-        expected_tco = self.capex_allocation + self.opex_allocation
-        if self.total_cost_of_ownership != expected_tco:
-            raise ValueError(
-                f"FIN_IDENTITY_ERR: TCO ({self.total_cost_of_ownership}) != "
-                f"CAPEX ({self.capex_allocation}) + OPEX ({self.opex_allocation}) [Expected: {expected_tco}]"
-            )
-        # 2. FAIR Monotonicity Invariant: P10 <= P50 <= P90
-        if not (self.risk_exposure_p10 <= self.risk_exposure_p50 <= self.risk_exposure_p90):
-            raise ValueError(
-                f"FAIR_MONOTONICITY_ERR: Percentiles violate P10 ({self.risk_exposure_p10}) <= "
-                f"P50 ({self.risk_exposure_p50}) <= P90 ({self.risk_exposure_p90})."
-            )
-        return self
+    @field_validator(
+        "capex_allocation",
+        "opex_allocation",
+        "total_cost_of_ownership",
+        "risk_exposure_p10",
+        "risk_exposure_p50",
+        "risk_exposure_p90",
+        mode="before",
+    )
+    @classmethod
+    def coerce_decimal(cls, v: Any) -> Decimal:
+        """Coerce raw strings or numerical types from LLM JSON Structured Outputs into exact Decimal."""
+        if isinstance(v, Decimal):
+            return v
+        if isinstance(v, (int, float, str)):
+            return Decimal(str(v))
+        raise ValueError(f"Cannot coerce {type(v)} to Decimal.")
 
 
 class StrategicOption(StrictDomainModel):
@@ -228,11 +233,21 @@ class ExecutiveRoadmapPhase(StrictDomainModel):
     allocated_budget: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
     evidence_citations: Annotated[List[str], Field(min_length=1)]
 
+    @field_validator("allocated_budget", mode="before")
+    @classmethod
+    def coerce_budget_decimal(cls, v: Any) -> Decimal:
+        """Coerce budget from raw JSON into exact Decimal."""
+        if isinstance(v, Decimal):
+            return v
+        if isinstance(v, (int, float, str)):
+            return Decimal(str(v))
+        raise ValueError(f"Cannot coerce {type(v)} to Decimal.")
 
-class VerifiedEnterpriseDeliverable(StrictDomainModel):
+
+class CandidateEnterpriseDeliverable(StrictDomainModel):
     """
-    Root Aggregate for the CEGAR Synthesis Engine.
-    Guaranteed free of structural drift, mathematical error, and ungrounded claims.
+    Syntactic Candidate Root for the CEGAR Synthesis Engine (Candidate A_0 / A_1).
+    Instantiated safely from LLM Structured Outputs prior to formal semantic verification.
     """
     bcp47_locale: Annotated[str, Field(pattern=r"^[a-z]{2,3}(-[A-Z]{2,3})?$")]
     industry_isic_code: Annotated[str, Field(min_length=1, max_length=10, description="UN ISIC Rev.4 Sector Code")]
@@ -245,37 +260,13 @@ class VerifiedEnterpriseDeliverable(StrictDomainModel):
     equilibrium_justification: Annotated[str, Field(min_length=200, max_length=4000)]
     execution_roadmap: Annotated[List[ExecutiveRoadmapPhase], Field(min_length=1, max_length=12)]
 
-    @model_validator(mode="after")
-    def verify_cross_aggregate_invariants(self) -> VerifiedEnterpriseDeliverable:
-        # 1. Orthogonality Check: Each Pareto option must champion a distinct OptimizationAxis
-        axes = {opt.primary_axis for opt in self.pareto_frontier}
-        if len(axes) != 3:
-            raise ValueError("PARETO_ORTHOGONALITY_ERR: All 3 OptimizationAxes must be uniquely represented.")
 
-        # 2. Referential Integrity: Selected option must exist in the Pareto Frontier
-        option_map = {opt.option_id: opt for opt in self.pareto_frontier}
-        if self.selected_equilibrium_option_id not in option_map:
-            raise ValueError(
-                f"REF_INTEGRITY_ERR: Selected option '{self.selected_equilibrium_option_id}' "
-                f"not found in pareto_frontier IDs {list(option_map.keys())}."
-            )
-
-        # 3. Roadmap Financial Reconciliation: Sum of phase budgets must equal the selected option's TCO
-        selected_opt = option_map[self.selected_equilibrium_option_id]
-        roadmap_total = sum((phase.allocated_budget for phase in self.execution_roadmap), Decimal("0.00"))
-        if roadmap_total != selected_opt.financials.total_cost_of_ownership:
-            raise ValueError(
-                f"ROADMAP_BUDGET_MISMATCH: Sum of roadmap phases ({roadmap_total}) != "
-                f"Selected Option TCO ({selected_opt.financials.total_cost_of_ownership})."
-            )
-
-        # 4. Sequential Phase Ordering
-        expected_indices = list(range(1, len(self.execution_roadmap) + 1))
-        actual_indices = [p.phase_index for p in self.execution_roadmap]
-        if actual_indices != expected_indices:
-            raise ValueError(f"ROADMAP_SEQUENCE_ERR: Phase indices {actual_indices} must be contiguous {expected_indices}.")
-
-        return self
+class VerifiedEnterpriseDeliverable(CandidateEnterpriseDeliverable):
+    """
+    Certified Root Aggregate for the CEGAR Synthesis Engine.
+    Emitted if and only if the Deterministic Verification Oracle confirms zero formal violations.
+    """
+    pass
 ```
 
 ---
@@ -285,7 +276,7 @@ class VerifiedEnterpriseDeliverable(StrictDomainModel):
 ### 3.1 Specification Gaming (Goodhart's Law)
 * **The Risk:** When an LLM is subjected to strict deterministic validation (e.g., `min_length=200`, `sum(budgets) == TCO`, `min_citations=1`), it may optimize for passing the validator rather than producing executive-grade insights. For example, it might pad strings with repetitive boilerplate, dump the entire budget into Phase 1 with `$0.00` in subsequent phases, or cite the exact same `evidence_id` across every single claim.
 * **Architectural Mitigation:** Implement **Semantic Entropy & Distribution Heuristics** inside the Deterministic Verification Oracle (`src/domain/synthesis/oracle.py`):
-  1. **Lexical Entropy & Compression Ratio Gate:** Compute the Shannon entropy and `zlib` compression ratio of all text blocks (`executive_thesis`, `architectural_rationale`, `equilibrium_justification`). If $\text{CompressionRatio} < 0.38$, the Oracle flags a `LOW_INFORMATION_DENSITY_ERR` (detecting repetitive padding or syntactic loops).
+  1. **Lexical Entropy & Compression Ratio Gate:** Compute Shannon entropy and `zlib` compression ratio across major narrative sections (`executive_thesis`, `architectural_rationale`, `equilibrium_justification`). For text blocks $> 500$ characters, a $\text{CompressionRatio} < 0.38$ triggers `LOW_INFORMATION_DENSITY_ERR`. For text blocks $\le 500$ characters, a Type-Token Ratio ($\text{TTR} \ge 0.55$) is evaluated instead, preventing short-string zlib header distortion while reliably flagging repetitive filler.
   2. **Citation Graph Bipartite Coverage:** Verify that `supporting_evidence_ids` across the deliverable satisfy a minimum Jaccard diversity threshold against the input `EvidenceRegistry`. Citing a single source ID for $>60\%$ of claims when $\ge 5$ distinct sources exist triggers `EPISTEMIC_MONOCULTURE_ERR`.
   3. **Financial Distribution Guard:** Reject degenerate financial allocations where any single `ExecutiveRoadmapPhase` consumes $0\%$ or $100\%$ of the `total_cost_of_ownership` when `len(execution_roadmap) > 1` (`DEGENERATE_BUDGET_ALLOCATION_ERR`).
 
@@ -313,13 +304,13 @@ class VerifiedEnterpriseDeliverable(StrictDomainModel):
 
 ## 4. STEP-BY-STEP EXECUTION PLAN
 
-To guarantee **zero downtime** and maintain **100% compatibility with the existing 388 green tests** throughout the migration, execution follows the **Strangler Fig Pattern** across five atomic Pull Requests.
+To guarantee **zero downtime** and maintain **100% compatibility with the existing 473 green tests** throughout the migration, execution follows the **Strangler Fig Pattern** across five atomic Pull Requests.
 
 ### PR-1: Domain Foundation & Deterministic Oracle (Additive Only)
 * **Scope:** Introduce `src/domain/synthesis/schemas.py`, `src/domain/synthesis/oracle.py`, and `src/domain/synthesis/exceptions.py`.
-* **Details:** Implement `VerifiedEnterpriseDeliverable`, `CounterexampleVector`, and the `DeterministicVerificationOracle` (including IEEE-754/Decimal math checks, citation graph resolution, and Shannon entropy anti-gaming checks).
+* **Details:** Implement `CandidateEnterpriseDeliverable`, `VerifiedEnterpriseDeliverable`, `CounterexampleVector`, and the `DeterministicVerificationOracle` (including IEEE-754/Decimal math checks, citation graph resolution, and calibrated Shannon entropy / TTR anti-gaming checks).
 * **Testing:** Add 65+ unit tests in `tests/unit/domain/test_cegar_oracle.py` using Hypothesis property-based testing to fuzz financial and structural invariants.
-* **Impact on Existing Suite:** 388 existing tests + 65 new tests = **453 green tests**. Zero existing files modified.
+* **Impact on Existing Suite:** 473 existing tests + 65 new tests = **538 green tests**. Zero existing files modified.
 
 ### PR-2: CEGAR Application Engine & Infrastructure Adapter (Additive Only)
 * **Scope:** Introduce `src/application/services/cegar_synthesis_engine.py` and `src/infrastructure/llm/cegar_adapter.py`.
@@ -328,12 +319,12 @@ To guarantee **zero downtime** and maintain **100% compatibility with the existi
   1. Happy path ($0$ violations $\rightarrow 1$ LLM call).
   2. 1-Shot recovery ($1+$ violations in $\mathcal{A}_0 \rightarrow$ repaired in $\mathcal{A}_1 \rightarrow 2$ LLM calls).
   3. Fail-Fast halt (persistent violation in $\mathcal{A}_1 \rightarrow$ raises `UnverifiableSynthesisError`).
-* **Impact on Existing Suite:** **485+ green tests**. Zero legacy code paths altered.
+* **Impact on Existing Suite:** **560+ green tests**. Zero legacy code paths altered.
 
 ### PR-3: Polymorphic Facade & Shadow-Mode Feature Flagging
 * **Scope:** Refactor the dependency injection container (`src/infrastructure/di/container.py`) and the synthesis port interface.
 * **Details:** Introduce an environment-driven strategy selector (`SYNTHESIS_ENGINE_MODE = "LEGACY" | "SHADOW" | "CEGAR"`). Map `VerifiedEnterpriseDeliverable` to the legacy output DTO via an Anti-Corruption Layer (ACL) mapper so downstream consumers (PDF/PPTX/HTML renderers) require zero immediate changes.
-* **Testing:** Verify that all 388 existing tests pass seamlessly when `SYNTHESIS_ENGINE_MODE="CEGAR"` is injected via `pytest` fixture overrides.
+* **Testing:** Verify that all 473 existing tests pass seamlessly when `SYNTHESIS_ENGINE_MODE="CEGAR"` is injected via `pytest` fixture overrides.
 
 ### PR-4: Cutover & Test Suite Migration
 * **Scope:** Flip default configuration to `SYNTHESIS_ENGINE_MODE="CEGAR"`. Update the specific unit tests previously targeting internal debate mechanics in `tests/unit/test_adversarial_consensus.py` to assert against the CEGAR contract.
