@@ -333,4 +333,4 @@ def build_appendix_d_methodology(
     )
 
     nodes.append(SpacerNode(points=10))
-    # (CFO Zero-Fluff Rule): Removed systemic_resilience_indicators_title and list since they are not used in Molins T1 body.
+    # Systemic resilience indicators omitted when not computed in tower payload body.

@@ -508,7 +508,7 @@ class DocxCompiler(DocumentCompiler):
                 t_item._element.getparent().remove(t_item._element)
 
             footer = section.footer
-            p_foot = footer.paragraphs[0]
+            p_foot = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
             p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             p_foot.paragraph_format.space_before = Pt(8)
 
@@ -524,8 +524,8 @@ class DocxCompiler(DocumentCompiler):
             fldSimple = OxmlElement('w:fldSimple')
             fldSimple.set(qn('w:instr'), 'PAGE')
             p_foot._p.append(fldSimple)
-        except Exception as ex:
-            logger.debug(f"[Footer] Handled exception: {ex}")
+        except (AttributeError, KeyError, IndexError, TypeError) as ex:
+            logger.warning("Document footer decoration encountered non-fatal layout exception: %s", ex)
 
         # Sequentially compiles all AST nodes using a Visitor design pattern.
         for node in ast.nodes:

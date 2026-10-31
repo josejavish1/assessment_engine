@@ -342,7 +342,11 @@ class PayloadToASTBridge:
         )
 
         facility_lbl = t("facility_label", locale=meta_lang)
-        facility_desc = t("facility_default_desc", locale=meta_lang)
+        facility_desc = (
+            blueprint_data.get("document_meta", {}).get("facility_name")
+            or blueprint_data.get("facility_name")
+            or t("facility_default_desc", locale=meta_lang)
+        )
         nodes.append(
             ParagraphNode(
                 text=f"**{facility_lbl.strip()}** {facility_desc}",
@@ -433,7 +437,7 @@ class PayloadToASTBridge:
                 ParagraphNode(text=t("module_exec_summary_unavailable", locale=meta_lang))
             )
 
-        # Respiro ejecutivo: Chapter 1 has its own dedicated page
+        # Executive pacing: Chapter 1 has its own dedicated page
         nodes.append(PageBreakNode())
 
         #
@@ -467,7 +471,18 @@ class PayloadToASTBridge:
                 nodes.append(HeadingNode(text=t("maturity_methodology_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
                 nodes.append(ParagraphNode(text=meth))
 
-            # 2.4 Methodological and Regulatory Framework Table (fills Page 4 with C-Level authority)
+            # 2.4 Methodological and Regulatory Framework Table (driven dynamically per tower domain)
+            norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
+            norm_fw_desc = (
+                t("norm_row_ashrae_desc", locale=meta_lang)
+                if tower_id == "T1"
+                else t("norm_row_iso_desc", locale=meta_lang)
+            )
+            norm_fw_purp = (
+                t("norm_row_ashrae_purp", locale=meta_lang)
+                if tower_id == "T1"
+                else t("norm_row_iso_purp", locale=meta_lang)
+            )
             headers_norm = [
                 CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
                 CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
@@ -481,9 +496,9 @@ class PayloadToASTBridge:
                     CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
                 ]),
                 TableRowNode(cells=[
-                    CellNode(text="ASHRAE TC 9.9", bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=t("norm_row_ashrae_desc", locale=meta_lang), bg_color=self.alt_row_hex),
-                    CellNode(text=t("norm_row_ashrae_purp", locale=meta_lang), bg_color=self.alt_row_hex, align="CENTER"),
+                    CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex),
+                    CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER"),
                 ]),
                 TableRowNode(cells=[
                     CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF"),
@@ -959,7 +974,7 @@ class PayloadToASTBridge:
             for r_idx, r_item in enumerate(in_mem_rows):
                 bg = self.alt_row_hex if r_idx % 2 == 1 else "FFFFFF"
                 score_val = float(r_item["score"])
-                formatted_score = f"{score_val:.2f}".replace(".", ",")
+                formatted_score = format_number(score_val, locale=meta_lang, decimals=2)
                 band_label = r_item.get("band_label", "")
                 row_cells = [
                     CellNode(text=r_item["pillar_name"], bold=True, font_size=8.5, bg_color=bg),
