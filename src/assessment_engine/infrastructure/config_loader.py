@@ -16,6 +16,14 @@ ENGINE_CONFIG_DIR = ROOT / "engine_config"
 
 from typing import Any, TypedDict
 
+from assessment_engine.infrastructure.exceptions import (
+    ConfigurationError,
+    ConfigurationFileNotFoundError,
+    ConfigurationKeyError,
+    ConfigurationParseError,
+    ConfigurationPermissionError,
+)
+
 
 class ModelProfile(TypedDict):
     """TypedDict defining model configuration parameters like temperature and seed."""
@@ -28,10 +36,26 @@ class ModelProfile(TypedDict):
 
 
 def _load_json(path: Path) -> Any:
-    if not path.exists():
-        raise FileNotFoundError(f"No existe: {path}")
-    with path.open("r", encoding="utf-8-sig") as f:
-        return json.load(f)
+    """Loads and deserializes a JSON file from disk with strict fail-fast error handling."""
+    if not path.exists() or not path.is_file():
+        raise ConfigurationFileNotFoundError(path)
+    try:
+        with path.open("r", encoding="utf-8-sig") as f:
+            return json.load(f)
+    except PermissionError as exc:
+        raise ConfigurationPermissionError(path, os_error=str(exc)) from exc
+    except json.JSONDecodeError as exc:
+        raise ConfigurationParseError(
+            path,
+            parse_details=exc.msg,
+            line=exc.lineno,
+            column=exc.colno,
+        ) from exc
+    except OSError as exc:
+        raise ConfigurationError(
+            f"OS I/O failure while reading configuration file '{path}': {exc}",
+            config_path=path,
+        ) from exc
 
 
 def load_abbreviations_glossary() -> dict:
@@ -63,13 +87,14 @@ def load_brand_profile() -> dict:
     return data
 
 
-def get_consultant_company_name() -> str:
-    """Returns the configured consultant company name, defaulting to 'Consultora' if not set."""
+def get_consultant_company_name(default: str = "Strategic Advisory") -> str:
+    """Returns the configured consultant company name from brand_profile.json."""
     try:
         brand = load_brand_profile()
-        return brand.get("company_name", "Consultora")
-    except Exception:
-        return "Consultora"
+        return str(brand.get("company_name") or default).strip()
+    except (ConfigurationError, FileNotFoundError, json.JSONDecodeError) as ex:
+        logger.debug("Failed to load brand profile for company name, using default: %s", ex)
+        return default
 
 
 def get_localized_disclaimer(lang: str = "en") -> str:
@@ -80,7 +105,8 @@ def get_localized_disclaimer(lang: str = "en") -> str:
             return vocab["disclaimer_text"]
         brand = load_brand_profile()
         return brand.get("disclaimer_text", "")
-    except Exception:
+    except (ConfigurationError, FileNotFoundError, KeyError, json.JSONDecodeError) as ex:
+        logger.debug("Failed to resolve localized disclaimer: %s", ex)
         return ""
 
 
@@ -177,7 +203,7 @@ def load_model_profile(profile_name: str) -> ModelProfile:
     data = load_model_profiles()
     profiles = data.get("profiles", {})
     if profile_name not in profiles:
-        raise KeyError(f"Perfil de modelo no encontrado: {profile_name}")
+        raise ConfigurationKeyError(profile_name, "model_profiles.json")
     profile = dict(profiles[profile_name])
 
     # Dynamic Tier Resolution: if profile specifies tier, resolve canonical model
@@ -246,7 +272,7 @@ def resolve_model_profile_for_role(role_name: str) -> ModelProfile:
     model_profiles = manifest.get("model_profiles", {})
     profile_name = model_profiles.get(role_name)
     if not profile_name:
-        raise KeyError(f"No model profile configured for role: {role_name}")
+        raise ConfigurationKeyError(f"role '{role_name}'", "runtime_manifest.json model_profiles")
     return load_model_profile(profile_name)
 
 
@@ -271,7 +297,8 @@ def resolve_model_for_role(
         except KeyError:
             profile = load_model_profile(role_name)
         return str(profile.get("model", default_model)).strip()
-    except Exception:
+    except (KeyError, ConfigurationError, FileNotFoundError, json.JSONDecodeError) as ex:
+        logger.debug("Failed to resolve model for role '%s', using fallback: %s", role_name, ex)
         return default_model
 
 
@@ -291,7 +318,7 @@ def resolve_document_profile() -> dict:
     manifest = load_runtime_manifest()
     profile_name = manifest.get("document_profile")
     if not profile_name:
-        raise KeyError("No hay document_profile en runtime_manifest.json")
+        raise ConfigurationKeyError("document_profile", "runtime_manifest.json")
     return load_document_profile(profile_name)
 
 
@@ -317,8 +344,8 @@ def resolve_target_maturity_defaults(document_profile_id: str) -> dict:
     policy = load_target_maturity_policy()
     defaults = policy.get("defaults", {})
     if document_profile_id not in defaults:
-        raise KeyError(
-            f"Missing target maturity defaults for: {document_profile_id}"
+        raise ConfigurationKeyError(
+            document_profile_id, "target_maturity_policy defaults"
         )
     return defaults[document_profile_id]
 
@@ -338,7 +365,7 @@ def load_rate_card() -> dict:
     return _load_json(ENGINE_CONFIG_DIR / "rate_card.json")
 
 
-def load_industry_profile(profile_key: str) -> dict:
+def load_industry_profile(profile_key: str, allow_fallback: bool = True) -> dict:
     """Load and parse an industry-specific configuration profile with automatic fallback to 'default'.
 
     Guarantees absolute path resolution to support execution from any directory context.
@@ -348,21 +375,31 @@ def load_industry_profile(profile_key: str) -> dict:
     """
     key = str(profile_key or "default").replace(".json", "").strip().lower()
     profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / f"{key}.json"
+    default_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
 
-    # Robust fallback handling (Technical Debt / Backward Compatibility)
+    if not profile_file.exists():
+        if not allow_fallback:
+            raise ConfigurationFileNotFoundError(profile_file)
+        logger.debug("Industry profile '%s' not found on disk, falling back to default.", key)
+        return _load_json(default_file)
+
     try:
-        if not profile_file.exists():
-            profile_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
         return _load_json(profile_file)
-    except Exception:
-        # Fallback to default.json if the custom profile is corrupt/malformed on disk
-        default_file = ENGINE_CONFIG_DIR / "industry_profiles" / "default.json"
+    except (json.JSONDecodeError, ConfigurationParseError) as exc:
+        if not allow_fallback:
+            raise
+        logger.warning(
+            "Corrupted industry profile '%s' detected on disk (%s). Falling back to default profile.",
+            key,
+            exc,
+        )
         try:
             return _load_json(default_file)
-        except Exception:
-            raise KeyError(
-                "Failed to load default industry profile or profile is corrupted."
-            )
+        except Exception as fallback_exc:
+            raise ConfigurationError(
+                f"Failed to load default industry profile: {fallback_exc}",
+                config_path=default_file,
+            ) from fallback_exc
 
 
 def load_framework_rubric(framework_id: str) -> dict:

@@ -252,13 +252,10 @@ def get_bid_manager_prompt(
     project_sizing: str,
     mitigated_risk_impact: str,
     target_language: str = "Spanish",
+    company_name: str | None = None,
 ) -> str:
     """Constructs a Tier-1 prompt to generate an executive project charter JSON."""
-    from assessment_engine.infrastructure.config_loader import (
-        get_consultant_company_name,
-    )
-
-    company = get_consultant_company_name()
+    company = company_name or "Strategic Advisory"
     prompt = (
         f"You are a Senior Bid Manager and Principal Solution Architect at {company} preparing a C-Level 'Project Charter' for client {client_name}.\n"
         f"PROJECT: {project_name}\n"

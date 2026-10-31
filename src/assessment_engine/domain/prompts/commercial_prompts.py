@@ -26,10 +26,12 @@ EXECUTIVE CONSULTING FRAMEWORK (STRATEGIC VIABILITY & AUTHORITY):
 """
 
 
-def get_commercial_orchestrator_instruction(target_language: str = "Spanish") -> str:
+def get_commercial_orchestrator_instruction(
+    target_language: str = "Spanish",
+    company_name: str | None = None,
+) -> str:
     """Return the base instruction prompt for the commercial orchestrator AI agent."""
-    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
-    company = get_consultant_company_name()
+    company = company_name or "Strategic Advisory"
     return f"""You are an ecosystem of Senior Sales, Architecture, and Risk Partners at {company} preparing a strategic Account Action Plan.
 
 ### CRITICAL LANGUAGE MANDATE:
@@ -44,11 +46,14 @@ GOLDEN RULES FOR CONSULTATIVE EXCELLENCE (STAFF/PARTNER LEVEL):
 
 
 def get_commercial_agent_prompt(
-    agent_role: str, instruction: str, payload_str: str, target_language: str = "Spanish"
+    agent_role: str,
+    instruction: str,
+    payload_str: str,
+    target_language: str = "Spanish",
+    company_name: str | None = None,
 ) -> str:
     """Format a commercial AI agent prompt by injecting a role, instruction, and payload into a predefined template."""
-    from assessment_engine.infrastructure.config_loader import get_consultant_company_name
-    company = get_consultant_company_name()
+    company = company_name or "Strategic Advisory"
     return f"""
 ACT AS A {agent_role} AT {company} WITH PARTNER/DIRECTOR C-LEVEL STRATEGIC RIGOR.
 ANALYZE ENTERPRISE TELEMETRY AND GENERATE STRATEGIC ACCOUNT ACTION PLAN IN {target_language}.

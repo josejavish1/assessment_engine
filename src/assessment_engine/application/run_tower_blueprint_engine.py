@@ -150,8 +150,12 @@ def sync_findings_to_graph(
 
 
 def get_default_blueprint_payload(
-    client_name, tower_name, tower_id, intel_data, doc_lang: str = "en"
-) -> dict:
+    client_name: str,
+    tower_name: str,
+    tower_id: str,
+    intel_data: dict[str, Any],
+    doc_lang: str = "en",
+) -> dict[str, Any]:
     """Constructs a default, schema-compliant dictionary for a blueprint payload.
 
     Initializes a baseline payload dictionary using provided metadata and populates
@@ -195,6 +199,11 @@ def get_default_blueprint_payload(
             "operational_benefits": [],
             "transformation_complexity": t("bp_default_complexity", locale=doc_lang),
         },
+        "design_principles": [
+            "Sovereignty by Design: Enforce strict jurisdictional data control",
+            "Resilience First: Minimize single points of failure across infrastructure",
+            "Continuous Automation: Eliminate operational entropy through GitOps",
+        ],
         "cross_capabilities_analysis": {
             "common_deficiency_patterns": [],
             "transformation_paradigm": t("bp_default_paradigm", locale=doc_lang),
@@ -968,8 +977,20 @@ def _scrub_client_placeholders(obj: Any, name: str) -> Any:
     return obj
 
 
-def _calculate_total_fair_ale(blueprint_payload: dict[str, Any]) -> float:
+def _calculate_total_fair_ale(
+    blueprint_payload: dict[str, Any] | BlueprintPayload,
+) -> float:
     """Calculate or extract the integrated subadditive portfolio ALE from SovereignPolicyEngine."""
+    if isinstance(blueprint_payload, BlueprintPayload):
+        if blueprint_payload.total_fair_ale is not None:
+            return float(blueprint_payload.total_fair_ale)
+        total = 0.0
+        for pilar in blueprint_payload.pillars_analysis:
+            for finding in pilar.health_check_asis:
+                if finding.fair_ale_score is not None:
+                    total += float(finding.fair_ale_score)
+        return total
+
     total_ale = float(blueprint_payload.get("total_fair_ale") or 0.0)
     if total_ale == 0.0:
         for pilar in blueprint_payload.get("pillars_analysis", []):
@@ -979,7 +1000,9 @@ def _calculate_total_fair_ale(blueprint_payload: dict[str, Any]) -> float:
     return total_ale
 
 
-async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
+async def run_tower_blueprint(
+    client_name: str, tower_id: str
+) -> BlueprintPayload | None:
     """Asynchronously orchestrates the generation of a client transformation blueprint."""
     client_dir = resolve_client_dir(client_name)
     case_input_path = resolve_case_input_path(client_name, tower_id)
@@ -987,7 +1010,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
 
     if not case_input_path.exists():
         logger.error("No case input found for %s at %s", tower_id, case_input_path)
-        return
+        return None
 
     case_data = json.loads(case_input_path.read_text(encoding="utf-8"))
     findings_path = client_dir / tower_id / "findings.json"
@@ -1188,6 +1211,7 @@ async def run_tower_blueprint(client_name: Any, tower_id: Any) -> Any:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(content, encoding="utf-8-sig")
     logger.info("Blueprint payload generated and validated at %s", output_path)
+    return validated_model
 
 
 def main(argv: list[str] | None = None) -> None:

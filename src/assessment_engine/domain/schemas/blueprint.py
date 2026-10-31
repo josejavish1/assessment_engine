@@ -45,17 +45,17 @@ class HealthCheckAsIs(BaseModel):
     target_state: str = Field(
         ...,
         alias="capability",
-        description="The specific technical capability being assessed within this architectural pillar.",
+        description="The specific technical capability being assessed within this architectural pillar, using its canonical name or identifier.",
     )
     risk_observed: str = Field(
         ...,
         alias="finding",
-        description="An objective, executive-level analysis of the finding or capability gap identified in the AS-IS assessment.",
+        description="An objective, executive-level analysis of the finding or capability gap identified in the AS-IS assessment, drafted strictly in the target_language.",
     )
     impact: str = Field(
         ...,
         alias="business_risk",
-        description="The specific, tangible business risk that directly results from the identified technical finding.",
+        description="The specific, tangible business risk directly resulting from the technical finding, drafted strictly in the target_language.",
     )
     fragment_id: Optional[str] = Field(
         None,
@@ -409,8 +409,8 @@ class PillarBlueprintDraft(BaseModel):
         thought_process: A free-form, step-by-step articulation of the
             architectural analysis and reasoning (Chain of Thought) that precedes
             the final JSON object construction.
-        pilar_id: The unique identifier for the architectural pillar.
-        pilar_name: The human-readable name of the architectural pillar.
+        pillar_id: The unique identifier for the architectural pillar (canonical English).
+        pillar_name: The human-readable name of the architectural pillar (canonical English).
         score: The current calculated score for the pillar's health or maturity.
         target_score: The desired target score for the pillar's health or maturity.
         asis_architecture_description: A comprehensive technical narrative detailing
@@ -424,20 +424,38 @@ class PillarBlueprintDraft(BaseModel):
             to the TO-BE architecture.
     """
 
+    model_config = ConfigDict(populate_by_name=True)
+
     thought_process: str = Field(
         description="A free-form, step-by-step articulation of the architectural analysis and reasoning (Chain of Thought) that precedes the final JSON object construction."
     )
-    pilar_id: str
-    pilar_name: str
+    pillar_id: str = Field(
+        ...,
+        alias="pilar_id",
+        description="The canonical immutable structural identifier for the pillar (e.g. 'T1.P1', 'T2.P1').",
+    )
+    pillar_name: str = Field(
+        ...,
+        alias="pilar_name",
+        description="The canonical architectural pillar name.",
+    )
     score: float = 0.0
     target_score: float = 4.0
     asis_architecture_description: str = Field(
         default="Architecture description not available.",
-        description="A comprehensive technical narrative (minimum 3 paragraphs) detailing the current state (AS-IS) architecture, inventory, and topology for the pillar, preceding the risk enumeration.",
+        description="A comprehensive technical narrative detailing current state (AS-IS) architecture and topology, drafted strictly in the target_language.",
     )
     health_check_asis: list[HealthCheckAsIs]
     target_architecture_tobe: TargetArchitectureToBe
     projects_todo: list[ProjectToDo]
+
+    @property
+    def pilar_id(self) -> str:
+        return self.pillar_id
+
+    @property
+    def pilar_name(self) -> str:
+        return self.pillar_name
 
 
 class ExecutiveSnapshot(BaseModel):
