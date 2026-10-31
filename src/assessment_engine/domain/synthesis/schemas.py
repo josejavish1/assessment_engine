@@ -6,7 +6,7 @@ counterexample vectors, and formally verified enterprise deliverables.
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from enum import Enum
 import math
 from typing import Annotated, Any
@@ -60,7 +60,7 @@ class CounterexampleViolation(StrictDomainModel):
 class CounterexampleVector(StrictDomainModel):
     """Aggregate payload of all formal violations for a single synthesis pass."""
 
-    synthesis_attempt: Annotated[int, Field(ge=1, le=2)]
+    synthesis_attempt: Annotated[int, Field(ge=1, le=10)]
     violations: list[CounterexampleViolation]
 
     @property
@@ -69,16 +69,35 @@ class CounterexampleVector(StrictDomainModel):
         return len(self.violations) == 0
 
 
+def _safe_coerce_to_decimal(v: Any) -> Decimal:
+    """Safely coerce numerical types to Decimal, rejecting booleans, NaN, and malformed strings."""
+    if isinstance(v, bool):
+        raise ValueError("Cannot coerce boolean to Decimal.")
+    if isinstance(v, Decimal):
+        if v.is_nan() or v.is_infinite():
+            raise ValueError("Decimal NaN and Infinity are prohibited.")
+        return v
+    if isinstance(v, (int, float, str)):
+        try:
+            dec = Decimal(str(v))
+            if dec.is_nan() or dec.is_infinite():
+                raise ValueError("Decimal NaN and Infinity are prohibited.")
+            return dec
+        except (InvalidOperation, ValueError) as err:
+            raise ValueError(f"Malformed numerical value '{v}' for Decimal conversion.") from err
+    raise ValueError(f"Cannot coerce type {type(v)} to Decimal.")
+
+
 class FinancialProjection(StrictDomainModel):
     """FAIR-compliant & FinOps financial allocation node."""
 
     currency_iso_4217: Annotated[str, Field(min_length=3, max_length=3, pattern=r"^[A-Z]{3}$")]
-    capex_allocation: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
-    opex_allocation: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
-    total_cost_of_ownership: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
-    risk_exposure_p10: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
-    risk_exposure_p50: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
-    risk_exposure_p90: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
+    capex_allocation: Annotated[Decimal, Field(ge=Decimal("0.00"))]
+    opex_allocation: Annotated[Decimal, Field(ge=Decimal("0.00"))]
+    total_cost_of_ownership: Annotated[Decimal, Field(ge=Decimal("0.00"))]
+    risk_exposure_p10: Annotated[Decimal, Field(ge=Decimal("0.00"))]
+    risk_exposure_p50: Annotated[Decimal, Field(ge=Decimal("0.00"))]
+    risk_exposure_p90: Annotated[Decimal, Field(ge=Decimal("0.00"))]
 
     @field_validator(
         "capex_allocation",
@@ -90,13 +109,9 @@ class FinancialProjection(StrictDomainModel):
         mode="before",
     )
     @classmethod
-    def coerce_decimal(cls, v: Any) -> Decimal:
-        """Coerce raw strings or numerical types from LLM JSON Structured Outputs into exact Decimal."""
-        if isinstance(v, Decimal):
-            return v
-        if isinstance(v, (int, float, str)):
-            return Decimal(str(v))
-        raise ValueError(f"Cannot coerce {type(v)} to Decimal.")
+    def coerce_decimal_field(cls, v: Any) -> Decimal:
+        """Coerce raw strings or numerical types into exact Decimal."""
+        return _safe_coerce_to_decimal(v)
 
 
 class StrategicOption(StrictDomainModel):
@@ -140,28 +155,37 @@ class ExecutiveRoadmapPhase(StrictDomainModel):
     phase_title: Annotated[str, Field(min_length=5, max_length=120)]
     duration_weeks: Annotated[int, Field(ge=1, le=260)]
     deliverable_artifacts: Annotated[list[str], Field(min_length=1)]
-    allocated_budget: Annotated[Decimal, Field(ge=Decimal("0.00"), decimal_places=2)]
+    allocated_budget: Annotated[Decimal, Field(ge=Decimal("0.00"))]
     evidence_citations: Annotated[list[str], Field(min_length=1)]
 
     @field_validator("allocated_budget", mode="before")
     @classmethod
     def coerce_budget_decimal(cls, v: Any) -> Decimal:
         """Coerce budget from raw JSON into exact Decimal."""
-        if isinstance(v, Decimal):
-            return v
-        if isinstance(v, (int, float, str)):
-            return Decimal(str(v))
-        raise ValueError(f"Cannot coerce {type(v)} to Decimal.")
+        return _safe_coerce_to_decimal(v)
 
 
 class CandidateEnterpriseDeliverable(StrictDomainModel):
     """Syntactic Candidate Root for the CEGAR Synthesis Engine (Candidate A_0 / A_1).
 
     Instantiated safely from LLM Structured Outputs prior to formal semantic verification.
+    Supports complete IETF BCP-47 language tags (e.g. zh-Hans-CN, es-419, en-US) and UN ISIC Rev.4.
     """
 
-    bcp47_locale: Annotated[str, Field(pattern=r"^[a-z]{2,3}(-[A-Z]{2,3})?$")]
-    industry_isic_code: Annotated[str, Field(min_length=1, max_length=10, description="UN ISIC Rev.4 Code")]
+    bcp47_locale: Annotated[
+        str,
+        Field(
+            pattern=r"^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$",
+            description="Complete IETF BCP-47 tag (e.g. en-US, zh-Hans-CN, es-419, ja-JP)",
+        ),
+    ]
+    industry_isic_code: Annotated[
+        str,
+        Field(
+            pattern=r"^[A-U]?[0-9]{2,4}$",
+            description="UN ISIC Rev.4 Sector Code (e.g. C10, 6201, J62, K6419)",
+        ),
+    ]
     executive_thesis: Annotated[str, Field(min_length=250, max_length=5000)]
     pareto_frontier: Annotated[
         list[StrategicOption],

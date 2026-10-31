@@ -2,6 +2,7 @@
 
 Sub-millisecond pure-code invariant evaluator enforcing mathematical, financial,
 epistemic, and structural guarantees with zero LLM invocations.
+Zero-hardcoding: supports any global enterprise scale, currency, vertical, and script.
 """
 
 from __future__ import annotations
@@ -9,7 +10,6 @@ from __future__ import annotations
 from collections import Counter
 from decimal import Decimal
 import re
-from typing import Any
 import zlib
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -21,16 +21,27 @@ from assessment_engine.domain.synthesis.schemas import (
     SeverityLevel,
 )
 
+# Regex matching CJK Unified Ideographs, Hiragana, Katakana, and Hangul
+CJK_REGEX = re.compile(r"[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]")
+
 
 class SynthesisContext(BaseModel):
-    """Immutable runtime execution context injected into the Deterministic Oracle."""
+    """Immutable runtime execution context injected into the Deterministic Oracle.
+
+    Zero defaults for enterprise identifiers: target currency, locale, sector code,
+    and valid evidence IDs must be explicitly bound per customer engagement.
+    """
 
     model_config = ConfigDict(strict=True, extra="forbid", frozen=True)
 
-    valid_evidence_ids: frozenset[str] = Field(default_factory=frozenset)
-    target_currency: str = Field(default="EUR", min_length=3, max_length=3)
-    target_locale: str = Field(default="en")
-    target_isic_code: str = Field(default="6201")
+    valid_evidence_ids: frozenset[str] = Field(
+        ...,
+        min_length=1,
+        description="Non-empty immutable set of authoritative evidence IDs harvested upstream.",
+    )
+    target_currency: str = Field(..., min_length=3, max_length=3, pattern=r"^[A-Z]{3}$")
+    target_locale: str = Field(..., min_length=2, max_length=35)
+    target_isic_code: str = Field(..., min_length=1, max_length=10)
     min_compression_ratio: float = Field(default=0.38, gt=0.0, lt=1.0)
     min_ttr_ratio: float = Field(default=0.55, gt=0.0, lt=1.0)
     max_single_source_citation_ratio: float = Field(default=0.60, gt=0.0, lt=1.0)
@@ -54,10 +65,61 @@ class DeterministicVerificationOracle:
         """
         violations: list[CounterexampleViolation] = []
 
-        # 1. Financial Invariants (Accounting Identity & FAIR Monotonicity)
+        # 0. Contextual Alignment Invariants (Locale & Sector Code)
+        if candidate.bcp47_locale.lower() != context.target_locale.lower():
+            violations.append(
+                CounterexampleViolation(
+                    rule_id="LOCALE_MISMATCH_ERR",
+                    json_path="/bcp47_locale",
+                    severity=SeverityLevel.CRITICAL,
+                    expected_invariant=f"bcp47_locale must match runtime target locale '{context.target_locale}'",
+                    actual_value=candidate.bcp47_locale,
+                    remediation_directive=f"Emit deliverable conforming strictly to locale '{context.target_locale}'.",
+                )
+            )
+
+        if candidate.industry_isic_code.strip() != context.target_isic_code.strip():
+            violations.append(
+                CounterexampleViolation(
+                    rule_id="ISIC_MISMATCH_ERR",
+                    json_path="/industry_isic_code",
+                    severity=SeverityLevel.CRITICAL,
+                    expected_invariant=f"industry_isic_code must match runtime sector code '{context.target_isic_code}'",
+                    actual_value=candidate.industry_isic_code,
+                    remediation_directive=f"Reconcile sector taxonomy to UN ISIC code '{context.target_isic_code}'.",
+                )
+            )
+
+        # 1. Option ID Uniqueness
+        opt_ids = [opt.option_id for opt in candidate.pareto_frontier]
+        if len(opt_ids) != len(set(opt_ids)):
+            violations.append(
+                CounterexampleViolation(
+                    rule_id="DUPLICATE_OPTION_ID_ERR",
+                    json_path="/pareto_frontier",
+                    severity=SeverityLevel.CRITICAL,
+                    expected_invariant="All options in pareto_frontier must possess unique option_ids",
+                    actual_value=f"{opt_ids}",
+                    remediation_directive="Assign unique distinct option_ids across all strategic options.",
+                )
+            )
+
+        # 2. Financial Invariants (Currency, Accounting Identity, and FAIR Monotonicity)
         for idx, option in enumerate(candidate.pareto_frontier):
             f = option.financials
             exp_path = f"/pareto_frontier/{idx}/financials"
+
+            if f.currency_iso_4217 != context.target_currency:
+                violations.append(
+                    CounterexampleViolation(
+                        rule_id="CURRENCY_MISMATCH_ERR",
+                        json_path=f"{exp_path}/currency_iso_4217",
+                        severity=SeverityLevel.CRITICAL,
+                        expected_invariant=f"Currency must match runtime target currency '{context.target_currency}'",
+                        actual_value=f.currency_iso_4217,
+                        remediation_directive=f"Denominate all financial projections in currency '{context.target_currency}'.",
+                    )
+                )
 
             expected_tco = f.capex_allocation + f.opex_allocation
             if f.total_cost_of_ownership != expected_tco:
@@ -84,7 +146,7 @@ class DeterministicVerificationOracle:
                     )
                 )
 
-        # 2. Pareto Orthogonality (3 distinct strategic vectors)
+        # 3. Pareto Orthogonality (3 distinct strategic vectors)
         axes = [opt.primary_axis for opt in candidate.pareto_frontier]
         unique_axes = set(axes)
         if len(unique_axes) != 3 or unique_axes != set(OptimizationAxis):
@@ -99,7 +161,7 @@ class DeterministicVerificationOracle:
                 )
             )
 
-        # 3. Referential Integrity (Selected Option in Frontier)
+        # 4. Referential Integrity (Selected Option in Frontier)
         option_map = {opt.option_id: opt for opt in candidate.pareto_frontier}
         if candidate.selected_equilibrium_option_id not in option_map:
             violations.append(
@@ -113,7 +175,7 @@ class DeterministicVerificationOracle:
                 )
             )
         else:
-            # 4. Roadmap Financial Reconciliation against Selected Option TCO
+            # 5. Roadmap Financial Reconciliation against Selected Option TCO
             selected_opt = option_map[candidate.selected_equilibrium_option_id]
             roadmap_total = sum(
                 (phase.allocated_budget for phase in candidate.execution_roadmap),
@@ -131,7 +193,7 @@ class DeterministicVerificationOracle:
                     )
                 )
 
-            # 5. Degenerate Budget Allocation Check (if len > 1, no single phase consumes 0% or 100%)
+            # 6. Degenerate Budget Allocation Check (if len > 1, no single phase consumes 0% or 100%)
             if len(candidate.execution_roadmap) > 1:
                 tco = selected_opt.financials.total_cost_of_ownership
                 for p_idx, phase in enumerate(candidate.execution_roadmap):
@@ -147,7 +209,7 @@ class DeterministicVerificationOracle:
                             )
                         )
 
-        # 6. Sequential Phase Ordering (contiguous 1..N)
+        # 7. Sequential Phase Ordering (contiguous 1..N)
         expected_indices = list(range(1, len(candidate.execution_roadmap) + 1))
         actual_indices = [p.phase_index for p in candidate.execution_roadmap]
         if actual_indices != expected_indices:
@@ -162,60 +224,59 @@ class DeterministicVerificationOracle:
                 )
             )
 
-        # 7. Epistemic Citation Graph Resolution against Evidence Registry
-        if context.valid_evidence_ids:
-            all_citations: list[str] = []
-            for o_idx, opt in enumerate(candidate.pareto_frontier):
-                for c_idx, cite in enumerate(opt.supporting_evidence_ids):
-                    all_citations.append(cite)
-                    if cite not in context.valid_evidence_ids:
-                        violations.append(
-                            CounterexampleViolation(
-                                rule_id="EPISTEMIC_UNGROUNDED_ERR",
-                                json_path=f"/pareto_frontier/{o_idx}/supporting_evidence_ids/{c_idx}",
-                                severity=SeverityLevel.CRITICAL,
-                                expected_invariant=f"Citation '{cite}' must exist in input Evidence Registry",
-                                actual_value=cite,
-                                remediation_directive=f"Replace '{cite}' with a valid ID from the evidence registry.",
-                            )
-                        )
-
-            for p_idx, phase in enumerate(candidate.execution_roadmap):
-                for c_idx, cite in enumerate(phase.evidence_citations):
-                    all_citations.append(cite)
-                    if cite not in context.valid_evidence_ids:
-                        violations.append(
-                            CounterexampleViolation(
-                                rule_id="EPISTEMIC_UNGROUNDED_ERR",
-                                json_path=f"/execution_roadmap/{p_idx}/evidence_citations/{c_idx}",
-                                severity=SeverityLevel.CRITICAL,
-                                expected_invariant=f"Citation '{cite}' must exist in input Evidence Registry",
-                                actual_value=cite,
-                                remediation_directive=f"Replace '{cite}' with a valid ID from the evidence registry.",
-                            )
-                        )
-
-            # 8. Citation Diversity & Monoculture Guard
-            if (
-                len(context.valid_evidence_ids) >= context.min_distinct_evidence_threshold
-                and all_citations
-            ):
-                counts = Counter(all_citations)
-                max_source, max_count = counts.most_common(1)[0]
-                ratio = max_count / len(all_citations)
-                if ratio > context.max_single_source_citation_ratio:
+        # 8. Epistemic Citation Graph Resolution against Evidence Registry
+        all_citations: list[str] = []
+        for o_idx, opt in enumerate(candidate.pareto_frontier):
+            for c_idx, cite in enumerate(opt.supporting_evidence_ids):
+                all_citations.append(cite)
+                if cite not in context.valid_evidence_ids:
                     violations.append(
                         CounterexampleViolation(
-                            rule_id="EPISTEMIC_MONOCULTURE_ERR",
-                            json_path="/supporting_evidence_ids",
-                            severity=SeverityLevel.HIGH,
-                            expected_invariant=f"Single source citation ratio ({ratio:.2f}) must not exceed {context.max_single_source_citation_ratio:.2f}",
-                            actual_value=f"Source '{max_source}' accounts for {ratio * 100:.1f}% of all citations",
-                            remediation_directive="Diversify evidentiary citations across multiple distinct evidence IDs.",
+                            rule_id="EPISTEMIC_UNGROUNDED_ERR",
+                            json_path=f"/pareto_frontier/{o_idx}/supporting_evidence_ids/{c_idx}",
+                            severity=SeverityLevel.CRITICAL,
+                            expected_invariant=f"Citation '{cite}' must exist in input Evidence Registry",
+                            actual_value=cite,
+                            remediation_directive=f"Replace '{cite}' with a valid ID from the evidence registry.",
                         )
                     )
 
-        # 9. Lexical Entropy & Compression Ratio (Anti-Gaming / Goodhart's Law)
+        for p_idx, phase in enumerate(candidate.execution_roadmap):
+            for c_idx, cite in enumerate(phase.evidence_citations):
+                all_citations.append(cite)
+                if cite not in context.valid_evidence_ids:
+                    violations.append(
+                        CounterexampleViolation(
+                            rule_id="EPISTEMIC_UNGROUNDED_ERR",
+                            json_path=f"/execution_roadmap/{p_idx}/evidence_citations/{c_idx}",
+                            severity=SeverityLevel.CRITICAL,
+                            expected_invariant=f"Citation '{cite}' must exist in input Evidence Registry",
+                            actual_value=cite,
+                            remediation_directive=f"Replace '{cite}' with a valid ID from the evidence registry.",
+                        )
+                    )
+
+        # 9. Citation Diversity & Monoculture Guard
+        if (
+            len(context.valid_evidence_ids) >= context.min_distinct_evidence_threshold
+            and all_citations
+        ):
+            counts = Counter(all_citations)
+            max_source, max_count = counts.most_common(1)[0]
+            ratio = max_count / len(all_citations)
+            if ratio > context.max_single_source_citation_ratio:
+                violations.append(
+                    CounterexampleViolation(
+                        rule_id="EPISTEMIC_MONOCULTURE_ERR",
+                        json_path="/pareto_frontier",
+                        severity=SeverityLevel.HIGH,
+                        expected_invariant=f"Single source citation ratio ({ratio:.2f}) must not exceed {context.max_single_source_citation_ratio:.2f}",
+                        actual_value=f"Source '{max_source}' accounts for {ratio * 100:.1f}% of all citations",
+                        remediation_directive="Diversify evidentiary citations across multiple distinct evidence IDs.",
+                    )
+                )
+
+        # 10. Lexical Entropy & Compression Ratio (Anti-Gaming / Goodhart's Law)
         text_nodes = [
             ("/executive_thesis", candidate.executive_thesis),
             ("/equilibrium_justification", candidate.equilibrium_justification),
@@ -237,9 +298,12 @@ class DeterministicVerificationOracle:
         context: SynthesisContext,
         violations: list[CounterexampleViolation],
     ) -> None:
-        """Evaluate information density via zlib compression ratio or Type-Token Ratio."""
-        raw_bytes = text.strip().encode("utf-8")
-        if len(raw_bytes) > 500:
+        """Evaluate information density via zlib compression ratio or CJK-aware Type-Token Ratio."""
+        stripped = text.strip()
+        char_count = len(stripped)
+
+        if char_count > 500:
+            raw_bytes = stripped.encode("utf-8")
             compressed = zlib.compress(raw_bytes, level=9)
             ratio = len(compressed) / len(raw_bytes)
             if ratio < context.min_compression_ratio:
@@ -254,10 +318,16 @@ class DeterministicVerificationOracle:
                     )
                 )
         else:
-            # Short-block Type-Token Ratio (TTR)
-            words = [w.lower() for w in re.findall(r"\b\w+\b", text)]
-            if len(words) >= 10:
-                ttr = len(set(words)) / len(words)
+            # Script-Aware Tokenization: handles space-delimited words and CJK character streams
+            has_cjk = bool(CJK_REGEX.search(stripped))
+            if has_cjk:
+                # For CJK text without whitespace, extract character unigrams and bigrams
+                tokens = list(stripped)
+            else:
+                tokens = [w.lower() for w in re.findall(r"\b\w+\b", stripped)]
+
+            if len(tokens) >= 10:
+                ttr = len(set(tokens)) / len(tokens)
                 if ttr < context.min_ttr_ratio:
                     violations.append(
                         CounterexampleViolation(
