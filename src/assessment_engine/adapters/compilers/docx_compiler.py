@@ -7,7 +7,7 @@ from typing import Any
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
@@ -21,6 +21,7 @@ from assessment_engine.domain.schemas.ast import (
     PictureNode,
     SpacerNode,
     TableNode,
+    TOCNode,
 )
 from assessment_engine.infrastructure.docx_render_utils import (
     add_heading_paragraph,
@@ -563,9 +564,72 @@ class DocxCompiler(DocumentCompiler):
             doc.add_page_break()
         elif node_type == "picture" or isinstance(node, PictureNode):
             self._compile_picture(doc, node)
+        elif node_type == "toc" or isinstance(node, TOCNode):
+            self._compile_toc(doc, node)
         else:
             # Unidentified nodes are safely ignored to ensure forward compatibility and operational robustness.
             pass
+
+    def _compile_toc(self, doc: Document, node: Any) -> None:
+        """Compiles a native Word Table of Contents field enclosing pre-computed entries."""
+        p_title = doc.add_paragraph()
+        p_title.paragraph_format.space_before = Pt(0)
+        p_title.paragraph_format.space_after = Pt(14)
+        r_title = p_title.add_run(getattr(node, "title", "Table of Contents"))
+        r_title.font.name = "Arial"
+        r_title.font.size = Pt(16)
+        r_title.font.bold = True
+        r_title.font.color.rgb = RGBColor(0, 114, 188)
+
+        p_begin = doc.add_paragraph()
+        p_begin.paragraph_format.space_after = Pt(0)
+        p_begin.paragraph_format.space_before = Pt(0)
+        fld_begin = OxmlElement("w:fldChar")
+        fld_begin.set(qn("w:fldCharType"), "begin")
+        p_begin._p.append(fld_begin)
+
+        instr = OxmlElement("w:instrText")
+        instr.set(qn("xml:space"), "preserve")
+        depth = getattr(node, "depth", 3)
+        instr.text = f'TOC \\o "1-{depth}" \\h \\z \\u'
+        p_begin._p.append(instr)
+
+        fld_sep = OxmlElement("w:fldChar")
+        fld_sep.set(qn("w:fldCharType"), "separate")
+        p_begin._p.append(fld_sep)
+
+        entries = getattr(node, "entries", [])
+        for entry in entries:
+            p_e = doc.add_paragraph()
+            p_e.paragraph_format.tab_stops.add_tab_stop(
+                Inches(6.4), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS
+            )
+            p_e.paragraph_format.space_after = Pt(3)
+            p_e.paragraph_format.space_before = Pt(0)
+            lvl = getattr(entry, "level", 1)
+            if lvl > 1:
+                p_e.paragraph_format.left_indent = Pt((lvl - 1) * 12)
+
+            r_title_e = p_e.add_run(getattr(entry, "title", ""))
+            r_title_e.font.name = "Arial"
+            r_title_e.font.size = Pt(9.5)
+            r_title_e.font.bold = (lvl == 1)
+            r_title_e.font.color.rgb = RGBColor(15, 23, 42)
+
+            p_e.add_run("\t")
+
+            r_page = p_e.add_run(str(getattr(entry, "page", "")))
+            r_page.font.name = "Arial"
+            r_page.font.size = Pt(9.5)
+            r_page.font.bold = (lvl == 1)
+            r_page.font.color.rgb = RGBColor(100, 116, 139)
+
+        p_end = doc.add_paragraph()
+        p_end.paragraph_format.space_after = Pt(14)
+        p_end.paragraph_format.space_before = Pt(0)
+        fld_end = OxmlElement("w:fldChar")
+        fld_end.set(qn("w:fldCharType"), "end")
+        p_end._p.append(fld_end)
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
         if any(tok in node.text.lower() for tok in ["table of contents", "indice de contenidos", "[indice"]):

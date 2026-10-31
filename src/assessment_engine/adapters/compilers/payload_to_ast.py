@@ -26,6 +26,8 @@ from assessment_engine.domain.schemas.ast import (
     SpacerNode,
     TableNode,
     TableRowNode,
+    TOCEntryNode,
+    TOCNode,
 )
 
 
@@ -305,19 +307,21 @@ class PayloadToASTBridge:
         blueprint_data = ctx.get("blueprint_data", {})
 
         # 1. Corporate Executive Cover Page
-        nodes.append(SpacerNode(points=90))
+        nodes.append(SpacerNode(points=40))
 
+        # 1. Main Document Title (36.0 pt, Bold, #2E404D)
         title_text = vocab.get("title", "Current State Assessment Report (AS-IS)")
         nodes.append(
             ParagraphNode(
                 text=title_text,
                 bold=True,
-                font_size=11.0,
-                text_color_rgb=[0, 114, 188],
-                space_after=16,
+                font_size=36.0,
+                text_color_rgb=[46, 64, 77],
+                space_after=8,
             )
         )
 
+        # 2. Technical Annex Subtitle (Heading level 1, #0072BC)
         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
         resolver = get_taxonomy_resolver()
         tower_code = blueprint_data.get("document_meta", {}).get("tower_code", "T1")
@@ -328,31 +332,35 @@ class PayloadToASTBridge:
             HeadingNode(
                 text=f"{annex_prefix} {localized_tower_name}",
                 level=1,
-                primary_color_rgb=[15, 23, 42],
+                primary_color_rgb=[0, 114, 188],
             )
         )
 
-        sub_text = t("cover_subtitle_text", locale=meta_lang)
+        # 3. Project Identity (14.0 pt, #2E404D)
+        proj_lbl = t("project_lbl", locale=meta_lang)
+        proj_name = t("cover_subtitle_text", locale=meta_lang)
         nodes.append(
             ParagraphNode(
-                text=sub_text,
-                italic=True,
-                font_size=12.0,
-                text_color_rgb=[100, 116, 139],
-                space_after=140,
+                text=f"**{proj_lbl.strip()}** {proj_name}",
+                font_size=14.0,
+                text_color_rgb=[46, 64, 77],
+                space_after=40,
             )
         )
 
+        # 4. Client Identity (28.0 pt, Bold, Cliente in #2E404D, Name in #0072BC)
         client_lbl = t("client_lbl", locale=meta_lang)
         nodes.append(
             ParagraphNode(
                 text=f"**{client_lbl.strip()}** {client_name.upper()}",
                 bold=True,
-                font_size=11.5,
-                space_after=6,
+                font_size=28.0,
+                text_color_rgb=[0, 114, 188],
+                space_after=24,
             )
         )
 
+        # 5. Facility Perimeter (11.0 pt, #52606D)
         facility_lbl = t("facility_label", locale=meta_lang)
         facility_desc = (
             blueprint_data.get("document_meta", {}).get("facility_name")
@@ -361,41 +369,45 @@ class PayloadToASTBridge:
         )
         nodes.append(
             ParagraphNode(
-                text=f"**{facility_lbl.strip()}** {facility_desc}",
-                font_size=10.5,
-                text_color_rgb=[51, 65, 85],
-                space_after=6,
+                text=f"**{facility_lbl.strip()}**\n{facility_desc}",
+                font_size=11.0,
+                text_color_rgb=[82, 96, 109],
+                space_after=50,
             )
         )
 
+        # 6. Corporate Metadata Line (9.5 pt, Italic, #969696)
         classification_clean = self.classification.replace(" (Tier-1 Assessment)", "")
         version_lbl = t("version_label", locale=meta_lang)
+        company_name_upper = self.company_name.upper()
         nodes.append(
             ParagraphNode(
-                text=f"{date_str} | {version_lbl} {version} | {classification_clean}",
+                text=f"{company_name_upper} | {date_str} | {version_lbl} {version} | {classification_clean}",
                 italic=True,
                 font_size=9.5,
-                text_color_rgb=[148, 163, 184],
+                text_color_rgb=[150, 150, 150],
             )
         )
         nodes.append(PageBreakNode())
 
         #
-        # CHAPTER 2: INDEX / TABLE OF CONTENTS
+        # CHAPTER 2: INDEX / NATIVE TABLE OF CONTENTS
         #
+        toc_entries = []
+        for raw_entry in get_localized_list("static_toc_entries", locale=meta_lang):
+            parts = raw_entry.split("\t")
+            if len(parts) == 2:
+                e_title = parts[0].strip()
+                e_page = parts[1].strip()
+                lvl = 2 if e_title.startswith("• ") or e_title.startswith("- ") else 1
+                toc_entries.append(TOCEntryNode(title=e_title, page=e_page, level=lvl))
         nodes.append(
-            HeadingNode(
-                text=t("toc_title", locale=meta_lang),
-                level=1,
-                primary_color_rgb=self.primary_color_rgb,
+            TOCNode(
+                title=t("toc_title", locale=meta_lang),
+                entries=toc_entries,
+                depth=3,
             )
         )
-        nodes.append(SpacerNode(points=14))
-
-        # Build native tab-separated executive Table of Contents
-        for entry in get_localized_list("static_toc_entries", locale=meta_lang):
-            nodes.append(ParagraphNode(text=entry, space_after=8))
-
         nodes.append(PageBreakNode())
 
         #
@@ -680,9 +692,10 @@ class PayloadToASTBridge:
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
             from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
             resolver = get_taxonomy_resolver()
-            raw_pname = p.get("pillar_name", "Pillar")
+            raw_pid = str(p.get("pillar_id") or p.get("pilar_id") or "")
+            raw_pname = str(p.get("pillar_name") or p.get("pilar_name") or "Pillar")
             p_name = resolver.resolve_pillar_by_any_reference(
-                p.get("pillar_id") or raw_pname,
+                raw_pid or raw_pname,
                 default=raw_pname,
                 locale=meta_lang,
             )

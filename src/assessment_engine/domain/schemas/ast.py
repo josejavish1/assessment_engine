@@ -222,9 +222,34 @@ class PictureNode(BaseNode):
     )
 
 
+class TOCEntryNode(BaseModel):
+    """Represents a single entry in the table of contents."""
+
+    title: str = Field(..., description="Title of the section.")
+    page: str = Field(..., description="Target page number as string.")
+    level: int = Field(1, description="Nesting level (1 to 3).")
+
+
+class TOCNode(BaseNode):
+    """Represents a native Word Table of Contents field containing cached structured entries."""
+
+    type: Literal["toc"] = "toc"
+    title: str = Field("Table of Contents", description="Title displayed above the TOC.")
+    entries: List[TOCEntryNode] = Field(
+        default_factory=list, description="Ordered list of TOC entries."
+    )
+    depth: int = Field(3, description="Maximum heading level included in the TOC.")
+
+
 # Defines a discriminated union of all concrete AST node types, enabling type-safe parsing, serialization, and pattern matching operations.
 DocNode = Union[
-    ParagraphNode, HeadingNode, TableNode, SpacerNode, PageBreakNode, PictureNode
+    ParagraphNode,
+    HeadingNode,
+    TableNode,
+    SpacerNode,
+    PageBreakNode,
+    PictureNode,
+    TOCNode,
 ]
 
 

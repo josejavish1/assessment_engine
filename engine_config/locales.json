@@ -642,13 +642,14 @@
     ],
     "interdep_concl_text": "Estos indicadores proporcionan un contexto de decisión cuantitativo y objetivo, permitiendo priorizar las inversiones de transformación en base a su retorno estratégico y resiliencia para la organización:",
     "static_toc_entries": [
-      "1. Resumen Ejecutivo y Tesis Estratégica\t3",
-      "2. Objetivo, Alcance y Marco Metodológico\t4",
-      "3. Diagnóstico Técnico y Cuadro de Mando de Madurez\t5",
-      "4. Exposición Financiera al Riesgo y Resiliencia Operativa\t8",
-      "5. Conclusiones y Coste de Inacción\t17",
-      "6. Registro de Custodia de Fuentes de Información\t18",
-      "Apéndice A. Metodología Cuantitativa de Riesgos (O-FAIR)\t20"
+      "1. Resumen Ejecutivo \t Pág. 3",
+      "2. Objetivo, Alcance y Marco Metodológico \t Pág. 4",
+      "3. Diagnóstico Tecnológico y Cuadro de Mando \t Pág. 6",
+      "4. Exposición Cuantitativa al Riesgo (Open FAIR™) \t Pág. 10",
+      "5. Conclusiones y Caso de Inversión \t Pág. 18",
+      "Apéndice A. Registro de Custodia de Fuentes de Información \t Pág. 19",
+      "Apéndice B. Metodología Cuantitativa de Riesgos (Open FAIR™) \t Pág. 20",
+      "Apéndice C. Glosario de Términos y Cláusula de Responsabilidad \t Pág. 22"
     ],
     "standard_sector_label": "Sector Estándar",
     "fair_intro_prose_p1": "El análisis de riesgos de la torre evalúa la cadena de propagación entre las deficiencias físicas observadas en las instalaciones, la estabilidad de las plataformas lógicas de TI y la continuidad de las operaciones de negocio.",
@@ -1382,7 +1383,8 @@
     ],
     "methodology_approach_title": "Enfoque Metodológico de la Evaluación",
     "maturity_scale_title": "Escala Analítica de Madurez CMMI",
-    "roi_payback_dynamic": "Payback < {months} meses"
+    "roi_payback_dynamic": "Payback < {months} meses",
+    "project_lbl": "Proyecto:"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2018,13 +2020,14 @@
     ],
     "interdep_concl_text": "These indicators provide an objective, quantitative decision context, allowing strategic investments to be prioritized based on transformation viability and overall resilience:",
     "static_toc_entries": [
-      "1. Executive Summary & Strategic Thesis\t3",
-      "2. Objective, Scope, and Methodological Framework\t4",
-      "3. Technical Diagnosis & Maturity Dashboard\t5",
-      "4. Quantitative Financial Risk Exposure (O-FAIR)\t8",
-      "5. Strategic Conclusions & Cost of Inaction\t17",
-      "6. Custody Register of Information Sources\t18",
-      "Appendix A. Quantitative Risk Methodology (O-FAIR)\t20"
+      "1. Executive Summary \t Page 3",
+      "2. Assessment Objective, Scope & Methodology \t Page 4",
+      "3. Technological Diagnosis & Maturity Dashboard \t Page 6",
+      "4. Quantitative Risk Exposure (Open FAIR™) \t Page 10",
+      "5. Conclusions & Investment Business Case \t Page 18",
+      "Appendix A. Information Source Chain of Custody Registry \t Page 19",
+      "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™) \t Page 20",
+      "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer \t Page 22"
     ],
     "standard_sector_label": "Standard Sector",
     "fair_intro_prose_p1": "The infrastructure risk assessment evaluates the propagation chain between physical facility deficiencies, logical IT platform stability, and core business continuity.",
@@ -2762,7 +2765,8 @@
     ],
     "methodology_approach_title": "Assessment Methodological Approach",
     "maturity_scale_title": "CMMI Analytical Maturity Scale",
-    "roi_payback_dynamic": "Payback < {months} months"
+    "roi_payback_dynamic": "Payback < {months} months",
+    "project_lbl": "Project:"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -3382,13 +3386,14 @@
     "interdep_concl_text": "Esses indicadores fornecem um contexto decisório quantitativo e objetivo, permitindo priorizar investimentos com base em resiliência e viabilidade:",
     "chapter_4_fair_resilience": "4. Exposição Financeira ao Risco e Resiliência Operacional",
     "static_toc_entries": [
-      "1. Executive Summary & Strategic Thesis\t3",
-      "2. Objective, Scope, and Methodological Framework\t4",
-      "3. Technical Diagnosis & Maturity Dashboard\t5",
-      "4. Quantitative Financial Risk Exposure (O-FAIR)\t8",
-      "5. Strategic Conclusions & Cost of Inaction\t17",
-      "6. Custody Register of Information Sources\t18",
-      "Appendix A. Quantitative Risk Methodology (O-FAIR)\t20"
+      "1. Executive Summary \t Page 3",
+      "2. Assessment Objective, Scope & Methodology \t Page 4",
+      "3. Technological Diagnosis & Maturity Dashboard \t Page 6",
+      "4. Quantitative Risk Exposure (Open FAIR™) \t Page 10",
+      "5. Conclusions & Investment Business Case \t Page 18",
+      "Appendix A. Information Source Chain of Custody Registry \t Page 19",
+      "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™) \t Page 20",
+      "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer \t Page 22"
     ],
     "standard_sector_label": "Setor Padrão",
     "fair_intro_prose_p1": "The infrastructure risk assessment evaluates the propagation chain between physical facility deficiencies, logical IT platform stability, and core business continuity.",
@@ -4139,7 +4144,8 @@
     ],
     "methodology_approach_title": "Assessment Methodological Approach",
     "maturity_scale_title": "CMMI Analytical Maturity Scale",
-    "roi_payback_dynamic": "Payback < {months} months"
+    "roi_payback_dynamic": "Payback < {months} months",
+    "project_lbl": "Project:"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -4759,13 +4765,14 @@
     "interdep_concl_text": "Ces indicateurs fournissent un cadre décisionnel quantitatif et objectif pour prioriser les investissements selon leur résilience :",
     "chapter_4_fair_resilience": "4. Exposition Financière au Risque et Résilience Opérationnelle",
     "static_toc_entries": [
-      "1. Executive Summary & Strategic Thesis\t3",
-      "2. Objective, Scope, and Methodological Framework\t4",
-      "3. Technical Diagnosis & Maturity Dashboard\t5",
-      "4. Quantitative Financial Risk Exposure (O-FAIR)\t8",
-      "5. Strategic Conclusions & Cost of Inaction\t17",
-      "6. Custody Register of Information Sources\t18",
-      "Appendix A. Quantitative Risk Methodology (O-FAIR)\t20"
+      "1. Executive Summary \t Page 3",
+      "2. Assessment Objective, Scope & Methodology \t Page 4",
+      "3. Technological Diagnosis & Maturity Dashboard \t Page 6",
+      "4. Quantitative Risk Exposure (Open FAIR™) \t Page 10",
+      "5. Conclusions & Investment Business Case \t Page 18",
+      "Appendix A. Information Source Chain of Custody Registry \t Page 19",
+      "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™) \t Page 20",
+      "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer \t Page 22"
     ],
     "standard_sector_label": "Secteur Standard",
     "fair_intro_prose_p1": "The infrastructure risk assessment evaluates the propagation chain between physical facility deficiencies, logical IT platform stability, and core business continuity.",
@@ -5516,7 +5523,8 @@
     ],
     "methodology_approach_title": "Assessment Methodological Approach",
     "maturity_scale_title": "CMMI Analytical Maturity Scale",
-    "roi_payback_dynamic": "Payback < {months} months"
+    "roi_payback_dynamic": "Payback < {months} months",
+    "project_lbl": "Project:"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -6136,13 +6144,14 @@
     "interdep_concl_text": "これらの指標は客観的かつ定量的な意思決定のコンテキストを提供し、変革の実現可能性と回復力に基づいた投資優先順位付けを可能にします:",
     "chapter_4_fair_resilience": "4. 財務的リスクエクスポージャーと運用の回復力",
     "static_toc_entries": [
-      "1. Executive Summary & Strategic Thesis\t3",
-      "2. Objective, Scope, and Methodological Framework\t4",
-      "3. Technical Diagnosis & Maturity Dashboard\t5",
-      "4. Quantitative Financial Risk Exposure (O-FAIR)\t8",
-      "5. Strategic Conclusions & Cost of Inaction\t17",
-      "6. Custody Register of Information Sources\t18",
-      "Appendix A. Quantitative Risk Methodology (O-FAIR)\t20"
+      "1. Executive Summary \t Page 3",
+      "2. Assessment Objective, Scope & Methodology \t Page 4",
+      "3. Technological Diagnosis & Maturity Dashboard \t Page 6",
+      "4. Quantitative Risk Exposure (Open FAIR™) \t Page 10",
+      "5. Conclusions & Investment Business Case \t Page 18",
+      "Appendix A. Information Source Chain of Custody Registry \t Page 19",
+      "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™) \t Page 20",
+      "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer \t Page 22"
     ],
     "standard_sector_label": "標準セクター",
     "fair_intro_prose_p1": "The infrastructure risk assessment evaluates the propagation chain between physical facility deficiencies, logical IT platform stability, and core business continuity.",
@@ -6893,7 +6902,8 @@
     ],
     "methodology_approach_title": "Assessment Methodological Approach",
     "maturity_scale_title": "CMMI Analytical Maturity Scale",
-    "roi_payback_dynamic": "Payback < {months} months"
+    "roi_payback_dynamic": "Payback < {months} months",
+    "project_lbl": "Project:"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -7513,13 +7523,14 @@
     "interdep_concl_text": "Diese Indikatoren liefern einen quantitativen Entscheidungskontext zur Priorisierung strategischer Investitionen nach Resilienz und Nutzen:",
     "chapter_4_fair_resilience": "4. Finanzielles Risiko und operative Resilienz",
     "static_toc_entries": [
-      "1. Executive Summary & Strategic Thesis\t3",
-      "2. Objective, Scope, and Methodological Framework\t4",
-      "3. Technical Diagnosis & Maturity Dashboard\t5",
-      "4. Quantitative Financial Risk Exposure (O-FAIR)\t8",
-      "5. Strategic Conclusions & Cost of Inaction\t17",
-      "6. Custody Register of Information Sources\t18",
-      "Appendix A. Quantitative Risk Methodology (O-FAIR)\t20"
+      "1. Executive Summary \t Page 3",
+      "2. Assessment Objective, Scope & Methodology \t Page 4",
+      "3. Technological Diagnosis & Maturity Dashboard \t Page 6",
+      "4. Quantitative Risk Exposure (Open FAIR™) \t Page 10",
+      "5. Conclusions & Investment Business Case \t Page 18",
+      "Appendix A. Information Source Chain of Custody Registry \t Page 19",
+      "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™) \t Page 20",
+      "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer \t Page 22"
     ],
     "standard_sector_label": "Standardsektor",
     "fair_intro_prose_p1": "The infrastructure risk assessment evaluates the propagation chain between physical facility deficiencies, logical IT platform stability, and core business continuity.",
@@ -8270,6 +8281,7 @@
     ],
     "methodology_approach_title": "Assessment Methodological Approach",
     "maturity_scale_title": "CMMI Analytical Maturity Scale",
-    "roi_payback_dynamic": "Payback < {months} months"
+    "roi_payback_dynamic": "Payback < {months} months",
+    "project_lbl": "Project:"
   }
 }
