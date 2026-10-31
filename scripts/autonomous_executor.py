@@ -207,17 +207,27 @@ def resolve_canonical_repo_path(raw_path_str: str) -> Path:
 
 
 def detect_target_files(task: RemediationTask) -> List[Path]:
-    """Extracts existing source files mentioned in task title and specification."""
-    search_text = f"{task.title}\n{task.specification}"
-    candidates: Set[Path] = set()
+    """Extracts the primary target source files mentioned in task title, or falls back to specification."""
+    # First priority: files explicitly specified in the title (e.g. `infrastructure/streaming_sentinel.py`)
+    title_mentions = re.findall(r"([a-zA-Z0-9_/.-]+\.py)", task.title)
+    if title_mentions:
+        primary: Set[Path] = set()
+        for fm in title_mentions:
+            resolved = resolve_canonical_repo_path(fm)
+            if resolved.exists() and resolved.is_file():
+                primary.add(resolved)
+        if primary:
+            return sorted(list(primary))
 
-    file_mentions = re.findall(r"([a-zA-Z0-9_/.-]+\.py)", search_text)
+    # Second priority: files mentioned in specification (bounded to at most 2 files)
+    candidates: Set[Path] = set()
+    file_mentions = re.findall(r"([a-zA-Z0-9_/.-]+\.py)", task.specification)
     for fm in file_mentions:
         resolved = resolve_canonical_repo_path(fm)
         if resolved.exists() and resolved.is_file():
             candidates.add(resolved)
 
-    return sorted(list(candidates))
+    return sorted(list(candidates))[:2]
 
 
 def parse_tasks_from_markdown(markdown_path: Path) -> List[RemediationTask]:

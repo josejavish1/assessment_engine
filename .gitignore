@@ -49,6 +49,8 @@ service_account.json
 *.log
 execution_*.log
 .amo/
+*.db
+jobs.db
 run_t*.log
 help.log
 
