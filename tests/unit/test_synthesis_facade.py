@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 from decimal import Decimal
 from typing import Any
 import pytest
 
 from assessment_engine.application.services.cegar_synthesis_engine import (
     CegarSynthesisEngine,
+    SynthesisGeneratorPort,
 )
 from assessment_engine.application.services.synthesis_facade import (
     PolymorphicSynthesisFacade,
@@ -17,13 +19,39 @@ from assessment_engine.application.services.synthesis_facade import (
 from assessment_engine.domain.synthesis.oracle import SynthesisContext
 from assessment_engine.domain.synthesis.schemas import (
     CandidateEnterpriseDeliverable,
+    CounterexampleVector,
     ExecutiveRoadmapPhase,
     FinancialProjection,
     OptimizationAxis,
     StrategicOption,
     VerifiedEnterpriseDeliverable,
 )
-from assessment_engine.infrastructure.llm.cegar_adapter import CegarLLMAdapter
+
+
+class MockSynthesisGenerator(SynthesisGeneratorPort):
+    """Pure application-level mock generator implementing SynthesisGeneratorPort without infrastructure coupling."""
+
+    def __init__(self, deliverable: CandidateEnterpriseDeliverable | None = None, should_fail: bool = False) -> None:
+        self.deliverable = deliverable or _build_valid_verified_deliverable()
+        self.should_fail = should_fail
+        self.call_count = 0
+
+    async def generate_candidate(
+        self, context: SynthesisContext, evidence_payload: dict[str, Any]
+    ) -> CandidateEnterpriseDeliverable:
+        self.call_count += 1
+        if self.should_fail:
+            raise RuntimeError("Simulated shadow synthesis failure.")
+        return self.deliverable
+
+    async def optimize_repair(
+        self,
+        candidate: CandidateEnterpriseDeliverable,
+        counterexamples: CounterexampleVector,
+        context: SynthesisContext,
+    ) -> CandidateEnterpriseDeliverable:
+        self.call_count += 1
+        return self.deliverable
 
 
 def _build_valid_verified_deliverable() -> VerifiedEnterpriseDeliverable:
@@ -147,21 +175,20 @@ def _build_context() -> SynthesisContext:
 
 @pytest.mark.asyncio
 async def test_facade_mode_legacy() -> None:
-    """Verify that mode LEGACY routes strictly to legacy synthesizer callable."""
+    """Verify that mode LEGACY routes strictly to legacy synthesizer callable (sync or async)."""
     legacy_called = False
 
-    async def mock_legacy(**kwargs: Any) -> dict[str, Any]:
+    def mock_legacy_sync(**kwargs: Any) -> dict[str, Any]:
         nonlocal legacy_called
         legacy_called = True
         return {"legacy_key": "legacy_val", "status": "LEGACY_EXECUTED"}
 
-    candidate_valid = _build_valid_verified_deliverable()
-    adapter = CegarLLMAdapter(custom_caller=lambda **kwargs: candidate_valid)
-    engine = CegarSynthesisEngine(generator=adapter)
+    generator = MockSynthesisGenerator()
+    engine = CegarSynthesisEngine(generator=generator)
 
     facade = PolymorphicSynthesisFacade(
         cegar_engine=engine,
-        legacy_synthesizer=mock_legacy,
+        legacy_synthesizer=mock_legacy_sync,
         default_mode=SynthesisMode.LEGACY,
     )
 
@@ -171,13 +198,28 @@ async def test_facade_mode_legacy() -> None:
 
 
 @pytest.mark.asyncio
+async def test_facade_legacy_missing_callable_raises_error() -> None:
+    """Verify that invoking LEGACY mode without a configured legacy_synthesizer raises ValueError."""
+    generator = MockSynthesisGenerator()
+    engine = CegarSynthesisEngine(generator=generator)
+
+    facade = PolymorphicSynthesisFacade(
+        cegar_engine=engine,
+        legacy_synthesizer=None,
+        default_mode=SynthesisMode.LEGACY,
+    )
+
+    with pytest.raises(ValueError, match="requires a configured legacy_synthesizer callable"):
+        await facade.synthesize(_build_context(), {"evidence": []})
+
+
+@pytest.mark.asyncio
 async def test_facade_mode_cegar(monkeypatch: pytest.MonkeyPatch) -> None:
     """Verify that mode CEGAR executes CEGAR engine and returns ACL mapped dictionary."""
     monkeypatch.setenv("SYNTHESIS_ENGINE_MODE", "CEGAR")
 
-    candidate_valid = _build_valid_verified_deliverable()
-    adapter = CegarLLMAdapter(custom_caller=lambda **kwargs: candidate_valid)
-    engine = CegarSynthesisEngine(generator=adapter)
+    generator = MockSynthesisGenerator()
+    engine = CegarSynthesisEngine(generator=generator)
 
     facade = PolymorphicSynthesisFacade(
         cegar_engine=engine,
@@ -193,29 +235,22 @@ async def test_facade_mode_cegar(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result["financials"]["tco"] == "150000.00"
     assert len(result["pareto_frontier"]) == 3
     assert len(result["execution_roadmap"]) == 2
+    assert generator.call_count == 1
 
 
 @pytest.mark.asyncio
 async def test_facade_mode_shadow(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify that mode SHADOW executes legacy and runs CEGAR in shadow mode."""
+    """Verify that mode SHADOW executes legacy and runs CEGAR in background task."""
     monkeypatch.setenv("SYNTHESIS_ENGINE_MODE", "SHADOW")
     legacy_called = False
-    cegar_called = False
 
     async def mock_legacy(**kwargs: Any) -> dict[str, Any]:
         nonlocal legacy_called
         legacy_called = True
         return {"result": "legacy_production"}
 
-    candidate_valid = _build_valid_verified_deliverable()
-
-    async def mock_cegar(**kwargs: Any) -> CandidateEnterpriseDeliverable:
-        nonlocal cegar_called
-        cegar_called = True
-        return candidate_valid
-
-    adapter = CegarLLMAdapter(custom_caller=mock_cegar)
-    engine = CegarSynthesisEngine(generator=adapter)
+    generator = MockSynthesisGenerator()
+    engine = CegarSynthesisEngine(generator=generator)
 
     facade = PolymorphicSynthesisFacade(
         cegar_engine=engine,
@@ -224,12 +259,10 @@ async def test_facade_mode_shadow(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
     result = await facade.synthesize(_build_context(), {"evidence": []})
-    if facade._background_tasks:
-        import asyncio
-        await asyncio.gather(*facade._background_tasks, return_exceptions=True)
+    await facade.shutdown()
 
     assert legacy_called is True
-    assert cegar_called is True
+    assert generator.call_count == 1
     assert result["result"] == "legacy_production"
 
 
@@ -241,11 +274,8 @@ async def test_facade_shadow_error_isolation(monkeypatch: pytest.MonkeyPatch) ->
     async def mock_legacy(**kwargs: Any) -> dict[str, Any]:
         return {"result": "legacy_success"}
 
-    async def failing_cegar(**kwargs: Any) -> CandidateEnterpriseDeliverable:
-        raise RuntimeError("Simulated shadow synthesis failure")
-
-    adapter = CegarLLMAdapter(custom_caller=failing_cegar)
-    engine = CegarSynthesisEngine(generator=adapter)
+    generator = MockSynthesisGenerator(should_fail=True)
+    engine = CegarSynthesisEngine(generator=generator)
 
     facade = PolymorphicSynthesisFacade(
         cegar_engine=engine,
@@ -253,11 +283,8 @@ async def test_facade_shadow_error_isolation(monkeypatch: pytest.MonkeyPatch) ->
         default_mode=SynthesisMode.LEGACY,
     )
 
-    # Must complete safely without raising
     result = await facade.synthesize(_build_context(), {"evidence": []})
-    if facade._background_tasks:
-        import asyncio
-        await asyncio.gather(*facade._background_tasks, return_exceptions=True)
+    await facade.shutdown()
     assert result["result"] == "legacy_success"
 
 
@@ -278,3 +305,11 @@ def test_anti_corruption_layer_mapping_fidelity() -> None:
     assert len(mapped["execution_roadmap"]) == 2
     assert mapped["execution_roadmap"][0]["allocated_budget"] == "60000.00"
     assert mapped["provenance"]["engine"] == "CEGAR_VERIFIED_V1"
+
+    # Verify option frontier fields completeness
+    first_opt = mapped["pareto_frontier"][0]
+    assert first_opt["currency"] == "EUR"
+    assert first_opt["tco"] == "150000.00"
+    assert first_opt["risk_p10"] == "15000.00"
+    assert first_opt["risk_p50"] == "45000.00"
+    assert first_opt["risk_p90"] == "120000.00"
