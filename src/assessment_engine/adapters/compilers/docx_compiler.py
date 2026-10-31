@@ -642,17 +642,26 @@ class DocxCompiler(DocumentCompiler):
                 elif align_str == "JUSTIFY":
                     align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
 
-                #
+                # Contrast Invariant Protection (RFC-026 Invariant II via StyleInvariantGuard)
+                from assessment_engine.compiler.style_invariants import StyleInvariantGuard
+
+                bg_hex = cell_node.bg_color if cell_node.bg_color else None
+                if cell_node.text_color_rgb:
+                    fg_hex = f"{cell_node.text_color_rgb[0]:02X}{cell_node.text_color_rgb[1]:02X}{cell_node.text_color_rgb[2]:02X}"
+                    safe_fg_hex = StyleInvariantGuard.enforce_safe_foreground(fg_hex, bg_hex)
+                    safe_rgb = (int(safe_fg_hex[0:2], 16), int(safe_fg_hex[2:4], 16), int(safe_fg_hex[4:6], 16))
+                else:
+                    safe_rgb = None
+
                 safe_set_cell_text(
                     cell,
                     cell_node.text,
                     bold=cell_node.bold,
                     align=align_const,
                     font_size=cell_node.font_size,
-                    color_rgb=cell_node.text_color_rgb,
+                    color_rgb=safe_rgb,
                 )
 
-                #
                 if cell_node.bg_color:
                     safe_shade_cell(cell, cell_node.bg_color)
 

@@ -172,13 +172,18 @@ class PayloadToASTBridge:
             except Exception as e:
                 logger.info(f"⚠️ Error loading client_intelligence in AST Bridge: {e}")
 
+        annex_data: dict[str, Any] = {}
+        if not annex_file.exists():
+            candidates = list(case_dir.glob("approved_annex_*.template_payload.json"))
+            if candidates:
+                annex_file = candidates[0]
+
         if annex_file.exists():
             try:
                 with open(annex_file, "r", encoding="utf-8-sig") as f:
-                    json.load(f)
+                    annex_data = json.load(f)
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-                logger.debug(f"[Fallback] Handled exception: {ex}")
+                logger.debug(f"[Fallback] Handled exception reading annex_file: {ex}")
 
         tower_meta = blueprint_data.get("document_meta", {})
         meta_lang = str(override_locale or tower_meta.get("language") or "en").strip().lower()
@@ -254,6 +259,7 @@ class PayloadToASTBridge:
             "annex_file": annex_file,
             "case_dir": case_dir,
             "modules_dir": modules_dir,
+            "annex_data": annex_data,
             "blueprint_data": blueprint_data,
             "intel_data": intel_data,
             "tower_meta": tower_meta,
@@ -356,9 +362,31 @@ class PayloadToASTBridge:
         gs_val = ctx["gs_val"]
         # 3. CHAPTER 1: EXECUTIVE SUMMARY
         #
-        resumen_path = modules_dir / "02_resumen_ejecutivo.md"
-        if resumen_path.exists():
-            nodes.extend(self._parse_markdown_to_nodes(resumen_path))
+        annex_data = ctx.get("annex_data", {})
+        executive_summary_path = modules_dir / "02_executive_summary.md"
+        if executive_summary_path.exists():
+            nodes.extend(self._parse_markdown_to_nodes(executive_summary_path))
+        elif annex_data and "executive_summary" in annex_data:
+            nodes.append(
+                HeadingNode(
+                    text=t("chapter_1_exec_summary", locale=meta_lang),
+                    level=1,
+                    primary_color_rgb=self.primary_color_rgb,
+                )
+            )
+            exec_sum = annex_data["executive_summary"]
+            headline = exec_sum.get("headline", "")
+            summary_body = exec_sum.get("summary_body", "")
+            if headline:
+                nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5))
+            if summary_body:
+                nodes.append(ParagraphNode(text=summary_body))
+            impacts = exec_sum.get("key_business_impacts", [])
+            if impacts:
+                nodes.append(SpacerNode(points=6))
+                nodes.append(ParagraphNode(text=f"**{t('business_impacts_title', locale=meta_lang)}:**"))
+                for imp in impacts:
+                    nodes.append(ParagraphNode(text=imp, style="List Bullet"))
         else:
             nodes.append(
                 HeadingNode(
@@ -382,9 +410,25 @@ class PayloadToASTBridge:
             )
         )
 
-        intro_path = modules_dir / "01_introduccion.md"
+        intro_path = modules_dir / "01_introduction.md"
         if intro_path.exists():
             nodes.extend(self._parse_markdown_to_nodes(intro_path, skip_level_1=True))
+        elif annex_data and "domain_introduction" in annex_data:
+            intro = annex_data["domain_introduction"]
+            obj = intro.get("domain_objective", "")
+            tech_dom = intro.get("technological_domain", "")
+            meth = intro.get("methodology", "")
+            if obj:
+                nodes.append(HeadingNode(text=t("objective_and_scope_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
+                nodes.append(ParagraphNode(text=obj))
+            if tech_dom:
+                nodes.append(SpacerNode(points=6))
+                nodes.append(HeadingNode(text=t("platform_description_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
+                nodes.append(ParagraphNode(text=tech_dom))
+            if meth:
+                nodes.append(SpacerNode(points=6))
+                nodes.append(HeadingNode(text=t("maturity_methodology_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
+                nodes.append(ParagraphNode(text=meth))
         else:
             nodes.append(
                 ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))

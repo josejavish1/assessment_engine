@@ -16,7 +16,7 @@ from assessment_engine.infrastructure.genai_client import (
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 doc_base = Document(str(REPO_ROOT / "working/out/molins_baseline_pre_argon/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"))
-doc_new = Document(str(REPO_ROOT / "working/out/molins_post_argon/T1/Molins_202610_Anexo_01_Data_Center_ASIS_ES.docx"))
+doc_new = Document(str(REPO_ROOT / "working/out/molins/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"))
 
 # Extract visual defects: White on White text
 white_on_white_count = 0
