@@ -1130,12 +1130,17 @@ class PayloadToASTBridge:
                     risks_by_pillar[p_name] = []
                 risks_by_pillar[p_name].append(r)
 
-            for p_name, pillar_risks in risks_by_pillar.items():
-                # Display all identified technical risks for full analytical completeness
+            from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+            resolver = get_taxonomy_resolver()
+
+            for raw_p_name, pillar_risks in risks_by_pillar.items():
                 pillar_risks_filtered = pillar_risks
                 if not pillar_risks_filtered:
                     continue
 
+                p_name = resolver.resolve_pillar_by_any_reference(
+                    raw_p_name, default=raw_p_name, locale=meta_lang
+                )
                 pilar_header = t("detailed_risks_pilar_title", locale=meta_lang) + p_name
                 nodes.append(
                     HeadingNode(

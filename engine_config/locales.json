@@ -305,7 +305,7 @@
     "exposure_lbl": "Exposición Cuantitativa (FAIR):\n",
     "ale_proyectado": "ALE Proyectado: ",
     "v_lbl": "Versión ",
-    "disclaimer_text_1": "Este informe de diagnóstico técnico (el Documento) constituye un ejercicio de evaluación rápida (Fast Assessment) preparado por la consultora únicamente para el uso interno y exclusivo de la organización cliente, sobre una base estrictamente confidencial. El lector y la organización cliente aceptan y declaran conocer que el Documento se fundamenta de manera única y exclusiva en las declaraciones verbales, narrativas, explicaciones de arquitectura y autoevaluaciones facilitadas por el personal del cliente durante las entrevistas técnicas y reuniones de contexto mantenidas, sin que se haya procedido a realizar ninguna auditoría de campo, revisión directo de código, análisis de configuraciones en sistemas, captura de tráfico de red, ni contraste o validación independiente de evidencias físicas o documentales por parte de la consultora. En consecuencia, la consultora no asume obligación, deber ni responsabilidad alguna de verificar, validar o contrastar la veracidad, exactitud, completitud o vigencia de la información facilitada por el cliente, estando completamente exenta de cualquier responsabilidad o culpa profesional contractual o extracontractual en caso de que los datos o narrativas proporcionados por los equipos del cliente resulten ser incompletos, inexactos, desactualizados o erróneos. El Documento no constituye, bajo ningún concepto, una garantía de rendimiento, ciberresiliencia, seguridad continua o indemnidad frente a incidentes operacionales o regulatorios.",
+    "disclaimer_text_1": "Este informe de diagnóstico técnico (el Documento) constituye un ejercicio de evaluación rápida (Fast Assessment) preparado por la consultora únicamente para el uso interno y exclusivo de la organización cliente, sobre una base estrictamente confidencial. El lector y la organización cliente aceptan y declaran conocer que el Documento se fundamenta de manera única y exclusiva en las declaraciones verbales, narrativas, explicaciones de arquitectura y autoevaluaciones facilitadas por el personal del cliente durante las entrevistas técnicas y reuniones de contexto mantenidas, sin que se haya procedido a realizar ninguna auditoría de campo, revisión directa de código, análisis de configuraciones en sistemas, captura de tráfico de red, ni contraste o validación independiente de evidencias físicas o documentales por parte de la consultora. En consecuencia, la consultora no asume obligación, deber ni responsabilidad alguna de verificar, validar o contrastar la veracidad, exactitud, completitud o vigencia de la información facilitada por el cliente, estando completamente exenta de cualquier responsabilidad o culpa profesional contractual o extracontractual en caso de que los datos o narrativas proporcionados por los equipos del cliente resulten ser incompletos, inexactos, desactualizados o erróneos. El Documento no constituye, bajo ningún concepto, una garantía de rendimiento, ciberresiliencia, seguridad continua o indemnidad frente a incidentes operacionales o regulatorios.",
     "disclaimer_text_2": "Las proyecciones de impacto financiero, simulación actuarial de riesgos, y los valores de Expectativa de Pérdida Anualizada (ALE) y peor caso (CVaR) calculados mediante la metodología estándar de Open FAIR™ y modelos estocásticos de Monte Carlo, representan únicamente estimaciones estadísticas y modelos matemáticos de probabilidad basados en distribuciones de incertidumbre. Dichas valoraciones monetarias constituyen herramientas analíticas exclusivas de priorización estratégica de inversiones y coste de inacción (Business Case). Bajo ninguna circunstancia deben interpretarse, utilizarse ni asimilarse a auditorías financieras o contables formales, provisiones de pasivos contables, garantías de impacto directo o indirecto en el balance de la compañía, ni como compromisos de pasivos exigibles legalmente o judicialmente.",
     "disclaimer_text_3": "Cualquier referencia contenida en el Documento a normativas, leyes, regulaciones o esquemas de cumplimiento sectorial se expone con un propósito estrictamente ilustrativo, técnico y de buenas prácticas de ingeniería para mitigar la superficie de exposición al riesgo. Dichas menciones no constituyen, bajo ningún concepto, asesoramiento legal, jurídico, fiscal o regulatorio formal. La interpretación, implantación, verificación y cumplimiento final de las obligaciones normativas y requerimientos legales aplicables recaen de manera estricta, directa e intransferible en los administradores, asesores legales, oficiales de cumplimiento y directivos de la organización cliente.",
     "disclaimer_text_4": "Queda expresamente prohibido distribuir, divulgar, reproducir, citar o facilitar el acceso a este Documento, de forma total o parcial, a cualquier tercero ajeno a la organización cliente sin el consentimiento previo y por escrito de la consultora. La consultora no asume, acepta ni adquiere responsabilidad alguna, contractual o extracontractual, frente a ningún tercero que acceda, lea o tome decisiones de cualquier naturaleza basadas en el contenido de este Documento, asumiendo dicho tercero todo el riesgo de forma exclusiva. El cliente se compromete a mantener indemne a la consultora, sus socios, empleados y subcontratistas frente a cualquier reclamación, demanda, daño, coste o perjuicio derivado de la distribución, uso inapropiado o divulgación no autorizada de este Documento a terceros.",
@@ -702,11 +702,11 @@
     "methodology_default_chapter_title": "Objetivo, Alcance y Marco Metodológico",
     "maturity_scale_intro": "La madurez se califica en una escala analítica del 1,00 al 5,00, donde cada nivel determina un estadio de control:",
     "maturity_scale_levels": [
-      "**Nivel 1 - Inicial (1.0-1.8):** Prácticas ad-hoc, inestables o dependientes del esfuerzo heroico de personas clave.",
-      "**Nivel 2 - Básico (1.8-2.6):** Prácticas funcionales de manera parcial o irregular, sin consistencia organizativa.",
-      "**Nivel 3 - Estandarizado (2.6-3.4):** Procesos formalizados e implantados de manera coherente en toda la organización.",
-      "**Nivel 4 - Optimizado (3.4-4.2):** Capacidades industrializadas, gobernadas predictivamente y sustentadas en métricas.",
-      "**Nivel 5 - Avanzado (4.2-5.0):** Procesos dinámicos impulsados por automatización inteligente y mejora continua."
+      "**Nivel 1 - Inicial (1,0 - 1,8):** Prácticas ad-hoc, reactivas o dependientes del esfuerzo individual de personas clave.",
+      "**Nivel 2 - Repetible (1,8 - 2,6):** Procesos operativos básicos establecidos a nivel táctico, con inconsistencias entre silos.",
+      "**Nivel 3 - Definido (2,6 - 3,4):** Procesos formalizados y documentados de manera coherente en toda la organización.",
+      "**Nivel 4 - Gestionado (3,4 - 4,2):** Capacidades medidas cuantitativamente y alineadas con el gobierno de TI.",
+      "**Nivel 5 - Optimizado (4,2 - 5,0):** Modelo operativo de excelencia, altamente automatizado y en mejora continua."
     ],
     "evaluated_capabilities_title": "Capacidades Evaluadas y Cálculo del Score",
     "evaluated_capabilities_intro": "El nivel de madurez técnica y el score global de la torre se consolidan mediante el promedio ponderado de las calificaciones obtenidas en las siguientes dimensiones y KPIs evaluados:",
@@ -718,7 +718,7 @@
     "systemic_resilience_intro": "Para medir la resiliencia cruzada de la plataforma e identificar riesgos que trascienden el perímetro de una única torre, el motor de la plataforma calcula y califica los siguientes indicadores decisionales avanzados utilizando modelos de decisión multicriterio y propagación en red:",
     "systemic_resilience_indicators_list": [
       "1. **Criticidad de Negocio (MCDA) [Rango 0% a 100%]:** Un valor superior al 80% (Extrema - Pilar Crítico) indica que el dominio tecnológico soporta directamente un servicio esencial de alta criticidad para la organización. Calificaciones de 50% a 79% representan un impacto alto pero de carácter secundario o diferido en el tiempo, y valores menores al 50% corresponden a un impacto medio de soporte operacional estándar.",
-      "2. **Presión Regulatoria (MCDA) [Rango 0% a 100%]:** Un valor mayor al 80% (Crítica) determina que la infraestructura está sujeta a normativas y regulaciones obligatorias severas (como la directiva europea NIS2, DORA o normativas sectoriales aplicables) con alto impacto penal o financiero ante incumplimientos. Rangos de 50% a 79% indican presiones sectoriales moderadas, y valores inferiores al 50% corresponden a regulaciones básicas.",
+      "2. **Presión Regulatoria (MCDA) [Rango 0% a 100%]:** Un valor mayor al 80% (Crítica) determina que la infraestructura está sujeta a normativas y regulaciones obligatorias severas (como la directiva europea NIS2 o normativas sectoriales aplicables) con alto impacto penal o financiero ante incumplimientos. Rangos de 50% a 79% indican presiones sectoriales moderadas, y valores inferiores al 50% corresponden a regulaciones básicas.",
       "3. **Viabilidad Operativa (MCDA) [Rango 0% a 100%]:** Mide la facilidad técnica y humana para ejecutar los proyectos propuestos (a mayor porcentaje, mayor facilidad). Un porcentaje superior al 60% representa proyectos viables y estándar. Valores inferiores al 60% indican una alta complejidad operacional, fuerte herencia de plataformas obsoletas (legacy), ventanas de mantenimiento críticas o falta de perfiles especializados.",
       "4. **Índice de Consistencia del Diagnóstico (DII) [Rango 0% a 100%]:** Cuantifica la volatilidad o sensibilidad del diagnóstico ante variaciones en las evidencias documentales recopiladas (a menor porcentaje, mayor robustez). Un valor por debajo del 15% (Estable - Diagnóstico Robusto) garantiza que la calificación es sólida matemáticamente y representativa frente a discrepancias técnicas. Rangos de 15% a 30% reflejan una consistencia moderada, y superiores al 30% representan una alta volatilidad.",
       "5. **Índice de Propagación de Fallos en Cascada (ERC) [Rango: 0,000 a 1,000]:** Utiliza un algoritmo de centralidad en red tipo PageRank para medir la capacidad de la torre de actuar como difusor de fallos técnicos hacia el resto de la plataforma corporativa. Valores mayores a 0,500 indican una Alta Influencia, donde cualquier incidente arrastrará de forma inmediata al resto de torres de TI. Rangos de 0,200 a 0,499 indican una influencia media, e inferiores a 0,200 representan componentes aislados con bajo riesgo de afectación colateral.",
@@ -1226,7 +1226,28 @@
     "desc_band_defined": "se evidencian procesos formalizados y documentados de manera coherente pero con margen de consolidación integrada a nivel de plataforma.",
     "desc_band_managed": "se evidencia un modelo operativo maduro, medido cuantitativamente y alineado sistemáticamente con la gobernanza de TI.",
     "desc_band_optimized": "se evidencia un modelo operativo de excelencia, altamente automatizado y en constante mejora continua.",
-    "default_industry_vertical": "Infraestructura y Tecnología Empresarial"
+    "default_industry_vertical": "Infraestructura y Tecnología Empresarial",
+    "pillar_intro_0": "Examina exhaustivamente la madurez operativa y los baselines técnicos",
+    "pillar_intro_1": "Audita con rigor de ingeniería el estado funcional y los controles",
+    "pillar_intro_2": "Verifica la solidez estructural y las políticas de salvaguarda",
+    "pillar_intro_3": "Pondera la eficacia de las medidas de protección y respuesta",
+    "pillar_intro_4": "Supervisa la disciplina de mantenimiento, gobernanza y continuidad",
+    "tef_levels": [
+      "Muy Bajo",
+      "Bajo",
+      "Medio",
+      "Alto",
+      "Muy Alto"
+    ],
+    "tef_descriptions": [
+      "< 0,1 eventos/año (menos de una vez por década)",
+      "0,1 - 0,5 eventos/año (una vez cada 4 años)",
+      "0,5 - 2,0 eventos/año (una vez al año)",
+      "2,0 - 10 eventos/año (frecuencia trimestral)",
+      "> 10 eventos/año (frecuencia mensual o superior)"
+    ],
+    "p90_stress_scenario_label": "Escenario de Estrés P90",
+    "pillar_bullet_evaluates_format": "**{name} ({weight_lbl}: {weight}%)**: {verb_intro}, analizando críticamente factores clave como {kpi_str}."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2446,7 +2467,28 @@
     "desc_band_defined": "formalized and consistently documented processes are in place, with room for integrated platform consolidation.",
     "desc_band_managed": "a mature, quantitatively measured operational model systematically aligned with IT governance is in place.",
     "desc_band_optimized": "an operational model of excellence, highly automated and in continuous improvement is demonstrated.",
-    "default_industry_vertical": "Enterprise & Industrial Technology"
+    "default_industry_vertical": "Enterprise & Industrial Technology",
+    "pillar_intro_0": "Comprehensively evaluates operational maturity and technical baselines",
+    "pillar_intro_1": "Audits functional state and controls with engineering rigor",
+    "pillar_intro_2": "Verifies structural soundness and safeguard policies",
+    "pillar_intro_3": "Weighs the effectiveness of protection and response measures",
+    "pillar_intro_4": "Supervises maintenance discipline, governance, and continuity",
+    "tef_levels": [
+      "Very Low",
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "tef_descriptions": [
+      "< 0.1 events/year (less than once every 10 years)",
+      "0.1 - 0.5 events/year (once every 4 years)",
+      "0.5 - 2.0 events/year (once a year)",
+      "2.0 - 10 events/year (once a quarter)",
+      "> 10 events/year (once a month)"
+    ],
+    "p90_stress_scenario_label": "P90 Stress Scenario",
+    "pillar_bullet_evaluates_format": "**{name} ({weight_lbl}: {weight}%)**: {verb_intro}, critically analyzing key factors such as {kpi_str}."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -3663,7 +3705,28 @@
     "platform_description_title": "Platform Description and Unified Topology",
     "chapter_4_fair_quantification": "4. Financial Risk Exposure & Operational Resilience",
     "objective_and_scope_title": "Objective and Scope",
-    "business_impacts_title": "Key Business Impacts"
+    "business_impacts_title": "Key Business Impacts",
+    "pillar_intro_0": "Comprehensively evaluates operational maturity and technical baselines",
+    "pillar_intro_1": "Audits functional state and controls with engineering rigor",
+    "pillar_intro_2": "Verifies structural soundness and safeguard policies",
+    "pillar_intro_3": "Weighs the effectiveness of protection and response measures",
+    "pillar_intro_4": "Supervises maintenance discipline, governance, and continuity",
+    "tef_levels": [
+      "Very Low",
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "tef_descriptions": [
+      "< 0.1 events/year (less than once every 10 years)",
+      "0.1 - 0.5 events/year (once every 4 years)",
+      "0.5 - 2.0 events/year (once a year)",
+      "2.0 - 10 events/year (once a quarter)",
+      "> 10 events/year (once a month)"
+    ],
+    "p90_stress_scenario_label": "P90 Stress Scenario",
+    "pillar_bullet_evaluates_format": "**{name} ({weight_lbl}: {weight}%)**: {verb_intro}, critically analyzing key factors such as {kpi_str}."
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -4880,7 +4943,28 @@
     "platform_description_title": "Platform Description and Unified Topology",
     "chapter_4_fair_quantification": "4. Financial Risk Exposure & Operational Resilience",
     "objective_and_scope_title": "Objective and Scope",
-    "business_impacts_title": "Key Business Impacts"
+    "business_impacts_title": "Key Business Impacts",
+    "pillar_intro_0": "Comprehensively evaluates operational maturity and technical baselines",
+    "pillar_intro_1": "Audits functional state and controls with engineering rigor",
+    "pillar_intro_2": "Verifies structural soundness and safeguard policies",
+    "pillar_intro_3": "Weighs the effectiveness of protection and response measures",
+    "pillar_intro_4": "Supervises maintenance discipline, governance, and continuity",
+    "tef_levels": [
+      "Very Low",
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "tef_descriptions": [
+      "< 0.1 events/year (less than once every 10 years)",
+      "0.1 - 0.5 events/year (once every 4 years)",
+      "0.5 - 2.0 events/year (once a year)",
+      "2.0 - 10 events/year (once a quarter)",
+      "> 10 events/year (once a month)"
+    ],
+    "p90_stress_scenario_label": "P90 Stress Scenario",
+    "pillar_bullet_evaluates_format": "**{name} ({weight_lbl}: {weight}%)**: {verb_intro}, critically analyzing key factors such as {kpi_str}."
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -6097,7 +6181,28 @@
     "platform_description_title": "Platform Description and Unified Topology",
     "chapter_4_fair_quantification": "4. Financial Risk Exposure & Operational Resilience",
     "objective_and_scope_title": "Objective and Scope",
-    "business_impacts_title": "Key Business Impacts"
+    "business_impacts_title": "Key Business Impacts",
+    "pillar_intro_0": "Comprehensively evaluates operational maturity and technical baselines",
+    "pillar_intro_1": "Audits functional state and controls with engineering rigor",
+    "pillar_intro_2": "Verifies structural soundness and safeguard policies",
+    "pillar_intro_3": "Weighs the effectiveness of protection and response measures",
+    "pillar_intro_4": "Supervises maintenance discipline, governance, and continuity",
+    "tef_levels": [
+      "Very Low",
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "tef_descriptions": [
+      "< 0.1 events/year (less than once every 10 years)",
+      "0.1 - 0.5 events/year (once every 4 years)",
+      "0.5 - 2.0 events/year (once a year)",
+      "2.0 - 10 events/year (once a quarter)",
+      "> 10 events/year (once a month)"
+    ],
+    "p90_stress_scenario_label": "P90 Stress Scenario",
+    "pillar_bullet_evaluates_format": "**{name} ({weight_lbl}: {weight}%)**: {verb_intro}, critically analyzing key factors such as {kpi_str}."
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -7314,6 +7419,27 @@
     "platform_description_title": "Platform Description and Unified Topology",
     "chapter_4_fair_quantification": "4. Financial Risk Exposure & Operational Resilience",
     "objective_and_scope_title": "Objective and Scope",
-    "business_impacts_title": "Key Business Impacts"
+    "business_impacts_title": "Key Business Impacts",
+    "pillar_intro_0": "Comprehensively evaluates operational maturity and technical baselines",
+    "pillar_intro_1": "Audits functional state and controls with engineering rigor",
+    "pillar_intro_2": "Verifies structural soundness and safeguard policies",
+    "pillar_intro_3": "Weighs the effectiveness of protection and response measures",
+    "pillar_intro_4": "Supervises maintenance discipline, governance, and continuity",
+    "tef_levels": [
+      "Very Low",
+      "Low",
+      "Medium",
+      "High",
+      "Very High"
+    ],
+    "tef_descriptions": [
+      "< 0.1 events/year (less than once every 10 years)",
+      "0.1 - 0.5 events/year (once every 4 years)",
+      "0.5 - 2.0 events/year (once a year)",
+      "2.0 - 10 events/year (once a quarter)",
+      "> 10 events/year (once a month)"
+    ],
+    "p90_stress_scenario_label": "P90 Stress Scenario",
+    "pillar_bullet_evaluates_format": "**{name} ({weight_lbl}: {weight}%)**: {verb_intro}, critically analyzing key factors such as {kpi_str}."
   }
 }

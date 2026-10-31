@@ -249,7 +249,7 @@ def build_appendix_d_methodology(
     from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
     resolver = get_taxonomy_resolver()
 
-    for p in pillars_list:
+    for p_idx, p in enumerate(pillars_list):
         raw_pname = p.get("pillar_name", p.get("pilar_name", "Pillar"))
         p_name = resolver.resolve_pillar_by_any_reference(
             p.get("pillar_id") or p.get("pilar_id") or raw_pname,
@@ -275,12 +275,14 @@ def build_appendix_d_methodology(
             kpi_str = t("lbl_default_pillar_kpis", locale=meta_lang)
 
         weight_lbl = t("lbl_weight", locale=meta_lang)
+        verb_intro = t(f"pillar_intro_{p_idx % 5}", locale=meta_lang)
         p_bullet_text = t(
-            "pillar_bullet_template",
+            "pillar_bullet_evaluates_format",
             locale=meta_lang,
             name=p_name,
             weight_lbl=weight_lbl,
             weight=p_weight,
+            verb_intro=verb_intro,
             kpi_str=kpi_str,
         )
         nodes.append(ParagraphNode(text=p_bullet_text, style="List Bullet"))

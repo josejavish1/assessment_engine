@@ -166,13 +166,6 @@ def build_heatmap_mosaic(risks_data_list: list[dict[str, Any]]) -> TableNode:
 
 
 TEF_SCALE_DEFINITIONS: dict[str, list[tuple[str, str]]] = {
-    "es": [
-        ("Very Low", "< 0.1 events/year (less than once per decade)"),
-        ("Low", "0.1 - 0.5 events/year (once per 4 years)"),
-        ("Medium", "0.5 - 2.0 events/year (once per year)"),
-        ("High", "2.0 - 10 events/year (quarterly)"),
-        ("Very High", "> 10 events/year (monthly or higher)"),
-    ],
     "en": [
         ("Very Low", "< 0.1 events/year (less than once every 10 years)"),
         ("Low", "0.1 - 0.5 events/year (once every 4 years)"),
@@ -188,11 +181,21 @@ def build_tef_scale_table(vocab: dict[str, Any], meta_lang: str, alt_row_hex: st
     tef_headers = vocab.get("tef_headers") or get_localized_list(
         "tef_headers", locale=meta_lang
     )
-    tef_tuples = TEF_SCALE_DEFINITIONS.get(
-        meta_lang,
-        TEF_SCALE_DEFINITIONS.get("en", TEF_SCALE_DEFINITIONS.get("es", [])),
-    )
-    tef_data = [(f"TEF {i+1}", tef_tuples[i][0], tef_tuples[i][1]) for i in range(5)]
+    tef_levels = get_localized_list("tef_levels", locale=meta_lang)
+    if not tef_levels or len(tef_levels) < 5:
+        tef_levels = ["Very Low", "Low", "Medium", "High", "Very High"]
+
+    tef_descs = get_localized_list("tef_descriptions", locale=meta_lang)
+    if not tef_descs or len(tef_descs) < 5:
+        tef_descs = [
+            "< 0.1 events/year (less than once every 10 years)",
+            "0.1 - 0.5 events/year (once every 4 years)",
+            "0.5 - 2.0 events/year (once a year)",
+            "2.0 - 10 events/year (once a quarter)",
+            "> 10 events/year (once a month)",
+        ]
+
+    tef_data = [(f"TEF {i+1}", tef_levels[i], tef_descs[i]) for i in range(5)]
     tef_rows = [
         TableRowNode(
             cells=[
@@ -230,12 +233,13 @@ def build_lm_scale_table(
     from assessment_engine.infrastructure.localization import format_number
 
     if is_critical:
+        stress_label = t("p90_stress_scenario_label", locale=meta_lang)
         limits = [
-            f"< {format_number(1000, locale=meta_lang, decimals=0)} {currency}",
-            f"{format_number(1000, locale=meta_lang, decimals=0)} {currency} - {format_number(10000, locale=meta_lang, decimals=0)} {currency}",
-            f"{format_number(10000, locale=meta_lang, decimals=0)} {currency} - {format_number(50000, locale=meta_lang, decimals=0)} {currency}",
-            f"{format_number(50000, locale=meta_lang, decimals=0)} {currency} - {format_number(300000, locale=meta_lang, decimals=0)} {currency}",
-            f"{format_number(250000, locale=meta_lang, decimals=0)} {currency} - {format_number(1500000, locale=meta_lang, decimals=0)} {currency}",
+            f"< {format_number(25000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(25000, locale=meta_lang, decimals=0)} {currency} - {format_number(100000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(100000, locale=meta_lang, decimals=0)} {currency} - {format_number(500000, locale=meta_lang, decimals=0)} {currency}",
+            f"{format_number(500000, locale=meta_lang, decimals=0)} {currency} - {format_number(2000000, locale=meta_lang, decimals=0)} {currency}",
+            f"> {format_number(2000000, locale=meta_lang, decimals=0)} {currency} ({stress_label})",
         ]
     else:
         limits = [

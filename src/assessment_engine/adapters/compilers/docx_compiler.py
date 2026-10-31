@@ -363,9 +363,11 @@ def safe_set_cell_text(
             # Heuristic to detect and structure list items that follow a '• Title: Description' pattern.
             if ":" in clean_line:
                 label, desc = clean_line.split(":", 1)
+                clean_label = label.strip().strip("*").strip("_").strip()
+                clean_desc = desc.strip()
 
                 #
-                run_lbl = p.add_run(f"{bullet_prefix}{label.strip()}: ")
+                run_lbl = p.add_run(f"{bullet_prefix}{clean_label}: ")
                 run_lbl.bold = True
                 set_run_font_comprehensive(run_lbl, font_name="Arial")
                 run_lbl.font.size = Pt(font_size)
@@ -374,7 +376,7 @@ def safe_set_cell_text(
 
                 #
                 add_markdown_runs(
-                    p, desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
+                    p, clean_desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
                 )
             else:
                 p.add_run(bullet_prefix)
@@ -399,7 +401,9 @@ def safe_set_cell_text(
         # Heuristic to detect and structure paragraphs that follow a 'Title: Description' pattern.
         if ":" in clean_txt and not clean_txt.startswith("http"):
             label, desc = clean_txt.split(":", 1)
-            run_lbl = p.add_run(f"{label.strip()}: ")
+            clean_label = label.strip().strip("*").strip("_").strip()
+            clean_desc = desc.strip()
+            run_lbl = p.add_run(f"{clean_label}: ")
             run_lbl.bold = True
             set_run_font_comprehensive(run_lbl, font_name="Arial")
             run_lbl.font.size = Pt(font_size)
@@ -407,7 +411,7 @@ def safe_set_cell_text(
                 run_lbl.font.color.rgb = RGBColor(*color_rgb)
 
             add_markdown_runs(
-                p, desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
+                p, clean_desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
             )
         else:
             add_markdown_runs(
