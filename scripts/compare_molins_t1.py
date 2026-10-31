@@ -1,85 +1,85 @@
 #!/usr/bin/env python3
-"""Differential Forensic Comparator: Molins T1 Pre-Argon vs Post-Argon (CEGAR)."""
+"""Side-by-Side Forensic Comparison and Strategic Planning via gemini-4-argon (100% Technical English)."""
 
 from __future__ import annotations
 
-import json
-import re
 import sys
 from pathlib import Path
 from docx import Document
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
 
-BASELINE_DOCX = REPO_ROOT / "working/out/molins_baseline_pre_argon/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"
-NEW_DOCX = REPO_ROOT / "working/out/molins_post_argon/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"
+from assessment_engine.infrastructure.genai_client import (
+    ModelTier,
+    create_genai_client,
+    get_model,
+)
+
+base_path = REPO_ROOT / "working/out/molins_baseline_pre_argon/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"
+new_path = REPO_ROOT / "working/out/molins/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"
+
+doc_base = Document(str(base_path))
+doc_new = Document(str(new_path))
 
 
-def extract_docx_metrics(docx_path: Path) -> dict:
-    doc = Document(str(docx_path))
+def extract_full_text(doc: Document) -> str:
     paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
-    full_text = "\n".join(paragraphs)
-    words = re.findall(r"\b\w+\b", full_text)
-    
-    tables_data = []
-    total_cells = 0
+    table_lines = []
     for t in doc.tables:
-        t_rows = []
-        for row in t.rows:
-            r_cells = [c.text.strip() for c in row.cells]
-            total_cells += len(r_cells)
-            t_rows.append(r_cells)
-        tables_data.append(t_rows)
-        
-    metrics_count = len(re.findall(r"\b\d+(?:[\.,]\d+)*(?:\s*(?:%|€|\$|k|m|kw|kva|pue|ups|sla|ms|gbps))\b", full_text, re.IGNORECASE))
-    placeholders = re.findall(r"\[[A-Z0-9_\s\-]+\]|TODO|TBD|FIXME", full_text)
-
-    return {
-        "file_name": docx_path.name,
-        "file_size_kb": round(docx_path.stat().st_size / 1024, 1),
-        "paragraph_count": len(paragraphs),
-        "total_words": len(words),
-        "unique_words": len(set(w.lower() for w in words)),
-        "table_count": len(doc.tables),
-        "total_cells": total_cells,
-        "metrics_found": metrics_count,
-        "placeholders_found": placeholders,
-        "sample_paragraphs": paragraphs[:3],
-    }
+        for r in t.rows:
+            row_txt = " | ".join(c.text.strip() for c in r.cells if c.text.strip())
+            if row_txt:
+                table_lines.append(row_txt)
+    return "\n".join(paragraphs + table_lines)
 
 
-def main():
-    if not BASELINE_DOCX.exists():
-        print(f"ERROR: Baseline docx missing at {BASELINE_DOCX}")
-        sys.exit(1)
-    if not NEW_DOCX.exists():
-        print(f"ERROR: New docx missing at {NEW_DOCX}")
-        sys.exit(1)
+base_text = extract_full_text(doc_base)
+new_text = extract_full_text(doc_new)
 
-    base = extract_docx_metrics(BASELINE_DOCX)
-    new = extract_docx_metrics(NEW_DOCX)
+base_words = len(base_text.split())
+new_words = len(new_text.split())
 
-    print("=" * 80)
-    print("COMPARATIVA FORENSE DEL ENTREGABLE: MOLINS TORRE 1 (DATA CENTER)")
-    print("Baseline (Pre-Argon) vs. Nueva Versión (Post-Argon / CEGAR Certified)")
-    print("=" * 80)
-    print(f"{'Métrica':<35} | {'Baseline (Pre-Argon)':<20} | {'Nueva (Post-Argon)':<20} | {'Delta':<10}")
-    print("-" * 80)
-    print(f"{'Tamaño de Archivo':<35} | {base['file_size_kb']:<16} KB | {new['file_size_kb']:<16} KB | {new['file_size_kb'] - base['file_size_kb']:+0.1f} KB")
-    print(f"{'Número de Párrafos':<35} | {base['paragraph_count']:<20} | {new['paragraph_count']:<20} | {new['paragraph_count'] - base['paragraph_count']:+d}")
-    print(f"{'Total de Palabras':<35} | {base['total_words']:<20} | {new['total_words']:<20} | {new['total_words'] - base['total_words']:+d}")
-    print(f"{'Vocabulario Único (Riqueza)':<35} | {base['unique_words']:<20} | {new['unique_words']:<20} | {new['unique_words'] - base['unique_words']:+d}")
-    print(f"{'Número de Tablas':<35} | {base['table_count']:<20} | {new['table_count']:<20} | {new['table_count'] - base['table_count']:+d}")
-    print(f"{'Total de Celdas':<35} | {base['total_cells']:<20} | {new['total_cells']:<20} | {new['total_cells'] - base['total_cells']:+d}")
-    print(f"{'Métricas Cuantitativas (SLA/kW/€)':<35} | {base['metrics_found']:<20} | {new['metrics_found']:<20} | {new['metrics_found'] - base['metrics_found']:+d}")
-    print(f"{'Placeholders Hallados (TODO/TBD)':<35} | {len(base['placeholders_found']):<20} | {len(new['placeholders_found']):<20} | {len(new['placeholders_found']) - len(base['placeholders_found']):+d}")
-    print("=" * 80)
+client = create_genai_client()
+model_name = get_model(ModelTier.REASONING)
 
-    # Let's write comparative JSON for documentation
-    comp_file = REPO_ROOT / "working/out/molins_post_argon/T1/comparative_metrics.json"
-    comp_file.write_text(json.dumps({"baseline": base, "post_argon": new}, indent=2, ensure_ascii=False))
-    print(f"Métricas persistidas en: {comp_file.relative_to(REPO_ROOT)}")
+prompt = f"""
+Role: Chief Technology Officer, Principal Systems Architect & Senior Strategy Partner (McKinsey & Co. / Gartner Research).
 
+OBJECTIVE:
+Perform an exhaustive, rigorous, unvarnished comparative audit between the original Baseline Deliverable and the newly compiled Deliverable for Molins T1 (Physical Data Center & Facilities):
+- Baseline Deliverable (Oct 30): {len(doc_base.paragraphs)} paragraphs, {len(doc_base.tables)} tables, {base_words} words, 23 PDF pages.
+- New Master Deliverable (Current HEAD): {len(doc_new.paragraphs)} paragraphs, {len(doc_new.tables)} tables, {new_words} words, 23 PDF pages.
 
-if __name__ == "__main__":
-    main()
+USER'S STRATEGIC QUESTIONS AND MANDATES:
+1. Did we lose any value or consulting depth compared to the original baseline?
+   - Compare Chapter 1 (Executive Summary), Chapter 2 (Methodology/Scope), Chapter 3 (Maturity Dashboard), Chapter 4 (FAIR Risks), and Chapter 5 (Conclusions/Roadmap).
+   - Identify any specific insights, nuances, or technical points that were present in the baseline but got lost or diluted in the new version.
+2. Identify what is clearly superior in the new version:
+   - Layout, typography, financial accuracy (1.05M € vs 8.4k € ALE), WCAG contrast, table modularity, absence of raw code markers (e.g. 'chapter3title', '**' markdown leaks).
+3. Strategic Engineering Plan for 100% Perfection:
+   - How should we address any remaining gaps before touching code?
+   - Ensure the solution is 100% UNIVERSAL across any company from mid-market to Global Fortune 10, any vertical (banking, energy, manufacturing, health, tech), any language/locale, and zero hardcoding.
+   - Codebase must remain 100% in Technical English (zero Spanish in code, docstrings, or schemas; Spanish only as localized output data).
+
+BASELINE CORPUS (23 PAGES, {base_words} WORDS):
+```text
+{base_text[:20000]}
+```
+
+NEW MASTER CORPUS (23 PAGES, {new_words} WORDS):
+```text
+{new_text[:20000]}
+```
+
+Provide your structured assessment with brutal honesty, quantitative evidence, and an actionable, flawless strategic roadmap.
+"""
+
+print(f"Executing comparative forensic audit via {model_name}...")
+response = client.models.generate_content(
+    model=model_name,
+    contents=prompt,
+)
+
+print(response.text)

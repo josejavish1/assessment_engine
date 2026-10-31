@@ -9,6 +9,7 @@ from typing import Any, List
 
 from assessment_engine.infrastructure.localization import (
     apply_vocabulary_substitutions,
+    format_currency,
     format_date_localized,
     format_number,
     get_localized_list,
@@ -48,10 +49,10 @@ def clean_client_name(client_name: str) -> str:
 
 
 from assessment_engine.adapters.compilers.ast_appendices_builder import (
-    build_appendix_a_glossary as _build_appendix_a_glossary_fn,
-    build_appendix_b_disclaimer as _build_appendix_b_disclaimer_fn,
-    build_appendix_c_custody as _build_appendix_c_custody_fn,
-    build_appendix_d_methodology as _build_appendix_d_methodology_fn,
+    build_cmmi_methodology_and_capabilities as _build_cmmi_methodology_and_capabilities_fn,
+    build_appendix_a_custody as _build_appendix_a_custody_fn,
+    build_appendix_b_fair_methodology as _build_appendix_b_fair_methodology_fn,
+    build_appendix_c_glossary_and_disclaimer as _build_appendix_c_glossary_and_disclaimer_fn,
 )
 from assessment_engine.adapters.compilers.ast_table_builders import (
     TEF_SCALE_DEFINITIONS,
@@ -234,19 +235,32 @@ class PayloadToASTBridge:
             .get("global_score", "3.0")
             .split()[0]
         )
-        global_band = exact_band if exact_band is not None else blueprint_data.get("executive_summary", {}).get(
-            "global_band", t("band_defined", locale=meta_lang)
-        )
-        global_reading = (
-            blueprint_data.get("pillar_score_profile", {})
-            .get("pillars", [{}])[0]
-            .get("executive_reading", "Standard Governance.")
-        )
-
         try:
             gs_val = float(global_score)
         except Exception:
             gs_val = 3.0
+
+        from assessment_engine.domain.maturity_band import ANNEX_MATURITY_BANDS, resolve_maturity_band
+        band_info = resolve_maturity_band(gs_val, ANNEX_MATURITY_BANDS, locale=meta_lang)
+        localized_band_label = band_info.get("label", "Defined")
+        level_prefix = t("level_prefix", locale=meta_lang)
+        band_key_level_map = {
+            "band_initial": 1,
+            "band_repeatable": 2,
+            "band_defined": 3,
+            "band_managed": 4,
+            "band_optimized": 5,
+        }
+        band_key = band_info.get("band_key", "band_defined")
+        band_level = band_key_level_map.get(band_key, 3)
+        global_band = f"{level_prefix} {band_level} - {localized_band_label}"
+
+        global_reading = (
+            blueprint_data.get("pillar_score_profile", {})
+            .get("pillars", [{}])[0]
+            .get("executive_reading")
+            or t("resilience_reading_standard", locale=meta_lang)
+        )
 
         formatted_global_score = format_number(gs_val, locale=meta_lang, decimals=2)
         max_score_formatted = format_number(5.0, locale=meta_lang, decimals=2)
@@ -472,6 +486,7 @@ class PayloadToASTBridge:
                 nodes.append(ParagraphNode(text=meth))
 
             # 2.4 Methodological and Regulatory Framework Table (driven dynamically per tower domain)
+            tower_id = str(ctx.get("tower_id") or "T1")
             norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
             norm_fw_desc = (
                 t("norm_row_ashrae_desc", locale=meta_lang)
@@ -508,6 +523,33 @@ class PayloadToASTBridge:
             ]
             nodes.append(SpacerNode(points=10))
             nodes.append(TableNode(rows=norm_rows))
+
+            # 2.5 Three Executive Outcomes of the Assessment
+            nodes.append(SpacerNode(points=12))
+            nodes.append(
+                HeadingNode(
+                    text=t("methodology_three_outcomes_title", locale=meta_lang),
+                    level=2,
+                    primary_color_rgb=self.primary_color_rgb,
+                )
+            )
+            for b in get_localized_list("methodology_three_outcomes_bullets", locale=meta_lang):
+                nodes.append(ParagraphNode(text=b, style="List Bullet"))
+
+            # 2.6 Three-Phase Ground-Truth Methodology
+            nodes.append(SpacerNode(points=6))
+            nodes.append(
+                HeadingNode(
+                    text=t("methodology_three_phases_title", locale=meta_lang),
+                    level=2,
+                    primary_color_rgb=self.primary_color_rgb,
+                )
+            )
+            for b in get_localized_list("methodology_three_phases_bullets", locale=meta_lang):
+                nodes.append(ParagraphNode(text=b, style="List Bullet", space_after=1, font_size=8.5))
+
+            # 2.7 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
+            _build_cmmi_methodology_and_capabilities_fn(ctx, nodes, self.primary_color_rgb)
         else:
             nodes.append(
                 ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))
@@ -640,9 +682,9 @@ class PayloadToASTBridge:
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
             from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
             resolver = get_taxonomy_resolver()
-            raw_pname = p.get("pillar_name", p.get("pilar_name", "Pillar"))
+            raw_pname = p.get("pillar_name", "Pillar")
             p_name = resolver.resolve_pillar_by_any_reference(
-                p.get("pillar_id") or p.get("pilar_id") or raw_pname,
+                p.get("pillar_id") or raw_pname,
                 default=raw_pname,
                 locale=meta_lang,
             )
@@ -686,11 +728,36 @@ class PayloadToASTBridge:
         intel_data = ctx["intel_data"]
         tower_id = ctx["tower_id"]
 
-        trans_path = modules_dir / "05_transversal.md"
+        trans_candidates = list(modules_dir.glob("*transversal*.md")) if modules_dir.exists() else []
+        trans_path = trans_candidates[0] if trans_candidates else (modules_dir / "transversal_analysis.md")
         if trans_path.exists():
             transversal_title = t("transversal_analysis_title", locale=meta_lang)
             nodes.append(HeadingNode(text=transversal_title, level=2, primary_color_rgb=self.primary_color_rgb))
             nodes.extend(self._parse_markdown_to_nodes(trans_path, skip_level_1=True))
+            nodes.append(SpacerNode(points=15))
+        else:
+            # 3.4 Cross-Cutting Structural Debt Patterns (domain-routed based on tower unit)
+            nodes.append(
+                HeadingNode(
+                    text=t("cross_cutting_debt_title", locale=meta_lang),
+                    level=2,
+                    primary_color_rgb=self.primary_color_rgb,
+                )
+            )
+            nodes.append(ParagraphNode(text=t("cross_cutting_debt_intro", locale=meta_lang), italic=True))
+            nodes.append(SpacerNode(points=6))
+            if tower_id == "T1":
+                nodes.append(ParagraphNode(text=t("cross_cutting_debt_pattern_1", locale=meta_lang)))
+                nodes.append(SpacerNode(points=4))
+                nodes.append(ParagraphNode(text=t("cross_cutting_debt_pattern_2", locale=meta_lang)))
+                nodes.append(SpacerNode(points=4))
+                nodes.append(ParagraphNode(text=t("cross_cutting_debt_pattern_3", locale=meta_lang)))
+            else:
+                nodes.append(ParagraphNode(text=t("cross_cutting_debt_universal_p1", locale=meta_lang)))
+                nodes.append(SpacerNode(points=4))
+                nodes.append(ParagraphNode(text=t("cross_cutting_debt_universal_p2", locale=meta_lang)))
+                nodes.append(SpacerNode(points=4))
+                nodes.append(ParagraphNode(text=t("cross_cutting_debt_universal_p3", locale=meta_lang)))
             nodes.append(SpacerNode(points=15))
 
         # 3.5 Systemic Risk Indicators and Decision Context (MCDA + Monte Carlo + LCBN)
@@ -1012,25 +1079,30 @@ class PayloadToASTBridge:
             logger.debug(f"[Fallback] Handled exception: {ex}")
 
         # Read the CSV risks first so we have the data for the executive overview
-        csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
+        csv_candidates = list(modules_dir.glob("*.csv")) if modules_dir.exists() else []
+        csv_risks_path = next(
+            (f for f in csv_candidates if "fair" in f.name.lower() or "risk" in f.name.lower()),
+            modules_dir / "fair_risks.csv",
+        )
         risks_data_list = []
         if csv_risks_path.exists():
             try:
                 with open(csv_risks_path, "r", encoding="utf-8-sig") as cf:
                     reader = csv.reader(cf, delimiter=";")
                     next(reader)
+                    rag_marker = t("evidence_rag_marker", locale=meta_lang)
                     for r_idx, row_data in enumerate(reader):
                         if not row_data or len(row_data) < 6:
                             continue
-                        pilar_full_name = row_data[0].split(" - ")[0]
+                        pillar_full_name = row_data[0].split(" - ")[0]
                         finding_raw = row_data[1]
-                        finding_parts = finding_raw.split("\n\nEvidencia Forense Literal (Audit RAG):\n")
+                        finding_parts = finding_raw.split(rag_marker) if rag_marker in finding_raw else [finding_raw]
                         finding = finding_parts[0]
                         evidence = finding_parts[1].strip('"') if len(finding_parts) > 1 else ""
 
                         r_item = {
                             "id": f"RVS{r_idx + 1:02d}",
-                            "pilar": pilar_full_name,
+                            "pillar": pillar_full_name,
                             "capability": row_data[0].split(" - ")[1]
                             if " - " in row_data[0]
                             else row_data[0],
@@ -1091,8 +1163,8 @@ class PayloadToASTBridge:
                 currency=currency,
                 client_name=client_name,
                 num_risks=len(risks_data_list),
-                highest_pilar=highest_pillar,
-                formatted_pilar_ale=formatted_pillar_ale,
+                highest_pillar=highest_pillar,
+                formatted_pillar_ale=formatted_pillar_ale,
                 highest_risk_cap=highest_risk_cap,
                 highest_risk_id=highest_risk_id,
                 formatted_risk_ale=formatted_risk_ale,
@@ -1140,6 +1212,62 @@ class PayloadToASTBridge:
         nodes.append(_build_heatmap_mosaic(risks_data_list))
         nodes.append(SpacerNode(points=15))
 
+        # 4.2 Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)
+        nodes.append(
+            HeadingNode(
+                text=t("rore_value_hexagon_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(ParagraphNode(text=t("rore_value_hexagon_intro", locale=meta_lang), italic=True))
+        nodes.append(SpacerNode(points=6))
+        for b in get_localized_list("rore_value_hexagon_bullets", locale=meta_lang):
+            nodes.append(ParagraphNode(text=b, style="List Bullet"))
+
+        # 4.3 Risk Inventory Categorization into Three Strategic Portfolios
+        nodes.append(SpacerNode(points=12))
+        nodes.append(
+            HeadingNode(
+                text=t("risk_portfolio_tiers_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        total_fair_ale = float(ctx.get("total_fair_ale") or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list))
+        sorted_risks = sorted(risks_data_list, key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0), reverse=True)
+        t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 50000.0
+        t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 10000.0
+
+        t1_risks = [r for r in sorted_risks if float(r.get("ale") or r.get("ale_val") or 0.0) >= t1_threshold]
+        if not t1_risks and sorted_risks:
+            t1_risks = sorted_risks[:max(1, len(sorted_risks) // 4)]
+        
+        t2_risks = [r for r in sorted_risks if t2_threshold <= float(r.get("ale") or r.get("ale_val") or 0.0) < t1_threshold]
+        if not t2_risks and len(sorted_risks) > len(t1_risks):
+            t2_risks = sorted_risks[len(t1_risks):len(t1_risks) + max(1, len(sorted_risks) // 3)]
+
+        t1_set = set(r.get("id") for r in t1_risks)
+        t2_set = set(r.get("id") for r in t2_risks)
+        t3_risks = [r for r in sorted_risks if r.get("id") not in t1_set and r.get("id") not in t2_set]
+
+        t1_ids = ", ".join(r.get("id") for r in t1_risks) if t1_risks else "N/A"
+        t2_ids = ", ".join(r.get("id") for r in t2_risks) if t2_risks else "N/A"
+        t3_ids = ", ".join(r.get("id") for r in t3_risks) if t3_risks else "N/A"
+
+        t1_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t1_risks)
+        t1_pct = int(round((t1_sum / total_fair_ale * 100))) if total_fair_ale > 0 else 0
+
+        intro_tiers = t("risk_portfolio_tiers_intro", locale=meta_lang, num_total=len(risks_data_list))
+        nodes.append(ParagraphNode(text=intro_tiers, italic=True))
+        nodes.append(SpacerNode(points=6))
+        nodes.append(ParagraphNode(text=t("risk_portfolio_tier_1_tpl", locale=meta_lang, ids=t1_ids, pct=t1_pct)))
+        nodes.append(SpacerNode(points=4))
+        nodes.append(ParagraphNode(text=t("risk_portfolio_tier_2_tpl", locale=meta_lang, ids=t2_ids)))
+        nodes.append(SpacerNode(points=4))
+        nodes.append(ParagraphNode(text=t("risk_portfolio_tier_3_tpl", locale=meta_lang, ids=t3_ids)))
+        nodes.append(SpacerNode(points=15))
+
     def _build_detailed_findings_log(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]], fair_lookup: dict[str, Any]) -> None:
         vocab = ctx["vocab"]
         gs_val = ctx["gs_val"]
@@ -1158,7 +1286,7 @@ class PayloadToASTBridge:
             # Group risks by pillar.
             risks_by_pillar = {}
             for r in risks_data_list:
-                p_name = r.get("pillar") or r.get("pilar", "Pillar")
+                p_name = r.get("pillar", "Pillar")
                 if p_name not in risks_by_pillar:
                     risks_by_pillar[p_name] = []
                 risks_by_pillar[p_name].append(r)
@@ -1174,10 +1302,10 @@ class PayloadToASTBridge:
                 p_name = resolver.resolve_pillar_by_any_reference(
                     raw_p_name, default=raw_p_name, locale=meta_lang
                 )
-                pilar_header = t("detailed_risks_pilar_title", locale=meta_lang) + p_name
+                pillar_header = t("detailed_risks_pillar_title", locale=meta_lang) + p_name
                 nodes.append(
                     HeadingNode(
-                        text=pilar_header,
+                        text=pillar_header,
                         level=3,
                         primary_color_rgb=self.primary_color_rgb,
                     )
@@ -1301,12 +1429,11 @@ class PayloadToASTBridge:
 
     def _build_conclusions_and_appendices(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         self._build_conclusions_chapter(ctx, nodes)
-        _build_appendix_c_custody_fn(ctx, nodes, self.primary_color_rgb)
-        _build_appendix_d_methodology_fn(
+        _build_appendix_a_custody_fn(ctx, nodes, self.primary_color_rgb)
+        _build_appendix_b_fair_methodology_fn(
             ctx, nodes, self.primary_color_rgb, self.brand_data, self.alt_row_hex
         )
-        _build_appendix_a_glossary_fn(ctx, nodes, self.primary_color_rgb)
-        _build_appendix_b_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
+        _build_appendix_c_glossary_and_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
 
     def _build_conclusions_chapter(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         from assessment_engine.infrastructure.localization import t
@@ -1340,12 +1467,85 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=15))
 
         # 5.2 Next Steps and Impact of Inaction
-        concl_path = modules_dir / "07_conclusiones.md"
+        concl_candidates = list(modules_dir.glob("*conclusion*.md")) if modules_dir.exists() else []
+        concl_path = concl_candidates[0] if concl_candidates else (modules_dir / "strategic_conclusions.md")
         if concl_path.exists():
             nodes.extend(self._parse_markdown_to_nodes(concl_path))
         else:
             inaction_text = cca_data.get("next_steps_inaction", not_def_lbl) if isinstance(cca_data, dict) else not_def_lbl
             nodes.append(ParagraphNode(text=inaction_text))
+
+        # 5.3 Multi-Horizon Stochastic Inaction vs. Modernization Program Table
+        nodes.append(SpacerNode(points=14))
+        nodes.append(
+            HeadingNode(
+                text=t("inaction_horizons_table_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        total_fair_ale = float(ctx.get("total_fair_ale") or 0.0)
+        p90_multiplier = float(blueprint_data.get("p90_ale_ratio") or 4.0)
+        p90_loss = float(ctx.get("p90_loss") or (total_fair_ale * p90_multiplier))
+        currency = str(ctx.get("currency") or blueprint_data.get("currency") or "")
+        capex_ratio = float(blueprint_data.get("capex_ale_ratio") or 0.20)
+        capex_val = float(blueprint_data.get("modernization_capex") or blueprint_data.get("capex_budget") or (total_fair_ale * capex_ratio))
+        annual_risk_reduction_ratio = float(blueprint_data.get("risk_reduction_ratio") or 0.80)
+        h5_scale_factor = float(blueprint_data.get("h5_p90_scale_factor") or 3.79)
+
+        # 1-Year Horizon
+        ale_h1 = format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)
+        p90_h1 = format_currency(p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
+        capex_h1 = format_currency(capex_val, currency_symbol=currency, locale=meta_lang, decimals=0)
+        roi_h1_pct = int(round((total_fair_ale * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
+        roi_h1_str = f"{roi_h1_pct} % ({t('roi_payback_quarter', locale=meta_lang)})"
+
+        # 3-Year Horizon
+        ale_h3 = format_currency(total_fair_ale * 3.0, currency_symbol=currency, locale=meta_lang, decimals=0)
+        p90_h3 = format_currency(p90_loss + (total_fair_ale * 2.0), currency_symbol=currency, locale=meta_lang, decimals=0)
+        savings_h3_num = (total_fair_ale * 3.0 * annual_risk_reduction_ratio) - capex_val
+        savings_h3_str = format_currency(savings_h3_num, currency_symbol=currency, locale=meta_lang, decimals=0)
+        roi_h3_pct = int(round((total_fair_ale * 3.0 * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
+        roi_h3_str = f"{roi_h3_pct} % ({t('roi_net_savings', locale=meta_lang, amount=savings_h3_str)})"
+
+        # 5-Year Horizon
+        ale_h5 = format_currency(total_fair_ale * 5.0, currency_symbol=currency, locale=meta_lang, decimals=0)
+        p90_h5 = format_currency(p90_loss + (total_fair_ale * h5_scale_factor), currency_symbol=currency, locale=meta_lang, decimals=0)
+        savings_h5_num = (total_fair_ale * 5.0 * annual_risk_reduction_ratio) - capex_val
+        savings_h5_str = format_currency(savings_h5_num, currency_symbol=currency, locale=meta_lang, decimals=0)
+        roi_h5_pct = int(round((total_fair_ale * 5.0 * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
+        roi_h5_str = f"{roi_h5_pct} % ({t('roi_net_savings', locale=meta_lang, amount=savings_h5_str)})"
+
+        headers_inaction = [
+            CellNode(text=h, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER" if h_i > 0 else "LEFT")
+            for h_i, h in enumerate(get_localized_list("inaction_horizons_headers", locale=meta_lang))
+        ]
+        horizon_rows = [
+            TableRowNode(cells=headers_inaction, is_header=True),
+            TableRowNode(cells=[
+                CellNode(text=t("inaction_h1_label", locale=meta_lang), bold=True, bg_color="FFFFFF"),
+                CellNode(text=ale_h1, bg_color="FFFFFF", align="RIGHT"),
+                CellNode(text=p90_h1, bg_color="FFF3CD", align="RIGHT"),
+                CellNode(text=capex_h1, bg_color="FFFFFF", align="RIGHT"),
+                CellNode(text=roi_h1_str, bold=True, bg_color="D9F2D9", align="CENTER"),
+            ]),
+            TableRowNode(cells=[
+                CellNode(text=t("inaction_h3_label", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
+                CellNode(text=ale_h3, bg_color=self.alt_row_hex, align="RIGHT"),
+                CellNode(text=p90_h3, bg_color="FCE4D6", align="RIGHT"),
+                CellNode(text=capex_h1, bg_color=self.alt_row_hex, align="RIGHT"),
+                CellNode(text=roi_h3_str, bold=True, bg_color="D9F2D9", align="CENTER"),
+            ]),
+            TableRowNode(cells=[
+                CellNode(text=t("inaction_h5_label", locale=meta_lang), bold=True, bg_color="FFFFFF"),
+                CellNode(text=ale_h5, bg_color="FFFFFF", align="RIGHT"),
+                CellNode(text=p90_h5, bg_color="F8D7DA", align="RIGHT"),
+                CellNode(text=capex_h1, bg_color="FFFFFF", align="RIGHT"),
+                CellNode(text=roi_h5_str, bold=True, bg_color="D9F2D9", align="CENTER"),
+            ]),
+        ]
+        nodes.append(TableNode(rows=horizon_rows))
+        nodes.append(SpacerNode(points=15))
 
         #
 

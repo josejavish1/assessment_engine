@@ -25,7 +25,7 @@
     "version_label": "Versión",
     "date_label": "Junio 2026",
     "table_of_contents_title": "Índice de Contenidos",
-    "appendix_a_title": "Lista de Abreviaturas",
+    "appendix_a_title": "Apéndice A. Glosario de Términos y Lista de Abreviaturas",
     "conclusions_title": "Informe Consolidado de Situación Futura",
     "bottlenecks_bullet": "**Cuellos de botella estructurales:** El modelo manual de aprovisionamiento de infraestructura limita la velocidad de entrega de las iniciativas estratégicas del negocio.",
     "delayed_faults_bullet": "**Detección tardía de incidentes técnicos:** La falta de observabilidad correlacionada eleva el Tiempo Medio de Resolución (MTTR) de fallos críticos.",
@@ -291,8 +291,8 @@
       "Abreviatura",
       "Significado / Descripción Técnica"
     ],
-    "appendix_b_title": "Cláusula de Limitación de Responsabilidad",
-    "appendix_c_title": "Registro de Custodia de Fuentes de Información",
+    "appendix_b_title": "Apéndice B. Cláusula de Limitación de Responsabilidad",
+    "appendix_c_title": "Apéndice C. Registro de Custodia de Fuentes de Información",
     "appendix_c_intro": "Para garantizar la transparencia, veracidad e inmutabilidad de la información recopilada en este diagnóstico técnico, a continuación, se listan y codifican las fuentes documentales utilizadas bajo custodia de auditoría:",
     "appendix_c_headers": [
       "Código de Referencia",
@@ -480,7 +480,7 @@
     "interdep_status_not_bottleneck": "Arquitectura Distribuida / Resiliente",
     "interdep_gloss_title": "Análisis Ejecutivo de Indicadores de Interdependencia:",
     "appendix_fair_title": "Metodología Cuantitativa de Riesgos",
-    "appendix_fair_intro": "Este diagnóstico técnico aplica el estándar internacional **O-FAIR (Factor Analysis of Information Risk)** de *The Open Group* para modelar, cuantificar y priorizar la exposición al riesgo de infraestructura en términos financieros reales.",
+    "appendix_fair_intro": "Este diagnóstico técnico aplica el estándar internacional **O-FAIR (Factor Analysis of Information Risk)** de The Open Group para modelar, cuantificar y priorizar la exposición al riesgo de infraestructura en términos financieros reales.",
     "reg_financial_banking": "las regulaciones vigentes de resiliencia operativa financiera (v.g. DORA o normativas de banca central)",
     "reg_energy_infra": "los marcos normativos de protección de infraestructuras críticas (v.g. Directiva NIS2 o leyes de seguridad nacional)",
     "reg_telecom_media": "los marcos regulatorios sectoriales de Telecomunicaciones, Media y soberanía de datos",
@@ -734,7 +734,7 @@
     "tef_scale_title": "Criterios de Escala de Frecuencia de Amenazas (TEF)",
     "lm_scale_title": "Criterios de Escala de Magnitud de Pérdida Directa/Indirecta (LM)",
     "systemic_resilience_indicators_title": "Indicadores Avanzados de Resiliencia Sistémica",
-    "appendix_fair_rationale_p": "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de impacto y probabilidad (como las matrices de rango alto/medio/bajo), constituyen un valioso punto de partida para identificar y clasificar de forma temprana las superficies de vulnerabilidad de una organización. No obstante, para facilitar la toma de decisiones presupuestarias y justificar la rentabilidad de las inversiones tecnológicas (ROI), es necesario complementar estos marcos de referencia con un enfoque cuantitativo avanzado. Este diagnóstico adopta de forma complementaria la metodología estándar **Open FAIR™ (Factor Analysis of Information Risk)** (reconocida por *The Open Group* e incorporada en marcos normativos como ISO/IEC 27005), aportando una metodología rigurosa para modelar e identificar la exposición financiera real de la plataforma ante eventos de riesgo.",
+    "appendix_fair_rationale_p": "Las metodologías tradicionales de evaluación de riesgos en TI, fundamentadas en análisis cualitativos de impacto y probabilidad (como las matrices de rango alto/medio/bajo), constituyen un valioso punto de partida para identificar y clasificar de forma temprana las superficies de vulnerabilidad de una organización. No obstante, para facilitar la toma de decisiones presupuestarias y justificar la rentabilidad de las inversiones tecnológicas (ROI), es necesario complementar estos marcos de referencia con un enfoque cuantitativo avanzado. Este diagnóstico adopta de forma complementaria la metodología estándar **Open FAIR™ (Factor Analysis of Information Risk)** (reconocida por The Open Group e incorporada en marcos normativos como ISO/IEC 27005), aportando una metodología rigurosa para modelar e identificar la exposición financiera real de la plataforma ante eventos de riesgo.",
     "appendix_fair_dual_layer_p": "Con el fin de comprender de forma intuitiva cómo una deficiencia técnica se propaga hasta impactar en el balance de la compañía, resulta de gran utilidad seguir paso a paso la cronología de un único evento de amenaza. A este recorrido lo denominamos 'La Biografía del Incidente'. Imaginemos, a modo de ejemplo ilustrativo, un incidente donde un fallo en la infraestructura de copia de seguridad o una brecha de ransomware afecta a un repositorio crítico de la plataforma. El modelo divide las consecuencias en dos capas claramente diferenciadas:",
     "appendix_fair_dual_layer_b1": "Capa 1: Modelado de Vulnerabilidad (Garantía FAIR-CAM™) - Calibración Estocástica de Eficacia Defensiva: El incidente se inicia con la materialización de un evento de amenaza. La probabilidad de que la amenaza supere las salvaguardas y cause una pérdida real se define técnicamente como Vulnerabilidad (_VULN_). Nuestro motor aplica el estándar **FAIR-CAM™ (Control Analytics Model)** para calibrar esta probabilidad en función de la madurez real auditada. Las pérdidas primarias (costes de respuesta de emergencia y restauración) se modelan estocásticamente mediante curvas lognormales continuas con límites estrictos de OPEX para ineficiencias de proceso.",
     "appendix_fair_dual_layer_b2": "Capa 2: Exposición Secundaria y Diligencia Debida (Garantía FAIR-MAM™) - Propagación Condicional de la Exposición Reguladora: Una vez materializada la pérdida primaria, se activa de forma secuencial una segunda capa de exposición reguladora y contractual basada en la demostración de la 'diligencia debida'. Utilizando la metodología **FAIR-MAM™ (Materiality Analytics Model)**, el motor simula el desencadenamiento de **Pérdidas Secundarias** catastróficas (sanciones bajo {reg_name} de hasta {reg_fine_limit} o reclamaciones por incumplimiento severo de SLAs) mediante una curva logística anclada en el nivel de madurez.",
@@ -912,7 +912,7 @@
     "business_driver_agenda_prefix": "Agenda de negocio prioritaria:",
     "business_driver_reg_prefix": "Presión regulatoria material:",
     "maturity_scale_legend": "Escala de Madurez: 1-Inicial | 2-Repetible | 3-Definido | 4-Gestionado | 5-Optimizado",
-    "fair_risk_summary_detailed": "**Resumen Ejecutivo de Exposición al Riesgo (FAIR):**\nEl análisis cuantitativo de riesgos de la plataforma de la torre identifica una exposición financiera agregada (Expectativa de Pérdida Anualizada - ALE) de **{formatted_ale} {currency}**. Esta cifra representa el impacto económico estimado al que se enfrenta **{client_name}** de forma anualizada debido a ineficiencias de continuidad, dependencias de soporte manual y vulnerabilidades operativas no mitigadas exclusivamente dentro de este perímetro tecnológico.\n\nDe los **{num_risks}** riesgos registrados, la mayor concentración de pérdidas se localiza en el pilar de **{highest_pilar}** (con una exposición de **{formatted_pilar_ale} {currency}**), impulsada principalmente por la inmadurez en **{highest_risk_cap}** (Riesgo **{highest_risk_id}** con **{formatted_risk_ale} {currency}**), la cual acumula por sí sola el **{highest_risk_pct} %** de la exposición global de la torre.",
+    "fair_risk_summary_detailed": "**Resumen Ejecutivo de Exposición al Riesgo (FAIR):**\nEl análisis cuantitativo de riesgos de la plataforma de la torre identifica una exposición financiera agregada (Expectativa de Pérdida Anualizada - ALE) de **{formatted_ale} {currency}**. Esta cifra representa el impacto económico estimado al que se enfrenta **{client_name}** de forma anualizada debido a ineficiencias de continuidad, dependencias de soporte manual y vulnerabilidades operativas no mitigadas exclusivamente dentro de este perímetro tecnológico.\n\nDe los **{num_risks}** riesgos registrados, la mayor concentración de pérdidas se localiza en el pilar de **{highest_pillar}** (con una exposición de **{formatted_pillar_ale} {currency}**), impulsada principalmente por la inmadurez en **{highest_risk_cap}** (Riesgo **{highest_risk_id}** con **{formatted_risk_ale} {currency}**), la cual acumula por sí sola el **{highest_risk_pct} %** de la exposición global de la torre.",
     "fair_risk_summary_basic": "**Resumen Ejecutivo de Exposición al Riesgo (FAIR):**\nLa evaluación de riesgos financieros mediante simulación probabilística estima una exposición anualizada al riesgo de **{formatted_ale} {currency}** para **{client_name}**. Esta cifra representa el impacto económico potencial por ineficiencias o brechas operativas detectadas exclusivamente en el perímetro de esta torre.",
     "fair_methodology_note": "**Nota Metodológica:** Para garantizar el máximo rigor directivo, la estimación del riesgo anualizado proyectado (ALE) y la priorización de vulnerabilidades técnicas en este informe se basan estrictamente en el estándar internacional **O-FAIR** y en simulaciones actuariales probabilísticas de Monte Carlo. Esto permite cuantificar con transparencia la exposición al riesgo en términos financieros reales del negocio. La explicación técnica, parámetros de calibración de pérdidas y las fórmulas estadísticas aplicadas se detallan en el **Apéndice A** de este reporte.",
     "methodological_legends_title": "Leyendas Metodológicas",
@@ -1269,7 +1269,106 @@
     "norm_row_fair_purp": "Cálculo probabilístico del ALE y ROI.",
     "corporate_footer_prefix": "Anexo Técnico — Confidencial  |  Pág.",
     "norm_row_iso_desc": "Controles de seguridad, segmentación de red y gobierno de continuidad operativa.",
-    "norm_row_iso_purp": "Gestión de riesgos tecnológicos."
+    "norm_row_iso_purp": "Gestión de riesgos tecnológicos.",
+    "methodology_three_outcomes_title": "Tres Resultados Ejecutivos del Diagnóstico",
+    "methodology_three_outcomes_bullets": [
+      "**1. Identificación y Cuantificación de Brechas de Resiliencia:** Auditoría técnica exhaustiva y mapeo de dependencias críticas en salas técnicas e infraestructura física de centros de datos.",
+      "**2. Evaluación de Obsolescencia y Deuda Tecnológica:** Análisis de ciclo de vida de hardware, soporte de fabricante (EoL) y grado de cumplimiento frente a estándares de diseño de alta disponibilidad.",
+      "**3. Priorización Racional de Inversiones (Business Case):** Cuantificación actuarial del Coste de Inacción (ALE) y cálculo de retornos financieros de modernización (CAPEX/ROI) defendibles ante el Consejo."
+    ],
+    "methodology_three_phases_title": "Metodología de Calibración en Tres Fases",
+    "methodology_three_phases_bullets": [
+      "**Fase 1: Ingesta de Evidencias y Verificación en Planta:** Inspección presencial, entrevistas técnicas con líderes de infraestructura y análisis de inventarios, contratos y topologías de red.",
+      "**Fase 2: Modelado Topológico de Interdependencias y SPOF:** Análisis de propagación de incidentes en cascada entre facilities y clústeres IT con impacto directo en la continuidad operativa de la organización.",
+      "**Fase 3: Simulación Actuarial Cuantitativa (Open FAIR):** Modelado estocástico de Monte Carlo (10.000 iteraciones) para cuantificar la exposición financiera anualizada y calibrar los percentiles de estrés P90."
+    ],
+    "cross_cutting_debt_title": "Análisis Transversal de Deuda Tecnológica y Patrones de Riesgo Estructural",
+    "cross_cutting_debt_intro": "Más allá del diagnóstico vertical por pilar, la auditoría identifica tres patrones horizontales de fricción operativa y tecnológica que atraviesan de forma transversal toda la infraestructura:",
+    "cross_cutting_debt_pattern_1": "**1. Dependencia de Medición Manual y Ausencia de Telemetría Continua:** La gestión de capacidad eléctrica y térmica se fundamenta en especificaciones teóricas de placa de fabricante y mediciones esporádicas con pinzas amperimétricas. La carencia de medición telemétrica digital en tiempo real en cuadros generales y regletas de rack (iPDU) impide conocer el margen real de potencia y dinamismo térmico al desplegar nuevas cargas de cómputo.",
+    "cross_cutting_debt_pattern_2": "**2. Silos Operativos entre Facilities (BMS) y Plataformas Centrales de Observabilidad de TI:** La infraestructura electromecánica opera de manera desacoplada de la monitorización corporativa. Un evento adverso no genera alertas tempranas correlacionadas, provocando que las degradaciones ambientales se descubran únicamente tras la caída de los clústeres de servidores.",
+    "cross_cutting_debt_pattern_3": "**3. Procedimientos Manuales en Papel y Fricción en Permisos de Trabajo (ePtW):** Las rondas de mantenimiento preventivo, los ensayos de conmutación de acometida (ATS) y el control de accesos de contratas externas se gestionan mediante formularios impresos y firmas manuscritas sin trazabilidad digital inmutable, generando una severa brecha de conformidad ante las exigencias de gobierno y auditoría de la directiva europea NIS2.",
+    "rore_value_hexagon_title": "El Hexágono de Retorno de Resiliencia y Eficiencia (RoRE / TBM & FinOps)",
+    "rore_value_hexagon_intro": "La mitigación del riesgo en la torre no solo previene incidentes, sino que libera valor económico directo estructurado bajo seis palancas de retorno del marco internacional TBM y FinOps:",
+    "rore_value_hexagon_bullets": [
+      "**1. Recuperación de Capital Laboral (Lean IT):** Eliminación del trabajo manual reactivo en rondas y mediciones físicas, reasignando horas de ingeniería a proyectos de innovación de negocio.",
+      "**2. Reducción del Coste de Demora (Cost of Delay):** Aceleración en el aprovisionamiento de capacidad e integración fluida de infraestructuras corporativas procedentes de adquisiciones (M&A).",
+      "**3. Optimización de Capacidad y Eficiencia Energética:** Supresión de puntos calientes y recirculación de aire, reduciendo el ratio PUE y el consumo eléctrico en climatización hasta un 28%.",
+      "**4. Evitación de Costes de Soporte por Obsolescencia:** Reemplazo programado de activos al final de ciclo de vida (EoL), evitando tarifas punitivas de mantenimiento extendido fuera de garantía.",
+      "**5. Mitigación de Pérdidas de Balance y Riesgo de Cola (CVaR):** Blindaje contra eventos catastróficos de indisponibilidad prolongada que amenazan los ingresos diarios y la continuidad de las operaciones.",
+      "**6. Aseguramiento de Cumplimiento Regulatorio y de Gobernanza:** Trazabilidad documental y técnica continua que garantiza la alineación con marcos internacionales de resiliencia y evita sanciones administrativas severas."
+    ],
+    "risk_portfolio_tiers_title": "Estructuración del Inventario de Riesgos en Tres Carteras de Inversión",
+    "risk_portfolio_tiers_intro": "Para facilitar la toma de decisiones presupuestarias, los {num_total} escenarios evaluados se clasifican en tres carteras estratégicas de prioridad directiva según su impacto financiero esperado:",
+    "inaction_horizons_table_title": "Proyección Multi-Horizonte del Coste de Inacción vs. Programa de Modernización",
+    "inaction_horizons_headers": [
+      "Horizonte Temporal",
+      "Exposición Ordinaria (ALE Acumulado)",
+      "Escenario de Estrés Severo (CVaR P90)",
+      "Inversión Requerida (CAPEX)",
+      "Retorno Operativo (ROI Estimado)"
+    ],
+    "inaction_h1_label": "1 Año (Corto Plazo)",
+    "inaction_h3_label": "3 Años (Medio Plazo)",
+    "inaction_h5_label": "5 Años (Largo Plazo)",
+    "level_prefix": "Nivel",
+    "custody_col_code": "Código de Referencia",
+    "custody_col_source": "Documento Fuente / Origen",
+    "custody_col_desc": "Descripción y Ámbito de Custodia",
+    "custody_sources_items": [
+      {
+        "code": "[Cuestionario de Autoevaluación]",
+        "source": "preguntas_{client_slug}.txt",
+        "desc": "Cuestionario estructurado de autoevaluación técnica de la torre de {tower_name}, recopilando las respuestas oficiales, notas y telemetrías declaradas por el equipo de ingeniería de {client_name}."
+      },
+      {
+        "code": "[Dossier de Contexto]",
+        "source": "contexto_{client_slug}.docx",
+        "desc": "Dossier estratégico de contexto de arquitectura de {client_name} que define la volumetría del patrimonio, distribución de centros de datos, dependencias y criticidad operativa."
+      },
+      {
+        "code": "[Capa de Inteligencia]",
+        "source": "client_intelligence.json",
+        "desc": "Módulo de ingesta y análisis semántico asistido por IA de la plataforma que recopila regulaciones de cumplimiento (NIS2, RGPD), requerimientos corporativos y baselines del sector."
+      },
+      {
+        "code": "[ITIC-DOWNTIME]",
+        "source": "ITIC Global Server Hardware Downtime Report",
+        "desc": "Estudio de referencia mundial y métrica estadística industrial que barema el coste promedio por hora de indisponibilidad de infraestructura core en grandes corporaciones."
+      },
+      {
+        "code": "[CISA-KEV]",
+        "source": "CISA Known Exploited Vulnerabilities Catalog",
+        "desc": "Catálogo internacional de vulnerabilidades explotadas activamente por agentes de amenaza, mantenido por la Cybersecurity and Infrastructure Security Agency (CISA)."
+      },
+      {
+        "code": "[DIRECTIVA-NIS2]",
+        "source": "Directiva (UE) 2022/2555 (NIS2)",
+        "desc": "Directiva del Parlamento Europeo y del Consejo relativa a medidas destinadas a garantizar un elevado nivel común de ciberseguridad en toda la Unión."
+      },
+      {
+        "code": "[ISO-27001]",
+        "source": "Norma Internacional ISO/IEC 27001",
+        "desc": "Estándar internacional de sistemas de gestión de seguridad de la información (SGSI), utilizado como marco de referencia universal para evaluar los controles de seguridad técnica."
+      },
+      {
+        "code": "[ASHRAE-TC99]",
+        "source": "ASHRAE TC 9.9 Thermal Guidelines",
+        "desc": "Guías térmicas y psicrométricas de diseño para entornos de procesamiento de datos, utilizadas para calibrar la envolvente de refrigeración y hardware."
+      }
+    ],
+    "ast_appendix_custody_title": "Apéndice A. Registro de Custodia de Fuentes de Información",
+    "ast_appendix_fair_title": "Apéndice B. Metodología Cuantitativa de Riesgos (Open FAIR™)",
+    "ast_appendix_glossary_disclaimer_title": "Apéndice C. Glosario de Términos y Cláusula de Responsabilidad",
+    "detailed_risks_pillar_title": "Análisis de Vulnerabilidades: ",
+    "roi_payback_quarter": "Payback < 3 meses",
+    "roi_net_savings": "Ahorro neto {amount}",
+    "risk_portfolio_tier_1_tpl": "**Tier 1 - Prioridad de Modernización Crítica ({ids}):** Escenarios de impacto directo e inmediato en la continuidad operativa del negocio, que concentran el {pct}% de la exposición financiera total calculada para la torre.",
+    "risk_portfolio_tier_2_tpl": "**Tier 2 - Optimización Operativa y Resiliencia ({ids}):** Brechas de redundancia N+1 y carencia de telemetría continua que elevan significativamente el tiempo medio de recuperación (MTTR).",
+    "risk_portfolio_tier_3_tpl": "**Tier 3 - Backlog de Mantenimiento y Gobierno ({ids}):** Procedimientos de mantenimiento, formalización de registros y actualización preventiva de ciclo de vida con impacto a medio plazo.",
+    "cross_cutting_debt_universal_p1": "**1. Observabilidad Fragmentada y Carencia de Telemetría Predictiva:** La supervisión de componentes opera en silos aislados sin correlación unificada de métricas y trazas, retrasando la detección temprana de anomalías operativas.",
+    "cross_cutting_debt_universal_p2": "**2. Deuda Tecnológica y Ciclos de Vida Desactualizados:** Retraso acumulado en planes de actualización de plataformas y dependencias críticas, elevando la fricción de integración y costes de soporte fuera de garantía.",
+    "cross_cutting_debt_universal_p3": "**3. Procesos Manuales y Fricción en el Gobierno del Cambio:** Dependencia de pasos operativos manuales y validaciones procedimentales que reducen la agilidad de entrega y aumentan el riesgo de error humano.",
+    "evidence_rag_marker": "\n\nEvidencia Forense Literal (Audit RAG):\n"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -1314,7 +1413,7 @@
     "chapter3title": "3. Global Tower Maturity Dashboard",
     "diagnosisperformancematrixtitle": "Operational Performance & Maturity Assessment Matrix",
     "decisionmatrixtitle": "Strategic Decision Matrix & Cost of Inaction",
-    "appendix_a_title": "List of Abbreviations",
+    "appendix_a_title": "Appendix A. Glossary of Terms and List of Abbreviations",
     "conclusions_title": "Consolidated Future State Report",
     "bottlenecks_bullet": "**Structural Bottlenecks:** The manual infrastructure provisioning model severely limits the delivery speed of strategic business initiatives.",
     "delayed_faults_bullet": "**Late Technical Incident Detection:** The lack of correlated observability increases the Mean Time To Resolution (MTTR) for critical system failures.",
@@ -1550,8 +1649,8 @@
       "Abbreviation",
       "Significado / Technical Description"
     ],
-    "appendix_b_title": "Limitation of Liability Disclaimer",
-    "appendix_c_title": "Registry of Custody of Information Sources",
+    "appendix_b_title": "Appendix B. Regulatory & Liability Disclaimer",
+    "appendix_c_title": "Appendix C. Information Source Chain of Custody Registry",
     "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
     "appendix_c_headers": [
       "Reference Code",
@@ -2175,7 +2274,7 @@
     "business_driver_agenda_prefix": "Priority business agenda:",
     "business_driver_reg_prefix": "Material regulatory pressure:",
     "maturity_scale_legend": "Maturity Scale: 1-Initial | 2-Repeatable | 3-Defined | 4-Managed | 5-Optimized",
-    "fair_risk_summary_detailed": "**Executive Risk Exposure Summary (FAIR):**\nQuantitative risk analysis of the platform identifies an aggregated financial exposure (Annual Loss Exposure - ALE) of **{currency}{formatted_ale}**. This figure represents the estimated annual economic drag confronting **{client_name}** due to continuity friction, manual toil dependencies, and unmitigated operational vulnerabilities within this technological perimeter.\n\nAcross the **{num_risks}** logged risks, loss concentration is localized in the **{highest_pilar}** pillar (with **{currency}{formatted_pilar_ale}** exposure), driven by immaturity in **{highest_risk_cap}** (Risk **{highest_risk_id}** at **{currency}{formatted_risk_ale}**), accounting for **{highest_risk_pct} %** of total tower exposure.",
+    "fair_risk_summary_detailed": "**Executive Risk Exposure Summary (FAIR):**\nQuantitative risk analysis of the platform identifies an aggregated financial exposure (Annual Loss Exposure - ALE) of **{currency}{formatted_ale}**. This figure represents the estimated annual economic drag confronting **{client_name}** due to continuity friction, manual toil dependencies, and unmitigated operational vulnerabilities within this technological perimeter.\n\nAcross the **{num_risks}** logged risks, loss concentration is localized in the **{highest_pillar}** pillar (with **{currency}{formatted_pillar_ale}** exposure), driven by immaturity in **{highest_risk_cap}** (Risk **{highest_risk_id}** at **{currency}{formatted_risk_ale}**), accounting for **{highest_risk_pct} %** of total tower exposure.",
     "fair_risk_summary_basic": "**Executive Risk Exposure Summary (FAIR):**\nFinancial risk assessment via probabilistic simulation estimates an annualized loss exposure of **{currency}{formatted_ale}** for **{client_name}**, representing the latent economic impact from operational vulnerabilities within this tower perimeter.",
     "fair_methodology_note": "**Methodological Note:** To substantiate executive decision-making, projected annualized loss exposure (ALE) and technical prioritization adhere strictly to the international **Open FAIR™** standard and Monte Carlo stochastic simulations, quantifying risk exposure in defensible balance sheet metrics. Calibration parameters and actuarial formulations are substantiated in **Appendix A**.",
     "methodological_legends_title": "Methodological Legends",
@@ -2532,7 +2631,106 @@
     "norm_row_fair_purp": "Probabilistic ALE and ROI calculation.",
     "corporate_footer_prefix": "Technical Annex — Confidential  |  Page",
     "norm_row_iso_desc": "Security controls, network segmentation, and operational continuity governance.",
-    "norm_row_iso_purp": "Technological risk governance."
+    "norm_row_iso_purp": "Technological risk governance.",
+    "methodology_three_outcomes_title": "Three Executive Outcomes of the Assessment",
+    "methodology_three_outcomes_bullets": [
+      "**1. Resilience Gap Identification & Quantification:** Rigorous technical audit and critical dependency mapping across data centers and facilities infrastructure.",
+      "**2. Technical Debt & Obsolescence Evaluation:** Hardware lifecycle analysis, vendor end-of-life (EoL) support exposure, and high-availability design compliance.",
+      "**3. Rational Investment Prioritization (Business Case):** Actuarial Cost of Inaction (ALE) quantification and modernizing financial return (CAPEX/ROI) justification for the Board."
+    ],
+    "methodology_three_phases_title": "Three-Phase Ground-Truth Methodology",
+    "methodology_three_phases_bullets": [
+      "**Phase 1: Evidence Ingestion & Operational Verification:** On-site technical inspection, engineering interviews, and network/facility topology validation.",
+      "**Phase 2: Topological Dependency Modeling & SPOF Analysis:** Cascading failure propagation analysis mapping facility disruptions to core organizational operations.",
+      "**Phase 3: Quantitative Actuarial Simulation (Open FAIR):** 10,000-run Monte Carlo stochastic modeling quantifying annualized financial loss exposure (ALE) and P90 tail risk."
+    ],
+    "cross_cutting_debt_title": "Cross-Cutting Technical Debt Analysis & Structural Risk Patterns",
+    "cross_cutting_debt_intro": "Beyond vertical pillar baselines, the assessment identifies three horizontal friction patterns spanning the entire infrastructure:",
+    "cross_cutting_debt_pattern_1": "**1. Manual Measurement Dependency & Continuous Telemetry Blindness:** Electrical and thermal capacity planning relies on theoretical vendor nameplates and sporadic manual clamp-meter checks. Lacking digital real-time telemetry across distribution panels and intelligent rack PDUs impairs visibility into operational headroom when migrating compute workloads.",
+    "cross_cutting_debt_pattern_2": "**2. Operational Silos Between Facilities (BMS) and Central Enterprise IT Observability:** Electromechanical infrastructure operates decoupled from corporate monitoring. Environmental anomalies fail to trigger correlated early warnings, causing degradations to be discovered only after server cluster outages.",
+    "cross_cutting_debt_pattern_3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates.",
+    "rore_value_hexagon_title": "The Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)",
+    "rore_value_hexagon_intro": "Infrastructure risk mitigation unlocks direct economic value structured across six strategic levers under the TBM and FinOps frameworks:",
+    "rore_value_hexagon_bullets": [
+      "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
+      "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
+      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
+      "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
+      "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
+    ],
+    "risk_portfolio_tiers_title": "Risk Inventory Structuring into Three Investment Portfolios",
+    "risk_portfolio_tiers_intro": "To facilitate executive capital allocation, all {num_total} evaluated scenarios are classified into three strategic portfolios prioritized by expected financial exposure:",
+    "inaction_horizons_table_title": "Multi-Horizon Cost of Inaction vs. Strategic Modernization Program",
+    "inaction_horizons_headers": [
+      "Time Horizon",
+      "Expected Inaction Cost (Cumulative ALE)",
+      "Severe Stress Scenario (Cumulative CVaR P90)",
+      "Required Capital Investment (CAPEX)",
+      "Estimated Operational Return (ROI)"
+    ],
+    "inaction_h1_label": "1 Year (Short-Term)",
+    "inaction_h3_label": "3 Years (Medium-Term)",
+    "inaction_h5_label": "5 Years (Long-Term)",
+    "level_prefix": "Level",
+    "custody_col_code": "Reference Code",
+    "custody_col_source": "Source Document / Origin",
+    "custody_col_desc": "Custody Description & Scope",
+    "custody_sources_items": [
+      {
+        "code": "[Self-Assessment Questionnaire]",
+        "source": "questions_{client_slug}.txt",
+        "desc": "Structured self-assessment technical questionnaire for {tower_name}, compiling declared telemetry and responses from {client_name} engineering leaders."
+      },
+      {
+        "code": "[Architecture Context Dossier]",
+        "source": "context_{client_slug}.docx",
+        "desc": "Strategic architectural dossier from {client_name} detailing infrastructure asset inventory, data center footprint, and operational criticality."
+      },
+      {
+        "code": "[Client Intelligence Layer]",
+        "source": "client_intelligence.json",
+        "desc": "Automated compliance and sector telemetry module ingesting regulatory standards (NIS2, GDPR) and industry benchmark datasets."
+      },
+      {
+        "code": "[ITIC-DOWNTIME]",
+        "source": "ITIC Global Server Hardware Downtime Report",
+        "desc": "Global benchmark standard quantifying the average hourly cost of downtime across enterprise core server and data center infrastructure."
+      },
+      {
+        "code": "[CISA-KEV]",
+        "source": "CISA Known Exploited Vulnerabilities Catalog",
+        "desc": "Authoritative international catalog of actively exploited vulnerabilities maintained by the Cybersecurity and Infrastructure Security Agency."
+      },
+      {
+        "code": "[NIS2-DIRECTIVE]",
+        "source": "Directive (EU) 2022/2555 (NIS2)",
+        "desc": "European Union directive on cybersecurity measures ensuring baseline resilience across essential and important commercial entities."
+      },
+      {
+        "code": "[ISO-27001]",
+        "source": "International Standard ISO/IEC 27001",
+        "desc": "Global standard for Information Security Management Systems (ISMS), defining physical and operational baseline security controls."
+      },
+      {
+        "code": "[ASHRAE-TC99]",
+        "source": "ASHRAE TC 9.9 Thermal Guidelines",
+        "desc": "Thermal and environmental engineering guidelines for data processing environments used to model hardware degradation limits."
+      }
+    ],
+    "ast_appendix_custody_title": "Appendix A. Information Source Chain of Custody Registry",
+    "ast_appendix_fair_title": "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™)",
+    "ast_appendix_glossary_disclaimer_title": "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer",
+    "detailed_risks_pillar_title": "Vulnerability Analysis: ",
+    "roi_payback_quarter": "Payback < 3 months",
+    "roi_net_savings": "Net savings {amount}",
+    "risk_portfolio_tier_1_tpl": "**Tier 1 - Critical Modernization Priority ({ids}):** Outage scenarios with immediate operational and financial disruption, accounting for {pct}% of total calculated tower exposure.",
+    "risk_portfolio_tier_2_tpl": "**Tier 2 - Operational Optimization & Resilience ({ids}):** Redundancy and telemetry gaps that elevate operational friction and mean time to recovery (MTTR).",
+    "risk_portfolio_tier_3_tpl": "**Tier 3 - Maintenance Backlog & Governance ({ids}):** Procedural formalization, physical record tracking, and preventive lifecycle maintenance.",
+    "cross_cutting_debt_universal_p1": "**1. Fragmented Observability & Predictive Telemetry Gaps:** Component telemetry operates in isolated silos without unified correlation of metrics and traces, impeding proactive anomaly detection.",
+    "cross_cutting_debt_universal_p2": "**2. Accumulated Technical Debt & Extended Lifecycle Lag:** Deferred upgrades of core components and dependencies increasing integration friction and extended vendor support exposure.",
+    "cross_cutting_debt_universal_p3": "**3. Manual Operational Toil & Change Governance Friction:** Reliance on manual operating procedures and fragmented sign-offs reducing deployment agility and increasing human error exposure.",
+    "evidence_rag_marker": "\n\nLiteral Forensic Evidence (Audit RAG):\n"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -2560,7 +2758,7 @@
     "version_label": "Versão",
     "date_label": "Junho 2026",
     "table_of_contents_title": "Índice de Conteúdos",
-    "appendix_a_title": "Lista de Abreviaturas",
+    "appendix_a_title": "Appendix A. Glossary of Terms and List of Abbreviations",
     "conclusions_title": "Relatório Consolidado do Estado Futuro",
     "table_header_pillar": "Pilar",
     "table_header_score": "Score",
@@ -2796,8 +2994,8 @@
       "Abbreviation",
       "Significado / Technical Description"
     ],
-    "appendix_b_title": "Limitation of Liability Disclaimer",
-    "appendix_c_title": "Registry of Custody of Information Sources",
+    "appendix_b_title": "Appendix B. Regulatory & Liability Disclaimer",
+    "appendix_c_title": "Appendix C. Information Source Chain of Custody Registry",
     "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
     "appendix_c_headers": [
       "Reference Code",
@@ -2986,7 +3184,7 @@
     "interdep_status_not_bottleneck": "Distributed / Resilient Architecture",
     "interdep_gloss_title": "Executive Synthesis of Interdependence Metrics:",
     "appendix_fair_title": "Quantitative Risk Modeling Methodology",
-    "appendix_fair_intro": "Este diagnóstico técnico aplica o padrão internacional **O-FAIR (Factor Analysis of Information Risk)** do *The Open Group* para modelar, quantificar e priorizar a exposição ao risco em termos financeiros reais.",
+    "appendix_fair_intro": "Este diagnóstico técnico aplica o padrão internacional **O-FAIR (Factor Analysis of Information Risk)** do The Open Group para modelar, quantificar e priorizar a exposição ao risco em termos financeiros reais.",
     "reg_financial_banking": "as regulamentações vigentes de resiliência operacional financeira (ex.: DORA)",
     "reg_energy_infra": "os marcos normativos de proteção de infraestruturas críticas (ex.: Diretiva NIS2)",
     "reg_telecom_media": "os marcos regulatórios setoriais de Telecomunicações, Mídia e soberania de dados",
@@ -3423,7 +3621,7 @@
     "business_driver_agenda_prefix": "Agenda de negócio prioritária:",
     "business_driver_reg_prefix": "Pressão regulatória material:",
     "maturity_scale_legend": "Escala de Maturidade: 1-Inicial | 2-Repetível | 3-Definido | 4-Gerenciado | 5-Otimizado",
-    "fair_risk_summary_detailed": "**Resumo Executivo de Exposição ao Risco (FAIR):**\nA análise quantitativa de riscos identifica uma exposição financeira agregada (ALE) de **{formatted_ale} {currency}**. Dentre os **{num_risks}** riscos registrados, a maior concentração de perdas localiza-se no pilar **{highest_pilar}** (com **{formatted_pilar_ale} {currency}** de exposição), acumulando **{highest_risk_pct} %** da exposição global.",
+    "fair_risk_summary_detailed": "**Resumo Executivo de Exposição ao Risco (FAIR):**\nA análise quantitativa de riscos identifica uma exposição financeira agregada (ALE) de **{formatted_ale} {currency}**. Dentre os **{num_risks}** riscos registrados, a maior concentração de perdas localiza-se no pilar **{highest_pillar}** (com **{formatted_pillar_ale} {currency}** de exposição), acumulando **{highest_risk_pct} %** da exposição global.",
     "fair_risk_summary_basic": "**Resumo Executivo de Exposição ao Risco (FAIR):**\nA avaliação de riscos financeiros por simulação probabilística estima uma exposição anualizada ao risco de **{formatted_ale} {currency}** para **{client_name}**.",
     "fair_methodology_note": "**Nota Metodológica:** A estimativa de risco anualizado (ALE) fundamenta-se estritamente no padrão Open FAIR™ e em simulações estocásticas de Monte Carlo. Detalhes no Apêndice A.",
     "methodological_legends_title": "Legendas Metodológicas",
@@ -3792,7 +3990,106 @@
     "scale_legend": "Maturity Scale: 1-Initial | 2-Repeatable | 3-Defined | 4-Managed | 5-Optimized",
     "corporate_footer_prefix": "Anexo Técnico — Confidencial  |  Pág.",
     "norm_row_iso_desc": "Controles de segurança, segmentação de rede e governança de continuidade operacional.",
-    "norm_row_iso_purp": "Gestão de riscos tecnológicos."
+    "norm_row_iso_purp": "Gestão de riscos tecnológicos.",
+    "methodology_three_outcomes_title": "Three Executive Outcomes of the Assessment",
+    "methodology_three_outcomes_bullets": [
+      "**1. Resilience Gap Identification & Quantification:** Rigorous technical audit and critical dependency mapping across data centers and facilities infrastructure.",
+      "**2. Technical Debt & Obsolescence Evaluation:** Hardware lifecycle analysis, vendor end-of-life (EoL) support exposure, and high-availability design compliance.",
+      "**3. Rational Investment Prioritization (Business Case):** Actuarial Cost of Inaction (ALE) quantification and modernizing financial return (CAPEX/ROI) justification for the Board."
+    ],
+    "methodology_three_phases_title": "Three-Phase Ground-Truth Methodology",
+    "methodology_three_phases_bullets": [
+      "**Phase 1: Evidence Ingestion & Operational Verification:** On-site technical inspection, engineering interviews, and network/facility topology validation.",
+      "**Phase 2: Topological Dependency Modeling & SPOF Analysis:** Cascading failure propagation analysis mapping facility disruptions to core organizational operations.",
+      "**Phase 3: Quantitative Actuarial Simulation (Open FAIR):** 10,000-run Monte Carlo stochastic modeling quantifying annualized financial loss exposure (ALE) and P90 tail risk."
+    ],
+    "cross_cutting_debt_title": "Cross-Cutting Technical Debt Analysis & Structural Risk Patterns",
+    "cross_cutting_debt_intro": "Beyond vertical pillar baselines, the assessment identifies three horizontal friction patterns spanning the entire infrastructure:",
+    "cross_cutting_debt_pattern_1": "**1. Manual Measurement Dependency & Continuous Telemetry Blindness:** Electrical and thermal capacity planning relies on theoretical vendor nameplates and sporadic manual clamp-meter checks. Lacking digital real-time telemetry across distribution panels and intelligent rack PDUs impairs visibility into operational headroom when migrating compute workloads.",
+    "cross_cutting_debt_pattern_2": "**2. Operational Silos Between Facilities (BMS) and Central Enterprise IT Observability:** Electromechanical infrastructure operates decoupled from corporate monitoring. Environmental anomalies fail to trigger correlated early warnings, causing degradations to be discovered only after server cluster outages.",
+    "cross_cutting_debt_pattern_3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates.",
+    "rore_value_hexagon_title": "The Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)",
+    "rore_value_hexagon_intro": "Infrastructure risk mitigation unlocks direct economic value structured across six strategic levers under the TBM and FinOps frameworks:",
+    "rore_value_hexagon_bullets": [
+      "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
+      "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
+      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
+      "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
+      "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
+    ],
+    "risk_portfolio_tiers_title": "Risk Inventory Structuring into Three Investment Portfolios",
+    "risk_portfolio_tiers_intro": "To facilitate executive capital allocation, all {num_total} evaluated scenarios are classified into three strategic portfolios prioritized by expected financial exposure:",
+    "inaction_horizons_table_title": "Multi-Horizon Cost of Inaction vs. Strategic Modernization Program",
+    "inaction_horizons_headers": [
+      "Time Horizon",
+      "Expected Inaction Cost (Cumulative ALE)",
+      "Severe Stress Scenario (Cumulative CVaR P90)",
+      "Required Capital Investment (CAPEX)",
+      "Estimated Operational Return (ROI)"
+    ],
+    "inaction_h1_label": "1 Year (Short-Term)",
+    "inaction_h3_label": "3 Years (Medium-Term)",
+    "inaction_h5_label": "5 Years (Long-Term)",
+    "level_prefix": "Nível",
+    "custody_col_code": "Reference Code",
+    "custody_col_source": "Source Document / Origin",
+    "custody_col_desc": "Custody Description & Scope",
+    "custody_sources_items": [
+      {
+        "code": "[Self-Assessment Questionnaire]",
+        "source": "questions_{client_slug}.txt",
+        "desc": "Structured self-assessment technical questionnaire for {tower_name}, compiling declared telemetry and responses from {client_name} engineering leaders."
+      },
+      {
+        "code": "[Architecture Context Dossier]",
+        "source": "context_{client_slug}.docx",
+        "desc": "Strategic architectural dossier from {client_name} detailing infrastructure asset inventory, data center footprint, and operational criticality."
+      },
+      {
+        "code": "[Client Intelligence Layer]",
+        "source": "client_intelligence.json",
+        "desc": "Automated compliance and sector telemetry module ingesting regulatory standards (NIS2, GDPR) and industry benchmark datasets."
+      },
+      {
+        "code": "[ITIC-DOWNTIME]",
+        "source": "ITIC Global Server Hardware Downtime Report",
+        "desc": "Global benchmark standard quantifying the average hourly cost of downtime across enterprise core server and data center infrastructure."
+      },
+      {
+        "code": "[CISA-KEV]",
+        "source": "CISA Known Exploited Vulnerabilities Catalog",
+        "desc": "Authoritative international catalog of actively exploited vulnerabilities maintained by the Cybersecurity and Infrastructure Security Agency."
+      },
+      {
+        "code": "[NIS2-DIRECTIVE]",
+        "source": "Directive (EU) 2022/2555 (NIS2)",
+        "desc": "European Union directive on cybersecurity measures ensuring baseline resilience across essential and important commercial entities."
+      },
+      {
+        "code": "[ISO-27001]",
+        "source": "International Standard ISO/IEC 27001",
+        "desc": "Global standard for Information Security Management Systems (ISMS), defining physical and operational baseline security controls."
+      },
+      {
+        "code": "[ASHRAE-TC99]",
+        "source": "ASHRAE TC 9.9 Thermal Guidelines",
+        "desc": "Thermal and environmental engineering guidelines for data processing environments used to model hardware degradation limits."
+      }
+    ],
+    "ast_appendix_custody_title": "Appendix A. Information Source Chain of Custody Registry",
+    "ast_appendix_fair_title": "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™)",
+    "ast_appendix_glossary_disclaimer_title": "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer",
+    "detailed_risks_pillar_title": "Vulnerability Analysis: ",
+    "roi_payback_quarter": "Payback < 3 meses",
+    "roi_net_savings": "Poupança líquida {amount}",
+    "risk_portfolio_tier_1_tpl": "**Tier 1 - Critical Modernization Priority ({ids}):** Outage scenarios with immediate operational and financial disruption, accounting for {pct}% of total calculated tower exposure.",
+    "risk_portfolio_tier_2_tpl": "**Tier 2 - Operational Optimization & Resilience ({ids}):** Redundancy and telemetry gaps that elevate operational friction and mean time to recovery (MTTR).",
+    "risk_portfolio_tier_3_tpl": "**Tier 3 - Maintenance Backlog & Governance ({ids}):** Procedural formalization, physical record tracking, and preventive lifecycle maintenance.",
+    "cross_cutting_debt_universal_p1": "**1. Fragmented Observability & Predictive Telemetry Gaps:** Component telemetry operates in isolated silos without unified correlation of metrics and traces, impeding proactive anomaly detection.",
+    "cross_cutting_debt_universal_p2": "**2. Accumulated Technical Debt & Extended Lifecycle Lag:** Deferred upgrades of core components and dependencies increasing integration friction and extended vendor support exposure.",
+    "cross_cutting_debt_universal_p3": "**3. Manual Operational Toil & Change Governance Friction:** Reliance on manual operating procedures and fragmented sign-offs reducing deployment agility and increasing human error exposure.",
+    "evidence_rag_marker": "\n\nLiteral Forensic Evidence (Audit RAG):\n"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -3820,7 +4117,7 @@
     "version_label": "Version",
     "date_label": "Juin 2026",
     "table_of_contents_title": "Table des Matières",
-    "appendix_a_title": "Liste des Abréviations",
+    "appendix_a_title": "Appendix A. Glossary of Terms and List of Abbreviations",
     "conclusions_title": "Rapport Consolidé de l'État Futur",
     "table_header_pillar": "Pilier",
     "table_header_score": "Score",
@@ -4056,8 +4353,8 @@
       "Abbreviation",
       "Significado / Technical Description"
     ],
-    "appendix_b_title": "Limitation of Liability Disclaimer",
-    "appendix_c_title": "Registry of Custody of Information Sources",
+    "appendix_b_title": "Appendix B. Regulatory & Liability Disclaimer",
+    "appendix_c_title": "Appendix C. Information Source Chain of Custody Registry",
     "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
     "appendix_c_headers": [
       "Reference Code",
@@ -4246,7 +4543,7 @@
     "interdep_status_not_bottleneck": "Distributed / Resilient Architecture",
     "interdep_gloss_title": "Executive Synthesis of Interdependence Metrics:",
     "appendix_fair_title": "Quantitative Risk Modeling Methodology",
-    "appendix_fair_intro": "Ce diagnostic technique applique la norme internationale **O-FAIR (Factor Analysis of Information Risk)** de *The Open Group* pour modéliser et quantifier l'exposition au risque financier.",
+    "appendix_fair_intro": "Ce diagnostic technique applique la norme internationale **O-FAIR (Factor Analysis of Information Risk)** de The Open Group pour modéliser et quantifier l'exposition au risque financier.",
     "reg_financial_banking": "les réglementations de résilience opérationnelle financière (ex. DORA)",
     "reg_energy_infra": "les cadres de protection des infrastructures critiques (ex. Directive NIS2)",
     "reg_telecom_media": "les cadres réglementaires des télécommunications, des médias et de la souveraineté des données",
@@ -4683,7 +4980,7 @@
     "business_driver_agenda_prefix": "Agenda métier prioritaire :",
     "business_driver_reg_prefix": "Pression réglementaire matérielle :",
     "maturity_scale_legend": "Échelle de Maturité : 1-Initial | 2-Répétable | 3-Défini | 4-Géré | 5-Optimisé",
-    "fair_risk_summary_detailed": "**Synthèse Exécutive de l'Exposition aux Risques (FAIR) :**\nL'analyse quantitative identifie une exposition financière agrégée (ALE) de **{formatted_ale} {currency}**. Sur les **{num_risks}** risques enregistrés, la plus forte concentration de pertes se situe dans le pilier **{highest_pilar}** (avec **{formatted_pilar_ale} {currency}**), représentant **{highest_risk_pct} %** de l'exposition totale.",
+    "fair_risk_summary_detailed": "**Synthèse Exécutive de l'Exposition aux Risques (FAIR) :**\nL'analyse quantitative identifie une exposition financière agrégée (ALE) de **{formatted_ale} {currency}**. Sur les **{num_risks}** risques enregistrés, la plus forte concentration de pertes se situe dans le pilier **{highest_pillar}** (avec **{formatted_pillar_ale} {currency}**), représentant **{highest_risk_pct} %** de l'exposition totale.",
     "fair_risk_summary_basic": "**Synthèse Exécutive de l'Exposition aux Risques (FAIR) :**\nL'évaluation des risques financiers estime une exposition annuelle de **{formatted_ale} {currency}** pour **{client_name}**.",
     "fair_methodology_note": "**Note Méthodologique :** L'estimation des pertes annuelles (ALE) repose strictement sur la norme Open FAIR™ et des simulations de Monte-Carlo. Détails en Annexe A.",
     "methodological_legends_title": "Légendes Méthodologiques",
@@ -5052,7 +5349,106 @@
     "scale_legend": "Maturity Scale: 1-Initial | 2-Repeatable | 3-Defined | 4-Managed | 5-Optimized",
     "corporate_footer_prefix": "Annexe Technique — Confidentiel  |  Page",
     "norm_row_iso_desc": "Contrôles de sécurité, segmentation réseau et gouvernance de continuité opérationnelle.",
-    "norm_row_iso_purp": "Gestion des risques technologiques."
+    "norm_row_iso_purp": "Gestion des risques technologiques.",
+    "methodology_three_outcomes_title": "Three Executive Outcomes of the Assessment",
+    "methodology_three_outcomes_bullets": [
+      "**1. Resilience Gap Identification & Quantification:** Rigorous technical audit and critical dependency mapping across data centers and facilities infrastructure.",
+      "**2. Technical Debt & Obsolescence Evaluation:** Hardware lifecycle analysis, vendor end-of-life (EoL) support exposure, and high-availability design compliance.",
+      "**3. Rational Investment Prioritization (Business Case):** Actuarial Cost of Inaction (ALE) quantification and modernizing financial return (CAPEX/ROI) justification for the Board."
+    ],
+    "methodology_three_phases_title": "Three-Phase Ground-Truth Methodology",
+    "methodology_three_phases_bullets": [
+      "**Phase 1: Evidence Ingestion & Operational Verification:** On-site technical inspection, engineering interviews, and network/facility topology validation.",
+      "**Phase 2: Topological Dependency Modeling & SPOF Analysis:** Cascading failure propagation analysis mapping facility disruptions to core organizational operations.",
+      "**Phase 3: Quantitative Actuarial Simulation (Open FAIR):** 10,000-run Monte Carlo stochastic modeling quantifying annualized financial loss exposure (ALE) and P90 tail risk."
+    ],
+    "cross_cutting_debt_title": "Cross-Cutting Technical Debt Analysis & Structural Risk Patterns",
+    "cross_cutting_debt_intro": "Beyond vertical pillar baselines, the assessment identifies three horizontal friction patterns spanning the entire infrastructure:",
+    "cross_cutting_debt_pattern_1": "**1. Manual Measurement Dependency & Continuous Telemetry Blindness:** Electrical and thermal capacity planning relies on theoretical vendor nameplates and sporadic manual clamp-meter checks. Lacking digital real-time telemetry across distribution panels and intelligent rack PDUs impairs visibility into operational headroom when migrating compute workloads.",
+    "cross_cutting_debt_pattern_2": "**2. Operational Silos Between Facilities (BMS) and Central Enterprise IT Observability:** Electromechanical infrastructure operates decoupled from corporate monitoring. Environmental anomalies fail to trigger correlated early warnings, causing degradations to be discovered only after server cluster outages.",
+    "cross_cutting_debt_pattern_3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates.",
+    "rore_value_hexagon_title": "The Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)",
+    "rore_value_hexagon_intro": "Infrastructure risk mitigation unlocks direct economic value structured across six strategic levers under the TBM and FinOps frameworks:",
+    "rore_value_hexagon_bullets": [
+      "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
+      "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
+      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
+      "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
+      "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
+    ],
+    "risk_portfolio_tiers_title": "Risk Inventory Structuring into Three Investment Portfolios",
+    "risk_portfolio_tiers_intro": "To facilitate executive capital allocation, all {num_total} evaluated scenarios are classified into three strategic portfolios prioritized by expected financial exposure:",
+    "inaction_horizons_table_title": "Multi-Horizon Cost of Inaction vs. Strategic Modernization Program",
+    "inaction_horizons_headers": [
+      "Time Horizon",
+      "Expected Inaction Cost (Cumulative ALE)",
+      "Severe Stress Scenario (Cumulative CVaR P90)",
+      "Required Capital Investment (CAPEX)",
+      "Estimated Operational Return (ROI)"
+    ],
+    "inaction_h1_label": "1 Year (Short-Term)",
+    "inaction_h3_label": "3 Years (Medium-Term)",
+    "inaction_h5_label": "5 Years (Long-Term)",
+    "level_prefix": "Niveau",
+    "custody_col_code": "Reference Code",
+    "custody_col_source": "Source Document / Origin",
+    "custody_col_desc": "Custody Description & Scope",
+    "custody_sources_items": [
+      {
+        "code": "[Self-Assessment Questionnaire]",
+        "source": "questions_{client_slug}.txt",
+        "desc": "Structured self-assessment technical questionnaire for {tower_name}, compiling declared telemetry and responses from {client_name} engineering leaders."
+      },
+      {
+        "code": "[Architecture Context Dossier]",
+        "source": "context_{client_slug}.docx",
+        "desc": "Strategic architectural dossier from {client_name} detailing infrastructure asset inventory, data center footprint, and operational criticality."
+      },
+      {
+        "code": "[Client Intelligence Layer]",
+        "source": "client_intelligence.json",
+        "desc": "Automated compliance and sector telemetry module ingesting regulatory standards (NIS2, GDPR) and industry benchmark datasets."
+      },
+      {
+        "code": "[ITIC-DOWNTIME]",
+        "source": "ITIC Global Server Hardware Downtime Report",
+        "desc": "Global benchmark standard quantifying the average hourly cost of downtime across enterprise core server and data center infrastructure."
+      },
+      {
+        "code": "[CISA-KEV]",
+        "source": "CISA Known Exploited Vulnerabilities Catalog",
+        "desc": "Authoritative international catalog of actively exploited vulnerabilities maintained by the Cybersecurity and Infrastructure Security Agency."
+      },
+      {
+        "code": "[NIS2-DIRECTIVE]",
+        "source": "Directive (EU) 2022/2555 (NIS2)",
+        "desc": "European Union directive on cybersecurity measures ensuring baseline resilience across essential and important commercial entities."
+      },
+      {
+        "code": "[ISO-27001]",
+        "source": "International Standard ISO/IEC 27001",
+        "desc": "Global standard for Information Security Management Systems (ISMS), defining physical and operational baseline security controls."
+      },
+      {
+        "code": "[ASHRAE-TC99]",
+        "source": "ASHRAE TC 9.9 Thermal Guidelines",
+        "desc": "Thermal and environmental engineering guidelines for data processing environments used to model hardware degradation limits."
+      }
+    ],
+    "ast_appendix_custody_title": "Appendix A. Information Source Chain of Custody Registry",
+    "ast_appendix_fair_title": "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™)",
+    "ast_appendix_glossary_disclaimer_title": "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer",
+    "detailed_risks_pillar_title": "Vulnerability Analysis: ",
+    "roi_payback_quarter": "Payback < 3 mois",
+    "roi_net_savings": "Économies nettes {amount}",
+    "risk_portfolio_tier_1_tpl": "**Tier 1 - Critical Modernization Priority ({ids}):** Outage scenarios with immediate operational and financial disruption, accounting for {pct}% of total calculated tower exposure.",
+    "risk_portfolio_tier_2_tpl": "**Tier 2 - Operational Optimization & Resilience ({ids}):** Redundancy and telemetry gaps that elevate operational friction and mean time to recovery (MTTR).",
+    "risk_portfolio_tier_3_tpl": "**Tier 3 - Maintenance Backlog & Governance ({ids}):** Procedural formalization, physical record tracking, and preventive lifecycle maintenance.",
+    "cross_cutting_debt_universal_p1": "**1. Fragmented Observability & Predictive Telemetry Gaps:** Component telemetry operates in isolated silos without unified correlation of metrics and traces, impeding proactive anomaly detection.",
+    "cross_cutting_debt_universal_p2": "**2. Accumulated Technical Debt & Extended Lifecycle Lag:** Deferred upgrades of core components and dependencies increasing integration friction and extended vendor support exposure.",
+    "cross_cutting_debt_universal_p3": "**3. Manual Operational Toil & Change Governance Friction:** Reliance on manual operating procedures and fragmented sign-offs reducing deployment agility and increasing human error exposure.",
+    "evidence_rag_marker": "\n\nLiteral Forensic Evidence (Audit RAG):\n"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -5080,7 +5476,7 @@
     "version_label": "バージョン",
     "date_label": "2026年6月",
     "table_of_contents_title": "目次",
-    "appendix_a_title": "付録A: 略語一覧",
+    "appendix_a_title": "Appendix A. Glossary of Terms and List of Abbreviations",
     "conclusions_title": "統合将来状態レポート",
     "table_header_pillar": "柱",
     "table_header_score": "スコア",
@@ -5316,8 +5712,8 @@
       "Abbreviation",
       "Significado / Technical Description"
     ],
-    "appendix_b_title": "Limitation of Liability Disclaimer",
-    "appendix_c_title": "Registry of Custody of Information Sources",
+    "appendix_b_title": "Appendix B. Regulatory & Liability Disclaimer",
+    "appendix_c_title": "Appendix C. Information Source Chain of Custody Registry",
     "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
     "appendix_c_headers": [
       "Reference Code",
@@ -5943,7 +6339,7 @@
     "business_driver_agenda_prefix": "優先ビジネスアジェンダ:",
     "business_driver_reg_prefix": "重要な規制圧力:",
     "maturity_scale_legend": "成熟度スケール: 1-初期 | 2-反復可能 | 3-定義済み | 4-管理された | 5-最適化",
-    "fair_risk_summary_detailed": "**リスクエクスポージャー・エグゼクティブサマリー (FAIR):**\nプラットフォームの定量的リスク分析により、**{currency}{formatted_ale}**の集約年間予想損失額 (ALE) が特定されました。記録された**{num_risks}**件のリスクのうち、損失の最大集中は**{highest_pilar}**ピラー（**{currency}{formatted_pilar_ale}**のエクスポージャー）にあり、**{highest_risk_cap}**の未成熟さ（タワー全体の**{highest_risk_pct} %**）が主因となっています。",
+    "fair_risk_summary_detailed": "**リスクエクスポージャー・エグゼクティブサマリー (FAIR):**\nプラットフォームの定量的リスク分析により、**{currency}{formatted_ale}**の集約年間予想損失額 (ALE) が特定されました。記録された**{num_risks}**件のリスクのうち、損失の最大集中は**{highest_pillar}**ピラー（**{currency}{formatted_pillar_ale}**のエクスポージャー）にあり、**{highest_risk_cap}**の未成熟さ（タワー全体の**{highest_risk_pct} %**）が主因となっています。",
     "fair_risk_summary_basic": "**リスクエクスポージャー・エグゼクティブサマリー (FAIR):**\n確率論的シミュレーションによる財務リスク評価では、**{client_name}**の年間リスクエクスポージャーを**{currency}{formatted_ale}**と推計しています。",
     "fair_methodology_note": "**方法論的注記:** 経営判断の厳密性を確保するため、予想年間損失額 (ALE) および技術的優先順位付けは、国際標準Open FAIR™およびモンテカルロ確率論的シミュレーションに厳格に準拠しています。詳細は付録Aに記載されています。",
     "methodological_legends_title": "方法論的凡例",
@@ -6312,7 +6708,106 @@
     "scale_legend": "Maturity Scale: 1-Initial | 2-Repeatable | 3-Defined | 4-Managed | 5-Optimized",
     "corporate_footer_prefix": "技術付録 — 社外秘  |  ページ",
     "norm_row_iso_desc": "セキュリティ管理、ネットワークセグメンテーション、および運用継続性ガバナンス。",
-    "norm_row_iso_purp": "技術的リスクガバナンス。"
+    "norm_row_iso_purp": "技術的リスクガバナンス。",
+    "methodology_three_outcomes_title": "Three Executive Outcomes of the Assessment",
+    "methodology_three_outcomes_bullets": [
+      "**1. Resilience Gap Identification & Quantification:** Rigorous technical audit and critical dependency mapping across data centers and facilities infrastructure.",
+      "**2. Technical Debt & Obsolescence Evaluation:** Hardware lifecycle analysis, vendor end-of-life (EoL) support exposure, and high-availability design compliance.",
+      "**3. Rational Investment Prioritization (Business Case):** Actuarial Cost of Inaction (ALE) quantification and modernizing financial return (CAPEX/ROI) justification for the Board."
+    ],
+    "methodology_three_phases_title": "Three-Phase Ground-Truth Methodology",
+    "methodology_three_phases_bullets": [
+      "**Phase 1: Evidence Ingestion & Operational Verification:** On-site technical inspection, engineering interviews, and network/facility topology validation.",
+      "**Phase 2: Topological Dependency Modeling & SPOF Analysis:** Cascading failure propagation analysis mapping facility disruptions to core organizational operations.",
+      "**Phase 3: Quantitative Actuarial Simulation (Open FAIR):** 10,000-run Monte Carlo stochastic modeling quantifying annualized financial loss exposure (ALE) and P90 tail risk."
+    ],
+    "cross_cutting_debt_title": "Cross-Cutting Technical Debt Analysis & Structural Risk Patterns",
+    "cross_cutting_debt_intro": "Beyond vertical pillar baselines, the assessment identifies three horizontal friction patterns spanning the entire infrastructure:",
+    "cross_cutting_debt_pattern_1": "**1. Manual Measurement Dependency & Continuous Telemetry Blindness:** Electrical and thermal capacity planning relies on theoretical vendor nameplates and sporadic manual clamp-meter checks. Lacking digital real-time telemetry across distribution panels and intelligent rack PDUs impairs visibility into operational headroom when migrating compute workloads.",
+    "cross_cutting_debt_pattern_2": "**2. Operational Silos Between Facilities (BMS) and Central Enterprise IT Observability:** Electromechanical infrastructure operates decoupled from corporate monitoring. Environmental anomalies fail to trigger correlated early warnings, causing degradations to be discovered only after server cluster outages.",
+    "cross_cutting_debt_pattern_3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates.",
+    "rore_value_hexagon_title": "The Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)",
+    "rore_value_hexagon_intro": "Infrastructure risk mitigation unlocks direct economic value structured across six strategic levers under the TBM and FinOps frameworks:",
+    "rore_value_hexagon_bullets": [
+      "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
+      "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
+      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
+      "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
+      "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
+    ],
+    "risk_portfolio_tiers_title": "Risk Inventory Structuring into Three Investment Portfolios",
+    "risk_portfolio_tiers_intro": "To facilitate executive capital allocation, all {num_total} evaluated scenarios are classified into three strategic portfolios prioritized by expected financial exposure:",
+    "inaction_horizons_table_title": "Multi-Horizon Cost of Inaction vs. Strategic Modernization Program",
+    "inaction_horizons_headers": [
+      "Time Horizon",
+      "Expected Inaction Cost (Cumulative ALE)",
+      "Severe Stress Scenario (Cumulative CVaR P90)",
+      "Required Capital Investment (CAPEX)",
+      "Estimated Operational Return (ROI)"
+    ],
+    "inaction_h1_label": "1 Year (Short-Term)",
+    "inaction_h3_label": "3 Years (Medium-Term)",
+    "inaction_h5_label": "5 Years (Long-Term)",
+    "level_prefix": "レベル",
+    "custody_col_code": "Reference Code",
+    "custody_col_source": "Source Document / Origin",
+    "custody_col_desc": "Custody Description & Scope",
+    "custody_sources_items": [
+      {
+        "code": "[Self-Assessment Questionnaire]",
+        "source": "questions_{client_slug}.txt",
+        "desc": "Structured self-assessment technical questionnaire for {tower_name}, compiling declared telemetry and responses from {client_name} engineering leaders."
+      },
+      {
+        "code": "[Architecture Context Dossier]",
+        "source": "context_{client_slug}.docx",
+        "desc": "Strategic architectural dossier from {client_name} detailing infrastructure asset inventory, data center footprint, and operational criticality."
+      },
+      {
+        "code": "[Client Intelligence Layer]",
+        "source": "client_intelligence.json",
+        "desc": "Automated compliance and sector telemetry module ingesting regulatory standards (NIS2, GDPR) and industry benchmark datasets."
+      },
+      {
+        "code": "[ITIC-DOWNTIME]",
+        "source": "ITIC Global Server Hardware Downtime Report",
+        "desc": "Global benchmark standard quantifying the average hourly cost of downtime across enterprise core server and data center infrastructure."
+      },
+      {
+        "code": "[CISA-KEV]",
+        "source": "CISA Known Exploited Vulnerabilities Catalog",
+        "desc": "Authoritative international catalog of actively exploited vulnerabilities maintained by the Cybersecurity and Infrastructure Security Agency."
+      },
+      {
+        "code": "[NIS2-DIRECTIVE]",
+        "source": "Directive (EU) 2022/2555 (NIS2)",
+        "desc": "European Union directive on cybersecurity measures ensuring baseline resilience across essential and important commercial entities."
+      },
+      {
+        "code": "[ISO-27001]",
+        "source": "International Standard ISO/IEC 27001",
+        "desc": "Global standard for Information Security Management Systems (ISMS), defining physical and operational baseline security controls."
+      },
+      {
+        "code": "[ASHRAE-TC99]",
+        "source": "ASHRAE TC 9.9 Thermal Guidelines",
+        "desc": "Thermal and environmental engineering guidelines for data processing environments used to model hardware degradation limits."
+      }
+    ],
+    "ast_appendix_custody_title": "Appendix A. Information Source Chain of Custody Registry",
+    "ast_appendix_fair_title": "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™)",
+    "ast_appendix_glossary_disclaimer_title": "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer",
+    "detailed_risks_pillar_title": "Vulnerability Analysis: ",
+    "roi_payback_quarter": "投資回収 < 3か月",
+    "roi_net_savings": "純削減額 {amount}",
+    "risk_portfolio_tier_1_tpl": "**Tier 1 - Critical Modernization Priority ({ids}):** Outage scenarios with immediate operational and financial disruption, accounting for {pct}% of total calculated tower exposure.",
+    "risk_portfolio_tier_2_tpl": "**Tier 2 - Operational Optimization & Resilience ({ids}):** Redundancy and telemetry gaps that elevate operational friction and mean time to recovery (MTTR).",
+    "risk_portfolio_tier_3_tpl": "**Tier 3 - Maintenance Backlog & Governance ({ids}):** Procedural formalization, physical record tracking, and preventive lifecycle maintenance.",
+    "cross_cutting_debt_universal_p1": "**1. Fragmented Observability & Predictive Telemetry Gaps:** Component telemetry operates in isolated silos without unified correlation of metrics and traces, impeding proactive anomaly detection.",
+    "cross_cutting_debt_universal_p2": "**2. Accumulated Technical Debt & Extended Lifecycle Lag:** Deferred upgrades of core components and dependencies increasing integration friction and extended vendor support exposure.",
+    "cross_cutting_debt_universal_p3": "**3. Manual Operational Toil & Change Governance Friction:** Reliance on manual operating procedures and fragmented sign-offs reducing deployment agility and increasing human error exposure.",
+    "evidence_rag_marker": "\n\nLiteral Forensic Evidence (Audit RAG):\n"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -6340,7 +6835,7 @@
     "version_label": "Version",
     "date_label": "June 2026",
     "table_of_contents_title": "Table of Contents",
-    "appendix_a_title": "List of Abbreviations",
+    "appendix_a_title": "Appendix A. Glossary of Terms and List of Abbreviations",
     "conclusions_title": "Consolidated Future State Report",
     "bottlenecks_bullet": "**Structural Bottlenecks:** The manual infrastructure provisioning model severely limits the delivery speed of strategic business initiatives.",
     "delayed_faults_bullet": "**Late Technical Incident Detection:** The lack of correlated observability increases the Mean Time To Resolution (MTTR) for critical system failures.",
@@ -6576,8 +7071,8 @@
       "Abbreviation",
       "Significado / Technical Description"
     ],
-    "appendix_b_title": "Limitation of Liability Disclaimer",
-    "appendix_c_title": "Registry of Custody of Information Sources",
+    "appendix_b_title": "Appendix B. Regulatory & Liability Disclaimer",
+    "appendix_c_title": "Appendix C. Information Source Chain of Custody Registry",
     "appendix_c_intro": "To ensure the transparency, veracity, and immutability of the information collected in this technical diagnosis, the document sources used under audit custody are listed and coded below:",
     "appendix_c_headers": [
       "Reference Code",
@@ -6766,7 +7261,7 @@
     "interdep_status_not_bottleneck": "Distributed / Resilient Architecture",
     "interdep_gloss_title": "Executive Synthesis of Interdependence Metrics:",
     "appendix_fair_title": "Quantitative Risk Modeling Methodology",
-    "appendix_fair_intro": "Dieses Gutachten wendet den internationalen Standard **O-FAIR (Factor Analysis of Information Risk)** von *The Open Group* an, um finanzielle Risiken präzise zu modellieren und zu quantifizieren.",
+    "appendix_fair_intro": "Dieses Gutachten wendet den internationalen Standard **O-FAIR (Factor Analysis of Information Risk)** von The Open Group an, um finanzielle Risiken präzise zu modellieren und zu quantifizieren.",
     "reg_financial_banking": "geltende Vorschriften zur operativen Resilienz im Finanzsektor (z. B. DORA)",
     "reg_energy_infra": "regulatorische Rahmenwerke für kritische Infrastrukturen (z. B. NIS2-Richtlinie)",
     "reg_telecom_media": "sektorale Vorgaben für Telekommunikation, Medien und Datensouveränität",
@@ -7203,7 +7698,7 @@
     "business_driver_agenda_prefix": "Prioritäre Geschäftsagenda:",
     "business_driver_reg_prefix": "Relevanter regulatorischer Druck:",
     "maturity_scale_legend": "Reifegradskala: 1-Initial | 2-Wiederholbar | 3-Definiert | 4-Gemanagt | 5-Optimiert",
-    "fair_risk_summary_detailed": "**Executive Risk Exposure Summary (FAIR):**\nDie quantitative Risikoanalyse der Plattform identifiziert eine aggregierte finanzielle Exposition (Annual Loss Exposure - ALE) von **{formatted_ale} {currency}**. Über die **{num_risks}** erfassten Risiken konzentriert sich der Hauptschaden im Pfeiler **{highest_pilar}** (mit **{formatted_pilar_ale} {currency}**), getrieben durch **{highest_risk_cap}** (**{highest_risk_pct} %** der Gesamtexposition).",
+    "fair_risk_summary_detailed": "**Executive Risk Exposure Summary (FAIR):**\nDie quantitative Risikoanalyse der Plattform identifiziert eine aggregierte finanzielle Exposition (Annual Loss Exposure - ALE) von **{formatted_ale} {currency}**. Über die **{num_risks}** erfassten Risiken konzentriert sich der Hauptschaden im Pfeiler **{highest_pillar}** (mit **{formatted_pillar_ale} {currency}**), getrieben durch **{highest_risk_cap}** (**{highest_risk_pct} %** der Gesamtexposition).",
     "fair_risk_summary_basic": "**Executive Risk Exposure Summary (FAIR):**\nDie versicherungsmathematische Risikobewertung schätzt eine jährliche Risikoexposition von **{formatted_ale} {currency}** für **{client_name}**.",
     "fair_methodology_note": "**Methodischer Hinweis:** Zur Gewährleistung maximaler Führungssicherheit basieren ALE-Schätzungen strikt auf dem Open FAIR™-Standard und stochastischen Monte-Carlo-Simulationen. Einzelheiten siehe Anhang A.",
     "methodological_legends_title": "Methodische Legenden",
@@ -7572,6 +8067,105 @@
     "scale_legend": "Maturity Scale: 1-Initial | 2-Repeatable | 3-Defined | 4-Managed | 5-Optimized",
     "corporate_footer_prefix": "Technischer Anhang — Vertraulich  |  Seite",
     "norm_row_iso_desc": "Sicherheitskontrollen, Netzwerksegmentierung und operative Kontinuitäts-Governance.",
-    "norm_row_iso_purp": "Technologisches Risikomanagement."
+    "norm_row_iso_purp": "Technologisches Risikomanagement.",
+    "methodology_three_outcomes_title": "Three Executive Outcomes of the Assessment",
+    "methodology_three_outcomes_bullets": [
+      "**1. Resilience Gap Identification & Quantification:** Rigorous technical audit and critical dependency mapping across data centers and facilities infrastructure.",
+      "**2. Technical Debt & Obsolescence Evaluation:** Hardware lifecycle analysis, vendor end-of-life (EoL) support exposure, and high-availability design compliance.",
+      "**3. Rational Investment Prioritization (Business Case):** Actuarial Cost of Inaction (ALE) quantification and modernizing financial return (CAPEX/ROI) justification for the Board."
+    ],
+    "methodology_three_phases_title": "Three-Phase Ground-Truth Methodology",
+    "methodology_three_phases_bullets": [
+      "**Phase 1: Evidence Ingestion & Operational Verification:** On-site technical inspection, engineering interviews, and network/facility topology validation.",
+      "**Phase 2: Topological Dependency Modeling & SPOF Analysis:** Cascading failure propagation analysis mapping facility disruptions to core organizational operations.",
+      "**Phase 3: Quantitative Actuarial Simulation (Open FAIR):** 10,000-run Monte Carlo stochastic modeling quantifying annualized financial loss exposure (ALE) and P90 tail risk."
+    ],
+    "cross_cutting_debt_title": "Cross-Cutting Technical Debt Analysis & Structural Risk Patterns",
+    "cross_cutting_debt_intro": "Beyond vertical pillar baselines, the assessment identifies three horizontal friction patterns spanning the entire infrastructure:",
+    "cross_cutting_debt_pattern_1": "**1. Manual Measurement Dependency & Continuous Telemetry Blindness:** Electrical and thermal capacity planning relies on theoretical vendor nameplates and sporadic manual clamp-meter checks. Lacking digital real-time telemetry across distribution panels and intelligent rack PDUs impairs visibility into operational headroom when migrating compute workloads.",
+    "cross_cutting_debt_pattern_2": "**2. Operational Silos Between Facilities (BMS) and Central Enterprise IT Observability:** Electromechanical infrastructure operates decoupled from corporate monitoring. Environmental anomalies fail to trigger correlated early warnings, causing degradations to be discovered only after server cluster outages.",
+    "cross_cutting_debt_pattern_3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates.",
+    "rore_value_hexagon_title": "The Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)",
+    "rore_value_hexagon_intro": "Infrastructure risk mitigation unlocks direct economic value structured across six strategic levers under the TBM and FinOps frameworks:",
+    "rore_value_hexagon_bullets": [
+      "**1. Labor Capital Recovery (Lean IT):** Eliminating reactive manual rounds and physical clamp measurements, freeing engineering capacity for core innovation initiatives.",
+      "**2. Cost of Delay Reduction:** Accelerating capacity provisioning and facilitating seamless post-merger technology onboarding for organizational acquisitions (M&A).",
+      "**3. Capacity Optimization & Energy Efficiency:** Suppressing thermal recirculation and hot spots, reducing PUE ratios and data center cooling power consumption by up to 28%.",
+      "**4. Extended Support Cost Avoidance:** Phasing out end-of-life (EoL) infrastructure before facing punitive non-warranty vendor maintenance pricing tiers.",
+      "**5. Tail-Risk Balance Sheet Mitigation (CVaR):** Insulating operational cash flows against catastrophic multi-day outages threatening commercial revenue and continuous operations.",
+      "**6. Regulatory & Governance Compliance Assurance:** Continuous audit-grade telemetry and incident records ensuring alignment with international resilience frameworks and preventing punitive regulatory sanctions."
+    ],
+    "risk_portfolio_tiers_title": "Risk Inventory Structuring into Three Investment Portfolios",
+    "risk_portfolio_tiers_intro": "To facilitate executive capital allocation, all {num_total} evaluated scenarios are classified into three strategic portfolios prioritized by expected financial exposure:",
+    "inaction_horizons_table_title": "Multi-Horizon Cost of Inaction vs. Strategic Modernization Program",
+    "inaction_horizons_headers": [
+      "Time Horizon",
+      "Expected Inaction Cost (Cumulative ALE)",
+      "Severe Stress Scenario (Cumulative CVaR P90)",
+      "Required Capital Investment (CAPEX)",
+      "Estimated Operational Return (ROI)"
+    ],
+    "inaction_h1_label": "1 Year (Short-Term)",
+    "inaction_h3_label": "3 Years (Medium-Term)",
+    "inaction_h5_label": "5 Years (Long-Term)",
+    "level_prefix": "Stufe",
+    "custody_col_code": "Reference Code",
+    "custody_col_source": "Source Document / Origin",
+    "custody_col_desc": "Custody Description & Scope",
+    "custody_sources_items": [
+      {
+        "code": "[Self-Assessment Questionnaire]",
+        "source": "questions_{client_slug}.txt",
+        "desc": "Structured self-assessment technical questionnaire for {tower_name}, compiling declared telemetry and responses from {client_name} engineering leaders."
+      },
+      {
+        "code": "[Architecture Context Dossier]",
+        "source": "context_{client_slug}.docx",
+        "desc": "Strategic architectural dossier from {client_name} detailing infrastructure asset inventory, data center footprint, and operational criticality."
+      },
+      {
+        "code": "[Client Intelligence Layer]",
+        "source": "client_intelligence.json",
+        "desc": "Automated compliance and sector telemetry module ingesting regulatory standards (NIS2, GDPR) and industry benchmark datasets."
+      },
+      {
+        "code": "[ITIC-DOWNTIME]",
+        "source": "ITIC Global Server Hardware Downtime Report",
+        "desc": "Global benchmark standard quantifying the average hourly cost of downtime across enterprise core server and data center infrastructure."
+      },
+      {
+        "code": "[CISA-KEV]",
+        "source": "CISA Known Exploited Vulnerabilities Catalog",
+        "desc": "Authoritative international catalog of actively exploited vulnerabilities maintained by the Cybersecurity and Infrastructure Security Agency."
+      },
+      {
+        "code": "[NIS2-DIRECTIVE]",
+        "source": "Directive (EU) 2022/2555 (NIS2)",
+        "desc": "European Union directive on cybersecurity measures ensuring baseline resilience across essential and important commercial entities."
+      },
+      {
+        "code": "[ISO-27001]",
+        "source": "International Standard ISO/IEC 27001",
+        "desc": "Global standard for Information Security Management Systems (ISMS), defining physical and operational baseline security controls."
+      },
+      {
+        "code": "[ASHRAE-TC99]",
+        "source": "ASHRAE TC 9.9 Thermal Guidelines",
+        "desc": "Thermal and environmental engineering guidelines for data processing environments used to model hardware degradation limits."
+      }
+    ],
+    "ast_appendix_custody_title": "Appendix A. Information Source Chain of Custody Registry",
+    "ast_appendix_fair_title": "Appendix B. Quantitative Risk Modeling Methodology (Open FAIR™)",
+    "ast_appendix_glossary_disclaimer_title": "Appendix C. Abbreviations Glossary & Legal Liability Disclaimer",
+    "detailed_risks_pillar_title": "Vulnerability Analysis: ",
+    "roi_payback_quarter": "Amortisation < 3 Monate",
+    "roi_net_savings": "Nettoeinsparungen {amount}",
+    "risk_portfolio_tier_1_tpl": "**Tier 1 - Critical Modernization Priority ({ids}):** Outage scenarios with immediate operational and financial disruption, accounting for {pct}% of total calculated tower exposure.",
+    "risk_portfolio_tier_2_tpl": "**Tier 2 - Operational Optimization & Resilience ({ids}):** Redundancy and telemetry gaps that elevate operational friction and mean time to recovery (MTTR).",
+    "risk_portfolio_tier_3_tpl": "**Tier 3 - Maintenance Backlog & Governance ({ids}):** Procedural formalization, physical record tracking, and preventive lifecycle maintenance.",
+    "cross_cutting_debt_universal_p1": "**1. Fragmented Observability & Predictive Telemetry Gaps:** Component telemetry operates in isolated silos without unified correlation of metrics and traces, impeding proactive anomaly detection.",
+    "cross_cutting_debt_universal_p2": "**2. Accumulated Technical Debt & Extended Lifecycle Lag:** Deferred upgrades of core components and dependencies increasing integration friction and extended vendor support exposure.",
+    "cross_cutting_debt_universal_p3": "**3. Manual Operational Toil & Change Governance Friction:** Reliance on manual operating procedures and fragmented sign-offs reducing deployment agility and increasing human error exposure.",
+    "evidence_rag_marker": "\n\nLiteral Forensic Evidence (Audit RAG):\n"
   }
 }
