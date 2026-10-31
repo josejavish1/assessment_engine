@@ -222,7 +222,7 @@ async def process_pilar_blueprint(
     pilar_data,
     context_str="",
     intel_str="",
-    target_language="Spanish",
+    target_language="English",
 ):
     """Asynchronously processes an architectural pillar using a two-phase generative AI pipeline.
 

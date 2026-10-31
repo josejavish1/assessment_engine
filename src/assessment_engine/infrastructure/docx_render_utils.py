@@ -13,9 +13,12 @@ from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt
 from docx.table import Table
 from docx.text.paragraph import Paragraph
+
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole
 
 from assessment_engine.infrastructure.text_utils import clean_text_for_word
 
@@ -1287,6 +1290,7 @@ def add_heading_paragraph(doc, text: Any, level: Any = 1) -> Any:
     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
     run = paragraph.add_run(clean_text(text))
 
+    brand_rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_PRIMARY)
     if level == 1:
         run.bold = False
         paragraph.paragraph_format.space_before = Pt(18)
@@ -1294,14 +1298,14 @@ def add_heading_paragraph(doc, text: Any, level: Any = 1) -> Any:
         paragraph.paragraph_format.page_break_before = False
         run.font.name = "Georgia"
         run.font.size = Pt(20)
-        run.font.color.rgb = RGBColor(0, 114, 188)
+        run.font.color.rgb = brand_rgb
     elif level == 2:
         run.bold = False
         paragraph.paragraph_format.space_before = Pt(12)
         paragraph.paragraph_format.space_after = Pt(12)
         run.font.name = "Georgia"
         run.font.size = Pt(14)
-        run.font.color.rgb = RGBColor(0, 114, 188)
+        run.font.color.rgb = brand_rgb
     else:
         run.bold = True
         paragraph.paragraph_format.space_before = Pt(3)

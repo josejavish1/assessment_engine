@@ -14,7 +14,10 @@ from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, RGBColor, Cm
+from docx.shared import Cm, Inches
+
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 
 from assessment_engine.infrastructure.docx_render_utils import (
     autofit_table_to_contents,
@@ -67,55 +70,69 @@ def _compile_cover_and_toc(doc: Any, ctx: DocumentCompilationContext) -> None:
     text_color_rgb = ctx["text_color_rgb"]
     doc_lang = ctx.get("doc_lang", "en")
 
+    style_resolver = DocxStyleResolver.get_default(language_code=doc_lang)
+
     add_spacer(doc, 200)
 
     p_title = doc.add_paragraph()
     run_title = p_title.add_run(t("title", locale=doc_lang))
-    run_title.bold = True
-    run_title.font.name = "Arial"
-    run_title.font.size = Pt(36)
-    run_title.font.color.rgb = RGBColor(*text_color_rgb)
+    style_resolver.apply_run_style(
+        run_title,
+        typo_role=TypographyRole.DISPLAY,
+        color_role=SemanticColorRole.TEXT_PRIMARY,
+        bold_override=True,
+    )
 
     p_sub = doc.add_paragraph()
     sub_prefix = t("annex_technical_prefix", locale=doc_lang)
     run_sub = p_sub.add_run(f"{sub_prefix} {ctx['tower_name']}")
-    run_sub.font.name = "Arial"
-    run_sub.font.size = Pt(20)
-    run_sub.font.color.rgb = RGBColor(*p_color_rgb)
+    style_resolver.apply_run_style(
+        run_sub,
+        typo_role=TypographyRole.HEADING_1,
+        color_role=SemanticColorRole.BRAND_PRIMARY,
+    )
 
     add_spacer(doc, 140)
 
     p_client = doc.add_paragraph()
     client_label = t("client_lbl", locale=doc_lang)
     run_cli_lbl = p_client.add_run(client_label)
-    run_cli_lbl.bold = True
-    run_cli_lbl.font.name = "Arial"
-    run_cli_lbl.font.size = Pt(28)
-    run_cli_lbl.font.color.rgb = RGBColor(*text_color_rgb)
+    style_resolver.apply_run_style(
+        run_cli_lbl,
+        typo_role=TypographyRole.DISPLAY,
+        color_role=SemanticColorRole.TEXT_PRIMARY,
+        bold_override=True,
+    )
 
     if ctx.get("client_group"):
         run_cli = p_client.add_run(f"{ctx['client_name'].upper()} ({ctx['client_group']})")
     else:
         run_cli = p_client.add_run(f"{ctx['client_name'].upper()}")
-    run_cli.bold = True
-    run_cli.font.name = "Arial"
-    run_cli.font.size = Pt(28)
-    run_cli.font.color.rgb = RGBColor(0, 114, 188)
+    style_resolver.apply_run_style(
+        run_cli,
+        typo_role=TypographyRole.DISPLAY,
+        color_role=SemanticColorRole.BRAND_PRIMARY,
+        bold_override=True,
+    )
 
     p_proj = doc.add_paragraph()
     proj_label = t("proj_lbl", locale=doc_lang)
     project_title = t("project", locale=doc_lang)
     if project_title:
         run_proj_lbl = p_proj.add_run(proj_label)
-        run_proj_lbl.bold = True
-        run_proj_lbl.font.name = "Arial"
-        run_proj_lbl.font.size = Pt(14)
-        run_proj_lbl.font.color.rgb = RGBColor(*text_color_rgb)
+        style_resolver.apply_run_style(
+            run_proj_lbl,
+            typo_role=TypographyRole.HEADING_2,
+            color_role=SemanticColorRole.TEXT_PRIMARY,
+            bold_override=True,
+        )
 
         run_proj = p_proj.add_run(f"{project_title}")
-        run_proj.font.name = "Arial"
-        run_proj.font.size = Pt(14)
-        run_proj.font.color.rgb = RGBColor(*text_color_rgb)
+        style_resolver.apply_run_style(
+            run_proj,
+            typo_role=TypographyRole.HEADING_2,
+            color_role=SemanticColorRole.TEXT_PRIMARY,
+        )
 
     add_spacer(doc, 140)
 
@@ -127,24 +144,65 @@ def _compile_cover_and_toc(doc: Any, ctx: DocumentCompilationContext) -> None:
     run_date = p_footer.add_run(
         f"{company_prefix}{ctx['doc_date']} | {version_label}{ctx['doc_version']} | {classification_clean}"
     )
-    run_date.font.name = "Arial"
-    run_date.font.size = Pt(9.5)
-    run_date.font.color.rgb = RGBColor(150, 150, 150)
+    style_resolver.apply_run_style(
+        run_date,
+        typo_role=TypographyRole.CAPTION,
+        color_role=SemanticColorRole.TEXT_MUTED,
+    )
 
     doc.add_page_break()
 
     # Section 0.1: Table of Contents (TOC).
+    # Render unnumbered title so Word does not treat the Table of Contents as Chapter 1 in the multi-level list template.
     toc_heading = t("toc_title", locale=doc_lang)
-    add_heading(doc, toc_heading, level=4, primary_color_rgb=p_color_rgb)
+    p_toc_title = doc.add_paragraph()
+    style_resolver.apply_paragraph_typography(p_toc_title, TypographyRole.HEADING_2)
+    p_toc_title.paragraph_format.keep_with_next = True
+    r_toc_title = p_toc_title.add_run(toc_heading)
+    style_resolver.apply_run_style(
+        r_toc_title,
+        typo_role=TypographyRole.HEADING_2,
+        color_role=SemanticColorRole.BRAND_PRIMARY,
+        bold_override=True,
+    )
+
+    # Word native dynamic Table of Contents field code (TOC \o "1-2")
     add_toc(doc)
+
+    # Preliminary Confidentiality and Liability Disclaimer
+    add_spacer(doc, 30)
+    p_disc = doc.add_paragraph()
+    style_resolver.apply_paragraph_typography(p_disc, TypographyRole.CAPTION)
+    p_disc.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+    r_conf = p_disc.add_run(t("confidentiality_label", locale=doc_lang))
+    style_resolver.apply_run_style(
+        r_conf,
+        typo_role=TypographyRole.CAPTION,
+        color_role=SemanticColorRole.TEXT_MUTED,
+        bold_override=True,
+    )
+
+    disc_text = t("disclaimer_statement", locale=doc_lang)
+    r_body = p_disc.add_run(disc_text)
+    style_resolver.apply_run_style(
+        r_body,
+        typo_role=TypographyRole.CAPTION,
+        color_role=SemanticColorRole.TEXT_MUTED,
+    )
+    r_body.font.italic = True
 
 
 def _compile_introduction_and_scope(doc: Any, ctx: DocumentCompilationContext) -> None:
-    """Render Chapter 1 (Executive Summary intro) and Chapter 2 (Methodology, Scope, Objectives)."""
+    """Render Chapter 1 (Executive Summary intro) and Chapter 2 (Methodology, Scope, Objectives, Asset Footprint)."""
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]
+    p_color_hex = ctx["p_color_hex"]
+    alt_row_hex = ctx["alt_row_hex"]
     doc_lang = ctx.get("doc_lang", "en")
     modules_dir = ctx["modules_dir"]
+    b_data = ctx.get("b_data", {})
+    style_resolver = DocxStyleResolver.get_default(language_code=doc_lang)
 
     # Assemble and render Chapter 1: Executive Summary and Business Context.
     parse_and_append_markdown_section(
@@ -158,11 +216,127 @@ def _compile_introduction_and_scope(doc: Any, ctx: DocumentCompilationContext) -
         level=1,
         primary_color_rgb=p_color_rgb,
     )
+
+    # 2.1 Objectives and Scope
+    intro_file = (modules_dir / "01_introduction.md") if (modules_dir / "01_introduction.md").exists() else (modules_dir / "01_introduccion.md")
+    methodology_hdr = t("methodology_section_header", locale=doc_lang)
     parse_and_append_markdown_section(
         doc,
-        modules_dir / "01_introduccion.md",
+        intro_file,
         p_color_rgb,
         text_color_rgb,
+        end_header=methodology_hdr,
+        skip_level_1=True,
+    )
+
+    # 2.2 Evaluated Infrastructure and Platform Perimeter (Asset Footprint)
+    add_heading(
+        doc,
+        t("section_asset_perimeter_title", locale=doc_lang),
+        level=2,
+        primary_color_rgb=p_color_rgb,
+    )
+    add_body_paragraph(
+        doc,
+        t("asset_perimeter_intro", locale=doc_lang),
+        text_color_rgb=text_color_rgb,
+    )
+    add_spacer(doc, 6)
+
+    pillars = b_data.get("pillars_analysis", [])
+    if pillars:
+        fp_table = doc.add_table(rows=1, cols=2)
+        fp_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+        fp_table.style = "Table Grid"
+
+        fp_headers = [
+            t("header_infrastructure_domain", locale=doc_lang),
+            t("header_evaluated_perimeter_assets", locale=doc_lang),
+        ]
+        for i, h_txt in enumerate(fp_headers):
+            set_cell_text_custom(
+                fp_table.rows[0].cells[i],
+                h_txt,
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                typography_role=TypographyRole.TABLE_HEADER,
+                color_role=SemanticColorRole.TEXT_INVERSE,
+                resolver=style_resolver,
+            )
+            shade_cell(fp_table.rows[0].cells[i], p_color_hex)
+
+        fp_table.rows[0].cells[0].width = Cm(5.0)
+        fp_table.rows[0].cells[1].width = Cm(11.4)
+
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
+        for p_idx, p in enumerate(pillars):
+            raw_pname = p.get("pillar_name", "Pillar")
+            p_id = p.get("pillar_id")
+            p_name = resolver.resolve_pillar_by_any_reference(
+                p_id or raw_pname, default=raw_pname, locale=doc_lang
+            )
+            findings = p.get("health_check_asis", [])
+            caps = []
+            for f in findings:
+                c = f.get("target_state") or f.get("capability")
+                if c:
+                    c_clean = c.split("(")[0].strip()
+                    c_loc = resolver.resolve_capability_name(c_clean, default=c_clean, locale=doc_lang)
+                    if c_loc and c_loc not in caps:
+                        caps.append(c_loc)
+            scope_desc = "; ".join(caps) if caps else t("default_evaluated_assets", locale=doc_lang)
+
+            row = fp_table.add_row()
+            set_cell_text_custom(row.cells[0], p_name, bold=True, font_size=8.5, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver)
+            set_cell_text_custom(row.cells[1], scope_desc, font_size=8.5, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+
+            row.cells[0].width = Cm(5.0)
+            row.cells[1].width = Cm(11.4)
+
+            if p_idx % 2 == 1:
+                shade_cell(row.cells[0], alt_row_hex)
+                shade_cell(row.cells[1], alt_row_hex)
+
+        # Append dependent business operations row
+        h_biz = t("header_dependent_business_workloads", locale=doc_lang)
+        desc_biz = t("dependent_business_workloads_desc", locale=doc_lang)
+        row_biz = fp_table.add_row()
+        set_cell_text_custom(row_biz.cells[0], h_biz, bold=True, font_size=8.5, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver)
+        set_cell_text_custom(row_biz.cells[1], desc_biz, font_size=8.5, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+
+        row_biz.cells[0].width = Cm(5.0)
+        row_biz.cells[1].width = Cm(11.4)
+        if len(pillars) % 2 == 1:
+            shade_cell(row_biz.cells[0], alt_row_hex)
+            shade_cell(row_biz.cells[1], alt_row_hex)
+
+        autofit_table_to_contents(fp_table)
+        add_spacer(doc, 10)
+
+    # Concluding benchmarking note for evaluated capability perimeter
+    client_name = ctx.get("client_name", "Client")
+    industry_name = ctx.get("industry") or t("default_industry_vertical", locale=doc_lang)
+    bench_note = t(
+        "asset_perimeter_benchmarking_note",
+        locale=doc_lang,
+        client_name=client_name,
+        industry_name=industry_name,
+    )
+    add_body_paragraph(
+        doc,
+        bench_note,
+        text_color_rgb=text_color_rgb,
+    )
+    add_spacer(doc, 15)
+
+    # 2.3 Diagnostic Methodological Framework
+    parse_and_append_markdown_section(
+        doc,
+        intro_file,
+        p_color_rgb,
+        text_color_rgb,
+        start_header=methodology_hdr,
         skip_level_1=True,
     )
 
@@ -268,17 +442,20 @@ def compile_docx(tower_dir: str, output_path: str):
     # Defined early here so it is in scope for any calls inside compile_docx.
     def add_markdown_bullet_local(text, space_after=4):
         p = doc.add_paragraph(style='Bullet')
-        p.paragraph_format.space_after = Pt(space_after)
+        resolver_local = DocxStyleResolver.get_default(language_code=doc_lang)
+        p.paragraph_format.space_after = resolver_local.resolve_pt(TypographyRole.TABLE_CELL)
         p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
         # Split on the first colon to find the heading label
         if ":" in text:
             label, body = text.split(":", 1)
             run_lbl = p.add_run(label + ":")
-            run_lbl.bold = True
-            run_lbl.font.name = "Arial"
-            run_lbl.font.size = Pt(9.5)
-            run_lbl.font.color.rgb = RGBColor(*text_color_rgb)
+            resolver_local.apply_run_style(
+                run_lbl,
+                typo_role=TypographyRole.BODY_STRONG,
+                color_role=SemanticColorRole.TEXT_PRIMARY,
+                bold_override=True,
+            )
         else:
             body = text
 
@@ -292,20 +469,22 @@ def compile_docx(tower_dir: str, output_path: str):
                 is_italic = i_idx % 2 == 1
 
                 run = p.add_run(i_part)
-                run.bold = is_bold
+                resolver_local.apply_run_style(
+                    run,
+                    typo_role=TypographyRole.BODY_REGULAR,
+                    color_role=SemanticColorRole.TEXT_PRIMARY,
+                    bold_override=is_bold,
+                )
                 run.italic = is_italic
-                run.font.name = "Arial"
-                run.font.size = Pt(9.5)
-                run.font.color.rgb = RGBColor(*text_color_rgb)
         return p
 
     if payload_path.exists():
         with open(payload_path, "r", encoding="utf-8-sig") as f:
             b_data = json.load(f)
             tower_meta = b_data.get("document_meta", {})
-            tower_name = tower_meta.get("tower_name", "Desconocida")
+            tower_name = tower_meta.get("tower_name", "Unknown")
             tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
-            raw_client_name = tower_meta.get("client_name", "Cliente")
+            raw_client_name = tower_meta.get("client_name", "Client")
             client_name = clean_client_name(raw_client_name)
             
             # Dynamically detect organizational scale to apply customized calibration.
@@ -418,13 +597,27 @@ def compile_docx(tower_dir: str, output_path: str):
     if scoring_path.exists():
         with open(scoring_path, "r", encoding="utf-8-sig") as f:
             s_data = json.load(f)
-            global_score = s_data.get("tower_score_exact", 3.0)
-            global_band = s_data.get("maturity_band_from_exact", {}).get(
-                "label", t("band_defined", locale=doc_lang)
+            global_score = float(s_data.get("tower_score_exact", 3.0))
+            from assessment_engine.domain.maturity_band import (
+                ANNEX_MATURITY_BANDS,
+                resolve_maturity_band,
             )
-            global_reading = s_data.get("maturity_band_from_exact", {}).get(
-                "reading"
-            ) or t("default_pillar_reading", locale=doc_lang)
+            band_info = resolve_maturity_band(global_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
+            global_band = band_info["label"]
+
+            # Universal numeric scoring bracket mapping (zero substring dependency across languages)
+            if global_score < 1.80:
+                desc_key = "desc_band_initial"
+            elif global_score < 2.60:
+                desc_key = "desc_band_repeatable"
+            elif global_score < 3.40:
+                desc_key = "desc_band_defined"
+            elif global_score < 4.20:
+                desc_key = "desc_band_managed"
+            else:
+                desc_key = "desc_band_optimized"
+
+            global_reading = t(desc_key, locale=doc_lang)
 
     org_label = t("lbl_holding", locale=doc_lang) if client_group else t("lbl_organization", locale=doc_lang)
 
@@ -484,6 +677,45 @@ def compile_docx(tower_dir: str, output_path: str):
     logger.info(
         f"🎉 AS-IS Technical Annex Word document COMPILED successfully at: {output_path}!"
     )
+
+    try:
+        from assessment_engine.infrastructure.artifacts import (
+            ArtifactContext,
+            ArtifactFormat,
+            DocumentType,
+        )
+        from assessment_engine.infrastructure.runtime_paths import (
+            resolve_artifact_registry,
+            resolve_assessment_id,
+            resolve_assessment_period,
+        )
+
+        tenant_id = client_name or "generic_client"
+        asmt_id = resolve_assessment_id(tower_meta.get("assessment_id"))
+        asmt_period = resolve_assessment_period(tower_meta.get("period"))
+
+        ctx = ArtifactContext(
+            tenant_id=tenant_id,
+            assessment_id=asmt_id,
+            period=asmt_period,
+            domain_unit_id=f"tower_{tower_id.lower()}",
+            doc_type=DocumentType.TECHNICAL_ANNEX,
+            locale=doc_lang,
+            extension=ArtifactFormat.DOCX,
+        )
+        registry = resolve_artifact_registry(client_id=tenant_id, assessment_id=asmt_id)
+        registry.register_artifact(
+            ctx=ctx,
+            source_file_path=output_path_obj,
+            generator_engine="compile_asis_docx_from_modules",
+            presentation_metadata={
+                "tenant_display_name": client_name,
+                "domain_unit_display": tower_name,
+                "doc_title_localized": t("lbl_technical_annex", locale=doc_lang),
+            },
+        )
+    except Exception as ex:
+        logger.debug("ArtifactRegistry technical annex registration skipped: %s", ex)
 
 
 if __name__ == "__main__":

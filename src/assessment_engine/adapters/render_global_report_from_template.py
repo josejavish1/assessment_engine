@@ -11,7 +11,12 @@ from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement, ns, parse_xml
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt
+
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
+
+BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
 """
 Module render_global_report_from_template.py.
@@ -145,7 +150,7 @@ def add_smart_bullet_list(container, items, color_rgb=None, bold_prefix=True) ->
             method, such as a `Document` or `_Cell` object.
         items (Union[str, List[str]]): A single string or a list of strings to be
             rendered as bullet points. A single string is treated as a single-item list.
-        color_rgb (Optional[docx.shared.RGBColor]): The `RGBColor` to apply to the
+        color_rgb (Any): The `RGBColor` to apply to the
             text. If None, the default text color of the container is used.
         bold_prefix (bool): If True, bolds the text preceding a separator (": "
             or " - ") or the entire line if no separator is found. Defaults to
@@ -204,7 +209,7 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
     run = title_p.add_run(t("global_report_cover_title", locale=doc_lang))
     run.font.size = Pt(34)
     run.font.name = "Georgia"
-    run.font.color.rgb = RGBColor(0, 114, 188)
+    run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_PRIMARY)
     run.bold = False
 
     # Reduces the vertical spacing between the report title and client name paragraphs to achieve a more compact and visually integrated header block.
@@ -224,7 +229,7 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
     version_run = version_p.add_run(v_text)
     version_run.font.size = Pt(14)
     version_run.font.name = "Arial"
-    version_run.font.color.rgb = RGBColor(127, 127, 127)
+    version_run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     # A 150-point vertical spacer is applied to anchor the legal disclaimer to the bottom margin of the final page, preventing premature page breaks and ensuring consistent document layout.
     add_spacer(doc, 150)
@@ -248,7 +253,7 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
     disclaimer_title_run = disclaimer_p1.add_run(t("legal_notice_confidentiality", locale=doc_lang) + " ")
     disclaimer_title_run.font.size = Pt(8)
     disclaimer_title_run.font.name = "Arial"
-    disclaimer_title_run.font.color.rgb = RGBColor(127, 127, 127)
+    disclaimer_title_run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
     disclaimer_title_run.bold = True
 
     if disclaimer_raw:
@@ -268,13 +273,13 @@ def render_cover(doc, payload: GlobalReportPayload, doc_lang: str) -> Any:
                 r = p_next.add_run(p_text_fmt)
             r.font.size = Pt(8)
             r.font.name = "Arial"
-            r.font.color.rgb = RGBColor(127, 127, 127)
+            r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
     else:
         p1_text = t("global_disclaimer_p1", locale=doc_lang, company=company)
         r1 = disclaimer_p1.add_run(p1_text)
         r1.font.size = Pt(8)
         r1.font.name = "Arial"
-        r1.font.color.rgb = RGBColor(127, 127, 127)
+        r1.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     doc.add_page_break()
 
@@ -333,12 +338,12 @@ def render_global_toc(doc: Document, doc_lang: str, scope: str | None = None) ->
         r_title = p.add_run(title_text)
         r_title.font.name = "Arial"
         r_title.font.size = Pt(10.5)
-        r_title.font.color.rgb = RGBColor(46, 64, 77)
+        r_title.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
         r_dots = p.add_run(f"  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  {page_hint}")
         r_dots.font.name = "Arial"
         r_dots.font.size = Pt(9.5)
-        r_dots.font.color.rgb = RGBColor(127, 127, 127)
+        r_dots.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     add_toc(doc)
     set_update_fields(doc)
@@ -370,25 +375,25 @@ def render_executive_callout(
         "legal": {
             "border": "C00000",
             "fill": "FFF5F5",
-            "title_color": RGBColor(192, 0, 0),
+            "title_color": DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.STATUS_CRITICAL),
             "prefix_key": "callout_legal_prefix",
         },
         "factory": {
             "border": "0072BC",
             "fill": "F2F6FA",
-            "title_color": RGBColor(0, 114, 188),
+            "title_color": DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_PRIMARY),
             "prefix_key": "callout_factory_prefix",
         },
         "decision": {
             "border": "7030A0",
             "fill": "F9F5FF",
-            "title_color": RGBColor(112, 48, 160),
+            "title_color": DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_ACCENT),
             "prefix_key": "callout_decision_prefix",
         },
         "strategic": {
             "border": "1F497D",
             "fill": "F2F4F7",
-            "title_color": RGBColor(31, 73, 125),
+            "title_color": DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_SECONDARY),
             "prefix_key": "callout_strategic_prefix",
         },
     }
@@ -432,7 +437,7 @@ def render_executive_callout(
     )
     r_msg.font.name = "Arial"
     r_msg.font.size = Pt(9.5)
-    r_msg.font.color.rgb = RGBColor(46, 64, 77)
+    r_msg.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
     if callout.key_metric:
         p_metric = cell.add_paragraph()
@@ -447,7 +452,7 @@ def render_executive_callout(
         r_met = p_metric.add_run(callout.key_metric)
         r_met.bold = True
         r_met.font.size = Pt(9.0)
-        r_met.font.color.rgb = RGBColor(46, 64, 77)
+        r_met.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
     autofit_table_to_contents(table)
     add_spacer(doc, 10)
@@ -462,7 +467,7 @@ def render_board_memo(
     """Renders a self-contained 1-page Board Memo table for Executive Committee / Board."""
     from assessment_engine.infrastructure.localization import t
 
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
     add_heading_paragraph(doc, t("board_memo_title", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
@@ -483,7 +488,7 @@ def render_board_memo(
         )
         shade_cell(table.rows[0].cells[i], "0072BC")
         for r in table.rows[0].cells[i].paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     color_map = {"E06666": "F4CCCC", "FFD966": "FFF2CC", "93C47D": "D9EAD3"}
 
@@ -561,7 +566,7 @@ def render_board_memo(
             )
             shade_cell(strat_table.rows[0].cells[i], "0072BC")
             for r in strat_table.rows[0].cells[i].paragraphs[0].runs:
-                r.font.color.rgb = RGBColor(255, 255, 255)
+                r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
         layers_keys = [
             ("layer_1_cash_inefficiency", "F4CCCC"),
@@ -609,7 +614,7 @@ def render_board_memo(
             run_roi_lbl = p_roi.add_run(roi_data.get("title", t("roi_statement_label", locale=doc_lang)))
             run_roi_lbl.bold = True
             run_roi_lbl.font.size = Pt(9.5)
-            run_roi_lbl.font.color.rgb = RGBColor(0, 114, 188)
+            run_roi_lbl.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.BRAND_PRIMARY)
 
             run_roi = p_roi.add_run(roi_data.get("body", ""))
             run_roi.font.size = Pt(9.5)
@@ -626,7 +631,7 @@ def render_cross_tower_nexus(
     client_name: str = "",
 ) -> Any:
     """Renders the Cross-Tower Nexus dependency matrix."""
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
     add_heading_paragraph(
         doc, "4. Matriz de Interdependencias Cruzadas (Cross-Tower Nexus)", level=1
     )
@@ -655,7 +660,7 @@ def render_cross_tower_nexus(
         )
         shade_cell(table.rows[0].cells[i], "0072BC")
         for r in table.rows[0].cells[i].paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     for dep in nexus.dependencies:
         row = table.add_row()
@@ -744,7 +749,7 @@ def render_executive_summary(
     Returns:
         None
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)  #
     add_heading_paragraph(doc, t("global_ch1_exec_summary", locale=doc_lang), level=1)
     table = doc.add_table(rows=1, cols=2)
     table.alignment = WD_TABLE_ALIGNMENT.LEFT
@@ -779,7 +784,7 @@ def render_executive_summary(
     )
     shade_cell(score_cell, "0072BC")
     for r in score_cell.paragraphs[0].runs:
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     desc_cell = table.rows[0].cells[1]
     desc_cell.width = Inches(3.9)
@@ -842,7 +847,7 @@ def render_executive_summary(
     )
     shade_cell(header_cell, "0072BC")
     for r in header_cell.paragraphs[0].runs:
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     impacts = [sanitize_client_name(i, client_name, doc_lang=doc_lang) for i in data.key_business_impacts]
     for impact in impacts:
@@ -883,7 +888,7 @@ def render_burning_platform(
     doc, platform_risks: list[BurningPlatformItem], doc_lang: str, client_name: str = ""
 ):
     r"""{'docstring': "Renders a section detailing systemic threats into a `python-docx` document.\n\nThis function appends a titled section for systemic threats to an existing\n`python-docx` document. For each threat provided in `platform_risks`, it\nconstructs a dedicated, formatted three-row table. The table's first row\nserves as a header with the threat's theme, the second row details the\nassociated business risk, and the third row enumerates the root causes as\na bulleted list. All text content is sanitized to process special codes\nand substitute placeholders with the specified client's name.\n\nArgs:\n    doc (docx.document.Document): The `python-docx` Document object to which\n        the content will be appended.\n    platform_risks (list[BurningPlatformItem]): A list of objects, each\n        representing a systemic threat. Each object must expose `theme` (str),\n        `business_risk` (str), and `root_causes` (list[str]) attributes.\n    client_name (str): The name of the client, used for substituting\n        placeholders in the text. Defaults to an empty string.\n\nRaises:\n    AttributeError: If an object in the `platform_risks` list lacks the\n        required `theme`, `business_risk`, or `root_causes` attributes."}."""
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)  #
     add_heading_paragraph(doc, t("global_ch2_threats", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
@@ -907,7 +912,7 @@ def render_burning_platform(
         )
         shade_cell(h_cell, "0072BC")
         for r in h_cell.paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
         #
         r_cell = table.rows[1].cells[0]
@@ -954,7 +959,7 @@ def render_tower_bottom_lines(
     """Populates a Word document with a technology area diagnosis table."""
     from assessment_engine.infrastructure.localization import t
 
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
     title = t("section_domain_assessment", locale=doc_lang)
     add_heading_paragraph(doc, title, level=1)
     table = doc.add_table(rows=1, cols=3)
@@ -974,7 +979,7 @@ def render_tower_bottom_lines(
         )
         shade_cell(table.rows[0].cells[i], "0072BC")
         for r in table.rows[0].cells[i].paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
     color_map = {"E06666": "F4CCCC", "FFD966": "FFF2CC", "93C47D": "D9EAD3"}
     for item in heatmap:
         # The color value is explicitly recalculated here to enforce strict document-wide consistency, overriding any inherited or default template styles.
@@ -1044,7 +1049,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, doc_lang: str, client_n
         AttributeError: If the `vision` object is missing one or more of the
             required attributes.
     """
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)  #
     add_heading_paragraph(doc, t("global_ch5_tobe", locale=doc_lang), level=1)
 
     table = doc.add_table(rows=2, cols=1)
@@ -1061,7 +1066,7 @@ def render_target_vision(doc, vision: TargetVisionDraft, doc_lang: str, client_n
     )
     shade_cell(v_cell_header, "0072BC")
     for r in v_cell_header.paragraphs[0].runs:
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     #
     v_cell_body = table.rows[1].cells[0]
@@ -1108,7 +1113,7 @@ def render_execution_roadmap(
     client_name="",
 ):
     """Renders the execution roadmap section into a Word document. This function constructs the "Implementation Plan and Time Horizons" section of the report. It first generates a table listing the defined transversal programs and their descriptions. It then iterates through the time horizons specified in the roadmap data (e.g., "Quick Wins", "Year 1"). For each horizon that contains initiatives, a detailed table is created, listing each initiative's associated program, title, business case, start month, and duration. Args: doc (docx.document.Document): The python-docx Document object to be modified. roadmap (ExecutionRoadmapDraft): A data object containing the structured roadmap information, including programs and initiatives per time horizon. visuals (dict): This parameter is currently unused. client_dir (str): This parameter is currently unused. client_name (str): The client's name, used for placeholder substitution in text content. Defaults to an empty string. Returns: None: The function modifies the `doc` object in place."""
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)  #
     add_heading_paragraph(
         doc, t("global_ch6_roadmap_title", locale=doc_lang), level=1
     )
@@ -1131,7 +1136,7 @@ def render_execution_roadmap(
     )
     shade_cell(p_cell_header, "0072BC")
     for r in p_cell_header.paragraphs[0].runs:
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     #
     programs = roadmap.programs
@@ -1196,7 +1201,7 @@ def render_execution_roadmap(
             )
             shade_cell(table.rows[0].cells[i], "0072BC")
             for r in table.rows[0].cells[i].paragraphs[0].runs:
-                r.font.color.rgb = RGBColor(255, 255, 255)
+                r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
         for init in initiatives:
             row = table.add_row()
             set_cell_text(
@@ -1242,7 +1247,7 @@ def render_executive_decisions(
     doc, decisions: ExecutiveDecisionsDraft, doc_lang: str, client_name=""
 ) -> Any:
     r"""{'docstring': "Populates a `python-docx` document with a formatted executive decisions section.\n\nModifies the provided document object by adding a main heading, a descriptive\nparagraph, and a table listing priority decisions. The table includes columns\nfor the decision's scope, the required action, and the impact of a delay.\nCell text is sanitized based on the provided client name.\n\nArgs:\n    doc (docx.document.Document): The document object to be modified.\n    decisions (ExecutiveDecisionsDraft): A data object containing the list of\n        executive decisions to render.\n    client_name (str): The name of the client, used to sanitize text content\n        in the table.\n\nReturns:\n    None: The function modifies the `doc` object in-place."}."""
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)  #
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)  #
     add_heading_paragraph(doc, t("global_ch7_decisions", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
@@ -1262,7 +1267,7 @@ def render_executive_decisions(
         )
         shade_cell(table.rows[0].cells[i], "0072BC")
         for r in table.rows[0].cells[i].paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
     for d in decisions.immediate_decisions:
         row = table.add_row()
         set_cell_text(
@@ -1296,7 +1301,7 @@ def render_tobe_domain_architectures(
     """Renders the comprehensive Target State Architecture for each technological domain, matching FNMT Volume 2."""
     from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
 
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
     add_heading_paragraph(doc, t("global_tobe_domain_architectures_heading", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
@@ -1347,8 +1352,16 @@ def render_tobe_domain_architectures(
             add_smart_bullet_list(doc, [sanitize_client_name(p, client_name, doc_lang=doc_lang) for p in principles], color_rgb=BASE_TEXT_COLOR)
 
         # 2. Pillars Target Architecture (FNMT Schema)
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
         for p_idx, pillar in enumerate(bp_data.get("pillars_analysis", []), start=1):
-            p_name = pillar.get("pilar_name", f"Pillar {p_idx}")
+            raw_pname = pillar.get("pillar_name") or pillar.get("pilar_name", f"Pillar {p_idx}")
+            p_name = resolver.resolve_pillar_by_any_reference(
+                pillar.get("pillar_id") or pillar.get("pilar_id") or raw_pname,
+                default=raw_pname,
+                locale=doc_lang,
+            )
             tobe = pillar.get("target_architecture_tobe", {})
             if not isinstance(tobe, dict):
                 tobe = {}
@@ -1426,7 +1439,7 @@ def render_todo_detailed_project_charters(
     """Renders all detailed project charters with SMART goals, WBS, CapEx/OpEx, matching FNMT Volume 3."""
     from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
 
-    BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+    BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
     add_heading_paragraph(doc, t("global_todo_project_catalog_heading", locale=doc_lang), level=1)
     add_body_paragraph(
         doc,
@@ -1558,7 +1571,7 @@ def create_page_number_footer(section, doc_lang: str) -> Any:
         run = p.add_run()
         run.font.size = Pt(9)
         run.font.name = "Arial"
-        run.font.color.rgb = RGBColor(127, 127, 127)
+        run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
         fldChar1 = OxmlElement("w:fldChar")
         fldChar1.set(ns.qn("w:fldCharType"), "begin")
@@ -1585,14 +1598,14 @@ def create_page_number_footer(section, doc_lang: str) -> Any:
     r = paragraph.add_run(t("page_number_label", locale=doc_lang) + " ")
     r.font.size = Pt(9)
     r.font.name = "Arial"
-    r.font.color.rgb = RGBColor(127, 127, 127)
+    r.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     add_field(paragraph, "PAGE")
 
     r2 = paragraph.add_run(" " + t("page_of_label", locale=doc_lang) + " ")
     r2.font.size = Pt(9)
     r2.font.name = "Arial"
-    r2.font.color.rgb = RGBColor(127, 127, 127)
+    r2.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     add_field(paragraph, "NUMPAGES")
 

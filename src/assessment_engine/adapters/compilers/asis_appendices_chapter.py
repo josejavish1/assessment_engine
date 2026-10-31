@@ -8,8 +8,10 @@ from typing import Any
 
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Cm, Inches, Pt, RGBColor
+from docx.shared import Cm, Inches
 
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 from assessment_engine.infrastructure.docx_render_utils import (
     autofit_table_to_contents,
     finalize_table,
@@ -139,14 +141,15 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     source_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     finalize_table(source_table)
 
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
     for i, h_txt in enumerate(vocab["appendix_c_headers"]):
         set_cell_text_custom(
             source_table.rows[0].cells[i],
             h_txt,
-            bold=True,
-            font_size=10,
-            color_rgb=RGBColor(255, 255, 255),
             align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=resolver,
         )
         shade_cell(source_table.rows[0].cells[i], p_color_hex)
 
@@ -296,10 +299,10 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
                 set_cell_text_custom(
                     gloss_table.rows[0].cells[i],
                     h_txt,
-                    bold=True,
-                    font_size=10,
-                    color_rgb=RGBColor(255, 255, 255),
                     align=WD_ALIGN_PARAGRAPH.CENTER,
+                    typography_role=TypographyRole.TABLE_HEADER,
+                    color_role=SemanticColorRole.TEXT_INVERSE,
+                    resolver=resolver,
                 )
                 shade_cell(gloss_table.rows[0].cells[i], p_color_hex)
 

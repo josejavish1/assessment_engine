@@ -3,6 +3,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -203,3 +204,34 @@ def resolve_global_report_template_path() -> Path:
 def resolve_tower_annex_template_path() -> Path:
     """Resolve the absolute path to the Tower Annex template file."""
     return ROOT / "templates" / "docx" / TOWER_ANNEX_TEMPLATE_NAME
+
+
+def resolve_assessment_id(explicit_id: str | None = None) -> str:
+    """Resolve active assessment identifier dynamically from input, environment, or default."""
+    if explicit_id and str(explicit_id).strip():
+        return str(explicit_id).strip()
+    return os.environ.get("ASSESSMENT_ID", "default_assessment").strip() or "default_assessment"
+
+
+def resolve_assessment_period(explicit_period: str | None = None) -> str:
+    """Resolve active assessment period dynamically from input, environment, or UTC YYYYMM."""
+    if explicit_period and str(explicit_period).strip():
+        return str(explicit_period).strip()
+    env_period = os.environ.get("ASSESSMENT_PERIOD")
+    if env_period and env_period.strip():
+        return env_period.strip()
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).strftime("%Y%m")
+
+
+def resolve_artifact_registry(
+    client_id: str | None = None,
+    assessment_id: str | None = None,
+) -> Any:
+    """Return configured ArtifactRegistry instance for client and assessment."""
+    from assessment_engine.infrastructure.artifacts import ArtifactRegistry
+
+    c_id = client_id or resolve_client_id()
+    a_id = resolve_assessment_id(assessment_id)
+    storage_root = resolve_working_dir()
+    return ArtifactRegistry(base_storage_dir=storage_root, tenant_id=c_id, assessment_id=a_id)

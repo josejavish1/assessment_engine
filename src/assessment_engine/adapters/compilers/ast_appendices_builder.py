@@ -246,12 +246,22 @@ def build_appendix_d_methodology(
     if not pillars_list:
         pillars_list = blueprint_data.get("pillars_analysis", [])
 
+    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    resolver = get_taxonomy_resolver()
+
     for p in pillars_list:
-        p_name = p.get("pillar_name", p.get("pilar_name", "Pilar"))
+        raw_pname = p.get("pillar_name", p.get("pilar_name", "Pillar"))
+        p_name = resolver.resolve_pillar_by_any_reference(
+            p.get("pillar_id") or p.get("pilar_id") or raw_pname,
+            default=raw_pname,
+            locale=meta_lang,
+        )
         p_weight = int(p.get("weight_pct", p.get("weight", 20)))
         kpi_names = []
         for kpi in p.get("kpis", []):
-            k_name = kpi.get("kpi_name", "KPI").strip()
+            raw_kname = kpi.get("kpi_name", "KPI").strip()
+            loc_kname = resolver.resolve_capability_name(raw_kname, default=raw_kname, locale=meta_lang)
+            k_name = loc_kname
             if k_name and not k_name.isupper() and len(k_name) > 4:
                 k_name = k_name[0].lower() + k_name[1:]
             kpi_names.append(k_name)

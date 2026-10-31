@@ -466,7 +466,7 @@
     "reg_telecom_media": "los marcos regulatorios sectoriales de Telecomunicaciones, Media y soberanía de datos",
     "reg_healthcare": "las regulaciones de protección de datos de salud y privacidad (v.g. HIPAA o marcos locales equivalentes)",
     "reg_general_privacy": "los marcos generales de protección de datos y privacidad (v.g. RGPD o legislación sectorial estándar)",
-    "conclusions_chapter_title": "Conclusiones y Coste de Inacción",
+    "conclusions_chapter_title": "Conclusiones y Marco de Decisión Estratégica",
     "conclusions_diagnosis_title": "Conclusiones del Diagnóstico de Situación",
     "cost_of_inaction_title": "Coste de Inacción (Cost of Inaction - CoI)",
     "page_prefix": "Página ",
@@ -493,7 +493,15 @@
     "appendix_fair_decision_metrics_title": "Definición de Métricas Decisionales de Exposición Financiera",
     "table_header_maturity_level": "Nivel de Madurez",
     "table_header_pillar_capacity": "Pilar / Capacidad Tecnológica Evaluada",
-    "table_header_score_asis": "Score AS-IS"
+    "table_header_score_asis": "Score AS-IS",
+    "decision_matrix_title": "Matriz de Decisión: Inacción frente a Modernización",
+    "appendix_glossary_title": "Apéndice A: Glosario de Términos y Abreviaturas Técnicas",
+    "appendix_glossary_intro": "A continuación se recopilan y definen los acrónimos, términos técnicos y estándares operacionales citados a lo largo de este informe de diagnóstico:",
+    "calib_label_critical_blocker": "Factor Bloqueante Crítico",
+    "calib_label_operational_bottleneck": "Cuello de Botella Operativo",
+    "calib_label_optimization_gap": "Brecha de Optimización Residual",
+    "calib_label_unlocking_lever": "Palanca de Desbloqueo",
+    "calib_lever_default_action": "Modernización y estandarización técnica del dominio"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -953,7 +961,7 @@
     "reg_telecom_media": "telecommunications and electronic media sector regulations and national data sovereignty mandates",
     "reg_healthcare": "health data protection and patient safety regulations (e.g., HIPAA, EHDS, or local equivalents)",
     "reg_general_privacy": "general data protection and privacy statutory frameworks (e.g., GDPR, CCPA, or standard sector legislation)",
-    "conclusions_chapter_title": "Conclusions and Cost of Inaction",
+    "conclusions_chapter_title": "Strategic Conclusions and Decision Framework",
     "conclusions_diagnosis_title": "Synthesis of Current State Assessment",
     "cost_of_inaction_title": "Cost of Inaction (CoI) Exposure",
     "page_prefix": "Page ",
@@ -980,7 +988,15 @@
     "appendix_fair_decision_metrics_title": "Financial Exposure Decision Metrics Definition",
     "table_header_maturity_level": "Maturity Level",
     "table_header_pillar_capacity": "Pillar / Evaluated Technical Capability",
-    "table_header_score_asis": "AS-IS Score"
+    "table_header_score_asis": "AS-IS Score",
+    "decision_matrix_title": "Decision Matrix: Inaction vs. Modernization",
+    "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:",
+    "calib_label_critical_blocker": "Critical Blocker Factor",
+    "calib_label_operational_bottleneck": "Operational Bottleneck",
+    "calib_label_optimization_gap": "Residual Optimization Gap",
+    "calib_label_unlocking_lever": "Unlocking Transformation Lever",
+    "calib_lever_default_action": "Technical modernization and domain standardization"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -1440,7 +1456,7 @@
     "reg_telecom_media": "telecommunications and electronic media sector regulations and national data sovereignty mandates",
     "reg_healthcare": "health data protection and patient safety regulations (e.g., HIPAA, EHDS, or local equivalents)",
     "reg_general_privacy": "general data protection and privacy statutory frameworks (e.g., GDPR, CCPA, or standard sector legislation)",
-    "conclusions_chapter_title": "Conclusions and Cost of Inaction",
+    "conclusions_chapter_title": "Strategic Conclusions and Decision Framework",
     "conclusions_diagnosis_title": "Synthesis of Current State Assessment",
     "cost_of_inaction_title": "Cost of Inaction (CoI) Exposure",
     "page_prefix": "Page ",
@@ -1467,7 +1483,10 @@
     "appendix_fair_decision_metrics_title": "Financial Exposure Decision Metrics Definition",
     "table_header_maturity_level": "Nível de Maturidade",
     "table_header_pillar_capacity": "Pilar / Capacidade Avaliada",
-    "table_header_score_asis": "AS-IS Score"
+    "table_header_score_asis": "AS-IS Score",
+    "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
+    "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -1927,7 +1946,7 @@
     "reg_telecom_media": "telecommunications and electronic media sector regulations and national data sovereignty mandates",
     "reg_healthcare": "health data protection and patient safety regulations (e.g., HIPAA, EHDS, or local equivalents)",
     "reg_general_privacy": "general data protection and privacy statutory frameworks (e.g., GDPR, CCPA, or standard sector legislation)",
-    "conclusions_chapter_title": "Conclusions and Cost of Inaction",
+    "conclusions_chapter_title": "Strategic Conclusions and Decision Framework",
     "conclusions_diagnosis_title": "Synthesis of Current State Assessment",
     "cost_of_inaction_title": "Cost of Inaction (CoI) Exposure",
     "page_prefix": "Page ",
@@ -1954,7 +1973,10 @@
     "appendix_fair_decision_metrics_title": "Financial Exposure Decision Metrics Definition",
     "table_header_maturity_level": "Maturity Level",
     "table_header_pillar_capacity": "Pillar / Evaluated Technical Capability",
-    "table_header_score_asis": "AS-IS Score"
+    "table_header_score_asis": "AS-IS Score",
+    "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
+    "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -2414,7 +2436,7 @@
     "reg_telecom_media": "telecommunications and electronic media sector regulations and national data sovereignty mandates",
     "reg_healthcare": "health data protection and patient safety regulations (e.g., HIPAA, EHDS, or local equivalents)",
     "reg_general_privacy": "general data protection and privacy statutory frameworks (e.g., GDPR, CCPA, or standard sector legislation)",
-    "conclusions_chapter_title": "Conclusions and Cost of Inaction",
+    "conclusions_chapter_title": "Strategic Conclusions and Decision Framework",
     "conclusions_diagnosis_title": "Synthesis of Current State Assessment",
     "cost_of_inaction_title": "Cost of Inaction (CoI) Exposure",
     "page_prefix": "Page ",
@@ -2441,7 +2463,10 @@
     "appendix_fair_decision_metrics_title": "Financial Exposure Decision Metrics Definition",
     "table_header_maturity_level": "Maturity Level",
     "table_header_pillar_capacity": "Pillar / Evaluated Technical Capability",
-    "table_header_score_asis": "AS-IS Score"
+    "table_header_score_asis": "AS-IS Score",
+    "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
+    "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -2901,7 +2926,7 @@
     "reg_telecom_media": "telecommunications and electronic media sector regulations and national data sovereignty mandates",
     "reg_healthcare": "health data protection and patient safety regulations (e.g., HIPAA, EHDS, or local equivalents)",
     "reg_general_privacy": "general data protection and privacy statutory frameworks (e.g., GDPR, CCPA, or standard sector legislation)",
-    "conclusions_chapter_title": "Conclusions and Cost of Inaction",
+    "conclusions_chapter_title": "Strategic Conclusions and Decision Framework",
     "conclusions_diagnosis_title": "Synthesis of Current State Assessment",
     "cost_of_inaction_title": "Cost of Inaction (CoI) Exposure",
     "page_prefix": "Page ",
@@ -2928,7 +2953,10 @@
     "appendix_fair_decision_metrics_title": "Financial Exposure Decision Metrics Definition",
     "table_header_maturity_level": "Maturity Level",
     "table_header_pillar_capacity": "Pillar / Evaluated Technical Capability",
-    "table_header_score_asis": "AS-IS Score"
+    "table_header_score_asis": "AS-IS Score",
+    "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
+    "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
   },
   "capability_keyword_maps": {
     "es": [
@@ -3207,8 +3235,8 @@
     "date_bracket_tag": "[Fecha]"
   },
   "chapter_01_intro_templates": {
-    "es": "# Objetivo, Alcance y Marco Metodológico\n\n## Objetivos y Alcance\nEste documento técnico anexo detalla el diagnóstico de la situación actual (AS-IS) de la torre tecnológica de **{tower_name}** para la organización **{client_name}**, desarrollado bajo un marco de evaluación ágil (*Fast Assessment*). El propósito principal de este análisis es proporcionar a la dirección de tecnología una radiografía clara, objetiva y priorizada de las capacidades operativas del perímetro evaluado.\n\nEl diagnóstico se enfoca específicamente en lograr tres resultados ejecutivos:\n*   **Identificación de brechas de resiliencia:** Localizar ineficiencias de infraestructura y cuellos de botella que comprometan la continuidad de los servicios de producción.\n*   **Determinación de obsolescencia técnica:** Evaluar el ciclo de vida de los activos tecnológicos y su alineación con los estándares actuales de soporte, seguridad y costes de mantenimiento.\n*   **Priorización racional de inversiones:** Establecer una hoja de ruta de transformación donde cada iniciativa propuesta esté justificada por su capacidad real para mitigar riesgos y mejorar la eficiencia del servicio.\n\nEl alcance técnico de esta evaluación comprende el análisis detallado de los siguientes pilares de capacidad del dominio de **{tower_name}**:\n\n{pillars_list_md}\nLa determinación de la madurez operativa y la postura de riesgo de estos pilares se realiza contrastando las prácticas actuales de **{client_name}** frente a los baselines estándar de la industria del **{industry_name}** y los marcos regulatorios aplicables.\n\n## Marco Metodológico del Diagnóstico\nLa solidez de este análisis radica en un método de **calibración objetiva cruzada**, diseñado para mitigar sesgos de percepción y asegurar que las recomendaciones correspondan a la realidad operativa de la organización. El proceso se desarrolla en tres fases de análisis secuenciales:\n\n1.  **Ingesta de Datos y Contraste de Evidencias:** Se recopila la información base mediante sesiones técnicas estructuradas y el análisis de la arquitectura física y lógica con los equipos especialistas de **{client_name}**. Esta autoevaluación inicial se contrasta y calibra con evidencias documentales de configuración y operación.\n2.  **Análisis de Interdependencias Críticas:** El diagnóstico no evalúa componentes aislados. Se modelan las relaciones de dependencia lógica entre la infraestructura evaluada y el resto de los servicios de la organización, identificando de manera analítica cómo la fragilidad de un componente puede propagar riesgos a toda la cadena de valor de negocio.\n3.  **Modelado Cuantitativo de Riesgos:** Para dotar al informe de rigor financiero, los riesgos técnicos identificados se evalúan utilizando el estándar internacional **OpenFAIR (Factor Analysis of Information Risk)**. Este marco traduce la probabilidad de fallos operativos y su impacto técnico en métricas cuantitativas de exposición económica y operativa, permitiendo fundamentar la urgencia de las acciones correctoras con criterios estrictamente de negocio.\n",
-    "en": "# Objective, Scope, and Methodological Framework\n\n## Objectives and Scope\nThis technical annex document details the current situation diagnostic (AS-IS) of the **{tower_name}** technology tower for **{client_name}**, developed within a fast-track assessment framework (*Fast Assessment*). The primary purpose of this analysis is to provide the technology leadership with a clear, objective, and prioritized overview of the operational capabilities of the evaluated perimeter.\n\nThe diagnostic specifically focuses on achieving three executive outcomes:\n*   **Identification of resilience gaps:** Pinpoint infrastructure bottlenecks and inefficiencies compromising production service continuity.\n*   **Technical obsolescence assessment:** Evaluate technology asset lifecycles and alignment with modern security, support, and maintenance baselines.\n*   **Rational investment prioritization:** Formulate a prioritized transformation roadmap where each proposed initiative is substantiated by its capacity to compress operational risk and elevate delivery velocity.\n\nThe technical perimeter of this assessment encompasses detailed analysis across the following capability pillars for **{tower_name}**:\n\n{pillars_list_md}\nOperational maturity and risk posture are determined by benchmarking **{client_name}**'s observed baseline against **{industry_name}** industry standards and applicable statutory frameworks.\n\n## Methodological Framework\nThe analytical integrity of this assessment is grounded in an objective **cross-calibration methodology**, engineered to eliminate perceptual bias and ensure findings reflect ground-truth reality across three sequential phases:\n\n1.  **Data Ingestion and Evidence Grounding:** Baseline evidence is gathered through structured technical workshops and physical/logical architecture inspections with specialist teams from **{client_name}**, verified against configuration and telemetry artifacts.\n2.  **Critical Interdependency Analysis:** The assessment models structural dependencies between evaluated infrastructure components and dependent business services, mapping cascade failure topologies.\n3.  **Quantitative Risk Modeling:** Identified technical deficiencies are evaluated via the international **Open FAIR™ (Factor Analysis of Information Risk)** standard, translating threat event frequency and loss magnitude into defensible financial metrics.\n"
+    "es": "# Objetivo, Alcance y Marco Metodológico\n\n## Objetivos y Alcance\nEste documento técnico anexo detalla el diagnóstico de la situación actual (AS-IS) de la torre tecnológica de **{tower_name}** para la organización **{client_name}**, desarrollado bajo un marco de evaluación ágil (*Fast Assessment*). El propósito principal de este análisis es proporcionar a la dirección de tecnología una radiografía clara, objetiva y priorizada de las capacidades operativas del perímetro evaluado.\n\nEl diagnóstico se enfoca específicamente en lograr tres resultados ejecutivos:\n*   **Identificación de brechas de resiliencia:** Localizar ineficiencias de infraestructura y cuellos de botella que comprometan la continuidad de los servicios de producción.\n*   **Determinación de obsolescencia técnica:** Evaluar el ciclo de vida de los activos tecnológicos y su alineación con los estándares actuales de soporte, seguridad y costes de mantenimiento.\n*   **Priorización racional de inversiones:** Establecer una hoja de ruta de transformación donde cada iniciativa propuesta esté justificada por su capacidad real para mitigar riesgos y mejorar la eficiencia del servicio.\n\n## Marco Metodológico del Diagnóstico\nLa solidez de este análisis radica en un método de **calibración objetiva cruzada**, diseñado para mitigar sesgos de percepción y asegurar que las recomendaciones correspondan a la realidad operativa de la organización. El proceso se desarrolla en tres fases de análisis secuenciales:\n\n1.  **Ingesta de Datos y Descubrimiento Técnico:** Se recopila la información base mediante sesiones estructuradas de descubrimiento y entrevistas de arquitectura con los equipos especialistas y responsables técnicos de **{client_name}**. Este diagnóstico consolida la información autodeclarada por la organización, permitiendo una radiografía ágil de la plataforma y estableciendo una línea base cualitativa que identifica riesgos operativos y dependencias críticas previo a auditorías forenses profundas.\n2.  **Análisis de Interdependencias Críticas:** El diagnóstico no evalúa componentes aislados. Se modelan las relaciones de dependencia lógica entre la infraestructura evaluada y el resto de los servicios de la organización, identificando de manera analítica cómo la fragilidad de un componente puede propagar riesgos a toda la cadena de valor de negocio.\n3.  **Modelado Cuantitativo de Riesgos:** Para dotar al informe de rigor financiero, los riesgos técnicos identificados se evalúan utilizando el estándar internacional **OpenFAIR (Factor Analysis of Information Risk)**. Este marco traduce la probabilidad de fallos operativos y su impacto técnico en métricas cuantitativas de exposición económica y operativa, permitiendo fundamentar la urgencia de las acciones correctoras con criterios estrictamente de negocio.\n",
+    "en": "# Objective, Scope, and Methodological Framework\n\n## Objectives and Scope\nThis technical annex document details the current situation diagnostic (AS-IS) of the **{tower_name}** technology tower for **{client_name}**, developed within a fast-track assessment framework (*Fast Assessment*). The primary purpose of this analysis is to provide the technology leadership with a clear, objective, and prioritized overview of the operational capabilities of the evaluated perimeter.\n\nThe diagnostic specifically focuses on achieving three executive outcomes:\n*   **Identification of resilience gaps:** Pinpoint infrastructure bottlenecks and inefficiencies compromising production service continuity.\n*   **Technical obsolescence assessment:** Evaluate technology asset lifecycles and alignment with modern security, support, and maintenance baselines.\n*   **Rational investment prioritization:** Formulate a prioritized transformation roadmap where each proposed initiative is substantiated by its capacity to compress operational risk and elevate delivery velocity.\n\n## Methodological Framework\nThe analytical integrity of this assessment is grounded in an objective **cross-calibration methodology**, engineered to eliminate perceptual bias and ensure findings reflect ground-truth reality across three sequential phases:\n\n1.  **Data Ingestion and Technical Discovery:** Baseline information is gathered through structured discovery sessions and architecture interviews with specialist engineering teams from **{client_name}**. This fast-track diagnostic synthesizes self-declared operational inputs from the organization, establishing an agile qualitative baseline to uncover immediate operational risks and critical dependencies ahead of deeper forensic audits.\n2.  **Critical Interdependency Analysis:** The assessment models structural dependencies between evaluated infrastructure components and dependent business services, mapping cascade failure topologies.\n3.  **Quantitative Risk Modeling:** Identified technical deficiencies are evaluated via the international **Open FAIR™ (Factor Analysis of Information Risk)** standard, translating threat event frequency and loss magnitude into defensible financial metrics.\n"
   },
   "pillar_bullet_template": {
     "es": {
@@ -3241,29 +3269,29 @@
     }
   },
   "tower_maturity_executive_paragraph": {
-    "es": "La torre presenta un perfil de madurez cuantitativo de **{formatted_score} sobre 5,00** (Nivel **'{exact_band}'**), evidenciando procesos operativos formalizados pero con una dispersión de prácticas entre sus sub-dominios. En términos económicos, esta falta de cohesión operativa se traduce en una fuga de capital medida en una **Expectativa de Pérdida Anualizada (ALE) de {true_ale_str}**, provocada por la acumulación de dependencias manuales, silos de configuración y la ausencia de automatizaciones avanzadas de recuperación. En un escenario de disrupción severa o estrés acumulado en el percentil 90 (P90), la exposición de la plataforma escalaría de forma abrupta hasta los **{formatted_p90} {currency}**, con una pérdida máxima estimada de hasta **{formatted_max} {currency}** ante eventos extremos de indisponibilidad concurrentes.",
-    "en": "The tower demonstrates a quantitative maturity profile of **{formatted_score} out of 5.00** (Level **'{exact_band}'**), exhibiting formalized operational processes with capability variance across sub-domains. In financial terms, this variance drives an annual economic drag measured by an **Annual Loss Exposure (ALE) of {currency}{true_ale_str}**, resulting from accumulated manual toil, configuration drift, and unmitigated recovery dependencies. Under a severe 90th percentile stress scenario (P90), platform exposure surges to **{currency}{formatted_p90}**, with an estimated maximum potential tail loss of up to **{currency}{formatted_max}** under extreme concurrent outage conditions."
+    "es": "La evaluación técnica sitúa la madurez de la torre en **{formatted_score} sobre 5,00** (Nivel **'{exact_band}'**), lo que refleja una infraestructura con procesos operativos funcionales y establecidos, pero carente de telemetría continua en tiempo real y automatizaciones avanzadas de recuperación.\n\nEsta deuda técnica genera dos niveles de exposición económica claramente diferenciados:\n\n* **Ineficiencia Operativa Ordinaria (ALE: {true_ale_str}/año):** Representa el coste anual recurrente que la organización absorbe de forma continua por mantenimiento manual, sobrecoste energético e incidencias operativas menores.\n* **Impacto ante Siniestro Mayor (Escenario P90: {formatted_p90} {currency}):** Cuantifica el impacto directo de un único evento de fallo catastrófico en horario punta (p. ej., caída simultánea de servicios, interrupción de cargas críticas o parálisis operativa de producción).\n\nLa pérdida máxima teórica ante un escenario extremo de indisponibilidad prolongada se estima en **{formatted_max} {currency}**.",
+    "en": "The technical assessment situates tower maturity at **{formatted_score} out of 5.00** (Level **'{exact_band}'**), reflecting an operational environment with established procedures, constrained by the absence of real-time telemetry and advanced automated recovery orchestration.\n\nThis technical debt generates two clearly differentiated levels of economic exposure:\n\n* **Baseline Operational Inefficiency (ALE: {currency}{true_ale_str}/year):** Quantifies the recurring annual friction absorbed continuously through manual maintenance overhead, energy inefficiencies, and localized operational interruptions.\n* **Severe Crisis Scenario Impact (P90: {currency}{formatted_p90}):** Measures the direct business impact of a single catastrophic failure event during peak operational demand (e.g., simultaneous service outage, critical workload disruption, or plant production halt).\n\nThe extreme theoretical maximum loss under prolonged total platform unavailability is estimated at **{currency}{formatted_max}**."
   },
   "conclusion_tobe_templates": {
     "es": {
-      "intro": "La calibración de los rangos de Magnitud de Pérdida (LM) para {client_name} se realiza bajo el criterio riguroso de operador de {industry_name}. Bajo esta base de calibración, se identifican las siguientes iniciativas prioritarias y grupos estratégicos críticos, cuya ejecución inmediata desbloqueará la resiliencia operativa y mitigará la exposición financiera acumulada de la organización:\n",
+      "intro": "La cuantificación del impacto por interrupción operativa para {client_name} se modela bajo los baselines técnicos de {industry_name}. Sobre esta base de criticidad técnica y de servicio, se priorizan las siguientes iniciativas estratégicas cuya ejecución inmediata mitigará los puntos únicos de fallo y reforzará la resiliencia de la plataforma:\n",
       "coverage_tiers": {
         "p80": "la práctica totalidad de la exposición financiera al riesgo identificada",
         "p65": "más de las dos terceras partes de la exposición financiera al riesgo identificada",
         "p40": "aproximadamente la mitad de la exposición financiera al riesgo identificada",
         "default": "una parte muy relevante de la exposición financiera al riesgo identificada"
       },
-      "value_prop_tail": "Esta iniciativa mitiga de forma consolidada **{formatted_g_ale} {currency}** ({pct:.1f}% del ALE total) de exposición financiera latente."
+      "value_prop_tail": "Esta iniciativa neutraliza un riesgo de parada y sobrecoste operativo estimado en **{formatted_g_ale} {currency}** (representando el {pct:.1f}% del impacto anualizado de la torre)."
     },
     "en": {
-      "intro": "Calibration of Loss Magnitude (LM) ranges for {client_name} reflects rigorous {industry_name} operating baselines. On this calibrated foundation, the following strategic programs are prioritized to unlock operational resilience and mitigate aggregated financial exposure:\n",
+      "intro": "The quantification of operational disruption impact for {client_name} is modeled against {industry_name} technical baselines. Based on this service criticality, the following strategic engineering programs are prioritized to eliminate single points of failure and reinforce platform resilience:\n",
       "coverage_tiers": {
         "p80": "virtually the totality of identified financial risk exposure",
         "p65": "more than two-thirds of identified financial risk exposure",
         "p40": "approximately half of identified financial risk exposure",
         "default": "a highly significant portion of identified financial risk exposure"
       },
-      "value_prop_tail": "This initiative consolidates mitigation for **{currency}{formatted_g_ale}** ({pct:.1f}% of total ALE) in latent financial exposure."
+      "value_prop_tail": "This initiative neutralizes an estimated operational downtime risk of **{currency}{formatted_g_ale}** (representing {pct:.1f}% of the tower's annualized loss exposure)."
     }
   },
   "risk_fallback_strings": {
@@ -3281,7 +3309,7 @@
     }
   },
   "metric_unification_regexes": [
-    "(?:La torre presenta|El perfil de madurez|El análisis de madurez|La evaluación de madurez).*?(?:Expectativa|Exposición|Pérdida|ALE).*?[\\d,.]+\\s*[€$].*?\\.",
+    "(?:La torre presenta|El perfil de madurez|El análisis de madurez|La evaluación de madurez|La evaluación técnica|The tower demonstrates|The technical assessment).*?(?:Expectativa|Exposición|Pérdida|ALE|Loss Exposure).*?[\\d,.]+\\s*[€$].*?\\.(?:\\s*(?:La exposición en cola|Exposición en cola|Tail risk|P90).*?[\\d,.]+\\s*[€$].*?\\.)?",
     "El análisis cuantitativo sitúa.*?\\.\\s*"
   ],
   "default_gaps_catalog": {
@@ -3310,14 +3338,14 @@
       "p65": "más de las dos terceras partes de la exposición financiera al riesgo identificada",
       "p40": "aproximadamente la mitad de la exposición financiera al riesgo identificada",
       "default": "una parte muy relevante de la exposición financiera al riesgo identificada",
-      "action": "La adopción inmediata de este plan de transformación mitigará {phrase}, reduciendo de forma proporcional el coste de inacción operativo, resolviendo la sobrecarga operativa de ingeniería e impulsando la conformidad con normativas europeas, lo cual habilitará la agilidad y escalabilidad requerida para soportar las demandas estratégicas del negocio en el mediano plazo."
+      "action": "La adopción inmediata de este plan de transformación mitigará {phrase}, reduciendo de forma directa el impacto por paradas no planificadas, resolviendo la sobrecarga operativa de ingeniería y asegurando la conformidad con los marcos regulatorios y normativos aplicables, lo cual habilitará la agilidad y escalabilidad requerida para soportar las demandas estratégicas del negocio."
     },
     "en": {
       "p80": "practically all of the identified financial risk exposure",
       "p65": "more than two-thirds of the identified financial risk exposure",
       "p40": "approximately half of the identified financial risk exposure",
       "default": "a very substantial portion of the identified financial risk exposure",
-      "action": "Immediate adoption of this transformation roadmap will mitigate {phrase}, proportionally reducing operational cost of inaction, resolving engineering operational toil, and driving compliance with regulatory frameworks, which will enable the agility and scalability required to support mid-term strategic business demands."
+      "action": "Immediate adoption of this transformation roadmap will mitigate {phrase}, directly reducing unplanned downtime impact, resolving engineering operational toil, and ensuring compliance with applicable regulatory and standards frameworks, enabling the agility and scalability required to support strategic business demands."
     }
   },
   "transversal_analysis_templates": {
@@ -3465,7 +3493,17 @@
     ". Más importante",
     ".  Más importante",
     ". More importantly",
-    ".  More importantly"
+    ".  More importantly",
+    ". La evaluación técnica sitúa",
+    ". La evaluación de madurez",
+    ". La torre presenta un perfil",
+    ". The technical assessment situates",
+    ". The tower demonstrates",
+    ". Mantener el esquema actual",
+    ". Mantener la postura actual",
+    ". Maintaining the current",
+    ". La ausencia de telemetría",
+    ". The absence of telemetry"
   ],
   "canonical_tower_names": {
     "T1": [
@@ -3546,7 +3584,12 @@
       "\\bholística\\b": "integral",
       "\\bapalancar\\b": "aprovechar",
       "\\bapalancando\\b": "aprovechando",
-      "\\binercia de gasto\\b": "gasto descontrolado"
+      "\\binercia de gasto\\b": "gasto descontrolado",
+      "\\benfrenta sanciones administrativas potenciales e inhabilitaciones de continuidad\\b": "eleva la exposición a requerimientos de no conformidad y auditoría de continuidad",
+      "\\benfrenta sanciones administrativas potenciales\\b": "eleva la exposición a requerimientos de no conformidad",
+      "\\benfrenta sanciones\\b": "podría enfrentar contingencias",
+      "\\bfaces potential administrative sanctions\\b": "elevates exposure to regulatory non-compliance findings",
+      "\\bfaces administrative sanctions\\b": "elevates exposure to regulatory non-compliance findings"
     }
   },
   "generic_deliverable_triggers": [
@@ -3637,5 +3680,147 @@
       "pattern": ",\\s+pero\\s+",
       "prefix": "Sin embargo, "
     }
-  ]
+  ],
+  "metric_context_tokens": {
+    "p90": [
+      "p90",
+      "percentile 90",
+      "tail",
+      "stress",
+      "worst-case",
+      "cola",
+      "percentil 90",
+      "estres"
+    ],
+    "max": [
+      "max",
+      "maximum",
+      "maxima",
+      "maximo",
+      "worst"
+    ],
+    "ale": [
+      "ale",
+      "annual",
+      "annualized",
+      "loss",
+      "exposure",
+      "anual",
+      "anualizada",
+      "perdida",
+      "exposicion"
+    ]
+  },
+  "tower_regulatory_scorecards": {
+    "T1": {
+      "es": [
+        [
+          "Directiva NIS2 (Art. 21)",
+          "Continuidad operativa, resiliencia física de instalaciones y control de accesos a CPD.",
+          "Silos entre controladores locales y SIEM; registros manuales de intervención física y falta de telemetría continua de incidentes.",
+          "No Conforme",
+          "F2D9D9"
+        ],
+        [
+          "ISO/IEC 27001 (A.11 / A.12)",
+          "Protección perimetral de centros de proceso, redundancia eléctrica y control dinámico de capacidad.",
+          "Aislamiento físico y doble acometida competentes, penalizados por ausencia de monitorización por fase y falta de gestión DCIM.",
+          "Parcial",
+          "FFF3CD"
+        ],
+        [
+          "ISO 22301 (Continuidad de Negocio)",
+          "Capacidad de resiliencia operativa y pruebas periódicas de contingencia ante desastres.",
+          "Carencia de un programa formal de pruebas de conmutación bajo carga real (Game Days); dependencia de failover en contingencias.",
+          "En Riesgo",
+          "FCE4D6"
+        ],
+        [
+          "Uptime Institute (Disponibilidad)",
+          "Mantenibilidad concurrente y tolerancia a fallos en cadena de alimentación y refrigeración.",
+          "Topología operacional asimilable a Tier II; las operaciones de conmutación entre ramas A y B conllevan riesgo latente de caída.",
+          "Limitado",
+          "FFF3CD"
+        ]
+      ],
+      "en": [
+        [
+          "NIS2 Directive (Art. 21)",
+          "Service continuity, facility physical security, and strict datacenter access governance.",
+          "Operational silos between local controllers and SIEM; manual intervention logs and lack of continuous telemetry.",
+          "Non-Compliant",
+          "F2D9D9"
+        ],
+        [
+          "ISO/IEC 27001 (A.11 / A.12)",
+          "Datacenter perimeter protection, power redundancy, and continuous capacity management.",
+          "Robust physical containment and dual-path supply, penalized by lack of per-phase monitoring and DCIM integration.",
+          "Partial",
+          "FFF3CD"
+        ],
+        [
+          "ISO 22301 (Business Continuity)",
+          "Operational resilience validation and recurring disaster recovery exercises under full load.",
+          "Absence of structured live failover testing (Game Days); reliance on reactive failovers during unplanned outages.",
+          "At Risk",
+          "FCE4D6"
+        ],
+        [
+          "Uptime Institute (Availability)",
+          "Concurrent maintainability and fault tolerance across power and cooling distribution paths.",
+          "Operational topology equivalent to Tier II; branch switching between A and B distribution paths entails outage risk.",
+          "Constrained",
+          "FFF3CD"
+        ]
+      ]
+    },
+    "default": {
+      "es": [
+        [
+          "Directiva NIS2 (Art. 21)",
+          "Gobernanza de seguridad y resiliencia en infraestructuras y cadenas de suministro críticas.",
+          "Ausencia de correlación centralizada de eventos y dependencia de procedimientos manuales no auditados.",
+          "En Riesgo",
+          "FCE4D6"
+        ],
+        [
+          "ISO/IEC 27001:2022",
+          "Gestión de riesgos operativos, control de accesos y monitorización continua de activos.",
+          "Procesos de mantenimiento establecidos pero carentes de telemetría continua y automatización de fallos.",
+          "Parcial",
+          "FFF3CD"
+        ],
+        [
+          "ISO 22301 (Continuidad)",
+          "Resiliencia de servicios críticos y validación formal de planes de contingencia.",
+          "Falta de validación periódica bajo escenarios de estrés operativo real.",
+          "En Riesgo",
+          "FCE4D6"
+        ]
+      ],
+      "en": [
+        [
+          "NIS2 Directive (Art. 21)",
+          "Security governance and operational resilience across critical infrastructure and supply chains.",
+          "Absence of centralized event correlation and reliance on un-audited manual procedures.",
+          "At Risk",
+          "FCE4D6"
+        ],
+        [
+          "ISO/IEC 27001:2022",
+          "Operational risk management, access control, and continuous asset monitoring.",
+          "Established maintenance processes constrained by lack of continuous telemetry and automated failover.",
+          "Partial",
+          "FFF3CD"
+        ],
+        [
+          "ISO 22301 (Continuity)",
+          "Resilience of critical operations and formal validation of disaster recovery contingency plans.",
+          "Lack of recurring validation under live operational stress scenarios.",
+          "At Risk",
+          "FCE4D6"
+        ]
+      ]
+    }
+  }
 }

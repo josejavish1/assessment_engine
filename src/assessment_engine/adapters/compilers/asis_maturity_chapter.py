@@ -5,14 +5,17 @@ import csv
 import json
 import logging
 from pathlib import Path
+import re
 from typing import Any
 
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Inches, Pt, RGBColor
+from docx.shared import Cm, Inches
 
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 from assessment_engine.infrastructure.docx_render_utils import (
     autofit_table_to_contents,
     finalize_table,
@@ -42,6 +45,11 @@ logger = logging.getLogger(__name__)
 
 def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContext) -> None:
     """Assemble and render Chapter 3: Maturity Profile and General Evaluation."""
+    from assessment_engine.domain.maturity_band import (
+        ANNEX_MATURITY_BANDS,
+        resolve_maturity_band,
+    )
+
     p_color_rgb = ctx["p_color_rgb"]
     text_color_rgb = ctx["text_color_rgb"]
     p_color_hex = ctx["p_color_hex"]
@@ -84,14 +92,15 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
     display_band_str = f"{global_band}"
 
     #
+    style_resolver = DocxStyleResolver.get_default(language_code=doc_lang)
     for i, h_txt in enumerate([vocab["score_lbl"], vocab["maturity_lbl"]]):
         set_cell_text_custom(
             dash_table.rows[0].cells[i],
             h_txt,
-            bold=True,
-            font_size=9,
-            color_rgb=RGBColor(255, 255, 255),
             align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=style_resolver,
         )
         shade_cell(dash_table.rows[0].cells[i], p_color_hex)
         dash_table.rows[0].cells[i].width = Inches(3.25)  #
@@ -127,102 +136,36 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
     dash_table.alignment = WD_TABLE_ALIGNMENT.CENTER
     add_spacer(doc, 5)
 
-    # Insert a structured, compact reference table detailing the maturity levels, with the client's current level highlighted dynamically.
-    add_spacer(doc, 10)
+    # Dynamic Operational Interpretation of Maturity Score (replaces static textbook CMMI table)
+    add_spacer(doc, 8)
     add_heading(
         doc,
-        t("maturity_ref_framework_title", locale=doc_lang),
+        t("maturity_diagnostic_synthesis_title", locale=doc_lang),
         level=3,
         primary_color_rgb=p_color_rgb,
     )
 
-    p_ref_intro = add_body_paragraph(
-        doc,
-        t("cmmi_table_intro", locale=doc_lang),
-        text_color_rgb=text_color_rgb
-    )
-    add_spacer(doc, 5)
-
-    ref_table = doc.add_table(rows=1, cols=3)
-    ref_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    ref_table.style = "Table Grid"
-    
-    headers_ref = [
-        t("cmmi_table_header_level", locale=doc_lang),
-        t("cmmi_table_header_range", locale=doc_lang),
-        t("cmmi_table_header_desc", locale=doc_lang),
-    ]
-    for i, h_txt in enumerate(headers_ref):
-        set_cell_text_custom(ref_table.rows[0].cells[i], h_txt, bold=True, font_size=8.5, color_rgb=RGBColor(255, 255, 255), align=WD_ALIGN_PARAGRAPH.CENTER)
-        shade_cell(ref_table.rows[0].cells[i], p_color_hex)
-        
-    levels_data = [
-        (t("cmmi_level_1_title", locale=doc_lang), t("cmmi_level_1_range", locale=doc_lang), t("cmmi_level_1_desc", locale=doc_lang)),
-        (t("cmmi_level_2_title", locale=doc_lang), t("cmmi_level_2_range", locale=doc_lang), t("cmmi_level_2_desc", locale=doc_lang)),
-        (t("cmmi_level_3_title", locale=doc_lang), t("cmmi_level_3_range", locale=doc_lang), t("cmmi_level_3_desc", locale=doc_lang)),
-        (t("cmmi_level_4_title", locale=doc_lang), t("cmmi_level_4_range", locale=doc_lang), t("cmmi_level_4_desc", locale=doc_lang)),
-        (t("cmmi_level_5_title", locale=doc_lang), t("cmmi_level_5_range", locale=doc_lang), t("cmmi_level_5_desc", locale=doc_lang)),
-    ]
-    
     try:
         gs_val = float(global_score)
     except Exception:
         gs_val = 3.0
 
-    for l_idx, (lvl_name, lvl_range, lvl_desc) in enumerate(levels_data):
-        row = ref_table.add_row()
-        bg_col = alt_row_hex if l_idx % 2 == 1 else "FFFFFF"
-        
-        is_active_lvl = False
-        if l_idx == 0 and 1.00 <= gs_val <= 1.79:
-            is_active_lvl = True
-        elif l_idx == 1 and 1.80 <= gs_val <= 2.59:
-            is_active_lvl = True
-        elif l_idx == 2 and 2.60 <= gs_val <= 3.39:
-            is_active_lvl = True
-        elif l_idx == 3 and 3.40 <= gs_val <= 4.19:
-            is_active_lvl = True
-        elif l_idx == 4 and 4.20 <= gs_val <= 5.00:
-            is_active_lvl = True
-            
-        if is_active_lvl:
-            # Highlight the active maturity level row to represent the current state dynamically
-            row_bg_color = "FFF3CD" if gs_val < 3.4 else "D9F2D9"  # Dynamically synchronized with previous table score band color
-            actual_badge = t("current_state_badge", locale=doc_lang)
-            set_cell_text_custom(row.cells[0], f"{lvl_name} {actual_badge}", bold=True, font_size=8, color_rgb=RGBColor(*p_color_rgb), align=WD_ALIGN_PARAGRAPH.LEFT)
-            set_cell_text_custom(row.cells[1], lvl_range, bold=True, font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
-            set_cell_text_custom(row.cells[2], lvl_desc, font_size=8, align=WD_ALIGN_PARAGRAPH.LEFT)
-            for cell in row.cells:
-                shade_cell(cell, row_bg_color)
-        else:
-            set_cell_text_custom(row.cells[0], lvl_name, bold=True, font_size=8, align=WD_ALIGN_PARAGRAPH.LEFT)
-            shade_cell(row.cells[0], alt_row_hex)
-            set_cell_text_custom(row.cells[1], lvl_range, font_size=8, align=WD_ALIGN_PARAGRAPH.CENTER)
-            shade_cell(row.cells[1], bg_col)
-            set_cell_text_custom(row.cells[2], lvl_desc, font_size=8, align=WD_ALIGN_PARAGRAPH.LEFT)
-            shade_cell(row.cells[2], bg_col)
-            
-    # Set explicit column widths to narrow 'Nivel de Madurez' and widen 'Rango' slightly
-    ref_table.allow_autofit = False
-    ref_table.autofit = False
-    col_widths = [Inches(1.5), Inches(1.2), Inches(3.8)]
-    for row in ref_table.rows:
-        for i, w in enumerate(col_widths):
-            row.cells[i].width = w
-            
-    add_spacer(doc, 15)
+    target_benchmark = 3.0
+    gap_score = f"{abs(gs_val - target_benchmark):.2f}"
+    formatted_gs = format_number(gs_val, locale=doc_lang, decimals=2)
+    band_label = resolve_maturity_band(gs_val, ANNEX_MATURITY_BANDS, locale=doc_lang)["label"]
 
-    # Narrative explanation linking the score with the environment context
-    score_formatted = format_number(gs_val, locale=doc_lang, decimals=2)
-    explanation_str = t(
-        "maturity_narrative_explanation",
+    formatted_benchmark = format_number(3.0, locale=doc_lang, decimals=2)
+    p_interp_text = t(
+        "asis_band_explanation_narrative",
         locale=doc_lang,
-        score_formatted=score_formatted,
-        global_band=global_band,
-        global_reading=global_reading.strip() + " ",
+        formatted_score=formatted_gs,
+        band_label=band_label,
+        gap_score=gap_score,
+        benchmark_score=formatted_benchmark,
     )
-    add_body_paragraph(doc, explanation_str, text_color_rgb=text_color_rgb)
-    add_spacer(doc, 15)
+    add_body_paragraph(doc, p_interp_text, text_color_rgb=text_color_rgb)
+    add_spacer(doc, 12)
 
     # Standard Diagnostic and Performance Matrix by Technical Domain
     health_title = t("diagnosis_performance_matrix_title", locale=doc_lang)
@@ -254,10 +197,10 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
         set_cell_text_custom(
             health_table.rows[0].cells[i],
             h_txt,
-            bold=True,
-            font_size=10,
-            color_rgb=RGBColor(255, 255, 255),
             align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=style_resolver,
         )
         shade_cell(health_table.rows[0].cells[i], p_color_hex)
 
@@ -267,6 +210,9 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
             resolve_maturity_band,
         )
 
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
         for s_idx, p in enumerate(
             sorted(
                 b_data.get("pillars_analysis", []),
@@ -274,7 +220,11 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
             )
         ):
             bg = alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
-            p_name = p.get("pilar_name", "Pilar")
+            raw_pname = p.get("pillar_name") or p.get("pilar_name", "Pillar")
+            p_id = p.get("pillar_id") or p.get("pilar_id") or raw_pname
+            p_name = resolver.resolve_pillar_by_any_reference(
+                p_id, default=raw_pname, locale=doc_lang
+            )
             p_score = float(p.get("score", 3.0))
 
             score_formatted = format_number(
@@ -317,8 +267,13 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
             from assessment_engine.application.generate_tower_radar_chart import generate_radar_chart_from_pillars
             chart_pillars = []
             for p in b_data.get("pillars_analysis", []):
+                raw_pname = p.get("pillar_name") or p.get("pilar_name", "Pillar")
+                p_id = p.get("pillar_id") or p.get("pilar_id") or raw_pname
+                p_label = resolver.resolve_pillar_by_any_reference(
+                    p_id, default=raw_pname, locale=doc_lang
+                )
                 chart_pillars.append({
-                    "pillar_label": p.get("pilar_name", p.get("pilar_id", "Pilar")),
+                    "pillar_label": p_label,
                     "score_display": p.get("score", 0.0)
                 })
             if chart_pillars:
@@ -353,50 +308,165 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
                         valid_snapshots.append((t_id, t_snap))
 
                 if valid_snapshots:
-                    add_heading(doc, t("rage_traceability_heading", locale=doc_lang), level=2, primary_color_rgb=p_color_rgb)
+                    add_heading(
+                        doc,
+                        t("rage_traceability_heading", locale=doc_lang),
+                        level=3,
+                        primary_color_rgb=p_color_rgb,
+                    )
                     intro_text = t("rage_traceability_intro", locale=doc_lang)
                     add_body_paragraph(doc, intro_text, text_color_rgb=text_color_rgb)
-                    add_spacer(doc, 10)
+                    add_spacer(doc, 8)
 
-                    for t_id, t_snap in valid_snapshots:
-                        framework_name = t_snap.get("framework_name", t("rage_framework_fallback", locale=doc_lang))
-                        score = t_snap.get("dynamic_score", 4.0)
-                        quote = t_snap.get("evidence_quote", "")
-                        url = t_snap.get("evidence_source_url", "")
-                        local_path = t_snap.get("local_snapshot_path", "")
+                    bench_table = doc.add_table(rows=1, cols=3)
+                    bench_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+                    bench_table.style = "Table Grid"
 
-                        header_p = t("rage_tower_header", locale=doc_lang, tower_id=t_id, framework_name=framework_name, score=f"{score:,.1f}")
-                        add_body_paragraph(doc, header_p, text_color_rgb=text_color_rgb)
+                    b_headers = [
+                        t("header_framework_reference", locale=doc_lang),
+                        t("header_industry_standard_score", locale=doc_lang),
+                        t("header_benchmark_calibration_rationale", locale=doc_lang),
+                    ]
+                    for i, h_txt in enumerate(b_headers):
+                        set_cell_text_custom(
+                            bench_table.rows[0].cells[i],
+                            h_txt,
+                            align=WD_ALIGN_PARAGRAPH.CENTER,
+                            typography_role=TypographyRole.TABLE_HEADER,
+                            color_role=SemanticColorRole.TEXT_INVERSE,
+                            resolver=style_resolver,
+                        )
+                        shade_cell(bench_table.rows[0].cells[i], p_color_hex)
 
-                        quote_p = t("rage_evidence_extracted", locale=doc_lang, quote=quote)
-                        add_body_paragraph(doc, quote_p, italic=True, text_color_rgb=text_color_rgb)
+                    for r_idx, (t_id, t_snap) in enumerate(valid_snapshots):
+                        framework_name = t_snap.get(
+                            "framework_name",
+                            t("rage_framework_fallback", locale=doc_lang),
+                        )
+                        score = t_snap.get("dynamic_score", 3.0)
+                        justification = t_snap.get(
+                            "justification_text",
+                            t_snap.get("evidence_quote", ""),
+                        )
+                        if "Runtime sectorial compliance research substantiates that:" in justification:
+                            justification = re.sub(
+                                r'Runtime sectorial compliance research substantiates that:\s*"([^"]+)"',
+                                r"\1",
+                                justification,
+                            )
+                            justification = re.sub(r"Cita Oficial Online:.*", "", justification).strip()
 
-                        source_p = t("rage_reference_source", locale=doc_lang, url=url)
-                        if local_path:
-                            source_p += t("rage_local_vault", locale=doc_lang, local_path=local_path)
-                        add_body_paragraph(doc, source_p, text_color_rgb=RGBColor(120, 130, 140))
-                        add_spacer(doc, 10)
+                        row = bench_table.add_row()
+                        set_cell_text_custom(
+                            row.cells[0],
+                            framework_name,
+                            bold=True,
+                            font_size=8.5,
+                        )
+                        score_label = f"{score:,.1f} / 5.0"
+                        set_cell_text_custom(
+                            row.cells[1],
+                            score_label,
+                            font_size=8.5,
+                            align=WD_ALIGN_PARAGRAPH.CENTER,
+                        )
+                        set_cell_text_custom(
+                            row.cells[2],
+                            justification,
+                            font_size=8.5,
+                            align=WD_ALIGN_PARAGRAPH.JUSTIFY,
+                        )
+                        if r_idx % 2 == 1:
+                            for cell in row.cells:
+                                shade_cell(cell, alt_row_hex)
+
+                    autofit_table_to_contents(bench_table)
+                    add_spacer(doc, 15)
+
+                    # Render Regulatory Compliance & Operational Resilience Scorecard
+                    from assessment_engine.adapters.generate_asis_markdown_modules import _ASIS_ANNEX_DATA
+                    reg_scorecards = _ASIS_ANNEX_DATA.get("tower_regulatory_scorecards", {})
+                    tower_card_dict = reg_scorecards.get(tower_id, reg_scorecards.get("default", {}))
+                    card_rows = tower_card_dict.get(doc_lang, tower_card_dict.get("en", []))
+
+                    if card_rows:
+                        add_heading(
+                            doc,
+                            t("regulatory_scorecard_title", locale=doc_lang),
+                            level=3,
+                            primary_color_rgb=p_color_rgb,
+                        )
+                        add_spacer(doc, 6)
+
+                        reg_table = doc.add_table(rows=1, cols=4)
+                        reg_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+                        reg_table.style = "Table Grid"
+
+                        reg_headers = [
+                            t("header_regulatory_framework", locale=doc_lang),
+                            t("header_framework_core_requirement", locale=doc_lang),
+                            t("header_diagnosed_operational_posture", locale=doc_lang),
+                            t("header_compliance_risk_level", locale=doc_lang),
+                        ]
+                        for i, h_txt in enumerate(reg_headers):
+                            set_cell_text_custom(
+                                reg_table.rows[0].cells[i],
+                                h_txt,
+                                align=WD_ALIGN_PARAGRAPH.CENTER,
+                                typography_role=TypographyRole.TABLE_HEADER,
+                                color_role=SemanticColorRole.TEXT_INVERSE,
+                                resolver=style_resolver,
+                            )
+                            shade_cell(reg_table.rows[0].cells[i], p_color_hex)
+
+                        reg_col_widths = [Cm(3.8), Cm(4.2), Cm(6.0), Cm(2.4)]
+                        for i in range(4):
+                            reg_table.rows[0].cells[i].width = reg_col_widths[i]
+
+                        for r_idx, r_data in enumerate(card_rows):
+                            row = reg_table.add_row()
+                            fw_name, req_txt, diag_txt, status_lbl, badge_bg = r_data[0], r_data[1], r_data[2], r_data[3], r_data[4]
+
+                            set_cell_text_custom(row.cells[0], fw_name, bold=True, font_size=8, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver)
+                            set_cell_text_custom(row.cells[1], req_txt, font_size=8, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+                            set_cell_text_custom(row.cells[2], diag_txt, font_size=8, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+                            set_cell_text_custom(row.cells[3], status_lbl, bold=True, font_size=8, color_role=SemanticColorRole.BRAND_PRIMARY, resolver=style_resolver, align=WD_ALIGN_PARAGRAPH.CENTER)
+
+                            for i in range(4):
+                                row.cells[i].width = reg_col_widths[i]
+                                if r_idx % 2 == 1:
+                                    shade_cell(row.cells[i], alt_row_hex)
+                            shade_cell(row.cells[3], badge_bg)
+
+                        autofit_table_to_contents(reg_table)
+                        add_spacer(doc, 15)
         except Exception as ex:
             logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into main document: {ex}")
 
     # Assemble and render Section 3.3: Score Justification Matrix; left-aligned, omits 'TO-BE Target' column.
     csv_mat_path = modules_dir / "04_matriz_madurez.csv"
     if csv_mat_path.exists():
+        score_just_title = t("score_justification_section_title", locale=doc_lang)
+        add_heading(doc, score_just_title, level=3, primary_color_rgb=p_color_rgb)
+
         mat_table = doc.add_table(rows=1, cols=3)
         mat_table.alignment = WD_TABLE_ALIGNMENT.LEFT
         mat_table.style = "Table Grid"
 
         headers_mat = vocab["justification_table_headers"]
+        mat_col_widths = [Cm(4.0), Cm(2.5), Cm(10.0)]
         for i, h_txt in enumerate(headers_mat):
+            cell = mat_table.rows[0].cells[i]
             set_cell_text_custom(
-                mat_table.rows[0].cells[i],
+                cell,
                 h_txt,
-                bold=True,
-                font_size=9,
-                color_rgb=RGBColor(255, 255, 255),
                 align=WD_ALIGN_PARAGRAPH.CENTER,
+                typography_role=TypographyRole.TABLE_HEADER,
+                color_role=SemanticColorRole.TEXT_INVERSE,
+                resolver=style_resolver,
             )
-            shade_cell(mat_table.rows[0].cells[i], p_color_hex)
+            shade_cell(cell, p_color_hex)
+            cell.width = mat_col_widths[i]
 
         with open(csv_mat_path, "r", encoding="utf-8") as cf:
             reader = csv.reader(cf, delimiter=";")
@@ -404,37 +474,86 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
 
             for r_idx, row_data in enumerate(reader):
                 row = mat_table.add_row()
+                # Col 0: Pillar name
                 set_cell_text_custom(
-                    row.cells[0], row_data[0], bold=True, font_size=8.5
+                    row.cells[0], row_data[0], bold=True, font_size=8.5, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver
                 )
+                
+                # Col 1: Score & Qualitative Band
+                sc_str = row_data[1].strip()
+                try:
+                    sc_val = float(sc_str.split()[0].replace(",", "."))
+                    band_lbl = resolve_maturity_band(sc_val, ANNEX_MATURITY_BANDS, locale=doc_lang)["label"]
+                    display_sc = f"{sc_val:.2f} / 5.00\n({band_lbl})"
+                except Exception:
+                    display_sc = sc_str
+
                 set_cell_text_custom(
                     row.cells[1],
-                    row_data[1],
+                    display_sc,
+                    bold=True,
                     font_size=8.5,
                     align=WD_ALIGN_PARAGRAPH.CENTER,
+                    color_role=SemanticColorRole.TEXT_PRIMARY,
+                    resolver=style_resolver,
+                    no_bullets=True,
                 )
                 
-                # Sanitize third column heading text to remove grade placeholders
-                justification_cell_text = row_data[2]
-                import re
-                just_hdr = t("asis_header_score_justification", locale=doc_lang)
-                justification_cell_text = re.sub(
-                    r"\*\*.*?(?:Nota|Score|Evaluation)\s*\(\d+[,.]\d+\):\*\*",
-                    f"**{just_hdr}**",
-                    justification_cell_text,
-                )
-                justification_cell_text = re.sub(
-                    r".*?(?:Nota|Score|Evaluation)\s*\(\d+[,.]\d+\):",
-                    just_hdr,
-                    justification_cell_text,
-                )
-                
-                set_cell_text_custom(
-                    row.cells[2],
-                    justification_cell_text,
-                    font_size=8.5,
-                    align=WD_ALIGN_PARAGRAPH.JUSTIFY,
-                )
+                # Col 2: Executive Justification Blocks (Bottleneck + Unlocking Lever)
+                cell_just = row.cells[2]
+                cell_just.text = ""
+                blocks = [b.strip() for b in row_data[2].split("\n\n") if b.strip()]
+                for b_idx, block in enumerate(blocks):
+                    clean_block = block.replace("• ", "").strip()
+                    p = cell_just.paragraphs[0] if b_idx == 0 else cell_just.add_paragraph()
+                    p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                    style_resolver.apply_paragraph_typography(p, TypographyRole.BODY_REGULAR)
+                    p.paragraph_format.left_indent = Inches(0.12)
+                    p.paragraph_format.first_line_indent = Inches(-0.12)
+
+                    # Extract bold label between **...**
+                    if "**" in clean_block:
+                        match = re.match(r"\*\*(.*?)\*\*:?\s*(.*)", clean_block, re.DOTALL)
+                        if match:
+                            lbl_txt = match.group(1).rstrip(":").replace("**", "").replace("*", "").strip()
+                            body_txt = match.group(2).replace("**", "").replace("*", "").strip()
+                        else:
+                            lbl_txt = ""
+                            body_txt = clean_block.replace("**", "").replace("*", "").strip()
+                    elif ":" in clean_block:
+                        parts = clean_block.split(":", 1)
+                        lbl_txt = parts[0].replace("**", "").replace("*", "").strip()
+                        body_txt = parts[1].replace("**", "").replace("*", "").strip()
+                    else:
+                        lbl_txt = ""
+                        body_txt = clean_block.replace("**", "").replace("*", "").strip()
+
+                    if lbl_txt:
+                        r_lbl = p.add_run(f"• {lbl_txt}: ")
+                        style_resolver.apply_run_style(
+                            r_lbl,
+                            typo_role=TypographyRole.TABLE_CELL,
+                            color_role=SemanticColorRole.TEXT_PRIMARY,
+                            bold_override=True,
+                        )
+                    else:
+                        r_bullet = p.add_run("• ")
+                        style_resolver.apply_run_style(
+                            r_bullet,
+                            typo_role=TypographyRole.TABLE_CELL,
+                            color_role=SemanticColorRole.TEXT_PRIMARY,
+                            bold_override=True,
+                        )
+
+                    r_body = p.add_run(body_txt)
+                    style_resolver.apply_run_style(
+                        r_body,
+                        typo_role=TypographyRole.TABLE_CELL,
+                        color_role=SemanticColorRole.TEXT_PRIMARY,
+                    )
+
+                for c_idx, w in enumerate(mat_col_widths):
+                    row.cells[c_idx].width = w
 
                 if r_idx % 2 == 1:
                     for cell in row.cells:
@@ -442,16 +561,145 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
 
         autofit_table_to_contents(mat_table)
         add_spacer(doc, 20)
+    elif b_data and b_data.get("pillars_analysis"):
+        from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+            derive_in_memory_maturity_matrix,
+        )
+        score_just_title = t("score_justification_section_title", locale=doc_lang)
+        add_heading(doc, score_just_title, level=3, primary_color_rgb=p_color_rgb)
 
-    transversal_title = t("transversal_analysis_title", locale=doc_lang)
-    add_heading(doc, transversal_title, level=2, primary_color_rgb=p_color_rgb)
-    parse_and_append_markdown_section(
-        doc,
-        modules_dir / "05_transversal.md",
-        p_color_rgb,
-        text_color_rgb,
-        skip_level_1=True,
-    )
+        mat_table = doc.add_table(rows=1, cols=3)
+        mat_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+        mat_table.style = "Table Grid"
+
+        headers_mat = vocab["justification_table_headers"]
+        mat_col_widths = [Cm(4.0), Cm(2.5), Cm(10.0)]
+        for i, h_txt in enumerate(headers_mat):
+            cell = mat_table.rows[0].cells[i]
+            set_cell_text_custom(
+                cell,
+                h_txt,
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                typography_role=TypographyRole.TABLE_HEADER,
+                color_role=SemanticColorRole.TEXT_INVERSE,
+                resolver=style_resolver,
+            )
+            shade_cell(cell, p_color_hex)
+            cell.width = mat_col_widths[i]
+
+        in_mem_rows = derive_in_memory_maturity_matrix(b_data, doc_lang=doc_lang)
+        for r_idx, r_data in enumerate(in_mem_rows):
+            row = mat_table.add_row()
+            set_cell_text_custom(
+                row.cells[0], r_data["pillar_name"], bold=True, font_size=8.5, color_role=SemanticColorRole.TEXT_PRIMARY, resolver=style_resolver
+            )
+            display_sc = f"{r_data['score_formatted']} / 5.00\n({r_data['band_label']})"
+            set_cell_text_custom(
+                row.cells[1],
+                display_sc,
+                bold=True,
+                font_size=8.5,
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                color_role=SemanticColorRole.TEXT_PRIMARY,
+                resolver=style_resolver,
+                no_bullets=True,
+            )
+            set_cell_text_custom(
+                row.cells[2],
+                r_data["justification"],
+                font_size=8.5,
+                color_role=SemanticColorRole.TEXT_PRIMARY,
+                resolver=style_resolver,
+                no_bullets=True,
+            )
+            for c_idx, w in enumerate(mat_col_widths):
+                row.cells[c_idx].width = w
+            if r_idx % 2 == 1:
+                for cell in row.cells:
+                    shade_cell(cell, alt_row_hex)
+
+        autofit_table_to_contents(mat_table)
+        add_spacer(doc, 20)
+
+    # 3.4 Structural Technical Debt and Platform Bottlenecks
+    debt_section_title = t("structural_debt_section_title", locale=doc_lang)
+    add_heading(doc, debt_section_title, level=2, primary_color_rgb=p_color_rgb)
+
+    cca = b_data.get("cross_capabilities_analysis", {}) if b_data else {}
+    critical_debt = cca.get("critical_technical_debt", "")
+    patterns = cca.get("common_deficiency_patterns", [])
+
+    if critical_debt:
+        add_callout_box(
+            doc,
+            critical_debt,
+            bg_color_hex="F4F8FA",
+            border_color_hex="0072BC",
+            bold=False,
+        )
+        add_spacer(doc, 10)
+
+    if patterns:
+        vectors_title = t("structural_friction_vectors_title", locale=doc_lang)
+        add_heading(doc, vectors_title, level=3, primary_color_rgb=p_color_rgb)
+
+        vec_table = doc.add_table(rows=1, cols=2)
+        vec_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+        vec_table.style = "Table Grid"
+
+        vec_headers = [
+            t("header_inefficiency_vector", locale=doc_lang),
+            t("header_business_operational_impact", locale=doc_lang),
+        ]
+        for i, h_txt in enumerate(vec_headers):
+            set_cell_text_custom(
+                vec_table.rows[0].cells[i],
+                h_txt,
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+                typography_role=TypographyRole.TABLE_HEADER,
+                color_role=SemanticColorRole.TEXT_INVERSE,
+                resolver=style_resolver,
+            )
+            shade_cell(vec_table.rows[0].cells[i], p_color_hex)
+
+        vec_table.rows[0].cells[0].width = Cm(5.0)
+        vec_table.rows[0].cells[1].width = Cm(11.4)
+
+        if isinstance(patterns, str):
+            patterns = [patterns]
+
+        for p_idx, pat in enumerate(patterns):
+            pat_str = str(pat).strip()
+            if ":" in pat_str:
+                parts = pat_str.split(":", 1)
+                v_name = parts[0].replace("**", "").replace("*", "").strip()
+                v_desc = parts[1].strip()
+            else:
+                words = pat_str.split()
+                v_name = " ".join(words[:4]).rstrip(".,;:")
+                v_desc = pat_str
+
+            row = vec_table.add_row()
+            set_cell_text_custom(row.cells[0], v_name, bold=True, font_size=8.5)
+            set_cell_text_custom(row.cells[1], v_desc, font_size=8.5, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+
+            row.cells[0].width = Cm(5.0)
+            row.cells[1].width = Cm(11.4)
+
+            if p_idx % 2 == 1:
+                shade_cell(row.cells[0], alt_row_hex)
+                shade_cell(row.cells[1], alt_row_hex)
+
+        autofit_table_to_contents(vec_table)
+        add_spacer(doc, 20)
+    else:
+        parse_and_append_markdown_section(
+            doc,
+            modules_dir / "05_transversal.md",
+            p_color_rgb,
+            text_color_rgb,
+            skip_level_1=True,
+        )
 
     # 3.5 Structural Risk Indicators and Decision Context
     if intel_data:
@@ -506,7 +754,12 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
                 ]
                 for i, h_txt in enumerate(headers_inter):
                     set_cell_text_custom(
-                        inter_table.rows[0].cells[i], h_txt, bold=True, font_size=10, color_rgb=RGBColor(255, 255, 255), align=WD_ALIGN_PARAGRAPH.CENTER
+                        inter_table.rows[0].cells[i],
+                        h_txt,
+                        align=WD_ALIGN_PARAGRAPH.CENTER,
+                        typography_role=TypographyRole.TABLE_HEADER,
+                        color_role=SemanticColorRole.TEXT_INVERSE,
+                        resolver=style_resolver,
                     )
                     shade_cell(inter_table.rows[0].cells[i], p_color_hex)
 
@@ -578,13 +831,14 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
 
                 # Add Glossary / Legend
                 p_gloss = doc.add_paragraph()
-                p_gloss.paragraph_format.space_before = Pt(8)
-                p_gloss.paragraph_format.space_after = Pt(2)
+                style_resolver.apply_paragraph_typography(p_gloss, TypographyRole.BODY_REGULAR)
                 run_g_title = p_gloss.add_run(t("interdep_gloss_title", locale=doc_lang))
-                run_g_title.bold = True
-                run_g_title.font.name = "Arial"
-                run_g_title.font.size = Pt(10)
-                run_g_title.font.color.rgb = RGBColor(*text_color_rgb)
+                style_resolver.apply_run_style(
+                    run_g_title,
+                    typo_role=TypographyRole.BODY_STRONG,
+                    color_role=SemanticColorRole.TEXT_PRIMARY,
+                    bold_override=True,
+                )
 
                 glossary_items = []
                 

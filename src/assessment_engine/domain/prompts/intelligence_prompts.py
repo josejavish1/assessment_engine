@@ -35,7 +35,7 @@ def get_grounding_harvester_prompt(context_text: str) -> str:
 
 
 def get_business_harvester_prompt(
-    client_name: str, context_text: str, grounding_json: str = "{}", target_language: str = "Spanish"
+    client_name: str, context_text: str, grounding_json: str = "{}", target_language: str = "English"
 ) -> str:
     """Generate an analytical prompt for business intelligence analysis from client context and grounding data."""
     return f"""
@@ -74,7 +74,7 @@ def get_business_harvester_prompt(
 
 
 def get_tech_harvester_prompt(
-    client_name: str, context_text: str, grounding_json: str = "{}", target_language: str = "Spanish"
+    client_name: str, context_text: str, grounding_json: str = "{}", target_language: str = "English"
 ) -> str:
     """Generate an analytical prompt to investigate a client's technology footprint."""
     return f"""
@@ -105,7 +105,7 @@ def get_tech_harvester_prompt(
 
 
 def get_regulatory_harvester_prompt(
-    client_name: str, context_text: str, grounding_json: str = "{}", target_language: str = "Spanish"
+    client_name: str, context_text: str, grounding_json: str = "{}", target_language: str = "English"
 ) -> str:
     """Constructs a technical prompt for regulatory and compliance analysis."""
     return f"""
@@ -132,7 +132,7 @@ def get_regulatory_harvester_prompt(
     """
 
 
-def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}", target_language: str = "Spanish") -> str:
+def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}", target_language: str = "English") -> str:
     """Construct a technical prompt to refine a technical tower analysis for an executive audience."""
     return f"""
     You are a Consulting PARTNER at a Tier-1 firm. Refine this technical TOWER assessment for the CIO.
@@ -153,7 +153,7 @@ def get_tower_refiner_prompt(findings_json: str, grounding_json: str = "{}", tar
     """
 
 
-def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}", target_language: str = "Spanish") -> str:
+def get_global_refiner_prompt(findings_json: str, grounding_json: str = "{}", target_language: str = "English") -> str:
     """Generates a structured prompt for an LLM to synthesize an executive CEO-level report."""
     return f"""
     You are a Consulting PARTNER at a Tier-1 firm. Refine this technical analysis for the CEO and Board.
@@ -209,7 +209,7 @@ def get_sota_researcher_prompt(
 
 
 def get_technical_analyst_prompt(
-    tower_id: str, pillar_name: str, score: float, context: str, evidences: str, target_language: str = "Spanish"
+    tower_id: str, pillar_name: str, score: float, context: str, evidences: str, target_language: str = "English"
 ) -> str:
     """Constructs a Tier-1 prompt for a generative model to act as a technical domain analyst."""
     return f"""

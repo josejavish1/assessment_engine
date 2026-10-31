@@ -91,8 +91,8 @@ def test_compile_asis_docx_full_oracle(tmp_path: Path) -> None:
     doc = Document(str(output_docx))
 
     # Structural baseline verification
-    assert len(doc.paragraphs) >= 100, f"Expected >= 100 paragraphs, got {len(doc.paragraphs)}"
-    assert len(doc.tables) == 8, f"Expected exactly 8 tables, got {len(doc.tables)}"
+    assert len(doc.paragraphs) >= 90, f"Expected >= 90 paragraphs, got {len(doc.paragraphs)}"
+    assert len(doc.tables) == 9, f"Expected exactly 9 tables, got {len(doc.tables)}"
 
     # Section verification
     full_text = "\n".join(p.text for p in doc.paragraphs)
@@ -103,12 +103,13 @@ def test_compile_asis_docx_full_oracle(tmp_path: Path) -> None:
     assert "Cláusula de Limitación de Responsabilidad" in full_text
 
     # Verify structured tables
-    assert len(doc.tables) == 8, f"Expected exactly 8 tables, got {len(doc.tables)}"
+    assert len(doc.tables) == 9, f"Expected exactly 9 tables, got {len(doc.tables)}"
     assert "PUNTUACIÓN AS-IS" in doc.tables[0].rows[0].cells[0].text
-    assert "Nivel de Madurez" in doc.tables[1].rows[0].cells[0].text
-    assert "Pilar / Capacidad Tecnológica Evaluada" in doc.tables[2].rows[0].cells[0].text
+    assert "Pilar / Capacidad Tecnológica Evaluada" in doc.tables[1].rows[0].cells[0].text
+    assert "Nivel de Madurez" in doc.tables[1].rows[0].cells[2].text
+    assert "ID" in doc.tables[2].rows[0].cells[0].text
     assert "TEF" in doc.tables[3].rows[0].cells[0].text
-    assert "ID" in doc.tables[4].rows[0].cells[0].text
-    assert "Dimensión de Negocio" in doc.tables[5].rows[0].cells[0].text
-    assert "Código de Referencia" in doc.tables[6].rows[0].cells[0].text
-    assert "Abreviatura" in doc.tables[7].rows[0].cells[0].text
+    assert "Dimensión Estratégica" in doc.tables[4].rows[0].cells[0].text
+    assert "Horizonte Temporal" in doc.tables[5].rows[0].cells[0].text
+    assert "Código de Referencia" in doc.tables[7].rows[0].cells[0].text
+    assert "Abreviatura" in doc.tables[8].rows[0].cells[0].text

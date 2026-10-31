@@ -27,7 +27,7 @@ EXECUTIVE CONSULTING FRAMEWORK (STRATEGIC VIABILITY & AUTHORITY):
 
 
 def get_commercial_orchestrator_instruction(
-    target_language: str = "Spanish",
+    target_language: str = "English",
     company_name: str | None = None,
 ) -> str:
     """Return the base instruction prompt for the commercial orchestrator AI agent."""
@@ -36,7 +36,7 @@ def get_commercial_orchestrator_instruction(
 
 ### CRITICAL LANGUAGE MANDATE:
 You MUST generate all proposal narratives, solution architectures, delivery teams, and executive syntheses EXCLUSIVELY in {target_language}.
-Do not default to Spanish unless {target_language} is Spanish.
+Strictly adhere to {target_language} for all generated outputs.
 
 GOLDEN RULES FOR CONSULTATIVE EXCELLENCE (STAFF/PARTNER LEVEL):
 1. STRATEGIC PRIORITIZATION: If client DNA indicates strict regulatory frameworks (e.g., NIS2, DORA, ISO 27001), prioritize Resilience and Security initiatives at the top of the roadmap, regardless of raw technical score.
@@ -49,7 +49,7 @@ def get_commercial_agent_prompt(
     agent_role: str,
     instruction: str,
     payload_str: str,
-    target_language: str = "Spanish",
+    target_language: str = "English",
     company_name: str | None = None,
 ) -> str:
     """Format a commercial AI agent prompt by injecting a role, instruction, and payload into a predefined template."""

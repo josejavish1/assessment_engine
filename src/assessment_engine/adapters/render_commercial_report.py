@@ -10,7 +10,10 @@ from typing import Any
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt
+
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole
 
 """
 Module render_commercial_report.py.
@@ -42,7 +45,7 @@ from assessment_engine.infrastructure.docx_render_utils import (
 )
 from assessment_engine.infrastructure.localization import get_localized_list, t
 
-BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
 
 def _resolve_company() -> str:
@@ -149,7 +152,7 @@ def render_commercial_cover(doc, payload: CommercialPayload, doc_lang: str) -> A
     run = title_p.add_run(t("account_action_plan_title", locale=doc_lang))
     run.font.size = Pt(34)
     run.font.name = "Georgia"
-    run.font.color.rgb = RGBColor(0, 114, 188)
+    run.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.BRAND_PRIMARY)
     run.bold = False
 
     add_spacer(doc, 30)
@@ -171,7 +174,7 @@ def render_commercial_cover(doc, payload: CommercialPayload, doc_lang: str) -> A
     version_run = version_p.add_run(v_text)
     version_run.font.size = Pt(14)
     version_run.font.name = "Arial"
-    version_run.font.color.rgb = RGBColor(46, 64, 77)
+    version_run.font.color.rgb = DocxStyleResolver.get_default(language_code=lang).resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
     version_run.bold = False
 
     add_spacer(doc, 150)
@@ -182,7 +185,7 @@ def render_commercial_cover(doc, payload: CommercialPayload, doc_lang: str) -> A
     )
     disclaimer_title_run.font.size = Pt(8)
     disclaimer_title_run.font.name = "Arial"
-    disclaimer_title_run.font.color.rgb = RGBColor(127, 127, 127)
+    disclaimer_title_run.font.color.rgb = DocxStyleResolver.get_default(language_code=lang).resolve_rgb(SemanticColorRole.TEXT_MUTED)
     disclaimer_title_run.bold = True
     disclaimer_title_p.paragraph_format.space_after = Pt(2)
 
@@ -194,40 +197,15 @@ def render_commercial_cover(doc, payload: CommercialPayload, doc_lang: str) -> A
     r1 = disclaimer_p.add_run(p1_text)
     r1.font.size = Pt(8)
     r1.font.name = "Arial"
-    r1.font.color.rgb = RGBColor(127, 127, 127)
-    r1.font.size = Pt(8)
-    r1.font.name = "Arial"
-    r1.font.color.rgb = RGBColor(127, 127, 127)
+    r1.font.color.rgb = DocxStyleResolver.get_default(language_code=lang).resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     doc.add_page_break()
 
 
 def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list, doc_lang: str) -> Any:
-    """Renders a commercial summary and stakeholder matrix into a `python-docx` document.
-
-    This function populates a Word document with a formatted executive summary
-    and deal snapshot. It includes a contextual warning, a "flash table" with key
-    deal metrics, bulleted lists for the problem statement and proposed strategy,
-    and an optional stakeholder value matrix. The function modifies the input
-    `doc` object in-place.
-
-    Args:
-        doc (docx.document.Document): The document object to be modified.
-        data (CommercialSummaryDraft): A data object containing the summary content.
-            Must expose `estimated_tam`, `deal_flash` (an object with
-            `purchase_driver` and `ntt_win_theme` attributes),
-            `why_now_bullets`, and `how_we_win_bullets`.
-        matrix (List[object]): A list of stakeholder data objects, each with
-            `role`, `focus`, and `message` attributes. If empty, the stakeholder
-            matrix section is not rendered.
-
-    Raises:
-        AttributeError: If `data` or any object within the `matrix` list is
-            missing required attributes.
-    """
+    """Renders a commercial summary and stakeholder matrix into a `python-docx` document."""
     add_heading_paragraph(doc, t("commercial_ch1_heading", locale=doc_lang), level=1)
 
-    #
     warn_table = doc.add_table(rows=1, cols=1)
     finalize_table(warn_table)
     w_cell = warn_table.rows[0].cells[0]
@@ -238,13 +216,12 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list, d
     wr1 = wp.add_run(t("commercial_report_context_badge", locale=doc_lang))
     wr1.bold = True
     wr1.font.size = Pt(9)
-    wr1.font.color.rgb = RGBColor(127, 127, 127)
+    wr1.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_MUTED)
     wr2 = wp.add_run(t("commercial_report_disclaimer_body", locale=doc_lang))
     wr2.font.size = Pt(9)
-    wr2.font.color.rgb = RGBColor(127, 127, 127)
+    wr2.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_MUTED)
     add_spacer(doc, 15)
 
-    #
     flash_table = doc.add_table(rows=3, cols=2)
     flash_table.alignment = WD_TABLE_ALIGNMENT.LEFT
     finalize_table(flash_table)
@@ -264,9 +241,9 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list, d
     )
     shade_cell(flash_table.rows[0].cells[1], "0072BC")
     for r in flash_table.rows[0].cells[0].paragraphs[0].runs:
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
     for r in flash_table.rows[0].cells[1].paragraphs[0].runs:
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     deal_flash = data.deal_flash
     set_cell_text(
@@ -359,7 +336,7 @@ def render_commercial_summary(doc, data: CommercialSummaryDraft, matrix: list, d
             )
             shade_cell(m_table.rows[0].cells[i], "0072BC")
             for r in m_table.rows[0].cells[i].paragraphs[0].runs:
-                r.font.color.rgb = RGBColor(255, 255, 255)
+                r.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
         for row_data in matrix:
             row = m_table.add_row()
@@ -402,7 +379,7 @@ def render_gtm_strategy(doc, gtm: GtmStrategy, doc_lang: str) -> Any:
         )
         shade_cell(table.rows[0].cells[i], "0072BC")
         for r in table.rows[0].cells[i].paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
     vectors = [
         (t("commercial_vector_trojan_horse", locale=doc_lang), gtm.trojan_horse),
         (t("commercial_vector_self_funded", locale=doc_lang), gtm.self_funded_transformation),
@@ -469,7 +446,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem], 
         )
         shade_cell(h_cell, "0072BC")
         for r in h_cell.paragraphs[0].runs:
-            r.font.color.rgb = RGBColor(255, 255, 255)
+            r.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
         set_cell_text(
             table.rows[1].cells[0],
             f"Vendor Co-Sell: {opp.vendor_cosell}",
@@ -504,7 +481,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem], 
         r1 = p1.add_run(t("commercial_client_objection_badge", locale=doc_lang))
         r1.bold = False
         r1.font.size = Pt(10.5)
-        r1.font.color.rgb = RGBColor(204, 0, 0)
+        r1.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.STATUS_CRITICAL)
         r_obj = p1.add_run(clean_commercial_text(opp.client_objection))
         r_obj.bold = False
         r_obj.font.size = Pt(10.5)
@@ -514,7 +491,7 @@ def render_opportunities_pipeline(doc, pipeline: list[OpportunityPipelineItem], 
         r2 = p2.add_run(f"✅ Respuesta {company} (Objection Handling): ")
         r2.bold = False
         r2.font.size = Pt(10.5)
-        r2.font.color.rgb = RGBColor(39, 78, 19)
+        r2.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.STATUS_SUCCESS)
         r_ans = p2.add_run(clean_commercial_text(opp.objection_handling))
         r_ans.bold = False
         r_ans.font.size = Pt(10.5)
@@ -562,7 +539,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
         p_syn.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
         r_syn_text = p_syn.add_run(clean_commercial_text(prop.executive_synthesis))
         r_syn_text.bold = False
-        r_syn_text.font.color.rgb = RGBColor(46, 64, 77)
+        r_syn_text.font.color.rgb = BASE_TEXT_COLOR
         p_syn.paragraph_format.space_after = Pt(12)
 
         ai_strat = prop.ai_transformation_strategy
@@ -573,7 +550,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
             p_ai = doc.add_paragraph()
             p_ai.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
             r_ai = p_ai.add_run(clean_commercial_text(ai_strat))
-            r_ai.font.color.rgb = RGBColor(46, 64, 77)
+            r_ai.font.color.rgb = BASE_TEXT_COLOR
             p_ai.paragraph_format.space_after = Pt(12)
 
         add_heading_paragraph(
@@ -588,7 +565,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
                 f"{orig_lbl}: {clean_commercial_text(ctx.origin)}",
                 f"{coi_lbl}: {clean_commercial_text(ctx.cost_of_inaction)}",
             ],
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=True,
         )
         add_spacer(doc, 10)
@@ -604,7 +581,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
                 f"{target_lbl}: {clean_commercial_text(sol.target_state)}",
                 f"{ns_lbl}: {clean_commercial_text(sol.north_star_metric)}",
             ],
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=True,
         )
         add_spacer(doc, 10)
@@ -613,34 +590,34 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
         p_phases = doc.add_paragraph()
         r_ph = p_phases.add_run(t("commercial_project_phases", locale=lang))
         r_ph.bold = True
-        r_ph.font.color.rgb = RGBColor(46, 64, 77)
+        r_ph.font.color.rgb = BASE_TEXT_COLOR
         p_phases.paragraph_format.space_after = Pt(4)
         add_smart_bullet_list(
             doc,
             scope.phases,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=True,
         )
         p_del = doc.add_paragraph()
         r_del = p_del.add_run(t("commercial_key_deliverables", locale=lang))
         r_del.bold = True
-        r_del.font.color.rgb = RGBColor(46, 64, 77)
+        r_del.font.color.rgb = BASE_TEXT_COLOR
         p_del.paragraph_format.space_after = Pt(4)
         add_smart_bullet_list(
             doc,
             scope.deliverables,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=False,
         )
         p_out = doc.add_paragraph()
         r_out = p_out.add_run(t("commercial_out_of_scope", locale=lang))
         r_out.bold = True
-        r_out.font.color.rgb = RGBColor(46, 64, 77)
+        r_out.font.color.rgb = BASE_TEXT_COLOR
         p_out.paragraph_format.space_after = Pt(4)
         add_smart_bullet_list(
             doc,
             scope.out_of_scope,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=False,
         )
         add_spacer(doc, 10)
@@ -651,29 +628,29 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
         add_body_paragraph(
             doc,
             f"{gov_lbl}: {clean_commercial_text(gov.governance_model)}",
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             space_after=6,
         )
         p_team = doc.add_paragraph()
         r_team = p_team.add_run(t("commercial_key_profiles", locale=lang))
         r_team.bold = True
-        r_team.font.color.rgb = RGBColor(46, 64, 77)
+        r_team.font.color.rgb = BASE_TEXT_COLOR
         p_team.paragraph_format.space_after = Pt(4)
         add_smart_bullet_list(
             doc,
             team.team_roles,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=False,
         )
         p_as = doc.add_paragraph()
         r_as = p_as.add_run(t("commercial_critical_assumptions", locale=lang))
         r_as.bold = True
-        r_as.font.color.rgb = RGBColor(46, 64, 77)
+        r_as.font.color.rgb = BASE_TEXT_COLOR
         p_as.paragraph_format.space_after = Pt(4)
         add_smart_bullet_list(
             doc,
             gov.assumptions,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=False,
         )
         add_spacer(doc, 10)
@@ -705,7 +682,7 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
             shade_cell(rtable.rows[0].cells[1], "0072BC")
             for cell in rtable.rows[0].cells:
                 for r in cell.paragraphs[0].runs:
-                    r.font.color.rgb = RGBColor(255, 255, 255)
+                    r.font.color.rgb = DocxStyleResolver.get_default(language_code=lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
             for risk_item in risks:
                 row = rtable.add_row()
                 set_cell_text(
@@ -727,19 +704,19 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
         add_smart_bullet_list(
             doc,
             why.accelerators,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=False,
         )
         part_lbl = t("commercial_key_partnerships_label", locale=lang)
         add_body_paragraph(
             doc,
             f"{part_lbl}: {clean_commercial_text(why.partnerships)}",
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
         )
         p_cred = doc.add_paragraph()
         r_cred = p_cred.add_run(t("commercial_action_required_credentials", locale=lang))
         r_cred.bold = True
-        r_cred.font.color.rgb = RGBColor(238, 63, 50)
+        r_cred.font.color.rgb = DocxStyleResolver.get_default(language_code=lang).resolve_rgb(SemanticColorRole.STATUS_CRITICAL)
         p_cred.paragraph_format.space_before = Pt(6)
         p_cred.paragraph_format.space_after = Pt(10)
         add_heading_paragraph(
@@ -754,18 +731,18 @@ def render_proactive_proposals(doc, proposals: list[ProposalDraft], lang: str) -
                 f"{dur_lbl}: {clean_commercial_text(inv.estimated_duration)}",
                 f"{inv_range_lbl}: {clean_commercial_text(inv.tcv_range)}",
             ],
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=True,
         )
         p_act = doc.add_paragraph()
         r_act = p_act.add_run(t("commercial_activation_plan", locale=lang))
         r_act.bold = True
-        r_act.font.color.rgb = RGBColor(46, 64, 77)
+        r_act.font.color.rgb = BASE_TEXT_COLOR
         p_act.paragraph_format.space_after = Pt(4)
         add_smart_bullet_list(
             doc,
             prop.activation_plan,
-            color_rgb=RGBColor(46, 64, 77),
+            color_rgb=BASE_TEXT_COLOR,
             bold_prefix=True,
         )
         add_spacer(doc, 15)

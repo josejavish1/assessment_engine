@@ -15,9 +15,11 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 from assessment_engine.infrastructure.docx_render_utils import (
     set_cell_text,
-    shade_cell,
+    shade_cell as _infra_shade_cell,
 )
 
 logger = logging.getLogger(__name__)
@@ -83,7 +85,7 @@ def format_currency_custom(value: float, thousands_sep: str, decimal_sep: str) -
 def clean_client_name(client_name: str) -> str:
     """Cleans a raw client name for reporting."""
     if not client_name:
-        return "Cliente"
+        return "Client"
     cleaned = re.sub(r"[_-][vV]\d+\b", "", client_name)
     cleaned = cleaned.replace("_", " ").replace("-", " ")
     cleaned = cleaned.strip()
@@ -121,16 +123,49 @@ def set_cell_border_white(cell: Any) -> None:
     tcPr.append(tcBorders)
 
 
+def shade_cell(
+    cell: Any,
+    color_hex_or_role: str | SemanticColorRole,
+    resolver: DocxStyleResolver | None = None,
+) -> None:
+    """Applies background shading to a table cell using a SemanticColorRole or hex string."""
+    active_resolver = resolver or DocxStyleResolver.get_default()
+    if isinstance(color_hex_or_role, SemanticColorRole):
+        hex_val = active_resolver.resolve_hex(color_hex_or_role)
+    else:
+        hex_val = str(color_hex_or_role).lstrip("#")
+    _infra_shade_cell(cell, hex_val)
+
+
 def set_cell_text_custom(
     cell: Any,
     text: Any,
     bold: bool = False,
-    font_size: int = 9,
+    font_size: int | float = 9,
     align: Any = WD_ALIGN_PARAGRAPH.LEFT,
     color_rgb: Any = None,
     no_bullets: bool = False,
+    typography_role: TypographyRole | None = None,
+    color_role: SemanticColorRole | None = None,
+    resolver: DocxStyleResolver | None = None,
 ) -> None:
-    """Populates a docx table cell with richly formatted, multi-line text."""
+    """Populates a docx table cell enforcing W3C Design Tokens via DocxStyleResolver."""
+    active_resolver = resolver or DocxStyleResolver.get_default()
+
+    if color_role:
+        effective_color = active_resolver.resolve_rgb(color_role)
+    elif color_rgb is not None:
+        effective_color = color_rgb if isinstance(color_rgb, RGBColor) else RGBColor(*color_rgb)
+    else:
+        effective_color = active_resolver.resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
+
+    if typography_role:
+        typo_token = active_resolver.theme.typography.get(typography_role)
+        if typo_token:
+            font_size = typo_token.font_size.points
+            if typo_token.is_bold:
+                bold = True
+
     clean_txt = str(text) if text is not None else ""
     lines = [line.strip() for line in clean_txt.split("\n") if line.strip()]
 
@@ -158,47 +193,66 @@ def set_cell_text_custom(
                 bullet_prefix = "• "
             else:
                 p.paragraph_format.left_indent = Inches(0.0)
-                bullet_prefix = "• "
+                bullet_prefix = "" if no_bullets else "• "
 
             ref_text = ""
             if "[Ref:" in clean_line:
                 clean_line, ref_part = clean_line.split("[Ref:", 1)
                 ref_text = "[Ref:" + ref_part
 
-            if ":" in clean_line:
-                label, desc = clean_line.split(":", 1)
+            # Strip any markdown bold asterisks to prevent raw formatting leaking
+            clean_line_no_md = clean_line.replace("**", "").replace("*", "")
+
+            if ":" in clean_line_no_md:
+                label, desc = clean_line_no_md.split(":", 1)
                 run_lbl = p.add_run(f"{bullet_prefix}{label.strip()}: ")
-                run_lbl.bold = True
-                run_lbl.font.name = "Arial"
+                active_resolver.apply_run_style(
+                    run_lbl,
+                    typo_role=typography_role or TypographyRole.TABLE_CELL,
+                    color_role=color_role or SemanticColorRole.TEXT_PRIMARY,
+                    bold_override=True,
+                )
                 run_lbl.font.size = Pt(font_size)
-                if color_rgb:
-                    run_lbl.font.color.rgb = color_rgb
 
                 run_desc = p.add_run(desc.strip())
-                run_desc.font.name = "Arial"
+                active_resolver.apply_run_style(
+                    run_desc,
+                    typo_role=typography_role or TypographyRole.TABLE_CELL,
+                    color_role=color_role or SemanticColorRole.TEXT_PRIMARY,
+                    bold_override=bold,
+                )
                 run_desc.font.size = Pt(font_size)
-                if color_rgb:
-                    run_desc.font.color.rgb = color_rgb
             else:
-                run = p.add_run(f"{bullet_prefix}{clean_line.strip()}")
-                run.bold = bold
-                run.font.name = "Arial"
+                run = p.add_run(f"{bullet_prefix}{clean_line_no_md.strip()}")
+                active_resolver.apply_run_style(
+                    run,
+                    typo_role=typography_role or TypographyRole.TABLE_CELL,
+                    color_role=color_role or SemanticColorRole.TEXT_PRIMARY,
+                    bold_override=bold,
+                )
                 run.font.size = Pt(font_size)
-                if color_rgb:
-                    run.font.color.rgb = color_rgb
 
             if ref_text:
                 run_ref = p.add_run(f" {ref_text.strip()}")
-                run_ref.font.name = "Arial"
+                active_resolver.apply_run_style(
+                    run_ref,
+                    typo_role=TypographyRole.CAPTION,
+                    color_role=SemanticColorRole.TEXT_MUTED,
+                )
                 run_ref.font.size = Pt(font_size - 1)
                 run_ref.font.italic = True
-                run_ref.font.color.rgb = RGBColor(120, 130, 140)
     else:
-        set_cell_text(cell, clean_txt, bold=bold, align=align, font_size=font_size)
+        clean_single = clean_txt.replace("**", "").replace("*", "")
+        set_cell_text(cell, clean_single, bold=bold, align=align, font_size=font_size)
         p = cell.paragraphs[0]
         for r in p.runs:
-            if color_rgb:
-                r.font.color.rgb = color_rgb
+            active_resolver.apply_run_style(
+                r,
+                typo_role=typography_role or TypographyRole.TABLE_CELL,
+                color_role=color_role or SemanticColorRole.TEXT_PRIMARY,
+                bold_override=bold,
+            )
+            r.font.size = Pt(font_size)
 
 
 def add_body_paragraph(
@@ -317,32 +371,47 @@ def add_callout_box(
 
 
 def add_heading(
-    doc: Any, text: str, level: int, primary_color_rgb: tuple[int, int, int] = (0, 114, 188)
+    doc: Any,
+    text: str,
+    level: int,
+    primary_color_rgb: tuple[int, int, int] | None = None,
+    typography_role: TypographyRole | None = None,
+    color_role: SemanticColorRole | None = None,
+    resolver: DocxStyleResolver | None = None,
 ) -> Any:
-    """Adds a sanitized and styled heading to a document."""
+    """Adds a sanitized and styled heading to a document enforcing W3C Design Tokens."""
+    active_resolver = resolver or DocxStyleResolver.get_default()
     clean_txt = (
-        text.replace("**", "").replace("__", "").replace("*", "").replace("_", "")
+        text.replace("**", "").replace("__", "").replace("*", "")
     )
+    if level == 1:
+        clean_txt = re.sub(r"^\d+\.\s*", "", clean_txt).strip()
+    else:
+        clean_txt = clean_txt.replace("_", "")
 
     h = doc.add_heading(clean_txt, level)
-    h.paragraph_format.space_before = Pt(12)
-    h.paragraph_format.space_after = Pt(6)
+    if level == 1:
+        typo = typography_role or TypographyRole.HEADING_1
+        c_role = color_role or SemanticColorRole.BRAND_PRIMARY
+        h.paragraph_format.page_break_before = True
+    elif level == 2:
+        typo = typography_role or TypographyRole.HEADING_2
+        c_role = color_role or SemanticColorRole.BRAND_SECONDARY
+    elif level == 3:
+        typo = typography_role or TypographyRole.HEADING_3
+        c_role = color_role or SemanticColorRole.TEXT_PRIMARY
+    else:
+        typo = typography_role or TypographyRole.HEADING_4
+        c_role = color_role or SemanticColorRole.TEXT_SECONDARY
+
+    active_resolver.apply_paragraph_typography(h, typo)
     h.paragraph_format.keep_with_next = True
 
-    if level == 1:
-        h.paragraph_format.page_break_before = True
-
     for run in h.runs:
-        run.font.color.rgb = RGBColor(*primary_color_rgb)
-        run.font.name = "Arial"
-        if level == 1:
-            run.font.size = Pt(16)
-        elif level == 2:
-            run.font.size = Pt(14)
-        elif level == 3:
-            run.font.size = Pt(12)
-        else:
-            run.font.size = Pt(11)
+        active_resolver.apply_run_style(run, typo_role=typo, color_role=c_role)
+        if primary_color_rgb is not None:
+            run.font.color.rgb = RGBColor(*primary_color_rgb)
+
     return h
 
 
@@ -384,6 +453,57 @@ def set_update_fields(doc: Any) -> None:
     settings.append(update_fields)
 
 
+def add_numbered_item(
+    doc: Any,
+    number_str: str,
+    text: str,
+    text_color_rgb: tuple[int, int, int] = (46, 64, 77),
+    space_after: int = 6,
+) -> Any:
+    """Adds a formatted numbered list paragraph with hanging indent and bold title."""
+    from assessment_engine.infrastructure.localization import (
+        apply_vocabulary_substitutions,
+    )
+
+    clean_txt = str(text).replace("**", "").replace("*", "").strip()
+    clean_txt = apply_vocabulary_substitutions(clean_txt)
+
+    p = doc.add_paragraph(style="Normal")
+    p.paragraph_format.space_before = Pt(3)
+    p.paragraph_format.space_after = Pt(space_after)
+    p.paragraph_format.left_indent = Pt(20)
+    p.paragraph_format.first_line_indent = Pt(-20)
+    p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+    run_num = p.add_run(f"{number_str}.  ")
+    run_num.font.name = "Arial"
+    run_num.font.size = Pt(10)
+    run_num.font.bold = True
+    run_num.font.color.rgb = RGBColor(*text_color_rgb)
+
+    if ":" in clean_txt:
+        parts = clean_txt.split(":", 1)
+        run_title = p.add_run(parts[0].strip() + ": ")
+        run_title.font.name = "Arial"
+        run_title.font.size = Pt(10)
+        run_title.font.bold = True
+        run_title.font.color.rgb = RGBColor(*text_color_rgb)
+
+        run_body = p.add_run(parts[1].strip())
+        run_body.font.name = "Arial"
+        run_body.font.size = Pt(10)
+        run_body.font.bold = False
+        run_body.font.color.rgb = RGBColor(*text_color_rgb)
+    else:
+        run_body = p.add_run(clean_txt)
+        run_body.font.name = "Arial"
+        run_body.font.size = Pt(10)
+        run_body.font.bold = False
+        run_body.font.color.rgb = RGBColor(*text_color_rgb)
+
+    return p
+
+
 def parse_and_append_markdown_section(
     doc: Any,
     md_path: Path,
@@ -412,6 +532,7 @@ def parse_and_append_markdown_section(
             and start_header.lower() in cleaned.lower()
         ):
             recording = True
+            add_heading(doc, cleaned[3:].strip(), level=2, primary_color_rgb=p_color_rgb)
             continue
 
         if (
@@ -436,7 +557,8 @@ def parse_and_append_markdown_section(
         if cleaned.startswith("# "):
             if skip_level_1:
                 continue
-            add_heading(doc, cleaned[2:], level=1, primary_color_rgb=p_color_rgb)
+            clean_h1 = re.sub(r"^\d+\.\s*", "", cleaned[2:].strip())
+            add_heading(doc, clean_h1, level=1, primary_color_rgb=p_color_rgb)
         elif cleaned.startswith("## "):
             add_heading(doc, cleaned[3:], level=2, primary_color_rgb=p_color_rgb)
         elif cleaned.startswith("### "):
@@ -447,6 +569,12 @@ def parse_and_append_markdown_section(
             add_body_paragraph(
                 doc, cleaned[2:], style="Bullet", text_color_rgb=text_color_rgb
             )
+        elif re.match(r"^(\d+)\.\s+(.*)", cleaned):
+            m_num = re.match(r"^(\d+)\.\s+(.*)", cleaned)
+            if m_num:
+                add_numbered_item(
+                    doc, m_num.group(1), m_num.group(2), text_color_rgb=text_color_rgb
+                )
         elif cleaned.startswith("> "):
             text_val = cleaned[2:]
             if "diagnostic" in text_val.lower() or "diagnostico" in text_val.lower():

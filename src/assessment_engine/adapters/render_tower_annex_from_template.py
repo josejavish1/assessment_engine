@@ -8,7 +8,10 @@ from typing import Any
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt
+
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole
 
 logger = logging.getLogger("assessment_engine.adapters.render_tower_annex")
 
@@ -317,7 +320,7 @@ def polish_semantic_tables(doc) -> None:
                     for run in paragraph.runs:
                         run.font.size = Pt(10)
                         if row_idx == 0:
-                            run.font.color.rgb = RGBColor(255, 255, 255)
+                            run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
 
 def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:

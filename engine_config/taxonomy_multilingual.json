@@ -1,0 +1,748 @@
+{
+  "T1": {
+    "canonical_name": "Physical Data Center & Facilities",
+    "locales": {
+      "es": "Centro de Datos Físico e Instalaciones",
+      "en": "Physical Data Center & Facilities",
+      "pt": "Data Center Físico e Instalações",
+      "fr": "Centre de Données Physique et Installations",
+      "de": "Physisches Rechenzentrum & Einrichtungen",
+      "ja": "フィジカルデータセンター＆ファシリティ"
+    },
+    "pillars": {
+      "T1.P1": {
+        "canonical_name": "Power & Electrical Continuity",
+        "locales": {
+          "es": "Energía y Continuidad Eléctrica",
+          "en": "Power & Electrical Continuity",
+          "pt": "Energia e Continuidade Elétrica",
+          "fr": "Alimentation et Continuité Électrique",
+          "de": "Stromversorgung & elektrische Kontinuität",
+          "ja": "電力および電気的継続性"
+        }
+      },
+      "T1.P2": {
+        "canonical_name": "Climate Control & Environmental Resilience",
+        "locales": {
+          "es": "Climatización, Refrigeración y Control Ambiental",
+          "en": "Climate Control & Environmental Resilience",
+          "pt": "Climatização e Resiliência Ambiental",
+          "fr": "Climatisation et Résilience Environnementale",
+          "de": "Klimatisierung & Umweltresilienz",
+          "ja": "空調・冷却および環境レジリエンス"
+        }
+      },
+      "T1.P3": {
+        "canonical_name": "Physical Security & Access Control",
+        "locales": {
+          "es": "Seguridad Física y Control de Accesos",
+          "en": "Physical Security & Access Control",
+          "pt": "Segurança Física e Controle de Acesso",
+          "fr": "Sécurité Physique et Contrôle d'Accès",
+          "de": "Physische Sicherheit & Zutrittskontrolle",
+          "ja": "物理セキュリティおよびアクセス制御"
+        }
+      },
+      "T1.P4": {
+        "canonical_name": "Fire Suppression & Environmental Safety",
+        "locales": {
+          "es": "Protección Contra Incendios y Seguridad Ambiental",
+          "en": "Fire Suppression & Environmental Safety",
+          "pt": "Proteção Contra Incêndios e Segurança Ambiental",
+          "fr": "Protection Incendie et Sécurité Environnementale",
+          "de": "Brandschutz & Umweltsicherheit",
+          "ja": "防火および環境安全"
+        }
+      },
+      "T1.P5": {
+        "canonical_name": "Facilities Operations, Monitoring & Maintenance",
+        "locales": {
+          "es": "Operación de Facilities, Monitorización y Mantenimiento",
+          "en": "Facilities Operations, Monitoring & Maintenance",
+          "pt": "Operações de Facilities, Monitoramento e Manutenção",
+          "fr": "Exploitation des Installations, Surveillance et Maintenance",
+          "de": "Facility-Betrieb, Monitoring & Wartung",
+          "ja": "ファシリティ運用・監視および保守"
+        }
+      }
+    }
+  },
+  "T2": {
+    "canonical_name": "Hybrid Compute & Platforms",
+    "locales": {
+      "es": "Cómputo Híbrido y Plataformas",
+      "en": "Hybrid Compute & Platforms",
+      "pt": "Computação Híbrida e Plataformas",
+      "fr": "Calcul Hybride et Plateformes",
+      "de": "Hybride Rechenkapazitäten & Plattformen",
+      "ja": "ハイブリッドコンピュート＆プラットフォーム"
+    },
+    "pillars": {
+      "T2.P1": {
+        "canonical_name": "Compute Foundation & Virtualization",
+        "locales": {
+          "es": "Fundamentos de Cómputo y Virtualización",
+          "en": "Compute Foundation & Virtualization",
+          "pt": "Fundamentos de Computação e Virtualização",
+          "fr": "Fondations de Calcul et Virtualisation",
+          "de": "Compute-Grundlagen & Virtualisierung",
+          "ja": "コンピュート基盤および仮想化"
+        }
+      },
+      "T2.P2": {
+        "canonical_name": "Container Platform & Kubernetes Operations",
+        "locales": {
+          "es": "Plataforma de Contenedores y Operaciones Kubernetes",
+          "en": "Container Platform & Kubernetes Operations",
+          "pt": "Plataforma de Contêineres e Operações Kubernetes",
+          "fr": "Plateforme de Conteneurs et Exploitation Kubernetes",
+          "de": "Container-Plattform & Kubernetes-Betrieb",
+          "ja": "コンテナプラットフォームおよびKubernetes運用"
+        }
+      },
+      "T2.P3": {
+        "canonical_name": "Hybrid Cloud Enablement & Landing Zones",
+        "locales": {
+          "es": "Habilitación de Cloud Híbrido y Landing Zones",
+          "en": "Hybrid Cloud Enablement & Landing Zones",
+          "pt": "Habilitação de Nuvem Híbrida e Landing Zones",
+          "fr": "Activation du Cloud Hybride et Landing Zones",
+          "de": "Hybrid Cloud Enablement & Landing Zones",
+          "ja": "ハイブリッドクラウド有効化およびランディングゾーン"
+        }
+      },
+      "T2.P4": {
+        "canonical_name": "Automation, Provisioning & Platform Self-Service",
+        "locales": {
+          "es": "Automatización, Aprovisionamiento y Autoservicio",
+          "en": "Automation, Provisioning & Platform Self-Service",
+          "pt": "Automação, Provisionamento e Autosserviço",
+          "fr": "Automatisation, Approvisionnement et Libre-service",
+          "de": "Automatisierung, Bereitstellung & Plattform-Self-Service",
+          "ja": "自動化・プロビジョニングおよびセルフサービス"
+        }
+      },
+      "T2.P5": {
+        "canonical_name": "Platform Operations, Observability & Reliability",
+        "locales": {
+          "es": "Operaciones de Plataforma, Observabilidad y Confiabilidad",
+          "en": "Platform Operations, Observability & Reliability",
+          "pt": "Operações de Plataforma, Observabilidade e Confiabilidade",
+          "fr": "Exploitation de Plateforme, Observabilité et Fiabilité",
+          "de": "Plattformbetrieb, Observability & Zuverlässigkeit",
+          "ja": "プラットフォーム運用・可観測性および信頼性"
+        }
+      }
+    },
+    "capabilities": {
+      "Platform Self-Service and Service Catalog": {
+        "es": "Autoservicio de Plataforma y Catálogo de Servicios",
+        "en": "Platform Self-Service and Service Catalog"
+      },
+      "Golden Image Pipeline and Configuration Baselines": {
+        "es": "Pipeline de Imágenes Golden y Baselines de Configuración",
+        "en": "Golden Image Pipeline and Configuration Baselines"
+      },
+      "Infrastructure as Code Provisioning Coverage": {
+        "es": "Aprovisionamiento Automatizado mediante Infraestructura como Código (IaC)",
+        "en": "Infrastructure as Code Provisioning Coverage"
+      },
+      "Self-Healing and Capacity Autoscaling": {
+        "es": "Autoscaling de Capacidad y Autorrecuperación (Self-Healing)",
+        "en": "Self-Healing and Capacity Autoscaling"
+      },
+      "Cluster Lifecycle Management and Upgrades": {
+        "es": "Gestión del Ciclo de Vida de Clústeres y Actualizaciones",
+        "en": "Cluster Lifecycle Management and Upgrades"
+      },
+      "Operational Resilience and Knowledge Redundancy": {
+        "es": "Resiliencia Operativa y Redundancia del Conocimiento Técnico",
+        "en": "Operational Resilience and Knowledge Redundancy"
+      },
+      "Cloud Cost Governance & FinOps Visibility": {
+        "es": "Gobernanza de Costes Cloud y Visibilidad FinOps",
+        "en": "Cloud Cost Governance & FinOps Visibility"
+      },
+      "Cloud Landing Zone Architecture & Multi-Account Structure": {
+        "es": "Arquitectura de Landing Zone y Estructura Multicuenta Cloud",
+        "en": "Cloud Landing Zone Architecture & Multi-Account Structure"
+      },
+      "Hybrid Deployment Patterns (IaaS/PaaS Standardization)": {
+        "es": "Patrones de Despliegue Híbrido y Estandarización IaaS/PaaS",
+        "en": "Hybrid Deployment Patterns (IaaS/PaaS Standardization)"
+      },
+      "Predictive Platform Capacity and Oversubscription Forecasting": {
+        "es": "Planificación Predictiva de Capacidad y Sobresuscripción",
+        "en": "Predictive Platform Capacity and Oversubscription Forecasting"
+      },
+      "Technical Guardrails & Policy-as-Code Governance": {
+        "es": "Guardrails Técnicos y Gobernanza de Políticas como Código",
+        "en": "Technical Guardrails & Policy-as-Code Governance"
+      },
+      "Virtualization Capacity and Performance Management": {
+        "es": "Gestión de Rendimiento y Capacidad de Virtualización",
+        "en": "Virtualization Capacity and Performance Management"
+      },
+      "Platform SLO, SLI, and Error Budget Governance": {
+        "es": "Gobierno de SLOs, SLIs y Presupuestos de Error de Plataforma",
+        "en": "Platform SLO, SLI, and Error Budget Governance"
+      },
+      "Automated Incident Remediation and Runbook Orchestration": {
+        "es": "Remediación Automatizada de Incidentes y Orquestación de Runbooks",
+        "en": "Automated Incident Remediation and Runbook Orchestration"
+      },
+      "Compute Lifecycle Management and Firmware Governance": {
+        "es": "Gestión del Ciclo de Vida del Cómputo y Gobierno de Firmware",
+        "en": "Compute Lifecycle Management and Firmware Governance"
+      },
+      "Compute Platform Availability and Hypervisor Resilience": {
+        "es": "Disponibilidad de la Plataforma de Cómputo y Resiliencia del Hipervisor",
+        "en": "Compute Platform Availability and Hypervisor Resilience"
+      }
+    }
+  },
+  "T3": {
+    "canonical_name": "Network & Connectivity",
+    "locales": {
+      "es": "Redes y Conectividad",
+      "en": "Network & Connectivity",
+      "pt": "Redes e Conectividade",
+      "fr": "Réseaux et Connectivité",
+      "de": "Netzwerk & Konnektivität",
+      "ja": "ネットワーク＆コネクティビティ"
+    },
+    "pillars": {
+      "T3.P1": {
+        "canonical_name": "Data Center & Campus Network Foundation",
+        "locales": {
+          "es": "Redes de Centro de Datos y Campus",
+          "en": "Data Center & Campus Network Foundation",
+          "pt": "Redes de Data Center e Campus",
+          "fr": "Fondations Réseau Data Center et Campus",
+          "de": "Rechenzentrums- & Campus-Netzwerkgrundlagen",
+          "ja": "データセンターおよびキャンパスネットワーク基盤"
+        }
+      },
+      "T3.P2": {
+        "canonical_name": "WAN / SD-WAN & Branch Connectivity",
+        "locales": {
+          "es": "WAN / SD-WAN y Conectividad de Sedes",
+          "en": "WAN / SD-WAN & Branch Connectivity",
+          "pt": "WAN / SD-WAN e Conectividade de Filiais",
+          "fr": "WAN / SD-WAN et Connectivité des Sites",
+          "de": "WAN / SD-WAN & Standort-Konnektivität",
+          "ja": "WAN / SD-WANおよび拠点間コネクティビティ"
+        }
+      },
+      "T3.P3": {
+        "canonical_name": "DCI & Resilient Transport",
+        "locales": {
+          "es": "Interconexión de CPDs (DCI) y Transporte Resiliente",
+          "en": "DCI & Resilient Transport",
+          "pt": "Interconexão de Data Centers (DCI) e Transporte Resiliente",
+          "fr": "Interconnexion de Data Centers (DCI) et Transport Résilient",
+          "de": "DCI & redundanter Transport",
+          "ja": "DCIおよび高信頼トランスポート"
+        }
+      },
+      "T3.P4": {
+        "canonical_name": "Hybrid Cloud Connectivity & Edge Services",
+        "locales": {
+          "es": "Conectividad a Cloud Híbrido y Servicios Edge",
+          "en": "Hybrid Cloud Connectivity & Edge Services",
+          "pt": "Conectividade de Nuvem Híbrida e Serviços Edge",
+          "fr": "Connectivité Cloud Hybride et Services Edge",
+          "de": "Hybrid Cloud Konnektivität & Edge Services",
+          "ja": "ハイブリッドクラウド接続およびエッジサービス"
+        }
+      },
+      "T3.P5": {
+        "canonical_name": "Network Operations, Observability & Automation",
+        "locales": {
+          "es": "Operaciones de Red, Observabilidad y Automatización",
+          "en": "Network Operations, Observability & Automation",
+          "pt": "Operações de Rede, Observabilidade e Automação",
+          "fr": "Exploitation Réseau, Observabilité et Automatisation",
+          "de": "Netzwerkbetrieb, Observability & Automatisierung",
+          "ja": "ネットワーク運用・可観測性および自動化"
+        }
+      }
+    }
+  },
+  "T4": {
+    "canonical_name": "Data Services & Storage",
+    "locales": {
+      "es": "Servicios de Datos y Almacenamiento",
+      "en": "Data Services & Storage",
+      "pt": "Serviços de Dados e Armazenamento",
+      "fr": "Services de Données et Stockage",
+      "de": "Datendienste & Speicher",
+      "ja": "データサービス＆ストレージ"
+    },
+    "pillars": {
+      "T4.P1": {
+        "canonical_name": "Storage Architecture & Service Levels",
+        "locales": {
+          "es": "Arquitectura de Almacenamiento y Niveles de Servicio",
+          "en": "Storage Architecture & Service Levels",
+          "pt": "Arquitetura de Armazenamento e Níveis de Serviço",
+          "fr": "Architecture de Stockage et Niveaux de Service",
+          "de": "Speicherarchitektur & Service Levels",
+          "ja": "ストレージアーキテクチャおよびサービスレベル"
+        }
+      },
+      "T4.P2": {
+        "canonical_name": "Performance, Capacity & Lifecycle Management",
+        "locales": {
+          "es": "Rendimiento, Capacidad y Ciclo de Vida del Almacenamiento",
+          "en": "Performance, Capacity & Lifecycle Management",
+          "pt": "Desempenho, Capacidade e Ciclo de Vida do Armazenamento",
+          "fr": "Performance, Capacité et Cycle de Vie du Stockage",
+          "de": "Leistung, Kapazität & Lifecycle-Management",
+          "ja": "パフォーマンス・容量およびライフサイクル管理"
+        }
+      },
+      "T4.P3": {
+        "canonical_name": "Data Services: Snapshots, Replication & Efficiency",
+        "locales": {
+          "es": "Servicios de Datos: Snapshots, Replicación y Eficiencia",
+          "en": "Data Services: Snapshots, Replication & Efficiency",
+          "pt": "Serviços de Dados: Snapshots, Replicação e Eficiência",
+          "fr": "Services de Données : Snapshots, Réplication et Efficacité",
+          "de": "Datendienste: Snapshots, Replikation & Effizienz",
+          "ja": "データサービス：スナップショット・レプリケーションおよび効率化"
+        }
+      },
+      "T4.P4": {
+        "canonical_name": "Security & Access Controls for Data Platforms",
+        "locales": {
+          "es": "Seguridad y Control de Acceso en Plataformas de Datos",
+          "en": "Security & Access Controls for Data Platforms",
+          "pt": "Segurança e Controles de Acesso para Plataformas de Dados",
+          "fr": "Sécurité et Contrôle d'Accès aux Plateformes de Données",
+          "de": "Sicherheit & Zugriffskontrolle für Datenplattformen",
+          "ja": "データプラットフォームのセキュリティおよびアクセス制御"
+        }
+      },
+      "T4.P5": {
+        "canonical_name": "Platform Integration & Storage Operations",
+        "locales": {
+          "es": "Integración de Plataforma y Operaciones de Almacenamiento",
+          "en": "Platform Integration & Storage Operations",
+          "pt": "Integração de Plataforma e Operações de Armazenamento",
+          "fr": "Intégration de Plateforme et Exploitation du Stockage",
+          "de": "Plattformintegration & Speicherbetrieb",
+          "ja": "プラットフォーム統合およびストレージ運用"
+        }
+      }
+    }
+  },
+  "T5": {
+    "canonical_name": "Resilience & Continuity",
+    "locales": {
+      "es": "Resiliencia y Continuidad Operativa",
+      "en": "Resilience & Continuity",
+      "pt": "Resiliência e Continuidade Operacional",
+      "fr": "Résilience et Continuité d'Activité",
+      "de": "Resilienz & Betriebskontinuität",
+      "ja": "レジリエンス＆業務継続性"
+    },
+    "pillars": {
+      "T5.P1": {
+        "canonical_name": "BC/DR Governance & Continuity Strategy",
+        "locales": {
+          "es": "Estrategia de Continuidad y Gobierno BC/DR",
+          "en": "BC/DR Governance & Continuity Strategy",
+          "pt": "Governança BC/DR e Estratégia de Continuidade",
+          "fr": "Gouvernance BC/DR et Stratégie de Continuité",
+          "de": "BC/DR-Governance & Kontinuitätsstrategie",
+          "ja": "BC/DRガバナンスおよび事業継続戦略"
+        }
+      },
+      "T5.P2": {
+        "canonical_name": "Backup & Restore Operational Readiness",
+        "locales": {
+          "es": "Copia de Seguridad y Recuperación Operativa",
+          "en": "Backup & Restore Operational Readiness",
+          "pt": "Backup e Recuperação Operacional",
+          "fr": "Sauvegarde et Restauration Opérationnelle",
+          "de": "Backup & Restore Betriebsbereitschaft",
+          "ja": "バックアップおよび復旧の運用態勢"
+        }
+      },
+      "T5.P3": {
+        "canonical_name": "Disaster Recovery Architecture & Failover",
+        "locales": {
+          "es": "Recuperación ante Desastres (DR) y Conmutación",
+          "en": "Disaster Recovery Architecture & Failover",
+          "pt": "Recuperação de Desastres (DR) e Failover",
+          "fr": "Reprise après Sinistre (DR) et Basculement",
+          "de": "Disaster Recovery & Failover",
+          "ja": "ディザスタリカバリおよびフェイルオーバー"
+        }
+      },
+      "T5.P4": {
+        "canonical_name": "Cyber Recovery & Ransomware Immutability",
+        "locales": {
+          "es": "Ciberresiliencia e Inmutabilidad contra Ransomware",
+          "en": "Cyber Recovery & Ransomware Immutability",
+          "pt": "Recuperação Cibernética e Imutabilidade Ransomware",
+          "fr": "Cyber-Résilience et Immuabilité Ransomware",
+          "de": "Cyber Recovery & Ransomware-Unveränderlichkeit",
+          "ja": "サイバーリカバリおよびイミュータブル保護"
+        }
+      },
+      "T5.P5": {
+        "canonical_name": "High Availability & Architectural Resilience",
+        "locales": {
+          "es": "Alta Disponibilidad y Resiliencia Arquitectónica",
+          "en": "High Availability & Architectural Resilience",
+          "pt": "Alta Disponibilidade e Resiliência Arquitetônica",
+          "fr": "Haute Disponibilité et Résilience Architecturale",
+          "de": "Hochverfügbarkeit & architektonische Resilienz",
+          "ja": "高可用性およびアーキテクチャレジリエンス"
+        }
+      }
+    }
+  },
+  "T6": {
+    "canonical_name": "Infrastructure Security & Identity",
+    "locales": {
+      "es": "Seguridad de Infraestructura e Identidad",
+      "en": "Infrastructure Security & Identity",
+      "pt": "Segurança de Infraestrutura e Identidade",
+      "fr": "Sécurité des Infrastructures et Identité",
+      "de": "Infrastruktursicherheit & Identität",
+      "ja": "インフラセキュリティ＆アイデンティティ"
+    },
+    "pillars": {
+      "T6.P1": {
+        "canonical_name": "Identity & Access Management (IAM)",
+        "locales": {
+          "es": "Identidad y Control de Acceso (IAM)",
+          "en": "Identity & Access Management (IAM)",
+          "pt": "Gestão de Identidade e Acesso (IAM)",
+          "fr": "Gestion des Identités et des Accès (IAM)",
+          "de": "Identity & Access Management (IAM)",
+          "ja": "アイデンティティ＆アクセス管理（IAM）"
+        }
+      },
+      "T6.P2": {
+        "canonical_name": "Privileged Access Management (PAM) & Secrets",
+        "locales": {
+          "es": "Gestión de Accesos Privilegiados (PAM) y Secretos",
+          "en": "Privileged Access Management (PAM) & Secrets",
+          "pt": "Gestão de Acesso Privilegiado (PAM) e Segredos",
+          "fr": "Gestion des Accès Privilégiés (PAM) et Secrets",
+          "de": "Privileged Access Management (PAM) & Secrets",
+          "ja": "特権アクセス管理（PAM）およびシークレット管理"
+        }
+      },
+      "T6.P3": {
+        "canonical_name": "Hardening & Secure Configuration Baseline",
+        "locales": {
+          "es": "Bastionado y Control de Configuración Segura",
+          "en": "Hardening & Secure Configuration Baseline",
+          "pt": "Hardening e Configuração Segura",
+          "fr": "Durcissement et Configuration Sécurisée",
+          "de": "Hardening & sichere Konfigurations-Baselines",
+          "ja": "ハーデニングおよびセキュア構成基準"
+        }
+      },
+      "T6.P4": {
+        "canonical_name": "Vulnerability & Patch Management",
+        "locales": {
+          "es": "Gestión de Vulnerabilidades y Parcheo",
+          "en": "Vulnerability & Patch Management",
+          "pt": "Gestão de Vulnerabilidades e Correções",
+          "fr": "Gestion des Vulnérabilités et Mises à Jour",
+          "de": "Schwachstellen- & Patch-Management",
+          "ja": "脆弱性およびパッチ管理"
+        }
+      },
+      "T6.P5": {
+        "canonical_name": "Network Segmentation, Logging & Audit",
+        "locales": {
+          "es": "Segregación de Red, Registro de Logs y Auditoría",
+          "en": "Network Segmentation, Logging & Audit",
+          "pt": "Segregação de Rede, Logs e Auditoria",
+          "fr": "Segmentation Réseau, Journalisation et Audit",
+          "de": "Netzwerksegmentierung, Logging & Auditierung",
+          "ja": "ネットワーク分離・ロギングおよび監査"
+        }
+      }
+    }
+  },
+  "T7": {
+    "canonical_name": "ITSM & Digital Operations",
+    "locales": {
+      "es": "Gestión de Servicios de TI y Operaciones Digitales",
+      "en": "ITSM & Digital Operations",
+      "pt": "Gestão de Serviços de TI e Operações Digitais",
+      "fr": "ITSM et Opérations Numériques",
+      "de": "ITSM & digitale Betriebsabläufe",
+      "ja": "ITSM＆デジタル運用"
+    },
+    "pillars": {
+      "T7.P1": {
+        "canonical_name": "Service Governance, Catalog & SLA Management",
+        "locales": {
+          "es": "Gobierno del Servicio, Catálogo y SLAs/SLOs",
+          "en": "Service Governance, Catalog & SLA Management",
+          "pt": "Governança de Serviços, Catálogo e SLAs/SLOs",
+          "fr": "Gouvernance des Services, Catalogue et SLAs/SLOs",
+          "de": "Service Governance, Katalog & SLA-Management",
+          "ja": "サービスガバナンス・カタログおよびSLA管理"
+        }
+      },
+      "T7.P2": {
+        "canonical_name": "Service Desk & Incident Management",
+        "locales": {
+          "es": "Centro de Servicios y Gestión de Incidentes",
+          "en": "Service Desk & Incident Management",
+          "pt": "Service Desk e Gestão de Incidentes",
+          "fr": "Centre de Services et Gestion des Incidents",
+          "de": "Service Desk & Störungsmanagement",
+          "ja": "サービスデスクおよびインシデント管理"
+        }
+      },
+      "T7.P3": {
+        "canonical_name": "Change, Release & Configuration Management (CMDB)",
+        "locales": {
+          "es": "Gestión de Cambios, Despliegues y CMDB",
+          "en": "Change, Release & Configuration Management (CMDB)",
+          "pt": "Gestão de Mudanças, Releases e CMDB",
+          "fr": "Gestion des Changements, Versions et CMDB",
+          "de": "Change-, Release- & Configuration-Management (CMDB)",
+          "ja": "変更・リリースおよび構成管理（CMDB）"
+        }
+      },
+      "T7.P4": {
+        "canonical_name": "Problem Management & Site Reliability Engineering (SRE)",
+        "locales": {
+          "es": "Gestión de Problemas y Fiabilidad (SRE)",
+          "en": "Problem Management & Site Reliability Engineering (SRE)",
+          "pt": "Gestão de Problemas e Confiabilidade (SRE)",
+          "fr": "Gestion des Problèmes et Fiabilité (SRE)",
+          "de": "Problem Management & Site Reliability Engineering (SRE)",
+          "ja": "問題管理およびサイト信頼性エンジニアリング（SRE）"
+        }
+      },
+      "T7.P5": {
+        "canonical_name": "Observability, Event Management & AIOps",
+        "locales": {
+          "es": "Observabilidad, Gestión de Eventos y AIOps",
+          "en": "Observability, Event Management & AIOps",
+          "pt": "Observabilidade, Gestão de Eventos e AIOps",
+          "fr": "Observabilité, Gestion des Événements et AIOps",
+          "de": "Observability, Event Management & AIOps",
+          "ja": "可観測性・イベント管理およびAIOps"
+        }
+      }
+    }
+  },
+  "T8": {
+    "canonical_name": "Strategy, Governance & FinOps",
+    "locales": {
+      "es": "Estrategia Tecnológica, Gobierno y FinOps",
+      "en": "Strategy, Governance & FinOps",
+      "pt": "Estratégia Tecnológica, Governança e FinOps",
+      "fr": "Stratégie Technologique, Gouvernance et FinOps",
+      "de": "Technologiestrategie, Governance & FinOps",
+      "ja": "IT戦略・ガバナンスおよびFinOps"
+    },
+    "pillars": {
+      "T8.P1": {
+        "canonical_name": "Technology Strategy & Strategic Roadmap",
+        "locales": {
+          "es": "Estrategia Tecnológica y Hoja de Ruta",
+          "en": "Technology Strategy & Strategic Roadmap",
+          "pt": "Estratégia Tecnológica e Roteiro Estratégico",
+          "fr": "Stratégie Technologique et Feuille de Route",
+          "de": "Technologiestrategie & strategische Roadmap",
+          "ja": "テクノロジー戦略および戦略的ロードマップ"
+        }
+      },
+      "T8.P2": {
+        "canonical_name": "IT Governance, Portfolio & Decision Framework",
+        "locales": {
+          "es": "Gobernanza de TI, Cartera y Marco de Decisión",
+          "en": "IT Governance, Portfolio & Decision Framework",
+          "pt": "Governança de TI, Portfólio e Tomada de Decisão",
+          "fr": "Gouvernance IT, Portefeuille et Prise de Décision",
+          "de": "IT-Governance, Portfolio & Entscheidungsrahmen",
+          "ja": "ITガバナンス・ポートフォリオおよび意思決定フレームワーク"
+        }
+      },
+      "T8.P3": {
+        "canonical_name": "Risk Governance, Compliance & Control",
+        "locales": {
+          "es": "Gestión de Riesgo Tecnológico y Cumplimiento",
+          "en": "Risk Governance, Compliance & Control",
+          "pt": "Governança de Risco, Conformidade e Controle",
+          "fr": "Gouvernance des Risques, Conformité et Contrôle",
+          "de": "Risiko-Governance, Compliance & Kontrolle",
+          "ja": "リスクガバナンス・コンプライアンスおよび内部統制"
+        }
+      },
+      "T8.P4": {
+        "canonical_name": "Cloud FinOps & Infrastructure Economics",
+        "locales": {
+          "es": "FinOps y Gestión Económica de Infraestructura",
+          "en": "Cloud FinOps & Infrastructure Economics",
+          "pt": "FinOps e Gestão Financeira de Infraestrutura",
+          "fr": "FinOps et Économie des Infrastructures",
+          "de": "Cloud FinOps & Infrastruktur-Ökonomie",
+          "ja": "クラウドFinOpsおよびインフラコスト最適化"
+        }
+      },
+      "T8.P5": {
+        "canonical_name": "Value Realization, Executive Metrics & Continuous Improvement",
+        "locales": {
+          "es": "Medición de Valor, KPIs Ejecutivos y Mejora Continua",
+          "en": "Value Realization, Executive Metrics & Continuous Improvement",
+          "pt": "Realização de Valor, Métricas Executivas e Melhoria Contínua",
+          "fr": "Réalisation de la Valeur, Métriques Dirigeantes et Amélioration Continue",
+          "de": "Wertrealisierung, Executive KPIs & kontinuierliche Verbesserung",
+          "ja": "価値創出・エグゼクティブKPIおよび継続的改善"
+        }
+      }
+    }
+  },
+  "T9": {
+    "canonical_name": "Digital Workplace & User Services",
+    "locales": {
+      "es": "Puesto de Trabajo Digital y Servicios de Usuario",
+      "en": "Digital Workplace & User Services",
+      "pt": "Ambiente de Trabalho Digital e Serviços de Usuário",
+      "fr": "Environnement de Travail Numérique et Services Utilisateurs",
+      "de": "Digital Workplace & Anwenderservices",
+      "ja": "デジタルワークプレイス＆ユーザーサービス"
+    },
+    "pillars": {
+      "T9.P1": {
+        "canonical_name": "Endpoint & Device Lifecycle Management",
+        "locales": {
+          "es": "Gestión del Ciclo de Vida de Puestos y Dispositivos",
+          "en": "Endpoint & Device Lifecycle Management",
+          "pt": "Gestão do Ciclo de Vida de Dispositivos",
+          "fr": "Gestion du Cycle de Vie des Postes et Appareils",
+          "de": "Endpoint- & Geräte-Lifecycle-Management",
+          "ja": "エンドポイントおよびデバイスライフサイクル管理"
+        }
+      },
+      "T9.P2": {
+        "canonical_name": "Workplace Identity & User Access Experience",
+        "locales": {
+          "es": "Identidad del Puesto de Trabajo y Experiencia de Acceso",
+          "en": "Workplace Identity & User Access Experience",
+          "pt": "Identidade no Local de Trabalho e Experiência de Acesso",
+          "fr": "Identité du Poste de Travail et Expérience d'Accès",
+          "de": "Workplace-Identität & Zugriffs-Erfahrung",
+          "ja": "ワークプレイスアイデンティティおよびアクセス体験"
+        }
+      },
+      "T9.P3": {
+        "canonical_name": "Productivity, Collaboration & Knowledge Platforms",
+        "locales": {
+          "es": "Productividad, Colaboración y Gestión del Conocimiento",
+          "en": "Productivity, Collaboration & Knowledge Platforms",
+          "pt": "Produtividade, Colaboração e Gestão do Conhecimento",
+          "fr": "Productivité, Collaboration et Gestion des Connaissances",
+          "de": "Produktivitäts-, Kollaborations- & Wissensplattformen",
+          "ja": "生産性・コラボレーションおよびナレッジプラットフォーム"
+        }
+      },
+      "T9.P4": {
+        "canonical_name": "Workplace Operations, Support & Self-Service",
+        "locales": {
+          "es": "Operación, Soporte y Autoservicio del Puesto de Trabajo",
+          "en": "Workplace Operations, Support & Self-Service",
+          "pt": "Operação, Suporte e Autosserviço do Local de Trabalho",
+          "fr": "Exploitation, Support et Libre-service Utilisateur",
+          "de": "Workplace-Betrieb, Support & Self-Service",
+          "ja": "ワークプレイス運用・サポートおよびセルフサービス"
+        }
+      },
+      "T9.P5": {
+        "canonical_name": "Digital Employee Experience (DEX) & Adoption",
+        "locales": {
+          "es": "Experiencia Digital del Empleado (DEX) y Adopción",
+          "en": "Digital Employee Experience (DEX) & Adoption",
+          "pt": "Experiência Digital do Empregado (DEX) e Adoção",
+          "fr": "Expérience Numérique Collaborateur (DEX) et Adoption",
+          "de": "Digital Employee Experience (DEX) & Adoption",
+          "ja": "デジタル従業員体験（DEX）および定着化"
+        }
+      }
+    }
+  },
+  "T10": {
+    "canonical_name": "Legacy & Core Mainframe Platforms",
+    "locales": {
+      "es": "Plataformas Legacy y Mainframe Central",
+      "en": "Legacy & Core Mainframe Platforms",
+      "pt": "Plataformas Legadas e Mainframe Central",
+      "fr": "Plateformes Héritées et Mainframe Central",
+      "de": "Legacy- & Core-Mainframe-Plattformen",
+      "ja": "レガシーおよびメインフレーム基幹プラットフォーム"
+    },
+    "pillars": {
+      "T10.P1": {
+        "canonical_name": "Core Mainframe & Legacy Platform Operations",
+        "locales": {
+          "es": "Operaciones de Plataforma Mainframe y Sistemas Core",
+          "en": "Core Mainframe & Legacy Platform Operations",
+          "pt": "Operações de Mainframe e Sistemas Legados",
+          "fr": "Exploitation Mainframe et Systèmes Hérités",
+          "de": "Mainframe-Betrieb & Core-Legacy-Systeme",
+          "ja": "メインフレームおよびレガシー基幹運用"
+        }
+      },
+      "T10.P2": {
+        "canonical_name": "Legacy Change, Release & Configuration Governance",
+        "locales": {
+          "es": "Control de Cambios, Releases y Configuración Legacy",
+          "en": "Legacy Change, Release & Configuration Governance",
+          "pt": "Governança de Mudanças e Configurações Legadas",
+          "fr": "Gouvernance des Changements et Configurations Héritées",
+          "de": "Legacy Change-, Release- & Konfigurationskontrolle",
+          "ja": "レガシー変更・リリースおよび構成統制"
+        }
+      },
+      "T10.P3": {
+        "canonical_name": "Capacity, Performance & Batch Workload Management",
+        "locales": {
+          "es": "Capacidad, Rendimiento y Gestión de Cargas Batch",
+          "en": "Capacity, Performance & Batch Workload Management",
+          "pt": "Capacidade, Desempenho e Processamento Batch",
+          "fr": "Capacité, Performance et Traitements Batch",
+          "de": "Kapazität, Performance & Batch-Verarbeitung",
+          "ja": "容量・パフォーマンスおよびバッチ処理管理"
+        }
+      },
+      "T10.P4": {
+        "canonical_name": "Legacy Integration, Interoperability & Modern APIs",
+        "locales": {
+          "es": "Integración, Interoperabilidad y Exposición de APIs Modernas",
+          "en": "Legacy Integration, Interoperability & Modern APIs",
+          "pt": "Integração, Interoperabilidade e Exposição de APIs Modernas",
+          "fr": "Intégration, Interopérabilité et Exposition d'APIs Modernes",
+          "de": "Integration, Interoperabilität & moderne APIs",
+          "ja": "レガシー統合・相互運用性および最新API連携"
+        }
+      },
+      "T10.P5": {
+        "canonical_name": "Modernization Strategy, Tech Debt & Sustainability",
+        "locales": {
+          "es": "Estrategia de Modernización, Deuda Técnica y Sostenibilidad",
+          "en": "Modernization Strategy, Tech Debt & Sustainability",
+          "pt": "Estratégia de Modernização, Dívida Técnica e Sustentabilidade",
+          "fr": "Stratégie de Modernisation, Dette Technique et Durabilité",
+          "de": "Modernisierungsstrategie, technische Schulden & Nachhaltigkeit",
+          "ja": "近代化戦略・技術的負債および持続可能性"
+        }
+      }
+    }
+  }
+}

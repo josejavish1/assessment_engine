@@ -29,26 +29,22 @@ from assessment_engine.domain.schemas.ast import (
 
 
 def clean_client_name(client_name: str) -> str:
-    """Cleans a raw client name (which might be a slug or directory name) for reporting.
-
-    Removes version tags (e.g. _v3, _v2, -v4), replaces underscores/hyphens with spaces,
-    strips trailing whitespace, and ensures Proper Noun Title Case capitalization.
-    """
-    if not client_name:
-        return "Cliente"
+    """Clean raw client identifier removing version suffixes while preserving corporate casing."""
+    if not client_name or not client_name.strip():
+        return "Client"
     import re
-    # Remove version endings like _v3, _V2, -v4, etc.
-    cleaned = re.sub(r'[_-][vV]\d+\b', '', client_name)
-    # Replace underscores/hyphens with spaces
-    cleaned = cleaned.replace('_', ' ').replace('-', ' ')
-    cleaned = cleaned.strip()
-    
-    # Elite Capitalization: Ensure it is a Proper Noun (Title Case)
-    # If the cleaned string is all lowercase, convert it to Title Case (e.g., 'cliente' -> 'Cliente')
-    # If it has uppercase, preserve the client's custom branding (e.g., 'CLIENTE' stays 'CLIENTE')
-    if cleaned.islower():
-        return cleaned.title()
-    return cleaned
+
+    cleaned = re.sub(r"[_-][vV]\d+\b", "", client_name).strip()
+    cleaned = cleaned.replace("_", " ")
+    if " " not in cleaned:
+        cleaned = cleaned.replace("-", " ")
+    cleaned = " ".join(cleaned.split())
+    if not cleaned:
+        return "Client"
+
+    # Only force capitalization on fully lowercase words to preserve mixed-case brands (e.g. McKinsey, PwC, JPMorgan)
+    words = [w.capitalize() if w.islower() else w for w in cleaned.split(" ")]
+    return " ".join(words)
 
 
 from assessment_engine.adapters.compilers.ast_appendices_builder import (
@@ -118,11 +114,20 @@ class PayloadToASTBridge:
 
 
     def convert(
-        self, blueprint_payload_path: str, approved_annex_path: str
+        self,
+        blueprint_payload_path: str,
+        approved_annex_path: str = "",
+        override_locale: str | None = None,
+        modules_dir: str | Path | None = None,
     ) -> DocumentAST:
         """Consolidates information from input JSON files and associated Markdown/CSV modules
         to generate a complete Document Abstract Syntax Tree (AST)."""
-        ctx = self._extract_conversion_context(blueprint_payload_path, approved_annex_path)
+        ctx = self._extract_conversion_context(
+            blueprint_payload_path,
+            approved_annex_path,
+            override_locale=override_locale,
+            modules_dir=modules_dir,
+        )
         self.meta_lang = ctx.get("meta_lang", "en")
 
         nodes: List[Any] = []
@@ -141,13 +146,18 @@ class PayloadToASTBridge:
         )
 
     def _extract_conversion_context(
-        self, blueprint_payload_path: str, approved_annex_path: str
+        self,
+        blueprint_payload_path: str,
+        approved_annex_path: str,
+        override_locale: str | None = None,
+        modules_dir: str | Path | None = None,
     ) -> dict[str, Any]:
         """Extract and prepare all context variables needed for DocumentAST compilation."""
         blueprint_file = Path(blueprint_payload_path)
-        annex_file = Path(approved_annex_path)
+        annex_file = Path(approved_annex_path) if approved_annex_path else Path("non_existent_annex.json")
         case_dir = blueprint_file.parent
-        modules_dir = case_dir / "asis_modules"
+        resolved_modules_dir = Path(modules_dir) if modules_dir else (case_dir / "asis_modules")
+        modules_dir = resolved_modules_dir
 
         #
         with open(blueprint_file, "r", encoding="utf-8-sig") as f:
@@ -171,7 +181,7 @@ class PayloadToASTBridge:
                 logger.debug(f"[Fallback] Handled exception: {ex}")
 
         tower_meta = blueprint_data.get("document_meta", {})
-        meta_lang = tower_meta.get("language", "en").lower()
+        meta_lang = str(override_locale or tower_meta.get("language") or "en").strip().lower()
         from assessment_engine.infrastructure.config_loader import (
             resolve_localized_vocabulary,
         )
@@ -184,14 +194,14 @@ class PayloadToASTBridge:
         )
         self.disclaimer = vocab.get("disclaimer_text", self.disclaimer)
 
-        tower_name = tower_meta.get("tower_name", "Desconocida")
+        tower_name = tower_meta.get("tower_name", "Unknown")
         tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
-        client_name = clean_client_name(tower_meta.get("client_name", "Cliente"))
+        client_name = clean_client_name(tower_meta.get("client_name", "Client"))
         version = tower_meta.get("version", "1.0")
         date_str = format_date_localized(
             tower_meta.get("date"), locale=meta_lang
         )
-        currency = tower_meta.get("currency", "€")
+        currency = tower_meta.get("currency") or self.brand_data.get("currency_symbol") or "USD"
 
         # Dynamically detect organizational scale to apply customized calibration.
         is_critical = self.brand_data.get("styling", {}).get("is_critical", None)
@@ -519,7 +529,14 @@ class PayloadToASTBridge:
 
         for s_idx, p in enumerate(sorted(blueprint_data.get("pillars_analysis", []), key=lambda item: item.get("score", 0.0))):
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
-            p_name = p.get("pilar_name", "Pilar")
+            from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+            resolver = get_taxonomy_resolver()
+            raw_pname = p.get("pillar_name", p.get("pilar_name", "Pillar"))
+            p_name = resolver.resolve_pillar_by_any_reference(
+                p.get("pillar_id") or p.get("pilar_id") or raw_pname,
+                default=raw_pname,
+                locale=meta_lang,
+            )
             p_score = float(p.get("score", 3.0))
             
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
@@ -821,12 +838,33 @@ class PayloadToASTBridge:
             except Exception as ex:
                 logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
-        # 4.3 Score Justification Matrix (from CSV) with fallback mechanism
+        # 4.3 Score Justification Matrix (from CSV or in-memory payload) with fallback mechanism
         csv_mat_path = modules_dir / "04_matriz_madurez.csv"
         if csv_mat_path.exists():
             # Ensure header collections are not empty to prevent the generation of malformed tables.
             mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
             nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers))
+        elif blueprint_data and blueprint_data.get("pillars_analysis"):
+            from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+                derive_in_memory_maturity_matrix,
+            )
+            in_mem_rows = derive_in_memory_maturity_matrix(blueprint_data, doc_lang=meta_lang)
+            mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
+            header_cells = [
+                CellNode(text=h, bold=True, font_size=9.0, bg_color="0072BC", align="CENTER")
+                for h in mat_headers
+            ]
+            table_rows = [TableRowNode(cells=header_cells, is_header=True)]
+            for r_idx, r_item in enumerate(in_mem_rows):
+                bg = self.alt_row_hex if r_idx % 2 == 1 else "FFFFFF"
+                int_score = int(round(r_item["score"]))
+                row_cells = [
+                    CellNode(text=r_item["pillar_name"], bold=True, font_size=8.5, bg_color=bg),
+                    CellNode(text=f"{int_score} ({r_item['band_label']})", font_size=8.5, bg_color=bg, align="CENTER"),
+                    CellNode(text=r_item["justification"], font_size=8.5, bg_color=bg),
+                ]
+                table_rows.append(TableRowNode(cells=row_cells))
+            nodes.append(TableNode(rows=table_rows))
 
         nodes.append(PageBreakNode())
 
@@ -890,6 +928,15 @@ class PayloadToASTBridge:
                         risks_data_list.append(r_item)
             except (OSError, ValueError, KeyError, AttributeError) as ex:
                 logger.debug(f"[Fallback] Handled exception: {ex}")
+        elif blueprint_data and blueprint_data.get("pillars_analysis"):
+            from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+                derive_in_memory_fair_risks,
+            )
+            rate_mult = float(ctx.get("rate_mult", 1.0))
+            currency = ctx.get("currency", "€")
+            risks_data_list, _ = derive_in_memory_fair_risks(
+                blueprint_data, doc_lang=meta_lang, currency=currency, rate_mult=rate_mult
+            )
 
         formatted_ale = format_number(
             total_fair_ale, locale=meta_lang, decimals=0
@@ -897,22 +944,22 @@ class PayloadToASTBridge:
 
         # Build executive risks summary paragraph
         if risks_data_list and total_fair_ale > 0:
-            pilar_sums = {}
+            pillar_sums: dict[str, float] = {}
             for r in risks_data_list:
-                p_name = r["pilar"]
-                pilar_sums[p_name] = pilar_sums.get(p_name, 0.0) + r["ale"]
-            highest_pilar = max(pilar_sums, key=pilar_sums.get)
-            highest_pilar_val = pilar_sums[highest_pilar]
+                p_name = str(r.get("pillar") or "Pillar")
+                pillar_sums[p_name] = pillar_sums.get(p_name, 0.0) + float(r.get("ale") or 0.0)
+            highest_pillar = max(pillar_sums, key=lambda k: pillar_sums[k])
+            highest_pillar_val = pillar_sums[highest_pillar]
             
-            highest_risk = max(risks_data_list, key=lambda x: x["ale"])
-            highest_risk_id = highest_risk["id"]
-            highest_risk_cap = highest_risk["capability"]
-            highest_risk_ale = highest_risk["ale"]
+            highest_risk = max(risks_data_list, key=lambda x: float(x.get("ale") or 0.0))
+            highest_risk_id = str(highest_risk.get("id") or "RISK-01")
+            highest_risk_cap = str(highest_risk.get("target_state") or highest_risk.get("capability") or "")
+            highest_risk_ale = float(highest_risk.get("ale") or 0.0)
             highest_risk_pct = (highest_risk_ale / total_fair_ale) * 100.0 if total_fair_ale > 0 else 0.0
             
             # Format sub-amounts
-            formatted_pilar_ale = format_number(
-                highest_pilar_val, locale=meta_lang, decimals=0
+            formatted_pillar_ale = format_number(
+                highest_pillar_val, locale=meta_lang, decimals=0
             )
             formatted_risk_ale = format_number(
                 highest_risk_ale, locale=meta_lang, decimals=0
@@ -925,8 +972,8 @@ class PayloadToASTBridge:
                 currency=currency,
                 client_name=client_name,
                 num_risks=len(risks_data_list),
-                highest_pilar=highest_pilar,
-                formatted_pilar_ale=formatted_pilar_ale,
+                highest_pilar=highest_pillar,
+                formatted_pilar_ale=formatted_pillar_ale,
                 highest_risk_cap=highest_risk_cap,
                 highest_risk_id=highest_risk_id,
                 formatted_risk_ale=formatted_risk_ale,
@@ -1032,17 +1079,17 @@ class PayloadToASTBridge:
             )
 
             # Group risks by pillar.
-            risks_by_pilar = {}
+            risks_by_pillar = {}
             for r in risks_data_list:
-                p_name = r["pilar"]
-                if p_name not in risks_by_pilar:
-                    risks_by_pilar[p_name] = []
-                risks_by_pilar[p_name].append(r)
+                p_name = r.get("pillar") or r.get("pilar", "Pillar")
+                if p_name not in risks_by_pillar:
+                    risks_by_pillar[p_name] = []
+                risks_by_pillar[p_name].append(r)
 
-            for p_name, pilar_risks in risks_by_pilar.items():
+            for p_name, pillar_risks in risks_by_pillar.items():
                 # Display all identified technical risks for full analytical completeness
-                pilar_risks_filtered = pilar_risks
-                if not pilar_risks_filtered:
+                pillar_risks_filtered = pillar_risks
+                if not pillar_risks_filtered:
                     continue
 
                 pilar_header = t("detailed_risks_pilar_title", locale=meta_lang) + p_name
@@ -1071,7 +1118,7 @@ class PayloadToASTBridge:
                     )
                 ]
 
-                for s_idx, hc in enumerate(pilar_risks_filtered):
+                for s_idx, hc in enumerate(pillar_risks_filtered):
                     bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
 
                     # Deduplicate or clean up repetitive prose between finding and evidence to improve readability
@@ -1378,3 +1425,26 @@ class PayloadToASTBridge:
                 rows.append(TableRowNode(cells=cells))
 
         return TableNode(rows=rows)
+
+
+def compile_asis_docx_via_ast(
+    payload_path: str | Path,
+    output_docx_path: str | Path,
+    doc_lang: str,
+    modules_dir: str | Path | None = None,
+) -> Path:
+    """Compile deliverable directly into DOCX via declarative AST transformation."""
+    bridge = PayloadToASTBridge()
+    ast = bridge.convert(
+        blueprint_payload_path=str(payload_path),
+        approved_annex_path="",
+        override_locale=doc_lang,
+        modules_dir=modules_dir,
+    )
+    from assessment_engine.adapters.compilers.docx_compiler import DocxCompiler
+
+    compiler = DocxCompiler()
+    out_p = Path(output_docx_path)
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+    compiler.compile(ast, str(out_p))
+    return out_p

@@ -237,6 +237,14 @@ class ExecutiveStyleCompressor:
         if not text:
             return ""
 
+        # Preserve multi-paragraph structure to avoid generating dense walls of text
+        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+        if len(paragraphs) > 1:
+            return "\n\n".join(
+                cls.compress_executive_paragraph(p, max_words_per_sentence=max_words_per_sentence)
+                for p in paragraphs
+            )
+
         if not cls.BUREAUCRATIC_OPENERS:
             cls.BUREAUCRATIC_OPENERS, cls.BUZZWORD_REPLACEMENTS = cls._load_editorial_linter()
 

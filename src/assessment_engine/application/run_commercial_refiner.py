@@ -38,8 +38,8 @@ async def call_commercial_agent(
     instruction,
     payload_str,
     schema_cls,
-    client_name="el cliente",
-    target_language="Spanish",
+    client_name="Client",
+    target_language="English",
 ):
     """Asynchronously invokes a commercial agent to process a payload against a schema."""
     agent = Agent(

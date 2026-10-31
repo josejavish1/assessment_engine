@@ -9,8 +9,10 @@ from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Inches, Pt, RGBColor
+from docx.shared import Cm, Inches
 
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 from assessment_engine.infrastructure.docx_render_utils import (
     autofit_table_to_contents,
     finalize_table,
@@ -39,13 +41,19 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     alt_row_hex = ctx["alt_row_hex"]
     modules_dir = ctx["modules_dir"]
     currency = ctx["currency"]
+    client_name = ctx.get("client_name", "Client")
+    tower_name = ctx.get("tower_name", "Tower")
     doc_lang = ctx.get("doc_lang", "en")
     global_fair_ale = ctx["global_fair_ale"]
     total_p90 = ctx.get("total_p90", 0.0)
-    formatted_ale_item = ctx.get("formatted_ale_item", "0")
-    formatted_p90 = ctx.get("formatted_p90", "0")
     t_sep = ctx.get("t_sep", ".")
     d_sep = ctx.get("d_sep", ",")
+    formatted_ale_item = format_currency_custom(round(global_fair_ale), t_sep, d_sep)
+    if d_sep and d_sep in formatted_ale_item:
+        formatted_ale_item = formatted_ale_item.split(d_sep)[0]
+    formatted_p90 = format_currency_custom(round(total_p90), t_sep, d_sep)
+    if d_sep and d_sep in formatted_p90:
+        formatted_p90 = formatted_p90.split(d_sep)[0]
 
     # Assemble and render Chapter 5: Conclusions and Cost of Inaction.
     add_heading(
@@ -56,18 +64,12 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     )
 
     # 5.1 Current Situation Diagnostic Conclusions
-    add_heading(
-        doc,
-        t("conclusions_diagnosis_title", locale=doc_lang),
-        level=2,
-        primary_color_rgb=p_color_rgb,
-    )
     parse_and_append_markdown_section(
         doc,
         modules_dir / "07_conclusiones.md",
         p_color_rgb,
         text_color_rgb,
-        start_header=t("annex_header_key_operational_implications", locale=doc_lang),
+        start_header=t("conclusions_diagnosis_title", locale=doc_lang),
         end_header=t("annex_header_cost_of_inaction", locale=doc_lang),
     )
 
@@ -112,16 +114,17 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
     dec_col_widths = [Cm(3.0), Cm(6.71), Cm(6.71)] # Sums to 16.42 cm, standard page content area
     
     # Header cells
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
     for i, h_txt in enumerate(dec_headers):
         cell = dec_table.rows[0].cells[i]
         set_cell_text_custom(
             cell,
             h_txt,
-            bold=True,
-            font_size=8.5,
-            color_rgb=RGBColor(255, 255, 255),
             align=WD_ALIGN_PARAGRAPH.CENTER,
-            no_bullets=True
+            no_bullets=True,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=resolver,
         )
         tcPr = cell._tc.get_or_add_tcPr()
         tcW = tcPr.find(qn('w:tcW'))
@@ -162,12 +165,14 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
                     for i_idx, i_part in enumerate(italic_parts):
                         is_italic = i_idx % 2 == 1
                         run = p.add_run(i_part)
-                        run.font.name = "Arial"
-                        run.font.size = Pt(8.5)
-                        run.bold = is_bold
+                        resolver.apply_run_style(
+                            run,
+                            typo_role=TypographyRole.TABLE_CELL,
+                            bold_override=is_bold,
+                        )
                         run.italic = is_italic
 
-                p.paragraph_format.space_after = Pt(2) if l_idx < len(lines) - 1 else Pt(0)
+                p.paragraph_format.space_after = resolver.resolve_pt(TypographyRole.TABLE_CELL) if l_idx < len(lines) - 1 else resolver.resolve_pt(TypographyRole.BODY_REGULAR)
                 if line.startswith("• "):
                     p.paragraph_format.left_indent = Inches(0.15)
                     # Prepend a bullet character
@@ -204,41 +209,86 @@ def _compile_chapter_5_conclusions(doc: Any, ctx: DocumentCompilationContext) ->
 
     coi_intro = t("coi_intro", locale=doc_lang)
     add_body_paragraph(doc, coi_intro, text_color_rgb=text_color_rgb)
+    add_spacer(doc, 6)
 
-    # Bullet 1 with native Word Bullet style
-    p_coi_1 = doc.add_paragraph(style='Bullet')
-    p_coi_1.paragraph_format.space_after = Pt(4)
-    p_coi_1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    
-    run_b1_lbl = p_coi_1.add_run(t("coi_ale_label", locale=doc_lang))
-    run_b1_lbl.bold = True
-    run_b1_lbl.font.name = "Arial"
-    run_b1_lbl.font.size = Pt(9.5)
-    run_b1_lbl.font.color.rgb = RGBColor(*text_color_rgb)
-    
-    txt_b1 = " " + t("coi_ale_text", locale=doc_lang, ale_3y=ale_3y, ale_5y=ale_5y, currency=currency)
-    p_coi_1.add_run(txt_b1)
-    p_coi_1.runs[-1].font.name = "Arial"
-    p_coi_1.runs[-1].font.size = Pt(9.5)
-    p_coi_1.runs[-1].font.color.rgb = RGBColor(*text_color_rgb)
+    coi_accel = t("coi_risk_acceleration_narrative", locale=doc_lang)
+    add_body_paragraph(doc, coi_accel, text_color_rgb=text_color_rgb)
+    add_spacer(doc, 8)
 
-    # Bullet 2 with native Word Bullet style
-    p_coi_2 = doc.add_paragraph(style='Bullet')
-    p_coi_2.paragraph_format.space_after = Pt(0)
-    p_coi_2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-    
-    run_b2_lbl = p_coi_2.add_run(t("coi_cvar_label", locale=doc_lang))
-    run_b2_lbl.bold = True
-    run_b2_lbl.font.name = "Arial"
-    run_b2_lbl.font.size = Pt(9.5)
-    run_b2_lbl.font.color.rgb = RGBColor(*text_color_rgb)
-    
-    txt_b2 = " " + t("coi_cvar_text", locale=doc_lang, p90_3y=p90_3y, p90_5y=p90_5y, currency=currency)
-    p_coi_2.add_run(txt_b2)
-    p_coi_2.runs[-1].font.name = "Arial"
-    p_coi_2.runs[-1].font.size = Pt(9.5)
-    p_coi_2.runs[-1].font.color.rgb = RGBColor(*text_color_rgb)
+    # 5.3 Multi-Year Executive Projection Table (1y, 3y, 5y)
+    coi_table = doc.add_table(rows=1, cols=4)
+    coi_table.alignment = WD_TABLE_ALIGNMENT.LEFT
+    coi_table.style = "Table Grid"
 
+    coi_headers = [
+        t("coi_table_header_horizon", locale=doc_lang),
+        t("coi_table_header_ale", locale=doc_lang),
+        t("coi_table_header_p90", locale=doc_lang),
+        t("coi_table_header_consequence", locale=doc_lang),
+    ]
+    for i, h_txt in enumerate(coi_headers):
+        set_cell_text_custom(
+            coi_table.rows[0].cells[i],
+            h_txt,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=resolver,
+        )
+        shade_cell(coi_table.rows[0].cells[i], p_color_hex)
+
+    coi_col_widths = [Cm(3.5), Cm(3.0), Cm(3.0), Cm(6.9)]
+    for i in range(4):
+        coi_table.rows[0].cells[i].width = coi_col_widths[i]
+
+    coi_rows_data = [
+        (
+            t("coi_horizon_1y", locale=doc_lang),
+            f"{formatted_ale_item} {currency}",
+            f"{formatted_p90} {currency}",
+            t("coi_consequence_1y", locale=doc_lang),
+        ),
+        (
+            t("coi_horizon_3y", locale=doc_lang),
+            f"{ale_3y} {currency}",
+            f"{p90_3y} {currency}",
+            t("coi_consequence_3y", locale=doc_lang),
+        ),
+        (
+            t("coi_horizon_5y", locale=doc_lang),
+            f"{ale_5y} {currency}",
+            f"{p90_5y} {currency}",
+            t("coi_consequence_5y", locale=doc_lang),
+        ),
+    ]
+
+    for r_idx, row_vals in enumerate(coi_rows_data):
+        row = coi_table.add_row()
+        set_cell_text_custom(row.cells[0], row_vals[0], bold=True, font_size=8.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text_custom(row.cells[1], row_vals[1], font_size=8.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text_custom(row.cells[2], row_vals[2], font_size=8.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_text_custom(row.cells[3], row_vals[3], font_size=8.5, align=WD_ALIGN_PARAGRAPH.JUSTIFY)
+
+        for i in range(4):
+            row.cells[i].width = coi_col_widths[i]
+            if r_idx % 2 == 1:
+                shade_cell(row.cells[i], alt_row_hex)
+
+    autofit_table_to_contents(coi_table)
+    add_spacer(doc, 20)
+
+    # 5.4 Bridge and Handover to Modernization Blueprint (TO-BE)
+    tobe_bridge_heading = t("tobe_bridge_title", locale=doc_lang)
+    add_heading(doc, tobe_bridge_heading, level=2, primary_color_rgb=p_color_rgb)
+
+    bridge_box_body = t("tobe_bridge_box_body", locale=doc_lang, tower_name=tower_name, client_name=client_name)
+    add_callout_box(
+        doc,
+        bridge_box_body,
+        bg_color_hex="F4F8FA",
+        border_color_hex="0072BC",
+        bold=False,
+    )
     add_spacer(doc, 15)
 
     #

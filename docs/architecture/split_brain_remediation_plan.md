@@ -1,3 +1,17 @@
+---
+status: Verified
+owner: docs-governance
+source_of_truth:
+- docs/README.md
+- docs/SYSTEM_ARCHITECTURE.md
+last_verified_against: 2026-06-26
+applies_to:
+- humans
+- ai-agents
+doc_type: canonical
+diataxis: explanation
+verification_mode: editorial
+---
 # ARCHITECTURAL REMEDIATION PLAN: SPLIT-BRAIN CONVERGENCE
 
 **Document ID:** `ARCH-REM-2026-001`  

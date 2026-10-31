@@ -143,21 +143,20 @@ def test_english_annex_compilation_purity(tmp_path: Path) -> None:
     # Check for expected canonical English phrases
     expected_en = [
         "Maturity Level",
-        "Operational Practice Description",
+        "Operational Maturity Level Interpretation",
         "Strategic Indicator",
         "Business Criticality (MCDA)",
         "Quantitative Risk Methodology",
-        "Conclusions and Cost of Inaction",
+        "Strategic Conclusions and Decision Framework",
         "Path A: Inaction (Status Quo)",
         "Path B: Structural Modernization",
-        "Quantitative Exposure (FAIR):",
-        "Projected Financial Exposure:",
+        "Operational Resilience & Economic Exposure:",
         "Annual Loss Exposure (ALE):",
         "Worst Case (CVaR):",
         "Self-Assessment Questionnaire",
         "Enterprise Context Dossier",
         "Platform Intelligence Layer",
-        "The quantitative score of",
+        "The technical assessment places tower maturity at",
     ]
     for en_phrase in expected_en:
         assert en_phrase in corpus, f"Expected English phrase '{en_phrase}' not found in compiled DOCX"

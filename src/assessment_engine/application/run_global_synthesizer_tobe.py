@@ -359,7 +359,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         print("❌ Error: No tower payloads found to synthesize.")
         return
 
-    client_name = payloads[0].get("document_meta", {}).get("client_name", "Cliente")
+    client_name = payloads[0].get("document_meta", {}).get("client_name", "Client")
     tower_text = "".join(tower_summaries)
 
     # Enforce a strict thematic expansion mandate to maintain focus and prevent generative drift from the core architectural topic.
@@ -480,7 +480,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_3 = Agent(
             name="tobe_phase3",
-            model=get_model(ModelTier.FAST),
+            model=get_model(ModelTier.REASONING),
             instruction="Strictly return the requested JSON schema.",
             output_schema=Phase3Benefits,
         )
@@ -507,7 +507,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_4 = Agent(
             name="tobe_phase4",
-            model=get_model(ModelTier.FAST),
+            model=get_model(ModelTier.REASONING),
             instruction="Strictly return the requested JSON schema.",
             output_schema=Phase4RisksAndAssumptions,
         )
@@ -527,7 +527,7 @@ async def synthesize_global_tobe(working_dir: str, industry: str):
         )
         agent_5 = Agent(
             name="tobe_phase5",
-            model=get_model(ModelTier.FAST),
+            model=get_model(ModelTier.REASONING),
             instruction="Strictly return the requested JSON schema.",
             output_schema=HighLevelRoadmap,
         )

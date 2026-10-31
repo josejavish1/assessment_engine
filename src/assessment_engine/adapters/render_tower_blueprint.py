@@ -10,7 +10,10 @@ from pathlib import Path
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement, ns
-from docx.shared import Inches, Pt, RGBColor
+from docx.shared import Inches, Pt
+
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 
 from assessment_engine.domain.maturity_band import (
     ANNEX_MATURITY_BANDS,
@@ -37,7 +40,7 @@ from assessment_engine.infrastructure.runtime_paths import (
 )
 from assessment_engine.infrastructure.text_utils import clean_text_for_word
 
-BASE_TEXT_COLOR = RGBColor(46, 64, 77)
+BASE_TEXT_COLOR = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_TEMPLATE_PATH = resolve_tower_annex_template_path()
 
@@ -155,11 +158,13 @@ def create_page_number_footer(section, doc_lang: str) -> Any:
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     clear_paragraph(paragraph)
 
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
+
     def add_field(p, field_code):
         run = p.add_run()
         run.font.size = Pt(9)
         run.font.name = "Arial"
-        run.font.color.rgb = RGBColor(127, 127, 127)
+        run.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_MUTED)
         fld_char_begin = OxmlElement("w:fldChar")
         fld_char_begin.set(ns.qn("w:fldCharType"), "begin")
         run._r.append(fld_char_begin)
@@ -181,13 +186,13 @@ def create_page_number_footer(section, doc_lang: str) -> Any:
     prefix = paragraph.add_run(prefix_str)
     prefix.font.size = Pt(9)
     prefix.font.name = "Arial"
-    prefix.font.color.rgb = RGBColor(127, 127, 127)
+    prefix.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_MUTED)
     add_field(paragraph, "PAGE")
     mid_str = t("of_page_connector", locale=doc_lang)
     middle = paragraph.add_run(mid_str)
     middle.font.size = Pt(9)
     middle.font.name = "Arial"
-    middle.font.color.rgb = RGBColor(127, 127, 127)
+    middle.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_MUTED)
     add_field(paragraph, "NUMPAGES")
 
 
@@ -461,9 +466,10 @@ def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
     title_p = doc.add_paragraph()
     report_title = t("blueprint_cover_report_title", locale=doc_lang, tower_name=dom_display)
     run = title_p.add_run(report_title)
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
     run.font.size = Pt(34)
     run.font.name = "Georgia"
-    run.font.color.rgb = RGBColor(0, 114, 188)
+    run.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.BRAND_PRIMARY)
     add_spacer(doc, 30)
 
     client_p = doc.add_paragraph()
@@ -483,7 +489,7 @@ def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
     version_run = version_p.add_run(version_text)
     version_run.font.size = Pt(14)
     version_run.font.name = "Arial"
-    version_run.font.color.rgb = RGBColor(127, 127, 127)
+    version_run.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     add_spacer(doc, 150)
     disclaimer = doc.add_paragraph()
@@ -492,7 +498,7 @@ def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
     title_run = disclaimer.add_run(conf_lbl)
     title_run.bold = True
     title_run.font.size = Pt(8)
-    title_run.font.color.rgb = RGBColor(127, 127, 127)
+    title_run.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_MUTED)
     from assessment_engine.infrastructure.config_loader import (
         get_consultant_company_name,
     )
@@ -501,7 +507,7 @@ def render_cover(doc, payload: BlueprintPayload, doc_lang: str) -> Any:
     disc_text = t("blueprint_cover_disclaimer", locale=doc_lang, company=company)
     text_run = disclaimer.add_run(disc_text)
     text_run.font.size = Pt(8)
-    text_run.font.color.rgb = RGBColor(127, 127, 127)
+    text_run.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_MUTED)
     doc.add_page_break()
 
 
@@ -517,6 +523,7 @@ def _render_snapshot_scores_table(
         t("header_target_maturity", locale=doc_lang),
     ]
     values = [global_score_val, global_band_val or "N/A", target_score_val]
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
 
     for i, header in enumerate(headers):
         set_cell_text(
@@ -528,7 +535,7 @@ def _render_snapshot_scores_table(
         )
         shade_cell(table.rows[0].cells[i], "0072BC")
         for run in table.rows[0].cells[i].paragraphs[0].runs:
-            run.font.color.rgb = RGBColor(255, 255, 255)
+            run.font.color.rgb = resolver.resolve_rgb(SemanticColorRole.TEXT_INVERSE)
         set_cell_text(
             table.rows[1].cells[i],
             values[i],
@@ -841,10 +848,10 @@ def _render_fair_5x5_table(doc, matrix: dict, doc_lang: str) -> None:
                 )
                 if (
                     risk_score >= 15
-                ):  # A specific text color (white) is required for high contrast against Red or Dark Red backgrounds to maintain readability.
+                ):  # Contrast-safe text resolved via W3C Theme Token
                     for paragraph in cell.paragraphs:
                         for run in paragraph.runs:
-                            run.font.color.rgb = RGBColor(255, 255, 255)
+                            run.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
             else:
                 set_cell_text(cell, "", font_size=8)
 
@@ -873,6 +880,9 @@ def _render_fair_details_table(
         set_cell_text(risk_table.rows[0].cells[i], header, bold=True, font_size=9)
         shade_cell(risk_table.rows[0].cells[i], "D9EAF7")
 
+    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    resolver = get_taxonomy_resolver()
+
     for detail in risk_details:
         row = risk_table.add_row()
         set_cell_text(
@@ -882,9 +892,15 @@ def _render_fair_details_table(
             bold=True,
             align=WD_ALIGN_PARAGRAPH.CENTER,
         )
-        set_cell_text(row.cells[1], detail["pilar"], font_size=8)
+        localized_pilar = resolver.resolve_pillar_by_any_reference(
+            detail.get("pilar_id") or detail["pilar"], default=detail["pilar"], locale=doc_lang
+        )
+        set_cell_text(row.cells[1], localized_pilar, font_size=8)
+        localized_cap = resolver.resolve_capability_name(
+            detail["target_state"], default=detail["target_state"], locale=doc_lang
+        )
         set_cell_text(
-            row.cells[2], f"{detail['target_state']}: {detail['finding']}", font_size=8
+            row.cells[2], f"{localized_cap}: {detail['finding']}", font_size=8
         )
         set_cell_text(
             row.cells[3],
@@ -921,7 +937,7 @@ def _render_fair_details_table(
         ):
             for paragraph in row.cells[4].paragraphs:
                 for run in paragraph.runs:
-                    run.font.color.rgb = RGBColor(255, 255, 255)
+                    run.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     autofit_table_to_contents(risk_table)
     add_spacer(doc, 15)
@@ -949,6 +965,7 @@ def render_fair_risk_heatmap(
     has_fair_data = False
     risk_details = []
     risk_counter = 1
+    tower_code = getattr(payload.document_meta, "tower_code", "T1") or "T1"
 
     for pilar in payload.pillars_analysis:
         for finding in pilar.health_check_asis:
@@ -957,13 +974,14 @@ def render_fair_risk_heatmap(
             ale = getattr(finding, "fair_ale_score", 0.0)
             if tef > 0 and lm > 0:
                 has_fair_data = True
-                r_id = f"R{risk_counter:02d}"
+                r_id = f"{tower_code}-RSK-{risk_counter:02d}"
                 risk_counter += 1
                 matrix[tef][lm].append(r_id)
                 risk_details.append(
                     {
                         "id": r_id,
                         "pilar": pilar.pilar_name,
+                        "pilar_id": getattr(pilar, "pilar_id", ""),
                         "finding": finding.risk_observed,
                         "target_state": finding.target_state,
                         "tef": tef,
@@ -1016,16 +1034,21 @@ def render_consolidated_tobe(doc, payload: BlueprintPayload, doc_lang: str) -> A
         for principle in payload.design_principles:
             add_bullet_p(doc, principle)
 
-
-def _find_mitigated_risk_text(project: Any, payload: BlueprintPayload) -> str:
-    """Find the risk observed description mitigated by this project."""
+def _find_mitigated_risk_text(project: Any, payload: BlueprintPayload, doc_lang: str) -> str:
+    """Finds and formats the description of the AS-IS risk mitigated by a project."""
     risk_id = getattr(project, "mitigates_risk_id", None)
     if not risk_id:
         return "N/A"
+
+    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    resolver = get_taxonomy_resolver()
+
     for p_ana in payload.pillars_analysis:
         for hc in p_ana.health_check_asis:
             if hc.node_id == risk_id:
-                return f"[{hc.target_state}] {hc.risk_observed}"
+                raw_cap = hc.target_state
+                loc_cap = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
+                return f"[{loc_cap}] {hc.risk_observed}"
     return "N/A"
 
 
@@ -1061,7 +1084,7 @@ def _resolve_project_charter_data(
         t("lbl_independent_enabler", locale=doc_lang)
     )
 
-    mitigated_risk_text = _find_mitigated_risk_text(project, payload)
+    mitigated_risk_text = _find_mitigated_risk_text(project, payload, doc_lang=doc_lang)
     capex = getattr(project, "capex_estimate", "N/A") or "N/A"
     opex = getattr(project, "opex_estimate", "N/A") or "N/A"
 
@@ -1128,8 +1151,12 @@ def _render_single_project_charter(
     crit_risks = data["crit_risks"]
     roi_just = data["roi_just"]
     sizing_text = t("charter_val_sizing", locale=doc_lang, sizing=project.sizing, duration=project.duration)
+    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    resolver = get_taxonomy_resolver()
+    localized_pillar = resolver.resolve_pillar_by_any_reference(pilar_name, default=pilar_name, locale=doc_lang)
+
     rows = [
-        (t("charter_row_architecture_domain", locale=doc_lang), pilar_name),
+        (t("charter_row_architecture_domain", locale=doc_lang), localized_pillar),
         (t("charter_row_executive_description", locale=doc_lang), proj_desc),
         (t("charter_row_smart_objective", locale=doc_lang), smart_obj),
         (t("charter_row_mitigated_risk", locale=doc_lang), mitigated_risk_text),
@@ -1157,7 +1184,7 @@ def _render_single_project_charter(
     )
     shade_cell(merged, "0072BC")
     for run in merged.paragraphs[0].runs:
-        run.font.color.rgb = RGBColor(255, 255, 255)
+        run.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_INVERSE)
 
     for idx, (label, value) in enumerate(rows, 1):
         set_cell_text(project_table.rows[idx].cells[0], label, bold=True, font_size=9)
@@ -1283,9 +1310,9 @@ def render_roadmap_page(
                     for run in paragraph.runs:
                         run.font.color.rgb = BASE_TEXT_COLOR
                         if "[Cross-Tower]" in run.text or "[Cross-Domain]" in run.text:
-                            run.font.color.rgb = RGBColor(192, 0, 0)
+                            run.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.STATUS_CRITICAL)
                         elif "[Interna]" in run.text or "[Internal]" in run.text:
-                            run.font.color.rgb = RGBColor(0, 112, 192)
+                            run.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.BRAND_ACCENT)
 
     autofit_table_to_contents(table)
     add_spacer(doc, 15)
@@ -1425,7 +1452,7 @@ def render_maturity_profile(doc, annex_data: dict, doc_lang: str) -> Any:
     if note:
         for run in note.runs:
             run.font.size = Pt(9.5)
-            run.font.color.rgb = RGBColor(127, 127, 127)
+            run.font.color.rgb = DocxStyleResolver.get_default().resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     radar_path = profile.get("radar_chart", "")
     doc_lang_resolved = doc_lang or str(annex_data.get("document_meta", {}).get("language", "en")).lower()
@@ -1533,12 +1560,12 @@ def render_blueprint_toc(doc: Document, doc_lang: str) -> None:
         r_title = p.add_run(title_text)
         r_title.font.name = "Arial"
         r_title.font.size = Pt(10.5)
-        r_title.font.color.rgb = RGBColor(46, 64, 77)
+        r_title.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_PRIMARY)
 
         r_dots = p.add_run(f"  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  {page_hint}")
         r_dots.font.name = "Arial"
         r_dots.font.size = Pt(9.5)
-        r_dots.font.color.rgb = RGBColor(127, 127, 127)
+        r_dots.font.color.rgb = DocxStyleResolver.get_default(language_code=doc_lang).resolve_rgb(SemanticColorRole.TEXT_MUTED)
 
     add_toc(doc)
     set_update_fields(doc)
@@ -1595,6 +1622,49 @@ def render_blueprint(
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(output_path))
+
+    try:
+        from assessment_engine.infrastructure.artifacts import (
+            ArtifactContext,
+            ArtifactFormat,
+            DocumentType,
+        )
+        from assessment_engine.infrastructure.runtime_paths import (
+            resolve_artifact_registry,
+            resolve_assessment_id,
+            resolve_assessment_period,
+        )
+
+        meta = payload.document_meta
+        tenant_id = getattr(meta, "client_name", "generic_client")
+        tower_code = getattr(meta, "tower_code", "T1")
+        tower_name = getattr(meta, "tower_name", None) or f"Tower {tower_code}"
+        asmt_id = resolve_assessment_id(getattr(meta, "assessment_id", None))
+        asmt_period = resolve_assessment_period(getattr(meta, "period", None))
+
+        ctx = ArtifactContext(
+            tenant_id=tenant_id,
+            assessment_id=asmt_id,
+            period=asmt_period,
+            domain_unit_id=f"tower_{tower_code.lower()}",
+            doc_type=DocumentType.TECHNICAL_BLUEPRINT,
+            locale=doc_lang,
+            extension=ArtifactFormat.DOCX,
+        )
+        registry = resolve_artifact_registry(client_id=tenant_id, assessment_id=asmt_id)
+        registry.register_artifact(
+            ctx=ctx,
+            source_file_path=output_path,
+            generator_engine="render_tower_blueprint",
+            presentation_metadata={
+                "tenant_display_name": tenant_id,
+                "domain_unit_display": tower_name,
+                "doc_title_localized": t("lbl_technical_blueprint", locale=doc_lang),
+            },
+        )
+    except Exception as ex:
+        logger.debug("ArtifactRegistry blueprint registration skipped: %s", ex)
+
     return output_path
 
 
@@ -1614,7 +1684,7 @@ def main(argv: list[str] | None = None) -> None:
         output_path=output_path,
         client_dir=client_dir,
     )
-    logger.info(f"Blueprint de Torre renderizado: {output_path}")
+    logger.info(f"Tower blueprint rendered: {output_path}")
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ def load_prompt_config(filename: str) -> dict[str, Any]:
 
 
 def get_blueprint_architect_instruction(
-    target_language: str = "Spanish",
+    target_language: str = "English",
 ) -> str:
     """Constructs the instruction prompt for the Blueprint Architect agent from a configuration file.
 
@@ -77,7 +77,7 @@ def get_pilar_architect_prompt(
     intel_str: str = "",
     answers_json: str = "[]",
     pilar_id: str = "",
-    target_language: str = "Spanish",
+    target_language: str = "English",
 ) -> Any:
     """Constructs a structured prompt for a generative model from various inputs.
 
@@ -251,7 +251,7 @@ def get_bid_manager_prompt(
     project_objective: str,
     project_sizing: str,
     mitigated_risk_impact: str,
-    target_language: str = "Spanish",
+    target_language: str = "English",
     company_name: str | None = None,
 ) -> str:
     """Constructs a Tier-1 prompt to generate an executive project charter JSON."""

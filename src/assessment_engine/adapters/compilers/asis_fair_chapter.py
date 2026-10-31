@@ -12,8 +12,10 @@ from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Inches, Pt, RGBColor
+from docx.shared import Cm, Inches
 
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
 from assessment_engine.infrastructure.docx_render_utils import (
     autofit_table_to_contents,
     finalize_table,
@@ -44,6 +46,157 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _render_fair_heatmap(
+    doc: Any,
+    ctx: DocumentCompilationContext,
+    risks_data_list: list[dict[str, Any]],
+    doc_lang: str,
+    client_name: str,
+    currency: str,
+    is_critical: bool,
+    p_color_rgb: tuple[int, int, int],
+    text_color_rgb: tuple[int, int, int],
+    vocab: dict[str, Any],
+) -> None:
+    """Renders the 5x5 quantitative risk heatmap table as a visual synthesis."""
+    if not risks_data_list:
+        return
+
+    industry_name = ctx.get("industry", "Enterprise & Industrial Technology")
+    add_heading(
+        doc, vocab["exposure_summary_title"], level=2, primary_color_rgb=p_color_rgb
+    )
+
+    sec_intro_p1 = t("fair_heatmap_sec_p1", locale=doc_lang)
+    sec_intro_p2 = t(
+        "fair_heatmap_sec_p2",
+        locale=doc_lang,
+        client_name=client_name,
+        industry_name=industry_name,
+    )
+    sec_intro_p3 = t("fair_heatmap_sec_p3", locale=doc_lang)
+
+    add_body_paragraph(doc, sec_intro_p1, text_color_rgb=text_color_rgb)
+    add_body_paragraph(doc, sec_intro_p2, text_color_rgb=text_color_rgb)
+    if sec_intro_p3:
+        add_body_paragraph(doc, sec_intro_p3, text_color_rgb=text_color_rgb)
+    add_spacer(doc, 15)
+
+    matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
+    for r in risks_data_list:
+        r_tef = min(5, max(1, int(round(r["tef"]))))
+        r_lm = min(5, max(1, int(round(r["lm"]))))
+        matrix_cells[r_tef][r_lm].append(r["id"])
+
+    heatmap_table = doc.add_table(rows=6, cols=6)
+    heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    finalize_table(heatmap_table)
+
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
+    cell_0_0 = heatmap_table.rows[0].cells[0]
+    set_cell_text_custom(
+        cell_0_0,
+        "TEF \\ LM",
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        typography_role=TypographyRole.TABLE_HEADER,
+        color_role=SemanticColorRole.TEXT_INVERSE,
+        resolver=resolver,
+        no_bullets=True,
+    )
+    shade_cell(cell_0_0, COLOR_BLUE)
+    set_cell_border_white(cell_0_0)
+    cell_0_0.width = Inches(1.3)
+    cell_0_0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+
+    rate_mult = float(ctx.get("rate_mult", 1.0))
+    for col_idx in range(1, 6):
+        if is_critical:
+            lm_ranges = {
+                1: f"< {format_number(1000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                2: f"{format_number(1000.0 * rate_mult, locale=doc_lang, decimals=0)} - {format_number(10000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                3: f"{format_number(10000.0 * rate_mult, locale=doc_lang, decimals=0)} - {format_number(50000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                4: f"{format_number(50000.0 * rate_mult, locale=doc_lang, decimals=0)} - {format_number(250000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                5: f"> {format_number(250000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+            }
+        else:
+            lm_ranges = {
+                1: f"< {format_number(1000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                2: f"{format_number(1000.0 * rate_mult, locale=doc_lang, decimals=0)} - {format_number(5000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                3: f"{format_number(5000.0 * rate_mult, locale=doc_lang, decimals=0)} - {format_number(25000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                4: f"{format_number(25000.0 * rate_mult, locale=doc_lang, decimals=0)} - {format_number(100000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+                5: f"> {format_number(100000.0 * rate_mult, locale=doc_lang, decimals=0)} {currency}",
+            }
+        lm_lbl = f"LM {col_idx}\n({lm_ranges[col_idx]})"
+        cell = heatmap_table.rows[0].cells[col_idx]
+        set_cell_text_custom(
+            cell,
+            lm_lbl,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=resolver,
+            no_bullets=True,
+        )
+        shade_cell(cell, COLOR_BLUE)
+        set_cell_border_white(cell)
+        cell.width = Inches(1.04)
+        cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+
+    for row_idx, tef_val in enumerate(range(5, 0, -1), 1):
+        tef_ranges = {
+            5: t("tef_annual_freq_5", locale=doc_lang),
+            4: t("tef_annual_freq_4", locale=doc_lang),
+            3: t("tef_annual_freq_3", locale=doc_lang),
+            2: t("tef_annual_freq_2", locale=doc_lang),
+            1: t("tef_annual_freq_1", locale=doc_lang),
+        }
+        tef_lbl = f"TEF {tef_val}\n({tef_ranges[tef_val]})"
+        cell_header = heatmap_table.rows[row_idx].cells[0]
+        set_cell_text_custom(
+            cell_header,
+            tef_lbl,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=resolver,
+            no_bullets=True,
+        )
+        shade_cell(cell_header, COLOR_BLUE)
+        set_cell_border_white(cell_header)
+        cell_header.width = Inches(1.3)
+        cell_header.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+
+        for col_idx, lm_val in enumerate(range(1, 6), 1):
+            cell = heatmap_table.rows[row_idx].cells[col_idx]
+            cell.width = Inches(1.04)
+            heatmap_table.rows[row_idx].height = Cm(0.4)
+
+            cell_risks = matrix_cells[tef_val][lm_val]
+            cell_text = ", ".join(cell_risks) if cell_risks else "-"
+
+            set_cell_text_custom(
+                cell,
+                cell_text,
+                bold=True,
+                font_size=8,
+                align=WD_ALIGN_PARAGRAPH.CENTER,
+            )
+            set_cell_border_white(cell)
+            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+
+            severity = tef_val * lm_val
+            if severity >= 15:
+                shade_cell(cell, "FADBD8")
+            elif severity >= 8:
+                shade_cell(cell, "FCF3CF")
+            else:
+                shade_cell(cell, "D5F5E3")
+
+    heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    add_spacer(doc, 20)
+
 
 def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContext) -> Chapter4Result:
     """Assemble and render Chapter 4: Quantitative Risk Matrix."""
@@ -139,20 +292,47 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     intro_prose_p4 = t("fair_intro_prose_p4", locale=doc_lang, reg_name=reg_name)
     intro_prose_p5 = t("fair_intro_prose_p5", locale=doc_lang, client_name=client_name, sre_rate=sre_rate, currency=currency)
 
+    # Section 4.1: Operational Risk Assessment and Resilience
+    add_heading(
+        doc,
+        t("operational_risk_framework_title", locale=doc_lang),
+        level=2,
+        primary_color_rgb=p_color_rgb,
+    )
+
     add_body_paragraph(doc, intro_prose_p1, text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, intro_prose_p2, text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, intro_prose_p3, text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, intro_prose_p4, text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, intro_prose_p5, text_color_rgb=text_color_rgb, italic=True)
+
+    p_exp_lead = doc.add_paragraph(style="Normal")
+    resolver = DocxStyleResolver.get_default(language_code=doc_lang)
+    resolver.apply_paragraph_typography(p_exp_lead, TypographyRole.BODY_REGULAR)
+    p_exp_lead.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    r_exp_lbl = p_exp_lead.add_run(t("lbl_resilience_and_economic_impact", locale=doc_lang) + " ")
+    resolver.apply_run_style(
+        r_exp_lbl,
+        typo_role=TypographyRole.BODY_STRONG,
+        color_role=SemanticColorRole.BRAND_PRIMARY,
+        bold_override=True,
+    )
+
+    r_exp_body = p_exp_lead.add_run(f"{intro_prose_p2} {intro_prose_p3}")
+    resolver.apply_run_style(
+        r_exp_body,
+        typo_role=TypographyRole.BODY_REGULAR,
+        color_role=SemanticColorRole.TEXT_PRIMARY,
+    )
+
+    if intro_prose_p4:
+        add_body_paragraph(doc, intro_prose_p4, text_color_rgb=text_color_rgb)
+    add_spacer(doc, 8)
+
+    lbl_metrics_intro = t("fair_guide_intro", locale=doc_lang)
+    add_body_paragraph(doc, lbl_metrics_intro, text_color_rgb=text_color_rgb)
+    for g_bullet in get_localized_list("fair_guide_bullets", locale=doc_lang):
+        add_body_paragraph(doc, g_bullet, style="List Bullet", text_color_rgb=text_color_rgb)
+    add_spacer(doc, 15)
 
     def add_markdown_bullet_local(text: str, space_after: int = 4) -> Any:
         return _add_markdown_bullet(doc, text, text_color_rgb, space_after)
-
-    add_appendix_subheading(doc, t("value_hexagon_heading", locale=doc_lang), primary_color_rgb=p_color_rgb)
-    lever_intro = t("value_hexagon_intro", locale=doc_lang)
-    add_body_paragraph(doc, lever_intro, text_color_rgb=text_color_rgb)
-    for l_idx, lever_text in enumerate(get_localized_list("value_hexagon_bullets", locale=doc_lang)):
-        add_markdown_bullet_local(lever_text, space_after=12 if l_idx == 5 else 3)
 
     #
     csv_risks_path = modules_dir / "06_matriz_riesgos_fair.csv"
@@ -185,138 +365,14 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                 if pilar_full_name not in risks_by_pilar:
                     risks_by_pilar[pilar_full_name] = []
                 risks_by_pilar[pilar_full_name].append(r_item)
-
-    # Assemble and render Section 5.1: 5x5 Heatmap as a centered, native table mosaic.
-    industry_name = ctx.get("industry", "Infraestructura y Operaciones")
-    if risks_data_list:
-        add_heading(
-            doc, vocab["exposure_summary_title"], level=2, primary_color_rgb=p_color_rgb
+    elif b_data and b_data.get("pillars_analysis"):
+        from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
+            derive_in_memory_fair_risks,
         )
-
-        sec_intro_p1 = t("fair_heatmap_sec_p1", locale=doc_lang)
-        sec_intro_p2 = t("fair_heatmap_sec_p2", locale=doc_lang, client_name=client_name, industry_name=industry_name)
-        sec_intro_p3 = t("fair_heatmap_sec_p3", locale=doc_lang)
-            
-        add_body_paragraph(doc, sec_intro_p1, text_color_rgb=text_color_rgb)
-        add_body_paragraph(doc, sec_intro_p2, text_color_rgb=text_color_rgb)
-        add_body_paragraph(doc, sec_intro_p3, text_color_rgb=text_color_rgb)
-        add_spacer(doc, 15)
-
-        matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
-        for r in risks_data_list:
-            r_tef = min(5, max(1, int(round(r["tef"]))))
-            r_lm = min(5, max(1, int(round(r["lm"]))))
-            matrix_cells[r_tef][r_lm].append(r["id"])
-
-        # Initialize a 6x6 table (5x5 data grid plus headers). The table is centered and set to full page width.
-        heatmap_table = doc.add_table(rows=6, cols=6)
-        heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-        finalize_table(heatmap_table)
-
-        #
-        cell_0_0 = heatmap_table.rows[0].cells[0]
-        set_cell_text_custom(
-            cell_0_0,
-            "TEF \\ LM",
-            bold=True,
-            font_size=9,
-            align=WD_ALIGN_PARAGRAPH.CENTER,
-            color_rgb=RGBColor(255, 255, 255),
-            no_bullets=True,
+        rate_mult = float(ctx.get("rate_mult", 1.0))
+        risks_data_list, risks_by_pilar = derive_in_memory_fair_risks(
+            b_data, doc_lang=doc_lang, currency=currency, rate_mult=rate_mult
         )
-        shade_cell(cell_0_0, COLOR_BLUE)
-        set_cell_border_white(cell_0_0)
-        cell_0_0.width = Inches(1.3)  # Slightly wider for inline ranges
-        cell_0_0.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        
-        for col_idx in range(1, 6):
-            if is_critical:
-                lm_ranges = {
-                    1: f"< 1k {currency}",
-                    2: f"1k - 10k {currency}",
-                    3: f"10k - 50k {currency}",
-                    4: f"50k - 300k {currency}",
-                    5: f"250k - 1.5M {currency}",
-                }
-            else:
-                lm_ranges = {
-                    1: f"< 1k {currency}",
-                    2: f"1k - 5k {currency}",
-                    3: f"5k - 25k {currency}",
-                    4: f"25k - 100k {currency}",
-                    5: f"100k - 500k {currency}",
-                }
-            lm_lbl = f"LM {col_idx}\n({lm_ranges[col_idx]})"
-            cell = heatmap_table.rows[0].cells[col_idx]
-            set_cell_text_custom(
-                cell,
-                lm_lbl,
-                bold=True,
-                font_size=9,
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-                color_rgb=RGBColor(255, 255, 255),
-                no_bullets=True,
-            )
-            shade_cell(cell, COLOR_BLUE)
-            set_cell_border_white(cell)
-            cell.width = Inches(1.04)
-            cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-
-        # Populate the 5x5 data matrix with content, ensuring it fills the full width of the table.
-        for row_idx, tef_val in enumerate(range(5, 0, -1), 1):
-            tef_ranges = {
-                5: t("tef_annual_freq_5", locale=doc_lang),
-                4: t("tef_annual_freq_4", locale=doc_lang),
-                3: t("tef_annual_freq_3", locale=doc_lang),
-                2: t("tef_annual_freq_2", locale=doc_lang),
-                1: t("tef_annual_freq_1", locale=doc_lang),
-            }
-            tef_lbl = f"TEF {tef_val}\n({tef_ranges[tef_val]})"
-            cell_header = heatmap_table.rows[row_idx].cells[0]
-            set_cell_text_custom(
-                cell_header,
-                tef_lbl,
-                bold=True,
-                font_size=9,
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-                color_rgb=RGBColor(255, 255, 255),
-                no_bullets=True,
-            )
-            shade_cell(cell_header, COLOR_BLUE)
-            set_cell_border_white(cell_header)
-            cell_header.width = Inches(1.3)
-            cell_header.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-
-            for col_idx, lm_val in enumerate(range(1, 6), 1):
-                cell = heatmap_table.rows[row_idx].cells[col_idx]
-
-                # Configure table dimensions to create a fixed, full-width mosaic layout.
-                cell.width = Inches(1.04)
-                heatmap_table.rows[row_idx].height = Cm(0.4)
-
-                cell_risks = matrix_cells[tef_val][lm_val]
-                cell_text = ", ".join(cell_risks) if cell_risks else "-"
-
-                set_cell_text_custom(
-                    cell,
-                    cell_text,
-                    bold=True,
-                    font_size=8,
-                    align=WD_ALIGN_PARAGRAPH.CENTER,
-                )
-                set_cell_border_white(cell)
-                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-
-                severity = tef_val * lm_val
-                if severity >= 15:
-                    shade_cell(cell, "FADBD8")  #
-                elif severity >= 8:
-                    shade_cell(cell, "FCF3CF")  #
-                else:
-                    shade_cell(cell, "D5F5E3")  #
-
-        heatmap_table.alignment = WD_TABLE_ALIGNMENT.CENTER  # Recalculate cell content alignment. This is required because the initial auto-fit operation may not apply alignment correctly.
-        add_spacer(doc, 20)
 
     # Build a lookup map from blueprint payload findings for detailed FAIR metrics
     fair_lookup = {}
@@ -335,312 +391,278 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
             logger.debug(f"[Fallback] Handled exception: {ex}")
 
-    # Assemble and render Section 5.3: Detailed Risk Register; left-aligned content per requirement 4.2.
+    # Section 4.2: Prioritized Risk Catalog
     add_heading(
-        doc, vocab["detailed_risks_title"], level=2, primary_color_rgb=p_color_rgb
+        doc, t("detailed_risks_title", locale=doc_lang), level=2, primary_color_rgb=p_color_rgb
     )
+    add_body_paragraph(
+        doc,
+        t("fair_catalog_intro", locale=doc_lang),
+        text_color_rgb=text_color_rgb,
+    )
+    add_spacer(doc, 10)
 
-    detailed_risks_intro = t("fair_detailed_risks_intro", locale=doc_lang)
-    guide_intro = t("fair_guide_intro", locale=doc_lang)
-    add_body_paragraph(doc, detailed_risks_intro, text_color_rgb=text_color_rgb)
-    add_body_paragraph(doc, guide_intro, text_color_rgb=text_color_rgb)
+    # Sort all risks strictly by ALE descending for unified global prioritization
+    risks_data_list.sort(key=lambda r: r["ale"], reverse=True)
+    for idx, r in enumerate(risks_data_list):
+        r["id"] = f"{tower_id}-RSK-{idx + 1:02d}"
+        r["rank"] = idx + 1
 
-    for g_bullet in get_localized_list("fair_guide_bullets", locale=doc_lang):
-        add_body_paragraph(doc, g_bullet, style="List Bullet", text_color_rgb=text_color_rgb)
-
-    add_spacer(doc, 15)
-
-    # Dynamic Relative Materiality Threshold Calculation (Statistical Mean ALE)
     total_risks_count = len(risks_data_list)
     local_mean_ale = (sum(r["ale"] for r in risks_data_list) / total_risks_count) if total_risks_count > 0 else 0.0
-    
     tier1_threshold = local_mean_ale * 1.5
     tier2_threshold = local_mean_ale * 0.5
 
-    tier1_risks = [r for r in risks_data_list if r["ale"] >= tier1_threshold]
-    tier2_risks = [r for r in risks_data_list if tier2_threshold <= r["ale"] < tier1_threshold]
-    tier3_risks = [r for r in risks_data_list if r["ale"] < tier2_threshold]
+    # Part A: Executive Risk Summary Table (1 single consolidated table)
+    table_risks = doc.add_table(rows=1, cols=6)
+    table_risks.alignment = WD_TABLE_ALIGNMENT.LEFT
+    finalize_table(table_risks)
+    table_risks.autofit = False
+    table_risks.allow_autofit = False
 
-    # Sort each tier by ALE descending to guarantee standard prioritization
-    tier1_risks.sort(key=lambda x: x["ale"], reverse=True)
-    tier2_risks.sort(key=lambda x: x["ale"], reverse=True)
-    tier3_risks.sort(key=lambda x: x["ale"], reverse=True)
+    tblPr = table_risks._tbl.tblPr
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        table_risks._tbl.insert(0, tblPr)
 
-    t_sep1 = format_currency_custom(tier1_threshold, t_sep, d_sep).split(d_sep)[0]
-    t_sep2 = format_currency_custom(tier2_threshold, t_sep, d_sep).split(d_sep)[0]
-    
-    tiers_config = [
-        (
-            t("tier1_portfolio_title", locale=doc_lang),
-            tier1_risks,
-            t("tier1_portfolio_desc", locale=doc_lang, t_sep1=t_sep1, currency=currency),
-        ),
-        (
-            t("tier2_portfolio_title", locale=doc_lang),
-            tier2_risks,
-            t("tier2_portfolio_desc", locale=doc_lang, t_sep2=t_sep2, t_sep1=t_sep1, currency=currency),
-        ),
-        (
-            t("tier3_portfolio_title", locale=doc_lang),
-            tier3_risks,
-            t("tier3_portfolio_desc", locale=doc_lang, t_sep2=t_sep2, currency=currency),
-        ),
-    ]
+    tblGrid = table_risks._tbl.find(qn('w:tblGrid'))
+    if tblGrid is not None:
+        table_risks._tbl.remove(tblGrid)
 
-    for title, p_risks, p_desc in tiers_config:
-        add_heading(
-            doc,
-            title,
-            level=3,
-            primary_color_rgb=p_color_rgb,
+    tblGrid = OxmlElement('w:tblGrid')
+    sum_col_widths = [Cm(2.2), Cm(5.1), Cm(3.4), Cm(2.0), Cm(2.0), Cm(1.8)]
+    for w in sum_col_widths:
+        gridCol = OxmlElement('w:gridCol')
+        gridCol.set(qn('w:w'), str(int(w.twips)))
+        tblGrid.append(gridCol)
+
+    tblPr_index = table_risks._tbl.index(tblPr)
+    table_risks._tbl.insert(tblPr_index + 1, tblGrid)
+
+    for child in list(tblPr):
+        if child.tag.endswith('tblLayout') or child.tag.endswith('tblW'):
+            tblPr.remove(child)
+
+    tblLayout = OxmlElement('w:tblLayout')
+    tblLayout.set(qn('w:type'), 'fixed')
+    tblPr.append(tblLayout)
+
+    tblW = OxmlElement('w:tblW')
+    tblW.set(qn('w:type'), 'dxa')
+    tblW.set(qn('w:w'), str(sum(int(w.twips) for w in sum_col_widths)))
+    tblPr.append(tblW)
+
+    summary_headers = get_localized_list("risk_summary_headers", locale=doc_lang)
+    if not isinstance(summary_headers, list) or len(summary_headers) < 6:
+        summary_headers = ["ID", "Evaluated Risk / Asset", "Pillar", "Frequency (TEF)", "Outage Cost (P90)", "Annual Loss (ALE)"]
+
+    for i, h_txt in enumerate(summary_headers):
+        cell = table_risks.rows[0].cells[i]
+        set_cell_text_custom(
+            cell,
+            h_txt,
+            align=WD_ALIGN_PARAGRAPH.CENTER,
+            typography_role=TypographyRole.TABLE_HEADER,
+            color_role=SemanticColorRole.TEXT_INVERSE,
+            resolver=resolver,
+            no_bullets=True,
         )
-        add_body_paragraph(doc, p_desc, text_color_rgb=text_color_rgb)
-        add_spacer(doc, 10)
+        tcPr = cell._tc.get_or_add_tcPr()
+        tcW = tcPr.find(qn('w:tcW'))
+        if tcW is not None:
+            tcPr.remove(tcW)
+        tcW = OxmlElement('w:tcW')
+        tcW.set(qn('w:type'), 'dxa')
+        tcW.set(qn('w:w'), str(int(sum_col_widths[i].twips)))
+        tcPr.append(tcW)
+        shade_cell(cell, p_color_hex)
 
-        if not p_risks:
-            empty_msg = t("msg_no_tier_vulnerabilities", locale=doc_lang)
-            add_body_paragraph(doc, empty_msg, text_color_rgb=text_color_rgb)
-            add_spacer(doc, 15)
-            continue
+    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    taxonomy_resolver = get_taxonomy_resolver()
+    style_resolver = DocxStyleResolver.get_default(language_code=doc_lang)
 
-        table_risks = doc.add_table(rows=1, cols=3)
-        table_risks.alignment = WD_TABLE_ALIGNMENT.LEFT
-        finalize_table(table_risks)
-        table_risks.autofit = False
-        table_risks.allow_autofit = False
+    for r_idx, r in enumerate(risks_data_list):
+        row = table_risks.add_row()
+        raw_cap = r["capability"]
+        cap_name = taxonomy_resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
+        raw_pilar = r.get("pillar") or r.get("pilar", "Pillar")
+        pilar_name = taxonomy_resolver.resolve_pillar_by_any_reference(raw_pilar, default=raw_pilar, locale=doc_lang)
 
-        tblPr = table_risks._tbl.tblPr
-        if tblPr is None:
-            tblPr = OxmlElement('w:tblPr')
-            table_risks._tbl.insert(0, tblPr)
+        fair_metrics = fair_lookup.get(raw_cap, fair_lookup.get(cap_name, {}))
+        p90_val = r.get("p90") or fair_metrics.get("p90", 0.0) or (r["ale"] * 2.5)
+        formatted_ale_r = format_currency_custom(r["ale"], t_sep, d_sep).split(d_sep)[0]
+        formatted_p90_r = format_currency_custom(p90_val, t_sep, d_sep).split(d_sep)[0]
 
-        # Apply robust OXML column widths to guarantee Word doesn't shrink the third column
-        tblGrid = table_risks._tbl.find(qn('w:tblGrid'))
-        if tblGrid is not None:
-            table_risks._tbl.remove(tblGrid)
-            
-        tblGrid = OxmlElement('w:tblGrid')
-        col_widths = [Cm(1.2), Cm(10.45), Cm(5.77)]
-        for w in col_widths:
-            gridCol = OxmlElement('w:gridCol')
-            gridCol.set(qn('w:w'), str(int(w.twips)))
-            tblGrid.append(gridCol)
-            
-        # Insert tblGrid immediately after tblPr to conform to OOXML schema
-        tblPr_index = table_risks._tbl.index(tblPr)
-        table_risks._tbl.insert(tblPr_index + 1, tblGrid)
-        
-        # Remove any existing autofit tags and set rigid total width
-        for child in list(tblPr):
-            if child.tag.endswith('tblLayout') or child.tag.endswith('tblW'):
-                tblPr.remove(child)
-                
-        tblLayout = OxmlElement('w:tblLayout')
-        tblLayout.set(qn('w:type'), 'fixed')
-        tblPr.append(tblLayout)
-        
-        tblW = OxmlElement('w:tblW')
-        tblW.set(qn('w:type'), 'dxa')
-        tblW.set(qn('w:w'), str(sum(int(w.twips) for w in col_widths)))
-        tblPr.append(tblW)
+        set_cell_text_custom(row.cells[0], r["id"], bold=True, font_size=8.0, align=WD_ALIGN_PARAGRAPH.CENTER, no_bullets=True)
+        set_cell_text_custom(row.cells[1], cap_name, bold=True, font_size=8.0, no_bullets=True)
+        set_cell_text_custom(row.cells[2], pilar_name, font_size=8.0, no_bullets=True)
+        set_cell_text_custom(row.cells[3], f"{r['tef']:.1f} / 5.0", font_size=8.0, align=WD_ALIGN_PARAGRAPH.CENTER, no_bullets=True)
+        set_cell_text_custom(row.cells[4], f"{formatted_p90_r} {currency}", font_size=8.0, align=WD_ALIGN_PARAGRAPH.RIGHT, no_bullets=True)
+        set_cell_text_custom(row.cells[5], f"{formatted_ale_r} {currency}", bold=True, font_size=8.0, align=WD_ALIGN_PARAGRAPH.RIGHT, no_bullets=True)
 
-        headers_table = vocab["detailed_risks_headers"]
-        for i, h_txt in enumerate(headers_table):
-            cell = table_risks.rows[0].cells[i]
-            set_cell_text_custom(
-                cell,
-                h_txt,
-                bold=True,
-                font_size=8.5,
-                color_rgb=RGBColor(255, 255, 255),
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-            )
-            # Force exact width on the cell level in OXML
+        for i, w in enumerate(sum_col_widths):
+            cell = row.cells[i]
             tcPr = cell._tc.get_or_add_tcPr()
             tcW = tcPr.find(qn('w:tcW'))
             if tcW is not None:
                 tcPr.remove(tcW)
             tcW = OxmlElement('w:tcW')
             tcW.set(qn('w:type'), 'dxa')
-            tcW.set(qn('w:w'), str(int(col_widths[i].twips)))
+            tcW.set(qn('w:w'), str(int(sum_col_widths[i].twips)))
             tcPr.append(tcW)
-            shade_cell(cell, p_color_hex)
+            if r_idx % 2 == 1:
+                shade_cell(cell, alt_row_hex)
 
-        for r_idx, r in enumerate(p_risks):
-            row = table_risks.add_row()
+    add_spacer(doc, 15)
 
-            #
-            set_cell_text_custom(
-                row.cells[0],
-                r["id"],
-                bold=True,
-                font_size=8.5,
-                align=WD_ALIGN_PARAGRAPH.CENTER,
-            )
-            shade_cell(row.cells[0], alt_row_hex)
+    # Part B: Executive 2-Line Risk Cards
+    lbl_diag = t("label_operational_diagnostic", locale=doc_lang)
+    lbl_econ = t("label_economic_impact", locale=doc_lang)
 
-            # Assemble and render Section 2: Description and Evidence, justified per user request.
-            # Clear default paragraph and build explicitly to prevent Shift+Enter stretching bugs
-            cell_desc = row.cells[1]
-            cell_desc.text = ""
-            p_desc_lbl = cell_desc.paragraphs[0]
-            p_desc_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p_desc_lbl.paragraph_format.space_after = Pt(2)
+    import re
+    from assessment_engine.infrastructure.localization import apply_vocabulary_substitutions
+    raw_client_name = ctx.get("raw_client_name", client_name)
 
-            finding = r["finding"]
-            biz_risk = r["business_risk"]
-            cap_name = r["capability"]
+    for r in risks_data_list:
+        raw_cap = r["capability"]
+        cap_name = taxonomy_resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
+        fair_metrics = fair_lookup.get(raw_cap, fair_lookup.get(cap_name, {}))
+        p90_val = r.get("p90") or fair_metrics.get("p90", 0.0) or (r["ale"] * 2.5)
+        formatted_ale_r = format_currency_custom(r["ale"], t_sep, d_sep).split(d_sep)[0]
+        formatted_p90_r = format_currency_custom(p90_val, t_sep, d_sep).split(d_sep)[0]
 
-            parts_f = finding.split("\n\nEvidencia Forense Literal (Audit RAG):\n")
+        if r["ale"] >= tier1_threshold:
+            tier_badge = t("tier_label_critical", locale=doc_lang)
+        elif r["ale"] >= tier2_threshold:
+            tier_badge = t("tier_label_medium", locale=doc_lang)
+        else:
+            tier_badge = t("tier_label_moderate", locale=doc_lang)
 
-            import re
-            from assessment_engine.infrastructure.localization import (
-                apply_vocabulary_substitutions,
-            )
-            raw_client_name = ctx.get("raw_client_name", client_name)
+        # Risk Card Heading
+        card_title = f"[{r['id']}] {cap_name} ({tier_badge})"
+        add_heading(doc, card_title, level=3, primary_color_rgb=p_color_rgb)
 
-            clean_finding_text = apply_vocabulary_substitutions(
-                clean_text_for_word(parts_f[0]), locale=doc_lang
-            )
-            clean_finding_text = re.sub(
-                re.escape(raw_client_name),
-                client_name,
-                clean_finding_text,
-                flags=re.IGNORECASE,
-            ).strip()
+        raw_f = re.split(r"\n\n(?:Evidencia|Evidence|Audit)", r["finding"])[0].strip()
+        raw_br = r["business_risk"].strip()
 
-            clean_biz_text = apply_vocabulary_substitutions(
-                clean_text_for_word(biz_risk), locale=doc_lang
-            )
-            clean_biz_text = re.sub(
-                re.escape(raw_client_name),
-                client_name,
-                clean_biz_text,
-                flags=re.IGNORECASE,
-            ).strip()
+        clean_f = apply_vocabulary_substitutions(clean_text_for_word(raw_f), locale=doc_lang)
+        clean_f = re.sub(re.escape(raw_client_name), client_name, clean_f, flags=re.IGNORECASE).strip()
+        f_parts = re.split(r"(?<!\d)\.(?!\d)\s+", clean_f)
+        clean_f = f_parts[0].strip() if f_parts else clean_f
 
-            run_obs = p_desc_lbl.add_run(t("vulnerability_identified_label", locale=doc_lang))
-            run_obs.bold = True
-            run_obs.font.name = "Arial"
-            run_obs.font.size = Pt(8.5)
+        clean_br = apply_vocabulary_substitutions(clean_text_for_word(raw_br), locale=doc_lang)
+        clean_br = re.sub(re.escape(raw_client_name), client_name, clean_br, flags=re.IGNORECASE).strip()
+        br_parts = re.split(r"(?<!\d)\.(?!\d)\s+", clean_br)
+        clean_br = br_parts[0].strip() if br_parts else clean_br
+        clean_br_low = clean_br[:1].lower() + clean_br[1:] if clean_br else ""
 
-            p_desc_txt = cell_desc.add_paragraph(clean_finding_text)
-            p_desc_txt.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            p_desc_txt.paragraph_format.space_after = Pt(8)
-            for run in p_desc_txt.runs:
-                run.font.name = "Arial"
-                run.font.size = Pt(8.5)
+        tef_val = r["tef"]
+        if tef_val >= 4.0:
+            freq_str = t("resilience_freq_high", locale=doc_lang)
+        elif tef_val >= 2.5:
+            freq_str = t("resilience_freq_med", locale=doc_lang)
+        else:
+            freq_str = t("resilience_freq_low", locale=doc_lang)
 
-            p_biz_lbl = cell_desc.add_paragraph()
-            p_biz_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p_biz_lbl.paragraph_format.space_after = Pt(2)
-            run_biz = p_biz_lbl.add_run(t("it_operational_impact_label", locale=doc_lang))
-            run_biz.bold = True
-            run_biz.font.name = "Arial"
-            run_biz.font.size = Pt(8.5)
+        calc_basis = t(
+            "calc_basis_note_template",
+            locale=doc_lang,
+            freq_str=freq_str,
+            tef_score=f"{tef_val:.1f}",
+        )
 
-            p_biz_txt = cell_desc.add_paragraph(clean_biz_text)
-            p_biz_txt.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            p_biz_txt.paragraph_format.space_after = Pt(0)
-            for run in p_biz_txt.runs:
-                run.font.name = "Arial"
-                run.font.size = Pt(8.5)
+        # 1. Operational Diagnostic Line
+        p_diag = doc.add_paragraph(style="Normal")
+        style_resolver.apply_paragraph_typography(p_diag, TypographyRole.BODY_REGULAR)
+        p_diag.paragraph_format.left_indent = Inches(0.12)
+        p_diag.paragraph_format.first_line_indent = Inches(-0.12)
+        p_diag.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        
+        r_lbl1 = p_diag.add_run(f"• {lbl_diag}: ")
+        style_resolver.apply_run_style(
+            r_lbl1,
+            typo_role=TypographyRole.TABLE_CELL,
+            color_role=SemanticColorRole.TEXT_PRIMARY,
+            bold_override=True,
+        )
 
-            # Assemble and render Section 3: Business Risk and FAIR Impact, left-aligned per user request.
-            # Use native paragraphs to avoid Shift+Enter stretching bugs and carriage return issues
-            cell_risk = row.cells[2]
-            cell_risk.text = ""
-            p_fair_lbl = cell_risk.paragraphs[0]
-            p_fair_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p_fair_lbl.paragraph_format.space_after = Pt(2)
-            
-            fair_lbl_txt = t("lbl_quantitative_fair_exposure", locale=doc_lang)
-            run_fair_lbl = p_fair_lbl.add_run(fair_lbl_txt)
-            run_fair_lbl.bold = True
+        diag_body = t(
+            "risk_card_diagnostic_template",
+            locale=doc_lang,
+            finding=clean_f.rstrip("."),
+            risk=clean_br_low.rstrip("."),
+        )
+        r_body1 = p_diag.add_run(diag_body)
+        style_resolver.apply_run_style(
+            r_body1,
+            typo_role=TypographyRole.TABLE_CELL,
+            color_role=SemanticColorRole.TEXT_PRIMARY,
+        )
 
-            tef = r["tef"]
-            lm = r["lm"]
-            ale = r["ale"]
+        # 2. Economic Impact Line
+        p_econ = doc.add_paragraph(style="Normal")
+        style_resolver.apply_paragraph_typography(p_econ, TypographyRole.BODY_REGULAR)
+        p_econ.paragraph_format.left_indent = Inches(0.12)
+        p_econ.paragraph_format.first_line_indent = Inches(-0.12)
+        p_econ.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
 
-            # Fetch detailed FAIR metrics from lookup map
-            fair_metrics = fair_lookup.get(cap_name, {})
-            p90_val = fair_metrics.get("p90", 0.0) or 0.0
-            min_val = fair_metrics.get("min", 0.0) or 0.0
-            max_val = fair_metrics.get("max", 0.0) or 0.0
+        r_lbl2 = p_econ.add_run(f"• {lbl_econ}: ")
+        style_resolver.apply_run_style(
+            r_lbl2,
+            typo_role=TypographyRole.TABLE_CELL,
+            color_role=SemanticColorRole.TEXT_PRIMARY,
+            bold_override=True,
+        )
 
-            p_fair_val = cell_risk.add_paragraph()
-            p_fair_val.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p_fair_val.paragraph_format.space_after = Pt(6)
-            from assessment_engine.infrastructure.localization import format_number
-            max_val_str = format_number(5.0, locale=doc_lang, decimals=1)
-            p_fair_val.add_run(
-                t(
-                    "fair_freq_mag_template",
-                    locale=doc_lang,
-                    tef=format_number(tef, locale=doc_lang, decimals=1),
-                    max_tef=max_val_str,
-                    lm=format_number(lm, locale=doc_lang, decimals=1),
-                    max_lm=max_val_str,
-                )
-            )
+        year_suffix = t("lbl_year", locale=doc_lang)
+        r_body2_bold = p_econ.add_run(f"{formatted_ale_r} {currency}/{year_suffix} (ALE)")
+        style_resolver.apply_run_style(
+            r_body2_bold,
+            typo_role=TypographyRole.TABLE_CELL,
+            color_role=SemanticColorRole.STATUS_CRITICAL,
+            bold_override=True,
+        )
 
-            p_exp_lbl = cell_risk.add_paragraph()
-            p_exp_lbl.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p_exp_lbl.paragraph_format.space_after = Pt(2)
-            exp_lbl_txt = t("lbl_projected_financial_exposure", locale=doc_lang)
-            run_exp_lbl = p_exp_lbl.add_run(exp_lbl_txt)
-            run_exp_lbl.bold = True
+        txt_mid = t("lbl_and_up_to_crisis_cost", locale=doc_lang, formatted_p90=formatted_p90_r, currency=currency)
+        r_body2_mid = p_econ.add_run(txt_mid)
+        style_resolver.apply_run_style(
+            r_body2_mid,
+            typo_role=TypographyRole.TABLE_CELL,
+            color_role=SemanticColorRole.TEXT_PRIMARY,
+            bold_override=True,
+        )
 
-            p_exp_val = cell_risk.add_paragraph()
-            p_exp_val.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            p_exp_val.paragraph_format.space_after = Pt(0)
+        r_body2_calc = p_econ.add_run(f"({calc_basis}).")
+        style_resolver.apply_run_style(
+            r_body2_calc,
+            typo_role=TypographyRole.CAPTION,
+            color_role=SemanticColorRole.TEXT_MUTED,
+        )
 
-            formatted_p90 = format_currency_custom(p90_val, t_sep, d_sep).split(d_sep)[0]
-            formatted_min = format_currency_custom(min_val, t_sep, d_sep).split(d_sep)[0]
-            formatted_max = format_currency_custom(max_val, t_sep, d_sep).split(d_sep)[0]
-            formatted_ale_item = format_currency_custom(ale, t_sep, d_sep).split(d_sep)[0]
+    add_spacer(doc, 15)
 
-            ale_lbl_txt = t("lbl_ale_bullet", locale=doc_lang)
-            p_exp_val.add_run(ale_lbl_txt)
-            run_ale_val = p_exp_val.add_run(f"{formatted_ale_item} {currency}\n")
-            run_ale_val.bold = True
-            run_ale_val.font.color.rgb = RGBColor(180, 0, 0)
-            
-            p_exp_val.add_run(t("lbl_cvar_bullet", locale=doc_lang, p90=formatted_p90, currency=currency))
-            p_exp_val.add_run(t("lbl_probabilistic_range_bullet", locale=doc_lang, min_val=formatted_min, max_val=formatted_max, currency=currency))
+    # Render Section 4.2: 5x5 Heatmap as a visual synthesis of all evaluated risks
+    _render_fair_heatmap(
+        doc=doc,
+        ctx=ctx,
+        risks_data_list=risks_data_list,
+        doc_lang=doc_lang,
+        client_name=client_name,
+        currency=currency,
+        is_critical=is_critical,
+        p_color_rgb=p_color_rgb,
+        text_color_rgb=text_color_rgb,
+        vocab=vocab,
+    )
 
-            # Apply fonts to all runs in the third cell
-            for p_item in cell_risk.paragraphs:
-                for r_item in p_item.runs:
-                    r_item.font.name = "Arial"
-                    r_item.font.size = Pt(8.5)
-
-            # Apply uniform alternating row backgrounds to maintain pure aesthetic logic
-            row_bg = alt_row_hex if r_idx % 2 == 1 else "FFFFFF"
-            for i in range(3):
-                shade_cell(row.cells[i], row_bg)
-
-            # Apply vertical centering to all cells in the row
-            row.cells[0].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-            row.cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-            row.cells[2].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-
-            # Enforce exact centimeter-based column widths on every cell of every row at the VERY END, 
-            # so that previous text injections and shade_cell don't overwrite the tcPr OXML.
-            for i in range(3):
-                cell = row.cells[i]
-                tcPr = cell._tc.get_or_add_tcPr()
-                tcW = tcPr.find(qn('w:tcW'))
-                if tcW is not None:
-                    tcPr.remove(tcW)
-                tcW = OxmlElement('w:tcW')
-                tcW.set(qn('w:type'), 'dxa')
-                tcW.set(qn('w:w'), str(int(col_widths[i].twips)))
-                tcPr.append(tcW)
-
-        add_spacer(doc, 15)
-
-    #
+    # Section 4.4: Mitigation Levers and Resilience Return (Hexagon of Value)
+    add_heading(
+        doc, t("value_hexagon_heading", locale=doc_lang), level=2, primary_color_rgb=p_color_rgb
+    )
+    lever_intro = t("value_hexagon_intro", locale=doc_lang)
+    add_body_paragraph(doc, lever_intro, text_color_rgb=text_color_rgb)
+    for l_idx, lever_text in enumerate(get_localized_list("value_hexagon_bullets", locale=doc_lang)):
+        add_markdown_bullet_local(lever_text, space_after=12 if l_idx == 5 else 3)
 
     return {
         "total_p90": total_p90,

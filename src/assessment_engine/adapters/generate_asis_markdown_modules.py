@@ -24,7 +24,7 @@ def clean_client_name(client_name: str) -> str:
     strips trailing whitespace, and ensures Proper Noun Title Case capitalization.
     """
     if not client_name:
-        return "Cliente"
+        return "Client"
     # Remove version endings like _v3, _V2, -v4, etc.
     cleaned = re.sub(r'[_-][vV]\d+\b', '', client_name)
     # Replace underscores/hyphens with spaces
@@ -110,137 +110,80 @@ def _get_low_maturity_prose(doc_lang: str, v_idx: int, gaps_caps: list[str], gap
 
 
 def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
-    """Derive pillar justification according to technical specification."""
+    """Derive concise, executive 2-block calibration and unlocking lever for pillar."""
     from assessment_engine.domain.maturity_band import (
         ANNEX_MATURITY_BANDS,
         resolve_maturity_band,
     )
-    from assessment_engine.infrastructure.localization import format_number
+    from assessment_engine.infrastructure.localization import format_number, t
 
     p_score = float(p.get("score", 3.0))
     band = resolve_maturity_band(
         p_score, ANNEX_MATURITY_BANDS, locale=doc_lang
     )["label"]
     formatted_score = format_number(p_score, locale=doc_lang, decimals=2)
-    p_name = p.get("pilar_name", "Pilar")
+    p_name = p.get("pilar_name", "Pillar")
+
+    # Resolve label for technical bottleneck / constraint based on maturity tier
+    if p_score < 2.0:
+        lbl_limit = t("calib_label_critical_blocker", locale=doc_lang)
+    elif p_score >= 3.5:
+        lbl_limit = t("calib_label_optimization_gap", locale=doc_lang)
+    else:
+        lbl_limit = t("calib_label_operational_bottleneck", locale=doc_lang)
+
+    lbl_lever = t("calib_label_unlocking_lever", locale=doc_lang)
 
     findings = p.get("health_check_asis", [])
     if not findings:
-        hdr_kpis = t("asis_header_kpis_status", locale=doc_lang)
-        hdr_gaps = t("asis_header_gaps_consequences", locale=doc_lang)
-        hdr_just = t("asis_header_score_justification", locale=doc_lang)
-        empty_kpis = t("asis_pillar_empty_kpis", locale=doc_lang, band=band, formatted_score=formatted_score)
         empty_gaps = t("asis_pillar_empty_gaps", locale=doc_lang)
         empty_just = t("asis_pillar_empty_justification", locale=doc_lang)
-        return (
-            f"• **{hdr_kpis}**\n• {empty_kpis}\n"
-            f"• **{hdr_gaps}**\n• {empty_gaps}\n"
-            f"• **{hdr_just} ({formatted_score})**\n• {empty_just}"
-        )
+        return f"• **{lbl_limit}:** {empty_gaps}\n\n• **{lbl_lever}:** {empty_just}"
 
-    # Sort findings by vulnerability_level (descending) or fair_ale_score (descending)
     def get_ale(f):
         try:
             return float(f.get("fair_ale_score", 0.0) or 0.0)
         except Exception:
             return 0.0
+
     def get_vuln(f):
         try:
             return int(f.get("vulnerability_level", 3) or 3)
         except Exception:
             return 3
-            
+
     sorted_findings = sorted(findings, key=lambda x: (get_vuln(x), get_ale(x)), reverse=True)
-    
-    gaps_findings = [f for f in sorted_findings if get_vuln(f) >= 4]
-    if not gaps_findings:
-        gaps_findings = sorted_findings[:1]
-        
-    stable_findings = [f for f in sorted_findings if f not in gaps_findings]
-    
-    def clean_cap_name(name):
-        return _clean_cap_name(name, doc_lang)
+    top_f = sorted_findings[0]
+    raw_fd = (top_f.get("finding", top_f.get("risk_observed", "")) or "").strip()
 
-    gaps_caps = [clean_cap_name(f.get("target_state", f.get("capability", ""))) for f in gaps_findings if f.get("target_state", f.get("capability"))]
-    stable_caps = [clean_cap_name(f.get("target_state", f.get("capability", ""))) for f in stable_findings if f.get("target_state", f.get("capability"))]
-    
-    gaps_caps = [c for c in gaps_caps if c]
-    stable_caps = [c for c in stable_caps if c]
-
-    # Deterministic variation index based on index
-    v_idx = idx % 3
-    
-    # 2. Brechas y Consecuencias Operativas
-    main_gaps = []
-    main_risks = []
-    for f in gaps_findings[:2]:
-        fd = (f.get("risk_observed", f.get("finding", "")) or "").strip()
-        br = (f.get("impact", f.get("business_risk", "")) or "").strip()
-        from assessment_engine.infrastructure.localization import resolve_base_locale
-        target_is_spanish = resolve_base_locale(doc_lang).startswith("es")
-        if fd:
-            if target_is_spanish and ("the" in fd.lower() or "is" in fd.lower() or "reflects" in fd.lower()):
-                desc_map = _ASIS_ANNEX_DATA.get("default_finding_descriptions", {}).get("es", {})
-                if "lifecycle" in fd.lower() or "patch" in fd.lower():
-                    fd = desc_map.get("lifecycle", "")
-                elif "configur" in fd.lower() or "standar" in fd.lower():
-                    fd = desc_map.get("virtualization", "")
-                elif "availability" in fd.lower() or "high availability" in fd.lower():
-                    fd = desc_map.get("availability", "")
-                else:
-                    fd = desc_map.get("fallback", "")
-            else:
-                # Lowercase the first letter of fd if it was parsed as a separate sentence and not an acronym
-                if fd and fd[0].isupper() and not (len(fd) >= 2 and fd[:2].isupper()):
-                    fd = fd[0].lower() + fd[1:]
-            fd_sent = fd.rstrip(".")
-            main_gaps.append(fd_sent)
-            
-        if br:
-            if target_is_spanish and ("increase" in br.lower() or "higher" in br.lower() or "risk" in br.lower() or "result" in br.lower()):
-                risk_fallbacks = _ASIS_ANNEX_DATA.get("risk_fallback_strings", {}).get("es", {})
-                if "security" in br.lower() or "vulnerab" in br.lower():
-                    br = risk_fallbacks.get("surface", "an expanded attack surface and prolonged exposure to critical vulnerabilities")
-                elif "cost" in br.lower() or "tco" in br.lower():
-                    br = risk_fallbacks.get("tco", "an increase in total cost of ownership (TCO) from managing heterogeneous technologies")
-                else:
-                    br = risk_fallbacks.get("mttr", "increased mean time to resolution (MTTR) and operational toil on engineering teams")
-            else:
-                if br and br[0].isupper() and not (len(br) >= 2 and br[:2].isupper()):
-                    br = br[0].lower() + br[1:]
-            br_sent = br.rstrip(".")
-            main_risks.append(br_sent)
-
-    loc_key = resolve_base_locale(doc_lang)
-    default_gaps_catalog = _ASIS_ANNEX_DATA.get("default_gaps_catalog", {})
-    default_risks_catalog = _ASIS_ANNEX_DATA.get("default_risks_catalog", {})
-    default_worst_cap_catalog = _ASIS_ANNEX_DATA.get("default_worst_cap_catalog", {})
-
-    if not main_gaps:
-        main_gaps = default_gaps_catalog.get(loc_key, default_gaps_catalog.get("en", []))
-    if not main_risks:
-        main_risks = default_risks_catalog.get(loc_key, default_risks_catalog.get("en", []))
-
-    conjunction = " y " if target_is_spanish else " and "
-    gaps_str_joined = conjunction.join(main_gaps)
-    risks_str_joined = conjunction.join(main_risks)
-
-    worst_cap = gaps_caps[0] if gaps_caps else default_worst_cap_catalog.get(loc_key, default_worst_cap_catalog.get("en", "critical capabilities"))
-
-    p_score = float(p.get("score", 3.0))
-
-    if p_score >= 4.20:
-        label_1, p1_text, label_2, p2_text, label_3, p3_text = _get_high_maturity_prose(doc_lang, stable_caps)
-    elif p_score >= 2.60:
-        label_1, p1_text, label_2, p2_text, label_3, p3_text = _get_balanced_maturity_prose(
-            doc_lang, v_idx, stable_caps, gaps_caps, gaps_str_joined, risks_str_joined, worst_cap
-        )
+    # Extract concise bottleneck statement (first complete sentence or up to 25 words)
+    if "." in raw_fd:
+        parts = [pt.strip() for pt in raw_fd.split(".") if pt.strip()]
+        if len(parts) > 1 and len(parts[0].split()) < 8:
+            fd_core = f"{parts[0]}. {parts[1]}"
+        else:
+            fd_core = parts[0]
     else:
-        label_1, p1_text, label_2, p2_text, label_3, p3_text = _get_low_maturity_prose(
-            doc_lang, v_idx, gaps_caps, gaps_str_joined, risks_str_joined, worst_cap
-        )
+        fd_core = raw_fd
 
-    return f"**{label_1}:** {p1_text}\n**{label_2}:** {p2_text}\n**{label_3}:** {p3_text}"
+    fd_core = sanitize_semantic_prose(fd_core, doc_lang).strip()
+
+    # Resolve unlocking transformation lever from roadmap / projects_todo
+    pjs = p.get("projects_todo", [])
+    top_pj = pjs[0] if pjs else {}
+    pj_name = top_pj.get("name", "") if isinstance(top_pj, dict) else str(top_pj)
+    pj_desc = top_pj.get("description", top_pj.get("scope", "")) if isinstance(top_pj, dict) else ""
+
+    if pj_name and pj_desc:
+        lever_text = f"{pj_name}: {pj_desc}"
+    elif pj_name:
+        lever_text = pj_name
+    else:
+        lever_text = top_f.get("target_state") or t("calib_lever_default_action", locale=doc_lang)
+
+    lever_text = sanitize_semantic_prose(lever_text, doc_lang).strip()
+
+    return f"• **{lbl_limit}:** {fd_core.rstrip('.')}.\n\n• **{lbl_lever}:** {lever_text.rstrip('.')}."
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str) -> str:
@@ -342,10 +285,30 @@ def sanitize_and_unify_metrics(text: str, exact_score: float, exact_band: str, t
     formatted_max = format_number(total_max, locale=doc_lang, decimals=0)
     formatted_score = format_number(exact_score, locale=doc_lang, decimals=2)
     
-    # Clean up any mention of currency values (like 35.560.000, 32,120,000, 2.580.552,94, etc.)
+    # Clean up currency values based on contextual metric alignment rather than blunt global overwrite
     # Robust money_pattern preventing partial matches and ensuring full match of floats/thousands sep
     money_pattern = r"\b\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?\s*[€$]"
-    text = re.sub(money_pattern, true_ale_str, text)
+    import unicodedata
+
+    context_tokens = _ASIS_ANNEX_DATA.get("metric_context_tokens", {})
+    p90_tokens = context_tokens.get("p90", ["p90", "tail", "stress"])
+    max_tokens = context_tokens.get("max", ["max", "maximum"])
+    ale_tokens = context_tokens.get("ale", ["ale", "annual", "loss"])
+
+    raw_sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()]
+    unified_sentences = []
+    for s in raw_sentences:
+        s_norm = unicodedata.normalize("NFKD", s).encode("ASCII", "ignore").decode("utf-8").lower()
+        if any(k in s_norm for k in p90_tokens) and total_p90 > 0:
+            s_unified = re.sub(money_pattern, f"{formatted_p90} {currency}", s)
+        elif any(k in s_norm for k in max_tokens) and total_max > 0:
+            s_unified = re.sub(money_pattern, f"{formatted_max} {currency}", s)
+        elif any(k in s_norm for k in ale_tokens):
+            s_unified = re.sub(money_pattern, true_ale_str, s)
+        else:
+            s_unified = s
+        unified_sentences.append(s_unified)
+    text = " ".join(unified_sentences)
     
     # Also look for phrases like "35,56 millones de euros" or "32,12 millones" and replace them
     millones_pattern = r"\b\d+[,.]\d+\s*(?:millones|millones de euros|million)\b"
@@ -443,8 +406,14 @@ def _write_module_06_matriz_riesgos_fair(modules_dir: Path, ctx: dict[str, Any])
             ]
         )
 
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
         for pilar in pillars:
-            p_name = pilar.get("pilar_name", "General")
+            raw_pname = pilar.get("pilar_name", "General")
+            p_name = resolver.resolve_pillar_by_any_reference(
+                pilar.get("pilar_id") or raw_pname, default=raw_pname, locale=doc_lang
+            )
             for hc in pilar.get("health_check_asis", []):
                 #
                 not_def_text = t("lbl_not_defined", locale=doc_lang)
@@ -462,9 +431,12 @@ def _write_module_06_matriz_riesgos_fair(modules_dir: Path, ctx: dict[str, Any])
                 lm = hc.get("loss_magnitude", 0.0)
                 ale = hc.get("fair_ale_score", 0.0)
 
+                raw_cap = hc.get("target_state", hc.get("capability", "Capability"))
+                cap_name = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
+
                 writer.writerow(
                     [
-                        f"{p_name} - {hc.get('target_state', hc.get('capability', 'Capacidad'))}",
+                        f"{p_name} - {cap_name}",
                         finding_full,
                         biz_risk,
                         f"{tef:.1f}",
@@ -486,6 +458,7 @@ def _write_module_07_conclusiones(modules_dir: Path, ctx: dict[str, Any]) -> Non
     tower_meta = ctx.get("tower_meta", {})
     exec_sum = ctx.get("exec_sum", {})
     snap = ctx.get("snap", {})
+    cca = ctx.get("cca", {})
     exact_score = ctx["exact_score"]
     exact_band = ctx["exact_band"]
     global_fair_ale = ctx["global_fair_ale"]
@@ -570,20 +543,48 @@ def _write_module_07_conclusiones(modules_dir: Path, ctx: dict[str, Any]) -> Non
         reg_frameworks = t("applicable_regulations_default", locale=doc_lang)
 
     conc_content.append(
-        f"## {t('annex_header_key_operational_implications', locale=doc_lang)}"
+        f"## {t('conclusions_diagnosis_title', locale=doc_lang)}"
     )
+    intro_imp = t("conclusions_operational_implications_intro", locale=doc_lang)
+    conc_content.append(intro_imp + "\n")
 
-    bottlenecks_cfg = _ASIS_ANNEX_DATA.get("default_structural_bottlenecks", {})
-    loc_b = resolve_base_locale(doc_lang)
-    default_bullets = bottlenecks_cfg.get(loc_b, bottlenecks_cfg.get("en", []))
+    structural_implications = []
+    if cca and cca.get("common_deficiency_patterns"):
+        patterns = cca["common_deficiency_patterns"]
+        if isinstance(patterns, list):
+            structural_implications.extend([p.strip() for p in patterns if p.strip()])
+        elif isinstance(patterns, str):
+            structural_implications.append(patterns.strip())
 
-    bottlenecks_txt = vocab.get("bottlenecks_bullet", default_bullets[0] if default_bullets else "")
-    delayed_txt = vocab.get("delayed_faults_bullet", default_bullets[1] if len(default_bullets) > 1 else "")
-    drift_tmpl = vocab.get("config_drift_bullet", default_bullets[2] if len(default_bullets) > 2 else "")
+    if not structural_implications and snap and snap.get("structural_risks"):
+        risks = snap["structural_risks"]
+        if isinstance(risks, list):
+            structural_implications.extend([r.strip() for r in risks if r.strip()])
+        elif isinstance(risks, str):
+            structural_implications.append(risks.strip())
 
-    conc_content.append(f"* {bottlenecks_txt}")
-    conc_content.append(f"* {delayed_txt}")
-    conc_content.append(f"* {drift_tmpl.format(reg_frameworks=reg_frameworks)}\n")
+    from assessment_engine.infrastructure.localization import get_localized_list
+    gov_bullets = get_localized_list("conclusions_governance_implications_bullets", locale=doc_lang)
+    if gov_bullets:
+        for item in gov_bullets[:3]:
+            conc_content.append(f"* {item}")
+        conc_content.append("")
+    elif structural_implications:
+        for item in structural_implications[:3]:
+            conc_content.append(f"* {item}")
+        conc_content.append("")
+    else:
+        bottlenecks_cfg = _ASIS_ANNEX_DATA.get("default_structural_bottlenecks", {})
+        loc_b = resolve_base_locale(doc_lang)
+        default_bullets = bottlenecks_cfg.get(loc_b, bottlenecks_cfg.get("en", []))
+
+        bottlenecks_txt = vocab.get("bottlenecks_bullet", default_bullets[0] if default_bullets else "")
+        delayed_txt = vocab.get("delayed_faults_bullet", default_bullets[1] if len(default_bullets) > 1 else "")
+        drift_tmpl = vocab.get("config_drift_bullet", default_bullets[2] if len(default_bullets) > 2 else "")
+
+        conc_content.append(f"* {bottlenecks_txt}")
+        conc_content.append(f"* {delayed_txt}")
+        conc_content.append(f"* {drift_tmpl.format(reg_frameworks=reg_frameworks)}\n")
 
     conc_content.append(f"## {t('annex_header_cost_of_inaction', locale=doc_lang)}")
     msg_bottle = exec_sum.get("message_bottleneck", "")
@@ -754,6 +755,15 @@ def _write_module_02_resumen_ejecutivo(modules_dir: Path, ctx: dict[str, Any]) -
             else:
                 group_key = cn_cat.get("prefix", "Optimization of {name}").format(name=clean_pilar_name)
             base_prop = cn_cat.get("base_prop", "Modernize {p_name}").format(p_name=p_name)
+
+        # Prioritize real projects from blueprint payload if available to eliminate repetitive boilerplates
+        pil = next((p for p in pillars if p.get("pilar_name") == p_name or p.get("pilar_id") == r.get("pilar_id")), None)
+        if pil and pil.get("projects_todo") and isinstance(pil["projects_todo"], list) and len(pil["projects_todo"]) > 0:
+            first_proj = pil["projects_todo"][0]
+            if first_proj.get("name"):
+                group_key = first_proj["name"]
+            if first_proj.get("project_description"):
+                base_prop = first_proj["project_description"]
             
         if group_key not in mitigation_groups:
             mitigation_groups[group_key] = {"ale_sum": 0.0, "prop": base_prop}
@@ -762,33 +772,49 @@ def _write_module_02_resumen_ejecutivo(modules_dir: Path, ctx: dict[str, Any]) -
     # Sort grouped mitigations by ALE sum descending
     sorted_groups = sorted(mitigation_groups.items(), key=lambda x: x[1]["ale_sum"], reverse=True)
 
-    # 4. Strategic Value Enablement and Mitigation Pillars (Streamlined Section 1.2 + 1.3 for 1-page fit)
-    re_content.append(f"## {t('annex_heading_mitigation_pillars', locale=doc_lang)}")
+    # 4. Priority Operational Remediation Vectors (Focuses on operational vulnerability domains in AS-IS)
+    re_content.append(f"## {t('exec_summary_priority_domains_title', locale=doc_lang)}\n")
+    re_content.append(t("exec_priority_vector_intro", locale=doc_lang) + "\n")
 
-    if sorted_groups:
-        conclusion_cfg = _ASIS_ANNEX_DATA.get("conclusion_tobe_templates", {})
-        intro_str = conclusion_cfg.get(loc_base, conclusion_cfg.get("en", {})).get("intro", "").format(
-            client_name=client_name, industry_name=industry_name
+    # Sort pillars by score ascending (lowest score = highest vulnerability)
+    sorted_vuln_pillars = sorted(pillars, key=lambda p: float(p.get("score", 3.0)))
+
+    for p in sorted_vuln_pillars[:3]:
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        raw_pname = p.get("pillar_name") or p.get("pilar_name", "Pillar")
+        p_name = resolver.resolve_pillar_by_any_reference(
+            p.get("pillar_id") or p.get("pilar_id") or raw_pname,
+            default=raw_pname,
+            locale=doc_lang,
         )
-        re_content.append(intro_str)
-        
-        top_3_sum = 0.0
-        for i, (g_key, g_data) in enumerate(sorted_groups[:3], 1):
-            g_ale = g_data["ale_sum"]
-            top_3_sum += g_ale
-            pct = (g_ale / global_fair_ale * 100) if global_fair_ale > 0 else 0.0
+        findings = p.get("health_check_asis", [])
+        if findings:
+            top_f = findings[0]
+            f_text = (top_f.get("finding") or top_f.get("risk_observed") or "").strip()
+            r_text = (top_f.get("business_risk") or top_f.get("impact") or "").strip()
             
-            # Scale dynamically by the exchange rate in time of presentation (FAIR-MAM)
-            scaled_g_ale = g_ale * rate_mult
-            formatted_g_ale = format_number(
-                scaled_g_ale, locale=doc_lang, decimals=2
-            )
+            # Remove any raw markdown asterisks
+            f_text = f_text.replace("**", "").replace("*", "")
+            r_text = r_text.replace("**", "").replace("*", "")
 
-            tail_tpl = _ASIS_ANNEX_DATA.get("conclusion_tobe_templates", {}).get(loc_base, {}).get("value_prop_tail", "")
-            tail_str = tail_tpl.format(formatted_g_ale=formatted_g_ale, currency=currency, pct=pct)
-            value_proposition = f"{g_data['prop']} {tail_str}".strip()
-            re_content.append(f"* **{g_key}:** {value_proposition}")
-        re_content.append("")
+            if f_text and r_text:
+                clean_r = r_text[0].lower() + r_text[1:] if len(r_text) > 1 else r_text
+                desc = t("exec_priority_domain_synthesis", locale=doc_lang, finding=f_text.rstrip("."), risk=clean_r.rstrip("."))
+            elif f_text:
+                desc = f_text
+            else:
+                desc = t("default_evaluated_assets", locale=doc_lang)
+        else:
+            desc = t("default_evaluated_assets", locale=doc_lang)
+
+        re_content.append(f"* **{p_name}:** {desc}")
+    re_content.append("")
+
+    top_3_sum = 0.0
+    for p in sorted_vuln_pillars[:3]:
+        for hc in p.get("health_check_asis", []):
+            top_3_sum += float(hc.get("fair_ale_score", 0.0) or 0.0)
 
     top_3_pct = (top_3_sum / global_fair_ale * 100) if global_fair_ale > 0 else 0.0
 
@@ -853,8 +879,14 @@ def _write_modules_03_04_05(modules_dir: Path, ctx: dict[str, Any]) -> None:
         writer = csv.writer(cf_out, delimiter=";")
         writer.writerow(get_localized_list("justification_table_headers", locale=doc_lang))
 
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
         for s_idx, p in enumerate(pillars):
-            p_name = p.get("pilar_name", "Pilar")
+            raw_pname = p.get("pilar_name", "Pillar")
+            p_name = resolver.resolve_pillar_by_any_reference(
+                p.get("pilar_id") or raw_pname, default=raw_pname, locale=doc_lang
+            )
             
             # We always generate the highly detailed, localized, structured justification dynamically
             justification = derive_pillar_justification(p, s_idx, doc_lang)
@@ -956,9 +988,9 @@ def generate_modules(payload_path: str):
 
     vocab = resolve_localized_vocabulary(doc_lang)
 
-    tower_name = tower_meta.get("tower_name", "Desconocida")
+    tower_name = tower_meta.get("tower_name", "Unknown")
     tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
-    client_name = clean_client_name(tower_meta.get("client_name", "Cliente"))
+    client_name = clean_client_name(tower_meta.get("client_name", "Client"))
 
     # Load client_intelligence.json for industry_name
     intel_data = {}
@@ -1027,7 +1059,7 @@ def generate_modules(payload_path: str):
             try:
                 t_def = json.load(tdf)
                 for p in t_def.get("pillars", []):
-                    p_name = p.get("pillar_name", "Pilar")
+                    p_name = p.get("pillar_name", "Pillar")
                     p_weight = p.get("weight_pct", "0")
 
                     # Extracts Key Performance Indicator (KPI) names for integration into narrative text.
@@ -1058,7 +1090,7 @@ def generate_modules(payload_path: str):
         bullet_cfg = _ASIS_ANNEX_DATA.get("pillar_bullet_template", {}).get(resolve_base_locale(doc_lang), _ASIS_ANNEX_DATA.get("pillar_bullet_template", {}).get("en", {}))
         std_tpl = bullet_cfg.get("standard", "* **{p_name}**: Technical assessment and operational gap analysis across the tower perimeter.\n")
         for p in pillars:
-            p_name = p.get("pilar_name", "Pilar")
+            p_name = p.get("pilar_name", "Pillar")
             pillars_list_md += std_tpl.format(p_name=p_name)
 
     #
