@@ -5,7 +5,7 @@ import html
 import json
 import re
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Optional
 
 from assessment_engine.infrastructure.localization import (
     apply_vocabulary_substitutions,
@@ -348,7 +348,7 @@ class PayloadToASTBridge:
             )
         )
 
-        # 4. Client Identity (28.0 pt, Bold, Cliente in #2E404D, Name in #0072BC)
+        # 4. Client Identity (28.0 pt, Bold, Client Label in #2E404D, Name in #0072BC)
         client_lbl = t("client_lbl", locale=meta_lang)
         nodes.append(
             ParagraphNode(
@@ -692,8 +692,8 @@ class PayloadToASTBridge:
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
             from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
             resolver = get_taxonomy_resolver()
-            raw_pid = str(p.get("pillar_id") or p.get("pilar_id") or "")
-            raw_pname = str(p.get("pillar_name") or p.get("pilar_name") or "Pillar")
+            raw_pid = str(p.get("pillar_id") or "")
+            raw_pname = str(p.get("pillar_name") or "Pillar")
             p_name = resolver.resolve_pillar_by_any_reference(
                 raw_pid or raw_pname,
                 default=raw_pname,
@@ -730,7 +730,7 @@ class PayloadToASTBridge:
                 )
             )
 
-        nodes.append(TableNode(rows=health_rows))
+        nodes.append(TableNode(rows=health_rows, col_widths=[0.42, 0.18, 0.40]))
         nodes.append(SpacerNode(points=15))
 
     def _build_systemic_risk_section(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
@@ -1034,7 +1034,7 @@ class PayloadToASTBridge:
         if csv_mat_path.exists():
             # Ensure header collections are not empty to prevent the generation of malformed tables.
             mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
-            nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers))
+            nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers, col_widths=[0.26, 0.14, 0.60]))
         elif blueprint_data and blueprint_data.get("pillars_analysis"):
             from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
                 derive_in_memory_maturity_matrix,
@@ -1064,7 +1064,7 @@ class PayloadToASTBridge:
                     CellNode(text=r_item["justification"], font_size=8.5, bg_color=bg),
                 ]
                 table_rows.append(TableRowNode(cells=row_cells))
-            nodes.append(TableNode(rows=table_rows))
+            nodes.append(TableNode(rows=table_rows, col_widths=[0.26, 0.14, 0.60]))
 
         #
         # CHAPTER 4: QUANTITATIVE RISK MATRIX (O-FAIR)
@@ -1283,154 +1283,266 @@ class PayloadToASTBridge:
         nodes.append(ParagraphNode(text=t("risk_portfolio_tier_3_tpl", locale=meta_lang, ids=t3_ids)))
         nodes.append(SpacerNode(points=15))
 
-    def _build_detailed_findings_log(self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]], fair_lookup: dict[str, Any]) -> None:
+    def _build_detailed_findings_log(
+        self,
+        ctx: dict[str, Any],
+        nodes: List[Any],
+        risks_data_list: list[dict[str, Any]],
+        fair_lookup: dict[str, Any],
+    ) -> None:
         vocab = ctx["vocab"]
-        gs_val = ctx["gs_val"]
         currency = ctx["currency"]
         meta_lang = ctx["meta_lang"]
-        total_fair_ale = float(ctx.get("total_fair_ale") or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list))
-        # 5.3 Detailed Log Segmented by Domain (in multiple independent tables)
-        if risks_data_list:
+        client_name = str(ctx.get("client_name") or "CLIENT")
+        blueprint_data = ctx.get("blueprint_data", {})
+        total_fair_ale = float(
+            ctx.get("total_fair_ale")
+            or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list)
+        )
+
+        if not risks_data_list:
+            return
+
+        nodes.append(
+            HeadingNode(
+                text=t("detailed_risks_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+
+        # 1. Global ranking and share calculation
+        sorted_risks = sorted(
+            risks_data_list,
+            key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0),
+            reverse=True,
+        )
+        for rank_idx, r in enumerate(sorted_risks, start=1):
+            r["global_rank"] = rank_idx
+            r_ale = float(r.get("ale") or r.get("ale_val") or 0.0)
+            r["share_pct"] = (r_ale / total_fair_ale * 100.0) if total_fair_ale > 0 else 0.0
+
+        # 2. Partition into the 3 Strategic Portfolios
+        t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
+        t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 0.0
+
+        t1_risks = [
+            r for r in sorted_risks
+            if float(r.get("ale") or r.get("ale_val") or 0.0) >= t1_threshold
+        ]
+        if not t1_risks and sorted_risks:
+            t1_risks = sorted_risks[:max(1, len(sorted_risks) // 4)]
+
+        t2_risks = [
+            r for r in sorted_risks
+            if t2_threshold <= float(r.get("ale") or r.get("ale_val") or 0.0) < t1_threshold
+        ]
+        if not t2_risks and len(sorted_risks) > len(t1_risks):
+            t2_risks = sorted_risks[len(t1_risks):len(t1_risks) + max(1, len(sorted_risks) // 3)]
+
+        t1_set = set(r.get("id") for r in t1_risks)
+        t2_set = set(r.get("id") for r in t2_risks)
+        t3_risks = [r for r in sorted_risks if r.get("id") not in t1_set and r.get("id") not in t2_set]
+
+        portfolios = [
+            (1, t("tier_1_catalog_title", locale=meta_lang), t1_risks),
+            (2, t("tier_2_catalog_title", locale=meta_lang), t2_risks),
+            (3, t("tier_3_catalog_title", locale=meta_lang), t3_risks),
+        ]
+
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
+        for t_idx, t_title, t_items in portfolios:
+            if not t_items:
+                continue
+
+            subtotal_ale = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t_items)
+            subtotal_pct = int(round(subtotal_ale / total_fair_ale * 100.0)) if total_fair_ale > 0 else 0
+            formatted_subtotal = format_currency(
+                subtotal_ale, currency_symbol=currency, locale=meta_lang, decimals=0
+            )
+
+            # Portfolio Tier Header
+            nodes.append(SpacerNode(points=10))
             nodes.append(
                 HeadingNode(
-                    text=t("detailed_risks_title", locale=meta_lang),
-                    level=2,
+                    text=t_title,
+                    level=3,
                     primary_color_rgb=self.primary_color_rgb,
                 )
             )
-
-            # Group risks by pillar.
-            risks_by_pillar = {}
-            for r in risks_data_list:
-                p_name = r.get("pillar", "Pillar")
-                if p_name not in risks_by_pillar:
-                    risks_by_pillar[p_name] = []
-                risks_by_pillar[p_name].append(r)
-
-            from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-            resolver = get_taxonomy_resolver()
-
-            for raw_p_name, pillar_risks in risks_by_pillar.items():
-                pillar_risks_filtered = pillar_risks
-                if not pillar_risks_filtered:
-                    continue
-
-                p_name = resolver.resolve_pillar_by_any_reference(
-                    raw_p_name, default=raw_p_name, locale=meta_lang
+            nodes.append(
+                ParagraphNode(
+                    text=t(
+                        "tier_subtotal_badge",
+                        locale=meta_lang,
+                        subtotal_ale=formatted_subtotal,
+                        currency=currency,
+                        pct=subtotal_pct,
+                    ),
+                    bold=True,
+                    italic=True,
+                    font_size=9.5,
+                    space_after=8,
                 )
-                pillar_header = t("detailed_risks_pillar_title", locale=meta_lang) + p_name
+            )
+
+            for hc in t_items:
+                r_id = hc.get("id", "RSK")
+                r_cap = hc.get("capability", "Capability")
+                raw_pname = hc.get("pillar", "Pillar")
+                p_name = resolver.resolve_pillar_by_any_reference(
+                    raw_pname, default=raw_pname, locale=meta_lang
+                )
+
+                tef = float(hc.get("tef") or 1.0)
+                lm = float(hc.get("lm") or 1.0)
+                ale = float(hc.get("ale") or hc.get("ale_val") or 0.0)
+                risk_score = tef * lm
+
+                # Determine severity label
+                if risk_score >= 15 or ale >= (total_fair_ale * 0.15):
+                    sev_lbl = t("severity_lbl_critical", locale=meta_lang)
+                elif risk_score >= 10 or ale >= (total_fair_ale * 0.05):
+                    sev_lbl = t("severity_lbl_high", locale=meta_lang)
+                elif risk_score >= 5 or ale >= (total_fair_ale * 0.01):
+                    sev_lbl = t("severity_lbl_medium", locale=meta_lang)
+                else:
+                    sev_lbl = t("severity_lbl_low", locale=meta_lang)
+
+                fair_metrics = fair_lookup.get(r_cap, {})
+                p90_val = fair_metrics.get("p90", ale * 4.613) or (ale * 4.613)
+
+                formatted_ale_str = format_currency(
+                    ale, currency_symbol=currency, locale=meta_lang, decimals=0
+                )
+                formatted_p90_str = format_currency(
+                    p90_val, currency_symbol=currency, locale=meta_lang, decimals=0
+                )
+
+                # 1. Card Header
                 nodes.append(
                     HeadingNode(
-                        text=pillar_header,
-                        level=3,
+                        text=f"[{r_id}] {r_cap}",
+                        level=4,
                         primary_color_rgb=self.primary_color_rgb,
                     )
                 )
 
-                headers_table = get_localized_list("detailed_risks_headers", locale=meta_lang)
-                risk_rows = [
-                    TableRowNode(
-                        cells=[
-                            CellNode(
-                                text=h,
-                                bold=True,
-                                bg_color="0072BC",
-                                text_color_rgb=[255, 255, 255],
-                                align="CENTER",
-                            )
-                            for h in headers_table
-                        ],
-                        is_header=True,
+                # 2. Card Metadata Badges Line
+                badge_line = (
+                    f"**[{sev_lbl}]** | "
+                    f"**{t('portfolio_lbl', locale=meta_lang)}:** Tier {t_idx} | "
+                    f"**{t('domain_lbl', locale=meta_lang)}:** {p_name} | "
+                    f"**{t('global_rank_lbl', locale=meta_lang)}:** #{hc.get('global_rank', 1)} ({hc.get('share_pct', 0.0):.1f} %)"
+                )
+                nodes.append(
+                    ParagraphNode(
+                        text=badge_line,
+                        font_size=9.0,
+                        text_color_rgb=[51, 65, 85],
+                        space_after=2,
                     )
-                ]
+                )
 
-                for s_idx, hc in enumerate(pillar_risks_filtered):
-                    bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
-
-                    # Clean up repetitive prose between finding and evidence to improve readability
-                    find_clean = (hc['finding'] or "").strip()
-                    ev_clean = (hc.get("evidence") or "").strip()
-
-                    v_lbl = t("vulnerability_identified_label", locale=meta_lang)
-                    imp_lbl = t("it_operational_impact_label", locale=meta_lang)
-                    desc_raw = (
-                        f"{v_lbl}\n{find_clean}\n\n"
-                        f"{imp_lbl}\n{hc['business_risk']}"
+                # 3. Card Financial Headline
+                fin_headline = (
+                    f"**{t('calc_ale_lbl', locale=meta_lang)}:** **{formatted_ale_str} / {t('year_lbl', locale=meta_lang)}** "
+                    f"({t('calc_worst_case_lbl', locale=meta_lang)}: {formatted_p90_str})"
+                )
+                nodes.append(
+                    ParagraphNode(
+                        text=fin_headline,
+                        font_size=9.5,
+                        text_color_rgb=[0, 114, 188],
+                        space_after=4,
                     )
-                    desc_text = apply_vocabulary_substitutions(
-                        desc_raw, locale=meta_lang
-                    )
+                )
 
-                    #
-                    tef = hc["tef"]
-                    lm = hc["lm"]
-                    ale = hc["ale"]
-                    cap_name = hc["capability"]
+                # 4. Vulnerability Identified (Prose)
+                find_clean = str(hc.get("finding") or "").strip()
+                v_lbl = t("vulnerability_identified_label", locale=meta_lang).rstrip(":")
+                nodes.append(
+                    ParagraphNode(
+                        text=f"**{v_lbl}:** {find_clean}",
+                        space_after=4,
+                    )
+                )
 
-                    # Fetch detailed FAIR metrics from lookup map
-                    fair_metrics = fair_lookup.get(cap_name, {})
-                    p90_val = fair_metrics.get("p90", 0.0) or 0.0
-                    min_val = fair_metrics.get("min", 0.0) or 0.0
-                    max_val = fair_metrics.get("max", 0.0) or 0.0
+                # 5. Operational Business Impact (Prose, stripped of duplicate inline formula)
+                raw_biz = str(hc.get("business_risk") or "").strip()
+                def_marker = t("defensibility_formula_marker", locale=meta_lang)
+                biz_risk_clean = raw_biz.split(def_marker)[0].strip().rstrip(".") + "."
+                imp_lbl = t("it_operational_impact_label", locale=meta_lang).rstrip(":")
+                nodes.append(
+                    ParagraphNode(
+                        text=f"**{imp_lbl}:** {biz_risk_clean}",
+                        space_after=4,
+                    )
+                )
 
-                    formatted_p90 = format_number(
-                        p90_val, locale=meta_lang, decimals=0
+                # 6. Actuarial Derivation & Formula Breakdown (Bullets)
+                nodes.append(
+                    ParagraphNode(
+                        text=f"**{t('actuarial_breakdown_title', locale=meta_lang)}:**",
+                        space_after=2,
                     )
-                    formatted_min = format_number(
-                        min_val, locale=meta_lang, decimals=0
-                    )
-                    formatted_max = format_number(
-                        max_val, locale=meta_lang, decimals=0
-                    )
-                    formatted_ale_item = format_number(
-                        ale, locale=meta_lang, decimals=0
-                    )
+                )
 
-                    calc_txt = "N/A"
-                    bg_severe = bg
-                    if ale and ale > 0:
-                        calc_txt = (
-                            f"**{t('calc_quant_exposure_title', locale=meta_lang)}**\n"
-                            f"• {t('calc_tef_lbl', locale=meta_lang)}: {tef:.1f} / 5.0\n"
-                            f"• {t('calc_lm_lbl', locale=meta_lang)}: {lm:.1f} / 5.0\n\n"
-                            f"**{t('calc_projected_exposure_title', locale=meta_lang)}**\n"
-                            f"• {t('calc_ale_lbl', locale=meta_lang)}: **{formatted_ale_item} {currency}**\n"
-                            f"• {t('calc_worst_case_lbl', locale=meta_lang)}: {formatted_p90} {currency}\n"
-                            f"• {t('calc_loss_range_lbl', locale=meta_lang)}: {formatted_min} {currency} - {formatted_max} {currency}"
+                tef_idx = min(5, max(1, int(round(tef))))
+                lm_idx = min(5, max(1, int(round(lm))))
+                tef_desc = t(f"tef_desc_{tef_idx}", locale=meta_lang)
+                lm_desc = t(f"lm_desc_{lm_idx}", locale=meta_lang)
+
+                downtime_hours = max(2, int(round(tef * 2.0 + lm * 1.5)))
+                annual_divisor = float(blueprint_data.get("annual_downtime_divisor", 67.5))
+                hourly_burn = float(
+                    blueprint_data.get("hourly_downtime_rate")
+                    or blueprint_data.get("hourly_burn_rate")
+                    or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 10000.0)
+                )
+                hourly_burn_str = format_currency(
+                    hourly_burn, currency_symbol=currency, locale=meta_lang, decimals=0
+                )
+                secondary_loss_num = max(0.0, ale - (tef * downtime_hours * hourly_burn))
+                secondary_loss_str = format_currency(
+                    secondary_loss_num, currency_symbol=currency, locale=meta_lang, decimals=0
+                )
+
+                b_tef = t("actuarial_tef_bullet", locale=meta_lang, tef=f"{tef:.1f} / 5.0", desc=tef_desc)
+                b_lm = t("actuarial_lm_bullet", locale=meta_lang, lm=f"{lm:.1f} / 5.0", desc=lm_desc)
+                b_dt = t("actuarial_downtime_bullet", locale=meta_lang, hours=downtime_hours)
+                b_burn = t("actuarial_burn_bullet", locale=meta_lang, rate=hourly_burn_str)
+                b_sec = t("actuarial_secondary_bullet", locale=meta_lang, cost=secondary_loss_str)
+                b_formula = t(
+                    "actuarial_formula_bullet",
+                    locale=meta_lang,
+                    tef=f"{tef:.2f}",
+                    hours=downtime_hours,
+                    rate=hourly_burn_str,
+                    secondary=secondary_loss_str,
+                    ale=formatted_ale_str,
+                )
+
+                for b_txt in [b_tef, b_lm, b_dt, b_burn, b_sec, b_formula]:
+                    nodes.append(ParagraphNode(text=b_txt, style="List Bullet", space_after=1, font_size=8.5))
+
+                # 7. Audit Evidence
+                ev_clean = str(hc.get("evidence") or "").strip()
+                if ev_clean:
+                    ev_lbl = t("audit_evidence_label", locale=meta_lang)
+                    nodes.append(
+                        ParagraphNode(
+                            text=f"**{ev_lbl}:** *\"{ev_clean}\"*",
+                            italic=True,
+                            font_size=8.5,
+                            text_color_rgb=[71, 85, 105],
+                            space_after=8,
                         )
-
-                        risk_score = tef * lm
-                        high_ale = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
-                        med_ale = total_fair_ale * 0.05 if total_fair_ale > 0 else 0.0
-                        low_ale = total_fair_ale * 0.01 if total_fair_ale > 0 else 0.0
-                        if risk_score >= 15 or ale >= high_ale:
-                            bg_severe = "F8D7DA"  # Light Red
-                        elif risk_score >= 10 or ale >= med_ale:
-                            bg_severe = "FFF3CD"  # Light Amber
-                        elif risk_score >= 5 or ale >= low_ale:
-                            bg_severe = "E2E3E5"  # Light Gray
-
-                    risk_rows.append(
-                        TableRowNode(
-                            cells=[
-                                CellNode(
-                                    text=hc["id"],
-                                    bold=True,
-                                    bg_color=self.alt_row_hex,
-                                    align="CENTER",
-                                ),
-                                CellNode(text=desc_text, bg_color=bg, align="JUSTIFY"),
-                                CellNode(
-                                    text=calc_txt,
-                                    bold=True,
-                                    bg_color=bg_severe,
-                                    align="RIGHT",
-                                ),
-                            ]
-                        )
                     )
 
-                nodes.append(TableNode(rows=risk_rows))
+                nodes.append(SpacerNode(points=10))
 
         #
         # CHAPTER 5: CONCLUSIONS AND COST OF INACTION
@@ -1652,7 +1764,12 @@ class PayloadToASTBridge:
 
         return nodes
 
-    def _parse_csv_generic(self, csv_path: Path, headers: List[str]) -> TableNode:
+    def _parse_csv_generic(
+        self,
+        csv_path: Path,
+        headers: List[str],
+        col_widths: Optional[List[float]] = None,
+    ) -> TableNode:
         rows = []
         #
         rows.append(
@@ -1712,7 +1829,7 @@ class PayloadToASTBridge:
                     )
                 rows.append(TableRowNode(cells=cells))
 
-        return TableNode(rows=rows)
+        return TableNode(rows=rows, col_widths=col_widths)
 
 
 def compile_asis_docx_via_ast(

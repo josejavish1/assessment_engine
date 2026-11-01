@@ -180,6 +180,14 @@ class TableNode(BaseNode):
         True,
         description="Enables automatic adjustment of column widths to fit content.",
     )
+    col_widths: Optional[List[float]] = Field(
+        None,
+        description="Optional list of proportional column width weights (e.g. [0.25, 0.15, 0.60]).",
+    )
+    auto_fit_strategy: str = Field(
+        "CONTENT_PROPORTIONAL",
+        description="Auto-fit strategy: 'CONTENT_PROPORTIONAL', 'EXPLICIT', or 'EQUAL'.",
+    )
 
 
 class SpacerNode(BaseNode):

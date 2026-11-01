@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, List, Optional
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -438,6 +438,89 @@ def safe_set_cell_text(
         cell.add_paragraph()
 
 
+class TableLayoutCalculator:
+    """Computes deterministic DXA column widths based on statistical cell content distribution."""
+
+    TOTAL_PRINTABLE_WIDTH_DXA: int = 9360  # 6.5 inches in twips (DXA)
+    ABS_MIN_COL_WIDTH_DXA: int = 950
+    CAP_MIN_COL_WIDTH_DXA: int = 2400
+    CHAR_WIDTH_DXA: int = 110
+    CELL_PADDING_DXA: int = 240
+    DAMPENING_EXPONENT: float = 0.62
+
+    @classmethod
+    def compute_column_widths_dxa(cls, node: TableNode) -> List[int]:
+        if not node.rows:
+            return []
+        num_cols = len(node.rows[0].cells)
+        if num_cols == 0:
+            return []
+
+        # Explicit width ratios override if provided
+        col_widths = getattr(node, "col_widths", None)
+        if col_widths and len(col_widths) == num_cols:
+            total_weight = sum(col_widths)
+            return [
+                int(round(cls.TOTAL_PRINTABLE_WIDTH_DXA * (w / total_weight)))
+                for w in col_widths
+            ]
+
+        if getattr(node, "auto_fit_strategy", "CONTENT_PROPORTIONAL") == "EQUAL":
+            base_w = cls.TOTAL_PRINTABLE_WIDTH_DXA // num_cols
+            return [base_w] * num_cols
+
+        # Pass 1: Statistical Content Inspection
+        min_bounds_dxa: List[int] = []
+        weights: List[float] = []
+
+        import math
+
+        for col_idx in range(num_cols):
+            all_texts: List[str] = []
+            for r in node.rows:
+                if col_idx < len(r.cells):
+                    txt = str(r.cells[col_idx].text or "").strip()
+                    if txt:
+                        all_texts.append(txt)
+
+            longest_word_len = max(
+                (len(word) for text in all_texts for word in text.split()),
+                default=4,
+            )
+            raw_min_dxa = min(longest_word_len, 16) * cls.CHAR_WIDTH_DXA + cls.CELL_PADDING_DXA
+            col_min_dxa = max(cls.ABS_MIN_COL_WIDTH_DXA, min(cls.CAP_MIN_COL_WIDTH_DXA, raw_min_dxa))
+            min_bounds_dxa.append(col_min_dxa)
+
+            lengths = sorted(len(t) for t in all_texts)
+            p90_idx = min(len(lengths) - 1, int(math.floor(len(lengths) * 0.90))) if lengths else 0
+            p90_len = lengths[p90_idx] if lengths else 1
+
+            weight = max(longest_word_len * 1.35, math.pow(float(p90_len), cls.DAMPENING_EXPONENT))
+            weights.append(weight)
+
+        # Pass 2: Bounded Proportional Normalization
+        sum_min_bounds = sum(min_bounds_dxa)
+        if sum_min_bounds >= cls.TOTAL_PRINTABLE_WIDTH_DXA:
+            return [
+                int(round(cls.TOTAL_PRINTABLE_WIDTH_DXA * (m / sum_min_bounds)))
+                for m in min_bounds_dxa
+            ]
+
+        remaining_dxa = cls.TOTAL_PRINTABLE_WIDTH_DXA - sum_min_bounds
+        total_weight = sum(weights) or 1.0
+
+        final_widths = [
+            min_bounds_dxa[i] + int(round(remaining_dxa * (weights[i] / total_weight)))
+            for i in range(num_cols)
+        ]
+
+        residual = cls.TOTAL_PRINTABLE_WIDTH_DXA - sum(final_widths)
+        widest_idx = max(range(num_cols), key=lambda i: final_widths[i])
+        final_widths[widest_idx] += residual
+
+        return final_widths
+
+
 class DocxCompiler(DocumentCompiler):
     r"""{'DocxCompiler': 'Compiles a `DocumentAST` into a Microsoft Word (.docx) document.\n\n    This class implements the visitor pattern to traverse a `DocumentAST`,\n    dispatching each node to a dedicated compilation method that translates it\n    into the corresponding `python-docx` object. It manages document\n    structure, text formatting, styles, and embedded objects like tables and\n    images. The process is designed to be robust, with fallbacks for missing\n    assets.', 'compile': "Translates a `DocumentAST` and saves it as a .docx file.\n\n        This method orchestrates the compilation pipeline. It first attempts to\n        load a DOCX template; if unavailable, it proceeds with a blank document.\n        The template's existing body content is cleared, and a default font is\n        applied to the 'Normal' style. It then iterates through the AST,\n        delegating each node to the `_compile_node` dispatcher. Finally, it saves\n        the generated document to the specified path, creating parent directories\n        if necessary.\n\n        Args:\n            ast: The abstract syntax tree of the document.\n            output_path: The file system path for the output .docx file.\n\n        Raises:\n            IOError: If the output file cannot be written due to permissions,\n                disk space, or other file system issues.", '_compile_node': 'Dispatches an AST node to its corresponding compiler method.\n\n        This method acts as the central router in the visitor pattern. It\n        inspects the `type` attribute or class of the node and calls the\n        appropriate `_compile_*` handler. Unrecognized node types are silently\n        ignored to maintain forward compatibility with evolving AST schemas.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `DocumentAST` node to compile.', '_compile_paragraph': "Compiles a `ParagraphNode` into a DOCX paragraph.\n\n        This method creates a new paragraph, applying specified alignment and\n        spacing. It handles styled text by processing markdown-like syntax for\n        bold and italic formatting. If the node's style indicates a bullet list,\n        the corresponding paragraph format is applied.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `ParagraphNode` containing text and formatting details.", '_compile_heading': 'Compiles a `HeadingNode` into a styled DOCX heading.\n\n        A heading paragraph is added to the document with the specified level and\n        text. If a `primary_color_rgb` is defined in the node, the font color\n        of all runs within the heading is set accordingly.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `HeadingNode` containing the heading text, level, and\n                color information.', '_compile_spacer': 'Compiles a `SpacerNode` by inserting vertical whitespace.\n\n        This is achieved by adding an empty paragraph and setting its\n        `space_after`, `space_before`, and `line_spacing` format properties.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `SpacerNode` specifying the height of the space in points.', '_compile_picture': 'Compiles a `PictureNode` into an embedded, centered image.\n\n        The method first verifies the existence of the image file at the\n        specified path. If found, the image is added to the document and\n        centered. If the file is not found, a descriptive, italicized\n        placeholder text is inserted in its place to prevent compilation\n        failure.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `PictureNode` containing the image path and width.', '_compile_table': "Compiles a `TableNode` into a DOCX table.\n\n        The method constructs a table with the specified dimensions and populates\n        each cell based on the corresponding `CellNode` data. It applies\n        cell-level formatting, including text content, alignment, bolding,\n        font size, text color, and background shading. If the `autofit`\n        attribute is true, column widths are adjusted to fit their content after\n        population.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `TableNode` containing the table's structure and data."}."""
 
@@ -785,20 +868,41 @@ class DocxCompiler(DocumentCompiler):
             run.font.color.rgb = RGBColor(120, 120, 120)
 
     def _compile_table(self, doc: Document, node: TableNode) -> None:
-        #
         num_rows = len(node.rows)
         if num_rows == 0:
             return
 
         num_cols = len(node.rows[0].cells)
+        col_widths_dxa = TableLayoutCalculator.compute_column_widths_dxa(node)
 
         table = doc.add_table(rows=num_rows, cols=num_cols)
         finalize_table(table)
-        table.alignment = WD_TABLE_ALIGNMENT.CENTER  #
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-        #
+        # Enforce fixed table layout and write tblGrid
+        tbl = table._tbl
+        tblPr = tbl.tblPr
+        if tblPr is not None:
+            for child in list(tblPr):
+                tag = child.tag.split("}")[-1]
+                if tag in ("tblW", "tblLayout"):
+                    tblPr.remove(child)
+            tblW = OxmlElement("w:tblW")
+            tblW.set(qn("w:type"), "dxa")
+            tblW.set(qn("w:w"), str(TableLayoutCalculator.TOTAL_PRINTABLE_WIDTH_DXA))
+            tblPr.append(tblW)
+            tblLayout = OxmlElement("w:tblLayout")
+            tblLayout.set(qn("w:type"), "fixed")
+            tblPr.append(tblLayout)
+
+        tblGrid = OxmlElement("w:tblGrid")
+        for w_dxa in col_widths_dxa:
+            gridCol = OxmlElement("w:gridCol")
+            gridCol.set(qn("w:w"), str(w_dxa))
+            tblGrid.append(gridCol)
+        tbl.append(tblGrid)
+
         for r_idx, row_node in enumerate(node.rows):
-            # C-Level Presentation Hygiene: Prevent rows from splitting across page breaks and repeat headers
             trPr = table.rows[r_idx]._tr.get_or_add_trPr()
             trPr.append(OxmlElement("w:cantSplit"))
             if r_idx == 0:
@@ -807,17 +911,24 @@ class DocxCompiler(DocumentCompiler):
             for c_idx in range(num_cols):
                 cell = table.rows[r_idx].cells[c_idx]
 
-                # Vertical Centering (C-Level Table Hygiene)
                 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
                 cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
-                #
+                # Apply exact cell width in DXA
+                tcPr = cell._tc.get_or_add_tcPr()
+                for child in list(tcPr):
+                    if child.tag.endswith("tcW"):
+                        tcPr.remove(child)
+                tcW = OxmlElement("w:tcW")
+                tcW.set(qn("w:type"), "dxa")
+                tcW.set(qn("w:w"), str(col_widths_dxa[c_idx]))
+                tcPr.append(tcW)
+
                 if c_idx < len(row_node.cells):
                     cell_node = row_node.cells[c_idx]
                 else:
                     cell_node = CellNode(text="", bold=False, align="LEFT")
 
-                #
                 align_const = WD_ALIGN_PARAGRAPH.LEFT
                 align_str = cell_node.align.upper()
                 if align_str == "CENTER":
@@ -827,9 +938,7 @@ class DocxCompiler(DocumentCompiler):
                 elif align_str == "JUSTIFY":
                     align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
 
-                # Contrast Invariant Protection (RFC-026 Invariant II via StyleInvariantGuard)
                 from assessment_engine.compiler.style_invariants import StyleInvariantGuard
-
                 bg_hex = cell_node.bg_color if cell_node.bg_color else None
                 if cell_node.text_color_rgb:
                     fg_hex = f"{cell_node.text_color_rgb[0]:02X}{cell_node.text_color_rgb[1]:02X}{cell_node.text_color_rgb[2]:02X}"
@@ -851,7 +960,3 @@ class DocxCompiler(DocumentCompiler):
 
                 if cell_node.bg_color:
                     safe_shade_cell(cell, cell_node.bg_color)
-
-        # Applies a safe, schema-compliant method for auto-fitting column widths.
-        if node.autofit:
-            safe_autofit_table_to_contents(table)
