@@ -65,10 +65,11 @@ def test_compile_asis_docx_via_ast(sample_payload_file: Path, tmp_path: Path, do
     assert len(doc.paragraphs) > 5
     assert len(doc.tables) >= 1
 
-    # Verify that the table contains the pillar from AST
+    # Verify that the table contains the pillar from AST (localized according to doc_lang)
     table_texts = [
         " ".join(c.text for c in row.cells)
         for t in doc.tables
         for row in t.rows
     ]
-    assert any("Power & Electrical Continuity" in t_txt for t_txt in table_texts)
+    expected_pillar = "Power & Electrical Continuity" if doc_lang == "en" else "Energía y Continuidad Eléctrica"
+    assert any(expected_pillar in t_txt for t_txt in table_texts)

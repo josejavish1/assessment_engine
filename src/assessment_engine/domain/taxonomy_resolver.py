@@ -414,7 +414,7 @@ def get_taxonomy_resolver(
     catalog: Mapping[str, TaxonomyConcept | Mapping[str, Any]] | None = None,
 ) -> PureTaxonomyResolver:
     """Retrieve shared thread-safe singleton instance of PureTaxonomyResolver."""
-    global _RESOLVER_INSTANCE, _DEFAULT_EMPTY_SINGLETON
+    global _RESOLVER_INSTANCE, _DEFAULT_EMPTY_SINGLETON, _CATALOG_LOADER_PROVIDER
     if catalog is not None:
         return PureTaxonomyResolver(catalog=catalog)
 

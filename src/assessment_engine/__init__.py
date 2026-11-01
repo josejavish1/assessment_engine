@@ -8,3 +8,13 @@ from pathlib import Path
 _SA_KEY_PATH = Path.home() / ".secrets" / "sa-key.json"
 if _SA_KEY_PATH.exists():
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(_SA_KEY_PATH)
+
+# Bootstrap taxonomy catalog loader for domain layer
+try:
+    from assessment_engine.domain.taxonomy_resolver import register_taxonomy_catalog_loader
+    from assessment_engine.infrastructure.json_taxonomy_catalog_loader import (
+        JsonTaxonomyCatalogLoader,
+    )
+    register_taxonomy_catalog_loader(JsonTaxonomyCatalogLoader())
+except Exception:
+    pass

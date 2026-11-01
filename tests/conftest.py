@@ -27,6 +27,16 @@ def block_external_network(monkeypatch):
     monkeypatch.setattr(socket.socket, "connect", mocked_connect)
 
 
+try:
+    from assessment_engine.domain.taxonomy_resolver import register_taxonomy_catalog_loader
+    from assessment_engine.infrastructure.json_taxonomy_catalog_loader import (
+        JsonTaxonomyCatalogLoader,
+    )
+    register_taxonomy_catalog_loader(JsonTaxonomyCatalogLoader())
+except Exception:
+    pass
+
+
 @pytest.fixture
 def sample_payload() -> Dict[str, Any]:
     return {

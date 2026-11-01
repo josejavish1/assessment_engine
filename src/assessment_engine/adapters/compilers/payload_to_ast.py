@@ -209,8 +209,14 @@ class PayloadToASTBridge:
         )
         self.disclaimer = vocab.get("disclaimer_text", self.disclaimer)
 
-        tower_name = tower_meta.get("tower_name", "Unknown")
-        tower_id = tower_meta.get("tower_code", tower_meta.get("tower_id", "TXX"))
+        tower_id = str(tower_meta.get("tower_code") or tower_meta.get("tower_id") or "TXX")
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        raw_tname = str(tower_meta.get("tower_name") or "").strip()
+        if raw_tname and raw_tname != "Unknown":
+            tower_name = raw_tname
+        else:
+            tower_name = resolver.resolve_tower_name(tower_id, default="Unknown", locale=meta_lang)
         client_name = clean_client_name(tower_meta.get("client_name", "Client"))
         version = tower_meta.get("version", "1.0")
         date_str = format_date_localized(
@@ -339,7 +345,10 @@ class PayloadToASTBridge:
         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
         resolver = get_taxonomy_resolver()
         tower_code = blueprint_data.get("document_meta", {}).get("tower_code", "T1")
-        localized_tower_name = resolver.resolve_tower_name(tower_code, default=tower_name, locale=meta_lang)
+        if tower_name and tower_name != "Unknown":
+            localized_tower_name = tower_name
+        else:
+            localized_tower_name = resolver.resolve_tower_name(tower_code, default="Unknown", locale=meta_lang)
 
         annex_prefix = t("annex_technical_prefix", locale=meta_lang)
         nodes.append(
@@ -1465,7 +1474,10 @@ class PayloadToASTBridge:
 
         raw_id = str(hc.get("id") or "RSK-01").strip()
         r_id = re.sub(r"[^A-Za-z0-9_.\-]", "-", raw_id) or "RSK-01"
-        r_cap = str(hc.get("capability") or "Capability").strip()
+        raw_cap = str(hc.get("capability") or "Capability").strip()
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        r_cap = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=meta_lang)
         global_rank = hc.get("global_rank", 1)
         share_pct = float(hc.get("share_pct") or 0.0)
 
