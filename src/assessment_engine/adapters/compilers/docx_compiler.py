@@ -8,8 +8,8 @@ from typing import Any, List, Optional
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_TAB_LEADER
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
+from docx.oxml import OxmlElement, parse_xml
+from docx.oxml.ns import nsdecls, qn
 from docx.shared import Inches, Pt, RGBColor
 
 from assessment_engine.domain.schemas.ast import (
@@ -449,16 +449,21 @@ class TableLayoutCalculator:
     DAMPENING_EXPONENT: float = 0.62
 
     @classmethod
-    def compute_column_widths_dxa(cls, node: TableNode) -> List[int]:
+    def compute_column_widths_dxa(cls, node: TableNode, num_cols: Optional[int] = None) -> List[int]:
         if not node.rows:
             return []
-        num_cols = len(node.rows[0].cells)
-        if num_cols == 0:
+
+        column_widths_dxa = getattr(node, "column_widths_dxa", None)
+        if column_widths_dxa:
+            return list(column_widths_dxa)
+
+        effective_cols = num_cols if num_cols is not None else len(node.rows[0].cells)
+        if effective_cols == 0:
             return []
 
         # Explicit width ratios override if provided
         col_widths = getattr(node, "col_widths", None)
-        if col_widths and len(col_widths) == num_cols:
+        if col_widths and len(col_widths) == effective_cols:
             total_weight = sum(col_widths)
             return [
                 int(round(cls.TOTAL_PRINTABLE_WIDTH_DXA * (w / total_weight)))
@@ -466,8 +471,8 @@ class TableLayoutCalculator:
             ]
 
         if getattr(node, "auto_fit_strategy", "CONTENT_PROPORTIONAL") == "EQUAL":
-            base_w = cls.TOTAL_PRINTABLE_WIDTH_DXA // num_cols
-            return [base_w] * num_cols
+            base_w = cls.TOTAL_PRINTABLE_WIDTH_DXA // effective_cols
+            return [base_w] * effective_cols
 
         # Pass 1: Statistical Content Inspection
         min_bounds_dxa: List[int] = []
@@ -475,7 +480,7 @@ class TableLayoutCalculator:
 
         import math
 
-        for col_idx in range(num_cols):
+        for col_idx in range(effective_cols):
             all_texts: List[str] = []
             for r in node.rows:
                 if col_idx < len(r.cells):
@@ -511,11 +516,11 @@ class TableLayoutCalculator:
 
         final_widths = [
             min_bounds_dxa[i] + int(round(remaining_dxa * (weights[i] / total_weight)))
-            for i in range(num_cols)
+            for i in range(effective_cols)
         ]
 
         residual = cls.TOTAL_PRINTABLE_WIDTH_DXA - sum(final_widths)
-        widest_idx = max(range(num_cols), key=lambda i: final_widths[i])
+        widest_idx = max(range(effective_cols), key=lambda i: final_widths[i])
         final_widths[widest_idx] += residual
 
         return final_widths
@@ -872,8 +877,20 @@ class DocxCompiler(DocumentCompiler):
         if num_rows == 0:
             return
 
-        num_cols = len(node.rows[0].cells)
-        col_widths_dxa = TableLayoutCalculator.compute_column_widths_dxa(node)
+        if getattr(node, "column_widths_dxa", None):
+            num_cols = len(node.column_widths_dxa)
+        elif getattr(node, "col_widths", None):
+            num_cols = len(node.col_widths)
+        else:
+            num_cols = max(
+                (sum(getattr(c, "grid_span", 1) for c in r.cells) for r in node.rows),
+                default=len(node.rows[0].cells),
+            )
+
+        if num_cols == 0:
+            return
+
+        col_widths_dxa = TableLayoutCalculator.compute_column_widths_dxa(node, num_cols=num_cols)
 
         table = doc.add_table(rows=num_rows, cols=num_cols)
         finalize_table(table)
@@ -904,30 +921,53 @@ class DocxCompiler(DocumentCompiler):
 
         for r_idx, row_node in enumerate(node.rows):
             trPr = table.rows[r_idx]._tr.get_or_add_trPr()
-            trPr.append(OxmlElement("w:cantSplit"))
-            if r_idx == 0:
+            if getattr(row_node, "cant_split", True):
+                trPr.append(OxmlElement("w:cantSplit"))
+            if row_node.is_header or (r_idx == 0 and getattr(node, "headers", None)):
                 trPr.append(OxmlElement("w:tblHeader"))
 
-            for c_idx in range(num_cols):
-                cell = table.rows[r_idx].cells[c_idx]
+            if getattr(row_node, "height_dxa", None):
+                trHeight = OxmlElement("w:trHeight")
+                trHeight.set(qn("w:val"), str(row_node.height_dxa))
+                trHeight.set(qn("w:hRule"), "atLeast")
+                trPr.append(trHeight)
+
+            col_cursor = 0
+            for cell_node in row_node.cells:
+                if col_cursor >= num_cols:
+                    break
+                span = getattr(cell_node, "grid_span", 1)
+                effective_span = min(span, num_cols - col_cursor)
+
+                if effective_span > 1:
+                    cell_start = table.rows[r_idx].cells[col_cursor]
+                    cell_end = table.rows[r_idx].cells[col_cursor + effective_span - 1]
+                    cell_start.merge(cell_end)
+
+                cell = table.rows[r_idx].cells[col_cursor]
 
                 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
                 cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
-                # Apply exact cell width in DXA
+                # Apply exact cell width in DXA across the spanned grid columns
+                cell_width_dxa = sum(col_widths_dxa[col_cursor : col_cursor + effective_span])
                 tcPr = cell._tc.get_or_add_tcPr()
                 for child in list(tcPr):
                     if child.tag.endswith("tcW"):
                         tcPr.remove(child)
                 tcW = OxmlElement("w:tcW")
                 tcW.set(qn("w:type"), "dxa")
-                tcW.set(qn("w:w"), str(col_widths_dxa[c_idx]))
+                tcW.set(qn("w:w"), str(cell_width_dxa))
                 tcPr.append(tcW)
 
-                if c_idx < len(row_node.cells):
-                    cell_node = row_node.cells[c_idx]
-                else:
-                    cell_node = CellNode(text="", bold=False, align="LEFT")
+                # Apply left accent border if specified
+                if getattr(cell_node, "border_left_color", None):
+                    b_color = cell_node.border_left_color.lstrip("#")
+                    b_size = str(getattr(cell_node, "border_left_size", None) or 24)
+                    tcBorders = parse_xml(
+                        f'<w:tcBorders {nsdecls("w")}><w:left w:val="single" w:sz="{b_size}" w:space="0" w:color="{b_color}"/><w:top w:val="none"/><w:right w:val="none"/><w:bottom w:val="none"/></w:tcBorders>'
+                    )
+                    tcPr.append(tcBorders)
 
                 align_const = WD_ALIGN_PARAGRAPH.LEFT
                 align_str = cell_node.align.upper()
@@ -960,3 +1000,9 @@ class DocxCompiler(DocumentCompiler):
 
                 if cell_node.bg_color:
                     safe_shade_cell(cell, cell_node.bg_color)
+
+                if getattr(node, "keep_together", False) and r_idx < num_rows - 1:
+                    for p in cell.paragraphs:
+                        p.paragraph_format.keep_with_next = True
+
+                col_cursor += effective_span

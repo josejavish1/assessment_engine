@@ -120,6 +120,26 @@ class CellNode(BaseModel):
         None,
         description="Optional text color override, specified as an RGB tuple of integers, where each value is in the range [0, 255].",
     )
+    grid_span: int = Field(
+        1,
+        description="Number of columns to span horizontally (equivalent to colspan).",
+    )
+    v_merge: Optional[str] = Field(
+        None,
+        description="Vertical merge state: 'restart', 'continue', or None.",
+    )
+    width_dxa: Optional[int] = Field(
+        None,
+        description="Explicit cell width in DXA (twips).",
+    )
+    border_left_color: Optional[str] = Field(
+        None,
+        description="Hex color for left accent border (e.g., '0072BC').",
+    )
+    border_left_size: Optional[int] = Field(
+        None,
+        description="Border thickness in eighths of a point (e.g. 24 for 3pt).",
+    )
 
 
 class TableRowNode(BaseModel):
@@ -139,6 +159,12 @@ class TableRowNode(BaseModel):
     )
     is_header: bool = Field(
         False, description="Specifies whether the row functions as the table header."
+    )
+    height_dxa: Optional[int] = Field(
+        None, description="Explicit row height in DXA (twips)."
+    )
+    cant_split: bool = Field(
+        True, description="Prevents the row from splitting across a page break."
     )
 
 
@@ -183,6 +209,14 @@ class TableNode(BaseNode):
     col_widths: Optional[List[float]] = Field(
         None,
         description="Optional list of proportional column width weights (e.g. [0.25, 0.15, 0.60]).",
+    )
+    column_widths_dxa: Optional[List[int]] = Field(
+        None,
+        description="Explicit DXA widths for each grid column in the table layout.",
+    )
+    keep_together: bool = Field(
+        True,
+        description="Enforces that all paragraphs inside the table maintain keep_with_next to avoid page splits.",
     )
     auto_fit_strategy: str = Field(
         "CONTENT_PROPORTIONAL",

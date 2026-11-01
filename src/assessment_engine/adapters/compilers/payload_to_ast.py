@@ -4,6 +4,7 @@ import csv
 import html
 import json
 import re
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -15,6 +16,12 @@ from assessment_engine.infrastructure.localization import (
     get_localized_list,
     t,
 )
+
+from assessment_engine.domain.schemas.risk_ontology import (
+    CouplingRegime,
+    FairActuarialInput,
+)
+from assessment_engine.domain.actuarial_calculator import ActuarialEngine
 
 from assessment_engine.domain.schemas.ast import (
     CellNode,
@@ -1389,160 +1396,257 @@ class PayloadToASTBridge:
             )
 
             for hc in t_items:
-                r_id = hc.get("id", "RSK")
-                r_cap = hc.get("capability", "Capability")
                 raw_pname = hc.get("pillar", "Pillar")
                 p_name = resolver.resolve_pillar_by_any_reference(
                     raw_pname, default=raw_pname, locale=meta_lang
                 )
 
-                tef = float(hc.get("tef") or 1.0)
-                lm = float(hc.get("lm") or 1.0)
-                ale = float(hc.get("ale") or hc.get("ale_val") or 0.0)
-                risk_score = tef * lm
-
-                # Determine severity label
-                if risk_score >= 15 or ale >= (total_fair_ale * 0.15):
-                    sev_lbl = t("severity_lbl_critical", locale=meta_lang)
-                elif risk_score >= 10 or ale >= (total_fair_ale * 0.05):
-                    sev_lbl = t("severity_lbl_high", locale=meta_lang)
-                elif risk_score >= 5 or ale >= (total_fair_ale * 0.01):
-                    sev_lbl = t("severity_lbl_medium", locale=meta_lang)
-                else:
-                    sev_lbl = t("severity_lbl_low", locale=meta_lang)
-
-                fair_metrics = fair_lookup.get(r_cap, {})
-                p90_val = fair_metrics.get("p90", ale * 4.613) or (ale * 4.613)
-
-                formatted_ale_str = format_currency(
-                    ale, currency_symbol=currency, locale=meta_lang, decimals=0
+                card_table = self._build_risk_mini_infographic_card(
+                    ctx=ctx,
+                    hc=hc,
+                    t_idx=t_idx,
+                    p_name=p_name,
+                    total_fair_ale=total_fair_ale,
                 )
-                formatted_p90_str = format_currency(
-                    p90_val, currency_symbol=currency, locale=meta_lang, decimals=0
-                )
+                nodes.append(card_table)
+                nodes.append(SpacerNode(points=12))
 
-                # 1. Card Header
-                nodes.append(
-                    HeadingNode(
-                        text=f"[{r_id}] {r_cap}",
-                        level=4,
-                        primary_color_rgb=self.primary_color_rgb,
-                    )
-                )
+    def _build_risk_mini_infographic_card(
+        self,
+        ctx: dict[str, Any],
+        hc: dict[str, Any],
+        t_idx: int,
+        p_name: str,
+        total_fair_ale: float,
+    ) -> TableNode:
+        """Constructs an executive Open FAIR Mini-Infographic Risk Card AST TableNode."""
+        meta_lang = ctx["meta_lang"]
+        currency = ctx["currency"]
+        blueprint_data = ctx.get("blueprint_data", {})
 
-                # 2. Card Metadata Badges Line
-                badge_line = (
-                    f"**[{sev_lbl}]** | "
-                    f"**{t('portfolio_lbl', locale=meta_lang)}:** Tier {t_idx} | "
-                    f"**{t('domain_lbl', locale=meta_lang)}:** {p_name} | "
-                    f"**{t('global_rank_lbl', locale=meta_lang)}:** #{hc.get('global_rank', 1)} ({hc.get('share_pct', 0.0):.1f} %)"
-                )
-                nodes.append(
-                    ParagraphNode(
-                        text=badge_line,
-                        font_size=9.0,
-                        text_color_rgb=[51, 65, 85],
-                        space_after=2,
-                    )
-                )
+        r_id = str(hc.get("id") or "RSK-01").strip()
+        r_cap = str(hc.get("capability") or "Capability").strip()
+        global_rank = hc.get("global_rank", 1)
+        share_pct = float(hc.get("share_pct") or 0.0)
 
-                # 3. Card Financial Headline
-                fin_headline = (
-                    f"**{t('calc_ale_lbl', locale=meta_lang)}:** **{formatted_ale_str} / {t('year_lbl', locale=meta_lang)}** "
-                    f"({t('calc_worst_case_lbl', locale=meta_lang)}: {formatted_p90_str})"
-                )
-                nodes.append(
-                    ParagraphNode(
-                        text=fin_headline,
-                        font_size=9.5,
-                        text_color_rgb=[0, 114, 188],
-                        space_after=4,
-                    )
-                )
+        raw_tef = float(hc.get("tef") or 1.0)
+        raw_lm = float(hc.get("lm") or 1.0)
 
-                # 4. Vulnerability Identified (Prose)
-                find_clean = str(hc.get("finding") or "").strip()
-                v_lbl = t("vulnerability_identified_label", locale=meta_lang).rstrip(":")
-                nodes.append(
-                    ParagraphNode(
-                        text=f"**{v_lbl}:** {find_clean}",
-                        space_after=4,
-                    )
-                )
+        if raw_tef >= 1.0:
+            lef = min(0.50, max(0.08, raw_tef * 0.09))
+        else:
+            lef = max(0.05, raw_tef)
 
-                # 5. Operational Business Impact (Prose, stripped of duplicate inline formula)
-                raw_biz = str(hc.get("business_risk") or "").strip()
-                def_marker = t("defensibility_formula_marker", locale=meta_lang)
-                biz_risk_clean = raw_biz.split(def_marker)[0].strip().rstrip(".") + "."
-                imp_lbl = t("it_operational_impact_label", locale=meta_lang).rstrip(":")
-                nodes.append(
-                    ParagraphNode(
-                        text=f"**{imp_lbl}:** {biz_risk_clean}",
-                        space_after=4,
-                    )
-                )
+        mttr_hours = min(6.0, max(1.5, raw_lm * 0.85))
+        annual_divisor = float(blueprint_data.get("annual_downtime_divisor", 67.5))
+        hourly_rate = float(
+            blueprint_data.get("hourly_downtime_rate")
+            or blueprint_data.get("hourly_burn_rate")
+            or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 10000.0)
+        )
 
-                # 6. Actuarial Derivation & Formula Breakdown (Bullets)
-                nodes.append(
-                    ParagraphNode(
-                        text=f"**{t('actuarial_breakdown_title', locale=meta_lang)}:**",
-                        space_after=2,
-                    )
-                )
+        coupling_factor = 1.0
+        if t_idx == 1:
+            coupling_regime = CouplingRegime.TIGHT
+            alpha = 0.70
+        elif t_idx == 2:
+            coupling_regime = CouplingRegime.MODERATE
+            alpha = 0.40
+        else:
+            coupling_regime = CouplingRegime.LOOSE
+            alpha = 0.20
 
-                tef_idx = min(5, max(1, int(round(tef))))
-                lm_idx = min(5, max(1, int(round(lm))))
-                tef_desc = t(f"tef_desc_{tef_idx}", locale=meta_lang)
-                lm_desc = t(f"lm_desc_{lm_idx}", locale=meta_lang)
+        effective_hourly = hourly_rate * alpha
+        sle_val = Decimal(str(round(mttr_hours * effective_hourly, 2)))
 
-                downtime_hours = max(2, int(round(tef * 2.0 + lm * 1.5)))
-                annual_divisor = float(blueprint_data.get("annual_downtime_divisor", 67.5))
-                hourly_burn = float(
-                    blueprint_data.get("hourly_downtime_rate")
-                    or blueprint_data.get("hourly_burn_rate")
-                    or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 10000.0)
-                )
-                hourly_burn_str = format_currency(
-                    hourly_burn, currency_symbol=currency, locale=meta_lang, decimals=0
-                )
-                secondary_loss_num = max(0.0, ale - (tef * downtime_hours * hourly_burn))
-                secondary_loss_str = format_currency(
-                    secondary_loss_num, currency_symbol=currency, locale=meta_lang, decimals=0
-                )
+        actuarial_input = FairActuarialInput(
+            loss_event_frequency_annual=round(lef, 2),
+            single_loss_magnitude_base=sle_val,
+            operational_coupling_factor=coupling_factor,
+            coupling_regime=coupling_regime,
+            downtime_hours_mean=round(mttr_hours, 1),
+            hourly_operational_impact=Decimal(str(round(effective_hourly, 2))),
+        )
+        metrics = ActuarialEngine.evaluate(actuarial_input)
 
-                b_tef = t("actuarial_tef_bullet", locale=meta_lang, tef=f"{tef:.1f} / 5.0", desc=tef_desc)
-                b_lm = t("actuarial_lm_bullet", locale=meta_lang, lm=f"{lm:.1f} / 5.0", desc=lm_desc)
-                b_dt = t("actuarial_downtime_bullet", locale=meta_lang, hours=downtime_hours)
-                b_burn = t("actuarial_burn_bullet", locale=meta_lang, rate=hourly_burn_str)
-                b_sec = t("actuarial_secondary_bullet", locale=meta_lang, cost=secondary_loss_str)
-                b_formula = t(
-                    "actuarial_formula_bullet",
-                    locale=meta_lang,
-                    tef=f"{tef:.2f}",
-                    hours=downtime_hours,
-                    rate=hourly_burn_str,
-                    secondary=secondary_loss_str,
-                    ale=formatted_ale_str,
-                )
+        formatted_ale = format_currency(
+            float(metrics.annualized_loss_expectancy),
+            currency_symbol=currency,
+            locale=meta_lang,
+            decimals=0,
+        )
+        formatted_sle = format_currency(
+            float(metrics.effective_sle),
+            currency_symbol=currency,
+            locale=meta_lang,
+            decimals=0,
+        )
+        return_period_str = t(
+            "risk_card_return_period_fmt",
+            locale=meta_lang,
+            years=metrics.return_period_years,
+        )
+        coupling_str = t(
+            f"risk_card_coupling_{coupling_regime.value.lower()}",
+            locale=meta_lang,
+        )
+        sev_badge_text = t(
+            f"risk_card_severity_{metrics.severity_tier.lower()}",
+            locale=meta_lang,
+        )
 
-                for b_txt in [b_tef, b_lm, b_dt, b_burn, b_sec, b_formula]:
-                    nodes.append(ParagraphNode(text=b_txt, style="List Bullet", space_after=1, font_size=8.5))
+        severity_colors = {
+            "CRITICAL": "DC2626",
+            "HIGH": "B45309",
+            "ELEVATED": "1D4ED8",
+            "MODERATE": "4B5563",
+        }
+        severity_bg_hex = severity_colors.get(metrics.severity_tier, "B45309")
 
-                # 7. Audit Evidence
-                ev_clean = str(hc.get("evidence") or "").strip()
-                if ev_clean:
-                    ev_lbl = t("audit_evidence_label", locale=meta_lang)
-                    nodes.append(
-                        ParagraphNode(
-                            text=f"**{ev_lbl}:** *\"{ev_clean}\"*",
-                            italic=True,
+        raw_threat = hc.get("initiating_threat")
+        if raw_threat:
+            threat_txt = str(raw_threat).strip()
+        else:
+            threat_txt = t("risk_card_default_threat", locale=meta_lang)
+
+        raw_vuln = hc.get("control_vulnerability") or hc.get("finding")
+        vuln_txt = str(raw_vuln or "").strip()
+
+        raw_impact = hc.get("primary_impact") or hc.get("business_risk")
+        def_marker = t("defensibility_formula_marker", locale=meta_lang)
+        impact_txt = str(raw_impact or "").split(def_marker)[0].strip().rstrip(".") + "."
+
+        raw_mitigation = hc.get("mitigation_directive") or hc.get("remediation")
+        if raw_mitigation:
+            directive_txt = str(raw_mitigation).strip()
+        else:
+            directive_txt = t("risk_card_default_mitigation", locale=meta_lang)
+
+        evidence_txt = str(hc.get("evidence") or "").strip()
+        if evidence_txt:
+            ev_lbl = t("audit_evidence_label", locale=meta_lang)
+            directive_txt += f"\n*{ev_lbl}: \"{evidence_txt}\"*"
+
+        card_table = TableNode(
+            rows=[
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=f"[{r_id}] {r_cap}\n{p_name} | {t('portfolio_lbl', locale=meta_lang)}: Tier {t_idx} (#{global_rank})",
+                            font_size=9.5,
+                            bold=True,
+                            bg_color="1B263B",
+                            text_color_rgb=[255, 255, 255],
+                            grid_span=3,
+                            width_dxa=7020,
+                            align="LEFT",
+                        ),
+                        CellNode(
+                            text=sev_badge_text,
                             font_size=8.5,
-                            text_color_rgb=[71, 85, 105],
-                            space_after=8,
-                        )
-                    )
-
-                nodes.append(SpacerNode(points=10))
+                            bold=True,
+                            bg_color=severity_bg_hex,
+                            text_color_rgb=[255, 255, 255],
+                            grid_span=1,
+                            width_dxa=2340,
+                            align="CENTER",
+                        ),
+                    ],
+                    cant_split=True,
+                ),
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=f"**{t('risk_card_ale_label', locale=meta_lang)}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang)}",
+                            font_size=8.0,
+                            bg_color="F8FAFC",
+                            text_color_rgb=[0, 114, 188],
+                            grid_span=1,
+                            width_dxa=2340,
+                            align="CENTER",
+                        ),
+                        CellNode(
+                            text=f"**{t('risk_card_sle_label', locale=meta_lang)}**\n{formatted_sle}",
+                            font_size=8.0,
+                            bg_color="F8FAFC",
+                            grid_span=1,
+                            width_dxa=2340,
+                            align="CENTER",
+                        ),
+                        CellNode(
+                            text=f"**{t('risk_card_lef_label', locale=meta_lang)}**\n{metrics.loss_event_frequency:.2f} ev/{t('year_lbl', locale=meta_lang)}\n({return_period_str})",
+                            font_size=8.0,
+                            bg_color="F8FAFC",
+                            grid_span=1,
+                            width_dxa=2340,
+                            align="CENTER",
+                        ),
+                        CellNode(
+                            text=f"**{t('risk_card_coupling_label', locale=meta_lang)}**\n{coupling_str}\n(x{coupling_factor:.1f})",
+                            font_size=8.0,
+                            bg_color="F8FAFC",
+                            grid_span=1,
+                            width_dxa=2340,
+                            align="CENTER",
+                        ),
+                    ],
+                    cant_split=True,
+                ),
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=f"**{t('risk_card_bowtie_threat', locale=meta_lang)}**\n{threat_txt}",
+                            font_size=7.5,
+                            bg_color="FFFFFF",
+                            grid_span=1,
+                            width_dxa=2340,
+                            border_left_color="E63946",
+                            border_left_size=24,
+                            align="LEFT",
+                        ),
+                        CellNode(
+                            text=f"**{t('risk_card_bowtie_vulnerability', locale=meta_lang)}**\n{vuln_txt}",
+                            font_size=7.5,
+                            bg_color="FFFFFF",
+                            grid_span=2,
+                            width_dxa=4680,
+                            border_left_color="F4A261",
+                            border_left_size=24,
+                            align="LEFT",
+                        ),
+                        CellNode(
+                            text=f"**{t('risk_card_bowtie_impact', locale=meta_lang)}**\n{impact_txt}",
+                            font_size=7.5,
+                            bg_color="FFFFFF",
+                            grid_span=1,
+                            width_dxa=2340,
+                            border_left_color="2A9D8F",
+                            border_left_size=24,
+                            align="LEFT",
+                        ),
+                    ],
+                    cant_split=True,
+                ),
+                TableRowNode(
+                    cells=[
+                        CellNode(
+                            text=f"{t('risk_card_mitigation_directive', locale=meta_lang)}: {directive_txt}",
+                            font_size=8.0,
+                            bg_color="F1F5F9",
+                            grid_span=4,
+                            width_dxa=9360,
+                            border_left_color="0072BC",
+                            border_left_size=24,
+                            align="LEFT",
+                        ),
+                    ],
+                    cant_split=True,
+                ),
+            ],
+            column_widths_dxa=[2340, 2340, 2340, 2340],
+            keep_together=True,
+        )
+        return card_table
 
         #
         # CHAPTER 5: CONCLUSIONS AND COST OF INACTION
