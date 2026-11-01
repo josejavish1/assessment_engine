@@ -41,8 +41,8 @@ def derive_in_memory_fair_risks(
 
     r_counter = 1
     for pillar in b_data.get("pillars_analysis", []):
-        raw_pname = pillar.get("pillar_name") or pillar.get("pilar_name") or "Pillar"
-        p_id = pillar.get("pillar_id") or pillar.get("pilar_id") or raw_pname
+        raw_pname = str(pillar.get("pillar_name") or "Pillar")
+        p_id = str(pillar.get("pillar_id") or raw_pname)
         pillar_name = resolver.resolve_pillar_by_any_reference(
             p_id, default=raw_pname, locale=doc_lang
         )
@@ -61,11 +61,18 @@ def derive_in_memory_fair_risks(
             raw_ale = float(hc.get("fair_ale_score") or hc.get("ale") or (tef_val * lm_val * 1000.0))
             raw_p90 = float(hc.get("fair_p90_score") or (raw_ale * 2.5))
 
-            calibrated_ale = raw_ale * rate_mult
-            calibrated_p90 = raw_p90 * rate_mult
+            ownership = str(hc.get("ownership_type") or "PRIMARY_CUSTODIAN").strip()
+            is_tangential = (ownership == "TANGENTIAL_CONTRIBUTOR")
+
+            intrinsic_ale = raw_ale * rate_mult
+            intrinsic_p90 = raw_p90 * rate_mult
+
+            # Enforce zero financial double counting in ledger totals for tangential contributors:
+            calibrated_ale = 0.0 if is_tangential else intrinsic_ale
+            calibrated_p90 = 0.0 if is_tangential else intrinsic_p90
 
             risk_item: dict[str, Any] = {
-                "id": f"RVS{r_counter:02d}",
+                "id": hc.get("id", f"RVS{r_counter:02d}"),
                 "node_id": hc.get("node_id", f"NODE-{r_counter:03d}"),
                 "pillar": pillar_name,
                 "pillar_id": p_id,
@@ -76,6 +83,16 @@ def derive_in_memory_fair_risks(
                 "lm": lm_val,
                 "ale": calibrated_ale,
                 "p90": calibrated_p90,
+                "intrinsic_ale": intrinsic_ale,
+                "intrinsic_p90": intrinsic_p90,
+                "ownership_type": ownership,
+                "primary_risk_ref": (str(hc.get("primary_risk_ref") or "").strip() or None) if is_tangential else None,
+                "contributing_towers": hc.get("contributing_towers", []) if not is_tangential else [],
+                "evidence": hc.get("evidence", ""),
+                "mitigation_directive": hc.get("mitigation_directive", ""),
+                "initiating_threat": hc.get("initiating_threat", ""),
+                "control_vulnerability": hc.get("control_vulnerability", ""),
+                "primary_impact": hc.get("primary_impact", ""),
                 "ale_str": format_currency(
                     calibrated_ale,
                     currency_symbol=currency,
@@ -105,8 +122,8 @@ def derive_in_memory_maturity_matrix(
     rows: list[dict[str, Any]] = []
 
     for pillar in b_data.get("pillars_analysis", []):
-        raw_pname = pillar.get("pillar_name") or pillar.get("pilar_name") or "Pillar"
-        p_id = pillar.get("pillar_id") or pillar.get("pilar_id") or raw_pname
+        raw_pname = str(pillar.get("pillar_name") or "Pillar")
+        p_id = str(pillar.get("pillar_id") or raw_pname)
         pillar_name = resolver.resolve_pillar_by_any_reference(
             p_id, default=raw_pname, locale=doc_lang
         )

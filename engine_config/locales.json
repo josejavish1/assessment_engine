@@ -1437,7 +1437,14 @@
     "event_frequency_unit": "ev",
     "risk_card_default_impact": "Interrupción operativa o degradación de servicio en activos de TI.",
     "portfolio_tier_prefix": "Tier",
-    "default_currency": "EUR"
+    "default_currency": "EUR",
+    "risk_card_ownership_badge_primary": "CUSTODIO PRIMARIO",
+    "risk_card_ownership_badge_tangential": "CONTRIBUYENTE TANGENCIAL",
+    "risk_card_contributing_towers_label": "Dominios Contribuyentes:",
+    "risk_card_deduplicated_ale_notice": "Exposición Financiera (ALE) contabilizada en el Riesgo Primario: {primary_risk_ref}",
+    "risk_card_tangential_sle_label": "SLE Transferido",
+    "risk_card_tangential_ale_label": "ALE Deduplicado",
+    "risk_card_default_vulnerability": "Ausencia de instrumentación continua, telemetría automatizada o mecanismos de redundancia activa N+1."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2872,7 +2879,14 @@
     "event_frequency_unit": "ev",
     "risk_card_default_impact": "Operational interruption or service degradation across critical IT assets.",
     "portfolio_tier_prefix": "Tier",
-    "default_currency": "EUR"
+    "default_currency": "EUR",
+    "risk_card_ownership_badge_primary": "PRIMARY CUSTODIAN",
+    "risk_card_ownership_badge_tangential": "TANGENTIAL CONTRIBUTOR",
+    "risk_card_contributing_towers_label": "Contributing Domains:",
+    "risk_card_deduplicated_ale_notice": "Financial Exposure (ALE) accounted for in Primary Risk: {primary_risk_ref}",
+    "risk_card_tangential_sle_label": "Transferred SLE",
+    "risk_card_tangential_ale_label": "Deduplicated ALE",
+    "risk_card_default_vulnerability": "Absence of continuous instrumentation, automated telemetry, or active N+1 redundancy mechanisms."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -4304,7 +4318,14 @@
     "event_frequency_unit": "ev",
     "risk_card_default_impact": "Operational interruption or service degradation across critical IT assets.",
     "portfolio_tier_prefix": "Tier",
-    "default_currency": "EUR"
+    "default_currency": "EUR",
+    "risk_card_ownership_badge_primary": "PRIMARY CUSTODIAN",
+    "risk_card_ownership_badge_tangential": "TANGENTIAL CONTRIBUTOR",
+    "risk_card_contributing_towers_label": "Contributing Domains:",
+    "risk_card_deduplicated_ale_notice": "Financial Exposure (ALE) accounted for in Primary Risk: {primary_risk_ref}",
+    "risk_card_tangential_sle_label": "Transferred SLE",
+    "risk_card_tangential_ale_label": "Deduplicated ALE",
+    "risk_card_default_vulnerability": "Absence of continuous instrumentation, automated telemetry, or active N+1 redundancy mechanisms."
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -5736,7 +5757,14 @@
     "event_frequency_unit": "ev",
     "risk_card_default_impact": "Operational interruption or service degradation across critical IT assets.",
     "portfolio_tier_prefix": "Tier",
-    "default_currency": "EUR"
+    "default_currency": "EUR",
+    "risk_card_ownership_badge_primary": "PRIMARY CUSTODIAN",
+    "risk_card_ownership_badge_tangential": "TANGENTIAL CONTRIBUTOR",
+    "risk_card_contributing_towers_label": "Contributing Domains:",
+    "risk_card_deduplicated_ale_notice": "Financial Exposure (ALE) accounted for in Primary Risk: {primary_risk_ref}",
+    "risk_card_tangential_sle_label": "Transferred SLE",
+    "risk_card_tangential_ale_label": "Deduplicated ALE",
+    "risk_card_default_vulnerability": "Absence of continuous instrumentation, automated telemetry, or active N+1 redundancy mechanisms."
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -7168,7 +7196,14 @@
     "event_frequency_unit": "回",
     "risk_card_default_impact": "Operational interruption or service degradation across critical IT assets.",
     "portfolio_tier_prefix": "Tier",
-    "default_currency": "EUR"
+    "default_currency": "EUR",
+    "risk_card_ownership_badge_primary": "PRIMARY CUSTODIAN",
+    "risk_card_ownership_badge_tangential": "TANGENTIAL CONTRIBUTOR",
+    "risk_card_contributing_towers_label": "Contributing Domains:",
+    "risk_card_deduplicated_ale_notice": "Financial Exposure (ALE) accounted for in Primary Risk: {primary_risk_ref}",
+    "risk_card_tangential_sle_label": "Transferred SLE",
+    "risk_card_tangential_ale_label": "Deduplicated ALE",
+    "risk_card_default_vulnerability": "Absence of continuous instrumentation, automated telemetry, or active N+1 redundancy mechanisms."
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -8600,6 +8635,13 @@
     "event_frequency_unit": "ev",
     "risk_card_default_impact": "Operational interruption or service degradation across critical IT assets.",
     "portfolio_tier_prefix": "Tier",
-    "default_currency": "EUR"
+    "default_currency": "EUR",
+    "risk_card_ownership_badge_primary": "PRIMARY CUSTODIAN",
+    "risk_card_ownership_badge_tangential": "TANGENTIAL CONTRIBUTOR",
+    "risk_card_contributing_towers_label": "Contributing Domains:",
+    "risk_card_deduplicated_ale_notice": "Financial Exposure (ALE) accounted for in Primary Risk: {primary_risk_ref}",
+    "risk_card_tangential_sle_label": "Transferred SLE",
+    "risk_card_tangential_ale_label": "Deduplicated ALE",
+    "risk_card_default_vulnerability": "Absence of continuous instrumentation, automated telemetry, or active N+1 redundancy mechanisms."
   }
 }

@@ -26,6 +26,7 @@ files_to_audit = [
     REPO_ROOT / "src/assessment_engine/domain/schemas/ast.py",
     REPO_ROOT / "src/assessment_engine/adapters/compilers/docx_compiler.py",
     REPO_ROOT / "src/assessment_engine/adapters/compilers/payload_to_ast.py",
+    REPO_ROOT / "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
 ]
 
 context_code = ""

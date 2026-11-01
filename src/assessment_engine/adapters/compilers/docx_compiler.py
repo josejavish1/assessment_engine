@@ -21,6 +21,7 @@ from assessment_engine.domain.schemas.ast import (
     PictureNode,
     SpacerNode,
     TableNode,
+    TableRowNode,
     TOCNode,
 )
 from assessment_engine.infrastructure.docx_render_utils import (
@@ -159,7 +160,6 @@ def safe_autofit_table_to_contents(table: Any) -> None:
     table.autofit = True
     tbl = table._tbl
 
-    #
     tblPr = tbl.tblPr
     if tblPr is None:
         tblPr = OxmlElement("w:tblPr")
@@ -179,12 +179,14 @@ def safe_autofit_table_to_contents(table: Any) -> None:
     tblLayout.set(qn("w:type"), "autofit")
     _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
 
-    # Forces automatic width (type='auto', w='0') on each cell, ensuring the property is inserted in the correct sequence within the XML schema.
+    visited_tcs = set()
     for row in table.rows:
         for cell in row.cells:
+            tc_id = id(cell._tc)
+            if tc_id in visited_tcs:
+                continue
+            visited_tcs.add(tc_id)
             tcPr = cell._tc.get_or_add_tcPr()
-
-            # Removes any pre-existing tcW (cell width) element to prevent conflicts with the new auto-fit properties.
             for child in list(tcPr):
                 if child.tag.endswith("tcW"):
                     tcPr.remove(child)
@@ -892,13 +894,21 @@ class DocxCompiler(DocumentCompiler):
             run.font.color.rgb = RGBColor(120, 120, 120)
 
     def _compile_table(self, doc: Document, node: TableNode) -> None:
-        num_rows = len(node.rows)
+        effective_rows = list(node.rows)
+        if getattr(node, "headers", None) and (not effective_rows or not effective_rows[0].is_header):
+            header_cells = [
+                CellNode(text=h, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER")
+                for h in node.headers
+            ]
+            effective_rows.insert(0, TableRowNode(cells=header_cells, is_header=True))
+
+        num_rows = len(effective_rows)
         if num_rows == 0:
             return
 
         required_cols = max(
-            (sum(getattr(c, "grid_span", 1) for c in r.cells) for r in node.rows),
-            default=len(node.rows[0].cells),
+            (sum(getattr(c, "grid_span", 1) for c in r.cells) for r in effective_rows),
+            default=len(effective_rows[0].cells),
         )
 
         if getattr(node, "column_widths_dxa", None):
@@ -950,7 +960,7 @@ class DocxCompiler(DocumentCompiler):
         else:
             tbl.insert(0, tblGrid)
 
-        for r_idx, row_node in enumerate(node.rows):
+        for r_idx, row_node in enumerate(effective_rows):
             trPr = table.rows[r_idx]._tr.get_or_add_trPr()
             if getattr(row_node, "cant_split", True):
                 trPr.append(OxmlElement("w:cantSplit"))

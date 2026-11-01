@@ -19,6 +19,10 @@ class ComputedFairMetrics:
     return_period_years: Decimal
     severity_tier: str  # "CRITICAL", "HIGH", "ELEVATED", "MODERATE"
     coupling_regime_label: str
+    ownership_type: str = "PRIMARY_CUSTODIAN"
+    primary_risk_ref: Optional[str] = None
+    contributing_towers: Optional[list[str]] = None
+    is_deduplicated: bool = False
 
 
 class ActuarialEngine:
@@ -36,6 +40,9 @@ class ActuarialEngine:
         inputs: FairActuarialInput,
         thresholds: Optional[Dict[str, Decimal]] = None,
         portfolio_total_ale: Optional[Decimal] = None,
+        ownership_type: str = "PRIMARY_CUSTODIAN",
+        primary_risk_ref: Optional[str] = None,
+        contributing_towers: Optional[list[str]] = None,
     ) -> ComputedFairMetrics:
         """Evaluates FairActuarialInput parameters into verified, auditable financial metrics."""
         if thresholds is not None:
@@ -60,12 +67,19 @@ class ActuarialEngine:
         coupling_dec = Decimal(str(inputs.operational_coupling_factor))
         lef_dec = Decimal(str(inputs.loss_event_frequency_annual))
 
-        effective_sle = (inputs.single_loss_magnitude_base * coupling_dec).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
-        ale = (effective_sle * lef_dec).quantize(
-            Decimal("0.01"), rounding=ROUND_HALF_UP
-        )
+        is_tangential = (ownership_type == "TANGENTIAL_CONTRIBUTOR")
+        if is_tangential:
+            effective_sle = Decimal("0.00")
+            ale = Decimal("0.00")
+            is_deduplicated = True
+        else:
+            effective_sle = (inputs.single_loss_magnitude_base * coupling_dec).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            ale = (effective_sle * lef_dec).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            is_deduplicated = False
 
         # Safe return period calculation bounded against division by zero
         if lef_dec > Decimal("0.00001"):
@@ -75,7 +89,10 @@ class ActuarialEngine:
         else:
             return_period = Decimal("100.0")
 
-        severity = cls._resolve_severity(ale, active_thresholds)
+        intrinsic_ale = (inputs.single_loss_magnitude_base * coupling_dec * lef_dec).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
+        severity = cls._resolve_severity(ale if not is_tangential else intrinsic_ale, active_thresholds)
 
         return ComputedFairMetrics(
             effective_sle=effective_sle,
@@ -84,6 +101,10 @@ class ActuarialEngine:
             return_period_years=return_period,
             severity_tier=severity,
             coupling_regime_label=inputs.coupling_regime.value,
+            ownership_type=ownership_type,
+            primary_risk_ref=primary_risk_ref,
+            contributing_towers=contributing_towers,
+            is_deduplicated=is_deduplicated,
         )
 
     @staticmethod

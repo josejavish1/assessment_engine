@@ -270,16 +270,16 @@ class PayloadToASTBridge:
         band_level = band_key_level_map.get(band_key, 3)
         global_band = f"{level_prefix} {band_level} - {localized_band_label}"
 
+        pillars_list = blueprint_data.get("pillar_score_profile", {}).get("pillars") or [{}]
         global_reading = (
-            blueprint_data.get("pillar_score_profile", {})
-            .get("pillars", [{}])[0]
-            .get("executive_reading")
+            pillars_list[0].get("executive_reading")
             or t("resilience_reading_standard", locale=meta_lang)
         )
 
         formatted_global_score = format_number(gs_val, locale=meta_lang, decimals=2)
         max_score_formatted = format_number(5.0, locale=meta_lang, decimals=2)
         display_score_str = f"{formatted_global_score} / {max_score_formatted}"
+        rate_mult = float(blueprint_data.get("rate_multiplier") or blueprint_data.get("rate_mult") or 1.0)
 
         return {
             "blueprint_file": blueprint_file,
@@ -300,6 +300,7 @@ class PayloadToASTBridge:
             "currency": currency,
             "is_critical": is_critical,
             "total_fair_ale": total_fair_ale,
+            "rate_mult": rate_mult,
             "exact_score": exact_score,
             "exact_band": global_band,
             "global_score": global_score,
@@ -1121,7 +1122,7 @@ class PayloadToASTBridge:
             try:
                 with open(csv_risks_path, "r", encoding="utf-8-sig") as cf:
                     reader = csv.reader(cf, delimiter=";")
-                    next(reader)
+                    next(reader, None)
                     rag_marker = t("evidence_rag_marker", locale=meta_lang)
                     for r_idx, row_data in enumerate(reader):
                         if not row_data or len(row_data) < 6:
@@ -1170,15 +1171,16 @@ class PayloadToASTBridge:
         )
 
         # Build executive risks summary paragraph
-        if risks_data_list and total_fair_ale > 0:
+        primary_risks = [r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"]
+        if primary_risks and total_fair_ale > 0:
             pillar_sums: dict[str, float] = {}
-            for r in risks_data_list:
+            for r in primary_risks:
                 p_name = str(r.get("pillar") or "Pillar")
                 pillar_sums[p_name] = pillar_sums.get(p_name, 0.0) + float(r.get("ale") or 0.0)
             highest_pillar = max(pillar_sums, key=lambda k: pillar_sums[k])
             highest_pillar_val = pillar_sums[highest_pillar]
             
-            highest_risk = max(risks_data_list, key=lambda x: float(x.get("ale") or 0.0))
+            highest_risk = max(primary_risks, key=lambda x: float(x.get("ale") or 0.0))
             highest_risk_id = str(highest_risk.get("id") or "RISK-01")
             highest_risk_cap = str(highest_risk.get("target_state") or highest_risk.get("capability") or "")
             highest_risk_ale = float(highest_risk.get("ale") or 0.0)
@@ -1273,22 +1275,32 @@ class PayloadToASTBridge:
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
-        total_fair_ale = float(ctx.get("total_fair_ale") or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list))
-        sorted_risks = sorted(risks_data_list, key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0), reverse=True)
+        primary_risks_total = sum(
+            float(r.get("ale") or r.get("ale_val") or 0.0)
+            for r in risks_data_list
+            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        )
+        total_fair_ale = primary_risks_total if primary_risks_total > 0 else float(ctx.get("total_fair_ale") or 0.0)
+
+        sorted_primary = sorted(
+            [r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"],
+            key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0),
+            reverse=True,
+        )
         t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
         t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 0.0
 
-        t1_risks = [r for r in sorted_risks if float(r.get("ale") or r.get("ale_val") or 0.0) >= t1_threshold]
-        if not t1_risks and sorted_risks:
-            t1_risks = sorted_risks[:max(1, len(sorted_risks) // 4)]
+        t1_risks = [r for r in sorted_primary if float(r.get("ale") or r.get("ale_val") or 0.0) >= t1_threshold and float(r.get("ale") or 0.0) > 0.0]
+        if not t1_risks and sorted_primary:
+            t1_risks = sorted_primary[:max(1, len(sorted_primary) // 4)]
         
-        t2_risks = [r for r in sorted_risks if t2_threshold <= float(r.get("ale") or r.get("ale_val") or 0.0) < t1_threshold]
-        if not t2_risks and len(sorted_risks) > len(t1_risks):
-            t2_risks = sorted_risks[len(t1_risks):len(t1_risks) + max(1, len(sorted_risks) // 3)]
+        t2_risks = [r for r in sorted_primary if t2_threshold <= float(r.get("ale") or r.get("ale_val") or 0.0) < t1_threshold and float(r.get("ale") or 0.0) > 0.0]
+        if not t2_risks and len(sorted_primary) > len(t1_risks):
+            t2_risks = sorted_primary[len(t1_risks):len(t1_risks) + max(1, len(sorted_primary) // 3)]
 
         t1_set = set(r.get("id") for r in t1_risks)
         t2_set = set(r.get("id") for r in t2_risks)
-        t3_risks = [r for r in sorted_risks if r.get("id") not in t1_set and r.get("id") not in t2_set]
+        t3_risks = [r for r in risks_data_list if r.get("id") not in t1_set and r.get("id") not in t2_set]
 
         t1_ids = ", ".join(r.get("id") for r in t1_risks) if t1_risks else "N/A"
         t2_ids = ", ".join(r.get("id") for r in t2_risks) if t2_risks else "N/A"
@@ -1319,10 +1331,14 @@ class PayloadToASTBridge:
         meta_lang = ctx["meta_lang"]
         client_name = str(ctx.get("client_name") or "CLIENT")
         blueprint_data = ctx.get("blueprint_data", {})
-        total_fair_ale = float(
-            ctx.get("total_fair_ale")
-            or sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in risks_data_list)
+
+        # Deduplication invariant: Only primary custodian risks contribute to financial exposure
+        primary_risks_total = sum(
+            float(r.get("ale") or r.get("ale_val") or 0.0)
+            for r in risks_data_list
+            if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
         )
+        total_fair_ale = primary_risks_total if primary_risks_total > 0.0 else float(ctx.get("total_fair_ale") or 0.0)
 
         if not risks_data_list:
             return
@@ -1335,10 +1351,13 @@ class PayloadToASTBridge:
             )
         )
 
-        # 1. Global ranking and share calculation
+        # 1. Global ranking: primary risks ranked by ALE descending, tangential risks appended thereafter
         sorted_risks = sorted(
             risks_data_list,
-            key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0),
+            key=lambda x: (
+                x.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR",
+                float(x.get("ale") or x.get("ale_val") or 0.0),
+            ),
             reverse=True,
         )
         for rank_idx, r in enumerate(sorted_risks, start=1):
@@ -1381,7 +1400,11 @@ class PayloadToASTBridge:
             if not t_items:
                 continue
 
-            subtotal_ale = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t_items)
+            subtotal_ale = sum(
+                float(r.get("ale") or r.get("ale_val") or 0.0)
+                for r in t_items
+                if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+            )
             subtotal_pct = int(round(subtotal_ale / total_fair_ale * 100.0)) if total_fair_ale > 0 else 0
             formatted_subtotal = format_currency(
                 subtotal_ale, currency_symbol=currency, locale=meta_lang, decimals=0
@@ -1447,7 +1470,7 @@ class PayloadToASTBridge:
         share_pct = float(hc.get("share_pct") or 0.0)
 
         # 1. Authoritative Actuarial Reconciliation & Scale Calibration
-        authoritative_ale = float(hc.get("ale") or hc.get("ale_val") or 0.0)
+        authoritative_ale = float(hc.get("intrinsic_ale") or hc.get("ale") or hc.get("ale_val") or 0.0)
         raw_tef = float(hc.get("tef") or 1.0)
         raw_lm = float(hc.get("lm") or 1.0)
 
@@ -1505,11 +1528,18 @@ class PayloadToASTBridge:
             hourly_operational_impact=Decimal(str(round(hourly_rate * alpha, 2))),
         )
 
+        ownership_type = str(hc.get("ownership_type") or "PRIMARY_CUSTODIAN")
+        primary_risk_ref = hc.get("primary_risk_ref")
+        contributing_towers = hc.get("contributing_towers") or []
+
         # Scale severity bounds dynamically relative to organizational exposure:
         portfolio_ale_dec = Decimal(str(round(total_fair_ale, 2))) if total_fair_ale > 0 else None
         metrics = ActuarialEngine.evaluate(
             actuarial_input,
             portfolio_total_ale=portfolio_ale_dec,
+            ownership_type=ownership_type,
+            primary_risk_ref=primary_risk_ref,
+            contributing_towers=contributing_towers,
         )
 
         formatted_ale = format_currency(
@@ -1554,7 +1584,7 @@ class PayloadToASTBridge:
             threat_txt = t("risk_card_default_threat", locale=meta_lang)
 
         raw_vuln = hc.get("control_vulnerability") or hc.get("finding")
-        vuln_txt = str(raw_vuln or "").strip()
+        vuln_txt = str(raw_vuln or "").strip() or t("risk_card_default_vulnerability", locale=meta_lang)
 
         raw_impact = str(hc.get("primary_impact") or hc.get("business_risk") or "").strip()
         def_marker = t("defensibility_formula_marker", locale=meta_lang)
@@ -1591,6 +1621,9 @@ class PayloadToASTBridge:
             actuarial_input=actuarial_input,
             mitigation_directive=directive_txt,
             audit_evidence=evidence_txt or None,
+            ownership_type=ownership_type,
+            primary_risk_ref=primary_risk_ref,
+            contributing_towers=contributing_towers,
         )
 
         if evidence_txt:
@@ -1601,6 +1634,70 @@ class PayloadToASTBridge:
         ev_unit = t("event_frequency_unit", locale=meta_lang)
         tier_prefix = t("portfolio_tier_prefix", locale=meta_lang)
 
+        # Apply specific styling if this is a tangential contributor
+        if metrics.is_deduplicated:
+            header_bg = "F1F5F9"
+            header_text = [71, 85, 105]
+            sev_badge_text = t("risk_card_ownership_badge_tangential", locale=meta_lang)
+            sev_badge_bg = "64748B"
+        else:
+            header_bg = "1B263B"
+            header_text = [255, 255, 255]
+            sev_badge_bg = severity_bg_hex
+
+        if metrics.is_deduplicated:
+            notice_text = t("risk_card_deduplicated_ale_notice", locale=meta_lang).format(
+                primary_risk_ref=loss_event.primary_risk_ref
+            )
+            kpi_row_cells = [
+                CellNode(
+                    text=f"*{notice_text}*",
+                    font_size=9.0,
+                    bold=True,
+                    bg_color="F8FAFC",
+                    text_color_rgb=[51, 65, 85],
+                    grid_span=4,
+                    width_dxa=9360,
+                    align="RIGHT",
+                )
+            ]
+        else:
+            kpi_row_cells = [
+                CellNode(
+                    text=f"**{t('risk_card_ale_label', locale=meta_lang)}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang)}",
+                    font_size=8.0,
+                    bg_color="F8FAFC",
+                    text_color_rgb=[0, 114, 188],
+                    grid_span=1,
+                    width_dxa=2340,
+                    align="CENTER",
+                ),
+                CellNode(
+                    text=f"**{t('risk_card_sle_label', locale=meta_lang)}**\n{formatted_sle}",
+                    font_size=8.0,
+                    bg_color="F8FAFC",
+                    grid_span=1,
+                    width_dxa=2340,
+                    align="CENTER",
+                ),
+                CellNode(
+                    text=f"**{t('risk_card_lef_label', locale=meta_lang)}**\n{lef_formatted} {ev_unit}/{t('year_lbl', locale=meta_lang)}\n({return_period_str})",
+                    font_size=8.0,
+                    bg_color="F8FAFC",
+                    grid_span=1,
+                    width_dxa=2340,
+                    align="CENTER",
+                ),
+                CellNode(
+                    text=f"**{t('risk_card_coupling_label', locale=meta_lang)}**\n{coupling_str}\n(x{coupling_factor:.1f})",
+                    font_size=8.0,
+                    bg_color="F8FAFC",
+                    grid_span=1,
+                    width_dxa=2340,
+                    align="CENTER",
+                ),
+            ]
+
         card_table = TableNode(
             rows=[
                 TableRowNode(
@@ -1609,8 +1706,8 @@ class PayloadToASTBridge:
                             text=f"[{loss_event.event_id}] {loss_event.title}\n{loss_event.domain_category} | {t('portfolio_lbl', locale=meta_lang)}: {tier_prefix} {t_idx} (#{global_rank} | {share_pct:.1f}%)",
                             font_size=9.5,
                             bold=True,
-                            bg_color="1B263B",
-                            text_color_rgb=[255, 255, 255],
+                            bg_color=header_bg,
+                            text_color_rgb=header_text,
                             grid_span=3,
                             width_dxa=7020,
                             align="LEFT",
@@ -1619,7 +1716,7 @@ class PayloadToASTBridge:
                             text=sev_badge_text,
                             font_size=8.5,
                             bold=True,
-                            bg_color=severity_bg_hex,
+                            bg_color=sev_badge_bg,
                             text_color_rgb=[255, 255, 255],
                             grid_span=1,
                             width_dxa=2340,
@@ -1629,41 +1726,7 @@ class PayloadToASTBridge:
                     cant_split=True,
                 ),
                 TableRowNode(
-                    cells=[
-                        CellNode(
-                            text=f"**{t('risk_card_ale_label', locale=meta_lang)}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang)}",
-                            font_size=8.0,
-                            bg_color="F8FAFC",
-                            text_color_rgb=[0, 114, 188],
-                            grid_span=1,
-                            width_dxa=2340,
-                            align="CENTER",
-                        ),
-                        CellNode(
-                            text=f"**{t('risk_card_sle_label', locale=meta_lang)}**\n{formatted_sle}",
-                            font_size=8.0,
-                            bg_color="F8FAFC",
-                            grid_span=1,
-                            width_dxa=2340,
-                            align="CENTER",
-                        ),
-                        CellNode(
-                            text=f"**{t('risk_card_lef_label', locale=meta_lang)}**\n{lef_formatted} {ev_unit}/{t('year_lbl', locale=meta_lang)}\n({return_period_str})",
-                            font_size=8.0,
-                            bg_color="F8FAFC",
-                            grid_span=1,
-                            width_dxa=2340,
-                            align="CENTER",
-                        ),
-                        CellNode(
-                            text=f"**{t('risk_card_coupling_label', locale=meta_lang)}**\n{coupling_str}\n(x{coupling_factor:.1f})",
-                            font_size=8.0,
-                            bg_color="F8FAFC",
-                            grid_span=1,
-                            width_dxa=2340,
-                            align="CENTER",
-                        ),
-                    ],
+                    cells=kpi_row_cells,
                     cant_split=True,
                 ),
                 TableRowNode(
@@ -1760,10 +1823,11 @@ class PayloadToASTBridge:
             )
         )
         cca_data = blueprint_data.get("cross_capabilities_analysis", {}) if isinstance(blueprint_data, dict) else {}
-        not_def_lbl = t("lbl_not_defined", locale=meta_lang)
-        paradigm_text = cca_data.get("transformation_paradigm", not_def_lbl) if isinstance(cca_data, dict) else not_def_lbl
-        nodes.append(ParagraphNode(text=paradigm_text, italic=True))
-        nodes.append(SpacerNode(points=15))
+        if isinstance(cca_data, dict) and cca_data.get("transformation_paradigm"):
+            paradigm_text = str(cca_data["transformation_paradigm"]).strip()
+            if paradigm_text:
+                nodes.append(ParagraphNode(text=paradigm_text, italic=True))
+                nodes.append(SpacerNode(points=15))
 
         # 5.2 Next Steps and Impact of Inaction
         concl_candidates = list(modules_dir.glob("*conclusion*.md")) if modules_dir.exists() else []
@@ -1771,8 +1835,10 @@ class PayloadToASTBridge:
         if concl_path.exists():
             nodes.extend(self._parse_markdown_to_nodes(concl_path))
         else:
-            inaction_text = cca_data.get("next_steps_inaction", not_def_lbl) if isinstance(cca_data, dict) else not_def_lbl
-            nodes.append(ParagraphNode(text=inaction_text))
+            if isinstance(cca_data, dict) and cca_data.get("next_steps_inaction"):
+                inaction_text = str(cca_data["next_steps_inaction"]).strip()
+                if inaction_text:
+                    nodes.append(ParagraphNode(text=inaction_text))
 
         # 5.3 Multi-Horizon Stochastic Inaction vs. Modernization Program Table
         nodes.append(SpacerNode(points=14))
@@ -1966,9 +2032,9 @@ class PayloadToASTBridge:
             )
         )
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, "r", encoding="utf-8-sig") as f:
             reader = csv.reader(f, delimiter=";")
-            next(reader, None)  #
+            next(reader, None)
             for r_idx, row_data in enumerate(reader):
                 if not row_data:
                     continue

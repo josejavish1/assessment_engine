@@ -4,8 +4,13 @@ from __future__ import annotations
 
 from decimal import Decimal
 from enum import Enum
-from typing import Optional
-from pydantic import BaseModel, Field, condecimal, confloat
+from typing import Optional, List
+from pydantic import BaseModel, Field, condecimal, confloat, model_validator
+
+
+class RiskOwnershipType(str, Enum):
+    PRIMARY_CUSTODIAN = "PRIMARY_CUSTODIAN"
+    TANGENTIAL_CONTRIBUTOR = "TANGENTIAL_CONTRIBUTOR"
 
 
 class CouplingRegime(str, Enum):
@@ -100,3 +105,40 @@ class ConditionalLossEvent(BaseModel):
         default=None,
         description="Direct forensic quote or audit log trace substantiating the vulnerability.",
     )
+    ownership_type: RiskOwnershipType = Field(
+        default=RiskOwnershipType.PRIMARY_CUSTODIAN,
+        description="Defines whether this tower owns the financial loss or contributes tangentially."
+    )
+    primary_risk_ref: Optional[str] = Field(
+        default=None,
+        description="The canonical ID of the primary risk event if this is a tangential contributor (e.g., 'T1-R01')."
+    )
+    contributing_towers: List[str] = Field(
+        default_factory=list,
+        description="List of tower identifiers that tangentially contribute to this primary risk."
+    )
+
+    @model_validator(mode="after")
+    def validate_cross_tower_topology(self) -> "ConditionalLossEvent":
+        clean_ref = (self.primary_risk_ref or "").strip()
+        if not clean_ref:
+            self.primary_risk_ref = None
+
+        if self.ownership_type == RiskOwnershipType.TANGENTIAL_CONTRIBUTOR:
+            if not self.primary_risk_ref:
+                raise ValueError(
+                    f"Ontological Violation in {self.event_id}: "
+                    "TANGENTIAL_CONTRIBUTOR must explicitly define a valid 'primary_risk_ref'."
+                )
+            if self.contributing_towers:
+                raise ValueError(
+                    f"Ontological Violation in {self.event_id}: "
+                    "TANGENTIAL_CONTRIBUTOR cannot declare 'contributing_towers'."
+                )
+        elif self.ownership_type == RiskOwnershipType.PRIMARY_CUSTODIAN:
+            if self.primary_risk_ref is not None:
+                raise ValueError(
+                    f"Ontological Violation in {self.event_id}: "
+                    "PRIMARY_CUSTODIAN cannot reference a 'primary_risk_ref'."
+                )
+        return self
