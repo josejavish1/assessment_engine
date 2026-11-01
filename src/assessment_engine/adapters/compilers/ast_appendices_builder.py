@@ -164,7 +164,12 @@ def build_appendix_a_custody(
     meta_lang = ctx.get("meta_lang", "en")
     app_a_title = t("ast_appendix_custody_title", locale=meta_lang)
     nodes.append(
-        HeadingNode(text=app_a_title, level=1, primary_color_rgb=primary_color_rgb)
+        HeadingNode(
+            text=app_a_title,
+            level=1,
+            primary_color_rgb=primary_color_rgb,
+            is_appendix=True,
+        )
     )
     default_intro = t("appendix_c_default_intro", locale=meta_lang)
     nodes.append(
@@ -226,7 +231,12 @@ def build_appendix_b_fair_methodology(
 
     app_b_title = t("ast_appendix_fair_title", locale=meta_lang)
     nodes.append(
-        HeadingNode(text=app_b_title, level=1, primary_color_rgb=primary_color_rgb)
+        HeadingNode(
+            text=app_b_title,
+            level=1,
+            primary_color_rgb=primary_color_rgb,
+            is_appendix=True,
+        )
     )
 
     nodes.append(
@@ -285,7 +295,12 @@ def build_appendix_c_glossary_and_disclaimer(
 
     app_c_title = t("ast_appendix_glossary_disclaimer_title", locale=meta_lang)
     nodes.append(
-        HeadingNode(text=app_c_title, level=1, primary_color_rgb=primary_color_rgb)
+        HeadingNode(
+            text=app_c_title,
+            level=1,
+            primary_color_rgb=primary_color_rgb,
+            is_appendix=True,
+        )
     )
 
     # C.1 Abbreviations Glossary

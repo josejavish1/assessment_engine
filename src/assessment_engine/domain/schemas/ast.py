@@ -80,7 +80,11 @@ class HeadingNode(BaseNode):
     )
     primary_color_rgb: Optional[List[int]] = Field(
         None,
-        description="Optional six-digit hexadecimal RGB color string for overriding the default header style.",
+        description="Optional list of three integers representing an RGB color tuple [R, G, B] each in range 0-255.",
+    )
+    is_appendix: bool = Field(
+        False,
+        description="Flag indicating if the heading represents an appendix title.",
     )
 
 

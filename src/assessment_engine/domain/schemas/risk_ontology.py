@@ -40,7 +40,7 @@ class FairActuarialInput(BaseModel):
         ...,
         description="Loss Event Frequency (LEF): Expected number of materialized loss events per calendar year.",
     )
-    single_loss_magnitude_base: condecimal(gt=Decimal("0.00"), decimal_places=2) = Field(
+    single_loss_magnitude_base: condecimal(ge=Decimal("0.00")) = Field(
         ...,
         description="Base Single Loss Expectancy (SLE) before systemic coupling amplification.",
     )
@@ -56,8 +56,8 @@ class FairActuarialInput(BaseModel):
         default=2.0,
         description="Mean Time to Recovery (MTTR) in hours.",
     )
-    hourly_operational_impact: condecimal(gt=Decimal("0.00"), decimal_places=2) = Field(
-        default=Decimal("15600.00"),
+    hourly_operational_impact: Optional[condecimal(ge=Decimal("0.00"))] = Field(
+        default=None,
         description="Hourly burn rate during partial or total business interruption.",
     )
 
@@ -67,8 +67,8 @@ class ConditionalLossEvent(BaseModel):
 
     event_id: str = Field(
         ...,
-        pattern=r"^[A-Z]{2,4}-\d{2,5}$",
-        description="Standardized risk identifier (e.g., RSK-01, RVS-05).",
+        pattern=r"^[A-Za-z0-9_.\-]+$",
+        description="Standardized risk identifier (e.g., RSK-01, RVS-05, RVS01, T1.R01).",
     )
     title: str = Field(
         ...,
@@ -79,10 +79,10 @@ class ConditionalLossEvent(BaseModel):
         description="Target technological domain or architectural pillar.",
     )
     currency_code: str = Field(
-        default="EUR",
-        min_length=3,
-        max_length=3,
-        description="ISO 4217 Currency Code (e.g., EUR, USD, JPY, GBP).",
+        ...,
+        min_length=1,
+        max_length=16,
+        description="ISO 4217 Currency Code or currency symbol (e.g., EUR, USD, JPY, GBP, €, $).",
     )
     causal_chain: CausalBowTie = Field(
         ...,

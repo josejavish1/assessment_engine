@@ -85,6 +85,34 @@ def _insert_in_tblpr(tblPr: Any, element: Any, tag_name: str) -> None:
     tblPr.append(element)
 
 
+def _insert_in_tcpr(tcPr: Any, element: Any, tag_name: str) -> None:
+    """Inserts a child element into w:tcPr adhering strictly to the OpenXML CT_TcPr XSD sequence."""
+    order = [
+        "cnfStyle",
+        "tcW",
+        "gridSpan",
+        "hMerge",
+        "vMerge",
+        "tcBorders",
+        "shd",
+        "noWrap",
+        "tcMar",
+        "textDirection",
+        "tcFitText",
+        "vAlign",
+        "hideMark",
+        "headers",
+    ]
+    if tag_name in order:
+        target_idx = order.index(tag_name)
+        for child in list(tcPr):
+            c_tag = child.tag.split("}")[-1]
+            if c_tag in order and order.index(c_tag) > target_idx:
+                child.addprevious(element)
+                return
+    tcPr.append(element)
+
+
 def safe_shade_cell(cell: Any, fill: str) -> None:
     """Apply a solid color shading to a table cell, ensuring XML schema validity.
 
@@ -114,39 +142,20 @@ def safe_shade_cell(cell: Any, fill: str) -> None:
     shd.set(qn("w:val"), "clear")
     shd.set(qn("w:color"), "auto")
     shd.set(qn("w:fill"), fill)
-
-    # This sequence is dictated by the official w:tcPr XSD schema definition.
-    order = [
-        "cnfStyle",
-        "tcW",
-        "tcBorders",
-        "shd",
-        "noWrap",
-        "tcMar",
-        "textDirection",
-        "tcFitText",
-        "vAlign",
-        "wHeader",
-        "vMerge",
-    ]
-
-    # Finds the first element that must succeed w:shd according to the OpenXML schema to determine the correct insertion point.
-    insert_before = None
-    for child in list(tcPr):
-        tag_name = child.tag.split("}")[-1]
-        if tag_name in order:
-            if order.index(tag_name) > order.index("shd"):
-                insert_before = child
-                break
-
-    if insert_before is not None:
-        insert_before.addprevious(shd)
-    else:
-        tcPr.append(shd)
+    _insert_in_tcpr(tcPr, shd, "shd")
 
 
 def safe_autofit_table_to_contents(table: Any) -> None:
-    r"""{'docstring': "Manipulates a table's OOXML to reliably autofit column widths.\n\nThis function directly modifies the Office Open XML (OOXML) of a table to\nenforce a robust column autofit behavior, bypassing potential inconsistencies\nwith higher-level library properties. It operates by systematically resetting\ntable- and cell-level width properties to ensure document validity and\npredictable rendering.\n\nFirst, at the table level, it removes any pre-existing width (`w:tblW`) and\nlayout (`w:tblLayout`) elements from the table properties (`w:tblPr`). It then\nadds a `w:tblLayout` element with its type set to 'autofit' and a `w:tblW`\nelement with its type set to 'auto'.\n\nSecond, it iterates through every cell in the table. For each cell, it\nremoves any existing cell width element (`w:tcW`) from the cell's properties\n(`w:tcPr`). A new `w:tcW` element with type 'auto' is then programmatically\ninserted into the correct position within the `w:tcPr` children, adhering to\nthe strict element sequence defined by the OOXML schema.\n\nArgs:\n    table (Any): The `python-docx` Table object to be modified in-place.\n        Expected to be an instance of `docx.table.Table`.\n\nReturns:\n    None\n\nRaises:\n    AttributeError: If the `table` object lacks the expected attributes and\n        methods of a `python-docx` Table instance."}."""
+    """Manipulates a table's OOXML to reliably autofit column widths.
+
+    This function directly modifies the Office Open XML (OOXML) of a table to
+    enforce robust column autofit behavior, bypassing potential inconsistencies
+    with higher-level library properties. It systematically resets table- and
+    cell-level width properties to ensure document validity and predictable rendering.
+
+    Args:
+        table (Any): The python-docx Table object to be modified in-place.
+    """
     table.autofit = True
     tbl = table._tbl
 
@@ -183,34 +192,7 @@ def safe_autofit_table_to_contents(table: Any) -> None:
             tcW = OxmlElement("w:tcW")
             tcW.set(qn("w:type"), "auto")
             tcW.set(qn("w:w"), "0")
-
-            # The sequence of child elements within w:tcPr is strictly defined by the OpenXML standard.
-            order = [
-                "cnfStyle",
-                "tcW",
-                "tcBorders",
-                "shd",
-                "noWrap",
-                "tcMar",
-                "textDirection",
-                "tcFitText",
-                "vAlign",
-                "wHeader",
-                "vMerge",
-            ]
-
-            insert_before = None
-            for child in list(tcPr):
-                tag_name = child.tag.split("}")[-1]
-                if tag_name in order:
-                    if order.index(tag_name) > order.index("tcW"):
-                        insert_before = child
-                        break
-
-            if insert_before is not None:
-                insert_before.addprevious(tcW)
-            else:
-                tcPr.append(tcW)
+            _insert_in_tcpr(tcPr, tcW, "tcW")
 
 
 def add_markdown_runs(
@@ -259,25 +241,29 @@ def add_markdown_runs(
             `docx.shared.RGBColor`.
     """
     sanitized = str(text or "").replace("__", "**")
-    parts = re.split(r"(\*\*.*?\*\*)", sanitized)
+    bold_parts = re.split(r"(\*\*.*?\*\*)", sanitized)
 
-    for part in parts:
-        if part.startswith("**") and part.endswith("**"):
-            #
-            clean_part = part[2:-2]
-            run = paragraph.add_run(clean_part)
-            run.bold = True
-            run.italic = default_italic
-        else:
-            #
-            run = paragraph.add_run(part)
-            run.bold = default_bold
-            run.italic = default_italic
+    for b_part in bold_parts:
+        if not b_part:
+            continue
+        is_bold_part = b_part.startswith("**") and b_part.endswith("**") and len(b_part) >= 4
+        clean_text = b_part[2:-2] if is_bold_part else b_part
+        effective_bold = True if is_bold_part else default_bold
 
-        set_run_font_comprehensive(run, font_name=font_name)
-        run.font.size = Pt(font_size)
-        if color_rgb:
-            run.font.color.rgb = RGBColor(*color_rgb)
+        # Parse single-asterisk italics within the segment
+        italic_parts = re.split(r"(\*.*?\*)", clean_text)
+        for i_part in italic_parts:
+            if not i_part:
+                continue
+            is_italic = i_part.startswith("*") and i_part.endswith("*") and len(i_part) >= 2
+            run_text = i_part[1:-1] if is_italic else i_part
+            run = paragraph.add_run(run_text)
+            run.bold = effective_bold
+            run.italic = True if is_italic else default_italic
+            set_run_font_comprehensive(run, font_name=font_name)
+            run.font.size = Pt(font_size)
+            if color_rgb:
+                run.font.color.rgb = RGBColor(*color_rgb)
 
 
 def safe_set_cell_text(
@@ -346,7 +332,7 @@ def safe_set_cell_text(
             p.paragraph_format.alignment = align
 
             # Removes any existing bullet formatting to ensure a consistent, uniform reconstruction.
-            if clean_line.startswith("•") or clean_line.startswith("-"):
+            if clean_line.startswith(("•", "-")) or (clean_line.startswith("* ") and not clean_line.startswith("**")):
                 clean_line = clean_line[1:].strip()
 
             if is_subpoint:
@@ -363,8 +349,10 @@ def safe_set_cell_text(
 
             # Heuristic to detect and structure list items that follow a '• Title: Description' pattern.
             colon_pos = clean_line.find(":")
+            has_bullet_or_markdown = bool(bullet_prefix or line.strip().startswith(("*", "•", "-")))
             is_short_label = (
                 colon_pos != -1
+                and has_bullet_or_markdown
                 and not clean_line.startswith("http")
                 and colon_pos <= 60
                 and "." not in clean_line[:colon_pos]
@@ -384,7 +372,13 @@ def safe_set_cell_text(
                     p, clean_desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
                 )
             else:
-                p.add_run(bullet_prefix)
+                if bullet_prefix:
+                    run_bp = p.add_run(bullet_prefix)
+                    run_bp.bold = bold
+                    set_run_font_comprehensive(run_bp, font_name="Arial")
+                    run_bp.font.size = Pt(font_size)
+                    if color_rgb:
+                        run_bp.font.color.rgb = RGBColor(*color_rgb)
                 add_markdown_runs(
                     p,
                     clean_line,
@@ -457,22 +451,31 @@ class TableLayoutCalculator:
         if column_widths_dxa:
             return list(column_widths_dxa)
 
-        effective_cols = num_cols if num_cols is not None else len(node.rows[0].cells)
+        effective_cols = num_cols if num_cols is not None else max(
+            (sum(getattr(c, "grid_span", 1) for c in r.cells) for r in node.rows),
+            default=len(node.rows[0].cells) if node.rows else 0,
+        )
         if effective_cols == 0:
             return []
 
         # Explicit width ratios override if provided
         col_widths = getattr(node, "col_widths", None)
         if col_widths and len(col_widths) == effective_cols:
-            total_weight = sum(col_widths)
-            return [
+            total_weight = sum(col_widths) or 1.0
+            raw_widths = [
                 int(round(cls.TOTAL_PRINTABLE_WIDTH_DXA * (w / total_weight)))
                 for w in col_widths
             ]
+            residual = cls.TOTAL_PRINTABLE_WIDTH_DXA - sum(raw_widths)
+            widest_idx = max(range(effective_cols), key=lambda i: raw_widths[i])
+            raw_widths[widest_idx] += residual
+            return raw_widths
 
         if getattr(node, "auto_fit_strategy", "CONTENT_PROPORTIONAL") == "EQUAL":
             base_w = cls.TOTAL_PRINTABLE_WIDTH_DXA // effective_cols
-            return [base_w] * effective_cols
+            widths = [base_w] * effective_cols
+            widths[0] += cls.TOTAL_PRINTABLE_WIDTH_DXA - sum(widths)
+            return widths
 
         # Pass 1: Statistical Content Inspection
         min_bounds_dxa: List[int] = []
@@ -483,10 +486,18 @@ class TableLayoutCalculator:
         for col_idx in range(effective_cols):
             all_texts: List[str] = []
             for r in node.rows:
-                if col_idx < len(r.cells):
-                    txt = str(r.cells[col_idx].text or "").strip()
-                    if txt:
-                        all_texts.append(txt)
+                c_cursor = 0
+                for c in r.cells:
+                    span = getattr(c, "grid_span", 1)
+                    if c_cursor <= col_idx < c_cursor + span:
+                        txt = str(c.text or "").strip()
+                        if txt:
+                            if span > 1:
+                                all_texts.append(txt[:max(4, len(txt) // span)])
+                            else:
+                                all_texts.append(txt)
+                        break
+                    c_cursor += span
 
             longest_word_len = max(
                 (len(word) for text in all_texts for word in text.split()),
@@ -527,7 +538,13 @@ class TableLayoutCalculator:
 
 
 class DocxCompiler(DocumentCompiler):
-    r"""{'DocxCompiler': 'Compiles a `DocumentAST` into a Microsoft Word (.docx) document.\n\n    This class implements the visitor pattern to traverse a `DocumentAST`,\n    dispatching each node to a dedicated compilation method that translates it\n    into the corresponding `python-docx` object. It manages document\n    structure, text formatting, styles, and embedded objects like tables and\n    images. The process is designed to be robust, with fallbacks for missing\n    assets.', 'compile': "Translates a `DocumentAST` and saves it as a .docx file.\n\n        This method orchestrates the compilation pipeline. It first attempts to\n        load a DOCX template; if unavailable, it proceeds with a blank document.\n        The template's existing body content is cleared, and a default font is\n        applied to the 'Normal' style. It then iterates through the AST,\n        delegating each node to the `_compile_node` dispatcher. Finally, it saves\n        the generated document to the specified path, creating parent directories\n        if necessary.\n\n        Args:\n            ast: The abstract syntax tree of the document.\n            output_path: The file system path for the output .docx file.\n\n        Raises:\n            IOError: If the output file cannot be written due to permissions,\n                disk space, or other file system issues.", '_compile_node': 'Dispatches an AST node to its corresponding compiler method.\n\n        This method acts as the central router in the visitor pattern. It\n        inspects the `type` attribute or class of the node and calls the\n        appropriate `_compile_*` handler. Unrecognized node types are silently\n        ignored to maintain forward compatibility with evolving AST schemas.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `DocumentAST` node to compile.', '_compile_paragraph': "Compiles a `ParagraphNode` into a DOCX paragraph.\n\n        This method creates a new paragraph, applying specified alignment and\n        spacing. It handles styled text by processing markdown-like syntax for\n        bold and italic formatting. If the node's style indicates a bullet list,\n        the corresponding paragraph format is applied.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `ParagraphNode` containing text and formatting details.", '_compile_heading': 'Compiles a `HeadingNode` into a styled DOCX heading.\n\n        A heading paragraph is added to the document with the specified level and\n        text. If a `primary_color_rgb` is defined in the node, the font color\n        of all runs within the heading is set accordingly.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `HeadingNode` containing the heading text, level, and\n                color information.', '_compile_spacer': 'Compiles a `SpacerNode` by inserting vertical whitespace.\n\n        This is achieved by adding an empty paragraph and setting its\n        `space_after`, `space_before`, and `line_spacing` format properties.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `SpacerNode` specifying the height of the space in points.', '_compile_picture': 'Compiles a `PictureNode` into an embedded, centered image.\n\n        The method first verifies the existence of the image file at the\n        specified path. If found, the image is added to the document and\n        centered. If the file is not found, a descriptive, italicized\n        placeholder text is inserted in its place to prevent compilation\n        failure.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `PictureNode` containing the image path and width.', '_compile_table': "Compiles a `TableNode` into a DOCX table.\n\n        The method constructs a table with the specified dimensions and populates\n        each cell based on the corresponding `CellNode` data. It applies\n        cell-level formatting, including text content, alignment, bolding,\n        font size, text color, and background shading. If the `autofit`\n        attribute is true, column widths are adjusted to fit their content after\n        population.\n\n        Args:\n            doc: The `python-docx` Document object being constructed.\n            node: The `TableNode` containing the table's structure and data."}."""
+    """Compiles a DocumentAST into a Microsoft Word (.docx) document.
+
+    This class implements the visitor pattern to traverse a DocumentAST,
+    dispatching each node to a dedicated compilation method that translates it
+    into the corresponding python-docx object. It manages document structure,
+    text formatting, styles, and embedded objects like tables and images.
+    """
 
     def compile(self, ast: DocumentAST, output_path: str) -> None:
         """Compiles a Document Abstract Syntax Tree (AST) into a .docx file.
@@ -568,7 +585,10 @@ class DocxCompiler(DocumentCompiler):
         template_path = resolve_tower_annex_template_path()
         try:
             doc = Document(str(template_path))
-        except Exception:
+        except Exception as ex:
+            logger.warning(
+                f"[DocxCompiler Warning] Failed to load template from {template_path}, falling back to empty Document(): {ex}"
+            )
             doc = Document()
 
         # Clears all pre-existing paragraphs and tables from the template body.
@@ -606,7 +626,7 @@ class DocxCompiler(DocumentCompiler):
             footer_prefix_str = t("corporate_footer_prefix", locale=doc_locale)
             full_footer = f"{client_name} - {footer_prefix_str} "
             r_text = p_foot.add_run(full_footer)
-            r_text.font.name = "Arial"
+            set_run_font_comprehensive(r_text, font_name="Arial")
             r_text.font.size = Pt(8.5)
             r_text.font.color.rgb = RGBColor(148, 163, 184)
 
@@ -628,8 +648,8 @@ class DocxCompiler(DocumentCompiler):
             updateFields = OxmlElement('w:updateFields')
             updateFields.set(qn('w:val'), 'true')
             settings.append(updateFields)
-        except Exception as e:
-            logger.info(f"⚠️ Failed to force updateFields on open: {e}")
+        except (AttributeError, KeyError, IndexError, TypeError, OSError) as e:
+            logger.warning(f"Failed to force updateFields on open: {e}")
 
         #
         output_file = Path(output_path)
@@ -664,7 +684,7 @@ class DocxCompiler(DocumentCompiler):
         p_title.paragraph_format.space_before = Pt(0)
         p_title.paragraph_format.space_after = Pt(14)
         r_title = p_title.add_run(getattr(node, "title", "Table of Contents"))
-        r_title.font.name = "Arial"
+        set_run_font_comprehensive(r_title, font_name="Arial")
         r_title.font.size = Pt(16)
         r_title.font.bold = True
         r_title.font.color.rgb = RGBColor(0, 114, 188)
@@ -699,7 +719,7 @@ class DocxCompiler(DocumentCompiler):
                 p_e.paragraph_format.left_indent = Pt((lvl - 1) * 12)
 
             r_title_e = p_e.add_run(getattr(entry, "title", ""))
-            r_title_e.font.name = "Arial"
+            set_run_font_comprehensive(r_title_e, font_name="Arial")
             r_title_e.font.size = Pt(9.5)
             r_title_e.font.bold = (lvl == 1)
             r_title_e.font.color.rgb = RGBColor(15, 23, 42)
@@ -707,7 +727,7 @@ class DocxCompiler(DocumentCompiler):
             p_e.add_run("\t")
 
             r_page = p_e.add_run(str(getattr(entry, "page", "")))
-            r_page.font.name = "Arial"
+            set_run_font_comprehensive(r_page, font_name="Arial")
             r_page.font.size = Pt(9.5)
             r_page.font.bold = (lvl == 1)
             r_page.font.color.rgb = RGBColor(100, 116, 139)
@@ -720,7 +740,7 @@ class DocxCompiler(DocumentCompiler):
         p_end._p.append(fld_end)
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
-        if any(tok in node.text.lower() for tok in ["table of contents", "indice de contenidos", "[indice"]):
+        if node.text.strip().lower() in ("table of contents", "[toc]"):
             # Inject native Word TOC field (simple field xml)
             from docx.oxml import OxmlElement
             from docx.oxml.ns import qn
@@ -816,8 +836,8 @@ class DocxCompiler(DocumentCompiler):
         )
 
     def _compile_heading(self, doc: Document, node: HeadingNode) -> None:
-        is_appendix_main = node.text.startswith("Appendix") or node.text.startswith("Apendice")
         import re
+        is_appendix_main = getattr(node, "is_appendix", False)
         is_appendix_sub = bool(re.match(r"^[A-Z]\.\d+\s", node.text))
         
         p = add_heading_paragraph(doc, node.text, level=node.level)
@@ -846,8 +866,7 @@ class DocxCompiler(DocumentCompiler):
                 elif is_appendix_sub:
                     p.style = "Appendix Heading 2"
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-                logger.debug(f"[Fallback] Handled exception: {ex}")
+                logger.warning(f"[DocxCompiler Warning] Failed to apply appendix heading style: {ex}")
 
         #
         if node.primary_color_rgb and p:
@@ -868,7 +887,7 @@ class DocxCompiler(DocumentCompiler):
         else:
             # Defensive fallback to prevent production failures if the image asset failed to generate.
             p = doc.add_paragraph()
-            run = p.add_run(f"[Imagen no disponible: {Path(node.path).name}]")
+            run = p.add_run(f"[Asset unavailable: {Path(node.path).name}]")
             run.italic = True
             run.font.color.rgb = RGBColor(120, 120, 120)
 
@@ -877,20 +896,24 @@ class DocxCompiler(DocumentCompiler):
         if num_rows == 0:
             return
 
+        required_cols = max(
+            (sum(getattr(c, "grid_span", 1) for c in r.cells) for r in node.rows),
+            default=len(node.rows[0].cells),
+        )
+
         if getattr(node, "column_widths_dxa", None):
-            num_cols = len(node.column_widths_dxa)
+            num_cols = max(len(node.column_widths_dxa), required_cols)
         elif getattr(node, "col_widths", None):
-            num_cols = len(node.col_widths)
+            num_cols = max(len(node.col_widths), required_cols)
         else:
-            num_cols = max(
-                (sum(getattr(c, "grid_span", 1) for c in r.cells) for r in node.rows),
-                default=len(node.rows[0].cells),
-            )
+            num_cols = required_cols
 
         if num_cols == 0:
             return
 
         col_widths_dxa = TableLayoutCalculator.compute_column_widths_dxa(node, num_cols=num_cols)
+        while len(col_widths_dxa) < num_cols:
+            col_widths_dxa.append(TableLayoutCalculator.TOTAL_PRINTABLE_WIDTH_DXA // num_cols)
 
         table = doc.add_table(rows=num_rows, cols=num_cols)
         finalize_table(table)
@@ -907,17 +930,25 @@ class DocxCompiler(DocumentCompiler):
             tblW = OxmlElement("w:tblW")
             tblW.set(qn("w:type"), "dxa")
             tblW.set(qn("w:w"), str(TableLayoutCalculator.TOTAL_PRINTABLE_WIDTH_DXA))
-            tblPr.append(tblW)
+            _insert_in_tblpr(tblPr, tblW, "tblW")
             tblLayout = OxmlElement("w:tblLayout")
             tblLayout.set(qn("w:type"), "fixed")
-            tblPr.append(tblLayout)
+            _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
+
+        for child in list(tbl):
+            if child.tag.endswith("tblGrid"):
+                tbl.remove(child)
 
         tblGrid = OxmlElement("w:tblGrid")
         for w_dxa in col_widths_dxa:
             gridCol = OxmlElement("w:gridCol")
             gridCol.set(qn("w:w"), str(w_dxa))
             tblGrid.append(gridCol)
-        tbl.append(tblGrid)
+
+        if tbl.tblPr is not None:
+            tbl.tblPr.addnext(tblGrid)
+        else:
+            tbl.insert(0, tblGrid)
 
         for r_idx, row_node in enumerate(node.rows):
             trPr = table.rows[r_idx]._tr.get_or_add_trPr()
@@ -946,19 +977,23 @@ class DocxCompiler(DocumentCompiler):
 
                 cell = table.rows[r_idx].cells[col_cursor]
 
-                from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
-                cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-
                 # Apply exact cell width in DXA across the spanned grid columns
-                cell_width_dxa = sum(col_widths_dxa[col_cursor : col_cursor + effective_span])
+                cell_width_dxa = getattr(cell_node, "width_dxa", None) or sum(col_widths_dxa[col_cursor : col_cursor + effective_span])
                 tcPr = cell._tc.get_or_add_tcPr()
                 for child in list(tcPr):
-                    if child.tag.endswith("tcW"):
+                    if child.tag.endswith(("tcW", "tcBorders", "vMerge")):
                         tcPr.remove(child)
                 tcW = OxmlElement("w:tcW")
                 tcW.set(qn("w:type"), "dxa")
                 tcW.set(qn("w:w"), str(cell_width_dxa))
-                tcPr.append(tcW)
+                _insert_in_tcpr(tcPr, tcW, "tcW")
+
+                # Handle vertical merge if specified
+                if getattr(cell_node, "v_merge", None) in ("restart", "continue"):
+                    vMerge = OxmlElement("w:vMerge")
+                    if cell_node.v_merge == "restart":
+                        vMerge.set(qn("w:val"), "restart")
+                    _insert_in_tcpr(tcPr, vMerge, "vMerge")
 
                 # Apply left accent border if specified
                 if getattr(cell_node, "border_left_color", None):
@@ -967,8 +1002,10 @@ class DocxCompiler(DocumentCompiler):
                     tcBorders = parse_xml(
                         f'<w:tcBorders {nsdecls("w")}><w:left w:val="single" w:sz="{b_size}" w:space="0" w:color="{b_color}"/><w:top w:val="none"/><w:right w:val="none"/><w:bottom w:val="none"/></w:tcBorders>'
                     )
-                    tcPr.append(tcBorders)
+                    _insert_in_tcpr(tcPr, tcBorders, "tcBorders")
 
+                from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+                cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
                 align_const = WD_ALIGN_PARAGRAPH.LEFT
                 align_str = cell_node.align.upper()
                 if align_str == "CENTER":

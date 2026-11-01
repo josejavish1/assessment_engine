@@ -4,7 +4,7 @@ import csv
 import html
 import json
 import re
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -18,6 +18,8 @@ from assessment_engine.infrastructure.localization import (
 )
 
 from assessment_engine.domain.schemas.risk_ontology import (
+    CausalBowTie,
+    ConditionalLossEvent,
     CouplingRegime,
     FairActuarialInput,
 )
@@ -100,7 +102,6 @@ class PayloadToASTBridge:
         self.brand_data = {}
         from assessment_engine.infrastructure.config_loader import load_brand_profile
 
-        self.meta_lang = "en"
         try:
             brand = load_brand_profile(brand_profile_path=self.brand_profile_path)
             self.brand_data = brand
@@ -119,8 +120,7 @@ class PayloadToASTBridge:
             b = int(p_hex[4:6], 16)
             self.primary_color_rgb = [r, g, b]
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-            logger.debug(f"[Fallback] Handled exception: {ex}")
+            logger.warning(f"[AST Bridge Warning] Error resolving primary brand color: {ex}")
 
 
     def convert(
@@ -193,7 +193,7 @@ class PayloadToASTBridge:
                 with open(annex_file, "r", encoding="utf-8-sig") as f:
                     annex_data = json.load(f)
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.debug(f"[Fallback] Handled exception reading annex_file: {ex}")
+                logger.warning(f"[AST Bridge Warning] Error reading annex_file: {ex}")
 
         tower_meta = blueprint_data.get("document_meta", {})
         meta_lang = str(override_locale or tower_meta.get("language") or "en").strip().lower()
@@ -216,7 +216,15 @@ class PayloadToASTBridge:
         date_str = format_date_localized(
             tower_meta.get("date"), locale=meta_lang
         )
-        currency = tower_meta.get("currency") or self.brand_data.get("currency_symbol") or "USD"
+        currency = (
+            tower_meta.get("currency")
+            or blueprint_data.get("currency")
+            or self.brand_data.get("currency_symbol")
+            or vocab.get("default_currency")
+            or t("default_currency", locale=meta_lang)
+        )
+        if not currency or currency == "default_currency":
+            currency = "EUR"
 
         # Dynamically detect organizational scale to apply customized calibration.
         is_critical = self.brand_data.get("styling", {}).get("is_critical", None)
@@ -271,9 +279,7 @@ class PayloadToASTBridge:
 
         formatted_global_score = format_number(gs_val, locale=meta_lang, decimals=2)
         max_score_formatted = format_number(5.0, locale=meta_lang, decimals=2)
-        display_score_str = f"{formatted_global_score} / {max_score_formatted}" 
-
-        nodes: List[Any] = []
+        display_score_str = f"{formatted_global_score} / {max_score_formatted}"
 
         return {
             "blueprint_file": blueprint_file,
@@ -508,17 +514,23 @@ class PayloadToASTBridge:
 
         # 2.4 Methodological and Regulatory Framework Table (driven dynamically per tower domain)
         tower_id = str(ctx.get("tower_id") or "T1")
-        norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
-        norm_fw_desc = (
-            t("norm_row_ashrae_desc", locale=meta_lang)
-            if tower_id == "T1"
-            else t("norm_row_iso_desc", locale=meta_lang)
-        )
-        norm_fw_purp = (
-            t("norm_row_ashrae_purp", locale=meta_lang)
-            if tower_id == "T1"
-            else t("norm_row_iso_purp", locale=meta_lang)
-        )
+        reg_meta = blueprint_data.get("document_meta", {}).get("regulatory_framework") or blueprint_data.get("regulatory_framework")
+        if reg_meta:
+            norm_fw_name = str(reg_meta)
+            norm_fw_desc = t("norm_row_ashrae_desc" if tower_id == "T1" else "norm_row_iso_desc", locale=meta_lang)
+            norm_fw_purp = t("norm_row_ashrae_purp" if tower_id == "T1" else "norm_row_iso_purp", locale=meta_lang)
+        else:
+            norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
+            norm_fw_desc = (
+                t("norm_row_ashrae_desc", locale=meta_lang)
+                if tower_id == "T1"
+                else t("norm_row_iso_desc", locale=meta_lang)
+            )
+            norm_fw_purp = (
+                t("norm_row_ashrae_purp", locale=meta_lang)
+                if tower_id == "T1"
+                else t("norm_row_iso_purp", locale=meta_lang)
+            )
         headers_norm = [
             CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
             CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
@@ -959,7 +971,6 @@ class PayloadToASTBridge:
         client_name = ctx["client_name"]
         total_fair_ale = ctx["total_fair_ale"]
         currency = ctx["currency"]
-        client_name = ctx["client_name"]
         meta_lang = ctx["meta_lang"]
         # 4.2 Radar Chart
         nodes.append(
@@ -1097,8 +1108,7 @@ class PayloadToASTBridge:
                             "max": hc.get("fair_max_score", 0.0),
                         }
         except (OSError, ValueError, KeyError, AttributeError) as ex:
-
-            logger.debug(f"[Fallback] Handled exception: {ex}")
+            logger.warning(f"[AST Bridge Warning] Error reading FAIR metrics from annex data: {ex}")
 
         # Read the CSV risks first so we have the data for the executive overview
         csv_candidates = list(modules_dir.glob("*.csv")) if modules_dir.exists() else []
@@ -1116,28 +1126,35 @@ class PayloadToASTBridge:
                     for r_idx, row_data in enumerate(reader):
                         if not row_data or len(row_data) < 6:
                             continue
-                        pillar_full_name = row_data[0].split(" - ")[0]
-                        finding_raw = row_data[1]
-                        finding_parts = finding_raw.split(rag_marker) if rag_marker in finding_raw else [finding_raw]
-                        finding = finding_parts[0]
-                        evidence = finding_parts[1].strip('"') if len(finding_parts) > 1 else ""
+                        try:
+                            pillar_full_name = row_data[0].split(" - ")[0]
+                            finding_raw = row_data[1]
+                            finding_parts = finding_raw.split(rag_marker) if rag_marker in finding_raw else [finding_raw]
+                            finding = finding_parts[0]
+                            evidence = finding_parts[1].strip('"') if len(finding_parts) > 1 else ""
 
-                        r_item = {
-                            "id": f"RVS{r_idx + 1:02d}",
-                            "pillar": pillar_full_name,
-                            "capability": row_data[0].split(" - ")[1]
-                            if " - " in row_data[0]
-                            else row_data[0],
-                            "finding": finding,
-                            "evidence": evidence,
-                            "business_risk": row_data[2],
-                            "tef": float(row_data[3]),
-                            "lm": float(row_data[4]),
-                            "ale": float(row_data[5]),
-                        }
-                        risks_data_list.append(r_item)
+                            tef_val = float(str(row_data[3]).replace(",", ".").strip())
+                            lm_val = float(str(row_data[4]).replace(",", ".").strip())
+                            ale_val = float(str(row_data[5]).replace(",", ".").strip())
+
+                            r_item = {
+                                "id": f"RVS{r_idx + 1:02d}",
+                                "pillar": pillar_full_name,
+                                "capability": row_data[0].split(" - ")[1]
+                                if " - " in row_data[0]
+                                else row_data[0],
+                                "finding": finding,
+                                "evidence": evidence,
+                                "business_risk": row_data[2],
+                                "tef": tef_val,
+                                "lm": lm_val,
+                                "ale": ale_val,
+                            }
+                            risks_data_list.append(r_item)
+                        except (ValueError, IndexError) as row_ex:
+                            logger.warning(f"[AST Bridge Warning] Skipped malformed risk row {r_idx}: {row_ex}")
             except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.debug(f"[Fallback] Handled exception: {ex}")
+                logger.warning(f"[AST Bridge Warning] Error reading risks CSV file: {ex}")
         elif blueprint_data and blueprint_data.get("pillars_analysis"):
             from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
                 derive_in_memory_fair_risks,
@@ -1385,7 +1402,6 @@ class PayloadToASTBridge:
                         "tier_subtotal_badge",
                         locale=meta_lang,
                         subtotal_ale=formatted_subtotal,
-                        currency=currency,
                         pct=subtotal_pct,
                     ),
                     bold=True,
@@ -1424,20 +1440,17 @@ class PayloadToASTBridge:
         currency = ctx["currency"]
         blueprint_data = ctx.get("blueprint_data", {})
 
-        r_id = str(hc.get("id") or "RSK-01").strip()
+        raw_id = str(hc.get("id") or "RSK-01").strip()
+        r_id = re.sub(r"[^A-Za-z0-9_.\-]", "-", raw_id) or "RSK-01"
         r_cap = str(hc.get("capability") or "Capability").strip()
         global_rank = hc.get("global_rank", 1)
         share_pct = float(hc.get("share_pct") or 0.0)
 
+        # 1. Authoritative Actuarial Reconciliation & Scale Calibration
+        authoritative_ale = float(hc.get("ale") or hc.get("ale_val") or 0.0)
         raw_tef = float(hc.get("tef") or 1.0)
         raw_lm = float(hc.get("lm") or 1.0)
 
-        if raw_tef >= 1.0:
-            lef = min(0.50, max(0.08, raw_tef * 0.09))
-        else:
-            lef = max(0.05, raw_tef)
-
-        mttr_hours = min(6.0, max(1.5, raw_lm * 0.85))
         annual_divisor = float(blueprint_data.get("annual_downtime_divisor", 67.5))
         hourly_rate = float(
             blueprint_data.get("hourly_downtime_rate")
@@ -1445,29 +1458,59 @@ class PayloadToASTBridge:
             or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 10000.0)
         )
 
-        coupling_factor = 1.0
         if t_idx == 1:
             coupling_regime = CouplingRegime.TIGHT
+            coupling_factor = 1.5
             alpha = 0.70
         elif t_idx == 2:
             coupling_regime = CouplingRegime.MODERATE
+            coupling_factor = 1.2
             alpha = 0.40
         else:
             coupling_regime = CouplingRegime.LOOSE
+            coupling_factor = 1.0
             alpha = 0.20
 
-        effective_hourly = hourly_rate * alpha
-        sle_val = Decimal(str(round(mttr_hours * effective_hourly, 2)))
+        # Preserve empirical monetary SLE from source data if already scaled (> 5.0)
+        if raw_lm > 5.0:
+            effective_sle_num = raw_lm
+            effective_sle_dec = Decimal(str(round(raw_lm, 2)))
+            lef = round(authoritative_ale / effective_sle_num, 6) if (authoritative_ale > 0.0 and effective_sle_num > 0.0) else (raw_tef if raw_tef <= 10.0 else 0.20)
+            mttr_hours = min(8.0, max(1.0, float(hc.get("downtime_hours") or 3.5)))
+        else:
+            # Calibrate from ordinal Likert (1-5 scale)
+            if raw_tef >= 1.0:
+                lef = min(0.50, max(0.08, raw_tef * 0.09))
+            else:
+                lef = max(0.05, raw_tef)
+
+            mttr_hours = min(8.0, max(1.0, raw_lm * 0.85))
+            effective_hourly = hourly_rate * alpha
+            if authoritative_ale > 0.0 and lef > 0.0:
+                effective_sle_dec = Decimal(str(authoritative_ale)) / Decimal(str(lef))
+            else:
+                effective_sle_dec = Decimal(str(round(mttr_hours * effective_hourly, 2)))
+
+        base_sle_dec = (effective_sle_dec / Decimal(str(coupling_factor))).quantize(
+            Decimal("0.0001"), rounding=ROUND_HALF_UP
+        )
+        sle_val = max(Decimal("0.00"), base_sle_dec)
 
         actuarial_input = FairActuarialInput(
-            loss_event_frequency_annual=round(lef, 2),
+            loss_event_frequency_annual=round(max(0.0001, lef), 6),
             single_loss_magnitude_base=sle_val,
             operational_coupling_factor=coupling_factor,
             coupling_regime=coupling_regime,
             downtime_hours_mean=round(mttr_hours, 1),
-            hourly_operational_impact=Decimal(str(round(effective_hourly, 2))),
+            hourly_operational_impact=Decimal(str(round(hourly_rate * alpha, 2))),
         )
-        metrics = ActuarialEngine.evaluate(actuarial_input)
+
+        # Scale severity bounds dynamically relative to organizational exposure:
+        portfolio_ale_dec = Decimal(str(round(total_fair_ale, 2))) if total_fair_ale > 0 else None
+        metrics = ActuarialEngine.evaluate(
+            actuarial_input,
+            portfolio_total_ale=portfolio_ale_dec,
+        )
 
         formatted_ale = format_currency(
             float(metrics.annualized_loss_expectancy),
@@ -1503,6 +1546,7 @@ class PayloadToASTBridge:
         }
         severity_bg_hex = severity_colors.get(metrics.severity_tier, "B45309")
 
+        # 2. Causal Bow-Tie 3-Step Scenario Construction
         raw_threat = hc.get("initiating_threat")
         if raw_threat:
             threat_txt = str(raw_threat).strip()
@@ -1512,9 +1556,17 @@ class PayloadToASTBridge:
         raw_vuln = hc.get("control_vulnerability") or hc.get("finding")
         vuln_txt = str(raw_vuln or "").strip()
 
-        raw_impact = hc.get("primary_impact") or hc.get("business_risk")
+        raw_impact = str(hc.get("primary_impact") or hc.get("business_risk") or "").strip()
         def_marker = t("defensibility_formula_marker", locale=meta_lang)
-        impact_txt = str(raw_impact or "").split(def_marker)[0].strip().rstrip(".") + "."
+        if def_marker and def_marker in raw_impact:
+            impact_clean = raw_impact.split(def_marker)[0].strip()
+        else:
+            impact_clean = raw_impact
+
+        if not impact_clean:
+            impact_txt = t("risk_card_default_impact", locale=meta_lang)
+        else:
+            impact_txt = impact_clean.rstrip(".!?") + "."
 
         raw_mitigation = hc.get("mitigation_directive") or hc.get("remediation")
         if raw_mitigation:
@@ -1523,16 +1575,38 @@ class PayloadToASTBridge:
             directive_txt = t("risk_card_default_mitigation", locale=meta_lang)
 
         evidence_txt = str(hc.get("evidence") or "").strip()
+
+        # 3. Domain Model Schema Validation
+        bow_tie = CausalBowTie(
+            initiating_threat_event=threat_txt,
+            control_vulnerability_gap=vuln_txt,
+            primary_asset_impact=impact_txt,
+        )
+        loss_event = ConditionalLossEvent(
+            event_id=r_id,
+            title=r_cap,
+            domain_category=p_name,
+            currency_code=currency,
+            causal_chain=bow_tie,
+            actuarial_input=actuarial_input,
+            mitigation_directive=directive_txt,
+            audit_evidence=evidence_txt or None,
+        )
+
         if evidence_txt:
             ev_lbl = t("audit_evidence_label", locale=meta_lang)
-            directive_txt += f"\n*{ev_lbl}: \"{evidence_txt}\"*"
+            directive_txt += f"\n{ev_lbl}: \"{evidence_txt}\""
+
+        lef_formatted = format_number(metrics.loss_event_frequency, locale=meta_lang, decimals=2)
+        ev_unit = t("event_frequency_unit", locale=meta_lang)
+        tier_prefix = t("portfolio_tier_prefix", locale=meta_lang)
 
         card_table = TableNode(
             rows=[
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"[{r_id}] {r_cap}\n{p_name} | {t('portfolio_lbl', locale=meta_lang)}: Tier {t_idx} (#{global_rank})",
+                            text=f"[{loss_event.event_id}] {loss_event.title}\n{loss_event.domain_category} | {t('portfolio_lbl', locale=meta_lang)}: {tier_prefix} {t_idx} (#{global_rank} | {share_pct:.1f}%)",
                             font_size=9.5,
                             bold=True,
                             bg_color="1B263B",
@@ -1574,7 +1648,7 @@ class PayloadToASTBridge:
                             align="CENTER",
                         ),
                         CellNode(
-                            text=f"**{t('risk_card_lef_label', locale=meta_lang)}**\n{metrics.loss_event_frequency:.2f} ev/{t('year_lbl', locale=meta_lang)}\n({return_period_str})",
+                            text=f"**{t('risk_card_lef_label', locale=meta_lang)}**\n{lef_formatted} {ev_unit}/{t('year_lbl', locale=meta_lang)}\n({return_period_str})",
                             font_size=8.0,
                             bg_color="F8FAFC",
                             grid_span=1,
@@ -1630,7 +1704,7 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"{t('risk_card_mitigation_directive', locale=meta_lang)}: {directive_txt}",
+                            text=f"**{t('risk_card_mitigation_directive', locale=meta_lang)}:** {directive_txt}",
                             font_size=8.0,
                             bg_color="F1F5F9",
                             grid_span=4,

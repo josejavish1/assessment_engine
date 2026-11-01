@@ -35,9 +35,27 @@ class ActuarialEngine:
         cls,
         inputs: FairActuarialInput,
         thresholds: Optional[Dict[str, Decimal]] = None,
+        portfolio_total_ale: Optional[Decimal] = None,
     ) -> ComputedFairMetrics:
         """Evaluates FairActuarialInput parameters into verified, auditable financial metrics."""
-        active_thresholds = thresholds or cls.DEFAULT_THRESHOLDS
+        if thresholds is not None:
+            active_thresholds = thresholds
+        elif portfolio_total_ale is not None and portfolio_total_ale > Decimal("0.00"):
+            active_thresholds = {
+                "CRITICAL": (portfolio_total_ale * Decimal("0.15")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                "HIGH": (portfolio_total_ale * Decimal("0.05")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                "ELEVATED": (portfolio_total_ale * Decimal("0.015")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+            }
+        else:
+            base_magnitude = inputs.single_loss_magnitude_base * Decimal(str(inputs.operational_coupling_factor))
+            if base_magnitude > Decimal("0.00"):
+                active_thresholds = {
+                    "CRITICAL": (base_magnitude * Decimal("0.50")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                    "HIGH": (base_magnitude * Decimal("0.20")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                    "ELEVATED": (base_magnitude * Decimal("0.05")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+                }
+            else:
+                active_thresholds = cls.DEFAULT_THRESHOLDS
 
         coupling_dec = Decimal(str(inputs.operational_coupling_factor))
         lef_dec = Decimal(str(inputs.loss_event_frequency_annual))
@@ -71,6 +89,8 @@ class ActuarialEngine:
     @staticmethod
     def _resolve_severity(ale: Decimal, thresholds: Dict[str, Decimal]) -> str:
         """Determines the risk severity tier based on monetary ALE bounds."""
+        if ale <= Decimal("0.00"):
+            return "MODERATE"
         if ale >= thresholds.get("CRITICAL", Decimal("25000.00")):
             return "CRITICAL"
         if ale >= thresholds.get("HIGH", Decimal("10000.00")):
