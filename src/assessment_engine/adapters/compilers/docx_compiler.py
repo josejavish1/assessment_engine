@@ -761,6 +761,9 @@ class DocxCompiler(DocumentCompiler):
                 continue
 
             p_e = doc.add_paragraph()
+            style_name = f"toc {lvl}"
+            if style_name in doc.styles:
+                p_e.style = style_name
             p_e.paragraph_format.tab_stops.add_tab_stop(
                 Inches(6.4), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS
             )
