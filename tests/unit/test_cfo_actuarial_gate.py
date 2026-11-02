@@ -14,8 +14,8 @@ from assessment_engine.domain.cfo_actuarial_gate import (
 
 def test_scenario_realism_mttr_floor() -> None:
     gate = CfoActuarialGate()
-    # 1.0h is below the 1.5h physical industrial plant recovery floor
-    with pytest.raises(ActuarialAuditGateViolationError, match="below physical industrial plant recovery floor"):
+    # 1.0h is below the 1.5h operational recovery floor
+    with pytest.raises(ActuarialAuditGateViolationError, match="below the configured operational recovery floor"):
         gate.verify_scenario_realism(
             mttr_hours=1.0,
             hourly_rate=15000.0,
@@ -29,7 +29,7 @@ def test_scenario_realism_mttr_floor() -> None:
 def test_scenario_realism_cold_rebuild_floor() -> None:
     gate = CfoActuarialGate()
     # Cold rebuild requires at least 4.0h
-    with pytest.raises(ActuarialAuditGateViolationError, match="below physical industrial plant recovery floor"):
+    with pytest.raises(ActuarialAuditGateViolationError, match="below the configured operational recovery floor"):
         gate.verify_scenario_realism(
             mttr_hours=2.5,
             hourly_rate=10000.0,
@@ -72,21 +72,32 @@ def test_scenario_realism_parametric_ale_mismatch() -> None:
 def test_probabilistic_tone_filter_forbidden_tokens() -> None:
     gate = CfoActuarialGate()
     bad_narratives = [
-        "El fallo de la bomba revienta los compresores de sala.",
-        "Esta arquitectura garantiza un fallo catastrófico.",
-        "Un microcorte es 100% seguro de paralizar la planta.",
-        "La falta de UPS inevitablemente causará la parada de hornos.",
+        "A single node failure guarantees a full cluster outage.",
+        "The architecture is 100% certain to fail under peak load.",
+        "A power transient inevitably causes database corruption.",
+        "This configuration will inevitably result in prolonged downtime.",
     ]
     for text in bad_narratives:
         with pytest.raises(ActuarialAuditGateViolationError, match="forbidden deterministic certainty token"):
             gate.verify_probabilistic_tone(text)
 
 
+def test_probabilistic_tone_filter_custom_tokens() -> None:
+    gate = CfoActuarialGate()
+    # Test custom dynamic localized tokens injected at runtime
+    custom_tokens = ["garantiza", "100% seguro", "inevitablemente causará"]
+    with pytest.raises(ActuarialAuditGateViolationError, match="forbidden deterministic certainty token"):
+        gate.verify_probabilistic_tone(
+            "Esta configuracion garantiza un fallo catastrofico.",
+            custom_forbidden_tokens=custom_tokens,
+        )
+
+
 def test_probabilistic_tone_filter_passes_on_calibrated_hypotheses() -> None:
     gate = CfoActuarialGate()
     good_text = (
-        "Bajo condiciones operativas no mitigadas, la persistencia de gradientes térmicos elevados "
-        "incrementa la probabilidad de disparo por protección en los compresores de climatización."
+        "Under unmitigated operating conditions, elevated thermal gradients increase "
+        "the statistical probability of protective shutdown on cooling compressors."
     )
     # Should not raise
     gate.verify_probabilistic_tone(good_text)
@@ -152,7 +163,7 @@ def test_portfolio_verification_passes_on_grounded_data() -> None:
             "ale_amount": 16200.0,
             "primary_cascade_domain_id": "HVAC_CHILLER",
             "is_deduplicated": False,
-            "narrative_hypothesis": "La ausencia de confinamiento eleva el gradiente térmico de sala.",
+            "narrative_hypothesis": "Absence of cold aisle containment elevates server exhaust thermal gradients.",
         },
         {
             "mttr_hours": 2.0,
@@ -163,7 +174,7 @@ def test_portfolio_verification_passes_on_grounded_data() -> None:
             "ale_amount": 7500.0,
             "primary_cascade_domain_id": "POWER_ATS",
             "is_deduplicated": False,
-            "narrative_hypothesis": "La degradación de baterías incrementa el riesgo de microcorte no conmutado.",
+            "narrative_hypothesis": "Battery string degradation elevates risk of unconditioned power transient during transfer.",
         },
     ]
     # Revenue = 50,000,000 EUR. Total ALE = 23,700 EUR (< 7.5M EUR ceiling).

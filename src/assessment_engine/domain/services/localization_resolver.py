@@ -12,22 +12,31 @@ logger = logging.getLogger(__name__)
 class LocalizationResolver:
     """Resolves taxonomy identifiers and formats numbers dynamically by ISO locale."""
 
-    # Locale-specific decimal and thousand separators
+    # Locale-specific decimal and thousand separators across global enterprise regions
     LOCALE_NUMERIC_CONVENTIONS: dict[str, tuple[str, str]] = {
         "en": (".", ","),
         "ja": (".", ","),
+        "zh": (".", ","),
+        "ko": (".", ","),
         "es": (",", "."),
         "pt": (",", "."),
         "de": (",", "."),
+        "it": (",", "."),
+        "nl": (",", "."),
+        "pl": (",", " "),
+        "sv": (",", " "),
         "fr": (",", " "),
+        "ru": (",", " "),
+        "ar": (".", ","),
     }
 
     def __init__(self, taxonomy_catalog: dict[str, Any], target_language: str) -> None:
         self._catalog = taxonomy_catalog
-        self._lang = target_language.split("-")[0].lower()
+        # Normalize primary subtag: e.g., 'es-ES' -> 'es', 'en-US' -> 'en'
+        self._lang = target_language.split("-")[0].lower() if target_language else "en"
         if self._lang not in self.LOCALE_NUMERIC_CONVENTIONS:
             logger.warning(
-                "Unsupported language '%s' requested; falling back to 'en'.",
+                "Language code '%s' not in primary numeric map; falling back to international standard.",
                 self._lang,
             )
             self._lang = "en"
@@ -62,21 +71,23 @@ class LocalizationResolver:
 
     def format_decimal(self, value: float, decimal_places: int = 2) -> str:
         """Formats a float according to the target language's typographic conventions."""
-        quantizer = Decimal("10") ** -decimal_places
+        quantizer = Decimal("10") ** -decimal_places if decimal_places > 0 else Decimal("1")
         dec_val = Decimal(str(value)).quantize(quantizer, rounding=ROUND_HALF_UP)
-        raw_str = f"{dec_val:,.{decimal_places}f}"
+        raw_str = f"{dec_val:,.{decimal_places}f}" if decimal_places > 0 else f"{int(dec_val):,d}"
 
-        dec_sep, thousand_sep = self.LOCALE_NUMERIC_CONVENTIONS[self._lang]
-        # Swap via placeholder to avoid collision
+        dec_sep, thousand_sep = self.LOCALE_NUMERIC_CONVENTIONS.get(self._lang, (".", ","))
+        # Swap via temporary placeholder to avoid replacement collisions
         return (
             raw_str.replace(",", "__THOUSAND__")
             .replace(".", dec_sep)
             .replace("__THOUSAND__", thousand_sep)
         )
 
-    def format_currency(self, amount: float, currency_code: str) -> str:
+    def format_currency(
+        self, amount: float, currency_code: str, decimal_places: int = 0
+    ) -> str:
         """Formats monetary values with ISO-4217 currency code and locale separators."""
-        formatted_num = self.format_decimal(amount, decimal_places=0)
+        formatted_num = self.format_decimal(amount, decimal_places=decimal_places)
         return f"{formatted_num} {currency_code.upper()}"
 
     def _extract_localized_string(self, node: dict[str, Any], fallback: str) -> str:

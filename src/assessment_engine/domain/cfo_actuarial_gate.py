@@ -20,14 +20,12 @@ class ActuarialAuditPolicy:
     max_ale_to_revenue_ratio: Decimal = Decimal("0.15")
     tolerance: Decimal = Decimal("5.00")
     forbidden_certainty_tokens: tuple[str, ...] = (
-        "garantiza",
         "guarantees",
-        "100% seguro",
         "100% certain",
-        "inevitablemente causará",
         "inevitably causes",
-        "revienta los compresores",
-        "destruye",
+        "will inevitably result",
+        "catastrophic certainty",
+        "irreversible shutdown",
     )
 
 
@@ -47,7 +45,7 @@ class CfoActuarialGate:
         ale: float | Decimal,
         is_cold_rebuild: bool = False,
     ) -> None:
-        """Verifies MTTR physical floor and mathematical parametric equality."""
+        """Verifies MTTR operational recovery floor and mathematical parametric equality."""
         mttr_dec = Decimal(str(round(float(mttr_hours), 2)))
         hr_dec = Decimal(str(round(float(hourly_rate), 2)))
         parts_dec = Decimal(str(round(float(parts_cost), 2)))
@@ -62,7 +60,7 @@ class CfoActuarialGate:
         )
         if mttr_dec < floor:
             raise ActuarialAuditGateViolationError(
-                f"MTTR {mttr_dec}h is below physical industrial plant recovery floor ({floor}h)."
+                f"MTTR {mttr_dec}h is below the configured operational recovery floor ({floor}h)."
             )
 
         expected_sle = (mttr_dec * hr_dec) + parts_dec
@@ -77,10 +75,18 @@ class CfoActuarialGate:
                 f"Parametric ALE mismatch: expected {expected_ale}, got {ale_dec} (diff: {abs(expected_ale - ale_dec)})."
             )
 
-    def verify_probabilistic_tone(self, narrative_text: str) -> None:
+    def verify_probabilistic_tone(
+        self,
+        narrative_text: str,
+        custom_forbidden_tokens: Sequence[str] | None = None,
+    ) -> None:
         """Ensures risk descriptions adhere to probabilistic hypotheses rather than catastrophic determinism."""
         text_lower = narrative_text.lower()
-        for token in self._policy.forbidden_certainty_tokens:
+        tokens = list(self._policy.forbidden_certainty_tokens)
+        if custom_forbidden_tokens:
+            tokens.extend(t.lower() for t in custom_forbidden_tokens)
+
+        for token in tokens:
             if token in text_lower:
                 raise ActuarialAuditGateViolationError(
                     f"Narrative contains forbidden deterministic certainty token: '{token}'."
@@ -90,6 +96,7 @@ class CfoActuarialGate:
         self,
         scenarios: Sequence[Mapping[str, Any]],
         annual_enterprise_revenue: Decimal | float,
+        custom_forbidden_tokens: Sequence[str] | None = None,
     ) -> None:
         """Audits an entire risk scenario portfolio against CFO credibility boundaries."""
         revenue_dec = Decimal(str(annual_enterprise_revenue))
@@ -127,7 +134,9 @@ class CfoActuarialGate:
                 or ""
             )
             if narrative:
-                self.verify_probabilistic_tone(narrative)
+                self.verify_probabilistic_tone(
+                    narrative, custom_forbidden_tokens=custom_forbidden_tokens
+                )
 
             domain_id = str(scenario.get("primary_cascade_domain_id") or scenario.get("domain_id") or "")
             if domain_id:

@@ -34,27 +34,34 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _load_json(path: Path) -> dict:
+def _load_json(path: Path, optional: bool = False) -> dict:
+    """Loads a JSON file with UTF-8-sig encoding, enforcing fail-fast validation."""
     if not path.exists():
-        logger.warning("File not found at '%s'; returning empty dict.", path)
-        return {}
+        if optional:
+            logger.info("Optional file not present at '%s'; defaulting to empty dictionary.", path)
+            return {}
+        raise FileNotFoundError(f"Mandatory configuration or payload file not found: {path}")
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def main() -> int:
-    """Executes the enrichment pipeline stage."""
+    """Executes the enrichment pipeline stage with fail-fast enforcement."""
     args = parse_args()
 
-    raw_payload = _load_json(args.input_payload)
-    if not raw_payload:
-        logger.error("Input payload at '%s' is empty or missing.", args.input_payload)
-        return 1
+    # Enforce fail-fast on mandatory files
+    raw_payload = _load_json(args.input_payload, optional=False)
+    taxonomy_catalog = _load_json(args.taxonomy_path, optional=False)
+    tenant_config = _load_json(args.tenant_config_path, optional=False)
+
+    # Actuarial and forensic ledger files are optional if uncalibrated yet
+    actuarial_gate_data = _load_json(args.actuarial_gate_path, optional=True)
+    forensic_ledger = _load_json(args.forensic_ledger_path, optional=True)
 
     enricher = UniversalPayloadEnricher(
-        taxonomy_catalog=_load_json(args.taxonomy_path),
-        actuarial_gate_data=_load_json(args.actuarial_gate_path),
-        forensic_ledger=_load_json(args.forensic_ledger_path),
-        tenant_config=_load_json(args.tenant_config_path),
+        taxonomy_catalog=taxonomy_catalog,
+        actuarial_gate_data=actuarial_gate_data,
+        forensic_ledger=forensic_ledger,
+        tenant_config=tenant_config,
     )
 
     enriched_model = enricher.enrich(raw_payload=raw_payload, tower_id=args.tower_id)

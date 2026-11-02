@@ -1461,7 +1461,10 @@
     "urgency_high": "Alta",
     "urgency_moderate": "Moderada",
     "conclusions_summary_intro": "El presente diagnóstico técnico AS-IS certifica que la infraestructura tecnológica y operativa de {client_name} se sitúa en una postura global de **{exact_band}** ({display_score}). El objetivo de esta síntesis es consolidar la concentración de fragilidades identificadas durante el relevamiento pericial, delimitando el nivel de urgencia operativa que fundamentará la posterior formulación del plan director de modernización.",
-    "conclusions_closing_text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **{formatted_ale}**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio."
+    "conclusions_closing_text": "La cuantificación estocástica desarrollada bajo el estándar Open FAIR™ confirma que la inacción mantiene a la organización expuesta a una pérdida anualizada acumulada (ALE) de **{formatted_ale}**. La concentración del riesgo en los dominios de mayor fragilidad operativa evidencia que las intervenciones futuras deberán priorizar la instrumentación de redundancias físicas N+1 y la telemetría automatizada en tiempo real para salvaguardar la continuidad del negocio.",
+    "pillar_kpi_status_header": "Estado de Capacidades y Desempeño (KPIs)",
+    "pillar_operational_gaps_header": "Brechas Operativas y Consecuencias Forenses",
+    "pillar_score_justification_header": "Justificación de Madurez y Puntuación"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2920,7 +2923,10 @@
     "urgency_high": "High",
     "urgency_moderate": "Moderate",
     "conclusions_summary_intro": "This baseline AS-IS technical assessment certifies that the technological and operational infrastructure of {client_name} sits at an overall maturity posture of **{exact_band}** ({display_score}). The objective of this synthesis is to consolidate critical vulnerability concentrations identified during forensic inspection, establishing operational urgency thresholds to inform the subsequent modernization master plan.",
-    "conclusions_closing_text": "The stochastic quantification conducted under the Open FAIR™ standard confirms that maintaining current operations exposes the organization to an annualized loss expectancy (ALE) of **{formatted_ale}**. Risk concentration within identified fragility domains highlights that future initiatives must prioritize physical N+1 redundancies and automated real-time telemetry to protect continuous business operations."
+    "conclusions_closing_text": "The stochastic quantification conducted under the Open FAIR™ standard confirms that maintaining current operations exposes the organization to an annualized loss expectancy (ALE) of **{formatted_ale}**. Risk concentration within identified fragility domains highlights that future initiatives must prioritize physical N+1 redundancies and automated real-time telemetry to protect continuous business operations.",
+    "pillar_kpi_status_header": "Capability Status & Operational Performance (KPIs)",
+    "pillar_operational_gaps_header": "Operational Gaps & Forensic Consequences",
+    "pillar_score_justification_header": "Maturity Justification & Scoring Rationale"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -4376,7 +4382,10 @@
     "urgency_high": "High",
     "urgency_moderate": "Moderate",
     "conclusions_summary_intro": "Este diagnóstico técnico AS-IS certifica que a infraestrutura tecnológica e operacional da {client_name} situa-se numa postura global de **{exact_band}** ({display_score}). O objetivo desta síntese é consolidar a concentração de fragilidades identificadas durante o levantamento pericial, delimitando o nível de urgência operacional para o plano de modernização.",
-    "conclusions_closing_text": "A quantificação estocástica desenvolvida sob o padrão Open FAIR™ confirma que a inação mantém a organização exposta a uma perda anualizada acumulada (ALE) de **{formatted_ale}**. A concentração do risco nos domínios de maior fragilidade operacional evidencia que intervenções futuras devem priorizar redundâncias físicas N+1 e telemetria automatizada em tempo real."
+    "conclusions_closing_text": "A quantificação estocástica desenvolvida sob o padrão Open FAIR™ confirma que a inação mantém a organização exposta a uma perda anualizada acumulada (ALE) de **{formatted_ale}**. A concentração do risco nos domínios de maior fragilidade operacional evidencia que intervenções futuras devem priorizar redundâncias físicas N+1 e telemetria automatizada em tempo real.",
+    "pillar_kpi_status_header": "Estado de Capacidades e Desempenho Operacional (KPIs)",
+    "pillar_operational_gaps_header": "Lacunas Operacionais e Consequências Forenses",
+    "pillar_score_justification_header": "Justificativa de Maturidade e Pontuação"
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -5832,7 +5841,10 @@
     "urgency_high": "High",
     "urgency_moderate": "Moderate",
     "conclusions_summary_intro": "Ce diagnostic technique AS-IS certifie que l infrastructure technologique et opérationnelle de {client_name} se situe à une posture globale de **{exact_band}** ({display_score}). L objectif de cette synthèse est de consolider les concentrations de vulnérabilités critiques identifiées lors de l inspection médico-légale.",
-    "conclusions_closing_text": "La quantification stochastique menée selon la norme Open FAIR™ confirme que le maintien des opérations actuelles expose l organisation à une perte annuelle prévisionnelle (ALE) de **{formatted_ale}**. La concentration des risques met en évidence que les initiatives futures devront prioriser les redondances physiques N+1 et la télémétrie en temps réel."
+    "conclusions_closing_text": "La quantification stochastique menée selon la norme Open FAIR™ confirme que le maintien des opérations actuelles expose l organisation à une perte annuelle prévisionnelle (ALE) de **{formatted_ale}**. La concentration des risques met en évidence que les initiatives futures devront prioriser les redondances physiques N+1 et la télémétrie en temps réel.",
+    "pillar_kpi_status_header": "État des Capacités et Performance Opérationnelle (KPIs)",
+    "pillar_operational_gaps_header": "Écarts Opérationnels et Conséquences Médico-légales",
+    "pillar_score_justification_header": "Justification de la Maturité et Notation"
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -7288,7 +7300,10 @@
     "urgency_high": "High",
     "urgency_moderate": "Moderate",
     "conclusions_summary_intro": "本AS-IS技術診断は、{client_name}の技術的および運用のインフラストラクチャが全体的な成熟度**{exact_band}**（{display_score}）に位置していることを証明します。本要約の目的は、法医学的検査中に特定された重要な脆弱性の集中を統合し、その後の近代化マスタープランに情報を提供するための運用上の緊急性しきい値を設定することです。",
-    "conclusions_closing_text": "Open FAIR™標準に基づいて実施された確率的定量化により、現在の運用を維持すると組織は年間予想損失（ALE）**{formatted_ale}**に晒され続けることが確認されます。特定された脆弱性領域内のリスク集中は、将来の取り組みにおいて物理的なN+1冗長性と自動化されたリアルタイムテレメトリを優先する必要があることを浮き彫りにしています。"
+    "conclusions_closing_text": "Open FAIR™標準に基づいて実施された確率的定量化により、現在の運用を維持すると組織は年間予想損失（ALE）**{formatted_ale}**に晒され続けることが確認されます。特定された脆弱性領域内のリスク集中は、将来の取り組みにおいて物理的なN+1冗長性と自動化されたリアルタイムテレメトリを優先する必要があることを浮き彫りにしています。",
+    "pillar_kpi_status_header": "機能ステータスと運用パフォーマンス (KPI)",
+    "pillar_operational_gaps_header": "運用上のギャップと法医学的影響",
+    "pillar_score_justification_header": "成熟度の根拠とスコアリングの論理的根拠"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -8744,6 +8759,9 @@
     "urgency_high": "High",
     "urgency_moderate": "Moderate",
     "conclusions_summary_intro": "Diese AS-IS-Technikbewertung bescheinigt, dass sich die technologische und operative Infrastruktur von {client_name} in einem Gesamtreifegrad von **{exact_band}** ({display_score}) befindet. Das Ziel dieser Synthese ist es, kritische Schwachstellenkonzentrationen zu konsolidieren.",
-    "conclusions_closing_text": "Die nach dem Open FAIR™-Standard durchgeführte stochastische Quantifizierung bestätigt, dass die Beibehaltung des aktuellen Betriebs die Organisation einer annualisierten Schadenserwartung (ALE) von **{formatted_ale}** aussetzt. Die Risikokonzentration verdeutlicht, dass zukünftige Initiativen physische N+1-Redundanzen und automatisierte Echtzeit-Telemetrie priorisieren müssen."
+    "conclusions_closing_text": "Die nach dem Open FAIR™-Standard durchgeführte stochastische Quantifizierung bestätigt, dass die Beibehaltung des aktuellen Betriebs die Organisation einer annualisierten Schadenserwartung (ALE) von **{formatted_ale}** aussetzt. Die Risikokonzentration verdeutlicht, dass zukünftige Initiativen physische N+1-Redundanzen und automatisierte Echtzeit-Telemetrie priorisieren müssen.",
+    "pillar_kpi_status_header": "Fähigkeitsstatus & Operative Leistung (KPIs)",
+    "pillar_operational_gaps_header": "Operative Lücken & Forensische Konsequenzen",
+    "pillar_score_justification_header": "Reifegradbegründung & Bewertungsgrundlage"
   }
 }

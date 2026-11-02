@@ -709,6 +709,9 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
         or not enriched_payload_path.exists()
         or enriched_payload_path.stat().st_size == 0
     ):
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        taxonomy_path = ROOT / "engine_config/taxonomy_multilingual.json"
+
         await run_step_async(
             [
                 cfg.python_bin,
@@ -717,7 +720,7 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
                 "--tower-id", cfg.tower_id,
                 "--input-payload", str(cfg.blueprint_payload_path),
                 "--output-payload", str(enriched_payload_path),
-                "--taxonomy-path", str(cfg.case_dir.parent.parent.parent / "engine_config/taxonomy_multilingual.json"),
+                "--taxonomy-path", str(taxonomy_path),
                 "--actuarial-gate-path", str(cfg.case_dir / "custom_risk_profile.json"),
                 "--forensic-ledger-path", str(cfg.case_dir / "evidence_ledger.json"),
                 "--tenant-config-path", str(cfg.case_dir / "case_input.json"),
