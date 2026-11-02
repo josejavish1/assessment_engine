@@ -740,24 +740,28 @@ class PayloadToASTBridge:
                 nodes.append(ParagraphNode(text=comp, style="List Bullet", space_after=2))
 
         # 2.2 Regulatory and Methodological Framework Table (Auto-fit to window and contents)
-        tower_id = str(ctx.get("tower_id") or "T1")
-        reg_meta = blueprint_data.get("document_meta", {}).get("regulatory_framework") or blueprint_data.get("regulatory_framework")
-        if reg_meta:
-            norm_fw_name = str(reg_meta)
-            norm_fw_desc = t("norm_row_ashrae_desc" if tower_id == "T1" else "norm_row_iso_desc", locale=meta_lang)
-            norm_fw_purp = t("norm_row_ashrae_purp" if tower_id == "T1" else "norm_row_iso_purp", locale=meta_lang)
-        else:
-            norm_fw_name = "ASHRAE TC 9.9" if tower_id == "T1" else "ISO/IEC 27001"
-            norm_fw_desc = (
-                t("norm_row_ashrae_desc", locale=meta_lang)
-                if tower_id == "T1"
-                else t("norm_row_iso_desc", locale=meta_lang)
-            )
-            norm_fw_purp = (
-                t("norm_row_ashrae_purp", locale=meta_lang)
-                if tower_id == "T1"
-                else t("norm_row_iso_purp", locale=meta_lang)
-            )
+        tower_id = str(ctx.get("tower_id") or "T1").upper()
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        import json
+
+        tower_cat_file = ROOT / "engine_config" / "towers" / "tower_catalog.json"
+        tower_cat: dict[str, Any] = {}
+        if tower_cat_file.exists():
+            try:
+                tower_cat = json.loads(tower_cat_file.read_text(encoding="utf-8-sig"))
+            except (json.JSONDecodeError, OSError):
+                tower_cat = {}
+
+        t_spec = (tower_cat.get(tower_id) or tower_cat.get("T1")) or {}
+        reg_meta = (
+            blueprint_data.get("document_meta", {}).get("regulatory_framework")
+            or blueprint_data.get("regulatory_framework")
+        )
+        norm_fw_name = str(reg_meta or t_spec.get("primary_engineering_standard", "ISO/IEC 27001"))
+        desc_key = t_spec.get("standard_description_key", "norm_row_iso_desc")
+        purp_key = t_spec.get("standard_purpose_key", "norm_row_iso_purp")
+        norm_fw_desc = t(desc_key, locale=meta_lang)
+        norm_fw_purp = t(purp_key, locale=meta_lang)
         headers_norm = [
             CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
             CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
@@ -991,19 +995,17 @@ class PayloadToASTBridge:
             )
             nodes.append(ParagraphNode(text=t("cross_cutting_debt_intro", locale=meta_lang), italic=True))
             nodes.append(SpacerNode(points=6))
-            if tower_id == "T1":
-                nodes.append(ParagraphNode(text=t("cross_cutting_debt_pattern_1", locale=meta_lang)))
+            pattern_keys = [
+                f"cross_cutting_debt_{tower_id.lower()}_p{idx}"
+                for idx in (1, 2, 3)
+            ]
+            for p_idx, p_key in enumerate(pattern_keys, 1):
+                p_text = t(p_key, default="", locale=meta_lang)
+                if not p_text:
+                    p_text = t(f"cross_cutting_debt_universal_p{p_idx}", locale=meta_lang)
+                nodes.append(ParagraphNode(text=p_text))
                 nodes.append(SpacerNode(points=4))
-                nodes.append(ParagraphNode(text=t("cross_cutting_debt_pattern_2", locale=meta_lang)))
-                nodes.append(SpacerNode(points=4))
-                nodes.append(ParagraphNode(text=t("cross_cutting_debt_pattern_3", locale=meta_lang)))
-            else:
-                nodes.append(ParagraphNode(text=t("cross_cutting_debt_universal_p1", locale=meta_lang)))
-                nodes.append(SpacerNode(points=4))
-                nodes.append(ParagraphNode(text=t("cross_cutting_debt_universal_p2", locale=meta_lang)))
-                nodes.append(SpacerNode(points=4))
-                nodes.append(ParagraphNode(text=t("cross_cutting_debt_universal_p3", locale=meta_lang)))
-            nodes.append(SpacerNode(points=15))
+            nodes.append(SpacerNode(points=11))
 
         # 3.5 Systemic Risk Indicators and Decision Context (MCDA + Monte Carlo + LCBN)
         if intel_data:

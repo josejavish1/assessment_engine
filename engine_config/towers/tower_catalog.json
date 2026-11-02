@@ -1,0 +1,72 @@
+{
+  "T1": {
+    "canonical_code": "T1",
+    "primary_engineering_standard": "TIA-942-B / ASHRAE TC 9.9",
+    "regulatory_compliance_framework": "ISO/IEC 22237 / EN 50600",
+    "standard_description_key": "norm_row_ashrae_desc",
+    "standard_purpose_key": "norm_row_ashrae_purp"
+  },
+  "T2": {
+    "canonical_code": "T2",
+    "primary_engineering_standard": "CIS Controls v8 / NIST SP 800-125",
+    "regulatory_compliance_framework": "ISO/IEC 27017 / SOC 2 Type II",
+    "standard_description_key": "norm_row_cis_desc",
+    "standard_purpose_key": "norm_row_cis_purp"
+  },
+  "T3": {
+    "canonical_code": "T3",
+    "primary_engineering_standard": "SNIA Storage Security / ISO/IEC 27040",
+    "regulatory_compliance_framework": "ISO 22301 / NIST SP 800-34",
+    "standard_description_key": "norm_row_snia_desc",
+    "standard_purpose_key": "norm_row_snia_purp"
+  },
+  "T4": {
+    "canonical_code": "T4",
+    "primary_engineering_standard": "IEEE 802.1Q / RFC 2544",
+    "regulatory_compliance_framework": "NIST SP 800-207 (Zero Trust)",
+    "standard_description_key": "norm_row_ieee_desc",
+    "standard_purpose_key": "norm_row_ieee_purp"
+  },
+  "T5": {
+    "canonical_code": "T5",
+    "primary_engineering_standard": "ISA/IEC 62443-3-3",
+    "regulatory_compliance_framework": "NIST SP 800-82 Rev. 3 / NIS2",
+    "standard_description_key": "norm_row_isa_desc",
+    "standard_purpose_key": "norm_row_isa_purp"
+  },
+  "T6": {
+    "canonical_code": "T6",
+    "primary_engineering_standard": "NIST CSF 2.0 / MITRE ATT&CK",
+    "regulatory_compliance_framework": "ISO/IEC 27001:2022 / NIS2",
+    "standard_description_key": "norm_row_nist_desc",
+    "standard_purpose_key": "norm_row_nist_purp"
+  },
+  "T7": {
+    "canonical_code": "T7",
+    "primary_engineering_standard": "ISO/IEC 25010 / TOGAF 10",
+    "regulatory_compliance_framework": "SOX ITGC / ISO/IEC 20000-1",
+    "standard_description_key": "norm_row_togaf_desc",
+    "standard_purpose_key": "norm_row_togaf_purp"
+  },
+  "T8": {
+    "canonical_code": "T8",
+    "primary_engineering_standard": "DAMA-DMBOK2 / ISO/IEC 38505-1",
+    "regulatory_compliance_framework": "ISO/IEC 42001 / GDPR",
+    "standard_description_key": "norm_row_dama_desc",
+    "standard_purpose_key": "norm_row_dama_purp"
+  },
+  "T9": {
+    "canonical_code": "T9",
+    "primary_engineering_standard": "ISO/IEC 27002 Endpoint Controls",
+    "regulatory_compliance_framework": "CIS Endpoint Benchmarks",
+    "standard_description_key": "norm_row_endpoint_desc",
+    "standard_purpose_key": "norm_row_endpoint_purp"
+  },
+  "T10": {
+    "canonical_code": "T10",
+    "primary_engineering_standard": "COBIT 2019 / ITIL v4",
+    "regulatory_compliance_framework": "ISO/IEC 38500 / FinOps",
+    "standard_description_key": "norm_row_cobit_desc",
+    "standard_purpose_key": "norm_row_cobit_purp"
+  }
+}
