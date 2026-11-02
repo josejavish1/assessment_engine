@@ -38,7 +38,7 @@ def _load_json(path: Path) -> dict:
     if not path.exists():
         logger.warning("File not found at '%s'; returning empty dict.", path)
         return {}
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def main() -> int:
