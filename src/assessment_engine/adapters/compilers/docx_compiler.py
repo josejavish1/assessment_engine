@@ -683,19 +683,16 @@ class DocxCompiler(DocumentCompiler):
     def _compile_toc(self, doc: Document, node: Any) -> None:
         """Compiles a native Word OpenXML Table of Contents field inside a Structured Document Tag."""
         # 1. Enable auto-update fields in settings.xml
-        try:
-            settings_element = doc.settings.element
-            update_fields = settings_element.find(qn("w:updateFields"))
-            if update_fields is None:
-                update_fields = OxmlElement("w:updateFields")
-                compat = settings_element.find(qn("w:compat"))
-                if compat is not None:
-                    compat.addprevious(update_fields)
-                else:
-                    settings_element.append(update_fields)
-            update_fields.set(qn("w:val"), "true")
-        except Exception as ex:
-            logger.debug("Failed setting updateFields in settings: %s", ex)
+        settings_element = doc.settings.element
+        update_fields = settings_element.find(qn("w:updateFields"))
+        if update_fields is None:
+            update_fields = OxmlElement("w:updateFields")
+            compat = settings_element.find(qn("w:compat"))
+            if compat is not None:
+                compat.addprevious(update_fields)
+            else:
+                settings_element.append(update_fields)
+        update_fields.set(qn("w:val"), "true")
 
         # 2. Top-level SDT container recognized by Microsoft Word
         sdt = OxmlElement("w:sdt")
@@ -907,8 +904,7 @@ class DocxCompiler(DocumentCompiler):
         )
 
     _HEADING_NUMBER_PREFIX_RE = re.compile(
-        r"^\s*(?:(?:cap[íi]tulo|chapter|secci[óo]n|section)\s+)?\d+(?:\.\d+)*\.?\s*[-–—:]?\s*",
-        re.IGNORECASE,
+        r"^\s*(?:[^\W\d_]+\s+)?\d+(?:\.\d+)*\.?\s*[-–—:]?\s*"
     )
 
     @classmethod

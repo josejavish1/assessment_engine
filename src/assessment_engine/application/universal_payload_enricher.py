@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime
 import logging
+import unicodedata
 from typing import Any
 
 from assessment_engine.domain.contracts.enriched_payload_schema import (
@@ -17,13 +18,20 @@ from assessment_engine.domain.contracts.enriched_payload_schema import (
 from assessment_engine.domain.services.localization_resolver import (
     LocalizationResolver,
 )
-from assessment_engine.domain.services.orthographic_normalizer import (
-    OrthographicNormalizer,
-)
 from assessment_engine.infrastructure.localization import t
-from assessment_engine.infrastructure.runtime_paths import ROOT
 
 logger = logging.getLogger(__name__)
+
+
+def canonicalize_unicode_nfc(data: Any) -> Any:
+    """Enforces universal Unicode Normalization Form C (NFC) across payload structures."""
+    if isinstance(data, str):
+        return unicodedata.normalize("NFC", data)
+    if isinstance(data, dict):
+        return {k: canonicalize_unicode_nfc(v) for k, v in data.items()}
+    if isinstance(data, list):
+        return [canonicalize_unicode_nfc(item) for item in data]
+    return data
 
 
 class UniversalPayloadEnricher:
@@ -48,9 +56,6 @@ class UniversalPayloadEnricher:
         self._actuarial = actuarial_gate_data
         self._forensics = forensic_ledger
         self._tenant = tenant_config
-        self._ortho_normalizer = OrthographicNormalizer(
-            lexicon_path=ROOT / "engine_config" / "orthographic_lexicon.json"
-        )
 
     def enrich(self, raw_payload: dict[str, Any], tower_id: str) -> EnrichedTowerPayload:
         """Executes the full enrichment lifecycle on a raw tower payload.
@@ -65,15 +70,15 @@ class UniversalPayloadEnricher:
         logger.info("Starting universal payload enrichment for Tower '%s'.", tower_id)
         working = dict(raw_payload)
 
+        # Enforce universal Unicode Normalization Form C (NFC) across incoming raw payload
+        working = canonicalize_unicode_nfc(working)
+
         # Stage 1: Normalize Document & Tenant Metadata with primary language subtag
         working["document_meta"] = self._build_document_metadata(
             working.get("document_meta", {}), tower_id
         )
         norm_lang = str(working["document_meta"]["language"]).split("-")[0].lower()
         currency = working["document_meta"]["currency_code"]
-
-        # Restore native orthographic diacritics across human-readable text
-        working = self._ortho_normalizer.normalize_payload(working, locale=norm_lang)
 
         # Bind LocalizationResolver with the verified runtime locale
         resolver = LocalizationResolver(

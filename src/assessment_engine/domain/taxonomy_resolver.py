@@ -307,15 +307,20 @@ class PureTaxonomyResolver:
                                     k_name = str(k.get("kpi_name") or "").strip()
                                     if k_id and k_name:
                                         self._kpis_index[k_id] = {
+                                            "canonical": k_name,
                                             "es": k_name,
+                                            "en": k_name,
                                             "pillar_id": p_id,
                                         }
                                         self._capabilities_index[k_id.lower()] = {
+                                            "canonical": k_name,
                                             "es": k_name,
+                                            "en": k_name,
                                             "pillar_id": p_id,
                                         }
-                        except Exception as e:
-                            logger.debug("Failed loading tower definition for KPI indexing: %s", e)
+                        except (json.JSONDecodeError, OSError) as e:
+                            logger.warning("Failed parsing tower definition file '%s': %s", def_file, e)
+                            raise
 
     @staticmethod
     def _normalize_locale(locale: str) -> str:
@@ -426,15 +431,9 @@ class PureTaxonomyResolver:
             loc_dict = self._kpis_index[code_key]
             if norm_locale in loc_dict:
                 return loc_dict[norm_locale]
-            p_id = loc_dict.get("pillar_id")
-            if p_id and norm_locale != "es":
-                p_label = self.resolve_pillar_name(p_id, default="", locale=norm_locale)
-                if p_label:
-                    return f"{code_key} - {p_label}"
             if "en" in loc_dict:
                 return loc_dict["en"]
-            if "es" in loc_dict:
-                return loc_dict["es"]
+            return loc_dict.get("canonical", default or cap_name)
 
         if norm_cap_lower in self._capabilities_index:
             loc_dict = self._capabilities_index[norm_cap_lower]

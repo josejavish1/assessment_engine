@@ -140,16 +140,22 @@ class PayloadToASTBridge:
         )
         self.meta_lang = ctx.get("meta_lang", "en")
 
-        # Deterministically restore native orthographic diacritics on human-readable strings
-        from assessment_engine.domain.services.orthographic_normalizer import (
-            OrthographicNormalizer,
-        )
-        from assessment_engine.infrastructure.runtime_paths import ROOT
-        ortho = OrthographicNormalizer(lexicon_path=ROOT / "engine_config" / "orthographic_lexicon.json")
+        # Enforce universal Unicode Normalization Form C (NFC) across incoming payload context
+        import unicodedata
+
+        def _canonicalize_nfc(data: Any) -> Any:
+            if isinstance(data, str):
+                return unicodedata.normalize("NFC", data)
+            if isinstance(data, dict):
+                return {k: _canonicalize_nfc(v) for k, v in data.items()}
+            if isinstance(data, list):
+                return [_canonicalize_nfc(item) for item in data]
+            return data
+
         if "blueprint_data" in ctx and isinstance(ctx["blueprint_data"], dict):
-            ctx["blueprint_data"] = ortho.normalize_payload(ctx["blueprint_data"], locale=self.meta_lang)
+            ctx["blueprint_data"] = _canonicalize_nfc(ctx["blueprint_data"])
         if "annex_data" in ctx and isinstance(ctx["annex_data"], dict):
-            ctx["annex_data"] = ortho.normalize_payload(ctx["annex_data"], locale=self.meta_lang)
+            ctx["annex_data"] = _canonicalize_nfc(ctx["annex_data"])
 
         nodes: List[Any] = []
         self._build_cover_and_toc(ctx, nodes)
