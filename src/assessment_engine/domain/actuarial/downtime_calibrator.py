@@ -28,6 +28,77 @@ class ActuarialRiskRegime(str, Enum):
 
 
 @dataclass(frozen=True)
+class OperationalTailRiskDecomposition:
+    """Holds the Open FAIR decomposition between capped operational stoppage and secondary tail costs."""
+    expected_annual_loss: float
+    var_90_total: float
+    composite_hourly_rate: float
+    eal_equivalent_hours: float
+    naive_linear_p90_hours: float
+    capped_operational_p90_hours: float
+    primary_operational_p90_loss: float
+    secondary_tail_p90_loss: float
+    operational_recovery_ceiling_hours: float
+
+
+class OperationalTailRiskEngine:
+    """Decomposes P90 Value-at-Risk into realistic physical outage hours and secondary tail loss."""
+    DEFAULT_RECOVERY_CEILING_HOURS: float = 24.0
+
+    @classmethod
+    def decompose_tail_risk(
+        cls,
+        expected_annual_loss: float,
+        var_90_total: float,
+        composite_hourly_rate: float,
+        operational_recovery_ceiling_hours: float | None = None,
+    ) -> OperationalTailRiskDecomposition:
+        if expected_annual_loss < 0.0 or var_90_total < 0.0:
+            raise ValueError("Loss magnitudes cannot be negative.")
+
+        ceiling_hours = (
+            operational_recovery_ceiling_hours
+            if operational_recovery_ceiling_hours is not None and operational_recovery_ceiling_hours > 0.0
+            else cls.DEFAULT_RECOVERY_CEILING_HOURS
+        )
+
+        if composite_hourly_rate <= 0.0 or (expected_annual_loss <= 0.0 and var_90_total <= 0.0):
+            return OperationalTailRiskDecomposition(
+                expected_annual_loss=max(0.0, expected_annual_loss),
+                var_90_total=max(0.0, var_90_total),
+                composite_hourly_rate=max(0.0, composite_hourly_rate),
+                eal_equivalent_hours=0.0,
+                naive_linear_p90_hours=0.0,
+                capped_operational_p90_hours=0.0,
+                primary_operational_p90_loss=0.0,
+                secondary_tail_p90_loss=0.0,
+                operational_recovery_ceiling_hours=ceiling_hours,
+            )
+
+        eal_hours = expected_annual_loss / composite_hourly_rate
+        naive_p90_hours = var_90_total / composite_hourly_rate
+
+        import math
+        capped_p90_hours = ceiling_hours * (1.0 - math.exp(-naive_p90_hours / ceiling_hours))
+        capped_p90_hours = min(capped_p90_hours, naive_p90_hours)
+
+        primary_p90_loss = capped_p90_hours * composite_hourly_rate
+        secondary_p90_loss = max(0.0, var_90_total - primary_p90_loss)
+
+        return OperationalTailRiskDecomposition(
+            expected_annual_loss=expected_annual_loss,
+            var_90_total=var_90_total,
+            composite_hourly_rate=composite_hourly_rate,
+            eal_equivalent_hours=eal_hours,
+            naive_linear_p90_hours=naive_p90_hours,
+            capped_operational_p90_hours=capped_p90_hours,
+            primary_operational_p90_loss=primary_p90_loss,
+            secondary_tail_p90_loss=secondary_p90_loss,
+            operational_recovery_ceiling_hours=ceiling_hours,
+        )
+
+
+@dataclass(frozen=True)
 class DomainActuarialMetrics:
     """Immutable Data Transfer Object representing calibrated domain risk metrics.
     Strictly decouples internal macro-economic baselines from domain presentation.

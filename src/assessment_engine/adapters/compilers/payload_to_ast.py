@@ -105,6 +105,7 @@ class ExecutiveNarrativeSynthesizer:
         remediation_horizon_label: str,
         primary_remediation_pillar: str,
         target_maturity_score: str,
+        capped_p90_hours_fmt: str = "",
     ) -> List[str]:
         """Synthesizes the 4 authoritative executive summary paragraphs for a capability tower."""
         f1 = findings_briefs[0] if len(findings_briefs) > 0 else t("default_critical_vulnerability", locale=self._locale_code)
@@ -115,6 +116,8 @@ class ExecutiveNarrativeSynthesizer:
         f1 = f1.strip().rstrip(".")
         f2 = f2.strip().rstrip(".")
         f3 = f3.strip().rstrip(".")
+
+        capped_hours_val = capped_p90_hours_fmt.strip() or p90_downtime_hours_fmt.strip()
 
         context = {
             "client_name": client_name.strip(),
@@ -130,6 +133,7 @@ class ExecutiveNarrativeSynthesizer:
             "net_downtime_hours_fmt": net_downtime_hours_fmt.strip(),
             "annual_loss_expectancy_fmt": annual_loss_expectancy_fmt.strip(),
             "p90_downtime_hours_fmt": p90_downtime_hours_fmt.strip(),
+            "capped_p90_hours_fmt": capped_hours_val,
             "p90_var_exposure_fmt": p90_var_exposure_fmt.strip(),
             "remediation_horizon_label": remediation_horizon_label.strip(),
             "primary_remediation_pillar": primary_remediation_pillar.strip(),
@@ -213,6 +217,13 @@ class PayloadToASTBridge:
             self.primary_color_rgb = [r, g, b]
         except (OSError, ValueError, KeyError, AttributeError) as ex:
             logger.warning(f"[AST Bridge Warning] Error resolving primary brand color: {ex}")
+
+    @property
+    def primary_color_hex(self) -> str:
+        """Returns the primary corporate brand color in 6-character hex format."""
+        if len(self.primary_color_rgb) == 3:
+            return f"{self.primary_color_rgb[0]:02X}{self.primary_color_rgb[1]:02X}{self.primary_color_rgb[2]:02X}"
+        return "0072BC"
 
 
     def convert(
@@ -807,6 +818,30 @@ class PayloadToASTBridge:
         primary_pillar_resolved = resolver.resolve_pillar_by_any_reference(primary_pillar, default=primary_pillar, locale=meta_lang)
         remediation_horizon = t("default_remediation_horizon", locale=meta_lang)
 
+        from assessment_engine.domain.actuarial.downtime_calibrator import OperationalTailRiskEngine
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        ceiling_hours = float(
+            fin_telemetry.get("operational_recovery_ceiling_hours")
+            or blueprint_data.get("operational_recovery_ceiling_hours")
+            or 24.0
+        )
+        tail_decomp = OperationalTailRiskEngine.decompose_tail_risk(
+            expected_annual_loss=total_fair_ale,
+            var_90_total=total_p90,
+            composite_hourly_rate=hourly_rate,
+            operational_recovery_ceiling_hours=ceiling_hours,
+        )
+        capped_p90_hours_str = format_number(tail_decomp.capped_operational_p90_hours, locale=meta_lang, decimals=1)
+
+        def _fmt_curr(val_str: str) -> str:
+            return f"{val_str} {currency}".strip() if meta_lang.startswith("es") else f"{currency}{val_str}".strip()
+
+        hourly_rate_narrative = (
+            f"{hourly_formatted} {currency}/h"
+            if meta_lang.startswith("es")
+            else f"{currency}{hourly_formatted}/hr"
+        )
+
         synthesizer = ExecutiveNarrativeSynthesizer(locale_code=meta_lang)
         p_texts = synthesizer.synthesize_chapter_one_paragraphs(
             client_name=client_name,
@@ -815,11 +850,12 @@ class PayloadToASTBridge:
             maturity_tier_label=global_band,
             primary_workloads_summary=primary_workloads,
             findings_briefs=findings_briefs,
-            hourly_burn_rate_fmt=f"{currency} {hourly_formatted}",
+            hourly_burn_rate_fmt=hourly_rate_narrative,
             net_downtime_hours_fmt=eff_hours_str,
-            annual_loss_expectancy_fmt=f"{currency} {ale_formatted}",
+            annual_loss_expectancy_fmt=_fmt_curr(ale_formatted),
             p90_downtime_hours_fmt=p90_hours_str,
-            p90_var_exposure_fmt=f"{currency} {p90_formatted}",
+            capped_p90_hours_fmt=capped_p90_hours_str,
+            p90_var_exposure_fmt=_fmt_curr(p90_formatted),
             remediation_horizon_label=remediation_horizon,
             primary_remediation_pillar=primary_pillar_resolved,
             target_maturity_score=target_score_str,
@@ -1615,13 +1651,125 @@ class PayloadToASTBridge:
                 client_name=client_name,
             )
 
-        nodes.append(ParagraphNode(text=executive_risk_summary))
+        # 4.1 Actuarial Quantification Framework & Mathematical Lineage Table
+        nodes.append(
+            HeadingNode(
+                text=t("ch4_sec1_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(ParagraphNode(text=t("ch4_sec1_narrative_p1", locale=meta_lang)))
+        nodes.append(SpacerNode(points=6))
 
-        # Insert an inline executive methodological note referencing Appendix A.
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        hourly_rate = float(
+            fin_telemetry.get("authoritative_hourly_downtime_cost")
+            or blueprint_data.get("hourly_downtime_rate")
+            or blueprint_data.get("hourly_burn_rate")
+            or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 0.0)
+        )
+        hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=2)
+        total_rate_fmt = f"{hourly_formatted} {currency}"
+
         nodes.append(
             ParagraphNode(
-                text=t("fair_methodology_note", locale=meta_lang),
+                text=t(
+                    "ch4_sec1_narrative_p2",
+                    locale=meta_lang,
+                    hourly_rate_est=total_rate_fmt,
+                    client_name=client_name,
+                )
+            )
+        )
+        nodes.append(SpacerNode(points=4))
+        nodes.append(
+            ParagraphNode(
+                text=f"*{t('ch4_sec1_formula_block', locale=meta_lang)}*",
+                align="CENTER",
+            )
+        )
+        nodes.append(SpacerNode(points=8))
+
+        # Formal Actuarial Lineage Table (Table 4.1)
+        vectors = fin_telemetry.get("hourly_rate_vectors") or {}
+        w_op = float(vectors.get("operational_velocity_share") or fin_telemetry.get("operational_loss_weight") or 0.75)
+        w_sla = float(vectors.get("contractual_sla_share") or fin_telemetry.get("sla_penalty_weight") or 0.15)
+        w_rec = float(vectors.get("emergency_recovery_share") or fin_telemetry.get("recovery_labor_weight") or round(1.0 - (w_op + w_sla), 4))
+
+        c_op_val = round(hourly_rate * w_op, 2)
+        c_sla_val = round(hourly_rate * w_sla, 2)
+        c_rec_val = round(hourly_rate - (c_op_val + c_sla_val), 2)
+
+        c_op_fmt = f"{format_number(c_op_val, locale=meta_lang, decimals=2)} {currency}"
+        c_sla_fmt = f"{format_number(c_sla_val, locale=meta_lang, decimals=2)} {currency}"
+        c_rec_fmt = f"{format_number(c_rec_val, locale=meta_lang, decimals=2)} {currency}"
+
+        p_op_str = f"{format_number(w_op * 100.0, locale=meta_lang, decimals=1)}%"
+        p_sla_str = f"{format_number(w_sla * 100.0, locale=meta_lang, decimals=1)}%"
+        p_rec_str = f"{format_number(w_rec * 100.0, locale=meta_lang, decimals=1)}%"
+        p_tot_str = f"{format_number(100.0, locale=meta_lang, decimals=1)}%"
+
+        header_bg = self.primary_color_hex
+        lineage_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_lineage_col_vector", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255]),
+                    CellNode(text=t("ch4_lineage_col_code", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=t("ch4_lineage_col_desc", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255]),
+                    CellNode(text=t("ch4_lineage_col_rate", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="RIGHT"),
+                    CellNode(text=t("ch4_lineage_col_share", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
+                ],
+                is_header=True,
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_lineage_row_op_name", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.5),
+                    CellNode(text="C_op, est", bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
+                    CellNode(text=t("ch4_lineage_row_op_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=c_op_fmt, bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=p_op_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_lineage_row_sla_name", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.5),
+                    CellNode(text="C_sla, est", bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
+                    CellNode(text=t("ch4_lineage_row_sla_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=c_sla_fmt, bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=p_sla_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_lineage_row_rec_name", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.5),
+                    CellNode(text="C_rec, est", bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
+                    CellNode(text=t("ch4_lineage_row_rec_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=c_rec_fmt, bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=p_rec_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_lineage_row_total_name", locale=meta_lang), bold=True, bg_color="E2F0D9", font_size=9.0),
+                    CellNode(text="R_hourly, est", bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
+                    CellNode(text=t("ch4_lineage_row_total_desc", locale=meta_lang), italic=True, bg_color="E2F0D9", font_size=8.0),
+                    CellNode(text=total_rate_fmt, bold=True, bg_color="E2F0D9", align="RIGHT", font_size=9.0),
+                    CellNode(text=p_tot_str, bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=lineage_rows, autofit=True, col_widths=[0.24, 0.12, 0.40, 0.14, 0.10]))
+        nodes.append(SpacerNode(points=8))
+
+        # Epistemic Modesty Governance Callout
+        callout_title = t("ch4_epistemic_callout_title", locale=meta_lang)
+        callout_body = t("ch4_epistemic_callout_body", locale=meta_lang)
+        nodes.append(
+            ParagraphNode(
+                text=f"**{callout_title}:** {callout_body}",
                 italic=True,
+                font_size=8.5,
                 space_after=12,
             )
         )
@@ -1637,22 +1785,23 @@ class PayloadToASTBridge:
         currency = ctx["currency"]
         is_critical = ctx["is_critical"]
 
-        # 5.1 Generate 5x5 Heatmap (Word-native mosaic)
+        # 4.2 Risk Prioritization Matrix & 5x5 Heatmap
         nodes.append(
             HeadingNode(
-                text=t("exposure_summary_title", locale=meta_lang),
+                text=t("ch4_sec2_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
+        nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
         nodes.append(_build_heatmap_mosaic(risks_data_list))
         nodes.append(SpacerNode(points=15))
 
-        # 4.2 Risk Inventory Categorization into Three Strategic Portfolios
+        # 4.3 Structuring Inventory into Three Strategic Investment Portfolios
         nodes.append(SpacerNode(points=12))
         nodes.append(
             HeadingNode(
-                text=t("risk_portfolio_tiers_title", locale=meta_lang),
+                text=t("ch4_sec3_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
@@ -1684,21 +1833,52 @@ class PayloadToASTBridge:
         t2_set = set(r.get("id") for r in t2_risks)
         t3_risks = [r for r in risks_data_list if r.get("id") not in t1_set and r.get("id") not in t2_set]
 
-        t1_ids = ", ".join(r.get("id") for r in t1_risks) if t1_risks else "N/A"
-        t2_ids = ", ".join(r.get("id") for r in t2_risks) if t2_risks else "N/A"
-        t3_ids = ", ".join(r.get("id") for r in t3_risks) if t3_risks else "N/A"
-
         t1_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t1_risks)
         t1_pct = int(round((t1_sum / total_fair_ale * 100))) if total_fair_ale > 0 else 0
+        t2_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t2_risks)
+        t3_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t3_risks)
 
-        intro_tiers = t("risk_portfolio_tiers_intro", locale=meta_lang, num_total=len(risks_data_list))
-        nodes.append(ParagraphNode(text=intro_tiers, italic=True))
-        nodes.append(SpacerNode(points=6))
-        nodes.append(ParagraphNode(text=t("risk_portfolio_tier_1_tpl", locale=meta_lang, ids=t1_ids, pct=t1_pct)))
-        nodes.append(SpacerNode(points=4))
-        nodes.append(ParagraphNode(text=t("risk_portfolio_tier_2_tpl", locale=meta_lang, ids=t2_ids)))
-        nodes.append(SpacerNode(points=4))
-        nodes.append(ParagraphNode(text=t("risk_portfolio_tier_3_tpl", locale=meta_lang, ids=t3_ids)))
+        intro_tiers = t("ch4_sec3_intro", locale=meta_lang)
+        nodes.append(ParagraphNode(text=intro_tiers, space_after=8))
+
+        yr_suffix = t("per_year_suffix", locale=meta_lang)
+        tier_header_bg = self.primary_color_hex
+        tier_summary_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_tier_table_col_tier", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255]),
+                    CellNode(text=t("ch4_tier_table_col_count", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=t("ch4_tier_table_col_ale", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="RIGHT"),
+                    CellNode(text=t("ch4_tier_table_col_focus", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255]),
+                ],
+                is_header=True,
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_tier1_label", locale=meta_lang), bold=True, bg_color="FADBD8", font_size=8.5),
+                    CellNode(text=str(len(t1_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                    CellNode(text=f"{format_number(t1_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t1_pct}%)", bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=t("ch4_tier1_focus", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_tier2_label", locale=meta_lang), bold=True, bg_color="FCF3CF", font_size=8.5),
+                    CellNode(text=str(len(t2_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                    CellNode(text=f"{format_number(t2_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=t("ch4_tier2_focus", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_tier3_label", locale=meta_lang), bold=True, bg_color="D5F5E3", font_size=8.5),
+                    CellNode(text=str(len(t3_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                    CellNode(text=f"{format_number(t3_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=t("ch4_tier3_focus", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=tier_summary_rows, autofit=True, col_widths=[0.28, 0.08, 0.24, 0.40]))
         nodes.append(SpacerNode(points=15))
 
     def _build_detailed_findings_log(
@@ -1727,9 +1907,15 @@ class PayloadToASTBridge:
 
         nodes.append(
             HeadingNode(
-                text=t("detailed_risks_title", locale=meta_lang),
+                text=t("ch4_sec4_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        nodes.append(
+            ParagraphNode(
+                text=t("ch4_sec4_intro", locale=meta_lang, risk_count=len(risks_data_list)),
+                space_after=12,
             )
         )
 
@@ -1860,10 +2046,12 @@ class PayloadToASTBridge:
         raw_lm = float(hc.get("lm") or 1.0)
 
         annual_divisor = float(blueprint_data.get("annual_downtime_divisor", 67.5))
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
         hourly_rate = float(
-            blueprint_data.get("hourly_downtime_rate")
+            fin_telemetry.get("authoritative_hourly_downtime_cost")
+            or blueprint_data.get("hourly_downtime_rate")
             or blueprint_data.get("hourly_burn_rate")
-            or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 10000.0)
+            or (total_fair_ale / annual_divisor if total_fair_ale > 0 else 0.0)
         )
 
         if t_idx == 1:
