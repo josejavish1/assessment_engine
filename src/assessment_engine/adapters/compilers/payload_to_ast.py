@@ -106,6 +106,7 @@ class ExecutiveNarrativeSynthesizer:
         primary_remediation_pillar: str,
         target_maturity_score: str,
         capped_p90_hours_fmt: str = "",
+        tower_id: str = "T1",
     ) -> List[str]:
         """Synthesizes the 4 authoritative executive summary paragraphs for a capability tower."""
         f1 = findings_briefs[0] if len(findings_briefs) > 0 else t("default_critical_vulnerability", locale=self._locale_code)
@@ -119,9 +120,36 @@ class ExecutiveNarrativeSynthesizer:
 
         capped_hours_val = capped_p90_hours_fmt.strip() or p90_downtime_hours_fmt.strip()
 
+        # Derive canonical key e.g. T1..T10
+        canonical_key = "DEFAULT"
+        match = re.search(r"(\d+)", str(tower_id))
+        if match:
+            idx = int(match.group(1))
+            if 1 <= idx <= 10:
+                canonical_key = f"T{idx}"
+
+        # Load narrative templates from locales.json
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        loc_file = ROOT / "engine_config" / "locales.json"
+        loc_data = {}
+        if loc_file.exists():
+            try:
+                loc_data = json.loads(loc_file.read_text(encoding="utf-8-sig"))
+            except Exception:
+                loc_data = {}
+
+        loc_branch = loc_data.get(self._locale_code, {})
+        tower_semantics_map = loc_branch.get("tower_domain_semantics", {})
+        tower_semantics = tower_semantics_map.get(canonical_key, tower_semantics_map.get("DEFAULT", {}))
+
+        operational_mission = tower_semantics.get("operational_mission", "")
+        dilemma_anchor = tower_semantics.get("dilemma_anchor", "")
+
         context = {
             "client_name": client_name.strip(),
             "tower_name": tower_name.strip(),
+            "operational_mission": operational_mission,
+            "dilemma_anchor": dilemma_anchor,
             "maturity_score": maturity_score.strip(),
             "maturity_tier_label": maturity_tier_label.strip(),
             "critical_findings_count": str(max(len(findings_briefs), 1)),
@@ -139,16 +167,6 @@ class ExecutiveNarrativeSynthesizer:
             "primary_remediation_pillar": primary_remediation_pillar.strip(),
             "target_maturity_score": target_maturity_score.strip(),
         }
-
-        # Load narrative templates from locales.json
-        from assessment_engine.infrastructure.runtime_paths import ROOT
-        loc_file = ROOT / "engine_config" / "locales.json"
-        loc_data = {}
-        if loc_file.exists():
-            try:
-                loc_data = json.loads(loc_file.read_text(encoding="utf-8-sig"))
-            except Exception:
-                loc_data = {}
 
         narrative_section = loc_data.get("executive_summary_narrative", {}).get(self._locale_code, {})
         p1_tmpl = narrative_section.get("p1_operational_posture")
@@ -541,6 +559,7 @@ class PayloadToASTBridge:
         global_reading = ctx["global_reading"]
         gs_val = ctx["gs_val"]
         annex_data = ctx.get("annex_data", {})
+        tower_id = str(ctx.get("tower_id") or blueprint_data.get("tower_id") or "T1").upper()
 
         #
         # 3. CHAPTER 1: EXECUTIVE SUMMARY (RFC 030 4-TIER EXECUTIVE VISUAL ARCHITECTURE)
@@ -859,6 +878,7 @@ class PayloadToASTBridge:
             remediation_horizon_label=remediation_horizon,
             primary_remediation_pillar=primary_pillar_resolved,
             target_maturity_score=target_score_str,
+            tower_id=tower_id,
         )
 
         for p_idx, p_text in enumerate(p_texts):
