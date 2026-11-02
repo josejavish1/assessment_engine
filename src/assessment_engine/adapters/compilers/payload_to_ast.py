@@ -79,6 +79,98 @@ from assessment_engine.adapters.compilers.ast_table_builders import (
 )
 
 
+class ExecutiveNarrativeSynthesizer:
+    """Compiles the 4-part Minto Pyramid Executive Summary for any capability tower (T1-T10).
+    Strictly adheres to 100% Technical English Codebase and Zero Hardcoding standards.
+    """
+
+    UNRESOLVED_TOKEN_PATTERN = re.compile(r"\{[a-zA-Z0-9_]+\}")
+
+    def __init__(self, locale_code: str) -> None:
+        self._locale_code = locale_code
+
+    def synthesize_chapter_one_paragraphs(
+        self,
+        client_name: str,
+        tower_name: str,
+        maturity_score: str,
+        maturity_tier_label: str,
+        primary_workloads_summary: str,
+        findings_briefs: List[str],
+        hourly_burn_rate_fmt: str,
+        net_downtime_hours_fmt: str,
+        annual_loss_expectancy_fmt: str,
+        p90_downtime_hours_fmt: str,
+        p90_var_exposure_fmt: str,
+        remediation_horizon_label: str,
+        primary_remediation_pillar: str,
+        target_maturity_score: str,
+    ) -> List[str]:
+        """Synthesizes the 4 authoritative executive summary paragraphs for a capability tower."""
+        f1 = findings_briefs[0] if len(findings_briefs) > 0 else t("default_critical_vulnerability", locale=self._locale_code)
+        f2 = findings_briefs[1] if len(findings_briefs) > 1 else ""
+        f3 = findings_briefs[2] if len(findings_briefs) > 2 else ""
+
+        # Clean trailing periods and whitespace for smooth multi-clause synthesis
+        f1 = f1.strip().rstrip(".")
+        f2 = f2.strip().rstrip(".")
+        f3 = f3.strip().rstrip(".")
+
+        context = {
+            "client_name": client_name.strip(),
+            "tower_name": tower_name.strip(),
+            "maturity_score": maturity_score.strip(),
+            "maturity_tier_label": maturity_tier_label.strip(),
+            "critical_findings_count": str(max(len(findings_briefs), 1)),
+            "primary_workloads_summary": primary_workloads_summary.strip(),
+            "finding_1_executive_brief": f1,
+            "finding_2_executive_brief": f2,
+            "finding_3_executive_brief": f3,
+            "hourly_burn_rate_fmt": hourly_burn_rate_fmt.strip(),
+            "net_downtime_hours_fmt": net_downtime_hours_fmt.strip(),
+            "annual_loss_expectancy_fmt": annual_loss_expectancy_fmt.strip(),
+            "p90_downtime_hours_fmt": p90_downtime_hours_fmt.strip(),
+            "p90_var_exposure_fmt": p90_var_exposure_fmt.strip(),
+            "remediation_horizon_label": remediation_horizon_label.strip(),
+            "primary_remediation_pillar": primary_remediation_pillar.strip(),
+            "target_maturity_score": target_maturity_score.strip(),
+        }
+
+        # Load narrative templates from locales.json
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        loc_file = ROOT / "engine_config" / "locales.json"
+        loc_data = {}
+        if loc_file.exists():
+            try:
+                loc_data = json.loads(loc_file.read_text(encoding="utf-8-sig"))
+            except Exception:
+                loc_data = {}
+
+        narrative_section = loc_data.get("executive_summary_narrative", {}).get(self._locale_code, {})
+        p1_tmpl = narrative_section.get("p1_operational_posture")
+        p2_tmpl = (
+            narrative_section.get("p2_architectural_dilemma")
+            if len(findings_briefs) >= 3
+            else narrative_section.get("p2_architectural_dilemma_single")
+        )
+        p3_tmpl = narrative_section.get("p3_financial_exposure")
+        p4_tmpl = narrative_section.get("p4_modernization_mandate")
+
+        paragraphs = []
+        for p_idx, tmpl in enumerate([p1_tmpl, p2_tmpl, p3_tmpl, p4_tmpl], 1):
+            if tmpl:
+                rendered = tmpl.format(**context)
+                unresolved = self.UNRESOLVED_TOKEN_PATTERN.findall(rendered)
+                if unresolved:
+                    raise ValueError(f"Unresolved tokens {unresolved} in paragraph {p_idx}")
+                paragraphs.append(rendered)
+            else:
+                fallback_p = t(f"exec_narrative_p{p_idx}", locale=self._locale_code, **context)
+                paragraphs.append(fallback_p)
+
+        return paragraphs
+
+
 class PayloadToASTBridge:
     """Translates structured JSON payloads and associated markdown modules into a unified Document Abstract Syntax Tree (AST).
     This process maintains semantic identity and structural alignment with the source content."""
@@ -661,62 +753,77 @@ class PayloadToASTBridge:
         else:
             eff_hours_str = format_number(0.0, locale=meta_lang, decimals=1)
             
-        perimeter_name = str(
-            blueprint_data.get("perimeter_context", {}).get("perimeter_name")
-            or blueprint_data.get("audited_site_name")
-            or t("default_perimeter_name", locale=meta_lang)
-            or "Site"
+        findings_briefs: List[str] = []
+        exec_struct_risks = blueprint_data.get("executive_snapshot", {}).get("structural_risks", [])
+        for sr in exec_struct_risks:
+            if isinstance(sr, str) and len(sr.strip()) > 15:
+                findings_briefs.append(sr.strip())
+
+        if len(findings_briefs) < 3:
+            for p in blueprint_data.get("pillars_analysis", []):
+                for hc in (p.get("health_check_asis") or []):
+                    brief = str(hc.get("finding") or hc.get("risk_observed") or hc.get("business_risk") or "").strip()
+                    if brief and len(brief) > 15 and brief not in findings_briefs:
+                        findings_briefs.append(brief)
+                        if len(findings_briefs) >= 3:
+                            break
+                if len(findings_briefs) >= 3:
+                    break
+
+        if not findings_briefs:
+            findings_briefs.append(fallback_vuln)
+
+        primary_workloads = str(
+            blueprint_data.get("perimeter_context", {}).get("primary_workloads")
+            or blueprint_data.get("executive_snapshot", {}).get("bottom_line_focus")
+            or t("default_primary_workloads", locale=meta_lang)
         )
 
-        p1_text = t(
-            "exec_narrative_p1",
-            locale=meta_lang,
+        target_score_val = float(blueprint_data.get("target_maturity_score") or blueprint_data.get("target_score") or min(5.0, gs_val + 1.5))
+        target_score_str = format_number(target_score_val, locale=meta_lang, decimals=1)
+
+        strat_roadmap = blueprint_data.get("strategic_roadmap")
+        lead_init = ""
+        if isinstance(strat_roadmap, dict):
+            lead_init = str(strat_roadmap.get("lead_initiative", ""))
+        elif isinstance(strat_roadmap, list) and strat_roadmap:
+            first_item = strat_roadmap[0]
+            if isinstance(first_item, dict):
+                lead_init = str(first_item.get("initiative") or first_item.get("name") or "")
+
+        first_pillar_name = ""
+        pillars_list = blueprint_data.get("pillars_analysis")
+        if isinstance(pillars_list, list) and pillars_list:
+            first_p = pillars_list[0]
+            if isinstance(first_p, dict):
+                first_pillar_name = str(first_p.get("pillar_name") or first_p.get("name") or "")
+
+        primary_pillar = lead_init or first_pillar_name or t("default_remediation_pillar", locale=meta_lang)
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        primary_pillar_resolved = resolver.resolve_pillar_by_any_reference(primary_pillar, default=primary_pillar, locale=meta_lang)
+        remediation_horizon = t("default_remediation_horizon", locale=meta_lang)
+
+        synthesizer = ExecutiveNarrativeSynthesizer(locale_code=meta_lang)
+        p_texts = synthesizer.synthesize_chapter_one_paragraphs(
+            client_name=client_name,
             tower_name=tower_name,
-            score_display=score_display,
-            global_band=global_band,
-            client_name=client_name,
-            total_findings=total_findings,
-            top_risk_title=top_risk_title,
-        )
-        p2_text = t(
-            "exec_narrative_p2",
-            locale=meta_lang,
-            client_name=client_name,
-            hourly_cost=f"{currency} {hourly_formatted}",
-            calibrated_hourly_cost_formatted=hourly_formatted,
-            audited_perimeter_name=perimeter_name,
-            global_annual_revenue_formatted=global_annual_revenue_formatted,
-            currency_code=currency,
-            perimeter_revenue_weight_pct=perimeter_weight_str,
-            effective_exposed_revenue_formatted=effective_exposed_formatted,
-            sector_benchmark_source=sector_benchmark_source,
-            sector_impact_factor_pct=sector_impact_factor_pct,
-            hourly_rate=hourly_formatted,
-            effective_downtime_hours=eff_hours_str,
-            total_ale=ale_formatted,
-        )
-        p3_text = t(
-            "exec_narrative_p3",
-            locale=meta_lang,
-            ale_formatted=f"{currency} {ale_formatted}",
-            ale_hours=eff_hours_str,
-            p90_formatted=f"{currency} {p90_formatted}",
-            p90_hours=p90_hours_str,
-            total_capex=total_capex_formatted,
-            currency=currency,
-        )
-        p4_text = t(
-            "exec_narrative_p4",
-            locale=meta_lang,
-            tower_name=tower_name,
-            client_name=client_name,
-            rosi_percentage=rosi_percentage,
+            maturity_score=score_display,
+            maturity_tier_label=global_band,
+            primary_workloads_summary=primary_workloads,
+            findings_briefs=findings_briefs,
+            hourly_burn_rate_fmt=f"{currency} {hourly_formatted}",
+            net_downtime_hours_fmt=eff_hours_str,
+            annual_loss_expectancy_fmt=f"{currency} {ale_formatted}",
+            p90_downtime_hours_fmt=p90_hours_str,
+            p90_var_exposure_fmt=f"{currency} {p90_formatted}",
+            remediation_horizon_label=remediation_horizon,
+            primary_remediation_pillar=primary_pillar_resolved,
+            target_maturity_score=target_score_str,
         )
 
-        nodes.append(ParagraphNode(text=p1_text, space_after=6))
-        nodes.append(ParagraphNode(text=p2_text, space_after=6))
-        nodes.append(ParagraphNode(text=p3_text, space_after=6))
-        nodes.append(ParagraphNode(text=p4_text, space_after=8))
+        for p_idx, p_text in enumerate(p_texts):
+            nodes.append(ParagraphNode(text=p_text, space_after=6 if p_idx < len(p_texts) - 1 else 8))
         nodes.append(SpacerNode(points=8))
 
         # -------------------------------------------------------------

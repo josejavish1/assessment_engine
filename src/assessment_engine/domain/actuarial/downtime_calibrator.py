@@ -21,6 +21,30 @@ class RevenueSourceType(str, Enum):
     PARAMETRIC_DERIVATION = "PARAMETRIC_HEADCOUNT_DERIVATION"
 
 
+class ActuarialRiskRegime(str, Enum):
+    """Classifies the domain risk profile based on tail-to-mean loss elasticity."""
+    TAIL_VOLATILITY_DOMINANT = "TAIL_VOLATILITY_DOMINANT"
+    CHRONIC_FRICTION_DOMINANT = "CHRONIC_FRICTION_DOMINANT"
+
+
+@dataclass(frozen=True)
+class DomainActuarialMetrics:
+    """Immutable Data Transfer Object representing calibrated domain risk metrics.
+    Strictly decouples internal macro-economic baselines from domain presentation.
+    """
+    tower_id: str
+    currency_code: str
+    currency_symbol: str
+    composite_hourly_burn_rate: Decimal
+    net_annual_downtime_hours: Decimal
+    annual_loss_expectancy: Decimal
+    p90_stress_downtime_hours: Decimal
+    p90_value_at_risk: Decimal
+    tail_to_mean_ratio: Decimal
+    risk_regime: ActuarialRiskRegime
+    target_maturity_score: Decimal
+
+
 @dataclass(frozen=True)
 class CalibratedDowntimeMetrics:
     """Immutable value object containing calibrated actuarial downtime parameters."""
@@ -56,6 +80,83 @@ class ActuarialDowntimeCalibrator:
     """
 
     DEFAULT_OPERATIONAL_HOURS_PER_YEAR: Decimal = Decimal("8760.0")
+    TAIL_REGIME_THRESHOLD: Decimal = Decimal("3.0")
+    QUANTIZE_CURRENCY: Decimal = Decimal("0.01")
+    QUANTIZE_WHOLE_CURRENCY: Decimal = Decimal("1")
+    QUANTIZE_HOURS: Decimal = Decimal("0.1")
+
+    @classmethod
+    def calibrate_domain_exposure(
+        cls,
+        tower_id: str,
+        currency_code: str,
+        currency_symbol: str,
+        raw_hourly_burn_rate: float,
+        deduplicated_annual_hours: float,
+        p90_stress_hours: float,
+        current_maturity_score: float,
+        configured_target_maturity: float | None = None,
+    ) -> DomainActuarialMetrics:
+        """Deterministically computes and quantizes actuarial exposure metrics for a given tower."""
+        if raw_hourly_burn_rate < 0 or deduplicated_annual_hours < 0 or p90_stress_hours < 0:
+            raise ValueError(
+                f"Invalid negative actuarial telemetry for tower '{tower_id}': "
+                f"rate={raw_hourly_burn_rate}, net_hours={deduplicated_annual_hours}, "
+                f"p90_hours={p90_stress_hours}."
+            )
+
+        hourly_rate = Decimal(str(raw_hourly_burn_rate)).quantize(
+            cls.QUANTIZE_CURRENCY, rounding=ROUND_HALF_UP
+        )
+        net_hours = Decimal(str(deduplicated_annual_hours)).quantize(
+            cls.QUANTIZE_HOURS, rounding=ROUND_HALF_UP
+        )
+        p90_hours = Decimal(str(max(deduplicated_annual_hours, p90_stress_hours))).quantize(
+            cls.QUANTIZE_HOURS, rounding=ROUND_HALF_UP
+        )
+
+        ale_amount = (hourly_rate * net_hours).quantize(
+            cls.QUANTIZE_WHOLE_CURRENCY, rounding=ROUND_HALF_UP
+        )
+        p90_var_amount = (hourly_rate * p90_hours).quantize(
+            cls.QUANTIZE_WHOLE_CURRENCY, rounding=ROUND_HALF_UP
+        )
+
+        if ale_amount > Decimal("0"):
+            tail_ratio = (p90_var_amount / ale_amount).quantize(
+                cls.QUANTIZE_HOURS, rounding=ROUND_HALF_UP
+            )
+        else:
+            tail_ratio = Decimal("1.0")
+
+        regime = (
+            ActuarialRiskRegime.TAIL_VOLATILITY_DOMINANT
+            if tail_ratio >= cls.TAIL_REGIME_THRESHOLD
+            else ActuarialRiskRegime.CHRONIC_FRICTION_DOMINANT
+        )
+
+        maturity_dec = Decimal(str(current_maturity_score))
+        if configured_target_maturity is not None:
+            target_maturity = Decimal(str(configured_target_maturity)).quantize(
+                cls.QUANTIZE_HOURS, rounding=ROUND_HALF_UP
+            )
+        else:
+            computed_target = min(Decimal("4.5"), max(Decimal("3.8"), maturity_dec + Decimal("1.5")))
+            target_maturity = computed_target.quantize(cls.QUANTIZE_HOURS, rounding=ROUND_HALF_UP)
+
+        return DomainActuarialMetrics(
+            tower_id=tower_id,
+            currency_code=currency_code,
+            currency_symbol=currency_symbol,
+            composite_hourly_burn_rate=hourly_rate,
+            net_annual_downtime_hours=net_hours,
+            annual_loss_expectancy=ale_amount,
+            p90_stress_downtime_hours=p90_hours,
+            p90_value_at_risk=p90_var_amount,
+            tail_to_mean_ratio=tail_ratio,
+            risk_regime=regime,
+            target_maturity_score=target_maturity,
+        )
 
     DEFAULT_SECTOR_CATALOG: Mapping[str, Mapping[str, Any]] = {
         "HEAVY_MANUFACTURING": {

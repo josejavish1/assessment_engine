@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Argon-4 Consultation: Pure Pipeline Architecture, Elimination of Secondary Template Anti-Patterns, and Zero-Hardcoding Lexical Governance (RFC 033)."""
+"""Argon-4 Master Architectural Consultation: RFC 040 Enterprise Executive Realism & Actuarial Credibility.
+
+Instructs gemini-4-argon to think through and formulate the complete architectural blueprint
+before any code is written, ensuring zero bugs, zero antipatterns, zero hardcoding,
+and 100% Technical English codebase standards.
+"""
 
 from __future__ import annotations
 
@@ -22,59 +27,84 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Principal Systems Architect, Chief Compiler Engineer & Executive Editorial Director (Google Tier-1 / Anthropic Core Infrastructure).
+Role: Chief Actuarial Systems Architect & Principal Enterprise Compiler Engineer (Google Tier-1 Core Infrastructure / Anthropic Engineering / MIT Actuarial Fellow).
 
-USER'S CRITICAL DIALECTICAL CHALLENGE:
-The user raised two fundamental architectural objections:
-1. "pero una duda, porque mantenemos (approved_annex_t2.template_payload.json) no es un antipatrón? creí que todas las torres tenian el mismo core."
-   - Why do we have separate `approved_annex_{tower}.template_payload.json` files alongside `blueprint_{tower}_payload.json`?
-   - Is splitting the pipeline between a "blueprint payload" and an "approved annex template payload" a split-brain anti-pattern?
-   - Shouldn't there be a SINGLE canonical payload contract per tower (`EnrichedTowerPayload` / `blueprint_{tower}_payload.json`) that contains all necessary data for rendering, so that all towers (T1 through T10) share the exact same core pipeline without juggling secondary artifact files?
-   - Moreover, manually editing or patching a JSON artifact on disk (`approved_annex_t2.template_payload.json`) is a non-reproducible manual hack that fails for any other client or when the pipeline is regenerated.
+MISSION CONTEXT:
+The user reviewed the generated assessment deliverables and delivered critical feedback regarding the executive narrative and actuarial framing of Chapter 1 (Executive Summary) in technical capability tower annexes:
 
-2. "no tengo claro que esta sea la mejor solución 'Supresión Definitiva de \"Fabril\":'"
-   - Is embedding hardcoded Python regexes like `re.sub(r"\\bfabril\\b", "de planta", ...)` inside the document compiler (`payload_to_ast.py`) an anti-pattern?
-   - YES: In a universal engine designed for any enterprise (from a hospital to an investment bank or pharmaceutical company in any country), hardcoding Spanish words like "fabril" in Python compiler code is hardcoded domain leakage!
-   - How should lexical tone and natural register be governed properly, purely, and universally without hardcoding language-specific regexes in Python code?
+"no se si es una tomadura de pelo, otra vez habla de 1.000.000 sigue todo bastante mal explicado la verdad ---> Para traducir esta fragilidad al lenguaje del comité de dirección, hemos huido de estimaciones teóricas. Aplicando un modelo actuarial calibrado sobre la facturación consolidada expuesta (1.000.000.000 €), determinamos un coste compuesto de inactividad de € 11.428,60/h (integrando lucro cesante directo del 0,0010%, penalizaciones de SLA y sobrecoste de recuperación). Esta valoración matemática vincula cada riesgo de la plataforma directamente con su impacto sobre el EBITDA de Molins.
+Además, para evitar la inflación artificial del riesgo, hemos deduplicado los radios de impacto solapados: la exposición neta se sitúa en 8,9 horas críticas anuales, representando una Pérdida Anualizada (ALE) de € 101.231. En un escenario de estrés extremo (percentil 90), la parálisis se dispararía hasta las 59,1 horas de interrupción incontrolable (un impacto contingente de € 675.231).
+hazme un diagnostico no cambies nada... lo único es antes de ponernos a programar hay que pensar bien como lo vamos a abordar para garantizar que queda sin errores y que vamos a aumentar la calidad de los entregables al 100% y quiero lo piense gemini-4-argon que lo haga sin bugs, problemas o antipatrones, no quiero nada hardcodeado recuerda que el objetivo es que sirva para cualquier empresa del mundo desde mediana a top tier 1 mundial, de cualquier vertical, en cualquier idioma, y el código debe estar 100% en ingles nada de español ni una sola palabra."
 
-3. SINGLE-PAGE EXECUTIVE SUMMARY ARCHITECTURE:
-   - The user explicitly requested:
-     a) Keep ONLY the main heading "1. Resumen Ejecutivo" (remove subheadings 1.1 and 1.2, and remove the separate financial table).
-     b) Embed a transparent, credible justification for the CIO directly into the narrative prose of Page 1 explaining where the financial figures come from (e.g. Expected Annual Loss [ALE] calculated from quantified failure frequencies across evaluated risks multiplied by the hourly downtime cost of 10,000 €/h, versus the P90 tail risk representing severe concurrent outages during peak operational/dispatch windows).
-     c) Render the Executive Scorecard Table and the Executive Diagnostic Triad Table (Strength, Gap, Bottleneck) cleanly on Page 1, followed by a Page Break.
+DEEP ROOT CAUSE ANALYSIS OF THE FAILURES:
+1. Unverified Macro Revenue Leakage:
+   Parading "(1.000.000.000 €)" in parentheses in a domain technical annex looks like an invented, unverified figure pulled from thin air. A technical specialist annex should NOT flaunt macro-corporate turnover unless explicitly certified by client financial filings.
+2. Cognitive Dissonance in Executive Impact (Macro vs Micro Mismatch):
+   Juxtaposing a 1,000,000,000 € turnover with an Annual Loss Expectancy (ALE) of 101,231 € creates a credibility collapse for the CFO. 101k € is 0.01% of revenue (less than 2 junior headcount). If leadership reads that the risk is only 8.9 hours and 100k €, they will conclude the tower is completely healthy and requires ZERO capital investment.
+3. Defensive Consultant Meta-Narrative:
+   Sentences like "hemos huido de estimaciones teóricas" or "para evitar la inflación artificial del riesgo hemos deduplicado los radios de impacto solapados" represent defensive analyst kitchen-talk. A Board of Directors / CIO wants business reality, operational urgency, and strategic investment trade-offs, not a consultant justifying how their algorithms work.
+4. Total Erasure of Physical & Contractual Gravitas:
+   The narrative was trapped in an abstract loop of theoretical rates and hours, while completely silencing the real, existential risks that keep engineers and plant managers awake:
+   - Imminent contractual cliff: Broadcom/VMware renewal in May 2027 with massive core-based licensing price shocks.
+   - Hardware End of Support (EoSL): HPE SimpliVity hyperconverged nodes facing lack of replacement parts between 2028-2030.
+   - Severe RAM & CPU overcommitment: 300+ VMs preventing automated N+1 failover without manually shutting down dev/test environments.
+   - Regulatory exposure: Unsupported legacy CentOS 5/6 operating systems violating European NIS2 cybersecurity mandates.
 
-NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ZERO ANTI-PATTERNS: Flawless architectural design.
+THE 5 NON-NEGOTIABLE LAWS:
+1. ZERO BUGS, ZERO ANTIPATTERNS, ZERO DEFECTS:
+   - Flawless mathematical, exception-handling, and architectural design.
+   - Fail-fast enforcement: no silent error swallowing.
 2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - The engine must scale to ANY company in the world: mid-market to Global Fortune 10, across any vertical (finance, healthcare, retail, manufacturing, SaaS), in any currency and language.
-   - Zero hardcoded client names, zero hardcoded domain regexes, zero hardcoded words in Python code.
-3. 100% TECHNICAL ENGLISH CODEBASE:
-   - All Python code, method names, variables, and docstrings must be 100% Technical English.
+   - The engine must scale to ANY company in the world: any tier (50M€ mid-market to 50B€ F10), any vertical (Heavy Manufacturing, Banking, Logistics, Healthcare, SaaS, Energy), any currency (EUR, USD, GBP, JPY, CHF, etc.), and any locale.
+   - Zero hardcoded client names, zero hardcoded numbers, zero language-specific assumptions in Python code.
+3. 100% TECHNICAL ENGLISH CODEBASE (LANGUAGE DECOUPLING LAW):
+   - All Python code, class names, method names, variables, identifiers, comments, docstrings, logs, exceptions, and regexes must be 100% Technical English.
+   - Zero Spanish words anywhere in Python source code files. (Spanish is ONLY permitted in `locales.json` data dictionaries).
+4. SPLIT-BRAIN ERADICATION (100% 10-TOWER SYMMETRY):
+   - All 10 towers (T1 through T10) must execute the exact same unified pipeline and code paths. Zero special-casing for T1 or T2.
+5. ISO/IEC 29500 OPENXML & EDITORIAL EXCELLENCE:
+   - Native Word TOC with deterministic layout synchronization, auto-fitted tables, professional executive typography (#2E404D slate, 10.5pt body).
 
 YOUR TASK:
-Emit a comprehensive architectural plan (RFC 033) in Markdown:
-1. Deep architectural analysis of the `approved_annex_*.template_payload.json` artifact: Explain why maintaining two separate JSON payloads is an anti-pattern, and how to unify the pipeline so that `EnrichedTowerPayload` (the single 21-key contract) is the ONLY source of truth consumed by `payload_to_ast.py`.
-2. Analysis of the "fabril" regex anti-pattern: Explain why regex word-patching in Python compiler code violates architectural purity, and specify the pure upstream solution (neutral prompt engineering in `annex_executive_synthesizer.yaml` and dynamic parameterization).
-3. The definitive single-heading Chapter 1 AST compiler implementation (zero subheadings, inline CIO financial justification, scorecard table, triad table, and clean page break).
-4. Concrete, production-ready Python code snippets in 100% Technical English.
+Synthesize a comprehensive, definitive Architectural Blueprint (RFC 040) in Markdown:
+
+1. Architectural Separation of Concerns:
+   - Define where macro-corporate financials (group revenue, enterprise-wide ALE) belong vs where domain technical annexes focus.
+   - Show how technical annexes should frame financial exposure: focusing on domain operational continuity, asset replacement value, vendor renewal price shocks, and unhedged cost of inaction.
+
+2. Actuarial Realism & Credibility Engine:
+   - Redesign how hourly outage cost and loss expectancies are modeled so they never look like invented round numbers, nor trivial micro-percentages.
+   - Show how domain criticality and asset tiering scale universally from mid-market to Fortune 10 without hardcoding.
+
+3. Executive Narrative Framework (Minto Pyramid Principle):
+   - Design the 4-part executive narrative structure in McKinsey/Gartner register:
+     * Paragraph 1: Operational Posture & Critical Dependencies (grounded in the physical reality of the tower).
+     * Paragraph 2: Core Architectural Dilemma & Contractual Horizons (hardware obsolescence, vendor licensing cliffs, regulatory compliance).
+     * Paragraph 3: Financial Exposure & Downtime Horizon (probabilistic operational loss and business interruption velocity).
+     * Paragraph 4: Modernization Mandate & Strategic ROI (the business case for transformation and operational stabilization).
+   - Provide the complete, pristine bilingual templates for `engine_config/locales.json` (Spanish and English).
+
+4. Production Implementation Plan:
+   - Detail the exact files to be updated (`payload_to_ast.py`, `downtime_calibrator.py`, `locales.json`, etc.).
+   - Provide concrete, production-ready Python code snippets in 100% Technical English.
 """
 
-    print(f"Requesting RFC 033 from {model_name}...")
+    print(f"Requesting RFC 040 Master Architectural Blueprint from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_033_PURE_PIPELINE_UNIFICATION_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_040_EXECUTIVE_REALISM_AND_ACTUARIAL_CREDIBILITY_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 033 ARCHITECTURAL PLAN")
+    print("GEMINI-4-ARGON: RFC 040 MASTER ARCHITECTURAL BLUEPRINT")
     print("=" * 80)
     print(response.text)
     print("=" * 80)
-    print(f"\nPlan saved to: {out_file.relative_to(REPO_ROOT)}")
+    print(f"\nBlueprint saved to: {out_file.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":

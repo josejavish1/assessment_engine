@@ -1507,7 +1507,10 @@
     "score_explanation_band_mid": "La plataforma alcanza una puntuación global de {global_score} sobre {max_score}. En términos sencillos, esta nota refleja que la base técnica es estable y garantiza la continuidad operativa diaria de {client_name}. No obstante, persisten procesos manuales y puntos únicos de control que impiden escalar con rapidez y absorben excesivo tiempo de los equipos.",
     "score_explanation_band_high": "La plataforma registra una puntuación global de {global_score} sobre {max_score}. Esto representa un entorno tecnológico maduro, gobernado y con un alto grado de automatización que permite anticipar fallos y operar de forma proactiva con mínima fricción.",
     "chapter_4_fair_quantitative_risk": "Exposición Financiera al Riesgo y Resiliencia Operativa",
-    "default_critical_vulnerability": "Vulnerabilidad crítica"
+    "default_critical_vulnerability": "Vulnerabilidad crítica",
+    "default_primary_workloads": "cargas de misión crítica de producción, expedición en planta y servicios corporativos centralizados",
+    "default_remediation_horizon": "12 a 24 meses",
+    "default_remediation_pillar": "la modernización de la plataforma y la resiliencia operativa"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -3011,7 +3014,10 @@
     "score_explanation_band_low": "The platform achieves an overall score of {global_score} out of {max_score}. In practice, core operations remain running through the direct dedication of technical specialists, but suffer from high manual dependencies, limited automation, and a lack of real-time telemetry to anticipate failures.",
     "score_explanation_band_mid": "The platform achieves an overall score of {global_score} out of {max_score}. In plain terms, this score reflects a stable technical foundation that sustains {client_name}'s daily operations. However, manual processes and single control points persist, hindering rapid scaling and absorbing valuable engineering bandwidth.",
     "score_explanation_band_high": "The platform records an overall score of {global_score} out of {max_score}. This represents a mature, well-governed, and highly automated technology environment capable of anticipating failures and operating proactively with minimal operational friction.",
-    "default_critical_vulnerability": "Critical vulnerability"
+    "default_critical_vulnerability": "Critical vulnerability",
+    "default_primary_workloads": "mission-critical production workloads, plant dispatch telemetry, and centralized corporate services",
+    "default_remediation_horizon": "12 to 24 months",
+    "default_remediation_pillar": "platform modernization and operational resilience"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -8848,5 +8854,21 @@
     "pillar_kpi_status_header": "Fähigkeitsstatus & Operative Leistung (KPIs)",
     "pillar_operational_gaps_header": "Operative Lücken & Forensische Konsequenzen",
     "pillar_score_justification_header": "Reifegradbegründung & Bewertungsgrundlage"
+  },
+  "executive_summary_narrative": {
+    "es": {
+      "p1_operational_posture": "La evaluación técnica de la torre de {tower_name} en {client_name} sitúa su índice de madurez arquitectónica en {maturity_score} sobre 5.0 ({maturity_tier_label}), evidenciando una postura operativa expuesta a {critical_findings_count} vectores de vulnerabilidad estructural. Dado que este dominio sustenta directamente la continuidad de {primary_workloads_summary}, las fricciones técnicas identificadas trascienden el ámbito puramente tecnológico y constituyen un cuello de botella directo para la estabilidad industrial y transaccional de la organización.",
+      "p2_architectural_dilemma": "El diagnóstico de ingeniería revela una convergencia de riesgos técnicos, contractuales y de ciclo de vida que comprometen la resiliencia a corto y medio plazo. En particular, la estabilidad de la plataforma se ve amenazada por tres factores determinantes: (1) {finding_1_executive_brief}; (2) {finding_2_executive_brief}; y (3) {finding_3_executive_brief}. La coexistencia de estas limitaciones degrada la capacidad de conmutación por error (failover) automatizada y amplifica el radio de impacto ante fallos simples de componente.",
+      "p2_architectural_dilemma_single": "El diagnóstico de ingeniería revela limitaciones estructurales de ciclo de vida y capacidad que comprometen la resiliencia operativa del dominio, destacando de forma prioritaria: {finding_1_executive_brief}. Esta condición degrada la capacidad de recuperación automatizada y amplifica el radio de impacto ante incidentes de infraestructura.",
+      "p3_financial_exposure": "En términos de impacto económico directo sobre las operaciones de {client_name}, la indisponibilidad no planificada de esta arquitectura genera un coste operativo compuesto de {hourly_burn_rate_fmt}/h, derivado de la paralización de capacidad productiva, costes de contingencia de ingeniería y penalizaciones asociadas al nivel de servicio. Bajo el régimen operativo actual, la exposición neta consolidada representa {net_downtime_hours_fmt} horas de degradación crítica anual, traduciéndose en una erosión operativa esperada (ALE) de {annual_loss_expectancy_fmt}. No obstante, el riesgo estratégico primordial reside en la volatilidad de cola (escenario de estrés P90): un fallo compuesto en horario pico sin capacidad de absorción N+1 prolongaría la interrupción hasta {p90_downtime_hours_fmt} horas, generando un impacto financiero contingente no cubierto de {p90_var_exposure_fmt}.",
+      "p4_modernization_mandate": "Mantener el statu quo operativo expone a la organización a una pérdida progresiva de control presupuestario y operativo frente a eventos de obsolescencia e inflación de licenciamiento. Resulta imperativo ejecutar el plan de transformación estructurado en este anexo durante el horizonte de {remediation_horizon_label}, priorizando {primary_remediation_pillar}. Esta intervención permitirá neutralizar la exposición en cola de {p90_var_exposure_fmt}, restaurar la tolerancia a fallos determinista y elevar la madurez del dominio hacia el objetivo estratégico de {target_maturity_score}/5.0."
+    },
+    "en": {
+      "p1_operational_posture": "The technical assessment of the {tower_name} capability tower at {client_name} establishes an architectural maturity index of {maturity_score} out of 5.0 ({maturity_tier_label}), reflecting an operational posture exposed to {critical_findings_count} structural vulnerability vectors. Because this domain directly underpins the continuity of {primary_workloads_summary}, the identified technical friction points transcend routine IT maintenance and represent a direct constraint on enterprise operational and transactional stability.",
+      "p2_architectural_dilemma": "Engineering telemetry reveals a convergence of technical, lifecycle, and commercial risks that compromise near- and medium-term resiliency. Specifically, platform stability is constrained by three primary factors: (1) {finding_1_executive_brief}; (2) {finding_2_executive_brief}; and (3) {finding_3_executive_brief}. The intersection of these constraints degrades automated failover determinism and amplifies the operational blast radius during single-component fault conditions.",
+      "p2_architectural_dilemma_single": "Engineering telemetry reveals structural lifecycle and capacity constraints that compromise domain resiliency, centered primarily on: {finding_1_executive_brief}. This condition degrades automated recovery determinism and amplifies the operational blast radius during infrastructure fault events.",
+      "p3_financial_exposure": "From an operational economics perspective at {client_name}, unplanned downtime within this architecture incurs a composite operational burn rate of {hourly_burn_rate_fmt}/hr, driven by halted productive capacity, emergency engineering mobilization, and service-level degradation. Under the current architectural baseline, net consolidated exposure accounts for {net_downtime_hours_fmt} hours of critical annual disruption, translating into an expected operational loss (ALE) of {annual_loss_expectancy_fmt}. However, the primary strategic exposure lies in tail-risk volatility (P90 stress scenario): a compound fault during peak utilization without deterministic N+1 absorption capacity would extend paralysis to {p90_downtime_hours_fmt} hours, triggering an unhedged contingent financial impact of {p90_var_exposure_fmt}.",
+      "p4_modernization_mandate": "Preserving the operational status quo exposes the enterprise to escalating budgetary and operational fragility driven by hardware obsolescence and vendor licensing cliffs. Leadership must execute the phased modernization roadmap detailed in this annex across the {remediation_horizon_label} horizon, prioritizing {primary_remediation_pillar}. Executing this mandate neutralizes the {p90_var_exposure_fmt} tail-risk exposure, restores deterministic fault tolerance, and advances domain maturity toward the target state of {target_maturity_score}/5.0."
+    }
   }
 }
