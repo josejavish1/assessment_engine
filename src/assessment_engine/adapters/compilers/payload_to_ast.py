@@ -582,11 +582,75 @@ class PayloadToASTBridge:
             global_band=global_band,
             client_name=client_name,
         )
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        req_keys = [
+            "global_annual_revenue",
+            "perimeter_revenue_weight_pct",
+            "effective_exposed_revenue",
+            "sector_benchmark_source",
+            "hourly_revenue_exposure_factor",
+            "authoritative_hourly_downtime_cost"
+        ]
+        if not all(k in fin_telemetry for k in req_keys):
+            from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
+            calibrator = ActuarialDowntimeCalibrator()
+            try:
+                metrics = calibrator.calibrate(blueprint_data)
+                fin_telemetry.update({
+                    "global_annual_revenue": float(metrics.global_annual_revenue),
+                    "perimeter_revenue_weight_pct": float(metrics.perimeter_revenue_weight_pct),
+                    "effective_exposed_revenue": float(metrics.effective_exposed_revenue),
+                    "sector_benchmark_source": metrics.sector_benchmark_source,
+                    "hourly_revenue_exposure_factor": float(metrics.hourly_revenue_exposure_factor),
+                    "authoritative_hourly_downtime_cost": float(metrics.calibrated_hourly_downtime_cost),
+                })
+            except Exception:
+                pass
+
+        global_annual_revenue = fin_telemetry.get("global_annual_revenue")
+        if global_annual_revenue is None:
+            raise ValueError("Missing 'global_annual_revenue' in financial_telemetry")
+            
+        perimeter_weight = fin_telemetry.get("perimeter_revenue_weight_pct")
+        if perimeter_weight is None:
+            raise ValueError("Missing 'perimeter_revenue_weight_pct' in financial_telemetry")
+            
+        effective_exposed = fin_telemetry.get("effective_exposed_revenue")
+        if effective_exposed is None:
+            raise ValueError("Missing 'effective_exposed_revenue' in financial_telemetry")
+            
+        sector_benchmark_source = fin_telemetry.get("sector_benchmark_source")
+        if sector_benchmark_source is None:
+            raise ValueError("Missing 'sector_benchmark_source' in financial_telemetry")
+            
+        sector_impact_factor = fin_telemetry.get("hourly_revenue_exposure_factor")
+        if sector_impact_factor is None:
+            raise ValueError("Missing 'hourly_revenue_exposure_factor' in financial_telemetry")
+
+        global_annual_revenue_formatted = format_number(global_annual_revenue, locale=meta_lang, decimals=0)
+        effective_exposed_formatted = format_number(effective_exposed, locale=meta_lang, decimals=0)
+        sector_impact_factor_pct = format_number(sector_impact_factor * 100, locale=meta_lang, decimals=4)
+        perimeter_weight_str = format_number(perimeter_weight, locale=meta_lang, decimals=2)
+        
+        perimeter_name = str(
+            blueprint_data.get("perimeter_context", {}).get("perimeter_name")
+            or blueprint_data.get("audited_site_name")
+            or t("default_perimeter_name", locale=meta_lang)
+            or "Site"
+        )
+
         p2_text = t(
             "exec_narrative_p2",
             locale=meta_lang,
-            hourly_cost=f"{currency} {hourly_formatted}/h",
             client_name=client_name,
+            audited_perimeter_name=perimeter_name,
+            global_annual_revenue_formatted=global_annual_revenue_formatted,
+            currency_code=currency,
+            perimeter_revenue_weight_pct=perimeter_weight_str,
+            effective_exposed_revenue_formatted=effective_exposed_formatted,
+            sector_benchmark_source=sector_benchmark_source,
+            sector_impact_factor_pct=sector_impact_factor_pct,
+            calibrated_hourly_cost_formatted=hourly_formatted,
         )
         p3_text = t(
             "exec_narrative_p3",

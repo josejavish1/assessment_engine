@@ -263,17 +263,28 @@ class UniversalPayloadEnricher:
         risk_exp = float(tower_fin.get("annualized_risk_exposure", 0.0))
         capex = float(tower_fin.get("remediation_capex", 0.0))
         opex = float(tower_fin.get("remediation_opex", 0.0))
-        actuarial_globals = self._actuarial.get("global_parameters") or {}
-        hourly_rate = float(
-            self._tenant.get("hourly_downtime_cost")
-            or self._tenant.get("hourly_downtime_rate")
-            or actuarial_globals.get("hourly_downtime_cost")
-            or 0.0
-        )
+
+        # Calibrate hourly downtime metrics using the actuarial calibrator
+        from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
+        calibrator = ActuarialDowntimeCalibrator()
+        
+        # Ensure we fail fast if telemetry is missing, upholding zero-hardcoding
+        downtime_metrics = calibrator.calibrate(self._tenant, strict_telemetry=True)
+        hourly_rate = float(downtime_metrics.calibrated_hourly_downtime_cost)
+        global_annual_revenue = float(downtime_metrics.global_annual_revenue)
+        perimeter_revenue_weight_pct = float(downtime_metrics.perimeter_revenue_weight_pct)
+        effective_exposed_revenue = float(downtime_metrics.effective_exposed_revenue)
+        sector_benchmark_source = downtime_metrics.sector_benchmark_source
+        hourly_revenue_exposure_factor = float(downtime_metrics.hourly_revenue_exposure_factor)
 
         return {
             "currency_code": currency_code,
             "authoritative_hourly_downtime_cost": hourly_rate,
+            "global_annual_revenue": global_annual_revenue,
+            "perimeter_revenue_weight_pct": perimeter_revenue_weight_pct,
+            "effective_exposed_revenue": effective_exposed_revenue,
+            "sector_benchmark_source": sector_benchmark_source,
+            "hourly_revenue_exposure_factor": hourly_revenue_exposure_factor,
             "total_annualized_risk_exposure": risk_exp,
             "formatted_risk_exposure": resolver.format_currency(risk_exp, currency_code),
             "remediation_capex_estimate": capex,
