@@ -643,6 +643,8 @@ class PayloadToASTBridge:
             "exec_narrative_p2",
             locale=meta_lang,
             client_name=client_name,
+            hourly_cost=f"{currency} {hourly_formatted}",
+            calibrated_hourly_cost_formatted=hourly_formatted,
             audited_perimeter_name=perimeter_name,
             global_annual_revenue_formatted=global_annual_revenue_formatted,
             currency_code=currency,
@@ -650,7 +652,6 @@ class PayloadToASTBridge:
             effective_exposed_revenue_formatted=effective_exposed_formatted,
             sector_benchmark_source=sector_benchmark_source,
             sector_impact_factor_pct=sector_impact_factor_pct,
-            calibrated_hourly_cost_formatted=hourly_formatted,
         )
         p3_text = t(
             "exec_narrative_p3",
@@ -2385,4 +2386,10 @@ def compile_asis_docx_via_ast(
     out_p = Path(output_docx_path)
     out_p.parent.mkdir(parents=True, exist_ok=True)
     compiler.compile(ast, str(out_p))
+
+    # Synchronize physical page numbers into the TOC SDT to eliminate split-brain
+    from assessment_engine.adapters.compilers.toc_page_resolver import DeterministicTocPageResolver
+
+    DeterministicTocPageResolver.synchronize_docx_toc(out_p)
+
     return out_p

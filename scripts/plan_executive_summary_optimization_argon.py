@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
-"""Argon-4 Consultation: Architectural Design for Executive Summary Optimization (RFC 030).
-
-Addresses:
-1. Natural, fluid C-level executive prose (eliminating stilted, robotic cadence).
-2. Multilingual maturity band localization bug (resolving 'Repeatable' vs 'Repetible').
-3. Dedicated, plain-language Financial Exposure & Operational Risk section.
-4. Natural European Spanish vocabulary (replacing stiff archaic 'fabril' with natural plant/operations terms).
-5. Executive visual summary architecture: high-impact scorecards and executive triad table (Strength, Gap, Bottleneck).
-"""
+"""Argon-4 Forensic Audit: Executive Summary Polish & TOC Real-Page Pre-Calculation (RFC 038)."""
 
 from __future__ import annotations
 
@@ -30,82 +22,67 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Principal Systems Architect, Chief Compiler Engineer & Executive Editorial Director (Tier-1 Management Consulting / McKinsey / Gartner).
+Role: Principal Actuarial Systems Architect & Chief Compiler Engineer (Google Tier-1 / Anthropic Core Infrastructure / MIT Actuarial Fellow).
 
-CONTEXT & USER CRITIQUE OF CHAPTER 1 ("RESUMEN EJECUTIVO"):
-The user performed an editorial review of Chapter 1 across Tower 1 (Data Center) and Tower 2 (Compute) and delivered 5 critical observations:
+CRITICAL INCIDENT & USER CRITIQUE:
+The user reviewed the deliverables and was deeply upset with the state of Chapter 1 (Resumen Ejecutivo) and the persistent Table of Contents discrepancy between Tower 1 and Tower 2:
 
-1. CRITIQUE 1: ROBOTIC / MECHANICAL PROSE
-   - "el texto suena como muy robot quizás un resumen ejecutivo con algo más de prosa se entendiría mejor."
-   - The current prompt in `annex_executive_synthesizer.yaml` enforces rigid, artificial constraints:
-     "STRICTLY PROHIBITED from writing sentences longer than 25 words. Average sentence length must be 15 to 18 words."
-     This forces the LLM to output choppy, telegraphic, stilted sentences that sound robotic and lack fluid narrative cadence.
-   - We need elegant, persuasive, cohesive C-level executive prose that explains the operational reality with strategic depth and natural transitions.
+1. EXECUTIVE SUMMARY (CHAPTER 1) REGRESSION:
+   - The user writes:
+     "PERO QUE HA PASADO EN EL PUNTO 1 MENUDA CAGADA HEMOS IDO DE MAL EN PEOR, LEELO ENTERO, PORQUE ES QUE AHORA ES HORRIBLE ANALIZALO TU Y DIME QUE VES TANTO EN LA TORRE 1 COMO EN LA TORRE 2, QUE DECEPCIÓN ESTOY MUY MAL."
+   - Forensic Analysis of what went wrong:
+     In our attempt to justify the 10,000 €/h rate and site weighting, we injected an unreadable, pedantic, 116-word paragraph in Chapter 1 that:
+     a) Leaked a raw variable token: `(default_perimeter_name)`!
+     b) Dumped repetitive, bureaucratic calculations: "Partiendo de una facturación anual consolidada verificada de 1.000.000.000 €, el motor aplica un Factor de Ponderación Operativa del Perímetro del 100,00%... Esto establece una Base de Facturación Expuesta Efectiva de 1.000.000.000 €."
+     c) Dumped long, ugly benchmark strings: "Gartner Cross-Industry Operational Continuity Benchmark (0,0010%)".
+     d) Transformed an Executive Summary (meant for the CEO, Board, and CIO) into an aggressive mathematical audit defense!
+   - How should Chapter 1 read?
+     An Executive Summary must be elegant, high-signal, punchy, and McKinsey/Gartner grade:
+     - 4 multi-clause analytical paragraphs of 40-55 words each:
+       * P1 (Operational Health & Maturity): Score, band, daily operational reality.
+       * P2 (Business Exposure & Downtime Rate): Translating technical findings to business impact via the validated rate of 10,000 €/h, without formulas or raw variable leaks.
+       * P3 (Annual Loss vs Tail Risk in Hours): Translating ALE (14.1h in T1, 10.1h in T2) and P90 stress (116.8h in T1, 67.5h in T2) into downtime disruption.
+       * P4 (Remediation Value): Clear ROI on operational stability and risk mitigation.
+     - All detailed perimeter formulas, headcount derivations, and Monte Carlo mathematics belong in Chapter 4 or the Appendices, NOT in the Executive Summary!
 
-2. CRITIQUE 2: SPLIT-BRAIN LANGUAGE ANOMALY IN MATURITY BAND ("Definida" vs "Repeatable")
-   - "en el segundo parrafo en un documento dice 'El diagnóstico sitúa la madurez de la torre en 2.6 sobre 5.0, clasificada en banda Definida.' y en otro dice 'La evaluacion situa la madurez de la torre en 2.5 dentro de la banda Repeatable' no se porque en el segundo hay una palabra en inglés al final y en el primero no, ¿split brain? ¿algún error?"
-   - Forensic Root Cause: In `run_executive_annex_synthesizer.py` line 227:
-     `build_executive_handover` calls `derive_maturity_band(average(scores))` without passing `locale=doc_lang`.
-     `derive_maturity_band` defaults to `locale=None` -> English!
-     For T2, it passed `"global_band": "Repeatable"` into the LLM prompt. The LLM transcribed the exact English token "Repeatable" into the Spanish text!
-   - This must be fixed at the root: `derive_maturity_band` must be strictly parameterized with the target document locale (`doc_lang`).
-
-3. CRITIQUE 3: FINANCIAL EXPOSURE DESERVES A DEDICATED SUBSECTION IN ACCESSIBLE LANGUAGE
-   - "cuando empieza a hablar de Exposición financiera creo que eso merece un apartado nuevo, y creo que habría que explicarlo mucho más y en un lenguaje sencillo."
-   - Currently, ALE and P90 metrics are jammed into the middle of Paragraph 2 using dense acronyms (ALE, P90, Open FAIR).
-   - Financial exposure should be presented with high-level clarity: a distinct subsection (e.g. 1.2 "Exposición Financiera y Riesgo Operativo") explaining in plain C-level financial language what these figures mean (annual operational friction vs worst-case failure), grounding them in tangible business consequences.
-
-4. CRITIQUE 4: OVERUSE OF ARCHAIC / STIFF VOCABULARY ("fabril")
-   - "te veo que usas mucho la palabra fabril no se si español de españa se usa, pero recuerda tiene que estar en un lenguaje sencillo y español de españa cuando así se te pida porque puede ser español de sudamerica."
-   - The prompt encouraged naming physical facilities, causing the model to repeatedly inject "fabril" ("operativa fabril", "pesaje fabril", "contingencia fabril"). In modern European Spanish (Castilian), "fabril" is archaic and bookish.
-   - Natural executive Castilian Spanish uses: "operaciones de planta", "instalaciones productivas", "entornos industriales", "operativa de fabricación".
-
-5. CRITIQUE 5: FORCED "PRINCIPALES IMPACTOS" VS HIGH-IMPACT EXECUTIVE CARDS & TRIAD TABLE
-   - "y luego al final habla de principales impacto de negocio pero suena hay como forzado no se entiende bien que quiere decir.... antes decias cosas en una tabla claramente 'SCORE ACTUAL BANDA DE MADUREZ 2.6 / 5.0 Definido' y en otra table 'Fortaleza principal ... Brecha principal ... Cuello de botella ...' no se ¿como podemos dejar de forma optima el resumen ejecutivo?"
-   - Raw bullet lists of business impacts feel tacked on.
-   - C-level executives need visual structure:
-     a) An Executive Snapshot Key Metrics Card / Block (Score Actual, Banda de Madurez, Exposición Anual Esperada).
-     b) An Executive Triad Table (Fortaleza Principal, Brecha Estructural Principal, Cuello de Botella Operativo).
-     c) Clear narrative sections that tell the story seamlessly.
+2. TABLE OF CONTENTS DIVERGENCE BETWEEN T1 AND T2:
+   - The user writes:
+     "y por cierto, sigue pasando el mismo error, en la torre 1 se acutalizan las páginsa del índice al abrir pero la torre 2, no creo que hay un bug o un splitbrain que no debería estar porque si está bien o mal para uno debería estarlo apra todos."
+   - Forensic Analysis of what went wrong:
+     Both T1 and T2 have identical XML: `<w:updateFields w:val="true"/>` and `w:dirty="true"`.
+     However, Microsoft Word on Windows SUPPRESSES the update prompt when a second document is opened in an existing `WINWORD.EXE` process!
+     As a result, if the user opens T1 first, Word updates T1; but when they open T2 next, Word does not prompt to update T2, leaving the hardcoded fallback page numbers from `locales.json` (`Pág. 10`, `Pág. 18`, `Pág. 20`, `Pág. 22`) visible!
+   - Architectural Solution:
+     We must PRE-CALCULATE the true physical page numbers of every heading dynamically (either via AST page-break accounting or headless LibreOffice layout sync) and inject the REAL physical page numbers directly into the static TOC XML entries in DOCX!
+     This guarantees that even if Word suppresses the prompt, or in Word Online / mobile viewers where fields do not auto-update, the Table of Contents displays 100% ACCURATE PAGE NUMBERS on both T1 and T2! Zero split-brain!
 
 NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ZERO ANTI-PATTERNS: Flawless design using clean architectural patterns.
+1. ZERO BUGS, ZERO ANTI-PATTERNS: Flawless mathematical and architectural design.
 2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - The architecture must scale to ANY company in the world: from a mid-market manufacturing plant to a top Global Fortune 10 financial institution.
-   - Any industry vertical.
-   - Any ISO 4217 currency.
-   - Any human language (English, Spanish, German, Japanese, Portuguese, French, etc.).
-   - Zero hardcoded client names, zero fixed strings in Python code.
+   - Works across all 10 towers (T1..T10), all tiers, all languages, and all verticals.
+   - Zero hardcoded client names or strings in Python logic.
 3. 100% TECHNICAL ENGLISH CODEBASE:
-   - All Python code, class names, method signatures, variables, docstrings, and comments must be 100% Technical English.
+   - All Python code, method names, variables, and docstrings must be 100% Technical English.
 
 YOUR TASK:
-Emit a comprehensive architectural plan (RFC 030) in Markdown:
-1. Redesign Chapter 1 ("Executive Summary") structure and visual layout:
-   - Executive Narrative (Situation & Diagnostic Thesis).
-   - Dedicated Financial Exposure Subsection (plain language, clear explanation of annualized expected loss vs concurrent stress scenario).
-   - Visual KPI Snapshot Table / Cards (Score, Band, Expected Financial Exposure).
-   - Executive Triad Table (Primary Strength, Primary Structural Gap, Primary Operational Bottleneck).
-2. Surgical fix for the `derive_maturity_band` locale propagation bug in `run_executive_annex_synthesizer.py`.
-3. Upstream prompt rewrite in `annex_executive_synthesizer.yaml`:
-   - Replace mechanical 15-word sentence constraints with fluid, cohesive Tier-1 McKinsey/Gartner executive prose guidelines.
-   - Enforce contemporary, natural European Spanish phrasing (banning archaic terms like "fabril" in favor of natural industrial/plant operations terms).
-4. Document compiler AST updates in `payload_to_ast.py` to render the polished Chapter 1 layout.
-5. Complete, production-ready Python and YAML code snippets in 100% Technical English.
+Emit a comprehensive architectural plan (RFC 038) in Markdown:
+1. Executive Summary Redesign: Provide the exact, elegant, high-signal narrative templates for `locales.json` in Spanish and English (purging all formula dumps, raw variable tokens like `default_perimeter_name`, and repetitive math).
+2. Dynamic TOC Real-Page Resolution: Show how to dynamically compute and write the exact physical page numbers into the TOC `<w:sdt>` entries so T1 and T2 are 100% consistent regardless of Word's update prompt behavior.
+3. Concrete, production-ready Python code snippets in 100% Technical English.
 """
 
-    print(f"Requesting RFC 030 from {model_name}...")
+    print(f"Requesting RFC 038 Executive Summary Polish & TOC Real-Page Sync from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_030_EXECUTIVE_SUMMARY_OPTIMIZATION_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_038_EXECUTIVE_SUMMARY_POLISH_AND_TOC_REAL_PAGES_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 030 ARCHITECTURAL PLAN")
+    print("GEMINI-4-ARGON: RFC 038 EXECUTIVE SUMMARY POLISH & TOC REAL-PAGES")
     print("=" * 80)
     print(response.text)
     print("=" * 80)
