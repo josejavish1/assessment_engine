@@ -263,9 +263,17 @@ class UniversalPayloadEnricher:
         risk_exp = float(tower_fin.get("annualized_risk_exposure", 0.0))
         capex = float(tower_fin.get("remediation_capex", 0.0))
         opex = float(tower_fin.get("remediation_opex", 0.0))
+        actuarial_globals = self._actuarial.get("global_parameters") or {}
+        hourly_rate = float(
+            self._tenant.get("hourly_downtime_cost")
+            or self._tenant.get("hourly_downtime_rate")
+            or actuarial_globals.get("hourly_downtime_cost")
+            or 0.0
+        )
 
         return {
             "currency_code": currency_code,
+            "authoritative_hourly_downtime_cost": hourly_rate,
             "total_annualized_risk_exposure": risk_exp,
             "formatted_risk_exposure": resolver.format_currency(risk_exp, currency_code),
             "remediation_capex_estimate": capex,

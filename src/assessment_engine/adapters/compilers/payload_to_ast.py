@@ -518,55 +518,62 @@ class PayloadToASTBridge:
         # COMPONENT B: EXECUTIVE HEADLINE & FLUID MECE NARRATIVE (PROSE)
         # -------------------------------------------------------------
         headline = exec_sum.get("headline", "")
-        summary_body = exec_sum.get("summary_body", "")
-
         if headline:
             nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5, space_after=8))
 
-        raw_div = blueprint_data.get("annual_downtime_divisor")
-        try:
-            annual_divisor = float(raw_div) if raw_div is not None and float(raw_div) > 0 else 67.5
-        except (ValueError, TypeError):
-            annual_divisor = 67.5
+        # Safe extraction of nested telemetry dictionaries
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        doc_meta = blueprint_data.get("document_meta") or {}
 
-        raw_hourly = blueprint_data.get("hourly_downtime_rate")
-        if raw_hourly is None:
-            raw_hourly = blueprint_data.get("hourly_burn_rate")
+        # Resolve authoritative corporate hourly downtime cost rate dynamically
+        raw_candidates = [
+            fin_telemetry.get("authoritative_hourly_downtime_cost"),
+            blueprint_data.get("hourly_downtime_rate"),
+            blueprint_data.get("hourly_burn_rate"),
+        ]
+        hourly_rate = 0.0
+        for candidate in raw_candidates:
+            if candidate is not None:
+                parsed = _safe_float(candidate, default=-1.0)
+                if parsed > 0.0:
+                    hourly_rate = parsed
+                    break
 
-        if raw_hourly is not None:
-            try:
-                hourly_rate = float(raw_hourly)
-            except (ValueError, TypeError):
-                hourly_rate = (total_fair_ale / annual_divisor) if (annual_divisor > 0 and total_fair_ale > 0) else 0.0
-        else:
-            hourly_rate = (total_fair_ale / annual_divisor) if (annual_divisor > 0 and total_fair_ale > 0) else 0.0
+        if hourly_rate <= 0.0:
+            raw_div = blueprint_data.get("annual_downtime_divisor")
+            baseline_hours = _safe_float(raw_div, default=0.0)
+            if baseline_hours > 0.0 and total_fair_ale > 0.0:
+                hourly_rate = total_fair_ale / baseline_hours
 
         hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=0)
+
+        # Calculate equivalent operational friction and recovery hours dynamically
+        ale_hours_val = (total_fair_ale / hourly_rate) if hourly_rate > 0.0 else 0.0
+        p90_hours_val = (total_p90 / hourly_rate) if hourly_rate > 0.0 else 0.0
+        ale_hours_str = format_number(ale_hours_val, locale=meta_lang, decimals=1)
+        p90_hours_str = format_number(p90_hours_val, locale=meta_lang, decimals=1)
+
+        tower_name = str(
+            ctx.get("tower_name")
+            or doc_meta.get("tower_name", "Infrastructure Domain")
+        )
 
         # Count quantified risk scenarios dynamically from payload structures
         risks_list: list[Any] = (
             blueprint_data.get("risk_register")
             or blueprint_data.get("risks")
-            or blueprint_data.get("fair_risk_profile", {}).get("scenarios")
+            or (blueprint_data.get("fair_risk_profile") or {}).get("scenarios")
             or []
         )
         if not risks_list:
             risks_list = [
                 hc
                 for p in blueprint_data.get("pillars_analysis", [])
-                for hc in p.get("health_check_asis", [])
+                for hc in (p.get("health_check_asis") or [])
             ]
         risk_count = max(len(risks_list), 1)
 
-        actuarial_clause = t(
-            "actuarial_cio_justification_template",
-            locale=meta_lang,
-            ale=f"{currency} {ale_formatted}",
-            p90=f"{currency} {p90_formatted}",
-            hourly_cost=f"{currency} {hourly_formatted}/h",
-            risk_count=risk_count,
-        )
-
+        summary_body = exec_sum.get("summary_body")
         if summary_body:
             paragraphs = [p.strip() for p in summary_body.split("\n\n") if p.strip()]
             target_p_idx = 1 if len(paragraphs) > 1 else 0
@@ -575,12 +582,51 @@ class PayloadToASTBridge:
                 if p_idx == target_p_idx:
                     has_rate = (hourly_formatted in p_text) or ("/h" in p_text)
                     if not has_rate:
+                        actuarial_clause = t(
+                            "actuarial_cio_justification_template",
+                            locale=meta_lang,
+                            ale=f"{currency} {ale_formatted}",
+                            p90=f"{currency} {p90_formatted}",
+                            hourly_cost=f"{currency} {hourly_formatted}/h",
+                            risk_count=risk_count,
+                        )
                         p_text = f"{p_text} {actuarial_clause}"
-                nodes.append(ParagraphNode(text=p_text, space_after=8))
+                nodes.append(ParagraphNode(text=p_text, space_after=6))
         else:
-            nodes.append(ParagraphNode(text=actuarial_clause, space_after=8))
+            p1_text = t(
+                "exec_narrative_p1",
+                locale=meta_lang,
+                tower_name=tower_name,
+                score_display=score_display,
+                global_band=global_band,
+                client_name=client_name,
+            )
+            p2_text = t(
+                "exec_narrative_p2",
+                locale=meta_lang,
+                hourly_cost=f"{currency} {hourly_formatted}/h",
+            )
+            p3_text = t(
+                "exec_narrative_p3",
+                locale=meta_lang,
+                ale_formatted=f"{currency} {ale_formatted}",
+                ale_hours=ale_hours_str,
+                p90_formatted=f"{currency} {p90_formatted}",
+                p90_hours=p90_hours_str,
+            )
+            p4_text = t(
+                "exec_narrative_p4",
+                locale=meta_lang,
+                tower_name=tower_name,
+                client_name=client_name,
+            )
 
-        nodes.append(SpacerNode(points=10))
+            nodes.append(ParagraphNode(text=p1_text, space_after=6))
+            nodes.append(ParagraphNode(text=p2_text, space_after=6))
+            nodes.append(ParagraphNode(text=p3_text, space_after=6))
+            nodes.append(ParagraphNode(text=p4_text, space_after=6))
+
+        nodes.append(SpacerNode(points=8))
 
         # -------------------------------------------------------------
         # COMPONENT C: EXECUTIVE DIAGNOSTIC TRIAD TABLE (STRENGTH/GAP/BOTTLENECK)

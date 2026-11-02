@@ -44,6 +44,7 @@ class FinancialTelemetryBlock(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     currency_code: str
+    authoritative_hourly_downtime_cost: float = Field(default=0.0, ge=0.0)
     total_annualized_risk_exposure: float
     formatted_risk_exposure: str
     remediation_capex_estimate: float
