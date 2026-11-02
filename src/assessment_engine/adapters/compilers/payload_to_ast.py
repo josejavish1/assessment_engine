@@ -973,11 +973,12 @@ class PayloadToASTBridge:
             locale=meta_lang,
         )
 
+        clean_score_str = format_number(gs_val, locale=meta_lang, decimals=2)
         synthesizer = ExecutiveNarrativeSynthesizer(locale_code=meta_lang)
         p_texts = synthesizer.synthesize_chapter_one_paragraphs(
             client_name=client_name,
             tower_name=tower_name,
-            maturity_score=score_display,
+            maturity_score=clean_score_str,
             maturity_tier_label=global_band,
             primary_workloads_summary=primary_workloads,
             findings_briefs=findings_briefs,
