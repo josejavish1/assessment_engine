@@ -695,14 +695,62 @@ class PayloadToASTBridge:
             ),
         ]
         nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.33, 0.33, 0.34]))
-        nodes.append(SpacerNode(points=12))
+        nodes.append(SpacerNode(points=4))
+
+        # -------------------------------------------------------------
+        # COMPONENT A2: EXECUTIVE DIAGNOSTIC TRIAD TABLE (COCKPIT COMPANION)
+        # -------------------------------------------------------------
+        m_strength = str(
+            exec_sum.get("message_strength")
+            or (blueprint_data.get("pillars_analysis", [{}])[0].get("health_check_asis", [{}])[0].get("capability") if blueprint_data.get("pillars_analysis") else "")
+            or t("module_strength_default", locale=meta_lang)
+        ).strip()
+        m_gap = str(
+            exec_sum.get("message_gap")
+            or (blueprint_data.get("executive_snapshot", {}).get("structural_risks", [""])[0] if blueprint_data.get("executive_snapshot", {}).get("structural_risks") else "")
+            or t("module_gap_default", locale=meta_lang)
+        ).strip()
+        m_bottleneck = str(
+            exec_sum.get("message_bottleneck")
+            or (blueprint_data.get("executive_snapshot", {}).get("business_impact", "") if blueprint_data.get("executive_snapshot", {}).get("business_impact") else "")
+            or t("module_bottleneck_default", locale=meta_lang)
+        ).strip()
+
+        triad_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_col_dimension", locale=meta_lang), bold=True, is_header=True, font_size=8.5),
+                    CellNode(text=t("triad_col_finding", locale=meta_lang), bold=True, is_header=True, font_size=8.5),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_row_strength", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=m_strength, bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_row_gap", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=m_gap, bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_row_bottleneck", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=m_bottleneck, bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=triad_rows, col_widths=[0.28, 0.72]))
+        nodes.append(SpacerNode(points=6))
 
         # -------------------------------------------------------------
         # COMPONENT B: EXECUTIVE HEADLINE & FLUID MECE NARRATIVE (PROSE)
         # -------------------------------------------------------------
         headline = exec_sum.get("headline", "")
         if headline:
-            nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5, space_after=8))
+            nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.0, space_after=6))
 
         # Safe extraction of nested telemetry dictionaries
         # Safe extraction of nested telemetry dictionaries
@@ -976,57 +1024,8 @@ class PayloadToASTBridge:
 
         # 4. Paragraph 4: Pure AS-IS Diagnostic Verdict
         nodes.append(ParagraphNode(text=p_texts[3], space_after=8))
-        nodes.append(SpacerNode(points=6))
 
-        # -------------------------------------------------------------
-        # COMPONENT C: EXECUTIVE DIAGNOSTIC TRIAD TABLE (STRENGTH/GAP/BOTTLENECK)
-        # -------------------------------------------------------------
-        m_strength = str(
-            exec_sum.get("message_strength")
-            or (blueprint_data.get("pillars_analysis", [{}])[0].get("health_check_asis", [{}])[0].get("capability") if blueprint_data.get("pillars_analysis") else "")
-            or t("module_strength_default", locale=meta_lang)
-        ).strip()
-        m_gap = str(
-            exec_sum.get("message_gap")
-            or (blueprint_data.get("executive_snapshot", {}).get("structural_risks", [""])[0] if blueprint_data.get("executive_snapshot", {}).get("structural_risks") else "")
-            or t("module_gap_default", locale=meta_lang)
-        ).strip()
-        m_bottleneck = str(
-            exec_sum.get("message_bottleneck")
-            or (blueprint_data.get("executive_snapshot", {}).get("business_impact", "") if blueprint_data.get("executive_snapshot", {}).get("business_impact") else "")
-            or t("module_bottleneck_default", locale=meta_lang)
-        ).strip()
-
-        triad_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("triad_col_dimension", locale=meta_lang), bold=True, is_header=True, font_size=8.5),
-                    CellNode(text=t("triad_col_finding", locale=meta_lang), bold=True, is_header=True, font_size=8.5),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("triad_row_strength", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
-                    CellNode(text=m_strength, bg_color="FFFFFF", font_size=8.0),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("triad_row_gap", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
-                    CellNode(text=m_gap, bg_color="FFFFFF", font_size=8.0),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("triad_row_bottleneck", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
-                    CellNode(text=m_bottleneck, bg_color="FFFFFF", font_size=8.0),
-                ]
-            ),
-        ]
-        nodes.append(TableNode(rows=triad_rows, col_widths=[0.30, 0.70]))
-        nodes.append(SpacerNode(points=4))
-
-        # Executive pacing: Chapter 1 stands strictly alone on Page 1
+        # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())
 
         #

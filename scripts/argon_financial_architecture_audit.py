@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Argon-4 Deep Forensic Audit: Financial Telemetry Incoherence, Hourly Downtime Rates, and Plain-Language Executive Risk Modeling (RFC 034)."""
+"""Argon-4 Master Consultation: RFC 048 Assertive Partnership Tone & Executive Cockpit Layout Architecture.
+
+Formulates the architectural blueprint before modifying any code:
+1. Eradicates client-blame / prosecutorial language across the entire document in favor of assertive, constructive engineering diplomacy.
+2. Simplifies convoluted consultant filler (e.g. eradicates 'en este dominio', 'desde una perspectiva económica').
+3. Re-architects Chapter 1 layout into an 'Executive Cockpit' by placing the Diagnostic Triad Table directly below the KPI Scorecard strip.
+4. Verifies OpenXML single-page vertical containment on Page 3.
+5. Upholds 100% Technical English codebase and zero hardcoding across all 10 capability towers.
+"""
 
 from __future__ import annotations
 
@@ -22,62 +30,75 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Principal Actuarial Systems Architect & Executive Editorial Director (Gartner / McKinsey Senior Partner / MIT Actuarial Fellow).
+Role: Chief Executive Communications Strategist & Principal Document Architect (McKinsey Senior Partner / Gartner Distinguished Analyst / Google Core Infrastructure Fellow).
 
-CRITICAL USER AUDIT & CORE INCOHERENCE REPORTED:
-The user performed an in-depth review of Chapter 1 across Tower 1 (Data Center Facilities) and Tower 2 (Hybrid Compute) and raised 3 profound architectural questions:
+CONTEXT & USER CRITIQUE (DEEP CONSULTING PSYCHOLOGY & VISUAL ERGONOMICS):
+The user delivered three critical insights that strike at the heart of executive client advisory:
 
-1. INCOHERENCE IN HOURLY DOWNTIME COST BETWEEN TOWERS:
-   - "no entiendo porque en la torre 2 habla de '10.000 €/hora.' y en la torre 1 dice '(€ 2.091/h)', sigo pensando que hay muchas incoherencias que no entiendo. ¿por qué tenemos un problema profundo de fondo que hay que solucionar?"
-   - Forensic Analysis: For the same corporate client (Molins, a multinational cement and materials manufacturer), how can an hour of operational downtime cost 10,000 €/h in Tower 2 and 2,091 €/h in Tower 1?
-   - In `payload_to_ast.py`, line 528 calculated `hourly_rate = total_fair_ale / 67.5 = 141,184 / 67.5 = 2,091 €/h` as an ad-hoc fallback because `hourly_downtime_rate` was not explicitly persisted in the blueprint payload, whereas in Tower 2, the narrative cited 10,000 €/h!
-   - This creates an obvious credibility collapse: a CIO or CTO reading both towers immediately spots that the financial baseline rate is completely incoherent between reports!
+1. Eradicating Client-Blame Language Across the Entire Document ("No echarle la culpa al cliente"):
+   - User critique:
+     "En la torre 1 veo una frase como 'se han identificado deficiencias estructurales que limitan su fiabilidad y exponen al negocio a interrupciones imprevistas ante cualquier fallo de componente.' en realidad decirle eso al cliente es muy fuerte y esto aplica a todo el documento: el documento no puede ser un documento de echarle la culpa al cliente, tiene que matizarse ese lenguaje, si no nos lo van a tirar a la cara. Tiene que exponerle los problemas pero en un lenguaje asertivo."
+   - Psychological & Strategic Analysis:
+     * In executive advisory, language that sounds prosecutorial ("deficiencias estructurales que exponen al negocio ante cualquier fallo", "aparente estabilidad que depende de la intervención reactiva del personal") triggers acute defensiveness from the IT Director, CIO, and engineering leads.
+     * If the client feels attacked or blamed, they reject the findings and kill the project ("nos lo van a tirar a la cara").
+     * Core Principle: **Assertive Engineering Diplomacy**.
+       a) We acknowledge the dedication and foundation established by the internal teams.
+       b) We frame challenges as the natural result of enterprise growth, scale, and escalating operational demands on legacy architectures.
+       c) We state technical realities with firm, objective engineering precision without pejorative or accusatory adjectives.
+       d) We present gaps as clear, actionable opportunities to strengthen resilience, autonomy, and fault tolerance.
 
-2. ACCESSIBLE, SIMPLE FINANCIAL EXPLANATION FOR NON-FINANCIAL TECHNICAL READERS:
-   - "toda la parte donde se habla de números creo que hay que pensarlo muy bien, no creo que esté bien explicada, vamos a pensar, imagina que eres el lector del documento y tienes perfil técnico pero no financiero, y te empiezo a hablar de números, tu quieres saber que son esos números explicados sencillo y de donde salen y como se han calculado, aunque sea en 2 3 párrafos porque todo absolutamente todo viene de ahí"
-   - The current text throws dense actuarial terms (ALE, P90, Monte Carlo, Open FAIR) at the reader without plain, intuitive explanations.
-   - A technical reader (VP Infrastructure, CTO, Lead Architect) needs to understand:
-     a) What is ALE (Expected Annual Loss)? It is NOT an invoice or budget line item; it is the statistical average annual cost of recurring operational friction, micro-interruptions, and engineering fire-fighting toil.
-     b) Where does the figure come from (e.g. 141,000 € or 101,000 €)? It comes from taking the empirical probability of failure across the evaluated technical risk scenarios and multiplying by the downtime hours and the client's validated cost of operational stoppage (e.g. 10,000 €/h).
-     c) What is the P90 Stress Scenario (e.g. 1.17 M€ or 675 K€)? It is the "perfect storm" or severe tail-risk scenario (90th percentile): what happens when multiple concurrent failures strike during peak manufacturing or logistics dispatch windows, requiring extended recovery (MTTR).
+2. Direct, Simple, Uncomplicated Phrasing (Kill "en este dominio" and Stiff Filler):
+   - User critique:
+     "Luego una frase como esta se ve rara: 'Desde una perspectiva económica, la indisponibilidad no planificada en este dominio genera un coste de parada estimado en 13.061,29 €/h (desglosado en la Sección 4.1).' Especialmente por lo de 'en este dominio', como que se complica la lectura. Quizás debería decirse más explícito y sencillo."
+   - Requirement:
+     * Eradicate stiff consultant boilerplate ("Desde una perspectiva económica", "en este dominio", etc.).
+     * Use clean, direct, punchy phrasing:
+       "En caso de producirse una parada imprevista del servicio, el coste operativo se estima en **{hourly_burn_rate_fmt}** (desglosado en la Sección 4.1)..."
 
-3. GIANT WALLS OF TEXT / POOR EDITORIAL PACING:
-   - "primero que los párrafos son como muy grandes y dificulta su lectura"
-   - Currently, Paragraph 2 is an overwhelming 180-word block of dense text that mixes score, maturity band, ALE, P90, hourly cost, and failure scenarios into one suffocating paragraph.
-   - We need clean, elegant, human executive pacing: 3 or 4 well-structured, readable paragraphs (each 50 to 80 words) with clear topic sentences and breathing room.
+3. Executive Cockpit Visual Layout (Reordering Chapter 1):
+   - User critique:
+     "y estoy pensando que la tabla del final de apartado 1, donde se dicen la fortaleza, brecha arquitectura y cuello de botella, quizás debería estar justo debajo de la tabla inicial 'PUNTUACIÓN ACTUAL BANDA DE MADUREZ EXPOSICIÓN ANUAL ESTIMADA'."
+   - Visual Architecture Analysis:
+     * Placing the Diagnostic Triad Table immediately below the KPI Scorecard strip creates an **Executive Cockpit**:
+       1. Row 1: The Metrics (Score, Band, Annual Exposure).
+       2. Row 2: The Triad At-a-Glance (Fortaleza Operativa, Brecha de Arquitectura, Cuello de Botella Sistémico).
+       3. Row 3: Headline Finding.
+       4. Row 4: Narrative Synthesis (Posture & Mission -> Scannable Bullets -> Actuarial Latent Exposure -> Current-State Diagnostic Verdict).
+     * An executive scanning the first third of Page 3 gets 100% of the core metrics and triad truths in 10 seconds!
+     * Vertical Budget Check: Verify that with this reordering, Page 3 remains strictly self-contained without overflowing to Page 4.
 
 NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ZERO ANTI-PATTERNS: Flawless mathematical and architectural design.
-2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - The solution must scale to ANY company in the world: any vertical, any currency, any size.
-   - Client-wide financial parameters (e.g. `hourly_downtime_cost`) must be authoritative at the tenant level and shared consistently across all towers.
-3. 100% TECHNICAL ENGLISH CODEBASE:
-   - All Python code, method names, variables, and docstrings must be 100% Technical English.
+1. Zero bugs, zero antipatterns.
+2. Zero hardcoding (scales across any enterprise 50M€ to 50B€, any vertical, any currency, any locale).
+3. 100% Technical English codebase (zero Spanish words in Python source files).
+4. Split-brain eradication across all 10 capability towers.
+5. OpenXML layout determinism.
 
 YOUR TASK:
-Emit a comprehensive architectural plan (RFC 034) in Markdown:
-1. Root cause analysis of the financial rate incoherence (10,000 €/h vs 2,091 €/h) and the pipeline fix to ensure a single, authoritative, tenant-level `hourly_downtime_cost` is propagated symmetrically across all 10 towers.
-2. The "Plain-Language Financial Risk Model" pedagogical framework: how to explain ALE, P90, and downtime rate to a non-financial technical leader in crystal-clear, persuasive, credible prose.
-3. Redesign of Chapter 1 executive narrative into well-paced, readable paragraphs (avoiding giant walls of text).
-4. Concrete, production-ready Python code snippets in 100% Technical English.
+Synthesize an authoritative Architectural Blueprint (RFC 048) in Markdown:
+1. Editorial Lexicon & Tone Transformation: Formulate the transformation rules from accusatory prose to Assertive Engineering Diplomacy.
+2. Complete bilingual templates for `engine_config/locales.json` in Spanish (`es`) and English (`en`).
+3. Executive Cockpit Layout Blueprint: Show the exact AST ordering in `payload_to_ast.py`.
+4. OpenXML Vertical Budget Validation for Page 3.
+5. Concrete Python implementation snippets in 100% Technical English.
 """
 
-    print(f"Requesting RFC 034 deep financial audit from {model_name}...")
+    print(f"Requesting RFC 048 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_034_FINANCIAL_TELEMETRY_AND_PEDAGOGICAL_NARRATIVE_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_048_ASSERTIVE_PARTNERSHIP_TONE_AND_EXECUTIVE_COCKPIT_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 034 FINANCIAL AUDIT & REMEDIATION PLAN")
+    print("GEMINI-4-ARGON: RFC 048 ASSERTIVE PARTNERSHIP TONE & EXECUTIVE COCKPIT")
     print("=" * 80)
     print(response.text)
     print("=" * 80)
-    print(f"\nPlan saved to: {out_file.relative_to(REPO_ROOT)}")
+    print(f"\nSaved to: {out_file.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":
