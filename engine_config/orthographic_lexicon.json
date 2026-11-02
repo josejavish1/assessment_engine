@@ -1,0 +1,120 @@
+{
+  "es": {
+    "unambiguous_tokens": {
+      "computo": "cómputo",
+      "energia": "energía",
+      "electrica": "eléctrica",
+      "electrico": "eléctrico",
+      "critica": "crítica",
+      "critico": "crítico",
+      "criticos": "críticos",
+      "criticas": "críticas",
+      "tecnica": "técnica",
+      "tecnico": "técnico",
+      "tecnicos": "técnicos",
+      "tecnicas": "técnicas",
+      "diagnostico": "diagnóstico",
+      "analisis": "análisis",
+      "perdida": "pérdida",
+      "perdidas": "pérdidas",
+      "metrica": "métrica",
+      "metricas": "métricas",
+      "arquitectonica": "arquitectónica",
+      "arquitectonico": "arquitectónico",
+      "estrategica": "estratégica",
+      "estrategico": "estratégico",
+      "economica": "económica",
+      "economico": "económico",
+      "exito": "éxito",
+      "indice": "índice",
+      "codigo": "código",
+      "trafico": "tráfico",
+      "numero": "número",
+      "minimo": "mínimo",
+      "maximo": "máximo",
+      "optimo": "óptimo",
+      "unico": "único",
+      "unica": "única",
+      "ademas": "además",
+      "estandares": "estándares",
+      "estandard": "estándar",
+      "estandar": "estándar",
+      "politica": "política",
+      "politicas": "políticas",
+      "basico": "básico",
+      "basica": "básica",
+      "periodica": "periódica",
+      "periodico": "periódico",
+      "periodicas": "periódicas",
+      "periodicos": "periódicos",
+      "fisica": "física",
+      "fisico": "físico",
+      "fisicas": "físicas",
+      "fisicos": "físicos",
+      "linea": "línea",
+      "lineas": "líneas",
+      "area": "área",
+      "areas": "áreas",
+      "automatica": "automática",
+      "automatico": "automático",
+      "automaticas": "automáticas",
+      "automaticos": "automáticos",
+      "dinamica": "dinámica",
+      "dinamico": "dinámico",
+      "dinamicas": "dinámicas",
+      "dinamicos": "dinámicos",
+      "a traves": "a través",
+      " mas ": " más ",
+      "estan": "están",
+      "esta ": "está "
+    },
+    "suffix_rules": [
+      {
+        "pattern": "\\b([a-zA-ZñÑáéíóúÁÉÍÓÚ]{3,})(cion)\\b",
+        "replacement": "\\1ción"
+      },
+      {
+        "pattern": "\\b([a-zA-ZñÑáéíóúÁÉÍÓÚ]{3,})(ciones)\\b",
+        "replacement": "\\1ciones"
+      },
+      {
+        "pattern": "\\b([a-zA-ZñÑáéíóúÁÉÍÓÚ]{3,})(sion)\\b",
+        "replacement": "\\1sión"
+      },
+      {
+        "pattern": "\\b([a-zA-ZñÑáéíóúÁÉÍÓÚ]{3,})(siones)\\b",
+        "replacement": "\\1siones"
+      },
+      {
+        "pattern": "\\b([a-zA-ZñÑáéíóúÁÉÍÓÚ]{3,})(logia)\\b",
+        "replacement": "\\1logía"
+      },
+      {
+        "pattern": "\\b([a-zA-ZñÑáéíóúÁÉÍÓÚ]{3,})(metria)\\b",
+        "replacement": "\\1metría"
+      }
+    ]
+  },
+  "pt": {
+    "unambiguous_tokens": {
+      "critico": "crítico",
+      "critica": "crítica",
+      "tecnico": "técnico",
+      "tecnica": "técnica",
+      "diagnostico": "diagnóstico",
+      "analise": "análise",
+      "indice": "índice",
+      "codigo": "código"
+    },
+    "suffix_rules": []
+  },
+  "fr": {
+    "unambiguous_tokens": {
+      "synthese": "synthèse",
+      "strategique": "stratégique",
+      "securite": "sécurité",
+      "reseau": "réseau"
+    },
+    "suffix_rules": []
+  }
+}

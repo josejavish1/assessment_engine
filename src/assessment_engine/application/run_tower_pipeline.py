@@ -733,6 +733,15 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
             "⏭️  [Cache Bypass] Engine: Universal Payload Enricher already generated. Skipping."
         )
 
+    # Sync enriched 21-key payload to active blueprint payload path for downstream compilation stages
+    if enriched_payload_path.exists() and enriched_payload_path.stat().st_size > 0:
+        import shutil
+        shutil.copy2(enriched_payload_path, cfg.blueprint_payload_path)
+        logger.info(
+            "[Pipeline] Synced 21-key enriched payload to active blueprint path: %s",
+            cfg.blueprint_payload_path.name,
+        )
+
 async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
     """Concurrently compile final AS-IS diagnostic report, radar charts, and Blueprint Word DOCX documents."""
 

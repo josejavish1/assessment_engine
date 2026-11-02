@@ -17,7 +17,11 @@ from assessment_engine.domain.contracts.enriched_payload_schema import (
 from assessment_engine.domain.services.localization_resolver import (
     LocalizationResolver,
 )
+from assessment_engine.domain.services.orthographic_normalizer import (
+    OrthographicNormalizer,
+)
 from assessment_engine.infrastructure.localization import t
+from assessment_engine.infrastructure.runtime_paths import ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +48,9 @@ class UniversalPayloadEnricher:
         self._actuarial = actuarial_gate_data
         self._forensics = forensic_ledger
         self._tenant = tenant_config
+        self._ortho_normalizer = OrthographicNormalizer(
+            lexicon_path=ROOT / "engine_config" / "orthographic_lexicon.json"
+        )
 
     def enrich(self, raw_payload: dict[str, Any], tower_id: str) -> EnrichedTowerPayload:
         """Executes the full enrichment lifecycle on a raw tower payload.
@@ -64,6 +71,9 @@ class UniversalPayloadEnricher:
         )
         norm_lang = str(working["document_meta"]["language"]).split("-")[0].lower()
         currency = working["document_meta"]["currency_code"]
+
+        # Restore native orthographic diacritics across human-readable text
+        working = self._ortho_normalizer.normalize_payload(working, locale=norm_lang)
 
         # Bind LocalizationResolver with the verified runtime locale
         resolver = LocalizationResolver(

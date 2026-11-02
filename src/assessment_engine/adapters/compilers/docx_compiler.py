@@ -738,7 +738,7 @@ class DocxCompiler(DocumentCompiler):
         r_instr = field_p.add_run()
         instr = OxmlElement("w:instrText")
         instr.set(qn("xml:space"), "preserve")
-        depth = getattr(node, "depth", 3)
+        depth = getattr(node, "depth", 2)
         instr.text = f' TOC \\o "1-{depth}" \\h \\z \\u '
         r_instr._r.append(instr)
 
@@ -748,9 +748,13 @@ class DocxCompiler(DocumentCompiler):
         r_sep._r.append(fld_sep)
         sdt_content.append(field_p._p)
 
-        # 5. Populate initial preview entries with dot leaders
+        # 5. Populate initial preview entries with dot leaders (filtered to max depth)
         entries = getattr(node, "entries", [])
         for entry in entries:
+            lvl = getattr(entry, "level", 1)
+            if lvl > depth:
+                continue
+
             p_e = doc.add_paragraph()
             p_e.paragraph_format.tab_stops.add_tab_stop(
                 Inches(6.4), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS

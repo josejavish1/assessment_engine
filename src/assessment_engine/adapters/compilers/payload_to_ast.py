@@ -140,6 +140,17 @@ class PayloadToASTBridge:
         )
         self.meta_lang = ctx.get("meta_lang", "en")
 
+        # Deterministically restore native orthographic diacritics on human-readable strings
+        from assessment_engine.domain.services.orthographic_normalizer import (
+            OrthographicNormalizer,
+        )
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        ortho = OrthographicNormalizer(lexicon_path=ROOT / "engine_config" / "orthographic_lexicon.json")
+        if "blueprint_data" in ctx and isinstance(ctx["blueprint_data"], dict):
+            ctx["blueprint_data"] = ortho.normalize_payload(ctx["blueprint_data"], locale=self.meta_lang)
+        if "annex_data" in ctx and isinstance(ctx["annex_data"], dict):
+            ctx["annex_data"] = ortho.normalize_payload(ctx["annex_data"], locale=self.meta_lang)
+
         nodes: List[Any] = []
         self._build_cover_and_toc(ctx, nodes)
         self._build_executive_summary_and_scope(ctx, nodes)
@@ -400,7 +411,7 @@ class PayloadToASTBridge:
             TOCNode(
                 title=t("toc_title", locale=meta_lang),
                 entries=toc_entries,
-                depth=3,
+                depth=2,
             )
         )
         nodes.append(PageBreakNode())
@@ -1795,7 +1806,12 @@ class PayloadToASTBridge:
         blueprint_data = ctx["blueprint_data"]
         client_name = ctx["client_name"]
         meta_lang = ctx["meta_lang"]
-        currency = str(ctx.get("currency") or blueprint_data.get("currency") or "EUR")
+        currency = str(
+            ctx.get("currency")
+            or blueprint_data.get("document_meta", {}).get("currency_code")
+            or blueprint_data.get("currency")
+            or "USD"
+        )
 
         # 5. Chapter Main Heading: 5. Conclusions & Baseline Diagnostic Synthesis (AS-IS)
         nodes.append(

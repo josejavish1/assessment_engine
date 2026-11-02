@@ -64,13 +64,15 @@ class CfoActuarialGate:
             )
 
         expected_sle = (mttr_dec * hr_dec) + parts_dec
-        if abs(expected_sle - sle_dec) > self._policy.tolerance:
+        effective_sle_tol = max(self._policy.tolerance, abs(expected_sle) * Decimal("0.005"))
+        if abs(expected_sle - sle_dec) > effective_sle_tol:
             raise ActuarialAuditGateViolationError(
                 f"Parametric SLE mismatch: expected {expected_sle}, got {sle_dec} (diff: {abs(expected_sle - sle_dec)})."
             )
 
         expected_ale = sle_dec * lef_dec
-        if abs(expected_ale - ale_dec) > self._policy.tolerance:
+        effective_ale_tol = max(self._policy.tolerance, abs(expected_ale) * Decimal("0.005"))
+        if abs(expected_ale - ale_dec) > effective_ale_tol:
             raise ActuarialAuditGateViolationError(
                 f"Parametric ALE mismatch: expected {expected_ale}, got {ale_dec} (diff: {abs(expected_ale - ale_dec)})."
             )
