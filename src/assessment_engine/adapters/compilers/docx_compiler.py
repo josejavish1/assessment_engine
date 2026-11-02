@@ -618,6 +618,17 @@ class DocxCompiler(DocumentCompiler):
             for t_item in list(first_foot.tables):
                 t_item._element.getparent().remove(t_item._element)
 
+            cover_footer_meta = str(ast.metadata.get("cover_footer_metadata") or "").strip()
+            if cover_footer_meta:
+                p_first = first_foot.add_paragraph()
+                p_first.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                p_first.paragraph_format.space_before = Pt(8)
+                r_first = p_first.add_run(cover_footer_meta)
+                set_run_font_comprehensive(r_first, font_name="Arial")
+                r_first.font.size = Pt(8.5)
+                r_first.font.italic = True
+                r_first.font.color.rgb = RGBColor(100, 116, 139)
+
             footer = section.footer
             p_foot = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
             p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT

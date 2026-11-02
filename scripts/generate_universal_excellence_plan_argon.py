@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Adversarial Strategy Review by gemini-4-argon for 100% Universal Deliverable Excellence."""
+"""Consulting gemini-4-argon for the Comprehensive Task-by-Task Implementation Plan for Deliverable Excellence."""
 
 from __future__ import annotations
 
@@ -20,54 +20,67 @@ client = create_genai_client()
 model_name = get_model(ModelTier.REASONING)
 
 prompt = """
-Role: Chief Technology Officer, Principal Compiler Architect & Senior McKinsey Strategy Partner.
+Role: Chief Software Architect (Enterprise Document Engineering) & Global Head of Strategic Advisory.
 
-OBJECTIVE:
-Review the Proposed Architectural Strategy to achieve 100% Zero-Defect Universal Excellence across all assessment deliverables (applicable to any enterprise from mid-market to Global Fortune 10, in any vertical and language):
+CONTEXT:
+We have audited the rendered AS-IS deliverables (Technical Annexes for Tower 1 Data Center and Tower 2 Hybrid Compute) with executive leadership.
+Leadership has provided 12 critical engineering and editorial directives to bring the deliverables to 100% Tier-1 McKinsey/Gartner quality:
 
-PROPOSED ARCHITECTURAL SYNTHESIS:
-1. Chapter 2 (Objective, Scope & Methodological Framework):
-   - Page 4: Executive Objective & Perimeter, Factory/Asset Topology, 3-Framework Alignment Table (CMMI, Domain Standard e.g. ASHRAE/ISO, Open FAIR), and 3 Executive Outcomes.
-   - Page 5: 3-Phase Ground-Truth Calibration Methodology, 5-Level CMMI Maturity Scale, and Evaluated Capabilities & Pillar Weight Allocation Table (Climatización 24%, Energía 20%, etc.).
-   - Rationale: Fully populates Page 5, resolves the visual white space, and consolidates all qualitative CMMI methodology into Chapter 2 where it belongs.
+1. COVER PAGE:
+   - Remove generic filler "Instalación: Perímetro de infraestructura y activos tecnológicos".
+   - Remove bureaucratic subtitle "Proyecto: Diagnóstico de Arquitectura, Madurez Operativa y Resiliencia Cuantitativa (O-FAIR)".
+   - Move document metadata ("STRATEGIC ADVISORY | Date | Version | Confidential") strictly into the bottom footer of the cover page.
 
-2. Chapter 3 (Technological Diagnosis & Maturity Dashboard):
-   - Page 6: Radar Chart and Global Maturity Scorecard (Nivel 3 - Definido, Gobernanza Estándar, zero English leaks).
-   - Pages 7-8: Pillar Diagnostic Table with explicit operational gap analysis and embedded O-FAIR Defensibility formulas.
-   - Page 9: Dedicated Cross-Cutting Structural Debt Analysis (Telemetry Blindness, IT/OT Observability Silos, Manual Procedural Toil).
+2. TABLE OF CONTENTS:
+   - Ensure the TOC is fully automated via native Word OpenXML fields (`w:fldSimple` / `w:instrText` `TOC \\o "1-3" \\h \\z \\u`) with an elegant fallback layout table that updates seamlessly in Word.
 
-3. Chapter 4 (Quantitative Risk Matrix & Actuarial Exposure - O-FAIR):
-   - Page 10: 5x5 Heatmap Matrix (TEF vs LM).
-   - Page 11: Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps: Lean IT, Cost of Delay, PUE Efficiency, EoL Support Avoidance, Tail Risk CVaR, NIS2 Compliance) and 3 Strategic Risk Portfolios (Tier 1 Critical Modernization, Tier 2 Operational Optimization, Tier 3 Maintenance Backlog).
-   - Pages 12-16: Detailed Risk Vulnerability Cards (RVS01 to RVS14) with exact FAIR parameter breakdowns.
+3. EXECUTIVE SUMMARY (CHAPTER 1) - AS-IS BOUNDARY PURITY:
+   - Remove arbitrary prescription of "wants to reach Level 4 Managed". AS-IS is a diagnostic of current state; target maturity should only be mentioned if driven by mandatory regulatory frameworks (NIS2/DORA).
+   - Eradicate TO-BE investment promises ("to neutralize this exposure the modernization program requires X investment of CAPEX..."). AS-IS describes observed exposure; investment belongs to TO-BE roadmap!
+   - Add explicit cross-reference directing the reader to Chapter 4 and Appendix B for the forensic actuarial breakdown.
 
-4. Chapter 5 (Conclusions, Investment Business Case & Roadmaps):
-   - Pages 17-19: Target Transformation Paradigm (Platform as a Product), Immediate Remediations, and the Multi-Horizon Stochastic Inaction Table (1-Year, 3-Year, 5-Year ALE vs. CVaR P90 with 185k € CAPEX, Payback < 3 months, and 455% ROI).
+4. METHODOLOGICAL FRAMEWORK (CHAPTER 2):
+   - Remove the academic "Three-phase calibration methodology" subsection.
+   - Harmonize typography: unify table font sizes across the CMMI scale and capability score tables (headers 9.0 pt bold, data 8.5 pt regular, badges 8.0 pt bold).
 
-5. Appendices (Institutional Trust & Rigor):
-   - Page 20: Appendix C: Chain of Custody & Document Provenance Registry (10-row table mapping questionnaire, context dossier, ITIC downtime, CISA KEV, NIS2, ISO 27001).
-   - Pages 21-22: Appendix A: Quantitative Risk Modeling Methodology (Open FAIR™ Standard, Monte Carlo 10,000-run simulation mechanics, TEF and LM scale tables).
-   - Page 23: Appendix B: Abbreviations Glossary (clean 2-column table) & Legal Liability Disclaimer (with dynamically interpolated {client_name}).
+5. RISK SECTION (CHAPTER 4) - MINI-INFOGRAPHIC CARD RE-ENGINEERING:
+   - Remove the "Resilience & Efficiency Return Hexagon" diagram if present.
+   - Decongest card header banner: do not concatenate code, capability, pillar, tier, rank, share in a single wall of text. Shorten and format cleanly.
+   - Tone down aggressive colors to an executive, sober palette (muted Slate, Navy, subtle Amber, muted Crimson).
+   - Remove repetitive boilerplate: eliminate the static "Evento Amenaza Iniciador" box that repeats identical text across all cards.
+   - Replace the TO-BE "Directiva de Mitigación Ejecutiva" with a high-value CFO section: **Actuarial Calculation Breakdown & Justification** explaining the empirical derivation of the numbers (e.g. `SLE = Observed MTTR (2.5h) x Plant Hourly Cost (15,600 €/h) + Parts (6,000 €) = 45,000 €; LEF = 0.36 ev/yr; ALE = SLE x LEF = 16,200 €/yr`).
+   - Grounded Realism & Actuarial Calibration: Ensure the baseline payload figures for Tower 1 match the previously agreed industrial plant reality (total tower ALE ~118,500 €/year, SLEs 25,000 € - 45,000 € based on real 2-4 hour recovery, not €1.05M!).
+   - Probabilistic Hypothesis Language: Eradicate sensationalist deterministic claims ("this recirculation bursts compressors, skyrockets electric bills, and causes simultaneous collapses..."). Reframe in rigorous actuarial hypothesis language ("Under unmitigated conditions, persistent elevated thermal gradients increase the probability of thermal trip in cooling compressors, potentially causing an estimated operational stoppage of...").
+   - Replace confusing jargon "Acoplamiento sistémico estrecho (cascada crítica)" with plain business language (e.g. "Efecto Cascada: Alto (Afecta a múltiples servicios)").
 
-MANDATORY INVARIANTS:
-- Zero Hardcoding: Universal for any company, vertical, and language.
-- 100% Technical English Codebase: Zero Spanish in code/docstrings/schemas; Spanish and other target languages exist exclusively as localized output data in engine_config/locales.json.
-- Zero Layout Defects: No ghost pages, no orphan headings, strict WCAG 2.1 contrast.
+6. CONCLUSIONS (CHAPTER 5) - AS-IS DIAGNOSTIC SYNTHESIS:
+   - Remove the Multi-Horizon Modernization Program table (1 Year, 3 Years, 5 Years with CAPEX, ROI, Payback). That belongs exclusively to the TO-BE phase.
+   - Transform Chapter 5 into a pure AS-IS Diagnostic Synthesis summarizing current maturity posture, key vulnerabilities, and operational urgency.
 
-CRITIQUE REQUIREMENTS:
-1. Does this architecture achieve 100% consulting perfection and eliminate all residual defects?
-2. Are there any hidden risks, layout traps, or anti-patterns in this proposed structure?
-3. Provide your formal authorization to proceed with implementation.
+7. APPENDICES:
+   - Remove Appendix A ("Information Sources Custody Log") entirely.
+   - Re-index Appendix B (Open FAIR Methodology) as the single primary technical appendix.
+
+MANDATES:
+- Zero bugs, zero problems, zero anti-patterns.
+- Zero hardcoding: universal across all enterprises worldwide, all verticals, all target languages (es, en, pt, fr, de, ja), and all currencies.
+- 100% Technical English Codebase: Zero Spanish words in Python code, docstrings, comments, or schemas.
+
+YOUR TASK:
+Provide an exhaustive, task-by-task engineering implementation plan specifying:
+1. Exact file-by-file changes (`payload_to_ast.py`, `docx_compiler.py`, `locales.json`, `blueprint_t1_payload.json`, `blueprint_t2_payload.json`, etc.).
+2. The exact data structures, AST node changes, and localization keys to add/modify.
+3. Verification plan with automated tests.
 """
 
-print(f"Requesting architectural validation from {model_name}...")
+print(f"Requesting universal deliverable excellence plan from {model_name}...")
 response = client.models.generate_content(
     model=model_name,
     contents=prompt,
 )
 
 print("\n" + "=" * 80)
-print("GEMINI-4-ARGON: ADVERSARIAL STRATEGY REVIEW FOR 100% UNIVERSAL EXCELLENCE")
+print("GEMINI-4-ARGON: UNIVERSAL DELIVERABLE EXCELLENCE ENGINEERING PLAN")
 print("=" * 80)
 print(response.text)
 print("=" * 80)

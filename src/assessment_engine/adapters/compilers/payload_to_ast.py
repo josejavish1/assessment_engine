@@ -147,7 +147,7 @@ class PayloadToASTBridge:
         risks_data_list, fair_lookup = self._build_maturity_and_benchmarks(ctx, nodes)
         self._build_fair_risk_analysis(ctx, nodes, risks_data_list)
         self._build_detailed_findings_log(ctx, nodes, risks_data_list, fair_lookup)
-        self._build_conclusions_and_appendices(ctx, nodes)
+        self._build_conclusions_and_appendices(ctx, nodes, risks_data_list)
 
         return DocumentAST(
             title=f"Technical Annex - Tower {ctx['tower_id']}",
@@ -359,19 +359,9 @@ class PayloadToASTBridge:
             )
         )
 
-        # 3. Project Identity (14.0 pt, #2E404D)
-        proj_lbl = t("project_lbl", locale=meta_lang)
-        proj_name = t("cover_subtitle_text", locale=meta_lang)
-        nodes.append(
-            ParagraphNode(
-                text=f"**{proj_lbl.strip()}** {proj_name}",
-                font_size=14.0,
-                text_color_rgb=[46, 64, 77],
-                space_after=40,
-            )
-        )
+        nodes.append(SpacerNode(points=30))
 
-        # 4. Client Identity (28.0 pt, Bold, Client Label in #2E404D, Name in #0072BC)
+        # 3. Client Identity (28.0 pt, Bold, Client Label in #2E404D, Name in #0072BC)
         client_lbl = t("client_lbl", locale=meta_lang)
         nodes.append(
             ParagraphNode(
@@ -383,34 +373,13 @@ class PayloadToASTBridge:
             )
         )
 
-        # 5. Facility Perimeter (11.0 pt, #52606D)
-        facility_lbl = t("facility_label", locale=meta_lang)
-        facility_desc = (
-            blueprint_data.get("document_meta", {}).get("facility_name")
-            or blueprint_data.get("facility_name")
-            or t("facility_default_desc", locale=meta_lang)
-        )
-        nodes.append(
-            ParagraphNode(
-                text=f"**{facility_lbl.strip()}**\n{facility_desc}",
-                font_size=11.0,
-                text_color_rgb=[82, 96, 109],
-                space_after=50,
-            )
-        )
-
-        # 6. Corporate Metadata Line (9.5 pt, Italic, #969696)
+        # Store corporate metadata strictly for native first-page footer rendering
         classification_clean = self.classification.replace(" (Tier-1 Assessment)", "")
         version_lbl = t("version_label", locale=meta_lang)
         company_name_upper = self.company_name.upper()
-        nodes.append(
-            ParagraphNode(
-                text=f"{company_name_upper} | {date_str} | {version_lbl} {version} | {classification_clean}",
-                italic=True,
-                font_size=9.5,
-                text_color_rgb=[150, 150, 150],
-            )
-        )
+        footer_meta_str = f"{company_name_upper}  |  {date_str}  |  {version_lbl} {version}  |  {classification_clean}"
+        ctx["tower_meta"]["cover_footer_metadata"] = footer_meta_str
+
         nodes.append(PageBreakNode())
 
         #
@@ -451,6 +420,16 @@ class PayloadToASTBridge:
         executive_summary_path = modules_dir / "02_executive_summary.md"
         if executive_summary_path.exists():
             nodes.extend(self._parse_markdown_to_nodes(executive_summary_path))
+            nodes.append(SpacerNode(points=10))
+            cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
+            nodes.append(
+                ParagraphNode(
+                    text=f"*{cross_ref_text}*",
+                    italic=True,
+                    font_size=9.5,
+                    text_color_rgb=[71, 85, 105],
+                )
+            )
         elif annex_data and "executive_summary" in annex_data:
             nodes.append(
                 HeadingNode(
@@ -472,6 +451,18 @@ class PayloadToASTBridge:
                 nodes.append(ParagraphNode(text=f"**{t('business_impacts_title', locale=meta_lang)}:**"))
                 for imp in impacts:
                     nodes.append(ParagraphNode(text=imp, style="List Bullet"))
+
+            # Append forensic cross-reference linking to Chapter 4 and Appendix A
+            nodes.append(SpacerNode(points=10))
+            cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
+            nodes.append(
+                ParagraphNode(
+                    text=f"*{cross_ref_text}*",
+                    italic=True,
+                    font_size=9.5,
+                    text_color_rgb=[71, 85, 105],
+                )
+            )
         else:
             nodes.append(
                 HeadingNode(
@@ -542,26 +533,26 @@ class PayloadToASTBridge:
                 else t("norm_row_iso_purp", locale=meta_lang)
             )
         headers_norm = [
-            CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
-            CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
-            CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT"),
+            CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.0),
+            CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.0),
+            CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.0),
         ]
         norm_rows = [
             TableRowNode(cells=headers_norm, is_header=True),
             TableRowNode(cells=[
-                CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF"),
-                CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF"),
-                CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
+                CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF", font_size=8.5),
+                CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.5),
+                CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=8.5),
             ]),
             TableRowNode(cells=[
-                CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex),
-                CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex),
-                CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER"),
+                CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex, font_size=8.5),
+                CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex, font_size=8.5),
+                CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
             ]),
             TableRowNode(cells=[
-                CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF"),
-                CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF"),
-                CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER"),
+                CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF", font_size=8.5),
+                CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.5),
+                CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=8.5),
             ]),
         ]
         nodes.append(SpacerNode(points=10))
@@ -579,19 +570,7 @@ class PayloadToASTBridge:
         for b in get_localized_list("methodology_three_outcomes_bullets", locale=meta_lang):
             nodes.append(ParagraphNode(text=b, style="List Bullet"))
 
-        # 2.6 Three-Phase Ground-Truth Methodology
-        nodes.append(SpacerNode(points=6))
-        nodes.append(
-            HeadingNode(
-                text=t("methodology_three_phases_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        for b in get_localized_list("methodology_three_phases_bullets", locale=meta_lang):
-            nodes.append(ParagraphNode(text=b, style="List Bullet", space_after=1, font_size=8.5))
-
-        # 2.7 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
+        # 2.6 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
         _build_cmmi_methodology_and_capabilities_fn(ctx, nodes, self.primary_color_rgb)
 
         # Chapter 2 ends cleanly with dedicated page
@@ -982,18 +961,6 @@ class PayloadToASTBridge:
         total_fair_ale = ctx["total_fair_ale"]
         currency = ctx["currency"]
         meta_lang = ctx["meta_lang"]
-        # 4.2 Radar Chart
-        nodes.append(
-            HeadingNode(
-                text=t("radar_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        radar_path = case_dir / "pillar_radar_chart.generated.png"
-        if radar_path.exists():
-            nodes.append(PictureNode(path=str(radar_path), width_inches=6.0))
-            nodes.append(SpacerNode(points=15))
 
         # RAGE Forensic Verification Injection
         snapshot_file = case_dir / "benchmarks_snapshot.json"
@@ -1262,20 +1229,7 @@ class PayloadToASTBridge:
         nodes.append(_build_heatmap_mosaic(risks_data_list))
         nodes.append(SpacerNode(points=15))
 
-        # 4.2 Return on Resilience & Efficiency Hexagon (RoRE / TBM & FinOps)
-        nodes.append(
-            HeadingNode(
-                text=t("rore_value_hexagon_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(ParagraphNode(text=t("rore_value_hexagon_intro", locale=meta_lang), italic=True))
-        nodes.append(SpacerNode(points=6))
-        for b in get_localized_list("rore_value_hexagon_bullets", locale=meta_lang):
-            nodes.append(ParagraphNode(text=b, style="List Bullet"))
-
-        # 4.3 Risk Inventory Categorization into Three Strategic Portfolios
+        # 4.2 Risk Inventory Categorization into Three Strategic Portfolios
         nodes.append(SpacerNode(points=12))
         nodes.append(
             HeadingNode(
@@ -1657,6 +1611,14 @@ class PayloadToASTBridge:
             header_text = [255, 255, 255]
             sev_badge_bg = severity_bg_hex
 
+        # Resolve plain-language cascade effect
+        if coupling_factor >= 1.5:
+            cascade_label = t("risk_card_cascade_high", locale=meta_lang)
+        elif coupling_factor >= 1.2:
+            cascade_label = t("risk_card_cascade_medium", locale=meta_lang)
+        else:
+            cascade_label = t("risk_card_cascade_low", locale=meta_lang)
+
         if metrics.is_deduplicated:
             notice_text = t("risk_card_deduplicated_ale_notice", locale=meta_lang).format(
                 primary_risk_ref=loss_event.primary_risk_ref
@@ -1701,7 +1663,7 @@ class PayloadToASTBridge:
                     align="CENTER",
                 ),
                 CellNode(
-                    text=f"**{t('risk_card_coupling_label', locale=meta_lang)}**\n{coupling_str}\n(x{coupling_factor:.1f})",
+                    text=f"**{t('risk_card_cascade_label', locale=meta_lang)}**\n{cascade_label}\n(x{coupling_factor:.1f})",
                     font_size=8.0,
                     bg_color="F8FAFC",
                     grid_span=1,
@@ -1710,12 +1672,22 @@ class PayloadToASTBridge:
                 ),
             ]
 
+        # Build transparent Actuarial Derivation Box for the CFO
+        actuarial_box_text = (
+            f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n"
+            f"SLE = (MTTR {mttr_hours:.1f}h × {format_currency(effective_hourly, currency_symbol=currency, locale=meta_lang, decimals=0)}/h) = {formatted_sle}  |  "
+            f"ALE = SLE × {lef_formatted} {ev_unit}/{t('year_lbl', locale=meta_lang)} = {formatted_ale}/{t('year_lbl', locale=meta_lang)}"
+        )
+        if evidence_txt:
+            ev_lbl = t("audit_evidence_label", locale=meta_lang)
+            actuarial_box_text += f"\n{ev_lbl}: \"{evidence_txt}\""
+
         card_table = TableNode(
             rows=[
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"[{loss_event.event_id}] {loss_event.title}\n{loss_event.domain_category} | {t('portfolio_lbl', locale=meta_lang)}: {tier_prefix} {t_idx} (#{global_rank} | {share_pct:.1f}%)",
+                            text=f"[{loss_event.event_id}] {loss_event.title}\n{loss_event.domain_category}",
                             font_size=9.5,
                             bold=True,
                             bg_color=header_bg,
@@ -1725,7 +1697,7 @@ class PayloadToASTBridge:
                             align="LEFT",
                         ),
                         CellNode(
-                            text=sev_badge_text,
+                            text=f"{sev_badge_text} ({share_pct:.1f}%)",
                             font_size=8.5,
                             bold=True,
                             bg_color=sev_badge_bg,
@@ -1744,31 +1716,21 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"**{t('risk_card_bowtie_threat', locale=meta_lang)}**\n{threat_txt}",
-                            font_size=7.5,
+                            text=f"**{t('risk_card_vulnerability_label', locale=meta_lang)}:**\n{vuln_txt}",
+                            font_size=8.0,
                             bg_color="FFFFFF",
-                            grid_span=1,
-                            width_dxa=2340,
+                            grid_span=2,
+                            width_dxa=4680,
                             border_left_color="E63946",
                             border_left_size=24,
                             align="LEFT",
                         ),
                         CellNode(
-                            text=f"**{t('risk_card_bowtie_vulnerability', locale=meta_lang)}**\n{vuln_txt}",
-                            font_size=7.5,
+                            text=f"**{t('risk_card_operational_impact_label', locale=meta_lang)}:**\n{impact_txt}",
+                            font_size=8.0,
                             bg_color="FFFFFF",
                             grid_span=2,
                             width_dxa=4680,
-                            border_left_color="F4A261",
-                            border_left_size=24,
-                            align="LEFT",
-                        ),
-                        CellNode(
-                            text=f"**{t('risk_card_bowtie_impact', locale=meta_lang)}**\n{impact_txt}",
-                            font_size=7.5,
-                            bg_color="FFFFFF",
-                            grid_span=1,
-                            width_dxa=2340,
                             border_left_color="2A9D8F",
                             border_left_size=24,
                             align="LEFT",
@@ -1779,9 +1741,9 @@ class PayloadToASTBridge:
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"**{t('risk_card_mitigation_directive', locale=meta_lang)}:** {directive_txt}",
+                            text=actuarial_box_text,
                             font_size=8.0,
-                            bg_color="F1F5F9",
+                            bg_color="F8FAFC",
                             grid_span=4,
                             width_dxa=9360,
                             border_left_color="0072BC",
@@ -1801,23 +1763,26 @@ class PayloadToASTBridge:
         # CHAPTER 5: CONCLUSIONS AND COST OF INACTION
         #
 
-    def _build_conclusions_and_appendices(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
-        self._build_conclusions_chapter(ctx, nodes)
-        _build_appendix_a_custody_fn(ctx, nodes, self.primary_color_rgb)
+    def _build_conclusions_and_appendices(
+        self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]] | None = None
+    ) -> None:
+        self._build_conclusions_chapter(ctx, nodes, risks_data_list or [])
         _build_appendix_b_fair_methodology_fn(
             ctx, nodes, self.primary_color_rgb, self.brand_data, self.alt_row_hex
         )
         _build_appendix_c_glossary_and_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
 
-    def _build_conclusions_chapter(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+    def _build_conclusions_chapter(
+        self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]]
+    ) -> None:
         from assessment_engine.infrastructure.localization import t
 
         blueprint_data = ctx["blueprint_data"]
         client_name = ctx["client_name"]
-        modules_dir = ctx["modules_dir"]
         meta_lang = ctx["meta_lang"]
+        currency = str(ctx.get("currency") or blueprint_data.get("currency") or "EUR")
 
-        # 5. Chapter Main Heading
+        # 5. Chapter Main Heading: 5. Conclusions & Baseline Diagnostic Synthesis (AS-IS)
         nodes.append(
             HeadingNode(
                 text=t("chapter_5_strategic_roadmap", locale=meta_lang),
@@ -1826,111 +1791,148 @@ class PayloadToASTBridge:
             )
         )
 
-        # 5.1 Transformation Paradigm (Promoted here from Chapter 4 as it represents a TO-BE vision)
+        # 5.1 Observed Structural Maturity Posture
+        exact_band = ctx.get("exact_band") or ctx.get("global_band") or "Defined"
+        display_score = ctx.get("display_score_str") or "3.00 / 5.00"
+        summary_intro = t(
+            "conclusions_summary_intro",
+            locale=meta_lang,
+            client_name=client_name,
+            exact_band=exact_band,
+            display_score=display_score,
+        )
+        nodes.append(ParagraphNode(text=summary_intro, space_after=12))
+
+        # 5.2 Vulnerability Concentration Matrix & Operational Urgency Table
         nodes.append(
             HeadingNode(
-                text=t("transformation_paradigm_heading", locale=meta_lang),
+                text=t("conclusions_urgency_table_title", locale=meta_lang),
                 level=2,
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
-        cca_data = blueprint_data.get("cross_capabilities_analysis", {}) if isinstance(blueprint_data, dict) else {}
-        if isinstance(cca_data, dict) and cca_data.get("transformation_paradigm"):
-            paradigm_text = str(cca_data["transformation_paradigm"]).strip()
-            if paradigm_text:
-                nodes.append(ParagraphNode(text=paradigm_text, italic=True))
-                nodes.append(SpacerNode(points=15))
 
-        # 5.2 Next Steps and Impact of Inaction
-        concl_candidates = list(modules_dir.glob("*conclusion*.md")) if modules_dir.exists() else []
-        concl_path = concl_candidates[0] if concl_candidates else (modules_dir / "strategic_conclusions.md")
-        if concl_path.exists():
-            nodes.extend(self._parse_markdown_to_nodes(concl_path))
-        else:
-            if isinstance(cca_data, dict) and cca_data.get("next_steps_inaction"):
-                inaction_text = str(cca_data["next_steps_inaction"]).strip()
-                if inaction_text:
-                    nodes.append(ParagraphNode(text=inaction_text))
+        headers = [
+            CellNode(
+                text=t("conclusions_col_fragility_domain", locale=meta_lang),
+                bold=True,
+                bg_color="0F172A",
+                text_color_rgb=[255, 255, 255],
+                align="LEFT",
+                font_size=9.0,
+            ),
+            CellNode(
+                text=t("conclusions_col_vulnerability", locale=meta_lang),
+                bold=True,
+                bg_color="0F172A",
+                text_color_rgb=[255, 255, 255],
+                align="LEFT",
+                font_size=9.0,
+            ),
+            CellNode(
+                text=t("conclusions_col_annual_exposure", locale=meta_lang),
+                bold=True,
+                bg_color="0F172A",
+                text_color_rgb=[255, 255, 255],
+                align="RIGHT",
+                font_size=9.0,
+            ),
+            CellNode(
+                text=t("conclusions_col_urgency", locale=meta_lang),
+                bold=True,
+                bg_color="0F172A",
+                text_color_rgb=[255, 255, 255],
+                align="CENTER",
+                font_size=9.0,
+            ),
+        ]
+        rows = [TableRowNode(cells=headers, is_header=True)]
 
-        # 5.3 Multi-Horizon Stochastic Inaction vs. Modernization Program Table
-        nodes.append(SpacerNode(points=14))
-        nodes.append(
-            HeadingNode(
-                text=t("inaction_horizons_table_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
+        primary_risks = [
+            r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"
+        ]
+        total_ale = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in primary_risks)
+        if total_ale <= 0.0:
+            total_ale = float(ctx.get("total_fair_ale") or 0.0)
+
+        sorted_risks = sorted(
+            primary_risks,
+            key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0),
+            reverse=True,
         )
-        total_fair_ale = float(ctx.get("total_fair_ale") or 0.0)
-        p90_multiplier = float(blueprint_data.get("p90_ale_ratio") or 4.0)
-        p90_loss = float(ctx.get("p90_loss") or (total_fair_ale * p90_multiplier))
-        currency = str(ctx.get("currency") or blueprint_data.get("currency") or "")
-        capex_ratio = float(blueprint_data.get("capex_ale_ratio") or 0.20)
-        capex_val = float(blueprint_data.get("modernization_capex") or blueprint_data.get("capex_budget") or (total_fair_ale * capex_ratio))
-        annual_risk_reduction_ratio = float(blueprint_data.get("risk_reduction_ratio") or 0.80)
 
-        import math
-        # Actuarial Square-Root of Time Rule for multi-year extreme tail risk (Basel/FAIR standard)
-        p90_h1_val = p90_loss
-        p90_h3_val = p90_loss * math.sqrt(3.0)
-        p90_h5_val = p90_loss * math.sqrt(5.0)
+        for idx, r in enumerate(sorted_risks[:8]):
+            r_ale = float(r.get("ale") or r.get("ale_val") or 0.0)
+            formatted_r_ale = format_currency(
+                r_ale, currency_symbol=currency, locale=meta_lang, decimals=0
+            )
+            share_pct = (r_ale / total_ale * 100.0) if total_ale > 0 else 0.0
 
-        annual_risk_reduction = total_fair_ale * annual_risk_reduction_ratio
-        payback_months = max(1, int(math.ceil(12.0 * capex_val / annual_risk_reduction))) if annual_risk_reduction > 0 else 12
+            if share_pct >= 25.0 or float(r.get("tef", 1.0)) >= 3.0:
+                urgency_text = t("urgency_immediate", locale=meta_lang)
+                urgency_bg = "FEE2E2"
+                urgency_fg = [185, 28, 28]
+            elif share_pct >= 15.0 or float(r.get("tef", 1.0)) >= 2.0:
+                urgency_text = t("urgency_high", locale=meta_lang)
+                urgency_bg = "FEF3C7"
+                urgency_fg = [180, 83, 9]
+            else:
+                urgency_text = t("urgency_moderate", locale=meta_lang)
+                urgency_bg = "F1F5F9"
+                urgency_fg = [71, 85, 105]
 
-        # 1-Year Horizon
-        ale_h1 = format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0)
-        p90_h1 = format_currency(p90_h1_val, currency_symbol=currency, locale=meta_lang, decimals=0)
-        capex_h1 = format_currency(capex_val, currency_symbol=currency, locale=meta_lang, decimals=0)
-        roi_h1_pct = int(round((annual_risk_reduction) / capex_val * 100)) if capex_val > 0 else 0
-        roi_h1_str = f"{roi_h1_pct} % ({t('roi_payback_dynamic', locale=meta_lang, months=payback_months)})"
+            bg = self.alt_row_hex if idx % 2 == 1 else "FFFFFF"
+            dom_name = str(r.get("pillar") or r.get("domain") or "Infrastructure")
+            vuln_name = str(
+                r.get("capability") or r.get("target_state") or r.get("finding") or "Vulnerability"
+            )
+            if len(vuln_name) > 65:
+                vuln_name = vuln_name[:62] + "..."
 
-        # 3-Year Horizon
-        ale_h3 = format_currency(total_fair_ale * 3.0, currency_symbol=currency, locale=meta_lang, decimals=0)
-        p90_h3 = format_currency(p90_h3_val, currency_symbol=currency, locale=meta_lang, decimals=0)
-        savings_h3_num = (total_fair_ale * 3.0 * annual_risk_reduction_ratio) - capex_val
-        savings_h3_str = format_currency(savings_h3_num, currency_symbol=currency, locale=meta_lang, decimals=0)
-        roi_h3_pct = int(round((total_fair_ale * 3.0 * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
-        roi_h3_str = f"{roi_h3_pct} % ({t('roi_net_savings', locale=meta_lang, amount=savings_h3_str)})"
+            r_id = str(r.get("id") or f"R{idx+1:02d}")
+            rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(text=dom_name, bold=True, bg_color=bg, align="LEFT", font_size=8.5),
+                        CellNode(
+                            text=f"[{r_id}] {vuln_name}",
+                            bg_color=bg,
+                            align="LEFT",
+                            font_size=8.5,
+                        ),
+                        CellNode(
+                            text=formatted_r_ale,
+                            bold=True,
+                            bg_color=bg,
+                            align="RIGHT",
+                            font_size=8.5,
+                        ),
+                        CellNode(
+                            text=urgency_text,
+                            bold=True,
+                            bg_color=urgency_bg,
+                            text_color_rgb=urgency_fg,
+                            align="CENTER",
+                            font_size=8.0,
+                        ),
+                    ]
+                )
+            )
 
-        # 5-Year Horizon
-        ale_h5 = format_currency(total_fair_ale * 5.0, currency_symbol=currency, locale=meta_lang, decimals=0)
-        p90_h5 = format_currency(p90_h5_val, currency_symbol=currency, locale=meta_lang, decimals=0)
-        savings_h5_num = (total_fair_ale * 5.0 * annual_risk_reduction_ratio) - capex_val
-        savings_h5_str = format_currency(savings_h5_num, currency_symbol=currency, locale=meta_lang, decimals=0)
-        roi_h5_pct = int(round((total_fair_ale * 5.0 * annual_risk_reduction_ratio) / capex_val * 100)) if capex_val > 0 else 0
-        roi_h5_str = f"{roi_h5_pct} % ({t('roi_net_savings', locale=meta_lang, amount=savings_h5_str)})"
+        if len(rows) > 1:
+            nodes.append(TableNode(rows=rows))
+            nodes.append(SpacerNode(points=16))
 
-        headers_inaction = [
-            CellNode(text=h, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER" if h_i > 0 else "LEFT")
-            for h_i, h in enumerate(get_localized_list("inaction_horizons_headers", locale=meta_lang))
-        ]
-        horizon_rows = [
-            TableRowNode(cells=headers_inaction, is_header=True),
-            TableRowNode(cells=[
-                CellNode(text=t("inaction_h1_label", locale=meta_lang), bold=True, bg_color="FFFFFF"),
-                CellNode(text=ale_h1, bg_color="FFFFFF", align="RIGHT"),
-                CellNode(text=p90_h1, bg_color="FFF3CD", align="RIGHT"),
-                CellNode(text=capex_h1, bg_color="FFFFFF", align="RIGHT"),
-                CellNode(text=roi_h1_str, bold=True, bg_color="D9F2D9", align="CENTER"),
-            ]),
-            TableRowNode(cells=[
-                CellNode(text=t("inaction_h3_label", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
-                CellNode(text=ale_h3, bg_color=self.alt_row_hex, align="RIGHT"),
-                CellNode(text=p90_h3, bg_color="FCE4D6", align="RIGHT"),
-                CellNode(text=capex_h1, bg_color=self.alt_row_hex, align="RIGHT"),
-                CellNode(text=roi_h3_str, bold=True, bg_color="D9F2D9", align="CENTER"),
-            ]),
-            TableRowNode(cells=[
-                CellNode(text=t("inaction_h5_label", locale=meta_lang), bold=True, bg_color="FFFFFF"),
-                CellNode(text=ale_h5, bg_color="FFFFFF", align="RIGHT"),
-                CellNode(text=p90_h5, bg_color="F8D7DA", align="RIGHT"),
-                CellNode(text=capex_h1, bg_color="FFFFFF", align="RIGHT"),
-                CellNode(text=roi_h5_str, bold=True, bg_color="D9F2D9", align="CENTER"),
-            ]),
-        ]
-        nodes.append(TableNode(rows=horizon_rows))
-        nodes.append(SpacerNode(points=15))
+        # 5.3 Objective Architectural Synthesis
+        formatted_total_ale = format_currency(
+            total_ale, currency_symbol=currency, locale=meta_lang, decimals=0
+        )
+        closing_text = t(
+            "conclusions_closing_text",
+            locale=meta_lang,
+            formatted_ale=formatted_total_ale,
+        )
+        nodes.append(ParagraphNode(text=closing_text, space_after=12))
 
         #
 

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Hostile CFO Content Audit via gemini-4-argon."""
+"""Consulting gemini-4-argon on whether an Adversarial CFO Validation Loop is an Anti-Pattern or a Best Practice."""
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
-from docx import Document
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -17,48 +16,41 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
-doc_path = REPO_ROOT / "working/out/molins/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx"
-doc = Document(str(doc_path))
-
-parts = []
-for p in doc.paragraphs:
-    if p.text.strip():
-        parts.append(p.text.strip())
-for t in doc.tables:
-    for r in t.rows:
-        row_txt = " | ".join(c.text.strip() for c in r.cells if c.text.strip())
-        if row_txt:
-            parts.append(row_txt)
-corpus = "\n".join(parts)
-
 client = create_genai_client()
 model_name = get_model(ModelTier.REASONING)
 
-prompt = f"""
-Actúa como el CFO (Director Financiero) de Molins, conocido por ser implacable, escéptico y alérgico a la "cháchara de consultores". También actúa como Auditor Principal de McKinsey.
+prompt = """
+Role: Chief Quality Officer (Tier-1 Systems Architecture) & Principal AI Governance Fellow.
 
-Evalúa el corpus completo del nuevo documento AS-IS (Data Center T1) comprobando estrictamente estas 5 métricas de perfección de contenido:
-1. Densidad de Valor (Zero-Fluff): ¿Cada párrafo aporta un dato técnico de planta, un activo concreto o una consecuencia de negocio? ¿Hay frases vacías de relleno?
-2. Coeficiente de No-Repetición: ¿La información progresa sin clonarse? ¿Se repiten frases en el resumen y luego en las fichas de riesgos?
-3. Trazabilidad Causal del Riesgo: ¿Los 14 riesgos (especialmente el RVS05 de climatización) desglosan su ALE en: Frecuencia (TEF) x Horas de Parada x Coste/hora (lucro cesante) + Daños Secundarios?
-4. Palanca Presupuestaria (ROI): ¿Está clara la inversión necesaria (CAPEX) y el retorno (reducción de ALE)?
-5. Test del CFO Hostil: ¿Te crees los números? ¿Puedes defenderlos ante el Comité de Dirección sin que te desmonten el caso de negocio?
+USER'S INQUIRY & QUESTION:
+The user asks:
+"Es que yo incluso estaba pensando en poner un debate adversarial con un CFO duro para que valide los números, aunque no sé si eso es un antipatrón."
+(I was even thinking of setting up an adversarial debate with a tough CFO to validate the numbers, although I don't know if that's an anti-pattern.)
 
-CORPUS COMPLETO DEL DOCUMENTO ({len(parts)} elementos):
-```text
-{corpus}
-```
+THE ARCHITECTURAL DILEMMA:
+In generative AI and automated enterprise advisory systems:
+Is introducing an adversarial persona (e.g., "A Skeptical Industrial CFO") to interrogate and validate risk figures an anti-pattern, or is it a best practice?
 
-EMITE TU INFORME:
-1. Veredicto por cada una de las 5 métricas (Aprobado/Suspenso).
-2. Si hay fallos, enumera exactamente qué falla y cómo solucionarlo en la próxima iteración.
-3. Si el contenido ha alcanzado el 10.0 (perfecto y defendible), confirma "APROBADO PARA COMITÉ DE DIRECCIÓN".
-4. Cierra con un pareado que resuma el veredicto del CFO.
+YOUR ANALYSIS MUST DELIVER:
+1. THE DANGER / ANTI-PATTERN ZONE:
+   - When DOES an adversarial debate become an anti-pattern? (e.g., nondeterministic runtime negotiation, vibe-based bargaining over numbers, adding unrepeatable LLM churn in the document compilation loop).
+2. THE BEST PRACTICE / TIER-1 ARTIFACT ZONE:
+   - When is it an elite architectural pattern? (e.g., offline Adversarial Evaluation Gates / Red-Teaming, pre-flight actuarial contract validation, automated stress-testing before payload compilation).
+3. HOW TO IMPLEMENT IT CORRECTLY (IF USED):
+   - What deterministic boundary checks must the CFO agent enforce? (Physical downtime floors, revenue proportionality bounds, double-counting checks, hypothesis framing vs catastrophic language).
+   - Where in the architecture must it live? (In the evaluation/payload generation pipeline, NEVER in the document rendering AST bridge).
+4. DEFINITIVE VERDICT & ACTIONABLE RECOMMENDATION:
+   - A clear, authoritative verdict for our platform.
 """
 
-print(f"Auditing CFO-Grade content with {model_name}...")
+print(f"Requesting architectural opinion from {model_name}...")
 response = client.models.generate_content(
     model=model_name,
     contents=prompt,
 )
+
+print("\n" + "=" * 80)
+print("GEMINI-4-ARGON: ADVERSARIAL CFO EVALUATION GATE ANALYSIS")
+print("=" * 80)
 print(response.text)
+print("=" * 80)
