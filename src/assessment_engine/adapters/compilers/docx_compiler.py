@@ -817,39 +817,75 @@ class DocxCompiler(DocumentCompiler):
         import re
         is_appendix_main = getattr(node, "is_appendix", False)
         is_appendix_sub = bool(re.match(r"^[A-Z]\.\d+\s", node.text))
-        
-        p = add_heading_paragraph(doc, node.text, level=node.level)
 
-        if p:
-            # Level 1 headings start on a new page unless preceded by an explicit page break
-            if node.level == 1 and len(doc.paragraphs) > 5:
-                prev_has_br = False
-                if len(doc.paragraphs) >= 2:
-                    prev_p = doc.paragraphs[-2]
-                    for r in prev_p.runs:
-                        for child in r._r:
-                            if child.tag.endswith("br") and child.attrib.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type") == "page":
-                                prev_has_br = True
-                if not prev_has_br:
-                    p.paragraph_format.page_break_before = True
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
-            # C-Level Typography Hygiene: Prevent orphaned headings at page bottom
-            pPr = p._p.get_or_add_pPr()
-            pPr.append(OxmlElement("w:keepNext"))
-            pPr.append(OxmlElement("w:keepLines"))
+        # Assign native Word Heading style from template styles catalog
+        try:
+            if is_appendix_main and "Appendix Heading 1" in doc.styles:
+                p.style = "Appendix Heading 1"
+            elif is_appendix_sub and "Appendix Heading 2" in doc.styles:
+                p.style = "Appendix Heading 2"
+            else:
+                heading_style_name = f"Heading {node.level}"
+                if heading_style_name in doc.styles:
+                    p.style = heading_style_name
+        except (KeyError, ValueError, AttributeError) as ex:
+            logger.debug("Failed to apply native heading style '%s': %s", getattr(node, "level", 1), ex)
 
-            try:
-                if is_appendix_main:
-                    p.style = "Appendix Heading 1"
-                elif is_appendix_sub:
-                    p.style = "Appendix Heading 2"
-            except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.warning(f"[DocxCompiler Warning] Failed to apply appendix heading style: {ex}")
+        # Level 1 headings start on a new page unless preceded by an explicit page break
+        if node.level == 1 and len(doc.paragraphs) > 5:
+            prev_has_br = False
+            if len(doc.paragraphs) >= 2:
+                prev_p = doc.paragraphs[-2]
+                for r in prev_p.runs:
+                    for child in r._r:
+                        if child.tag.endswith("br") and child.attrib.get("{http://schemas.openxmlformats.org/wordprocessingml/2006/main}type") == "page":
+                            prev_has_br = True
+            if not prev_has_br:
+                p.paragraph_format.page_break_before = True
 
-        #
-        if node.primary_color_rgb and p:
-            for run in p.runs:
-                run.font.color.rgb = RGBColor(*node.primary_color_rgb)
+        # Executive Spacing and Typographic Scale per heading level
+        if node.level == 1:
+            p.paragraph_format.space_before = Pt(18)
+            p.paragraph_format.space_after = Pt(14)
+            font_size_pt = 18.0
+        elif node.level == 2:
+            p.paragraph_format.space_before = Pt(14)
+            p.paragraph_format.space_after = Pt(10)
+            font_size_pt = 13.0
+        else:
+            p.paragraph_format.space_before = Pt(8)
+            p.paragraph_format.space_after = Pt(4)
+            font_size_pt = 11.0
+
+        # C-Level Typography Hygiene: Prevent orphaned headings at page bottom
+        pPr = p._p.get_or_add_pPr()
+        pPr.append(OxmlElement("w:keepNext"))
+        pPr.append(OxmlElement("w:keepLines"))
+
+        # Inject universal ISO/IEC 29500 OpenXML outlineLvl for Word Navigation Pane and TOC (0-indexed)
+        outline_val = max(0, min(8, node.level - 1))
+        outlineLvl = OxmlElement("w:outlineLvl")
+        outlineLvl.set(qn("w:val"), str(outline_val))
+        rPr_elem = pPr.find(qn("w:rPr"))
+        if rPr_elem is not None:
+            rPr_elem.addprevious(outlineLvl)
+        else:
+            pPr.append(outlineLvl)
+
+        # Render heading text run with brand color
+        brand_color = (
+            RGBColor(*node.primary_color_rgb)
+            if node.primary_color_rgb
+            else RGBColor(0, 114, 188)
+        )
+        run = p.add_run(node.text.strip())
+        run.bold = True
+        set_run_font_comprehensive(run, font_name="Arial")
+        run.font.size = Pt(font_size_pt)
+        run.font.color.rgb = brand_color
 
     def _compile_spacer(self, doc: Document, node: SpacerNode) -> None:
         p = doc.add_paragraph()
