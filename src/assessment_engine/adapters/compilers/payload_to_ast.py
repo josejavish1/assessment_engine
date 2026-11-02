@@ -24,6 +24,7 @@ from assessment_engine.domain.schemas.risk_ontology import (
     FairActuarialInput,
 )
 from assessment_engine.domain.actuarial_calculator import ActuarialEngine
+from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
 
 from assessment_engine.domain.schemas.ast import (
     CellNode,
@@ -277,6 +278,20 @@ class PayloadToASTBridge:
             ctx["blueprint_data"] = _canonicalize_nfc(ctx["blueprint_data"])
         if "annex_data" in ctx and isinstance(ctx["annex_data"], dict):
             ctx["annex_data"] = _canonicalize_nfc(ctx["annex_data"])
+
+        # Authoritative calibration of financial telemetry across all deliverable chapters (Fail-Fast Law 1)
+        calibrator = ActuarialDowntimeCalibrator()
+        metrics = calibrator.calibrate(ctx["blueprint_data"])
+        fin_telemetry = ctx["blueprint_data"].setdefault("financial_telemetry", {})
+        fin_telemetry.update({
+            "global_annual_revenue": float(metrics.global_annual_revenue),
+            "perimeter_revenue_weight_pct": float(metrics.perimeter_revenue_weight_pct),
+            "effective_exposed_revenue": float(metrics.effective_exposed_revenue),
+            "sector_benchmark_source": metrics.sector_benchmark_source,
+            "hourly_revenue_exposure_factor": float(metrics.hourly_revenue_exposure_factor),
+            "authoritative_hourly_downtime_cost": float(metrics.calibrated_hourly_downtime_cost),
+        })
+        ctx["financial_telemetry"] = fin_telemetry
 
         nodes: List[Any] = []
         self._build_cover_and_toc(ctx, nodes)

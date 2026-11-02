@@ -1566,43 +1566,43 @@
     },
     "tower_domain_semantics": {
       "T1": {
-        "operational_mission": "que gobierna la envolvente física, la climatización de precisión y la continuidad electromecánica de los centros de datos",
+        "operational_mission": "instalaciones de centros de datos, suministro eléctrico y climatización",
         "dilemma_anchor": "Al evaluar la resiliencia electromecánica y la redundancia física de las instalaciones,"
       },
       "T2": {
-        "operational_mission": "que sustenta el cómputo elástico, los hipervisores y la orquestación de clústeres de virtualización e infraestructura híbrida",
+        "operational_mission": "servidores físicos, virtualización e infraestructura de cómputo híbrido",
         "dilemma_anchor": "Desde la óptica de la ingeniería de plataformas y capacidad de cómputo,"
       },
       "T3": {
-        "operational_mission": "que protege la persistencia transaccional, la inmutabilidad y el rendimiento de cabinas de almacenamiento y bases de datos",
+        "operational_mission": "almacenamiento de datos, cabinas SAN/NAS y copias de seguridad",
         "dilemma_anchor": "En el plano de la persistencia de datos y la resistencia a la corrupción transaccional,"
       },
       "T4": {
-        "operational_mission": "que articula la conectividad distribuida, la segmentación y el transporte seguro de tráfico entre sedes, plantas y nubes",
+        "operational_mission": "redes corporativas, comunicaciones y conectividad entre sedes y plantas",
         "dilemma_anchor": "Bajo el prisma de la ingeniería de red y la arquitectura de transporte distribuido,"
       },
       "T5": {
-        "operational_mission": "que gobierna las redes de control industrial, sistemas SCADA/PLC y la telemetría de primera línea en plantas de producción",
+        "operational_mission": "redes industriales, sistemas de control de planta y automatización (OT)",
         "dilemma_anchor": "Respecto a la convergencia OT/IT y la protección de los entornos de fabricación continua,"
       },
       "T6": {
-        "operational_mission": "que aplica la postura de defensa en profundidad, la gestión de identidades privilegiadas (IAM) y la contención de amenazas",
+        "operational_mission": "ciberseguridad, gestión de identidades y protección frente a amenazas",
         "dilemma_anchor": "Analizando la exposición a vectores de intrusión y la resiliencia activa ante ransomware,"
       },
       "T7": {
-        "operational_mission": "que ejecuta el ecosistema de aplicaciones de negocio, el ERP transaccional y la lógica de procesos operativos críticos",
+        "operational_mission": "aplicaciones de negocio, sistemas ERP y plataformas transaccionales",
         "dilemma_anchor": "En el diseño e integración de la cartera de software corporativo y servicios transaccionales,"
       },
       "T8": {
-        "operational_mission": "que orquesta la ingesta de datos, canalizaciones analíticas y soporte a la toma de decisiones basada en inteligencia de negocio",
+        "operational_mission": "gestión de bases de datos, analítica e inteligencia de negocio",
         "dilemma_anchor": "Confrontando los cuellos de botella en la gobernanza de datos y la disponibilidad analítica,"
       },
       "T9": {
-        "operational_mission": "que habilita el puesto de trabajo digital, la colaboración y la productividad segura de los usuarios corporativos",
+        "operational_mission": "puestos de trabajo de usuario, colaboración y soporte técnico",
         "dilemma_anchor": "Desde la perspectiva de la experiencia de usuario y la estandarización del puesto de trabajo,"
       },
       "T10": {
-        "operational_mission": "que rige la gobernanza técnica de nube, el control financiero de consumos (FinOps) y el marco normativo global",
+        "operational_mission": "gobernanza de TI, gestión de costes cloud (FinOps) y políticas de servicio",
         "dilemma_anchor": "Examinando el control fiduciario de recursos y el cumplimiento de estándares corporativos,"
       },
       "DEFAULT": {
@@ -3172,43 +3172,43 @@
     },
     "tower_domain_semantics": {
       "T1": {
-        "operational_mission": "governing physical facilities, precision climate control, and electromechanical datacenter power continuity",
+        "operational_mission": "datacenter facilities, power continuity, and precision cooling",
         "dilemma_anchor": "When evaluating electromechanical resilience and physical facility redundancy,"
       },
       "T2": {
-        "operational_mission": "underpinning elastic compute, hypervisor virtualization, and hybrid infrastructure cluster orchestration",
+        "operational_mission": "physical servers, virtualization, and hybrid compute infrastructure",
         "dilemma_anchor": "From a platform engineering and compute capacity standpoint,"
       },
       "T3": {
-        "operational_mission": "safeguarding transactional persistence, immutability, and storage array and database throughput",
+        "operational_mission": "data storage, SAN/NAS arrays, and backup persistence",
         "dilemma_anchor": "Within the data persistence plane and state-corruption defense layer,"
       },
       "T4": {
-        "operational_mission": "enforcing distributed connectivity, segmentation, and secure traffic transport across campuses, plants, and clouds",
+        "operational_mission": "enterprise networks, switching, and inter-site connectivity",
         "dilemma_anchor": "Through the lens of network engineering and distributed transport architecture,"
       },
       "T5": {
-        "operational_mission": "governing industrial control networks, SCADA/PLC systems, and front-line manufacturing plant telemetry",
+        "operational_mission": "industrial networks, plant control systems, and operational technology (OT)",
         "dilemma_anchor": "Regarding OT/IT convergence and continuous industrial manufacturing defense,"
       },
       "T6": {
-        "operational_mission": "enforcing defense-in-depth posture, privileged identity management (IAM), and active threat containment",
+        "operational_mission": "cybersecurity, identity management, and threat protection",
         "dilemma_anchor": "Analyzing intrusion vector exposure and active ransomware resilience,"
       },
       "T7": {
-        "operational_mission": "executing the core business application ecosystem, transactional ERP, and operational business workflows",
+        "operational_mission": "business applications, ERP systems, and transactional workflows",
         "dilemma_anchor": "In designing corporate software integration and transactional service stability,"
       },
       "T8": {
-        "operational_mission": "orchestrating data ingestion, analytics pipelines, and data-driven decision intelligence platforms",
+        "operational_mission": "database management, data analytics, and business intelligence",
         "dilemma_anchor": "Confronting data governance bottlenecks and analytical availability constraints,"
       },
       "T9": {
-        "operational_mission": "enabling modern digital workplace, unified collaboration, and corporate workforce productivity",
+        "operational_mission": "end-user workplace, collaboration, and IT support services",
         "dilemma_anchor": "From an end-user experience and endpoint standardization perspective,"
       },
       "T10": {
-        "operational_mission": "structuring cloud governance, financial resource optimization (FinOps), and enterprise regulatory compliance",
+        "operational_mission": "IT governance, cloud cost optimization (FinOps), and service management",
         "dilemma_anchor": "Examining fiduciary resource control and architectural compliance adherence,"
       },
       "DEFAULT": {
@@ -9055,18 +9055,18 @@
   },
   "executive_summary_narrative": {
     "es": {
-      "p1_operational_posture": "En el marco operativo de {client_name}, la torre de **{tower_name}** ({operational_mission}) sitúa su índice de madurez arquitectónica estimado en **{maturity_score} sobre 5.0 ({maturity_tier_label})**, evidenciando una exposición técnica distribuida en {critical_findings_count} vectores de vulnerabilidad estructural. Al sustentar directamente {primary_workloads_summary}, las limitaciones identificadas en este dominio constituyen un cuello de botella directo para la continuidad y la estabilidad operativa del negocio.",
-      "p2_architectural_dilemma": "{dilemma_anchor} el diagnóstico técnico constata tres riesgos determinantes que degradan la resiliencia a corto y medio plazo: (1) {finding_1_executive_brief}; (2) {finding_2_executive_brief}; y (3) {finding_3_executive_brief}. La convergencia de estas deficiencias compromete la conmutación por error automatizada, carece de tolerancia a fallos N+1 y amplifica severamente el radio de impacto ante contingencias de componente.",
-      "p2_architectural_dilemma_single": "El diagnóstico de ingeniería revela limitaciones estructurales de ciclo de vida y capacidad que comprometen la resiliencia operativa del dominio, destacando prioritariamente: {finding_1_executive_brief}. Esta condición degrada la recuperación automatizada y amplifica el impacto ante incidentes de infraestructura.",
-      "p3_financial_exposure": "En términos de impacto económico directo sobre las operaciones de {client_name}, la indisponibilidad no planificada en este dominio genera un coste operativo compuesto estimado de **{hourly_burn_rate_fmt}** (desglosado formalmente en la Tabla de Linaje de la Sección 4.1). Bajo el régimen operativo actual, la exposición neta consolidada representa **{net_downtime_hours_fmt} horas de degradación crítica anual**, traduciéndose en una Pérdida Anual Esperada estimada (ALE P50) de **{annual_loss_expectancy_fmt}**. No obstante, el riesgo estratégico primordial reside en la volatilidad de cola (escenario de estrés P90): este evento extremo no supone una parada física ininterrumpida de {p90_downtime_hours_fmt} horas, sino una ventana de interrupción aguda acotada a **{capped_p90_hours_fmt} horas estimadas** antes de activar contingencias manuales en planta, combinada con sobrecostes extraordinarios de cola (fletes urgentes fuera de SLA, sustitución de hardware y penalizaciones) que elevan la contingencia total proyectada a **{p90_var_exposure_fmt}**.",
-      "p4_modernization_mandate": "Mantener el statu quo operativo agrava la obsolescencia técnica y los costes por renovación contractual. Resulta prioritario acometer la modernización estructurada en este anexo en un horizonte de {remediation_horizon_label}, priorizando {primary_remediation_pillar}, para neutralizar el riesgo en cola de {p90_var_exposure_fmt} y alcanzar el objetivo de {target_maturity_score}/5.0."
+      "p1_operational_posture": "La evaluación técnica de la infraestructura de **{tower_name}** en {client_name} ({operational_mission}) sitúa su nivel de madurez estimado en **{maturity_score} sobre 5,0 ({maturity_tier_label})**. Aunque la plataforma actual permite mantener las operaciones diarias de {primary_workloads_summary}, se han identificado {critical_findings_count} deficiencias estructurales importantes que limitan su fiabilidad y exponen al negocio a paradas imprevistas ante cualquier fallo de componente.",
+      "p2_architectural_dilemma": "El diagnóstico técnico destaca tres problemas prioritarios que requieren atención inmediata: en primer lugar, {finding_1_executive_brief}; en segundo lugar, {finding_2_executive_brief}; y en tercer lugar, {finding_3_executive_brief}. Al no contar con redundancia real ni mecanismos automáticos de aislamiento de fallos, estas limitaciones aumentan la probabilidad de interrupción de servicio y complican la recuperación de la operativa.",
+      "p2_architectural_dilemma_single": "El diagnóstico técnico identifica deficiencias prioritarias de capacidad y ciclo de vida en la plataforma, destacando principalmente: {finding_1_executive_brief}. Esta limitación compromete la recuperación automática y traslada el riesgo técnico directamente a la continuidad operativa del negocio.",
+      "p3_financial_exposure": "La parada no planificada en este dominio tiene un coste estimado de **{hourly_burn_rate_fmt}**, calculado a partir del valor de producción en riesgo y los costes de contingencia (desglosado en la Sección 4.1). Con las incidencias acumuladas en un año habitual, la pérdida estimada (ALE P50) se sitúa en **{annual_loss_expectancy_fmt}** (unas {net_downtime_hours_fmt} horas acumuladas). En un fallo grave imprevisto (escenario percentil 90), la planta tardaría un máximo estimado de **{capped_p90_hours_fmt} horas** en reanudar la actividad mediante planes de contingencia; sumando esta parada a los sobrecostes urgentes de sustitución de equipos y soporte extraordinario, el impacto económico máximo proyectado se estima en **{p90_var_exposure_fmt}**.",
+      "p4_modernization_mandate": "Para resolver estas limitaciones, es prioritario acometer el plan de modernización detallado en este informe en un plazo de **{remediation_horizon_label}**, focalizado en {primary_remediation_pillar}. Esta inversión permitirá proteger la continuidad de la actividad frente a contingencias extremas y elevar la madurez de la plataforma hasta el objetivo de **{target_maturity_score} sobre 5,0**."
     },
     "en": {
-      "p1_operational_posture": "Within the operational fabric of {client_name}, the **{tower_name}** capability tower ({operational_mission}) registers an estimated architectural maturity index of **{maturity_score} out of 5.0 ({maturity_tier_label})**, exposed across {critical_findings_count} structural vulnerability vectors. Because this domain directly underpins {primary_workloads_summary}, the identified technical friction represents a direct constraint on enterprise operational and industrial stability.",
-      "p2_architectural_dilemma": "{dilemma_anchor} engineering telemetry reveals three primary constraints that degrade near-term resiliency: (1) {finding_1_executive_brief}; (2) {finding_2_executive_brief}; and (3) {finding_3_executive_brief}. The intersection of these vulnerabilities compromises automated failover determinism, lacks N+1 fault tolerance, and amplifies the operational blast radius during fault events.",
-      "p2_architectural_dilemma_single": "Engineering telemetry reveals structural lifecycle and capacity constraints that compromise domain resiliency, centered on: {finding_1_executive_brief}. This condition degrades automated recovery and amplifies the operational blast radius during infrastructure fault events.",
-      "p3_financial_exposure": "From an operational economics perspective at {client_name}, unplanned downtime within this domain incurs an estimated composite operational burn rate of **{hourly_burn_rate_fmt}** (formally disaggregated in the Lineage Table of Section 4.1). Under the current baseline, net consolidated exposure represents **{net_downtime_hours_fmt} hours of critical annual disruption**, translating into an Estimated Annualized Loss Expectancy (ALE P50) of **{annual_loss_expectancy_fmt}**. However, the primary strategic exposure lies in tail-risk volatility (P90 stress scenario): this tail event does not imply an uninterrupted facility shutdown of {p90_downtime_hours_fmt} hours; rather, it reflects an acute operational disruption capped at **{capped_p90_hours_fmt} estimated hours** before manual contingency bypasses restore baseline operations, compounded by secondary tail costs (emergency air-freight, out-of-SLA hardware replacement, and delivery penalties) that elevate total projected exposure to **{p90_var_exposure_fmt}**.",
-      "p4_modernization_mandate": "Preserving the operational status quo compounds technical debt and vendor renewal exposure. Leadership must execute the phased modernization roadmap detailed in this annex across the {remediation_horizon_label} horizon, prioritizing {primary_remediation_pillar}, to eliminate the {p90_var_exposure_fmt} tail-risk exposure and achieve the target state of {target_maturity_score}/5.0."
+      "p1_operational_posture": "The technical assessment of the **{tower_name}** domain at {client_name} ({operational_mission}) establishes an estimated architectural maturity score of **{maturity_score} out of 5.0 ({maturity_tier_label})**. While the current environment sustains daily operations across {primary_workloads_summary}, the assessment identified {critical_findings_count} key structural gaps that restrict operational reliability and expose business workflows to unplanned downtime during component faults.",
+      "p2_architectural_dilemma": "The technical diagnosis highlights three priority issues requiring leadership attention: first, {finding_1_executive_brief}; second, {finding_2_executive_brief}; and third, {finding_3_executive_brief}. Lacking true automated failover and fault isolation, these constraints compound recovery complexity and increase the operational blast radius during fault events.",
+      "p2_architectural_dilemma_single": "The technical diagnosis identifies structural lifecycle and capacity constraints, centered on: {finding_1_executive_brief}. This condition degrades automated recovery and transfers infrastructure risk directly into operational disruption.",
+      "p3_financial_exposure": "Unplanned downtime within this perimeter incurs an estimated operational cost of **{hourly_burn_rate_fmt}**, modeled from production revenue at risk and emergency response overhead (detailed in Section 4.1). Under routine baseline operations, cumulative annual friction (ALE P50) represents an estimated loss of **{annual_loss_expectancy_fmt}** (approximately {net_downtime_hours_fmt} accumulated hours). Under a severe stress event (90th percentile), critical workflows would be restored within an estimated maximum ceiling of **{capped_p90_hours_fmt} hours** via manual workarounds; combining direct stoppage with emergency hardware expedited replacement and specialized triage, total projected tail exposure stands at **{p90_var_exposure_fmt}**.",
+      "p4_modernization_mandate": "To resolve these bottlenecks, leadership should execute the phased modernization roadmap detailed in this annex over the **{remediation_horizon_label}** horizon, prioritizing {primary_remediation_pillar}. This targeted investment will eliminate tail-risk exposure and elevate platform maturity toward the target state of **{target_maturity_score} out of 5.0**."
     }
   }
 }
