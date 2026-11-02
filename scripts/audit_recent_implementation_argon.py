@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-"""Adversarial and Comprehensive Codebase Review by gemini-4-argon of the recent Risk Ontology & Mini-Infographic implementation."""
+"""Argon-4 Comprehensive Adversarial Audit: Full Codebase & Recent Implementation Review.
+
+Examines recent code changes against all non-negotiable architectural laws:
+1. Zero Bugs, Zero Antipatterns
+2. Zero Hardcoding (Universal Global Enterprise Readiness: any tier, vertical, currency, language)
+3. 100% Technical English Codebase (Zero Spanish words in Python source code)
+4. Split-Brain Eradication (100% 10-Tower Symmetry T1..T10)
+5. ISO/IEC 29500 OpenXML & Editorial Perfection
+"""
 
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,66 +25,99 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
-client = create_genai_client()
-model_name = get_model(ModelTier.REASONING)
 
-# Load relevant source files
-files_to_audit = [
-    REPO_ROOT / "src/assessment_engine/domain/schemas/risk_ontology.py",
-    REPO_ROOT / "src/assessment_engine/domain/actuarial_calculator.py",
-    REPO_ROOT / "src/assessment_engine/domain/schemas/ast.py",
-    REPO_ROOT / "src/assessment_engine/adapters/compilers/docx_compiler.py",
-    REPO_ROOT / "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-    REPO_ROOT / "src/assessment_engine/adapters/compilers/in_memory_asis_compiler.py",
-]
+def main() -> None:
+    client = create_genai_client()
+    model_name = get_model(ModelTier.REASONING)
 
-context_code = ""
-for f_path in files_to_audit:
-    if f_path.exists():
-        context_code += f"\n\n{'=' * 40}\nFILE: {f_path.relative_to(REPO_ROOT)}\n{'=' * 40}\n"
-        context_code += f_path.read_text(encoding="utf-8")
+    # Gather git diff against origin/main or recent commits
+    diff_cmd = ["git", "diff", "HEAD~4"]
+    diff_res = subprocess.run(diff_cmd, cwd=REPO_ROOT, capture_output=True, text=True)
+    git_diff = diff_res.stdout
 
-prompt = f"""
-Role: Principal Security Architect, Lead Quality Assurance Auditor & Chief Risk Officer.
+    if not git_diff:
+        diff_cmd = ["git", "diff", "HEAD~1"]
+        diff_res = subprocess.run(diff_cmd, cwd=REPO_ROOT, capture_output=True, text=True)
+        git_diff = diff_res.stdout
+
+    # Also include the full content of toc_page_resolver.py
+    toc_resolver_path = REPO_ROOT / "src/assessment_engine/adapters/compilers/toc_page_resolver.py"
+    toc_resolver_content = (
+        toc_resolver_path.read_text(encoding="utf-8")
+        if toc_resolver_path.exists()
+        else "NOT FOUND"
+    )
+
+    prompt = f"""
+Role: Principal Actuarial Systems Architect & Chief Compiler Engineer (Google Tier-1 / Anthropic Core Infrastructure / MIT Actuarial Fellow).
 
 TASK:
-Perform a relentless, exhaustive, and adversarial code review on the newly implemented Open FAIR Risk Ontology and Mini-Infographic Card compiler pipeline.
+Perform a comprehensive, adversarial, forensic code review of all recently modified and created files in this repository.
 
-INSPECT THE FOLLOWING CODEBASE CONTEXT:
-{context_code}
+THE 5 NON-NEGOTIABLE LAWS:
+1. ZERO BUGS, ZERO ANTIPATTERNS, ZERO DEFECTS:
+   - Flawless mathematical, exception-handling, and architectural design.
+   - Fail-fast enforcement: no silent error swallowing, no generic `except Exception: pass`.
+2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
+   - The engine must scale to ANY company in the world: any tier (50M€ to 50B€ turnover), any vertical, any currency (EUR, USD, GBP, JPY, CHF, etc.), and any language (en, es, de, fr, pt, etc.).
+   - Zero hardcoded client names, zero hardcoded monetary amounts, zero language-specific assumptions in Python code.
+3. 100% TECHNICAL ENGLISH CODEBASE (LANGUAGE DECOUPLING LAW):
+   - All Python code, class names, method names, variables, identifiers, comments, docstrings, logs, exceptions, and regexes must be 100% Technical English.
+   - Zero Spanish words anywhere in Python source code files. (Spanish is ONLY permitted in `locales.json` data dictionary).
+4. SPLIT-BRAIN ERADICATION (100% 10-TOWER SYMMETRY):
+   - Towers T1 through T10 must execute the exact same unified pipeline and code paths. Zero special-casing for T1 or T2.
+5. ISO/IEC 29500 OPENXML & EDITORIAL EXCELLENCE:
+   - Valid OpenXML markup, native Word Table of Contents, table auto-fit to 100% window width, professional typography (#2E404D slate, 10.5pt body).
 
-CRITICAL MANDATES TO AUDIT:
-1. ZERO HARDCODING & UNIVERSAL SCALING:
-   - Check every single line for hardcoded company names, facility locations, hardcoded currency symbols, fixed monetary amounts, or magic ratios.
-   - Verify that this logic works seamlessly for a 50-person credit union, a regional hospital, a global investment bank, or a Fortune 10 manufacturer anywhere in the world.
-   - Verify that all currencies (USD, EUR, GBP, JPY, etc.) and locales (en, es, fr, de, ja, pt, etc.) are handled dynamically.
-2. 100% TECHNICAL ENGLISH CODEBASE:
-   - Scan all identifiers, variable names, function names, class names, docstrings, inline comments, exception messages, logger statements, and regex literals.
-   - Zero tolerance for any Spanish words or non-English identifiers in Python code (Spanish is permitted ONLY inside `locales.json` data dictionaries or dynamic translation output).
-3. ZERO BUGS & ZERO ANTI-PATTERNS:
-   - Identify any potential `KeyError`, `IndexError`, `AttributeError`, `ZeroDivisionError`, `TypeError`, or `NoneType` exceptions.
-   - Verify table grid span calculations, column width sums, and boundary conditions in `TableLayoutCalculator` and `_compile_table`.
-   - Inspect fallbacks: ensure no silent error masking (`except: pass`), CWE-391 fail-open defects, or unhandled null references.
-4. ACTUARIAL RIGOR (OPEN FAIR):
-   - Confirm proper distinction between SLE (Single Loss Expectancy), LEF (Loss Event Frequency), and ALE (Annualized Loss Expectancy).
-   - Verify precision handling (`Decimal` vs floating point).
+SOURCE CODE TO AUDIT:
+
+--- FILE: src/assessment_engine/adapters/compilers/toc_page_resolver.py ---
+{toc_resolver_content}
+
+--- GIT DIFF (RECENT COMMITS) ---
+{git_diff[:25000]}
 
 OUTPUT FORMAT:
-Provide a structured, unvarnished audit report:
-- FINAL VERDICT: PASS or FAIL
-- FINDINGS COUNT: (Critical, Major, Minor)
-- DETAILED FINDINGS: Line number, severity, exact issue, and required code change (if any).
-- FINAL SYNTHESIS: Objective technical assessment of the implementation.
+Return a valid JSON object matching this schema:
+{{
+  "verdict": "PASS" | "FAIL",
+  "zero_bugs_or_antipatterns": true | false,
+  "zero_hardcoding_verified": true | false,
+  "universal_tier1_enterprise_ready": true | false,
+  "strict_english_only_verified": true | false,
+  "split_brain_eradicated": true | false,
+  "openxml_editorial_excellence_verified": true | false,
+  "findings": [
+    {{
+      "file_path": "path/to/file.py",
+      "line_number": 123,
+      "category": "BUG" | "HARDCODING" | "SPANISH_IN_CODE" | "SPLIT_BRAIN" | "EDITORIAL",
+      "severity": "CRITICAL" | "MAJOR" | "MINOR",
+      "technical_critique": "Detailed explanation of why this fails the law",
+      "mandatory_fix": "Concrete instruction to resolve it cleanly"
+    }}
+  ],
+  "forensic_executive_summary": "Thorough, objective executive synthesis of the codebase status."
+}}
 """
 
-print(f"Requesting deep adversarial review from {model_name}...")
-response = client.models.generate_content(
-    model=model_name,
-    contents=prompt,
-)
+    print(f"Requesting comprehensive adversarial audit from {model_name}...")
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+    )
 
-print("\n" + "=" * 80)
-print("GEMINI-4-ARGON: ADVERSARIAL AUDIT OF RISK ONTOLOGY & INFOGRAPHICS")
-print("=" * 80)
-print(response.text)
-print("=" * 80)
+    out_file = REPO_ROOT / "docs/architecture/COMPREHENSIVE_RECENT_AUDIT_ARGON.json"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(response.text, encoding="utf-8")
+
+    print("\n" + "=" * 80)
+    print("GEMINI-4-ARGON: COMPREHENSIVE ADVERSARIAL AUDIT")
+    print("=" * 80)
+    print(response.text)
+    print("=" * 80)
+    print(f"\nAudit saved to: {out_file.relative_to(REPO_ROOT)}")
+
+
+if __name__ == "__main__":
+    main()
