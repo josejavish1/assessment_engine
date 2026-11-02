@@ -1459,8 +1459,6 @@
     "pillar_kpi_status_header": "Estado de Capacidades y Desempeño (KPIs)",
     "pillar_operational_gaps_header": "Brechas Operativas y Consecuencias Forenses",
     "pillar_score_justification_header": "Justificación de Madurez y Puntuación",
-    "sub_1_1_title": "1.1 Contexto Estratégico y Tesis Diagnóstica",
-    "sub_1_2_title": "1.2 Exposición Financiera y Riesgo Operativo",
     "kpi_score_header": "PUNTUACIÓN ACTUAL",
     "kpi_band_header": "BANDA DE MADUREZ",
     "kpi_exposure_header": "EXPOSICIÓN ANUAL ESTIMADA",
@@ -1478,7 +1476,8 @@
     "fin_desc_ale": "Coste anual previsible derivado de incidencias operativas recurrentes, micro-cortes de servicio y horas de remediación técnica manual.",
     "fin_desc_p90": "Impacto económico estimado ante una caída concurrente de infraestructura crítica durante ventanas de máxima actividad operativa.",
     "fin_plain_intro": "La vulnerabilidad estructural observada genera una exposición económica cuantificable que combina la fricción operativa recurrente con el riesgo de una interrupción severa en los procesos de negocio. Este impacto económico se desglosa a continuación en términos de pérdida anual esperada frente a escenarios de contingencia extrema:",
-    "components_evaluated_lead": "El alcance técnico evaluado en esta torre comprende los siguientes componentes y subsistemas clave:"
+    "components_evaluated_lead": "El alcance técnico evaluado en esta torre comprende los siguientes componentes y subsistemas clave:",
+    "actuarial_cio_justification_template": "Desde una perspectiva actuarial, la Pérdida Anual Esperada (ALE) de {ale} se calcula a partir de la frecuencia probabilística anualizada de los {risk_count} vectores de riesgo cuantificados multiplicada por el coste de indisponibilidad operativa validado ({hourly_cost}), mientras que el escenario de estrés P90 ({p90}) modela el impacto de cola ante indisponibilidades concurrentes o extensión del tiempo de recuperación (MTTR) en ventanas críticas de operación."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2935,8 +2934,6 @@
     "pillar_kpi_status_header": "Capability Status & Operational Performance (KPIs)",
     "pillar_operational_gaps_header": "Operational Gaps & Forensic Consequences",
     "pillar_score_justification_header": "Maturity Justification & Scoring Rationale",
-    "sub_1_1_title": "1.1 Strategic Context & Diagnostic Thesis",
-    "sub_1_2_title": "1.2 Financial Exposure & Operational Risk",
     "kpi_score_header": "CURRENT SCORE",
     "kpi_band_header": "MATURITY BAND",
     "kpi_exposure_header": "ESTIMATED ANNUAL EXPOSURE",
@@ -2954,7 +2951,8 @@
     "fin_desc_ale": "Foreseeable recurring annual cost resulting from routine operational disruptions, micro-outages, and manual engineering remediation toil.",
     "fin_desc_p90": "Estimated financial impact of a severe concurrent infrastructure failure during peak operational windows.",
     "fin_plain_intro": "The observed structural vulnerability generates quantifiable financial exposure that balances recurring operational friction against the tail risk of severe business disruption. This economic impact is detailed below in terms of expected annual operational loss versus extreme stress scenarios:",
-    "components_evaluated_lead": "The technical scope evaluated within this tower encompasses the following key components and subsystems:"
+    "components_evaluated_lead": "The technical scope evaluated within this tower encompasses the following key components and subsystems:",
+    "actuarial_cio_justification_template": "From an actuarial perspective, the Expected Annual Loss (ALE) of {ale} is derived from the annualized probabilistic failure frequencies across the {risk_count} quantified risk vectors multiplied by the validated operational downtime cost rate ({hourly_cost}), while the P90 stress scenario ({p90}) models the severe tail-risk exposure during concurrent outages or extended recovery windows (MTTR) in critical operational windows."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",

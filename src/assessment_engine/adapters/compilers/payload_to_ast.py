@@ -515,30 +515,70 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=12))
 
         # -------------------------------------------------------------
-        # COMPONENT B: 1.1 STRATEGIC CONTEXT & DIAGNOSTIC THESIS (PROSE)
+        # COMPONENT B: EXECUTIVE HEADLINE & FLUID MECE NARRATIVE (PROSE)
         # -------------------------------------------------------------
-        nodes.append(
-            HeadingNode(
-                text=t("sub_1_1_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-
         headline = exec_sum.get("headline", "")
         summary_body = exec_sum.get("summary_body", "")
 
         if headline:
             nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5, space_after=8))
 
+        raw_div = blueprint_data.get("annual_downtime_divisor")
+        try:
+            annual_divisor = float(raw_div) if raw_div is not None and float(raw_div) > 0 else 67.5
+        except (ValueError, TypeError):
+            annual_divisor = 67.5
+
+        raw_hourly = blueprint_data.get("hourly_downtime_rate")
+        if raw_hourly is None:
+            raw_hourly = blueprint_data.get("hourly_burn_rate")
+
+        if raw_hourly is not None:
+            try:
+                hourly_rate = float(raw_hourly)
+            except (ValueError, TypeError):
+                hourly_rate = (total_fair_ale / annual_divisor) if (annual_divisor > 0 and total_fair_ale > 0) else 0.0
+        else:
+            hourly_rate = (total_fair_ale / annual_divisor) if (annual_divisor > 0 and total_fair_ale > 0) else 0.0
+
+        hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=0)
+
+        # Count quantified risk scenarios dynamically from payload structures
+        risks_list: list[Any] = (
+            blueprint_data.get("risk_register")
+            or blueprint_data.get("risks")
+            or blueprint_data.get("fair_risk_profile", {}).get("scenarios")
+            or []
+        )
+        if not risks_list:
+            risks_list = [
+                hc
+                for p in blueprint_data.get("pillars_analysis", [])
+                for hc in p.get("health_check_asis", [])
+            ]
+        risk_count = max(len(risks_list), 1)
+
+        actuarial_clause = t(
+            "actuarial_cio_justification_template",
+            locale=meta_lang,
+            ale=f"{currency} {ale_formatted}",
+            p90=f"{currency} {p90_formatted}",
+            hourly_cost=f"{currency} {hourly_formatted}/h",
+            risk_count=risk_count,
+        )
+
         if summary_body:
             paragraphs = [p.strip() for p in summary_body.split("\n\n") if p.strip()]
-            for p_text in paragraphs:
+            target_p_idx = 1 if len(paragraphs) > 1 else 0
+            for p_idx, p_text in enumerate(paragraphs):
+                # Ensure the CIO actuarial justification is always woven into the narrative
+                if p_idx == target_p_idx:
+                    has_rate = (hourly_formatted in p_text) or ("/h" in p_text)
+                    if not has_rate:
+                        p_text = f"{p_text} {actuarial_clause}"
                 nodes.append(ParagraphNode(text=p_text, space_after=8))
         else:
-            executive_summary_path = modules_dir / "02_executive_summary.md"
-            if executive_summary_path.exists():
-                nodes.extend(self._parse_markdown_to_nodes(executive_summary_path, skip_level_1=True))
+            nodes.append(ParagraphNode(text=actuarial_clause, space_after=8))
 
         nodes.append(SpacerNode(points=10))
 
@@ -590,50 +630,7 @@ class PayloadToASTBridge:
         nodes.append(TableNode(rows=triad_rows, col_widths=[0.32, 0.68]))
         nodes.append(SpacerNode(points=14))
 
-        # -------------------------------------------------------------
-        # COMPONENT D: 1.2 FINANCIAL EXPOSURE & OPERATIONAL RISK SUBSECTION
-        # -------------------------------------------------------------
-        nodes.append(
-            HeadingNode(
-                text=t("sub_1_2_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(
-            ParagraphNode(
-                text=t("fin_plain_intro", locale=meta_lang),
-                space_after=8,
-            )
-        )
-
-        fin_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("fin_col_metric", locale=meta_lang), bold=True, is_header=True),
-                    CellNode(text=t("fin_col_figure", locale=meta_lang), bold=True, is_header=True),
-                    CellNode(text=t("fin_col_meaning", locale=meta_lang), bold=True, is_header=True),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("fin_row_ale", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=f"{currency} {ale_formatted} {per_year_suffix}", bold=True, align="CENTER", bg_color="FFF3CD"),
-                    CellNode(text=t("fin_desc_ale", locale=meta_lang), bg_color="FFFFFF"),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("fin_row_p90", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=f"{currency} {p90_formatted}", bold=True, align="CENTER", bg_color="FCE4D6"),
-                    CellNode(text=t("fin_desc_p90", locale=meta_lang), bg_color="FFFFFF"),
-                ]
-            ),
-        ]
-        nodes.append(TableNode(rows=fin_rows, col_widths=[0.30, 0.25, 0.45]))
-        nodes.append(SpacerNode(points=10))
-
-        # Append forensic cross-reference linking to Chapter 4 and Appendix A
+        # Append subtle forensic cross-reference linking to Chapter 4 and Appendix A
         cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
         nodes.append(
             ParagraphNode(
@@ -644,7 +641,7 @@ class PayloadToASTBridge:
             )
         )
 
-        # Executive pacing: Chapter 1 has its own dedicated page
+        # Executive pacing: Chapter 1 stands strictly alone on Page 1
         nodes.append(PageBreakNode())
 
         #
