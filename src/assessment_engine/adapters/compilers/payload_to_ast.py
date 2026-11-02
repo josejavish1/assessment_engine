@@ -6,7 +6,7 @@ import json
 import re
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from assessment_engine.infrastructure.localization import (
     apply_vocabulary_substitutions,
@@ -80,8 +80,41 @@ from assessment_engine.adapters.compilers.ast_table_builders import (
 )
 
 
+def extract_dimension_boundary_profile(
+    pillars_analysis: List[Dict[str, Any]],
+    current_maturity_score: float,
+    locale: str = "es",
+) -> Tuple[str, str, str, str]:
+    """Extracts the weakest and strongest dimension names and formatted scores.
+    Returns: (strongest_name, strongest_score_str, weakest_name, weakest_score_str)
+    """
+    valid_dims: List[Tuple[str, float]] = []
+    for p in pillars_analysis:
+        if not isinstance(p, dict):
+            continue
+        name = str(p.get("pillar_name") or p.get("name") or "").strip()
+        raw_score = p.get("score") if p.get("score") is not None else p.get("maturity_score")
+        if name and raw_score is not None:
+            try:
+                valid_dims.append((name, float(raw_score)))
+            except (ValueError, TypeError):
+                continue
+
+    if not valid_dims:
+        return "", "", "", ""
+
+    sorted_dims = sorted(valid_dims, key=lambda x: x[1])
+    weakest_name, weakest_score = sorted_dims[0]
+    strongest_name, strongest_score = sorted_dims[-1]
+
+    strongest_str = format_number(strongest_score, locale=locale, decimals=1)
+    weakest_str = format_number(weakest_score, locale=locale, decimals=1)
+
+    return strongest_name, strongest_str, weakest_name, weakest_str
+
+
 class ExecutiveNarrativeSynthesizer:
-    """Compiles the 4-part Minto Pyramid Executive Summary for any capability tower (T1-T10).
+    """Compiles the authoritative Executive Summary for any capability tower (T1-T10).
     Strictly adheres to 100% Technical English Codebase and Zero Hardcoding standards.
     """
 
@@ -108,8 +141,12 @@ class ExecutiveNarrativeSynthesizer:
         target_maturity_score: str,
         capped_p90_hours_fmt: str = "",
         tower_id: str = "T1",
+        strongest_dim_name: str = "",
+        strongest_dim_score: str = "",
+        weakest_dim_name: str = "",
+        weakest_dim_score: str = "",
     ) -> List[str]:
-        """Synthesizes the 4 authoritative executive summary paragraphs for a capability tower."""
+        """Synthesizes the executive summary paragraphs for a capability tower."""
         f1 = findings_briefs[0] if len(findings_briefs) > 0 else t("default_critical_vulnerability", locale=self._locale_code)
         f2 = findings_briefs[1] if len(findings_briefs) > 1 else ""
         f3 = findings_briefs[2] if len(findings_briefs) > 2 else ""
@@ -167,28 +204,34 @@ class ExecutiveNarrativeSynthesizer:
             "remediation_horizon_label": remediation_horizon_label.strip(),
             "primary_remediation_pillar": primary_remediation_pillar.strip(),
             "target_maturity_score": target_maturity_score.strip(),
+            "strongest_dim_name": strongest_dim_name.strip(),
+            "strongest_dim_score": strongest_dim_score.strip(),
+            "weakest_dim_name": weakest_dim_name.strip(),
+            "weakest_dim_score": weakest_dim_score.strip(),
         }
 
         narrative_section = loc_data.get("executive_summary_narrative", {}).get(self._locale_code, {})
         p1_tmpl = narrative_section.get("p1_operational_posture")
-        p2_tmpl = (
-            narrative_section.get("p2_architectural_dilemma")
-            if len(findings_briefs) >= 3
-            else narrative_section.get("p2_architectural_dilemma_single")
-        )
+        findings_lead_in = narrative_section.get("findings_lead_in", t("findings_lead_in", locale=self._locale_code))
         p3_tmpl = narrative_section.get("p3_financial_exposure")
         p4_tmpl = narrative_section.get("p4_modernization_mandate")
 
         paragraphs = []
-        for p_idx, tmpl in enumerate([p1_tmpl, p2_tmpl, p3_tmpl, p4_tmpl], 1):
+        raw_templates = [
+            (p1_tmpl, "p1_operational_posture"),
+            (findings_lead_in, "findings_lead_in"),
+            (p3_tmpl, "p3_financial_exposure"),
+            (p4_tmpl, "p4_modernization_mandate"),
+        ]
+        for tmpl, key in raw_templates:
             if tmpl:
                 rendered = tmpl.format(**context)
                 unresolved = self.UNRESOLVED_TOKEN_PATTERN.findall(rendered)
                 if unresolved:
-                    raise ValueError(f"Unresolved tokens {unresolved} in paragraph {p_idx}")
+                    raise ValueError(f"Unresolved tokens {unresolved} in paragraph '{key}'")
                 paragraphs.append(rendered)
             else:
-                fallback_p = t(f"exec_narrative_p{p_idx}", locale=self._locale_code, **context)
+                fallback_p = t(key, locale=self._locale_code, **context)
                 paragraphs.append(fallback_p)
 
         return paragraphs
@@ -876,6 +919,12 @@ class PayloadToASTBridge:
             else f"{currency}{hourly_formatted}/hr"
         )
 
+        strongest_name, strongest_score_str, weakest_name, weakest_score_str = extract_dimension_boundary_profile(
+            pillars_analysis=blueprint_data.get("pillars_analysis", []),
+            current_maturity_score=gs_val,
+            locale=meta_lang,
+        )
+
         synthesizer = ExecutiveNarrativeSynthesizer(locale_code=meta_lang)
         p_texts = synthesizer.synthesize_chapter_one_paragraphs(
             client_name=client_name,
@@ -894,11 +943,35 @@ class PayloadToASTBridge:
             primary_remediation_pillar=primary_pillar_resolved,
             target_maturity_score=target_score_str,
             tower_id=tower_id,
+            strongest_dim_name=strongest_name,
+            strongest_dim_score=strongest_score_str,
+            weakest_dim_name=weakest_name,
+            weakest_dim_score=weakest_score_str,
         )
 
-        for p_idx, p_text in enumerate(p_texts):
-            nodes.append(ParagraphNode(text=p_text, space_after=6 if p_idx < len(p_texts) - 1 else 8))
-        nodes.append(SpacerNode(points=8))
+        # 1. Paragraph 1: Posture & Mission
+        nodes.append(ParagraphNode(text=p_texts[0], space_after=6))
+
+        # 2. Paragraph 2: Lead-in + Structured List Bullets
+        nodes.append(ParagraphNode(text=p_texts[1], space_after=3, keep_with_next=True))
+        active_findings = findings_briefs[:4] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
+        for f_idx, fb in enumerate(active_findings):
+            is_last = (f_idx == len(active_findings) - 1)
+            b_text = fb.strip().rstrip(".")
+            if ":" in b_text:
+                parts = b_text.split(":", 1)
+                formatted_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}."
+            else:
+                prefix = t("exposure_vector_prefix", locale=meta_lang, index=f_idx + 1)
+                formatted_bullet = f"**{prefix}:** {b_text}."
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", space_after=6 if is_last else 2))
+
+        # 3. Paragraph 3: Actuarial Latent Exposure
+        nodes.append(ParagraphNode(text=p_texts[2], space_after=6))
+
+        # 4. Paragraph 4: Pure AS-IS Diagnostic Verdict
+        nodes.append(ParagraphNode(text=p_texts[3], space_after=8))
+        nodes.append(SpacerNode(points=6))
 
         # -------------------------------------------------------------
         # COMPONENT C: EXECUTIVE DIAGNOSTIC TRIAD TABLE (STRENGTH/GAP/BOTTLENECK)

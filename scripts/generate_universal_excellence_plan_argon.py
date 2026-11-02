@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Consulting gemini-4-argon for the Comprehensive Task-by-Task Implementation Plan for Deliverable Excellence."""
+"""Argon-4 Master Consultation: RFC 046 Universal Master Executive AS-IS Architecture.
+
+Formulates the end-to-end architectural plan before modifying any application code:
+1. Latent Actuarial Risk Framing in Paragraph 3 (Implicit unhedged risk premium vs realized P&L cash outflow).
+2. Dynamic Findings Cardinality in Paragraph 2 (K = 0, 1, 2, N >= 3 with natural language enumeration).
+3. Pure AS-IS Diagnostic Closure in Paragraph 4 (Eradicating TO-BE target scores and TO-DO implementation roadmaps).
+4. Universal Multi-Tenant Enterprise Scalability (50M€ to 50B€, any vertical, any currency, any locale).
+5. 100% Technical English Codebase (Zero Spanish words anywhere in Python source code).
+"""
 
 from __future__ import annotations
 
@@ -16,71 +24,86 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
-client = create_genai_client()
-model_name = get_model(ModelTier.REASONING)
 
-prompt = """
-Role: Chief Software Architect (Enterprise Document Engineering) & Global Head of Strategic Advisory.
+def main() -> None:
+    client = create_genai_client()
+    model_name = get_model(ModelTier.REASONING)
 
-CONTEXT:
-We have audited the rendered AS-IS deliverables (Technical Annexes for Tower 1 Data Center and Tower 2 Hybrid Compute) with executive leadership.
-Leadership has provided 12 critical engineering and editorial directives to bring the deliverables to 100% Tier-1 McKinsey/Gartner quality:
+    prompt = """
+Role: Chief Actuarial Systems Architect & Principal Enterprise Compiler Engineer (Google Tier-1 Infrastructure / Anthropic Core Staff / McKinsey Senior Partner).
 
-1. COVER PAGE:
-   - Remove generic filler "Instalación: Perímetro de infraestructura y activos tecnológicos".
-   - Remove bureaucratic subtitle "Proyecto: Diagnóstico de Arquitectura, Madurez Operativa y Resiliencia Cuantitativa (O-FAIR)".
-   - Move document metadata ("STRATEGIC ADVISORY | Date | Version | Confidential") strictly into the bottom footer of the cover page.
+CONTEXT & USER CRITIQUE (CRITICAL REFINEMENT DIRECTIVES):
+The user provided vital architectural feedback on the Executive Summary:
 
-2. TABLE OF CONTENTS:
-   - Ensure the TOC is fully automated via native Word OpenXML fields (`w:fldSimple` / `w:instrText` `TOC \\o "1-3" \\h \\z \\u`) with an elegant fallback layout table that updates seamlessly in Word.
+1. The "Every Year Accounting Loss" Fallacy (Paragraph 3):
+   - The user observed:
+     "y además cuando hablas de los números: 'Con las incidencias acumuladas en un año habitual, la pérdida estimada (ALE P50) se sitúa en 141.184 €...'. Da la sensación de que el cliente pierde eso todos los años, y nos pueden decir: 'mira, yo no he tenido ningún fallo en los últimos años y menos de esa cantidad'... quizás tengamos que decirlo de otra forma."
+   - The user's critique is razor-sharp: Describing Annualized Loss Expectancy (ALE P50) as "la pérdida en un año habitual" leads business stakeholders to interpret it as a recurring accounting cash loss from their operating budget. When a client has had no major outage in the past 2 years, they immediately push back and reject the credibility of the entire assessment!
+   - Actuarial Requirement (Open FAIR™ / ISO 31000):
+     * ALE is NOT an annual operational accounting expenditure or P&L debit.
+     * ALE is a *latent actuarial exposure* — the annualized mathematical expectation of unhedged operational risk (analogous to an insurance premium or Value-at-Risk).
+     * The narrative must clearly and elegantly articulate that this figure represents the *implicit risk premium* the organization is carrying without formal protection, which remains dormant until a stochastic failure event materializes.
 
-3. EXECUTIVE SUMMARY (CHAPTER 1) - AS-IS BOUNDARY PURITY:
-   - Remove arbitrary prescription of "wants to reach Level 4 Managed". AS-IS is a diagnostic of current state; target maturity should only be mentioned if driven by mandatory regulatory frameworks (NIS2/DORA).
-   - Eradicate TO-BE investment promises ("to neutralize this exposure the modernization program requires X investment of CAPEX..."). AS-IS describes observed exposure; investment belongs to TO-BE roadmap!
-   - Add explicit cross-reference directing the reader to Chapter 4 and Appendix B for the forensic actuarial breakdown.
+2. Eradication of the "Rule of 3" Hardcoding Antipattern (Paragraph 2):
+   - The user observed:
+     "solo una duda en el párrafo, ¿por qué 3 vulnerabilidades? Depende del cliente y la torre esto ¿no puede variar? No quiero ningún antipatrón."
+   - The user is completely right: Hardcoding that every tower across every enterprise in the world exhibits exactly "tres problemas prioritarios" is an unacceptable antipattern.
+   - Architectural Requirement:
+     * Support dynamic findings cardinality: K = 0, K = 1, K = 2, and K >= 3.
+     * When K = 0: Affirm operational hygiene and absence of active critical failure points.
+     * When K = 1: Use singular grammatical phrasing isolating the single primary bottleneck.
+     * When K = 2: Use dual grammatical phrasing linking the two interrelated vectors.
+     * When K >= 3: Use plural phrasing with dynamic integer-to-word cardinal resolution ("tres", "cuatro", "cinco", etc. in Spanish; "three", "four", "five", etc. in English) and natural language list enumeration with proper conjunctions ("; y " / "; and ").
+     * Zero hardcoded number words in locale templates.
 
-4. METHODOLOGICAL FRAMEWORK (CHAPTER 2):
-   - Remove the academic "Three-phase calibration methodology" subsection.
-   - Harmonize typography: unify table font sizes across the CMMI scale and capability score tables (headers 9.0 pt bold, data 8.5 pt regular, badges 8.0 pt bold).
+3. Pure AS-IS Boundary Enforcement (Paragraph 4):
+   - The user observed:
+     "esto es un documento de AS-IS, no hablamos de TO-BE ni de TO-DO así que el último párrafo hay que cambiarlo ¿no? --> 'Para resolver estas limitaciones, es prioritario acometer el plan de modernización en un plazo de 12 a 24 meses... elevar la madurez hasta el objetivo de 4,1 sobre 5,0.' ¿Qué ponemos? ¿Qué más cosas de valor tenemos que añadir? Esto es un resumen ejecutivo, se supone que en esta página leyéndola te enteras de todo ¿no?"
+   - Architectural Requirement:
+     * Eliminate all premature Phase 2 (TO-BE target scores like "4.1 sobre 5.0") and Phase 3 (TO-DO roadmaps like "12 a 24 meses") contamination.
+     * In an AS-IS diagnostic report, Paragraph 4 must deliver the *Definitive Diagnostic Verdict & Cost of Inaction (Inercia del Statu Quo)*:
+       a) Contrast apparent daily stability (sustained by manual workarounds and heroics) against underlying structural fragility.
+       b) Highlight the active governor/bottleneck: the weakest dimension holding back the overall domain maturity.
+       c) Articulate the concrete cost of status-quo inertia: what happens if leadership maintains the current state (increasing recovery friction, accelerating technical debt, and heightening operational exposure).
 
-5. RISK SECTION (CHAPTER 4) - MINI-INFOGRAPHIC CARD RE-ENGINEERING:
-   - Remove the "Resilience & Efficiency Return Hexagon" diagram if present.
-   - Decongest card header banner: do not concatenate code, capability, pillar, tier, rank, share in a single wall of text. Shorten and format cleanly.
-   - Tone down aggressive colors to an executive, sober palette (muted Slate, Navy, subtle Amber, muted Crimson).
-   - Remove repetitive boilerplate: eliminate the static "Evento Amenaza Iniciador" box that repeats identical text across all cards.
-   - Replace the TO-BE "Directiva de Mitigación Ejecutiva" with a high-value CFO section: **Actuarial Calculation Breakdown & Justification** explaining the empirical derivation of the numbers (e.g. `SLE = Observed MTTR (2.5h) x Plant Hourly Cost (15,600 €/h) + Parts (6,000 €) = 45,000 €; LEF = 0.36 ev/yr; ALE = SLE x LEF = 16,200 €/yr`).
-   - Grounded Realism & Actuarial Calibration: Ensure the baseline payload figures for Tower 1 match the previously agreed industrial plant reality (total tower ALE ~118,500 €/year, SLEs 25,000 € - 45,000 € based on real 2-4 hour recovery, not €1.05M!).
-   - Probabilistic Hypothesis Language: Eradicate sensationalist deterministic claims ("this recirculation bursts compressors, skyrockets electric bills, and causes simultaneous collapses..."). Reframe in rigorous actuarial hypothesis language ("Under unmitigated conditions, persistent elevated thermal gradients increase the probability of thermal trip in cooling compressors, potentially causing an estimated operational stoppage of...").
-   - Replace confusing jargon "Acoplamiento sistémico estrecho (cascada crítica)" with plain business language (e.g. "Efecto Cascada: Alto (Afecta a múltiples servicios)").
+4. Universal Multi-Tenant Enterprise Scalability:
+   - Must scale cleanly across any enterprise size (50M€ mid-market to 50B€ global conglomerates), any vertical (Manufacturing, Banking, Retail, Healthcare, Logistics), any currency (EUR, USD, GBP, JPY, CHF), and any locale (es, en).
+   - 100% Technical English codebase: all Python classes, methods, functions, variables, identifiers, docstrings, comments, log messages, and exceptions must be strictly in Technical English.
+   - Zero Spanish words anywhere in Python source code. All human-facing text must reside strictly in `engine_config/locales.json`.
 
-6. CONCLUSIONS (CHAPTER 5) - AS-IS DIAGNOSTIC SYNTHESIS:
-   - Remove the Multi-Horizon Modernization Program table (1 Year, 3 Years, 5 Years with CAPEX, ROI, Payback). That belongs exclusively to the TO-BE phase.
-   - Transform Chapter 5 into a pure AS-IS Diagnostic Synthesis summarizing current maturity posture, key vulnerabilities, and operational urgency.
-
-7. APPENDICES:
-   - Remove Appendix A ("Information Sources Custody Log") entirely.
-   - Re-index Appendix B (Open FAIR Methodology) as the single primary technical appendix.
-
-MANDATES:
-- Zero bugs, zero problems, zero anti-patterns.
-- Zero hardcoding: universal across all enterprises worldwide, all verticals, all target languages (es, en, pt, fr, de, ja), and all currencies.
-- 100% Technical English Codebase: Zero Spanish words in Python code, docstrings, comments, or schemas.
+NON-NEGOTIABLE ENGINEERING LAWS:
+- Law 1: Zero bugs, zero antipatterns, zero unhandled exceptions (fail-fast architecture).
+- Law 2: Zero hardcoding (scales across any tenant, vertical, currency, or locale).
+- Law 3: 100% Technical English codebase.
+- Law 4: Split-brain eradication across all 10 capability towers (T1..T10).
+- Law 5: OpenXML ISO/IEC 29500 layout determinism (Page 3 single-page containment, TOC synchronization).
 
 YOUR TASK:
-Provide an exhaustive, task-by-task engineering implementation plan specifying:
-1. Exact file-by-file changes (`payload_to_ast.py`, `docx_compiler.py`, `locales.json`, `blueprint_t1_payload.json`, `blueprint_t2_payload.json`, etc.).
-2. The exact data structures, AST node changes, and localization keys to add/modify.
-3. Verification plan with automated tests.
+Synthesize an exhaustive, authoritative Master Architectural Blueprint (RFC 046) in Markdown:
+1. Actuarial Narrative Deconstruction: Formulate the exact phrasing that reframes ALE as an unhedged latent risk exposure (implicit risk premium) rather than a realized accounting loss.
+2. Dynamic Cardinality Linguistic Architecture: Detail the state machine and grammatical algorithms for K = 0, 1, 2, and N >= 3 findings.
+3. Pure AS-IS Diagnostic Verdict Architecture: Formulate the structural components of Paragraph 4, showing how it closes the current-state diagnosis without TO-BE/TO-DO contamination.
+4. Complete Bilingual Locale Catalog Additions: Provide the exact JSON blocks for `engine_config/locales.json` in Spanish (`es`) and English (`en`).
+5. Complete Production Python Implementation Plan: Detail the exact changes in `payload_to_ast.py` in 100% Technical English.
 """
 
-print(f"Requesting universal deliverable excellence plan from {model_name}...")
-response = client.models.generate_content(
-    model=model_name,
-    contents=prompt,
-)
+    print(f"Requesting RFC 046 Master Architectural Blueprint from {model_name}...")
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+    )
 
-print("\n" + "=" * 80)
-print("GEMINI-4-ARGON: UNIVERSAL DELIVERABLE EXCELLENCE ENGINEERING PLAN")
-print("=" * 80)
-print(response.text)
-print("=" * 80)
+    out_file = REPO_ROOT / "docs/architecture/RFC_046_MASTER_EXECUTIVE_ASIS_ARCHITECTURE_ARGON.md"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(response.text, encoding="utf-8")
+
+    print("\n" + "=" * 80)
+    print("GEMINI-4-ARGON: RFC 046 MASTER EXECUTIVE AS-IS ARCHITECTURE")
+    print("=" * 80)
+    print(response.text)
+    print("=" * 80)
+    print(f"\nBlueprint saved to: {out_file.relative_to(REPO_ROOT)}")
+
+
+if __name__ == "__main__":
+    main()

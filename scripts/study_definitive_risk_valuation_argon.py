@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: RFC 042 Dynamic Tenant Workload Adaptation & Transparent Actuarial Rate Lineage.
+"""Argon-4 Master Consultation: RFC 045 Dynamic Findings Cardinality & Pure AS-IS Synthesis.
 
-Formulates the architectural blueprint before any code is modified, guaranteeing:
-1. Zero hardcoding of tenant-specific application names (e.g. no hardcoded SAP/MES in catalogs).
-2. Transparent, CFO-verifiable mathematical derivation of the composite hourly downtime rate.
-3. 100% Technical English codebase and universal multi-tier enterprise scalability.
+Eradicates the 'Rule of 3' hardcoding antipattern where Paragraph 2 assumed exactly 3 vulnerabilities.
+Enforces dynamic cardinality (0, 1, 2, or N findings) with natural language enumeration and grammar,
+coupled with the pure AS-IS diagnostic verdict in Paragraph 4.
 """
 
 from __future__ import annotations
@@ -28,60 +27,60 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Actuarial Systems Architect & Principal Enterprise Compiler Engineer (Google Tier-1 Core Infrastructure / Anthropic Engineering / MIT Actuarial Fellow).
+Role: Chief Enterprise Systems Architect & Principal Enterprise Compiler Fellow (Google Tier-1 Core Infrastructure / Anthropic Core Staff).
 
-CONTEXT & USER CRITIQUE (DEEP ARCHITECTURAL FEEDBACK):
-The user reviewed the proposed RFC 041 architecture and delivered two critical, staff-level engineering insights:
+CONTEXT & USER CRITIQUE (ELIMINATING THE 'RULE OF 3' ANTIPATTERN):
+The user observed:
+"solo una duda en el párrafo, ¿por qué 3 vulnerabilidades? Depende del cliente y la torre esto ¿no puede variar? No quiero ningún antipatrón."
 
-1. Dynamic Tenant Workload Adaptation (Anti-Hardcoding Law):
-   - The user observed:
-     "Respecto al punto 1 diferenciación narrativa dinámica entre las 10 Torres estoy de acuerdo en parte porque cada cliente es totalmente distinto entonces hardcodear exactamente el texto puede no ser la mejor opción por ejemplo tú dices en la torre dos su impacto en la disponibilidad transaccional del SAP ERP sistemas MES de fabricación y elasticidad ante picos pero la realidad es que cada cliente puede ser de un idioma distinto en un país distinto con una vertical distinta y con una casuística concreta distinta... hardcodearlo puede ser sí pero hay que tener mucho cuidado o quizá no para adaptarlo a cada empresa hay que pensar qué hacemos."
-   - The user is 100% correct: Hardcoding specific enterprise applications like "SAP ERP" or "MES" into tower catalog definitions (`tower_catalog.json`) is a brittle anti-pattern. If the client is a Japanese logistics giant using Oracle/Go microservices, a German hospital chain running Cerner/Epic, or a US SaaS provider on AWS, hardcoding "SAP and MES" destroys credibility and violates Law #2 (Zero Hardcoding).
-   - Architectural Requirement: How do we dynamically resolve the tenant's real mission-critical systems and workloads from their payload telemetry (`included_components`, `primary_workloads`, `business_critical_services`, `domain_introduction`), while keeping tower catalogs purely abstract and capability-oriented across all 10 towers?
+ARCHITECTURAL ANALYSIS:
+The user is 100% right. Hardcoding that every tower and every enterprise in the world has "tres problemas prioritarios" is a blatant antipattern.
+1. A small firm or highly mature tower may have 0 or 1 critical vulnerability.
+2. An intermediate tower may have 2 distinct findings.
+3. A heavily burdened domain may have 4, 5, or more findings.
+4. Forcing a static "three vulnerabilities" sentence:
+   - Produces awkward grammar when len(findings) < 3 (filling with blanks or falling back awkwardly).
+   - Artificially truncates real risks when len(findings) > 3.
+   - Violates Law 2 (Zero Hardcoding / Universal Global Enterprise Readiness).
 
-2. Transparent Mathematical Lineage for the Hourly Rate (CFO Credibility):
-   - The user observed:
-     "y luego otro punto tú hablas de la explicación natural de la tasa en el párrafo 3 y yo lo que digo es que si salen 11428,60 € quiero saber la fórmula de cómo sale: 'oye pues para calcular esto se ha hecho teniendo en cuenta esto y este número así lo hemos tenido en cuenta teniendo esto entre esto'... es decir, contar la fórmula y de dónde han salido los números porque ese número es la clave de absolutamente todo, de todo lo que hacemos, de cómo escalamos. Ese número tiene que estar hiper bien explicado, quizá en el resumen ejecutivo no tanto pero sí un poco porque si no no se va a entender y van a tirar todo el informe a la basura."
-   - The user is completely right: The hourly outage rate ($R_{\text{hourly}} = 11.428,60\text{ €/h}$) is the single foundational multiplier for the entire report. If a CFO asks *"How was this calculated?"* and the report gives only hand-wavy prose, the CFO will dismiss the entire deliverable.
-   - Architectural Requirement:
-     a) How should the exact mathematical formula be stated concisely in Chapter 1 (Executive Summary) so the CFO sees the mathematical lineage (Base Operational Velocity + Contractual SLA Penalties + Emergency Recovery Labor Burden) without overwhelming the narrative with unverified macro numbers?
-     b) Where and how should the full step-by-step mathematical derivation table be rendered in the document (e.g. Chapter 2 Methodology / Chapter 4 Actuarial Analysis) so the finance department can audit every single variable down to the cent?
-     c) How does this formula scale universally across enterprise tiers (e.g. 50M€ mid-market -> ~570 €/h, heavy industry -> ~11,400 €/h, tier-1 global bank -> ~150,000 €/h)?
-
-NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ZERO ANTIPATTERNS, ZERO DEFECTS.
-2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - Scalable across any enterprise tier (50M€ to 50B€), any vertical, any currency (EUR, USD, GBP, JPY, CHF, etc.), and any locale.
-   - Zero hardcoded client names, zero hardcoded application names (no hardcoded SAP/MES in catalogs), zero hardcoded rates.
-3. 100% TECHNICAL ENGLISH CODEBASE:
-   - All Python code, method names, variables, identifiers, docstrings, comments, logs, and exceptions must be 100% Technical English.
-   - Zero Spanish words anywhere in Python source files.
-4. SPLIT-BRAIN ERADICATION (100% 10-TOWER SYMMETRY).
-5. ISO/IEC 29500 OPENXML & EDITORIAL EXCELLENCE.
+METHODOLOGICAL REQUIREMENTS FOR RFC 045:
+1. Dynamic Findings Cardinality & Natural Language Enumeration:
+   - The engine must inspect `len(findings_briefs)` dynamically:
+     * `0 findings`: Positive diagnostic confirming operational hygiene and absence of active critical failure points.
+     * `1 finding`: Singular grammatical construct focusing directly on the single identified constraint.
+     * `2 findings`: Dual grammatical construct linking the two interrelated vectors.
+     * `N >= 3 findings`: Pluralized construct stating the verified count and enumerating the top prioritized items naturally.
+   - Zero hardcoded numbers ("tres", "three") in locale templates.
+2. Pure AS-IS Diagnostic Verdict for Paragraph 4 (from RFC 044):
+   - Zero TO-BE roadmap promises ("12 to 24 months").
+   - Zero TO-BE target scores ("4.1 out of 5.0").
+   - Instead: True diagnostic closure — Apparent vs. Structural Stability, Primary Systemic Bottleneck, and the Concrete Cost of Status-Quo Inertia.
+3. 100% Technical English Codebase:
+   - All Python code, helper functions, variables, identifiers, docstrings, comments, logs, and exceptions must be 100% Technical English.
+   - All localized strings isolated in `engine_config/locales.json`.
+4. OpenXML Layout Determinism:
+   - Guarantees clean pagination and single-page executive containment.
 
 YOUR TASK:
-Synthesize a comprehensive Architectural Blueprint (RFC 042) in Markdown:
-1. Dynamic Tenant Telemetry Resolution Engine: Design the algorithm that extracts and normalizes the client's actual systems, applications, and operational scope from payload telemetry across all 10 towers without hardcoding.
-2. Transparent Mathematical Lineage for the Hourly Burn Rate:
-   - Provide the exact algebraic formula and parameter definitions.
-   - Design the concise 2-sentence executive explanation for Chapter 1.
-   - Design the formal Actuarial Derivation Callout Box / Table for Chapter 2 or Chapter 4.
-3. Executive Summary Narrative Templates for `engine_config/locales.json` in Spanish and English.
-4. Concrete, production-ready Python code snippets in 100% Technical English.
+Synthesize an authoritative Architectural Blueprint (RFC 045) in Markdown:
+1. Dynamic Findings Enumeration Architecture: Show the exact algorithm and linguistic grammar rules for 0, 1, 2, and N findings in both Spanish and English.
+2. Pure AS-IS Paragraph 4 Template Structure: Formulate the definitive diagnostic verdict without TO-BE/TO-DO contamination.
+3. Complete bilingual additions for `engine_config/locales.json`.
+4. Production-ready Python code modifications for `payload_to_ast.py` in 100% Technical English.
 """
 
-    print(f"Requesting RFC 042 from {model_name}...")
+    print(f"Requesting RFC 045 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_042_DYNAMIC_WORKLOADS_AND_TRANSPARENT_ACTUARIAL_LINEAGE_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_045_DYNAMIC_CARDINALITY_AND_PURE_ASIS_SYNTHESIS_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 042 DYNAMIC WORKLOADS & TRANSPARENT ACTUARIAL LINEAGE")
+    print("GEMINI-4-ARGON: RFC 045 DYNAMIC CARDINALITY & PURE AS-IS SYNTHESIS")
     print("=" * 80)
     print(response.text)
     print("=" * 80)

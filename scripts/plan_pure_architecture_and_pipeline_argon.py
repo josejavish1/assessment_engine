@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Architectural Consultation: RFC 040 Enterprise Executive Realism & Actuarial Credibility.
+"""Argon-4 Master Consultation: RFC 044 Pure AS-IS Executive Summary Alignment & Definitive Diagnostic Synthesis.
 
-Instructs gemini-4-argon to think through and formulate the complete architectural blueprint
-before any code is written, ensuring zero bugs, zero antipatterns, zero hardcoding,
-and 100% Technical English codebase standards.
+Addresses the user's acute observation:
+"esto es un documento de AS-IS, no hablamos de TO-BE ni de TO-DO así que el último párrafo hay que cambiarlo no?
+--> Para resolver estas limitaciones, es prioritario acometer el plan de modernización... elevar la madurez hasta el objetivo de 4,1 sobre 5,0.
+¿Qué ponemos? ¿Qué más cosas de valor tenemos que añadir, o quizás explicar algunas mejor?
+Esto es un resumen ejecutivo, se supone que en esta página leyéndola te enteras de todo no?"
 """
 
 from __future__ import annotations
@@ -27,80 +29,71 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Actuarial Systems Architect & Principal Enterprise Compiler Engineer (Google Tier-1 Core Infrastructure / Anthropic Engineering / MIT Actuarial Fellow).
+Role: Chief Enterprise Architect & Executive Editorial Fellow (McKinsey Global Managing Partner / Gartner Senior Research VP / MIT Systems Architect).
 
-MISSION CONTEXT:
-The user reviewed the generated assessment deliverables and delivered critical feedback regarding the executive narrative and actuarial framing of Chapter 1 (Executive Summary) in technical capability tower annexes:
+CONTEXT & USER CRITIQUE (DEEP METHODOLOGICAL INSIGHT):
+The user delivered a brilliant, fundamental critique of the Executive Summary closing paragraph:
+"Esto ya me gusta mucho más, pero vamos por partes: esto es un documento de AS-IS, no hablamos de TO-BE ni de TO-DO, así que el último párrafo hay que cambiarlo ¿no?
+--> 'Para resolver estas limitaciones, es prioritario acometer el plan de modernización detallado en este informe en un plazo de 12 a 24 meses, focalizado en la modernización de la plataforma... elevar la madurez hasta el objetivo de 4,1 sobre 5,0.'
+¿Qué ponemos? ¿Qué más cosas de valor tenemos que añadir, o quizás explicar algunas mejor? Esto es un resumen ejecutivo, se supone que en esta página leyéndola te enteras de todo ¿no?"
 
-"no se si es una tomadura de pelo, otra vez habla de 1.000.000 sigue todo bastante mal explicado la verdad ---> Para traducir esta fragilidad al lenguaje del comité de dirección, hemos huido de estimaciones teóricas. Aplicando un modelo actuarial calibrado sobre la facturación consolidada expuesta (1.000.000.000 €), determinamos un coste compuesto de inactividad de € 11.428,60/h (integrando lucro cesante directo del 0,0010%, penalizaciones de SLA y sobrecoste de recuperación). Esta valoración matemática vincula cada riesgo de la plataforma directamente con su impacto sobre el EBITDA de Molins.
-Además, para evitar la inflación artificial del riesgo, hemos deduplicado los radios de impacto solapados: la exposición neta se sitúa en 8,9 horas críticas anuales, representando una Pérdida Anualizada (ALE) de € 101.231. En un escenario de estrés extremo (percentil 90), la parálisis se dispararía hasta las 59,1 horas de interrupción incontrolable (un impacto contingente de € 675.231).
-hazme un diagnostico no cambies nada... lo único es antes de ponernos a programar hay que pensar bien como lo vamos a abordar para garantizar que queda sin errores y que vamos a aumentar la calidad de los entregables al 100% y quiero lo piense gemini-4-argon que lo haga sin bugs, problemas o antipatrones, no quiero nada hardcodeado recuerda que el objetivo es que sirva para cualquier empresa del mundo desde mediana a top tier 1 mundial, de cualquier vertical, en cualquier idioma, y el código debe estar 100% en ingles nada de español ni una sola palabra."
+CORE ARCHITECTURAL ANALYSIS:
+1. Strict Boundary of Current-State (AS-IS) Assessments:
+   - In tier-1 strategy consulting (McKinsey, BCG, Gartner, Big 4), the deliverables are cleanly phased:
+     * Phase 1: AS-IS Technical Assessment (Current State Diagnostic, Vulnerability Inventory, Actuarial Risk Baseline).
+     * Phase 2: TO-BE Target Architecture (Target Operating Model, Future Maturity Goal).
+     * Phase 3: TO-DO Implementation Roadmap (Phased Migration Plan, Work Breakdown, Program Scheduling).
+   - In an AS-IS diagnostic report, promising a "12 to 24 month modernization roadmap" or setting future "target scores like 4.1/5.0" is a methodological contamination! It jumps into Phase 2/3 before the executive committee has even ratified the diagnostic truth of Phase 1.
 
-DEEP ROOT CAUSE ANALYSIS OF THE FAILURES:
-1. Unverified Macro Revenue Leakage:
-   Parading "(1.000.000.000 €)" in parentheses in a domain technical annex looks like an invented, unverified figure pulled from thin air. A technical specialist annex should NOT flaunt macro-corporate turnover unless explicitly certified by client financial filings.
-2. Cognitive Dissonance in Executive Impact (Macro vs Micro Mismatch):
-   Juxtaposing a 1,000,000,000 € turnover with an Annual Loss Expectancy (ALE) of 101,231 € creates a credibility collapse for the CFO. 101k € is 0.01% of revenue (less than 2 junior headcount). If leadership reads that the risk is only 8.9 hours and 100k €, they will conclude the tower is completely healthy and requires ZERO capital investment.
-3. Defensive Consultant Meta-Narrative:
-   Sentences like "hemos huido de estimaciones teóricas" or "para evitar la inflación artificial del riesgo hemos deduplicado los radios de impacto solapados" represent defensive analyst kitchen-talk. A Board of Directors / CIO wants business reality, operational urgency, and strategic investment trade-offs, not a consultant justifying how their algorithms work.
-4. Total Erasure of Physical & Contractual Gravitas:
-   The narrative was trapped in an abstract loop of theoretical rates and hours, while completely silencing the real, existential risks that keep engineers and plant managers awake:
-   - Imminent contractual cliff: Broadcom/VMware renewal in May 2027 with massive core-based licensing price shocks.
-   - Hardware End of Support (EoSL): HPE SimpliVity hyperconverged nodes facing lack of replacement parts between 2028-2030.
-   - Severe RAM & CPU overcommitment: 300+ VMs preventing automated N+1 failover without manually shutting down dev/test environments.
-   - Regulatory exposure: Unsupported legacy CentOS 5/6 operating systems violating European NIS2 cybersecurity mandates.
+2. What Belongs in Paragraph 4 of a Pure AS-IS Executive Summary?
+   - Instead of premature TO-BE planning, Paragraph 4 must deliver the **Definitive AS-IS Diagnostic Verdict & Cost of Inaction (Inercia del Statu Quo)**:
+     * Apparent vs. Real Stability: Explaining that while daily operations appear functional, this stability is fragile and subsidized by manual heroics and unhedged technical debt.
+     * Compounding Technical Debt & Inaction Trajectory: What happens if leadership maintains the status quo? (Accumulation of end-of-support hardware, increasing frequency of unplanned downtime, higher recovery friction, and escalating maintenance overhead).
+     * Systemic Organizational Bottleneck: Pinpointing whether the primary constraint is technical debt, operational process gaps, or governance silos.
+     * The Executive Call to Consciousness: Delivering the clear, sobering verdict that this domain requires structural remediation to achieve acceptable baseline reliability.
 
-THE 5 NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ZERO ANTIPATTERNS, ZERO DEFECTS:
-   - Flawless mathematical, exception-handling, and architectural design.
-   - Fail-fast enforcement: no silent error swallowing.
-2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - The engine must scale to ANY company in the world: any tier (50M€ mid-market to 50B€ F10), any vertical (Heavy Manufacturing, Banking, Logistics, Healthcare, SaaS, Energy), any currency (EUR, USD, GBP, JPY, CHF, etc.), and any locale.
-   - Zero hardcoded client names, zero hardcoded numbers, zero language-specific assumptions in Python code.
-3. 100% TECHNICAL ENGLISH CODEBASE (LANGUAGE DECOUPLING LAW):
-   - All Python code, class names, method names, variables, identifiers, comments, docstrings, logs, exceptions, and regexes must be 100% Technical English.
-   - Zero Spanish words anywhere in Python source code files. (Spanish is ONLY permitted in `locales.json` data dictionaries).
-4. SPLIT-BRAIN ERADICATION (100% 10-TOWER SYMMETRY):
-   - All 10 towers (T1 through T10) must execute the exact same unified pipeline and code paths. Zero special-casing for T1 or T2.
-5. ISO/IEC 29500 OPENXML & EDITORIAL EXCELLENCE:
-   - Native Word TOC with deterministic layout synchronization, auto-fitted tables, professional executive typography (#2E404D slate, 10.5pt body).
+3. Maximizing Executive Self-Containment (The 1-Page Comprehensive Briefing):
+   - The user states: "Esto es un resumen ejecutivo, se supone que en esta página leyéndola te enteras de todo ¿no?"
+   - How can this single executive page be engineered so that a CEO, CFO, or Board Director who reads ONLY this page grasps 100% of the domain's reality:
+     * Component A: Visual Scorecard (Score, Band, Annualized Loss Expectancy ALE P50).
+     * Component B Headline: Executive Diagnostic Statement (The single overarching finding).
+     * Component B Prose (The 4 Natural Chapters of Truth):
+       1. The Baseline Posture & Domain Criticality: What is this domain, what mission does it fulfill for the business, and what is its current maturity rating?
+       2. The Three Concrete Physical Vulnerabilities: What are the exact structural failure points discovered during inspection (explained in plain, clear, professional language)?
+       3. The Financial & Operational Reality: What is the hourly cost of downtime, the annual expected loss (ALE), and the realistic worst-case scenario (P90) with capped recovery hours?
+       4. The Diagnostic Verdict & Cost of Inaction: What is the definitive conclusion of the current state, and why is maintaining the status quo an unacceptable enterprise risk?
+     * Component C: The Diagnostic Triad Table (Operational Strength, Critical Gap, Systemic Bottleneck).
+
+NON-NEGOTIABLE LAWS:
+1. ZERO BUGS, ZERO ANTIPATTERNS, ZERO DEFECTS.
+2. ZERO HARDCODING (Scales to any enterprise 50M€ to 50B€, any vertical, any currency, any locale).
+3. 100% TECHNICAL ENGLISH CODEBASE (Zero Spanish in Python code).
+4. SPLIT-BRAIN ERADICATION (10-Tower Symmetry).
+5. OPENXML EDITORIAL PERFECTION.
 
 YOUR TASK:
-Synthesize a comprehensive, definitive Architectural Blueprint (RFC 040) in Markdown:
-
-1. Architectural Separation of Concerns:
-   - Define where macro-corporate financials (group revenue, enterprise-wide ALE) belong vs where domain technical annexes focus.
-   - Show how technical annexes should frame financial exposure: focusing on domain operational continuity, asset replacement value, vendor renewal price shocks, and unhedged cost of inaction.
-
-2. Actuarial Realism & Credibility Engine:
-   - Redesign how hourly outage cost and loss expectancies are modeled so they never look like invented round numbers, nor trivial micro-percentages.
-   - Show how domain criticality and asset tiering scale universally from mid-market to Fortune 10 without hardcoding.
-
-3. Executive Narrative Framework (Minto Pyramid Principle):
-   - Design the 4-part executive narrative structure in McKinsey/Gartner register:
-     * Paragraph 1: Operational Posture & Critical Dependencies (grounded in the physical reality of the tower).
-     * Paragraph 2: Core Architectural Dilemma & Contractual Horizons (hardware obsolescence, vendor licensing cliffs, regulatory compliance).
-     * Paragraph 3: Financial Exposure & Downtime Horizon (probabilistic operational loss and business interruption velocity).
-     * Paragraph 4: Modernization Mandate & Strategic ROI (the business case for transformation and operational stabilization).
-   - Provide the complete, pristine bilingual templates for `engine_config/locales.json` (Spanish and English).
-
-4. Production Implementation Plan:
-   - Detail the exact files to be updated (`payload_to_ast.py`, `downtime_calibrator.py`, `locales.json`, etc.).
-   - Provide concrete, production-ready Python code snippets in 100% Technical English.
+Synthesize an authoritative Architectural Blueprint (RFC 044) in Markdown:
+1. Pure AS-IS Editorial Principles: Define the exact boundary rules that eliminate TO-BE / TO-DO contamination while maximizing executive diagnostic value.
+2. Re-architected Paragraph 4 (The Diagnostic Verdict & Cost of Inaction):
+   - Design the narrative structure and dynamic variables.
+   - Craft the bilingual templates for `engine_config/locales.json` in plain, human, professional Spanish and English.
+   - Show how it adapts across all 10 capability towers (T1..T10) based on their specific risk posture.
+3. Review of the Entire Executive Summary Flow: Verify how Components A, B, and C combine to deliver the ultimate 1-page self-contained briefing.
+4. Concrete, production-ready Python code modifications in 100% Technical English.
 """
 
-    print(f"Requesting RFC 040 Master Architectural Blueprint from {model_name}...")
+    print(f"Requesting RFC 044 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_040_EXECUTIVE_REALISM_AND_ACTUARIAL_CREDIBILITY_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_044_PURE_ASIS_EXECUTIVE_ALIGNMENT_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 040 MASTER ARCHITECTURAL BLUEPRINT")
+    print("GEMINI-4-ARGON: RFC 044 PURE AS-IS EXECUTIVE SUMMARY ALIGNMENT")
     print("=" * 80)
     print(response.text)
     print("=" * 80)

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Architectural Design & Strategy Formulation by gemini-4-argon for Table Auto-Fit & Risk Presentation."""
+"""Argon-4 Master Consultation: Visual Bullet-Point Finding Formatting & Vertical Budget Verification.
+
+Validates the user's editorial insight:
+"¿las vulnerabilidades no deberían estar en bullets para facilitar su lectura en lugar de en un párrafo gigante?"
+"""
 
 from __future__ import annotations
 
@@ -16,46 +20,80 @@ from assessment_engine.infrastructure.genai_client import (
     get_model,
 )
 
-client = create_genai_client()
-model_name = get_model(ModelTier.REASONING)
 
-prompt = """
-Role: Chief Risk Officer, Senior Strategy Partner (McKinsey/Gartner) & Principal Compiler Architect.
+def main() -> None:
+    client = create_genai_client()
+    model_name = get_model(ModelTier.REASONING)
 
-CONTEXT & PROBLEM STATEMENT:
-The user has reviewed the generated deliverable and provided critical qualitative and visual feedback:
-1. Table Width Auto-Fit:
-   - "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico" (3 columns) and "Perfil de Madurez por Dominio Tecnológico" (3 columns) look poorly proportioned when Word leaves column widths arbitrary. Columns must auto-fit to content with proportional width distribution (e.g. short scores getting compact widths, long gap analysis getting wide wrapping space).
-2. Elimination of Cramped Risk Tables:
-   - The user states: "Catálogo Priorizado de Riesgos should NOT be in a cramped table. It looks horrible and is poorly communicated. Someone reading a risk wants to see it clearly, understand the risk and impact, and understand perfectly how its financial cost was calculated (probability, downtime, hourly rate, secondary losses), narrated in clear prose or structured bullets, not squeezed into table cells."
-3. Risk Organization & Hierarchy:
-   - Should risks be grouped by Technology Pillars, or is there a vastly superior organizational structure?
-   - Compare:
-     * Architecture A: Grouped by the 3 Strategic Portfolios / Tiers (Tier 1: Critical Modernization, Tier 2: Operational Optimization, Tier 3: Maintenance Backlog), with risks sorted by ALE descending inside each tier.
-     * Architecture B: Pure Global ALE Ranking (from #1 highest financial loss to lowest), with Tier and Pillar badges.
-     * Architecture C: Grouped by Technology Pillar.
-   - Analyze from both a Board/CFO capital allocation perspective and an engineering audit perspective.
-4. Universal Zero-Hardcoding Mandate:
-   - Must scale seamlessly from a 50-person mid-market firm to a Fortune 10 conglomerate across any industry vertical (Banking, Energy, Healthcare, Tech, Manufacturing, Retail) in any language and any ISO 4217 currency.
-5. 100% Technical English Codebase:
-   - Zero Spanish words anywhere in Python code identifiers, comments, docstrings, or schemas.
+    prompt = """
+Role: Chief Executive Document Designer & Principal OpenXML Compiler Architect (Gartner Research VP / McKinsey Executive Design Director / Google Core Infrastructure).
+
+USER CRITIQUE & EDITORIAL DIRECTION:
+The user raised an essential editorial and visual design question:
+"una última duda o aclaración: ¿las vulnerabilidades no deberían estar en bullets para facilitar su lectura en lugar de en un párrafo gigante?"
+
+ARCHITECTURAL EVALUATION:
+1. Cognitive Ergonomics & Executive Scanability:
+   - The user is 100% correct: Embedding 3 to 5 multi-clause technical findings into a single dense, monolithic paragraph creates an unreadable "wall of text" where executive eyes glaze over.
+   - Transforming the findings section into:
+     * A clean, concise lead-in sentence.
+     * Followed by clean, high-impact bullet items (`ParagraphNode(text=..., style="List Bullet", space_after=2)`).
+     * Where each bullet starts with a bold technical topic/category and a concise description of the failure vector:
+       `• **[Vulnerability Focus]:** [Operational failure vector and direct business impact].`
+   - This achieves instant executive scanability in under 5 seconds.
+
+2. Vertical Layout Budget & Page 3 Containment:
+   - In Word OpenXML with 10.5pt font, 1-inch margins, and 0pt before / 2pt after list bullets:
+     * Scorecard Table: ~55pt
+     * Headline: ~18pt
+     * Paragraph 1 (Posture & Mission): ~42pt
+     * Bullet Lead-in: ~14pt
+     * 3-4 Bullets (with 2pt spacing): ~50-65pt
+     * Paragraph 3 (Actuarial Latent Exposure): ~50pt
+     * Paragraph 4 (AS-IS Diagnostic Verdict): ~45pt
+     * Diagnostic Triad Table (8pt font): ~55pt
+     * Spacers: ~30pt
+     * Total Content Height: ~360pt to ~380pt.
+     * Total Available Printable Height on A4 (297mm - 50.8mm margins): ~698pt.
+   - Result: Content consumes ~54% of Page 3. It will NEVER overflow onto Page 4!
+
+3. Dynamic Cardinality Integration:
+   - If K = 0: Single clean paragraph affirming control without bullets.
+   - If K = 1: Lead-in sentence + 1 bullet item.
+   - If K >= 2: Lead-in sentence + K bullet items (capped at 4 for executive summary density).
+
+NON-NEGOTIABLE LAWS:
+1. Zero bugs, zero antipatterns.
+2. Zero hardcoding (scales across any tenant, vertical, currency, or locale).
+3. 100% Technical English codebase (zero Spanish in Python code).
+4. Split-brain eradication across all 10 capability towers.
+5. OpenXML layout perfection.
 
 YOUR TASK:
-Provide an exhaustive, definitive architectural blueprint addressing:
-1. Table Layout & Auto-Fit Engine: Exact mathematical specifications for proportional column widths in `TableNode` and `DocxCompiler`.
-2. Risk Narrative Card Architecture: Complete visual and structural anatomy of each risk block in prose/bullets (Header, Badges, Vulnerability Prose, Operational Impact, Actuarial Cost Derivation Breakdown, Audit Evidence).
-3. Strategic Hierarchy Recommendation: The definitive verdict on how risks should be ordered and grouped to maximize Board decision-making authority.
-4. Implementation Roadmap: Step-by-step technical plan to execute these changes with zero bugs, zero anti-patterns, and zero hardcoding.
+Synthesize an authoritative Architectural Addendum (RFC 046-Addendum) in Markdown:
+1. Define the AST node generation pattern for the bullet-point findings layout.
+2. Provide the bilingual templates for `engine_config/locales.json` in Spanish (`es`) and English (`en`).
+3. Provide the exact Python implementation snippet in 100% Technical English for `payload_to_ast.py`.
+4. Confirm vertical containment verification on Page 3.
 """
 
-print(f"Requesting architectural design blueprint from {model_name}...")
-response = client.models.generate_content(
-    model=model_name,
-    contents=prompt,
-)
+    print(f"Requesting Bullet-Point Layout Verification from {model_name}...")
+    response = client.models.generate_content(
+        model=model_name,
+        contents=prompt,
+    )
 
-print("\n" + "=" * 80)
-print("GEMINI-4-ARGON: STRATEGIC BLUEPRINT FOR TABLE AUTO-FIT & RISK NARRATIVE CARDS")
-print("=" * 80)
-print(response.text)
-print("=" * 80)
+    out_file = REPO_ROOT / "docs/architecture/RFC_046_ADDENDUM_BULLET_FINDINGS_ARGON.md"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(response.text, encoding="utf-8")
+
+    print("\n" + "=" * 80)
+    print("GEMINI-4-ARGON: BULLET-POINT FINDINGS & VERTICAL BUDGET AUDIT")
+    print("=" * 80)
+    print(response.text)
+    print("=" * 80)
+    print(f"\nSaved to: {out_file.relative_to(REPO_ROOT)}")
+
+
+if __name__ == "__main__":
+    main()
