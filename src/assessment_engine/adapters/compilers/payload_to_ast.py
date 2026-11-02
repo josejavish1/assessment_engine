@@ -962,8 +962,13 @@ class PayloadToASTBridge:
                 parts = b_text.split(":", 1)
                 formatted_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}."
             else:
-                prefix = t("exposure_vector_prefix", locale=meta_lang, index=f_idx + 1)
-                formatted_bullet = f"**{prefix}:** {b_text}."
+                words = b_text.split()
+                if len(words) > 4:
+                    lead_phrase = " ".join(words[:3])
+                    rest_phrase = " ".join(words[3:])
+                    formatted_bullet = f"**{lead_phrase}** {rest_phrase}."
+                else:
+                    formatted_bullet = f"{b_text}."
             nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", space_after=6 if is_last else 2))
 
         # 3. Paragraph 3: Actuarial Latent Exposure

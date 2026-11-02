@@ -132,23 +132,27 @@ def derive_in_memory_maturity_matrix(
         band_info = resolve_maturity_band(exact_score, ANNEX_MATURITY_BANDS, locale=doc_lang)
         band_label = band_info.get("label", "Defined")
 
-        # Extract or derive executive justification block
+        # Extract balanced executive justification block (Strength + Gap)
         findings = pillar.get("health_check_asis", [])
+        lbl_strength = t("calib_label_operational_strength", locale=doc_lang)
+        lbl_gap = t("calib_label_operational_gap", locale=doc_lang)
+
+        asis_desc = (pillar.get("asis_architecture_description") or "").strip()
+        if "." in asis_desc:
+            clean_strength = asis_desc.split(".")[0].strip() + "."
+        else:
+            clean_strength = asis_desc
+
         if findings:
             top_f = findings[0]
             f_text = (top_f.get("finding") or top_f.get("risk_observed") or "").strip()
-            r_text = (top_f.get("business_risk") or top_f.get("impact") or "").strip()
             clean_f = re.split(r"(?<!\d)[\.。\u3002](?!\d)\s*", f_text)[0].strip()
-            clean_r = re.split(r"(?<!\d)[\.。\u3002](?!\d)\s*", r_text)[0].strip()
-            clean_r_low = clean_r[:1].lower() + clean_r[1:] if clean_r else ""
-            justification = t(
-                "exec_priority_domain_synthesis",
-                locale=doc_lang,
-                finding=clean_f.rstrip("."),
-                risk=clean_r_low.rstrip("."),
-            )
+            if clean_strength:
+                justification = f"• **{lbl_strength}:** {clean_strength}\n\n• **{lbl_gap}:** {clean_f.rstrip('.')}."
+            else:
+                justification = f"• **{lbl_gap}:** {clean_f.rstrip('.')}."
         else:
-            justification = pillar.get("asis_architecture_description", t("default_evaluated_assets", locale=doc_lang))
+            justification = f"• **{lbl_strength}:** {clean_strength}" if clean_strength else t("default_evaluated_assets", locale=doc_lang)
 
         rows.append(
             {

@@ -653,6 +653,26 @@ class DocxCompiler(DocumentCompiler):
 
             fldSimple = OxmlElement('w:fldSimple')
             fldSimple.set(qn('w:instr'), 'PAGE')
+
+            # Inner run with identical font, size, and color to guarantee uniform footer rendering
+            r_page_num = OxmlElement('w:r')
+            rPr_page = OxmlElement('w:rPr')
+            rFonts_page = OxmlElement('w:rFonts')
+            rFonts_page.set(qn('w:ascii'), 'Arial')
+            rFonts_page.set(qn('w:hAnsi'), 'Arial')
+            rFonts_page.set(qn('w:cs'), 'Arial')
+            rPr_page.append(rFonts_page)
+
+            sz_page = OxmlElement('w:sz')
+            sz_page.set(qn('w:val'), '17')  # 8.5 pt
+            rPr_page.append(sz_page)
+
+            color_page = OxmlElement('w:color')
+            color_page.set(qn('w:val'), '94A3B8')
+            rPr_page.append(color_page)
+
+            r_page_num.append(rPr_page)
+            fldSimple.append(r_page_num)
             p_foot._p.append(fldSimple)
         except (AttributeError, KeyError, IndexError, TypeError) as ex:
             logger.warning("Document footer decoration encountered non-fatal layout exception: %s", ex)
@@ -876,15 +896,13 @@ class DocxCompiler(DocumentCompiler):
             run_page.font.color.rgb = RGBColor(0, 114, 188)
             return
 
-        # Map string alignment: headers, short labels and bullets must be left-aligned
+        # Map string alignment: short labels stay left-aligned, all substantive body text is justified
         clean_text_val = node.text.strip()
-        is_short_or_label = (
-            len(clean_text_val) < 85
-            or clean_text_val.endswith(":")
-            or clean_text_val.startswith("#")
-            or node.style in ("List Bullet", "Bullet")
+        is_short_label = (
+            len(clean_text_val) < 50
+            and (clean_text_val.endswith(":") or clean_text_val.startswith("#"))
         )
-        if is_short_or_label:
+        if is_short_label:
             align_const = WD_ALIGN_PARAGRAPH.LEFT
         else:
             align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
@@ -892,10 +910,12 @@ class DocxCompiler(DocumentCompiler):
         align_str = node.align.upper()
         if align_str == "CENTER":
             align_const = WD_ALIGN_PARAGRAPH.CENTER
-        elif align_str == "LEFT":
-            align_const = WD_ALIGN_PARAGRAPH.LEFT
         elif align_str == "RIGHT":
             align_const = WD_ALIGN_PARAGRAPH.RIGHT
+        elif align_str == "JUSTIFY":
+            align_const = WD_ALIGN_PARAGRAPH.JUSTIFY
+        elif align_str == "LEFT" and is_short_label:
+            align_const = WD_ALIGN_PARAGRAPH.LEFT
 
         p.paragraph_format.alignment = align_const
 

@@ -168,22 +168,23 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
 
     fd_core = sanitize_semantic_prose(fd_core, doc_lang).strip()
 
-    # Resolve unlocking transformation lever from roadmap / projects_todo
-    pjs = p.get("projects_todo", [])
-    top_pj = pjs[0] if pjs else {}
-    pj_name = top_pj.get("name", "") if isinstance(top_pj, dict) else str(top_pj)
-    pj_desc = top_pj.get("description", top_pj.get("scope", "")) if isinstance(top_pj, dict) else ""
+    lbl_strength = t("calib_label_operational_strength", locale=doc_lang)
+    lbl_gap = t("calib_label_operational_gap", locale=doc_lang)
 
-    if pj_name and pj_desc:
-        lever_text = f"{pj_name}: {pj_desc}"
-    elif pj_name:
-        lever_text = pj_name
+    # Extract established architectural baseline as positive operational strength
+    asis_desc = (p.get("asis_architecture_description") or "").strip()
+    if "." in asis_desc:
+        clean_strength = asis_desc.split(".")[0].strip() + "."
     else:
-        lever_text = top_f.get("target_state") or t("calib_lever_default_action", locale=doc_lang)
+        clean_strength = asis_desc
+    clean_strength = sanitize_semantic_prose(clean_strength, doc_lang).strip()
 
-    lever_text = sanitize_semantic_prose(lever_text, doc_lang).strip()
-
-    return f"• **{lbl_limit}:** {fd_core.rstrip('.')}.\n\n• **{lbl_lever}:** {lever_text.rstrip('.')}."
+    if clean_strength and fd_core:
+        return f"• **{lbl_strength}:** {clean_strength}\n\n• **{lbl_gap}:** {fd_core.rstrip('.')}."
+    elif fd_core:
+        return f"• **{lbl_gap}:** {fd_core.rstrip('.')}."
+    else:
+        return f"• **{lbl_strength}:** {clean_strength}"
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str) -> str:
