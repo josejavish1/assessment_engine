@@ -573,59 +573,40 @@ class PayloadToASTBridge:
             ]
         risk_count = max(len(risks_list), 1)
 
-        summary_body = exec_sum.get("summary_body")
-        if summary_body:
-            paragraphs = [p.strip() for p in summary_body.split("\n\n") if p.strip()]
-            target_p_idx = 1 if len(paragraphs) > 1 else 0
-            for p_idx, p_text in enumerate(paragraphs):
-                # Ensure the CIO actuarial justification is always woven into the narrative
-                if p_idx == target_p_idx:
-                    has_rate = (hourly_formatted in p_text) or ("/h" in p_text)
-                    if not has_rate:
-                        actuarial_clause = t(
-                            "actuarial_cio_justification_template",
-                            locale=meta_lang,
-                            ale=f"{currency} {ale_formatted}",
-                            p90=f"{currency} {p90_formatted}",
-                            hourly_cost=f"{currency} {hourly_formatted}/h",
-                            risk_count=risk_count,
-                        )
-                        p_text = f"{p_text} {actuarial_clause}"
-                nodes.append(ParagraphNode(text=p_text, space_after=6))
-        else:
-            p1_text = t(
-                "exec_narrative_p1",
-                locale=meta_lang,
-                tower_name=tower_name,
-                score_display=score_display,
-                global_band=global_band,
-                client_name=client_name,
-            )
-            p2_text = t(
-                "exec_narrative_p2",
-                locale=meta_lang,
-                hourly_cost=f"{currency} {hourly_formatted}/h",
-            )
-            p3_text = t(
-                "exec_narrative_p3",
-                locale=meta_lang,
-                ale_formatted=f"{currency} {ale_formatted}",
-                ale_hours=ale_hours_str,
-                p90_formatted=f"{currency} {p90_formatted}",
-                p90_hours=p90_hours_str,
-            )
-            p4_text = t(
-                "exec_narrative_p4",
-                locale=meta_lang,
-                tower_name=tower_name,
-                client_name=client_name,
-            )
+        # Build 4 clean, well-paced pedagogical paragraphs
+        p1_text = t(
+            "exec_narrative_p1",
+            locale=meta_lang,
+            tower_name=tower_name,
+            score_display=score_display,
+            global_band=global_band,
+            client_name=client_name,
+        )
+        p2_text = t(
+            "exec_narrative_p2",
+            locale=meta_lang,
+            hourly_cost=f"{currency} {hourly_formatted}/h",
+            client_name=client_name,
+        )
+        p3_text = t(
+            "exec_narrative_p3",
+            locale=meta_lang,
+            ale_formatted=f"{currency} {ale_formatted}",
+            ale_hours=ale_hours_str,
+            p90_formatted=f"{currency} {p90_formatted}",
+            p90_hours=p90_hours_str,
+        )
+        p4_text = t(
+            "exec_narrative_p4",
+            locale=meta_lang,
+            tower_name=tower_name,
+            client_name=client_name,
+        )
 
-            nodes.append(ParagraphNode(text=p1_text, space_after=6))
-            nodes.append(ParagraphNode(text=p2_text, space_after=6))
-            nodes.append(ParagraphNode(text=p3_text, space_after=6))
-            nodes.append(ParagraphNode(text=p4_text, space_after=6))
-
+        nodes.append(ParagraphNode(text=p1_text, space_after=6))
+        nodes.append(ParagraphNode(text=p2_text, space_after=6))
+        nodes.append(ParagraphNode(text=p3_text, space_after=6))
+        nodes.append(ParagraphNode(text=p4_text, space_after=8))
         nodes.append(SpacerNode(points=8))
 
         # -------------------------------------------------------------
@@ -675,17 +656,6 @@ class PayloadToASTBridge:
         ]
         nodes.append(TableNode(rows=triad_rows, col_widths=[0.32, 0.68]))
         nodes.append(SpacerNode(points=14))
-
-        # Append subtle forensic cross-reference linking to Chapter 4 and Appendix A
-        cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
-        nodes.append(
-            ParagraphNode(
-                text=f"*{cross_ref_text}*",
-                italic=True,
-                font_size=9.5,
-                text_color_rgb=[71, 85, 105],
-            )
-        )
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 1
         nodes.append(PageBreakNode())

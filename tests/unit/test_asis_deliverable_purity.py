@@ -45,8 +45,8 @@ def test_compiled_asis_document_purity(tmp_path: Path) -> None:
     assert any("Contenido" in t or "Índice" in t for t in all_p_texts)
     assert len(doc.element.xpath("//w:sdt")) >= 1
 
-    # Task 3: Chapter 1 Forensic Cross-Reference & Purity
-    assert "Para consultar la parametrización actuarial detallada" in full_text or "Capítulo 4" in full_text
+    # Task 3: Chapter 1 Forensic Purity
+    assert "Para consultar la parametrización actuarial detallada" not in full_text
     assert "quiere alcanzar el Nivel 4" not in full_text
 
     # Task 4: Chapter 2 Streamlining
