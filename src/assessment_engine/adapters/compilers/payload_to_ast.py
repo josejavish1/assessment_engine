@@ -352,10 +352,13 @@ class PayloadToASTBridge:
 
         annex_prefix = t("annex_technical_prefix", locale=meta_lang)
         nodes.append(
-            HeadingNode(
+            ParagraphNode(
                 text=f"{annex_prefix} {localized_tower_name}",
-                level=1,
-                primary_color_rgb=[0, 114, 188],
+                bold=True,
+                font_size=16.0,
+                text_color_rgb=[0, 114, 188],
+                style="cover_subtitle",
+                space_after=24,
             )
         )
 
@@ -700,8 +703,20 @@ class PayloadToASTBridge:
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
             from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
             resolver = get_taxonomy_resolver()
-            raw_pid = str(p.get("pillar_id") or "")
-            raw_pname = str(p.get("pillar_name") or "Pillar")
+            raw_pid = str(
+                p.get("pillar_id")
+                or p.get("id")
+                or p.get("code")
+                or ""
+            )
+            raw_pname = str(
+                p.get("pillar_name")
+                or p.get("pillar_label")
+                or p.get("name")
+                or p.get("label")
+                or p.get("title")
+                or "Pillar"
+            )
             p_name = resolver.resolve_pillar_by_any_reference(
                 raw_pid or raw_pname,
                 default=raw_pname,

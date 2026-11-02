@@ -117,8 +117,18 @@ def build_cmmi_methodology_and_capabilities(
     resolver = get_taxonomy_resolver()
 
     for p_idx, p in enumerate(pillars_list):
-        raw_pid = str(p.get("pillar_id") or "")
-        raw_pname = str(p.get("pillar_name") or "Pillar")
+        raw_pid = str(
+            p.get("pillar_id")
+            or p.get("id")
+            or p.get("code")
+            or ""
+        )
+        raw_pname = str(
+            p.get("pillar_name")
+            or p.get("pillar_label")
+            or p.get("name")
+            or "Pillar"
+        )
         p_name = resolver.resolve_pillar_by_any_reference(
             raw_pid or raw_pname,
             default=raw_pname,

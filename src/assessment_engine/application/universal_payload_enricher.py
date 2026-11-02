@@ -165,7 +165,14 @@ class UniversalPayloadEnricher:
         )
 
         for pillar in pillars:
-            pillar_id = pillar.get("pillar_id", "P0")
+            raw_id = pillar.get("pillar_id") or pillar.get("id") or pillar.get("code")
+            if not raw_id:
+                for k, v in list(pillar.items()):
+                    if k.endswith("_id") and isinstance(v, str) and v.startswith("T"):
+                        raw_id = v
+                        break
+            pillar_id = str(raw_id or "P0")
+
             raw_score = float(pillar.get("raw_score", pillar.get("score", 0.0)))
 
             # Resolve localized labels dynamically

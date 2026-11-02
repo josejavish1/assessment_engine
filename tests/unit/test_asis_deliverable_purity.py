@@ -40,8 +40,10 @@ def test_compiled_asis_document_purity(tmp_path: Path) -> None:
     footer_text = " ".join(p.text for p in first_footer.paragraphs)
     assert "STRATEGIC ADVISORY" in footer_text or "Confidencial" in footer_text
 
-    # Task 2: Native TOC
-    assert any("Contenido" in p.text or "Índice" in p.text for p in doc.paragraphs)
+    # Task 2: Native Word SDT Table of Contents
+    all_p_texts = [p.text for p in doc.element.xpath("//w:p")]
+    assert any("Contenido" in t or "Índice" in t for t in all_p_texts)
+    assert len(doc.element.xpath("//w:sdt")) >= 1
 
     # Task 3: Chapter 1 Forensic Cross-Reference & Purity
     assert "Para consultar la parametrización actuarial detallada" in full_text or "Capítulo 4" in full_text

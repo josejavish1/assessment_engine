@@ -227,6 +227,7 @@ class PureTaxonomyResolver:
         self._localized_name_to_id: dict[str, tuple[str, str]] = {}
         self._scoped_name_to_id: dict[tuple[str, str], tuple[str, str]] = {}
         self._capabilities_index: dict[str, dict[str, str]] = {}
+        self._kpis_index: dict[str, dict[str, str]] = {}
 
         if catalog is not None and isinstance(catalog, Mapping):
             self._concepts, self._taxonomy = normalize_taxonomy_catalog(catalog)
@@ -282,6 +283,32 @@ class PureTaxonomyResolver:
                         self._capabilities_index[loc_text_norm] = self._capabilities_index[
                             c_canon_lower
                         ]
+
+        # Index leaf KPI codes from tower definitions
+        from assessment_engine.infrastructure.runtime_paths import ROOT
+        towers_dir = ROOT / "engine_config" / "towers"
+        if towers_dir.exists():
+            import json
+            for t_dir in towers_dir.iterdir():
+                if t_dir.is_dir():
+                    candidates = [
+                        t_dir / f"tower_definition_{t_dir.name.upper()}.json",
+                        t_dir / f"tower_definition_{t_dir.name.lower()}.json",
+                        t_dir / f"tower_definition_{t_dir.name}.json",
+                    ]
+                    def_file = next((f for f in candidates if f.exists()), None)
+                    if def_file is not None:
+                        try:
+                            t_def = json.loads(def_file.read_text(encoding="utf-8-sig"))
+                            for p in t_def.get("pillars", []):
+                                for k in p.get("kpis", []):
+                                    k_id = str(k.get("kpi_id") or "").strip().upper()
+                                    k_name = str(k.get("kpi_name") or "").strip()
+                                    if k_id and k_name:
+                                        self._kpis_index[k_id] = {"es": k_name, "en": k_name}
+                                        self._capabilities_index[k_id.lower()] = {"es": k_name, "en": k_name}
+                        except Exception as e:
+                            logger.debug("Failed loading tower definition for KPI indexing: %s", e)
 
     @staticmethod
     def _normalize_locale(locale: str) -> str:
@@ -376,8 +403,29 @@ class PureTaxonomyResolver:
             return default
 
         norm_cap = str(cap_name).strip()
+        norm_cap_upper = norm_cap.upper()
         norm_cap_lower = norm_cap.lower()
         norm_locale = self._normalize_locale(locale)
+
+        if norm_cap_upper in self._kpis_index:
+            loc_dict = self._kpis_index[norm_cap_upper]
+            if norm_locale in loc_dict:
+                return loc_dict[norm_locale]
+            if "en" in loc_dict:
+                return loc_dict["en"]
+            if "es" in loc_dict:
+                return loc_dict["es"]
+
+        if " - " in norm_cap_upper:
+            code_prefix = norm_cap_upper.split(" - ")[0].strip()
+            if code_prefix in self._kpis_index:
+                loc_dict = self._kpis_index[code_prefix]
+                if norm_locale in loc_dict:
+                    return loc_dict[norm_locale]
+                if "en" in loc_dict:
+                    return loc_dict["en"]
+                if "es" in loc_dict:
+                    return loc_dict["es"]
 
         if norm_cap_lower in self._capabilities_index:
             loc_dict = self._capabilities_index[norm_cap_lower]
@@ -385,6 +433,8 @@ class PureTaxonomyResolver:
                 return loc_dict[norm_locale]
             if "en" in loc_dict:
                 return loc_dict["en"]
+            if "es" in loc_dict:
+                return loc_dict["es"]
 
         return default or cap_name
 

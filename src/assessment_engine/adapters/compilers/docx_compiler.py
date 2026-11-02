@@ -681,16 +681,74 @@ class DocxCompiler(DocumentCompiler):
             pass
 
     def _compile_toc(self, doc: Document, node: Any) -> None:
-        """Compiles an executive Table of Contents with polished tab leaders and typography."""
+        """Compiles a native Word OpenXML Table of Contents field inside a Structured Document Tag."""
+        # 1. Enable auto-update fields in settings.xml
+        try:
+            settings_element = doc.settings.element
+            update_fields = settings_element.find(qn("w:updateFields"))
+            if update_fields is None:
+                update_fields = OxmlElement("w:updateFields")
+                compat = settings_element.find(qn("w:compat"))
+                if compat is not None:
+                    compat.addprevious(update_fields)
+                else:
+                    settings_element.append(update_fields)
+            update_fields.set(qn("w:val"), "true")
+        except Exception as ex:
+            logger.debug("Failed setting updateFields in settings: %s", ex)
+
+        # 2. Top-level SDT container recognized by Microsoft Word
+        sdt = OxmlElement("w:sdt")
+        sdt_pr = OxmlElement("w:sdtPr")
+        doc_part_obj = OxmlElement("w:docPartObj")
+        doc_part_gallery = OxmlElement("w:docPartGallery")
+        doc_part_gallery.set(qn("w:val"), "Table of Contents")
+        doc_part_unique = OxmlElement("w:docPartUnique")
+        doc_part_obj.append(doc_part_gallery)
+        doc_part_obj.append(doc_part_unique)
+        sdt_pr.append(doc_part_obj)
+        sdt.append(sdt_pr)
+
+        sdt_content = OxmlElement("w:sdtContent")
+        sdt.append(sdt_content)
+
+        # 3. TOC Title (not Heading 1 so it does not self-index)
         p_title = doc.add_paragraph()
         p_title.paragraph_format.space_before = Pt(0)
         p_title.paragraph_format.space_after = Pt(14)
+        p_title.paragraph_format.keep_with_next = True
         r_title = p_title.add_run(getattr(node, "title", "Table of Contents"))
         set_run_font_comprehensive(r_title, font_name="Arial")
         r_title.font.size = Pt(16)
         r_title.font.bold = True
         r_title.font.color.rgb = RGBColor(0, 114, 188)
+        sdt_content.append(p_title._p)
 
+        # 4. TOC Complex Field Paragraph (begin + instrText + separate)
+        field_p = doc.add_paragraph()
+        field_p.paragraph_format.space_before = Pt(2)
+        field_p.paragraph_format.space_after = Pt(2)
+
+        r_begin = field_p.add_run()
+        fld_begin = OxmlElement("w:fldChar")
+        fld_begin.set(qn("w:fldCharType"), "begin")
+        fld_begin.set(qn("w:dirty"), "true")
+        r_begin._r.append(fld_begin)
+
+        r_instr = field_p.add_run()
+        instr = OxmlElement("w:instrText")
+        instr.set(qn("xml:space"), "preserve")
+        depth = getattr(node, "depth", 3)
+        instr.text = f' TOC \\o "1-{depth}" \\h \\z \\u '
+        r_instr._r.append(instr)
+
+        r_sep = field_p.add_run()
+        fld_sep = OxmlElement("w:fldChar")
+        fld_sep.set(qn("w:fldCharType"), "separate")
+        r_sep._r.append(fld_sep)
+        sdt_content.append(field_p._p)
+
+        # 5. Populate initial preview entries with dot leaders
         entries = getattr(node, "entries", [])
         for entry in entries:
             p_e = doc.add_paragraph()
@@ -703,7 +761,8 @@ class DocxCompiler(DocumentCompiler):
             if lvl > 1:
                 p_e.paragraph_format.left_indent = Pt((lvl - 1) * 12)
 
-            r_title_e = p_e.add_run(getattr(entry, "title", ""))
+            clean_entry_title = self._strip_heading_number_prefix(getattr(entry, "title", ""))
+            r_title_e = p_e.add_run(clean_entry_title)
             set_run_font_comprehensive(r_title_e, font_name="Arial")
             r_title_e.font.size = Pt(9.5)
             r_title_e.font.bold = (lvl == 1)
@@ -711,13 +770,43 @@ class DocxCompiler(DocumentCompiler):
 
             p_e.add_run("\t")
 
-            r_page = p_e.add_run(str(getattr(entry, "page", "")))
+            raw_page = str(getattr(entry, "page", "")).strip()
+            r_page = p_e.add_run(raw_page)
             set_run_font_comprehensive(r_page, font_name="Arial")
             r_page.font.size = Pt(9.5)
             r_page.font.bold = (lvl == 1)
             r_page.font.color.rgb = RGBColor(100, 116, 139)
+            sdt_content.append(p_e._p)
+
+        # Close TOC Complex Field
+        end_p = doc.add_paragraph()
+        end_p.paragraph_format.space_before = Pt(0)
+        end_p.paragraph_format.space_after = Pt(14)
+        r_end = end_p.add_run()
+        fld_end = OxmlElement("w:fldChar")
+        fld_end.set(qn("w:fldCharType"), "end")
+        r_end._r.append(fld_end)
+        sdt_content.append(end_p._p)
+
+        # Insert complete SDT container at current document sequential position
+        p_anchor = doc.add_paragraph()
+        p_anchor._p.addprevious(sdt)
+        p_anchor._p.getparent().remove(p_anchor._p)
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
+        if node.style == "cover_subtitle":
+            p = doc.add_paragraph()
+            p.paragraph_format.page_break_before = False
+            p.paragraph_format.keep_with_next = True
+            p.paragraph_format.space_before = Pt(6)
+            p.paragraph_format.space_after = Pt(24)
+            run = p.add_run(node.text)
+            set_run_font_comprehensive(run, font_name="Arial")
+            run.font.size = Pt(16.0)
+            run.bold = True
+            run.font.color.rgb = RGBColor(0, 114, 188)
+            return
+
         if node.text.strip().lower() in ("table of contents", "[toc]"):
             # Inject native Word TOC field (simple field xml)
             from docx.oxml import OxmlElement
@@ -813,10 +902,25 @@ class DocxCompiler(DocumentCompiler):
             color_rgb=node.text_color_rgb,
         )
 
+    _HEADING_NUMBER_PREFIX_RE = re.compile(
+        r"^\s*(?:(?:cap[íi]tulo|chapter|secci[óo]n|section)\s+)?\d+(?:\.\d+)*\.?\s*[-–—:]?\s*",
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _strip_heading_number_prefix(cls, title: str) -> str:
+        """Strip manual leading numeric prefixes (e.g. '1. ', '3.1. ') from heading text."""
+        if not title:
+            return ""
+        cleaned = cls._HEADING_NUMBER_PREFIX_RE.sub("", title.strip())
+        return cleaned if cleaned else title.strip()
+
     def _compile_heading(self, doc: Document, node: HeadingNode) -> None:
         import re
         is_appendix_main = getattr(node, "is_appendix", False)
         is_appendix_sub = bool(re.match(r"^[A-Z]\.\d+\s", node.text))
+
+        clean_text = self._strip_heading_number_prefix(node.text)
 
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -881,7 +985,7 @@ class DocxCompiler(DocumentCompiler):
             if node.primary_color_rgb
             else RGBColor(0, 114, 188)
         )
-        run = p.add_run(node.text.strip())
+        run = p.add_run(clean_text)
         run.bold = True
         set_run_font_comprehensive(run, font_name="Arial")
         run.font.size = Pt(font_size_pt)
