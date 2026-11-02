@@ -839,26 +839,13 @@ class PayloadToASTBridge:
             )
         )
 
-        # 3.1 Direct Introduction (Consulting-grade synthesis)
-        intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang)
+        # 3. Direct Introduction (Accessible and clear executive prose)
+        tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
+        intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
-        # 3.2 Global Dashboard
-        nodes.append(
-            HeadingNode(
-                text=t("dashboard_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(
-            ParagraphNode(
-                text=t("dashboard_intro", locale=meta_lang)
-            )
-        )
-
-        #
+        # Unified Maturity Score Card (Autofit)
         nodes.append(
             TableNode(
                 rows=[
@@ -899,7 +886,9 @@ class PayloadToASTBridge:
                             ),
                         ]
                     ),
-                ]
+                ],
+                autofit=True,
+                col_widths=[0.5, 0.5],
             )
         )
         nodes.append(SpacerNode(points=5))
@@ -910,29 +899,29 @@ class PayloadToASTBridge:
                 italic=True,
             )
         )
-        nodes.append(SpacerNode(points=10))
+        nodes.append(SpacerNode(points=8))
 
-        # Read resilience data.
-        res_reading = t("resilience_reading", locale=meta_lang)
-        nodes.append(ParagraphNode(text=f"**{res_reading}** {global_reading}"))
-        nodes.append(SpacerNode(points=15))
+        # Friendly pedagogical score explanation (replaces robotic resilience string)
+        if gs_val < 2.20:
+            score_expl_key = "score_explanation_band_low"
+        elif gs_val < 3.60:
+            score_expl_key = "score_explanation_band_mid"
+        else:
+            score_expl_key = "score_explanation_band_high"
 
-        health_title = t("health_matrix_title", locale=meta_lang)
-        nodes.append(
-            HeadingNode(
-                text=health_title,
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
+        max_score_formatted = format_number(5.0, locale=meta_lang, decimals=2)
+        score_expl = t(
+            score_expl_key,
+            locale=meta_lang,
+            global_score=display_score_str,
+            max_score=max_score_formatted,
+            client_name=client_name,
+            tower_name=tower_name,
         )
-        nodes.append(
-            ParagraphNode(
-                text=t("maturity_matrix_section_intro", locale=meta_lang),
-                italic=True,
-            )
-        )
-        nodes.append(SpacerNode(points=10))
+        nodes.append(ParagraphNode(text=score_expl))
+        nodes.append(SpacerNode(points=12))
 
+        # Unified Pillar Maturity Breakdown Table
         col_1_hdr = t("table_header_pillar_capacity", locale=meta_lang)
         col_2_hdr = t("table_header_score_asis", locale=meta_lang)
         col_3_hdr = t("table_header_status_level", locale=meta_lang)
@@ -948,10 +937,11 @@ class PayloadToASTBridge:
             )
         ]
 
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+
         for s_idx, p in enumerate(sorted(blueprint_data.get("pillars_analysis", []), key=lambda item: item.get("score", 0.0))):
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
-            from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-            resolver = get_taxonomy_resolver()
             raw_pid = str(
                 p.get("pillar_id")
                 or p.get("id")
@@ -960,19 +950,27 @@ class PayloadToASTBridge:
             )
             raw_pname = str(
                 p.get("pillar_name")
-                or p.get("pillar_label")
                 or p.get("name")
-                or p.get("label")
                 or p.get("title")
-                or "Pillar"
+                or ""
             )
+            if not raw_pid:
+                for k, v in p.items():
+                    if "id" in k.lower() and v:
+                        raw_pid = str(v)
+                        break
+            if not raw_pname:
+                for k, v in p.items():
+                    if "name" in k.lower() and v:
+                        raw_pname = str(v)
+                        break
+
             p_name = resolver.resolve_pillar_by_any_reference(
                 raw_pid or raw_pname,
-                default=raw_pname,
+                default=(raw_pname or raw_pid or "Pillar"),
                 locale=meta_lang,
             )
             p_score = float(p.get("score", 3.0))
-            
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
             
             # Map score to status and color via localized keys
@@ -1002,8 +1000,8 @@ class PayloadToASTBridge:
                 )
             )
 
-        nodes.append(TableNode(rows=health_rows, col_widths=[0.42, 0.18, 0.40]))
-        nodes.append(SpacerNode(points=15))
+        nodes.append(TableNode(rows=health_rows, autofit=True, col_widths=[0.48, 0.20, 0.32]))
+        nodes.append(SpacerNode(points=16))
 
     def _build_systemic_risk_section(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
         meta_lang = ctx["meta_lang"]
@@ -1286,12 +1284,15 @@ class PayloadToASTBridge:
                 logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
         # 4.3 Score Justification Matrix (from CSV or in-memory payload) with fallback mechanism
-        csv_mat_candidates = list(modules_dir.glob("*maturity*.csv")) if modules_dir.exists() else []
+        csv_mat_candidates = (
+            list(modules_dir.glob("*maturity*.csv"))
+            + list(modules_dir.glob("*matrix*.csv"))
+        ) if modules_dir.exists() else []
         csv_mat_path = csv_mat_candidates[0] if csv_mat_candidates else (modules_dir / "maturity_matrix.csv")
         if csv_mat_path.exists():
             # Ensure header collections are not empty to prevent the generation of malformed tables.
             mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
-            nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers, col_widths=[0.26, 0.14, 0.60]))
+            nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers, col_widths=[0.28, 0.14, 0.58]))
         elif blueprint_data and blueprint_data.get("pillars_analysis"):
             from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
                 derive_in_memory_maturity_matrix,
@@ -1321,7 +1322,7 @@ class PayloadToASTBridge:
                     CellNode(text=r_item["justification"], font_size=8.5, bg_color=bg),
                 ]
                 table_rows.append(TableRowNode(cells=row_cells))
-            nodes.append(TableNode(rows=table_rows, col_widths=[0.26, 0.14, 0.60]))
+            nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.28, 0.14, 0.58]))
 
         #
         # CHAPTER 4: QUANTITATIVE RISK MATRIX (O-FAIR)
@@ -2336,6 +2337,13 @@ class PayloadToASTBridge:
                             val_str, locale=meta_l
                         )
 
+                    if c_idx == 0 and isinstance(val_str, str) and val_str.strip():
+                        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+                        resolver = get_taxonomy_resolver()
+                        val_str = resolver.resolve_pillar_by_any_reference(
+                            val_str, default=val_str, locale=getattr(self, "meta_lang", "en")
+                        )
+
                     if c_idx == 2:
                         just_hdr = t("asis_header_score_justification", locale=getattr(self, "meta_lang", "en"))
                         val_str = re.sub(
@@ -2354,7 +2362,7 @@ class PayloadToASTBridge:
                     )
                 rows.append(TableRowNode(cells=cells))
 
-        return TableNode(rows=rows, col_widths=col_widths)
+        return TableNode(rows=rows, autofit=True, col_widths=col_widths)
 
 
 def compile_asis_docx_via_ast(

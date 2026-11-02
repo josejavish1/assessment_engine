@@ -187,6 +187,26 @@ class UniversalPayloadEnricher:
                         raw_id = v
                         break
             pillar_id = str(raw_id or "P0")
+            pillar["pillar_id"] = pillar_id
+
+            # Canonicalize top-level pillars_analysis entries as well
+            for p in working.get("pillars_analysis", []):
+                p_id = p.get("pillar_id") or p.get("id") or p.get("code")
+                if not p_id:
+                    for k, v in list(p.items()):
+                        if "id" in k.lower() and isinstance(v, str) and (v.startswith("T") or "." in v):
+                            p_id = v
+                            break
+                if p_id:
+                    p["pillar_id"] = str(p_id)
+                p_name = p.get("pillar_name") or p.get("name") or p.get("title")
+                if not p_name:
+                    for k, v in list(p.items()):
+                        if "name" in k.lower() and isinstance(v, str) and v.strip():
+                            p_name = v
+                            break
+                if p_name:
+                    p["pillar_name"] = str(p_name)
 
             raw_score = float(pillar.get("raw_score", pillar.get("score", 0.0)))
 

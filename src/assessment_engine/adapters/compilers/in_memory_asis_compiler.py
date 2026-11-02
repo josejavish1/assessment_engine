@@ -41,10 +41,10 @@ def derive_in_memory_fair_risks(
 
     r_counter = 1
     for pillar in b_data.get("pillars_analysis", []):
-        raw_pname = str(pillar.get("pillar_name") or "Pillar")
-        p_id = str(pillar.get("pillar_id") or raw_pname)
+        raw_pname = str(pillar.get("pillar_name") or pillar.get("name") or "")
+        p_id = str(pillar.get("pillar_id") or pillar.get("id") or pillar.get("code") or raw_pname)
         pillar_name = resolver.resolve_pillar_by_any_reference(
-            p_id, default=raw_pname, locale=doc_lang
+            p_id or raw_pname, default=(raw_pname or p_id or "Pillar"), locale=doc_lang
         )
 
         for hc in pillar.get("health_check_asis", []):
@@ -122,10 +122,10 @@ def derive_in_memory_maturity_matrix(
     rows: list[dict[str, Any]] = []
 
     for pillar in b_data.get("pillars_analysis", []):
-        raw_pname = str(pillar.get("pillar_name") or "Pillar")
-        p_id = str(pillar.get("pillar_id") or raw_pname)
+        raw_pname = str(pillar.get("pillar_name") or pillar.get("name") or "")
+        p_id = str(pillar.get("pillar_id") or pillar.get("id") or pillar.get("code") or raw_pname)
         pillar_name = resolver.resolve_pillar_by_any_reference(
-            p_id, default=raw_pname, locale=doc_lang
+            p_id or raw_pname, default=(raw_pname or p_id or "Pillar"), locale=doc_lang
         )
 
         exact_score = float(pillar.get("score") or 3.0)

@@ -628,7 +628,7 @@
     "section_maturity_evolution_principles": "Principios de Evolución de Madurez",
     "section_strategic_enabling_pillars": "Pilares Estratégicos Habilitadores",
     "section_executive_decisions_priority": "7. Decisiones Ejecutivas Prioritarias",
-    "intro_ch3_technical_diagnosis": "El siguiente diagnóstico técnico desglosa los hallazgos operativos de la plataforma, contraponiendo las capacidades funcionales establecidas frente a las brechas estructurales que limitan el estado objetivo de la organización:",
+    "intro_ch3_technical_diagnosis": "En este capítulo revisamos de forma clara y directa el estado actual de la tecnología que sostiene a {tower_name}. El objetivo es entender qué componentes funcionan con estabilidad en el día a día y dónde existen dependencias manuales o limitaciones técnicas que frenan la agilidad del equipo.",
     "section_evaluation_maturity": "Evaluación y Madurez Tecnológica",
     "health_matrix_title": "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico",
     "table_header_status_level": "Estado y Nivel de Desempeño",
@@ -1502,7 +1502,10 @@
     "norm_row_cobit_purp": "Gobernanza y FinOps",
     "cross_cutting_debt_t1_p1": "**1. Dependencia de Medición Manual y Ausencia de Telemetría Continua:** La gestión de capacidad eléctrica y térmica se fundamenta en especificaciones teóricas de placa de fabricante y mediciones esporádicas con pinzas amperimétricas. La carencia de medición telemétrica digital en tiempo real en cuadros generales y regletas de rack (iPDU) impide conocer el margen real de potencia y dinamismo térmico al desplegar nuevas cargas de cómputo.",
     "cross_cutting_debt_t1_p2": "**2. Silos Operativos entre Facilities (BMS) y Plataformas Centrales de Observabilidad de TI:** La infraestructura electromecánica opera de manera desacoplada de la monitorización corporativa. Un evento adverso no genera alertas tempranas correlacionadas, provocando que las degradaciones ambientales se descubran únicamente tras la caída de los clústeres de servidores.",
-    "cross_cutting_debt_t1_p3": "**3. Procedimientos Manuales en Papel y Fricción en Permisos de Trabajo (ePtW):** Las rondas de mantenimiento preventivo, los ensayos de conmutación de acometida (ATS) y el control de accesos de contratas externas se gestionan mediante formularios impresos y firmas manuscritas sin trazabilidad digital inmutable, generando una severa brecha de conformidad ante las exigencias de gobierno y auditoría de la directiva europea NIS2."
+    "cross_cutting_debt_t1_p3": "**3. Procedimientos Manuales en Papel y Fricción en Permisos de Trabajo (ePtW):** Las rondas de mantenimiento preventivo, los ensayos de conmutación de acometida (ATS) y el control de accesos de contratas externas se gestionan mediante formularios impresos y firmas manuscritas sin trazabilidad digital inmutable, generando una severa brecha de conformidad ante las exigencias de gobierno y auditoría de la directiva europea NIS2.",
+    "score_explanation_band_low": "La plataforma registra una puntuación global de {global_score} sobre {max_score}. En la práctica, esto indica que los servicios básicos se sostienen gracias al esfuerzo directo de los especialistas técnicos, pero con una alta dependencia de tareas manuales, escasa automatización y falta de telemetría en tiempo real para anticipar incidencias.",
+    "score_explanation_band_mid": "La plataforma alcanza una puntuación global de {global_score} sobre {max_score}. En términos sencillos, esta nota refleja que la base técnica es estable y garantiza la continuidad operativa diaria de {client_name}. No obstante, persisten procesos manuales y puntos únicos de control que impiden escalar con rapidez y absorben excesivo tiempo de los equipos.",
+    "score_explanation_band_high": "La plataforma registra una puntuación global de {global_score} sobre {max_score}. Esto representa un entorno tecnológico maduro, gobernado y con un alto grado de automatización que permite anticipar fallos y operar de forma proactiva con mínima fricción."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2124,7 +2127,7 @@
     "section_maturity_evolution_principles": "Maturity Evolution Principles",
     "section_strategic_enabling_pillars": "Strategic Enabling Pillars",
     "section_executive_decisions_priority": "7. Priority Executive Decisions",
-    "intro_ch3_technical_diagnosis": "The following technical diagnosis breaks down the operational findings of the platform, contrasting established functional capabilities against structural gaps limiting the organization's target state:",
+    "intro_ch3_technical_diagnosis": "This chapter provides a clear, direct evaluation of the current technological foundation supporting {tower_name}. The goal is to highlight which components operate reliably day to day and pinpoint where manual dependencies or technical bottlenecks impede team agility.",
     "section_evaluation_maturity": "Technology Maturity and Evaluation",
     "health_matrix_title": "Diagnosis and Performance Matrix by Technology Domain",
     "table_header_status_level": "Performance State and Level",
@@ -3002,7 +3005,10 @@
     "norm_row_cobit_purp": "Governance & FinOps",
     "cross_cutting_debt_t1_p1": "**1. Manual Measurement Dependency & Continuous Telemetry Blindness:** Electrical and thermal capacity planning relies on theoretical vendor nameplates and sporadic manual clamp-meter checks. Lacking digital real-time telemetry across distribution panels and intelligent rack PDUs impairs visibility into operational headroom when migrating compute workloads.",
     "cross_cutting_debt_t1_p2": "**2. Operational Silos Between Facilities (BMS) and Central Enterprise IT Observability:** Electromechanical infrastructure operates decoupled from corporate monitoring. Environmental anomalies fail to trigger correlated early warnings, causing degradations to be discovered only after server cluster outages.",
-    "cross_cutting_debt_t1_p3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates."
+    "cross_cutting_debt_t1_p3": "**3. Paper-Based Procedural Toil & Electronic Permit Friction (ePtW):** Preventive maintenance rounds, ATS generator failover tests, and third-party contractor access logs rely on physical paper binders and manual sign-offs without digital immutability, creating a compliance gap against European NIS2 governance mandates.",
+    "score_explanation_band_low": "The platform achieves an overall score of {global_score} out of {max_score}. In practice, core operations remain running through the direct dedication of technical specialists, but suffer from high manual dependencies, limited automation, and a lack of real-time telemetry to anticipate failures.",
+    "score_explanation_band_mid": "The platform achieves an overall score of {global_score} out of {max_score}. In plain terms, this score reflects a stable technical foundation that sustains {client_name}'s daily operations. However, manual processes and single control points persist, hindering rapid scaling and absorbing valuable engineering bandwidth.",
+    "score_explanation_band_high": "The platform records an overall score of {global_score} out of {max_score}. This represents a mature, well-governed, and highly automated technology environment capable of anticipating failures and operating proactively with minimal operational friction."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
