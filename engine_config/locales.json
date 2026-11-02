@@ -628,7 +628,7 @@
     "section_maturity_evolution_principles": "Principios de Evolución de Madurez",
     "section_strategic_enabling_pillars": "Pilares Estratégicos Habilitadores",
     "section_executive_decisions_priority": "7. Decisiones Ejecutivas Prioritarias",
-    "intro_ch3_technical_diagnosis": "El presente capítulo expone el diagnóstico técnico detallado de la infraestructura de {tower_name} en {client_name}, evaluando el grado de madurez, obsolescencia y gobernanza operativa de sus capacidades frente a los estándares de referencia de la industria.",
+    "intro_ch3_technical_diagnosis": "El presente capítulo ejecuta el diagnóstico técnico de la plataforma tecnológica en {client_name}, evaluando la infraestructura de {tower_name} bajo tres ejes analíticos: (1) la solidez arquitectónica frente a puntos únicos de fallo (SPOF) y carencias de redundancia; (2) el grado de obsolescencia física y lógica respecto a los ciclos de soporte de los fabricantes; y (3) la madurez de los procedimientos operativos y esquemas de mantenimiento preventivo. La contrastación de estos factores bajo el marco CMMI establece la línea base de resiliencia operativa y fundamenta las prioridades de modernización.",
     "section_evaluation_maturity": "Evaluación y Madurez Tecnológica",
     "health_matrix_title": "Matriz de Diagnóstico y Desempeño por Dominio Tecnológico",
     "table_header_status_level": "Estado y Nivel de Desempeño",
@@ -1623,7 +1623,10 @@
     },
     "exposure_vector_prefix": "Vector de Exposición #{index}",
     "calib_label_operational_strength": "Fortaleza Operativa Identificada",
-    "calib_label_operational_gap": "Brecha de Resiliencia Diagnosticada"
+    "calib_label_operational_gap": "Brecha de Resiliencia Diagnosticada",
+    "calib_label_observed_state": "Situación Operativa Observada",
+    "calib_label_critical_gap": "Brecha Crítica de Resiliencia",
+    "ch3_intro_p1": "El presente capítulo ejecuta el diagnóstico técnico de la plataforma tecnológica en {client_name}, evaluando la infraestructura de {tower_name} bajo tres ejes analíticos: (1) la solidez arquitectónica frente a puntos únicos de fallo (SPOF) y carencias de redundancia; (2) el grado de obsolescencia física y lógica respecto a los ciclos de soporte de los fabricantes; y (3) la madurez de los procedimientos operativos y esquemas de mantenimiento preventivo. La contrastación de estos factores bajo el marco CMMI establece la línea base de resiliencia operativa y fundamenta las prioridades de modernización."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2245,7 +2248,7 @@
     "section_maturity_evolution_principles": "Maturity Evolution Principles",
     "section_strategic_enabling_pillars": "Strategic Enabling Pillars",
     "section_executive_decisions_priority": "7. Priority Executive Decisions",
-    "intro_ch3_technical_diagnosis": "This chapter presents the detailed technical diagnostic of the {tower_name} infrastructure at {client_name}, evaluating the operational maturity, obsolescence, and governance posture across each capability tower against established industry benchmarks.",
+    "intro_ch3_technical_diagnosis": "This chapter executes the technical diagnostic of the technology platform at {client_name}, evaluating the {tower_name} infrastructure across three analytical dimensions: (1) architectural resilience against single points of failure (SPOFs) and redundancy deficits; (2) physical and logical obsolescence relative to vendor support lifecycles; and (3) the maturity of operational runbooks and preventive maintenance regimes. Triangulating these factors under the CMMI framework establishes the operational risk baseline and substantiates modernization priorities.",
     "section_evaluation_maturity": "Technology Maturity and Evaluation",
     "health_matrix_title": "Diagnosis and Performance Matrix by Technology Domain",
     "table_header_status_level": "Performance State and Level",
@@ -3243,7 +3246,10 @@
     },
     "exposure_vector_prefix": "Exposure Vector #{index}",
     "calib_label_operational_strength": "Established Operational Strength",
-    "calib_label_operational_gap": "Diagnosed Resilience Gap"
+    "calib_label_operational_gap": "Diagnosed Resilience Gap",
+    "calib_label_observed_state": "Observed Operational State",
+    "calib_label_critical_gap": "Critical Resilience Gap",
+    "ch3_intro_p1": "This chapter executes the technical diagnostic of the technology platform at {client_name}, evaluating the {tower_name} infrastructure across three analytical dimensions: (1) architectural resilience against single points of failure (SPOFs) and redundancy deficits; (2) physical and logical obsolescence relative to vendor support lifecycles; and (3) the maturity of operational runbooks and preventive maintenance regimes. Triangulating these factors under the CMMI framework establishes the operational risk baseline and substantiates modernization priorities."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",

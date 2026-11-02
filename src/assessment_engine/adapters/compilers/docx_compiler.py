@@ -651,29 +651,70 @@ class DocxCompiler(DocumentCompiler):
             r_text.font.size = Pt(8.5)
             r_text.font.color.rgb = RGBColor(148, 163, 184)
 
-            fldSimple = OxmlElement('w:fldSimple')
-            fldSimple.set(qn('w:instr'), 'PAGE')
+            # Paragraph-level default run properties for footer
+            pPr_foot = p_foot._p.get_or_add_pPr()
+            existing_p_rPr = pPr_foot.find(qn('w:rPr'))
+            if existing_p_rPr is not None:
+                pPr_foot.remove(existing_p_rPr)
 
-            # Inner run with identical font, size, and color to guarantee uniform footer rendering
-            r_page_num = OxmlElement('w:r')
-            rPr_page = OxmlElement('w:rPr')
-            rFonts_page = OxmlElement('w:rFonts')
-            rFonts_page.set(qn('w:ascii'), 'Arial')
-            rFonts_page.set(qn('w:hAnsi'), 'Arial')
-            rFonts_page.set(qn('w:cs'), 'Arial')
-            rPr_page.append(rFonts_page)
+            p_rPr = OxmlElement('w:rPr')
+            p_rFonts = OxmlElement('w:rFonts')
+            p_rFonts.set(qn('w:ascii'), 'Arial')
+            p_rFonts.set(qn('w:hAnsi'), 'Arial')
+            p_rFonts.set(qn('w:cs'), 'Arial')
+            p_rPr.append(p_rFonts)
+            p_sz = OxmlElement('w:sz')
+            p_sz.set(qn('w:val'), '17')
+            p_rPr.append(p_sz)
+            p_col = OxmlElement('w:color')
+            p_col.set(qn('w:val'), '94A3B8')
+            p_rPr.append(p_col)
+            pPr_foot.append(p_rPr)
 
-            sz_page = OxmlElement('w:sz')
-            sz_page.set(qn('w:val'), '17')  # 8.5 pt
-            rPr_page.append(sz_page)
+            # 5-run complex field structure for PAGE guaranteeing 100% font/size/color inheritance
+            r_begin = OxmlElement('w:r')
+            fc_begin = OxmlElement('w:fldChar')
+            fc_begin.set(qn('w:fldCharType'), 'begin')
+            r_begin.append(fc_begin)
+            p_foot._p.append(r_begin)
 
-            color_page = OxmlElement('w:color')
-            color_page.set(qn('w:val'), '94A3B8')
-            rPr_page.append(color_page)
+            r_instr = OxmlElement('w:r')
+            instr = OxmlElement('w:instrText')
+            instr.set(qn('xml:space'), 'preserve')
+            instr.text = " PAGE "
+            r_instr.append(instr)
+            p_foot._p.append(r_instr)
 
-            r_page_num.append(rPr_page)
-            fldSimple.append(r_page_num)
-            p_foot._p.append(fldSimple)
+            r_sep = OxmlElement('w:r')
+            fc_sep = OxmlElement('w:fldChar')
+            fc_sep.set(qn('w:fldCharType'), 'separate')
+            r_sep.append(fc_sep)
+            p_foot._p.append(r_sep)
+
+            r_val = OxmlElement('w:r')
+            rPr_val = OxmlElement('w:rPr')
+            rFonts_val = OxmlElement('w:rFonts')
+            rFonts_val.set(qn('w:ascii'), 'Arial')
+            rFonts_val.set(qn('w:hAnsi'), 'Arial')
+            rFonts_val.set(qn('w:cs'), 'Arial')
+            rPr_val.append(rFonts_val)
+            sz_val = OxmlElement('w:sz')
+            sz_val.set(qn('w:val'), '17')
+            rPr_val.append(sz_val)
+            col_val = OxmlElement('w:color')
+            col_val.set(qn('w:val'), '94A3B8')
+            rPr_val.append(col_val)
+            r_val.append(rPr_val)
+            t_val = OxmlElement('w:t')
+            t_val.text = "1"
+            r_val.append(t_val)
+            p_foot._p.append(r_val)
+
+            r_end = OxmlElement('w:r')
+            fc_end = OxmlElement('w:fldChar')
+            fc_end.set(qn('w:fldCharType'), 'end')
+            r_end.append(fc_end)
+            p_foot._p.append(r_end)
         except (AttributeError, KeyError, IndexError, TypeError) as ex:
             logger.warning("Document footer decoration encountered non-fatal layout exception: %s", ex)
 
@@ -922,7 +963,8 @@ class DocxCompiler(DocumentCompiler):
         #
         is_bullet = node.style == "List Bullet" or node.style == "Bullet"
         if is_bullet:
-            apply_bullet_list_format(p)
+            apply_bullet_list_format(p, alignment=align_const)
+            p.paragraph_format.alignment = align_const
 
         #
         add_markdown_runs(

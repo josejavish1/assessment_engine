@@ -168,23 +168,30 @@ def derive_pillar_justification(p: dict, idx: int, doc_lang: str) -> str:
 
     fd_core = sanitize_semantic_prose(fd_core, doc_lang).strip()
 
-    lbl_strength = t("calib_label_operational_strength", locale=doc_lang)
-    lbl_gap = t("calib_label_operational_gap", locale=doc_lang)
+    p_score = float(p.get("score") or p.get("maturity_score") or 0.0)
+    low_maturity_threshold = 2.2
 
-    # Extract established architectural baseline as positive operational strength
+    if p_score < low_maturity_threshold:
+        lbl_pos = t("calib_label_observed_state", locale=doc_lang)
+        lbl_neg = t("calib_label_critical_gap", locale=doc_lang)
+    else:
+        lbl_pos = t("calib_label_operational_strength", locale=doc_lang)
+        lbl_neg = t("calib_label_operational_gap", locale=doc_lang)
+
+    # Extract established architectural baseline
     asis_desc = (p.get("asis_architecture_description") or "").strip()
     if "." in asis_desc:
-        clean_strength = asis_desc.split(".")[0].strip() + "."
+        clean_state = asis_desc.split(".")[0].strip() + "."
     else:
-        clean_strength = asis_desc
-    clean_strength = sanitize_semantic_prose(clean_strength, doc_lang).strip()
+        clean_state = asis_desc
+    clean_state = sanitize_semantic_prose(clean_state, doc_lang).strip()
 
-    if clean_strength and fd_core:
-        return f"• **{lbl_strength}:** {clean_strength}\n\n• **{lbl_gap}:** {fd_core.rstrip('.')}."
+    if clean_state and fd_core:
+        return f"• **{lbl_pos}:** {clean_state}\n\n• **{lbl_neg}:** {fd_core.rstrip('.')}."
     elif fd_core:
-        return f"• **{lbl_gap}:** {fd_core.rstrip('.')}."
+        return f"• **{lbl_neg}:** {fd_core.rstrip('.')}."
     else:
-        return f"• **{lbl_strength}:** {clean_strength}"
+        return f"• **{lbl_pos}:** {clean_state}"
 
 
 def sanitize_semantic_prose(text: str, doc_lang: str) -> str:

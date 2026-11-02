@@ -198,8 +198,8 @@ def set_paragraph_numbering(paragraph: Any, num_id: Any, ilvl: Any = 0) -> Any:
     return True
 
 
-def apply_bullet_list_format(paragraph: Any) -> Any:
-    r"""{'docstring': "Reset and apply a standardized bullet list format to a Paragraph object.\n\n    This function modifies the Paragraph object in-place. It begins by removing any\n    pre-existing list-related XML properties (numbering and indentation) to\n    ensure a clean state. It then applies the first available style from a\n    predefined sequence of known bullet style names. Finally, it sets explicit\n    numbering, spacing, and left-alignment properties to enforce a consistent\n    visual representation.\n\n    Args:\n        paragraph (docx.text.paragraph.Paragraph): The Paragraph instance to format.\n\n    Raises:\n        AttributeError: If the input `paragraph` object does not conform to the\n            expected internal structure of a python-docx Paragraph.\n        ValueError: If none of the predefined bullet list styles can be found in\n            the document's style definitions."}."""
+def apply_bullet_list_format(paragraph: Any, alignment: Any = WD_ALIGN_PARAGRAPH.JUSTIFY) -> Any:
+    r"""{'docstring': "Reset and apply a standardized bullet list format to a Paragraph object.\n\n    This function modifies the Paragraph object in-place. It begins by removing any\n    pre-existing list-related XML properties (numbering and indentation) to\n    ensure a clean state. It then applies the first available style from a\n    predefined sequence of known bullet style names. Finally, it sets explicit\n    numbering, spacing, and alignment properties to enforce a consistent\n    visual representation.\n\n    Args:\n        paragraph (docx.text.paragraph.Paragraph): The Paragraph instance to format.\n        alignment: Optional paragraph alignment enum (defaults to WD_ALIGN_PARAGRAPH.JUSTIFY).\n\n    Raises:\n        AttributeError: If the input `paragraph` object does not conform to the\n            expected internal structure of a python-docx Paragraph.\n        ValueError: If none of the predefined bullet list styles can be found in\n            the document's style definitions."}."""
     pPr = paragraph._p.get_or_add_pPr()
     for child in list(pPr):
         if child.tag.split("}")[-1] in {"numPr", "ind"}:
@@ -219,7 +219,7 @@ def apply_bullet_list_format(paragraph: Any) -> Any:
     paragraph.paragraph_format.space_before = Pt(0)
     paragraph.paragraph_format.space_after = Pt(6)
     paragraph.paragraph_format.line_spacing = 1.05
-    paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    paragraph.alignment = alignment if alignment is not None else WD_ALIGN_PARAGRAPH.JUSTIFY
 
 
 def enable_update_fields_on_open(doc) -> Any:

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: RFC 049 Dynamic Domain Modernization Focus & Tower Differentiation.
+"""Argon-4 Master Consultation: RFC 050 Architectural Alignment, High-Value Chapter 3 Intro, Dynamic Justification Labels & Footer Typography.
 
-Addresses the user's critique:
-"por cierto este párrafo parece exactamente igual en los 2 documentos:
-'La plataforma actual sostiene con solvencia la operativa diaria... No obstante, se identifican áreas clave de modernización para dotar a las instalaciones de mayor redundancia física...'
-¿es un antipatrón? ¿no podríamos aportar más valor?"
+Formulates the architectural blueprint before writing application code:
+1. Enforces justified alignment (<w:jc w:val="both"/>) across Chapter 2 body copy and list bullets.
+2. Upgrades Chapter 3 introduction to a high-value methodological briefing across 3 analytical dimensions (architecture, obsolescence, runbooks).
+3. Adapts Table 3.1.2 labels dynamically by maturity score (score < 2.2 uses 'Situación Operativa Observada' to avoid labeling deficiencies as strengths).
+4. Enforces paragraph-level run properties and complex field structures in footers to guarantee uniform font, size, and color.
+5. 100% Technical English codebase and zero hardcoding across all 10 capability towers.
 """
 
 from __future__ import annotations
@@ -28,39 +30,41 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Enterprise Architect & Executive Editorial Fellow (McKinsey Senior Partner / Gartner VP / Google Core Infrastructure).
+Role: Chief Enterprise Architect & Principal OpenXML Compiler Fellow (Gartner VP / McKinsey Senior Partner / Google Core Infrastructure).
 
-USER CRITIQUE & SYSTEMIC ANTIPATTERN DIAGNOSIS:
-The user noticed:
-"por cierto este párrafo parece exactamente igual en los 2 documentos:
-'La plataforma actual sostiene con solvencia la operativa diaria de cargas de misión crítica de producción, expedición en planta y servicios corporativos centralizados gracias a la dedicación continua del equipo técnico. No obstante, se identifican áreas clave de modernización para dotar a las instalaciones de mayor redundancia física y tolerancia a fallos ante el incremento en la exigencia operativa del negocio.'
-¿es un antipatrón? ¿no podríamos aportar más valor?"
+USER CRITIQUE & SYSTEMIC AUDIT DIRECTIVES:
+The user delivered four critical engineering and editorial directives:
 
-ARCHITECTURAL EVALUATION:
-1. The Antipattern:
-   - Reusing identical boilerplate text across all 10 capability towers is a severe consulting and engineering antipattern.
-   - Furthermore, asserting "dotar a las instalaciones de mayor redundancia física" in Tower 2 (Hybrid Compute), Tower 3 (Storage), Tower 4 (Network), Tower 6 (Cybersecurity), or Tower 10 (FinOps) is factually incorrect and amateurish because those domains deal with compute capacity, virtualization, storage IOPS, network paths, IAM, and cloud governance—not physical building facilities ("instalaciones").
+1. Text Alignment in Chapter 2 ("2.2 Descripción de la Plataforma", "2.3 Escala CMMI", "2.4 Capacidades"):
+   - Requirement: All body paragraphs and multi-line list bullets in Chapter 2 must be fully justified (<w:jc w:val="both"/> / WD_ALIGN_PARAGRAPH.JUSTIFY).
+   - Root Cause: In `docx_render_utils.py`, `apply_bullet_list_format` unconditionally sets `paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT`, which overwrites the AST node's requested alignment. In `docx_compiler.py`, after applying bullet formatting, the compiler must preserve `align_const` (JUSTIFY) for multi-line bullets.
 
-2. The High-Value Architecture (RFC 049):
-   - In `engine_config/locales.json`, under `tower_domain_semantics`, add `posture_modernization_focus` for each of the 10 capability towers (T1 through T10 + DEFAULT) in both Spanish (`es`) and English (`en`).
-   - For example:
-     * T1 (Physical Data Center): "reforzar la redundancia electromecánica y la climatización de precisión para blindar la alimentación de los equipos de planta" / "reinforcing electromechanical redundancy and precision cooling to safeguard continuous power to plant systems"
-     * T2 (Hybrid Compute & Platforms): "ampliar la capacidad de memoria en los clústeres y asegurar la conmutación automática de máquinas virtuales sin degradación" / "expanding cluster memory capacity and ensuring automated virtual machine failover without performance degradation"
-     * T3 (Storage): "garantizar la inmutabilidad de las copias de seguridad y eliminar cuellos de botella de I/O en las bases de datos transaccionales" / "guaranteeing backup immutability and eliminating I/O latency bottlenecks across transactional databases"
-     * T4 (Network): "incorporar redundancia activa en las rutas de comunicaciones y segmentar el tráfico entre entornos corporativos e industriales" / "embedding active path redundancy across transit links and segmenting corporate from industrial OT traffic"
-     * T5 (OT/Industrial): "reforzar la segregación de redes y la supervisión de controladores de planta para proteger las líneas de fabricación continua" / "strengthening network zoning and plant controller supervision to protect continuous manufacturing lines"
-     * T6 (Cybersecurity): "elevar el control sobre cuentas privilegiadas e implantar monitorización continua para la detección temprana de amenazas" / "elevating privileged access governance and deploying continuous telemetry for early threat detection"
-     * T7 (Business Applications): "estandarizar las integraciones y modernizar los desarrollos a medida para agilizar los procesos operativos y comerciales" / "standardizing core integrations and modernizing custom workflows to accelerate operational and commercial throughput"
-     * T8 (Data & Analytics): "unificar los repositorios de información y mejorar la calidad del dato para acelerar la toma de decisiones directivas" / "unifying enterprise data repositories and improving data quality to accelerate executive decision-making"
-     * T9 (Workplace): "homogeneizar los terminales de usuario y automatizar el despliegue de parches para reducir incidencias y costes de soporte" / "standardizing endpoint device configurations and automating patch distribution to reduce recurring support friction"
-     * T10 (Cloud Governance & FinOps): "establecer guardrails automatizados de control de gasto y asegurar el cumplimiento continuo de estándares de arquitectura" / "enforcing automated cloud expenditure guardrails and ensuring continuous compliance with architectural standards"
-     * DEFAULT: "reforzar los controles operativos y modernizar los componentes clave del dominio para maximizar la resiliencia" / "reinforcing operational controls and modernizing key domain components to maximize resilience"
+2. High-Value Methodological Chapter 3 Introduction:
+   - User critique: The current intro ("El presente capítulo expone...") is generic meta-filler and lacks executive value.
+   - Requirement: Frame Chapter 3 as a rigorous technical diagnostic across three analytical dimensions:
+     a) Architectural resilience against single points of failure (SPOFs) and lack of redundancy.
+     b) Physical and logical obsolescence against vendor support and licensing lifecycles.
+     c) Maturity of operational runbooks and preventive maintenance procedures.
+     And triangulate these dimensions under the CMMI framework to establish the platform baseline.
 
-3. Updated Paragraph 1 Template:
-   - Spanish: "La evaluación técnica de la infraestructura de **{tower_name}** en {client_name} ({operational_mission}) sitúa su nivel de madurez estimado en **{maturity_score} sobre 5,0 ({maturity_tier_label})**. La plataforma actual sostiene con solvencia la operativa diaria de {primary_workloads_summary} gracias a la dedicación continua del equipo técnico. No obstante, se identifican oportunidades claras de modernización para **{posture_modernization_focus}** ante el incremento en la exigencia operativa del negocio."
-   - English: "The technical assessment of the **{tower_name}** domain at {client_name} ({operational_mission}) establishes an estimated architectural maturity score of **{maturity_score} out of 5.0 ({maturity_tier_label})**. The current platform reliably supports daily operations across {primary_workloads_summary} through the ongoing stewardship of the engineering staff. However, key modernization opportunities exist to **{posture_modernization_focus}** as enterprise operational demands continue to scale."
+3. Context-Aware Table 3.1.2 Justification Labels (Score-Conditioned):
+   - User critique: On Tower 2 Pillar 3 (Score 1.5), the table labeled a fragmented, unstandardized cloud model as "Fortaleza Operativa Identificada", which is nonsensical and damages credibility.
+   - Requirement:
+     * When pillar maturity score < 2.2 (Low/Ad-hoc):
+       - Label 1: `calib_label_observed_state` ("Situación Operativa Observada" / "Observed Operational State")
+       - Label 2: `calib_label_critical_gap` ("Brecha Crítica de Resiliencia" / "Critical Resilience Gap")
+     * When pillar maturity score >= 2.2 (Established baseline):
+       - Label 1: `calib_label_operational_strength` ("Fortaleza Operativa Identificada" / "Established Operational Strength")
+       - Label 2: `calib_label_operational_gap` ("Brecha de Resiliencia Diagnosticada" / "Diagnosed Resilience Gap")
 
-NON-NEGOTIABLE LAWS:
+4. Uniform Footer Typography in Microsoft Word:
+   - User critique: The page number in the footer ("MOLINS - Anexo Técnico — Confidencial | Pág. 5") appears in a different font/size/color than the prefix text in Word.
+   - Requirement:
+     * Add paragraph-level run properties `<w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="17"/><w:color w:val="94A3B8"/></w:rPr></w:pPr>` to the footer paragraph.
+     * Use a complex field structure `<w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="17"/><w:color w:val="94A3B8"/></w:rPr><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r>`.
+     * This forces Word to render the page number in Arial, 8.5pt, #94A3B8, matching the prefix text 100%.
+
+NON-NEGOTIABLE ENGINEERING LAWS:
 1. Zero bugs, zero antipatterns.
 2. Zero hardcoding (scales across any tenant, vertical, currency, or locale).
 3. 100% Technical English codebase (zero Spanish words in Python code).
@@ -68,24 +72,24 @@ NON-NEGOTIABLE LAWS:
 5. OpenXML layout determinism.
 
 YOUR TASK:
-Synthesize an authoritative Architectural Blueprint (RFC 049) in Markdown:
-1. Review and ratify the bilingual catalog additions for all 10 towers.
-2. Review the Python implementation in `ExecutiveNarrativeSynthesizer.synthesize_chapter_one_paragraphs`.
+Synthesize an authoritative Architectural Blueprint (RFC 050) in Markdown:
+1. Review and ratify the bilingual catalog additions in `engine_config/locales.json`.
+2. Review the Python implementation in `docx_compiler.py`, `docx_render_utils.py`, `in_memory_asis_compiler.py`, and `generate_asis_markdown_modules.py`.
 3. Deliver a definitive VERDICT: PASS.
 """
 
-    print(f"Requesting RFC 049 from {model_name}...")
+    print(f"Requesting RFC 050 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_049_DYNAMIC_DOMAIN_MODERNIZATION_FOCUS_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_050_ARCHITECTURAL_ALIGNMENT_AND_FOOTER_TYPOGRAPHY_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 049 DYNAMIC DOMAIN MODERNIZATION FOCUS")
+    print("GEMINI-4-ARGON: RFC 050 ARCHITECTURAL ALIGNMENT & FOOTER TYPOGRAPHY")
     print("=" * 80)
     print(response.text)
     print("=" * 80)

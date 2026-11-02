@@ -1148,7 +1148,7 @@ class PayloadToASTBridge:
 
         # 3. Direct Introduction (Accessible and clear executive prose)
         tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
-        intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name)
+        intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
