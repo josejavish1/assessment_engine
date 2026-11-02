@@ -212,9 +212,13 @@ def summarize_project_name(name: str) -> str:
     return " ".join(str(name or "").split()).strip()
 
 
-def build_executive_handover(blueprint: BlueprintPayload) -> dict[str, Any]:
+def build_executive_handover(
+    blueprint: BlueprintPayload, locale: str | None = None
+) -> dict[str, Any]:
     """Build executive handover according to architectural specification."""
+    doc_locale = locale or getattr(blueprint.document_meta, "language", "en")
     scores = [pillar.score for pillar in blueprint.pillars_analysis]
+    avg_score = average(scores)
     project_names = [
         summarize_project_name(project.initiative)
         for pillar in blueprint.pillars_analysis
@@ -223,8 +227,8 @@ def build_executive_handover(blueprint: BlueprintPayload) -> dict[str, Any]:
     return {
         "tower_code": blueprint.document_meta.tower_code,
         "tower_name": blueprint.document_meta.tower_name,
-        "global_score": average(scores),
-        "global_band": derive_maturity_band(average(scores)),
+        "global_score": avg_score,
+        "global_band": derive_maturity_band(avg_score, locale=doc_locale),
         "bottom_line": blueprint.executive_snapshot.bottom_line,
         "cost_of_inaction": blueprint.executive_snapshot.cost_of_inaction,
         "business_impact": blueprint.executive_snapshot.business_impact,
@@ -835,7 +839,8 @@ async def generate_synthesis(
 ) -> Optional[AnnexPayload]:
     """Executes the core synthesis logic by processing input data through the specified AI agent to produce an enriched annex payload. This function is designed to be pure, encapsulating all business logic without external side effects."""
     blueprint_data = blueprint.model_dump(by_alias=True)
-    executive_handover = build_executive_handover(blueprint)
+    doc_lang = getattr(blueprint.document_meta, "language", "en")
+    executive_handover = build_executive_handover(blueprint, locale=doc_lang)
     prompt = build_synthesis_prompt(
         blueprint_data=blueprint_data,
         executive_handover=executive_handover,

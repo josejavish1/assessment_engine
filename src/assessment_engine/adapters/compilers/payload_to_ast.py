@@ -425,6 +425,7 @@ class PayloadToASTBridge:
         #
 
     def _build_executive_summary_and_scope(self, ctx: dict[str, Any], nodes: List[Any]) -> None:
+        import re
         modules_dir = ctx["modules_dir"]
         meta_lang = ctx["meta_lang"]
         blueprint_data = ctx["blueprint_data"]
@@ -432,68 +433,216 @@ class PayloadToASTBridge:
         global_band = ctx["global_band"]
         display_score_str = ctx["display_score_str"]
         global_reading = ctx["global_reading"]
-        vocab = ctx["vocab"]
         gs_val = ctx["gs_val"]
-        # 3. CHAPTER 1: EXECUTIVE SUMMARY
-        #
         annex_data = ctx.get("annex_data", {})
-        executive_summary_path = modules_dir / "02_executive_summary.md"
-        if executive_summary_path.exists():
-            nodes.extend(self._parse_markdown_to_nodes(executive_summary_path))
-            nodes.append(SpacerNode(points=10))
-            cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
-            nodes.append(
-                ParagraphNode(
-                    text=f"*{cross_ref_text}*",
-                    italic=True,
-                    font_size=9.5,
-                    text_color_rgb=[71, 85, 105],
-                )
-            )
-        elif annex_data and "executive_summary" in annex_data:
-            nodes.append(
-                HeadingNode(
-                    text=t("chapter_1_exec_summary", locale=meta_lang),
-                    level=1,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
-            )
-            exec_sum = annex_data["executive_summary"]
-            headline = exec_sum.get("headline", "")
-            summary_body = exec_sum.get("summary_body", "")
-            if headline:
-                nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5))
-            if summary_body:
-                nodes.append(ParagraphNode(text=summary_body))
-            impacts = exec_sum.get("key_business_impacts", [])
-            if impacts:
-                nodes.append(SpacerNode(points=6))
-                nodes.append(ParagraphNode(text=f"**{t('business_impacts_title', locale=meta_lang)}:**"))
-                for imp in impacts:
-                    nodes.append(ParagraphNode(text=imp, style="List Bullet"))
 
-            # Append forensic cross-reference linking to Chapter 4 and Appendix A
-            nodes.append(SpacerNode(points=10))
-            cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
-            nodes.append(
-                ParagraphNode(
-                    text=f"*{cross_ref_text}*",
-                    italic=True,
-                    font_size=9.5,
-                    text_color_rgb=[71, 85, 105],
-                )
+        #
+        # 3. CHAPTER 1: EXECUTIVE SUMMARY (RFC 030 4-TIER EXECUTIVE VISUAL ARCHITECTURE)
+        #
+        nodes.append(
+            HeadingNode(
+                text=t("chapter_1_exec_summary", locale=meta_lang),
+                level=1,
+                primary_color_rgb=self.primary_color_rgb,
             )
+        )
+
+        exec_sum = (
+            annex_data.get("executive_summary") if annex_data else {}
+        ) or blueprint_data.get("executive_snapshot", {})
+
+        def _safe_float(val: Any, default: float = 0.0) -> float:
+            if val is None:
+                return default
+            if isinstance(val, (int, float)):
+                return float(val)
+            try:
+                clean_val = str(val).replace("$", "").replace("€", "").replace(",", "").strip()
+                return float(clean_val)
+            except (ValueError, TypeError):
+                return default
+
+        currency = str(
+            ctx.get("currency")
+            or blueprint_data.get("document_meta", {}).get("currency_code")
+            or blueprint_data.get("currency")
+            or "USD"
+        )
+        total_fair_ale = (
+            _safe_float(blueprint_data.get("total_fair_ale"))
+            or _safe_float(blueprint_data.get("annualized_loss_expectancy"))
+            or _safe_float(blueprint_data.get("fair_risk_profile", {}).get("total_ale"))
+            or _safe_float(blueprint_data.get("total_ale"))
+            or 0.0
+        )
+        total_p90 = (
+            _safe_float(blueprint_data.get("total_fair_p90"))
+            or _safe_float(blueprint_data.get("fair_risk_profile", {}).get("p90_ale"))
+            or _safe_float(blueprint_data.get("tail_risk_p90"))
+            or 0.0
+        )
+        ale_formatted = format_number(total_fair_ale, locale=meta_lang, decimals=0)
+        p90_formatted = format_number(total_p90, locale=meta_lang, decimals=0)
+        per_year_suffix = t("per_year_suffix", locale=meta_lang)
+
+        # -------------------------------------------------------------
+        # COMPONENT A: EXECUTIVE KPI SNAPSHOT SCORECARD TABLE (3 COLUMNS)
+        # -------------------------------------------------------------
+        max_score_str = format_number(5.0, locale=meta_lang, decimals=1)
+        score_display = (
+            display_score_str
+            if " / " in display_score_str
+            else f"{display_score_str} / {max_score_str}"
+        )
+        band_bg = "FFF3CD" if gs_val < 3.4 else "E2F0D9"
+        scorecard_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("kpi_score_header", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("kpi_band_header", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("kpi_exposure_header", locale=meta_lang), bold=True, is_header=True),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=score_display, bold=True, align="CENTER", bg_color=self.alt_row_hex),
+                    CellNode(text=global_band, bold=True, align="CENTER", bg_color=band_bg),
+                    CellNode(text=f"{currency} {ale_formatted} {per_year_suffix}", bold=True, align="CENTER", bg_color="FCE4D6"),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.33, 0.33, 0.34]))
+        nodes.append(SpacerNode(points=12))
+
+        # -------------------------------------------------------------
+        # COMPONENT B: 1.1 STRATEGIC CONTEXT & DIAGNOSTIC THESIS (PROSE)
+        # -------------------------------------------------------------
+        nodes.append(
+            HeadingNode(
+                text=t("sub_1_1_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+
+        headline = exec_sum.get("headline", "")
+        summary_body = exec_sum.get("summary_body", "")
+
+        if headline:
+            nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5, space_after=8))
+
+        if summary_body:
+            paragraphs = [p.strip() for p in summary_body.split("\n\n") if p.strip()]
+            for p_text in paragraphs:
+                nodes.append(ParagraphNode(text=p_text, space_after=8))
         else:
-            nodes.append(
-                HeadingNode(
-                    text=t("chapter_1_exec_summary", locale=meta_lang),
-                    level=1,
-                    primary_color_rgb=self.primary_color_rgb,
-                )
+            executive_summary_path = modules_dir / "02_executive_summary.md"
+            if executive_summary_path.exists():
+                nodes.extend(self._parse_markdown_to_nodes(executive_summary_path, skip_level_1=True))
+
+        nodes.append(SpacerNode(points=10))
+
+        # -------------------------------------------------------------
+        # COMPONENT C: EXECUTIVE DIAGNOSTIC TRIAD TABLE (STRENGTH/GAP/BOTTLENECK)
+        # -------------------------------------------------------------
+        m_strength = str(
+            exec_sum.get("message_strength")
+            or (blueprint_data.get("pillars_analysis", [{}])[0].get("health_check_asis", [{}])[0].get("capability") if blueprint_data.get("pillars_analysis") else "")
+            or t("module_strength_default", locale=meta_lang)
+        ).strip()
+        m_gap = str(
+            exec_sum.get("message_gap")
+            or (blueprint_data.get("executive_snapshot", {}).get("structural_risks", [""])[0] if blueprint_data.get("executive_snapshot", {}).get("structural_risks") else "")
+            or t("module_gap_default", locale=meta_lang)
+        ).strip()
+        m_bottleneck = str(
+            exec_sum.get("message_bottleneck")
+            or (blueprint_data.get("executive_snapshot", {}).get("business_impact", "") if blueprint_data.get("executive_snapshot", {}).get("business_impact") else "")
+            or t("module_bottleneck_default", locale=meta_lang)
+        ).strip()
+
+        triad_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_col_dimension", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("triad_col_finding", locale=meta_lang), bold=True, is_header=True),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_row_strength", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=m_strength, bg_color="FFFFFF"),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_row_gap", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=m_gap, bg_color="FFFFFF"),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("triad_row_bottleneck", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=m_bottleneck, bg_color="FFFFFF"),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=triad_rows, col_widths=[0.32, 0.68]))
+        nodes.append(SpacerNode(points=14))
+
+        # -------------------------------------------------------------
+        # COMPONENT D: 1.2 FINANCIAL EXPOSURE & OPERATIONAL RISK SUBSECTION
+        # -------------------------------------------------------------
+        nodes.append(
+            HeadingNode(
+                text=t("sub_1_2_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
             )
-            nodes.append(
-                ParagraphNode(text=t("module_exec_summary_unavailable", locale=meta_lang))
+        )
+        nodes.append(
+            ParagraphNode(
+                text=t("fin_plain_intro", locale=meta_lang),
+                space_after=8,
             )
+        )
+
+        fin_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("fin_col_metric", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("fin_col_figure", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("fin_col_meaning", locale=meta_lang), bold=True, is_header=True),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("fin_row_ale", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=f"{currency} {ale_formatted} {per_year_suffix}", bold=True, align="CENTER", bg_color="FFF3CD"),
+                    CellNode(text=t("fin_desc_ale", locale=meta_lang), bg_color="FFFFFF"),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("fin_row_p90", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
+                    CellNode(text=f"{currency} {p90_formatted}", bold=True, align="CENTER", bg_color="FCE4D6"),
+                    CellNode(text=t("fin_desc_p90", locale=meta_lang), bg_color="FFFFFF"),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=fin_rows, col_widths=[0.30, 0.25, 0.45]))
+        nodes.append(SpacerNode(points=10))
+
+        # Append forensic cross-reference linking to Chapter 4 and Appendix A
+        cross_ref_text = t("exec_summary_forensic_cross_reference", locale=meta_lang)
+        nodes.append(
+            ParagraphNode(
+                text=f"*{cross_ref_text}*",
+                italic=True,
+                font_size=9.5,
+                text_color_rgb=[71, 85, 105],
+            )
+        )
 
         # Executive pacing: Chapter 1 has its own dedicated page
         nodes.append(PageBreakNode())
