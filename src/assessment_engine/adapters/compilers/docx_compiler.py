@@ -653,17 +653,6 @@ class DocxCompiler(DocumentCompiler):
         for node in ast.nodes:
             self._compile_node(doc, node)
 
-        # Force Word to update fields (including TOC) on open
-        try:
-            from docx.oxml import OxmlElement
-            from docx.oxml.ns import qn
-            settings = doc.settings.element
-            updateFields = OxmlElement('w:updateFields')
-            updateFields.set(qn('w:val'), 'true')
-            settings.append(updateFields)
-        except (AttributeError, KeyError, IndexError, TypeError, OSError) as e:
-            logger.warning(f"Failed to force updateFields on open: {e}")
-
         #
         output_file = Path(output_path)
         output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -692,7 +681,7 @@ class DocxCompiler(DocumentCompiler):
             pass
 
     def _compile_toc(self, doc: Document, node: Any) -> None:
-        """Compiles a native Word Table of Contents field enclosing pre-computed entries."""
+        """Compiles an executive Table of Contents with polished tab leaders and typography."""
         p_title = doc.add_paragraph()
         p_title.paragraph_format.space_before = Pt(0)
         p_title.paragraph_format.space_after = Pt(14)
@@ -701,23 +690,6 @@ class DocxCompiler(DocumentCompiler):
         r_title.font.size = Pt(16)
         r_title.font.bold = True
         r_title.font.color.rgb = RGBColor(0, 114, 188)
-
-        p_begin = doc.add_paragraph()
-        p_begin.paragraph_format.space_after = Pt(0)
-        p_begin.paragraph_format.space_before = Pt(0)
-        fld_begin = OxmlElement("w:fldChar")
-        fld_begin.set(qn("w:fldCharType"), "begin")
-        p_begin._p.append(fld_begin)
-
-        instr = OxmlElement("w:instrText")
-        instr.set(qn("xml:space"), "preserve")
-        depth = getattr(node, "depth", 3)
-        instr.text = f'TOC \\o "1-{depth}" \\h \\z \\u'
-        p_begin._p.append(instr)
-
-        fld_sep = OxmlElement("w:fldChar")
-        fld_sep.set(qn("w:fldCharType"), "separate")
-        p_begin._p.append(fld_sep)
 
         entries = getattr(node, "entries", [])
         for entry in entries:
@@ -744,13 +716,6 @@ class DocxCompiler(DocumentCompiler):
             r_page.font.size = Pt(9.5)
             r_page.font.bold = (lvl == 1)
             r_page.font.color.rgb = RGBColor(100, 116, 139)
-
-        p_end = doc.add_paragraph()
-        p_end.paragraph_format.space_after = Pt(14)
-        p_end.paragraph_format.space_before = Pt(0)
-        fld_end = OxmlElement("w:fldChar")
-        fld_end.set(qn("w:fldCharType"), "end")
-        p_end._p.append(fld_end)
 
     def _compile_paragraph(self, doc: Document, node: ParagraphNode) -> None:
         if node.text.strip().lower() in ("table of contents", "[toc]"):
