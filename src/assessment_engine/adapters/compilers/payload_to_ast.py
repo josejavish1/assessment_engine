@@ -213,10 +213,32 @@ class ExecutiveNarrativeSynthesizer:
         }
 
         narrative_section = loc_data.get("executive_summary_narrative", {}).get(self._locale_code, {})
-        p1_tmpl = narrative_section.get("p1_operational_posture")
-        findings_lead_in = narrative_section.get("findings_lead_in", t("findings_lead_in", locale=self._locale_code))
-        p3_tmpl = narrative_section.get("p3_financial_exposure")
-        p4_tmpl = narrative_section.get("p4_modernization_mandate")
+
+        # Polymorphic 3-Archetype Narrative Rotation (RFC 051)
+        archetype_map = {
+            "T1": "INFRASTRUCTURE_PHYSICAL",
+            "T4": "INFRASTRUCTURE_PHYSICAL",
+            "T5": "INFRASTRUCTURE_PHYSICAL",
+            "T2": "COMPUTE_PLATFORMS",
+            "T7": "COMPUTE_PLATFORMS",
+            "T8": "COMPUTE_PLATFORMS",
+            "T3": "SECURITY_GOVERNANCE",
+            "T6": "SECURITY_GOVERNANCE",
+            "T9": "SECURITY_GOVERNANCE",
+            "T10": "SECURITY_GOVERNANCE",
+        }
+        archetype_key = archetype_map.get(canonical_key, "INFRASTRUCTURE_PHYSICAL")
+        archetypes_branch = loc_data.get("executive_summary_narrative", {}).get("archetypes", {})
+        arch_templates = archetypes_branch.get(archetype_key, {}).get(self._locale_code, {})
+
+        p1_tmpl = arch_templates.get("p1_operational_posture") or narrative_section.get("p1_operational_posture")
+        findings_lead_in = (
+            arch_templates.get("findings_lead_in")
+            or narrative_section.get("findings_lead_in")
+            or t("findings_lead_in", locale=self._locale_code)
+        )
+        p3_tmpl = arch_templates.get("p3_financial_exposure") or narrative_section.get("p3_financial_exposure")
+        p4_tmpl = arch_templates.get("p4_modernization_mandate") or narrative_section.get("p4_modernization_mandate")
 
         paragraphs = []
         raw_templates = [
@@ -1001,11 +1023,11 @@ class PayloadToASTBridge:
         )
 
         # 1. Paragraph 1: Posture & Mission
-        nodes.append(ParagraphNode(text=p_texts[0], space_after=6))
+        nodes.append(ParagraphNode(text=p_texts[0], font_size=9.5, space_after=3))
 
         # 2. Paragraph 2: Lead-in + Structured List Bullets
-        nodes.append(ParagraphNode(text=p_texts[1], space_after=3, keep_with_next=True))
-        active_findings = findings_briefs[:4] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
+        nodes.append(ParagraphNode(text=p_texts[1], font_size=9.5, space_after=2, keep_with_next=True))
+        active_findings = findings_briefs[:3] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
         for f_idx, fb in enumerate(active_findings):
             is_last = (f_idx == len(active_findings) - 1)
             b_text = fb.strip().rstrip(".")
@@ -1020,13 +1042,13 @@ class PayloadToASTBridge:
                     formatted_bullet = f"**{lead_phrase}** {rest_phrase}."
                 else:
                     formatted_bullet = f"{b_text}."
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", space_after=6 if is_last else 2))
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.0, space_after=3 if is_last else 2))
 
         # 3. Paragraph 3: Actuarial Latent Exposure
-        nodes.append(ParagraphNode(text=p_texts[2], space_after=6))
+        nodes.append(ParagraphNode(text=p_texts[2], font_size=9.5, space_after=3))
 
         # 4. Paragraph 4: Pure AS-IS Diagnostic Verdict
-        nodes.append(ParagraphNode(text=p_texts[3], space_after=8))
+        nodes.append(ParagraphNode(text=p_texts[3], font_size=9.5, space_after=4))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())

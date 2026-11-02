@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, List, Optional
 
 from docx import Document
+from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_TAB_LEADER
 from docx.oxml import OxmlElement, parse_xml
@@ -637,6 +638,19 @@ class DocxCompiler(DocumentCompiler):
                 r_first.font.italic = True
                 r_first.font.color.rgb = RGBColor(100, 116, 139)
 
+            # Configure built-in 'Footer' style so Word inherits exact typography on dynamic fields
+            try:
+                styles = doc.styles
+                if "Footer" not in styles:
+                    footer_style = styles.add_style("Footer", WD_STYLE_TYPE.PARAGRAPH)
+                else:
+                    footer_style = styles["Footer"]
+                footer_style.font.name = "Arial"
+                footer_style.font.size = Pt(8.5)
+                footer_style.font.color.rgb = RGBColor(148, 163, 184)
+            except Exception as ex:
+                logger.debug("Failed configuring Footer style: %s", ex)
+
             footer = section.footer
             p_foot = footer.paragraphs[0] if footer.paragraphs else footer.add_paragraph()
             p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -798,7 +812,6 @@ class DocxCompiler(DocumentCompiler):
         r_begin = field_p.add_run()
         fld_begin = OxmlElement("w:fldChar")
         fld_begin.set(qn("w:fldCharType"), "begin")
-        fld_begin.set(qn("w:dirty"), "true")
         r_begin._r.append(fld_begin)
 
         r_instr = field_p.add_run()
