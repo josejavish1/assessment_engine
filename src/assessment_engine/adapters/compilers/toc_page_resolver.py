@@ -225,7 +225,7 @@ class DeterministicTocPageResolver:
 
             for t_node in reversed(text_nodes):
                 val = (t_node.text or "").strip()
-                if page_node is None and val.isdigit():
+                if page_node is None and re.search(r'\d+\s*$', val):
                     page_node = t_node
                 elif page_node is not None:
                     title_fragments.insert(0, val)
@@ -250,7 +250,8 @@ class DeterministicTocPageResolver:
                         break
 
             if matched_page is not None:
-                page_node.text = str(matched_page)
+                old_text = (page_node.text or "").strip()
+                page_node.text = re.sub(r'\d+\s*$', str(matched_page), old_text)
 
     @staticmethod
     def _repack_docx(extract_dir: Path, target_docx: Path) -> None:

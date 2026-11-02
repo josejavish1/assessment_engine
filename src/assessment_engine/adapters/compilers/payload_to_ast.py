@@ -498,11 +498,14 @@ class PayloadToASTBridge:
         # CHAPTER 2: INDEX / NATIVE TABLE OF CONTENTS
         #
         toc_entries = []
+        page_prefix = t("toc_page_prefix", locale=meta_lang)
         for raw_entry in get_localized_list("static_toc_entries", locale=meta_lang):
             parts = raw_entry.split("\t")
             if len(parts) == 2:
                 e_title = parts[0].strip()
                 e_page = parts[1].strip()
+                if e_page.isdigit() and page_prefix:
+                    e_page = f"{page_prefix}{e_page}"
                 lvl = 2 if e_title.startswith("• ") or e_title.startswith("- ") else 1
                 toc_entries.append(TOCEntryNode(title=e_title, page=e_page, level=lvl))
         nodes.append(
@@ -848,31 +851,31 @@ class PayloadToASTBridge:
         triad_rows = [
             TableRowNode(
                 cells=[
-                    CellNode(text=t("triad_col_dimension", locale=meta_lang), bold=True, is_header=True),
-                    CellNode(text=t("triad_col_finding", locale=meta_lang), bold=True, is_header=True),
+                    CellNode(text=t("triad_col_dimension", locale=meta_lang), bold=True, is_header=True, font_size=8.5),
+                    CellNode(text=t("triad_col_finding", locale=meta_lang), bold=True, is_header=True, font_size=8.5),
                 ]
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=t("triad_row_strength", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=m_strength, bg_color="FFFFFF"),
+                    CellNode(text=t("triad_row_strength", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=m_strength, bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=t("triad_row_gap", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=m_gap, bg_color="FFFFFF"),
+                    CellNode(text=t("triad_row_gap", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=m_gap, bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=t("triad_row_bottleneck", locale=meta_lang), bold=True, bg_color=self.alt_row_hex),
-                    CellNode(text=m_bottleneck, bg_color="FFFFFF"),
+                    CellNode(text=t("triad_row_bottleneck", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=m_bottleneck, bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
         ]
-        nodes.append(TableNode(rows=triad_rows, col_widths=[0.32, 0.68]))
-        nodes.append(SpacerNode(points=14))
+        nodes.append(TableNode(rows=triad_rows, col_widths=[0.30, 0.70]))
+        nodes.append(SpacerNode(points=4))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 1
         nodes.append(PageBreakNode())
