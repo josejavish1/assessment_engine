@@ -522,22 +522,47 @@ class PayloadToASTBridge:
             nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.5, space_after=8))
 
         # Safe extraction of nested telemetry dictionaries
+        # Safe extraction of nested telemetry dictionaries
         fin_telemetry = blueprint_data.get("financial_telemetry") or {}
         doc_meta = blueprint_data.get("document_meta") or {}
 
-        # Resolve authoritative corporate hourly downtime cost rate dynamically
-        raw_candidates = [
-            fin_telemetry.get("authoritative_hourly_downtime_cost"),
-            blueprint_data.get("hourly_downtime_rate"),
-            blueprint_data.get("hourly_burn_rate"),
+        # Resolve authoritative corporate hourly downtime cost rate dynamically via ActuarialDowntimeCalibrator
+        req_keys = [
+            "global_annual_revenue",
+            "perimeter_revenue_weight_pct",
+            "effective_exposed_revenue",
+            "sector_benchmark_source",
+            "hourly_revenue_exposure_factor",
+            "authoritative_hourly_downtime_cost"
         ]
-        hourly_rate = 0.0
-        for candidate in raw_candidates:
-            if candidate is not None:
-                parsed = _safe_float(candidate, default=-1.0)
-                if parsed > 0.0:
-                    hourly_rate = parsed
-                    break
+        if not all(k in fin_telemetry for k in req_keys):
+            from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
+            calibrator = ActuarialDowntimeCalibrator()
+            try:
+                metrics = calibrator.calibrate(blueprint_data)
+                fin_telemetry.update({
+                    "global_annual_revenue": float(metrics.global_annual_revenue),
+                    "perimeter_revenue_weight_pct": float(metrics.perimeter_revenue_weight_pct),
+                    "effective_exposed_revenue": float(metrics.effective_exposed_revenue),
+                    "sector_benchmark_source": metrics.sector_benchmark_source,
+                    "hourly_revenue_exposure_factor": float(metrics.hourly_revenue_exposure_factor),
+                    "authoritative_hourly_downtime_cost": float(metrics.calibrated_hourly_downtime_cost),
+                })
+            except Exception:
+                pass
+
+        hourly_rate = float(fin_telemetry.get("authoritative_hourly_downtime_cost") or 0.0)
+        if hourly_rate <= 0.0:
+            raw_candidates = [
+                blueprint_data.get("hourly_downtime_rate"),
+                blueprint_data.get("hourly_burn_rate"),
+            ]
+            for candidate in raw_candidates:
+                if candidate is not None:
+                    parsed = _safe_float(candidate, default=-1.0)
+                    if parsed > 0.0:
+                        hourly_rate = parsed
+                        break
 
         if hourly_rate <= 0.0:
             raw_div = blueprint_data.get("annual_downtime_divisor")
@@ -545,7 +570,7 @@ class PayloadToASTBridge:
             if baseline_hours > 0.0 and total_fair_ale > 0.0:
                 hourly_rate = total_fair_ale / baseline_hours
 
-        hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=0)
+        hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=2)
 
         # Calculate equivalent operational friction and recovery hours dynamically
         ale_hours_val = (total_fair_ale / hourly_rate) if hourly_rate > 0.0 else 0.0
@@ -571,41 +596,14 @@ class PayloadToASTBridge:
                 for p in blueprint_data.get("pillars_analysis", [])
                 for hc in (p.get("health_check_asis") or [])
             ]
-        risk_count = max(len(risks_list), 1)
-
-        # Build 4 clean, well-paced pedagogical paragraphs
-        p1_text = t(
-            "exec_narrative_p1",
-            locale=meta_lang,
-            tower_name=tower_name,
-            score_display=score_display,
-            global_band=global_band,
-            client_name=client_name,
+        
+        total_findings = max(len(risks_list), 1)
+        fallback_vuln = t("default_critical_vulnerability", locale=meta_lang)
+        top_risk_title = (
+            str(risks_list[0].get("risk_name") or risks_list[0].get("finding") or fallback_vuln)
+            if risks_list
+            else fallback_vuln
         )
-        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
-        req_keys = [
-            "global_annual_revenue",
-            "perimeter_revenue_weight_pct",
-            "effective_exposed_revenue",
-            "sector_benchmark_source",
-            "hourly_revenue_exposure_factor",
-            "authoritative_hourly_downtime_cost"
-        ]
-        if not all(k in fin_telemetry for k in req_keys):
-            from assessment_engine.domain.actuarial.downtime_calibrator import ActuarialDowntimeCalibrator
-            calibrator = ActuarialDowntimeCalibrator()
-            try:
-                metrics = calibrator.calibrate(blueprint_data)
-                fin_telemetry.update({
-                    "global_annual_revenue": float(metrics.global_annual_revenue),
-                    "perimeter_revenue_weight_pct": float(metrics.perimeter_revenue_weight_pct),
-                    "effective_exposed_revenue": float(metrics.effective_exposed_revenue),
-                    "sector_benchmark_source": metrics.sector_benchmark_source,
-                    "hourly_revenue_exposure_factor": float(metrics.hourly_revenue_exposure_factor),
-                    "authoritative_hourly_downtime_cost": float(metrics.calibrated_hourly_downtime_cost),
-                })
-            except Exception:
-                pass
 
         global_annual_revenue = fin_telemetry.get("global_annual_revenue")
         if global_annual_revenue is None:
@@ -626,12 +624,43 @@ class PayloadToASTBridge:
         sector_impact_factor = fin_telemetry.get("hourly_revenue_exposure_factor")
         if sector_impact_factor is None:
             raise ValueError("Missing 'hourly_revenue_exposure_factor' in financial_telemetry")
+            
+        total_capex = fin_telemetry.get("remediation_capex_estimate")
+        if total_capex is None:
+            total_capex = sum(float(r.get("mitigation_capex", 0)) for r in risks_list)
 
         global_annual_revenue_formatted = format_number(global_annual_revenue, locale=meta_lang, decimals=0)
         effective_exposed_formatted = format_number(effective_exposed, locale=meta_lang, decimals=0)
         sector_impact_factor_pct = format_number(sector_impact_factor * 100, locale=meta_lang, decimals=4)
         perimeter_weight_str = format_number(perimeter_weight, locale=meta_lang, decimals=2)
+        total_capex_formatted = format_number(total_capex, locale=meta_lang, decimals=0)
         
+        # Calculate ROSI percentage
+        total_ale = fin_telemetry.get("total_annualized_risk_exposure")
+        if total_ale is None:
+            total_ale = sum(float(r.get("ale", 0)) for r in risks_list)
+        
+        rosi_percentage = "100"
+        if total_capex > 0:
+            rosi = ((total_ale - total_capex) / total_capex) * 100
+            rosi_percentage = format_number(rosi, locale=meta_lang, decimals=1)
+
+        # Deduplicate downtime hours via Joint Probability (Inclusion-Exclusion Principle)
+        from assessment_engine.domain.actuarial.risk_aggregator import BlastRadiusDeduplicator
+        from decimal import Decimal
+        raw_hours = [
+            Decimal(str(r.get("ale_hours")))
+            for r in risks_list
+            if r.get("ale_hours") is not None
+        ]
+        if raw_hours:
+            eff_hours_dec = BlastRadiusDeduplicator.compute_effective_downtime(raw_hours)
+            eff_hours_str = format_number(float(eff_hours_dec), locale=meta_lang, decimals=1)
+        elif ale_hours_val > 0.0:
+            eff_hours_str = ale_hours_str
+        else:
+            eff_hours_str = format_number(0.0, locale=meta_lang, decimals=1)
+            
         perimeter_name = str(
             blueprint_data.get("perimeter_context", {}).get("perimeter_name")
             or blueprint_data.get("audited_site_name")
@@ -639,6 +668,16 @@ class PayloadToASTBridge:
             or "Site"
         )
 
+        p1_text = t(
+            "exec_narrative_p1",
+            locale=meta_lang,
+            tower_name=tower_name,
+            score_display=score_display,
+            global_band=global_band,
+            client_name=client_name,
+            total_findings=total_findings,
+            top_risk_title=top_risk_title,
+        )
         p2_text = t(
             "exec_narrative_p2",
             locale=meta_lang,
@@ -652,20 +691,26 @@ class PayloadToASTBridge:
             effective_exposed_revenue_formatted=effective_exposed_formatted,
             sector_benchmark_source=sector_benchmark_source,
             sector_impact_factor_pct=sector_impact_factor_pct,
+            hourly_rate=hourly_formatted,
+            effective_downtime_hours=eff_hours_str,
+            total_ale=ale_formatted,
         )
         p3_text = t(
             "exec_narrative_p3",
             locale=meta_lang,
             ale_formatted=f"{currency} {ale_formatted}",
-            ale_hours=ale_hours_str,
+            ale_hours=eff_hours_str,
             p90_formatted=f"{currency} {p90_formatted}",
             p90_hours=p90_hours_str,
+            total_capex=total_capex_formatted,
+            currency=currency,
         )
         p4_text = t(
             "exec_narrative_p4",
             locale=meta_lang,
             tower_name=tower_name,
             client_name=client_name,
+            rosi_percentage=rosi_percentage,
         )
 
         nodes.append(ParagraphNode(text=p1_text, space_after=6))

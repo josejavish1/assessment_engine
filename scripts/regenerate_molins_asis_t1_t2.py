@@ -38,7 +38,7 @@ def compile_and_export_tower(
     compile_asis_docx_via_ast(payload_path, primary_docx, doc_lang="es")
     print(f"   ✓ DOCX generated: {primary_docx.stat().st_size:,} bytes")
 
-    # 2. Replicate to official package mirrors if they exist
+    # 2. Replicate to official package mirrors and legacy working paths
     mirrors = [
         REPO_ROOT / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/02_ANEXOS_TECNICOS_ESPECIALISTAS",
         REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/02_DIAGNOSTICOS_ASIS",
@@ -49,6 +49,20 @@ def compile_and_export_tower(
             dest = mirror_dir / output_docx_name
             shutil.copy2(primary_docx, dest)
             print(f"   ✓ Mirrored DOCX to: {mirror_dir.name}/{output_docx_name}")
+
+    # Mirror to local working/molins directory and November 202611 variants to prevent stale file reads
+    legacy_dir = REPO_ROOT / f"working/molins/{tower_code}"
+    if legacy_dir.exists():
+        for alt_name in [
+            output_docx_name,
+            output_docx_name.replace("202610", "202611"),
+            f"AS-IS_Anexo_Tecnico_{tower_code}.docx",
+            f"Diagnostico_ASIS_{tower_code}_molins.docx",
+        ]:
+            alt_dest = legacy_dir / alt_name
+            shutil.copy2(primary_docx, alt_dest)
+        # Also mirror 202611 to out_dir
+        shutil.copy2(primary_docx, out_dir / output_docx_name.replace("202610", "202611"))
 
     # 3. Convert DOCX to PDF via LibreOffice headless
     print(f"2. Converting DOCX to PDF via LibreOffice headless...")
@@ -74,6 +88,11 @@ def compile_and_export_tower(
             dest_pdf = mirror_dir / pdf_name
             shutil.copy2(primary_pdf, dest_pdf)
             print(f"   ✓ Mirrored PDF to: {mirror_dir.name}/{pdf_name}")
+
+    if legacy_dir.exists():
+        shutil.copy2(primary_pdf, legacy_dir / pdf_name)
+        shutil.copy2(primary_pdf, legacy_dir / pdf_name.replace("202610", "202611"))
+    shutil.copy2(primary_pdf, out_dir / pdf_name.replace("202610", "202611"))
 
     # 4. Generate Portal PNG page previews via pdftoppm
     pages_dir = out_dir / "pages"

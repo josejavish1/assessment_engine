@@ -105,12 +105,12 @@ class DeterministicTocPageResolver:
             outline_lvl = p.find("w:pPr/w:outlineLvl", namespaces=NS)
             is_heading = False
 
-            if p_style is not None:
-                style_val = str(p_style.get(f"{{{WORD_NAMESPACE}}}val", "")).lower()
-                if "heading" in style_val or style_val.startswith("h") and any(style_val.endswith(str(i)) for i in range(1, 4)):
-                    is_heading = True
-            elif outline_lvl is not None:
+            if outline_lvl is not None:
                 is_heading = True
+            elif p_style is not None:
+                style_val = str(p_style.get(f"{{{WORD_NAMESPACE}}}val", "")).lower()
+                if "heading" in style_val or (style_val.startswith("h") and any(style_val.endswith(str(i)) for i in range(1, 4))):
+                    is_heading = True
 
             if is_heading:
                 full_text = "".join(p.itertext()).strip()
@@ -198,6 +198,12 @@ class DeterministicTocPageResolver:
 
             return resolved
 
+    @staticmethod
+    def _normalize_token(text: str) -> str:
+        """Strips dot leaders and non-alphanumeric characters to create a canonical lookup key."""
+        cleaned = re.sub(r'\.{2,}.*$', '', text)
+        return re.sub(r'[^\w]', '', cleaned.lower(), flags=re.UNICODE)
+
     @classmethod
     def _patch_toc_entries(cls, root: etree._Element, resolved_pages: Dict[str, int]) -> None:
         """Walks TOC paragraphs inside w:sdt and updates the numeric run with resolved page."""
@@ -205,29 +211,46 @@ class DeterministicTocPageResolver:
         if sdt_content is None:
             return
 
-        for p in sdt_content.findall(".//w:p", namespaces=NS):
-            all_text_runs = p.findall(".//w:t", namespaces=NS)
-            if len(all_text_runs) >= 2:
-                # Reconstruct full entry title from all runs before the final page run
-                raw_entry_title = " ".join(t.text.strip() for t in all_text_runs[:-1] if t.text and t.text.strip())
-                clean_entry = re.sub(r"^\d+[\.\s]+", "", raw_entry_title).strip().lower()
+        canonical_map: Dict[str, int] = {
+            cls._normalize_token(k): v for k, v in resolved_pages.items()
+        }
 
-                matched_page: int | None = None
-                for canon_title, p_num in resolved_pages.items():
-                    c_lower = canon_title.lower()
-                    if clean_entry in c_lower or c_lower in clean_entry:
-                        matched_page = p_num
+        for p in sdt_content.findall(".//w:p", namespaces=NS):
+            text_nodes = p.findall(".//w:t", namespaces=NS)
+            if not text_nodes:
+                continue
+
+            page_node = None
+            title_fragments: List[str] = []
+
+            for t_node in reversed(text_nodes):
+                val = (t_node.text or "").strip()
+                if page_node is None and val.isdigit():
+                    page_node = t_node
+                elif page_node is not None:
+                    title_fragments.insert(0, val)
+
+            if page_node is None or not title_fragments:
+                continue
+
+            raw_title = "".join(title_fragments)
+            norm_title = cls._normalize_token(raw_title)
+
+            if not norm_title:
+                continue
+
+            # 1. Exact Canonical Match
+            matched_page = canonical_map.get(norm_title)
+
+            # 2. Fallback: Bidirectional Substring Inclusion
+            if matched_page is None:
+                for target_key, physical_page in canonical_map.items():
+                    if len(target_key) > 5 and (target_key in norm_title or norm_title in target_key):
+                        matched_page = physical_page
                         break
 
-                if matched_page is not None:
-                    last_t = all_text_runs[-1]
-                    old_text = (last_t.text or "").strip()
-                    match = cls.NUMERIC_PAGE_PATTERN.match(old_text)
-                    if match:
-                        prefix, _, suffix = match.groups()
-                        last_t.text = f"{prefix}{matched_page}{suffix}"
-                    else:
-                        last_t.text = str(matched_page)
+            if matched_page is not None:
+                page_node.text = str(matched_page)
 
     @staticmethod
     def _repack_docx(extract_dir: Path, target_docx: Path) -> None:

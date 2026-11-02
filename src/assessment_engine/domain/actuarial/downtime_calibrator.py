@@ -63,36 +63,48 @@ class ActuarialDowntimeCalibrator:
             "hourly_revenue_exposure_factor": Decimal("0.000010"),
             "default_single_site_weight_pct": Decimal("15.0"),
             "revenue_per_employee_benchmark": Decimal("350000.0"),
+            "sla_penalty_coefficient": Decimal("0.0845"),
+            "labor_recovery_coefficient": Decimal("0.05836"),
         },
         "GLOBAL_LOGISTICS": {
             "benchmark_authority": "ITIC Global Supply Chain Benchmark",
             "hourly_revenue_exposure_factor": Decimal("0.000025"),
             "default_single_site_weight_pct": Decimal("10.0"),
             "revenue_per_employee_benchmark": Decimal("250000.0"),
+            "sla_penalty_coefficient": Decimal("0.1000"),
+            "labor_recovery_coefficient": Decimal("0.0600"),
         },
         "FINANCIAL_SERVICES": {
             "benchmark_authority": "Gartner Tier-1 Banking Benchmark",
             "hourly_revenue_exposure_factor": Decimal("0.000005"),
             "default_single_site_weight_pct": Decimal("30.0"),
             "revenue_per_employee_benchmark": Decimal("850000.0"),
+            "sla_penalty_coefficient": Decimal("0.1500"),
+            "labor_recovery_coefficient": Decimal("0.0800"),
         },
         "HEALTHCARE": {
             "benchmark_authority": "HIMSS / Gartner Healthcare Continuity Benchmark",
             "hourly_revenue_exposure_factor": Decimal("0.000015"),
             "default_single_site_weight_pct": Decimal("20.0"),
             "revenue_per_employee_benchmark": Decimal("200000.0"),
+            "sla_penalty_coefficient": Decimal("0.1200"),
+            "labor_recovery_coefficient": Decimal("0.0700"),
         },
         "TECHNOLOGY_SAAS": {
             "benchmark_authority": "SaaS Capital / Gartner High-Availability Benchmark",
             "hourly_revenue_exposure_factor": Decimal("0.000020"),
             "default_single_site_weight_pct": Decimal("40.0"),
             "revenue_per_employee_benchmark": Decimal("450000.0"),
+            "sla_penalty_coefficient": Decimal("0.1000"),
+            "labor_recovery_coefficient": Decimal("0.0500"),
         },
         "DEFAULT_ENTERPRISE": {
             "benchmark_authority": "Gartner Cross-Industry Operational Continuity Benchmark",
             "hourly_revenue_exposure_factor": Decimal("0.000010"),
             "default_single_site_weight_pct": Decimal("10.0"),
             "revenue_per_employee_benchmark": Decimal("300000.0"),
+            "sla_penalty_coefficient": Decimal("0.0845"),
+            "labor_recovery_coefficient": Decimal("0.05836"),
         },
     }
 
@@ -138,15 +150,29 @@ class ActuarialDowntimeCalibrator:
             Decimal("0.01"), rounding=ROUND_HALF_UP
         )
 
-        explicit_override = organization_profile.get("explicit_hourly_downtime_cost") or organization_profile.get("hourly_downtime_rate")
+        explicit_override = organization_profile.get("explicit_hourly_downtime_cost")
         if explicit_override is not None and float(explicit_override) > 0.0:
             calibrated_hourly_cost = Decimal(str(explicit_override)).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
             is_override = True
         else:
-            # Mathematical calculation: Hourly Cost = Effective Exposed Revenue * Sector Factor
-            calibrated_hourly_cost = (effective_exposed_revenue * sector_factor).quantize(
+            # Base Hourly Cost: from explicit baseline or exposed revenue * sector factor
+            raw_base = organization_profile.get("hourly_downtime_rate") or organization_profile.get("hourly_downtime_cost")
+            if raw_base is not None and float(raw_base) > 0.0:
+                base_hourly = Decimal(str(raw_base))
+            else:
+                base_hourly = effective_exposed_revenue * sector_factor
+
+            raw_sla = organization_profile.get("sla_penalty_coefficient") or sector_spec.get("sla_penalty_coefficient", Decimal("0.0"))
+            raw_labor = organization_profile.get("labor_recovery_coefficient") or sector_spec.get("labor_recovery_coefficient", Decimal("0.0"))
+            sla_coef = Decimal(str(raw_sla))
+            labor_coef = Decimal(str(raw_labor))
+
+            sla_hourly = base_hourly * sla_coef
+            labor_hourly = base_hourly * labor_coef
+            
+            calibrated_hourly_cost = (base_hourly + sla_hourly + labor_hourly).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
             is_override = False
