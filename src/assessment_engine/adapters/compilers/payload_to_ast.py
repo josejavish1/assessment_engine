@@ -182,12 +182,14 @@ class ExecutiveNarrativeSynthesizer:
 
         operational_mission = tower_semantics.get("operational_mission", "")
         dilemma_anchor = tower_semantics.get("dilemma_anchor", "")
+        posture_modernization_focus = tower_semantics.get("posture_modernization_focus", "")
 
         context = {
             "client_name": client_name.strip(),
             "tower_name": tower_name.strip(),
             "operational_mission": operational_mission,
             "dilemma_anchor": dilemma_anchor,
+            "posture_modernization_focus": posture_modernization_focus,
             "maturity_score": maturity_score.strip(),
             "maturity_tier_label": maturity_tier_label.strip(),
             "critical_findings_count": str(max(len(findings_briefs), 1)),
