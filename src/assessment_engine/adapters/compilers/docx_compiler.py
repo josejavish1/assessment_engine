@@ -266,6 +266,8 @@ def add_markdown_runs(
             run.font.size = Pt(font_size)
             if color_rgb:
                 run.font.color.rgb = RGBColor(*color_rgb)
+            else:
+                run.font.color.rgb = RGBColor(46, 64, 77)
 
 
 def safe_set_cell_text(
@@ -369,6 +371,8 @@ def safe_set_cell_text(
                 run_lbl.font.size = Pt(font_size)
                 if color_rgb:
                     run_lbl.font.color.rgb = RGBColor(*color_rgb)
+                else:
+                    run_lbl.font.color.rgb = RGBColor(46, 64, 77)
 
                 add_markdown_runs(
                     p, clean_desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
@@ -381,6 +385,8 @@ def safe_set_cell_text(
                     run_bp.font.size = Pt(font_size)
                     if color_rgb:
                         run_bp.font.color.rgb = RGBColor(*color_rgb)
+                    else:
+                        run_bp.font.color.rgb = RGBColor(46, 64, 77)
                 add_markdown_runs(
                     p,
                     clean_line,
@@ -416,6 +422,8 @@ def safe_set_cell_text(
             run_lbl.font.size = Pt(font_size)
             if color_rgb:
                 run_lbl.font.color.rgb = RGBColor(*color_rgb)
+            else:
+                run_lbl.font.color.rgb = RGBColor(46, 64, 77)
 
             add_markdown_runs(
                 p, clean_desc, default_bold=bold, font_size=font_size, color_rgb=color_rgb
@@ -1045,21 +1053,33 @@ class DocxCompiler(DocumentCompiler):
         finalize_table(table)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-        # Enforce fixed table layout and write tblGrid
+        # Enforce table layout
         tbl = table._tbl
         tblPr = tbl.tblPr
+        is_autofit = getattr(node, "autofit", False)
         if tblPr is not None:
             for child in list(tblPr):
                 tag = child.tag.split("}")[-1]
                 if tag in ("tblW", "tblLayout"):
                     tblPr.remove(child)
-            tblW = OxmlElement("w:tblW")
-            tblW.set(qn("w:type"), "dxa")
-            tblW.set(qn("w:w"), str(TableLayoutCalculator.TOTAL_PRINTABLE_WIDTH_DXA))
-            _insert_in_tblpr(tblPr, tblW, "tblW")
-            tblLayout = OxmlElement("w:tblLayout")
-            tblLayout.set(qn("w:type"), "fixed")
-            _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
+
+            if is_autofit:
+                tblW = OxmlElement("w:tblW")
+                tblW.set(qn("w:type"), "pct")
+                tblW.set(qn("w:w"), "5000")
+                _insert_in_tblpr(tblPr, tblW, "tblW")
+                tblLayout = OxmlElement("w:tblLayout")
+                tblLayout.set(qn("w:type"), "autofit")
+                _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
+                table.autofit = True
+            else:
+                tblW = OxmlElement("w:tblW")
+                tblW.set(qn("w:type"), "dxa")
+                tblW.set(qn("w:w"), str(TableLayoutCalculator.TOTAL_PRINTABLE_WIDTH_DXA))
+                _insert_in_tblpr(tblPr, tblW, "tblW")
+                tblLayout = OxmlElement("w:tblLayout")
+                tblLayout.set(qn("w:type"), "fixed")
+                _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
 
         for child in list(tbl):
             if child.tag.endswith("tblGrid"):

@@ -658,31 +658,45 @@ class PayloadToASTBridge:
             )
         )
 
-        intro_path = modules_dir / "01_introduction.md"
-        if intro_path.exists():
-            nodes.extend(self._parse_markdown_to_nodes(intro_path, skip_level_1=True))
-        elif annex_data and "domain_introduction" in annex_data:
-            intro = annex_data["domain_introduction"]
-            obj = intro.get("domain_objective", "")
-            tech_dom = intro.get("technological_domain", "")
-            meth = intro.get("methodology", "")
-            if obj:
-                nodes.append(HeadingNode(text=t("objective_and_scope_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
-                nodes.append(ParagraphNode(text=obj))
-            if tech_dom:
-                nodes.append(SpacerNode(points=6))
-                nodes.append(HeadingNode(text=t("platform_description_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
-                nodes.append(ParagraphNode(text=tech_dom))
-            if meth:
-                nodes.append(SpacerNode(points=6))
-                nodes.append(HeadingNode(text=t("methodology_approach_title", locale=meta_lang), level=2, primary_color_rgb=self.primary_color_rgb))
-                nodes.append(ParagraphNode(text=meth))
-        else:
-            nodes.append(
-                ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang))
-            )
+        intro = (annex_data.get("domain_introduction") if annex_data else {}) or {}
+        obj = intro.get("domain_objective", "")
+        intro_para = intro.get("introduction_paragraph", "")
+        included_comps = intro.get("included_components", [])
 
-        # 2.4 Methodological and Regulatory Framework Table (driven dynamically per tower domain)
+        # 2.1 Objective and Scope
+        nodes.append(
+            HeadingNode(
+                text=t("objective_and_scope_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+        if obj:
+            nodes.append(ParagraphNode(text=obj, space_after=8))
+        else:
+            nodes.append(ParagraphNode(text=t("module_intro_scope_unavailable", locale=meta_lang), space_after=8))
+
+        # 2.2 Platform Description & Technical Scope
+        nodes.append(SpacerNode(points=6))
+        nodes.append(
+            HeadingNode(
+                text=t("platform_description_title", locale=meta_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+            )
+        )
+
+        if intro_para:
+            nodes.append(ParagraphNode(text=intro_para, space_after=8))
+
+        if included_comps:
+            lead_text = t("components_evaluated_lead", locale=meta_lang)
+            if lead_text:
+                nodes.append(ParagraphNode(text=f"**{lead_text}**", space_after=4))
+            for comp in included_comps:
+                nodes.append(ParagraphNode(text=comp, style="List Bullet", space_after=2))
+
+        # 2.2 Regulatory and Methodological Framework Table (Auto-fit to window and contents)
         tower_id = str(ctx.get("tower_id") or "T1")
         reg_meta = blueprint_data.get("document_meta", {}).get("regulatory_framework") or blueprint_data.get("regulatory_framework")
         if reg_meta:
@@ -702,44 +716,32 @@ class PayloadToASTBridge:
                 else t("norm_row_iso_purp", locale=meta_lang)
             )
         headers_norm = [
-            CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.0),
-            CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.0),
-            CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.0),
+            CellNode(text=t("norm_col_standard", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
+            CellNode(text=t("norm_col_scope", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
+            CellNode(text=t("norm_col_purpose", locale=meta_lang), bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="LEFT", font_size=9.5),
         ]
         norm_rows = [
             TableRowNode(cells=headers_norm, is_header=True),
             TableRowNode(cells=[
-                CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF", font_size=8.5),
-                CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.5),
-                CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                CellNode(text="CMMI for Infrastructure", bold=True, bg_color="FFFFFF", font_size=9.0),
+                CellNode(text=t("norm_row_cmmi_desc", locale=meta_lang), bg_color="FFFFFF", font_size=9.0),
+                CellNode(text=t("norm_row_cmmi_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=9.0),
             ]),
             TableRowNode(cells=[
-                CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex, font_size=8.5),
-                CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex, font_size=8.5),
-                CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
+                CellNode(text=norm_fw_name, bold=True, bg_color=self.alt_row_hex, font_size=9.0),
+                CellNode(text=norm_fw_desc, bg_color=self.alt_row_hex, font_size=9.0),
+                CellNode(text=norm_fw_purp, bg_color=self.alt_row_hex, align="CENTER", font_size=9.0),
             ]),
             TableRowNode(cells=[
-                CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF", font_size=8.5),
-                CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.5),
-                CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=8.5),
+                CellNode(text="Open FAIR™", bold=True, bg_color="FFFFFF", font_size=9.0),
+                CellNode(text=t("norm_row_fair_desc", locale=meta_lang), bg_color="FFFFFF", font_size=9.0),
+                CellNode(text=t("norm_row_fair_purp", locale=meta_lang), bg_color="FFFFFF", align="CENTER", font_size=9.0),
             ]),
         ]
         nodes.append(SpacerNode(points=10))
-        nodes.append(TableNode(rows=norm_rows))
+        nodes.append(TableNode(rows=norm_rows, autofit=True, col_widths=[0.28, 0.47, 0.25]))
 
-        # 2.5 Three Executive Outcomes of the Assessment
-        nodes.append(SpacerNode(points=12))
-        nodes.append(
-            HeadingNode(
-                text=t("methodology_three_outcomes_title", locale=meta_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        for b in get_localized_list("methodology_three_outcomes_bullets", locale=meta_lang):
-            nodes.append(ParagraphNode(text=b, style="List Bullet"))
-
-        # 2.6 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
+        # 2.3 & 2.4 CMMI Analytical Maturity Scale & Evaluated Capabilities Allocation
         _build_cmmi_methodology_and_capabilities_fn(ctx, nodes, self.primary_color_rgb)
 
         # Chapter 2 ends cleanly with dedicated page

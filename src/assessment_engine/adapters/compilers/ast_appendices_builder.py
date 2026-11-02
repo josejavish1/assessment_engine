@@ -47,8 +47,8 @@ def build_cmmi_methodology_and_capabilities(
     tower_id = ctx["tower_id"]
     blueprint_data = ctx["blueprint_data"]
 
-    # 2.6 Five-Level Analytical Maturity Scale
-    nodes.append(SpacerNode(points=4))
+    # 2.3 Five-Level Analytical Maturity Scale (CMMI)
+    nodes.append(SpacerNode(points=6))
     nodes.append(
         HeadingNode(
             text=t(heading_key, locale=meta_lang),
@@ -59,16 +59,25 @@ def build_cmmi_methodology_and_capabilities(
     nodes.append(
         ParagraphNode(
             text=t("maturity_scale_intro", locale=meta_lang),
-            space_after=2,
-            font_size=9.0,
+            space_after=4,
+            font_size=10.5,
+            text_color_rgb=[46, 64, 77],
         )
     )
     levels = get_localized_list("maturity_scale_levels", locale=meta_lang)
     for lvl in levels:
-        nodes.append(ParagraphNode(text=lvl, style="List Bullet", space_after=1, font_size=8.5))
+        nodes.append(
+            ParagraphNode(
+                text=lvl,
+                style="List Bullet",
+                space_after=2,
+                font_size=10.5,
+                text_color_rgb=[46, 64, 77],
+            )
+        )
 
-    # 2.7 Evaluated Capabilities and Pillar Weight Allocation
-    nodes.append(SpacerNode(points=4))
+    # 2.4 Evaluated Capabilities and Pillar Weight Allocation
+    nodes.append(SpacerNode(points=6))
     nodes.append(
         HeadingNode(
             text=t("evaluated_capabilities_title", locale=meta_lang),
@@ -79,8 +88,9 @@ def build_cmmi_methodology_and_capabilities(
     nodes.append(
         ParagraphNode(
             text=t("evaluated_capabilities_intro", locale=meta_lang),
-            space_after=2,
-            font_size=9.0,
+            space_after=4,
+            font_size=10.5,
+            text_color_rgb=[46, 64, 77],
         )
     )
 
@@ -163,7 +173,15 @@ def build_cmmi_methodology_and_capabilities(
             verb_intro=verb_intro,
             kpi_str=kpi_str,
         )
-        nodes.append(ParagraphNode(text=p_bullet_text, style="List Bullet", space_after=1, font_size=8.5))
+        nodes.append(
+            ParagraphNode(
+                text=p_bullet_text,
+                style="List Bullet",
+                space_after=3,
+                font_size=10.5,
+                text_color_rgb=[46, 64, 77],
+            )
+        )
 
 
 def build_appendix_a_custody(

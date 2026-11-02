@@ -224,7 +224,7 @@
     "chapter_5_strategic_roadmap": "5. Conclusiones y Síntesis Diagnóstica (AS-IS)",
     "business_impacts_title": "Principales Impactos de Negocio",
     "objective_and_scope_title": "Objetivo y Alcance",
-    "platform_description_title": "Descripción de la Plataforma y Topología Unificada",
+    "platform_description_title": "2.2. Descripción de la Plataforma",
     "maturity_methodology_title": "Metodología de Evaluación de Madurez",
     "diagnosis_performance_matrix_title": "Matriz de Desempeño por Dominio",
     "decision_matrix_title": "Matriz de Decisión: Inacción frente a Modernización",
@@ -708,7 +708,7 @@
       "**Nivel 4 - Gestionado (3,4 - 4,2):** Capacidades medidas cuantitativamente y alineadas con el gobierno de TI.",
       "**Nivel 5 - Optimizado (4,2 - 5,0):** Modelo operativo de excelencia, altamente automatizado y en mejora continua."
     ],
-    "evaluated_capabilities_title": "Capacidades Evaluadas y Cálculo del Score",
+    "evaluated_capabilities_title": "2.4. Capacidades Evaluadas y Cálculo del Score",
     "evaluated_capabilities_intro": "El nivel de madurez técnica y el score global de la torre se consolidan mediante el promedio ponderado de las calificaciones obtenidas en las siguientes dimensiones y KPIs evaluados:",
     "connector_and": " y ",
     "lbl_default_pillar_kpis": "las capacidades operativas del pilar",
@@ -1270,12 +1270,6 @@
     "corporate_footer_prefix": "Anexo Técnico — Confidencial  |  Pág.",
     "norm_row_iso_desc": "Controles de seguridad, segmentación de red y gobierno de continuidad operativa.",
     "norm_row_iso_purp": "Gestión de riesgos tecnológicos.",
-    "methodology_three_outcomes_title": "Tres Resultados Ejecutivos del Diagnóstico",
-    "methodology_three_outcomes_bullets": [
-      "**1. Identificación y Cuantificación de Brechas de Resiliencia:** Auditoría técnica exhaustiva y mapeo de dependencias críticas en salas técnicas e infraestructura física de centros de datos.",
-      "**2. Evaluación de Obsolescencia y Deuda Tecnológica:** Análisis de ciclo de vida de hardware, soporte de fabricante (EoL) y grado de cumplimiento frente a estándares de diseño de alta disponibilidad.",
-      "**3. Priorización Racional de Inversiones (Business Case):** Cuantificación actuarial del Coste de Inacción (ALE) y cálculo de retornos financieros de modernización (CAPEX/ROI) defendibles ante el Consejo."
-    ],
     "methodology_three_phases_title": "Metodología de Calibración en Tres Fases",
     "methodology_three_phases_bullets": [
       "**Fase 1: Ingesta de Evidencias y Verificación en Planta:** Inspección presencial, entrevistas técnicas con líderes de infraestructura y análisis de inventarios, contratos y topologías de red.",
@@ -1381,7 +1375,7 @@
       "--- FIN TABLA"
     ],
     "methodology_approach_title": "Enfoque Metodológico de la Evaluación",
-    "maturity_scale_title": "Escala Analítica de Madurez CMMI",
+    "maturity_scale_title": "2.3. Escala Analítica de Madurez CMMI",
     "roi_payback_dynamic": "Payback < {months} meses",
     "project_lbl": "Proyecto:",
     "portfolio_lbl": "Cartera",
@@ -1483,7 +1477,8 @@
     "per_year_suffix": "/ año",
     "fin_desc_ale": "Coste anual previsible derivado de incidencias operativas recurrentes, micro-cortes de servicio y horas de remediación técnica manual.",
     "fin_desc_p90": "Impacto económico estimado ante una caída concurrente de infraestructura crítica durante ventanas de máxima actividad operativa.",
-    "fin_plain_intro": "La vulnerabilidad estructural observada genera una exposición económica cuantificable que combina la fricción operativa recurrente con el riesgo de una interrupción severa en los procesos de negocio. Este impacto económico se desglosa a continuación en términos de pérdida anual esperada frente a escenarios de contingencia extrema:"
+    "fin_plain_intro": "La vulnerabilidad estructural observada genera una exposición económica cuantificable que combina la fricción operativa recurrente con el riesgo de una interrupción severa en los procesos de negocio. Este impacto económico se desglosa a continuación en términos de pérdida anual esperada frente a escenarios de contingencia extrema:",
+    "components_evaluated_lead": "El alcance técnico evaluado en esta torre comprende los siguientes componentes y subsistemas clave:"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -1521,7 +1516,7 @@
     "chapter_5_strategic_roadmap": "5. Conclusions & Baseline Diagnostic Synthesis (AS-IS)",
     "business_impacts_title": "Key Business Impacts",
     "objective_and_scope_title": "Objective and Scope",
-    "platform_description_title": "Platform Description and Unified Topology",
+    "platform_description_title": "2.2. Platform Description",
     "maturity_methodology_title": "Maturity Assessment Methodology",
     "diagnosis_performance_matrix_title": "Performance Matrix by Technical Domain",
     "decision_matrix_title": "Decision Matrix: Inaction vs. Modernization",
@@ -2185,7 +2180,7 @@
       "**Level 4 - Managed (3.4-4.2):** Industrialized capabilities governed predictively through quantitative metrics.",
       "**Level 5 - Optimized (4.2-5.0):** Dynamic, highly automated processes focused on continuous evolutionary improvement."
     ],
-    "evaluated_capabilities_title": "Evaluated Capabilities and Score Calculation",
+    "evaluated_capabilities_title": "2.4. Evaluated Capabilities & Score Calculation",
     "evaluated_capabilities_intro": "The overall tower maturity score is consolidated through a weighted average of scores achieved across the following evaluated dimensions and KPIs:",
     "connector_and": " and ",
     "lbl_default_pillar_kpis": "core operational capabilities",
@@ -2747,12 +2742,6 @@
     "corporate_footer_prefix": "Technical Annex — Confidential  |  Page",
     "norm_row_iso_desc": "Security controls, network segmentation, and operational continuity governance.",
     "norm_row_iso_purp": "Technological risk governance.",
-    "methodology_three_outcomes_title": "Three Executive Outcomes of the Assessment",
-    "methodology_three_outcomes_bullets": [
-      "**1. Resilience Gap Identification & Quantification:** Rigorous technical audit and critical dependency mapping across data centers and facilities infrastructure.",
-      "**2. Technical Debt & Obsolescence Evaluation:** Hardware lifecycle analysis, vendor end-of-life (EoL) support exposure, and high-availability design compliance.",
-      "**3. Rational Investment Prioritization (Business Case):** Actuarial Cost of Inaction (ALE) quantification and modernizing financial return (CAPEX/ROI) justification for the Board."
-    ],
     "methodology_three_phases_title": "Three-Phase Ground-Truth Methodology",
     "methodology_three_phases_bullets": [
       "**Phase 1: Evidence Ingestion & Operational Verification:** On-site technical inspection, engineering interviews, and network/facility topology validation.",
@@ -2862,7 +2851,7 @@
       "--- FIN TABLA"
     ],
     "methodology_approach_title": "Assessment Methodological Approach",
-    "maturity_scale_title": "CMMI Analytical Maturity Scale",
+    "maturity_scale_title": "2.3. CMMI Analytical Maturity Scale",
     "roi_payback_dynamic": "Payback < {months} months",
     "project_lbl": "Project:",
     "portfolio_lbl": "Portfolio",
@@ -2964,7 +2953,8 @@
     "per_year_suffix": "/ yr",
     "fin_desc_ale": "Foreseeable recurring annual cost resulting from routine operational disruptions, micro-outages, and manual engineering remediation toil.",
     "fin_desc_p90": "Estimated financial impact of a severe concurrent infrastructure failure during peak operational windows.",
-    "fin_plain_intro": "The observed structural vulnerability generates quantifiable financial exposure that balances recurring operational friction against the tail risk of severe business disruption. This economic impact is detailed below in terms of expected annual operational loss versus extreme stress scenarios:"
+    "fin_plain_intro": "The observed structural vulnerability generates quantifiable financial exposure that balances recurring operational friction against the tail risk of severe business disruption. This economic impact is detailed below in terms of expected annual operational loss versus extreme stress scenarios:",
+    "components_evaluated_lead": "The technical scope evaluated within this tower encompasses the following key components and subsystems:"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
