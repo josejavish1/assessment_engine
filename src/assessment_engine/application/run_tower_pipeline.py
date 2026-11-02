@@ -702,6 +702,34 @@ async def _stage_blueprint_and_annex(cfg: PipelineConfig) -> None:
         )
 
 
+    print("\n🚀 Starting Universal Payload Enrichment...")
+    enriched_payload_path = cfg.case_dir / f"approved_annex_{cfg.tower_id.lower()}.enriched_payload.json"
+    if (
+        cfg.force
+        or not enriched_payload_path.exists()
+        or enriched_payload_path.stat().st_size == 0
+    ):
+        await run_step_async(
+            [
+                cfg.python_bin,
+                "-m",
+                "assessment_engine.cli.enrich_tower_payload_cli",
+                "--tower-id", cfg.tower_id,
+                "--input-payload", str(cfg.blueprint_payload_path),
+                "--output-payload", str(enriched_payload_path),
+                "--taxonomy-path", str(cfg.case_dir.parent.parent.parent / "engine_config/taxonomy_multilingual.json"),
+                "--actuarial-gate-path", str(cfg.case_dir / "custom_risk_profile.json"),
+                "--forensic-ledger-path", str(cfg.case_dir / "evidence_ledger.json"),
+                "--tenant-config-path", str(cfg.case_dir / "case_input.json"),
+            ],
+            cfg.env,
+            "Universal Payload Enricher (Pre-flight T1..T10)",
+        )
+    else:
+        print(
+            "⏭️  [Cache Bypass] Engine: Universal Payload Enricher already generated. Skipping."
+        )
+
 async def _stage_render_deliverables(cfg: PipelineConfig) -> None:
     """Concurrently compile final AS-IS diagnostic report, radar charts, and Blueprint Word DOCX documents."""
 
