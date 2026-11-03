@@ -1514,7 +1514,7 @@
     "ch4_sec1_title": "4.1. Coste Estimado por Hora de Inactividad",
     "ch4_sec1_narrative_p1": "Para traducir los hallazgos empíricos de infraestructura y arquitectura (documentados en los Capítulos 2 y 3) al lenguaje financiero del Comité de Dirección, este análisis aplica la taxonomía internacional Open FAIR™ (Factor Analysis of Information Risk). Es imperativo señalar que todas las cifras monetarias, frecuencias de ocurrencia y tiempos de recuperación contenidos en este capítulo representan proyecciones actuariales estimadas diseñadas para la priorización racional de inversiones (CAPEX) y no constituyen asientos contables históricos ni pérdidas ya materializadas.",
     "ch4_sec1_narrative_p2": "El pilar paramétrico del modelo es la Tasa Horaria Compuesta Estimada de Indisponibilidad Crítica (R_hourly, est), calculada en {hourly_rate_est}/h. Esta magnitud proyectada agrega tres vectores de erosión financiera que operan simultáneamente durante una interrupción severa del servicio en {client_name}:",
-    "ch4_sec1_formula_block": "R_hourly, est = C_op, est (Lucro Cesante Base) + C_sla, est (Penalizaciones Contractuales) + C_rec, est (Brigadas y Recuperación)",
+    "ch4_sec1_formula_block": "R_hourly, est = C_op, est + C_sla, est + C_rec, est",
     "ch4_lineage_table_title": "Tabla 4.1: Linaje Matemático y Desglose Paramétrico de la Tasa Horaria Estimada de Indisponibilidad",
     "ch4_lineage_col_vector": "Vector Actuarial (Open FAIR™)",
     "ch4_lineage_col_code": "Parámetro",
@@ -1858,7 +1858,22 @@
     "sec4_1_alpha_reconciliation": "Reconciliación con la Tasa Base Corporativa (Factor de Afectación Operativa α): El coste base de parada establecido en el Capítulo 1 ({base_rate}/h) representa un escenario de parálisis corporativa total (100% de inoperatividad). Dado que un incidente técnico rara vez detiene simultáneamente el 100% de la facturación y productividad de toda la organización, el modelo actuarial pondera dicha tasa base mediante el Factor de Afectación Operativa (α) según la severidad sistémica del activo afectado: 70% de afectación ({rate_70}/h) para fallos en plataformas críticas troncales; 40% de afectación ({rate_40}/h) para contingencias en servicios intermedios con degradación parcial; y 20% de afectación ({rate_20}/h) para fricciones aisladas en componentes periféricos. De este modo, cada ficha de riesgo en la Sección 4.4 refleja exactamente la fracción del coste corporativo expuesta en función de su radio de impacto real.",
     "actuarial_custody_promoted_scope_note": "Nota de Alcance: Este riesgo se cuantifica económicamente en este informe porque el área técnica principal ({target_tower}, ref: {primary_risk_ref}) no forma parte de los servicios evaluados en este proyecto.",
     "actuarial_custody_promoted_unmapped_note": "Nota de Alcance: Este riesgo se cuantifica económicamente en este informe al no estar asignado a otra área técnica evaluada en este proyecto.",
-    "actuarial_custody_deduplicated_note": "Exposición económica contabilizada en el área principal: {primary_risk_ref}."
+    "actuarial_custody_deduplicated_note": "Exposición económica contabilizada en el área principal: {primary_risk_ref}.",
+    "p90_callout_title": "Escenario Adverso de Contingencia Máxima y Resiliencia Extrema (P90)",
+    "p90_callout_body_template": "En consonancia con la síntesis ejecutiva del Capítulo 1, la modelización actuarial en el percentil 90 (P90) evalúa la materialización de un fallo compuesto por {compound_failure_trigger}. Bajo este régimen de estrés asintótico, la ventana física de reconstrucción, sincronización e integridad operativa se extiende hasta {p90_recovery_hours} horas. El impacto financiero contingente asciende a un máximo proyectado de {p90_total_contingency}, desglosado en {direct_stoppage_loss} por interrupción operativa directa y {secondary_disaster_spend} asociados a gastos extraordinarios de contingencia (activación de soporte de emergencia del fabricante, logística crítica de reemplazo de componentes y triaje especializado de nivel 3).",
+    "tower_p90_triggers": {
+      "T1": "pérdida simultánea de alimentación eléctrica redundante y degradación térmica en sala técnica principal",
+      "T2": "caída crítica simultánea de clústeres de cómputo e indisponibilidad del quórum de almacenamiento primario",
+      "T3": "corrupción de catálogos de réplica e indisponibilidad del repositorio primario de respaldos inmutables",
+      "T4": "partición de red en el núcleo de conmutación con fallo concurrente en el plano de control de enrutamiento",
+      "T5": "desconexión masiva de buses de campo y bloqueo de controladores lógicos programables (PLC)",
+      "T6": "compromiso de cuentas privilegiadas e invalidación simultánea de mecanismos de autenticación",
+      "T7": "corrupción transaccional en motores de bases de datos críticas con necesidad de recuperación point-in-time",
+      "T8": "caída sistémica del plano de integración y colas de mensajería del ecosistema de aplicaciones corporativas",
+      "T9": "revocación masiva de perfiles de aprovisionamiento o bloqueo generalizado de flota de puestos de trabajo",
+      "T10": "indisponibilidad simultánea de plataformas de monitorización, ITSM y orquestación de respuesta a incidentes",
+      "DEFAULT": "fallo concurrente de componentes troncales y pérdida de redundancia operativa en el dominio"
+    }
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -3369,7 +3384,7 @@
     "ch4_sec1_title": "4.1. Estimated Hourly Downtime Cost",
     "ch4_sec1_narrative_p1": "To translate empirical infrastructure and architectural findings (documented in Chapters 2 and 3) into executive financial telemetry, this assessment applies the international Open FAIR™ (Factor Analysis of Information Risk) taxonomy. Crucially, all monetary figures, event frequencies, and recovery durations contained in this chapter represent estimated actuarial projections engineered for rational capital allocation (CAPEX prioritization) and do not represent historical accounting losses or realized financial events.",
     "ch4_sec1_narrative_p2": "The parametric cornerstone of the model is the Estimated Composite Critical Downtime Hourly Rate (R_hourly, est), quantified at {hourly_rate_est}/hr. This projected metric aggregates three financial erosion vectors operating simultaneously during a severe service disruption at {client_name}:",
-    "ch4_sec1_formula_block": "R_hourly, est = C_op, est (Operational Velocity) + C_sla, est (Contractual SLA Penalties) + C_rec, est (Emergency Recovery Burden)",
+    "ch4_sec1_formula_block": "R_hourly, est = C_op, est + C_sla, est + C_rec, est",
     "ch4_lineage_table_title": "Table 4.1: Mathematical Lineage and Parametric Breakdown of the Estimated Hourly Downtime Rate",
     "ch4_lineage_col_vector": "Actuarial Vector (Open FAIR™)",
     "ch4_lineage_col_code": "Parameter",
@@ -3581,7 +3596,22 @@
     "sec4_1_alpha_reconciliation": "Corporate Baseline Rate Reconciliation (Operational Impact Factor α): The baseline downtime cost established in Chapter 1 ({base_rate}/h) represents a total enterprise paralysis scenario (100% operational halt). Because a localized technical incident rarely halts 100% of organization-wide revenue and productivity simultaneously, the actuarial model weights this baseline rate using the Operational Impact Factor (α) according to the systemic severity of the affected asset: 70% impact ({rate_70}/h) for core critical platform failures; 40% impact ({rate_40}/h) for intermediate service contingencies with partial degradation; and 20% impact ({rate_20}/h) for isolated friction in peripheral components. Consequently, every risk card in Section 4.4 reflects the exact fraction of corporate downtime cost exposed by its specific blast radius.",
     "actuarial_custody_promoted_scope_note": "Scope Note: This risk is quantified in this report because its primary technical area ({target_tower}, ref: {primary_risk_ref}) is not part of the services assessed in this project.",
     "actuarial_custody_promoted_unmapped_note": "Scope Note: This risk is quantified in this report as it is not assigned to another assessed technical area.",
-    "actuarial_custody_deduplicated_note": "Financial exposure accounted for in primary area: {primary_risk_ref}."
+    "actuarial_custody_deduplicated_note": "Financial exposure accounted for in primary area: {primary_risk_ref}.",
+    "p90_callout_title": "P90 Adverse Contingency & Extreme Resilience Scenario",
+    "p90_callout_body_template": "Consistent with the Chapter 1 executive synthesis, actuarial modeling at the 90th percentile (P90) evaluates a compound failure triggered by {compound_failure_trigger}. Under this asymptotic stress regime, the physical reconstruction, state synchronization, and operational verification window extends up to {p90_recovery_hours} hours. The projected maximum contingent financial exposure reaches {p90_total_contingency}, comprising {direct_stoppage_loss} in direct operational stoppage losses and {secondary_disaster_spend} in secondary disaster expenditures (emergency OEM vendor escalation, expedited hardware logistics, and Tier-3 specialized triage).",
+    "tower_p90_triggers": {
+      "T1": "simultaneous dual power path loss and thermal runaway across primary technical facilities",
+      "T2": "simultaneous critical compute cluster failure and loss of primary storage quorum",
+      "T3": "replica catalog corruption alongside primary immutable backup repository unavailability",
+      "T4": "core switching fabric partition coupled with concurrent routing control-plane degradation",
+      "T5": "mass fieldbus disconnection and programmable logic controller (PLC) lockout",
+      "T6": "privileged identity compromise and concurrent authentication mechanism invalidation",
+      "T7": "transactional corruption across core database engines requiring point-in-time recovery",
+      "T8": "systemic integration bus and message broker outage across enterprise application workloads",
+      "T9": "mass endpoint provisioning revocation or fleet-wide workspace lockouts",
+      "T10": "simultaneous outage of observability, ITSM, and incident orchestration platforms",
+      "DEFAULT": "concurrent core component failure and operational redundancy loss across the domain"
+    }
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",

@@ -733,7 +733,7 @@ class PayloadToASTBridge:
             ),
         ]
         nodes.append(TableNode(rows=scorecard_rows, col_widths=[0.33, 0.33, 0.34]))
-        nodes.append(SpacerNode(points=4))
+        nodes.append(SpacerNode(points=14))
 
         # -------------------------------------------------------------
         # COMPONENT A2: EXECUTIVE DIAGNOSTIC TRIAD TABLE (COCKPIT COMPANION)
@@ -781,14 +781,14 @@ class PayloadToASTBridge:
             ),
         ]
         nodes.append(TableNode(rows=triad_rows, col_widths=[0.28, 0.72]))
-        nodes.append(SpacerNode(points=6))
+        nodes.append(SpacerNode(points=16))
 
         # -------------------------------------------------------------
         # COMPONENT B: EXECUTIVE HEADLINE & FLUID MECE NARRATIVE (PROSE)
         # -------------------------------------------------------------
         headline = exec_sum.get("headline", "")
         if headline:
-            nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.0, space_after=6))
+            nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.0, space_after=8))
 
         # Safe extraction of nested telemetry dictionaries
         # Safe extraction of nested telemetry dictionaries
@@ -1037,10 +1037,10 @@ class PayloadToASTBridge:
         )
 
         # 1. Paragraph 1: Posture & Mission
-        nodes.append(ParagraphNode(text=p_texts[0], font_size=9.5, space_after=3))
+        nodes.append(ParagraphNode(text=p_texts[0], font_size=9.5, space_after=8))
 
         # 2. Paragraph 2: Lead-in + Structured List Bullets
-        nodes.append(ParagraphNode(text=p_texts[1], font_size=9.5, space_after=2, keep_with_next=True))
+        nodes.append(ParagraphNode(text=p_texts[1], font_size=9.5, space_after=4, keep_with_next=True))
         active_findings = findings_briefs[:3] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
         for f_idx, fb in enumerate(active_findings):
             is_last = (f_idx == len(active_findings) - 1)
@@ -1056,13 +1056,13 @@ class PayloadToASTBridge:
                     formatted_bullet = f"**{lead_phrase}** {rest_phrase}."
                 else:
                     formatted_bullet = f"{b_text}."
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.0, space_after=3 if is_last else 2))
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.0, space_after=8 if is_last else 3))
 
         # 3. Paragraph 3: Actuarial Latent Exposure
-        nodes.append(ParagraphNode(text=p_texts[2], font_size=9.5, space_after=3))
+        nodes.append(ParagraphNode(text=p_texts[2], font_size=9.5, space_after=8))
 
         # 4. Paragraph 4: Pure AS-IS Diagnostic Verdict
-        nodes.append(ParagraphNode(text=p_texts[3], font_size=9.5, space_after=4))
+        nodes.append(ParagraphNode(text=p_texts[3], font_size=9.5, space_after=10))
 
         # Executive pacing: Chapter 1 stands strictly alone on Page 3
         nodes.append(PageBreakNode())
@@ -2155,6 +2155,77 @@ class PayloadToASTBridge:
             ),
         ]
         nodes.append(TableNode(rows=tier_summary_rows, autofit=True, col_widths=[0.28, 0.08, 0.24, 0.40]))
+        nodes.append(SpacerNode(points=10))
+
+        # 4.3.1 P90 Tail Risk Disaster Scenario Callout (RFC 058)
+        from assessment_engine.domain.actuarial.downtime_calibrator import OperationalTailRiskEngine
+        blueprint_data = ctx.get("blueprint_data") or {}
+        fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
+        hourly_rate = float(
+            fin_telemetry.get("authoritative_hourly_downtime_cost")
+            or blueprint_data.get("hourly_downtime_rate")
+            or blueprint_data.get("hourly_burn_rate")
+            or 0.0
+        )
+        if hourly_rate <= 0.0 and total_fair_ale > 0.0:
+            raw_div = _safe_float(blueprint_data.get("annual_downtime_divisor"), default=0.0)
+            if raw_div > 0.0:
+                hourly_rate = total_fair_ale / raw_div
+
+        loc_branch = self.loc_branch
+
+        ceiling_hours = float(
+            fin_telemetry.get("operational_recovery_ceiling_hours")
+            or blueprint_data.get("operational_recovery_ceiling_hours")
+            or OperationalTailRiskEngine.DEFAULT_RECOVERY_CEILING_HOURS
+        )
+        total_p90_val = float(
+            blueprint_data.get("total_fair_p90")
+            or blueprint_data.get("fair_risk_profile", {}).get("p90_ale")
+            or blueprint_data.get("tail_risk_p90")
+            or total_fair_ale
+        )
+        tail_decomp = OperationalTailRiskEngine.decompose_tail_risk(
+            expected_annual_loss=total_fair_ale,
+            var_90_total=total_p90_val,
+            composite_hourly_rate=hourly_rate,
+            operational_recovery_ceiling_hours=ceiling_hours,
+        )
+        p90_rec_hours_str = format_number(tail_decomp.capped_operational_p90_hours, locale=meta_lang, decimals=1)
+        p90_contingency_str = format_currency(total_p90_val, currency_symbol=currency, locale=meta_lang, decimals=0)
+        direct_stoppage_str = format_currency(tail_decomp.primary_operational_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
+        secondary_spend_str = format_currency(tail_decomp.secondary_tail_p90_loss, currency_symbol=currency, locale=meta_lang, decimals=0)
+
+        triggers_map = loc_branch.get("tower_p90_triggers", {})
+        trigger_text = triggers_map.get(canonical_t_id) or triggers_map.get("DEFAULT", "")
+
+        p90_body = t(
+            "p90_callout_body_template",
+            locale=meta_lang,
+            compound_failure_trigger=trigger_text,
+            p90_recovery_hours=p90_rec_hours_str,
+            p90_total_contingency=p90_contingency_str,
+            direct_stoppage_loss=direct_stoppage_str,
+            secondary_disaster_spend=secondary_spend_str,
+        )
+
+        p90_callout_title = t("p90_callout_title", locale=meta_lang)
+        callout_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(
+                        text=f"**{p90_callout_title}**\n\n{p90_body}",
+                        font_size=8.5,
+                        bg_color="F8FAFC",
+                        border_left_color="1E3A8A",
+                        border_left_size=24,
+                        align="LEFT",
+                    )
+                ]
+            )
+        ]
+        nodes.append(TableNode(rows=callout_rows, autofit=True, col_widths=[1.0]))
         nodes.append(SpacerNode(points=15))
 
     def _build_detailed_findings_log(
