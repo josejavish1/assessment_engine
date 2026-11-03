@@ -2005,28 +2005,34 @@ class PayloadToASTBridge:
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
         nodes.append(_build_heatmap_mosaic(risks_data_list))
 
-        # 4.2.1 Threat Event Frequency (TEF) Scale Criteria Table (RFC 053)
+        # 4.2.1 Threat Event Frequency (TEF) Compact Legend (RFC 054)
         nodes.append(SpacerNode(points=6))
         nodes.append(
-            HeadingNode(
-                text=t("sec_4_2_1_title", locale=meta_lang),
-                level=3,
-                primary_color_rgb=self.primary_color_rgb,
+            ParagraphNode(
+                text=f"*{t('legend_tef_caption', locale=meta_lang)}*",
+                bold=True,
+                font_size=8.5,
+                space_before=6,
+                space_after=2,
+                keep_with_next=True,
             )
         )
         nodes.append(_build_tef_scale_table(vocab, meta_lang, self.alt_row_hex))
-        nodes.append(SpacerNode(points=10))
+        nodes.append(SpacerNode(points=6))
 
-        # 4.2.2 Loss Magnitude (LM) Scale Criteria Table (RFC 053)
+        # 4.2.2 Loss Magnitude (LM) Compact Legend (RFC 054)
         nodes.append(
-            HeadingNode(
-                text=t("sec_4_2_2_title", locale=meta_lang),
-                level=3,
-                primary_color_rgb=self.primary_color_rgb,
+            ParagraphNode(
+                text=f"*{t('legend_lm_caption', locale=meta_lang)}*",
+                bold=True,
+                font_size=8.5,
+                space_before=6,
+                space_after=2,
+                keep_with_next=True,
             )
         )
         nodes.append(_build_lm_scale_table(vocab, meta_lang, currency, is_critical, self.alt_row_hex))
-        nodes.append(SpacerNode(points=15))
+        nodes.append(SpacerNode(points=12))
 
         # 4.3 Pure AS-IS Domain Risk Concentration Profile
         nodes.append(SpacerNode(points=12))
@@ -2353,6 +2359,11 @@ class PayloadToASTBridge:
             contributing_towers=contributing_towers,
         )
 
+        # Single Invariant Domain Hourly Downtime Rate across all cards (RFC 054)
+        domain_hourly_rate = max(round(hourly_rate * alpha, 2), 1.0)
+        eff_recovery_hours = max(round(float(metrics.effective_sle) / domain_hourly_rate, 1), 0.1)
+        reconciled_sle = round(eff_recovery_hours * domain_hourly_rate)
+
         formatted_ale = format_currency(
             float(metrics.annualized_loss_expectancy),
             currency_symbol=currency,
@@ -2360,7 +2371,7 @@ class PayloadToASTBridge:
             decimals=0,
         )
         formatted_sle = format_currency(
-            float(metrics.effective_sle),
+            float(reconciled_sle),
             currency_symbol=currency,
             locale=meta_lang,
             decimals=0,
@@ -2513,15 +2524,9 @@ class PayloadToASTBridge:
                 ),
             ]
 
-        # Enforce exact closed-form arithmetic identity: EffectiveHours * HourlyRate == SLE (RFC 053)
-        sle_num = float(metrics.effective_sle)
-        safe_hourly = (hourly_rate * alpha) if (hourly_rate * alpha) > 0 else 1.0
-        eff_recovery_hours = sle_num / safe_hourly
-        eff_h_rounded = max(round(eff_recovery_hours, 1), 0.1)
-        calibrated_hourly_rate = sle_num / eff_h_rounded
-
-        eff_h_str = format_number(eff_h_rounded, locale=meta_lang, decimals=1)
-        rate_str = format_currency(calibrated_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
+        # Enforce exact closed-form arithmetic identity: EffectiveHours * HourlyRate == SLE (RFC 054)
+        eff_h_str = format_number(eff_recovery_hours, locale=meta_lang, decimals=1)
+        rate_str = format_currency(domain_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
 
         sle_bullet = t(
             "sle_derivation_formula_bullet",

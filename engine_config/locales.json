@@ -1719,7 +1719,9 @@
     "kpi_frequency_value_annual": "{events} eventos/año",
     "sle_derivation_formula_bullet": "• **Derivación Financiera Exacta (SLE):** {effective_hours}h de interrupción operativa efectiva × {hourly_rate}/h (coste horario de parada) = {sle_formatted}.",
     "ale_derivation_formula_bullet": "• **Exposición Anualizada Estimada (ALE):** {ale_formatted}/año (calculada para una frecuencia estimada de {frequency_text}).",
-    "appendix_glossary_single_title": "Apéndice. Glosario de Términos y Cláusula de Responsabilidad"
+    "appendix_glossary_single_title": "Apéndice. Glosario de Términos y Cláusula de Responsabilidad",
+    "legend_tef_caption": "Leyenda de Criterios: Frecuencia de Amenazas (TEF)",
+    "legend_lm_caption": "Leyenda de Criterios: Magnitud de Pérdida Financiera (LM)"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -3435,7 +3437,9 @@
     "kpi_frequency_value_annual": "{events} events/year",
     "sle_derivation_formula_bullet": "• **Exact Financial Derivation (SLE):** {effective_hours}h effective operational disruption × {hourly_rate}/hr (hourly downtime cost) = {sle_formatted}.",
     "ale_derivation_formula_bullet": "• **Estimated Annualized Exposure (ALE):** {ale_formatted}/year (calculated for an estimated frequency of {frequency_text}).",
-    "appendix_glossary_single_title": "Appendix. Glossary of Terms & Liability Clause"
+    "appendix_glossary_single_title": "Appendix. Glossary of Terms & Liability Clause",
+    "legend_tef_caption": "Criteria Legend: Threat Event Frequency (TEF)",
+    "legend_lm_caption": "Criteria Legend: Financial Loss Magnitude (LM)"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",

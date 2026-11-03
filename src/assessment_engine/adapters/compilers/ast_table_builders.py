@@ -199,7 +199,7 @@ def build_tef_scale_table(vocab: dict[str, Any], meta_lang: str, alt_row_hex: st
     tef_rows = [
         TableRowNode(
             cells=[
-                CellNode(text=h, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], align="CENTER")
+                CellNode(text=h, bold=True, bg_color="0072BC", text_color_rgb=[255, 255, 255], font_size=8.0, align="CENTER")
                 for h in tef_headers
             ],
             is_header=True,
@@ -210,13 +210,13 @@ def build_tef_scale_table(vocab: dict[str, Any], meta_lang: str, alt_row_hex: st
         tef_rows.append(
             TableRowNode(
                 cells=[
-                    CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, align="CENTER"),
-                    CellNode(text=r_vals[1], bg_color=bg, align="CENTER"),
-                    CellNode(text=r_vals[2], bg_color=bg),
+                    CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, font_size=7.5, align="CENTER"),
+                    CellNode(text=r_vals[1], bg_color=bg, font_size=7.5, align="CENTER"),
+                    CellNode(text=r_vals[2], bg_color=bg, font_size=7.5),
                 ]
             )
         )
-    return TableNode(rows=tef_rows)
+    return TableNode(rows=tef_rows, autofit=True)
 
 
 def build_lm_scale_table(
@@ -259,6 +259,7 @@ def build_lm_scale_table(
                     bold=True,
                     bg_color="0072BC",
                     text_color_rgb=[255, 255, 255],
+                    font_size=8.0,
                     align="CENTER",
                 )
                 for h_idx, h in enumerate(lm_headers)
@@ -271,10 +272,10 @@ def build_lm_scale_table(
         lm_rows.append(
             TableRowNode(
                 cells=[
-                    CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, align="CENTER"),
-                    CellNode(text=r_vals[1], bg_color=bg, align="CENTER"),
-                    CellNode(text=r_vals[2], bg_color=bg),
+                    CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, font_size=7.5, align="CENTER"),
+                    CellNode(text=r_vals[1], bg_color=bg, font_size=7.5, align="CENTER"),
+                    CellNode(text=r_vals[2], bg_color=bg, font_size=7.5),
                 ]
             )
         )
-    return TableNode(rows=lm_rows)
+    return TableNode(rows=lm_rows, autofit=True)
