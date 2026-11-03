@@ -433,73 +433,11 @@ def format_date_localized(date_val: str | None = None, locale: str = "en") -> st
     return cleaned
 
 
-from functools import lru_cache
-import re
-
-
-@lru_cache(maxsize=16)
-def _compile_orthographic_pattern(locale: str) -> tuple[re.Pattern[str] | None, dict[str, str]]:
-    """Load the externalized orthographic restoration dictionary from locales.json
-    and compile a single word-boundary regex pattern for O(N) single-pass replacement."""
-    base_loc = resolve_base_locale(locale)
-    catalog = load_locales_catalog()
-    locale_data = catalog.get(base_loc, {})
-    raw_map: dict[str, str] = locale_data.get("orthographic_restoration_map", {})
-    if not raw_map:
-        return None, {}
-
-    normalized_map = {k.lower(): v for k, v in raw_map.items()}
-    escaped_keys = sorted((re.escape(k) for k in normalized_map.keys()), key=len, reverse=True)
-    pattern = re.compile(r"\b(" + "|".join(escaped_keys) + r")\b", flags=re.IGNORECASE)
-    return pattern, normalized_map
-
-
 def restore_locale_diacritics(text: str, locale: str = "en") -> str:
-    """Deterministically restore stripped diacritical marks for the target locale
-    using externalized lexicon mappings and linguistic morphology while preserving original casing."""
-    if not text or not locale:
-        return text
+    """RFC-029 Upstream Governance: Payload strings are authoritative UTF-8 literals.
 
-    base_loc = resolve_base_locale(locale)
-    res = text
-
-    # Apply morphological oxytone accentuation for Spanish -cion/-sion nouns
-    if base_loc == "es":
-        def _repl_cion(m: re.Match[str]) -> str:
-            w = m.group(0)
-            if w.endswith("cion"):
-                rep = w[:-4] + "ción"
-            elif w.endswith("CION"):
-                rep = w[:-4] + "CIÓN"
-            elif w.endswith("Cion"):
-                rep = w[:-4] + "ción"
-            elif w.endswith("sion"):
-                rep = w[:-4] + "sión"
-            elif w.endswith("SION"):
-                rep = w[:-4] + "SIÓN"
-            elif w.endswith("Sion"):
-                rep = w[:-4] + "sión"
-            else:
-                rep = w
-            if w[0].isupper() and rep[0].islower():
-                rep = rep.capitalize()
-            return rep
-
-        res = re.sub(r"\b[A-Za-zÁÉÍÓÚáéíóúñÑ]+(?:cion|CION|Cion|sion|SION|Sion)\b", _repl_cion, res)
-
-    pattern, mapping = _compile_orthographic_pattern(locale)
-    if pattern is None:
-        return res
-
-    def _replace_match(match: re.Match[str]) -> str:
-        token = match.group(0)
-        replacement = mapping.get(token.lower())
-        if not replacement:
-            return token
-        if token.isupper():
-            return replacement.upper()
-        if token[0].isupper():
-            return replacement.capitalize()
-        return replacement
-
-    return pattern.sub(_replace_match, res)
+    Maintains language-agnostic pass-through without runtime morphological mutations.
+    """
+    if not text:
+        return ""
+    return str(text)
