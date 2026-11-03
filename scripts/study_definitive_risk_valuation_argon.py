@@ -1,17 +1,7 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: RFC 060 Plain-Language Section 4.1 and Source-Level Payload Orthographic Perfection.
+"""Argon-4 Master Consultation: RFC 062 Declarative AST Architecture for Consolidated Tomo 1 AS-IS.
 
-Addresses the user's two directives:
-1. Plain-Language Simplification of Section 4.1:
-   - Replace pompous jargon like "Reconciliación con la Tasa Base Corporativa (Factor de Afectación Operativa α):"
-     with clear, human terminology (e.g. "Ajuste del Coste según el Alcance del Fallo:").
-   - Replace "Nota de Gobernanza Actuarial y Modestia Epistémica:" with simple executive language
-     (e.g. "Nota sobre las Estimaciones Económicas:").
-2. Source-Level Orthographic Cleansing of Risk Findings (Zero Antipatterns):
-   - The rest of the document has perfect tildes because its source payload text is cleanly spelled.
-   - The finding strings in `pillars_analysis` -> `health_check_asis` in `blueprint_t1_payload.json` and `blueprint_t2_payload.json`
-     still contain unaccented words (electrogenos, magnetotermicas, energetica, tardia, caidas, perdida, taxonomia, analitico, termica).
-   - Clean the payload data at the source once at rest, guaranteeing 100% RAE compliance without compiler-level dictionary patches or runtime regex hacks.
+Eradicates the split-brain between individual tower annexes and the transversal CTO/CIO deliverable.
 """
 
 from __future__ import annotations
@@ -35,51 +25,56 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Editorial Fellow & Principal Systems Architect (Tier-1 Management Consulting / Google Core Infrastructure).
+Role: Chief Enterprise Architect & Principal OpenXML AST Compiler Engineer (Tier-1 Management Consulting / Google Core Infrastructure).
 
-USER'S STRATEGIC DIRECTIVES:
-The user delivered two explicit requirements:
+USER'S STRATEGIC MANDATE:
+"ok lo importante es que no haya split brain"
+The user mandates the complete eradication of split-brain between individual tower annexes (which are certified 10/10 under the declarative AST compiler) and the transversal Tomo 1 AS-IS diagnostic report (which was stuck in an obsolete 5.8/10 template compiler with missing chapters and over-compressed diagnostics).
 
-1. Plain-Language Simplification in Section 4.1:
-   - In Section 4.1, replace pompous academic terms:
-     * "Reconciliación con la Tasa Base Corporativa (Factor de Afectación Operativa α):"
-       -> Replace with simple, executive language explaining downtime cost scaling by failure scope (e.g. "Ajuste del Coste según el Alcance del Fallo:").
-     * "Nota de Gobernanza Actuarial y Modestia Epistémica:"
-       -> Replace with clear, human language explaining that these are forward-looking risk models to prioritize technical investments, not recorded accounting losses (e.g. "Nota sobre las Estimaciones Económicas:").
+OBJECTIVE:
+Design the architectural specification for `TomoAsisASTCompiler` (RFC 062) to compile `Molins_202610_Tomo_1_Diagnostico_ASIS.docx` directly from enriched SSOT payloads (`global_report_payload.json`, `blueprint_t1_payload.json`, `blueprint_t2_payload.json`, etc.) into a cohesive, board-ready 25-30 page document.
 
-2. Source-Level Orthographic Perfection for Risk Findings in Section 4.4:
-   - The user observed:
-     "por cierto en las tablas de los riesgos todavía no aparecen los acentos, debes solucionarlo y no parar hasta que tu puedas verificar que se ha solucionado y tienes que solucionarlo como lo has solucionado para el resto del documento sin parches, porque el resto del documento las tildes están bien nada de antipatrones."
-   - Forensic Analysis:
-     * In Chapters 1, 2, and 3, all Spanish text is natively well-formed UTF-8 at the source (in `blueprint_payload.json` and `locales.json`).
-     * In Chapter 4, the risk findings in `pillars_analysis` -> `health_check_asis` in `blueprint_t1_payload.json` and `blueprint_t2_payload.json` still contained ASCII-degraded tokens (`electrogenos`, `magnetotermicas`, `energetica`, `tardia`, `caidas`, `perdida`, `taxonomia`, `analitico`, `termica`, `Sant Vicenc`).
-     * To solve this WITHOUT antipatterns (no runtime regexes, no hardcoded dictionary maps in `locales.json`), we must sanitize the source JSON fixtures at rest. The compiler then ingests pristine UTF-8 literals and outputs them directly with zero mutation.
+ARCHITECTURAL SPECIFICATIONS REQUIRED:
+1. Complete 5-Chapter Structure:
+   - Chapter 1: Executive Summary & Transversal Strategic Thesis (KPI Cockpit, Diagnostic Triad table, Board narrative on industrial continuity, Secil integration, NIS2, and May 2027 contract milestone).
+   - Chapter 2: Consolidated Capability Maturity Radiography (CMMI table across all 10 towers with strict CMMI bands [1.0-1.9 Initial, 2.0-2.9 Managed, 3.0-3.9 Defined], target scores, and visual distribution).
+   - Chapter 3: Aggregated Open FAIR™ Actuarial Risk Register (10,000-run Monte Carlo methodology, 13,061.29 €/h baseline, aggregated ALE P50, P90 tail risk compound disaster breakdown, aggregated 5x5 heatmap, and Tier 1/2/3 risk concentration table).
+   - Chapter 4: Forensic Domain Diagnostics & Critical Single Point of Failure (SPOF) Matrix (Deep-dive into evaluated domains—T1 Data Center, T2 Hybrid Compute—with real hardware/topology: Sant Vicenç dels Horts, SimpliVity, NetApp, VMware, 5,000 €/h plant weighbridge dependencies, complemented by transversal status of T3-T10, plus a dedicated SPOF Table).
+   - Chapter 5: Cross-Tower Nexus & Critical Interdependencies (prerequisites table, architectural rationale, cost of delay/inaction).
+   - Unified Appendix: Clean Abbreviations Glossary (18%/82% autofitted table) and Legal Liability Disclaimer.
 
-NON-NEGOTIABLE LAWS:
-1. Zero bugs, zero antipatterns.
-2. Zero hardcoding (scales across any global enterprise from mid-market to Top Tier 1, any vertical, any language).
-3. 100% Technical English codebase (zero Spanish words in Python code, docstrings, identifiers, or logs).
-4. Full mathematical and narrative consistency across all 10 capability towers.
+2. Mathematical Synchronization (Zero Split-Brain):
+   - Global maturity score = exact weighted average of tower maturity scores.
+   - Global ALE P50 = sum of deduplicated primary risks via `DynamicCustodyResolver`.
+   - All financial figures across Chapter 1, Chapter 2, Chapter 3, and Chapter 4 must be 100% mathematically aligned.
+
+3. Non-Negotiable Engineering Laws:
+   - Law #1: Zero bugs, zero antipatterns.
+   - Law #2: Zero hardcoding (scales dynamically to any enterprise client worldwide, any vertical, any currency).
+   - Law #3: 100% Technical English codebase (Python identifiers, classes, methods, docstrings, and comments in Technical English; Spanish ONLY in localized dictionaries).
+   - Law #4: Strict Short-Hyphen Invariant (zero em-dashes `—` or en-dashes `–`).
+   - Law #5: OpenXML Layout Determinism (Native headings, TableNode autofit, cantSplit, tblHeader, and DeterministicTocPageResolver synchronization).
 
 YOUR TASK:
-Synthesize an authoritative Architectural Blueprint (RFC 060) in Markdown:
-1. Specify the localized dictionary updates for Section 4.1 in `engine_config/locales.json` (for both `es` and `en`).
-2. Define the source payload sanitization protocol for `working/molins/T1/` and `T2/`.
-3. Deliver a definitive VERDICT: PASS.
+Synthesize an authoritative Architectural Blueprint (RFC 062) in Markdown:
+1. Define the class hierarchy and methods for `TomoAsisASTCompiler`.
+2. Specify the payload aggregation protocol and data flow.
+3. Detail the OpenXML AST node construction for all 5 chapters.
+4. Deliver a definitive VERDICT: PASS.
 """
 
-    print(f"Requesting RFC 060 from {model_name}...")
+    print(f"Requesting RFC 062 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_060_PLAIN_LANGUAGE_SEC41_AND_PAYLOAD_ORTHOGRAPHY_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_062_TOMO_1_ASIS_AST_COMPILER_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 060 ARCHITECTURAL BLUEPRINT")
+    print("GEMINI-4-ARGON: RFC 062 ARCHITECTURAL BLUEPRINT")
     print("=" * 80)
     print(response.text)
     print("=" * 80)

@@ -55,8 +55,12 @@ def main() -> None:
 
     # 1. Re-compile State-of-the-Art AS-IS Towers T1 and T2 via Declarative AST Engine
     from scripts.regenerate_molins_asis_t1_t2 import compile_and_export_tower
+    from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import (
+        TomoAsisASTCompiler,
+    )
+    import json
 
-    print("\n>>> PHASE 1: COMPILING DECLARATIVE AST DELIVERABLES (T1 & T2) <<<")
+    print("\n>>> PHASE 1: COMPILING DECLARATIVE AST DELIVERABLES (T1, T2 & TOMO 1) <<<")
     compile_and_export_tower(
         tower_code="T1",
         payload_rel_path="working/molins/T1/blueprint_t1_payload.json",
@@ -67,6 +71,46 @@ def main() -> None:
         payload_rel_path="working/molins/T2/blueprint_t2_payload.json",
         output_docx_name="Molins_202610_Anexo_02_Computo_Hibrido_ASIS.docx",
     )
+
+    # 1.1 Compile Consolidated Tomo 1 AS-IS via Declarative AST Engine (RFC 062)
+    print("\n>>> COMPILING CONSOLIDATED TOMO 1 AS-IS VIA AST ENGINE (RFC 062) <<<")
+    global_payload_path = REPO_ROOT / "working/molins/global_report_payload.json"
+    t1_payload_path = REPO_ROOT / "working/molins/T1/blueprint_t1_payload.json"
+    t2_payload_path = REPO_ROOT / "working/molins/T2/blueprint_t2_payload.json"
+
+    with open(global_payload_path, "r", encoding="utf-8-sig") as f:
+        global_payload = json.load(f)
+    with open(t1_payload_path, "r", encoding="utf-8-sig") as f:
+        t1_payload = json.load(f)
+    with open(t2_payload_path, "r", encoding="utf-8-sig") as f:
+        t2_payload = json.load(f)
+
+    tower_payloads = {"T1": t1_payload, "T2": t2_payload}
+
+    tomo1_compiler = TomoAsisASTCompiler()
+    tomo1_out = (
+        REPO_ROOT
+        / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+    )
+    tomo1_compiler.compile(
+        global_payload=global_payload,
+        tower_payloads=tower_payloads,
+        output_docx_path=tomo1_out,
+        doc_lang="es",
+    )
+    print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
+
+    # Mirror Tomo 1 to alternate delivery structures
+    tomo1_mirrors = [
+        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO",
+        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL",
+        REPO_ROOT / "working/molins",
+    ]
+    for mirror_dir in tomo1_mirrors:
+        if mirror_dir.exists():
+            dest = mirror_dir / tomo1_out.name
+            shutil.copy2(tomo1_out, dest)
+            print(f"   ✓ Mirrored Tomo 1 DOCX to: {dest.relative_to(REPO_ROOT)}")
 
     # 2. Synchronize to 202611 naming convention in working/molins/
     shutil.copy2(
