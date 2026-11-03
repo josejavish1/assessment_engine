@@ -1890,6 +1890,20 @@ class PayloadToASTBridge:
             )
             nodes.append(ParagraphNode(text=domain_p, space_after=6))
 
+        rate_70_val = round(hourly_rate * 0.70)
+        rate_40_val = round(hourly_rate * 0.40)
+        rate_20_val = round(hourly_rate * 0.20)
+
+        alpha_reconciliation_text = t(
+            "sec4_1_alpha_reconciliation",
+            locale=meta_lang,
+            base_rate=total_rate_fmt,
+            rate_70=format_currency(rate_70_val, currency_symbol=currency, locale=meta_lang, decimals=0),
+            rate_40=format_currency(rate_40_val, currency_symbol=currency, locale=meta_lang, decimals=0),
+            rate_20=format_currency(rate_20_val, currency_symbol=currency, locale=meta_lang, decimals=0),
+        )
+        nodes.append(ParagraphNode(text=alpha_reconciliation_text, space_after=6))
+
         nodes.append(
             ParagraphNode(
                 text=t(
@@ -2552,15 +2566,19 @@ class PayloadToASTBridge:
                 ),
             ]
 
-        # Enforce exact closed-form arithmetic identity: EffectiveHours * HourlyRate == SLE (RFC 054)
+        # Enforce exact closed-form arithmetic identity: EffectiveHours * HourlyRate == SLE (RFC 056)
         eff_h_str = format_number(eff_recovery_hours, locale=meta_lang, decimals=1)
         rate_str = format_currency(domain_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
+        base_rate_str = format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=2)
+        alpha_pct_str = str(int(round(alpha * 100)))
 
         sle_bullet = t(
             "sle_derivation_formula_bullet",
             locale=meta_lang,
             effective_hours=eff_h_str,
             hourly_rate=rate_str,
+            alpha_pct=alpha_pct_str,
+            base_rate=base_rate_str,
             sle_formatted=formatted_sle,
         )
         ale_bullet = t(

@@ -198,6 +198,21 @@ def safe_autofit_table_to_contents(table: Any) -> None:
             _insert_in_tcpr(tcPr, tcW, "tcW")
 
 
+_DASH_TRANSLATION_TABLE = str.maketrans({
+    "\u2014": "-",  # Em-dash (—) -> ASCII Hyphen (-)
+    "\u2013": "-",  # En-dash (–) -> ASCII Hyphen (-)
+    "\u2012": "-",  # Figure dash (‒) -> ASCII Hyphen (-)
+    "\u2015": "-",  # Horizontal bar (―) -> ASCII Hyphen (-)
+})
+
+
+def normalize_ascii_hyphens(text: str) -> str:
+    """Enforces the Zero Long-Dash Invariant across all document text runs."""
+    if not text:
+        return text
+    return text.translate(_DASH_TRANSLATION_TABLE)
+
+
 def add_markdown_runs(
     paragraph: Any,
     text: str,
@@ -243,7 +258,7 @@ def add_markdown_runs(
         TypeError: If `color_rgb` is not a 3-tuple of integers compatible with
             `docx.shared.RGBColor`.
     """
-    sanitized = str(text or "").replace("__", "**")
+    sanitized = normalize_ascii_hyphens(str(text or "").replace("__", "**"))
     bold_parts = re.split(r"(\*\*.*?\*\*)", sanitized)
 
     for b_part in bold_parts:
