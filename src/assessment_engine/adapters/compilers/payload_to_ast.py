@@ -1721,61 +1721,9 @@ class PayloadToASTBridge:
         except (OSError, ValueError, KeyError, AttributeError) as ex:
             logger.warning(f"[AST Bridge Warning] Error reading FAIR metrics from annex data: {ex}")
 
-        # Read the CSV risks first so we have the data for the executive overview
-        csv_candidates = list(modules_dir.glob("*.csv")) if modules_dir.exists() else []
-        csv_risks_path = next(
-            (f for f in csv_candidates if "fair" in f.name.lower() or "risk" in f.name.lower()),
-            modules_dir / "fair_risks.csv",
-        )
+        # Extract FAIR risks: Authoritative blueprint payload takes precedence as SSOT
         risks_data_list = []
-        if csv_risks_path.exists():
-            try:
-                with open(csv_risks_path, "r", encoding="utf-8-sig") as cf:
-                    reader = csv.reader(cf, delimiter=";")
-                    next(reader, None)
-                    rag_marker = t("evidence_rag_marker", locale=meta_lang)
-                    for r_idx, row_data in enumerate(reader):
-                        if not row_data or len(row_data) < 6:
-                            continue
-                        try:
-                            pillar_full_name = row_data[0].split(" - ")[0]
-                            finding_raw = row_data[1]
-                            finding_parts = finding_raw.split(rag_marker) if rag_marker in finding_raw else [finding_raw]
-                            finding = finding_parts[0]
-                            evidence = finding_parts[1].strip('"') if len(finding_parts) > 1 else ""
-
-                            tef_val = float(str(row_data[3]).replace(",", ".").strip())
-                            lm_val = float(str(row_data[4]).replace(",", ".").strip())
-                            ale_val = float(str(row_data[5]).replace(",", ".").strip())
-
-                            # Calibrate actuarial LEF and SLE (RFC 055)
-                            if tef_val >= 1.0:
-                                calc_lef = min(0.50, max(0.08, tef_val * 0.09))
-                            else:
-                                calc_lef = max(0.05, tef_val)
-                            calc_sle = ale_val / calc_lef if (ale_val > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
-
-                            r_item = {
-                                "id": f"RVS{r_idx + 1:02d}",
-                                "pillar": pillar_full_name,
-                                "capability": row_data[0].split(" - ")[1]
-                                if " - " in row_data[0]
-                                else row_data[0],
-                                "finding": finding,
-                                "evidence": evidence,
-                                "business_risk": row_data[2],
-                                "tef": tef_val,
-                                "lm": lm_val,
-                                "lef": round(calc_lef, 4),
-                                "sle": round(calc_sle, 2),
-                                "ale": ale_val,
-                            }
-                            risks_data_list.append(r_item)
-                        except (ValueError, IndexError) as row_ex:
-                            logger.warning(f"[AST Bridge Warning] Skipped malformed risk row {r_idx}: {row_ex}")
-            except (OSError, ValueError, KeyError, AttributeError) as ex:
-                logger.warning(f"[AST Bridge Warning] Error reading risks CSV file: {ex}")
-        elif blueprint_data and blueprint_data.get("pillars_analysis"):
+        if blueprint_data and blueprint_data.get("pillars_analysis"):
             from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
                 derive_in_memory_fair_risks,
             )
@@ -1784,6 +1732,60 @@ class PayloadToASTBridge:
             risks_data_list, _ = derive_in_memory_fair_risks(
                 blueprint_data, doc_lang=meta_lang, currency=currency, rate_mult=rate_mult
             )
+        else:
+            # Fallback to CSV if structured payload is absent
+            csv_candidates = list(modules_dir.glob("*.csv")) if modules_dir.exists() else []
+            csv_risks_path = next(
+                (f for f in csv_candidates if "fair" in f.name.lower() or "risk" in f.name.lower()),
+                modules_dir / "fair_risks.csv",
+            )
+            if csv_risks_path.exists():
+                try:
+                    with open(csv_risks_path, "r", encoding="utf-8-sig") as cf:
+                        reader = csv.reader(cf, delimiter=";")
+                        next(reader, None)
+                        rag_marker = t("evidence_rag_marker", locale=meta_lang)
+                        for r_idx, row_data in enumerate(reader):
+                            if not row_data or len(row_data) < 6:
+                                continue
+                            try:
+                                pillar_full_name = row_data[0].split(" - ")[0]
+                                finding_raw = row_data[1]
+                                finding_parts = finding_raw.split(rag_marker) if rag_marker in finding_raw else [finding_raw]
+                                finding = finding_parts[0]
+                                evidence = finding_parts[1].strip('"') if len(finding_parts) > 1 else ""
+
+                                tef_val = float(str(row_data[3]).replace(",", ".").strip())
+                                lm_val = float(str(row_data[4]).replace(",", ".").strip())
+                                ale_val = float(str(row_data[5]).replace(",", ".").strip())
+
+                                # Calibrate actuarial LEF and SLE (RFC 055)
+                                if tef_val >= 1.0:
+                                    calc_lef = min(0.50, max(0.08, tef_val * 0.09))
+                                else:
+                                    calc_lef = max(0.05, tef_val)
+                                calc_sle = ale_val / calc_lef if (ale_val > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
+
+                                r_item = {
+                                    "id": f"RVS{r_idx + 1:02d}",
+                                    "pillar": pillar_full_name,
+                                    "capability": row_data[0].split(" - ")[1]
+                                    if " - " in row_data[0]
+                                    else row_data[0],
+                                    "finding": finding,
+                                    "evidence": evidence,
+                                    "business_risk": row_data[2],
+                                    "tef": tef_val,
+                                    "lm": lm_val,
+                                    "lef": round(calc_lef, 4),
+                                    "sle": round(calc_sle, 2),
+                                    "ale": ale_val,
+                                }
+                                risks_data_list.append(r_item)
+                            except (ValueError, IndexError) as row_ex:
+                                logger.warning(f"[AST Bridge Warning] Skipped malformed risk row {r_idx}: {row_ex}")
+                except (OSError, ValueError, KeyError, AttributeError) as ex:
+                    logger.warning(f"[AST Bridge Warning] Error reading risks CSV file: {ex}")
 
         formatted_ale = format_number(
             total_fair_ale, locale=meta_lang, decimals=0
