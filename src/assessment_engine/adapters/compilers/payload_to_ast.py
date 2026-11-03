@@ -1949,7 +1949,7 @@ class PayloadToASTBridge:
                     CellNode(text=t("ch4_lineage_col_vector", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255]),
                     CellNode(text=t("ch4_lineage_col_code", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
                     CellNode(text=t("ch4_lineage_col_desc", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255]),
-                    CellNode(text=t("ch4_lineage_col_rate", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="RIGHT"),
+                    CellNode(text=t("ch4_lineage_col_rate", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
                     CellNode(text=t("ch4_lineage_col_share", locale=meta_lang), bold=True, bg_color=header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
                 ],
                 is_header=True,
@@ -1959,7 +1959,7 @@ class PayloadToASTBridge:
                     CellNode(text=t("ch4_lineage_row_op_name", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.5),
                     CellNode(text="C_op, est", bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
                     CellNode(text=t("ch4_lineage_row_op_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
-                    CellNode(text=c_op_fmt, bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=c_op_fmt, bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=p_op_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                 ]
             ),
@@ -1968,7 +1968,7 @@ class PayloadToASTBridge:
                     CellNode(text=t("ch4_lineage_row_sla_name", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.5),
                     CellNode(text="C_sla, est", bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
                     CellNode(text=t("ch4_lineage_row_sla_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
-                    CellNode(text=c_sla_fmt, bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=c_sla_fmt, bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=p_sla_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                 ]
             ),
@@ -1977,7 +1977,7 @@ class PayloadToASTBridge:
                     CellNode(text=t("ch4_lineage_row_rec_name", locale=meta_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.5),
                     CellNode(text="C_rec, est", bg_color=self.alt_row_hex, align="CENTER", font_size=8.5),
                     CellNode(text=t("ch4_lineage_row_rec_desc", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
-                    CellNode(text=c_rec_fmt, bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=c_rec_fmt, bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=p_rec_str, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                 ]
             ),
@@ -1986,7 +1986,7 @@ class PayloadToASTBridge:
                     CellNode(text=t("ch4_lineage_row_total_name", locale=meta_lang), bold=True, bg_color="E2F0D9", font_size=9.0),
                     CellNode(text="R_hourly, est", bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
                     CellNode(text=t("ch4_lineage_row_total_desc", locale=meta_lang), italic=True, bg_color="E2F0D9", font_size=8.0),
-                    CellNode(text=total_rate_fmt, bold=True, bg_color="E2F0D9", align="RIGHT", font_size=9.0),
+                    CellNode(text=total_rate_fmt, bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
                     CellNode(text=p_tot_str, bold=True, bg_color="E2F0D9", align="CENTER", font_size=9.0),
                 ]
             ),
@@ -2124,7 +2124,7 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=t("ch4_tier_table_col_tier", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255]),
                     CellNode(text=t("ch4_tier_table_col_count", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text=t("ch4_tier_table_col_ale", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="RIGHT"),
+                    CellNode(text=t("ch4_tier_table_col_ale", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255], align="CENTER"),
                     CellNode(text=t("ch4_tier_table_col_focus", locale=meta_lang), bold=True, bg_color=tier_header_bg, text_color_rgb=[255, 255, 255]),
                 ],
                 is_header=True,
@@ -2133,7 +2133,7 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=t("ch4_tier1_label", locale=meta_lang), bold=True, bg_color="FADBD8", font_size=8.5),
                     CellNode(text=str(len(t1_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t1_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t1_pct}%)", bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=f"{format_number(t1_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix} ({t1_pct}%)", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t("ch4_tier1_focus", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
@@ -2141,7 +2141,7 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=t("ch4_tier2_label", locale=meta_lang), bold=True, bg_color="FCF3CF", font_size=8.5),
                     CellNode(text=str(len(t2_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t2_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=f"{format_number(t2_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t("ch4_tier2_focus", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
                 ]
             ),
@@ -2149,7 +2149,7 @@ class PayloadToASTBridge:
                 cells=[
                     CellNode(text=t("ch4_tier3_label", locale=meta_lang), bold=True, bg_color="D5F5E3", font_size=8.5),
                     CellNode(text=str(len(t3_risks)), bg_color="FFFFFF", align="CENTER", font_size=8.5),
-                    CellNode(text=f"{format_number(t3_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="RIGHT", font_size=8.5),
+                    CellNode(text=f"{format_number(t3_sum, locale=meta_lang, decimals=0)} {currency}{yr_suffix}", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t("ch4_tier3_focus", locale=meta_lang), bg_color="FFFFFF", font_size=8.0),
                 ]
             ),

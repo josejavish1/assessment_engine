@@ -336,7 +336,7 @@ def build_lm_scale_table(
                 cells=[
                     CellNode(text=r_vals[0], bold=True, bg_color=alt_row_hex, font_size=7.5, align="CENTER"),
                     CellNode(text=r_vals[1], bg_color=bg, font_size=7.5, align="CENTER"),
-                    CellNode(text=r_vals[2], bg_color=bg, font_size=7.5),
+                    CellNode(text=r_vals[2], bg_color=bg, font_size=7.5, align="CENTER"),
                 ]
             )
         )

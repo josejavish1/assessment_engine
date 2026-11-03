@@ -338,6 +338,7 @@ def build_appendix_c_glossary_and_disclaimer(
             text=re.sub(_get_appendix_strip_regex(), "", default_glossary_title),
             level=2,
             primary_color_rgb=primary_color_rgb,
+            is_appendix=True,
         )
     )
     default_intro = t("appendix_a_default_intro", locale=meta_lang)
@@ -397,7 +398,7 @@ def build_appendix_c_glossary_and_disclaimer(
                     ]
                 )
             )
-        nodes.append(TableNode(rows=rows))
+        nodes.append(TableNode(rows=rows, autofit=True))
     except Exception as ex:
         logger.warning(f"Error loading glossary: {ex}")
 
@@ -409,6 +410,7 @@ def build_appendix_c_glossary_and_disclaimer(
             text=re.sub(_get_appendix_strip_regex(), "", default_disclaimer_title),
             level=2,
             primary_color_rgb=primary_color_rgb,
+            is_appendix=True,
         )
     )
     client_name = str(ctx.get("client_name") or "CLIENT").upper()

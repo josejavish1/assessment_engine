@@ -456,13 +456,40 @@ def _compile_orthographic_pattern(locale: str) -> tuple[re.Pattern[str] | None, 
 
 def restore_locale_diacritics(text: str, locale: str = "en") -> str:
     """Deterministically restore stripped diacritical marks for the target locale
-    using externalized lexicon mappings while preserving original casing."""
+    using externalized lexicon mappings and linguistic morphology while preserving original casing."""
     if not text or not locale:
         return text
 
+    base_loc = resolve_base_locale(locale)
+    res = text
+
+    # Apply morphological oxytone accentuation for Spanish -cion/-sion nouns
+    if base_loc == "es":
+        def _repl_cion(m: re.Match[str]) -> str:
+            w = m.group(0)
+            if w.endswith("cion"):
+                rep = w[:-4] + "ción"
+            elif w.endswith("CION"):
+                rep = w[:-4] + "CIÓN"
+            elif w.endswith("Cion"):
+                rep = w[:-4] + "ción"
+            elif w.endswith("sion"):
+                rep = w[:-4] + "sión"
+            elif w.endswith("SION"):
+                rep = w[:-4] + "SIÓN"
+            elif w.endswith("Sion"):
+                rep = w[:-4] + "sión"
+            else:
+                rep = w
+            if w[0].isupper() and rep[0].islower():
+                rep = rep.capitalize()
+            return rep
+
+        res = re.sub(r"\b[A-Za-zÁÉÍÓÚáéíóúñÑ]+(?:cion|CION|Cion|sion|SION|Sion)\b", _repl_cion, res)
+
     pattern, mapping = _compile_orthographic_pattern(locale)
     if pattern is None:
-        return text
+        return res
 
     def _replace_match(match: re.Match[str]) -> str:
         token = match.group(0)
@@ -475,4 +502,4 @@ def restore_locale_diacritics(text: str, locale: str = "en") -> str:
             return replacement.capitalize()
         return replacement
 
-    return pattern.sub(_replace_match, text)
+    return pattern.sub(_replace_match, res)

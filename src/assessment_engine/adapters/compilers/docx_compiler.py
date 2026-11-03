@@ -1018,8 +1018,8 @@ class DocxCompiler(DocumentCompiler):
 
     def _compile_heading(self, doc: Document, node: HeadingNode) -> None:
         import re
-        is_appendix_main = getattr(node, "is_appendix", False)
-        is_appendix_sub = bool(re.match(r"^[A-Z]\.\d+\s", node.text))
+        is_appendix_main = getattr(node, "is_appendix", False) and getattr(node, "level", 1) == 1
+        is_appendix_sub = (getattr(node, "is_appendix", False) and getattr(node, "level", 1) >= 2) or bool(re.match(r"^[A-Z]\.\d+\s", node.text))
 
         clean_text = self._strip_heading_number_prefix(node.text)
 
