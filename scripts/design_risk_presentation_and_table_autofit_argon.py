@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: Visual Bullet-Point Finding Formatting & Vertical Budget Verification.
-
-Validates the user's editorial insight:
-"¿las vulnerabilidades no deberían estar en bullets para facilitar su lectura en lugar de en un párrafo gigante?"
-"""
+"""Argon-4 Consultation: OpenXML Table AutoFit to Contents and Visual Polish for Appendix Abbreviations Table."""
 
 from __future__ import annotations
 
@@ -26,73 +22,51 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Executive Document Designer & Principal OpenXML Compiler Architect (Gartner Research VP / McKinsey Executive Design Director / Google Core Infrastructure).
+Role: Chief Editorial & OpenXML Typography Architect (Tier-1 Management Consulting / Google Core Infrastructure).
 
-USER CRITIQUE & EDITORIAL DIRECTION:
-The user raised an essential editorial and visual design question:
-"una última duda o aclaración: ¿las vulnerabilidades no deberían estar en bullets para facilitar su lectura en lugar de en un párrafo gigante?"
+USER'S DIRECTIVE & CRITIQUE:
+The user explicitly stated:
+"Por cierto en la tabla de Appendix A.1 Lista de Abreviaturas tiene que quedar autoajustado al contenido que todavía no lo está, una vez hagas el cambio verifica con pantallazos que ha quedado así y no pares hasta que quede perfecto."
 
-ARCHITECTURAL EVALUATION:
-1. Cognitive Ergonomics & Executive Scanability:
-   - The user is 100% correct: Embedding 3 to 5 multi-clause technical findings into a single dense, monolithic paragraph creates an unreadable "wall of text" where executive eyes glaze over.
-   - Transforming the findings section into:
-     * A clean, concise lead-in sentence.
-     * Followed by clean, high-impact bullet items (`ParagraphNode(text=..., style="List Bullet", space_after=2)`).
-     * Where each bullet starts with a bold technical topic/category and a concise description of the failure vector:
-       `• **[Vulnerability Focus]:** [Operational failure vector and direct business impact].`
-   - This achieves instant executive scanability in under 5 seconds.
+FORENSIC AUDIT OF THE PROBLEM:
+1. In `ast_appendices_builder.py`, the abbreviations table is built as:
+   `nodes.append(TableNode(rows=rows, autofit=True))`
+2. In `docx_compiler.py`:
+   - When no explicit `col_widths` is provided, `TableLayoutCalculator.compute_column_widths_dxa` uses a heuristic that assigns dampening and large minimum bounds (e.g. `CAP_MIN_COL_WIDTH_DXA = 2400`), resulting in Col 0 (the acronym column) getting ~3858 DXA (almost 50% of the entire printable table width!).
+   - In Microsoft Word, this causes the 2-column table to look severely disproportionate: a tiny 3-to-5 letter acronym (like 'API', 'RAM', 'KPI') sits inside a massive ~6.8 cm column, while the multi-line definition is crammed into the remainder.
+   - When viewed in Word or PDF, the table is NOT visually auto-fitted to its contents!
 
-2. Vertical Layout Budget & Page 3 Containment:
-   - In Word OpenXML with 10.5pt font, 1-inch margins, and 0pt before / 2pt after list bullets:
-     * Scorecard Table: ~55pt
-     * Headline: ~18pt
-     * Paragraph 1 (Posture & Mission): ~42pt
-     * Bullet Lead-in: ~14pt
-     * 3-4 Bullets (with 2pt spacing): ~50-65pt
-     * Paragraph 3 (Actuarial Latent Exposure): ~50pt
-     * Paragraph 4 (AS-IS Diagnostic Verdict): ~45pt
-     * Diagnostic Triad Table (8pt font): ~55pt
-     * Spacers: ~30pt
-     * Total Content Height: ~360pt to ~380pt.
-     * Total Available Printable Height on A4 (297mm - 50.8mm margins): ~698pt.
-   - Result: Content consumes ~54% of Page 3. It will NEVER overflow onto Page 4!
-
-3. Dynamic Cardinality Integration:
-   - If K = 0: Single clean paragraph affirming control without bullets.
-   - If K = 1: Lead-in sentence + 1 bullet item.
-   - If K >= 2: Lead-in sentence + K bullet items (capped at 4 for executive summary density).
-
-NON-NEGOTIABLE LAWS:
-1. Zero bugs, zero antipatterns.
-2. Zero hardcoding (scales across any tenant, vertical, currency, or locale).
-3. 100% Technical English codebase (zero Spanish in Python code).
-4. Split-brain eradication across all 10 capability towers.
-5. OpenXML layout perfection.
+ARCHITECTURAL SPECIFICATION REQUIRED:
+1. Table Column Geometry:
+   - What is the ideal proportional distribution for the Abbreviations table? (e.g. `col_widths=[0.18, 0.82]` or `[0.20, 0.80]`, giving Col 0 ~1,684 DXA / 1.17 inches—plenty of room for "Abreviatura" and acronyms, while dedicating 7,676 DXA / 5.33 inches to the definitions).
+2. OpenXML `w:tblPr` and `w:tcPr` Layout Configuration:
+   - How should `docx_compiler.py` configure `tblW`, `tblLayout`, and cell-level `tcW` when `autofit=True` is requested so that Word renders an auto-fitted layout?
+3. Page Containment & Spacing:
+   - Ensure the Appendix A.1 table and Appendix A.2 disclaimer do not generate awkward page breaks or orphan headings.
 
 YOUR TASK:
-Synthesize an authoritative Architectural Addendum (RFC 046-Addendum) in Markdown:
-1. Define the AST node generation pattern for the bullet-point findings layout.
-2. Provide the bilingual templates for `engine_config/locales.json` in Spanish (`es`) and English (`en`).
-3. Provide the exact Python implementation snippet in 100% Technical English for `payload_to_ast.py`.
-4. Confirm vertical containment verification on Page 3.
+Synthesize an authoritative Architectural Blueprint in Markdown:
+1. Deliver the exact OpenXML and AST parameters for the Appendix A.1 table.
+2. Provide the definitive implementation code for `ast_appendices_builder.py` and `docx_compiler.py`.
+3. Deliver a definitive VERDICT: PASS.
 """
 
-    print(f"Requesting Bullet-Point Layout Verification from {model_name}...")
+    print(f"Requesting table autofit blueprint from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_046_ADDENDUM_BULLET_FINDINGS_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_061_TABLE_AUTOFIT_AND_APPENDIX_POLISH_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: BULLET-POINT FINDINGS & VERTICAL BUDGET AUDIT")
+    print("GEMINI-4-ARGON: RFC 061 TABLE AUTOFIT BLUEPRINT")
     print("=" * 80)
     print(response.text)
     print("=" * 80)
-    print(f"\nSaved to: {out_file.relative_to(REPO_ROOT)}")
+    print(f"\nBlueprint saved to: {out_file.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":

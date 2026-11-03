@@ -398,7 +398,7 @@ def build_appendix_c_glossary_and_disclaimer(
                     ]
                 )
             )
-        nodes.append(TableNode(rows=rows, autofit=True))
+        nodes.append(TableNode(rows=rows, autofit=True, col_widths=[0.18, 0.82]))
     except Exception as ex:
         logger.warning(f"Error loading glossary: {ex}")
 

@@ -1165,6 +1165,7 @@ class DocxCompiler(DocumentCompiler):
                 tblLayout.set(qn("w:type"), "autofit")
                 _insert_in_tblpr(tblPr, tblLayout, "tblLayout")
                 table.autofit = True
+                table.allow_autofit = True
             else:
                 tblW = OxmlElement("w:tblW")
                 tblW.set(qn("w:type"), "dxa")
@@ -1226,6 +1227,11 @@ class DocxCompiler(DocumentCompiler):
                 tcW.set(qn("w:type"), "dxa")
                 tcW.set(qn("w:w"), str(cell_width_dxa))
                 _insert_in_tcpr(tcPr, tcW, "tcW")
+
+                cell_txt = str(getattr(cell_node, "text", "") or "").strip()
+                if is_autofit and cell_width_dxa <= 2000 and " " not in cell_txt and len(cell_txt) <= 15:
+                    if tcPr.find(qn("w:noWrap")) is None:
+                        _insert_in_tcpr(tcPr, OxmlElement("w:noWrap"), "noWrap")
 
                 # Handle vertical merge if specified
                 if getattr(cell_node, "v_merge", None) in ("restart", "continue"):
