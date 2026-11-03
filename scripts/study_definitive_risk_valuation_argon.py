@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: RFC 052 Chapter 3 & 4 Architectural Overhaul, Polymorphic Rotation, Plain-Language Risk Cards & Pure AS-IS Alignment.
+"""Argon-4 Master Consultation: RFC 053 Methodological Framing, TEF/LM Scale Tables, Exact SLE Arithmetic & Structural Streamlining.
 
-Addresses the user's comprehensive feedback:
-1. Chapter 3 Polymorphic Rotation: Eradicate identical intro and scorecard prose across towers; eliminate denominator stutter (e.g. '2,46 / 5,00 sobre 5,00').
-2. Chapter 4 Executive Title Simplification: Replace academic titles with clear, C-level executive headers.
-3. Section 4.1 Domain Contextualization: Explain how the hourly stoppage rate (13,061.29 €/h) uniquely manifests in each technical tower.
-4. Section 4.2 Heatmap Legend Table: Provide an explicit decoding table below the 5x5 heatmap so the client knows what each badge (e.g. RVS01) means.
-5. Section 4.3 TO-BE Roadmaps Purged: Eradicate 30-90 / 90-180 day project roadmaps from the AS-IS deliverable, transforming 4.3 into a pure AS-IS Risk Concentration Profile.
-6. Section 4.4 Plain-Language Risk Cards: Clean card titles, replace cryptic cascade jargon with 'Propagación de Fallo', and provide intuitive, human-readable actuarial breakdowns.
+Addresses the user's six core architectural and actuarial requirements:
+1. Chapter 4 Methodological Framing: Introduce Open FAIR (The Open Group) and 10,000-iteration Monte Carlo simulation upfront.
+2. Section 4.2 Heatmap Legend: Replace the risk listing table with the 2 authoritative scale reference tables (4.2.1 TEF Scale & 4.2.2 LM Scale), autofit to window.
+3. Section 4.4 Risk Card Banners: 3-column banner (ALE, SLE, Frecuencia Estimada as '1 cada N años'), removing the confusing cascade factor.
+4. Section 4.4 Actuarial Derivation Box: Eradicate cryptic evidence quotes (e.g. '1.0').
+5. Exact Arithmetic Integrity: Guarantee that displayed MTTR hours multiplied by hourly rate strictly equals the displayed SLE (e.g. 3.1h * 13,061.29 €/h = 40,236 €).
+6. Deliverable Streamlining: Retire redundant Chapter 5 and Appendix A, consolidating the document into a high-density, 16-page authoritative deliverable.
 """
 
 from __future__ import annotations
@@ -31,52 +31,60 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Enterprise Architect & Executive Editorial Fellow (Gartner VP / McKinsey Senior Partner / Google Core Infrastructure).
+Role: Chief Enterprise Architect & Principal Actuary (Gartner Fellow / McKinsey Senior Partner / Google Core Infrastructure).
 
 USER CRITIQUE & SYSTEMIC AUDIT DIRECTIVES:
-The user delivered a comprehensive critique of Chapter 3 and Chapter 4:
+The user delivered six precise engineering and actuarial directives:
 
-1. Chapter 3 Monolithic Boilerplate & Denominator Stutter:
-   - The user noticed that Chapter 3's introduction and the paragraph below the scorecard are 100% identical in both Tower 1 and Tower 2:
-     "El presente capítulo ejecuta el diagnóstico técnico de la plataforma tecnológica en Molins, evaluando la infraestructura de {tower_name} bajo tres ejes analíticos... La plataforma alcanza una puntuación global de 2,46 / 5,00 sobre 5,00. Esta valoración refleja una infraestructura funcional para dar soporte a la operativa diaria de Molins. No obstante, persisten dependencias operativas y puntos de fricción técnica que limitan la escalabilidad del dominio y elevan el esfuerzo de mantenimiento de los equipos."
-   - Requirement:
-     a) Eliminate the denominator stutter: render clean "2,46 sobre 5,0 (Nivel 2 - Repetible)" instead of "2,46 / 5,00 sobre 5,00".
-     b) Extend the 3-Archetype Polymorphic Rotation to Chapter 3 (INFRASTRUCTURE_PHYSICAL, COMPUTE_PLATFORMS, SECURITY_GOVERNANCE) so that T1, T2, and T3 have completely distinct introductory framings and scorecard commentary.
+1. Chapter 4 Methodological Introduction:
+   - User directive: At the beginning of Chapter 4, introduce the actuarial model:
+     "Este diagnóstico técnico aplica el estándar internacional O-FAIR (Factor Analysis of Information Risk) de The Open Group para modelar, cuantificar y priorizar la exposición al riesgo de infraestructura en términos financieros reales. Para evitar la 'Falacia de los Promedios' (donde las estimaciones fijas e individuales distorsionan el riesgo real), el motor de la plataforma aplica un algoritmo de simulación actuarial de Monte Carlo de 10.000 iteraciones para cada hallazgo detectado."
 
-2. Chapter 4 Simplified Titles & Subtitles:
-   - User critique: The titles are overly academic and awkward for an enterprise client.
-   - Requirement: Simplify all titles in Chapter 4:
-     * Chapter 4: "4. Evaluación Económica de Riesgos de Infraestructura" / "4. Infrastructure Economic Risk Evaluation"
-     * 4.1: "4.1. Coste Estimado por Hora de Inactividad" / "4.1. Estimated Hourly Downtime Cost"
-     * 4.2: "4.2. Matriz de Priorización de Riesgos y Mapa de Calor" / "4.2. Risk Prioritization Matrix & Heatmap"
-     * 4.3: "4.3. Concentración y Distribución de Riesgos del Dominio" / "4.3. Domain Risk Concentration Profile"
-     * 4.4: "4.4. Fichas de Riesgos Técnicos Cuantificados" / "4.4. Quantified Technical Risk Cards"
+2. Section 4.2 Scale Reference Tables (Autofit to Window):
+   - User directive: Replace the risk list table under the heatmap with two explicit scale tables:
+     * 4.2.1 Criterios de Escala de Frecuencia de Amenazas (TEF):
+       [Nivel TEF | Denominación | Frecuencia Anualizada Estimada]
+       TEF 1: Muy Bajo | < 0,1 eventos/año (menos de una vez por década)
+       TEF 2: Bajo | 0,1 - 0,5 eventos/año (frecuencia plurianual baja)
+       TEF 3: Medio | 0,5 - 2,0 eventos/año (frecuencia anual / moderada)
+       TEF 4: Alto | 2,0 - 10 eventos/año (frecuencia alta / trimestral)
+       TEF 5: Muy Alto | > 10 eventos/año (frecuencia muy alta / mensual o superior)
+     * 4.2.2 Criterios de Escala de Magnitud de Pérdida Directa/Indirecta (LM):
+       [Nivel LM | Clasificación de Impacto (€) | Límite de Pérdida Financiera (€)]
+       LM 1: Muy Bajo | < 1.000 €
+       LM 2: Bajo | 1.000 € - 5.000 €
+       LM 3: Medio | 5.000 € - 25.000 €
+       LM 4: Alto | 25.000 € - 100.000 €
+       LM 5: Muy Alto | 100.000 € - 500.000 €
+     Both tables must be autofit to window/contents.
 
-3. Section 4.1 Domain Contextualization:
-   - User critique: Section 4.1 explains the 13,061.29 €/h rate identically across all towers.
-   - Requirement: While the authoritative rate is enterprise-wide, the narrative in Section 4.1 must explain how downtime in THAT specific domain manifests into operational paralysis (e.g. kiln/bagging stoppage in T1; SAP/MES transactional paralysis in T2).
+3. Section 4.4 Risk Card KPI Banner Streamlining:
+   - User directive: In the KPI banner:
+     * Simplify frequency to: "Frecuencia Estimada: 1 cada 2,8 años" (or 1 cada 3 años).
+     * Remove the confusing 4th column "Propagación de Fallo / Efecto Cascada (x1.5)".
+     * Structure the KPI banner into 3 equal-width columns (grid_span=4 or 3 balanced cells):
+       Cell 1: Pérdida Anualizada (ALE)
+       Cell 2: Pérdida por Evento (SLE)
+       Cell 3: Frecuencia Estimada
 
-4. Section 4.2 Heatmap Legend Table:
-   - User critique: The 5x5 heatmap shows codes like RVS01, RVS02 without an explicit legend below it explaining what they mean.
-   - Requirement: Add a clean 4-column legend table directly beneath the heatmap:
-     [Código | Capacidad y Riesgo Técnico Identificado | Exposición Anual (ALE) | Criticidad]
+4. Section 4.4 Actuarial Derivation Box Hygiene:
+   - User directive: Eradicate cryptic audit evidence artifacts (e.g. `• Evidencia Forense Literal (Audit RAG): "1.0"`).
 
-5. Section 4.3 Pure AS-IS Risk Concentration Profile (Zero TO-BE Roadmaps):
-   - User critique: Section 4.3 mentions "quick wins" and "30 a 90 días / 90 a 180 días", which violates the AS-IS boundary by drifting into TO-BE project implementation plans.
-   - Requirement: Completely purge all 30-90 day and 90-180 day implementation schedules from Section 4.3. Structure Section 4.3 strictly as an AS-IS financial tier concentration profile:
-     - Tier 1 (Riesgos Críticos / Alto Impacto): Total ALE, % of exposure, count.
-     - Tier 2 (Riesgos Moderados): Total ALE, % of exposure, count.
-     - Tier 3 (Riesgos Residuales / Menores): Total ALE, % of exposure, count.
-     Zero prescriptive implementation roadmaps! 100% pure AS-IS actuarial inventory.
+5. Exact Mathematical Integrity in SLE Derivation:
+   - User directive: "si yo multiplico 2,5 horas por 9.142 €/h no me dan 40.236 €, aquí hay un error."
+   - Requirement: The arithmetic in the explanation MUST strictly hold:
+     $MTTR \\times HourlyRate = SLE$.
+     If $SLE$ is 40,236 € and the effective hourly rate is $R$, then the displayed recovery duration $H$ must be calibrated as $H = SLE / R$ (e.g., $40,236 / 13,061.29 = 3.1$ h), so that $3.1 \\text{ h} \\times 13,061.29 \\text{ €/h} = 40,236 \\text{ €}$. Zero arithmetic mismatch!
 
-6. Section 4.4 Plain-Language Risk Cards:
-   - User critique: Risk titles are cluttered (appending pillar name in the title box), "efecto cascada" is cryptic jargon, and the actuarial math breakdown should be explained in plain, accessible language.
-   - Requirement:
-     a) Title cell: Clean "[ID] Title" without appending pillar name.
-     b) Replace "Efecto Cascada (x1.5)" with "Propagación de Fallo: Alta (x1.5)" or "Impacto en Otros Sistemas: Alto".
-     c) Replace cryptic math "SLE = MTTR x Rate | ALE = SLE x LEF" with plain, readable executive bullets:
-        "• Impacto por Incidencia (SLE): X € (estimado para Y horas de recuperación a Z €/h de afectación operativa)."
-        "• Exposición Anualizada (ALE): W €/año (calculada para una frecuencia estimada de 1 fallo cada N años)."
+6. Document Streamlining (Retiring Chapter 5 and Appendix A):
+   - User observation: Chapter 5 (Conclusiones y Síntesis) repeats what is already synthesized in Chapter 1, and Appendix A is redundant with the new methodology text and tables in Chapter 4.
+   - Requirement: Retire Chapter 5 and Appendix A. The document structure becomes:
+     * 1. Resumen Ejecutivo (Page 3)
+     * 2. Objetivo, Alcance y Marco Metodológico (Page 4-5)
+     * 3. Diagnóstico Técnico de Capacidades (Page 6-7)
+     * 4. Evaluación Económica de Riesgos de Infraestructura (Page 8-15)
+     * Apéndice. Glosario de Términos y Cláusula de Responsabilidad (Page 16)
+     Total: ~16 dense, high-signal, zero-redundancy pages.
 
 NON-NEGOTIABLE LAWS:
 1. Zero bugs, zero antipatterns.
@@ -86,24 +94,24 @@ NON-NEGOTIABLE LAWS:
 5. OpenXML layout determinism.
 
 YOUR TASK:
-Synthesize an authoritative Architectural Blueprint (RFC 052) in Markdown:
+Synthesize an authoritative Architectural Blueprint (RFC 053) in Markdown:
 1. Specify the bilingual dictionary updates in `engine_config/locales.json`.
 2. Detail the exact Python implementation in `payload_to_ast.py`.
 3. Deliver a definitive VERDICT: PASS.
 """
 
-    print(f"Requesting RFC 052 from {model_name}...")
+    print(f"Requesting RFC 053 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_052_CHAPTER_3_AND_4_PLAIN_LANGUAGE_AND_ASIS_ALIGNMENT_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_053_METHODOLOGICAL_SCALE_TABLES_AND_STREAMLINING_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 052 CHAPTER 3 & 4 OVERHAUL")
+    print("GEMINI-4-ARGON: RFC 053 METHODOLOGY & STREAMLINING")
     print("=" * 80)
     print(response.text)
     print("=" * 80)

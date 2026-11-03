@@ -644,11 +644,9 @@
     "static_toc_entries": [
       "Resumen Ejecutivo\t3",
       "Objetivo, Alcance y Marco Metodológico\t4",
-      "Diagnóstico Técnico y Cuadro de Mando de Madurez\t6",
-      "Registro Actuarial de Riesgos y Cuantificación Financiera (Open FAIR™)\t8",
-      "Conclusiones y Síntesis Diagnóstica (AS-IS)\t18",
-      "Apéndice A. Metodología Cuantitativa de Riesgos (Open FAIR™)\t20",
-      "Apéndice B. Glosario de Términos y Cláusula de Responsabilidad\t22"
+      "Diagnóstico Técnico de Capacidades\t6",
+      "Evaluación Económica de Riesgos de Infraestructura\t8",
+      "Apéndice. Glosario de Términos y Cláusula de Responsabilidad\t16"
     ],
     "standard_sector_label": "Sector Estándar",
     "fair_intro_prose_p1": "El análisis de riesgos de la torre evalúa la cadena de propagación entre las deficiencias físicas observadas en las instalaciones, la estabilidad de las plataformas lógicas de TI y la continuidad de las operaciones de negocio.",
@@ -1352,7 +1350,7 @@
     ],
     "ast_appendix_custody_title": "Apéndice A. Registro de Custodia de Fuentes de Información",
     "ast_appendix_fair_title": "Apéndice A. Metodología Cuantitativa de Riesgos (Open FAIR™)",
-    "ast_appendix_glossary_disclaimer_title": "Apéndice B. Glosario de Términos y Cláusula de Responsabilidad",
+    "ast_appendix_glossary_disclaimer_title": "Apéndice. Glosario de Términos y Cláusula de Responsabilidad",
     "detailed_risks_pillar_title": "Análisis de Vulnerabilidades: ",
     "roi_payback_quarter": "Payback < 3 meses",
     "roi_net_savings": "Ahorro neto {amount}",
@@ -1648,7 +1646,80 @@
       "SECURITY_GOVERNANCE": "En el dominio de {tower_name}, un incidente grave de almacenamiento o ciberseguridad —como la corrupción de cabinas o el bloqueo de cuentas privilegiadas— compromete la disponibilidad de volúmenes transaccionales y copias de respaldo, obligando a detener la operativa para verificar la integridad del dato a un coste de {hourly_rate_est}."
     },
     "risk_card_sle_bullet_fmt": "• **Impacto por Incidencia (SLE):** {sle_val} (estimado para {mttr_hours}h de recuperación a {hourly_rate}/h de afectación operativa).",
-    "risk_card_ale_bullet_fmt": "• **Exposición Anualizada (ALE):** {ale_val}/año (calculada para una frecuencia estimada de 1 fallo cada {recurrence_years} años, tasa anual {lef_val})."
+    "risk_card_ale_bullet_fmt": "• **Exposición Anualizada (ALE):** {ale_val}/año (calculada para una frecuencia estimada de 1 fallo cada {recurrence_years} años, tasa anual {lef_val}).",
+    "ch4_methodological_intro": "Este diagnóstico técnico aplica el estándar internacional O-FAIR (Factor Analysis of Information Risk) de The Open Group para modelar, cuantificar y priorizar la exposición al riesgo de infraestructura en términos financieros reales. Para evitar la \"Falacia de los Promedios\" (donde las estimaciones fijas e individuales distorsionan el riesgo real), el motor de la plataforma aplica un algoritmo de simulación actuarial de Monte Carlo de 10.000 iteraciones para cada hallazgo detectado.",
+    "sec_4_2_1_title": "4.2.1 Criterios de Escala de Frecuencia de Amenazas (TEF)",
+    "tef_scale_headers": [
+      "Nivel TEF",
+      "Denominación",
+      "Frecuencia Anualizada Estimada"
+    ],
+    "tef_scale_rows": [
+      [
+        "TEF 1",
+        "Muy Bajo",
+        "< 0,1 eventos/año (menos de una vez por década)"
+      ],
+      [
+        "TEF 2",
+        "Bajo",
+        "0,1 - 0,5 eventos/año (frecuencia plurianual baja)"
+      ],
+      [
+        "TEF 3",
+        "Medio",
+        "0,5 - 2,0 eventos/año (frecuencia anual / moderada)"
+      ],
+      [
+        "TEF 4",
+        "Alto",
+        "2,0 - 10 eventos/año (frecuencia alta / trimestral)"
+      ],
+      [
+        "TEF 5",
+        "Muy Alto",
+        "> 10 eventos/año (frecuencia muy alta / mensual o superior)"
+      ]
+    ],
+    "sec_4_2_2_title": "4.2.2 Criterios de Escala de Magnitud de Pérdida Directa/Indirecta (LM)",
+    "lm_scale_headers": [
+      "Nivel LM",
+      "Clasificación de Impacto ({currency})",
+      "Límite de Pérdida Financiera ({currency})"
+    ],
+    "lm_scale_rows": [
+      [
+        "LM 1",
+        "Muy Bajo",
+        "< 1.000 {currency}"
+      ],
+      [
+        "LM 2",
+        "Bajo",
+        "1.000 {currency} - 5.000 {currency}"
+      ],
+      [
+        "LM 3",
+        "Medio",
+        "5.000 {currency} - 25.000 {currency}"
+      ],
+      [
+        "LM 4",
+        "Alto",
+        "25.000 {currency} - 100.000 {currency}"
+      ],
+      [
+        "LM 5",
+        "Muy Alto",
+        "100.000 {currency} - 500.000 {currency}"
+      ]
+    ],
+    "kpi_estimated_frequency_label": "Frecuencia Estimada",
+    "kpi_frequency_value_years": "1 cada {years} años",
+    "kpi_frequency_value_annual": "{events} eventos/año",
+    "sle_derivation_formula_bullet": "• **Derivación Financiera Exacta (SLE):** {effective_hours}h de interrupción operativa efectiva × {hourly_rate}/h (coste horario de parada) = {sle_formatted}.",
+    "ale_derivation_formula_bullet": "• **Exposición Anualizada Estimada (ALE):** {ale_formatted}/año (calculada para una frecuencia estimada de {frequency_text}).",
+    "appendix_glossary_single_title": "Apéndice. Glosario de Términos y Cláusula de Responsabilidad"
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -2285,12 +2356,10 @@
     "interdep_concl_text": "These indicators provide an objective, quantitative decision context, allowing strategic investments to be prioritized based on transformation viability and overall resilience:",
     "static_toc_entries": [
       "Executive Summary\t3",
-      "Objective, Scope and Methodological Framework\t4",
-      "Technical Diagnosis and Maturity Dashboard\t6",
-      "Actuarial Risk Register & Financial Quantification (Open FAIR™)\t8",
-      "Conclusions and Diagnostic Synthesis (AS-IS)\t18",
-      "Appendix A. Quantitative Risk Methodology (Open FAIR™)\t20",
-      "Appendix B. Glossary of Terms and Limitation of Liability\t22"
+      "Objective, Scope & Methodological Framework\t4",
+      "Technical Capability Diagnostic\t6",
+      "Infrastructure Economic Risk Evaluation\t8",
+      "Appendix. Glossary of Terms & Liability Clause\t16"
     ],
     "standard_sector_label": "Standard Sector",
     "fair_intro_prose_p1": "The infrastructure risk assessment evaluates the propagation chain between physical facility deficiencies, logical IT platform stability, and core business continuity.",
@@ -2994,7 +3063,7 @@
     ],
     "ast_appendix_custody_title": "Appendix A. Information Source Chain of Custody Registry",
     "ast_appendix_fair_title": "Appendix A. Quantitative Risk Modeling Methodology (Open FAIR™)",
-    "ast_appendix_glossary_disclaimer_title": "Appendix B. Abbreviations Glossary & Legal Liability Disclaimer",
+    "ast_appendix_glossary_disclaimer_title": "Appendix. Abbreviations Glossary & Legal Liability Disclaimer",
     "detailed_risks_pillar_title": "Vulnerability Analysis: ",
     "roi_payback_quarter": "Payback < 3 months",
     "roi_net_savings": "Net savings {amount}",
@@ -3293,7 +3362,80 @@
       "SECURITY_GOVERNANCE": "Within {tower_name}, a major persistence or security incident—such as storage array corruption or privileged identity lockout—compromises transactional volumes and backups, forcing operational suspension to verify data integrity at a cost of {hourly_rate_est}."
     },
     "risk_card_sle_bullet_fmt": "• **Single Loss Expectancy (SLE):** {sle_val} (estimated for {mttr_hours}h recovery at {hourly_rate}/hr operational impact).",
-    "risk_card_ale_bullet_fmt": "• **Annualized Loss Expectancy (ALE):** {ale_val}/year (calculated for an estimated frequency of 1 incident every {recurrence_years} years, annual rate {lef_val})."
+    "risk_card_ale_bullet_fmt": "• **Annualized Loss Expectancy (ALE):** {ale_val}/year (calculated for an estimated frequency of 1 incident every {recurrence_years} years, annual rate {lef_val}).",
+    "ch4_methodological_intro": "This technical diagnostic applies The Open Group international O-FAIR (Factor Analysis of Information Risk) standard to model, quantify, and prioritize infrastructure risk exposure in real financial terms. To avoid the \"Flaw of Averages\" (where fixed single-point estimates distort true risk), the platform engine executes a 10,000-iteration Monte Carlo actuarial simulation algorithm for every detected finding.",
+    "sec_4_2_1_title": "4.2.1 Threat Event Frequency (TEF) Scale Criteria",
+    "tef_scale_headers": [
+      "TEF Level",
+      "Classification",
+      "Estimated Annualized Frequency"
+    ],
+    "tef_scale_rows": [
+      [
+        "TEF 1",
+        "Very Low",
+        "< 0.1 events/year (less than once per decade)"
+      ],
+      [
+        "TEF 2",
+        "Low",
+        "0.1 - 0.5 events/year (low multi-year frequency)"
+      ],
+      [
+        "TEF 3",
+        "Medium",
+        "0.5 - 2.0 events/year (annual / moderate frequency)"
+      ],
+      [
+        "TEF 4",
+        "High",
+        "2.0 - 10 events/year (high / quarterly frequency)"
+      ],
+      [
+        "TEF 5",
+        "Very High",
+        "> 10 events/year (very high / monthly or higher)"
+      ]
+    ],
+    "sec_4_2_2_title": "4.2.2 Direct/Indirect Loss Magnitude (LM) Scale Criteria",
+    "lm_scale_headers": [
+      "LM Level",
+      "Impact Classification ({currency})",
+      "Financial Loss Bound ({currency})"
+    ],
+    "lm_scale_rows": [
+      [
+        "LM 1",
+        "Very Low",
+        "< 1,000 {currency}"
+      ],
+      [
+        "LM 2",
+        "Low",
+        "1,000 {currency} - 5,000 {currency}"
+      ],
+      [
+        "LM 3",
+        "Medium",
+        "5,000 {currency} - 25,000 {currency}"
+      ],
+      [
+        "LM 4",
+        "High",
+        "25,000 {currency} - 100,000 {currency}"
+      ],
+      [
+        "LM 5",
+        "Very High",
+        "100,000 {currency} - 500,000 {currency}"
+      ]
+    ],
+    "kpi_estimated_frequency_label": "Estimated Frequency",
+    "kpi_frequency_value_years": "1 every {years} years",
+    "kpi_frequency_value_annual": "{events} events/year",
+    "sle_derivation_formula_bullet": "• **Exact Financial Derivation (SLE):** {effective_hours}h effective operational disruption × {hourly_rate}/hr (hourly downtime cost) = {sle_formatted}.",
+    "ale_derivation_formula_bullet": "• **Estimated Annualized Exposure (ALE):** {ale_formatted}/year (calculated for an estimated frequency of {frequency_text}).",
+    "appendix_glossary_single_title": "Appendix. Glossary of Terms & Liability Clause"
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",

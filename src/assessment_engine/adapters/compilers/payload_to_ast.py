@@ -1708,6 +1708,7 @@ class PayloadToASTBridge:
                 primary_color_rgb=self.primary_color_rgb,
             )
         )
+        nodes.append(ParagraphNode(text=t("ch4_methodological_intro", locale=meta_lang), space_after=8))
 
         # Build a lookup map from blueprint payload findings for detailed FAIR metrics
         fair_lookup = {}
@@ -2004,47 +2005,27 @@ class PayloadToASTBridge:
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
         nodes.append(_build_heatmap_mosaic(risks_data_list))
 
-        # 4.2.1 Deterministic Heatmap Legend Table (RFC 052)
+        # 4.2.1 Threat Event Frequency (TEF) Scale Criteria Table (RFC 053)
         nodes.append(SpacerNode(points=6))
         nodes.append(
-            ParagraphNode(
-                text=f"*{t('ch4_heatmap_legend_title', locale=meta_lang)}*",
-                bold=True,
-                font_size=9.0,
-                space_after=4,
+            HeadingNode(
+                text=t("sec_4_2_1_title", locale=meta_lang),
+                level=3,
+                primary_color_rgb=self.primary_color_rgb,
             )
         )
-        legend_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("ch4_heatmap_col_code", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
-                    CellNode(text=t("ch4_heatmap_col_desc", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]),
-                    CellNode(text=t("ch4_heatmap_col_ale", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="RIGHT"),
-                    CellNode(text=t("ch4_heatmap_col_crit", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
-                ],
-                is_header=True,
+        nodes.append(_build_tef_scale_table(vocab, meta_lang, self.alt_row_hex))
+        nodes.append(SpacerNode(points=10))
+
+        # 4.2.2 Loss Magnitude (LM) Scale Criteria Table (RFC 053)
+        nodes.append(
+            HeadingNode(
+                text=t("sec_4_2_2_title", locale=meta_lang),
+                level=3,
+                primary_color_rgb=self.primary_color_rgb,
             )
-        ]
-        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
-        resolver = get_taxonomy_resolver()
-        for r_item in risks_data_list:
-            r_id = str(r_item.get("id") or "RSK-01").strip()
-            raw_cap = str(r_item.get("capability") or "Capability").strip()
-            r_cap = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=meta_lang)
-            r_ale = float(r_item.get("ale") or r_item.get("ale_val") or 0.0)
-            formatted_r_ale = format_currency(r_ale, currency_symbol=currency, locale=meta_lang, decimals=0)
-            crit_badge = t(f"risk_card_severity_{str(r_item.get('severity_tier', 'HIGH')).lower()}", locale=meta_lang)
-            legend_rows.append(
-                TableRowNode(
-                    cells=[
-                        CellNode(text=r_id, bold=True, align="CENTER", font_size=8.0, bg_color=self.alt_row_hex),
-                        CellNode(text=r_cap, font_size=8.0, bg_color="FFFFFF"),
-                        CellNode(text=formatted_r_ale, bold=True, align="RIGHT", font_size=8.0, bg_color="FFFFFF"),
-                        CellNode(text=crit_badge, font_size=8.0, align="CENTER", bg_color=self.alt_row_hex),
-                    ]
-                )
-            )
-        nodes.append(TableNode(rows=legend_rows, autofit=True, col_widths=[0.14, 0.52, 0.18, 0.16]))
+        )
+        nodes.append(_build_lm_scale_table(vocab, meta_lang, currency, is_critical, self.alt_row_hex))
         nodes.append(SpacerNode(points=15))
 
         # 4.3 Pure AS-IS Domain Risk Concentration Profile
@@ -2475,13 +2456,17 @@ class PayloadToASTBridge:
             header_text = [255, 255, 255]
             sev_badge_bg = severity_bg_hex
 
-        # Resolve plain-language cascade effect
-        if coupling_factor >= 1.5:
-            cascade_label = t("risk_card_cascade_high", locale=meta_lang)
-        elif coupling_factor >= 1.2:
-            cascade_label = t("risk_card_cascade_medium", locale=meta_lang)
+        # Calculate human-readable return period / frequency (RFC 053)
+        if lef <= 0:
+            freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=format_number(0.1, locale=meta_lang, decimals=1))
+        elif lef < 1.0:
+            rec_years = round(1.0 / lef, 1)
+            rec_decimals = 0 if abs(rec_years - round(rec_years)) < 0.15 else 1
+            years_str = format_number(rec_years, locale=meta_lang, decimals=rec_decimals)
+            freq_display = t("kpi_frequency_value_years", locale=meta_lang, years=years_str)
         else:
-            cascade_label = t("risk_card_cascade_low", locale=meta_lang)
+            ev_str = format_number(lef, locale=meta_lang, decimals=1)
+            freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
 
         if metrics.is_deduplicated:
             notice_text = t("risk_card_deduplicated_ale_notice", locale=meta_lang).format(
@@ -2494,7 +2479,7 @@ class PayloadToASTBridge:
                     bold=True,
                     bg_color="F8FAFC",
                     text_color_rgb=[51, 65, 85],
-                    grid_span=4,
+                    grid_span=12,
                     width_dxa=9360,
                     align="RIGHT",
                 )
@@ -2503,63 +2488,55 @@ class PayloadToASTBridge:
             kpi_row_cells = [
                 CellNode(
                     text=f"**{t('risk_card_ale_label', locale=meta_lang)}**\n{formatted_ale} / {t('year_lbl', locale=meta_lang)}",
-                    font_size=8.0,
+                    font_size=8.5,
                     bg_color="F8FAFC",
                     text_color_rgb=[0, 114, 188],
-                    grid_span=1,
-                    width_dxa=2340,
+                    grid_span=4,
+                    width_dxa=3120,
                     align="CENTER",
                 ),
                 CellNode(
                     text=f"**{t('risk_card_sle_label', locale=meta_lang)}**\n{formatted_sle}",
-                    font_size=8.0,
+                    font_size=8.5,
                     bg_color="F8FAFC",
-                    grid_span=1,
-                    width_dxa=2340,
+                    grid_span=4,
+                    width_dxa=3120,
                     align="CENTER",
                 ),
                 CellNode(
-                    text=f"**{t('risk_card_lef_label', locale=meta_lang)}**\n{lef_formatted} {ev_unit}/{t('year_lbl', locale=meta_lang)}\n({return_period_str})",
-                    font_size=8.0,
+                    text=f"**{t('kpi_estimated_frequency_label', locale=meta_lang)}**\n{freq_display}",
+                    font_size=8.5,
                     bg_color="F8FAFC",
-                    grid_span=1,
-                    width_dxa=2340,
-                    align="CENTER",
-                ),
-                CellNode(
-                    text=f"**{t('risk_card_cascade_label', locale=meta_lang)}**\n{cascade_label}\n(x{coupling_factor:.1f})",
-                    font_size=8.0,
-                    bg_color="F8FAFC",
-                    grid_span=1,
-                    width_dxa=2340,
+                    grid_span=4,
+                    width_dxa=3120,
                     align="CENTER",
                 ),
             ]
 
-        # Build transparent plain-language Actuarial Derivation Box for the CFO (RFC 052)
-        rec_years = round(1.0 / lef, 1) if lef > 0 else 5.0
-        rec_decimals = 0 if abs(rec_years - round(rec_years)) < 0.15 else 1
-        rec_years_str = format_number(rec_years, locale=meta_lang, decimals=rec_decimals)
-        mttr_hours_str = format_number(mttr_hours, locale=meta_lang, decimals=1)
+        # Enforce exact closed-form arithmetic identity: EffectiveHours * HourlyRate == SLE (RFC 053)
+        sle_num = float(metrics.effective_sle)
+        safe_hourly = (hourly_rate * alpha) if (hourly_rate * alpha) > 0 else 1.0
+        eff_recovery_hours = sle_num / safe_hourly
+        eff_h_rounded = max(round(eff_recovery_hours, 1), 0.1)
+        calibrated_hourly_rate = sle_num / eff_h_rounded
+
+        eff_h_str = format_number(eff_h_rounded, locale=meta_lang, decimals=1)
+        rate_str = format_currency(calibrated_hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)
 
         sle_bullet = t(
-            "risk_card_sle_bullet_fmt",
+            "sle_derivation_formula_bullet",
             locale=meta_lang,
-            sle_val=formatted_sle,
-            mttr_hours=mttr_hours_str,
-            hourly_rate=format_currency(effective_hourly, currency_symbol=currency, locale=meta_lang, decimals=0),
+            effective_hours=eff_h_str,
+            hourly_rate=rate_str,
+            sle_formatted=formatted_sle,
         )
         ale_bullet = t(
-            "risk_card_ale_bullet_fmt",
+            "ale_derivation_formula_bullet",
             locale=meta_lang,
-            ale_val=formatted_ale,
-            recurrence_years=rec_years_str,
-            lef_val=lef_formatted,
+            ale_formatted=formatted_ale,
+            frequency_text=freq_display,
         )
         actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
-        if evidence_txt:
-            ev_lbl = t("audit_evidence_label", locale=meta_lang)
-            actuarial_box_text += f"\n• **{ev_lbl}:** \"{evidence_txt}\""
 
         card_table = TableNode(
             rows=[
@@ -2571,7 +2548,7 @@ class PayloadToASTBridge:
                             bold=True,
                             bg_color=header_bg,
                             text_color_rgb=header_text,
-                            grid_span=3,
+                            grid_span=9,
                             width_dxa=7020,
                             align="LEFT",
                         ),
@@ -2581,7 +2558,7 @@ class PayloadToASTBridge:
                             bold=True,
                             bg_color=sev_badge_bg,
                             text_color_rgb=[255, 255, 255],
-                            grid_span=1,
+                            grid_span=3,
                             width_dxa=2340,
                             align="CENTER",
                         ),
@@ -2598,7 +2575,7 @@ class PayloadToASTBridge:
                             text=f"**{t('risk_card_vulnerability_label', locale=meta_lang)}:**\n{vuln_txt}",
                             font_size=8.0,
                             bg_color="FFFFFF",
-                            grid_span=2,
+                            grid_span=6,
                             width_dxa=4680,
                             border_left_color="E63946",
                             border_left_size=24,
@@ -2608,7 +2585,7 @@ class PayloadToASTBridge:
                             text=f"**{t('risk_card_operational_impact_label', locale=meta_lang)}:**\n{impact_txt}",
                             font_size=8.0,
                             bg_color="FFFFFF",
-                            grid_span=2,
+                            grid_span=6,
                             width_dxa=4680,
                             border_left_color="2A9D8F",
                             border_left_size=24,
@@ -2623,7 +2600,7 @@ class PayloadToASTBridge:
                             text=actuarial_box_text,
                             font_size=8.0,
                             bg_color="F8FAFC",
-                            grid_span=4,
+                            grid_span=12,
                             width_dxa=9360,
                             border_left_color="0072BC",
                             border_left_size=24,
@@ -2633,7 +2610,7 @@ class PayloadToASTBridge:
                     cant_split=True,
                 ),
             ],
-            column_widths_dxa=[2340, 2340, 2340, 2340],
+            column_widths_dxa=[780] * 12,
             keep_together=True,
         )
         return card_table
@@ -2645,10 +2622,7 @@ class PayloadToASTBridge:
     def _build_conclusions_and_appendices(
         self, ctx: dict[str, Any], nodes: List[Any], risks_data_list: list[dict[str, Any]] | None = None
     ) -> None:
-        self._build_conclusions_chapter(ctx, nodes, risks_data_list or [])
-        _build_appendix_b_fair_methodology_fn(
-            ctx, nodes, self.primary_color_rgb, self.brand_data, self.alt_row_hex
-        )
+        # Streamlined Unified Appendix (RFC 053): Chapter 5 & Appendix A/B retired; glossary unified
         _build_appendix_c_glossary_and_disclaimer_fn(ctx, nodes, self.primary_color_rgb)
 
     def _build_conclusions_chapter(

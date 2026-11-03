@@ -57,13 +57,10 @@ def test_compiled_asis_document_purity(tmp_path: Path) -> None:
     assert "Palancas de Retorno de Resiliencia" not in full_text
     assert "Avería o fallo de componente electromecánico principal durante la operación continua" not in full_text
     assert "Desglose del Cálculo Actuarial" in full_text
-    assert "Propagación de Fallo" in full_text or "Efecto Cascada" in full_text
+    assert "Frecuencia Estimada" in full_text
 
-    # Task 7: Chapter 5 Pure AS-IS Synthesis
+    # Task 7 & 8: Streamlined Architecture (RFC 053)
     assert "Proyección Multi-Horizonte del Coste de Inacción" not in full_text
-    assert "Matriz de Concentración de Vulnerabilidades" in full_text
-
-    # Task 8: Single Technical Appendix
-    assert "Registro de Custodia de Fuentes de Información" not in full_text
-    assert "Apéndice A. Metodología Cuantitativa de Riesgos (Open FAIR™)" in full_text
-    assert "Apéndice B. Glosario de Términos" in full_text
+    assert "Criterios de Escala de Frecuencia de Amenazas (TEF)" in full_text
+    assert "Criterios de Escala de Magnitud de Pérdida Directa/Indirecta (LM)" in full_text
+    assert "Glosario de Términos y Cláusula de Responsabilidad" in full_text
