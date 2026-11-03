@@ -1042,6 +1042,7 @@ class PayloadToASTBridge:
         # 2. Paragraph 2: Lead-in + Structured List Bullets
         nodes.append(ParagraphNode(text=p_texts[1], font_size=9.5, space_after=4, keep_with_next=True))
         active_findings = findings_briefs[:3] if findings_briefs else [t("default_critical_vulnerability", locale=meta_lang)]
+        from assessment_engine.infrastructure.localization import restore_locale_diacritics
         for f_idx, fb in enumerate(active_findings):
             is_last = (f_idx == len(active_findings) - 1)
             b_text = fb.strip().rstrip(".")
@@ -1049,14 +1050,9 @@ class PayloadToASTBridge:
                 parts = b_text.split(":", 1)
                 formatted_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}."
             else:
-                words = b_text.split()
-                if len(words) > 4:
-                    lead_phrase = " ".join(words[:3])
-                    rest_phrase = " ".join(words[3:])
-                    formatted_bullet = f"**{lead_phrase}** {rest_phrase}."
-                else:
-                    formatted_bullet = f"{b_text}."
-            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.0, space_after=8 if is_last else 3))
+                formatted_bullet = f"{b_text}."
+            formatted_bullet = restore_locale_diacritics(formatted_bullet, meta_lang)
+            nodes.append(ParagraphNode(text=formatted_bullet, style="List Bullet", font_size=9.5, space_after=8 if is_last else 3))
 
         # 3. Paragraph 3: Actuarial Latent Exposure
         nodes.append(ParagraphNode(text=p_texts[2], font_size=9.5, space_after=8))
@@ -2200,33 +2196,32 @@ class PayloadToASTBridge:
         triggers_map = loc_branch.get("tower_p90_triggers", {})
         trigger_text = triggers_map.get(canonical_t_id) or triggers_map.get("DEFAULT", "")
 
-        p90_body = t(
-            "p90_callout_body_template",
-            locale=meta_lang,
-            compound_failure_trigger=trigger_text,
-            p90_recovery_hours=p90_rec_hours_str,
-            p90_total_contingency=p90_contingency_str,
-            direct_stoppage_loss=direct_stoppage_str,
-            secondary_disaster_spend=secondary_spend_str,
-        )
+        fmt_kwargs = {
+            "compound_failure_trigger": trigger_text,
+            "p90_recovery_hours": p90_rec_hours_str,
+            "p90_total_contingency": p90_contingency_str,
+            "direct_stoppage_loss": direct_stoppage_str,
+            "secondary_disaster_spend": secondary_spend_str,
+        }
 
-        p90_callout_title = t("p90_callout_title", locale=meta_lang)
-        callout_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(
-                        text=f"**{p90_callout_title}**\n\n{p90_body}",
-                        font_size=8.5,
-                        bg_color="F8FAFC",
-                        border_left_color="1E3A8A",
-                        border_left_size=24,
-                        align="LEFT",
-                    )
-                ]
+        p90_heading = t("p90_callout_title", locale=meta_lang)
+        nodes.append(SpacerNode(points=12))
+        nodes.append(
+            HeadingNode(
+                text=p90_heading,
+                level=3,
+                primary_color_rgb=self.primary_color_rgb,
+                keep_with_next=True,
             )
-        ]
-        nodes.append(TableNode(rows=callout_rows, autofit=True, col_widths=[1.0]))
-        nodes.append(SpacerNode(points=15))
+        )
+        p1_text = t("p90_callout_p1", locale=meta_lang, **fmt_kwargs)
+        p2_text = t("p90_callout_p2", locale=meta_lang, **fmt_kwargs)
+        p3_text = t("p90_callout_p3", locale=meta_lang, **fmt_kwargs)
+
+        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        nodes.append(ParagraphNode(text=restore_locale_diacritics(p1_text, meta_lang), font_size=10.0, space_after=6))
+        nodes.append(ParagraphNode(text=restore_locale_diacritics(p2_text, meta_lang), font_size=10.0, space_after=6))
+        nodes.append(ParagraphNode(text=restore_locale_diacritics(p3_text, meta_lang), font_size=10.0, space_after=14))
 
     def _build_detailed_findings_log(
         self,

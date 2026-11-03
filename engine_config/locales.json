@@ -1890,7 +1890,7 @@
     "actuarial_custody_promoted_scope_note": "Nota de Alcance: Este riesgo se cuantifica económicamente en este informe porque el área técnica principal ({target_tower}, ref: {primary_risk_ref}) no forma parte de los servicios evaluados en este proyecto.",
     "actuarial_custody_promoted_unmapped_note": "Nota de Alcance: Este riesgo se cuantifica económicamente en este informe al no estar asignado a otra área técnica evaluada en este proyecto.",
     "actuarial_custody_deduplicated_note": "Exposición económica contabilizada en el área principal: {primary_risk_ref}.",
-    "p90_callout_title": "Escenario Adverso de Contingencia Máxima y Resiliencia Extrema (P90)",
+    "p90_callout_title": "Escenario de Fallo Grave y Tiempo Máximo de Recuperación (P90)",
     "p90_callout_body_template": "En consonancia con la síntesis ejecutiva del Capítulo 1, la modelización actuarial en el percentil 90 (P90) evalúa la materialización de un fallo compuesto por {compound_failure_trigger}. Bajo este régimen de estrés asintótico, la ventana física de reconstrucción, sincronización e integridad operativa se extiende hasta {p90_recovery_hours} horas. El impacto financiero contingente asciende a un máximo proyectado de {p90_total_contingency}, desglosado en {direct_stoppage_loss} por interrupción operativa directa y {secondary_disaster_spend} asociados a gastos extraordinarios de contingencia (activación de soporte de emergencia del fabricante, logística crítica de reemplazo de componentes y triaje especializado de nivel 3).",
     "tower_p90_triggers": {
       "T1": "pérdida simultánea de alimentación eléctrica redundante y degradación térmica en sala técnica principal",
@@ -1904,7 +1904,10 @@
       "T9": "revocación masiva de perfiles de aprovisionamiento o bloqueo generalizado de flota de puestos de trabajo",
       "T10": "indisponibilidad simultánea de plataformas de monitorización, ITSM y orquestación de respuesta a incidentes",
       "DEFAULT": "fallo concurrente de componentes troncales y pérdida de redundancia operativa en el dominio"
-    }
+    },
+    "p90_callout_p1": "Para evaluar el límite real de resistencia operativa de esta torre, se ha simulado un escenario extremo pero plausible en el que coinciden varios fallos críticos de forma simultánea ({compound_failure_trigger}). A diferencia de las incidencias aisladas del día a día, este supuesto analiza qué ocurre cuando fallan a la vez el sistema principal y sus mecanismos de respaldo.",
+    "p90_callout_p2": "En una situación de esta magnitud, la recuperación no consiste simplemente en reiniciar los equipos, sino en reconstruir la operativa paso a paso y comprobar que ningún dato crítico se haya corrompido. Bajo las condiciones técnicas actuales, restablecer el servicio por completo y verificar la integridad de la información requeriría un tiempo estimado de hasta {p90_recovery_hours} horas.",
+    "p90_callout_p3": "El impacto económico total de este escenario ascendería a {p90_total_contingency}. Esta cifra se divide de forma clara en dos conceptos: {direct_stoppage_loss} derivados directamente de la paralización de la actividad comercial y operativa durante la caída, y {secondary_disaster_spend} en costes extraordinarios de emergencia (como la contratación urgente de especialistas externos, soporte prioritario de fabricantes y sustitución inmediata de componentes dañados)."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -3628,7 +3631,7 @@
     "actuarial_custody_promoted_scope_note": "Scope Note: This risk is quantified in this report because its primary technical area ({target_tower}, ref: {primary_risk_ref}) is not part of the services assessed in this project.",
     "actuarial_custody_promoted_unmapped_note": "Scope Note: This risk is quantified in this report as it is not assigned to another assessed technical area.",
     "actuarial_custody_deduplicated_note": "Financial exposure accounted for in primary area: {primary_risk_ref}.",
-    "p90_callout_title": "P90 Adverse Contingency & Extreme Resilience Scenario",
+    "p90_callout_title": "Severe Failure Scenario and Maximum Recovery Time (P90)",
     "p90_callout_body_template": "Consistent with the Chapter 1 executive synthesis, actuarial modeling at the 90th percentile (P90) evaluates a compound failure triggered by {compound_failure_trigger}. Under this asymptotic stress regime, the physical reconstruction, state synchronization, and operational verification window extends up to {p90_recovery_hours} hours. The projected maximum contingent financial exposure reaches {p90_total_contingency}, comprising {direct_stoppage_loss} in direct operational stoppage losses and {secondary_disaster_spend} in secondary disaster expenditures (emergency OEM vendor escalation, expedited hardware logistics, and Tier-3 specialized triage).",
     "tower_p90_triggers": {
       "T1": "simultaneous dual power path loss and thermal runaway across primary technical facilities",
@@ -3642,7 +3645,10 @@
       "T9": "mass endpoint provisioning revocation or fleet-wide workspace lockouts",
       "T10": "simultaneous outage of observability, ITSM, and incident orchestration platforms",
       "DEFAULT": "concurrent core component failure and operational redundancy loss across the domain"
-    }
+    },
+    "p90_callout_p1": "To evaluate the practical resilience limit of this capability tower, the model simulates a severe, plausible scenario in which multiple critical failures occur simultaneously ({compound_failure_trigger}). Unlike routine isolated incidents, this case examines the operational reality when both primary systems and their backup mechanisms fail concurrently.",
+    "p90_callout_p2": "In a disruption of this magnitude, recovery requires more than restarting equipment; teams must rebuild operations step by step and verify that no critical business data has been corrupted. Under current technical conditions, fully restoring service and validating data consistency would require up to {p90_recovery_hours} hours.",
+    "p90_callout_p3": "The total financial exposure of this scenario reaches {p90_total_contingency}. This impact breaks down clearly into two categories: {direct_stoppage_loss} in direct losses from halted commercial and operational activity during the outage, and {secondary_disaster_spend} in extraordinary emergency expenses (such as urgent third-party specialist intervention, priority vendor support, and immediate hardware replacement)."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",

@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-"""Argon-4 Consultation: Code Audit, Page 3 Spacing, Formula Simplification & Section 4.3 P90 Deepening (RFC 058)."""
+"""Argon-4 Master Consultation: RFC 059 Natural Bullet Typography & Plain-Language P90 Scenario.
+
+Addresses the user's two acute editorial critiques:
+1. Artificial 3-word bolding in Chapter 1:
+   - "en cada torre hay un párrafo que pones a las 3 primeras palabras del bullets en negrita de la sección 1 y es que no tiene ningún sentido... '● Saturacion estructural de' o '● Bloqueo contractual y' o '● Proliferacion de silos'".
+   - Eradicate arbitrary words[:3] bolding. Preserve natural sentence flow. Restore full RAE diacritics.
+2. Section 4.3 P90 Scenario Plain-Language Restructuring:
+   - "este texto es infumable no se entiende, ni hay que hacer referencia al capítulo 1, de hecho el capítulo 1 es el resumen de lo que pongamos aquí, pero aquí tiene que estar redactado simple para que lo entienda alguien no financiero bien explicado y sencillo y no ponerlo en una tabla si no en el mismo tamaño de letra que el resto".
+   - Remove table wrapper; render as Heading 3 + standard 10.0pt body paragraphs.
+   - Eliminate jargon ('estrés asintótico', 'triaje nivel 3') and explain in plain, human, accessible language.
+"""
 
 from __future__ import annotations
 
@@ -22,46 +32,31 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Chief Systems Architect & Principal Actuary (Tier-1 Management Consulting / Google Core Infrastructure).
+Role: Chief Editorial Fellow & Principal Enterprise Architect (Tier-1 Management Consulting / Google Core Infrastructure).
 
-USER'S REVIEW & DIRECTIVES:
-The user delivered three specific requirements:
+USER CRITIQUE & SYSTEMIC AUDIT DIRECTIVES:
+The user delivered two penetrating editorial and layout critiques:
 
-1. Mandatory Comprehensive Code Review:
-   - Perform an exhaustive forensic code review of all recent implementations (`DynamicCustodyResolver`, `ast_table_builders.py`, `payload_to_ast.py`, `locales.json`).
-   - Check strictly for:
-     a) Zero bugs or edge-case failures.
-     b) Zero hardcoding (scales across any global enterprise from mid-market to Top Tier 1 worldwide, any vertical, any currency).
-     c) 100% Technical English codebase (not a single Spanish word in Python code, docstrings, identifiers, or logs).
+1. Artificial 3-Word Bolding in Chapter 1 Executive Bullets:
+   - User critique:
+     "en cada torre hay un párrafo que pones a las 3 primeras palabras del bullets en negrita de la sección 1 y es que no tiene ningún sentido. Ejemplo de la torre 2: '● Saturacion estructural de' o '● Bloqueo contractual y' o '● Proliferacion de silos'... es que no tiene ningún sentido."
+   - Root Cause:
+     In `payload_to_ast.py` lines 1045-1060, an arbitrary heuristic split the bullet text and bolded `words[:3]` if no colon existed, bolding prepositions and conjunctions ('de', 'y') without semantic justification. Furthermore, bullets lacked RAE diacritics.
+   - Architectural Remedy:
+     a) Eliminate arbitrary `words[:3]` bolding. If the bullet contains an explicit topic anchor (`:`), bold the prefix before the colon. If not, render the entire sentence in natural, unbolded typography.
+     b) Run all bullet text through `restore_locale_diacritics` to ensure 100% RAE orthographic compliance.
 
-2. Executive Summary (Page 3) Vertical Spacing Optimization:
-   - User feedback:
-     "en el '1. Resumen Ejecutivo' me encanta pero quizás como la idea es que ocupe una sola página y nos sobra espacio, quizás podríamos por ejemplo separar las tablas primera y segunda del resumen ejecutivo, entre cada párrafo dar un enter para que se vea más espacioso."
-   - Requirement:
-     Currently, Page 3 has ~268pt of empty void at the bottom because we compressed it too much.
-     Formulate the exact vertical spacing budget for Page 3 on an A4 canvas (698pt printable height) so the page looks balanced, spacious, and elegant without ever overflowing onto Page 4:
-     - Spacer between Table 1 (KPI) and Table 2 (Diagnostic Triad).
-     - Spacer between Table 2 and Headline.
-     - Paragraph vertical rhythm (`space_after` between 6pt and 8pt).
-
-3. Section 4.1 Formula Simplification:
-   - User directive:
-     "En el punto 4.1 podemos sustituir 'R_hourly, est = C_op, est (Lucro Cesante Base) + C_sla, est (Penalizaciones Contractuales) + C_rec, est (Brigadas y Recuperación)' por simplemente 'R_hourly, est = C_op, est + C_sla, est + C_rec, est'"
-   - Requirement:
-     Replace the verbose formula string with the clean mathematical formula across `engine_config/locales.json` in all locales.
-
-4. Section 4.3 P90 Tail Risk Disaster Scenario Deepening:
-   - User directive:
-     "También me pregunto si en el punto 4.3 deberíamos hablar y profundizar sobre lo que se dice en el resumen ejecutivo que no viene en ningún otro sitio: 'Ante una caída crítica simultánea de clústeres, el restablecimiento de los servicios clave requeriría hasta 15,5 horas, elevando la contingencia máxima proyectada a 325.000 € con soporte de emergencia del fabricante.' Esto que te he puesto arriba es un ejemplo, aplica para todas las torres."
-   - Requirement:
-     Currently, Section 4.3 presents the ALE concentration tiers, but lacks detailed technical grounding for the P90 stress scenario cited in Chapter 1.
-     Design an authoritative actuarial callout / subsection in Section 4.3 titled:
-     "Escenario Adverso de Contingencia Máxima y Resiliencia Extrema (P90)" / "P90 Adverse Contingency & Extreme Resilience Scenario".
-     This section will detail:
-     a) Compound failure trigger (e.g. simultaneous cluster degradation, dual power path loss).
-     b) Asymptotic physical recovery window (e.g. 15.5h in T2, 17.3h in T1) calibrated by `OperationalTailRiskEngine`.
-     c) Financial loss composition: Direct operational stoppage loss + contingent secondary disaster expenditures (emergency vendor support, express parts replacement, technical triage).
-     This bridges Chapter 1 and Chapter 4 with 100% mathematical and narrative consistency across all 10 capability towers.
+2. Section 4.3 P90 Tail Risk Scenario Text & Layout Restructuring:
+   - User critique:
+     "en el punto 4.3 es que este texto es infumable no se entiende, ni hay que hacer referencia al capítulo 1, de hecho el capítulo 1 es el resumen de lo que pongamos aquí, pero aquí tiene que estar redactado simple para que lo entienda alguien no financiero bien explicado y sencillo y no ponerlo en una tabla si no en el mismo tamaño de letra que el resto."
+   - Root Cause:
+     The P90 scenario was wrapped inside a single-cell callout table with 8.5pt font, creating unnecessary visual boxing. The text contained pseudo-academic jargon ('estrés asintótico', 'triaje especializado de nivel 3') and meta-references ('En consonancia con la síntesis ejecutiva del Capítulo 1').
+   - Architectural Remedy:
+     a) Layout: Remove the table wrapper. Render as a native `HeadingNode(level=3)` titled "Escenario de Fallo Grave y Tiempo Máximo de Recuperación (P90)" followed by standard `ParagraphNode(font_size=10.0, space_after=8)` body paragraphs.
+     b) Tone & Language: Eliminate all meta-references to Chapter 1 and all academic jargon. Explain in plain, human, board-level language:
+        - Paragraph 1: Explains that to test the resilience limit, the model evaluates a compound failure where multiple major components fail simultaneously (e.g. {compound_failure_trigger}).
+        - Paragraph 2: Explains that restoring operations and verifying full data consistency in such an extreme case would take up to {p90_recovery_hours} hours.
+        - Paragraph 3: Details the financial impact of {p90_total_contingency}, clearly broken down into direct operational downtime losses ({direct_stoppage_loss}) and extraordinary emergency recovery costs ({secondary_disaster_spend}, like urgent manufacturer support and immediate parts replacement).
 
 NON-NEGOTIABLE LAWS:
 1. Zero bugs, zero antipatterns.
@@ -71,26 +66,24 @@ NON-NEGOTIABLE LAWS:
 5. OpenXML layout determinism.
 
 YOUR TASK:
-Synthesize an authoritative Architectural Blueprint (RFC 058) in Markdown:
-1. Deliver the forensic code audit verdict on recent changes.
-2. Detail the exact OpenXML vertical point budget for Page 3.
-3. Specify the localized formula updates for Section 4.1.
-4. Detail the Section 4.3 P90 Tail Risk subsection architecture and schema integration.
-5. Deliver a definitive VERDICT: PASS.
+Synthesize an authoritative Architectural Blueprint (RFC 059) in Markdown:
+1. Specify the localized dictionary updates in `engine_config/locales.json`.
+2. Detail the exact Python implementation in `payload_to_ast.py`.
+3. Deliver a definitive VERDICT: PASS.
 """
 
-    print(f"Requesting RFC 058 from {model_name}...")
+    print(f"Requesting RFC 059 from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_058_PAGE3_SPACING_FORMULA_AND_P90_DEEPENING_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_059_NATURAL_BULLETS_AND_PLAIN_LANGUAGE_P90_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 058 ARCHITECTURAL BLUEPRINT")
+    print("GEMINI-4-ARGON: RFC 059 ARCHITECTURAL BLUEPRINT")
     print("=" * 80)
     print(response.text)
     print("=" * 80)
