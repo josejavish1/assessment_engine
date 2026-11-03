@@ -57,7 +57,7 @@ def test_compiled_asis_document_purity(tmp_path: Path) -> None:
     assert "Palancas de Retorno de Resiliencia" not in full_text
     assert "Avería o fallo de componente electromecánico principal durante la operación continua" not in full_text
     assert "Desglose del Cálculo Actuarial" in full_text
-    assert "Efecto Cascada" in full_text
+    assert "Propagación de Fallo" in full_text or "Efecto Cascada" in full_text
 
     # Task 7: Chapter 5 Pure AS-IS Synthesis
     assert "Proyección Multi-Horizonte del Coste de Inacción" not in full_text

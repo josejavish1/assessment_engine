@@ -284,6 +284,12 @@ class PayloadToASTBridge:
         self.brand_data = {}
         from assessment_engine.infrastructure.config_loader import load_brand_profile
 
+        if self.locales_path.exists():
+            with open(self.locales_path, "r", encoding="utf-8") as f:
+                self.loc_data = json.load(f)
+        else:
+            self.loc_data = {}
+
         try:
             brand = load_brand_profile(brand_profile_path=self.brand_profile_path)
             self.brand_data = brand
@@ -328,6 +334,13 @@ class PayloadToASTBridge:
             modules_dir=modules_dir,
         )
         self.meta_lang = ctx.get("meta_lang", "en")
+        self.loc_data = {}
+        if self.locales_path.exists():
+            try:
+                self.loc_data = json.loads(self.locales_path.read_text(encoding="utf-8"))
+            except Exception:
+                self.loc_data = {}
+        self.loc_branch = self.loc_data.get(self.meta_lang, {})
 
         # Enforce universal Unicode Normalization Form C (NFC) across incoming payload context
         import unicodedata
@@ -634,6 +647,7 @@ class PayloadToASTBridge:
         import re
         modules_dir = ctx["modules_dir"]
         meta_lang = ctx["meta_lang"]
+        loc_branch = self.loc_branch
         blueprint_data = ctx["blueprint_data"]
         client_name = ctx["client_name"]
         global_band = ctx["global_band"]
@@ -1168,9 +1182,29 @@ class PayloadToASTBridge:
             )
         )
 
-        # 3. Direct Introduction (Accessible and clear executive prose)
+        # 3. Direct Introduction (Polymorphic Archetype Rotation)
         tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
-        intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
+        archetype_map = {
+            "T1": "INFRASTRUCTURE_PHYSICAL",
+            "T4": "INFRASTRUCTURE_PHYSICAL",
+            "T5": "INFRASTRUCTURE_PHYSICAL",
+            "T2": "COMPUTE_PLATFORMS",
+            "T7": "COMPUTE_PLATFORMS",
+            "T8": "COMPUTE_PLATFORMS",
+            "T3": "SECURITY_GOVERNANCE",
+            "T6": "SECURITY_GOVERNANCE",
+            "T9": "SECURITY_GOVERNANCE",
+            "T10": "SECURITY_GOVERNANCE",
+        }
+        canonical_tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
+        ch3_archetype = archetype_map.get(canonical_tower_id, "INFRASTRUCTURE_PHYSICAL")
+
+        ch3_intros = loc_branch.get("ch3_intro_archetypes", {})
+        arch_intro_tmpl = ch3_intros.get(ch3_archetype)
+        if arch_intro_tmpl:
+            intro_ch3 = arch_intro_tmpl.format(tower_name=tower_name, client_name=client_name)
+        else:
+            intro_ch3 = t("intro_ch3_technical_diagnosis", locale=meta_lang, tower_name=tower_name, client_name=client_name)
         nodes.append(ParagraphNode(text=intro_ch3))
         nodes.append(SpacerNode(points=10))
 
@@ -1230,23 +1264,33 @@ class PayloadToASTBridge:
         )
         nodes.append(SpacerNode(points=8))
 
-        # Friendly pedagogical score explanation (replaces robotic resilience string)
-        if gs_val < 2.20:
-            score_expl_key = "score_explanation_band_low"
-        elif gs_val < 3.60:
-            score_expl_key = "score_explanation_band_mid"
+        # Friendly pedagogical score explanation (Polymorphic rotation across archetypes + clean score value)
+        clean_gs_str = format_number(gs_val, locale=meta_lang, decimals=2)
+        ch3_commentaries = loc_branch.get("ch3_scorecard_commentary_archetypes", {})
+        arch_comm_tmpl = ch3_commentaries.get(ch3_archetype)
+        if arch_comm_tmpl:
+            score_expl = arch_comm_tmpl.format(
+                score_val=clean_gs_str,
+                maturity_tier_label=global_band,
+                client_name=client_name,
+                tower_name=tower_name,
+            )
         else:
-            score_expl_key = "score_explanation_band_high"
+            if gs_val < 2.20:
+                score_expl_key = "score_explanation_band_low"
+            elif gs_val < 3.60:
+                score_expl_key = "score_explanation_band_mid"
+            else:
+                score_expl_key = "score_explanation_band_high"
 
-        max_score_formatted = format_number(5.0, locale=meta_lang, decimals=2)
-        score_expl = t(
-            score_expl_key,
-            locale=meta_lang,
-            global_score=display_score_str,
-            max_score=max_score_formatted,
-            client_name=client_name,
-            tower_name=tower_name,
-        )
+            score_expl = t(
+                score_expl_key,
+                locale=meta_lang,
+                global_score=clean_gs_str,
+                max_score=format_number(5.0, locale=meta_lang, decimals=1),
+                client_name=client_name,
+                tower_name=tower_name,
+            )
         nodes.append(ParagraphNode(text=score_expl))
         nodes.append(SpacerNode(points=12))
 
@@ -1550,6 +1594,7 @@ class PayloadToASTBridge:
         total_fair_ale = ctx["total_fair_ale"]
         currency = ctx["currency"]
         meta_lang = ctx["meta_lang"]
+        loc_branch = self.loc_branch
 
         # RAGE Forensic Verification Injection
         snapshot_file = case_dir / "benchmarks_snapshot.json"
@@ -1809,6 +1854,32 @@ class PayloadToASTBridge:
         hourly_formatted = format_number(hourly_rate, locale=meta_lang, decimals=2)
         total_rate_fmt = f"{hourly_formatted} {currency}"
 
+        # Inject domain-specific downtime impact (RFC 052)
+        ch4_archetype_map = {
+            "T1": "INFRASTRUCTURE_PHYSICAL",
+            "T4": "INFRASTRUCTURE_PHYSICAL",
+            "T5": "INFRASTRUCTURE_PHYSICAL",
+            "T2": "COMPUTE_PLATFORMS",
+            "T7": "COMPUTE_PLATFORMS",
+            "T8": "COMPUTE_PLATFORMS",
+            "T3": "SECURITY_GOVERNANCE",
+            "T6": "SECURITY_GOVERNANCE",
+            "T9": "SECURITY_GOVERNANCE",
+            "T10": "SECURITY_GOVERNANCE",
+        }
+        canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
+        ch4_archetype = ch4_archetype_map.get(canonical_t_id, "INFRASTRUCTURE_PHYSICAL")
+        tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
+        ch4_domain_ctx = loc_branch.get("ch4_sec1_domain_context", {})
+        arch_sec1_ctx = ch4_domain_ctx.get(ch4_archetype)
+        if arch_sec1_ctx:
+            domain_p = arch_sec1_ctx.format(
+                tower_name=tower_name,
+                client_name=client_name,
+                hourly_rate_est=total_rate_fmt,
+            )
+            nodes.append(ParagraphNode(text=domain_p, space_after=6))
+
         nodes.append(
             ParagraphNode(
                 text=t(
@@ -1932,9 +2003,51 @@ class PayloadToASTBridge:
         )
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
         nodes.append(_build_heatmap_mosaic(risks_data_list))
+
+        # 4.2.1 Deterministic Heatmap Legend Table (RFC 052)
+        nodes.append(SpacerNode(points=6))
+        nodes.append(
+            ParagraphNode(
+                text=f"*{t('ch4_heatmap_legend_title', locale=meta_lang)}*",
+                bold=True,
+                font_size=9.0,
+                space_after=4,
+            )
+        )
+        legend_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("ch4_heatmap_col_code", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
+                    CellNode(text=t("ch4_heatmap_col_desc", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255]),
+                    CellNode(text=t("ch4_heatmap_col_ale", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="RIGHT"),
+                    CellNode(text=t("ch4_heatmap_col_crit", locale=meta_lang), bold=True, bg_color=self.primary_color_hex, text_color_rgb=[255, 255, 255], align="CENTER"),
+                ],
+                is_header=True,
+            )
+        ]
+        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        resolver = get_taxonomy_resolver()
+        for r_item in risks_data_list:
+            r_id = str(r_item.get("id") or "RSK-01").strip()
+            raw_cap = str(r_item.get("capability") or "Capability").strip()
+            r_cap = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=meta_lang)
+            r_ale = float(r_item.get("ale") or r_item.get("ale_val") or 0.0)
+            formatted_r_ale = format_currency(r_ale, currency_symbol=currency, locale=meta_lang, decimals=0)
+            crit_badge = t(f"risk_card_severity_{str(r_item.get('severity_tier', 'HIGH')).lower()}", locale=meta_lang)
+            legend_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(text=r_id, bold=True, align="CENTER", font_size=8.0, bg_color=self.alt_row_hex),
+                        CellNode(text=r_cap, font_size=8.0, bg_color="FFFFFF"),
+                        CellNode(text=formatted_r_ale, bold=True, align="RIGHT", font_size=8.0, bg_color="FFFFFF"),
+                        CellNode(text=crit_badge, font_size=8.0, align="CENTER", bg_color=self.alt_row_hex),
+                    ]
+                )
+            )
+        nodes.append(TableNode(rows=legend_rows, autofit=True, col_widths=[0.14, 0.52, 0.18, 0.16]))
         nodes.append(SpacerNode(points=15))
 
-        # 4.3 Structuring Inventory into Three Strategic Investment Portfolios
+        # 4.3 Pure AS-IS Domain Risk Concentration Profile
         nodes.append(SpacerNode(points=12))
         nodes.append(
             HeadingNode(
@@ -1975,7 +2088,14 @@ class PayloadToASTBridge:
         t2_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t2_risks)
         t3_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t3_risks)
 
-        intro_tiers = t("ch4_sec3_intro", locale=meta_lang)
+        formatted_ale_ch4 = format_number(total_fair_ale, locale=meta_lang, decimals=0)
+        intro_tiers = t(
+            "ch4_sec3_intro",
+            locale=meta_lang,
+            tower_name=str(ctx.get("tower_name") or ""),
+            formatted_ale=formatted_ale_ch4,
+            currency=currency,
+        )
         nodes.append(ParagraphNode(text=intro_tiers, space_after=8))
 
         yr_suffix = t("per_year_suffix", locale=meta_lang)
@@ -2416,22 +2536,37 @@ class PayloadToASTBridge:
                 ),
             ]
 
-        # Build transparent Actuarial Derivation Box for the CFO
-        actuarial_box_text = (
-            f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n"
-            f"SLE = (MTTR {mttr_hours:.1f}h × {format_currency(effective_hourly, currency_symbol=currency, locale=meta_lang, decimals=0)}/h) = {formatted_sle}  |  "
-            f"ALE = SLE × {lef_formatted} {ev_unit}/{t('year_lbl', locale=meta_lang)} = {formatted_ale}/{t('year_lbl', locale=meta_lang)}"
+        # Build transparent plain-language Actuarial Derivation Box for the CFO (RFC 052)
+        rec_years = round(1.0 / lef, 1) if lef > 0 else 5.0
+        rec_decimals = 0 if abs(rec_years - round(rec_years)) < 0.15 else 1
+        rec_years_str = format_number(rec_years, locale=meta_lang, decimals=rec_decimals)
+        mttr_hours_str = format_number(mttr_hours, locale=meta_lang, decimals=1)
+
+        sle_bullet = t(
+            "risk_card_sle_bullet_fmt",
+            locale=meta_lang,
+            sle_val=formatted_sle,
+            mttr_hours=mttr_hours_str,
+            hourly_rate=format_currency(effective_hourly, currency_symbol=currency, locale=meta_lang, decimals=0),
         )
+        ale_bullet = t(
+            "risk_card_ale_bullet_fmt",
+            locale=meta_lang,
+            ale_val=formatted_ale,
+            recurrence_years=rec_years_str,
+            lef_val=lef_formatted,
+        )
+        actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
         if evidence_txt:
             ev_lbl = t("audit_evidence_label", locale=meta_lang)
-            actuarial_box_text += f"\n{ev_lbl}: \"{evidence_txt}\""
+            actuarial_box_text += f"\n• **{ev_lbl}:** \"{evidence_txt}\""
 
         card_table = TableNode(
             rows=[
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"[{loss_event.event_id}] {loss_event.title}\n{loss_event.domain_category}",
+                            text=f"[{loss_event.event_id}] {loss_event.title}",
                             font_size=9.5,
                             bold=True,
                             bg_color=header_bg,
