@@ -1752,6 +1752,13 @@ class PayloadToASTBridge:
                             lm_val = float(str(row_data[4]).replace(",", ".").strip())
                             ale_val = float(str(row_data[5]).replace(",", ".").strip())
 
+                            # Calibrate actuarial LEF and SLE (RFC 055)
+                            if tef_val >= 1.0:
+                                calc_lef = min(0.50, max(0.08, tef_val * 0.09))
+                            else:
+                                calc_lef = max(0.05, tef_val)
+                            calc_sle = ale_val / calc_lef if (ale_val > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
+
                             r_item = {
                                 "id": f"RVS{r_idx + 1:02d}",
                                 "pillar": pillar_full_name,
@@ -1763,6 +1770,8 @@ class PayloadToASTBridge:
                                 "business_risk": row_data[2],
                                 "tef": tef_val,
                                 "lm": lm_val,
+                                "lef": round(calc_lef, 4),
+                                "sle": round(calc_sle, 2),
                                 "ale": ale_val,
                             }
                             risks_data_list.append(r_item)
@@ -2003,7 +2012,7 @@ class PayloadToASTBridge:
             )
         )
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
-        nodes.append(_build_heatmap_mosaic(risks_data_list))
+        nodes.append(_build_heatmap_mosaic(risks_data_list, is_critical=is_critical))
 
         # 4.2.1 Threat Event Frequency (TEF) Compact Legend (RFC 054)
         nodes.append(SpacerNode(points=6))
@@ -2438,6 +2447,14 @@ class PayloadToASTBridge:
             directive_txt = t("risk_card_default_mitigation", locale=meta_lang)
 
         evidence_txt = str(hc.get("evidence") or "").strip()
+
+        # Restore official grammatical diacritics for target locale (RFC 055)
+        from assessment_engine.infrastructure.localization import restore_locale_diacritics
+        r_cap = restore_locale_diacritics(r_cap, meta_lang)
+        threat_txt = restore_locale_diacritics(threat_txt, meta_lang)
+        vuln_txt = restore_locale_diacritics(vuln_txt, meta_lang)
+        impact_txt = restore_locale_diacritics(impact_txt, meta_lang)
+        directive_txt = restore_locale_diacritics(directive_txt, meta_lang)
 
         # 3. Domain Model Schema Validation
         bow_tie = CausalBowTie(

@@ -431,3 +431,48 @@ def format_date_localized(date_val: str | None = None, locale: str = "en") -> st
         pass
 
     return cleaned
+
+
+from functools import lru_cache
+import re
+
+
+@lru_cache(maxsize=16)
+def _compile_orthographic_pattern(locale: str) -> tuple[re.Pattern[str] | None, dict[str, str]]:
+    """Load the externalized orthographic restoration dictionary from locales.json
+    and compile a single word-boundary regex pattern for O(N) single-pass replacement."""
+    base_loc = resolve_base_locale(locale)
+    catalog = load_locales_catalog()
+    locale_data = catalog.get(base_loc, {})
+    raw_map: dict[str, str] = locale_data.get("orthographic_restoration_map", {})
+    if not raw_map:
+        return None, {}
+
+    normalized_map = {k.lower(): v for k, v in raw_map.items()}
+    escaped_keys = sorted((re.escape(k) for k in normalized_map.keys()), key=len, reverse=True)
+    pattern = re.compile(r"\b(" + "|".join(escaped_keys) + r")\b", flags=re.IGNORECASE)
+    return pattern, normalized_map
+
+
+def restore_locale_diacritics(text: str, locale: str = "en") -> str:
+    """Deterministically restore stripped diacritical marks for the target locale
+    using externalized lexicon mappings while preserving original casing."""
+    if not text or not locale:
+        return text
+
+    pattern, mapping = _compile_orthographic_pattern(locale)
+    if pattern is None:
+        return text
+
+    def _replace_match(match: re.Match[str]) -> str:
+        token = match.group(0)
+        replacement = mapping.get(token.lower())
+        if not replacement:
+            return token
+        if token.isupper():
+            return replacement.upper()
+        if token[0].isupper():
+            return replacement.capitalize()
+        return replacement
+
+    return pattern.sub(_replace_match, text)

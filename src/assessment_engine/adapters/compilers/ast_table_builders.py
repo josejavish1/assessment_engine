@@ -111,12 +111,74 @@ def build_spof_bullet(
     )
 
 
-def build_heatmap_mosaic(risks_data_list: list[dict[str, Any]]) -> TableNode:
-    """Builds the 5x5 FAIR Risk Heatmap mosaic TableNode."""
+DEFAULT_TEF_THRESHOLDS: tuple[float, ...] = (0.1, 0.5, 2.0, 10.0)
+DEFAULT_LM_STANDARD_THRESHOLDS: tuple[float, ...] = (1_000.0, 5_000.0, 25_000.0, 100_000.0)
+DEFAULT_LM_CRITICAL_THRESHOLDS: tuple[float, ...] = (25_000.0, 100_000.0, 500_000.0, 2_000_000.0)
+
+
+def resolve_tef_scale_level(
+    lef_annual: float,
+    thresholds: tuple[float, ...] = DEFAULT_TEF_THRESHOLDS,
+) -> int:
+    """Map continuous Loss Event Frequency (events/year) to discrete 1..5 TEF scale level.
+    Reconciles 100% with Table 4.2.1:
+      Level 1: < 0.1
+      Level 2: 0.1 - 0.5
+      Level 3: 0.5 - 2.0
+      Level 4: 2.0 - 10.0
+      Level 5: > 10.0
+    """
+    if lef_annual < thresholds[0]:
+        return 1
+    if lef_annual < thresholds[1]:
+        return 2
+    if lef_annual < thresholds[2]:
+        return 3
+    if lef_annual <= thresholds[3]:
+        return 4
+    return 5
+
+
+def resolve_lm_scale_level(
+    sle_amount: float,
+    is_critical_tier: bool = False,
+    standard_thresholds: tuple[float, ...] = DEFAULT_LM_STANDARD_THRESHOLDS,
+    critical_thresholds: tuple[float, ...] = DEFAULT_LM_CRITICAL_THRESHOLDS,
+) -> int:
+    """Map continuous Single Loss Expectancy (currency units) to discrete 1..5 LM scale level.
+    Reconciles 100% with Table 4.2.2:
+      Standard Tier: <1k (1), 1k-5k (2), 5k-25k (3), 25k-100k (4), >=100k (5)
+      Critical Tier: <25k (1), 25k-100k (2), 100k-500k (3), 500k-2M (4), >=2M (5)
+    """
+    bounds = critical_thresholds if is_critical_tier else standard_thresholds
+    if sle_amount < bounds[0]:
+        return 1
+    if sle_amount < bounds[1]:
+        return 2
+    if sle_amount < bounds[2]:
+        return 3
+    if sle_amount < bounds[3]:
+        return 4
+    return 5
+
+
+def build_heatmap_mosaic(risks_data_list: list[dict[str, Any]], is_critical: bool = False) -> TableNode:
+    """Builds the 5x5 FAIR Risk Heatmap mosaic TableNode reconciling coordinates with TEF/LM scale criteria."""
     matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
     for r in risks_data_list:
-        r_tef = min(5, max(1, int(round(r["tef"]))))
-        r_lm = min(5, max(1, int(round(r["lm"]))))
+        # Reconcile coordinates directly with Table 4.2.1 and Table 4.2.2 criteria
+        lef_val = float(r.get("lef") or r.get("tef_annual") or 0.0)
+        sle_val = float(r.get("sle") or r.get("effective_sle") or 0.0)
+
+        if lef_val > 0.0 and sle_val > 0.0:
+            r_tef = resolve_tef_scale_level(lef_val)
+            r_lm = resolve_lm_scale_level(sle_val, is_critical_tier=is_critical)
+        elif "tef_scale_level" in r and "lm_scale_level" in r:
+            r_tef = min(5, max(1, int(r["tef_scale_level"])))
+            r_lm = min(5, max(1, int(r["lm_scale_level"])))
+        else:
+            r_tef = min(5, max(1, int(round(float(r.get("tef") or 1.0)))))
+            r_lm = min(5, max(1, int(round(float(r.get("lm") or 1.0)))))
         matrix_cells[r_tef][r_lm].append(r["id"])
 
     heatmap_rows = []

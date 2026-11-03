@@ -67,6 +67,13 @@ def derive_in_memory_fair_risks(
             intrinsic_ale = raw_ale * rate_mult
             intrinsic_p90 = raw_p90 * rate_mult
 
+            # Calibrate actuarial LEF and SLE (RFC 055)
+            if tef_val >= 1.0:
+                calc_lef = min(0.50, max(0.08, tef_val * 0.09))
+            else:
+                calc_lef = max(0.05, tef_val)
+            calc_sle = intrinsic_ale / calc_lef if (intrinsic_ale > 0.0 and calc_lef > 0.0) else (lm_val * 5000.0)
+
             # Enforce zero financial double counting in ledger totals for tangential contributors:
             calibrated_ale = 0.0 if is_tangential else intrinsic_ale
             calibrated_p90 = 0.0 if is_tangential else intrinsic_p90
@@ -81,6 +88,8 @@ def derive_in_memory_fair_risks(
                 "business_risk": business_risk,
                 "tef": tef_val,
                 "lm": lm_val,
+                "lef": round(calc_lef, 4),
+                "sle": round(calc_sle, 2),
                 "ale": calibrated_ale,
                 "p90": calibrated_p90,
                 "intrinsic_ale": intrinsic_ale,
