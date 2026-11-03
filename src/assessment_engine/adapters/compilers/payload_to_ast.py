@@ -2050,30 +2050,39 @@ class PayloadToASTBridge:
         )
         total_fair_ale = primary_risks_total if primary_risks_total > 0 else float(ctx.get("total_fair_ale") or 0.0)
 
+        def _get_ale(item: dict[str, Any]) -> float:
+            return float(item.get("ale") or item.get("ale_val") or 0.0)
+
         sorted_primary = sorted(
             [r for r in risks_data_list if r.get("ownership_type") != "TANGENTIAL_CONTRIBUTOR"],
-            key=lambda x: float(x.get("ale") or x.get("ale_val") or 0.0),
+            key=_get_ale,
             reverse=True,
         )
         t1_threshold = total_fair_ale * 0.15 if total_fair_ale > 0 else 0.0
         t2_threshold = total_fair_ale * 0.03 if total_fair_ale > 0 else 0.0
 
-        t1_risks = [r for r in sorted_primary if float(r.get("ale") or r.get("ale_val") or 0.0) >= t1_threshold and float(r.get("ale") or 0.0) > 0.0]
+        t1_risks = [r for r in sorted_primary if _get_ale(r) >= t1_threshold and _get_ale(r) > 0.0]
         if not t1_risks and sorted_primary:
             t1_risks = sorted_primary[:max(1, len(sorted_primary) // 4)]
-        
-        t2_risks = [r for r in sorted_primary if t2_threshold <= float(r.get("ale") or r.get("ale_val") or 0.0) < t1_threshold and float(r.get("ale") or 0.0) > 0.0]
-        if not t2_risks and len(sorted_primary) > len(t1_risks):
-            t2_risks = sorted_primary[len(t1_risks):len(t1_risks) + max(1, len(sorted_primary) // 3)]
-
         t1_set = set(r.get("id") for r in t1_risks)
+
+        t2_risks = [
+            r for r in sorted_primary
+            if r.get("id") not in t1_set
+            and _get_ale(r) >= t2_threshold
+            and _get_ale(r) > 0.0
+        ]
+        if not t2_risks and len(sorted_primary) > len(t1_risks):
+            remaining = [r for r in sorted_primary if r.get("id") not in t1_set]
+            t2_risks = remaining[:max(1, len(remaining) // 2)]
         t2_set = set(r.get("id") for r in t2_risks)
+
         t3_risks = [r for r in risks_data_list if r.get("id") not in t1_set and r.get("id") not in t2_set]
 
-        t1_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t1_risks)
+        t1_sum = sum(_get_ale(r) for r in t1_risks)
         t1_pct = int(round((t1_sum / total_fair_ale * 100))) if total_fair_ale > 0 else 0
-        t2_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t2_risks)
-        t3_sum = sum(float(r.get("ale") or r.get("ale_val") or 0.0) for r in t3_risks)
+        t2_sum = sum(_get_ale(r) for r in t2_risks)
+        t3_sum = sum(_get_ale(r) for r in t3_risks)
 
         formatted_ale_ch4 = format_number(total_fair_ale, locale=meta_lang, decimals=0)
         intro_tiers = t(
@@ -2187,16 +2196,18 @@ class PayloadToASTBridge:
         ]
         if not t1_risks and sorted_risks:
             t1_risks = sorted_risks[:max(1, len(sorted_risks) // 4)]
+        t1_set = set(r.get("id") for r in t1_risks)
 
         t2_risks = [
             r for r in sorted_risks
-            if t2_threshold <= float(r.get("ale") or r.get("ale_val") or 0.0) < t1_threshold
+            if r.get("id") not in t1_set
+            and float(r.get("ale") or r.get("ale_val") or 0.0) >= t2_threshold
         ]
         if not t2_risks and len(sorted_risks) > len(t1_risks):
-            t2_risks = sorted_risks[len(t1_risks):len(t1_risks) + max(1, len(sorted_risks) // 3)]
-
-        t1_set = set(r.get("id") for r in t1_risks)
+            remaining = [r for r in sorted_risks if r.get("id") not in t1_set]
+            t2_risks = remaining[:max(1, len(remaining) // 2)]
         t2_set = set(r.get("id") for r in t2_risks)
+
         t3_risks = [r for r in sorted_risks if r.get("id") not in t1_set and r.get("id") not in t2_set]
 
         portfolios = [
