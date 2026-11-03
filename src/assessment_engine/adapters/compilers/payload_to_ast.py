@@ -2522,7 +2522,7 @@ class PayloadToASTBridge:
             freq_display = t("kpi_frequency_value_annual", locale=meta_lang, events=ev_str)
 
         if metrics.is_deduplicated:
-            notice_text = t("risk_card_deduplicated_ale_notice", locale=meta_lang).format(
+            notice_text = t("actuarial_custody_deduplicated_note", locale=meta_lang).format(
                 primary_risk_ref=loss_event.primary_risk_ref
             )
             kpi_row_cells = [
@@ -2588,6 +2588,9 @@ class PayloadToASTBridge:
             frequency_text=freq_display,
         )
         actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
+        scope_note = str(hc.get("scope_note") or "").strip()
+        if scope_note:
+            actuarial_box_text += f"\n• *{scope_note}*"
 
         card_table = TableNode(
             rows=[

@@ -15,6 +15,7 @@ from assessment_engine.domain.maturity_band import (
     resolve_maturity_band,
 )
 from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+from assessment_engine.domain.services.dynamic_custody_resolver import DynamicCustodyResolver
 from assessment_engine.infrastructure.localization import (
     format_currency,
     format_number,
@@ -29,8 +30,11 @@ def derive_in_memory_fair_risks(
     doc_lang: str,
     currency: str,
     rate_mult: float = 1.0,
+    active_towers_scope: set[str] | list[str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, list[dict[str, Any]]]]:
     """Extract and calibrate FAIR risk scenarios directly from in-memory payload.
+
+    Applies DynamicCustodyResolver to prevent actuarial blind spots in partial-scope assessments.
 
     Returns:
         Tuple of (flat_risks_list, risks_by_pillar_dict).
@@ -38,6 +42,13 @@ def derive_in_memory_fair_risks(
     resolver = get_taxonomy_resolver()
     risks_data_list: list[dict[str, Any]] = []
     risks_by_pillar: dict[str, list[dict[str, Any]]] = {}
+
+    current_tower_id = str(b_data.get("tower_id") or b_data.get("document_meta", {}).get("tower_id") or "T1").upper()
+    norm_scope = {str(t_id).strip().upper() for t_id in active_towers_scope} if active_towers_scope else None
+    custody_resolver = DynamicCustodyResolver(
+        active_towers_scope=norm_scope,
+        localizer=lambda key, **kwargs: t(key, locale=doc_lang, **kwargs),
+    )
 
     r_counter = 1
     for pillar in b_data.get("pillars_analysis", []):
@@ -53,15 +64,19 @@ def derive_in_memory_fair_risks(
             if not finding_text and not business_risk:
                 continue
 
-            raw_cap = str(hc.get("target_state") or hc.get("capability") or "General Capability")
+            # Apply dynamic custody resolution (RFC 057)
+            resolved_list = custody_resolver.resolve_portfolio([hc], current_tower_id=current_tower_id)
+            eff_hc = resolved_list[0] if resolved_list else hc
+
+            raw_cap = str(eff_hc.get("target_state") or eff_hc.get("capability") or "General Capability")
             capability = resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
 
-            tef_val = float(hc.get("threat_event_frequency") or hc.get("tef") or 3.0)
-            lm_val = float(hc.get("loss_magnitude") or hc.get("lm") or 3.0)
-            raw_ale = float(hc.get("fair_ale_score") or hc.get("ale") or (tef_val * lm_val * 1000.0))
-            raw_p90 = float(hc.get("fair_p90_score") or (raw_ale * 2.5))
+            tef_val = float(eff_hc.get("threat_event_frequency") or eff_hc.get("tef") or 3.0)
+            lm_val = float(eff_hc.get("loss_magnitude") or eff_hc.get("lm") or 3.0)
+            raw_ale = float(eff_hc.get("fair_ale_score") or eff_hc.get("ale") or (tef_val * lm_val * 1000.0))
+            raw_p90 = float(eff_hc.get("fair_p90_score") or (raw_ale * 2.5))
 
-            ownership = str(hc.get("ownership_type") or "PRIMARY_CUSTODIAN").strip()
+            ownership = str(eff_hc.get("ownership_type") or "PRIMARY_CUSTODIAN").strip().upper()
             is_tangential = (ownership == "TANGENTIAL_CONTRIBUTOR")
 
             intrinsic_ale = raw_ale * rate_mult
@@ -79,8 +94,8 @@ def derive_in_memory_fair_risks(
             calibrated_p90 = 0.0 if is_tangential else intrinsic_p90
 
             risk_item: dict[str, Any] = {
-                "id": hc.get("id", f"RVS{r_counter:02d}"),
-                "node_id": hc.get("node_id", f"NODE-{r_counter:03d}"),
+                "id": eff_hc.get("id", f"RVS{r_counter:02d}"),
+                "node_id": eff_hc.get("node_id", f"NODE-{r_counter:03d}"),
                 "pillar": pillar_name,
                 "pillar_id": p_id,
                 "capability": capability,
@@ -95,13 +110,15 @@ def derive_in_memory_fair_risks(
                 "intrinsic_ale": intrinsic_ale,
                 "intrinsic_p90": intrinsic_p90,
                 "ownership_type": ownership,
-                "primary_risk_ref": (str(hc.get("primary_risk_ref") or "").strip() or None) if is_tangential else None,
-                "contributing_towers": hc.get("contributing_towers", []) if not is_tangential else [],
-                "evidence": hc.get("evidence", ""),
-                "mitigation_directive": hc.get("mitigation_directive", ""),
-                "initiating_threat": hc.get("initiating_threat", ""),
-                "control_vulnerability": hc.get("control_vulnerability", ""),
-                "primary_impact": hc.get("primary_impact", ""),
+                "primary_risk_ref": (str(eff_hc.get("primary_risk_ref") or "").strip() or None) if is_tangential else None,
+                "contributing_towers": eff_hc.get("contributing_towers", []) if not is_tangential else [],
+                "evidence": eff_hc.get("evidence", ""),
+                "mitigation_directive": eff_hc.get("mitigation_directive", ""),
+                "initiating_threat": eff_hc.get("initiating_threat", ""),
+                "control_vulnerability": eff_hc.get("control_vulnerability", ""),
+                "primary_impact": eff_hc.get("primary_impact", ""),
+                "scope_note": eff_hc.get("scope_note", ""),
+                "custody_resolution_metadata": eff_hc.get("custody_resolution_metadata", {}),
                 "ale_str": format_currency(
                     calibrated_ale,
                     currency_symbol=currency,
