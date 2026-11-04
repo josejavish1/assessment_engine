@@ -2144,10 +2144,25 @@ class PayloadToASTBridge:
 
         t3_risks = [r for r in risks_data_list if r.get("id") not in t1_set and r.get("id") not in t2_set]
 
-        t1_sum = sum(_get_ale(r) for r in t1_risks)
-        t1_pct = int(round((t1_sum / total_fair_ale * 100))) if total_fair_ale > 0 else 0
-        t2_sum = sum(_get_ale(r) for r in t2_risks)
-        t3_sum = sum(_get_ale(r) for r in t3_risks)
+        from assessment_engine.domain.actuarial_reconciler import ActuarialReconciler
+        raw_t1 = Decimal(str(round(sum(_get_ale(r) for r in t1_risks), 2)))
+        raw_t2 = Decimal(str(round(sum(_get_ale(r) for r in t2_risks), 2)))
+        raw_t3 = Decimal(str(round(sum(_get_ale(r) for r in t3_risks), 2)))
+
+        target_int = int(round(total_fair_ale))
+        if target_int > 0 and (raw_t1 + raw_t2 + raw_t3) > 0:
+            reconciled_tiers = ActuarialReconciler.reconcile_domain_allocations(
+                target_corporate_ale=target_int,
+                domain_raw_exposures=[("tier1", raw_t1), ("tier2", raw_t2), ("tier3", raw_t3)],
+            )
+            t1_sum = float(reconciled_tiers["tier1"])
+            t2_sum = float(reconciled_tiers["tier2"])
+            t3_sum = float(reconciled_tiers["tier3"])
+        else:
+            t1_sum = float(raw_t1)
+            t2_sum = float(raw_t2)
+            t3_sum = float(raw_t3)
+        t1_pct = int(round((t1_sum / float(target_int) * 100))) if target_int > 0 else 0
 
         formatted_ale_ch4 = format_number(total_fair_ale, locale=meta_lang, decimals=0)
         intro_tiers = t(

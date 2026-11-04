@@ -15,7 +15,16 @@ from matplotlib.figure import Figure
 logger = logging.getLogger(__name__)
 
 
-from typing import Any, cast
+from typing import Any, Final, cast
+
+DEFAULT_BRAND_COLOR_HEX: Final[str] = "0072BC"
+RADAR_FIG_WIDTH_IN: Final[float] = 14.0
+RADAR_FIG_HEIGHT_IN: Final[float] = 8.0
+RADAR_DPI: Final[int] = 200
+RADAR_YLIM_MAX: Final[float] = 5.6
+RADAR_LABEL_RADIAL_OFFSET: Final[float] = 0.35
+RADAR_LABEL_MAX_RADIUS: Final[float] = 5.25
+FALLBACK_SORT_RANK: Final[int] = 99
 
 from assessment_engine.domain.actuarial_scale_calibrator import (
     safe_float as _domain_safe_float,
@@ -87,7 +96,7 @@ def main(argv: list[str] | None = None) -> None:
     def _sort_key(node: dict[str, Any]) -> tuple[int, str]:
         t_code = str(node.get("id") or node.get("tower_code") or "")
         match = re.search(r"\d+", t_code)
-        return (int(match.group(0)) if match else 99, t_code)
+        return (int(match.group(0)) if match else FALLBACK_SORT_RANK, t_code)
 
     towers = sorted(towers, key=_sort_key)
 
@@ -103,15 +112,15 @@ def main(argv: list[str] | None = None) -> None:
     angles = [i / float(n) * 2 * math.pi for i in range(n)]
     angles += angles[:1]
     values += values[:1]
-    raw_brand = str(payload.get("meta", {}).get("brand_color") or payload.get("meta", {}).get("primary_color_hex") or "0072BC").lstrip("#")
+    raw_brand = str(payload.get("meta", {}).get("brand_color") or payload.get("meta", {}).get("primary_color_hex") or DEFAULT_BRAND_COLOR_HEX).lstrip("#")
     if len(raw_brand) == 3 and all(c in "0123456789abcdefABCDEF" for c in raw_brand):
         raw_brand = "".join(c * 2 for c in raw_brand)
     elif len(raw_brand) != 6 or not all(c in "0123456789abcdefABCDEF" for c in raw_brand):
-        raw_brand = "0072BC"
+        raw_brand = DEFAULT_BRAND_COLOR_HEX
     brand_hex = f"#{raw_brand}"
 
     # Expands the figure width to ensure both the chart and its legend render completely within page boundaries
-    fig = Figure(figsize=(14, 8), facecolor="white")
+    fig = Figure(figsize=(RADAR_FIG_WIDTH_IN, RADAR_FIG_HEIGHT_IN), facecolor="white")
     fig.subplots_adjust(left=0.1, right=0.7, top=0.85, bottom=0.1)
     ax = fig.add_subplot(111, polar=True, facecolor="#F8FAFC")
     ax.grid(color="#E2E8F0", linestyle="-", linewidth=1.0)
@@ -126,7 +135,7 @@ def main(argv: list[str] | None = None) -> None:
     y_tick_labels = [format_number(float(i), locale=doc_lang, decimals=1) for i in [1, 2, 3, 4, 5]]
     ax.set_yticks([1, 2, 3, 4, 5])
     ax.set_yticklabels(y_tick_labels, color="#718096", size=10)
-    ax.set_ylim(0, 5.5)
+    ax.set_ylim(0, RADAR_YLIM_MAX)
 
     # Pure forensic AS-IS Current state polygon (solid corporate blue)
     ax.plot(
@@ -155,9 +164,10 @@ def main(argv: list[str] | None = None) -> None:
             va = "top"
 
         text_val = format_number(value, locale=doc_lang, decimals=2)
+        label_radius = min(value + RADAR_LABEL_RADIAL_OFFSET, RADAR_LABEL_MAX_RADIUS)
         ax.text(
             angle,
-            value + 0.4,
+            label_radius,
             text_val,
             color=brand_hex,
             size=13,
@@ -194,7 +204,7 @@ def main(argv: list[str] | None = None) -> None:
         horizontalalignment="center",
     )
 
-    fig.savefig(out_path, dpi=200, bbox_inches="tight")
+    fig.savefig(out_path, dpi=RADAR_DPI, bbox_inches="tight")
 
     logger.info("Global radar chart generated at: %s", out_path)
 

@@ -315,6 +315,16 @@ _COMMA_DECIMAL_BASE_LANGS: Final[frozenset[str]] = frozenset({
 })
 
 
+_GENERIC_INDUSTRY_PLACEHOLDERS: Final[frozenset[str]] = frozenset({
+    "default",
+    "enterprise",
+    "general enterprise",
+    "industry baseline",
+    "unknown",
+    "n/a",
+})
+
+
 def _format_executive_currency(
     val: float, currency_symbol: str = "€", doc_lang: str = "en"
 ) -> str:
@@ -339,19 +349,23 @@ def _format_executive_currency(
     )
 
     if clean_val >= BILLION_THRESHOLD:
-        num_str = f"{clean_val / BILLION_THRESHOLD:.1f}"
+        scaled = _round_half_up(clean_val / BILLION_THRESHOLD, 1)
+        num_str = f"{scaled:.1f}"
         if is_comma_decimal:
             num_str = num_str.replace(".", ",")
         return f"{currency_symbol}{num_str}B" if is_prefix_symbol else f"{num_str}B {currency_symbol}"
-    if clean_val >= MILLION_THRESHOLD:
-        num_str = f"{clean_val / MILLION_THRESHOLD:.1f}"
+    if clean_val >= MILLION_THRESHOLD or _round_half_up(clean_val / THOUSAND_THRESHOLD, 0) >= 1000.0:
+        scaled = _round_half_up(clean_val / MILLION_THRESHOLD, 1)
+        num_str = f"{scaled:.1f}"
         if is_comma_decimal:
             num_str = num_str.replace(".", ",")
         return f"{currency_symbol}{num_str}M" if is_prefix_symbol else f"{num_str}M {currency_symbol}"
-    elif clean_val >= THOUSAND_THRESHOLD:
-        num_str = f"{clean_val / THOUSAND_THRESHOLD:.0f}"
+    if clean_val >= THOUSAND_THRESHOLD:
+        scaled = _round_half_up(clean_val / THOUSAND_THRESHOLD, 0)
+        num_str = f"{scaled:.0f}"
         return f"{currency_symbol}{num_str}K" if is_prefix_symbol else f"{num_str}K {currency_symbol}"
-    num_str = f"{clean_val:.0f}"
+    scaled = _round_half_up(clean_val, 0)
+    num_str = f"{scaled:.0f}"
     return f"{currency_symbol}{num_str}" if is_prefix_symbol else f"{num_str} {currency_symbol}"
 
 
@@ -846,10 +860,10 @@ def _build_executive_callouts(
                 ind = intel_data.get("profile", {}).get("industry") or intel_data.get("industry")
                 if ind:
                     ind_clean = str(ind).lower().strip()
-                    if "enterprise" in ind_clean or "default" in ind_clean or "industrial" in ind_clean:
+                    if ind_clean in _GENERIC_INDUSTRY_PLACEHOLDERS:
                         industry_name = t("default_industry_name", locale=doc_lang)
                     else:
-                        industry_name = ind
+                        industry_name = str(ind).strip()
             except Exception as ex:
                 logger.debug("Error reading client_intelligence industry: %s", ex)
 

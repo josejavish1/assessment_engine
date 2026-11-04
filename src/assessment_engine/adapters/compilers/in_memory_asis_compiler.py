@@ -73,8 +73,17 @@ def derive_in_memory_fair_risks(
 
             tef_val = float(eff_hc.get("threat_event_frequency") or eff_hc.get("tef") or 3.0)
             lm_val = float(eff_hc.get("loss_magnitude") or eff_hc.get("lm") or 3.0)
-            raw_ale = float(eff_hc.get("fair_ale_score") or eff_hc.get("ale") or (tef_val * lm_val * 1000.0))
-            raw_p90 = float(eff_hc.get("fair_p90_score") or (raw_ale * 2.5))
+            if eff_hc.get("fair_ale_score") is not None:
+                raw_ale = float(eff_hc["fair_ale_score"])
+            elif eff_hc.get("ale") is not None:
+                raw_ale = float(eff_hc["ale"])
+            else:
+                raw_ale = float(tef_val * lm_val * 1000.0)
+
+            if eff_hc.get("fair_p90_score") is not None:
+                raw_p90 = float(eff_hc["fair_p90_score"])
+            else:
+                raw_p90 = float(raw_ale * 2.5)
 
             ownership = str(eff_hc.get("ownership_type") or "PRIMARY_CUSTODIAN").strip().upper()
             is_tangential = (ownership == "TANGENTIAL_CONTRIBUTOR")

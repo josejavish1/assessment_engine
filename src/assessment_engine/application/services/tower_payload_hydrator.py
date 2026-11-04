@@ -256,9 +256,10 @@ class TowerPayloadHydrator:
                 )
                 target_domain_ale = _round_currency_half_up(raw_domain_weight)
                 target_domain_p90 = _round_currency_half_up(target_domain_ale * tail_mult)
+                target_domain_max = _round_currency_half_up(target_domain_p90 * max_mult)
                 raw_payload["total_fair_ale"] = target_domain_ale
                 raw_payload["total_fair_p90"] = target_domain_p90
-                raw_payload["total_fair_max"] = _round_currency_half_up(target_domain_p90 * max_mult)
+                raw_payload["total_fair_max"] = target_domain_max
 
                 pillars = raw_payload.get("pillars_analysis") or []
                 all_findings = [
@@ -275,6 +276,9 @@ class TowerPayloadHydrator:
                     _reconcile_finding_scores_half_up(
                         all_findings, "fair_p90_score", target_domain_p90, locale=doc_lang
                     )
+                    _reconcile_finding_scores_half_up(
+                        all_findings, "fair_max_score", target_domain_max, locale=doc_lang
+                    )
 
             tower_fin_tel = raw_payload.get("financial_telemetry") or {}
             explicit_tower_rate = (
@@ -282,9 +286,18 @@ class TowerPayloadHydrator:
                 or safe_float(raw_payload.get("hourly_burn_rate"), locale=doc_lang)
                 or safe_float(tower_fin_tel.get("authoritative_hourly_downtime_cost"), locale=doc_lang)
             )
-            if code_upper == "T10":
+            local_facility_domains = {
+                str(d).strip().upper()
+                for d in (fin_tel.get("local_facility_domains") or ("T10",))
+            }
+            is_local_facility_domain = (
+                bool(raw_payload.get("is_local_facility"))
+                or code_upper in local_facility_domains
+            )
+            if is_local_facility_domain:
                 facility_share = (
-                    safe_float(fin_tel.get("primary_facility_revenue_share"), locale=doc_lang)
+                    safe_float(tower_fin_tel.get("primary_facility_revenue_share"), locale=doc_lang)
+                    or safe_float(fin_tel.get("primary_facility_revenue_share"), locale=doc_lang)
                     or DEFAULT_FACILITY_REVENUE_SHARE
                 )
                 local_facility_rate = (
@@ -295,9 +308,9 @@ class TowerPayloadHydrator:
                 effective_tower_hourly_rate = local_facility_rate
             else:
                 effective_tower_hourly_rate = (
-                    safe_float(fin_tel.get("consolidated_hourly_downtime_rate"), locale=doc_lang)
+                    explicit_tower_rate
+                    or safe_float(fin_tel.get("consolidated_hourly_downtime_rate"), locale=doc_lang)
                     or safe_float(fin_tel.get("hourly_downtime_rate"), locale=doc_lang)
-                    or explicit_tower_rate
                     or hourly_rate
                 )
 
@@ -340,7 +353,7 @@ class TowerPayloadHydrator:
                     or DEFAULT_RECOVERY_CEILING_HOURS
                 ),
                 "currency": currency,
-                "currency_code": "EUR" if currency in ("€", "EUR") else currency,
+                "currency_code": resolved_currency_code,
             }
 
             doc_meta = dict(raw_payload.get("document_meta") or {})
