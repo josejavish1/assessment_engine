@@ -187,6 +187,10 @@ class TaxonomyCatalogLoaderPort(Protocol):
         """Load and return an immutable mapping of tower IDs to TaxonomyConcept objects."""
         ...
 
+    def load_leaf_kpis_index(self) -> Mapping[str, Mapping[str, str]]:
+        """Load and return indexed leaf KPI codes from tower definitions."""
+        ...
+
 
 def normalize_taxonomy_catalog(
     catalog: Mapping[str, TaxonomyConcept | Mapping[str, Any]] | None,
@@ -219,6 +223,7 @@ class PureTaxonomyResolver:
     def __init__(
         self,
         catalog: Mapping[str, TaxonomyConcept | Mapping[str, Any]] | None = None,
+        leaf_kpis_index: Mapping[str, Mapping[str, str]] | None = None,
     ) -> None:
         """Initialize resolver from an injected multilingual taxonomy concept catalog."""
         self._concepts: Mapping[str, TaxonomyConcept] = MappingProxyType({})
@@ -228,6 +233,7 @@ class PureTaxonomyResolver:
         self._scoped_name_to_id: dict[tuple[str, str], tuple[str, str]] = {}
         self._capabilities_index: dict[str, dict[str, str]] = {}
         self._kpis_index: dict[str, dict[str, str]] = {}
+        self._leaf_kpis_index = leaf_kpis_index
 
         if catalog is not None and isinstance(catalog, Mapping):
             self._concepts, self._taxonomy = normalize_taxonomy_catalog(catalog)
@@ -284,43 +290,13 @@ class PureTaxonomyResolver:
                             c_canon_lower
                         ]
 
-        # Index leaf KPI codes from tower definitions
-        from assessment_engine.infrastructure.runtime_paths import ROOT
-        towers_dir = ROOT / "engine_config" / "towers"
-        if towers_dir.exists():
-            import json
-            for t_dir in towers_dir.iterdir():
-                if t_dir.is_dir():
-                    candidates = [
-                        t_dir / f"tower_definition_{t_dir.name.upper()}.json",
-                        t_dir / f"tower_definition_{t_dir.name.lower()}.json",
-                        t_dir / f"tower_definition_{t_dir.name}.json",
-                    ]
-                    def_file = next((f for f in candidates if f.exists()), None)
-                    if def_file is not None:
-                        try:
-                            t_def = json.loads(def_file.read_text(encoding="utf-8-sig"))
-                            for p in t_def.get("pillars", []):
-                                p_id = str(p.get("pillar_id") or p.get("id") or "").strip().upper()
-                                for k in p.get("kpis", []):
-                                    k_id = str(k.get("kpi_id") or "").strip().upper()
-                                    k_name = str(k.get("kpi_name") or "").strip()
-                                    if k_id and k_name:
-                                        self._kpis_index[k_id] = {
-                                            "canonical": k_name,
-                                            "es": k_name,
-                                            "en": k_name,
-                                            "pillar_id": p_id,
-                                        }
-                                        self._capabilities_index[k_id.lower()] = {
-                                            "canonical": k_name,
-                                            "es": k_name,
-                                            "en": k_name,
-                                            "pillar_id": p_id,
-                                        }
-                        except (json.JSONDecodeError, OSError) as e:
-                            logger.warning("Failed parsing tower definition file '%s': %s", def_file, e)
-                            raise
+        # Index leaf KPI codes from injected index (zero filesystem I/O in domain layer)
+        if self._leaf_kpis_index:
+            for k_id, k_data in self._leaf_kpis_index.items():
+                k_id_clean = str(k_id).strip().upper()
+                k_entry = {str(k): str(v) for k, v in k_data.items()}
+                self._kpis_index[k_id_clean] = k_entry
+                self._capabilities_index[k_id_clean.lower()] = k_entry
 
     @staticmethod
     def _normalize_locale(locale: str) -> str:
@@ -484,7 +460,14 @@ def get_taxonomy_resolver(
             return _RESOLVER_INSTANCE
         if _CATALOG_LOADER_PROVIDER is not None:
             loaded_catalog = _CATALOG_LOADER_PROVIDER.load_taxonomy_catalog()
-            _RESOLVER_INSTANCE = PureTaxonomyResolver(catalog=loaded_catalog)
+            loaded_kpis = (
+                _CATALOG_LOADER_PROVIDER.load_leaf_kpis_index()
+                if hasattr(_CATALOG_LOADER_PROVIDER, "load_leaf_kpis_index")
+                else None
+            )
+            _RESOLVER_INSTANCE = PureTaxonomyResolver(
+                catalog=loaded_catalog, leaf_kpis_index=loaded_kpis
+            )
             return _RESOLVER_INSTANCE
         if _DEFAULT_EMPTY_SINGLETON is None:
             _DEFAULT_EMPTY_SINGLETON = PureTaxonomyResolver(catalog={})

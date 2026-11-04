@@ -360,11 +360,11 @@ def apply_semantic_annex_styles(doc, payload_dict: dict) -> None:
         template_es_title = t(loc_key, "en")
         if level == 1:
             heading_level_1.add(template_es_title)
-            for lang_code in catalog:
+            for lang_code in list(catalog.keys()):
                 heading_level_1.add(t(loc_key, lang_code))
         else:
             heading_level_2.add(template_es_title)
-            for lang_code in catalog:
+            for lang_code in list(catalog.keys()):
                 heading_level_2.add(t(loc_key, lang_code))
 
     title_text = (

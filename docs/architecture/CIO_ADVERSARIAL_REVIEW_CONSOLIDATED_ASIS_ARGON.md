@@ -1,120 +1,163 @@
-# DICTAMEN EJECUTIVO DE AUDITORÍA DOCUMENTAL
-**Para:** Dirección del Programa de Transformación / Equipo Consultor  
-**De:** Chief Information Officer (IBEX-35 / Fortune 500) & Senior Partner, Gartner Executive Programs  
-**Asunto:** Revisión Crítica del Diagnóstico Consolidado AS-IS (*Tomo 1* e *Informe Maestro CIO*) — Proyecto Molins (v6.0)  
-**Metodología de Revisión:** Análisis algorítmico de coherencia estructural (*Gemini-4-Argon Engine*) + Juicio Crítico Ejecutivo (Perspectiva humana C-Level / Comité de Dirección).
+# 🏛️ DICTAMEN EJECUTIVO DE AUDITORÍA DE CALIDAD (QA): REVISIÓN DEL ENTREGABLE CONSOLIDADO AS-IS (MOLINS)
+
+**Rol del Evaluador:** Chief Information Officer (CIO) de multinacional industrial (IBEX-35 / Fortune 500) & Senior Partner en Gartner Executive Programs.  
+**Metodología de Revisión:** Análisis dual — **Motor Analítico Estructural (`gemini-4-argon`)** para verificación de consistencia cruzada, matemática actuarial y trazabilidad de datos, combinado con **Inspección Editorial Humana (Lente C-Level)** para evaluar la persuasión ejecutiva, la fricción cognitiva y el retorno de valor percibido por el cliente.
 
 ---
 
 ## 1. VEREDICTO EJECUTIVO DEL CIO Y PUNTUACIÓN (SCORE)
 
-Si yo, como CIO de Molins, recibo hoy estos dos documentos (*Tomo 1: Diagnóstico AS-IS* e *Informe Maestro Consolidado*) sobre mi mesa para defender mañana ante mi CEO y el Consejo de Administración una aprobación presupuestaria de **1,46 M€ (96% en OpEx)**, mi reacción inmediata es **ambivalente: admiración por el enfoque estratégico y frustración por la ejecución editorial y la falta de simetría técnica**.
+### 🎯 Calificación Oficial del Entregable
+*   **Puntuación Global Actual:** **6,8 / 10** (**68 / 100**)
+*   **Potencial de la Ingeniería Subyacente:** **9,6 / 10** *(El trabajo forense realizado en las torres individuales es extraordinario, pero la capa de consolidación sufre de "defectos de ensamblaje" que destruyen la credibilidad en el último metro).*
 
-### Puntuación Global: **6,8 / 10** *(68 / 100)*
-
-* **Desglose de la nota:**
-  * **Alineamiento Estratégico y Narrativa de Negocio (9,2 / 10):** Habláis el idioma del Comité de Dirección. Conectar la caída de un CPD con el bloqueo de las **básculas de pesaje de cemento (5.000 €/h)**, el **shock de licencias de Broadcom/VMware (mayo 2027)**, la **directiva NIS2** y la **integración de Secil (18 países)** es brillante. El uso de Open FAIR™ en lugar de "semáforos de colores" os posiciona como consultores de élite.
-  * **Completitud Técnica y Captura de Valor de las 10 Torres (4,5 / 10):** Habéis sufrido un síndrome de "sobre-compresión agresiva". En el Tomo 1 desarrolláis T1 y T2 y os detenéis abruptamente. Las torres T3 a T10 son tratadas como ciudadanas de segunda categoría, reducidas a una frase genérica en una tabla.
-  * **Rigor Financiero, Consistencia de Datos y Acabado Humano (6,5 / 10):** Hay errores de QA inaceptables para un C-Level (variables de código sin renderizar, sumas actuariales que no cuadran, confusión terminológica llamando "Mainframe" al entorno industrial y desalineación entre el presupuesto de 1 año y el de 3 años).
-
-### ¿Justifica una decisión inmediata del Consejo?
-**No hoy.** Si llevo esto al CFO (*Chief Financial Officer*) y al Comité de Auditoría, me van a tumbar la propuesta en el minuto 5 por tres inconsistencias matemáticas y conceptuales que detallo en la Sección 3. Me estáis dando la munición narrativa, pero me habéis quitado los planos de ingeniería de 8 de las 10 torres que justifican por qué necesito 1,46 millones de euros.
-
----
-
-## 2. AUDITORÍA DE CAPTURA DE VALOR DE LAS TORRES (T1 A T10)
-
-La pregunta clave que me hacéis es: *¿Estamos contando en el documento consolidado todo el valor de las torres analizadas?*  
-La respuesta rotunda es **NO. Estáis ocultando aproximadamente el 80% del valor de ingeniería generado en la auditoría.**
-
-Cuando se compara la profundidad forense que habéis demostrado en los anexos individuales de **T1 (Data Center)** y **T2 (Cómputo)** —donde hay telemetría térmica ASHRAE, topologías de nodos HPE SimpliVity, ratios de sobre-suscripción y derivaciones estocásticas FAIR— frente a lo que habéis plasmado en el **Tomo 1** y en la **Tabla 9 del Informe Maestro**, el desequilibrio es alarmante:
-
-1. **El Abismo del Capítulo 4 del Tomo 1:** En el *Tomo 1*, bajo el epígrafe *"Diagnóstico Forense y Matriz de Brechas (SPOF) por Dominio"*, redactáis un párrafo excelente para **T1 (Sant Vicenç dels Horts)** y otro excelente para **T2 (HPE SimpliVity / VMware / GCP-Azure-OCI)**. **¿Y dónde están los epígrafes H2 de T3, T4, T5, T6, T7, T8, T9 y T10?** No existen. El documento salta directamente a la matriz de SPOFs. Si yo soy el CTO o el Director de Infraestructura y leo el Tomo 1, pienso que os habéis quedado sin tiempo o sin presupuesto de redacción a partir de la segunda torre.
-2. **La insuficiencia de las Tablas Resumen (Tabla 3 de Tomo 1 y Tabla 9 de Informe Maestro):** Dedicar una única frase de 20 palabras por torre en el Informe Maestro ("*Molins debe evolucionar su arquitectura de red hacia un diseño automatizado...*") es un cliché consultor (*boilerplate*) que no aporta evidencia forense. Si no me ponéis los datos duros del AS-IS de cada torre, parece que las puntuaciones CMMI (ej. T4 con 3,30 o T5 con 2,10) han sido asignadas a ojo.
-
-### Lo que falta (Valor Oculto) por cada Torre en el Consolidado AS-IS:
-
-* **T1 (Physical Data Center) & T2 (Hybrid Compute):** *Bien capturados en narrativa, pero falta cuantificación exacta en tablas.* Habláis de 6 nodos SimpliVity (>90% saturación) y pasillos frío/calor en Sant Vicenç dels Horts. **Esto es el estándar de oro que debéis aplicar al resto.**
-* **T3 (Networks & Connectivity - Score 2,50):** En el roadmap (Wave 0) aparecen iniciativas críticas como *"Resiliencia Transit DCI"*, *"GSLB Automatizado"* y *"SD-WAN por SLA de capa 7"*, pero en el diagnóstico AS-IS **no me habéis contado qué pasa hoy en la red**. ¿Qué electrónica de red o firewalls perimetrales tenemos hoy? ¿Cuál es el problema exacto del enlace de 10Gb entre los dos CPDs que rompe el quórum (SPOF-02)? ¿Cómo están conectadas las plantas cementeras y las sedes de Secil hoy (MPLS rígido, IPSec sin redundancia)?
-* **T4 (Storage & Data Services - Score 3,30):** Le dais la nota más alta de toda la auditoría (Nivel 3 Definido), mencionáis de pasada cabinas **NetApp**, y en Wave 2 habláis de *"Multipathing ESXi-NetApp"* e *"Inmutabilidad WORM"*. Sin embargo, en el texto AS-IS no explicáis por qué tiene un 3,30 ni cuál es su capacidad actual, su nivel de deduplicación, ni por qué las instantáneas (snapshots) actuales no son inmutables frente a un ransomware.
-* **T5 (Industrial Resilience & Business Continuity - Score 2,10):** Es la torre con **peor puntuación de toda la compañía (2,10)** y la mayor exposición financiera en el Informe Maestro (**~971K € a 3 años**). ¡Y no tiene ni un solo párrafo dedicado en el Tomo 1! Como CIO necesito leer aquí el estado actual de los backups (¿Veeam, Commvault, NetApp SnapMirror?), cuál es el RTO/RPO real medido hoy frente al teórico, y por qué la desconexión entre IT y el mundo OT (fábricas) nos deja vendidos.
-* **T6 (Cybersecurity & Identity Governance - Score 2,80):** Mencionáis en el SPOF-04 la *"sincronización frágil de bosques Active Directory entre Molins y Secil"* y la falta de PAM. Eso es oro puro, pero está enterrado en una celda de tabla. ¿Qué pasa con el EDR/XDR, el SIEM actual (en Wave 1 habláis de costes de ingesta SIEM y Data Lakehouse OCSF), la segmentación Este-Oeste en planta y el estado de MFA/Conditional Access en Entra ID? Todo ese análisis de la torre T6 ha desaparecido del AS-IS consolidado.
-* **T7 (Database Operations & ITSM Platforms - Score 2,50):** Hay una esquizofrenia de nomenclatura entre el Tomo 1 (donde T7 es *Database Operations & ITSM*) y el Informe Maestro (donde T7 es solo *Operaciones ITSM*). ¿Dónde está el diagnóstico de las bases de datos corporativas (Oracle, SQL Server, SAP HANA) que soportan el negocio? ¿Qué herramienta ITSM usa Molins hoy (ServiceNow, Jira, Cherwell) y por qué la CMDB está desincronizada?
-* **T8 (Enterprise Applications & FinOps - Score 2,40):** En una multinacional industrial como Molins, hablar de Aplicaciones Empresariales sin mencionar el estado de su **ERP core (SAP / S/4HANA)**, su MES de fabricación o el coste descontrolado del *Shadow IT* y nubes públicas (GCP, Azure, OCI, AWS) resta muchísima credibilidad al documento.
-* **T9 (Digital Workplace & Mobility - Score 3,10):** Es la segunda mejor nota (3,10), y el punto de choque cultural inmediato en la compra de **Secil**. ¿Cuántos endpoints gestionamos? ¿Cómo conviven los tenants de Microsoft 365 / Intune de Molins y Secil hoy? No se dice absolutamente nada en el AS-IS.
-* **T10 (Mission-Critical Core & Weighbridge Logistics - Score 2,40):** Aquí hay un **error conceptual grave en el Informe Maestro**: habéis llamado a T10 **"T10: Mainframe Core"**. ¿Molins opera un Mainframe IBM zSeries para pesar camiones de cemento, o es un error de traducción automática por traducir *"Mission-Critical Core"* como *"Mainframe"*? En el Tomo 1 se llama correctamente *"Mission-Critical Core & Weighbridge Logistics"*. Además, siendo las básculas el corazón del caso de negocio (5.000 €/h), no explicáis cómo funciona hoy la arquitectura de pesaje y expedición ni por qué depende de sistemas operativos en fin de soporte (*EoL/EoS*).
+| Dimensión Evaluada por el CIO | Nota (0-10) | Diagnóstico Ejecutivo Rápido |
+| :--- | :---: | :--- |
+| **1. Narrativa Estratégica y Enfoque de Negocio** | **9,2 / 10** | Sobresaliente. Habla de toneladas de cemento, básculas a 5.000 €/h, shock de Broadcom en mayo 2027, integración de Secil en 18 países y NIS2. Conecta directo con el CEO y el CFO. |
+| **2. Coherencia Matemática y Actuarial (Open FAIR™)** | **4,5 / 10** | **CRÍTICO (Bloqueante).** El ALE global de Tomo 1 (242.416 €) es exactamente la suma de T1 (141.184 €) + T2 (101.231 €). **Las Torres T3 a T10 tienen 0 EUR/año de exposición en sus tablas.** Un CFO tumba el informe en 3 minutos al ver esto. |
+| **3. Captura del Valor Forense de las 10 Torres** | **6,0 / 10** | Asimetría severa. T1 y T2 acaparan todo el rigor cuantitativo; T3 a T10 están reducidas a resúmenes de 80 palabras con cabeceras "copia-pega" erróneas. Se pierde el 75% del valor de ingeniería generado en los anexos. |
+| **4. Calidad Editorial y Fricción Cognitiva (Human Lens)** | **6,5 / 10** | Errores graves de automatización/plantilla: códigos de riesgo duplicados en la matriz 5x5, el término *"Mainframe Core"* aplicado a básculas de fábrica, y placeholders sin limpiar (`Remediar la brecha técnica identificada...`). |
 
 ---
 
-## 3. CRÍTICA EDITORIAL Y DE EXPERIENCIA HUMANA (HUMAN-CENTRIC REVIEW)
+### 🧠 La Primera Impresión Honesta del CIO al Abrir los Documentos
 
-Cuando paso el documento por el filtro de lectura humana ejecutiva —imaginando que lo leo en un iPad en un vuelo Barcelona-Lisboa para ver la integración de Secil—, detecto una altísima **fricción cognitiva** provocada por defectos de edición y ensamblaje automatizado:
+1. **Los primeros 3 minutos (Euforia Ejecutiva):**  
+   *"¡Por fin una consultora que entiende el negocio cementero! No me vienen con palabrería genérica de la nube; han ido a Sant Vicenç dels Horts, han visto los 6 nodos SimpliVity al 90% de saturación, han calculado que parar una báscula nos cuesta 5.000 €/h (y 13.061 €/h a nivel corporativo), me avisan de la trampa de licencias de VMware/Broadcom para mayo de 2027 y ponen sobre la mesa los 135.000 € que tiramos a la basura por duplicidades con Secil. La narrativa del Resumen Ejecutivo es de 10."*
 
-### A. Errores Críticos de "Higiene Documental" (Red Flags inmediatas)
-1. **Placeholders de código sin reemplazar:** En el Tomo 1, la Tabla 1 (el cuadro de mando principal que ve el lector en la página 1) tiene como cabeceras literales: `COCKPIT_CURRENT_SCORE_LABEL` y `COCKPIT_MATURITY_BAND_LABEL`. Para un ejecutivo, ver variables de plantilla sin renderizar destruye instantáneamente la percepción de documento "artesanal de alta dirección" y revela generación masiva por software sin revisión humana.
-2. **Error grave de mapeo CMMI en el Informe Maestro:** En las Tablas 0 y 9 del *Informe Maestro*, **TODAS las torres llevan la etiqueta `(Inicial)`** al lado de su nota. Poner `T4: Datos Storage - Puntuación: 3.3 (Inicial)` o `T9: Puesto Trabajo - 3.1 (Inicial)` contradice directamente la escala CMMI explicada en el Tomo 1 (donde 1.x es Inicial, 2.x es Gestionado y 3.x es Definido). Esto demuestra que la columna de etiqueta del script que generó la tabla del Informe Maestro tenía el texto `(Inicial)` *hardcodeado*.
-3. **Plantillas repetitivas ("Remediar la brecha..."):** En las tablas del Roadmap (Tablas 13 a 16 del Informe Maestro), la columna *Impacto / Business Case* repite **12 veces** la muletilla exacta: *"Remediar la brecha técnica identificada en el estado actual (AS-IS)..."*. Un humano que lee esa tabla nota inmediatamente el relleno algorítmico.
+2. **El minuto 7 (Fricción Cognitiva y Sospecha Técnica):**  
+   *"Espera un momento... Voy a mirar el detalle de las 10 torres en el Tomo 1. Veo que T1 tiene un riesgo anual (ALE) de 141.184 € y T2 de 101.231 €. Paso a T3 (Redes), T4 (Storage), T5 (Resiliencia Industrial), T6 (Ciberseguridad)... ¡¿y todas ponen `Exposición ALE: 0 EUR/año`?! ¿Me estás diciendo que en Ciberseguridad (T6) o en la Resiliencia de las Básculas (T5 y T10) nuestro riesgo financiero anual es CERO euros, cuando dos páginas antes me habéis dicho que es el mayor peligro del grupo?"*
 
-### B. Inconsistencias Matemáticas y Financieras (Lo que el CFO atacará)
-1. **La suma del ALE P50 no cuadra en el Tomo 1:**
-   * En el texto y en la Tabla 1 decís que el **ALE P50 global es de 242.416 € / año**.
-   * En la Tabla 4 desglosáis el 100% de la cartera de riesgos en tres Tiers: Tier 1 (`98.540 €` - 48%) + Tier 2 (`77.380 €` - 38%) + Tier 3 (`29.080 €` - 14%).
-   * Si sumo `98.540 + 77.380 + 29.080`, el resultado es **205.000 €**, no **242.416 €**. ¿Dónde están los **37.416 €** que faltan?
-2. **El baile de millones en el P90 (Contingencia Máxima):**
-   * En el Resumen Ejecutivo del Tomo 1 decís que la contingencia máxima proyectada (P90) es de **6.103.182 EUR**.
-   * Dos páginas después, bajo el título *"Escenario de Fallo Grave y Tiempo Máximo de Recuperación (P90)"*, decís que la caída simultánea de sistemas tiene un impacto económico total de **450.000 €** (17,3 horas).
-   * Y en el Informe Maestro (Tabla 1), decís que la Exposición Actuarial de Cola (P90) es de **675.000 € - 975.000 €**, mientras que en el Board Memo habláis de **3,7 M€ a 3 años**.
-   * *Diagnóstico del CIO:* Sé que uno es el P90 agregado multi-anual o catastrófico regulatorio y el otro es un escenario operativo puntual de 17 horas, pero tal como está redactado, **parece que os estáis contradiciendo en un factor de 13x (de 450k € a 6,1M €)**.
-3. **El espejismo del Presupuesto de Transformación (Año 1 vs. 3 Años):**
-   * En el *Board Memo* pedís aprobar para el **Año 1: 1,46 M€** (`1,40 M€ OpEx + 60 K€ CapEx`).
-   * En la Sección 6 (*Plan de Implementación a 36 meses*), decís que el plan completo de 3 años (4 horizontes: Wave 0, Año 1, Año 2 y Año 3) moviliza una inversión total agregada de **1,49 M€** (`1,43 M€ OpEx + 60 K€ CapEx`).
-   * ¿Me estáis diciendo que el Año 1 cuesta **1,46 M€** y que los Años 2 y 3 juntos (que tienen 26 proyectos complejísimos en las Tablas 15 y 16) cuestan solo **30.000 €** (`1,49M - 1,46M`)? Además, renovar toda la infraestructura física de CPDs, redes y clústeres de cómputo de Molins con solo **60.000 € de CapEx** (cuando solo dos cabinas o cuatro nodos servidores ya cuestan más que eso) exige explicar que lo estáis llevando todo a un modelo *Everything-as-a-Service (OpEx / GreenLake / Leasing)*, porque de lo contrario ningún CIO se cree 60k € de CapEx.
+3. **El minuto 12 (Pérdida de Confianza frente al Comité de Dirección):**  
+   *"Miro las cabeceras de T4 y T5 en las tablas de detalle del Tomo 1 (Tablas 18 y 20) y en todas pone `Madurez AS-IS: 2,50 (Repetible) | Objetivo H1: 3,70`, contradiciendo la Tabla 3 inicial donde T4 tenía un 3,30 y T5 tenía un 2,10. Y en el Informe Maestro llamáis a la Torre 10 `Mainframe Core`, ¡cuando en Molins no tenemos ningún Mainframe IBM zSeries, sino básculas industriales y SAP en Google Cloud! Además, me pedís 1,46 M€ para el Año 1 y luego en la página 20 decís que el plan completo de 3 años cuesta 1,49 M€ (¡solo 30.000 € para los Años 2 y 3!)."*
 
-### C. Desproporción Estructural del Tomo 1
-El *Tomo 1* promete ser el documento fundacional de diagnóstico transversal, pero su cuerpo de texto narrativo apenas supera las **1.100 palabras** (de las cuales casi 200 son el aviso legal del apéndice).
-* Los capítulos de **Matriz de SPOFs** y de **Interdependencias (Cross-Tower Nexus)** no tienen análisis: tienen una frase introductoria de dos líneas ("*A continuación, se catalogan los vectores...*") y sueltan una tabla de 4 filas.
-* Solo listar **4 SPOFs** para una multinacional con 10 dominios auditados sabe a muy poco.
-* En la Tabla 13 del Informe Maestro aparece una iniciativa llamada *"Automatización de Runbooks y Trazabilidad Operativa AWS"*, cuando en el Tomo 1 dijisteis que las nubes de Molins eran **GCP, Azure y OCI** (sin mencionar AWS).
+### ⚖️ ¿Justifica una decisión inmediata del Consejo o deja preguntas sin respuesta?
+**Veredicto:** **NO todavía.** Si como CIO llevo este documento mañana al Comité de Dirección, **el CFO (Director Financiero) bloqueará la liberación de los 1,46 M€** señalando las incongruencias matemáticas entre las tablas del Tomo 1 y el Informe Maestro. El documento tiene el esqueleto y la narrativa de un entregable de primer nivel mundial, pero presenta **"cicatrices de ensamblaje automatizado"** que un ojo humano detecta de inmediato.
 
 ---
 
-## 4. HOJA DE RUTA ACCIONABLE PARA ALCANZAR EL 10/10 (PLAN DE CHOQUE)
+## 2. AUDITORÍA DE CAPTURA DE VALOR: ¿ESTAMOS CONTANDO TODO EL VALOR DE LAS 10 TORRES?
 
-Para que este entregable pase de un **6,8** a un **10/10 indiscutible** (nivel McKinsey / Gartner Executive Boardroom) y el CIO firme el proyecto sin dudar, debéis ejecutar las siguientes **6 acciones correctivas antes de entregar**:
+**Respuesta directa:** **NO. Estamos mostrando apenas el 25% de la riqueza analítica y forense generada en las auditorías individuales.**
 
-### Acción 1: Completar las 8 Torres faltantes en el Capítulo 4 del Tomo 1 (Crítico)
-No podéis dejar el Capítulo 4 del Tomo 1 solo con `Dominio T1` y `Dominio T2`.
-* **Qué hacer:** Extraed el resumen forense de los documentos individuales de **T3 a T10** e insertad los **8 subcapítulos (`Heading 2`) restantes** en el Tomo 1, manteniendo exactamente el mismo tono, longitud (150-200 palabras por torre) y densidad técnica que usasteis en T1 y T2.
-* **Qué incluir obligatoriamente:** Datos reales de cada torre (ej. arquitectura WAN/SD-WAN en T3; topología NetApp y backups en T4/T5; situación de Active Directory/Entra ID/EDR/SIEM en T6; motores de BBDD y herramienta ITSM en T7; paisaje SAP/ERP y gasto cloud en T8; parque de usuarios M365 Molins+Secil en T9; y arquitectura de software de básculas y expedición en T10).
+Al comparar los anexos profundos de cada torre (~16 páginas por dominio con inventarios exhaustivos, derivaciones Monte Carlo, árboles de fallos y telemetría) frente al Tomo 1 y al Informe Maestro, se evidencia un **fenómeno de embudo asimétrico**: las Torres T1 y T2 están bien representadas cuantitativamente, pero **las Torres T3 a T10 han sufrido una amputación analítica**.
 
-### Acción 2: Ampliar la Matriz de SPOFs (de 4 a 10 SPOFs) y el Glosario
-* Actualmente la Tabla 5 del Tomo 1 solo tiene `SPOF-01` a `SPOF-04` (centrados en T1, T2 y T6).
-* **Qué hacer:** Añadid al menos **1 SPOF crítico por cada una de las torres principales** (hasta llegar a `SPOF-10`), incluyendo el punto de fallo en las básculas de planta (T10), en el repositorio de backups no inmutable (T5), en la base de datos transaccional del ERP (T7/T8) y en la electrónica de red core/perimetral (T3).
+### 🔍 La Prueba Forense de la Compresión Excesiva
+1. **El Sesgo del Top 5 de Riesgos (Tablas 7 a 11 del Tomo 1):**  
+   Las 5 fichas de "Riesgos Sistémicos Troncales (Top 5 Corporativo)" del Tomo 1 pertenecen **exclusivamente a T1 y T2**:
+   *   `[RVS11]` Mantenimiento preventivo electromecánico (T1) — 43.120 €/año
+   *   `[RVS03]` Rangos ambientales ASHRAE (T1) — 16.105 €/año
+   *   `[RVS04]` Hotspots y densidad por rack (T1) — 15.189 €/año
+   *   `[RVS13]` Golden images y baseline (T2) — 14.485 €/año
+   *   `[RVS11]` Cobertura de IaC (T2) — 13.315 €/año  
+   *¿Qué piensa el CIO?* *"¿Cómo es posible que el riesgo de falta de Infraestructura como Código (IaC) o de Golden Images esté en el Top 5 de riesgos corporativos de una cementera, por encima de un ataque de Ransomware por falta de PAM/WORM (T6/T5) o de la caída de las básculas de camiones (T10)?"* Además, todas las fichas tienen exactamente la misma frecuencia clavada (`LEF: 0,36 ev`), lo que huele a parámetro por defecto no calibrado.
 
-### Acción 3: Reconciliación Financiera y Actuarial Exacta (Prueba de CFO)
-* **Cuadrar la Tabla 4 del Tomo 1:** Ajustad las cifras de los Tiers 1, 2 y 3 para que sumen exactamente **242.416 €**, o explicad en una nota al pie por qué la suma aritmética difiere del P50 agregado de Monte Carlo (efecto de covarianza en agregación estocástica).
-* **Clarificar las métricas de P90:** Diferenciad claramente en el texto tres conceptos distintos para que no parezcan contradicciones:
-  1. *Coste de un incidente aislado de caída simultánea de CPD (17,3h):* **450.000 €**.
-  2. *Exposición Actuarial Anualizada en percentil 90 (ALE P90 anual):* **~975.000 € / año**.
-  3. *Valor en Riesgo Acumulado Catastrófico a 3 años / Sanción NIS2 + Lucro Cesante (VaR P90/P99):* **3,7 M€ a 6,1 M€**.
-* **Corregir o justificar el Presupuesto (Año 1 vs. 3 Años):** Revisad por qué el Año 1 cuesta 1,46 M€ y el total a 3 años cuesta 1,49 M€. Si los Años 2 y 3 no están presupuestados aún o se autofinancian con el ahorro de licencias/Secil, declaradlo explícitamente. Y añadid una frase explicando que la renovación de hardware se presupuesta como **OpEx (modelo consumo/leasing)** para justificar que el CapEx sea de solo 60 K€.
-
-### Acción 4: Corrección de Errores de Renderizado y Nomenclatura (QA Quirúrgico)
-1. **Tomo 1 (Tabla 1):** Sustituir `COCKPIT_CURRENT_SCORE_LABEL` por **`PUNTUACIÓN DE MADUREZ ACTUAL`** y `COCKPIT_MATURITY_BAND_LABEL` por **`NIVEL DE MADUREZ (CMMI)`**. Unificar además si el Nivel 2 se llama *"Gestionado"* o *"Repetible"* (en la Tabla 1 dice Repetible y en el resto dice Gestionado).
-2. **Informe Maestro (Tablas 0 y 9):** Corregir las etiquetas CMMI junto a las notas:
-   * Donde la nota sea `2.1` a `2.8` $\rightarrow$ cambiar `(Inicial)` por **`(Gestionado / Reactivo)`**.
-   * Donde la nota sea `3.1` o `3.3` (T4 y T9) $\rightarrow$ cambiar `(Inicial)` por **`(Definido / Proactivo)`**.
-3. **Renombrar T10 en todo el Informe Maestro:** Eliminar la palabra **`Mainframe Core`** (que suena a banca de los años 80) y sustituirla por **`Core Industrial y Logística de Básculas`** (alineado con el Tomo 1).
-4. **Unificar la nota global:** En el Tomo 1 la nota es **2,55 / 5,00** y en el Informe Maestro se redondea a **2,6 / 5**. Usad **2,55 / 5,00** en ambos documentos para transmitir precisión matemática.
-
-### Acción 5: Limpieza de las Tablas del Roadmap (Informe Maestro, Tablas 13 a 16)
-* **Eliminar el texto genérico:** Sustituid las 12 apariciones de *"Remediar la brecha técnica identificada en el estado actual (AS-IS)..."* por el impacto de negocio real de cada iniciativa.
-* **Racionalizar Wave 0 (0-3 meses):** Tenéis **27 iniciativas** metidas en los primeros 90 días (Tabla 13), mientras que en el Año 1 (Tabla 14) solo hay 8. Ningún departamento de IT con menos de 5 personas clave (como decís en el diagnóstico) puede ejecutar 27 proyectos en 3 meses. Moved al menos 15 iniciativas de la *Wave 0* hacia la *Wave 1 (3-12m)*, dejando en Wave 0 únicamente las 8-10 acciones de emergencia pura (telemetría térmica CPD, PAM urgente, diseño Landing Zone, preparación licencias VMware y plan de contingencia de básculas).
-* **Corregir "AWS":** En la fila 9 de la Tabla 13, cambiad *"Trazabilidad Operativa AWS"* por *"Trazabilidad Operativa Multi-Cloud (Azure/GCP/OCI)"* y corregid el typo de la fila 25: `Zona de Aterrizaje Cloud (Zona de Aterrizaje Cloud`.
+2. **La Tabla 9 del Informe Maestro (1 frase por torre):**  
+   Reducir cada torre en el Informe Maestro a una frase genérica declarativa (*"Es imperativo modernizar la infraestructura...", "Molins debe evolucionar su arquitectura..."*) **oculta el 90% del valor de ingeniería**. Un CIO no paga una auditoría profunda para que le digan *"hay que modernizar la red"*, sino para leer los hallazgos concretos que demuestran que el consultor ha estado dentro de sus sistemas.
 
 ---
 
-### Conclusión Final del CIO
-Tenéis entre manos una **joya en bruto**. El enfoque actuarial Open FAIR™, la conexión con el negocio cementero (básculas, plantas, compra de Secil) y la urgencia temporal (VMware mayo 2027 y NIS2) son extraordinarios y están muy por encima de lo que entregan las consultoras tradicionales. 
+### 📋 Qué Valor Específico se ha Perdido Torre por Torre (T1 a T10) y Debe Rescatarse
 
-Sin embargo, el automatismo de consolidación os ha jugado una mala pasada al truncar las torres T3-T10 en el Tomo 1 y dejar rastros de código y desajustes aritméticos en las tablas. Aplicad estas 5 correcciones (que os llevarán menos de un día de edición enfocada) y pasaréis de tener un documento con costuras visibles (6,8/10) a un **Informe Maestro blindado de 10/10 que el Comité de Dirección aprobará sin reservas**.
+| Torre | Lo que hoy cuenta el Consolidado | Lo que FALTA de las auditorías de torre (El verdadero "Oro" Técnico) |
+| :--- | :--- | :--- |
+| **T1: Data Center & Facilities** | Buen resumen (pasillos frío/calor, ASHRAE, NIS2, PDUs). **ALE: 141.184 €.** | Falta detallar la topología exacta del anillo eléctrico entre CPD 1 y CPD 2 en Sant Vicenç dels Horts, la antigüedad de las enfriadoras perimetrales, el PUE estimado actual vs. objetivo y los tiempos reales de autonomía de los SAIs bajo carga pico. |
+| **T2: Hybrid Compute & Cloud** | Buen resumen (6 nodos SimpliVity >90%, VMware mayo 2027, GCP/Azure/OCI). **ALE: 101.231 €.** | Falta cuantificar el inventario de VMs (cuántas cargas productivas vs. preproducción hay que apagar en caso de *failover*), los ratios de *overcommit* de CPU/RAM actuales y la comparativa financiera del *shock* de Broadcom (coste actual vs. coste multiplicado x4). |
+| **T3: Redes y Conectividad (WAN/DCI)** | DCI 10G sin anillo, switches Huawei/Cisco, IPSec estático sin SD-WAN. **ALE en Tomo 1: 0 €** *(Inaceptable)*. | **Valor oculto:** Arquitectura de red internacional hacia los **18 países de Secil**, latencias y pérdida de paquetes en los enlaces hacia canteras y plantas remotas, solapamiento de direccionamiento IP (RFC 1918) entre Molins y Secil, y estado de soporte (EoL/EoS) de la electrónica Huawei/Cisco. |
+| **T4: Storage & Data Services** | NetApp FAS/AFF (NFS/FC), Cohesity, falta SnapLock WORM y multipathing. **ALE en Tomo 1: 0 €**. | **Valor oculto:** Volumetría total gestionada (TBs/PBs útiles vs. ocupados), ratios de deduplicación/compresión, latencias actuales de I/O en bases de datos críticas, y desglose de datos "fríos" no nivelados (*tiering* a nube) que están consumiendo disco flash caro en NetApp. |
+| **T5: Resiliencia Industrial (OT/IT)** | Puntuación más baja (2,10), sin Cyber Recovery Vault, RTO < 4h no certificado, MES/SCADA sin pruebas DR. **ALE en Tomo 1: 0 €**. | **Valor oculto:** ¡En el Informe Maestro se dice que T5 tiene un riesgo P90 de **971K €** (el más alto de toda la empresa), pero en el Tomo 1 su ALE es **0 €**! Falta detallar la matriz RPO/RTO actual frente a la requerida por planta, el estado de aislamiento de red IT/OT (modelo Purdue / IEC 62443) y cuánto tardaría hoy reconstruir una planta desde cero tras un ciberataque. |
+| **T6: Ciberseguridad e Identidad** | Bosques AD dispersos (Molins/Secil), Entra ID incompleto, Fortinet, sin PAM Tier-0 ni microsegmentación. **ALE en Tomo 1: 0 €**. | **Valor oculto:** Deuda técnica de Active Directory (cuentas de servicio con contraseñas que no expiran, Kerberoasting potencial), arquitectura del SOC/SIEM actual, cobertura real de EDR en servidores frente a puestos de planta, y mapa de cumplimiento artículo por artículo de la **Directiva NIS2**. |
+| **T7: Operaciones BBDD e ITSM** | Oracle y SQL Server manuales, ITSM sin CMDB federada. **ALE en Tomo 1: 0 €**. | **Valor oculto:** Inventario de instancias Oracle/SQL Server fuera de soporte extendido, riesgo de auditoría de licencias de Oracle en entornos virtualizados VMware, métricas operativas actuales (MTTR, % de cambios fallidos por falta de CMDB, ratio de tickets reactivos vs. automatizados). |
+| **T8: Aplicaciones Empresariales & FinOps** | SAP S/4HANA en GCP, multicloud reactivo, sin tagging, 135k € de ineficiencia con Secil. **ALE en Tomo 1: 0 €**. | **Valor oculto:** Desglose de dónde salen exactamente los **135.000 €/año** de ahorro en caja real (contratos SaaS duplicados entre Molins y Secil, instancias cloud sobredimensionadas sin *Reserved Instances / Savings Plans* en GCP/Azure/OCI) y arquitectura de integración (APIs/Middleware) entre SAP S/4HANA y las plantas. |
+| **T9: Digital Workplace & Mobility** | M365, Intune vs. manual en Secil, sin DEX. **ALE en Tomo 1: 0 €**. | **Valor oculto:** Número total de *endpoints* (oficinas vs. puestos rugerizados en canteras/fábricas), fricción en la colaboración cruzada Molins-Secil (migración de *tenants* M365), y volumen de incidencias de Nivel 1/2 que podrían eliminarse con autorremediación DEX. |
+| **T10: Core Transaccional y Básculas** | Pesaje de camiones en SO obsoletos, parada a 5.000 €/h, necesita modo *offline*. **ALE en Tomo 1: 0 €**. | **Valor oculto:** Arquitectura técnica del puesto de pesaje (comunicación serie/IP con los puentes báscula, impresión de albaranes, sincronización síncrona con SAP S/4HANA en GCP). **Error grave a corregir:** En el Informe Maestro se le llama **"T10: Mainframe Core"**, un error de plantilla que destruye el realismo industrial conseguido en el Tomo 1. |
+
+---
+
+## 3. CRÍTICA HUMANA Y EDITORIAL (CÓMO LO PERCIBE UN LECTOR EJECUTIVO HUMANO)
+
+Cuando un humano (el CIO, el CTO o un miembro del Consejo) imprime o lee en iPad estos dos documentos en paralelo, experimenta **cuatro choques cognitivos severos** provocados por fallos de edición y generación automatizada:
+
+### 🚨 Choque 1: La Ilusión de las Tablas Copiadas y Pegadas (Tomo 1, Tablas 12 a 31)
+En el Capítulo 4 del Tomo 1 (*Diagnóstico Forense por Dominio*), cada torre va acompañada de una cinta de indicadores (Tablas 12, 14, 16, 18, 20, 22, 24, 26, 28 y 30).
+*   En **T1** (Tabla 12) dice: `Madurez AS-IS: 2,60 (Definido) | Objetivo H1: 3,80 | Exposición ALE: 141.184 EUR/año`. *(Nota: 2,60 en CMMI NO es "Definido", es Nivel 2 "Gestionado/Repetible").*
+*   En **T2** (Tabla 14) dice: `Madurez AS-IS: 2,50 (Repetible) | Objetivo H1: 3,70 | Exposición ALE: 101.231 EUR/año`.
+*   **¡De T3 a T10 (Tablas 16 a 30), TODAS las cabeceras están congeladas con los mismos números exactos!** Todas dicen: `Madurez AS-IS: 2,50 (Repetible) | Objetivo H1: 3,70 | Exposición ALE: 0 EUR/año`.
+*   Esto contradice frontalmente la **Tabla 3** del mismo documento (donde T4 tiene 3,30, T5 tiene 2,10, T6 tiene 2,80, T9 tiene 3,10, etc.). Para un lector humano, esto grita: *"Plantilla no actualizada de la Torre 3 a la 10"*.
+
+### 🚨 Choque 2: La Matriz de Calor 5x5 "Rota" (Tomo 1, Tabla 6)
+El texto promete: *"La siguiente matriz de calor distribuye los 29 escenarios de riesgo corporativos..."*. Cuando el ojo humano mira la **Tabla 6**:
+1.  Las filas `TEF 5`, `TEF 4`, `TEF 3` y `TEF 1` están **completamente vacías (`-`)**.
+2.  **Todos los riesgos están apelotonados en una única fila (`TEF 2`)**.
+3.  Dentro de esa fila, los códigos están repetidos porque se han concatenado los IDs locales de T1 y T2 sin prefijo de torre: aparecen dos veces `RVS01`, dos veces `RVS02`, dos veces `RVS03`, dos veces `RVS04`, dos veces `RVS05`, dos veces `RVS06`... Un humano ve inmediatamente que no es una matriz de calor real de las 10 torres, sino un volcado sin depurar de dos tablas en una sola fila.
+
+### 🚨 Choque 3: Esquizofrenia de Cifras Financieras entre Tomo 1 e Informe Maestro
+Un ejecutivo que lee ambos documentos ve que los números no cuadran entre sí:
+*   **¿Cuál es el P90 (peor caso)?**
+    *   En Tomo 1 (Resumen Ejecutivo, pág. 1): **6.103.182 EUR**.
+    *   En Tomo 1 (Escenario de Fallo Grave P90, pág. 3): **450.000 EUR** (con 17,3 horas de caída).
+    *   En Informe Maestro (Board Memo, pág. 3): **3,7 M€** a 3 años.
+    *   En Informe Maestro (Tabla 1, pág. 4): **675.000 € - 975.000 €** anuales.
+*   **¿Cuánto cuesta el Plan de Transformación?**
+    *   En el Board Memo del Informe Maestro se pide aprobar para el **Año 1: 1,46 M€** (1,4 M€ OpEx + 60 K€ CapEx).
+    *   En la Sección 6 del mismo Informe Maestro se dice que la inversión total agregada **a 36 meses (3 años) es de 1,49 M€** (1,43 M€ OpEx + 60 K€ CapEx).
+    *   *Lectura del CFO:* *"¿Me estáis diciendo que el Año 1 cuesta 1,46 M€ y que los Años 2 y 3 juntos cuestan solo 30.000 € para ejecutar 25 iniciativas complejas de automatización, SRE, AIOps y FinOps?"*
+
+### 🚨 Choque 4: "Restos de Andamio" (Placeholders de Generación en el Informe Maestro)
+En las Tablas 13, 14, 15 y 16 del Informe Maestro (el Plan de Implementación TO-DO), más de 15 filas tienen el texto genérico de relleno:
+*   `Remediar la brecha técnica identificada en el estado actual...`
+*   En la Tabla 13 (Fila 9) aparece **`Automatización de Runbooks y Trazabilidad Operativa AWS`**, cuando el texto del Tomo 1 establece que la huella cloud de Molins es **GCP, Azure y OCI** (no AWS).
+*   En la Tabla 13 (Fila 25) hay un paréntesis roto: **`Zona de Aterrizaje Cloud (Zona de Aterrizaje Cloud`**.
+*   En la Tabla 10 (Interdependencias) los nombres de los dominios tienen dos puntos sueltos delante (`: Security & Identity`, `: Compute & Cloud`) y están en inglés, mientras que el resto del documento está en español.
+*   Las fechas de emisión no coinciden: Tomo 1 dice **Noviembre 2026** y el Informe Maestro dice **Octubre 2026**.
+
+---
+
+## 4. HOJA DE RUTA ACCIONABLE PARA ALCANZAR EL 10/10 (NIVEL MASTERPIECE)
+
+Para transformar este entregable de un **6,8/10** a un **10/10 indiscutible** que consiga la firma inmediata del Comité de Dirección de Molins, se deben ejecutar las siguientes **6 acciones quirúrgicas** antes de entregar al cliente:
+
+### 🛠️ Acción 1: Reconciliación Matemática y Actuarial Completa (Prioridad Crítica)
+1.  **Poblar el ALE (P50) de las Torres T3 a T10 en el Tomo 1:** Eliminar inmediatamente los `0 EUR/año` de las Tablas 16 a 30. Asignar a cada torre su expectativa de pérdida anualizada real (derivada de las cifras de 3 años que ya existen en la Tabla 0 del Informe Maestro: ej. T3 Redes ~85k €/año, T5 Resiliencia ~210k €/año, T6 Seguridad ~65k €/año, T10 Básculas ~120k €/año) y recalcular el ALE P50 global consolidado (o conciliarlo con los ~945k €/año implícitos en el modelo de 3 años del Informe Maestro).
+2.  **Unificar la Jerarquía de Cifras P50 / P90:** Crear un cuadro único de conciliación financiera idéntico en ambos documentos que explique claramente:
+    *   **Ineficiencia directa en caja (OpEx desperdiciado hoy):** 135.000 €/año (duplicidades Secil + FinOps).
+    *   **Exposición Operativa Esperada (ALE P50 Anual):** Cifra única consolidada de las 10 torres.
+    *   **Escenario de Fallo Aislado de CPD (P90 de 1 evento de 17,3h):** 450.000 €.
+    *   **Exposición Acumulada a 3 Años sin Intervención (VaR 3Y):** 3,7 M€ (y reserva de cola extrema catastrófica multisitio / sanción NIS2 de 6,1 M€).
+3.  **Corregir el Presupuesto Plurianual (1,46 M€ Año 1 vs. Total 3 Años):** Desglosar claramente cuánto cuesta la Wave 0 + Año 1 (ej. 1,46 M€), cuánto cuesta el Año 2 (ej. 1,10 M€) y cuánto el Año 3 (ej. 0,85 M€), o especificar que los 1,49 M€ corresponden exclusivamente al **Presupuesto de Fase 1 (Año 1)** sujeto a aprobación hoy.
+
+### 🛠️ Acción 2: Reparar las Cabeceras y el "Top 5" de Riesgos del Tomo 1
+1.  **Corregir las Tablas 12 a 30 del Tomo 1:** Sincronizar la puntuación `Madurez AS-IS`, la etiqueta CMMI (`Inicial`, `Gestionado`, `Definido`) y el `Objetivo H1` de cada tabla individual con los valores exactos de la **Tabla 3** (Resumen CMMI).
+2.  **Diversificar el Top 5 de Fichas de Riesgo (Tablas 7 a 11):** No pueden ser 3 fichas de climatización/mantenimiento (T1) y 2 de IaC/Golden Images (T2). Sustituir al menos 3 de esas fichas por los verdaderos riesgos mortales de Molins que se mencionan en el Resumen Ejecutivo:
+    *   *Riesgo Top 1:* Parada de expedición en básculas de fábrica por fallo de conectividad/hardware obsoleto (**T10 / T5**).
+    *   *Riesgo Top 2:* Saturación estructural SimpliVity (>90%) + Shock de licencias VMware/Broadcom mayo 2027 (**T2**).
+    *   *Riesgo Top 3:* Compromiso de identidad / Ransomware por falta de PAM Tier-0, bosques AD fragmentados con Secil y ausencia de SnapLock WORM (**T6 / T4 / T5**).
+    *   *Riesgo Top 4:* Disparo térmico / fallo eléctrico en salas técnicas de Sant Vicenç dels Horts sin telemetría IoT (**T1**).
+    *   *Riesgo Top 5:* Incumplimiento regulatorio NIS2 y sobrecoste FinOps multicloud + duplicidades Secil (**T8 / T6**).
+3.  **Reconstruir la Matriz de Calor 5x5 (Tabla 6):** Prefijar cada riesgo con su torre (`T1-R01`, `T2-R04`, `T5-R02`, `T10-R01`...) y distribuirlos realmente en las filas `TEF 1` a `TEF 5` según su probabilidad real (no todos en `TEF 2` con `LEF 0,36`).
+
+### 🛠️ Acción 3: Expandir la Profundidad Forense de las Torres T3 a T10 en el Tomo 1
+Ampliar la narrativa y las tablas de evidencia de **T3 a T10** en el Capítulo 4 del Tomo 1 de ~80 palabras a **250-300 palabras por torre**, inyectando los datos duros de los informes individuales:
+*   Añadir métricas de inventario (nº de sedes/plantas conectadas, TBs en NetApp/Cohesity, nº de instancias Oracle/SQL, nº de endpoints en Intune vs. Secil, arquitectura de las básculas).
+*   Incluir el cálculo del impacto horario específico de cada torre (conectando con los 5.000 €/h de planta y 13.061,29 €/h corporativos).
+
+### 🛠️ Acción 4: Limpieza Quirúrgica de Nomenclatura y "Alucinaciones de Plantilla"
+1.  **Erradicar el término `Mainframe Core`:** En el Informe Maestro (Tablas 0, 9 y 12), cambiar inmediatamente `T10: Mainframe Core` por **`T10: Core Transaccional y Logística de Básculas`**.
+2.  **Erradicar la mención a `AWS`:** En la Tabla 13 (Fila 9) del Informe Maestro, cambiar `Trazabilidad Operativa AWS` por `Trazabilidad Operativa Multicloud (GCP/Azure/OCI)` o `Trazabilidad de Mantenimiento en Salas Técnicas`.
+3.  **Sustituir todos los textos `Remediar la brecha técnica identificada en el estado actual...`:** En las Tablas 13, 14, 15 y 16 del Informe Maestro, reemplazar ese *placeholder* por el beneficio ejecutivo real de cada iniciativa (ej. *"Reduce el riesgo de parada en básculas garantizando operación offline durante >48h"*).
+4.  **Unificar la fecha de portada:** Poner **Noviembre 2026** (o Octubre 2026) en ambos documentos de forma idéntica.
+
+### 🛠️ Acción 5: Racionalizar la "Wave 0 (0-3 meses)" en el Informe Maestro
+*   **El problema humano:** La Tabla 13 del Informe Maestro lista **27 iniciativas simultáneas en la Wave 0 (0 a 3 meses)**, mientras que en el Tomo 1 hemos diagnosticado que el cuello de botella de Molins es tener un **equipo técnico exhausto de menos de 5 personas (<5 FTEs)**.
+*   **La solución del CIO:** Ningún equipo de 5 personas puede ejecutar 27 proyectos en 90 días. Reestructurar la **Wave 0 (0-3 meses)** dejando únicamente **5 a 7 intervenciones de choque reales (Triage Puro)**:
+    1.  Piloto de sensorización IoT ambiental/eléctrica y cerramiento de pasillos en Sant Vicenç dels Horts (T1).
+    2.  Despliegue táctico de PAM Tier-0 e inmutabilidad WORM (SnapLock) en backups existentes NetApp/Cohesity (T6/T4/T5).
+    3.  Decisión de arquitectura e inicio de negociación/transición por el fin de contrato VMware mayo 2027 (T2).
+    4.  Diseño del nodo autónomo (*offline edge*) para proteger las básculas de expedición (T10).
+    5.  Etiquetado FinOps de choque y cancelación de licencias duplicadas inmediatas con Secil (T8).  
+    *(Mover el resto de las 22 iniciativas de estandarización, IaC, NetDevOps y SRE a las Waves 1 y 2).*
+
+---
+
+### 🏆 Conclusión del Evaluador
+Tenéis entre manos un trabajo de consultoría con una **comprensión del negocio industrial de Molins verdaderamente brillante** (básculas, Secil, Broadcom 2027, Sant Vicenç dels Horts, NIS2, tasas horarias de parada). Si corregís las **incongruencias matemáticas de las tablas (los 0 € de T3-T10 y las cabeceras repetidas)** y limpiáis los **restos de plantilla (`Mainframe Core`, `AWS`, `Remediar la brecha...`)**, este entregable pasará de ser un documento cuestionable por el CFO a convertirse en una **obra maestra de consultoría estratégica (10/10)** que justificará cada euro del presupuesto de transformación.

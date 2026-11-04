@@ -57,10 +57,10 @@ def test_tomo_asis_ast_compilation_integrity(tmp_path: Path) -> None:
 
     # Verify all 5 chapters are present
     assert any("Resumen Ejecutivo" in h for h in headings)
-    assert any("Radiografía Consolidada de Madurez" in h for h in headings)
-    assert any("Cuantificación Actuarial Consolidada" in h for h in headings)
-    assert any("Diagnóstico Forense" in h for h in headings)
-    assert any("Interdependencias Críticas" in h for h in headings)
+    assert any("Madurez Tecnológica" in h for h in headings)
+    assert any("Análisis de Riesgos" in h for h in headings)
+    assert any("Áreas Técnicas" in h for h in headings)
+    assert any("Dependencias" in h for h in headings)
 
     # Verify CMMI table contains all 10 towers
     full_text = "\n".join(p.text for p in doc.paragraphs) + "\n" + "\n".join(c.text for t in doc.tables for r in t.rows for c in r.cells)

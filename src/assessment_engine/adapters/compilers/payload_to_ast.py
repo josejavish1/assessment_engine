@@ -14,6 +14,7 @@ from assessment_engine.infrastructure.localization import (
     format_date_localized,
     format_number,
     get_localized_list,
+    load_locales_catalog,
     t,
 )
 
@@ -83,7 +84,7 @@ from assessment_engine.adapters.compilers.ast_table_builders import (
 def extract_dimension_boundary_profile(
     pillars_analysis: List[Dict[str, Any]],
     current_maturity_score: float,
-    locale: str = "es",
+    locale: str,
 ) -> Tuple[str, str, str, str]:
     """Extracts the weakest and strongest dimension names and formatted scores.
     Returns: (strongest_name, strongest_score_str, weakest_name, weakest_score_str)
@@ -996,14 +997,7 @@ class PayloadToASTBridge:
         )
         capped_p90_hours_str = format_number(tail_decomp.capped_operational_p90_hours, locale=meta_lang, decimals=1)
 
-        def _fmt_curr(val_str: str) -> str:
-            return f"{val_str} {currency}".strip() if meta_lang.startswith("es") else f"{currency}{val_str}".strip()
-
-        hourly_rate_narrative = (
-            f"{hourly_formatted} {currency}/h"
-            if meta_lang.startswith("es")
-            else f"{currency}{hourly_formatted}/hr"
-        )
+        hourly_rate_narrative = f"{format_currency(hourly_rate, currency_symbol=currency, locale=meta_lang, decimals=0)}{t('per_hour_suffix', locale=meta_lang)}"
 
         strongest_name, strongest_score_str, weakest_name, weakest_score_str = extract_dimension_boundary_profile(
             pillars_analysis=blueprint_data.get("pillars_analysis", []),
@@ -1022,10 +1016,10 @@ class PayloadToASTBridge:
             findings_briefs=findings_briefs,
             hourly_burn_rate_fmt=hourly_rate_narrative,
             net_downtime_hours_fmt=eff_hours_str,
-            annual_loss_expectancy_fmt=_fmt_curr(ale_formatted),
+            annual_loss_expectancy_fmt=format_currency(total_fair_ale, currency_symbol=currency, locale=meta_lang, decimals=0),
             p90_downtime_hours_fmt=p90_hours_str,
             capped_p90_hours_fmt=capped_p90_hours_str,
-            p90_var_exposure_fmt=_fmt_curr(p90_formatted),
+            p90_var_exposure_fmt=format_currency(total_p90, currency_symbol=currency, locale=meta_lang, decimals=0),
             remediation_horizon_label=remediation_horizon,
             primary_remediation_pillar=primary_pillar_resolved,
             target_maturity_score=target_score_str,
@@ -1400,9 +1394,11 @@ class PayloadToASTBridge:
                 f"cross_cutting_debt_{tower_id.lower()}_p{idx}"
                 for idx in (1, 2, 3)
             ]
+            catalog = load_locales_catalog().get(meta_lang, {})
             for p_idx, p_key in enumerate(pattern_keys, 1):
-                p_text = t(p_key, default="", locale=meta_lang)
-                if not p_text:
+                if p_key in catalog:
+                    p_text = t(p_key, locale=meta_lang)
+                else:
                     p_text = t(f"cross_cutting_debt_universal_p{p_idx}", locale=meta_lang)
                 nodes.append(ParagraphNode(text=p_text))
                 nodes.append(SpacerNode(points=4))

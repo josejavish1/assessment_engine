@@ -54,6 +54,14 @@ GLOBAL_MATURITY_BANDS: tuple[MaturityBandDefinition, ...] = (
     {"min": float("-inf"), "max": 3.5, "label": "Basic", "band_key": "band_initial"},
 )
 
+CMMI_MATURITY_BANDS: tuple[MaturityBandDefinition, ...] = (
+    {"min": 4.5, "max": float("inf"), "label": "Optimizing", "band_key": "band_optimized"},
+    {"min": 4.0, "max": 4.5, "label": "Managed (Quant)", "band_key": "band_managed_quant"},
+    {"min": 3.0, "max": 4.0, "label": "Defined", "band_key": "band_defined"},
+    {"min": 2.0, "max": 3.0, "label": "Repeatable", "band_key": "band_repeatable"},
+    {"min": float("-inf"), "max": 2.0, "label": "Initial", "band_key": "band_initial"},
+)
+
 
 def resolve_maturity_band(
     score: float,

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: RFC 062 Declarative AST Architecture for Consolidated Tomo 1 AS-IS.
+"""Argon-4 Master Consultation: Elevating Consolidated Tomo 1 AS-IS to an Unquestionable 10/10 Masterpiece.
 
-Eradicates the split-brain between individual tower annexes and the transversal CTO/CIO deliverable.
+The user mandates:
+"lo que quiero es que con gemini-4argon y luego revisnadolo como lo ve un humano hagas una revisiln del as is consolidado y me des tu diagnostico si lo lee el CIO y que pintuacion nos da y si en el documento contamos todo el valor de las torre sin antipatrones , sin bug, sin splt brain y al fibal del todo quiero tener un entregable que un CIO y un CTO valoren de 10 por su contenido, claridad, valor que aporta, es decir a mi me encantan como tenemos las torres, este documento debe resaltar ltodo el valor de las torres  inclsuo si hace falta con infografias o lo quesea necesario pero queoro que el no paremos jas ral el cio o ctto exigentes nos diga que es de 10 el entrege"
 """
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
+from docx import Document
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -20,61 +22,70 @@ from assessment_engine.infrastructure.genai_client import (
 )
 
 
+def extract_full_docx_text(file_path: Path) -> str:
+    doc = Document(file_path)
+    lines = []
+    lines.append(f"=== DOCUMENT: {file_path.name} ===")
+    for p in doc.paragraphs:
+        txt = p.text.strip()
+        if txt:
+            lines.append(f"[{p.style.name}]: {txt}")
+    for idx, tbl in enumerate(doc.tables):
+        lines.append(f"\n--- TABLE {idx} ({len(tbl.rows)} rows, {len(tbl.columns)} cols) ---")
+        for r_idx, row in enumerate(tbl.rows):
+            row_txt = " | ".join(c.text.replace("\n", " ").strip() for c in row.cells)
+            lines.append(f"Row {r_idx}: {row_txt[:160]}")
+    return "\n".join(lines)
+
+
 def main() -> None:
     client = create_genai_client()
     model_name = get_model(ModelTier.REASONING)
 
-    prompt = """
-Role: Chief Enterprise Architect & Principal OpenXML AST Compiler Engineer (Tier-1 Management Consulting / Google Core Infrastructure).
+    f_docx = REPO_ROOT / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+    doc_text = extract_full_docx_text(f_docx)
 
-USER'S STRATEGIC MANDATE:
-"ok lo importante es que no haya split brain"
-The user mandates the complete eradication of split-brain between individual tower annexes (which are certified 10/10 under the declarative AST compiler) and the transversal Tomo 1 AS-IS diagnostic report (which was stuck in an obsolete 5.8/10 template compiler with missing chapters and over-compressed diagnostics).
+    prompt = f"""
+Role: You are an exceptionally demanding, world-class Chief Information Officer (CIO) and Chief Technology Officer (CTO) of a Global Tier-1 Industrial Enterprise (IBEX-35 / Fortune 500) and Gartner Research Fellow.
 
-OBJECTIVE:
-Design the architectural specification for `TomoAsisASTCompiler` (RFC 062) to compile `Molins_202610_Tomo_1_Diagnostico_ASIS.docx` directly from enriched SSOT payloads (`global_report_payload.json`, `blueprint_t1_payload.json`, `blueprint_t2_payload.json`, etc.) into a cohesive, board-ready 25-30 page document.
+USER MANDATE:
+"lo que quiero es que con gemini-4argon y luego revisnadolo como lo ve un humano hagas una revisiln del as is consolidado y me des tu diagnostico si lo lee el CIO y que pintuacion nos da y si en el documento contamos todo el valor de las torre sin antipatrones , sin bug, sin splt brain y al fibal del todo quiero tener un entregable que un CIO y un CTO valoren de 10 por su contenido, claridad, valor que aporta, es decir a mi me encantan como tenemos las torres, este documento debe resaltar ltodo el valor de las torres  inclsuo si hace falta con infografias o lo quesea necesario pero queoro que el no paremos jas ral el cio o ctto exigentes nos diga que es de 10 el entrege"
 
-ARCHITECTURAL SPECIFICATIONS REQUIRED:
-1. Complete 5-Chapter Structure:
-   - Chapter 1: Executive Summary & Transversal Strategic Thesis (KPI Cockpit, Diagnostic Triad table, Board narrative on industrial continuity, Secil integration, NIS2, and May 2027 contract milestone).
-   - Chapter 2: Consolidated Capability Maturity Radiography (CMMI table across all 10 towers with strict CMMI bands [1.0-1.9 Initial, 2.0-2.9 Managed, 3.0-3.9 Defined], target scores, and visual distribution).
-   - Chapter 3: Aggregated Open FAIR™ Actuarial Risk Register (10,000-run Monte Carlo methodology, 13,061.29 €/h baseline, aggregated ALE P50, P90 tail risk compound disaster breakdown, aggregated 5x5 heatmap, and Tier 1/2/3 risk concentration table).
-   - Chapter 4: Forensic Domain Diagnostics & Critical Single Point of Failure (SPOF) Matrix (Deep-dive into evaluated domains—T1 Data Center, T2 Hybrid Compute—with real hardware/topology: Sant Vicenç dels Horts, SimpliVity, NetApp, VMware, 5,000 €/h plant weighbridge dependencies, complemented by transversal status of T3-T10, plus a dedicated SPOF Table).
-   - Chapter 5: Cross-Tower Nexus & Critical Interdependencies (prerequisites table, architectural rationale, cost of delay/inaction).
-   - Unified Appendix: Clean Abbreviations Glossary (18%/82% autofitted table) and Legal Liability Disclaimer.
+CURRENT STATE OF TOMO 1 AS-IS (COMPILED VIA DECLARATIVE AST ENGINE, 10 PAGES, 3,078 WORDS):
+{doc_text}
 
-2. Mathematical Synchronization (Zero Split-Brain):
-   - Global maturity score = exact weighted average of tower maturity scores.
-   - Global ALE P50 = sum of deduplicated primary risks via `DynamicCustodyResolver`.
-   - All financial figures across Chapter 1, Chapter 2, Chapter 3, and Chapter 4 must be 100% mathematically aligned.
+YOUR MISSION:
+1. Precise Current Score (0 to 10 and 0 to 100):
+   - What exact score do you give this updated 10-page version?
+   - What is your honest impression as a demanding CIO/CTO?
 
-3. Non-Negotiable Engineering Laws:
-   - Law #1: Zero bugs, zero antipatterns.
-   - Law #2: Zero hardcoding (scales dynamically to any enterprise client worldwide, any vertical, any currency).
-   - Law #3: 100% Technical English codebase (Python identifiers, classes, methods, docstrings, and comments in Technical English; Spanish ONLY in localized dictionaries).
-   - Law #4: Strict Short-Hyphen Invariant (zero em-dashes `—` or en-dashes `–`).
-   - Law #5: OpenXML Layout Determinism (Native headings, TableNode autofit, cantSplit, tblHeader, and DeterministicTocPageResolver synchronization).
+2. Forensic Gap Analysis to reach 10/10:
+   - What specific elements are still missing compared to the individual tower annexes (which have rich visual infographics, radar charts, 5x5 risk heatmaps, 3-column KPI risk cards, exact SLE arithmetic, and pillar-level capability scores)?
+   - How can we embed:
+     a) The Global Radar Chart (`global_radar_chart.png`) in Chapter 2?
+     b) An Aggregated 5x5 FAIR Heatmap in Chapter 3?
+     c) 3-Column Mini-Infographic Risk Cards for the Top Transversal Systemic Risks in Chapter 4?
+     d) 2-column forensic deep-dives for each of the 10 capability domains?
 
-YOUR TASK:
-Synthesize an authoritative Architectural Blueprint (RFC 062) in Markdown:
-1. Define the class hierarchy and methods for `TomoAsisASTCompiler`.
-2. Specify the payload aggregation protocol and data flow.
-3. Detail the OpenXML AST node construction for all 5 chapters.
-4. Deliver a definitive VERDICT: PASS.
+3. The "Human-Centric Review" (How an executive human perceives the document):
+   - Executive flow, readability, cognitive ergonomics, emotional impact on the Board.
+
+4. Definitive Blueprint for 10/10 Excellence:
+   - Provide the complete, surgical plan for `tomo_asis_ast_compiler.py` and `locales.json` so that the final deliverable is unanimously rated 10/10 by any Fortune 500 CIO/CTO worldwide.
 """
 
-    print(f"Requesting RFC 062 from {model_name}...")
+    print(f"Requesting 10/10 perfection blueprint from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_062_TOMO_1_ASIS_AST_COMPILER_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_064_TOMO_1_PERFECTION_10_OUT_OF_10_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
 
     print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 062 ARCHITECTURAL BLUEPRINT")
+    print("GEMINI-4-ARGON: 10/10 BLUEPRINT ON CONSOLIDATED TOMO 1 AS-IS")
     print("=" * 80)
     print(response.text)
     print("=" * 80)

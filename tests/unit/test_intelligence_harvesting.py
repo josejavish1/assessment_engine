@@ -126,6 +126,7 @@ def test_ast_bridge_systemic_risk_table(tmp_path: Path):
             "version": "1.0",
             "date": "June 2026",
             "language": "es",
+            "annual_revenue": "100000000",
         },
         "executive_summary": {
             "global_score": "2.4",

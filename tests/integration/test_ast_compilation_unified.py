@@ -21,6 +21,7 @@ def sample_payload_file(tmp_path: Path) -> Path:
             "language": "en",
             "date": "October 2026",
             "version": "1.0",
+            "annual_revenue": "500000000",
         },
         "total_fair_ale": 1250000.0,
         "pillars_analysis": [

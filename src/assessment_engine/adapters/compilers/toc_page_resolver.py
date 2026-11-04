@@ -58,7 +58,7 @@ class DeterministicTocPageResolver:
                 raise TocSynchronizationError(f"Missing word/document.xml in DOCX archive: {docx_file}")
 
             try:
-                parser = etree.XMLParser(remove_blank_text=False)
+                parser = etree.XMLParser(remove_blank_text=False, resolve_entities=False, no_network=True)
                 tree = etree.parse(str(doc_xml_path), parser)
                 root = tree.getroot()
             except (etree.XMLSyntaxError, OSError) as exc:
@@ -129,8 +129,10 @@ class DeterministicTocPageResolver:
             raise TocSynchronizationError("Headless layout engine (soffice/libreoffice) not available in runtime PATH.")
 
         with tempfile.TemporaryDirectory() as pdf_dir:
+            user_profile_dir = Path(pdf_dir) / "profile"
             cmd = [
                 soffice_bin,
+                f"-env:UserInstallation=file://{user_profile_dir}",
                 "--headless",
                 "--convert-to",
                 "pdf",
@@ -186,14 +188,23 @@ class DeterministicTocPageResolver:
                 except (subprocess.SubprocessError, OSError) as exc:
                     raise TocSynchronizationError(f"Failed to extract text from PDF page {p_num}: {exc}") from exc
 
-                first_lines = [l.strip().lower() for l in txt_res.stdout.splitlines() if l.strip()][:5]
-                page_text_block = " ".join(first_lines)
+                lines_sample = [l.strip() for l in txt_res.stdout.splitlines() if l.strip()][:25]
+                page_text_block = " ".join(lines_sample).lower()
+                norm_page_block = cls._normalize_token(page_text_block)
 
                 for full_title, clean_title in heading_specs:
                     if clean_title not in resolved:
                         clean_lower = clean_title.lower()
                         full_lower = full_title.lower()
-                        if clean_lower in page_text_block or full_lower in page_text_block:
+                        norm_clean = cls._normalize_token(clean_title)
+                        norm_full = cls._normalize_token(full_title)
+
+                        if (
+                            clean_lower in page_text_block
+                            or full_lower in page_text_block
+                            or (len(norm_clean) > 5 and norm_clean in norm_page_block)
+                            or (len(norm_full) > 5 and norm_full in norm_page_block)
+                        ):
                             resolved[clean_title] = p_num
 
             return resolved

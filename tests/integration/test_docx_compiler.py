@@ -91,7 +91,7 @@ def test_docx_compiler_e2e() -> None:
 
         # Verify headings and paragraphs
         paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
-        assert "1. Executive Summary" in paragraphs
+        assert "Executive Summary" in paragraphs
         assert (
             "This is a fuzzed diagnostic paragraph to evaluate AST stability."
             in paragraphs

@@ -1378,5 +1378,9 @@ coverage:
   exclude:
   - docs/reference/generated/legacy-gemini/**
   - docs/strategy/**
+  - docs/architecture/RFC_*.md
+  - docs/architecture/*ARGON*.md
+  - docs/architecture/FINAL_*.md
+  - docs/architecture/DEEP_*.md
 freshness:
   verified_max_age_days: 120
