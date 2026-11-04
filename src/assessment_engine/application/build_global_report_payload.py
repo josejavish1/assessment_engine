@@ -57,6 +57,23 @@ STRATEGIC_CYCLE_YEARS: Final[float] = 3.0
 MONTHS_PER_YEAR: Final[float] = 12.0
 DEFAULT_PAYBACK_MONTHS: Final[float] = 6.0
 DEFAULT_ROI_RATIO: Final[float] = 1.0
+MIN_SIGNIFICANT_CAPEX_THRESHOLD: Final[float] = 1_000.0
+
+BILLION_THRESHOLD: Final[float] = 1_000_000_000.0
+MILLION_THRESHOLD: Final[float] = 1_000_000.0
+THOUSAND_THRESHOLD: Final[float] = 1_000.0
+
+WAVE_0_MAX_INDEX: Final[int] = 12
+WAVE_1_MAX_INDEX: Final[int] = 28
+WAVE_2_MAX_INDEX: Final[int] = 44
+WAVE_0_START_MONTH: Final[int] = 0
+WAVE_0_DURATION_MONTHS: Final[int] = 3
+WAVE_1_START_MONTH: Final[int] = 3
+WAVE_1_DURATION_MONTHS: Final[int] = 9
+WAVE_2_START_MONTH: Final[int] = 12
+WAVE_2_DURATION_MONTHS: Final[int] = 12
+WAVE_3_START_MONTH: Final[int] = 24
+WAVE_3_DURATION_MONTHS: Final[int] = 12
 
 
 def _round_half_up(val: float, decimals: int = 0) -> float:
@@ -73,7 +90,6 @@ from assessment_engine.infrastructure.client_intelligence import (
     build_client_context_packet,
     load_client_intelligence,
 )
-from assessment_engine.infrastructure.epistemic_graph import EpistemicGraph
 from assessment_engine.infrastructure.global_maturity_policy import (
     average_pillar_score,
     average_pillar_target,
@@ -81,7 +97,7 @@ from assessment_engine.infrastructure.global_maturity_policy import (
     status_color_for_score,
 )
 from assessment_engine.infrastructure.localization import t
-from assessment_engine.infrastructure.text_utils import clean_text_for_word, slugify
+from assessment_engine.infrastructure.text_utils import clean_text_for_word
 
 logger = logging.getLogger(__name__)
 
@@ -291,20 +307,36 @@ def _parse_currency_amount_to_float(val_str: Any, locale: str | None = None) -> 
     return safe_float(val_str, locale=locale, allow_zero=True) or 0.0
 
 
-def _format_executive_currency(val: float, currency_symbol: str = "€", doc_lang: str = "es") -> str:
-    """Formats numeric amounts elegantly for C-Level executives respecting international locale conventions."""
+def _format_executive_currency(
+    val: float, currency_symbol: str = "€", doc_lang: str = "en"
+) -> str:
+    """Formats numeric amounts for C-Level executives respecting international locale and scale conventions."""
+    clean_val = safe_float(val, allow_zero=True) or 0.0
     is_comma_decimal = doc_lang in ("es", "de", "fr", "it", "pt")
-    is_prefix_symbol = doc_lang in ("en", "ja") and currency_symbol in ("$", "£", "¥")
+    is_prefix_symbol = doc_lang in ("en", "ja", "zh") and currency_symbol in (
+        "$",
+        "£",
+        "¥",
+        "CA$",
+        "A$",
+        "S$",
+        "HK$",
+    )
 
-    if val >= 1_000_000:
-        num_str = f"{val/1_000_000:.1f}"
+    if clean_val >= BILLION_THRESHOLD:
+        num_str = f"{clean_val / BILLION_THRESHOLD:.1f}"
+        if is_comma_decimal:
+            num_str = num_str.replace(".", ",")
+        return f"{currency_symbol}{num_str}B" if is_prefix_symbol else f"{num_str}B {currency_symbol}"
+    if clean_val >= MILLION_THRESHOLD:
+        num_str = f"{clean_val / MILLION_THRESHOLD:.1f}"
         if is_comma_decimal:
             num_str = num_str.replace(".", ",")
         return f"{currency_symbol}{num_str}M" if is_prefix_symbol else f"{num_str}M {currency_symbol}"
-    elif val >= 1_000:
-        num_str = f"{val/1000:.0f}"
+    elif clean_val >= THOUSAND_THRESHOLD:
+        num_str = f"{clean_val / THOUSAND_THRESHOLD:.0f}"
         return f"{currency_symbol}{num_str}K" if is_prefix_symbol else f"{num_str}K {currency_symbol}"
-    num_str = f"{val:.0f}"
+    num_str = f"{clean_val:.0f}"
     return f"{currency_symbol}{num_str}" if is_prefix_symbol else f"{num_str} {currency_symbol}"
 
 
@@ -611,8 +643,8 @@ def _build_board_memo(
                         for pr in pil.get("projects_todo", []):
                             if not top_project_name and pr.get("name"):
                                 top_project_name = pr.get("name")
-                            opex_tower += _parse_currency_amount_to_float(pr.get("opex_estimate"))
-                            capex_tower += _parse_currency_amount_to_float(pr.get("capex_estimate"))
+                            opex_tower += _parse_currency_amount_to_float(pr.get("opex_estimate"), locale=doc_lang)
+                            capex_tower += _parse_currency_amount_to_float(pr.get("capex_estimate"), locale=doc_lang)
                 except Exception as err:
                     logger.debug("Error reading blueprint for budget: %s", err)
 
@@ -622,7 +654,7 @@ def _build_board_memo(
 
         fallback_budget_lbl = t("budget_subscription_fallback", locale=doc_lang)
         if total_inv_tower > 0:
-            if capex_tower >= 1000:
+            if capex_tower >= MIN_SIGNIFICANT_CAPEX_THRESHOLD:
                 tot_fmt = _format_executive_currency(total_inv_tower, currency_symbol, doc_lang)
                 cap_fmt = _format_executive_currency(capex_tower, currency_symbol, doc_lang)
                 op_fmt = _format_executive_currency(opex_tower, currency_symbol, doc_lang)
@@ -946,38 +978,7 @@ def build_global_payload(
         run_strategic_orchestration,
     )
 
-    strategic_result = run_strategic_orchestration(client_name)
-    _strategic_roadmap = strategic_result.get("roadmap", [])
-
-    # Resolves UUIDs against the graph's data dictionary to substitute them with human-readable labels, ensuring the final report is intelligible to end-users.
-    graph = EpistemicGraph(client_id=slugify(client_name))
-    truth = graph.resolve_truth()
-
-    def get_label(node_id: str) -> str:
-        """Resolve a node ID to its canonical display label.
-
-        Searches the global `truth` data structure for a label associated with the
-        provided `node_id`. The resolution logic attempts to find a label value from
-        predicates in a specific order of precedence:
-        1. 'PROPOSES_INITIATIVE'
-        2. 'IDENTIFIED_AS_GAP'
-
-        If no label is found under these predicates, the function returns the
-        original `node_id` as a fallback identifier.
-
-        Args:
-            node_id: The unique identifier for the node to be resolved.
-
-        Returns:
-            The corresponding display label as a string, or the original `node_id`
-            if a label cannot be resolved.
-        """
-        predicates = truth.get(node_id, {})
-        return (
-            predicates.get("PROPOSES_INITIATIVE", {}).get("value")
-            or predicates.get("IDENTIFIED_AS_GAP", {}).get("value")
-            or node_id
-        )
+    run_strategic_orchestration(client_name)
 
     # Collect approved priority initiatives across towers for clean executive horizons
     approved_initiatives = []
@@ -1023,26 +1024,26 @@ def build_global_payload(
         obj_text = clean_text_for_word(item.get("objective", "")) or t("quick_win_objective_default", locale=doc_lang)
         prio = str(item.get("priority", "")).lower()
 
-        if any(tok in prio for tok in high_priority_tokens) or idx < 12:
+        if any(tok in prio for tok in high_priority_tokens) or idx < WAVE_0_MAX_INDEX:
             h_key = "quick_wins_0_3_months"
             w_lbl = wave_0_lbl
-            s_m = 0
-            d_m = 3
-        elif idx < 28:
+            s_m = WAVE_0_START_MONTH
+            d_m = WAVE_0_DURATION_MONTHS
+        elif idx < WAVE_1_MAX_INDEX:
             h_key = "year_1_3_12_months"
             w_lbl = wave_1_lbl
-            s_m = 3
-            d_m = 9
-        elif idx < 44:
+            s_m = WAVE_1_START_MONTH
+            d_m = WAVE_1_DURATION_MONTHS
+        elif idx < WAVE_2_MAX_INDEX:
             h_key = "year_2_12_24_months"
             w_lbl = wave_2_lbl
-            s_m = 12
-            d_m = 12
+            s_m = WAVE_2_START_MONTH
+            d_m = WAVE_2_DURATION_MONTHS
         else:
             h_key = "year_3_24_36_months"
             w_lbl = wave_3_lbl
-            s_m = 24
-            d_m = 12
+            s_m = WAVE_3_START_MONTH
+            d_m = WAVE_3_DURATION_MONTHS
 
         init_def = {
             "program": w_lbl,
