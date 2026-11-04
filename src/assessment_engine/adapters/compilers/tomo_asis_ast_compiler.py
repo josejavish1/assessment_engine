@@ -30,6 +30,12 @@ STRATEGIC_HORIZON_YEARS: Final[float] = 3.0
 TAIL_STRESS_HORIZON_FACTOR: Final[float] = 1.5
 DOMAIN_HIGH_EXPOSURE_SHARE_RATIO: Final[float] = 0.15
 DOMAIN_MED_EXPOSURE_SHARE_RATIO: Final[float] = 0.07
+DEFAULT_TIER1_WEIGHT: Final[str] = "0.48"
+DEFAULT_TIER2_WEIGHT: Final[str] = "0.38"
+DEFAULT_TIER3_WEIGHT: Final[str] = "0.14"
+DEFAULT_SCENARIO_TIER1_WEIGHT: Final[str] = "0.24"
+DEFAULT_SCENARIO_TIER2_WEIGHT: Final[str] = "0.41"
+DEFAULT_SCENARIO_TIER3_WEIGHT: Final[str] = "0.35"
 CHAPTER_HEADING_SPACER_PT: Final[int] = 8
 COCKPIT_HEADER_FONT_PT: Final[float] = 8.5
 HEADER_TEXT_WHITE_RGB: Final[Tuple[int, int, int]] = (255, 255, 255)
@@ -1134,9 +1140,9 @@ class Volume1AsisASTCompiler:
 
         # 3-Tier Portfolio Table dynamically calculated
         tier_cfg = fin_metrics.get("portfolio_tier_weights") or {}
-        w1 = Decimal(str(tier_cfg.get("tier1", "0.48")))
-        w2 = Decimal(str(tier_cfg.get("tier2", "0.38")))
-        w3 = Decimal(str(tier_cfg.get("tier3", "0.14")))
+        w1 = Decimal(str(tier_cfg.get("tier1", DEFAULT_TIER1_WEIGHT)))
+        w2 = Decimal(str(tier_cfg.get("tier2", DEFAULT_TIER2_WEIGHT)))
+        w3 = Decimal(str(tier_cfg.get("tier3", DEFAULT_TIER3_WEIGHT)))
         tier_ale_pairs = [("tier1", w1), ("tier2", w2), ("tier3", w3)]
         reconciled_tier_ale = ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=target_ale_int,
@@ -1147,9 +1153,9 @@ class Volume1AsisASTCompiler:
         t3_val = reconciled_tier_ale["tier3"]
 
         scen_w = fin_metrics.get("portfolio_scenario_weights") or {}
-        sw1 = Decimal(str(scen_w.get("tier1", "0.24")))
-        sw2 = Decimal(str(scen_w.get("tier2", "0.41")))
-        sw3 = Decimal(str(scen_w.get("tier3", "0.35")))
+        sw1 = Decimal(str(scen_w.get("tier1", DEFAULT_SCENARIO_TIER1_WEIGHT)))
+        sw2 = Decimal(str(scen_w.get("tier2", DEFAULT_SCENARIO_TIER2_WEIGHT)))
+        sw3 = Decimal(str(scen_w.get("tier3", DEFAULT_SCENARIO_TIER3_WEIGHT)))
         tier_scen_pairs = [("tier1", sw1), ("tier2", sw2), ("tier3", sw3)]
         reconciled_tier_scen = ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=total_scenarios_sum,
@@ -1282,7 +1288,7 @@ class Volume1AsisASTCompiler:
         if not top_cards_feed and all_primary_risks:
             sorted_primary = sorted(
                 all_primary_risks,
-                key=lambda item: float(item.get("ale") or item.get("ale_val") or 0.0),
+                key=lambda item: safe_float(item.get("ale") or item.get("ale_val"), locale=doc_lang, allow_zero=True) or 0.0,
                 reverse=True,
             )
             top_cards_feed = []

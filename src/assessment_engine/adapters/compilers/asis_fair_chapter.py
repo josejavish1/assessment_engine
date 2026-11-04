@@ -356,7 +356,6 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                 custom_calibration = loaded_profile
         except (OSError, ValueError, KeyError, AttributeError) as ex:
             logger.debug("[Fallback] Handled exception reading custom risk profile: %s", ex)
-    ctx["custom_calibration"] = custom_calibration
 
     currency = (
         ctx.get("currency")
