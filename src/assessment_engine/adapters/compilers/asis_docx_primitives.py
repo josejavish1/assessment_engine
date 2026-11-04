@@ -85,7 +85,7 @@ def format_currency_custom(value: float, thousands_sep: str, decimal_sep: str) -
 def clean_client_name(client_name: str) -> str:
     """Cleans a raw client name for reporting."""
     if not client_name:
-        return "Client"
+        return "Organization"
     cleaned = re.sub(r"[_-][vV]\d+\b", "", client_name)
     cleaned = cleaned.replace("_", " ").replace("-", " ")
     cleaned = cleaned.strip()

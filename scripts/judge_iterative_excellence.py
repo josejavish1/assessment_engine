@@ -29,7 +29,13 @@ def extract_summary_docx_structure(file_path: Path) -> str:
     for idx, tbl in enumerate(doc.tables):
         lines.append(f"\n--- TABLE {idx} ({len(tbl.rows)} rows, {len(tbl.columns)} cols) ---")
         for r_idx, row in enumerate(tbl.rows[:3]):  # First 3 rows
-            row_txt = " | ".join(c.text.replace("\n", " ").strip() for c in row.cells)
+            seen_tc = set()
+            unique_cells = []
+            for c in row.cells:
+                if c._tc not in seen_tc:
+                    seen_tc.add(c._tc)
+                    unique_cells.append(c.text.replace("\n", " ").strip())
+            row_txt = " | ".join(unique_cells)
             lines.append(f"  R{r_idx}: {row_txt[:130]}")
     return "\n".join(lines)
 

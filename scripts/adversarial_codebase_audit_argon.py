@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""Deep Adversarial Forensic Code Audit by gemini-4-argon (100% Technical English)."""
+"""Execute full adversarial audit with gemini-4-argon on recent code changes.
+
+Audits:
+- src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py
+- src/assessment_engine/application/generate_global_radar_chart.py
+- engine_config/locales.json (recent keys)
+
+Enforces:
+1. Multi-Tenant Scalability: Must serve any enterprise worldwide (mid-market to Top Tier-1, any vertical, any currency).
+2. Zero Hardcoding: No hardcoded client names (Molins, Secil), monetary values, or tenant assumptions.
+3. 100% Technical English Codebase: Zero Spanish in Python code, comments, docstrings, or symbols.
+4. Clean Architecture & Anti-Pattern Detection.
+"""
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
-from typing import List
-
-from google.genai import types
-from pydantic import BaseModel, Field
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -22,114 +29,70 @@ from assessment_engine.infrastructure.genai_client import (
 )
 
 
-class ForensicFinding(BaseModel):
-    file_path: str = Field(..., description="File path where violation occurs")
-    line_number: int = Field(..., description="Approximate line number")
-    category: str = Field(..., description="Category: BUG, HARDCODING, NON_UNIVERSAL, or SPANISH_IN_CODE")
-    severity: str = Field(..., description="CRITICAL, MAJOR, or MINOR")
-    technical_critique: str = Field(..., description="Deep architectural and forensic explanation")
-    mandatory_fix: str = Field(..., description="Concrete code or configuration change required")
-
-
-class ComprehensiveArgonAuditVerdict(BaseModel):
-    verdict: str = Field(..., description="Must be 'PASS' or 'FAIL'")
-    zero_bugs_or_antipatterns: bool = Field(..., description="True if code is completely free of bugs")
-    zero_hardcoding_verified: bool = Field(..., description="True if universal across all company tiers and verticals")
-    universal_tier1_enterprise_ready: bool = Field(..., description="True if ready for mid-market to Fortune 10 across any vertical")
-    strict_english_only_verified: bool = Field(..., description="True if Python source code contains zero Spanish words")
-    findings: List[ForensicFinding] = Field(default_factory=list, description="List of findings, empty on PASS")
-    forensic_executive_summary: str = Field(..., description="Unvarnished forensic assessment")
+def read_file_safe(path: Path) -> str:
+    if path.exists():
+        return path.read_text(encoding="utf-8", errors="replace")
+    return f"[File {path.name} not found]"
 
 
 def main() -> None:
     client = create_genai_client()
     model_name = get_model(ModelTier.REASONING)
 
-    payload_to_ast_code = (REPO_ROOT / "src/assessment_engine/adapters/compilers/payload_to_ast.py").read_text(encoding="utf-8")
-    ast_appendices_code = (REPO_ROOT / "src/assessment_engine/adapters/compilers/ast_appendices_builder.py").read_text(encoding="utf-8")
-
-    diff_cmd = ["git", "show", "8ab2894", "--", "src/assessment_engine/adapters/compilers/", "engine_config/locales.json"]
-    diff_text = subprocess.run(diff_cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=True).stdout
+    compiler_code = read_file_safe(
+        REPO_ROOT / "src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py"
+    )
+    radar_code = read_file_safe(
+        REPO_ROOT / "src/assessment_engine/application/generate_global_radar_chart.py"
+    )
 
     prompt = f"""
-Role: Principal Systems Architect, Chief Compiler Engineer & Staff Quality Auditor (Google Tier-1 / Anthropic Core Infrastructure).
+Role: Principal Enterprise Systems Architect, Lead Code Auditor for Global Multi-Tenant Platforms, and Hardcore Quality Gatekeeper.
 
-OBJECTIVE:
-Perform a deep, exhaustive, adversarial code audit on the full AST compilation engine (`payload_to_ast.py` and `ast_appendices_builder.py`), plus the recent changeset in commit 8ab2894.
+MISSION:
+Execute an uncompromising, adversarial forensic code review of recent changes in the Assessment Engine repository. The user has specifically requested an exhaustive audit to catch ANY bug, anti-pattern, hardcoding, or language leakage.
 
-USER'S ABSOLUTE AND NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ISSUES, OR ANTI-PATTERNS:
-   - Check all visitor handlers, node constructors, table builders, mathematical calculations, and exception handling.
-   - Fail-fast enforcement: no silent error swallowing, no type unsafety, no indexing errors, no division by zero.
-2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - The platform MUST serve ANY company in the world: from a 50-person mid-market firm to a top Global Fortune 10 bank, healthcare conglomerate, or tech giant.
-   - Any industry vertical (Banking, Capital Markets, Heavy Industry, Healthcare, Aerospace, Energy, SaaS, Retail, Telecom).
-   - Any ISO 4217 currency (USD, EUR, GBP, JPY, CHF, CAD, AUD, BRL, SGD, KRW).
-   - Any human language (English, Spanish, German, Japanese, Portuguese, French, Arabic).
-   - Zero hardcoded client names ("Molins", "Acme"), zero fixed currencies ("EUR", "$"), zero fixed monetary amounts, zero hardcoded risk IDs or percentages.
-   - All tenant details, thresholds, and financial models must be dynamically derived or driven by configuration.
-3. 100% TECHNICAL ENGLISH CODEBASE:
-   - Zero Spanish words anywhere in Python identifiers, variable names, function names, docstrings, comments, exceptions, logs, or schemas.
-   - Spanish and other human languages are ONLY permissible as localized data in `engine_config/locales.json`.
+MANDATORY LAWS & VERIFICATION CRITERIA:
+1. Zero Hardcoding & Universal Multi-Tenancy:
+   - The platform MUST serve ANY enterprise in the world, from mid-market ($50M) to Top Tier-1 global conglomerates ($50B+), across ANY vertical (heavy manufacturing, banking, healthcare, retail, public sector), in ANY currency (USD, EUR, JPY, GBP), and in ANY language (es, en, pt, fr, de, ja).
+   - Zero hardcoded client names (e.g., "Molins", "Secil", "Cempro", "Sant Vicenç").
+   - Zero hardcoded monetary values, downtime rates, or fixed incident dollar amounts in Python logic.
+   - All financial parameters must be dynamically derived from tenant payloads (`financial_telemetry`, `global_payload`, `tower_payloads`) or closed-form parametric formulas based on revenue.
+2. 100% Technical English Codebase:
+   - Zero Spanish words in Python code (no Spanish variable names, function names, docstrings, comments, log messages, or exception strings).
+   - Spanish (and pt, fr, de, ja) is strictly data localized within `engine_config/locales.json`.
+3. Architectural Cleanliness & Anti-Pattern Detection:
+   - Audit for any script proliferation, file collision risks, zip-slip vulnerabilities, or brittle regex matching.
+   - Audit Table 2 and Chapter 2 maturity model to ensure no legacy fake benchmarks or broken references remain.
+   - Audit Table 4 and Chapter 3 actuarial calculations to guarantee closed-form conservation without integer rounding errors.
 
-FULL SOURCE: payload_to_ast.py ({len(payload_to_ast_code)} chars):
-```python
-{payload_to_ast_code}
-```
+SOURCE CODE UNDER AUDIT:
 
-FULL SOURCE: ast_appendices_builder.py ({len(ast_appendices_code)} chars):
-```python
-{ast_appendices_code}
-```
+--- FILE 1: `src/assessment_engine/adapters/compilers/tomo_asis_ast_compiler.py` ---
+{compiler_code}
 
-RECENT CHANGESET (Commit 8ab2894):
-```diff
-{diff_text[:30000]}
-```
+--- FILE 2: `src/assessment_engine/application/generate_global_radar_chart.py` ---
+{radar_code}
 
-Analyze with extreme forensic rigor. Return your output strictly conforming to the ComprehensiveArgonAuditVerdict schema.
-If there are any flaws, set verdict='FAIL' and document each finding.
-If the implementation is 100% flawless and satisfies all user mandates, set verdict='PASS' with findings=[].
+YOUR ADVERSARIAL REPORT MUST DELIVER:
+1. Executive Verdict & Overall Code Quality Score (0 to 10).
+2. Forensic Finding Log (categorized by Critical, High, Medium, Low):
+   - Pinpoint line numbers, file paths, and exact problematic expressions.
+   - Detail any tenant leakage, hardcoding, or non-English impurities found.
+3. Specific Code Remediation Instructions:
+   - Provide exact before-and-after replacements for any defect found.
 """
 
-    print(f"Executing comprehensive forensic audit via {model_name}...")
+    print(f"Requesting full adversarial code audit from {model_name}...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
-        config=types.GenerateContentConfig(
-            temperature=0.0,
-            response_mime_type="application/json",
-            response_schema=ComprehensiveArgonAuditVerdict,
-        ),
     )
 
-    report = ComprehensiveArgonAuditVerdict.model_validate_json(response.text)
-
-    print("\n" + "=" * 80)
-    print("AUDITORÍA FORENSE AVANZADA: GEMINI-4-ARGON (REVISIÓN DE CÓDIGO)")
-    print("=" * 80)
-    print(f"VEREDICTO FINAL:               {report.verdict}")
-    print(f"Zero Bugs / Antipatrones:      {report.zero_bugs_or_antipatterns}")
-    print(f"Zero Hardcoding Verificado:    {report.zero_hardcoding_verified}")
-    print(f"Universal Tier-1 Enterprise:   {report.universal_tier1_enterprise_ready}")
-    print(f"100% Strict English Codebase:  {report.strict_english_only_verified}")
-    print(f"Total de Hallazgos Críticos:   {len(report.findings)}")
-    print("-" * 80)
-    print("RESUMEN EJECUTIVO FORENSE:")
-    print(report.forensic_executive_summary)
-    print("-" * 80)
-
-    if report.findings:
-        print("HALLAZGOS DETALLADOS:")
-        for idx, f in enumerate(report.findings, start=1):
-            print(f"[{idx}] {f.file_path}:{f.line_number} [{f.category}] (Severity: {f.severity})")
-            print(f"    Critique: {f.technical_critique}")
-            print(f"    Required Fix: {f.mandatory_fix}")
-            print()
-    else:
-        print("CERTIFICACIÓN: Cero defectos encontrados. El código cumple al 100% con todos los mandatos.")
-
-    print("=" * 80)
+    out_file = REPO_ROOT / "docs/architecture/ARGON_FULL_ADVERSARIAL_AUDIT_REPORT.md"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(response.text, encoding="utf-8")
+    print(f"Successfully generated adversarial audit report: {out_file}")
 
 
 if __name__ == "__main__":

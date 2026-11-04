@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
-"""Argon-4 Master Consultation: Elevating Consolidated Tomo 1 AS-IS to an Unquestionable 10/10 Masterpiece.
-
-The user mandates:
-"lo que quiero es que con gemini-4argon y luego revisnadolo como lo ve un humano hagas una revisiln del as is consolidado y me des tu diagnostico si lo lee el CIO y que pintuacion nos da y si en el documento contamos todo el valor de las torre sin antipatrones , sin bug, sin splt brain y al fibal del todo quiero tener un entregable que un CIO y un CTO valoren de 10 por su contenido, claridad, valor que aporta, es decir a mi me encantan como tenemos las torres, este documento debe resaltar ltodo el valor de las torres  inclsuo si hace falta con infografias o lo quesea necesario pero queoro que el no paremos jas ral el cio o ctto exigentes nos diga que es de 10 el entrege"
-"""
+"""Consult gemini-4-argon on strategic value of Chapter 3 Section 3.2 (Anatomy of a Major Incident)."""
 
 from __future__ import annotations
 
 import sys
 from pathlib import Path
-from docx import Document
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "src") not in sys.path:
@@ -22,74 +17,47 @@ from assessment_engine.infrastructure.genai_client import (
 )
 
 
-def extract_full_docx_text(file_path: Path) -> str:
-    doc = Document(file_path)
-    lines = []
-    lines.append(f"=== DOCUMENT: {file_path.name} ===")
-    for p in doc.paragraphs:
-        txt = p.text.strip()
-        if txt:
-            lines.append(f"[{p.style.name}]: {txt}")
-    for idx, tbl in enumerate(doc.tables):
-        lines.append(f"\n--- TABLE {idx} ({len(tbl.rows)} rows, {len(tbl.columns)} cols) ---")
-        for r_idx, row in enumerate(tbl.rows):
-            row_txt = " | ".join(c.text.replace("\n", " ").strip() for c in row.cells)
-            lines.append(f"Row {r_idx}: {row_txt[:160]}")
-    return "\n".join(lines)
-
-
 def main() -> None:
     client = create_genai_client()
     model_name = get_model(ModelTier.REASONING)
 
-    f_docx = REPO_ROOT / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
-    doc_text = extract_full_docx_text(f_docx)
+    prompt = """
+Role: Advisory Partner, Senior Technology Strategy Director at Gartner / McKinsey, and Fortune 500 CIO.
 
-    prompt = f"""
-Role: You are an exceptionally demanding, world-class Chief Information Officer (CIO) and Chief Technology Officer (CTO) of a Global Tier-1 Industrial Enterprise (IBEX-35 / Fortune 500) and Gartner Research Fellow.
+CONTEXT & INQUIRY:
+In Tomo 1 (Consolidated AS-IS Technical Diagnostic), Chapter 3 addresses Economic Impact and Actuarial Risk Analysis.
+The chapter currently flows as follows:
+- 3.1 The Cost of Inaction: Annualized Financial Exposure by Domain (Table 4: 916,416 € ALE across 10 domains, Table 5: 3-tier portfolio breakdown).
+- 3.2 Anatomy of a Major Incident: What Happens during a Critical Outage? (Hypothetical single outage of 17.3 hours costing 450,000 €, split into 225,548 € direct downtime and 224,452 € emergency recovery: OEM support 94k, Spot hardware 74k, Database forensics 56k).
+- 3.3 5x5 Open FAIR Heatmap Matrix (Mosaic of 29 scenarios).
+- 3.4 Top 5 Systemic Risk Cards (Each card has SLE, LEF, and ALE).
+- 3.5 Annual Portfolio Tail Risk & 3-Year Outlook (P90 = 2.29 M€/yr, 3Y cumulative = 2.75 M€ expected, 6.10 M€ VaR).
 
-USER MANDATE:
-"lo que quiero es que con gemini-4argon y luego revisnadolo como lo ve un humano hagas una revisiln del as is consolidado y me des tu diagnostico si lo lee el CIO y que pintuacion nos da y si en el documento contamos todo el valor de las torre sin antipatrones , sin bug, sin splt brain y al fibal del todo quiero tener un entregable que un CIO y un CTO valoren de 10 por su contenido, claridad, valor que aporta, es decir a mi me encantan como tenemos las torres, este documento debe resaltar ltodo el valor de las torres  inclsuo si hace falta con infografias o lo quesea necesario pero queoro que el no paremos jas ral el cio o ctto exigentes nos diga que es de 10 el entrege"
+THE USER'S QUESTION:
+"Realmente el punto 3.2 aporta valor o se puede eliminar?" (Does Section 3.2 really add value, or can/should it be eliminated?)
 
-CURRENT STATE OF TOMO 1 AS-IS (COMPILED VIA DECLARATIVE AST ENGINE, 10 PAGES, 3,078 WORDS):
-{doc_text}
-
-YOUR MISSION:
-1. Precise Current Score (0 to 10 and 0 to 100):
-   - What exact score do you give this updated 10-page version?
-   - What is your honest impression as a demanding CIO/CTO?
-
-2. Forensic Gap Analysis to reach 10/10:
-   - What specific elements are still missing compared to the individual tower annexes (which have rich visual infographics, radar charts, 5x5 risk heatmaps, 3-column KPI risk cards, exact SLE arithmetic, and pillar-level capability scores)?
-   - How can we embed:
-     a) The Global Radar Chart (`global_radar_chart.png`) in Chapter 2?
-     b) An Aggregated 5x5 FAIR Heatmap in Chapter 3?
-     c) 3-Column Mini-Infographic Risk Cards for the Top Transversal Systemic Risks in Chapter 4?
-     d) 2-column forensic deep-dives for each of the 10 capability domains?
-
-3. The "Human-Centric Review" (How an executive human perceives the document):
-   - Executive flow, readability, cognitive ergonomics, emotional impact on the Board.
-
-4. Definitive Blueprint for 10/10 Excellence:
-   - Provide the complete, surgical plan for `tomo_asis_ast_compiler.py` and `locales.json` so that the final deliverable is unanimously rated 10/10 by any Fortune 500 CIO/CTO worldwide.
+STRATEGIC ANALYSIS REQUIRED:
+1. Executive Cognitive Load & Narrative Cohesion:
+   - Does introducing a single hypothetical 450k € incident in Section 3.2 confuse the board between annual expected loss (ALE 916k €) and a single event?
+   - Does it distract from the 5 discrete risk cards (which already contain SLE values of 205k €, 316k €, 340k €)?
+2. Pros & Cons of:
+   - Keeping Section 3.2 as is.
+   - Eliminating Section 3.2 entirely from Tomo 1 (transferring emergency recovery concepts to technical annexes where deep incident simulations belong).
+   - Merging the emergency recovery cost concept into the Executive Summary or the Top Risk Cards without a dedicated standalone 17.3-hour hypothetical section.
+3. Unambiguous Recommendation:
+   - Provide a definitive, clear recommendation for Tomo 1. If eliminated, what is the exact resulting chapter structure and narrative flow?
 """
 
-    print(f"Requesting 10/10 perfection blueprint from {model_name}...")
+    print(f"Consulting {model_name} on Section 3.2 strategic viability...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_064_TOMO_1_PERFECTION_10_OUT_OF_10_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/ARGON_STRATEGIC_ASSESSMENT_SECTION_3_2.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
-
-    print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: 10/10 BLUEPRINT ON CONSOLIDATED TOMO 1 AS-IS")
-    print("=" * 80)
-    print(response.text)
-    print("=" * 80)
-    print(f"\nBlueprint saved to: {out_file.relative_to(REPO_ROOT)}")
+    print(f"Successfully generated strategic recommendation: {out_file}")
 
 
 if __name__ == "__main__":

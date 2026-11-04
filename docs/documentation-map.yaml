@@ -1382,5 +1382,6 @@ coverage:
   - docs/architecture/*ARGON*.md
   - docs/architecture/FINAL_*.md
   - docs/architecture/DEEP_*.md
+  - docs/architecture/USER_OBSERVATIONS*.md
 freshness:
   verified_max_age_days: 120

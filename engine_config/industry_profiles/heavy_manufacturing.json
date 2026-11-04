@@ -1,0 +1,30 @@
+{
+  "industry": "Heavy Process Manufacturing & Construction Materials",
+  "methodology_baseline": "Composite IT/OT Industrial Benchmark (Gartner Industrial Cohort, CMMI v2.0, NIST CSF 2.0)",
+  "effective_date": "2026-Q1",
+  "benchmarks": {
+    "T1": 3.80,
+    "T2": 3.65,
+    "T3": 3.65,
+    "T4": 3.55,
+    "T5": 3.05,
+    "T6": 3.35,
+    "T7": 3.40,
+    "T8": 3.55,
+    "T9": 3.75,
+    "T10": 3.25
+  },
+  "justifications": {
+    "default": "The industry benchmark reflects the empirical median (P50) for heavy process manufacturing and continuous industrial operations. Standardized IT commodity domains (Data Center, Workplace) operate with higher maturity (3.75 - 3.80), while operational technology (OT) and shopfloor plant systems reflect lower structural maturity (3.05 - 3.25) due to long capital depreciation cycles of 20 to 30 years.",
+    "T1": "High maturity (3.80) due to widespread consolidation into standardized Tier-III colocation facilities and automated power/thermal management.",
+    "T2": "Mature virtualization and hybrid cloud adoption (3.65) supported by enterprise hyperconverged platforms.",
+    "T3": "Standardized SD-WAN connectivity and dual-homed telecom access for manufacturing plants (3.65).",
+    "T4": "Centralized SAN/NAS storage arrays with structured replication profiles (3.55).",
+    "T5": "Constrained shopfloor continuity and OT backup maturity (3.05) driven by legacy PLC lifecycles and heterogeneous plant automation.",
+    "T6": "Industrial cybersecurity posture (3.35) undergoing active NIS2 compliance elevation but impacted by legacy IT/OT segmentation challenges.",
+    "T7": "Relational database administration and transactional telemetry (3.40) supporting enterprise ERP systems.",
+    "T8": "Core ERP governance (3.55) supporting international multi-entity supply chain and financial operations.",
+    "T9": "Workplace and collaboration maturity (3.75) underpinned by standardized cloud productivity suites and modern endpoint management.",
+    "T10": "Plant dispatch and industrial weighbridge systems (3.25) constrained by localized dependencies and legacy serial communications."
+  }
+}

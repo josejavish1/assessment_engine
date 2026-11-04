@@ -1,4 +1,17 @@
 {
+  "hourly_rates": {
+    "account_manager": 70,
+    "architect": 65,
+    "expert": 58,
+    "project_manager": 45,
+    "mid_level_technician": 36,
+    "junior_technician": 28
+  },
+  "margins": {
+    "consulting": 0.45,
+    "projects": 0.35,
+    "services": 0.30
+  },
   "tarifas_hora": {
     "gerente_cuenta": 70,
     "arquitecto": 65,

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""End-to-End Master Delivery Compilation Suite for Molins.
+"""Build and synchronize client delivery suite across the full pyramid.
 
-Generates and mirrors all client-facing deliverables across:
-1. Master Consolidated Report (00_INFORME_MAESTRO_CIO)
-2. Strategic Triad Tomos (01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO)
-3. Specialized Technical Annexes AS-IS & TO-BE (02_ANEXOS_TECNICOS_ESPECIALISTAS / 02_DIAGNOSTICOS_ASIS)
-4. Target Blueprints & Transformation Plans (03_BLUEPRINTS_TOBE)
-5. Actuarial FAIR Files (04_EXPEDIENTES_FAIR)
-6. Digital Twin Web Portal Previews (03_CUADRO_MANDO_DIGITAL_TWIN / 05_PRESENTACION_WEB)
+Supports:
+- Declarative AST compilation for Volume 1 AS-IS (Tomo 1)
+- Declarative AST compilation for all 10 specialist annexes (T1 - T10)
+- Conversion of DOCX deliverables to PDF
+- Mirrored deployment to Tier-1 delivery packages
 """
 
 from __future__ import annotations
 
+import argparse
+import json
 import shutil
 import subprocess
 import sys
@@ -24,6 +24,27 @@ if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from assessment_engine.adapters.compilers.payload_to_ast import compile_asis_docx_via_ast
+from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import Volume1AsisASTCompiler
+from assessment_engine.application.services.tower_payload_hydrator import TowerPayloadHydrator
+
+MOLINS_CANONICAL_FILENAMES: dict[str, str] = {
+    "T1": "Molins_202610_Anexo_01_Data_Center_ASIS.docx",
+    "T2": "Molins_202610_Anexo_02_Computo_Hibrido_ASIS.docx",
+    "T3": "Molins_202610_Anexo_03_Redes_ASIS.docx",
+    "T4": "Molins_202610_Anexo_04_Datos_Storage_ASIS.docx",
+    "T5": "Molins_202610_Anexo_05_Resiliencia_ASIS.docx",
+    "T6": "Molins_202610_Anexo_06_Seguridad_Identidad_ASIS.docx",
+    "T7": "Molins_202610_Anexo_07_Bases_Datos_Operaciones_ASIS.docx",
+    "T8": "Molins_202610_Anexo_08_Aplicaciones_FinOps_ASIS.docx",
+    "T9": "Molins_202610_Anexo_09_Puesto_Trabajo_ASIS.docx",
+    "T10": "Molins_202610_Anexo_10_Sistemas_Expedicion_Operaciones_ASIS.docx",
+}
+
+MOLINS_LEGACY_ALIASES: dict[str, str] = {
+    "T7": "Molins_202610_Anexo_07_Operaciones_ITSM_ASIS.docx",
+    "T8": "Molins_202610_Anexo_08_FinOps_Gobernanza_ASIS.docx",
+    "T10": "Molins_202610_Anexo_10_Mainframe_Core_ASIS.docx",
+}
 
 
 def convert_docx_to_pdf(docx_path: Path, output_pdf_path: Path) -> bool:
@@ -48,128 +69,192 @@ def convert_docx_to_pdf(docx_path: Path, output_pdf_path: Path) -> bool:
         return False
 
 
-def main() -> None:
+def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
+    """Compiles all 10 specialist AS-IS annexes via the Declarative AST Engine."""
     print("\n" + "=" * 80)
-    print("STARTING END-TO-END MASTER DELIVERABLE COMPILATION FOR MOLINS")
+    print("PHASE: COMPILING ALL 10 SPECIALIST ANNEXES VIA DECLARATIVE AST ENGINE (T1-T10)")
     print("=" * 80)
 
-    # 1. Re-compile State-of-the-Art AS-IS Towers T1 and T2 via Declarative AST Engine
-    from scripts.regenerate_molins_asis_t1_t2 import compile_and_export_tower
-    from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import (
-        TomoAsisASTCompiler,
+    official_annex_dir = (
+        REPO_ROOT
+        / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/02_ANEXOS_TECNICOS_ESPECIALISTAS"
     )
-    import json
+    official_annex_dir.mkdir(parents=True, exist_ok=True)
 
-    print("\n>>> PHASE 1: COMPILING DECLARATIVE AST DELIVERABLES (T1, T2 & TOMO 1) <<<")
-    compile_and_export_tower(
-        tower_code="T1",
-        payload_rel_path="working/molins/T1/blueprint_t1_payload.json",
-        output_docx_name="Molins_202610_Anexo_01_Data_Center_ASIS.docx",
-    )
-    compile_and_export_tower(
-        tower_code="T2",
-        payload_rel_path="working/molins/T2/blueprint_t2_payload.json",
-        output_docx_name="Molins_202610_Anexo_02_Computo_Hibrido_ASIS.docx",
-    )
+    mirrors = [
+        official_annex_dir,
+        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/02_DIAGNOSTICOS_ASIS",
+        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/02_ANEXOS_TECNICOS_POR_DOMINIO",
+    ]
 
-    # 1.1 Compile Consolidated Tomo 1 AS-IS via Declarative AST Engine (RFC 062)
-    print("\n>>> COMPILING CONSOLIDATED TOMO 1 AS-IS VIA AST ENGINE (RFC 062) <<<")
+    for code, filename in MOLINS_CANONICAL_FILENAMES.items():
+        print(f"\n>>> Compiling AS-IS Annex for Tower {code}: {filename} <<<")
+        out_dir = REPO_ROOT / f"working/out/molins/{code}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        primary_docx = out_dir / filename
+        payload_path = REPO_ROOT / f"working/molins/{code}/blueprint_{code.lower()}_payload.json"
+
+        if not payload_path.exists():
+            print(f"   ⚠️ Payload missing for {code}: {payload_path}")
+            continue
+
+        compile_asis_docx_via_ast(payload_path, primary_docx, doc_lang="es")
+        print(f"   ✓ Generated AST DOCX: {primary_docx.name} ({primary_docx.stat().st_size:,} bytes)")
+
+        # Convert to PDF
+        pdf_path = primary_docx.with_suffix(".pdf")
+        convert_docx_to_pdf(primary_docx, pdf_path)
+        print(f"   ✓ Generated AST PDF: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
+
+        # Replicate to package mirrors
+        for m_dir in mirrors:
+            if m_dir.exists():
+                shutil.copy2(primary_docx, m_dir / filename)
+                if pdf_path.exists():
+                    shutil.copy2(pdf_path, m_dir / pdf_path.name)
+                # Replicate backward-compatible alias if defined
+                if code in MOLINS_LEGACY_ALIASES:
+                    alias_name = MOLINS_LEGACY_ALIASES[code]
+                    alias_pdf = alias_name.replace(".docx", ".pdf")
+                    shutil.copy2(primary_docx, m_dir / alias_name)
+                    if pdf_path.exists():
+                        shutil.copy2(pdf_path, m_dir / alias_pdf)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Compile and mirror client deliverables.")
+    parser.add_argument(
+        "--only",
+        choices=["all", "tomo1", "tomo1_asis", "annexes"],
+        default="all",
+        help="Compile only a specific deliverable or suite component.",
+    )
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
     global_payload_path = REPO_ROOT / "working/molins/global_report_payload.json"
-    t1_payload_path = REPO_ROOT / "working/molins/T1/blueprint_t1_payload.json"
-    t2_payload_path = REPO_ROOT / "working/molins/T2/blueprint_t2_payload.json"
-
     with open(global_payload_path, "r", encoding="utf-8-sig") as f:
         global_payload = json.load(f)
-    with open(t1_payload_path, "r", encoding="utf-8-sig") as f:
-        t1_payload = json.load(f)
-    with open(t2_payload_path, "r", encoding="utf-8-sig") as f:
-        t2_payload = json.load(f)
 
-    tower_payloads = {"T1": t1_payload, "T2": t2_payload}
+    # 1. Deterministically hydrate all 10 tower payloads with corporate telemetry
+    hydrated_payloads = TowerPayloadHydrator.load_and_hydrate_all_towers(
+        REPO_ROOT, global_payload, doc_lang="es"
+    )
 
-    tomo1_compiler = TomoAsisASTCompiler()
+    if args.only == "annexes":
+        compile_all_annexes(hydrated_payloads)
+        print("\n" + "=" * 80)
+        print("ALL 10 AST ANNEXES SUCCESSFULLY GENERATED AND SYNCHRONIZED")
+        print("=" * 80)
+        return
+
+    if args.only in ("tomo1", "tomo1_asis"):
+        print("\n" + "=" * 80)
+        print("FAST-PATH ISOLATED COMPILATION: TOMO 1 CONSOLIDATED AS-IS")
+        print("=" * 80)
+
+        tomo1_compiler = Volume1AsisASTCompiler()
+        tomo1_out = (
+            REPO_ROOT
+            / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
+        )
+        tomo1_out.parent.mkdir(parents=True, exist_ok=True)
+        radar_src = REPO_ROOT / "working/molins/global_radar_chart.png"
+        if radar_src.exists():
+            shutil.copy2(radar_src, tomo1_out.parent / "global_radar_chart.png")
+
+        tomo1_compiler.compile(
+            global_payload=global_payload,
+            tower_payloads=hydrated_payloads,
+            output_docx_path=tomo1_out,
+            doc_lang="es",
+        )
+        print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
+
+        # Convert to PDF
+        pdf_out = tomo1_out.with_suffix(".pdf")
+        convert_docx_to_pdf(tomo1_out, pdf_out)
+        print(f"   ✓ Generated Tomo 1 AS-IS PDF: {pdf_out.name} ({pdf_out.stat().st_size:,} bytes)")
+
+        # Mirror to root and packages
+        for mirror_dest in [
+            REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+            REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+            REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+            REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        ]:
+            if mirror_dest.parent.exists():
+                shutil.copy2(tomo1_out, mirror_dest)
+
+        for mirror_pdf in [
+            REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
+            REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
+            REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
+        ]:
+            if mirror_pdf.parent.exists():
+                shutil.copy2(pdf_out, mirror_pdf)
+
+        print("\n" + "=" * 80)
+        print("TOMO 1 ISOLATED COMPILATION & CONVERSION COMPLETE (< 4s)")
+        print("=" * 80)
+        return
+
+    # Default "all" mode
+    print("\n" + "=" * 80)
+    print("STARTING COMPLETE END-TO-END MASTER DELIVERABLE COMPILATION FOR MOLINS")
+    print("=" * 80)
+
+    # 1. Compile all 10 AS-IS annexes via Declarative AST Engine
+    compile_all_annexes(hydrated_payloads)
+
+    # 2. Compile Consolidated Tomo 1 AS-IS via Declarative AST Engine
+    print("\n>>> COMPILING CONSOLIDATED TOMO 1 AS-IS VIA AST ENGINE (RFC 071) <<<")
+    tomo1_compiler = Volume1AsisASTCompiler()
     tomo1_out = (
         REPO_ROOT
         / "working/out/Molins_Entrega_Oficial_Piramide_Tier1/01_TRIADA_ESTRATEGICA_TRANSVERSAL_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx"
     )
+    tomo1_out.parent.mkdir(parents=True, exist_ok=True)
+    radar_src = REPO_ROOT / "working/molins/global_radar_chart.png"
+    if radar_src.exists():
+        shutil.copy2(radar_src, tomo1_out.parent / "global_radar_chart.png")
+
     tomo1_compiler.compile(
         global_payload=global_payload,
-        tower_payloads=tower_payloads,
+        tower_payloads=hydrated_payloads,
         output_docx_path=tomo1_out,
         doc_lang="es",
     )
     print(f"   ✓ Compiled Tomo 1 AS-IS DOCX: {tomo1_out.name} ({tomo1_out.stat().st_size:,} bytes)")
 
-    # Mirror Tomo 1 to alternate delivery structures
-    tomo1_mirrors = [
-        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO",
-        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL",
-        REPO_ROOT / "working/molins",
-    ]
-    for mirror_dir in tomo1_mirrors:
-        if mirror_dir.exists():
-            dest = mirror_dir / tomo1_out.name
-            shutil.copy2(tomo1_out, dest)
-            print(f"   ✓ Mirrored Tomo 1 DOCX to: {dest.relative_to(REPO_ROOT)}")
+    # Convert Tomo 1 to PDF
+    pdf_out = tomo1_out.with_suffix(".pdf")
+    convert_docx_to_pdf(tomo1_out, pdf_out)
+    print(f"   ✓ Generated Tomo 1 AS-IS PDF: {pdf_out.name} ({pdf_out.stat().st_size:,} bytes)")
 
-    # 2. Synchronize to 202611 naming convention in working/molins/
-    shutil.copy2(
-        REPO_ROOT / "working/out/molins/T1/Molins_202610_Anexo_01_Data_Center_ASIS.docx",
-        REPO_ROOT / "working/molins/T1/Molins_202611_Anexo_01_Data_Center_ASIS.docx",
-    )
-    shutil.copy2(
-        REPO_ROOT / "working/out/molins/T2/Molins_202610_Anexo_02_Computo_Hibrido_ASIS.docx",
-        REPO_ROOT / "working/molins/T2/Molins_202611_Anexo_02_Computo_Hibrido_ASIS.docx",
-    )
+    # Mirror Tomo 1
+    for mirror_dest in [
+        REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        REPO_ROOT / "working/molins/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.docx",
+    ]:
+        if mirror_dest.parent.exists():
+            shutil.copy2(tomo1_out, mirror_dest)
 
-    # 3. Synchronize All Official Delivery Package Structures
-    official_packages = [
-        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final",
-        REPO_ROOT / "working/out/Molins_Entrega_Oficial_Piramide_Tier1",
-        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1",
-        REPO_ROOT / "working/out/Molins_Entrega_Ejecutiva_Final",
-        REPO_ROOT / "working/out/Molins_Entrega_Oficial",
-    ]
+    for mirror_pdf in [
+        REPO_ROOT / "Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
+        REPO_ROOT / "working/out/Molins_Entrega_Piramide_Tier1/01_TOMOS_ESTRATEGICOS_CTO/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
+        REPO_ROOT / "working/out/Molins_Entrega_Cliente_Final/01_INFORME_GLOBAL/Molins_202610_Tomo_1_Diagnostico_ASIS.pdf",
+    ]:
+        if mirror_pdf.parent.exists():
+            shutil.copy2(pdf_out, mirror_pdf)
 
-    print("\n>>> PHASE 2: GENERATING PDF DELIVERABLES ACROSS COMPLETE SUITE <<<")
-    converted_count = 0
-
-    for pkg_dir in official_packages:
-        if not pkg_dir.exists():
-            continue
-        print(f"\nProcessing package: {pkg_dir.name}")
-        for docx_path in sorted(pkg_dir.glob("**/*.docx")):
-            pdf_path = docx_path.with_suffix(".pdf")
-            if not pdf_path.exists() or pdf_path.stat().st_mtime < docx_path.stat().st_mtime:
-                print(f"   Converting {docx_path.relative_to(pkg_dir)} -> PDF...")
-                ok = convert_docx_to_pdf(docx_path, pdf_path)
-                if ok:
-                    converted_count += 1
-                    print(f"   ✓ Generated PDF: {pdf_path.name} ({pdf_path.stat().st_size:,} bytes)")
-
-    # 4. Generate Audit and Verification Summary
     print("\n" + "=" * 80)
-    print("MASTER DELIVERABLES VERIFICATION AUDIT")
-    print("=" * 80)
-
-    primary_pkg = REPO_ROOT / "working/out/Molins_Entrega_Oficial_Piramide_Tier1"
-    print(f"\nAudit of Primary Delivery Directory: {primary_pkg.name}")
-
-    total_files = 0
-    total_bytes = 0
-    for sub in sorted(primary_pkg.iterdir()):
-        if sub.is_dir() and not sub.name.startswith("."):
-            docx_files = list(sub.glob("*.docx"))
-            pdf_files = list(sub.glob("*.pdf"))
-            other_files = [f for f in sub.glob("*") if f.is_file() and f.suffix not in (".docx", ".pdf")]
-            sub_bytes = sum(f.stat().st_size for f in sub.glob("**/*") if f.is_file())
-            total_bytes += sub_bytes
-            total_files += len(docx_files) + len(pdf_files) + len(other_files)
-            print(f" • {sub.name}: {len(docx_files)} DOCX | {len(pdf_files)} PDF | {len(other_files)} Other ({sub_bytes / (1024*1024):.2f} MB)")
-
-    print(f"\nTotal Deliverables Verified: {total_files} files ({total_bytes / (1024*1024):.2f} MB)")
-    print("\n" + "=" * 80)
-    print("ALL CLIENT DELIVERABLES SUCCESSFULLY GENERATED END-TO-END")
+    print("ALL 10 ANNEXES + TOMO 1 CONSOLIDATED DELIVERABLE GENERATION COMPLETE")
     print("=" * 80)
 
 

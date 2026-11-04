@@ -6,7 +6,22 @@ import json
 import re
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from types import MappingProxyType
+from typing import Any, Dict, Final, List, Mapping, Optional, Tuple
+
+CANONICAL_TOWER_ARCHETYPE_MAP: Final[Mapping[str, str]] = MappingProxyType({
+    "T1": "INFRASTRUCTURE_PHYSICAL",
+    "T4": "INFRASTRUCTURE_PHYSICAL",
+    "T5": "INFRASTRUCTURE_PHYSICAL",
+    "T2": "COMPUTE_PLATFORMS",
+    "T7": "COMPUTE_PLATFORMS",
+    "T8": "COMPUTE_PLATFORMS",
+    "T3": "SECURITY_GOVERNANCE",
+    "T6": "SECURITY_GOVERNANCE",
+    "T9": "SECURITY_GOVERNANCE",
+    "T10": "SECURITY_GOVERNANCE",
+})
+DEFAULT_DOMAIN_ARCHETYPE: Final[str] = "INFRASTRUCTURE_PHYSICAL"
 
 from assessment_engine.infrastructure.localization import (
     apply_vocabulary_substitutions,
@@ -42,10 +57,11 @@ from assessment_engine.domain.schemas.ast import (
 )
 
 
-def clean_client_name(client_name: str) -> str:
+def clean_client_name(client_name: str, locale: Optional[str] = None) -> str:
     """Clean raw client identifier removing version suffixes while preserving corporate casing."""
+    target_locale = locale or "en"
     if not client_name or not client_name.strip():
-        return "Client"
+        return t("default_client_name", locale=target_locale)
     import re
 
     cleaned = re.sub(r"[_-][vV]\d+\b", "", client_name).strip()
@@ -54,7 +70,7 @@ def clean_client_name(client_name: str) -> str:
         cleaned = cleaned.replace("-", " ")
     cleaned = " ".join(cleaned.split())
     if not cleaned:
-        return "Client"
+        return t("default_client_name", locale=target_locale)
 
     # Only force capitalization on fully lowercase words to preserve mixed-case brands (e.g. McKinsey, PwC, JPMorgan)
     words = [w.capitalize() if w.islower() else w for w in cleaned.split(" ")]
@@ -78,6 +94,11 @@ from assessment_engine.adapters.compilers.ast_table_builders import (
     build_regulatory_bullet as _build_regulatory_bullet,
     build_spof_bullet as _build_spof_bullet,
     build_tef_scale_table as _build_tef_scale_table,
+)
+from assessment_engine.domain.actuarial_scale_calibrator import (
+    compute_dynamic_lm_brackets,
+    compute_dynamic_lm_thresholds,
+    safe_float,
 )
 
 
@@ -114,6 +135,24 @@ def extract_dimension_boundary_profile(
     return strongest_name, strongest_str, weakest_name, weakest_str
 
 
+def resolve_domain_semantics_key(tower_id: str, available_keys: set[str]) -> str:
+    """Resolves a tower identifier to its localization semantics key without rigid T1..T10 truncation."""
+    raw_id = str(tower_id or "").strip().upper()
+    if not raw_id:
+        return "DEFAULT"
+
+    if raw_id in available_keys:
+        return raw_id
+
+    canonical_match = re.match(r"^(?:T|TOWER[-_\s]*)(\d+)$", raw_id)
+    if canonical_match:
+        candidate = f"T{int(canonical_match.group(1))}"
+        if candidate in available_keys:
+            return candidate
+
+    return "DEFAULT"
+
+
 class ExecutiveNarrativeSynthesizer:
     """Compiles the authoritative Executive Summary for any capability tower (T1-T10).
     Strictly adheres to 100% Technical English Codebase and Zero Hardcoding standards.
@@ -146,6 +185,10 @@ class ExecutiveNarrativeSynthesizer:
         strongest_dim_score: str = "",
         weakest_dim_name: str = "",
         weakest_dim_score: str = "",
+        archetype: str = "",
+        operational_mission: str = "",
+        dilemma_anchor: str = "",
+        posture_modernization_focus: str = "",
     ) -> List[str]:
         """Synthesizes the executive summary paragraphs for a capability tower."""
         f1 = findings_briefs[0] if len(findings_briefs) > 0 else t("default_critical_vulnerability", locale=self._locale_code)
@@ -159,38 +202,30 @@ class ExecutiveNarrativeSynthesizer:
 
         capped_hours_val = capped_p90_hours_fmt.strip() or p90_downtime_hours_fmt.strip()
 
-        # Derive canonical key e.g. T1..T10
-        canonical_key = "DEFAULT"
-        match = re.search(r"(\d+)", str(tower_id))
-        if match:
-            idx = int(match.group(1))
-            if 1 <= idx <= 10:
-                canonical_key = f"T{idx}"
-
-        # Load narrative templates from locales.json
-        from assessment_engine.infrastructure.runtime_paths import ROOT
-        loc_file = ROOT / "engine_config" / "locales.json"
-        loc_data = {}
-        if loc_file.exists():
-            try:
-                loc_data = json.loads(loc_file.read_text(encoding="utf-8-sig"))
-            except Exception:
-                loc_data = {}
-
+        # Load narrative templates via cached infrastructure catalog (Zero inline disk I/O)
+        loc_data = load_locales_catalog()
         loc_branch = loc_data.get(self._locale_code, {})
         tower_semantics_map = loc_branch.get("tower_domain_semantics", {})
-        tower_semantics = tower_semantics_map.get(canonical_key, tower_semantics_map.get("DEFAULT", {}))
 
-        operational_mission = tower_semantics.get("operational_mission", "")
-        dilemma_anchor = tower_semantics.get("dilemma_anchor", "")
-        posture_modernization_focus = tower_semantics.get("posture_modernization_focus", "")
+        canonical_key = resolve_domain_semantics_key(
+            tower_id=str(tower_id),
+            available_keys=set(tower_semantics_map.keys()),
+        )
+        tower_semantics = tower_semantics_map.get(
+            canonical_key, tower_semantics_map.get("DEFAULT", {})
+        )
+
+        # Dynamically prioritize explicitly provided or payload-injected domain semantics
+        resolved_mission = operational_mission.strip() if operational_mission else tower_semantics.get("operational_mission", "")
+        resolved_anchor = dilemma_anchor.strip() if dilemma_anchor else tower_semantics.get("dilemma_anchor", "")
+        resolved_focus = posture_modernization_focus.strip() if posture_modernization_focus else tower_semantics.get("posture_modernization_focus", "")
 
         context = {
             "client_name": client_name.strip(),
             "tower_name": tower_name.strip(),
-            "operational_mission": operational_mission,
-            "dilemma_anchor": dilemma_anchor,
-            "posture_modernization_focus": posture_modernization_focus,
+            "operational_mission": resolved_mission,
+            "dilemma_anchor": resolved_anchor,
+            "posture_modernization_focus": resolved_focus,
             "maturity_score": maturity_score.strip(),
             "maturity_tier_label": maturity_tier_label.strip(),
             "critical_findings_count": str(max(len(findings_briefs), 1)),
@@ -215,21 +250,14 @@ class ExecutiveNarrativeSynthesizer:
 
         narrative_section = loc_data.get("executive_summary_narrative", {}).get(self._locale_code, {})
 
-        # Polymorphic 3-Archetype Narrative Rotation (RFC 051)
-        archetype_map = {
-            "T1": "INFRASTRUCTURE_PHYSICAL",
-            "T4": "INFRASTRUCTURE_PHYSICAL",
-            "T5": "INFRASTRUCTURE_PHYSICAL",
-            "T2": "COMPUTE_PLATFORMS",
-            "T7": "COMPUTE_PLATFORMS",
-            "T8": "COMPUTE_PLATFORMS",
-            "T3": "SECURITY_GOVERNANCE",
-            "T6": "SECURITY_GOVERNANCE",
-            "T9": "SECURITY_GOVERNANCE",
-            "T10": "SECURITY_GOVERNANCE",
-        }
-        archetype_key = archetype_map.get(canonical_key, "INFRASTRUCTURE_PHYSICAL")
+        # Polymorphic Archetype Resolution: Prioritize explicit payload archetype over hardcoded T1..T10 map
         archetypes_branch = loc_data.get("executive_summary_narrative", {}).get("archetypes", {})
+        clean_archetype = archetype.strip().upper() if archetype else ""
+        if clean_archetype and clean_archetype in archetypes_branch:
+            archetype_key = clean_archetype
+        else:
+            archetype_key = CANONICAL_TOWER_ARCHETYPE_MAP.get(canonical_key, DEFAULT_DOMAIN_ARCHETYPE)
+
         arch_templates = archetypes_branch.get(archetype_key, {}).get(self._locale_code, {})
 
         p1_tmpl = arch_templates.get("p1_operational_posture") or narrative_section.get("p1_operational_posture")
@@ -451,7 +479,7 @@ class PayloadToASTBridge:
             tower_name = raw_tname
         else:
             tower_name = resolver.resolve_tower_name(tower_id, default="Unknown", locale=meta_lang)
-        client_name = clean_client_name(tower_meta.get("client_name", "Client"))
+        client_name = clean_client_name(str(tower_meta.get("client_name") or ""), locale=meta_lang)
         version = tower_meta.get("version", "1.0")
         date_str = format_date_localized(
             tower_meta.get("date"), locale=meta_lang
@@ -1028,6 +1056,10 @@ class PayloadToASTBridge:
             strongest_dim_score=strongest_score_str,
             weakest_dim_name=weakest_name,
             weakest_dim_score=weakest_score_str,
+            archetype=str(blueprint_data.get("archetype") or blueprint_data.get("domain_archetype") or ""),
+            operational_mission=str(blueprint_data.get("operational_mission") or blueprint_data.get("domain_semantics", {}).get("operational_mission") or ""),
+            dilemma_anchor=str(blueprint_data.get("dilemma_anchor") or blueprint_data.get("domain_semantics", {}).get("dilemma_anchor") or ""),
+            posture_modernization_focus=str(blueprint_data.get("posture_modernization_focus") or blueprint_data.get("domain_semantics", {}).get("posture_modernization_focus") or ""),
         )
 
         # 1. Paragraph 1: Posture & Mission
@@ -1174,20 +1206,9 @@ class PayloadToASTBridge:
 
         # 3. Direct Introduction (Polymorphic Archetype Rotation)
         tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
-        archetype_map = {
-            "T1": "INFRASTRUCTURE_PHYSICAL",
-            "T4": "INFRASTRUCTURE_PHYSICAL",
-            "T5": "INFRASTRUCTURE_PHYSICAL",
-            "T2": "COMPUTE_PLATFORMS",
-            "T7": "COMPUTE_PLATFORMS",
-            "T8": "COMPUTE_PLATFORMS",
-            "T3": "SECURITY_GOVERNANCE",
-            "T6": "SECURITY_GOVERNANCE",
-            "T9": "SECURITY_GOVERNANCE",
-            "T10": "SECURITY_GOVERNANCE",
-        }
         canonical_tower_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        ch3_archetype = archetype_map.get(canonical_tower_id, "INFRASTRUCTURE_PHYSICAL")
+        explicit_arch = str(blueprint_data.get("archetype") or blueprint_data.get("domain_archetype") or "").strip().upper()
+        ch3_archetype = explicit_arch if explicit_arch in CANONICAL_TOWER_ARCHETYPE_MAP.values() else CANONICAL_TOWER_ARCHETYPE_MAP.get(canonical_tower_id, DEFAULT_DOMAIN_ARCHETYPE)
 
         ch3_intros = loc_branch.get("ch3_intro_archetypes", {})
         arch_intro_tmpl = ch3_intros.get(ch3_archetype)
@@ -1849,6 +1870,7 @@ class PayloadToASTBridge:
         nodes.append(SpacerNode(points=6))
 
         fin_telemetry = blueprint_data.get("financial_telemetry") or {}
+        annual_divisor = safe_float(blueprint_data.get("annual_downtime_divisor"), locale=meta_lang) or 8760.0
         hourly_rate = float(
             fin_telemetry.get("authoritative_hourly_downtime_cost")
             or blueprint_data.get("hourly_downtime_rate")
@@ -1859,20 +1881,9 @@ class PayloadToASTBridge:
         total_rate_fmt = f"{hourly_formatted} {currency}"
 
         # Inject domain-specific downtime impact (RFC 052)
-        ch4_archetype_map = {
-            "T1": "INFRASTRUCTURE_PHYSICAL",
-            "T4": "INFRASTRUCTURE_PHYSICAL",
-            "T5": "INFRASTRUCTURE_PHYSICAL",
-            "T2": "COMPUTE_PLATFORMS",
-            "T7": "COMPUTE_PLATFORMS",
-            "T8": "COMPUTE_PLATFORMS",
-            "T3": "SECURITY_GOVERNANCE",
-            "T6": "SECURITY_GOVERNANCE",
-            "T9": "SECURITY_GOVERNANCE",
-            "T10": "SECURITY_GOVERNANCE",
-        }
         canonical_t_id = str(ctx.get("tower_id") or blueprint_data.get("document_meta", {}).get("tower_id", "T1")).strip().upper()
-        ch4_archetype = ch4_archetype_map.get(canonical_t_id, "INFRASTRUCTURE_PHYSICAL")
+        explicit_ch4_arch = str(blueprint_data.get("archetype") or blueprint_data.get("domain_archetype") or "").strip().upper()
+        ch4_archetype = explicit_ch4_arch if explicit_ch4_arch in CANONICAL_TOWER_ARCHETYPE_MAP.values() else CANONICAL_TOWER_ARCHETYPE_MAP.get(canonical_t_id, DEFAULT_DOMAIN_ARCHETYPE)
         tower_name = str(ctx.get("tower_name") or blueprint_data.get("document_meta", {}).get("tower_name", "Infrastructure Domain"))
         ch4_domain_ctx = loc_branch.get("ch4_sec1_domain_context", {})
         arch_sec1_ctx = ch4_domain_ctx.get(ch4_archetype)
@@ -2011,6 +2022,26 @@ class PayloadToASTBridge:
         currency = ctx["currency"]
         is_critical = ctx["is_critical"]
 
+        annual_rev = safe_float(ctx.get("annual_revenue"))
+        hourly_burn = safe_float(ctx.get("hourly_downtime_cost")) or safe_float(
+            ctx.get("hourly_burn_rate")
+        )
+        dynamic_lm_bounds = compute_dynamic_lm_thresholds(
+            currency=currency,
+            annual_revenue=annual_rev,
+            hourly_downtime_cost=hourly_burn,
+            is_critical_tier=is_critical,
+            locale=meta_lang,
+        )
+        dynamic_lm_brackets = compute_dynamic_lm_brackets(
+            currency=currency,
+            locale=meta_lang,
+            annual_revenue=annual_rev,
+            hourly_downtime_cost=hourly_burn,
+            is_critical_tier=is_critical,
+            precomputed_thresholds=dynamic_lm_bounds,
+        )
+
         # 4.2 Risk Prioritization Matrix & 5x5 Heatmap
         nodes.append(
             HeadingNode(
@@ -2020,7 +2051,14 @@ class PayloadToASTBridge:
             )
         )
         nodes.append(ParagraphNode(text=t("ch4_sec2_intro", locale=meta_lang), space_after=8))
-        nodes.append(_build_heatmap_mosaic(risks_data_list, is_critical=is_critical))
+        nodes.append(
+            _build_heatmap_mosaic(
+                risks_data_list,
+                is_critical=is_critical,
+                dynamic_lm_thresholds=dynamic_lm_bounds,
+                locale=meta_lang,
+            )
+        )
 
         # 4.2.1 Threat Event Frequency (TEF) Compact Legend (RFC 054)
         nodes.append(SpacerNode(points=6))
@@ -2048,7 +2086,17 @@ class PayloadToASTBridge:
                 keep_with_next=True,
             )
         )
-        nodes.append(_build_lm_scale_table(vocab, meta_lang, currency, is_critical, self.alt_row_hex))
+        nodes.append(
+            _build_lm_scale_table(
+                vocab,
+                meta_lang,
+                currency,
+                is_critical,
+                self.alt_row_hex,
+                lm_brackets=dynamic_lm_brackets,
+                dynamic_lm_thresholds=dynamic_lm_bounds,
+            )
+        )
         nodes.append(SpacerNode(points=12))
 
         # 4.3 Pure AS-IS Domain Risk Concentration Profile
@@ -2163,7 +2211,7 @@ class PayloadToASTBridge:
             or 0.0
         )
         if hourly_rate <= 0.0 and total_fair_ale > 0.0:
-            raw_div = _safe_float(blueprint_data.get("annual_downtime_divisor"), default=0.0)
+            raw_div = safe_float(blueprint_data.get("annual_downtime_divisor"), locale=meta_lang, allow_zero=True) or 0.0
             if raw_div > 0.0:
                 hourly_rate = total_fair_ale / raw_div
 

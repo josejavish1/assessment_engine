@@ -412,8 +412,80 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
     ast_compiler.compile(ast, str(blueprint_docx_path))
     audit_results["generated_files"].append(str(blueprint_docx_path))
 
+    # 5. Build Tomo 1 AS-IS Transversal Strategic Diagnostic Deliverable
+    from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import (
+        TomoAsisASTCompiler,
+    )
+
+    tomo1_compiler = TomoAsisASTCompiler()
+    tomo1_docx_path = out_dir / f"Tomo_1_Diagnostico_ASIS_{slug}.docx"
+
+    tomo1_global = {
+        "meta": {
+            "client": cfg.company_name,
+            "date": "November 2026",
+            "version": "v1.0",
+            "language": cfg.doc_lang,
+        },
+        "domain_scope": "scoped",
+        "heatmap": [
+            {
+                "id": "CORE_INFRA",
+                "name": f"{cfg.company_name} Core Infrastructure",
+                "score": 3.90,
+                "ale": cfg.hourly_rate_sre * 12.0,
+            },
+            {
+                "id": "DATA_SECURITY",
+                "name": f"{cfg.company_name} Data & Cybersecurity",
+                "score": 4.10,
+                "ale": cfg.hourly_rate_sre * 8.0,
+            },
+        ],
+        "financial_telemetry": {
+            "corporate_ale": cfg.hourly_rate_sre * 20.0,
+            "annual_p90_var": cfg.hourly_rate_sre * 50.0,
+            "currency": cfg.currency_symbol,
+            "domain_weights": {
+                "CORE_INFRA": cfg.hourly_rate_sre * 12.0,
+                "DATA_SECURITY": cfg.hourly_rate_sre * 8.0,
+            },
+        },
+    }
+
+    tomo1_towers = {
+        "CORE_INFRA": {
+            "inventory": f"Enterprise infrastructure supporting {', '.join(cfg.critical_systems)}.",
+            "diagnostic_narrative": f"Operational infrastructure at {cfg.company_name} maintains high availability aligned with {', '.join(cfg.regulatory_frameworks)}.",
+            "strengths": ["High availability and automated failover across active clusters"],
+            "findings": ["Monitoring telemetry consolidation planned across distributed sites"],
+            "pillars_analysis": [
+                {"pilar_name": "High Availability", "score": 4.0},
+                {"pilar_name": "Telemetry & Observability", "score": 3.8},
+            ],
+        },
+        "DATA_SECURITY": {
+            "inventory": f"Security governance fabric enforcing {', '.join(cfg.regulatory_frameworks)}.",
+            "diagnostic_narrative": f"Security operations protect {cfg.company_name} critical data assets with Tier-0 access controls.",
+            "strengths": ["Zero-trust network architecture across primary ingress gateways"],
+            "findings": ["Continuous credential rotation cadence requires further automation"],
+            "pillars_analysis": [
+                {"pilar_name": "Access Control", "score": 4.2},
+                {"pilar_name": "Threat Protection", "score": 4.0},
+            ],
+        },
+    }
+
+    tomo1_compiler.compile(
+        global_payload=tomo1_global,
+        tower_payloads=tomo1_towers,
+        output_docx_path=tomo1_docx_path,
+        doc_lang=cfg.doc_lang,
+    )
+    audit_results["generated_files"].append(str(tomo1_docx_path))
+
     # --- AUTOMATED EMPIRICAL AUDITS ---
-    docx_files = [comm_docx_path, annex_docx_path, blueprint_docx_path]
+    docx_files = [comm_docx_path, annex_docx_path, blueprint_docx_path, tomo1_docx_path]
 
     for d_path in docx_files:
         assert d_path.is_file(), f"Physical file missing: {d_path}"
@@ -462,15 +534,28 @@ def simulate_archetype(cfg: ArchetypeConfig) -> dict[str, Any]:
         if has_buzzword:
             audit_results["checks_passed"] = False
 
-        # Audit 5: Zero Residual Client Leakage (purgar clientes previos como Redeia o Secil)
-        has_client_leak = "redeia" in extracted_text.lower() or "secil" in extracted_text.lower()
+        # Audit 5: Zero Residual Client Leakage (purgar clientes previos como Redeia, Secil, Molins)
+        client_leak_terms = ["redeia", "secil", "molins", "sant vicen", "weighbridge", "báscula", "simplivity"]
+        leak_found = next((term for term in client_leak_terms if term in extracted_text.lower()), None)
+        has_client_leak = leak_found is not None
         audit_results["check_details"].append({
             "file": d_path.name,
-            "check": "Zero Residual Client Leakage",
+            "check": f"Zero Residual Client Leakage (detected: {leak_found})" if has_client_leak else "Zero Residual Client Leakage",
             "passed": not has_client_leak,
         })
         if has_client_leak:
             audit_results["checks_passed"] = False
+
+        # Audit 6: Strict Hyphen Invariant (Zero em-dashes or en-dashes in AST-compiled documents)
+        if d_path in [blueprint_docx_path, tomo1_docx_path]:
+            has_long_dash = "—" in extracted_text or "–" in extracted_text
+            audit_results["check_details"].append({
+                "file": d_path.name,
+                "check": "Strict Hyphen Invariant",
+                "passed": not has_long_dash,
+            })
+            if has_long_dash:
+                audit_results["checks_passed"] = False
 
         # Audit 6: Multilingual Cover Page Integrity for Commercial Proposals
         if d_path == comm_docx_path:

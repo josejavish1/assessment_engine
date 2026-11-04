@@ -1,0 +1,30 @@
+{
+  "industry": "Banking, Financial Services & Insurance (BFSI)",
+  "methodology_baseline": "Composite Financial Resilience Framework (DORA, Basel III, NIST CSF 2.0)",
+  "effective_date": "2026-Q1",
+  "benchmarks": {
+    "T1": 4.10,
+    "T2": 3.90,
+    "T3": 3.85,
+    "T4": 4.00,
+    "T5": 4.15,
+    "T6": 4.25,
+    "T7": 3.95,
+    "T8": 4.05,
+    "T9": 3.85,
+    "T10": 3.90
+  },
+  "justifications": {
+    "default": "Financial sector benchmarks demand high baseline maturity (Level 4 - Managed) driven by stringent regulatory frameworks (EU Digital Operational Resilience Act - DORA, SEC Cyber Disclosure, FFIEC guidelines). Core banking transaction processing, automated multi-region active-active resilience, and continuous threat monitoring are non-negotiable operational requirements.",
+    "T1": "High maturity (4.10) mandated by zero-downtime banking facility standards, dual-fed UPS rings, and continuous telemetry.",
+    "T2": "Mature private cloud and container orchestration (3.90) supporting low-latency transaction processing and regulatory isolation.",
+    "T3": "Secure, deterministic enterprise WAN and trading network fabric (3.85) with strict microsegmentation.",
+    "T4": "High-durability storage clusters with synchronous multi-site replication and strict data-at-rest encryption (4.00).",
+    "T5": "Demanding operational resilience and automated disaster recovery switchover (4.15) with sub-second RPO objectives.",
+    "T6": "Advanced cybersecurity posture (4.25) enforcing continuous behavioral threat analytics, zero-trust identity, and Tier-0 PAM governance.",
+    "T7": "Relational transactional databases and core banking ledger integrity (3.95) with automated reconciliation.",
+    "T8": "Strict data governance, privacy compliance (GDPR/GLBA), and automated regulatory reporting pipelines (4.05).",
+    "T9": "Secure workplace endpoints with zero-trust network access, conditional access policies, and enterprise DLP (3.85).",
+    "T10": "Fiduciary IT governance, automated cloud financial controls (FinOps), and rigorous vendor audit mechanisms (3.90)."
+  }
+}

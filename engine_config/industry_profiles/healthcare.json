@@ -1,0 +1,30 @@
+{
+  "industry": "Healthcare & Life Sciences",
+  "methodology_baseline": "Composite Clinical Infrastructure Baseline (HITRUST, HIPAA, NIS2 Healthcare Cohort)",
+  "effective_date": "2026-Q1",
+  "benchmarks": {
+    "T1": 4.00,
+    "T2": 3.80,
+    "T3": 3.75,
+    "T4": 3.90,
+    "T5": 4.10,
+    "T6": 4.15,
+    "T7": 3.85,
+    "T8": 3.95,
+    "T9": 3.80,
+    "T10": 3.70
+  },
+  "justifications": {
+    "default": "Healthcare infrastructure benchmarks prioritize patient safety, life-critical system continuity, and protected health information (PHI) confidentiality. Hospital information systems (HIS), picture archiving (PACS), and electronic health records (EHR) demand continuous availability, isolated biomedical device VLANs, and disaster recovery architectures capable of operating during external telecom outages.",
+    "T1": "Robust facility resilience (4.00) ensuring uninterrupted power and HVAC across clinical hospital campus data centers.",
+    "T2": "High-availability compute virtualization (3.80) supporting electronic health record clusters and real-time medical imaging.",
+    "T3": "Segmented hospital network infrastructure (3.75) isolating IoMT (Internet of Medical Things) devices from corporate workstations.",
+    "T4": "High-capacity, encrypted medical archive storage (3.90) ensuring long-term PACS diagnostic retention.",
+    "T5": "Demanding operational continuity (4.10) to safeguard patient care pathways and ICU monitoring systems without interruption.",
+    "T6": "Strict cybersecurity and access control (4.15) protecting patient privacy under HIPAA and NIS2 critical entity directives.",
+    "T7": "Reliable relational clinical databases (3.85) integrating laboratory, pharmacy, and emergency department workflows.",
+    "T8": "Strict biomedical data governance and anonymization pipelines (3.95) for clinical research and compliance auditability.",
+    "T9": "Standardized clinical workstations, single sign-on (SSO) tap-and-go badges, and mobile nursing tablets (3.80).",
+    "T10": "Clinical IT governance and medical device software lifecycle management (3.70)."
+  }
+}

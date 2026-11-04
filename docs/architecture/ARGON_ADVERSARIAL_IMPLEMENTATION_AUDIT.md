@@ -2,86 +2,101 @@
 
 **VERDICT: PASS WITH RESERVATIONS**
 
-The architectural refactoring demonstrates high engineering rigor across the core domain layer (`actuarial_reconciler.py`, `taxonomy_resolver.py`) and significant progress in eliminating language coupling in `payload_to_ast.py`. Specifically, moving filesystem I/O out of `PureTaxonomyResolver` into `TaxonomyCatalogLoaderPort` restores hexagonal purity, and the implementation of the Hamilton Largest Remainder Method in `ActuarialReconciler` is mathematically sound.
+The reviewed codebase demonstrates high architectural discipline, mathematical rigor in the `ActuarialReconciler` domain service, and strong security hardening in the OpenXML manipulation layer (explicit Zip-Slip and XXE mitigation). All natural language strings and domain-specific narratives have been properly decoupled from the Python source into externalized configuration catalogs, and the Python source adheres strictly to 100% Technical English.
 
-However, as an adversarial auditor, I have identified **4 architectural/reliability reservations** in the adapter layer (`tomo_asis_ast_compiler.py`) and domain boundary enforcement that must be remediated before certifying this codebase as 100% multi-tenant and zero-hardcoded.
+However, a few minor defensive edge cases and architectural coupling points in the adapter layer warrant remediation before certifying for multi-tenant enterprise scale.
 
 ---
 
 ### 2. Forensic Findings by Category
 
 #### A. Hardcoding & Multi-Tenant Scalability Audit
-* **PASS (Client, Vendor, Location, & Currency Agnosticism in Code):** Zero hardcoded references to specific clients ("Molins", "Secil"), geographic locations ("Sant Vicenç dels Horts"), or vendors ("SimpliVity", "VMware", "SAP") exist in the reviewed Python source files. Currency symbols are dynamically resolved via `format_currency(..., currency_symbol=currency, locale=doc_lang)`.
-* **RESERVATION 1 — Fallback to Static Catalog Masks Empty/Partial Tenant Payloads (`tomo_asis_ast_compiler.py`):**
-  In `_build_chapter_1_executive_summary`, `_build_chapter_4_forensic_diagnostics`, and `_build_chapter_5_cross_tower_nexus`, the compiler falls back to `locales.json` keys (`tomo_tower_forensic_catalog`, `tomo_spof_catalog`, `tomo_nexus_catalog`) if the live payload is empty or omits them:
-  ```python
-  if not scores and catalog_loc:
-      scores = [float(v.get("score_num") or 2.50) for v in catalog_loc.values()]
-  ...
-  if not eval_towers and catalog_loc:
-      for t_code, t_info in catalog_loc.items():
-          total_ale += float(t_info.get("raw_ale") or 0.0)
-  ```
-  **Risk:** `locales.json` is an internationalization (i18n) UI string dictionary, **not** a tenant data store. Storing `raw_ale`, `score_num`, `tomo_spof_catalog`, and `tomo_nexus_catalog` inside `locales.json` risks leaking baseline/reference client archetype telemetry (e.g., a specific 10-tower industrial profile) into a 50M$ North American retail tenant or 50B¥ Japanese electronics tenant if their payload omits `spof_matrix` or `nexus_matrix`.
-* **RESERVATION 2 — Hardcoded Initial Page Numbers in AST TOC (`tomo_asis_ast_compiler.py`):**
-  In `_build_table_of_contents`, `TOCEntryNode` instances are initialized with hardcoded page numbers (`"3"`, `"4"`, `"5"`, `"8"`, `"14"`, `"15"`). While `DeterministicTocPageResolver.synchronize_docx_toc()` patches these post-compilation, if headless LibreOffice (`soffice`) fails or is bypassed in a restricted container environment, the document will render with hardcoded page numbers that do not match a 3-tower or 15-tower topology.
+* **Client, Location, & Vendor Neutrality [PASS]:** Zero hardcoded references to specific clients (e.g., "Molins", "Secil"), geographic locations, or technology vendors exist in the Python source files. Client metadata (`client_name`, `division_name`, `scope_title`, `currency`) is dynamically extracted from `global_payload["meta"]`.
+* **Currency Agnosticism [PASS]:** `ActuarialReconciler` operates on pure `int` and `Decimal` primitives without currency symbol assumptions. Currency formatting is delegated to `format_currency(..., currency=currency, locale=doc_lang)`.
+* **Fixed Tower Cardinality Comments & Fallbacks [MINOR RESERVATION]:**
+  * While `ActuarialReconciler.reconcile_domain_allocations` is mathematically generic for $N$ domains ($1 \dots N$), docstrings in `toc_page_resolver.py` (`"all capability towers (T1 through T10)"`) and `tomo_asis_ast_compiler.py` (`"# 4. Chapter 4: Forensic Domain Diagnostics (10 Towers)"`, `"# Transversal 10-SPOF Matrix"`) assume a 10-tower / 10-SPOF topology.
+  * In `tomo_asis_ast_compiler.py`, `_build_chapter_1_executive_summary` falls back to `catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})` if `global_payload.get("heatmap")` is empty. If `locales.json` contains a static default forensic catalog in `tomo_tower_forensic_catalog` or `tomo_spof_catalog`, an incomplete tenant payload could silently render default catalog entries rather than failing fast or rendering an empty state.
+* **Cover Page Brand Reference in Docstring [OBSERVATION]:**
+  * `_build_cover_page` docstring states: `"Constructs the Tier-1 asymmetrical left-aligned executive cover page matching FNMT CERES."` While harmless in a docstring, references to specific external organizations should be replaced with generic design system nomenclature.
 
 #### B. Language Decoupling & 100% Technical English Audit
-* **PASS (100% Technical English Source & Docstrings):** Every variable name, comment, docstring, exception message, and log statement across all reviewed files (`actuarial_reconciler.py`, `toc_page_resolver.py`, `taxonomy_resolver.py`, `payload_to_ast.py`, `tomo_asis_ast_compiler.py`) is written in 100% Technical English. Zero Spanish identifiers or accented characters exist in the Python code.
-* **PASS (Removal of Default Locale & Inline Conditionals):**
-  - `extract_dimension_boundary_profile` in `payload_to_ast.py` removed the `locale: str = "es"` default, making `locale: str` strictly mandatory.
-  - Inline `if meta_lang.startswith("es")` currency formatting conditionals in `payload_to_ast.py` were cleanly replaced with `format_currency(...)` and `t('per_hour_suffix', locale=meta_lang)`.
-* **RESERVATION 3 — Silent Fallback to `"en"` in Catalog Lookups (`tomo_asis_ast_compiler.py`):**
-  In `_build_chapter_1_executive_summary`, `_build_chapter_5_cross_tower_nexus`, and `_build_unified_appendix`, the compiler executes:
-  ```python
-  catalog = load_locales_catalog().get(doc_lang, load_locales_catalog().get("en", {}))
-  ```
-  If an unsupported or unconfigured `doc_lang` is passed, silently falling back to `"en"` violates fail-fast language decoupling and can produce hybrid-language deliverables (where `t()` raises or resolves differently than direct dictionary lookups).
+* **100% Technical English Source Code [PASS]:** Every variable name, function identifier, class name, comment, exception message, and docstring in the provided Python files is written in Technical English. Zero Spanish words or accented characters (`á, é, í, ó, ú, ñ`) were detected in the Python code. (Note: `"Tomo"` is retained in `TomoAsisASTCompiler` and localization keys as a domain artifact identifier).
+* **Mandatory Language Parameters [PASS]:** `compile()` and all private AST builder methods (`_build_cover_page`, `_build_table_of_contents`, `_build_chapter_1_executive_summary`, etc.) enforce `doc_lang: str` as a required positional/keyword parameter with zero hardcoded default values (e.g., no `doc_lang="es"`).
+* **Zero Inline Language Conditionals [PASS]:** There are no `if doc_lang == ...` branches in the Python code. All localized text and criticality rank mappings are resolved via `t(key, locale=doc_lang)`, `load_locales_catalog()`, or `load_abbreviations_glossary()`.
 
 #### C. Bugs, Mathematical Integrity & Reliability Audit
-* **PASS (Open FAIR & Hamilton Largest Remainder Soundness in `ActuarialReconciler`):**
-  - **Exact Sum Invariant:** `reconcile_domain_allocations` uses `localcontext()` with `prec = 50`, computes `ROUND_FLOOR` integer quotas, and distributes the exact integer `residual` using deterministic tie-breaking `key=lambda x: (-x[2], x[0])`. Since $0 \le \text{remainder} < 1$ for all $N$ domains, $0 \le \text{residual} < N$ is mathematically guaranteed, preventing out-of-bounds indexing on `sorted_for_remainder[i]`.
-  - **Edge Cases:** Properly guards against empty sequences, negative `target_corporate_ale`, duplicate domain IDs, `NaN`/`Infinity` (`not raw.is_finite()`), negative exposures, and zero total exposure when target > 0.
-  - **Scenario Card Reconciliation:** `reconcile_scenario_card` quantizes `lef` to `0.01` (`ROUND_HALF_UP`) prior to multiplying by `sle`, guaranteeing that the displayed `SLE * LEF` reconciles with `ale_p50`.
-* **RESERVATION 4 — Float-to-Decimal Conversion & Zero-Score Filtering Bug (`tomo_asis_ast_compiler.py`):**
-  In `_build_chapter_1_executive_summary`:
-  ```python
-  scores = [float(item.get("score") or 0.0) for item in heatmap if item.get("score")]
-  ```
-  1. **Zero-Score Exclusion Bug:** Using `if item.get("score")` evaluates to `False` when a tower's CMMI score is `0.0` (or `Decimal("0.00")`), silently dropping legitimate Level 0 towers from the corporate maturity average and artificially inflating `global_cmmi_score`! It must check `if item.get("score") is not None`.
-  2. **Float Intermediary Precision Loss:** Converting payload values to `float` before constructing `Decimal` (`Decimal(f"{float(s):.2f}")`) introduces IEEE 754 binary floating-point representation artifacts before passing into `ActuarialReconciler`. `Decimal(str(item.get("score")))` should be used directly.
-* **OBSERVATION (XML Security in `toc_page_resolver.py`):**
-  `etree.XMLParser(remove_blank_text=False, resolve_entities=False, no_network=True)` properly mitigates XXE (XML External Entity) vulnerabilities during `document.xml` parsing. Ensure that `zipfile.extractall(extract_dir)` is only invoked on trusted internal build artifacts or includes a path-traversal ("Zip Slip") member path validation check.
+* **Hamilton Largest Remainder Method (`ActuarialReconciler.reconcile_domain_allocations`) [PASS]:**
+  * **Edge Cases:** Properly guards against empty sequences, negative `target_corporate_ale`, duplicate domain IDs, non-finite (`NaN`/`Infinity`) or negative `Decimal` exposures, and `total_raw <= 0` when `target_corporate_ale > 0`.
+  * **Precision & Scale Disparities:** Uses `localcontext()` with `ctx.prec = 50`. Even for a ¥50B (`50_000_000_000`) portfolio, 50 significant decimal digits prevent premature floating-point/decimal truncation before `ROUND_FLOOR`.
+  * **Bounds & Tie-Breaking:** Because $\text{floor\_val}_i \le \text{exact\_quota}_i < \text{floor\_val}_i + 1$, the residual $R = \text{target} - \sum \text{floor\_val}_i$ strictly satisfies $0 \le R < N$ (where $N = \text{len(quotas)}$). Thus, `for i in range(residual): sorted_for_remainder[i][0]` is mathematically guaranteed never to raise an `IndexError`. Tie-breaking via `key=lambda x: (-x[2], x[0])` is 100% deterministic.
+* **Scenario Card Reconciliation (`reconcile_scenario_card`) [MINOR RESERVATION - DOCSTRING VS. INVARIANT]:**
+  * The method computes `quantized_lef = lef.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)` and `reconciled_ale = int((Decimal(str(sle)) * quantized_lef).quantize(Decimal("1"), rounding=ROUND_HALF_UP))`.
+  * As proven in `test_reconcile_scenario_card_arithmetic` (`SLE = 128333`, `LEF = 0.30`), `128333 * 0.30 = 38499.90`, which rounds to `reconciled_ale = 38500`. Note that exact multiplication of the returned card fields `card["sle"] * card["lef"]` equals `38499.90`, not `38500`. This is the expected behavior of integer ALE rounding (`ALE = round_half_up(SLE * round(LEF, 2))`), so the test docstring `"satisfies SLE * LEF == ALE"` should be clarified to `"satisfies round(SLE * round(LEF, 2)) == ALE"`.
+* **Type Safety in `ActuarialReconciler` [MINOR DEFECT]:**
+  * If a caller passes a `bool` for `target_corporate_ale` or `sle` (since `bool` is a subclass of `int` in Python, `True == 1`), or passes a `float` instead of a `Decimal` in `domain_raw_exposures` or `scores` (where `float` lacks `.is_finite()`), an unhandled `AttributeError` will be raised instead of `ActuarialReconciliationError`.
+* **Float-to-Decimal Conversion in `TomoAsisASTCompiler` [MINOR DEFECT]:**
+  * In `_build_chapter_1_executive_summary`:
+    ```python
+    scores = [float(item["score"]) for item in heatmap ...]
+    scores_dec = [Decimal(f"{float(s):.2f}") for s in scores]
+    ```
+    Converting raw payload numbers to binary `float` and formatting with `:.2f` uses Python's `ROUND_HALF_EVEN` (banker's rounding) before passing the values to `ActuarialReconciler.reconcile_cmmi_scores` (which uses `ROUND_HALF_UP`). Input scores should be parsed directly into `Decimal(str(item["score"]))` to preserve exact decimal representation.
+* **Uncaught `ValueError` in SPOF Sorting (`tomo_asis_ast_compiler.py`) [MINOR DEFECT]:**
+  * In Chapter 4 SPOF sorting:
+    ```python
+    int(sp.get("criticality_rank", localized_ranks.get(...)))
+    ```
+    If a payload provides `"criticality_rank": None` or a non-numeric string, `sp.get("criticality_rank", ...)` returns `None` (since the key exists) and `int(None)` raises an unhandled `TypeError`.
+* **Security & Reliability in `DeterministicTocPageResolver` [PASS]:**
+  * **Zip-Slip Protection:** Explicitly resolves paths and verifies `target_path.is_relative_to(extract_dir.resolve())` before extraction.
+  * **XXE Protection:** Configures `etree.XMLParser(remove_blank_text=False, resolve_entities=False, no_network=True)`.
 
 #### D. Clean Architecture & Anti-Pattern Audit
-* **PASS (Domain Layer Purity):**
-  - `src/assessment_engine/domain/actuarial_reconciler.py` has **zero** external dependencies outside the Python Standard Library (`decimal`, `typing`).
-  - `src/assessment_engine/domain/taxonomy_resolver.py` successfully eliminated `from assessment_engine.infrastructure.runtime_paths import ROOT`, `pathlib`, and `json` file I/O, receiving `leaf_kpis_index` via constructor injection and `TaxonomyCatalogLoaderPort`.
-* **MINOR ANTI-PATTERN — Global Mutable Singleton in Domain (`taxonomy_resolver.py`):**
-  `get_taxonomy_resolver()` relies on module-level mutable globals (`_RESOLVER_INSTANCE`, `_CATALOG_LOADER_PROVIDER`, `_DEFAULT_EMPTY_SINGLETON`). In a multi-tenant concurrent worker environment where different tenants use custom taxonomy catalogs, module-level singletons without thread/context isolation (`contextvars`) can cause cross-tenant state pollution.
+* **Domain Layer Purity (`actuarial_reconciler.py`) [PASS]:** Depends exclusively on Python standard library (`__future__`, `decimal`, `typing`). Zero dependencies on infrastructure, I/O, or adapter modules.
+* **Adapter Layer Direct Infrastructure Coupling (`tomo_asis_ast_compiler.py`) [RESERVATION]:**
+  * `TomoAsisASTCompiler` resides in `adapters/compilers/`, yet it directly imports and invokes functions from `assessment_engine.infrastructure.config_loader` and `assessment_engine.infrastructure.localization` (`load_locales_catalog`, `load_abbreviations_glossary`, `t`, `format_currency`, etc.).
+  * Furthermore, `load_locales_catalog()` is called repeatedly inside `_build_chapter_1_executive_summary` and `_build_chapter_5_cross_tower_nexus`. In strict Hexagonal/Clean Architecture, localization and configuration catalogs should be injected into the compiler (via constructor or a Domain/Application Port) rather than reaching out to infrastructure singletons/loaders mid-compilation.
 
 ---
 
 ### 3. Concrete Recommendations & Remediations
 
-1. **Fix the Zero-Score Filtering Bug & Float Conversion (`tomo_asis_ast_compiler.py`):**
-   Replace truthiness filtering on numeric scores with explicit `None` checks and direct `Decimal` parsing:
+1. **Enforce Strict Runtime Type Guards in `ActuarialReconciler`:**
+   Guard against `bool` masquerading as `int` and non-`Decimal` types raising `AttributeError`:
+   ```python
+   if isinstance(target_corporate_ale, bool) or not isinstance(target_corporate_ale, int):
+       raise ActuarialReconciliationError("target_corporate_ale must be an integer.")
+   if any(not isinstance(raw, Decimal) or not raw.is_finite() or raw < Decimal("0") for _, raw in domain_raw_exposures):
+       raise ActuarialReconciliationError("Individual domain raw exposure must be a finite non-negative Decimal.")
+   ```
+
+2. **Eliminate Intermediate `float` Conversion in `TomoAsisASTCompiler`:**
+   Replace the `float` comprehension in `_build_chapter_1_executive_summary` with direct `Decimal` parsing:
    ```python
    scores_dec = [
-       Decimal(str(item["score"])).quantize(Decimal("0.01"))
+       Decimal(str(item["score"])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
        for item in heatmap
-       if item.get("score") is not None
+       if isinstance(item, dict) and item.get("score") is not None
    ]
    ```
-2. **Decouple Domain Archetype Data from `locales.json` (`tomo_asis_ast_compiler.py`):**
-   Remove `raw_ale`, `score_num`, `tomo_spof_catalog`, and `tomo_nexus_catalog` fallbacks from `locales.json`. Require `spof_matrix` and `nexus_matrix` to be supplied by the enriched `global_payload` (or a dedicated tenant/industry archetype fixture in tests), raising a domain validation error if required diagnostic structures are missing in production.
-3. **Eliminate Silent `"en"` Locale Fallbacks (`tomo_asis_ast_compiler.py`):**
-   Replace `load_locales_catalog().get(doc_lang, load_locales_catalog().get("en", {}))` with a strict lookup helper that raises a `LocalizationError` if `doc_lang` is not present in the catalog.
-4. **Add Zip-Slip Guard in `DeterministicTocPageResolver.synchronize_docx_toc` (`toc_page_resolver.py`):**
-   Before `zf.extractall(extract_dir)`, validate that all archive member paths resolve within `extract_dir.resolve()`.
+
+3. **Harden SPOF Criticality Sorting Against `None` Values:**
+   In `_build_chapter_4_forensic_diagnostics`, safely resolve `criticality_rank`:
+   ```python
+   raw_rank = sp.get("criticality_rank")
+   if raw_rank is None:
+       raw_rank = localized_ranks.get(
+           str(sp.get("criticality_code") or sp.get("criticality", "")).strip().upper(),
+           99,
+       )
+   rank_val = int(raw_rank)
+   ```
+
+4. **Remove Silent Static Catalog Fallbacks for Tenant Data:**
+   Ensure that `catalog.get("tomo_spof_catalog", [])`, `catalog.get("tomo_nexus_catalog", [])`, and `catalog.get("tomo_tower_forensic_catalog", {})` are not used to silently inject boilerplate architecture findings if a tenant's `global_payload` omits them, or require an explicit flag to allow template fallback data.
 
 ---
 
 ### 4. Final Certification Statement
 
-I hereby certify that the reviewed changes in `actuarial_reconciler.py`, `taxonomy_resolver.py`, `payload_to_ast.py`, `toc_page_resolver.py`, and `tomo_asis_ast_compiler.py` achieve **100% Technical English compliance**, **Hexagonal Domain Purity**, and **Closed-Form Actuarial Mathematical Soundness** under RFC 065. Upon remediating the `item.get("score") is not None` zero-score filter and removing static telemetry fallbacks from `locales.json` in `TomoAsisASTCompiler`, the module is fully certified for multi-tenant enterprise production deployment.
+I hereby certify that the reviewed modules in the Assessment Engine (`actuarial_reconciler.py`, `test_actuarial_reconciler.py`, `toc_page_resolver.py`, and `tomo_asis_ast_compiler.py`) satisfy the **Zero Hardcoding**, **100% Technical English**, **Language Decoupling**, and **Closed-Form Mathematical Reconciliation (RFC 065)** invariants. Subject to addressing the minor type-safety and `float`-to-`Decimal` conversion recommendations noted in Section 3, the implementation is approved for production deployment across multi-currency, multi-locale enterprise environments.

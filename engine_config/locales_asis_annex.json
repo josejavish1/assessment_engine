@@ -501,7 +501,10 @@
     "calib_label_operational_bottleneck": "Cuello de Botella Operativo",
     "calib_label_optimization_gap": "Brecha de Optimización Residual",
     "calib_label_unlocking_lever": "Palanca de Desbloqueo",
-    "calib_lever_default_action": "Modernización y estandarización técnica del dominio"
+    "calib_lever_default_action": "Modernización y estandarización técnica del dominio",
+    "gloss_erc_high": "**Propagación de Fallos (ERC) [{val} - Alta]:** Influencia estructural alta; una degradación en esta torre desestabilizaría de manera en cadena gran parte de la plataforma corporativa.",
+    "gloss_erc_medium": "**Propagación de Fallos (ERC) [{val} - Media]:** Influencia estructural media; un incidente tendría un efecto moderado o contenido, afectando solo a sistemas inmediatamente adyacentes.",
+    "gloss_erc_low": "**Propagación de Fallos (ERC) [{val} - Baja/Aislada]:** Influencia estructural baja; un fallo técnico se contendría dentro de su propio perímetro sin arrastrar a otros dominios."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -996,7 +999,10 @@
     "calib_label_operational_bottleneck": "Operational Bottleneck",
     "calib_label_optimization_gap": "Residual Optimization Gap",
     "calib_label_unlocking_lever": "Unlocking Transformation Lever",
-    "calib_lever_default_action": "Technical modernization and domain standardization"
+    "calib_lever_default_action": "Technical modernization and domain standardization",
+    "gloss_erc_high": "**Cascading Fault Propagation (ERC) [{val} - High]:** High structural influence; a critical outage in this domain easily propagates cascades destabilizing connected enterprise systems.",
+    "gloss_erc_medium": "**Cascading Fault Propagation (ERC) [{val} - Medium]:** Moderate structural influence; disruption remains contained, impacting only immediately adjacent workloads.",
+    "gloss_erc_low": "**Cascading Fault Propagation (ERC) [{val} - Low/Isolated]:** Low structural influence; failures remain strictly isolated within this technical perimeter without holding-wide impact."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -1486,7 +1492,10 @@
     "table_header_score_asis": "AS-IS Score",
     "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
     "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
-    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:",
+    "gloss_erc_high": "**Cascading Fault Propagation (ERC) [{val} - High]:** High structural influence; a critical outage in this domain easily propagates cascades destabilizing connected enterprise systems.",
+    "gloss_erc_medium": "**Cascading Fault Propagation (ERC) [{val} - Medium]:** Moderate structural influence; disruption remains contained, impacting only immediately adjacent workloads.",
+    "gloss_erc_low": "**Cascading Fault Propagation (ERC) [{val} - Low/Isolated]:** Low structural influence; failures remain strictly isolated within this technical perimeter without holding-wide impact."
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -1976,7 +1985,10 @@
     "table_header_score_asis": "AS-IS Score",
     "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
     "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
-    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:",
+    "gloss_erc_high": "**Cascading Fault Propagation (ERC) [{val} - High]:** High structural influence; a critical outage in this domain easily propagates cascades destabilizing connected enterprise systems.",
+    "gloss_erc_medium": "**Cascading Fault Propagation (ERC) [{val} - Medium]:** Moderate structural influence; disruption remains contained, impacting only immediately adjacent workloads.",
+    "gloss_erc_low": "**Cascading Fault Propagation (ERC) [{val} - Low/Isolated]:** Low structural influence; failures remain strictly isolated within this technical perimeter without holding-wide impact."
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -2466,7 +2478,10 @@
     "table_header_score_asis": "AS-IS Score",
     "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
     "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
-    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:",
+    "gloss_erc_high": "**Cascading Fault Propagation (ERC) [{val} - High]:** High structural influence; a critical outage in this domain easily propagates cascades destabilizing connected enterprise systems.",
+    "gloss_erc_medium": "**Cascading Fault Propagation (ERC) [{val} - Medium]:** Moderate structural influence; disruption remains contained, impacting only immediately adjacent workloads.",
+    "gloss_erc_low": "**Cascading Fault Propagation (ERC) [{val} - Low/Isolated]:** Low structural influence; failures remain strictly isolated within this technical perimeter without holding-wide impact."
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -2956,7 +2971,10 @@
     "table_header_score_asis": "AS-IS Score",
     "decision_matrix_title": "Executive Decision Matrix: Inaction vs. Modernization",
     "appendix_glossary_title": "Appendix A: Glossary of Terms and Technical Abbreviations",
-    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:"
+    "appendix_glossary_intro": "The following table consolidates and defines the technical acronyms, industry terms, and operational standards referenced throughout this assessment:",
+    "gloss_erc_high": "**Cascading Fault Propagation (ERC) [{val} - High]:** High structural influence; a critical outage in this domain easily propagates cascades destabilizing connected enterprise systems.",
+    "gloss_erc_medium": "**Cascading Fault Propagation (ERC) [{val} - Medium]:** Moderate structural influence; disruption remains contained, impacting only immediately adjacent workloads.",
+    "gloss_erc_low": "**Cascading Fault Propagation (ERC) [{val} - Low/Isolated]:** Low structural influence; failures remain strictly isolated within this technical perimeter without holding-wide impact."
   },
   "capability_keyword_maps": {
     "es": [

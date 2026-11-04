@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Argon-4 Consultation: Architectural Design for Chapter 2 Refinements, Visual Auto-fit & Typography Normalization (RFC 031)."""
+"""Consult gemini-4-argon on pure forensic AS-IS Chapter 2 architecture and prose enrichment."""
 
 from __future__ import annotations
 
@@ -22,67 +22,49 @@ def main() -> None:
     model_name = get_model(ModelTier.REASONING)
 
     prompt = """
-Role: Principal Systems Architect, Chief Compiler Engineer & Executive Editorial Director (Tier-1 Management Consulting / McKinsey / Gartner).
+Role: Advisory Partner at McKinsey / Gartner, Lead Auditor for Enterprise Technology Diligence, and Senior Enterprise Architect.
 
-CONTEXT & USER CRITIQUE OF CHAPTER 2 ("OBJETIVO, ALCANCE Y MARCO METODOLÓGICO"):
-The user performed an editorial review of Chapter 2 across Tower 1 (Data Center) and Tower 2 (Compute) and delivered 4 critical feedback items:
-
-1. SECTION 2.2 TITLE & INTRODUCTORY PROSE
-   - Current title: "2.2. Descripción de la Plataforma y Topología Unificada"
-   - User feedback: "primero que el titulo tiene que ser más sencillo suena fatal y segundo justo debajo del titulo viene en ambos documento el nombre de la torre tecnológica pero no se si debería haber una introducción en uno aparece 'Physical Data Center & Facilities' y en otro 'Hybrid Compute & Platforms'"
-   - Architectural Need:
-     a) Streamline title in `locales.json`: "2.2. Descripción de la Plataforma" (es) / "2.2. Platform Description" (en).
-     b) Do NOT dump the raw English string `Physical Data Center & Facilities` under the heading.
-     c) Instead, synthesize a rich, cohesive introductory paragraph from `domain_introduction.introduction_paragraph` and `domain_introduction.included_components` that explains the evaluated technical domain and its concrete physical/digital footprint.
-     d) Auto-fit the Regulatory/Methodological Framework table both to the window width (100% pct: `w:tblW w:type="pct" w:w="5000"`) and to its cell contents (`w:tblLayout w:type="autofit"`).
-
-2. ELIMINATION OF SECTION 2.3 ("TRES RESULTADOS EJECUTIVOS DEL DIAGNÓSTICO")
-   - Current section: "2.3. Tres Resultados Ejecutivos del Diagnóstico" with 3 generic bullet points ("1. Identificación y Cuantificación de Brechas...", "2. Evaluación de Obsolescencia...", "3. Priorización Racional de Inversiones...").
-   - User feedback: "Por otro lado el punto 2.3 '2.3. Tres Resultados Ejecutivos del Diagnóstico' directamente lo eliminaba ya que es mentira, es decir, nosotros solo hemos hecho una entrevista al cliente nada más."
-   - Architectural Need: Completely remove Section 2.3 and its bullet points from `payload_to_ast.py` and `locales.json`.
-
-3. UNIFORM EXECUTIVE SLATE COLOR (#2E404D) VS PURE BLACK
-   - User feedback: "Otra cosa más a veces el texto veo que está escrito en un color '#2E404D' y otros en negro directamente esto hace que no se vea bien, el negro debería ser sustituido por '#2E404D' siempre para dar seriedad al documento"
-   - Architectural Need: In `docx_compiler.py` and `add_markdown_runs()`, replace the default pure black `#000000` with the executive slate color `#2E404D` (RGB: 46, 64, 77) across all regular paragraphs, list bullets, and table cells.
-
-4. UNIFORM TYPOGRAPHIC SCALE (10.5 PT) ACROSS SECTIONS 2.4 AND 2.5
-   - Current state: In `ast_appendices_builder.py`, `build_cmmi_methodology_and_capabilities` hardcodes `font_size=9.0` for intro paragraphs and `font_size=8.5` for list bullets!
-   - User feedback: "incluso no se si en el punto 2.4 la misma letra es decir empieza con 'La madurez se califica en una escala analítica del 1,00 al 5,00, donde cada nivel determina un estadio de control:' que tiene un tamaño y luego nivel 1, 2, 3, 4, 5 con otra todos debería tener el mismo tamaño, quizás el mismo 10,5 que tenemos en los otros párrafos, y todo esto último que te he dicho de los colores y tamaños también aplica en el punto 2.5."
-   - Architectural Need: Standardize all intro paragraphs and bullet points in CMMI 5-level scale and evaluated capabilities allocation to uniform 10.5 pt font size and `#2E404D` text color.
+MANDATE FROM LEADERSHIP:
+The user has issued a decisive, zero-bullshit mandate for Chapter 2 (Maturity Radiography):
+1. Completely eradicate all references to external "industry/sector benchmarks" (Mediana P50, Gartner ITKMD, fake external decimals). Unless we have primary empirical client survey datasets, inventing external peer decimals damages technical credibility.
+2. Completely remove the callout box `Metodología de Calibración de la Referencia Sectorial`.
+3. Redesign Table 2 (Table of Capability Maturity) to be 100% forensic, internally consistent, and audit-proof:
+   - Column 1: Código (T1–T10)
+   - Column 2: Área Tecnológica Evaluada
+   - Column 3: Madurez AS-IS (1.00 – 5.00)
+   - Column 4: Nivel CMMI (Nivel 1 Inicial, Nivel 2 Repetible, Nivel 3 Definido)
+   - Column 5: Estado Operativo (e.g. Operación Estandarizada, Deuda Técnica Moderada, Riesgo Operativo Alto)
+   - Column 6: Factor Focal de Diagnóstico (Concise core technical observation for that tower)
+4. Redesign Figure 2.1 (Polar Radar Chart):
+   - Single authentic series: Molins AS-IS footprint in corporate solid blue (#0072BC) with filled area, showing the exact shape of the enterprise capabilities over the CMMI Level 1 to 5 grid. Zero external ghost polygons.
+5. Enrich the professional executive narrative prose in Chapter 2:
+   - Deepen the strategic explanation of the 2.55 consolidated score (Level 2 - Repeatable).
+   - Articulate the dual reality of the enterprise:
+     * Standardized Foundations: Domains like Storage (3.30) and Digital Workplace (3.10) have reached Level 3 (Defined), functioning with documented standards, stable vendors, and predictable service levels.
+     * Operational Bottlenecks: Plant continuity (2.10), Core applications (2.40), and Weighbridge / Dispatch logistics (2.40) remain at Level 2 (Repeatable), where operations succeed through technical staff heroics, reactive incident response, and legacy point-to-point configurations.
+   - Explain how this asymmetry creates latent operational risk that directly links to the financial exposure detailed in Chapter 3.
 
 NON-NEGOTIABLE LAWS:
-1. ZERO BUGS, ZERO ANTI-PATTERNS: Flawless design using clean architectural patterns.
-2. ZERO HARDCODING (UNIVERSAL GLOBAL ENTERPRISE READINESS):
-   - The architecture must scale to ANY company in the world: any tier, vertical, currency, or language.
-   - Zero hardcoded client names, zero fixed strings in Python code.
-3. 100% TECHNICAL ENGLISH CODEBASE:
-   - All Python code, class names, method signatures, variables, docstrings, and comments must be 100% Technical English.
+- 100% Technical English Codebase: Zero Spanish in Python code, docstrings, or variables.
+- Multi-Tenant & Multi-Locale: All natural language string updates must be symmetric across all 6 locales (es, en, pt, fr, de, ja).
+- Zero Hardcoding: Dynamic binding via `locales.json` and DocumentAST nodes.
 
-YOUR TASK:
-Emit a comprehensive architectural plan (RFC 031) in Markdown:
-1. Detailed design for Section 2.2: streamlined title, contextual domain narrative synthesis (using `domain_introduction` data and components), and OpenXML table auto-fit specification.
-2. Complete removal plan for Section 2.3 ("Tres Resultados Ejecutivos del Diagnóstico").
-3. Universal typography color governance: replacing default pure black `#000000` with `#2E404D` (RGB: 46, 64, 77) in `docx_compiler.py`.
-4. Typographic scale standardization: normalizing CMMI scale and capabilities paragraphs to 10.5 pt in `ast_appendices_builder.py`.
-5. Production-ready Python code snippets in 100% Technical English.
+DELIVERABLES:
+1. Exact column definitions and row mapping for forensic Table 2.
+2. Exact enriched narrative prose across all 6 locales for Chapter 2 (`tomo_ch2_summary_p1`, `tomo_ch2_summary_p2`, `tomo_ch2_intro`).
+3. Complete implementation blueprint for `tomo_asis_ast_compiler.py` and `generate_global_radar_chart.py`.
 """
 
-    print(f"Requesting RFC 031 from {model_name}...")
+    print(f"Consulting {model_name} on Chapter 2 pure forensic architecture...")
     response = client.models.generate_content(
         model=model_name,
         contents=prompt,
     )
 
-    out_file = REPO_ROOT / "docs/architecture/RFC_031_CHAPTER_2_REFINEMENTS_AND_TYPOGRAPHY_ARGON.md"
+    out_file = REPO_ROOT / "docs/architecture/RFC_070_PURE_FORENSIC_CHAPTER_2_ARCHITECTURE_ARGON.md"
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(response.text, encoding="utf-8")
-
-    print("\n" + "=" * 80)
-    print("GEMINI-4-ARGON: RFC 031 ARCHITECTURAL PLAN")
-    print("=" * 80)
-    print(response.text)
-    print("=" * 80)
-    print(f"\nPlan saved to: {out_file.relative_to(REPO_ROOT)}")
+    print(f"Successfully generated RFC 070 specification: {out_file}")
 
 
 if __name__ == "__main__":

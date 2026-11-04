@@ -49,6 +49,12 @@ class DeterministicTocPageResolver:
             extract_dir = tmp_path / "unpacked"
             try:
                 with zipfile.ZipFile(docx_file, "r") as zf:
+                    for member in zf.namelist():
+                        target_path = (extract_dir / member).resolve()
+                        if not target_path.is_relative_to(extract_dir.resolve()):
+                            raise TocSynchronizationError(
+                                f"Zip-Slip vulnerability detected in DOCX member: {member}"
+                            )
                     zf.extractall(extract_dir)
             except (zipfile.BadZipFile, OSError) as exc:
                 raise TocSynchronizationError(f"Failed to unpack DOCX archive: {exc}") from exc
