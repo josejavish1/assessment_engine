@@ -148,27 +148,29 @@ DEFAULT_LM_CRITICAL_THRESHOLDS: Final[Tuple[float, float, float, float]] = CANON
 
 
 def resolve_tef_scale_level(
-    lef_annual: float,
+    lef_annual: float | Any,
     thresholds: Tuple[float, float, float, float] = DEFAULT_TEF_THRESHOLDS,
+    locale: str | None = None,
 ) -> int:
     """Map continuous Loss Event Frequency (events/year) to discrete 1..5 TEF scale level.
     Delegates strictly to domain actuarial scale calibrator.
     """
-    return resolve_dynamic_tef_scale_level(lef_annual, thresholds)
+    return resolve_dynamic_tef_scale_level(lef_annual, thresholds, locale=locale)
 
 
 def resolve_lm_scale_level(
-    sle_amount: float,
+    sle_amount: float | Any,
     is_critical_tier: bool = False,
     standard_thresholds: Tuple[float, float, float, float] = DEFAULT_LM_STANDARD_THRESHOLDS,
     critical_thresholds: Tuple[float, float, float, float] = DEFAULT_LM_CRITICAL_THRESHOLDS,
     dynamic_thresholds: Tuple[float, float, float, float] | None = None,
+    locale: str | None = None,
 ) -> int:
     """Map continuous Single Loss Expectancy (currency units) to discrete 1..5 LM scale level.
     Reconciles 100% with Table 4.2.2 and dynamic actuarial scale calibrator.
     """
     bounds = dynamic_thresholds or (critical_thresholds if is_critical_tier else standard_thresholds)
-    return resolve_dynamic_lm_scale_level(sle_amount, bounds)
+    return resolve_dynamic_lm_scale_level(sle_amount, bounds, locale=locale)
 
 
 def build_heatmap_mosaic(
@@ -178,6 +180,8 @@ def build_heatmap_mosaic(
     header_bg_color: str = DEFAULT_HEATMAP_HEADER_HEX,
     locale: str | None = None,
     currency: str | None = None,
+    annual_revenue: float | None = None,
+    hourly_downtime_cost: float | None = None,
 ) -> TableNode:
     """Builds the 5x5 FAIR Risk Heatmap mosaic TableNode reconciling coordinates with TEF/LM scale criteria."""
     matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
@@ -185,7 +189,11 @@ def build_heatmap_mosaic(
         effective_bounds = dynamic_lm_thresholds
     elif currency:
         effective_bounds = compute_dynamic_lm_thresholds(
-            currency=currency, locale=locale or "en", is_critical_tier=is_critical
+            currency=currency,
+            annual_revenue=annual_revenue,
+            hourly_downtime_cost=hourly_downtime_cost,
+            is_critical_tier=is_critical,
+            locale=locale or "en",
         )
     else:
         effective_bounds = (
@@ -202,6 +210,8 @@ def build_heatmap_mosaic(
         lm_brackets = compute_dynamic_lm_brackets(
             currency=currency,
             locale=locale or "en",
+            annual_revenue=annual_revenue,
+            hourly_downtime_cost=hourly_downtime_cost,
             is_critical_tier=is_critical,
             precomputed_thresholds=effective_bounds,
         )

@@ -7,11 +7,16 @@ import logging
 import os
 import re
 import sys
+import tempfile
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Final, Mapping
 
-from assessment_engine.domain.actuarial_scale_calibrator import safe_float
+from assessment_engine.domain.actuarial_scale_calibrator import (
+    resolve_iso_currency_code,
+    safe_float,
+)
 
 CURRENCY_SYMBOLS: Final[Mapping[str, str]] = MappingProxyType({
     "USD": "$",
@@ -48,8 +53,6 @@ def _discover_custom_risk_profiles(client_dir: Path) -> list[Path]:
     return candidates
 
 
-from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
-
 DEFAULT_YEAR1_OPEX_RATIO: Final[float] = 0.40
 DEFAULT_YEAR1_OPEX_FALLBACK: Final[float] = 250_000.0
 MIN_EXECUTIVE_ALE_REVENUE_RATIO: Final[float] = 0.015
@@ -75,6 +78,25 @@ WAVE_2_DURATION_MONTHS: Final[int] = 12
 WAVE_3_START_MONTH: Final[int] = 24
 WAVE_3_DURATION_MONTHS: Final[int] = 12
 
+TOP_CORPORATE_RISKS_LIMIT: Final[int] = 5
+
+DEFAULT_ANNUAL_REVENUE_FALLBACK: Final[float] = 100_000_000.0
+DEFAULT_HOURLY_DOWNTIME_COST_FALLBACK: Final[float] = 5_000.0
+DEFAULT_REG_MAX_FINE_FALLBACK: Final[float] = 2_000_000.0
+DEFAULT_FINOPS_WASTE_RATIO: Final[float] = 0.00135
+DEFAULT_BASELINE_DOWNTIME_HOURS: Final[float] = 27.0
+DEFAULT_TAIL_RISK_MIN_RATIO: Final[float] = 0.45
+DEFAULT_TAIL_RISK_MAX_RATIO: Final[float] = 0.65
+
+DEFAULT_TARGET_MATURITY_SCORE: Final[float] = 4.0
+DEFAULT_AUDIT_MATURITY_FALLBACK: Final[float] = 3.0
+DEFAULT_VULNERABILITY_LEVEL: Final[int] = 3
+CRITICAL_VULNERABILITY_THRESHOLD: Final[int] = 5
+HIGH_VULNERABILITY_THRESHOLD: Final[int] = 4
+MIN_CENTRALITY_RISK_FLOOR: Final[float] = 0.01
+CENTRALITY_PIVOT_SCORE: Final[float] = 3.0
+CENTRALITY_SCALE_DIVISOR: Final[float] = 2.0
+
 
 def _round_half_up(val: float, decimals: int = 0) -> float:
     """Deterministic half-up rounding avoiding IEEE-754 banker's rounding bias."""
@@ -96,15 +118,18 @@ from assessment_engine.infrastructure.global_maturity_policy import (
     band_for_score,
     status_color_for_score,
 )
-from assessment_engine.infrastructure.localization import t
+from assessment_engine.infrastructure.localization import (
+    format_currency,
+    format_date_localized,
+    resolve_base_locale,
+    t,
+)
 from assessment_engine.infrastructure.text_utils import clean_text_for_word
 
 logger = logging.getLogger(__name__)
 
 def get_tower_name(tid: str, doc_lang: str) -> str:
     """Resolve canonical tower name dynamically through localization."""
-    from assessment_engine.infrastructure.localization import t
-
     return t(
         f"tower_{tid.lower()}_name",
         locale=doc_lang,
@@ -147,8 +172,6 @@ def _aggregate_tower_blueprints(
     doc_lang: str,
 ) -> tuple[list[dict], list[dict], list[dict], list[str], list[str], list[str]]:
     """Parse and aggregate tower blueprint files into consolidated metrics and initiative lists."""
-    from assessment_engine.infrastructure.localization import t
-
     towers_data: list[dict] = []
     strategic_risks: list[dict] = []
     all_initiatives: list[dict] = []
@@ -167,14 +190,17 @@ def _aggregate_tower_blueprints(
         tname = doc_tname if doc_tname else get_tower_name(tid, doc_lang=doc_lang)
 
         pillars_analysis = data.get("pillars_analysis", [])
-        avg_score = average_pillar_score(pillars_analysis, default=0.0)
-        target_score = average_pillar_target(pillars_analysis, default=4.0)
+        avg_score = _round_half_up(average_pillar_score(pillars_analysis, default=0.0), 2)
+        target_score = _round_half_up(
+            average_pillar_target(pillars_analysis, default=DEFAULT_TARGET_MATURITY_SCORE), 2
+        )
 
         towers_data.append(
             {
                 "id": tid,
                 "name": tname,
                 "score": f"{avg_score:.1f}",
+                "score_num": avg_score,
                 "band": band_for_score(avg_score, doc_lang=doc_lang),
                 "status_color": status_color_for_score(avg_score),
                 "executive_message": data.get("executive_snapshot", {}).get(
@@ -188,13 +214,13 @@ def _aggregate_tower_blueprints(
         p_idx = 1
         for pillar in data.get("pillars_analysis", []):
             for hc in pillar.get("health_check_asis", []):
-                vuln = hc.get("vulnerability_level", 3)
+                vuln = hc.get("vulnerability_level", DEFAULT_VULNERABILITY_LEVEL)
                 impact_label = (
                     t("critical_severity_lbl", locale=doc_lang)
-                    if vuln >= 5
+                    if vuln >= CRITICAL_VULNERABILITY_THRESHOLD
                     else (
                         t("high_severity_lbl", locale=doc_lang)
-                        if vuln >= 4
+                        if vuln >= HIGH_VULNERABILITY_THRESHOLD
                         else t("medium_severity_lbl", locale=doc_lang)
                     )
                 )
@@ -250,8 +276,6 @@ def _aggregate_tower_blueprints(
 
 def _get_cross_tower_nexus_rules(doc_lang: str) -> list[dict[str, str]]:
     """Declarative cross-tower nexus dependency rules resolved dynamically through i18n."""
-    from assessment_engine.infrastructure.localization import t
-
     t1_name = f"T1: {get_tower_name('T1', doc_lang=doc_lang)}"
     t2_name = f"T2: {get_tower_name('T2', doc_lang=doc_lang)}"
     t3_name = f"T3: {get_tower_name('T3', doc_lang=doc_lang)}"
@@ -302,8 +326,6 @@ def _get_cross_tower_nexus_rules(doc_lang: str) -> list[dict[str, str]]:
 
 def _parse_currency_amount_to_float(val_str: Any, locale: str | None = None) -> float:
     """Robustly parses localized currency strings into finite non-negative floats."""
-    from assessment_engine.domain.actuarial_scale_calibrator import safe_float
-
     return safe_float(val_str, locale=locale, allow_zero=True) or 0.0
 
 
@@ -380,11 +402,6 @@ def _build_stratified_financial_case(
 
     100% dynamic, mathematical, and agnostic across any client, size, country, currency, and language.
     """
-    from assessment_engine.infrastructure.localization import (
-        format_currency,
-        t,
-    )
-
     fallbacks_path = (
         Path(__file__).resolve().parents[3]
         / "engine_config"
@@ -399,16 +416,16 @@ def _build_stratified_financial_case(
         except (OSError, ValueError, KeyError) as ex:
             logger.debug("[GlobalPayload] Fallbacks metrics loading fallback: %s", ex)
 
-    finops_waste_ratio = float(strat_metrics.get("finops_cash_waste_ratio", 0.00135))
-    baseline_downtime_hours = float(strat_metrics.get("baseline_annual_downtime_hours", 27.0))
-    tail_risk_min_ratio = float(strat_metrics.get("tail_risk_p90_ratio_min", 0.45))
-    tail_risk_max_ratio = float(strat_metrics.get("tail_risk_p90_ratio_max", 0.65))
+    finops_waste_ratio = safe_float(strat_metrics.get("finops_cash_waste_ratio")) or DEFAULT_FINOPS_WASTE_RATIO
+    baseline_downtime_hours = safe_float(strat_metrics.get("baseline_annual_downtime_hours")) or DEFAULT_BASELINE_DOWNTIME_HOURS
+    tail_risk_min_ratio = safe_float(strat_metrics.get("tail_risk_p90_ratio_min")) or DEFAULT_TAIL_RISK_MIN_RATIO
+    tail_risk_max_ratio = safe_float(strat_metrics.get("tail_risk_p90_ratio_max")) or DEFAULT_TAIL_RISK_MAX_RATIO
 
     currency_code = "EUR"
     currency_symbol = "€"
-    annual_revenue = float(strat_metrics.get("default_annual_revenue", 100000000.0))
-    hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
-    reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
+    annual_revenue = safe_float(strat_metrics.get("default_annual_revenue")) or DEFAULT_ANNUAL_REVENUE_FALLBACK
+    hourly_downtime_cost = safe_float(strat_metrics.get("default_hourly_downtime_cost")) or DEFAULT_HOURLY_DOWNTIME_COST_FALLBACK
+    reg_max_fine = safe_float(strat_metrics.get("default_reg_max_fine")) or DEFAULT_REG_MAX_FINE_FALLBACK
     compliance_framework = t("default_compliance_framework", locale=doc_lang)
 
     if client_dir:
@@ -422,11 +439,13 @@ def _build_stratified_financial_case(
                     or intel_data.get("profile", {}).get("currency")
                 )
                 if c_code:
-                    currency_code = str(c_code).upper().strip()
+                    currency_code = resolve_iso_currency_code(str(c_code), locale=doc_lang)
                     currency_symbol = CURRENCY_SYMBOLS.get(currency_code, currency_code)
                 c_sym = intel_data.get("currency_symbol")
                 if c_sym:
                     currency_symbol = str(c_sym).strip()
+                    if not c_code:
+                        currency_code = resolve_iso_currency_code(currency_symbol, locale=doc_lang)
                 framework = (
                     intel_data.get("compliance", {}).get("primary_framework")
                     or intel_data.get("primary_framework")
@@ -439,12 +458,14 @@ def _build_stratified_financial_case(
         for prof_path in _discover_custom_risk_profiles(client_dir):
             try:
                 prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
-                currency_code = str(
-                    prof_data.get("currency_code") or prof_data.get("currency") or currency_code
-                ).upper().strip()
+                raw_prof_code = prof_data.get("currency_code") or prof_data.get("currency")
+                raw_prof_sym = prof_data.get("currency_symbol")
+                if raw_prof_code:
+                    currency_code = resolve_iso_currency_code(str(raw_prof_code), locale=doc_lang)
+                elif raw_prof_sym:
+                    currency_code = resolve_iso_currency_code(str(raw_prof_sym), locale=doc_lang)
                 currency_symbol = str(
-                    prof_data.get("currency_symbol")
-                    or CURRENCY_SYMBOLS.get(currency_code, currency_symbol)
+                    raw_prof_sym or CURRENCY_SYMBOLS.get(currency_code, currency_symbol)
                 ).strip()
                 annual_revenue = (
                     safe_float(prof_data.get("annual_revenue"), locale=doc_lang)
@@ -475,12 +496,13 @@ def _build_stratified_financial_case(
     for bp in blueprint_files:
         try:
             bp_data = json.loads(bp.read_text(encoding="utf-8-sig"))
-            t_ale = (
-                safe_float(bp_data.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
-                or safe_float(bp_data.get("annualized_loss_expectancy"), locale=doc_lang, allow_zero=True)
-                or safe_float(bp_data.get("executive_summary", {}).get("total_fair_ale"), locale=doc_lang, allow_zero=True)
-            )
-            total_fair_ale += t_ale or 0.0
+            t_ale_cands = [
+                safe_float(bp_data.get("total_fair_ale"), locale=doc_lang, allow_zero=True),
+                safe_float(bp_data.get("annualized_loss_expectancy"), locale=doc_lang, allow_zero=True),
+                safe_float(bp_data.get("executive_summary", {}).get("total_fair_ale"), locale=doc_lang, allow_zero=True),
+            ]
+            t_ale = next((c for c in t_ale_cands if c is not None), 0.0)
+            total_fair_ale += t_ale
             for pil in bp_data.get("pillars_analysis", []):
                 for pr in pil.get("projects_todo", []):
                     op_val = _parse_currency_amount_to_float(pr.get("opex_estimate"), locale=doc_lang)
@@ -508,9 +530,8 @@ def _build_stratified_financial_case(
     layer_2_display = format_currency(layer_2_amount, currency_code=currency_code, locale=doc_lang, decimals=0)
 
     # Layer 3: Dynamic Actuarial Tail Risk (P90 FAIR value: calibrated ratio of total FAIR exposure)
-    minimum_executive_ale = annual_revenue * MIN_EXECUTIVE_ALE_REVENUE_RATIO
-    if total_fair_ale < minimum_executive_ale:
-        total_fair_ale = minimum_executive_ale
+    if total_fair_ale <= 0.0:
+        total_fair_ale = annual_revenue * MIN_EXECUTIVE_ALE_REVENUE_RATIO
         
     layer_3_min = _round_half_up(total_fair_ale * tail_risk_min_ratio, 0)
     layer_3_max = _round_half_up(total_fair_ale * tail_risk_max_ratio, 0)
@@ -600,8 +621,6 @@ def _build_board_memo(
     doc_lang: str,
     client_dir: Path | None = None,
 ) -> dict[str, Any]:
-    from assessment_engine.infrastructure.localization import format_currency, t
-
     currency_code = "EUR"
     currency_symbol = "€"
     if client_dir:
@@ -615,23 +634,27 @@ def _build_board_memo(
                     or intel_data.get("profile", {}).get("currency")
                 )
                 if c_code:
-                    currency_code = str(c_code).upper().strip()
+                    currency_code = resolve_iso_currency_code(str(c_code), locale=doc_lang)
                     currency_symbol = CURRENCY_SYMBOLS.get(currency_code, currency_code)
                 c_sym = intel_data.get("currency_symbol")
                 if c_sym:
                     currency_symbol = str(c_sym).strip()
-            except Exception as ex:
+                    if not c_code:
+                        currency_code = resolve_iso_currency_code(currency_symbol, locale=doc_lang)
+            except (OSError, ValueError, KeyError, TypeError) as ex:
                 logger.debug("Error reading client_intelligence currency: %s", ex)
 
         for prof_path in _discover_custom_risk_profiles(client_dir):
             try:
                 prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
-                currency_code = str(
-                    prof_data.get("currency_code") or prof_data.get("currency") or currency_code
-                ).upper().strip()
+                raw_prof_code = prof_data.get("currency_code") or prof_data.get("currency")
+                raw_prof_sym = prof_data.get("currency_symbol")
+                if raw_prof_code:
+                    currency_code = resolve_iso_currency_code(str(raw_prof_code), locale=doc_lang)
+                elif raw_prof_sym:
+                    currency_code = resolve_iso_currency_code(str(raw_prof_sym), locale=doc_lang)
                 currency_symbol = str(
-                    prof_data.get("currency_symbol")
-                    or CURRENCY_SYMBOLS.get(currency_code, currency_symbol)
+                    raw_prof_sym or CURRENCY_SYMBOLS.get(currency_code, currency_symbol)
                 ).strip()
                 break
             except (OSError, ValueError, KeyError) as ex:
@@ -773,18 +796,25 @@ def _build_board_memo(
 
 
 def _build_cross_tower_nexus(
-    towers_data: list[dict], blueprint_files: list[Path], doc_lang: str
+    towers_data: list[dict],
+    _blueprint_files: list[Path] | None = None,
+    doc_lang: str = "en",
 ) -> dict[str, Any]:
     gen_tids = {t["id"].upper() for t in towers_data}
     all_rules = _get_cross_tower_nexus_rules(doc_lang=doc_lang)
-    active_rules = []
-    for r in all_rules:
-        src_id = r["source_tower"].split(":")[0].strip().upper()
-        tgt_id = r["target_tower"].split(":")[0].strip().upper()
-        if src_id in gen_tids or tgt_id in gen_tids or len(gen_tids) >= 3:
-            active_rules.append(r)
-
-    from assessment_engine.infrastructure.localization import t
+    active_rules = [
+        r
+        for r in all_rules
+        if r["source_tower"].split(":")[0].strip().upper() in gen_tids
+        and r["target_tower"].split(":")[0].strip().upper() in gen_tids
+    ]
+    if not active_rules:
+        active_rules = [
+            r
+            for r in all_rules
+            if r["source_tower"].split(":")[0].strip().upper() in gen_tids
+            or r["target_tower"].split(":")[0].strip().upper() in gen_tids
+        ]
 
     return {
         "title": t(
@@ -805,8 +835,6 @@ def _build_executive_callouts(
     doc_lang: str,
     client_dir: Path | None = None,
 ) -> list[dict[str, str]]:
-    from assessment_engine.infrastructure.localization import format_currency, t
-
     fallbacks_path = (
         Path(__file__).resolve().parents[3]
         / "engine_config"
@@ -823,20 +851,28 @@ def _build_executive_callouts(
 
     currency_code = "EUR"
     currency_symbol = "€"
-    hourly_downtime_cost = float(strat_metrics.get("default_hourly_downtime_cost", 5000.0))
-    reg_max_fine = float(strat_metrics.get("default_reg_max_fine", 2000000.0))
+    hourly_downtime_cost = (
+        safe_float(strat_metrics.get("default_hourly_downtime_cost"))
+        or DEFAULT_HOURLY_DOWNTIME_COST_FALLBACK
+    )
+    reg_max_fine = (
+        safe_float(strat_metrics.get("default_reg_max_fine"))
+        or DEFAULT_REG_MAX_FINE_FALLBACK
+    )
     industry_name = t("default_industry_name", locale=doc_lang)
 
     if client_dir:
         for prof_path in _discover_custom_risk_profiles(client_dir):
             try:
                 prof_data = json.loads(prof_path.read_text(encoding="utf-8-sig"))
-                currency_code = str(
-                    prof_data.get("currency_code") or prof_data.get("currency") or currency_code
-                ).upper().strip()
+                raw_prof_code = prof_data.get("currency_code") or prof_data.get("currency")
+                raw_prof_sym = prof_data.get("currency_symbol")
+                if raw_prof_code:
+                    currency_code = resolve_iso_currency_code(str(raw_prof_code), locale=doc_lang)
+                elif raw_prof_sym:
+                    currency_code = resolve_iso_currency_code(str(raw_prof_sym), locale=doc_lang)
                 currency_symbol = str(
-                    prof_data.get("currency_symbol")
-                    or CURRENCY_SYMBOLS.get(currency_code, currency_symbol)
+                    raw_prof_sym or CURRENCY_SYMBOLS.get(currency_code, currency_symbol)
                 ).strip()
                 hourly_downtime_cost = (
                     safe_float(prof_data.get("hourly_downtime_cost"), locale=doc_lang)
@@ -850,7 +886,7 @@ def _build_executive_callouts(
                     or reg_max_fine
                 )
                 break
-            except Exception as ex:
+            except (OSError, ValueError, KeyError, TypeError) as ex:
                 logger.debug("Error reading custom_risk_profile: %s", ex)
 
         intel_path = client_dir / "client_intelligence.json"
@@ -864,7 +900,7 @@ def _build_executive_callouts(
                         industry_name = t("default_industry_name", locale=doc_lang)
                     else:
                         industry_name = str(ind).strip()
-            except Exception as ex:
+            except (OSError, ValueError, KeyError, TypeError) as ex:
                 logger.debug("Error reading client_intelligence industry: %s", ex)
 
     reg_fine_fmt = format_currency(reg_max_fine, currency_code=currency_code, locale=doc_lang, decimals=0)
@@ -933,8 +969,6 @@ def build_global_payload(
     if not resolved_lang:
         resolved_lang = os.environ.get("ASSESSMENT_DOC_LANG") or os.environ.get("ASSESSMENT_LANGUAGE")
 
-    from assessment_engine.infrastructure.localization import resolve_base_locale
-
     doc_lang = resolve_base_locale(resolved_lang or "en")
 
     (
@@ -958,12 +992,22 @@ def build_global_payload(
         ind_profile = intelligence_dossier.get("profile", {}).get("industry", "default")
         graph_service = EpistemicGraphService(industry_profile=ind_profile)
 
-        intrinsic_audited = {item["id"]: float(item["score"]) for item in towers_data}
+        intrinsic_audited = {
+            item["id"]: (
+                safe_float(
+                    item.get("score_num") if item.get("score_num") is not None else item.get("score"),
+                    locale=doc_lang,
+                    allow_zero=True,
+                )
+                or 0.0
+            )
+            for item in towers_data
+        }
         # Actuarial model: Impute empirical mean of audited towers to prevent Bayesian dilution bias
         avg_audited_score = (
             sum(intrinsic_audited.values()) / len(intrinsic_audited)
             if intrinsic_audited
-            else 3.0
+            else DEFAULT_AUDIT_MATURITY_FALLBACK
         )
         for t_id in graph_service.towers:
             if t_id not in intrinsic_audited:
@@ -973,12 +1017,15 @@ def build_global_payload(
 
         # Calculate actual audited risk volatilities for PageRank Centrality
         audited_risks = {
-            t_id: max(0.01, 1.0 - (propagated_audited.get(t_id, 4.0) - 3.0) / 2.0)
+            t_id: max(
+                MIN_CENTRALITY_RISK_FLOOR,
+                1.0 - (propagated_audited.get(t_id, DEFAULT_TARGET_MATURITY_SCORE) - CENTRALITY_PIVOT_SCORE) / CENTRALITY_SCALE_DIVISOR,
+            )
             for t_id in graph_service.towers
         }
         audited_centrality = graph_service.calculate_risk_centrality(audited_risks)
         empirical_spof = (
-            max(audited_centrality, key=audited_centrality.get)
+            max(audited_centrality.items(), key=lambda kv: (kv[1], kv[0]))[0]
             if audited_centrality
             else (towers_data[0]["id"] if towers_data else "T1")
         )
@@ -986,13 +1033,25 @@ def build_global_payload(
         # Update towers_data with propagated (effective) maturity scores
         for item in towers_data:
             tid = item["id"].upper()
-            eff_score = propagated_audited.get(tid, float(item["score"]))
+            score_cand = item.get("score_num") if item.get("score_num") is not None else item.get("score")
+            fallback_score = safe_float(score_cand, locale=doc_lang, allow_zero=True) or 0.0
+            eff_score = _round_half_up(propagated_audited.get(tid, fallback_score), 2)
             item["effective_score"] = f"{eff_score:.1f}"
+            item["effective_score_num"] = eff_score
             item["effective_band"] = band_for_score(eff_score, doc_lang=doc_lang)
             item["effective_status_color"] = status_color_for_score(eff_score)
 
-        avg_effective_score = round(
-            sum(float(t["effective_score"]) for t in towers_data) / len(towers_data), 1
+        avg_effective_score = _round_half_up(
+            sum(
+                safe_float(
+                    t.get("effective_score_num") if t.get("effective_score_num") is not None else t.get("effective_score"),
+                    locale=doc_lang,
+                    allow_zero=True,
+                ) or 0.0
+                for t in towers_data
+            )
+            / max(1, len(towers_data)),
+            2,
         )
 
         epistemic_analysis = {
@@ -1013,11 +1072,14 @@ def build_global_payload(
     blueprint_towers = sorted(dict.fromkeys(blueprint_towers))
 
     # Executes the graph-based resolution algorithm to determine strategic alignments and dependencies, a core component of Phase 2 Tier 1 logic.
-    from assessment_engine.application.run_strategic_orchestrator import (
-        run_strategic_orchestration,
-    )
+    try:
+        from assessment_engine.application.run_strategic_orchestrator import (
+            run_strategic_orchestration,
+        )
 
-    run_strategic_orchestration(client_name)
+        run_strategic_orchestration(client_name)
+    except Exception as ex:
+        logger.debug("[GlobalPayload] Strategic orchestration deferred: %s", ex)
 
     # Collect approved priority initiatives across towers for clean executive horizons
     approved_initiatives = []
@@ -1038,7 +1100,6 @@ def build_global_payload(
                 except Exception as ex:
                     logger.debug("Error reading approved_annex: %s", ex)
 
-    final_roadmap_programs = []
     final_horizons = {
         "quick_wins_0_3_months": [],
         "year_1_3_12_months": [],
@@ -1093,18 +1154,22 @@ def build_global_payload(
         }
         final_horizons[h_key].append(init_def)
 
-    for w_name in [wave_0_lbl, wave_1_lbl, wave_2_lbl, wave_3_lbl]:
-        final_roadmap_programs.append(
-            {"name": w_name, "description": t("roadmap_program_desc_default", locale=doc_lang, program_name=w_name)}
+    avg_score = _round_half_up(
+        sum(
+            safe_float(
+                t.get("score_num") if t.get("score_num") is not None else t.get("score"),
+                locale=doc_lang,
+                allow_zero=True,
+            ) or 0.0
+            for t in towers_data
         )
-
-    avg_score = round(sum(float(t["score"]) for t in towers_data) / len(towers_data), 1)
+        / max(1, len(towers_data)),
+        2,
+    )
 
     # Performs deduplication on the aggregated list and truncates it to a predefined maximum length, ensuring the final result set is both unique and concise.
     unique_principles = list(dict.fromkeys(all_principles))
     unique_implications = list(dict.fromkeys(all_implications))
-
-    from assessment_engine.infrastructure.localization import format_date_localized
 
     dynamic_date_str = format_date_localized(locale=doc_lang)
     version_str = t("report_version_dto", locale=doc_lang)
@@ -1128,13 +1193,13 @@ def build_global_payload(
                 locale=doc_lang,
                 avg_score=f"{avg_score:.1f}",
             ),
-            "narrative": "PENDING STRATEGIC REFINEMENT",
+            "narrative": t("executive_summary_narrative_default", locale=doc_lang),
             "key_business_impacts": [
                 t("impact_time_to_market", locale=doc_lang),
                 t("impact_operational_risk", locale=doc_lang),
                 t("impact_cost_optimization", locale=doc_lang),
             ],
-            "top_strategic_risks": strategic_risks[:5],
+            "top_strategic_risks": strategic_risks[:TOP_CORPORATE_RISKS_LIMIT],
             "maturity_pulse": {
                 "score": avg_score,
                 "band": band_for_score(avg_score, doc_lang=doc_lang),
@@ -1150,7 +1215,7 @@ def build_global_payload(
                 "strategic_overview_tobe_default",
                 locale=doc_lang,
             ),
-            "value_targets": unique_implications[:5],
+            "value_targets": unique_implications[:TOP_CORPORATE_RISKS_LIMIT],
         },
         "burning_platform": [
             {
@@ -1160,7 +1225,7 @@ def build_global_payload(
                     risk.get("description", t("risk_root_cause_default", locale=doc_lang))
                 ],
             }
-            for risk in strategic_risks[:5]
+            for risk in strategic_risks[:TOP_CORPORATE_RISKS_LIMIT]
         ],
         "intelligence_dossier": intelligence_dossier,
         "epistemic_analysis": epistemic_analysis,
@@ -1186,14 +1251,14 @@ def build_global_payload(
                     "principle": p,
                     "description": t("evolution_principle_desc_default", locale=doc_lang),
                 }
-                for p in unique_principles[:5]
+                for p in unique_principles[:TOP_CORPORATE_RISKS_LIMIT]
             ],
             "strategic_pillars": [
                 {
                     "pillar": p,
                     "description": t("strategic_pillar_desc_default", locale=doc_lang),
                 }
-                for p in unique_implications[:5]
+                for p in unique_implications[:TOP_CORPORATE_RISKS_LIMIT]
             ],
         },
         "execution_roadmap": {
@@ -1311,7 +1376,7 @@ def build_global_payload(
         towers_data, blueprint_files, client_name, client_dir=client_dir, doc_lang=doc_lang
     )
     payload["cross_tower_nexus"] = _build_cross_tower_nexus(
-        towers_data, blueprint_files, doc_lang=doc_lang
+        towers_data, doc_lang=doc_lang
     )
     payload["executive_callouts"] = _build_executive_callouts(
         client_name, towers_data, client_dir=client_dir, doc_lang=doc_lang
@@ -1349,7 +1414,30 @@ def main(argv: list[str] | None = None) -> None:
     doc_lang = raw_args[4].lower() if len(raw_args) > 4 else None
     payload = build_global_payload(client_dir, client_name, doc_lang=doc_lang)
     if payload:
-        Path(raw_args[3]).write_text(json.dumps(payload, ensure_ascii=False, indent=2))
+        out_file = Path(raw_args[3])
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        temp_fd, temp_path = tempfile.mkstemp(
+            dir=str(out_file.parent), prefix="tmp_global_payload_", suffix=".json"
+        )
+        fd_closed = False
+        try:
+            with os.fdopen(temp_fd, "w", encoding="utf-8") as f:
+                fd_closed = True
+                json.dump(payload, f, ensure_ascii=False, indent=2)
+                f.write("\n")
+            os.replace(temp_path, str(out_file))
+        except Exception:
+            if not fd_closed:
+                try:
+                    os.close(temp_fd)
+                except OSError:
+                    pass
+            try:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            except OSError:
+                pass
+            raise
         logger.info("Dynamic payload generated successfully.")
 
 

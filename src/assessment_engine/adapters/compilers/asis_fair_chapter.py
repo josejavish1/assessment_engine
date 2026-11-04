@@ -23,7 +23,6 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
     add_body_paragraph,
     add_heading,
     add_spacer,
-    format_currency_custom,
     set_cell_border_white,
     set_cell_text_custom,
 )
@@ -63,6 +62,7 @@ from assessment_engine.infrastructure.localization import (
 from assessment_engine.infrastructure.text_utils import clean_text_for_word
 
 P90_ALE_MULTIPLIER_FALLBACK: Final[float] = 2.5
+MAX_LOSS_P90_MULTIPLIER_FALLBACK: Final[float] = 1.5
 TIER1_THRESHOLD_MULTIPLIER: Final[float] = 1.5
 TIER2_THRESHOLD_MULTIPLIER: Final[float] = 0.5
 
@@ -72,6 +72,14 @@ HEATMAP_ROW_HEIGHT_CM: Final[float] = 0.40
 HEATMAP_CELL_FONT_SIZE_PT: Final[float] = 8.0
 SUMMARY_TABLE_FONT_SIZE_PT: Final[float] = 8.0
 RISK_SUMMARY_COL_WIDTHS_CM: Final[tuple[float, ...]] = (2.2, 5.1, 3.4, 2.0, 2.0, 1.8)
+DEFAULT_RISK_SUMMARY_HEADERS: Final[tuple[str, ...]] = (
+    "ID",
+    "Evaluated Risk / Asset",
+    "Pillar",
+    "Frequency (TEF)",
+    "Outage Cost (P90)",
+    "Annual Loss (ALE)",
+)
 RISK_CARD_HANGING_INDENT_IN: Final[float] = 0.12
 CANONICAL_LEF_HEADER_TOKENS: Final[tuple[str, ...]] = ("lef", "events", "year", "annual")
 DEFAULT_CURRENCY_FALLBACK: Final[str] = "EUR"
@@ -128,16 +136,20 @@ def _format_integer_currency_safe(
     if 0.0 < clean_val < 1.0:
         try:
             sub_unit = Decimal(str(clean_val)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            if sub_unit >= Decimal("1.00"):
+                return "1"
+            if sub_unit <= Decimal("0.00"):
+                return "0"
             return f"{sub_unit:.2f}".replace(".", d_sep)
         except (InvalidOperation, ValueError, OverflowError):
-            return f"0{d_sep}00"
+            return "0"
     try:
         rounded = int(Decimal(str(clean_val)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
     except (InvalidOperation, ValueError, OverflowError):
         rounded = 0
-    if t_sep and t_sep != d_sep:
+    if t_sep:
         return f"{rounded:,}".replace(",", t_sep)
-    return format_currency_custom(float(rounded), t_sep, d_sep)
+    return str(rounded)
 
 
 def _render_fair_heatmap(
@@ -329,7 +341,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
     add_heading(doc, vocab["risk_matrix_title"], level=1, primary_color_rgb=p_color_rgb)
 
-    formatted_ale = format_currency_custom(global_fair_ale, t_sep, d_sep)
+    formatted_ale = _format_integer_currency_safe(global_fair_ale, t_sep, d_sep, locale=doc_lang)
 
     # Resolve client_id and custom calibration strictly via compilation context (100% thread-safe)
     doc_meta = b_data.get("document_meta") or {}
@@ -401,7 +413,22 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                 total_p90 += p90_raw
             if max_raw is not None:
                 total_max += max_raw
-    
+
+    if total_p90 <= 0.0:
+        explicit_p90 = safe_float(b_data.get("total_fair_p90"), locale=doc_lang, allow_zero=True)
+        total_p90 = (
+            explicit_p90
+            if explicit_p90 is not None and explicit_p90 > 0.0
+            else (global_fair_ale * P90_ALE_MULTIPLIER_FALLBACK)
+        )
+    if total_max <= 0.0:
+        explicit_max = safe_float(b_data.get("total_fair_max"), locale=doc_lang, allow_zero=True)
+        total_max = (
+            explicit_max
+            if explicit_max is not None and explicit_max > 0.0
+            else (total_p90 * MAX_LOSS_P90_MULTIPLIER_FALLBACK)
+        )
+
     formatted_p90 = _format_integer_currency_safe(total_p90, t_sep, d_sep, locale=doc_lang)
     formatted_max = _format_integer_currency_safe(total_max, t_sep, d_sep, locale=doc_lang)
 
@@ -455,15 +482,14 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         for hc in pillar.get("health_check_asis", []):
             cap_name = hc.get("capability")
             if cap_name:
+                f_tef = safe_float(hc.get("fair_tef_score"), locale=doc_lang, allow_zero=True)
+                f_lef = safe_float(hc.get("lef"), locale=doc_lang, allow_zero=True)
                 fair_lookup[cap_name] = {
-                    "p90": safe_float(hc.get("fair_p90_score"), locale=doc_lang) or 0.0,
-                    "min": safe_float(hc.get("fair_min_score"), locale=doc_lang) or 0.0,
-                    "max": safe_float(hc.get("fair_max_score"), locale=doc_lang) or 0.0,
-                    "lef": (
-                        safe_float(hc.get("fair_tef_score"), locale=doc_lang)
-                        or safe_float(hc.get("lef"), locale=doc_lang)
-                    ),
-                    "tef_scale_level": safe_float(hc.get("tef_scale_level"), locale=doc_lang),
+                    "p90": safe_float(hc.get("fair_p90_score"), locale=doc_lang, allow_zero=True) or 0.0,
+                    "min": safe_float(hc.get("fair_min_score"), locale=doc_lang, allow_zero=True) or 0.0,
+                    "max": safe_float(hc.get("fair_max_score"), locale=doc_lang, allow_zero=True) or 0.0,
+                    "lef": f_tef if f_tef is not None else f_lef,
+                    "tef_scale_level": safe_float(hc.get("tef_scale_level"), locale=doc_lang, allow_zero=True),
                 }
 
     # Decoupled CSV risk matrix path resolved via vocabulary config or canonical English filename
@@ -483,7 +509,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             if str(tok).strip()
         ]
         valid_lef_tokens = set(CANONICAL_LEF_HEADER_TOKENS) | set(localized_lef_tokens)
-        with open(csv_risks_path, "r", encoding="utf-8") as cf:
+        with open(csv_risks_path, "r", encoding="utf-8-sig") as cf:
             reader = csv.reader(cf, delimiter=";")
             header = next(reader, None)
             if header is not None:
@@ -503,15 +529,22 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
                     bp_metrics = fair_lookup.get(cap_raw, {})
                     bp_lef = bp_metrics.get("lef")
+                    bp_tef_scale = bp_metrics.get("tef_scale_level")
                     bp_sle = safe_float(bp_metrics.get("p90"), locale=doc_lang)
 
                     # Determine whether column 3 represents continuous LEF or discrete 1..5 TEF
                     if bp_lef is not None:
                         lef_val: float | None = bp_lef
-                        tef_scale = float(resolve_dynamic_tef_scale_level(bp_lef))
+                        tef_scale = float(resolve_dynamic_tef_scale_level(bp_lef, locale=doc_lang))
                     elif is_lef_column or (parsed_tef_col is not None and parsed_tef_col not in (1.0, 2.0, 3.0, 4.0, 5.0)):
                         lef_val = parsed_tef_col
-                        tef_scale = float(resolve_dynamic_tef_scale_level(raw_tef_cell))
+                        tef_scale = float(resolve_dynamic_tef_scale_level(raw_tef_cell, locale=doc_lang))
+                    elif parsed_tef_col is not None:
+                        lef_val = None
+                        tef_scale = float(clamp_scale_level(parsed_tef_col, default=1, locale=doc_lang))
+                    elif bp_tef_scale is not None:
+                        lef_val = None
+                        tef_scale = float(clamp_scale_level(bp_tef_scale, default=1, locale=doc_lang))
                     else:
                         lef_val = None
                         tef_scale = float(clamp_scale_level(raw_tef_cell, default=1, locale=doc_lang))
@@ -526,7 +559,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
                         else bp_sle
                     )
                     lm_scale = (
-                        float(resolve_dynamic_lm_scale_level(sle_val, dynamic_lm_bounds))
+                        float(resolve_dynamic_lm_scale_level(sle_val, dynamic_lm_bounds, locale=doc_lang))
                         if sle_val is not None
                         else float(clamp_scale_level(raw_lm_cell, default=1, locale=doc_lang))
                     )
@@ -554,17 +587,17 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
             derive_in_memory_fair_risks,
         )
-        rate_mult = float(ctx.get("rate_mult", 1.0))
+        rate_mult = safe_float(ctx.get("rate_mult"), locale=doc_lang) or 1.0
         risks_data_list, risks_by_pillar = derive_in_memory_fair_risks(
             b_data, doc_lang=doc_lang, currency=currency, rate_mult=rate_mult
         )
         for r_item in risks_data_list:
             sle_val = safe_float(r_item.get("sle"), locale=doc_lang)
             if sle_val is not None:
-                r_item["lm"] = float(resolve_dynamic_lm_scale_level(sle_val, dynamic_lm_bounds))
+                r_item["lm"] = float(resolve_dynamic_lm_scale_level(sle_val, dynamic_lm_bounds, locale=doc_lang))
             lef_val = safe_float(r_item.get("lef"), locale=doc_lang)
             if lef_val is not None:
-                r_item["tef"] = float(resolve_dynamic_tef_scale_level(lef_val))
+                r_item["tef"] = float(resolve_dynamic_tef_scale_level(lef_val, locale=doc_lang))
 
     # Section 4.2: Prioritized Risk Catalog
     add_heading(
@@ -580,7 +613,8 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     # Mutate deep/shallow copy to prevent global AST state pollution (Split-Brain)
     safe_risks_data_list = [dict(r) for r in risks_data_list]
     safe_risks_data_list.sort(
-        key=lambda r: safe_float(r.get("ale")) or 0.0, reverse=True
+        key=lambda r: safe_float(r.get("ale"), locale=doc_lang, allow_zero=True) or 0.0,
+        reverse=True,
     )
     for idx, r in enumerate(safe_risks_data_list):
         r["id"] = f"{tower_id}-RSK-{idx + 1:02d}"
@@ -588,7 +622,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
     total_risks_count = len(safe_risks_data_list)
     local_mean_ale = (
-        (sum(safe_float(r.get("ale")) or 0.0 for r in safe_risks_data_list) / total_risks_count)
+        (sum(safe_float(r.get("ale"), locale=doc_lang, allow_zero=True) or 0.0 for r in safe_risks_data_list) / total_risks_count)
         if total_risks_count > 0
         else 0.0
     )
@@ -634,9 +668,25 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     tblW.set(qn('w:w'), str(sum(int(w.twips) for w in sum_col_widths)))
     tblPr.append(tblW)
 
-    summary_headers = get_localized_list("risk_summary_headers", locale=doc_lang)
-    if not isinstance(summary_headers, list) or len(summary_headers) < 6:
-        summary_headers = ["ID", "Evaluated Risk / Asset", "Pillar", "Frequency (TEF)", "Outage Cost (P90)", "Annual Loss (ALE)"]
+    def _set_cell_width_twips(cell_node: Any, width_twips: int) -> None:
+        tcPr = cell_node._tc.get_or_add_tcPr()
+        tcW = tcPr.find(qn('w:tcW'))
+        if tcW is not None:
+            tcPr.remove(tcW)
+        new_tcW = OxmlElement('w:tcW')
+        new_tcW.set(qn('w:type'), 'dxa')
+        new_tcW.set(qn('w:w'), str(width_twips))
+        tcPr.append(new_tcW)
+
+    summary_headers = (
+        get_localized_list("risk_summary_headers", locale=doc_lang)
+        or get_localized_list("risk_summary_headers", locale="en")
+        or list(DEFAULT_RISK_SUMMARY_HEADERS)
+    )
+    if not isinstance(summary_headers, list) or len(summary_headers) < len(sum_col_widths):
+        summary_headers = list(DEFAULT_RISK_SUMMARY_HEADERS)
+    else:
+        summary_headers = summary_headers[: len(sum_col_widths)]
 
     for i, h_txt in enumerate(summary_headers):
         cell = table_risks.rows[0].cells[i]
@@ -649,14 +699,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
             resolver=resolver,
             no_bullets=True,
         )
-        tcPr = cell._tc.get_or_add_tcPr()
-        tcW = tcPr.find(qn('w:tcW'))
-        if tcW is not None:
-            tcPr.remove(tcW)
-        tcW = OxmlElement('w:tcW')
-        tcW.set(qn('w:type'), 'dxa')
-        tcW.set(qn('w:w'), str(int(sum_col_widths[i].twips)))
-        tcPr.append(tcW)
+        _set_cell_width_twips(cell, int(sum_col_widths[i].twips))
         shade_cell(cell, p_color_hex)
 
     taxonomy_resolver = get_taxonomy_resolver()
@@ -671,7 +714,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
         fair_metrics = fair_lookup.get(raw_cap, fair_lookup.get(cap_name, {}))
         raw_p90_candidate = r.get("p90") if r.get("p90") is not None else fair_metrics.get("p90")
-        clean_p90_candidate = safe_float(raw_p90_candidate, locale=doc_lang)
+        clean_p90_candidate = safe_float(raw_p90_candidate, locale=doc_lang, allow_zero=True)
         clean_ale_val = safe_float(r.get("ale"), locale=doc_lang, allow_zero=True) or 0.0
         p90_val = (
             clean_p90_candidate
@@ -692,14 +735,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
 
         for i, w in enumerate(sum_col_widths):
             cell = row.cells[i]
-            tcPr = cell._tc.get_or_add_tcPr()
-            tcW = tcPr.find(qn('w:tcW'))
-            if tcW is not None:
-                tcPr.remove(tcW)
-            tcW = OxmlElement('w:tcW')
-            tcW.set(qn('w:type'), 'dxa')
-            tcW.set(qn('w:w'), str(int(sum_col_widths[i].twips)))
-            tcPr.append(tcW)
+            _set_cell_width_twips(cell, int(w.twips))
             if r_idx % 2 == 1:
                 shade_cell(cell, alt_row_hex)
 
@@ -715,7 +751,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         cap_name = taxonomy_resolver.resolve_capability_name(raw_cap, default=raw_cap, locale=doc_lang)
         fair_metrics = fair_lookup.get(raw_cap, fair_lookup.get(cap_name, {}))
         raw_p90_candidate = r.get("p90") if r.get("p90") is not None else fair_metrics.get("p90")
-        clean_p90_candidate = safe_float(raw_p90_candidate, locale=doc_lang)
+        clean_p90_candidate = safe_float(raw_p90_candidate, locale=doc_lang, allow_zero=True)
         clean_ale_val = safe_float(r.get("ale"), locale=doc_lang, allow_zero=True) or 0.0
         p90_val = (
             clean_p90_candidate
@@ -857,10 +893,11 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
     )
     lever_intro = t("value_hexagon_intro", locale=doc_lang)
     add_body_paragraph(doc, lever_intro, text_color_rgb=text_color_rgb)
-    for l_idx, lever_text in enumerate(get_localized_list("value_hexagon_bullets", locale=doc_lang)):
+    hexagon_bullets = get_localized_list("value_hexagon_bullets", locale=doc_lang) or []
+    for l_idx, lever_text in enumerate(hexagon_bullets):
         add_markdown_bullet_local(
             lever_text,
-            space_after=HEXAGON_LAST_BULLET_SPACE_PT if l_idx == 5 else HEXAGON_BULLET_SPACE_PT,
+            space_after=HEXAGON_LAST_BULLET_SPACE_PT if l_idx == len(hexagon_bullets) - 1 else HEXAGON_BULLET_SPACE_PT,
         )
 
     return {

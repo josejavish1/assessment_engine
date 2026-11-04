@@ -20,6 +20,8 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 )
 
 MAX_CMMI_SCORE: Final[float] = 5.0
+DEFAULT_MATURITY_SCORE: Final[float] = 2.50
+DEFAULT_SCENARIOS_PER_DOMAIN: Final[int] = 3
 FALLBACK_CORPORATE_ALE: Final[float] = 10000.0
 DEFAULT_ANNUAL_REVENUE: Final[float] = 100_000_000.0
 DEFAULT_OPERATING_HOURS_PER_YEAR: Final[float] = 8760.0
@@ -40,7 +42,24 @@ CHAPTER_HEADING_SPACER_PT: Final[int] = 8
 COCKPIT_HEADER_FONT_PT: Final[float] = 8.5
 HEADER_TEXT_WHITE_RGB: Final[Tuple[int, int, int]] = (255, 255, 255)
 
+TOP_CORPORATE_RISKS_LIMIT: Final[int] = 5
+DEFAULT_SUBPILLAR_COUNT: Final[int] = 5
+
+COVER_TOP_SPACER_PT: Final[int] = 142
+COVER_BOTTOM_SPACER_PT: Final[int] = 258
+STATUS_STANDARDIZED_BG_HEX: Final[str] = "D9EAD3"
+STATUS_MODERATE_DEBT_BG_HEX: Final[str] = "FFF2CC"
+STATUS_HIGH_RISK_BG_HEX: Final[str] = "FCE5CD"
+CALLOUT_STRENGTH_BG_HEX: Final[str] = "F0FDFA"
+CALLOUT_STRENGTH_BORDER_HEX: Final[str] = "0D9488"
+CALLOUT_FRICTION_BG_HEX: Final[str] = "FFFBEB"
+CALLOUT_FRICTION_BORDER_HEX: Final[str] = "D97706"
+CALLOUT_BORDER_LEFT_SIZE: Final[int] = 24
+FALLBACK_CRITICALITY_RANK: Final[int] = 99
+
 from assessment_engine.adapters.compilers.ast_table_builders import (
+    HEATMAP_SEVERITY_HIGH_HEX,
+    HEATMAP_SEVERITY_LOW_HEX,
     HEATMAP_SEVERITY_MED_HEX,
     build_heatmap_mosaic,
 )
@@ -230,7 +249,7 @@ class Volume1AsisASTCompiler:
     ) -> None:
         """Constructs the Tier-1 asymmetrical left-aligned executive cover page."""
         # 1. Upper vertical offset (~28% down an A4 page)
-        nodes.append(SpacerNode(points=142))
+        nodes.append(SpacerNode(points=COVER_TOP_SPACER_PT))
 
         # 2. Left-aligned 3-line primary title block in Corporate Primary Blue
         title_line_1 = t("tomo_cover_title_line_1", locale=doc_lang)
@@ -289,8 +308,8 @@ class Volume1AsisASTCompiler:
                 )
             )
 
-        # 4. Editorial whitespace chasm (~258 pt)
-        nodes.append(SpacerNode(points=258))
+        # 4. Editorial whitespace chasm
+        nodes.append(SpacerNode(points=COVER_BOTTOM_SPACER_PT))
 
         # 5. Minimalist borderless single-line metadata (~79% down page, left-aligned)
         version_prefix = t("tomo_cover_version_prefix", locale=doc_lang)
@@ -333,14 +352,25 @@ class Volume1AsisASTCompiler:
         return default
 
     @staticmethod
-    def _round_half_up_int(val: Any, default: int = 0) -> int:
-        clean = safe_float(val, allow_zero=True)
+    def _round_half_up_int(val: Any, default: int = 0, locale: str | None = None) -> int:
+        clean = safe_float(val, locale=locale, allow_zero=True)
         if clean is None:
             return default
         try:
             return int(Decimal(str(clean)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
         except (InvalidOperation, ValueError, OverflowError):
             return default
+
+    @staticmethod
+    def _to_score_decimal(val: Any, locale: str | None = None) -> Decimal:
+        """Converts a score to a 2-decimal-place Decimal using exact ROUND_HALF_UP."""
+        clean = safe_float(val, locale=locale, allow_zero=True)
+        if clean is None:
+            return Decimal("0.00")
+        try:
+            return Decimal(str(clean)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        except (InvalidOperation, ValueError, OverflowError):
+            return Decimal("0.00")
 
     @staticmethod
     def _safe_decimal_weight(val: Any, default_str: str, locale: str | None = None) -> Decimal:
@@ -352,6 +382,23 @@ class Volume1AsisASTCompiler:
             except (InvalidOperation, ValueError, OverflowError):
                 pass
         return Decimal(default_str)
+
+    @staticmethod
+    def _safe_format_template(template_str: str, fallback_str: str, **kwargs: Any) -> str:
+        """Safely formats a localized template string without crashing on malformed placeholders."""
+        try:
+            return str(template_str).format(**kwargs)
+        except (KeyError, ValueError, IndexError):
+            try:
+                return str(fallback_str).format(**kwargs)
+            except (KeyError, ValueError, IndexError):
+                return str(fallback_str)
+
+    @staticmethod
+    def _get_locale_catalog(doc_lang: str) -> dict[str, Any]:
+        """Safely retrieves the locale catalog with fallback without duplicate lookups."""
+        all_loc = load_locales_catalog()
+        return all_loc.get(doc_lang) or all_loc.get("en") or {}
 
     def _resolve_financial_telemetry(
         self,
@@ -391,9 +438,9 @@ class Volume1AsisASTCompiler:
 
         # 3. Corporate ALE & P90 tail risk (reconciled with live tower FAIR scenarios)
         corporate_ale = (
-            safe_float(fin.get("total_fair_ale"), locale=doc_lang)
-            or safe_float(fin.get("corporate_ale"), locale=doc_lang)
-            or safe_float(global_payload.get("total_fair_ale"), locale=doc_lang)
+            safe_float(fin.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
+            or safe_float(fin.get("corporate_ale"), locale=doc_lang, allow_zero=True)
+            or safe_float(global_payload.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
         )
         derived_p90_sum = 0.0
         if corporate_ale is None:
@@ -473,8 +520,7 @@ class Volume1AsisASTCompiler:
 
         Returns list of tuples: (tower_code, tower_name, default_score, title_key, text_key).
         """
-        all_catalogs = load_locales_catalog()
-        catalog = all_catalogs.get(doc_lang) or all_catalogs.get("en", {})
+        catalog = self._get_locale_catalog(doc_lang)
         catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
 
         canonical_topology_map = {
@@ -540,17 +586,15 @@ class Volume1AsisASTCompiler:
             t_item = t_payloads.get(code) or t_payloads.get(code_u) or t_payloads.get(code.lower()) or {}
             c_item = catalog_loc.get(code_u, catalog_loc.get(code, {}))
 
-            # Score resolution prioritizing live telemetry
-            score_val = (
-                h_item.get("score")
-                if (h_item and h_item.get("score") is not None)
-                else (
-                    t_item.get("maturity_score") or t_item.get("global_score")
-                    if (isinstance(t_item, dict) and (t_item.get("maturity_score") is not None or t_item.get("global_score") is not None))
-                    else c_item.get("score_num")
-                )
+            # Score resolution prioritizing live telemetry (preserving legitimate 0.0 scores)
+            score_val = self._first_not_none(
+                h_item.get("score") if isinstance(h_item, dict) else None,
+                t_item.get("maturity_score") if isinstance(t_item, dict) else None,
+                t_item.get("global_score") if isinstance(t_item, dict) else None,
+                c_item.get("score_num") if isinstance(c_item, dict) else None,
             )
-            score = float(score_val if score_val is not None else 2.50)
+            parsed_score = safe_float(score_val, locale=doc_lang, allow_zero=True)
+            score = parsed_score if parsed_score is not None else DEFAULT_MATURITY_SCORE
 
             # Name resolution
             clean_name = t(f"tomo_tower_{code.lower()}_clean", locale=doc_lang)
@@ -586,13 +630,13 @@ class Volume1AsisASTCompiler:
 
         if lvl >= 3:
             status_name = t("tomo_status_standardized", locale=doc_lang)
-            bg_color = "D9EAD3"
+            bg_color = STATUS_STANDARDIZED_BG_HEX
         elif lvl == 2:
             status_name = t("tomo_status_moderate_debt", locale=doc_lang)
-            bg_color = "FFF2CC"
+            bg_color = STATUS_MODERATE_DEBT_BG_HEX
         else:
             status_name = t("tomo_status_high_risk", locale=doc_lang)
-            bg_color = "FCE5CD"
+            bg_color = STATUS_HIGH_RISK_BG_HEX
 
         return {
             "level": lvl,
@@ -647,9 +691,9 @@ class Volume1AsisASTCompiler:
                 parametric_weight = (
                     (target_corporate_ale / max(1, len(domain_meta)))
                     if target_corporate_ale > 0
-                    else FALLBACK_CORPORATE_ALE
+                    else 0.0
                 )
-                val = safe_float(t_info.get("raw_ale"), locale=doc_lang) or parametric_weight
+                val = safe_float(t_info.get("raw_ale"), locale=doc_lang, allow_zero=True) or parametric_weight
 
             try:
                 dec_val = Decimal(str(val)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -657,7 +701,12 @@ class Volume1AsisASTCompiler:
                 dec_val = Decimal("0.00")
             raw_pairs.append((code, dec_val))
 
-        safe_target = safe_float(target_corporate_ale) or float(sum(p[1] for p in raw_pairs)) or FALLBACK_CORPORATE_ALE
+        parsed_target = safe_float(target_corporate_ale, allow_zero=True)
+        safe_target = (
+            parsed_target
+            if parsed_target is not None
+            else (float(sum(p[1] for p in raw_pairs)) if raw_pairs else FALLBACK_CORPORATE_ALE)
+        )
         target_int = int(Decimal(str(safe_target)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
         return ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=target_int,
@@ -686,7 +735,7 @@ class Volume1AsisASTCompiler:
         )
         nodes.append(SpacerNode(points=CHAPTER_HEADING_SPACER_PT))
 
-        catalog = load_locales_catalog().get(doc_lang, load_locales_catalog().get("en", {}))
+        catalog = self._get_locale_catalog(doc_lang)
         catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
 
         heatmap = global_payload.get("heatmap", [])
@@ -694,7 +743,7 @@ class Volume1AsisASTCompiler:
             val
             for item in heatmap
             if isinstance(item, dict)
-            for val in [safe_float(item.get("score"), locale=doc_lang)]
+            for val in [safe_float(item.get("score"), locale=doc_lang, allow_zero=True)]
             if val is not None
         ]
         if not scores and catalog_loc:
@@ -702,12 +751,12 @@ class Volume1AsisASTCompiler:
                 val
                 for v in catalog_loc.values()
                 if isinstance(v, dict)
-                for val in [safe_float(v.get("score_num"), locale=doc_lang)]
+                for val in [safe_float(v.get("score_num"), locale=doc_lang, allow_zero=True)]
                 if val is not None
             ]
-        scores_dec = [Decimal(f"{float(s):.2f}") for s in scores]
+        scores_dec = [self._to_score_decimal(s, locale=doc_lang) for s in scores]
         simple_mean_dec, weighted_dec = ActuarialReconciler.reconcile_cmmi_scores(scores_dec)
-        explicit_global_score = safe_float(global_payload.get("global_cmmi_score"), locale=doc_lang)
+        explicit_global_score = safe_float(global_payload.get("global_cmmi_score"), locale=doc_lang, allow_zero=True)
         global_score = float(
             explicit_global_score if explicit_global_score is not None else weighted_dec
         )
@@ -920,11 +969,16 @@ class Volume1AsisASTCompiler:
             )
 
         # Consolidated global index closure row derived dynamically
-        scores_dec = [Decimal(f"{s:.2f}") for s in domain_scores]
+        scores_dec = [self._to_score_decimal(s, locale=doc_lang) for s in domain_scores]
         simple_mean_dec, weighted_dec = ActuarialReconciler.reconcile_cmmi_scores(scores_dec)
         simple_mean = float(simple_mean_dec)
         simple_mean_str = format_number(simple_mean, locale=doc_lang, decimals=2)
-        weighted_score = float(self._first_not_none(global_payload.get("global_cmmi_score"), weighted_dec))
+        parsed_global_score = safe_float(
+            global_payload.get("global_cmmi_score"), locale=doc_lang, allow_zero=True
+        )
+        weighted_score = float(
+            parsed_global_score if parsed_global_score is not None else weighted_dec
+        )
         weighted_score_str = format_number(weighted_score, locale=doc_lang, decimals=2)
         global_b_info = self._resolve_cmmi_band_info(weighted_score, doc_lang)
 
@@ -1016,7 +1070,7 @@ class Volume1AsisASTCompiler:
         p_intro = t("tomo_ch3_exec_intro_p1", locale=doc_lang)
         nodes.append(ParagraphNode(text=p_intro, font_size=9.5, space_after=10))
 
-        catalog = load_locales_catalog().get(doc_lang, load_locales_catalog().get("en", {}))
+        catalog = self._get_locale_catalog(doc_lang)
         catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
 
         fin_metrics = self._resolve_financial_telemetry(global_payload, tower_payloads, currency, doc_lang)
@@ -1039,8 +1093,13 @@ class Volume1AsisASTCompiler:
         domain_topology = self._resolve_domain_topology(global_payload, doc_lang, tower_payloads)
         domain_meta = [(code, title_k, text_k) for code, _, _, title_k, text_k in domain_topology]
 
-        domain_scenarios = fin_metrics.get("domain_scenario_counts") or self.CANONICAL_DOMAIN_SCENARIO_BASELINE
-        total_scenarios_sum = sum(domain_scenarios.get(code, 3) for code, *_ in domain_meta)
+        raw_domain_scenarios = fin_metrics.get("domain_scenario_counts") or self.CANONICAL_DOMAIN_SCENARIO_BASELINE
+        domain_scenarios = {
+            str(k).upper(): int(v)
+            for k, v in raw_domain_scenarios.items()
+            if safe_float(v, allow_zero=True) is not None
+        }
+        total_scenarios_sum = sum(domain_scenarios.get(code.upper(), DEFAULT_SCENARIOS_PER_DOMAIN) for code, *_ in domain_meta)
 
         # 3.1 The Cost of Inaction: Annualized Financial Exposure by Domain
         nodes.append(
@@ -1067,7 +1126,7 @@ class Volume1AsisASTCompiler:
             doc_lang=doc_lang,
         )
 
-        target_ale_int = self._round_half_up_int(total_ale)
+        target_ale_int = self._round_half_up_int(total_ale, locale=doc_lang)
 
         col_dom_lbl = t("tomo_ch3_table4_col_domain", locale=doc_lang)
         col_scen_lbl = t("tomo_ch3_table4_col_scenarios_count", locale=doc_lang)
@@ -1088,7 +1147,7 @@ class Volume1AsisASTCompiler:
             )
         ]
 
-        target_p90_int = self._round_half_up_int(total_p90)
+        target_p90_int = self._round_half_up_int(total_p90, locale=doc_lang)
         raw_p90_pairs: List[Tuple[str, Decimal]] = [
             (code, Decimal(str(reconciled_allocations.get(code, 0))))
             for code, *_ in domain_meta
@@ -1099,12 +1158,15 @@ class Volume1AsisASTCompiler:
         )
 
         # Reconcile percentage shares across domains to strictly sum to 100.0%
+        equal_share_tenths = (
+            Decimal("1000") / Decimal(str(max(1, len(domain_topology))))
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         raw_pct_pairs: List[Tuple[str, Decimal]] = [
             (
                 code,
                 (Decimal(str(reconciled_allocations.get(code, 0))) / Decimal(str(target_ale_int)) * Decimal("1000"))
                 if target_ale_int > 0
-                else Decimal(str(round(1000.0 / max(1, len(domain_topology)), 2))),
+                else equal_share_tenths,
             )
             for code, *_ in domain_topology
         ]
@@ -1114,9 +1176,9 @@ class Volume1AsisASTCompiler:
         )
 
         for code, clean_tower_name, _, _, _ in domain_topology:
-            sc_count = domain_scenarios.get(code, 3)
+            sc_count = domain_scenarios.get(code.upper(), DEFAULT_SCENARIOS_PER_DOMAIN)
             d_ale = reconciled_allocations.get(code, 0)
-            d_p95 = reconciled_p90_allocations.get(code, 0)
+            d_p90 = reconciled_p90_allocations.get(code, 0)
             d_pct_val = reconciled_pct_tenths.get(code, 100) / 10.0
             d_pct_str = f"{format_number(d_pct_val, locale=doc_lang, decimals=1)}%"
 
@@ -1126,13 +1188,12 @@ class Volume1AsisASTCompiler:
                         CellNode(text=f"{code} — {clean_tower_name}", font_size=8.0),
                         CellNode(text=str(sc_count), font_size=8.0, align="CENTER"),
                         CellNode(text=format_currency(d_ale, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
-                        CellNode(text=format_currency(d_p95, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
+                        CellNode(text=format_currency(d_p90, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
                         CellNode(text=d_pct_str, font_size=8.0, align="CENTER"),
                     ]
                 )
             )
 
-        total_p95_sum = target_p90_int
         tot_label = t("tomo_ch3_table4_total_row_label", locale=doc_lang, total_domains=len(domain_meta))
         pct_100_str = f"{format_number(100.0, locale=doc_lang, decimals=1)}%"
         table4_rows.append(
@@ -1141,7 +1202,7 @@ class Volume1AsisASTCompiler:
                     CellNode(text=tot_label, bold=True, bg_color="F8FAFC", font_size=8.5),
                     CellNode(text=str(total_scenarios_sum), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
                     CellNode(text=format_currency(target_ale_int, currency_symbol=currency, locale=doc_lang, decimals=0), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
-                    CellNode(text=format_currency(total_p95_sum, currency_symbol=currency, locale=doc_lang, decimals=0), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
+                    CellNode(text=format_currency(target_p90_int, currency_symbol=currency, locale=doc_lang, decimals=0), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
                     CellNode(text=pct_100_str, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
                 ]
             )
@@ -1206,7 +1267,7 @@ class Volume1AsisASTCompiler:
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=t("tomo_ch3_tier1_title", locale=doc_lang), bold=True, bg_color="FADBD8", font_size=8.5),
+                    CellNode(text=t("tomo_ch3_tier1_title", locale=doc_lang), bold=True, bg_color=HEATMAP_SEVERITY_HIGH_HEX, font_size=8.5),
                     CellNode(text=str(t1_scenarios), bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=f"{t1_str} {t('per_year_suffix', locale=doc_lang)} ({pct1_str})", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t("tomo_ch3_tier1_desc", locale=doc_lang), bg_color="FFFFFF", font_size=8.0),
@@ -1222,7 +1283,7 @@ class Volume1AsisASTCompiler:
             ),
             TableRowNode(
                 cells=[
-                    CellNode(text=t("tomo_ch3_tier3_title", locale=doc_lang), bold=True, bg_color="D5F5E3", font_size=8.5),
+                    CellNode(text=t("tomo_ch3_tier3_title", locale=doc_lang), bold=True, bg_color=HEATMAP_SEVERITY_LOW_HEX, font_size=8.5),
                     CellNode(text=str(t3_scenarios), bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=f"{t3_str} {t('per_year_suffix', locale=doc_lang)} ({pct3_str})", bold=True, bg_color="FFFFFF", align="CENTER", font_size=8.5),
                     CellNode(text=t("tomo_ch3_tier3_desc", locale=doc_lang), bg_color="FFFFFF", font_size=8.0),
@@ -1259,11 +1320,12 @@ class Volume1AsisASTCompiler:
             )
         )
 
+        is_critical_tier = bool(global_payload.get("meta", {}).get("is_critical", False))
         dynamic_lm_bounds = compute_dynamic_lm_thresholds(
             currency=currency,
             annual_revenue=fin_metrics["annual_revenue"],
             hourly_downtime_cost=fin_metrics["consolidated_rate"],
-            is_critical_tier=bool(global_payload.get("meta", {}).get("is_critical", False)),
+            is_critical_tier=is_critical_tier,
             locale=doc_lang,
         )
         heatmap_feed = global_payload.get("corporate_heatmap_risks") or catalog.get("tomo_corporate_heatmap_risks") or all_primary_risks
@@ -1271,10 +1333,13 @@ class Volume1AsisASTCompiler:
             nodes.append(
                 build_heatmap_mosaic(
                     heatmap_feed,
+                    is_critical=is_critical_tier,
                     dynamic_lm_thresholds=dynamic_lm_bounds,
                     header_bg_color=self.primary_color_hex,
                     locale=doc_lang,
                     currency=currency,
+                    annual_revenue=fin_metrics["annual_revenue"],
+                    hourly_downtime_cost=fin_metrics["consolidated_rate"],
                 )
             )
             nodes.append(SpacerNode(points=14))
@@ -1304,8 +1369,8 @@ class Volume1AsisASTCompiler:
                 reverse=True,
             )
             top_cards_feed = []
-            for r in sorted_primary[:5]:
-                raw_sle = self._round_half_up_int(r.get("sle"))
+            for r in sorted_primary[:TOP_CORPORATE_RISKS_LIMIT]:
+                raw_sle = self._round_half_up_int(r.get("sle"), locale=doc_lang)
                 clean_lef = safe_float(r.get("lef"), locale=doc_lang, allow_zero=True) or 0.0
                 raw_lef = Decimal(str(clean_lef)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
                 reconciled = ActuarialReconciler.reconcile_scenario_card(raw_sle, raw_lef)
@@ -1430,7 +1495,7 @@ class Volume1AsisASTCompiler:
         strip_ale_lbl = t("tomo_ch4_kpi_annual_risk_exposure", locale=doc_lang)
         strip_exposure_lbl = t("tomo_lbl_exposure", locale=doc_lang)
 
-        catalog = load_locales_catalog().get(doc_lang, load_locales_catalog().get("en", {}))
+        catalog = self._get_locale_catalog(doc_lang)
         catalog_loc = catalog.get("tomo_tower_forensic_catalog", {})
         col_sub_lbl = t("tomo_ch4_subpillar_col_name", locale=doc_lang)
         col_str_lbl = t("tomo_ch4_subpillar_col_strengths", locale=doc_lang)
@@ -1449,7 +1514,7 @@ class Volume1AsisASTCompiler:
             catalog_loc=catalog_loc,
             doc_lang=doc_lang,
         )
-        target_ale_int = self._round_half_up_int(fin_metrics["corporate_ale"])
+        target_ale_int = self._round_half_up_int(fin_metrics["corporate_ale"], locale=doc_lang)
 
         for code, title_key, text_key in domain_meta:
             clean_heading = t(title_key, locale=doc_lang)
@@ -1469,14 +1534,26 @@ class Volume1AsisASTCompiler:
             t_payload = tower_payloads.get(code) or tower_payloads.get(code.upper()) or tower_payloads.get(code.lower()) or {}
             h_item = heatmap_map.get(code.upper(), {})
 
-            # Derive metrics dynamically prioritizing live payload telemetry
+            # Derive metrics dynamically prioritizing live payload telemetry (preserving legitimate 0.0 scores)
             payload_score = (
-                t_payload.get("maturity_score")
-                or t_payload.get("global_score")
+                self._first_not_none(
+                    t_payload.get("maturity_score"),
+                    t_payload.get("global_score"),
+                )
                 if isinstance(t_payload, dict)
                 else None
             )
-            raw_score = float(self._first_not_none(h_item.get("score"), payload_score, t_data.get("score_num"), default=2.50))
+            parsed_raw = safe_float(
+                self._first_not_none(
+                    h_item.get("score") if isinstance(h_item, dict) else None,
+                    payload_score,
+                    t_data.get("score_num") if isinstance(t_data, dict) else None,
+                    default=DEFAULT_MATURITY_SCORE,
+                ),
+                locale=doc_lang,
+                allow_zero=True,
+            )
+            raw_score = parsed_raw if parsed_raw is not None else DEFAULT_MATURITY_SCORE
 
             b_info = self._resolve_cmmi_band_info(raw_score, doc_lang)
             band_lbl = t(b_info["band_key"], locale=doc_lang)
@@ -1522,9 +1599,19 @@ class Volume1AsisASTCompiler:
                             or t("default_subpillar_label", locale=doc_lang)
                         )
                         p_score = safe_float(p.get("score"), locale=doc_lang, allow_zero=True)
-                        subpillars.append([p_name, p_score if p_score is not None else 2.50])
+                        subpillars.append([p_name, p_score if p_score is not None else DEFAULT_MATURITY_SCORE])
             else:
-                subpillars = t_data.get("subpillars") or []
+                raw_sp_list = t_data.get("subpillars") or []
+                subpillars = []
+                for sp_item in raw_sp_list:
+                    if isinstance(sp_item, (list, tuple)) and len(sp_item) >= 2:
+                        sp_name = str(sp_item[0])
+                        sp_score = safe_float(sp_item[1], locale=doc_lang, allow_zero=True)
+                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE])
+                    elif isinstance(sp_item, dict):
+                        sp_name = str(sp_item.get("name") or sp_item.get("pillar_name") or t("default_subpillar_label", locale=doc_lang))
+                        sp_score = safe_float(sp_item.get("score"), locale=doc_lang, allow_zero=True)
+                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE])
 
             # 2. Dynamic narrative extraction
             raw_narrative = (
@@ -1539,7 +1626,7 @@ class Volume1AsisASTCompiler:
                     "forensic_domain_narrative_default",
                     locale=doc_lang,
                     tower_name=matched_name,
-                    client_name=str(global_payload.get("meta", {}).get("client") or "Organization").strip(),
+                    client_name=str(global_payload.get("meta", {}).get("client") or t("default_client_name", locale=doc_lang)).strip(),
                 )
 
             # 3. Dynamic inventory extraction
@@ -1554,11 +1641,15 @@ class Volume1AsisASTCompiler:
             inventory = payload_inv or t_data.get("inventory") or ""
             if not inventory:
                 f_templates = catalog.get("forensic_domain_templates", {})
-                inv_tmpl = f_templates.get("inventory_fallback") or "Scoped technological estate for {domain_code} ({domain_title}), encompassing {subpillar_count} evaluated control subpillars."
-                inventory = inv_tmpl.format(
+                inv_tmpl = f_templates.get("inventory_fallback") or t(
+                    "forensic_inventory_fallback_template", locale=doc_lang
+                )
+                inventory = self._safe_format_template(
+                    inv_tmpl,
+                    f"Domain {code} technological estate comprising evaluated control subpillars.",
                     domain_code=code,
                     domain_title=matched_name,
-                    subpillar_count=len(subpillars) if subpillars else 5,
+                    subpillar_count=len(subpillars) if subpillars else DEFAULT_SUBPILLAR_COUNT,
                     sector_name=t("default_industry_name", locale=doc_lang),
                 )
 
@@ -1572,17 +1663,24 @@ class Volume1AsisASTCompiler:
             strengths = payload_str or t_data.get("strengths") or []
             max_cmmi_str = format_number(MAX_CMMI_SCORE, decimals=2, locale=doc_lang)
             if not strengths and subpillars:
-                sorted_sp = sorted(subpillars, key=lambda x: float(x[1]) if isinstance(x[1], (int, float, Decimal)) else 0.0, reverse=True)
+                sorted_sp = sorted(
+                    subpillars,
+                    key=lambda x: safe_float(x[1], locale=doc_lang, allow_zero=True) or 0.0,
+                    reverse=True,
+                )
                 top_sp = sorted_sp[0]
+                top_sp_score = safe_float(top_sp[1], locale=doc_lang, allow_zero=True) or 0.0
                 f_templates = catalog.get("forensic_domain_templates", {})
-                str_tmpl = (
-                    f_templates.get("strength_fallback")
-                    or f"Established baseline operational continuity in {{highest_subpillar_name}} (maturity index {{highest_subpillar_score}}/{max_cmmi_str})."
+                str_tmpl = f_templates.get("strength_fallback") or t(
+                    "forensic_strength_fallback_template", locale=doc_lang
                 )
                 strengths = [
-                    str_tmpl.format(
+                    self._safe_format_template(
+                        str_tmpl,
+                        f"Established operational continuity in {top_sp[0]}.",
                         highest_subpillar_name=top_sp[0],
-                        highest_subpillar_score=format_number(float(top_sp[1]), decimals=2, locale=doc_lang),
+                        highest_subpillar_score=format_number(top_sp_score, decimals=2, locale=doc_lang),
+                        max_cmmi_str=max_cmmi_str,
                     )
                 ]
 
@@ -1596,17 +1694,23 @@ class Volume1AsisASTCompiler:
             )
             findings = payload_fnd or t_data.get("findings") or []
             if not findings and subpillars:
-                sorted_sp = sorted(subpillars, key=lambda x: float(x[1]) if isinstance(x[1], (int, float, Decimal)) else 0.0)
+                sorted_sp = sorted(
+                    subpillars,
+                    key=lambda x: safe_float(x[1], locale=doc_lang, allow_zero=True) or 0.0,
+                )
                 low_sp = sorted_sp[0]
+                low_sp_score = safe_float(low_sp[1], locale=doc_lang, allow_zero=True) or 0.0
                 f_templates = catalog.get("forensic_domain_templates", {})
-                fnd_tmpl = (
-                    f_templates.get("finding_fallback")
-                    or f"Control deficit in {{lowest_subpillar_name}} (maturity index {{lowest_subpillar_score}}/{max_cmmi_str})."
+                fnd_tmpl = f_templates.get("finding_fallback") or t(
+                    "forensic_finding_fallback_template", locale=doc_lang
                 )
                 findings = [
-                    fnd_tmpl.format(
+                    self._safe_format_template(
+                        fnd_tmpl,
+                        f"Control deficit identified in {low_sp[0]}.",
                         lowest_subpillar_name=low_sp[0],
-                        lowest_subpillar_score=format_number(float(low_sp[1]), decimals=2, locale=doc_lang),
+                        lowest_subpillar_score=format_number(low_sp_score, decimals=2, locale=doc_lang),
+                        max_cmmi_str=max_cmmi_str,
                     )
                 ]
 
@@ -1625,9 +1729,9 @@ class Volume1AsisASTCompiler:
                                     CellNode(
                                         text=f"**{strengths_title}**\n\n{str_bullets}",
                                         font_size=8.0,
-                                        bg_color="F0FDFA",
-                                        border_left_color="0D9488",
-                                        border_left_size=24,
+                                        bg_color=CALLOUT_STRENGTH_BG_HEX,
+                                        border_left_color=CALLOUT_STRENGTH_BORDER_HEX,
+                                        border_left_size=CALLOUT_BORDER_LEFT_SIZE,
                                         align="LEFT",
                                     )
                                 ]
@@ -1650,9 +1754,9 @@ class Volume1AsisASTCompiler:
                                     CellNode(
                                         text=f"**{friction_title}**\n\n{fric_bullets}",
                                         font_size=8.0,
-                                        bg_color="FFFBEB",
-                                        border_left_color="D97706",
-                                        border_left_size=24,
+                                        bg_color=CALLOUT_FRICTION_BG_HEX,
+                                        border_left_color=CALLOUT_FRICTION_BORDER_HEX,
+                                        border_left_size=CALLOUT_BORDER_LEFT_SIZE,
                                         align="LEFT",
                                     )
                                 ]
@@ -1682,7 +1786,8 @@ class Volume1AsisASTCompiler:
                     sp_score = sp[1]
                     sp_strength = strengths[idx] if idx < len(strengths) else ""
                     sp_finding = findings[idx] if idx < len(findings) else ""
-                    sp_score_str = format_number(float(sp_score), decimals=2, locale=doc_lang) if isinstance(sp_score, (int, float, Decimal)) else str(sp_score)
+                    parsed_sp = safe_float(sp_score, locale=doc_lang, allow_zero=True)
+                    sp_score_str = format_number(parsed_sp, decimals=2, locale=doc_lang) if parsed_sp is not None else str(sp_score)
                     deep_rows.append(
                         TableRowNode(
                             cells=[
@@ -1749,7 +1854,7 @@ class Volume1AsisASTCompiler:
                 if parsed_rank is not None:
                     return (int(parsed_rank), str(sp.get("id", "")))
             crit_token = str(sp.get("criticality_code") or sp.get("criticality", "")).strip().upper()
-            fallback_rank = localized_ranks.get(crit_token, canonical_criticality_ranks.get(crit_token, 99))
+            fallback_rank = localized_ranks.get(crit_token, canonical_criticality_ranks.get(crit_token, FALLBACK_CRITICALITY_RANK))
             return (int(fallback_rank), str(sp.get("id", "")))
 
         valid_spofs = [sp for sp in spof_list if isinstance(sp, dict)]
@@ -1812,7 +1917,7 @@ class Volume1AsisASTCompiler:
             )
         ]
 
-        catalog = load_locales_catalog().get(doc_lang, load_locales_catalog().get("en", {}))
+        catalog = self._get_locale_catalog(doc_lang)
         nexus_list = global_payload.get("nexus_matrix") or catalog.get("tomo_nexus_catalog", [])
 
         for nx in nexus_list:
@@ -1866,7 +1971,8 @@ class Volume1AsisASTCompiler:
             )
         )
 
-        glossary = load_abbreviations_glossary().get(doc_lang, load_abbreviations_glossary().get("en", {}))
+        all_glossaries = load_abbreviations_glossary()
+        glossary = all_glossaries.get(doc_lang) or all_glossaries.get("en") or {}
         gloss_rows = [
             TableRowNode(
                 cells=[

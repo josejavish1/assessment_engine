@@ -87,6 +87,7 @@ CURRENCY_SCALE_PARITY: Final[Mapping[str, float]] = MappingProxyType({
     "DKK": 7.5,
     "ISK": 140.0,
     "PLN": 4.3,
+    "ZŁ": 4.3,
     "HUF": 395.0,
     "CZK": 25.0,
     "TRY": 34.0,
@@ -131,6 +132,7 @@ CURRENCY_SCALE_PARITY: Final[Mapping[str, float]] = MappingProxyType({
     "EGP": 52.0,
     "NGN": 1650.0,
     "ZAR": 18.5,
+    "R": 18.5,
 })
 
 _DOT_THOUSANDS_LOCALES: Final[frozenset[str]] = frozenset(
@@ -150,7 +152,10 @@ MAX_MONETARY_LM_CUTOFF: Final[float] = 100.0
 MAX_SAFE_BASE_THRESHOLD: Final[float] = 1e290
 
 _STRICT_DOT_THOUSANDS_GROUP_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"^[+-]?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d+)?$"
+    r"^[+-]?[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?$"
+)
+_STRICT_COMMA_THOUSANDS_GROUP_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^[+-]?[1-9]\d{0,2}(?:,\d{3})+$"
 )
 
 
@@ -214,6 +219,9 @@ _ACCOUNTING_NEGATIVE_PATTERN: Final[re.Pattern[str]] = re.compile(
 _PRE_CURRENCY_NEGATIVE_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"^[+-]\s*[^\deE\s.,'_\u2019\u00a0\u202f]+\s*\d|[^\deE\s.,'_\u2019\u00a0\u202f]+\s*-\s*\d"
 )
+_EXPLICIT_NEGATIVE_PREFIX_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(?<![\d.eE])-\s*(?:[^\d\s.,'_\u2019\u00a0\u202f]+\s*)?\d"
+)
 _NUMERIC_CLEAN_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"(?<![\d.+-])([+-])?\s*(\d(?:[\d.,'_\u2019\u00a0\u202f]*\d)?)((?:[eE][+-]?\d+)?)"
 )
@@ -234,7 +242,11 @@ def safe_float(
             return None
 
         # Reject accounting negative notation e.g. "(1,500.00)", "($1,500)", "1,500-" and negative currency prefixes
-        if _ACCOUNTING_NEGATIVE_PATTERN.search(stripped) or _PRE_CURRENCY_NEGATIVE_PATTERN.search(stripped):
+        if (
+            _ACCOUNTING_NEGATIVE_PATTERN.search(stripped)
+            or _PRE_CURRENCY_NEGATIVE_PATTERN.search(stripped)
+            or _EXPLICIT_NEGATIVE_PREFIX_PATTERN.search(stripped)
+        ):
             return None
 
         match = _NUMERIC_CLEAN_PATTERN.search(stripped)
@@ -281,22 +293,29 @@ def safe_float(
                     clean = clean.replace(",", ".")
                 else:
                     clean = clean.replace(",", "")
-            else:
+            elif _STRICT_COMMA_THOUSANDS_GROUP_PATTERN.match(clean):
                 clean = clean.replace(",", "")
+            else:
+                return None
         elif clean.count(".") > 1:
-            clean = clean.replace(".", "")
+            if _STRICT_DOT_THOUSANDS_GROUP_PATTERN.match(clean):
+                clean = clean.replace(".", "")
+            else:
+                return None
         elif is_dot_thousands_locale and clean.count(".") == 1 and not exponent:
             dot_parts = clean.split(".")
             unsigned_int = dot_parts[0].lstrip("+-")
-            # In dot-thousands locales (es, de, pt, it), a single dot followed by
-            # exactly 3 digits ending in '00' on a non-zero integer part (e.g. '1.000',
-            # '1.500', '25.000') represents integer thousands, whereas fractional scores
-            # or ratios either have < 3 digits (e.g. '1.5', '2.50') or non-zero trailing
-            # hundredths/thousandths (e.g. '0.125', '1.255', '3.142').
+            # In dot-thousands locales without a decimal comma, a single dot followed by
+            # exactly 3 digits is ONLY stripped as integer thousands if the trailing
+            # group is strictly '000' (e.g. '1.000', '10.000', '250.000').
+            # If the fractional part contains non-zero digits (e.g. '1.500', '10.500',
+            # '12.300', '0.125'), it represents a fractional float and the dot is preserved.
             if (
-                unsigned_int != "0"
+                unsigned_int.isdigit()
+                and not (len(unsigned_int) > 1 and unsigned_int.startswith("0"))
+                and int(unsigned_int) > 0
                 and _STRICT_DOT_THOUSANDS_GROUP_PATTERN.match(clean)
-                and dot_parts[1].endswith("00")
+                and dot_parts[1] == "000"
             ):
                 clean = clean.replace(".", "")
         val = clean + exponent
@@ -403,6 +422,64 @@ def resolve_currency_parity(currency: str = "EUR", locale: str | None = None) ->
     return parity
 
 
+_UNAMBIGUOUS_SYMBOL_TO_ISO: Final[Mapping[str, str]] = MappingProxyType({
+    "€": "EUR",
+    "$": "USD",
+    "£": "GBP",
+    "¥": "JPY",
+    "R$": "BRL",
+    "CA$": "CAD",
+    "A$": "AUD",
+    "NZ$": "NZD",
+    "S$": "SGD",
+    "HK$": "HKD",
+    "NT$": "TWD",
+    "₹": "INR",
+    "₩": "KRW",
+    "₫": "VND",
+    "₪": "ILS",
+    "ZŁ": "PLN",
+    "KR": "SEK",
+    "KR.": "DKK",
+    "R": "ZAR",
+    "CHF": "CHF",
+    "SFR": "CHF",
+    "FR.": "CHF",
+    "SFR.": "CHF",
+})
+
+
+def resolve_iso_currency_code(currency_token: str = "EUR", locale: str | None = None) -> str:
+    """Resolves a currency symbol or code into an authoritative ISO 4217 code respecting locale."""
+    clean_curr = str(currency_token or "EUR").strip()
+    clean_upper = clean_curr.upper()
+    norm_loc, lang_code, region_code = _extract_bcp47_lang_and_region(locale)
+
+    mapped_iso = (
+        _AMBIGUOUS_SYMBOL_LOCALE_MAP.get((clean_upper, norm_loc))
+        or (_AMBIGUOUS_SYMBOL_LOCALE_MAP.get((clean_upper, region_code)) if region_code else None)
+        or (_AMBIGUOUS_SYMBOL_LOCALE_MAP.get((clean_upper, lang_code)) if lang_code else None)
+    )
+    if not mapped_iso:
+        for (sym, prefix), iso in _AMBIGUOUS_SYMBOL_LOCALE_MAP.items():
+            if sym == clean_upper and (norm_loc == prefix or norm_loc.startswith(f"{prefix}-")):
+                mapped_iso = iso
+                break
+    if mapped_iso:
+        return mapped_iso
+
+    if clean_upper in ("KR", "KR."):
+        if lang_code == "da" or norm_loc == "dk" or region_code == "dk":
+            return "DKK"
+        if lang_code == "is" or region_code == "is":
+            return "ISK"
+        if lang_code in ("no", "nb", "nn") or region_code == "no":
+            return "NOK"
+        return "SEK"
+
+    return _UNAMBIGUOUS_SYMBOL_TO_ISO.get(clean_curr, _UNAMBIGUOUS_SYMBOL_TO_ISO.get(clean_upper, clean_upper))
+
+
 def compute_dynamic_lm_thresholds(
     currency: str = "EUR",
     annual_revenue: float | None = None,
@@ -447,14 +524,15 @@ def compute_dynamic_lm_thresholds(
 
 
 def resolve_dynamic_lm_scale_level(
-    sle_amount: float,
+    sle_amount: float | Any,
     thresholds: Tuple[float, float, float, float],
+    locale: str | None = None,
 ) -> int:
     """Maps single loss expectancy (SLE) to discrete 1..5 LM scale level given dynamic thresholds."""
     if _is_positive_infinity(sle_amount):
         return 5
 
-    val = safe_float(sle_amount)
+    val = safe_float(sle_amount, locale=locale)
     if val is None:
         return 1
 
@@ -475,14 +553,15 @@ def resolve_dynamic_lm_scale_level(
 
 
 def resolve_dynamic_tef_scale_level(
-    lef_annual: float,
+    lef_annual: float | Any,
     thresholds: Tuple[float, float, float, float] = CANONICAL_TEF_THRESHOLDS,
+    locale: str | None = None,
 ) -> int:
     """Maps continuous Loss Event Frequency (events/year) to discrete 1..5 TEF scale level."""
     if _is_positive_infinity(lef_annual):
         return 5
 
-    val = safe_float(lef_annual)
+    val = safe_float(lef_annual, locale=locale)
     if val is None:
         return 1
 
@@ -515,7 +594,7 @@ def resolve_risk_matrix_coordinates(
     else:
         f_lef = safe_float(raw_lef, locale=locale)
         if f_lef is not None:
-            r_tef = resolve_dynamic_tef_scale_level(f_lef, tef_thresholds)
+            r_tef = resolve_dynamic_tef_scale_level(f_lef, tef_thresholds, locale=locale)
         elif "tef_scale_level" in risk_entry and risk_entry.get("tef_scale_level") is not None:
             r_tef = clamp_scale_level(risk_entry.get("tef_scale_level"), default=1, locale=locale)
         else:
@@ -527,7 +606,7 @@ def resolve_risk_matrix_coordinates(
     else:
         f_sle = safe_float(raw_sle, locale=locale)
         if f_sle is not None:
-            r_lm = resolve_dynamic_lm_scale_level(f_sle, lm_thresholds)
+            r_lm = resolve_dynamic_lm_scale_level(f_sle, lm_thresholds, locale=locale)
         elif "lm_scale_level" in risk_entry and risk_entry.get("lm_scale_level") is not None:
             r_lm = clamp_scale_level(risk_entry.get("lm_scale_level"), default=1, locale=locale)
         else:
@@ -539,7 +618,7 @@ def resolve_risk_matrix_coordinates(
                 min(clean_lm_bounds[0] * MONETARY_CUTOFF_SCALE_RATIO, MAX_MONETARY_LM_CUTOFF),
             )
             if f_lm is not None and f_lm >= monetary_cutoff:
-                r_lm = resolve_dynamic_lm_scale_level(f_lm, clean_lm_bounds)
+                r_lm = resolve_dynamic_lm_scale_level(f_lm, clean_lm_bounds, locale=locale)
             else:
                 r_lm = clamp_scale_level(raw_lm_field, default=1, locale=locale)
 
@@ -554,9 +633,13 @@ def _format_integer_with_separator(val: float, thousands_sep: str = ".") -> str:
         decimal_sep = "," if thousands_sep in (".", " ") else "."
         try:
             sub_unit = Decimal(str(val)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            if sub_unit >= Decimal("1.00"):
+                return "1"
+            if sub_unit <= Decimal("0.00"):
+                return "0"
             return f"{sub_unit:.2f}".replace(".", decimal_sep)
         except (InvalidOperation, ValueError, OverflowError):
-            return "0" + decimal_sep + "00"
+            return "0"
     try:
         rounded = int(Decimal(str(val)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
     except (InvalidOperation, ValueError, OverflowError):

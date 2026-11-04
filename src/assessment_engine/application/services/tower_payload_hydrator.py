@@ -16,11 +16,16 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Dict, Final, List, Mapping, Optional
 
-from assessment_engine.domain.actuarial_scale_calibrator import safe_float
+from assessment_engine.domain.actuarial_scale_calibrator import (
+    resolve_iso_currency_code as _resolve_iso_currency_code,
+)
+from assessment_engine.domain.actuarial_scale_calibrator import (
+    safe_float,
+)
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_ANNUAL_REVENUE: Final[float] = 1_000_000_000.0
+DEFAULT_ANNUAL_REVENUE: Final[float] = 100_000_000.0
 HOURS_IN_YEAR: Final[float] = 8760.0
 DEFAULT_REVENUE_EXPOSURE_FACTOR: Final[float] = 0.001
 DEFAULT_FACILITY_REVENUE_SHARE: Final[float] = 0.35
@@ -34,21 +39,6 @@ DEFAULT_TENANT_PLACEHOLDER_TITLE: Final[str] = "Enterprise"
 DEFAULT_CURRENCY_CODE: Final[str] = "EUR"
 DEFAULT_CURRENCY_SYMBOL: Final[str] = "€"
 DEFAULT_SECTOR_BENCHMARK_LABEL: Final[str] = "Industry Baseline"
-
-SYMBOL_TO_ISO_CURRENCY: Final[Mapping[str, str]] = MappingProxyType({
-    "€": "EUR",
-    "$": "USD",
-    "£": "GBP",
-    "¥": "JPY",
-    "R$": "BRL",
-    "CA$": "CAD",
-    "A$": "AUD",
-    "S$": "SGD",
-    "HK$": "HKD",
-    "₹": "INR",
-    "₩": "KRW",
-    "CHF": "CHF",
-})
 
 
 def _round_currency_half_up(val: float) -> float:
@@ -68,8 +58,9 @@ def _reconcile_finding_scores_half_up(
     """Proportionally scales finding scores using exact Decimal arithmetic and Largest Remainder reconciliation."""
     if not findings:
         return
+    clean_target = safe_float(target_total, locale=locale, allow_zero=True) or 0.0
     target_cents = int(
-        (Decimal(str(target_total)) * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        (Decimal(str(clean_target)) * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
     )
     raw_weights = [
         Decimal(str(safe_float(hc.get(score_key), locale=locale, allow_zero=True) or 0.0))
@@ -88,7 +79,7 @@ def _reconcile_finding_scores_half_up(
     floored_cents = [int(q.to_integral_value(rounding="ROUND_FLOOR")) for q in exact_quotas]
     remainders = [(idx, exact_quotas[idx] - Decimal(floored_cents[idx])) for idx in range(n)]
     deficit = target_cents - sum(floored_cents)
-    remainders.sort(key=lambda item: item[1], reverse=True)
+    remainders.sort(key=lambda item: (-item[1], item[0]))
     for i in range(max(0, deficit)):
         floored_cents[remainders[i % n][0]] += 1
 
@@ -288,7 +279,8 @@ class TowerPayloadHydrator:
             )
             local_facility_domains = {
                 str(d).strip().upper()
-                for d in (fin_tel.get("local_facility_domains") or ("T10",))
+                for d in (fin_tel.get("local_facility_domains") or ())
+                if str(d).strip()
             }
             is_local_facility_domain = (
                 bool(raw_payload.get("is_local_facility"))
@@ -317,7 +309,7 @@ class TowerPayloadHydrator:
             resolved_currency_code = str(
                 meta.get("currency_code")
                 or fin_tel.get("currency_code")
-                or SYMBOL_TO_ISO_CURRENCY.get(currency, currency.upper())
+                or _resolve_iso_currency_code(currency, locale=doc_lang)
             ).strip()
 
             raw_payload["annual_revenue"] = annual_revenue

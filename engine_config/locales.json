@@ -2646,7 +2646,11 @@
     "gloss_dii_volatile": "**Consistencia del Diagnóstico (DII) [{val}% - Sensibilidad Alta]:** Sensibilidad alta; la escasez de evidencias documentales podría alterar la nota, por lo que se recomienda contraste confirmatorio.",
     "default_pillar_label": "Pilar",
     "months_unit_lbl": "meses",
-    "fair_risk_matrix_csv_filename": "06_matriz_riesgos_fair.csv"
+    "fair_risk_matrix_csv_filename": "06_matriz_riesgos_fair.csv",
+    "executive_summary_narrative_default": "Hoja de ruta de modernización tecnológica corporativa establecida para consolidar la resiliencia operativa y la velocidad estratégica en todos los dominios funcionales.",
+    "forensic_inventory_fallback_template": "Entorno tecnológico evaluado para {domain_code} ({domain_title}), que abarca {subpillar_count} subpilares de control analizados.",
+    "forensic_strength_fallback_template": "Continuidad operativa de línea base establecida en {highest_subpillar_name} (índice de madurez {highest_subpillar_score}/{max_cmmi_str}).",
+    "forensic_finding_fallback_template": "Déficit de control en {lowest_subpillar_name} (índice de madurez {lowest_subpillar_score}/{max_cmmi_str})."
   },
   "en": {
     "control_documental_title": "Document Control and Change History",
@@ -5229,7 +5233,11 @@
     "gloss_dii_volatile": "**Diagnostic Consistency (DII) [{val}% - High Sensitivity]:** High volatility; limited evidentiary backing suggests further confirmation is required to lock target maturity scores.",
     "default_pillar_label": "Pillar",
     "months_unit_lbl": "months",
-    "fair_risk_matrix_csv_filename": "06_fair_risk_matrix.csv"
+    "fair_risk_matrix_csv_filename": "06_fair_risk_matrix.csv",
+    "executive_summary_narrative_default": "Enterprise technology modernization roadmap established to solidify operational resilience and strategic velocity across all functional domains.",
+    "forensic_inventory_fallback_template": "Scoped technological estate for {domain_code} ({domain_title}), encompassing {subpillar_count} evaluated control subpillars.",
+    "forensic_strength_fallback_template": "Established baseline operational continuity in {highest_subpillar_name} (maturity index {highest_subpillar_score}/{max_cmmi_str}).",
+    "forensic_finding_fallback_template": "Control deficit in {lowest_subpillar_name} (maturity index {lowest_subpillar_score}/{max_cmmi_str})."
   },
   "pt": {
     "control_documental_title": "Controle de Documento e Histórico de Alterações",
@@ -7873,7 +7881,11 @@
     "gloss_dii_volatile": "**Diagnostic Consistency (DII) [{val}% - High Sensitivity]:** High volatility; limited evidentiary backing suggests further confirmation is required to lock target maturity scores.",
     "default_pillar_label": "Pilar",
     "months_unit_lbl": "meses",
-    "fair_risk_matrix_csv_filename": "06_matriz_riscos_fair.csv"
+    "fair_risk_matrix_csv_filename": "06_matriz_riscos_fair.csv",
+    "executive_summary_narrative_default": "Roteiro de modernização tecnológica corporativa estabelecido para consolidar a resiliência operacional e a velocidade estratégica em todos os domínios funcionais.",
+    "forensic_inventory_fallback_template": "Ambiente tecnológico avaliado para {domain_code} ({domain_title}), abrangendo {subpillar_count} subpilares de controle analisados.",
+    "forensic_strength_fallback_template": "Continuidade operacional de linha de base estabelecida em {highest_subpillar_name} (índice de maturidade {highest_subpillar_score}/{max_cmmi_str}).",
+    "forensic_finding_fallback_template": "Déficit de controle em {lowest_subpillar_name} (índice de maturidade {lowest_subpillar_score}/{max_cmmi_str})."
   },
   "fr": {
     "control_documental_title": "Contrôle des Documents et Historique des Modifications",
@@ -10516,7 +10528,11 @@
     "gloss_dii_volatile": "**Diagnostic Consistency (DII) [{val}% - High Sensitivity]:** High volatility; limited evidentiary backing suggests further confirmation is required to lock target maturity scores.",
     "default_pillar_label": "Pilier",
     "months_unit_lbl": "mois",
-    "fair_risk_matrix_csv_filename": "06_matrice_risques_fair.csv"
+    "fair_risk_matrix_csv_filename": "06_matrice_risques_fair.csv",
+    "executive_summary_narrative_default": "Feuille de route de modernisation technologique d'entreprise établie pour consolider la résilience opérationnelle et la vélocité stratégique dans tous les domaines fonctionnels.",
+    "forensic_inventory_fallback_template": "Environnement technologique évalué pour {domain_code} ({domain_title}), comprenant {subpillar_count} sous-piliers de contrôle analysés.",
+    "forensic_strength_fallback_template": "Continuité opérationnelle de référence établie dans {highest_subpillar_name} (indice de maturité {highest_subpillar_score}/{max_cmmi_str}).",
+    "forensic_finding_fallback_template": "Déficit de contrôle dans {lowest_subpillar_name} (indice de maturité {lowest_subpillar_score}/{max_cmmi_str})."
   },
   "ja": {
     "control_documental_title": "文書管理および変更履歴",
@@ -13158,7 +13174,11 @@
     "gloss_dii_volatile": "**Diagnostic Consistency (DII) [{val}% - High Sensitivity]:** High volatility; limited evidentiary backing suggests further confirmation is required to lock target maturity scores.",
     "default_pillar_label": "柱",
     "months_unit_lbl": "ヶ月",
-    "fair_risk_matrix_csv_filename": "06_fair_risk_matrix.csv"
+    "fair_risk_matrix_csv_filename": "06_fair_risk_matrix.csv",
+    "executive_summary_narrative_default": "すべての機能ドメインにおける運用上のレジリエンスと戦略的スピードを強化するために確立された企業テクノロジー近代化ロードマップ。",
+    "forensic_inventory_fallback_template": "{domain_code}（{domain_title}）の対象技術環境。分析された{subpillar_count}個の制御サブピラーを網羅。",
+    "forensic_strength_fallback_template": "{highest_subpillar_name}における確立されたベースライン運用継続性（成熟度指数 {highest_subpillar_score}/{max_cmmi_str}）。",
+    "forensic_finding_fallback_template": "{lowest_subpillar_name}における統制不備（成熟度指数 {lowest_subpillar_score}/{max_cmmi_str}）。"
   },
   "de": {
     "control_documental_title": "Dokumentenkontrolle und Änderungshistorie",
@@ -15800,7 +15820,11 @@
     "gloss_dii_volatile": "**Diagnostic Consistency (DII) [{val}% - High Sensitivity]:** High volatility; limited evidentiary backing suggests further confirmation is required to lock target maturity scores.",
     "default_pillar_label": "Säule",
     "months_unit_lbl": "Monate",
-    "fair_risk_matrix_csv_filename": "06_fair_risikomatrix.csv"
+    "fair_risk_matrix_csv_filename": "06_fair_risikomatrix.csv",
+    "executive_summary_narrative_default": "Fahrplan zur Modernisierung der Unternehmenstechnologie zur Festigung der operativen Resilienz und strategischen Geschwindigkeit in allen Funktionsbereichen.",
+    "forensic_inventory_fallback_template": "Bewertetes technologisches Umfeld für {domain_code} ({domain_title}), das {subpillar_count} analysierte Kontroll-Teilbereiche umfasst.",
+    "forensic_strength_fallback_template": "Etablierte operative Basiskontinuität in {highest_subpillar_name} (Reifegradindex {highest_subpillar_score}/{max_cmmi_str}).",
+    "forensic_finding_fallback_template": "Kontrolldefizit in {lowest_subpillar_name} (Reifegradindex {lowest_subpillar_score}/{max_cmmi_str})."
   },
   "executive_summary_narrative": {
     "es": {

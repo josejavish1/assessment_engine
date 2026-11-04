@@ -3,19 +3,23 @@
 import json
 import logging
 import math
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
+from typing import Any, Final, cast
 
 import matplotlib
 
 matplotlib.use("Agg")
 from matplotlib.figure import Figure
 
+from assessment_engine.domain.actuarial_scale_calibrator import (
+    safe_float as _domain_safe_float,
+)
+
 logger = logging.getLogger(__name__)
-
-
-from typing import Any, Final, cast
 
 DEFAULT_BRAND_COLOR_HEX: Final[str] = "0072BC"
 RADAR_FIG_WIDTH_IN: Final[float] = 14.0
@@ -25,10 +29,26 @@ RADAR_YLIM_MAX: Final[float] = 5.6
 RADAR_LABEL_RADIAL_OFFSET: Final[float] = 0.35
 RADAR_LABEL_MAX_RADIUS: Final[float] = 5.25
 FALLBACK_SORT_RANK: Final[int] = 99
+LEGEND_MIN_FONT_SIZE: Final[int] = 9
+LEGEND_MAX_FONT_SIZE: Final[int] = 13
+LEGEND_FONT_DIVIDEND: Final[int] = 130
+LEGEND_COMPACT_TOWER_THRESHOLD: Final[int] = 10
 
-from assessment_engine.domain.actuarial_scale_calibrator import (
-    safe_float as _domain_safe_float,
-)
+RADAR_GRID_COLOR_HEX: Final[str] = "#E2E8F0"
+RADAR_SPINE_COLOR_HEX: Final[str] = "#CBD5E1"
+RADAR_BG_COLOR_HEX: Final[str] = "#F8FAFC"
+RADAR_LABEL_COLOR_HEX: Final[str] = "#2D3748"
+RADAR_YTICK_COLOR_HEX: Final[str] = "#718096"
+RADAR_LEGEND_TEXT_COLOR_HEX: Final[str] = "#333333"
+
+RADAR_SUBPLOT_LEFT: Final[float] = 0.1
+RADAR_SUBPLOT_RIGHT: Final[float] = 0.7
+RADAR_SUBPLOT_TOP: Final[float] = 0.85
+RADAR_SUBPLOT_BOTTOM: Final[float] = 0.1
+RADAR_LINE_WIDTH: Final[float] = 3.0
+RADAR_MARKER_SIZE: Final[float] = 7.0
+RADAR_FILL_ALPHA: Final[float] = 0.25
+RADAR_SUPTITLE_FONT_SIZE: Final[float] = 24.0
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -36,9 +56,11 @@ def load_json(path: Path) -> dict[str, Any]:
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8-sig")))
 
 
-def safe_float(value: Any, locale: str | None = None) -> float:
+def _safe_float_zero(
+    value: Any, locale: str | None = None, allow_zero: bool = True
+) -> float:
     """Safely convert an arbitrary value to a finite float using the domain calibrator."""
-    return _domain_safe_float(value, locale=locale, allow_zero=True) or 0.0
+    return _domain_safe_float(value, locale=locale, allow_zero=allow_zero) or 0.0
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -106,7 +128,14 @@ def main(argv: list[str] | None = None) -> None:
     doc_lang = str(payload.get("meta", {}).get("language") or "en").lower()
 
     labels = [str(t_node.get("id") or t_node.get("tower_code") or "") for t_node in towers]
-    values = [safe_float(t_node.get("score"), locale=doc_lang) for t_node in towers]
+    values = [
+        _safe_float_zero(
+            t_node.get("score_num") if t_node.get("score_num") is not None else t_node.get("score"),
+            locale=doc_lang,
+            allow_zero=True,
+        )
+        for t_node in towers
+    ]
 
     n = len(labels)
     angles = [i / float(n) * 2 * math.pi for i in range(n)]
@@ -121,33 +150,33 @@ def main(argv: list[str] | None = None) -> None:
 
     # Expands the figure width to ensure both the chart and its legend render completely within page boundaries
     fig = Figure(figsize=(RADAR_FIG_WIDTH_IN, RADAR_FIG_HEIGHT_IN), facecolor="white")
-    fig.subplots_adjust(left=0.1, right=0.7, top=0.85, bottom=0.1)
-    ax = fig.add_subplot(111, polar=True, facecolor="#F8FAFC")
-    ax.grid(color="#E2E8F0", linestyle="-", linewidth=1.0)
-    ax.spines["polar"].set_color("#CBD5E1")
+    fig.subplots_adjust(left=RADAR_SUBPLOT_LEFT, right=RADAR_SUBPLOT_RIGHT, top=RADAR_SUBPLOT_TOP, bottom=RADAR_SUBPLOT_BOTTOM)
+    ax = fig.add_subplot(111, polar=True, facecolor=RADAR_BG_COLOR_HEX)
+    ax.grid(color=RADAR_GRID_COLOR_HEX, linestyle="-", linewidth=1.0)
+    ax.spines["polar"].set_color(RADAR_SPINE_COLOR_HEX)
 
     ax.set_theta_offset(math.pi / 2)
     ax.set_theta_direction(-1)
 
     ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(labels, color="#2D3748", size=13, weight="bold")
+    ax.set_xticklabels(labels, color=RADAR_LABEL_COLOR_HEX, size=13, weight="bold")
     ax.set_rlabel_position(0)
     y_tick_labels = [format_number(float(i), locale=doc_lang, decimals=1) for i in [1, 2, 3, 4, 5]]
     ax.set_yticks([1, 2, 3, 4, 5])
-    ax.set_yticklabels(y_tick_labels, color="#718096", size=10)
+    ax.set_yticklabels(y_tick_labels, color=RADAR_YTICK_COLOR_HEX, size=10)
     ax.set_ylim(0, RADAR_YLIM_MAX)
 
     # Pure forensic AS-IS Current state polygon (solid corporate blue)
     ax.plot(
         angles,
         values,
-        linewidth=3.0,
+        linewidth=RADAR_LINE_WIDTH,
         linestyle="solid",
         color=brand_hex,
         marker="o",
-        markersize=7,
+        markersize=RADAR_MARKER_SIZE,
     )
-    ax.fill(angles, values, color=brand_hex, alpha=0.25)
+    ax.fill(angles, values, color=brand_hex, alpha=RADAR_FILL_ALPHA)
 
     # Annotates each data point on the plot with its numerical score to facilitate precise, at-a-glance value retrieval.
     for angle, value in zip(angles[:-1], values[:-1]):
@@ -187,24 +216,47 @@ def main(argv: list[str] | None = None) -> None:
         tower_names.append(f"{t_id}: {localized_name}")
 
     n_towers = len(towers)
-    legend_sep = "\n" if n_towers > 10 else "\n\n"
-    legend_fontsize = max(9, min(13, int(130 / max(1, n_towers))))
+    legend_sep = "\n" if n_towers > LEGEND_COMPACT_TOWER_THRESHOLD else "\n\n"
+    legend_fontsize = max(LEGEND_MIN_FONT_SIZE, min(LEGEND_MAX_FONT_SIZE, int(LEGEND_FONT_DIVIDEND / max(1, n_towers))))
 
     fig.text(
-        0.72, 0.5, legend_sep.join(tower_names), fontsize=legend_fontsize, color="#333333", va="center"
+        0.72, 0.5, legend_sep.join(tower_names), fontsize=legend_fontsize, color=RADAR_LEGEND_TEXT_COLOR_HEX, va="center"
     )
 
     chart_title = t("global_radar_chart_title", locale=doc_lang)
     fig.suptitle(
         chart_title,
-        size=24,
+        size=RADAR_SUPTITLE_FONT_SIZE,
         color=brand_hex,
         x=0.5,
         y=0.96,
         horizontalalignment="center",
     )
 
-    fig.savefig(out_path, dpi=RADAR_DPI, bbox_inches="tight")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_fd, temp_png = tempfile.mkstemp(
+        dir=str(out_path.parent), prefix="tmp_radar_chart_", suffix=".png"
+    )
+    fd_closed = False
+    try:
+        os.close(temp_fd)
+        fd_closed = True
+        fig.savefig(temp_png, dpi=RADAR_DPI, bbox_inches="tight")
+        os.replace(temp_png, str(out_path))
+    except Exception:
+        if not fd_closed:
+            try:
+                os.close(temp_fd)
+            except OSError:
+                pass
+        try:
+            if os.path.exists(temp_png):
+                os.unlink(temp_png)
+        except OSError:
+            pass
+        raise
+    finally:
+        fig.clear()
 
     logger.info("Global radar chart generated at: %s", out_path)
 
