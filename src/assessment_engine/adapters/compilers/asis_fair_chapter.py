@@ -660,7 +660,7 @@ def _compile_chapter_4_fair_risk_matrix(doc: Any, ctx: DocumentCompilationContex
         shade_cell(cell, p_color_hex)
 
     taxonomy_resolver = get_taxonomy_resolver()
-    style_resolver = DocxStyleResolver.get_default(language_code=doc_lang)
+    style_resolver = resolver
 
     for r_idx, r in enumerate(safe_risks_data_list):
         row = table_risks.add_row()

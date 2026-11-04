@@ -139,7 +139,7 @@ class Volume1AsisASTCompiler:
             or meta.get("client_name")
             or t("default_client_name", locale=doc_lang)
         ).strip()
-        currency = str(meta.get("currency") or fin_tel.get("currency") or "USD").strip()
+        currency = str(meta.get("currency") or fin_tel.get("currency") or "€").strip()
         version_str = str(meta.get("version") or meta.get("document_version") or "1.0").strip()
         scope_title = str(meta.get("scope_title") or meta.get("document_scope") or t("tomo_cover_scope_default", locale=doc_lang)).strip()
         division_name = str(meta.get("division") or meta.get("client_division") or t("tomo_cover_division_default", locale=doc_lang)).strip()
@@ -341,6 +341,17 @@ class Volume1AsisASTCompiler:
             return int(Decimal(str(clean)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
         except (InvalidOperation, ValueError, OverflowError):
             return default
+
+    @staticmethod
+    def _safe_decimal_weight(val: Any, default_str: str, locale: str | None = None) -> Decimal:
+        """Safely converts an arbitrary weight value to a positive Decimal with fallback."""
+        parsed = safe_float(val, locale=locale)
+        if parsed is not None:
+            try:
+                return Decimal(str(parsed)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+            except (InvalidOperation, ValueError, OverflowError):
+                pass
+        return Decimal(default_str)
 
     def _resolve_financial_telemetry(
         self,
@@ -1140,9 +1151,9 @@ class Volume1AsisASTCompiler:
 
         # 3-Tier Portfolio Table dynamically calculated
         tier_cfg = fin_metrics.get("portfolio_tier_weights") or {}
-        w1 = Decimal(str(tier_cfg.get("tier1", DEFAULT_TIER1_WEIGHT)))
-        w2 = Decimal(str(tier_cfg.get("tier2", DEFAULT_TIER2_WEIGHT)))
-        w3 = Decimal(str(tier_cfg.get("tier3", DEFAULT_TIER3_WEIGHT)))
+        w1 = self._safe_decimal_weight(tier_cfg.get("tier1"), DEFAULT_TIER1_WEIGHT, locale=doc_lang)
+        w2 = self._safe_decimal_weight(tier_cfg.get("tier2"), DEFAULT_TIER2_WEIGHT, locale=doc_lang)
+        w3 = self._safe_decimal_weight(tier_cfg.get("tier3"), DEFAULT_TIER3_WEIGHT, locale=doc_lang)
         tier_ale_pairs = [("tier1", w1), ("tier2", w2), ("tier3", w3)]
         reconciled_tier_ale = ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=target_ale_int,
@@ -1153,9 +1164,9 @@ class Volume1AsisASTCompiler:
         t3_val = reconciled_tier_ale["tier3"]
 
         scen_w = fin_metrics.get("portfolio_scenario_weights") or {}
-        sw1 = Decimal(str(scen_w.get("tier1", DEFAULT_SCENARIO_TIER1_WEIGHT)))
-        sw2 = Decimal(str(scen_w.get("tier2", DEFAULT_SCENARIO_TIER2_WEIGHT)))
-        sw3 = Decimal(str(scen_w.get("tier3", DEFAULT_SCENARIO_TIER3_WEIGHT)))
+        sw1 = self._safe_decimal_weight(scen_w.get("tier1"), DEFAULT_SCENARIO_TIER1_WEIGHT, locale=doc_lang)
+        sw2 = self._safe_decimal_weight(scen_w.get("tier2"), DEFAULT_SCENARIO_TIER2_WEIGHT, locale=doc_lang)
+        sw3 = self._safe_decimal_weight(scen_w.get("tier3"), DEFAULT_SCENARIO_TIER3_WEIGHT, locale=doc_lang)
         tier_scen_pairs = [("tier1", sw1), ("tier2", sw2), ("tier3", sw3)]
         reconciled_tier_scen = ActuarialReconciler.reconcile_domain_allocations(
             target_corporate_ale=total_scenarios_sum,
@@ -1263,6 +1274,7 @@ class Volume1AsisASTCompiler:
                     dynamic_lm_thresholds=dynamic_lm_bounds,
                     header_bg_color=self.primary_color_hex,
                     locale=doc_lang,
+                    currency=currency,
                 )
             )
             nodes.append(SpacerNode(points=14))
@@ -1558,11 +1570,15 @@ class Volume1AsisASTCompiler:
                 else None
             )
             strengths = payload_str or t_data.get("strengths") or []
+            max_cmmi_str = format_number(MAX_CMMI_SCORE, decimals=2, locale=doc_lang)
             if not strengths and subpillars:
                 sorted_sp = sorted(subpillars, key=lambda x: float(x[1]) if isinstance(x[1], (int, float, Decimal)) else 0.0, reverse=True)
                 top_sp = sorted_sp[0]
                 f_templates = catalog.get("forensic_domain_templates", {})
-                str_tmpl = f_templates.get("strength_fallback") or "Established baseline operational continuity in {highest_subpillar_name} (maturity index {highest_subpillar_score}/5.00)."
+                str_tmpl = (
+                    f_templates.get("strength_fallback")
+                    or f"Established baseline operational continuity in {{highest_subpillar_name}} (maturity index {{highest_subpillar_score}}/{max_cmmi_str})."
+                )
                 strengths = [
                     str_tmpl.format(
                         highest_subpillar_name=top_sp[0],
@@ -1583,7 +1599,10 @@ class Volume1AsisASTCompiler:
                 sorted_sp = sorted(subpillars, key=lambda x: float(x[1]) if isinstance(x[1], (int, float, Decimal)) else 0.0)
                 low_sp = sorted_sp[0]
                 f_templates = catalog.get("forensic_domain_templates", {})
-                fnd_tmpl = f_templates.get("finding_fallback") or "Control deficit in {lowest_subpillar_name} (maturity index {lowest_subpillar_score}/5.00)."
+                fnd_tmpl = (
+                    f_templates.get("finding_fallback")
+                    or f"Control deficit in {{lowest_subpillar_name}} (maturity index {{lowest_subpillar_score}}/{max_cmmi_str})."
+                )
                 findings = [
                     fnd_tmpl.format(
                         lowest_subpillar_name=low_sp[0],
@@ -1657,7 +1676,7 @@ class Volume1AsisASTCompiler:
                         is_header=True,
                     )
                 ]
-                max_cmmi_str = format_number(5.0, decimals=2, locale=doc_lang)
+                max_cmmi_str = format_number(MAX_CMMI_SCORE, decimals=2, locale=doc_lang)
                 for idx, sp in enumerate(subpillars):
                     sp_name = sp[0]
                     sp_score = sp[1]
@@ -1723,22 +1742,18 @@ class Volume1AsisASTCompiler:
         }
         localized_ranks = catalog.get("spof_criticality_ranks") or canonical_criticality_ranks
 
+        def _resolve_spof_sort_key(sp: Dict[str, Any]) -> Tuple[int, str]:
+            raw_rank = sp.get("criticality_rank")
+            if raw_rank is not None:
+                parsed_rank = safe_float(raw_rank, allow_zero=True)
+                if parsed_rank is not None:
+                    return (int(parsed_rank), str(sp.get("id", "")))
+            crit_token = str(sp.get("criticality_code") or sp.get("criticality", "")).strip().upper()
+            fallback_rank = localized_ranks.get(crit_token, canonical_criticality_ranks.get(crit_token, 99))
+            return (int(fallback_rank), str(sp.get("id", "")))
+
         valid_spofs = [sp for sp in spof_list if isinstance(sp, dict)]
-        sorted_spofs = sorted(
-            valid_spofs,
-            key=lambda sp: (
-                int(
-                    sp.get(
-                        "criticality_rank",
-                        localized_ranks.get(
-                            str(sp.get("criticality_code") or sp.get("criticality", "")).strip().upper(),
-                            99,
-                        ),
-                    )
-                ),
-                str(sp.get("id", "")),
-            ),
-        )
+        sorted_spofs = sorted(valid_spofs, key=_resolve_spof_sort_key)
 
         for sp in sorted_spofs:
             spof_rows.append(

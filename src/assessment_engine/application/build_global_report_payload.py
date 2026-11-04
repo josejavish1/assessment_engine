@@ -307,20 +307,35 @@ def _parse_currency_amount_to_float(val_str: Any, locale: str | None = None) -> 
     return safe_float(val_str, locale=locale, allow_zero=True) or 0.0
 
 
+_PREFIX_CURRENCY_SYMBOLS: Final[frozenset[str]] = frozenset({
+    "$", "£", "¥", "R$", "CA$", "A$", "S$", "HK$", "₹", "₩", "R",
+})
+_COMMA_DECIMAL_BASE_LANGS: Final[frozenset[str]] = frozenset({
+    "es", "de", "fr", "it", "pt", "nl", "da", "pl", "tr", "id", "vi",
+})
+
+
 def _format_executive_currency(
     val: float, currency_symbol: str = "€", doc_lang: str = "en"
 ) -> str:
     """Formats numeric amounts for C-Level executives respecting international locale and scale conventions."""
     clean_val = safe_float(val, allow_zero=True) or 0.0
-    is_comma_decimal = doc_lang in ("es", "de", "fr", "it", "pt")
-    is_prefix_symbol = doc_lang in ("en", "ja", "zh") and currency_symbol in (
-        "$",
-        "£",
-        "¥",
-        "CA$",
-        "A$",
-        "S$",
-        "HK$",
+    norm_loc = str(doc_lang or "en").strip().replace("_", "-").lower()
+    parts = [p for p in norm_loc.split("-") if p]
+    base_lang = parts[0] if parts else "en"
+    region = parts[1] if len(parts) > 1 and len(parts[1]) == 2 else ""
+
+    is_comma_decimal = (
+        base_lang in _COMMA_DECIMAL_BASE_LANGS
+        and not (base_lang == "es" and region in ("mx", "us", "pr"))
+        and region != "ch"
+    )
+    is_prefix_symbol = (
+        currency_symbol in _PREFIX_CURRENCY_SYMBOLS
+        and (
+            base_lang in ("en", "ja", "zh", "ko", "pt", "hi")
+            or (base_lang == "es" and region in ("mx", "ar", "cl", "co", "pe", "uy", "us", "pr"))
+        )
     )
 
     if clean_val >= BILLION_THRESHOLD:
@@ -446,7 +461,12 @@ def _build_stratified_financial_case(
     for bp in blueprint_files:
         try:
             bp_data = json.loads(bp.read_text(encoding="utf-8-sig"))
-            total_fair_ale += safe_float(bp_data.get("total_fair_ale"), locale=doc_lang, allow_zero=True) or 0.0
+            t_ale = (
+                safe_float(bp_data.get("total_fair_ale"), locale=doc_lang, allow_zero=True)
+                or safe_float(bp_data.get("annualized_loss_expectancy"), locale=doc_lang, allow_zero=True)
+                or safe_float(bp_data.get("executive_summary", {}).get("total_fair_ale"), locale=doc_lang, allow_zero=True)
+            )
+            total_fair_ale += t_ale or 0.0
             for pil in bp_data.get("pillars_analysis", []):
                 for pr in pil.get("projects_todo", []):
                     op_val = _parse_currency_amount_to_float(pr.get("opex_estimate"), locale=doc_lang)
@@ -892,7 +912,8 @@ def build_global_payload(
                     or raw_int.get("locale")
                     or raw_int.get("doc_lang")
                 )
-        except Exception:
+        except Exception as ex:
+            logger.debug("Failed to load client_intelligence.json at %s: %s", intelligence_path, ex)
             intelligence_dossier = {}
 
     if not resolved_lang:
@@ -942,7 +963,11 @@ def build_global_payload(
             for t_id in graph_service.towers
         }
         audited_centrality = graph_service.calculate_risk_centrality(audited_risks)
-        empirical_spof = max(audited_centrality, key=audited_centrality.get)
+        empirical_spof = (
+            max(audited_centrality, key=audited_centrality.get)
+            if audited_centrality
+            else (towers_data[0]["id"] if towers_data else "T1")
+        )
 
         # Update towers_data with propagated (effective) maturity scores
         for item in towers_data:
@@ -1158,7 +1183,7 @@ def build_global_payload(
             ],
         },
         "execution_roadmap": {
-            "programs": [],  #
+            "programs": [],
             "horizons": final_horizons,
         },
         "executive_decisions": {

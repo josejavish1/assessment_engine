@@ -177,12 +177,20 @@ def build_heatmap_mosaic(
     dynamic_lm_thresholds: tuple[float, float, float, float] | None = None,
     header_bg_color: str = DEFAULT_HEATMAP_HEADER_HEX,
     locale: str | None = None,
+    currency: str | None = None,
 ) -> TableNode:
     """Builds the 5x5 FAIR Risk Heatmap mosaic TableNode reconciling coordinates with TEF/LM scale criteria."""
     matrix_cells = {r: {c: [] for c in range(1, 6)} for r in range(5, 0, -1)}
-    effective_bounds = dynamic_lm_thresholds or (
-        DEFAULT_LM_CRITICAL_THRESHOLDS if is_critical else DEFAULT_LM_STANDARD_THRESHOLDS
-    )
+    if dynamic_lm_thresholds is not None:
+        effective_bounds = dynamic_lm_thresholds
+    elif currency:
+        effective_bounds = compute_dynamic_lm_thresholds(
+            currency=currency, locale=locale or "en", is_critical_tier=is_critical
+        )
+    else:
+        effective_bounds = (
+            DEFAULT_LM_CRITICAL_THRESHOLDS if is_critical else DEFAULT_LM_STANDARD_THRESHOLDS
+        )
     for r in risks_data_list:
         r_tef, r_lm = resolve_risk_matrix_coordinates(r, effective_bounds, locale=locale)
         risk_id = str(r.get("id") or r.get("risk_id") or "").strip()
@@ -190,7 +198,19 @@ def build_heatmap_mosaic(
             matrix_cells[r_tef][r_lm].append(risk_id)
 
     heatmap_rows = []
-    heatmap_headers = [r"TEF \ LM", "LM 1", "LM 2", "LM 3", "LM 4", "LM 5"]
+    if currency:
+        lm_brackets = compute_dynamic_lm_brackets(
+            currency=currency,
+            locale=locale or "en",
+            is_critical_tier=is_critical,
+            precomputed_thresholds=effective_bounds,
+        )
+        heatmap_headers = [r"TEF \ LM"] + [
+            f"LM {col_idx}\n({lm_brackets[col_idx]})" for col_idx in range(1, 6)
+        ]
+    else:
+        heatmap_headers = [r"TEF \ LM", "LM 1", "LM 2", "LM 3", "LM 4", "LM 5"]
+
     heatmap_rows.append(
         TableRowNode(
             cells=[
@@ -209,9 +229,15 @@ def build_heatmap_mosaic(
     )
 
     for tef_val in range(5, 0, -1):
+        tef_freq_label = t(f"tef_annual_freq_{tef_val}", locale=locale) if locale else ""
+        row_header_text = (
+            f"TEF {tef_val}\n({tef_freq_label})"
+            if tef_freq_label and not tef_freq_label.startswith("tef_annual_freq_")
+            else f"TEF {tef_val}"
+        )
         row_cells = [
             CellNode(
-                text=f"TEF {tef_val}",
+                text=row_header_text,
                 bold=True,
                 bg_color=header_bg_color,
                 text_color_rgb=list(HEADER_TEXT_WHITE_RGB),

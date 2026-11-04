@@ -287,9 +287,17 @@ def safe_float(
             clean = clean.replace(".", "")
         elif is_dot_thousands_locale and clean.count(".") == 1 and not exponent:
             dot_parts = clean.split(".")
+            unsigned_int = dot_parts[0].lstrip("+-")
+            # In dot-thousands locales (es, de, pt, it), a single dot followed by
+            # exactly 3 digits where the last two digits are '00' (e.g. '1.000',
+            # '1.500', '25.000') represents integer thousands, whereas non-zero
+            # trailing digits on small numbers (e.g. '0.125', '1.250', '3.142')
+            # represent fractional decimals.
             if (
-                dot_parts[0] not in ("0", "+0", "-0")
+                unsigned_int != "0"
                 and _STRICT_DOT_THOUSANDS_GROUP_PATTERN.match(clean)
+                and dot_parts[1].endswith("00")
+                and (dot_parts[1] == "000" or int(unsigned_int) >= 10)
             ):
                 clean = clean.replace(".", "")
         val = clean + exponent

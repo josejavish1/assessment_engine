@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import tempfile
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Dict, Final, List, Mapping, Optional
@@ -22,13 +23,78 @@ logger = logging.getLogger(__name__)
 DEFAULT_ANNUAL_REVENUE: Final[float] = 1_000_000_000.0
 HOURS_IN_YEAR: Final[float] = 8760.0
 DEFAULT_REVENUE_EXPOSURE_FACTOR: Final[float] = 0.001
+DEFAULT_FACILITY_REVENUE_SHARE: Final[float] = 0.35
+DEFAULT_TAIL_RISK_MULTIPLIER: Final[float] = 2.50
+DEFAULT_MAX_LOSS_MULTIPLIER: Final[float] = 1.50
 DEFAULT_RECOVERY_CEILING_HOURS: Final[float] = 24.0
 DEFAULT_PERIMETER_WEIGHT_PCT: Final[float] = 100.0
 DEFAULT_ENGAGEMENT_PERIOD: Final[str] = "000000"
 DEFAULT_TENANT_PLACEHOLDER_UPPER: Final[str] = "ENTERPRISE"
 DEFAULT_TENANT_PLACEHOLDER_TITLE: Final[str] = "Enterprise"
-DEFAULT_CURRENCY_CODE: Final[str] = "USD"
+DEFAULT_CURRENCY_CODE: Final[str] = "EUR"
+DEFAULT_CURRENCY_SYMBOL: Final[str] = "€"
 DEFAULT_SECTOR_BENCHMARK_LABEL: Final[str] = "Industry Baseline"
+
+SYMBOL_TO_ISO_CURRENCY: Final[Mapping[str, str]] = MappingProxyType({
+    "€": "EUR",
+    "$": "USD",
+    "£": "GBP",
+    "¥": "JPY",
+    "R$": "BRL",
+    "CA$": "CAD",
+    "A$": "AUD",
+    "S$": "SGD",
+    "HK$": "HKD",
+    "₹": "INR",
+    "₩": "KRW",
+    "CHF": "CHF",
+})
+
+
+def _round_currency_half_up(val: float) -> float:
+    """Deterministic half-up rounding to 2 decimal places."""
+    try:
+        return float(Decimal(str(val)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    except (InvalidOperation, ValueError, OverflowError):
+        return 0.0
+
+
+def _reconcile_finding_scores_half_up(
+    findings: List[Dict[str, Any]],
+    score_key: str,
+    target_total: float,
+    locale: str | None = None,
+) -> None:
+    """Proportionally scales finding scores using exact Decimal arithmetic and Largest Remainder reconciliation."""
+    if not findings:
+        return
+    target_cents = int(
+        (Decimal(str(target_total)) * Decimal("100")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    )
+    raw_weights = [
+        Decimal(str(safe_float(hc.get(score_key), locale=locale, allow_zero=True) or 0.0))
+        for hc in findings
+    ]
+    total_weight = sum(raw_weights)
+    n = len(findings)
+
+    exact_quotas: List[Decimal] = []
+    for w in raw_weights:
+        if total_weight > Decimal("0"):
+            exact_quotas.append((Decimal(target_cents) * w) / total_weight)
+        else:
+            exact_quotas.append(Decimal(target_cents) / Decimal(n))
+
+    floored_cents = [int(q.to_integral_value(rounding="ROUND_FLOOR")) for q in exact_quotas]
+    remainders = [(idx, exact_quotas[idx] - Decimal(floored_cents[idx])) for idx in range(n)]
+    deficit = target_cents - sum(floored_cents)
+    remainders.sort(key=lambda item: item[1], reverse=True)
+    for i in range(max(0, deficit)):
+        floored_cents[remainders[i % n][0]] += 1
+
+    for idx, hc in enumerate(findings):
+        hc[score_key] = float(Decimal(floored_cents[idx]) / Decimal("100"))
+
 
 _SAFE_TENANT_SLUG_PATTERN: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9_]+")
 _FILENAME_TOKEN_SPLIT_PATTERN: Final[re.Pattern[str]] = re.compile(r"[^A-Za-z0-9]+")
@@ -91,9 +157,14 @@ class TowerPayloadHydrator:
             meta.get("client") or meta.get("client_name") or DEFAULT_TENANT_PLACEHOLDER_UPPER
         ).strip()
         client_id_norm = _sanitize_tenant_slug(client_name)
-        currency = str(meta.get("currency") or DEFAULT_CURRENCY_CODE).strip()
-
         fin_tel = global_payload.get("financial_telemetry") or meta.get("financial_telemetry", {})
+        currency = str(
+            meta.get("currency")
+            or meta.get("currency_symbol")
+            or fin_tel.get("currency")
+            or DEFAULT_CURRENCY_SYMBOL
+        ).strip()
+
         annual_revenue = (
             safe_float(fin_tel.get("annual_revenue"), locale=doc_lang)
             or safe_float(meta.get("annual_revenue"), locale=doc_lang)
@@ -171,17 +242,77 @@ class TowerPayloadHydrator:
                     "tower_name": CANONICAL_TOWER_NAMES.get(code_upper, f"Domain {code_upper}"),
                 }
 
+            # 1. Reconcile domain ALE and P90 with authoritative financial telemetry
+            domain_weights = fin_tel.get("domain_weights") or {}
+            raw_domain_weight = safe_float(domain_weights.get(code_upper), locale=doc_lang, allow_zero=True)
+            if raw_domain_weight is not None:
+                tail_mult = (
+                    safe_float(fin_tel.get("tail_risk_multiplier"), locale=doc_lang)
+                    or DEFAULT_TAIL_RISK_MULTIPLIER
+                )
+                max_mult = (
+                    safe_float(fin_tel.get("max_loss_multiplier"), locale=doc_lang)
+                    or DEFAULT_MAX_LOSS_MULTIPLIER
+                )
+                target_domain_ale = _round_currency_half_up(raw_domain_weight)
+                target_domain_p90 = _round_currency_half_up(target_domain_ale * tail_mult)
+                raw_payload["total_fair_ale"] = target_domain_ale
+                raw_payload["total_fair_p90"] = target_domain_p90
+                raw_payload["total_fair_max"] = _round_currency_half_up(target_domain_p90 * max_mult)
+
+                pillars = raw_payload.get("pillars_analysis") or []
+                all_findings = [
+                    hc
+                    for pillar in pillars
+                    if isinstance(pillar, dict)
+                    for hc in pillar.get("health_check_asis", [])
+                    if isinstance(hc, dict)
+                ]
+                if all_findings:
+                    _reconcile_finding_scores_half_up(
+                        all_findings, "fair_ale_score", target_domain_ale, locale=doc_lang
+                    )
+                    _reconcile_finding_scores_half_up(
+                        all_findings, "fair_p90_score", target_domain_p90, locale=doc_lang
+                    )
+
             tower_fin_tel = raw_payload.get("financial_telemetry") or {}
-            effective_tower_hourly_rate = (
+            explicit_tower_rate = (
                 safe_float(raw_payload.get("hourly_downtime_rate"), locale=doc_lang)
                 or safe_float(raw_payload.get("hourly_burn_rate"), locale=doc_lang)
                 or safe_float(tower_fin_tel.get("authoritative_hourly_downtime_cost"), locale=doc_lang)
-                or hourly_rate
             )
+            if code_upper == "T10":
+                facility_share = (
+                    safe_float(fin_tel.get("primary_facility_revenue_share"), locale=doc_lang)
+                    or DEFAULT_FACILITY_REVENUE_SHARE
+                )
+                local_facility_rate = (
+                    safe_float(fin_tel.get("local_facility_hourly_rate"), locale=doc_lang)
+                    or explicit_tower_rate
+                    or _round_currency_half_up(hourly_rate * facility_share)
+                )
+                effective_tower_hourly_rate = local_facility_rate
+            else:
+                effective_tower_hourly_rate = (
+                    safe_float(fin_tel.get("consolidated_hourly_downtime_rate"), locale=doc_lang)
+                    or safe_float(fin_tel.get("hourly_downtime_rate"), locale=doc_lang)
+                    or explicit_tower_rate
+                    or hourly_rate
+                )
+
+            resolved_currency_code = str(
+                meta.get("currency_code")
+                or fin_tel.get("currency_code")
+                or SYMBOL_TO_ISO_CURRENCY.get(currency, currency.upper())
+            ).strip()
 
             raw_payload["annual_revenue"] = annual_revenue
             raw_payload["hourly_downtime_rate"] = effective_tower_hourly_rate
             raw_payload["hourly_burn_rate"] = effective_tower_hourly_rate
+            raw_payload["explicit_hourly_downtime_cost"] = effective_tower_hourly_rate
+            raw_payload["currency"] = currency
+            raw_payload["currency_code"] = resolved_currency_code
 
             raw_payload["financial_telemetry"] = {
                 "consolidated_annual_revenue": annual_revenue,
@@ -203,10 +334,13 @@ class TowerPayloadHydrator:
                     or DEFAULT_REVENUE_EXPOSURE_FACTOR
                 ),
                 "authoritative_hourly_downtime_cost": effective_tower_hourly_rate,
+                "explicit_hourly_downtime_cost": effective_tower_hourly_rate,
                 "operational_recovery_ceiling_hours": (
                     safe_float(tower_fin_tel.get("operational_recovery_ceiling_hours"), locale=doc_lang)
                     or DEFAULT_RECOVERY_CEILING_HOURS
                 ),
+                "currency": currency,
+                "currency_code": "EUR" if currency in ("€", "EUR") else currency,
             }
 
             doc_meta = dict(raw_payload.get("document_meta") or {})
