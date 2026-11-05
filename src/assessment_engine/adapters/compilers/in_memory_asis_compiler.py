@@ -14,7 +14,10 @@ from assessment_engine.domain.maturity_band import (
     ANNEX_MATURITY_BANDS,
     resolve_maturity_band,
 )
-from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+from assessment_engine.domain.taxonomy_resolver import (
+    extract_pillar_identifiers,
+    get_taxonomy_resolver,
+)
 from assessment_engine.domain.services.dynamic_custody_resolver import DynamicCustodyResolver
 from assessment_engine.infrastructure.localization import (
     format_currency,
@@ -52,10 +55,12 @@ def derive_in_memory_fair_risks(
 
     r_counter = 1
     for pillar in b_data.get("pillars_analysis", []):
-        raw_pname = str(pillar.get("pillar_name") or pillar.get("name") or "")
-        p_id = str(pillar.get("pillar_id") or pillar.get("id") or pillar.get("code") or raw_pname)
+        p_id, raw_pname = extract_pillar_identifiers(pillar)
         pillar_name = resolver.resolve_pillar_by_any_reference(
-            p_id or raw_pname, default=(raw_pname or p_id or "Pillar"), locale=doc_lang
+            p_id or raw_pname,
+            default=(raw_pname or p_id or "Pillar"),
+            locale=doc_lang,
+            tower_id=current_tower_id,
         )
 
         for hc in pillar.get("health_check_asis", []):
@@ -155,12 +160,15 @@ def derive_in_memory_maturity_matrix(
     """Extract and format maturity assessment matrix rows directly from in-memory payload."""
     resolver = get_taxonomy_resolver()
     rows: list[dict[str, Any]] = []
+    current_tower_id = str(b_data.get("tower_id") or b_data.get("document_meta", {}).get("tower_id") or "").upper()
 
     for pillar in b_data.get("pillars_analysis", []):
-        raw_pname = str(pillar.get("pillar_name") or pillar.get("name") or "")
-        p_id = str(pillar.get("pillar_id") or pillar.get("id") or pillar.get("code") or raw_pname)
+        p_id, raw_pname = extract_pillar_identifiers(pillar)
         pillar_name = resolver.resolve_pillar_by_any_reference(
-            p_id or raw_pname, default=(raw_pname or p_id or "Pillar"), locale=doc_lang
+            p_id or raw_pname,
+            default=(raw_pname or p_id or "Pillar"),
+            locale=doc_lang,
+            tower_id=current_tower_id,
         )
 
         exact_score = float(pillar.get("score") or 3.0)

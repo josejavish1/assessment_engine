@@ -422,6 +422,60 @@ class PureTaxonomyResolver:
 
         return default or cap_name
 
+    @staticmethod
+    def extract_pillar_identifiers(pillar: Mapping[str, Any] | Any) -> tuple[str, str]:
+        """Extract canonical pillar ID and raw pillar name supporting diverse schema variants."""
+        return extract_pillar_identifiers(pillar)
+
+
+def extract_pillar_identifiers(pillar: Mapping[str, Any] | Any) -> tuple[str, str]:
+    """Extract canonical pillar ID and raw pillar name supporting diverse schema variants.
+
+    Resolves both English ('pillar_id', 'pillar_name') and Spanish ('pilar_id', 'pilar_name')
+    keys, as well as generic fallbacks ('id', 'code', 'name', 'title').
+    """
+    if not isinstance(pillar, Mapping):
+        return "", ""
+
+    raw_pid = str(
+        pillar.get("pillar_id")
+        or pillar.get("pilar_id")
+        or pillar.get("id")
+        or pillar.get("code")
+        or ""
+    ).strip()
+
+    raw_pname = str(
+        pillar.get("pillar_name")
+        or pillar.get("pilar_name")
+        or pillar.get("pilar")
+        or pillar.get("pillar_label")
+        or pillar.get("pilar_label")
+        or pillar.get("name")
+        or pillar.get("title")
+        or ""
+    ).strip()
+
+    if not raw_pid:
+        for k, v in pillar.items():
+            k_lower = str(k).lower()
+            if ("id" in k_lower or "code" in k_lower) and isinstance(v, (str, int)) and str(v).strip():
+                raw_pid = str(v).strip()
+                break
+
+    if not raw_pname:
+        for k, v in pillar.items():
+            k_lower = str(k).lower()
+            if (
+                ("name" in k_lower or "pilar" in k_lower or "title" in k_lower or "label" in k_lower)
+                and isinstance(v, str)
+                and v.strip()
+            ):
+                raw_pname = v.strip()
+                break
+
+    return raw_pid, raw_pname
+
 
 TaxonomyResolver = PureTaxonomyResolver
 _DEFAULT_EMPTY_SINGLETON: PureTaxonomyResolver | None = None

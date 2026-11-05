@@ -210,7 +210,10 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
             resolve_maturity_band,
         )
 
-        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        from assessment_engine.domain.taxonomy_resolver import (
+            extract_pillar_identifiers,
+            get_taxonomy_resolver,
+        )
         resolver = get_taxonomy_resolver()
 
         for s_idx, p in enumerate(
@@ -220,10 +223,9 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
             )
         ):
             bg = alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
-            raw_pname = p.get("pillar_name") or p.get("pilar_name", "Pillar")
-            p_id = p.get("pillar_id") or p.get("pilar_id") or raw_pname
+            p_id, raw_pname = extract_pillar_identifiers(p)
             p_name = resolver.resolve_pillar_by_any_reference(
-                p_id, default=raw_pname, locale=doc_lang
+                p_id or raw_pname, default=(raw_pname or p_id or "Pillar"), locale=doc_lang, tower_id=tower_id
             )
             p_score = float(p.get("score", 3.0))
 
@@ -267,10 +269,9 @@ def _compile_chapter_3_maturity_profile(doc: Any, ctx: DocumentCompilationContex
             from assessment_engine.application.generate_tower_radar_chart import generate_radar_chart_from_pillars
             chart_pillars = []
             for p in b_data.get("pillars_analysis", []):
-                raw_pname = p.get("pillar_name") or p.get("pilar_name", "Pillar")
-                p_id = p.get("pillar_id") or p.get("pilar_id") or raw_pname
+                p_id, raw_pname = extract_pillar_identifiers(p)
                 p_label = resolver.resolve_pillar_by_any_reference(
-                    p_id, default=raw_pname, locale=doc_lang
+                    p_id or raw_pname, default=(raw_pname or p_id or "Pillar"), locale=doc_lang, tower_id=tower_id
                 )
                 chart_pillars.append({
                     "pillar_label": p_label,

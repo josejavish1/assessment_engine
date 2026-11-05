@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 import re
-from pathlib import Path
 from typing import Any, List
 
 from assessment_engine.adapters.compilers.ast_table_builders import (
@@ -123,26 +122,19 @@ def build_cmmi_methodology_and_capabilities(
     if not pillars_list:
         pillars_list = blueprint_data.get("pillars_analysis", [])
 
-    from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+    from assessment_engine.domain.taxonomy_resolver import (
+        extract_pillar_identifiers,
+        get_taxonomy_resolver,
+    )
     resolver = get_taxonomy_resolver()
 
     for p_idx, p in enumerate(pillars_list):
-        raw_pid = str(
-            p.get("pillar_id")
-            or p.get("id")
-            or p.get("code")
-            or ""
-        )
-        raw_pname = str(
-            p.get("pillar_name")
-            or p.get("pillar_label")
-            or p.get("name")
-            or "Pillar"
-        )
+        raw_pid, raw_pname = extract_pillar_identifiers(p)
         p_name = resolver.resolve_pillar_by_any_reference(
             raw_pid or raw_pname,
-            default=raw_pname,
+            default=raw_pname or raw_pid or "Pillar",
             locale=meta_lang,
+            tower_id=tower_id,
         )
         p_weight = int(p.get("weight_pct", p.get("weight", 20)))
         kpi_names = []
@@ -413,11 +405,16 @@ def build_appendix_c_glossary_and_disclaimer(
             is_appendix=True,
         )
     )
-    client_name = str(ctx.get("client_name") or "CLIENT").upper()
+    client_name = str(ctx.get("client_name") or ctx.get("client") or "CLIENT").upper()
+    company_name = str(ctx.get("company_name") or ctx.get("company") or "NTT DATA").strip()
     for i in range(1, 6):
         disc_text = vocab.get(f"disclaimer_text_{i}", "")
         if disc_text:
-            interpolated = disc_text.replace("{client_name}", client_name)
+            interpolated = (
+                disc_text.replace("{client_name}", client_name)
+                .replace("{company_name}", company_name)
+                .replace("{company}", company_name)
+            )
             nodes.append(ParagraphNode(text=interpolated))
             nodes.append(SpacerNode(points=8))
 

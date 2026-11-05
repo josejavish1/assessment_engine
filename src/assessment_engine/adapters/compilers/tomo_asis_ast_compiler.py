@@ -18,6 +18,10 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
     compute_dynamic_lm_thresholds,
     safe_float,
 )
+from assessment_engine.domain.taxonomy_resolver import (
+    extract_pillar_identifiers,
+    get_taxonomy_resolver,
+)
 
 MAX_CMMI_SCORE: Final[float] = 5.0
 DEFAULT_MATURITY_SCORE: Final[float] = 2.50
@@ -158,6 +162,12 @@ class Volume1AsisASTCompiler:
             or meta.get("client_name")
             or t("default_client_name", locale=doc_lang)
         ).strip()
+        company_name = str(
+            meta.get("company_name")
+            or meta.get("company")
+            or global_payload.get("company_name")
+            or t("default_company_name", locale=doc_lang)
+        ).strip()
         currency = str(meta.get("currency") or fin_tel.get("currency") or "€").strip()
         version_str = str(meta.get("version") or meta.get("document_version") or "1.0").strip()
         scope_title = str(meta.get("scope_title") or meta.get("document_scope") or t("tomo_cover_scope_default", locale=doc_lang)).strip()
@@ -211,7 +221,7 @@ class Volume1AsisASTCompiler:
 
         # 6. Unified Appendix: Glossary & Legal Liability Disclaimer
         self._build_unified_appendix(
-            nodes, client_name, doc_lang
+            nodes, client_name, doc_lang, company_name=company_name
         )
 
         ast = DocumentAST(
@@ -1589,14 +1599,17 @@ class Volume1AsisASTCompiler:
 
             # 1. Dynamic subpillars extraction from live payload
             pillars_analysis = t_payload.get("pillars_analysis", []) if isinstance(t_payload, dict) else []
+            resolver = get_taxonomy_resolver()
             if pillars_analysis and isinstance(pillars_analysis, list):
                 subpillars = []
                 for p in pillars_analysis:
                     if isinstance(p, dict):
-                        p_name = (
-                            p.get("pillar_name")
-                            or p.get("name")
-                            or t("default_subpillar_label", locale=doc_lang)
+                        p_id, raw_pname = extract_pillar_identifiers(p)
+                        p_name = resolver.resolve_pillar_by_any_reference(
+                            p_id or raw_pname,
+                            default=(raw_pname or p_id or t("default_subpillar_label", locale=doc_lang)),
+                            locale=doc_lang,
+                            tower_id=code,
                         )
                         p_score = safe_float(p.get("score"), locale=doc_lang, allow_zero=True)
                         subpillars.append([p_name, p_score if p_score is not None else DEFAULT_MATURITY_SCORE])
@@ -1605,11 +1618,23 @@ class Volume1AsisASTCompiler:
                 subpillars = []
                 for sp_item in raw_sp_list:
                     if isinstance(sp_item, (list, tuple)) and len(sp_item) >= 2:
-                        sp_name = str(sp_item[0])
+                        sp_id, raw_pname = extract_pillar_identifiers({"pillar_name": str(sp_item[0])})
+                        sp_name = resolver.resolve_pillar_by_any_reference(
+                            sp_id or raw_pname,
+                            default=(raw_pname or sp_id or str(sp_item[0])),
+                            locale=doc_lang,
+                            tower_id=code,
+                        )
                         sp_score = safe_float(sp_item[1], locale=doc_lang, allow_zero=True)
                         subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE])
                     elif isinstance(sp_item, dict):
-                        sp_name = str(sp_item.get("name") or sp_item.get("pillar_name") or t("default_subpillar_label", locale=doc_lang))
+                        sp_id, raw_pname = extract_pillar_identifiers(sp_item)
+                        sp_name = resolver.resolve_pillar_by_any_reference(
+                            sp_id or raw_pname,
+                            default=(raw_pname or sp_id or t("default_subpillar_label", locale=doc_lang)),
+                            locale=doc_lang,
+                            tower_id=code,
+                        )
                         sp_score = safe_float(sp_item.get("score"), locale=doc_lang, allow_zero=True)
                         subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE])
 
@@ -1942,7 +1967,11 @@ class Volume1AsisASTCompiler:
     # UNIFIED APPENDIX: GLOSSARY & LEGAL LIABILITY DISCLAIMER
     # =========================================================================
     def _build_unified_appendix(
-        self, nodes: List[DocNode], client_name: str, doc_lang: str
+        self,
+        nodes: List[DocNode],
+        client_name: str,
+        doc_lang: str,
+        company_name: str = "NTT DATA",
     ) -> None:
         """Unified Appendix: Clean Abbreviations Glossary (18/82 autofit) + Disclaimer."""
         nodes.append(
@@ -2003,9 +2032,17 @@ class Volume1AsisASTCompiler:
                 is_appendix=True,
             )
         )
-        for disc_k in ("disclaimer_text_1", "disclaimer_text_2", "disclaimer_text_3", "disclaimer_text_4"):
-            disc_text = t(disc_k, locale=doc_lang, client_name=client_name, company=client_name)
-            nodes.append(ParagraphNode(text=disc_text, font_size=9.0, space_after=6))
+        for i in range(1, 6):
+            disc_k = f"disclaimer_text_{i}"
+            disc_text = t(
+                disc_k,
+                locale=doc_lang,
+                client_name=client_name,
+                company_name=company_name,
+                company=company_name,
+            )
+            if disc_text and disc_text != disc_k and not disc_text.startswith("disclaimer_text_"):
+                nodes.append(ParagraphNode(text=disc_text, font_size=9.0, space_after=6))
 
 
 # Legacy backward-compatibility alias

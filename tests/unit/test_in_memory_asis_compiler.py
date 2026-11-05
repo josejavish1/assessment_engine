@@ -91,3 +91,42 @@ def test_derive_in_memory_maturity_matrix(sample_blueprint_payload: dict) -> Non
     assert row2["pillar_id"] == "T2.P2"
     assert row2["score"] == 3.8
     assert "Kubernetes worker node" in row2["justification"]
+
+
+def test_derive_in_memory_maturity_matrix_spanish_keys() -> None:
+    """Verify Spanish-keyed payloads (pilar_id, pilar_name) resolve properly and never default to 'Pillar'."""
+    payload = {
+        "document_meta": {"tower_code": "T3", "language": "es"},
+        "pillars_analysis": [
+            {
+                "pilar_id": "T3.P1",
+                "pilar_name": "Redes de Centro de Datos y Campus",
+                "score": 3.0,
+                "health_check_asis": [
+                    {
+                        "finding": "Topología de red sin redundancia en switches de acceso.",
+                        "business_risk": "Pérdida de conectividad en planta.",
+                    }
+                ],
+            },
+            {
+                "pilar_id": "T3.P2",
+                "pilar_name": "WAN / SD-WAN y Conectividad de Sedes",
+                "score": 2.2,
+                "health_check_asis": [
+                    {
+                        "finding": "Enlaces WAN monoruta sin backup celular o satelital.",
+                        "business_risk": "Aislamiento de fábricas ante corte de fibra.",
+                    }
+                ],
+            },
+        ],
+    }
+
+    rows = derive_in_memory_maturity_matrix(payload, doc_lang="es")
+    assert len(rows) == 2
+    assert rows[0]["pillar_name"] != "Pillar"
+    assert "Redes de Centro de Datos" in rows[0]["pillar_name"]
+    assert rows[1]["pillar_name"] != "Pillar"
+    assert "WAN" in rows[1]["pillar_name"]
+

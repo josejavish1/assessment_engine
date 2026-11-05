@@ -22,6 +22,7 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
 from assessment_engine.domain.actuarial_scale_calibrator import (
     safe_float,
 )
+from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
 
 logger = logging.getLogger(__name__)
 
@@ -253,6 +254,14 @@ class TowerPayloadHydrator:
                 raw_payload["total_fair_max"] = target_domain_max
 
                 pillars = raw_payload.get("pillars_analysis") or []
+                for pil in pillars:
+                    if isinstance(pil, dict):
+                        p_id, p_name = extract_pillar_identifiers(pil)
+                        if p_id and "pillar_id" not in pil:
+                            pil["pillar_id"] = p_id
+                        if p_name and "pillar_name" not in pil:
+                            pil["pillar_name"] = p_name
+
                 all_findings = [
                     hc
                     for pillar in pillars

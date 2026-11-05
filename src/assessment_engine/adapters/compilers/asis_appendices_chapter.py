@@ -3,26 +3,12 @@ from __future__ import annotations
 
 import json
 import logging
-from pathlib import Path
 from typing import Any
 
-from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
+from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Cm, Inches
 
-from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
-from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
-from assessment_engine.infrastructure.docx_render_utils import (
-    autofit_table_to_contents,
-    finalize_table,
-    shade_cell,
-)
-from assessment_engine.infrastructure.localization import (
-    format_currency,
-    format_number,
-    get_localized_list,
-    t,
-)
 from assessment_engine.adapters.compilers.asis_docx_primitives import (
     DocumentCompilationContext,
     _add_markdown_bullet,
@@ -30,9 +16,18 @@ from assessment_engine.adapters.compilers.asis_docx_primitives import (
     add_appendix_subheading,
     add_body_paragraph,
     add_spacer,
-    format_currency_custom,
-    set_cell_border_white,
     set_cell_text_custom,
+)
+from assessment_engine.adapters.emitters.docx_style_resolver import DocxStyleResolver
+from assessment_engine.domain.theme_registry import SemanticColorRole, TypographyRole
+from assessment_engine.infrastructure.docx_render_utils import (
+    finalize_table,
+    shade_cell,
+)
+from assessment_engine.infrastructure.localization import (
+    format_currency,
+    get_localized_list,
+    t,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,7 +46,7 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     client_name = ctx["client_name"]
     tower_name = ctx["tower_name"]
     tower_dir_obj = ctx["tower_dir_obj"]
-    modules_dir = ctx["modules_dir"]
+    _modules_dir = ctx["modules_dir"]
     vocab = ctx["vocab"]
     payload_path = ctx["payload_path"]
     b_data = ctx.get("b_data", {})
@@ -66,7 +61,7 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
     add_body_paragraph(doc, appendix_a_intro, text_color_rgb=text_color_rgb)
 
     # Detect if the organization operates in a regulated critical sector to apply custom parameters
-    is_critical_client = is_critical if is_critical is not None else True
+    _is_critical_client = is_critical if is_critical is not None else True
 
     # standard Actuarial Practice: Dynamic Regulatory Mapping (Industry Routing)
     if "Financial" in industry or "Banking" in industry:
@@ -349,9 +344,15 @@ def _compile_appendices(doc: Any, ctx: DocumentCompilationContext) -> None:
                 )
     else:
         for k in ["disclaimer_text_1", "disclaimer_text_2", "disclaimer_text_3", "disclaimer_text_4", "disclaimer_text_5"]:
-            if vocab.get(k):
+            raw_k = vocab.get(k, "")
+            if raw_k:
+                formatted_k = (
+                    raw_k.replace("{client_name}", client_name)
+                    .replace("{company_name}", company_name)
+                    .replace("{company}", company_name)
+                )
                 add_body_paragraph(
-                    doc, vocab.get(k, ""), text_color_rgb=text_color_rgb
+                    doc, formatted_k, text_color_rgb=text_color_rgb
                 )
 
     add_spacer(doc, 20)

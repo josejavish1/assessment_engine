@@ -162,3 +162,25 @@ def test_unknown_reference_returns_default(isolated_resolver: TaxonomyResolver) 
     assert isolated_resolver.resolve_tower_name("T99", default="Default Tower") == "Default Tower"
     assert isolated_resolver.resolve_pillar_name("T99", "T99.P1", default="Default Pillar") == "Default Pillar"
     assert isolated_resolver.resolve_pillar_by_any_reference("Nonexistent Capability", default="Default Cap") == "Default Cap"
+
+
+def test_extract_pillar_identifiers_bilingual_support() -> None:
+    """Verify robust extraction across English, Spanish, and generic schema variants."""
+    from assessment_engine.domain.taxonomy_resolver import extract_pillar_identifiers
+
+    # 1. English schema
+    en_sample = {"pillar_id": "T3.P1", "pillar_name": "Data Center & Campus Network Fabric"}
+    assert extract_pillar_identifiers(en_sample) == ("T3.P1", "Data Center & Campus Network Fabric")
+
+    # 2. Spanish schema
+    es_sample = {"pilar_id": "T3.P2", "pilar_name": "WAN / SD-WAN & Branch Connectivity"}
+    assert extract_pillar_identifiers(es_sample) == ("T3.P2", "WAN / SD-WAN & Branch Connectivity")
+
+    # 3. Generic fallback schema
+    gen_sample = {"id": "T4.P1", "title": "Storage Architecture & Service Levels"}
+    assert extract_pillar_identifiers(gen_sample) == ("T4.P1", "Storage Architecture & Service Levels")
+
+    # 4. Empty / non-mapping edge cases
+    assert extract_pillar_identifiers({}) == ("", "")
+    assert extract_pillar_identifiers(None) == ("", "")
+

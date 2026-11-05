@@ -304,7 +304,7 @@ class PayloadToASTBridge:
         self.meta_lang = "en"
 
         # Load brand profiles, using fallback values to ensure required assets are present.
-        self.company_name = "Consulting Firm"
+        self.company_name = "NTT DATA"
         self.classification = "Confidential"
         self.disclaimer = ""
         self.primary_color_rgb = [0, 114, 188]  # Primary corporate brand color code.
@@ -563,6 +563,7 @@ class PayloadToASTBridge:
             "tower_name": tower_name,
             "tower_id": tower_id,
             "client_name": client_name,
+            "company_name": self.company_name,
             "version": version,
             "date_str": date_str,
             "currency": currency,
@@ -1002,7 +1003,12 @@ class PayloadToASTBridge:
         if isinstance(pillars_list, list) and pillars_list:
             first_p = pillars_list[0]
             if isinstance(first_p, dict):
-                first_pillar_name = str(first_p.get("pillar_name") or first_p.get("name") or "")
+                from assessment_engine.domain.taxonomy_resolver import (
+                    extract_pillar_identifiers,
+                    get_taxonomy_resolver,
+                )
+                first_pid, first_pname = extract_pillar_identifiers(first_p)
+                first_pillar_name = first_pname or first_pid
 
         primary_pillar = lead_init or first_pillar_name or t("default_remediation_pillar", locale=meta_lang)
         from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
@@ -1321,38 +1327,20 @@ class PayloadToASTBridge:
             )
         ]
 
-        from assessment_engine.domain.taxonomy_resolver import get_taxonomy_resolver
+        from assessment_engine.domain.taxonomy_resolver import (
+            extract_pillar_identifiers,
+            get_taxonomy_resolver,
+        )
         resolver = get_taxonomy_resolver()
 
         for s_idx, p in enumerate(sorted(blueprint_data.get("pillars_analysis", []), key=lambda item: item.get("score", 0.0))):
             bg = self.alt_row_hex if s_idx % 2 == 1 else "FFFFFF"
-            raw_pid = str(
-                p.get("pillar_id")
-                or p.get("id")
-                or p.get("code")
-                or ""
-            )
-            raw_pname = str(
-                p.get("pillar_name")
-                or p.get("name")
-                or p.get("title")
-                or ""
-            )
-            if not raw_pid:
-                for k, v in p.items():
-                    if "id" in k.lower() and v:
-                        raw_pid = str(v)
-                        break
-            if not raw_pname:
-                for k, v in p.items():
-                    if "name" in k.lower() and v:
-                        raw_pname = str(v)
-                        break
-
+            raw_pid, raw_pname = extract_pillar_identifiers(p)
             p_name = resolver.resolve_pillar_by_any_reference(
                 raw_pid or raw_pname,
                 default=(raw_pname or raw_pid or "Pillar"),
                 locale=meta_lang,
+                tower_id=tower_id,
             )
             p_score = float(p.get("score", 3.0))
             score_formatted = format_number(p_score, locale=meta_lang, decimals=2)
