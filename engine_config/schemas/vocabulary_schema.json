@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TenantAndOntologyVocabularySchema",
+  "type": "object",
+  "properties": {
+    "ontology_version": {
+      "type": "string"
+    },
+    "canonical_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "canonical_name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "phonetic_aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "acronyms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["canonical_name", "category"]
+      }
+    }
+  },
+  "required": ["ontology_version", "canonical_entities"]
+}

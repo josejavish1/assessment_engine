@@ -133,6 +133,31 @@ class TowerPayloadHydrator:
     """Hydrates raw tower blueprint payloads with authoritative corporate telemetry."""
 
     @staticmethod
+    def compute_canonical_score(payload: Dict[str, Any], doc_lang: str = "en") -> float:
+        """Computes the canonical maturity score strictly from exact_score, scoring_output, or pillars_analysis."""
+        raw_ext = payload.get("exact_score") or payload.get("score")
+        parsed_ext = safe_float(raw_ext, locale=doc_lang, allow_zero=True)
+        if parsed_ext is not None:
+            return round(parsed_ext, 2)
+
+        pa = payload.get("pillars_analysis") or []
+        pa_scores = []
+        for p_item in pa:
+            if isinstance(p_item, dict):
+                raw_sc = p_item.get("score") if p_item.get("score") is not None else p_item.get("maturity_score")
+                sc_f = safe_float(raw_sc, locale=doc_lang, allow_zero=True)
+                if sc_f is not None:
+                    pa_scores.append(Decimal(str(sc_f)))
+
+        if pa_scores:
+            canonical_score_dec = (sum(pa_scores) / Decimal(str(len(pa_scores)))).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            return float(canonical_score_dec)
+
+        return 2.50
+
+    @staticmethod
     def load_and_hydrate_all_towers(
         repo_root: Path,
         global_payload: Dict[str, Any],
@@ -187,6 +212,29 @@ class TowerPayloadHydrator:
 
         candidate_roots = [resolved_repo_root / "working" / client_id_norm] + safe_extra_roots
 
+        # RFC 082: Load immutable multi-source epistemic ledger if present in candidate roots
+        epistemic_ledger_data: Optional[Dict[str, Any]] = None
+        for base_dir in candidate_roots:
+            ledger_candidate = base_dir / "epistemic_ledger.json"
+            if ledger_candidate.exists():
+                try:
+                    with open(ledger_candidate, "r", encoding="utf-8-sig") as lf:
+                        loaded_ledger = json.load(lf)
+                    if isinstance(loaded_ledger, dict):
+                        epistemic_ledger_data = loaded_ledger
+                        logger.info("Loaded epistemic ledger from: %s", ledger_candidate)
+                        break
+                except (OSError, ValueError, TypeError) as e:
+                    logger.warning("Could not parse epistemic ledger from %s: %s", ledger_candidate, e)
+
+        ledger_entries_by_tower: Dict[str, Dict[str, Any]] = {}
+        if epistemic_ledger_data and isinstance(epistemic_ledger_data, dict):
+            for entry in epistemic_ledger_data.get("epistemic_entries", []):
+                if isinstance(entry, dict):
+                    t_ref = str(entry.get("domain_taxonomy_ref", "")).strip().upper()
+                    if t_ref:
+                        ledger_entries_by_tower[t_ref] = entry
+
         for tower_code in target_towers:
             code_upper = _FILENAME_TOKEN_SPLIT_PATTERN.sub("_", tower_code.strip().upper()).strip("_")
             if not code_upper:
@@ -222,6 +270,16 @@ class TowerPayloadHydrator:
                             logger.warning("Error reading %s: %s", p_file, e)
 
                 if raw_payload is not None:
+                    scoring_file = tower_dir / "scoring_output.json"
+                    if scoring_file.exists():
+                        try:
+                            with open(scoring_file, "r", encoding="utf-8-sig") as sf:
+                                score_data = json.load(sf)
+                                disk_score = score_data.get("tower_score_exact")
+                                if disk_score is not None:
+                                    raw_payload["exact_score"] = float(disk_score)
+                        except Exception as ex:
+                            logger.debug("Could not read scoring_output in %s: %s", tower_dir, ex)
                     break
 
             if raw_payload is None:
@@ -279,6 +337,43 @@ class TowerPayloadHydrator:
                     _reconcile_finding_scores_half_up(
                         all_findings, "fair_max_score", target_domain_max, locale=doc_lang
                     )
+
+            # RFC 075: Compute canonical maturity score strictly from pillars_analysis or exact_score
+            pa = raw_payload.get("pillars_analysis") or []
+            pa_scores = []
+            for p_item in pa:
+                if isinstance(p_item, dict):
+                    raw_sc = p_item.get("score") if p_item.get("score") is not None else p_item.get("maturity_score")
+                    sc_f = safe_float(raw_sc, locale=doc_lang, allow_zero=True)
+                    if sc_f is not None:
+                        pa_scores.append(Decimal(str(sc_f)))
+
+            raw_ext = raw_payload.get("exact_score") or raw_payload.get("score")
+            parsed_ext = safe_float(raw_ext, locale=doc_lang, allow_zero=True)
+            if parsed_ext is not None:
+                canonical_score_float = parsed_ext
+                canonical_score_str = f"{parsed_ext:.2f}"
+            elif pa_scores:
+                canonical_score_dec = (sum(pa_scores) / Decimal(str(len(pa_scores)))).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
+                canonical_score_float = float(canonical_score_dec)
+                canonical_score_str = f"{canonical_score_dec:.2f}"
+            else:
+                canonical_score_float = 2.50
+                canonical_score_str = "2.50"
+
+            raw_payload["score"] = canonical_score_float
+            raw_payload["exact_score"] = canonical_score_float
+            raw_payload["maturity_score"] = canonical_score_float
+            raw_payload["overall_score"] = canonical_score_float
+
+            exec_summary = raw_payload.get("executive_summary")
+            if not isinstance(exec_summary, dict):
+                exec_summary = {}
+                raw_payload["executive_summary"] = exec_summary
+            exec_summary["global_score"] = canonical_score_str
+            exec_summary["global_score_numeric"] = canonical_score_float
 
             tower_fin_tel = raw_payload.get("financial_telemetry") or {}
             explicit_tower_rate = (
@@ -372,6 +467,41 @@ class TowerPayloadHydrator:
             doc_meta["tower_code"] = code_upper
             doc_meta["tower_name"] = resolved_tower_name
             raw_payload["document_meta"] = doc_meta
+
+            # RFC 082: Attach reconciled epistemic evidence from immutable ledger
+            if code_upper in ledger_entries_by_tower:
+                t_entry = ledger_entries_by_tower[code_upper]
+                raw_payload["epistemic_ledger_entry"] = t_entry
+                raw_payload["epistemic_truth_status"] = t_entry.get("truth_status")
+                raw_payload["epistemic_composite_confidence"] = t_entry.get("composite_confidence")
+                frags = t_entry.get("supporting_fragments", [])
+                raw_payload["epistemic_supporting_fragments"] = frags
+
+                pos_facts = [
+                    str(f.get("canonical_assertion", "")).strip()
+                    for f in frags
+                    if isinstance(f, dict) and f.get("polarity") == "POSITIVE" and f.get("canonical_assertion")
+                ]
+                neg_facts = [
+                    str(f.get("canonical_assertion", "")).strip()
+                    for f in frags
+                    if isinstance(f, dict) and f.get("polarity") == "NEGATIVE" and f.get("canonical_assertion")
+                ]
+                if pos_facts:
+                    raw_payload["epistemic_positive_assertions"] = pos_facts
+                if neg_facts:
+                    raw_payload["epistemic_negative_assertions"] = neg_facts
+
+                resolved_entities_list: List[Dict[str, Any]] = []
+                for f in frags:
+                    if isinstance(f, dict):
+                        f_meta = f.get("metadata", {})
+                        if isinstance(f_meta, dict):
+                            for ent in f_meta.get("resolved_entities", []):
+                                if isinstance(ent, dict) and ent not in resolved_entities_list:
+                                    resolved_entities_list.append(ent)
+                if resolved_entities_list:
+                    raw_payload["verified_entities"] = resolved_entities_list
 
             if persist_to_disk:
                 local_tower_dir = resolved_repo_root / "working" / client_id_norm / code_upper

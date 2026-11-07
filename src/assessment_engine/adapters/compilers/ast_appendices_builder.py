@@ -406,7 +406,7 @@ def build_appendix_c_glossary_and_disclaimer(
         )
     )
     client_name = str(ctx.get("client_name") or ctx.get("client") or "CLIENT").upper()
-    company_name = str(ctx.get("company_name") or ctx.get("company") or "NTT DATA").strip()
+    company_name = str(ctx.get("company_name") or ctx.get("company") or vocab.get("default_company_name") or "").strip()
     for i in range(1, 6):
         disc_text = vocab.get(f"disclaimer_text_{i}", "")
         if disc_text:

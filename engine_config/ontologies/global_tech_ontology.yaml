@@ -1,0 +1,187 @@
+ontology_version: "2.1.0-RFC082"
+
+role_classification_cues:
+  INTERVIEWER:
+    - "interviewer"
+    - "consultant"
+    - "auditor"
+    - "evaluator"
+    - "moderator"
+  EXECUTIVE_SPONSOR:
+    - "cio"
+    - "cto"
+    - "ciso"
+    - "coo"
+    - "cfo"
+    - "director"
+    - "vp"
+    - "vice president"
+    - "executive"
+    - "sponsor"
+    - "head of"
+  SME_TECHNICAL:
+    - "sme"
+    - "architect"
+    - "engineer"
+    - "lead"
+    - "specialist"
+    - "administrator"
+    - "sysadmin"
+    - "devops"
+    - "sre"
+    - "analyst"
+
+polarity_cues:
+  negative:
+    - "bottleneck"
+    - "outage"
+    - "failure"
+    - "fail"
+    - "risk"
+    - "strained"
+    - "strain"
+    - "legacy"
+    - "limitation"
+    - "limit"
+    - "lack"
+    - "saturated"
+    - "severe"
+    - "degraded"
+    - "technical debt"
+    - "debt"
+    - "deficit"
+    - "vulnerability"
+    - "single point of failure"
+  positive:
+    - "robust"
+    - "healthy"
+    - "automated"
+    - "redundant"
+    - "high availability"
+    - "optimal"
+    - "compliant"
+    - "resilient"
+    - "stable"
+    - "zero trust"
+
+domain_taxonomy_rules:
+  T1:
+    name: "Core Facilities & Datacenter"
+    keywords: ["datacenter", "data center", "ups", "hvac", "cooling", "generator", "facilities", "power", "rack", "colocation"]
+  T2:
+    name: "Compute & Virtualization"
+    keywords: ["virtualization", "vmware", "vsphere", "simplivity", "proxmox", "compute", "cluster", "esxi", "vcenter", "hyper-v", "nutanix", "kubernetes"]
+  T3:
+    name: "Storage & Data Protection"
+    keywords: ["storage", "netapp", "vnx", "san", "nas", "backup", "cohesity", "veeam", "s3", "metrocluster", "recovery", "replication", "snapshot"]
+  T4:
+    name: "Enterprise Networking & Connectivity"
+    keywords: ["network", "switch", "routing", "lan", "wan", "sd-wan", "huawei", "firewall", "fortinet", "fortigate", "vpn", "equinix", "fiber", "bgp", "mpls"]
+  T5:
+    name: "Edge, Industrial & Operational Technology"
+    keywords: ["edge", "industrial", "ot", "scada", "plc", "iot", "telemetry", "plant", "manufacturing", "branch", "point of sale", "hivision"]
+  T6:
+    name: "Identity & Access Management"
+    keywords: ["identity", "active directory", "entra", "iam", "pam", "mfa", "rbac", "privileged", "cyberark", "credential", "sso", "okta"]
+  T7:
+    name: "Cloud Platforms & Core ERP"
+    keywords: ["cloud", "gcp", "azure", "oci", "aws", "sap", "s/4hana", "erp", "iaas", "paas", "saas", "hyperscaler"]
+  T8:
+    name: "Cybersecurity & SecOps"
+    keywords: ["cybersecurity", "security", "edr", "xdr", "soc", "siem", "vulnerability", "patching", "ransomware", "antivirus", "netskope", "ztna", "iso27001"]
+  T9:
+    name: "Digital Workplace & End-User Computing"
+    keywords: ["workplace", "endpoint", "laptop", "desktop", "vdi", "m365", "office 365", "teams", "helpdesk", "service desk", "itsm", "ticketing"]
+  T10:
+    name: "Application Modernization & Integration"
+    keywords: ["modernization", "legacy", "technical debt", "iseries", "as400", "mainframe", "oracle forms", "architecture", "middleware", "wso2", "api gateway", "integration"]
+
+canonical_entities:
+  - canonical_name: "VMware vSphere"
+    category: "compute_virtualization"
+    acronyms: ["ESXi", "vCenter"]
+    phonetic_aliases: ["bienware", "bmware", "viemware"]
+  - canonical_name: "HPE SimpliVity"
+    category: "compute_virtualization"
+    acronyms: ["SimpliVity"]
+    phonetic_aliases: ["simplibiti", "synclivity", "simplivity"]
+  - canonical_name: "Proxmox VE"
+    category: "compute_virtualization"
+    acronyms: ["PVE"]
+    phonetic_aliases: ["prosmoz", "promox", "proxmos"]
+  - canonical_name: "Kubernetes"
+    category: "compute_containers"
+    acronyms: ["K8s"]
+    phonetic_aliases: ["cubernetes", "kuvernetes"]
+  - canonical_name: "IBM iSeries"
+    category: "compute_legacy"
+    acronyms: ["AS400", "iSeries"]
+    phonetic_aliases: ["aseries", "as 400", "i series"]
+  - canonical_name: "NetApp MetroCluster"
+    category: "storage"
+    acronyms: ["ONTAP"]
+    phonetic_aliases: ["netap", "stretch microplaster", "metrocluster"]
+  - canonical_name: "Cohesity"
+    category: "backup_dr"
+    acronyms: ["DataProtect"]
+    phonetic_aliases: ["coesity", "cohesi", "cohesiti"]
+  - canonical_name: "Dell EMC VNX"
+    category: "storage_legacy"
+    acronyms: ["VNX"]
+    phonetic_aliases: ["ubnx", "benex", "v n x"]
+  - canonical_name: "Oracle Cloud Infrastructure"
+    category: "public_cloud"
+    acronyms: ["OCI"]
+    phonetic_aliases: ["occlout", "orcle cloud", "o c i"]
+  - canonical_name: "Google Cloud Platform"
+    category: "public_cloud"
+    acronyms: ["GCP"]
+    phonetic_aliases: ["gugol cloud", "g c p"]
+  - canonical_name: "Microsoft Azure"
+    category: "public_cloud"
+    acronyms: ["Azure"]
+    phonetic_aliases: ["asur", "asur cloud"]
+  - canonical_name: "Equinix Fabric"
+    category: "network_interconnect"
+    acronyms: ["Equinix Fabric"]
+    phonetic_aliases: ["equinis", "ecuinis fabric", "equinix"]
+  - canonical_name: "Huawei Enterprise Networking"
+    category: "network_switches"
+    acronyms: ["Core Switches"]
+    phonetic_aliases: ["juawei", "corel switch", "guaguey", "guagüey"]
+  - canonical_name: "Fortinet FortiGate"
+    category: "network_security"
+    acronyms: ["FortiGate"]
+    phonetic_aliases: ["fortinet", "fortigate"]
+  - canonical_name: "Netskope"
+    category: "network_security"
+    acronyms: ["ZTNA"]
+    phonetic_aliases: ["netscope", "neskope"]
+  - canonical_name: "SAP S/4HANA"
+    category: "enterprise_erp"
+    acronyms: ["S/4HANA"]
+    phonetic_aliases: ["sap hana", "es for jana", "s four hana"]
+  - canonical_name: "WSO2 API Manager"
+    category: "integration_middleware"
+    acronyms: ["WSO2"]
+    phonetic_aliases: ["w s o 2"]
+  - canonical_name: "Oracle Forms and Reports"
+    category: "legacy_apps"
+    acronyms: ["Forms/Reports"]
+    phonetic_aliases: ["forms and reports", "orcle forms", "oracle forms"]
+  - canonical_name: "Zabbix"
+    category: "observability"
+    acronyms: ["Zabbix"]
+    phonetic_aliases: ["zabix", "tabix", "tavics"]
+  - canonical_name: "Grafana Loki"
+    category: "observability"
+    acronyms: ["Loki"]
+    phonetic_aliases: ["grafana loqui"]
+  - canonical_name: "Prometheus"
+    category: "observability"
+    acronyms: ["Prometheus"]
+    phonetic_aliases: ["prometeus", "promitius", "promitiüs"]
+  - canonical_name: "Hirschmann Industrial HiVision"
+    category: "ot_observability"
+    acronyms: ["HiVision"]
+    phonetic_aliases: ["jivision", "hi vision"]

@@ -63,56 +63,18 @@ def _safe_float_zero(
     return _domain_safe_float(value, locale=locale, allow_zero=allow_zero) or 0.0
 
 
-def main(argv: list[str] | None = None) -> None:
-    """Generate and save a global technology maturity radar chart.
-
-    This function serves as the main entry point for a command-line script that
-    visualizes technology maturity data. It reads a specified JSON payload file,
-    processes scores for each defined 'tower', and renders them as a polar plot
-    (radar chart) using Matplotlib. The resulting chart is saved as a PNG image.
-
-    The input JSON is expected to contain a 'heatmap' key, which maps to a
-    list of tower objects. Each tower object must have an 'id' (e.g., 'T1') and a
-    'score'. Towers are sorted numerically based on their ID to ensure a
-    consistent and logical axis order in the chart.
-
-    Args:
-        argv: A list of command-line arguments. If `None`, `sys.argv` is used.
-            The list is expected to contain:
-            1. The path to the input JSON payload file.
-            2. (Optional) The path for the output PNG file. If omitted, the
-               output is saved as 'global_radar_chart.png' in the same
-               directory as the input file.
-
-    Raises:
-        SystemExit: If the number of command-line arguments is insufficient or
-            if the input JSON payload does not contain any tower data under the
-            'heatmap' key.
-        FileNotFoundError: If the path to the input JSON file does not exist.
-        json.JSONDecodeError: If the input file is not a valid JSON document.
-        ValueError: If a tower 'id' cannot be parsed for numerical sorting
-            (e.g., 'T' followed by non-digits) or if a 'score' cannot be
-            converted to a float.
-    """
-    if len(argv if argv is not None else sys.argv) < 2:
-        logger.info(
-            "Usage: python -m assessment_engine.application.generate_global_radar_chart <global_payload_json> [output_png]"
-        )
-        sys.exit(1)
-
-    payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
-    payload = load_json(payload_path)
-
-    out_path = (
-        Path((argv if argv is not None else sys.argv)[2]).resolve()
-        if len(argv if argv is not None else sys.argv) > 2
-        else payload_path.with_name("global_radar_chart.png")
-    )
-
-    towers = payload.get("heatmap", [])
+def render_radar_chart(
+    towers: list[dict[str, Any]],
+    out_path: Path,
+    doc_lang: str = "en",
+    brand_color_hex: str = DEFAULT_BRAND_COLOR_HEX,
+) -> Path:
+    """Render a high-resolution single-series CMMI polar radar chart for any N-domain topology."""
     if not towers:
-        logger.warning("Zero tower data points in global payload.")
-        sys.exit(1)
+        raise ValueError("Cannot render radar chart: zero towers provided.")
+
+    from assessment_engine.infrastructure.localization import format_number, t
+    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
 
     # Enforces a strict numerical sort on tower labels with secondary string tie-breaking
     def _sort_key(node: dict[str, Any]) -> tuple[int, str]:
@@ -120,28 +82,24 @@ def main(argv: list[str] | None = None) -> None:
         match = re.search(r"\d+", t_code)
         return (int(match.group(0)) if match else FALLBACK_SORT_RANK, t_code)
 
-    towers = sorted(towers, key=_sort_key)
+    sorted_towers = sorted(towers, key=_sort_key)
 
-    from assessment_engine.infrastructure.localization import format_number, t
-    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
-
-    doc_lang = str(payload.get("meta", {}).get("language") or "en").lower()
-
-    labels = [str(t_node.get("id") or t_node.get("tower_code") or "") for t_node in towers]
+    labels = [str(t_node.get("id") or t_node.get("tower_code") or "") for t_node in sorted_towers]
     values = [
         _safe_float_zero(
             t_node.get("score_num") if t_node.get("score_num") is not None else t_node.get("score"),
             locale=doc_lang,
             allow_zero=True,
         )
-        for t_node in towers
+        for t_node in sorted_towers
     ]
 
     n = len(labels)
     angles = [i / float(n) * 2 * math.pi for i in range(n)]
     angles += angles[:1]
     values += values[:1]
-    raw_brand = str(payload.get("meta", {}).get("brand_color") or payload.get("meta", {}).get("primary_color_hex") or DEFAULT_BRAND_COLOR_HEX).lstrip("#")
+
+    raw_brand = str(brand_color_hex or DEFAULT_BRAND_COLOR_HEX).lstrip("#")
     if len(raw_brand) == 3 and all(c in "0123456789abcdefABCDEF" for c in raw_brand):
         raw_brand = "".join(c * 2 for c in raw_brand)
     elif len(raw_brand) != 6 or not all(c in "0123456789abcdefABCDEF" for c in raw_brand):
@@ -207,7 +165,7 @@ def main(argv: list[str] | None = None) -> None:
 
     # Positions the legend, containing tower names, to the right of the chart
     tower_names = []
-    for t_item in towers:
+    for t_item in sorted_towers:
         t_id = str(t_item.get("id") or t_item.get("tower_code") or "")
         localized_name = t(f"tomo_tower_{t_id.lower()}_clean", locale=doc_lang)
         if not localized_name or localized_name.startswith("tomo_tower_"):
@@ -215,7 +173,7 @@ def main(argv: list[str] | None = None) -> None:
             localized_name = dom.replace("_", " ") if dom else t_item.get("name", "")
         tower_names.append(f"{t_id}: {localized_name}")
 
-    n_towers = len(towers)
+    n_towers = len(sorted_towers)
     legend_sep = "\n" if n_towers > LEGEND_COMPACT_TOWER_THRESHOLD else "\n\n"
     legend_fontsize = max(LEGEND_MIN_FONT_SIZE, min(LEGEND_MAX_FONT_SIZE, int(LEGEND_FONT_DIVIDEND / max(1, n_towers))))
 
@@ -258,6 +216,68 @@ def main(argv: list[str] | None = None) -> None:
     finally:
         fig.clear()
 
+    return out_path
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Generate and save a global technology maturity radar chart.
+
+    This function serves as the main entry point for a command-line script that
+    visualizes technology maturity data. It reads a specified JSON payload file,
+    processes scores for each defined 'tower', and renders them as a polar plot
+    (radar chart) using Matplotlib. The resulting chart is saved as a PNG image.
+
+    The input JSON is expected to contain a 'heatmap' key, which maps to a
+    list of tower objects. Each tower object must have an 'id' (e.g., 'T1') and a
+    'score'. Towers are sorted numerically based on their ID to ensure a
+    consistent and logical axis order in the chart.
+
+    Args:
+        argv: A list of command-line arguments. If `None`, `sys.argv` is used.
+            The list is expected to contain:
+            1. The path to the input JSON payload file.
+            2. (Optional) The path for the output PNG file. If omitted, the
+               output is saved as 'global_radar_chart.png' in the same
+               directory as the input file.
+
+    Raises:
+        SystemExit: If the number of command-line arguments is insufficient or
+            if the input JSON payload does not contain any tower data under the
+            'heatmap' key.
+        FileNotFoundError: If the path to the input JSON file does not exist.
+        json.JSONDecodeError: If the input file is not a valid JSON document.
+        ValueError: If a tower 'id' cannot be parsed for numerical sorting
+            (e.g., 'T' followed by non-digits) or if a 'score' cannot be
+            converted to a float.
+    """
+    if len(argv if argv is not None else sys.argv) < 2:
+        logger.info(
+            "Usage: python -m assessment_engine.application.generate_global_radar_chart <global_payload_json> [output_png]"
+        )
+        sys.exit(1)
+
+    payload_path = Path((argv if argv is not None else sys.argv)[1]).resolve()
+    payload = load_json(payload_path)
+
+    out_path = (
+        Path((argv if argv is not None else sys.argv)[2]).resolve()
+        if len(argv if argv is not None else sys.argv) > 2
+        else payload_path.with_name("global_radar_chart.png")
+    )
+
+    towers = payload.get("heatmap", [])
+    if not towers:
+        logger.warning("Zero tower data points in global payload.")
+        sys.exit(1)
+
+    doc_lang = str(payload.get("meta", {}).get("language") or "en").lower()
+    raw_brand = str(
+        payload.get("meta", {}).get("brand_color")
+        or payload.get("meta", {}).get("primary_color_hex")
+        or DEFAULT_BRAND_COLOR_HEX
+    )
+
+    render_radar_chart(towers, out_path, doc_lang=doc_lang, brand_color_hex=raw_brand)
     logger.info("Global radar chart generated at: %s", out_path)
 
 

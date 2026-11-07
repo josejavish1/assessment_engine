@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
@@ -23,9 +24,15 @@ if str(REPO_ROOT) not in sys.path:
 if str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from assessment_engine.adapters.compilers.payload_to_ast import compile_asis_docx_via_ast
-from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import Volume1AsisASTCompiler
-from assessment_engine.application.services.tower_payload_hydrator import TowerPayloadHydrator
+from assessment_engine.adapters.compilers.payload_to_ast import (
+    compile_asis_docx_via_ast,
+)
+from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import (
+    Volume1AsisASTCompiler,
+)
+from assessment_engine.application.services.tower_payload_hydrator import (
+    TowerPayloadHydrator,
+)
 
 MOLINS_CANONICAL_FILENAMES: dict[str, str] = {
     "T1": "Molins_202610_Anexo_01_Data_Center_ASIS.docx",
@@ -34,16 +41,10 @@ MOLINS_CANONICAL_FILENAMES: dict[str, str] = {
     "T4": "Molins_202610_Anexo_04_Datos_Storage_ASIS.docx",
     "T5": "Molins_202610_Anexo_05_Resiliencia_ASIS.docx",
     "T6": "Molins_202610_Anexo_06_Seguridad_Identidad_ASIS.docx",
-    "T7": "Molins_202610_Anexo_07_Bases_Datos_Operaciones_ASIS.docx",
-    "T8": "Molins_202610_Anexo_08_Aplicaciones_FinOps_ASIS.docx",
-    "T9": "Molins_202610_Anexo_09_Puesto_Trabajo_ASIS.docx",
-    "T10": "Molins_202610_Anexo_10_Sistemas_Expedicion_Operaciones_ASIS.docx",
-}
-
-MOLINS_LEGACY_ALIASES: dict[str, str] = {
     "T7": "Molins_202610_Anexo_07_Operaciones_ITSM_ASIS.docx",
     "T8": "Molins_202610_Anexo_08_FinOps_Gobernanza_ASIS.docx",
-    "T10": "Molins_202610_Anexo_10_Mainframe_Core_ASIS.docx",
+    "T9": "Molins_202610_Anexo_09_Puesto_Trabajo_ASIS.docx",
+    "T10": "Molins_202610_Anexo_10_Sistemas_Expedicion_Operaciones_ASIS.docx",
 }
 
 
@@ -59,7 +60,7 @@ def convert_docx_to_pdf(docx_path: Path, output_pdf_path: Path) -> bool:
             "--outdir",
             str(output_pdf_path.parent),
         ]
-        res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         generated_pdf = output_pdf_path.parent / (docx_path.stem + ".pdf")
         if generated_pdf.exists() and generated_pdf != output_pdf_path:
             shutil.move(generated_pdf, output_pdf_path)
@@ -112,13 +113,6 @@ def compile_all_annexes(hydrated_payloads: dict[str, dict[str, Any]]) -> None:
                 shutil.copy2(primary_docx, m_dir / filename)
                 if pdf_path.exists():
                     shutil.copy2(pdf_path, m_dir / pdf_path.name)
-                # Replicate backward-compatible alias if defined
-                if code in MOLINS_LEGACY_ALIASES:
-                    alias_name = MOLINS_LEGACY_ALIASES[code]
-                    alias_pdf = alias_name.replace(".docx", ".pdf")
-                    shutil.copy2(primary_docx, m_dir / alias_name)
-                    if pdf_path.exists():
-                        shutil.copy2(pdf_path, m_dir / alias_pdf)
 
 
 def parse_args() -> argparse.Namespace:
@@ -143,6 +137,23 @@ def main() -> None:
     hydrated_payloads = TowerPayloadHydrator.load_and_hydrate_all_towers(
         REPO_ROOT, global_payload, doc_lang="es"
     )
+
+    # 1.1 Synchronize global_payload heatmap across all active towers
+    from assessment_engine.domain.actuarial_scale_calibrator import safe_float
+    from assessment_engine.infrastructure.text_utils import CANONICAL_TOWER_NAMES
+
+    synced_heatmap = []
+    for code in sorted(hydrated_payloads.keys(), key=lambda x: int(x[1:]) if x[1:].isdigit() else 99):
+        p = hydrated_payloads[code]
+        pa = p.get("pillars_analysis", [])
+        pa_scores = [p_item.get("score") for p_item in pa if p_item.get("score") is not None]
+        avg_score = (sum(pa_scores) / len(pa_scores)) if pa_scores else 2.5
+        score_val = safe_float(p.get("score") or p.get("overall_score") or p.get("exact_score") or avg_score)
+        name_val = p.get("tower_name") or CANONICAL_TOWER_NAMES.get(code, code)
+        synced_heatmap.append({"id": code, "tower_code": code, "tower_name": name_val, "score": score_val})
+    global_payload["heatmap"] = synced_heatmap
+    with open(global_payload_path, "w", encoding="utf-8") as f:
+        json.dump(global_payload, f, indent=2, ensure_ascii=False)
 
     if args.only == "annexes":
         compile_all_annexes(hydrated_payloads)

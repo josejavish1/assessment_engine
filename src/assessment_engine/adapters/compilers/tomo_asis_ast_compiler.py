@@ -8,20 +8,49 @@ from enriched SSOT payloads, completely eradicating template-injection split-bra
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Dict, Final, List, Mapping, Optional, Tuple
 
+from assessment_engine.application.generate_global_radar_chart import render_radar_chart
 from assessment_engine.domain.actuarial_reconciler import ActuarialReconciler
 from assessment_engine.domain.actuarial_scale_calibrator import (
     compute_dynamic_lm_thresholds,
     safe_float,
 )
+from assessment_engine.domain.actuarial_taxonomy_clusterer import (
+    ActuarialTaxonomyClusterer,
+)
 from assessment_engine.domain.taxonomy_resolver import (
     extract_pillar_identifiers,
     get_taxonomy_resolver,
 )
+
+
+@dataclass(frozen=True)
+class DomainPolarityMetric:
+    """Immutable representation of a single domain extremity in the portfolio."""
+
+    code: str
+    name: str
+    score_formatted: str
+    ale_formatted: str
+    ale_share_pct: str
+    raw_score: float
+    raw_ale: float
+
+
+@dataclass(frozen=True)
+class PortfolioPolarityExtremes:
+    """Container holding the mathematical polarity extremes of the assessed portfolio."""
+
+    domain_count: int
+    leader: DomainPolarityMetric
+    top_risk: DomainPolarityMetric
+    lagging: DomainPolarityMetric
+
 
 MAX_CMMI_SCORE: Final[float] = 5.0
 DEFAULT_MATURITY_SCORE: Final[float] = 2.50
@@ -54,10 +83,10 @@ COVER_BOTTOM_SPACER_PT: Final[int] = 258
 STATUS_STANDARDIZED_BG_HEX: Final[str] = "D9EAD3"
 STATUS_MODERATE_DEBT_BG_HEX: Final[str] = "FFF2CC"
 STATUS_HIGH_RISK_BG_HEX: Final[str] = "FCE5CD"
-CALLOUT_STRENGTH_BG_HEX: Final[str] = "F0FDFA"
-CALLOUT_STRENGTH_BORDER_HEX: Final[str] = "0D9488"
-CALLOUT_FRICTION_BG_HEX: Final[str] = "FFFBEB"
-CALLOUT_FRICTION_BORDER_HEX: Final[str] = "D97706"
+CALLOUT_STRENGTH_BG_HEX: Final[str] = "F8FAFC"
+CALLOUT_STRENGTH_BORDER_HEX: Final[str] = "475569"
+CALLOUT_FRICTION_BG_HEX: Final[str] = "F8FAFC"
+CALLOUT_FRICTION_BORDER_HEX: Final[str] = "475569"
 CALLOUT_BORDER_LEFT_SIZE: Final[int] = 24
 FALLBACK_CRITICALITY_RANK: Final[int] = 99
 
@@ -598,11 +627,23 @@ class Volume1AsisASTCompiler:
 
             # Score resolution prioritizing live telemetry (preserving legitimate 0.0 scores)
             score_val = self._first_not_none(
-                h_item.get("score") if isinstance(h_item, dict) else None,
+                t_item.get("exact_score") if isinstance(t_item, dict) else None,
+                t_item.get("score") if isinstance(t_item, dict) else None,
                 t_item.get("maturity_score") if isinstance(t_item, dict) else None,
-                t_item.get("global_score") if isinstance(t_item, dict) else None,
+                t_item.get("overall_score") if isinstance(t_item, dict) else None,
+                h_item.get("score") if isinstance(h_item, dict) else None,
                 c_item.get("score_num") if isinstance(c_item, dict) else None,
             )
+            if score_val is None and isinstance(t_item, dict) and t_item.get("pillars_analysis"):
+                pa_scores = [
+                    safe_float(p.get("score"), locale=doc_lang, allow_zero=True)
+                    for p in t_item.get("pillars_analysis", [])
+                    if isinstance(p, dict) and p.get("score") is not None
+                ]
+                valid_scores = [s for s in pa_scores if s is not None]
+                if valid_scores:
+                    score_val = round(sum(valid_scores) / len(valid_scores), 2)
+
             parsed_score = safe_float(score_val, locale=doc_lang, allow_zero=True)
             score = parsed_score if parsed_score is not None else DEFAULT_MATURITY_SCORE
 
@@ -633,7 +674,7 @@ class Volume1AsisASTCompiler:
         for idx, b in enumerate(CMMI_MATURITY_BANDS, start=1):
             if b["min"] <= score < b["max"] or (b["max"] == float("inf") and score >= b["min"]):
                 band_key = b["band_key"]
-                lvl = int(b.get("level", idx))
+                lvl = int(b.get("level", 6 - idx))
                 break
 
         tier_name = f"{t('level_prefix', locale=doc_lang)} {lvl} ({t(band_key, locale=doc_lang)})"
@@ -655,6 +696,116 @@ class Volume1AsisASTCompiler:
             "status_name": status_name,
             "bg_color": bg_color,
         }
+
+    def _compute_portfolio_polarity_extremes(
+        self,
+        domain_topology: List[Tuple[str, str, float, str, str]],
+        reconciled_allocations: Dict[str, int],
+        currency: str,
+        doc_lang: str,
+    ) -> PortfolioPolarityExtremes:
+        """Dynamically computes portfolio polarity extremes across any N-domain topology.
+
+        Identifies:
+          1. Maturity Leader: Highest score -> Lowest ALE -> Code ASC
+          2. Financial Risk Concentration: Highest ALE -> Lowest score -> Code ASC
+          3. Modernization Urgency / Lagging: Lowest score -> Highest ALE -> Code ASC
+        """
+        if not domain_topology:
+            fallback = DomainPolarityMetric(
+                code="N/A",
+                name="Unassigned Domain",
+                score_formatted="0.00",
+                ale_formatted=format_currency(0.0, currency_symbol=currency, locale=doc_lang, decimals=0),
+                ale_share_pct="0.0",
+                raw_score=0.0,
+                raw_ale=0.0,
+            )
+            return PortfolioPolarityExtremes(
+                domain_count=0,
+                leader=fallback,
+                top_risk=fallback,
+                lagging=fallback,
+            )
+
+        total_portfolio_ale = float(sum(reconciled_allocations.values()))
+
+        normalized: List[Dict[str, Any]] = []
+        for code, name, score, _, _ in domain_topology:
+            ale_val = float(reconciled_allocations.get(code, 0))
+            normalized.append(
+                {
+                    "code": code,
+                    "name": name,
+                    "score": float(score),
+                    "ale": ale_val,
+                }
+            )
+
+        leader_raw = min(
+            normalized,
+            key=lambda d: (-round(d["score"], 4), round(d["ale"], 2), d["code"]),
+        )
+        top_risk_raw = min(
+            normalized,
+            key=lambda d: (-round(d["ale"], 2), round(d["score"], 4), d["code"]),
+        )
+        lagging_raw = min(
+            normalized,
+            key=lambda d: (round(d["score"], 4), -round(d["ale"], 2), d["code"]),
+        )
+
+        def _to_metric(rec: Dict[str, Any]) -> DomainPolarityMetric:
+            share = (
+                (rec["ale"] / total_portfolio_ale * 100.0)
+                if total_portfolio_ale > 0.0
+                else 0.0
+            )
+            return DomainPolarityMetric(
+                code=rec["code"],
+                name=rec["name"],
+                score_formatted=format_number(rec["score"], locale=doc_lang, decimals=2),
+                ale_formatted=format_currency(rec["ale"], currency_symbol=currency, locale=doc_lang, decimals=0),
+                ale_share_pct=format_number(share, locale=doc_lang, decimals=1),
+                raw_score=rec["score"],
+                raw_ale=rec["ale"],
+            )
+
+        return PortfolioPolarityExtremes(
+            domain_count=len(normalized),
+            leader=_to_metric(leader_raw),
+            top_risk=_to_metric(top_risk_raw),
+            lagging=_to_metric(lagging_raw),
+        )
+
+    def _compute_peak_single_incident(
+        self,
+        domain_topology: List[Tuple[str, str, float, str, str]],
+        reconciled_p90_allocations: Dict[str, int],
+        currency: str,
+        doc_lang: str,
+    ) -> Tuple[str, str, int, str]:
+        """Dynamically computes the supremum single-incident exposure across all active domains.
+
+        Returns:
+            Tuple of (peak_code, peak_domain_name, peak_cost_int, formatted_peak_cost).
+        """
+        peak_code = ""
+        peak_name = ""
+        peak_val = 0
+        for code, clean_tower_name, _, _, _ in domain_topology:
+            val = reconciled_p90_allocations.get(code, 0)
+            if val > peak_val:
+                peak_val = val
+                peak_code = code
+                peak_name = clean_tower_name
+
+        if not peak_code and domain_topology:
+            peak_code = domain_topology[0][0]
+            peak_name = domain_topology[0][1]
+
+        formatted_cost = format_currency(peak_val, currency_symbol=currency, locale=doc_lang, decimals=0)
+        return peak_code, peak_name, peak_val, formatted_cost
 
     def _resolve_domain_allocations(
         self,
@@ -802,7 +953,7 @@ class Volume1AsisASTCompiler:
                         font_size=COCKPIT_HEADER_FONT_PT,
                     ),
                     CellNode(
-                        text=t("kpi_exposure_header", locale=doc_lang) + " (ALE P50)",
+                        text=t("kpi_exposure_header", locale=doc_lang),
                         bold=True,
                         bg_color=self.primary_color_hex,
                         text_color_rgb=list(HEADER_TEXT_WHITE_RGB),
@@ -836,83 +987,187 @@ class Volume1AsisASTCompiler:
             ),
         ]
         nodes.append(TableNode(rows=cockpit_rows, autofit=True, col_widths=[0.33, 0.33, 0.34]))
-        nodes.append(SpacerNode(points=14))
+        nodes.append(SpacerNode(points=8))
 
-        triad_rows = [
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("triad_col_dimension", locale=doc_lang), bold=True, is_header=True, font_size=8.5),
-                    CellNode(text=t("triad_col_finding", locale=doc_lang), bold=True, is_header=True, font_size=8.5),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("tomo_triad_strength_title", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
-                    CellNode(
-                        text=t("tomo_triad_strength_desc", locale=doc_lang),
-                        bg_color="FFFFFF",
-                        font_size=8.0,
-                    ),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("tomo_triad_gap_title", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
-                    CellNode(
-                        text=t("tomo_triad_gap_desc", locale=doc_lang),
-                        bg_color="FFFFFF",
-                        font_size=8.0,
-                    ),
-                ]
-            ),
-            TableRowNode(
-                cells=[
-                    CellNode(text=t("tomo_triad_bottleneck_title", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
-                    CellNode(
-                        text=t("tomo_triad_bottleneck_desc", locale=doc_lang),
-                        bg_color="FFFFFF",
-                        font_size=8.0,
-                    ),
-                ]
-            ),
-        ]
-        nodes.append(TableNode(rows=triad_rows, autofit=True, col_widths=[0.28, 0.72]))
-        nodes.append(SpacerNode(points=16))
-
-        headline = t("tomo_ch1_headline", locale=doc_lang, client_name=client_name)
-        nodes.append(ParagraphNode(text=f"**{headline}**", font_size=11.0, space_after=8))
-
-        p1 = t("tomo_ch1_p1", locale=doc_lang, client_name=client_name, global_score=format_number(global_score, locale=doc_lang, decimals=2))
-        nodes.append(ParagraphNode(text=p1, font_size=9.5, space_after=8))
-
-        lead_in = t("tomo_ch1_lead_in", locale=doc_lang)
-        nodes.append(ParagraphNode(text=lead_in, font_size=9.5, space_after=4, keep_with_next=True))
-
-        local_rate_str = format_currency(fin_metrics["local_rate"], currency_symbol=currency, locale=doc_lang, decimals=0) + t("per_hour_suffix", locale=doc_lang)
-        consolidated_rate_str = format_currency(fin_metrics["consolidated_rate"], currency_symbol=currency, locale=doc_lang, decimals=2) + t("per_hour_suffix", locale=doc_lang)
-        b1_title = t("tomo_ch1_continuity_bullet_title", locale=doc_lang)
-        b1_body = t(
-            "tomo_ch1_continuity_bullet_body",
-            locale=doc_lang,
-            local_site_hourly_rate=local_rate_str,
-            consolidated_hourly_rate=consolidated_rate_str,
+        # ---------------------------------------------------------------------
+        # RESOLVE TOPOLOGY, ALLOCATIONS & POLARITY EXTREMES
+        # ---------------------------------------------------------------------
+        domain_topology = self._resolve_domain_topology(
+            global_payload, doc_lang, tower_payloads=tower_payloads
         )
-        bullet_1_text = f"{b1_title} {b1_body}"
-
-        bullets = [
-            bullet_1_text,
-            t("tomo_ch1_bullet_2", locale=doc_lang),
-            t("tomo_ch1_bullet_3", locale=doc_lang),
-            t("tomo_ch1_bullet_4", locale=doc_lang),
+        catalog_loc = self._get_locale_catalog(doc_lang).get("tomo_tower_forensic_catalog", {})
+        reconciled_allocations = self._resolve_domain_allocations(
+            global_payload=global_payload,
+            tower_payloads=tower_payloads or {},
+            target_corporate_ale=total_ale,
+            domain_meta=domain_topology,
+            catalog_loc=catalog_loc,
+            doc_lang=doc_lang,
+        )
+        target_p90_int = self._round_half_up_int(total_p90, locale=doc_lang)
+        raw_p90_pairs: List[Tuple[str, Decimal]] = [
+            (code, Decimal(str(reconciled_allocations.get(code, 0))))
+            for code, *_ in domain_topology
         ]
-        for idx, b in enumerate(bullets):
-            is_last = (idx == len(bullets) - 1)
-            parts = b.split(":", 1)
-            f_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}" if len(parts) > 1 else b
-            nodes.append(ParagraphNode(text=f_bullet, style="List Bullet", font_size=9.0, space_after=8 if is_last else 3))
+        reconciled_p90_allocations = ActuarialReconciler.reconcile_domain_allocations(
+            target_corporate_ale=target_p90_int,
+            domain_raw_exposures=raw_p90_pairs,
+        )
+        peak_code, peak_domain, peak_cost, peak_cost_fmt = self._compute_peak_single_incident(
+            domain_topology, reconciled_p90_allocations, currency, doc_lang
+        )
+        polarity = self._compute_portfolio_polarity_extremes(
+            domain_topology, reconciled_allocations, currency, doc_lang
+        )
 
-        p3 = t("tomo_ch1_p3", locale=doc_lang, formatted_ale=formatted_ale, formatted_p90=formatted_p90)
-        nodes.append(ParagraphNode(text=p3, font_size=9.5, space_after=10))
+        # ---------------------------------------------------------------------
+        # EXECUTIVE LEAD SYNTHESIS PARAGRAPH (RFC 077 Parameterized)
+        # ---------------------------------------------------------------------
+        p1 = t(
+            "tomo_ch1_p1",
+            locale=doc_lang,
+            client=client_name,
+            domain_count=polarity.domain_count,
+            score=format_number(global_score, locale=doc_lang, decimals=2),
+            cmmi_label=level_display,
+        )
+        nodes.append(ParagraphNode(text=p1, font_size=9.5, space_after=6))
+
+        # ---------------------------------------------------------------------
+        # BLOCK 2: PORTFOLIO POLARITY & EXTREMES RADIOGRAPHY (3x3 Table)
+        # ---------------------------------------------------------------------
+        fmt_kwargs = {
+            "leader_code": polarity.leader.code,
+            "leader_name": polarity.leader.name,
+            "leader_score": polarity.leader.score_formatted,
+            "leader_ale": polarity.leader.ale_formatted,
+            "top_risk_code": polarity.top_risk.code,
+            "top_risk_name": polarity.top_risk.name,
+            "top_risk_score": polarity.top_risk.score_formatted,
+            "top_risk_ale": polarity.top_risk.ale_formatted,
+            "top_risk_share_pct": polarity.top_risk.ale_share_pct,
+            "lagging_code": polarity.lagging.code,
+            "lagging_name": polarity.lagging.name,
+            "lagging_score": polarity.lagging.score_formatted,
+            "lagging_ale": polarity.lagging.ale_formatted,
+        }
+
+        nodes.append(
+            HeadingNode(
+                text=t("tomo_polarity_section_title", locale=doc_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+                space_before=2,
+                space_after=3,
+            )
+        )
+        polarity_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_polarity_col_axis", locale=doc_lang), bold=True, is_header=True, font_size=8.5),
+                    CellNode(text=t("tomo_polarity_col_domain", locale=doc_lang), bold=True, is_header=True, font_size=8.5),
+                    CellNode(text=t("tomo_polarity_col_telemetry", locale=doc_lang), bold=True, is_header=True, font_size=8.5),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_polarity_leader_axis", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=t("tomo_polarity_leader_domain", locale=doc_lang, **fmt_kwargs), bold=True, bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=t("tomo_polarity_leader_desc", locale=doc_lang, **fmt_kwargs), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_polarity_risk_axis", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=t("tomo_polarity_risk_domain", locale=doc_lang, **fmt_kwargs), bold=True, bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=t("tomo_polarity_risk_desc", locale=doc_lang, **fmt_kwargs), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_polarity_lagging_axis", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=t("tomo_polarity_lagging_domain", locale=doc_lang, **fmt_kwargs), bold=True, bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=t("tomo_polarity_lagging_desc", locale=doc_lang, **fmt_kwargs), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=polarity_rows, autofit=True, col_widths=[0.26, 0.26, 0.48]))
+        nodes.append(SpacerNode(points=6))
+
+        # ---------------------------------------------------------------------
+        # BLOCK 3: PRIORITY STRATEGIC BUSINESS CHALLENGES
+        # ---------------------------------------------------------------------
+        nodes.append(
+            HeadingNode(
+                text=t("tomo_ch1_challenges_title", locale=doc_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+                space_before=2,
+                space_after=3,
+            )
+        )
+        burning_platform = global_payload.get("burning_platform")
+        dynamic_bullets: List[str] = []
+
+        if isinstance(burning_platform, list) and burning_platform:
+            for bp_item in burning_platform:
+                if isinstance(bp_item, dict):
+                    theme = str(bp_item.get("theme") or bp_item.get("title") or "").strip()
+                    risk = str(
+                        bp_item.get("business_risk")
+                        or bp_item.get("impact")
+                        or bp_item.get("description")
+                        or ""
+                    ).strip()
+                    if theme and risk:
+                        dynamic_bullets.append(f"**{theme}:** {risk}")
+                    elif theme or risk:
+                        dynamic_bullets.append(theme or risk)
+                elif isinstance(bp_item, str) and bp_item.strip():
+                    dynamic_bullets.append(bp_item.strip())
+
+        if not dynamic_bullets:
+            b1_title = t("tomo_ch1_continuity_bullet_title", locale=doc_lang).strip()
+            b1_body = t("tomo_ch1_continuity_bullet_body", locale=doc_lang).strip()
+            fallback_b1 = f"**{b1_title}** {b1_body}" if b1_title and b1_body else (b1_title or b1_body)
+            dynamic_bullets = [
+                fallback_b1,
+                t("tomo_ch1_bullet_2", locale=doc_lang),
+                t("tomo_ch1_bullet_3", locale=doc_lang),
+                t("tomo_ch1_bullet_4", locale=doc_lang),
+            ]
+
+        for idx, b in enumerate(dynamic_bullets):
+            is_last = (idx == len(dynamic_bullets) - 1)
+            if b.startswith("**"):
+                f_bullet = b
+            else:
+                parts = b.split(":", 1)
+                f_bullet = f"**{parts[0].strip()}:** {parts[1].strip()}" if len(parts) > 1 else b
+            nodes.append(ParagraphNode(text=f_bullet, style="List Bullet", font_size=8.5, space_after=5 if is_last else 2))
+
+        # ---------------------------------------------------------------------
+        # BLOCK 4: ACTUARIAL FINANCIAL QUANTIFICATION (OPEN FAIR™)
+        # ---------------------------------------------------------------------
+        nodes.append(
+            HeadingNode(
+                text=t("tomo_ch1_econ_title", locale=doc_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+                space_before=2,
+                space_after=3,
+            )
+        )
+        p3 = t(
+            "tomo_ch1_p3",
+            locale=doc_lang,
+            formatted_ale=formatted_ale,
+            formatted_p90=formatted_p90,
+            worst_incident_cost=peak_cost_fmt,
+            worst_incident_code=peak_code,
+            worst_incident_domain=peak_domain,
+        )
+        nodes.append(ParagraphNode(text=p3, font_size=8.5, space_after=8))
         nodes.append(PageBreakNode())
 
     # =========================================================================
@@ -1015,44 +1270,114 @@ class Volume1AsisASTCompiler:
         )
         nodes.append(PageBreakNode())
 
-        # Deterministic search for radar chart strictly in tenant output directory
+        # Dynamically render high-resolution polar radar chart for all active domains in topology
+        radar_target = output_docx_path.parent / "global_radar_chart.png"
         radar_path = None
-        specific_candidates = [
-            output_docx_path.parent / f"{output_docx_path.stem}_radar.png",
-            output_docx_path.parent / "global_radar_chart.png",
-            output_docx_path.parent / "assets" / "global_radar_chart.png",
-        ]
-        for candidate in specific_candidates:
-            if candidate.exists():
-                radar_path = candidate
-                break
+        try:
+            radar_towers = [
+                {"id": code, "tower_code": code, "score": score, "name": clean_tower_name}
+                for code, clean_tower_name, score, _, _ in domain_topology
+            ]
+            render_radar_chart(
+                towers=radar_towers,
+                out_path=radar_target,
+                doc_lang=doc_lang,
+                brand_color_hex=self.primary_color_hex,
+            )
+            radar_path = radar_target
+        except Exception as ex:
+            logger.debug("[Radar Chart] Dynamic generation fallback: %s", ex)
+            specific_candidates = [
+                output_docx_path.parent / f"{output_docx_path.stem}_radar.png",
+                output_docx_path.parent / "global_radar_chart.png",
+                output_docx_path.parent / "assets" / "global_radar_chart.png",
+            ]
+            for candidate in specific_candidates:
+                if candidate.exists():
+                    radar_path = candidate
+                    break
 
         if radar_path and radar_path.exists():
-            nodes.append(PictureNode(path=str(radar_path), width_inches=5.2))
+            nodes.append(PictureNode(path=str(radar_path), width_inches=4.4))
             nodes.append(
                 ParagraphNode(
                     text=f"*{t('tomo_fig_radar_caption', locale=doc_lang)}*",
                     font_size=8.5,
                     italic=True,
                     align="CENTER",
-                    space_after=14,
+                    space_after=6,
                 )
             )
 
         nodes.append(
             ParagraphNode(
                 text=t("tomo_ch2_summary_p1", locale=doc_lang, overall_maturity=weighted_score_str),
-                font_size=9.5,
-                space_after=8,
+                font_size=9.0,
+                space_after=5,
             )
         )
         nodes.append(
             ParagraphNode(
                 text=t("tomo_ch2_summary_p2", locale=doc_lang),
-                font_size=9.5,
-                space_after=12,
+                font_size=9.0,
+                space_after=6,
             )
         )
+
+        # ---------------------------------------------------------------------
+        # SECTION 2.2: CMMI ANALYTICAL MATURITY SCALE REFERENCE TABLE (RFC 079)
+        # ---------------------------------------------------------------------
+        nodes.append(
+            HeadingNode(
+                text=t("tomo_ch2_sec2_title", locale=doc_lang),
+                level=2,
+                primary_color_rgb=self.primary_color_rgb,
+                space_before=4,
+                space_after=3,
+            )
+        )
+        nodes.append(
+            ParagraphNode(
+                text=t("tomo_ch2_sec2_intro", locale=doc_lang),
+                font_size=8.5,
+                space_after=5,
+            )
+        )
+
+        scale_definitions: List[Tuple[str, float, float, str]] = [
+            ("tomo_ch2_scale_lvl1_name", 1.00, 1.80, "tomo_ch2_scale_lvl1_desc"),
+            ("tomo_ch2_scale_lvl2_name", 1.80, 2.60, "tomo_ch2_scale_lvl2_desc"),
+            ("tomo_ch2_scale_lvl3_name", 2.60, 3.40, "tomo_ch2_scale_lvl3_desc"),
+            ("tomo_ch2_scale_lvl4_name", 3.40, 4.20, "tomo_ch2_scale_lvl4_desc"),
+            ("tomo_ch2_scale_lvl5_name", 4.20, 5.00, "tomo_ch2_scale_lvl5_desc"),
+        ]
+
+        scale_rows: List[TableRowNode] = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_ch2_scale_col_level", locale=doc_lang), bold=True, is_header=True, font_size=8.0),
+                    CellNode(text=t("tomo_ch2_scale_col_range", locale=doc_lang), bold=True, is_header=True, font_size=8.0, align="CENTER"),
+                    CellNode(text=t("tomo_ch2_scale_col_criteria", locale=doc_lang), bold=True, is_header=True, font_size=8.0),
+                ]
+            )
+        ]
+
+        for idx, (name_k, min_v, max_v, desc_k) in enumerate(scale_definitions):
+            range_str = f"{format_number(min_v, locale=doc_lang, decimals=2)} - {format_number(max_v, locale=doc_lang, decimals=2)}"
+            is_alt = (idx % 2 == 1)
+            row_bg = self.alt_row_hex if is_alt else "FFFFFF"
+            scale_rows.append(
+                TableRowNode(
+                    cells=[
+                        CellNode(text=t(name_k, locale=doc_lang), bold=True, bg_color=row_bg, font_size=7.5),
+                        CellNode(text=range_str, bold=True, bg_color=row_bg, font_size=7.5, align="CENTER"),
+                        CellNode(text=t(desc_k, locale=doc_lang), bg_color=row_bg, font_size=7.5),
+                    ]
+                )
+            )
+
+        nodes.append(TableNode(rows=scale_rows, autofit=True, col_widths=[0.24, 0.16, 0.60]))
+        nodes.append(SpacerNode(points=6))
         nodes.append(PageBreakNode())
 
     # =========================================================================
@@ -1102,6 +1427,9 @@ class Volume1AsisASTCompiler:
 
         domain_topology = self._resolve_domain_topology(global_payload, doc_lang, tower_payloads)
         domain_meta = [(code, title_k, text_k) for code, _, _, title_k, text_k in domain_topology]
+        scores = [s for _, _, s, _, _ in domain_topology]
+        explicit_gs = safe_float(global_payload.get("global_cmmi_score"), locale=doc_lang, allow_zero=True)
+        global_score = explicit_gs if explicit_gs is not None else (sum(scores) / max(1, len(scores)))
 
         raw_domain_scenarios = fin_metrics.get("domain_scenario_counts") or self.CANONICAL_DOMAIN_SCENARIO_BASELINE
         domain_scenarios = {
@@ -1122,8 +1450,6 @@ class Volume1AsisASTCompiler:
         bridge_text = t(
             "tomo_ch3_sec31_reconciliation_bridge",
             locale=doc_lang,
-            total_scenarios=total_scenarios_sum,
-            total_domains=len(domain_meta),
         )
         nodes.append(ParagraphNode(text=bridge_text, font_size=9.5, space_after=8))
 
@@ -1139,7 +1465,7 @@ class Volume1AsisASTCompiler:
         target_ale_int = self._round_half_up_int(total_ale, locale=doc_lang)
 
         col_dom_lbl = t("tomo_ch3_table4_col_domain", locale=doc_lang)
-        col_scen_lbl = t("tomo_ch3_table4_col_scenarios_count", locale=doc_lang)
+        col_cmmi_lbl = t("tomo_ch3_table_col_cmmi", locale=doc_lang)
         col_ann_lbl = t("tomo_ch3_table4_col_annual_exposure", locale=doc_lang)
         col_sev_lbl = t("tomo_ch3_table4_col_severe_event", locale=doc_lang)
         col_pct_lbl = t("tomo_ch3_table4_col_share_pct", locale=doc_lang)
@@ -1148,7 +1474,7 @@ class Volume1AsisASTCompiler:
             TableRowNode(
                 cells=[
                     CellNode(text=col_dom_lbl, bold=True, is_header=True, font_size=8.5),
-                    CellNode(text=col_scen_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
+                    CellNode(text=col_cmmi_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
                     CellNode(text=col_ann_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
                     CellNode(text=col_sev_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
                     CellNode(text=col_pct_lbl, bold=True, is_header=True, font_size=8.5, align="CENTER"),
@@ -1185,18 +1511,18 @@ class Volume1AsisASTCompiler:
             domain_raw_exposures=raw_pct_pairs,
         )
 
-        for code, clean_tower_name, _, _, _ in domain_topology:
-            sc_count = domain_scenarios.get(code.upper(), DEFAULT_SCENARIOS_PER_DOMAIN)
+        for code, clean_tower_name, score, _, _ in domain_topology:
             d_ale = reconciled_allocations.get(code, 0)
             d_p90 = reconciled_p90_allocations.get(code, 0)
             d_pct_val = reconciled_pct_tenths.get(code, 100) / 10.0
             d_pct_str = f"{format_number(d_pct_val, locale=doc_lang, decimals=1)}%"
+            score_str = format_number(score, locale=doc_lang, decimals=2)
 
             table4_rows.append(
                 TableRowNode(
                     cells=[
                         CellNode(text=f"{code} — {clean_tower_name}", font_size=8.0),
-                        CellNode(text=str(sc_count), font_size=8.0, align="CENTER"),
+                        CellNode(text=score_str, font_size=8.0, align="CENTER"),
                         CellNode(text=format_currency(d_ale, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
                         CellNode(text=format_currency(d_p90, currency_symbol=currency, locale=doc_lang, decimals=0), font_size=8.0, align="CENTER"),
                         CellNode(text=d_pct_str, font_size=8.0, align="CENTER"),
@@ -1206,18 +1532,37 @@ class Volume1AsisASTCompiler:
 
         tot_label = t("tomo_ch3_table4_total_row_label", locale=doc_lang, total_domains=len(domain_meta))
         pct_100_str = f"{format_number(100.0, locale=doc_lang, decimals=1)}%"
+
+        peak_code, peak_domain, peak_cost, peak_cost_fmt = self._compute_peak_single_incident(
+            domain_topology, reconciled_p90_allocations, currency, doc_lang
+        )
+        max_qualifier = t("tomo_ch3_table4_max_tag", locale=doc_lang)
+        peak_summary_text = f"{peak_cost_fmt} {max_qualifier}"
+        tot_cmmi_str = format_number(global_score, locale=doc_lang, decimals=2)
+
         table4_rows.append(
             TableRowNode(
                 cells=[
                     CellNode(text=tot_label, bold=True, bg_color="F8FAFC", font_size=8.5),
-                    CellNode(text=str(total_scenarios_sum), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
+                    CellNode(text=tot_cmmi_str, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
                     CellNode(text=format_currency(target_ale_int, currency_symbol=currency, locale=doc_lang, decimals=0), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
-                    CellNode(text=format_currency(target_p90_int, currency_symbol=currency, locale=doc_lang, decimals=0), bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
+                    CellNode(text=peak_summary_text, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
                     CellNode(text=pct_100_str, bold=True, bg_color="F8FAFC", font_size=8.5, align="CENTER"),
                 ]
             )
         )
         nodes.append(TableNode(rows=table4_rows, autofit=True, col_widths=[0.32, 0.14, 0.22, 0.20, 0.12]))
+
+        # Actuarial footnote explaining non-additivity of tail incidents
+        footnote_text = t(
+            "tomo_ch3_table4_footnote",
+            locale=doc_lang,
+            worst_incident_cost=peak_cost_fmt,
+            worst_incident_code=peak_code,
+            worst_incident_domain=peak_domain,
+            formatted_p90=format_currency(target_p90_int, currency_symbol=currency, locale=doc_lang, decimals=0),
+        )
+        nodes.append(ParagraphNode(text=footnote_text, font_size=8.0, italic=True, space_after=6))
         nodes.append(SpacerNode(points=10))
 
         # 3-Tier Portfolio Table dynamically calculated
@@ -1265,6 +1610,10 @@ class Volume1AsisASTCompiler:
         col_ale = t("tomo_ch3_col_ale", locale=doc_lang)
         col_scope = t("tomo_ch3_col_scope", locale=doc_lang)
 
+        # Introductory prose paragraph for the 3-Tier Portfolio Stratification Table
+        tier_intro_text = t("tomo_ch3_tier_table_intro", locale=doc_lang)
+        nodes.append(ParagraphNode(text=tier_intro_text, font_size=9.5, space_after=8))
+
         tier_rows = [
             TableRowNode(
                 cells=[
@@ -1301,18 +1650,69 @@ class Volume1AsisASTCompiler:
             ),
         ]
         nodes.append(TableNode(rows=tier_rows, autofit=True, col_widths=[0.30, 0.10, 0.25, 0.35]))
-        nodes.append(SpacerNode(points=8))
+        nodes.append(SpacerNode(points=10))
 
-        loss_note = t("tomo_ch3_loss_composition_note", locale=doc_lang)
-        nodes.append(
-            ParagraphNode(
-                text=loss_note,
-                font_size=8.5,
-                italic=True,
-                text_color_rgb=[100, 100, 100],
-                space_after=14,
-            )
-        )
+        # Section 3.1.C: Executive Stress-Testing Table (Open FAIR Portfolio Simulation)
+        stress_intro = t("tomo_ch3_stress_table_intro", locale=doc_lang)
+        nodes.append(ParagraphNode(text=stress_intro, font_size=9.5, space_after=8))
+
+        formatted_p90 = format_currency(total_p90, currency_symbol=currency, locale=doc_lang, decimals=0)
+        var_3y_tail = format_currency(fin_metrics["var_3y_tail"], currency_symbol=currency, locale=doc_lang, decimals=0)
+        formatted_ale = format_currency(target_ale_int, currency_symbol=currency, locale=doc_lang, decimals=0)
+
+        stress_col_h = t("tomo_ch3_stress_col_horizon", locale=doc_lang)
+        stress_col_m = t("tomo_ch3_stress_col_model", locale=doc_lang)
+        stress_col_d = t("tomo_ch3_stress_col_desc", locale=doc_lang)
+
+        stress_rows = [
+            TableRowNode(
+                cells=[
+                    CellNode(text=stress_col_h, bold=True, is_header=True, font_size=8.5),
+                    CellNode(text=stress_col_m, bold=True, is_header=True, font_size=8.5, align="CENTER"),
+                    CellNode(text=stress_col_d, bold=True, is_header=True, font_size=8.5),
+                ],
+                is_header=True,
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_ch3_stress_row1_title", locale=doc_lang), bold=True, bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=f"{formatted_ale} {t('per_year_suffix', locale=doc_lang)}", bold=True, bg_color="FFFFFF", font_size=8.0, align="CENTER"),
+                    CellNode(text=t("tomo_ch3_stress_row1_desc", locale=doc_lang), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_ch3_stress_row2_title", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=peak_cost_fmt, bold=True, bg_color=self.alt_row_hex, font_size=8.0, align="CENTER"),
+                    CellNode(
+                        text=t(
+                            "tomo_ch3_stress_row2_desc",
+                            locale=doc_lang,
+                            worst_incident_code=peak_code,
+                            worst_incident_domain=peak_domain,
+                        ),
+                        bg_color=self.alt_row_hex,
+                        font_size=8.0,
+                    ),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_ch3_stress_row3_title", locale=doc_lang), bold=True, bg_color="FFFFFF", font_size=8.0),
+                    CellNode(text=f"{formatted_p90} {t('per_year_suffix', locale=doc_lang)}", bold=True, bg_color="FFFFFF", font_size=8.0, align="CENTER"),
+                    CellNode(text=t("tomo_ch3_stress_row3_desc", locale=doc_lang), bg_color="FFFFFF", font_size=8.0),
+                ]
+            ),
+            TableRowNode(
+                cells=[
+                    CellNode(text=t("tomo_ch3_stress_row4_title", locale=doc_lang), bold=True, bg_color=self.alt_row_hex, font_size=8.0),
+                    CellNode(text=var_3y_tail, bold=True, bg_color=self.alt_row_hex, font_size=8.0, align="CENTER"),
+                    CellNode(text=t("tomo_ch3_stress_row4_desc", locale=doc_lang), bg_color=self.alt_row_hex, font_size=8.0),
+                ]
+            ),
+        ]
+        nodes.append(TableNode(rows=stress_rows, autofit=True, col_widths=[0.28, 0.22, 0.50]))
+        nodes.append(SpacerNode(points=14))
 
         # 3.2 5x5 Open FAIR Heatmap Matrix (Dynamically calibrated to tenant telemetry)
         nodes.append(
@@ -1352,7 +1752,116 @@ class Volume1AsisASTCompiler:
                     hourly_downtime_cost=fin_metrics["consolidated_rate"],
                 )
             )
-            nodes.append(SpacerNode(points=14))
+            nodes.append(SpacerNode(points=8))
+
+            # Dynamic Risk Taxonomy Clustering & Heatmap Legend (RFC 081)
+            clusters = ActuarialTaxonomyClusterer.build_dynamic_clusters(
+                risk_vectors=heatmap_feed,
+                tower_payloads=tower_payloads,
+                reconciled_allocations=reconciled_allocations,
+            )
+
+            if clusters:
+                total_crit = sum(c.critical_findings for c in clusters)
+                total_high = sum(c.high_findings for c in clusters)
+                total_med = sum(c.medium_findings for c in clusters)
+                total_all = sum(c.total_findings for c in clusters)
+                total_plot_points = sum(len(c.matrix_plot_codes) for c in clusters)
+
+                bridge_text = t(
+                    "sec_3_2_taxonomy_bridge_narrative",
+                    locale=doc_lang,
+                    active_cluster_count=len(clusters),
+                    total_plot_points=total_plot_points,
+                    total_findings=total_all,
+                    critical_count=total_crit,
+                    high_count=total_high,
+                    medium_count=total_med,
+                )
+                nodes.append(ParagraphNode(text=bridge_text, font_size=8.5, space_after=6))
+
+                legend_headers = [
+                    t("sec_3_2_col_taxonomy_family", locale=doc_lang),
+                    t("sec_3_2_col_matrix_codes", locale=doc_lang),
+                    t("sec_3_2_col_systemic_threat_rationale", locale=doc_lang),
+                    t("sec_3_2_col_forensic_breakdown", locale=doc_lang),
+                    t("sec_3_2_col_clustered_ale", locale=doc_lang),
+                ]
+
+                legend_rows = [
+                    TableRowNode(
+                        cells=[
+                            CellNode(text=legend_headers[0], bold=True, is_header=True, font_size=8.0),
+                            CellNode(text=legend_headers[1], bold=True, is_header=True, font_size=8.0, align="CENTER"),
+                            CellNode(text=legend_headers[2], bold=True, is_header=True, font_size=8.0),
+                            CellNode(text=legend_headers[3], bold=True, is_header=True, font_size=8.0, align="CENTER"),
+                            CellNode(text=legend_headers[4], bold=True, is_header=True, font_size=8.0, align="CENTER"),
+                        ],
+                        is_header=True,
+                    )
+                ]
+
+                for idx, c in enumerate(clusters):
+                    fam_title = t(f"{c.taxonomy_id}_TITLE", locale=doc_lang)
+                    fam_rationale = t(f"{c.taxonomy_id}_RATIONALE", locale=doc_lang)
+                    if c.representative_threats:
+                        empirical_scope = " | ".join(c.representative_threats)
+                        rationale_cell = f"{fam_rationale} ({empirical_scope})"
+                    else:
+                        rationale_cell = fam_rationale
+
+                    codes_cell = ", ".join(c.matrix_plot_codes) if c.matrix_plot_codes else "—"
+                    breakdown_cell = t(
+                        "sec_3_2_findings_badge_template",
+                        locale=doc_lang,
+                        total=c.total_findings,
+                        crit=c.critical_findings,
+                        high=c.high_findings,
+                        med=c.medium_findings,
+                    )
+                    ale_str = f"{format_currency(c.cluster_ale, currency_symbol=currency, locale=doc_lang, decimals=0)} ({format_number(c.share_of_total_ale_pct, locale=doc_lang, decimals=1)}%)"
+
+                    is_alt = (idx % 2 == 1)
+                    row_bg = self.alt_row_hex if is_alt else "FFFFFF"
+
+                    legend_rows.append(
+                        TableRowNode(
+                            cells=[
+                                CellNode(text=fam_title, bold=True, bg_color=row_bg, font_size=7.5),
+                                CellNode(text=codes_cell, bg_color=row_bg, font_size=7.5, align="CENTER"),
+                                CellNode(text=rationale_cell, bg_color=row_bg, font_size=7.5),
+                                CellNode(text=breakdown_cell, bold=True, bg_color=row_bg, font_size=7.5, align="CENTER"),
+                                CellNode(text=ale_str, bold=True, bg_color=row_bg, font_size=7.5, align="CENTER"),
+                            ]
+                        )
+                    )
+
+                # Total Footer Row
+                tot_ale_val = sum(c.cluster_ale for c in clusters)
+                tot_breakdown = t(
+                    "sec_3_2_findings_badge_template",
+                    locale=doc_lang,
+                    total=total_all,
+                    crit=total_crit,
+                    high=total_high,
+                    med=total_med,
+                )
+                tot_ale_str = f"{format_currency(tot_ale_val, currency_symbol=currency, locale=doc_lang, decimals=0)} ({format_number(100.0, locale=doc_lang, decimals=1)}%)"
+
+                legend_rows.append(
+                    TableRowNode(
+                        cells=[
+                            CellNode(text=t("sec_3_2_row_total_reconciled", locale=doc_lang), bold=True, bg_color="F8FAFC", font_size=8.0),
+                            CellNode(text=f"N = {total_plot_points}", bold=True, bg_color="F8FAFC", font_size=8.0, align="CENTER"),
+                            CellNode(text=t("sec_3_2_row_total_rationale", locale=doc_lang), italic=True, bg_color="F8FAFC", font_size=7.5),
+                            CellNode(text=tot_breakdown, bold=True, bg_color="F8FAFC", font_size=8.0, align="CENTER"),
+                            CellNode(text=tot_ale_str, bold=True, bg_color="F8FAFC", font_size=8.0, align="CENTER"),
+                        ]
+                    )
+                )
+
+                nodes.append(TableNode(rows=legend_rows, autofit=True, col_widths=[0.24, 0.12, 0.36, 0.14, 0.14]))
+                nodes.append(SpacerNode(points=14))
 
         # 3.3 Top Corporate Systemic Risk Cards
         nodes.append(
@@ -1449,22 +1958,6 @@ class Volume1AsisASTCompiler:
             nodes.append(TableNode(rows=card_rows, autofit=True, col_widths=[0.33, 0.33, 0.34]))
             nodes.append(SpacerNode(points=8))
 
-        nodes.append(SpacerNode(points=10))
-        formatted_p90 = format_currency(total_p90, currency_symbol=currency, locale=doc_lang, decimals=0)
-        var_3y_expected = format_currency(fin_metrics["var_3y_expected"], currency_symbol=currency, locale=doc_lang, decimals=0)
-        var_3y_tail = format_currency(fin_metrics["var_3y_tail"], currency_symbol=currency, locale=doc_lang, decimals=0)
-
-        nodes.append(
-            HeadingNode(
-                text=t("tomo_ch3_p90_title", locale=doc_lang),
-                level=2,
-                primary_color_rgb=self.primary_color_rgb,
-            )
-        )
-        nodes.append(ParagraphNode(text=t("tomo_ch3_p90_1", locale=doc_lang), font_size=9.5, space_after=6))
-        nodes.append(ParagraphNode(text=t("tomo_ch3_p90_2", locale=doc_lang, formatted_p90=formatted_p90), font_size=9.5, space_after=6))
-        nodes.append(ParagraphNode(text=t("tomo_ch3_p90_3", locale=doc_lang, formatted_p90=formatted_p90), font_size=9.5, space_after=6))
-        nodes.append(ParagraphNode(text=t("tomo_ch3_p90_4", locale=doc_lang, var_3y_expected=var_3y_expected, var_3y_tail=var_3y_tail), font_size=9.5, space_after=12))
         nodes.append(PageBreakNode())
 
     # =========================================================================
@@ -1587,10 +2080,10 @@ class Volume1AsisASTCompiler:
             strip_rows = [
                 TableRowNode(
                     cells=[
-                        CellNode(text=f"**{strip_score_lbl}:** {score_fmt}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
-                        CellNode(text=f"**{strip_status_lbl}:** {status_val}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
-                        CellNode(text=f"**{strip_ale_lbl}:** {ale_fmt}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
-                        CellNode(text=f"**{strip_exposure_lbl}:** {exposure_val}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
+                        CellNode(text=f"**{strip_score_lbl}**\n{score_fmt}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
+                        CellNode(text=f"**{strip_status_lbl}**\n{status_val}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
+                        CellNode(text=f"**{strip_ale_lbl}**\n{ale_fmt}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
+                        CellNode(text=f"**{strip_exposure_lbl}**\n{exposure_val}", font_size=8.0, bg_color="F8FAFC", align="CENTER"),
                     ]
                 )
             ]
@@ -1612,7 +2105,7 @@ class Volume1AsisASTCompiler:
                             tower_id=code,
                         )
                         p_score = safe_float(p.get("score"), locale=doc_lang, allow_zero=True)
-                        subpillars.append([p_name, p_score if p_score is not None else DEFAULT_MATURITY_SCORE])
+                        subpillars.append([p_name, p_score if p_score is not None else DEFAULT_MATURITY_SCORE, p])
             else:
                 raw_sp_list = t_data.get("subpillars") or []
                 subpillars = []
@@ -1626,7 +2119,7 @@ class Volume1AsisASTCompiler:
                             tower_id=code,
                         )
                         sp_score = safe_float(sp_item[1], locale=doc_lang, allow_zero=True)
-                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE])
+                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE, {}])
                     elif isinstance(sp_item, dict):
                         sp_id, raw_pname = extract_pillar_identifiers(sp_item)
                         sp_name = resolver.resolve_pillar_by_any_reference(
@@ -1636,7 +2129,7 @@ class Volume1AsisASTCompiler:
                             tower_id=code,
                         )
                         sp_score = safe_float(sp_item.get("score"), locale=doc_lang, allow_zero=True)
-                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE])
+                        subpillars.append([sp_name, sp_score if sp_score is not None else DEFAULT_MATURITY_SCORE, sp_item])
 
             # 2. Dynamic narrative extraction
             raw_narrative = (
@@ -1806,11 +2299,42 @@ class Volume1AsisASTCompiler:
                     )
                 ]
                 max_cmmi_str = format_number(MAX_CMMI_SCORE, decimals=2, locale=doc_lang)
+                cat_strengths = t_data.get("strengths") or []
+                cat_findings = t_data.get("findings") or []
                 for idx, sp in enumerate(subpillars):
                     sp_name = sp[0]
                     sp_score = sp[1]
-                    sp_strength = strengths[idx] if idx < len(strengths) else ""
-                    sp_finding = findings[idx] if idx < len(findings) else ""
+                    sp_pillar_dict = sp[2] if len(sp) > 2 and isinstance(sp[2], dict) else {}
+
+                    # Resolve Strength: prioritize catalog pillar strength, then target_state, then fallback
+                    sp_strength = ""
+                    if idx < len(cat_strengths) and cat_strengths[idx]:
+                        sp_strength = str(cat_strengths[idx]).strip()
+                    elif idx < len(strengths) and strengths[idx]:
+                        sp_strength = str(strengths[idx]).strip()
+                    elif sp_pillar_dict:
+                        hcs = sp_pillar_dict.get("health_check_asis") or []
+                        target_st = next((h.get("target_state") for h in hcs if isinstance(h, dict) and h.get("target_state")), None)
+                        if target_st:
+                            sp_strength = str(target_st).strip()
+                    if not sp_strength:
+                        sp_strength = t("tomo_pillar_default_strength", locale=doc_lang, pillar_name=sp_name)
+
+                    # Resolve Finding / Risk: prioritize catalog pillar finding, then concise health check, then fallback
+                    sp_finding = ""
+                    if idx < len(cat_findings) and cat_findings[idx]:
+                        sp_finding = str(cat_findings[idx]).strip()
+                    elif idx < len(findings) and findings[idx]:
+                        sp_finding = str(findings[idx]).strip()
+                    elif sp_pillar_dict:
+                        hcs = sp_pillar_dict.get("health_check_asis") or []
+                        f_txt = next((h.get("finding") or h.get("business_risk") for h in hcs if isinstance(h, dict) and (h.get("finding") or h.get("business_risk"))), None)
+                        if f_txt:
+                            clean_sent = str(f_txt).split(".")[0].strip()
+                            sp_finding = f"{clean_sent}." if clean_sent else str(f_txt).strip()
+                    if not sp_finding:
+                        sp_finding = t("tomo_pillar_default_finding", locale=doc_lang, pillar_name=sp_name)
+
                     parsed_sp = safe_float(sp_score, locale=doc_lang, allow_zero=True)
                     sp_score_str = format_number(parsed_sp, decimals=2, locale=doc_lang) if parsed_sp is not None else str(sp_score)
                     deep_rows.append(
@@ -1971,9 +2495,10 @@ class Volume1AsisASTCompiler:
         nodes: List[DocNode],
         client_name: str,
         doc_lang: str,
-        company_name: str = "NTT DATA",
+        company_name: str = "",
     ) -> None:
         """Unified Appendix: Clean Abbreviations Glossary (18/82 autofit) + Disclaimer."""
+        effective_company_name = str(company_name or t("default_company_name", locale=doc_lang)).strip()
         nodes.append(
             HeadingNode(
                 text=t("tomo_app_title", locale=doc_lang),
@@ -2038,8 +2563,8 @@ class Volume1AsisASTCompiler:
                 disc_k,
                 locale=doc_lang,
                 client_name=client_name,
-                company_name=company_name,
-                company=company_name,
+                company_name=effective_company_name,
+                company=effective_company_name,
             )
             if disc_text and disc_text != disc_k and not disc_text.startswith("disclaimer_text_"):
                 nodes.append(ParagraphNode(text=disc_text, font_size=9.0, space_after=6))

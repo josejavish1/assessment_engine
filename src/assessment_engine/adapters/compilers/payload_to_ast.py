@@ -304,7 +304,7 @@ class PayloadToASTBridge:
         self.meta_lang = "en"
 
         # Load brand profiles, using fallback values to ensure required assets are present.
-        self.company_name = "NTT DATA"
+        self.company_name = ""
         self.classification = "Confidential"
         self.disclaimer = ""
         self.primary_color_rgb = [0, 114, 188]  # Primary corporate brand color code.
@@ -445,12 +445,7 @@ class PayloadToASTBridge:
                 logger.info(f"⚠️ Error loading client_intelligence in AST Bridge: {e}")
 
         annex_data: dict[str, Any] = {}
-        if not annex_file.exists():
-            candidates = list(case_dir.glob("approved_annex_*.template_payload.json"))
-            if candidates:
-                annex_file = candidates[0]
-
-        if annex_file.exists():
+        if approved_annex_path and annex_file.exists():
             try:
                 with open(annex_file, "r", encoding="utf-8-sig") as f:
                     annex_data = json.load(f)
@@ -513,15 +508,32 @@ class PayloadToASTBridge:
             except Exception as e:
                 logger.info(f"⚠️ Error loading scoring_output in AST Bridge: {e}")
 
-        global_score = str(exact_score) if exact_score is not None else (
-            blueprint_data.get("executive_summary", {})
-            .get("global_score", "3.0")
-            .split()[0]
-        )
-        try:
-            gs_val = float(global_score)
-        except Exception:
-            gs_val = 3.0
+        # RFC 075: Resolve strictly from SSOT payload or pillars_analysis without legacy "3.0" fallback
+        if exact_score is None:
+            raw_s = (
+                blueprint_data.get("score")
+                or blueprint_data.get("exact_score")
+                or blueprint_data.get("maturity_score")
+                or blueprint_data.get("overall_score")
+                or (blueprint_data.get("executive_summary") or {}).get("global_score_numeric")
+                or (blueprint_data.get("executive_summary") or {}).get("global_score")
+            )
+            parsed_s = safe_float(raw_s, locale=meta_lang, allow_zero=True)
+            if parsed_s is not None:
+                exact_score = parsed_s
+            else:
+                pa = blueprint_data.get("pillars_analysis") or []
+                pa_scores = [
+                    safe_float(p.get("score"), locale=meta_lang, allow_zero=True)
+                    for p in pa
+                    if isinstance(p, dict) and p.get("score") is not None
+                ]
+                valid_scores = [s for s in pa_scores if s is not None]
+                if valid_scores:
+                    exact_score = round(sum(valid_scores) / len(valid_scores), 2)
+
+        gs_val = float(exact_score if exact_score is not None else 2.50)
+        global_score = f"{gs_val:.2f}"
 
         from assessment_engine.domain.maturity_band import ANNEX_MATURITY_BANDS, resolve_maturity_band
         band_info = resolve_maturity_band(gs_val, ANNEX_MATURITY_BANDS, locale=meta_lang)
@@ -699,8 +711,10 @@ class PayloadToASTBridge:
         )
 
         exec_sum = (
-            annex_data.get("executive_summary") if annex_data else {}
-        ) or blueprint_data.get("executive_snapshot", {})
+            blueprint_data.get("executive_snapshot")
+            or (annex_data.get("executive_summary") if annex_data else {})
+            or {}
+        )
 
         def _safe_float(val: Any, default: float = 0.0) -> float:
             if val is None:
@@ -768,19 +782,23 @@ class PayloadToASTBridge:
         # -------------------------------------------------------------
         # COMPONENT A2: EXECUTIVE DIAGNOSTIC TRIAD TABLE (COCKPIT COMPANION)
         # -------------------------------------------------------------
+        benefits_list = blueprint_data.get("executive_snapshot", {}).get("operational_benefits") or []
+        risks_list = blueprint_data.get("executive_snapshot", {}).get("structural_risks") or []
         m_strength = str(
             exec_sum.get("message_strength")
+            or (benefits_list[0] if benefits_list else "")
             or (blueprint_data.get("pillars_analysis", [{}])[0].get("health_check_asis", [{}])[0].get("capability") if blueprint_data.get("pillars_analysis") else "")
             or t("module_strength_default", locale=meta_lang)
         ).strip()
         m_gap = str(
             exec_sum.get("message_gap")
-            or (blueprint_data.get("executive_snapshot", {}).get("structural_risks", [""])[0] if blueprint_data.get("executive_snapshot", {}).get("structural_risks") else "")
+            or (risks_list[0] if risks_list else "")
             or t("module_gap_default", locale=meta_lang)
         ).strip()
         m_bottleneck = str(
             exec_sum.get("message_bottleneck")
             or (blueprint_data.get("executive_snapshot", {}).get("business_impact", "") if blueprint_data.get("executive_snapshot", {}).get("business_impact") else "")
+            or (risks_list[1] if len(risks_list) > 1 else (risks_list[0] if risks_list else ""))
             or t("module_bottleneck_default", locale=meta_lang)
         ).strip()
 
@@ -1658,17 +1676,8 @@ class PayloadToASTBridge:
             except Exception as ex:
                 logger.info(f"⚠️  [RAGE] Failed to inject RAGE report into AST: {ex}")
 
-        # 4.3 Score Justification Matrix (from CSV or in-memory payload) with fallback mechanism
-        csv_mat_candidates = (
-            list(modules_dir.glob("*maturity*.csv"))
-            + list(modules_dir.glob("*matrix*.csv"))
-        ) if modules_dir.exists() else []
-        csv_mat_path = csv_mat_candidates[0] if csv_mat_candidates else (modules_dir / "maturity_matrix.csv")
-        if csv_mat_path.exists():
-            # Ensure header collections are not empty to prevent the generation of malformed tables.
-            mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
-            nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers, col_widths=[0.28, 0.14, 0.58]))
-        elif blueprint_data and blueprint_data.get("pillars_analysis"):
+        # 4.3 Score Justification Matrix (prioritize authoritative in-memory blueprint pillars_analysis)
+        if blueprint_data and blueprint_data.get("pillars_analysis"):
             from assessment_engine.adapters.compilers.in_memory_asis_compiler import (
                 derive_in_memory_maturity_matrix,
             )
@@ -1698,6 +1707,15 @@ class PayloadToASTBridge:
                 ]
                 table_rows.append(TableRowNode(cells=row_cells))
             nodes.append(TableNode(rows=table_rows, autofit=True, col_widths=[0.28, 0.14, 0.58]))
+        else:
+            csv_mat_candidates = (
+                list(modules_dir.glob("*maturity*.csv"))
+                + list(modules_dir.glob("*matrix*.csv"))
+            ) if modules_dir and modules_dir.exists() else []
+            csv_mat_path = csv_mat_candidates[0] if csv_mat_candidates else (modules_dir / "maturity_matrix.csv" if modules_dir else Path("non_existent.csv"))
+            if csv_mat_path.exists():
+                mat_headers = get_localized_list("justification_table_headers", locale=meta_lang)
+                nodes.append(self._parse_csv_generic(csv_mat_path, mat_headers, col_widths=[0.28, 0.14, 0.58]))
 
         #
         # CHAPTER 4: QUANTITATIVE RISK MATRIX (O-FAIR)
