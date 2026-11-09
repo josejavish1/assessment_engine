@@ -106,12 +106,10 @@ class FrameworkAliasRegistry:
         "isostandard27001": ISO_27001_2022,
         "iso270012013": ISO_27001_2013,
         "isoiec270012013": ISO_27001_2013,
-        # ISO/IEC 27701
         "iso27701": ISO_27701_2019,
         "isoiec27701": ISO_27701_2019,
         "iso277012019": ISO_27701_2019,
         "isoiec277012019": ISO_27701_2019,
-        # ISO/IEC 27017 & 27018
         "iso27017": ISO_27017_2015,
         "isoiec27017": ISO_27017_2015,
         "iso270172015": ISO_27017_2015,
@@ -120,17 +118,14 @@ class FrameworkAliasRegistry:
         "isoiec27018": ISO_27018_2019,
         "iso270182019": ISO_27018_2019,
         "isoiec270182019": ISO_27018_2019,
-        # ISO/IEC 42001
         "iso42001": ISO_42001_2023,
         "isoiec42001": ISO_42001_2023,
         "iso420012023": ISO_42001_2023,
         "isoiec420012023": ISO_42001_2023,
-        # ISO 22301 & 9001
         "iso22301": ISO_22301_2019,
         "iso223012019": ISO_22301_2019,
         "iso9001": ISO_9001_2015,
         "iso90012015": ISO_9001_2015,
-        # NIST CSF
         "nistcsf": NIST_CSF_2_0,
         "nistcsf2": NIST_CSF_2_0,
         "nistcsf20": NIST_CSF_2_0,
@@ -139,7 +134,6 @@ class FrameworkAliasRegistry:
         "csf20": NIST_CSF_2_0,
         "nistcsf11": NIST_CSF_1_1,
         "csf11": NIST_CSF_1_1,
-        # NIST SP 800-53
         "nist80053": NIST_800_53_R5,
         "nistsp80053": NIST_800_53_R5,
         "nist80053r5": NIST_800_53_R5,
@@ -153,7 +147,6 @@ class FrameworkAliasRegistry:
         "nist80053rev4": NIST_800_53_R4,
         "nistsp80053r4": NIST_800_53_R4,
         "nistsp80053rev4": NIST_800_53_R4,
-        # NIST SP 800-171
         "nist800171": NIST_800_171_R2,
         "nistsp800171": NIST_800_171_R2,
         "nist800171r2": NIST_800_171_R2,
@@ -162,12 +155,10 @@ class FrameworkAliasRegistry:
         "nist800171r3": NIST_800_171_R3,
         "nist800171rev3": NIST_800_171_R3,
         "nistsp800171r3": NIST_800_171_R3,
-        # NIST AI RMF
         "nistairmf": NIST_AI_RMF_1_0,
         "nistairmf10": NIST_AI_RMF_1_0,
         "airmf": NIST_AI_RMF_1_0,
         "airmf10": NIST_AI_RMF_1_0,
-        # SOC 2 & SOC 1
         "soc2": SOC2_2017,
         "soc2type1": SOC2_2017,
         "soc2type2": SOC2_2017,
@@ -180,7 +171,6 @@ class FrameworkAliasRegistry:
         "soc1": SOC1_2017,
         "aicpasoc1": SOC1_2017,
         "soc12017": SOC1_2017,
-        # PCI-DSS
         "pcidss": PCI_DSS_4_0,
         "pci": PCI_DSS_4_0,
         "pcidss4": PCI_DSS_4_0,
@@ -189,7 +179,6 @@ class FrameworkAliasRegistry:
         "pcidssv40": PCI_DSS_4_0,
         "pcidss321": PCI_DSS_3_2_1,
         "pcidssv321": PCI_DSS_3_2_1,
-        # European Union Regulations
         "gdpr": EU_GDPR_2016,
         "eugdpr": EU_GDPR_2016,
         "gdpr2016679": EU_GDPR_2016,
@@ -203,7 +192,6 @@ class FrameworkAliasRegistry:
         "euaiact": EU_AI_ACT_2024,
         "aiact": EU_AI_ACT_2024,
         "euaiact2024": EU_AI_ACT_2024,
-        # US Regulations & Standards
         "hipaa": US_HIPAA_2013,
         "ushipaa": US_HIPAA_2013,
         "hipaa2013": US_HIPAA_2013,
@@ -219,7 +207,6 @@ class FrameworkAliasRegistry:
         "fedramp": US_FEDRAMP_R5,
         "fedrampr5": US_FEDRAMP_R5,
         "fedramprev5": US_FEDRAMP_R5,
-        # CIS Controls
         "cis": CIS_CONTROLS_V8,
         "ciscontrols": CIS_CONTROLS_V8,
         "cisv8": CIS_CONTROLS_V8,
@@ -230,12 +217,11 @@ class FrameworkAliasRegistry:
         "cisv7": CIS_CONTROLS_V7,
         "cis71": CIS_CONTROLS_V7,
         "ciscontrolsv71": CIS_CONTROLS_V7,
-        # ISACA COBIT
         "cobit": COBIT_2019,
         "cobit2019": COBIT_2019,
         "isacacobit": COBIT_2019,
         "isacacobit2019": COBIT_2019,
-        # CSA CCM
+        "csaccm": CSA_CCM_V4,
         "csaccm": CSA_CCM_V4,
         "ccm": CSA_CCM_V4,
         "csaccmv4": CSA_CCM_V4,

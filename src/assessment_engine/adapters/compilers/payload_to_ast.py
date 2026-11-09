@@ -3141,16 +3141,16 @@ class PayloadToASTBridge:
         severity_bg_hex = severity_colors.get(metrics.severity_tier, "B45309")
 
         # 2. Causal Bow-Tie 3-Step Scenario Construction
-        raw_threat = hc.get("initiating_threat")
+        raw_threat = hc.get("initiating_threat") or hc.get("threat_mechanism") or hc.get("causal_risk_title")
         if raw_threat:
             threat_txt = str(raw_threat).strip()
         else:
             threat_txt = t("risk_card_default_threat", locale=meta_lang)
 
-        raw_vuln = hc.get("control_vulnerability") or hc.get("finding")
+        raw_vuln = hc.get("technical_failure_mechanism") or hc.get("control_vulnerability") or hc.get("finding")
         vuln_txt = str(raw_vuln or "").strip() or t("risk_card_default_vulnerability", locale=meta_lang)
 
-        raw_impact = str(hc.get("primary_impact") or hc.get("business_risk") or "").strip()
+        raw_impact = str(hc.get("primary_impact") or hc.get("business_risk") or hc.get("operational_impact") or "").strip()
         def_marker = t("defensibility_formula_marker", locale=meta_lang)
         if def_marker and def_marker in raw_impact:
             impact_clean = raw_impact.split(def_marker)[0].strip()
@@ -3173,7 +3173,7 @@ class PayloadToASTBridge:
 
         impact_txt = impact_clean.rstrip(".!?") + "."
 
-        raw_mitigation = hc.get("mitigation_directive") or hc.get("remediation")
+        raw_mitigation = hc.get("remediation_architecture") or hc.get("mitigation_directive") or hc.get("remediation")
         if raw_mitigation:
             directive_txt = str(raw_mitigation).strip()
         else:
@@ -3306,17 +3306,32 @@ class PayloadToASTBridge:
             ale_formatted=formatted_ale,
             frequency_text=freq_display,
         )
-        actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
+        act_just = str(hc.get("actuarial_justification") or "").strip()
+        if act_just:
+            actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{act_just}\n\n• {sle_bullet}\n• {ale_bullet}"
+        else:
+            actuarial_box_text = f"**{t('risk_card_actuarial_breakdown_title', locale=meta_lang)}:**\n{sle_bullet}\n{ale_bullet}"
         scope_note = str(hc.get("scope_note") or "").strip()
         if scope_note:
             actuarial_box_text += f"\n• *{scope_note}*"
+
+        # Prioritize stack-grounded causal threat title over generic taxonomy labels
+        causal_title = str(
+            hc.get("causal_risk_title")
+            or hc.get("synthesized_title")
+            or hc.get("title")
+            or ""
+        ).strip()
+        if causal_title.startswith("Operational Risk Scenario:"):
+            causal_title = causal_title.split("Operational Risk Scenario:", 1)[1].strip()
+        display_title = causal_title if len(causal_title) > 10 else loss_event.title
 
         card_table = TableNode(
             rows=[
                 TableRowNode(
                     cells=[
                         CellNode(
-                            text=f"[{loss_event.event_id}] {loss_event.title}",
+                            text=f"[{loss_event.event_id}] {display_title}",
                             font_size=9.5,
                             bold=True,
                             bg_color=header_bg,

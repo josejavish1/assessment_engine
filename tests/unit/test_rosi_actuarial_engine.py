@@ -191,3 +191,16 @@ def test_multi_currency_scale_invariance(
     # Scale invariance: ROSI percentage is mathematically scale-invariant
     assert pytest.approx(res_jpy.rosi_percentage.p50, rel=1e-3) == res_usd.rosi_percentage.p50
     assert pytest.approx(res_jpy.probability_of_positive_return, rel=1e-3) == res_usd.probability_of_positive_return
+
+
+def test_rosi_verdict_boundary_mutants() -> None:
+    """Verifies boundary conditions that kill AST comparison mutants in ROSI verdict."""
+    # Line 73 mutant: invert median_rosi_pct > 0.0 to <= 0.0
+    assert ActuarialRosiEngine._determine_verdict(prob_positive=0.60, median_rosi_pct=15.0) == "VIABLE_POSITIVE_RETURN"
+    assert ActuarialRosiEngine._determine_verdict(prob_positive=0.60, median_rosi_pct=0.0) == "MARGINAL_BREAK_EVEN_MITIGATION"
+
+    # Line 75 mutant: invert prob_positive < min_viable_prob to >=
+    assert (
+        ActuarialRosiEngine._determine_verdict(prob_positive=0.40, median_rosi_pct=-5.0)
+        == "NET_NEGATIVE_FINANCIAL_RETURN_REQUIRES_COMPLIANCE_JUSTIFICATION"
+    )

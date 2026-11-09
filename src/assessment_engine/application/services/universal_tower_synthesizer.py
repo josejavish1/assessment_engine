@@ -11,6 +11,12 @@ from dataclasses import dataclass, field
 import json
 from typing import Any
 
+from assessment_engine.application.services.neurosymbolic_risk_synthesizer import (
+    NeurosymbolicLLMSynthesizer,
+)
+from assessment_engine.application.services.risk_synthesis_service import (
+    DeterministicFallbackSynthesizer,
+)
 from assessment_engine.application.services.semantic_epistemic_router import (
     EpistemicContextPacket,
 )
@@ -212,21 +218,31 @@ CANONICAL {pillar_count} PILLARS FOR {tower_code}:
    - When evaluating or recommending persistent storage for container orchestration (Kubernetes/OpenShift), mandate a compliant Container Storage Interface (CSI) driver provisioning native Block (iSCSI/NVMe-oF/FC) or File (NFS/SMB) protocols. Object storage (S3) may only be cited for cloud-native application-level API consumption, backup targets, or log archival.
 5. EMPIRICAL REALITY OVER SURVEY CLAIMS:
    - If an enterprise has zero containers or minimal adoption in production, score the container pillar strictly as Initial/Ad-hoc (1.00 to 1.50) regardless of future aspirations. Never award high maturity (Level 4 or 5) to a capability that is purely in planning, PoC, or hiring phase.
+6. PURE AS-IS DIAGNOSTIC INVARIANT (ZERO PRESCRIPTION):
+   - Your mandate is strictly diagnostic for Volume 1 (AS-IS Baseline). You evaluate what exists today, how it functions under load, where its structural fault lines lie, and the operational/commercial consequences of status-quo inertia.
+   - ZERO PRESCRIPTION: Do NOT suggest fixes, target states, migrations, hardware purchases, hiring plans, or CAPEX/OPEX allocations. Ban all prescriptive verbs and modal imperatives ("must", "should", "needs to", "recommend", "require upgrading", "propose", "migrate").
+   - Establish urgency exclusively by projecting the blast-radius of current debt if unmitigated.
+7. ANTI-FORMULAIC PROSE & DOMAIN-NATIVE VOICE:
+   - Never use a repetitive sentence template across sections. Every tower must read as if written by a senior specialist steeped in the specific architectural physics of that layer (e.g., electromechanical and thermal continuity for Facilities; resource contention and hypervisor headroom for Compute; routing transit and perimeter ingress/egress for Networks; data persistence and storage IOPS for Storage; privilege sprawl and credential governance for Security; core transactional processing and edge operational survivability for Core Systems/Operations).
+   - Open directly with the sharpest architectural paradox or bottleneck discovered in the evidence. Never open with generic filler ("In this section...", "The evaluation of [Tower] reveals...").
+8. DOMAIN JURISDICTION & ORTHOGONALITY (KILL THE ECHO CHAMBER):
+   - A technical fact, strength, or risk may ONLY be cited if it is a primary native mechanism of THIS specific tower.
+   - Do NOT use cross-domain facts as generic filler (e.g. do not cite central monitoring tools or remote DBA personnel in towers where they are not primary architectural drivers).
 
 ### OUTPUT SCHEMA:
 Output ONLY a valid JSON object matching this structure (write prose in {context.target_language}):
 {{
   "executive_snapshot": {{
-    "bottom_line": "...",
+    "bottom_line": "Bespoke diagnostic synthesis of status quo inertia, technical debt, and business blast radius (write prose in {context.target_language})...",
     "operational_benefits": [
-      "Concise strength 1...",
-      "Concise strength 2...",
-      "Concise strength 3..."
+      "Specific operational strength native to this domain's architecture...",
+      "Specific operational strength 2...",
+      "Specific operational strength 3..."
     ],
     "structural_risks": [
-      "Concise risk 1...",
-      "Concise risk 2...",
-      "Concise risk 3..."
+      "Concrete structural risk native to this domain [Component/Vendor + Metric/Threshold + Business Blast Radius]...",
+      "Concrete structural risk 2...",
+      "Concrete structural risk 3..."
     ]
   }},
   "pillars_analysis": [

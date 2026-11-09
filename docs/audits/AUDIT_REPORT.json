@@ -1,17 +1,17 @@
 {
   "project_name": "assessment_engine",
   "target_path": "/home/jsanchhi/assessment_engine",
-  "timestamp": 1794187859,
+  "timestamp": 1794193345,
   "global_grade": "A+",
-  "global_score": 98.9,
+  "global_score": 100.0,
   "probes": {
     "security_sast": {
       "probe_name": "Security SAST & Secret Scanner (OWASP ASVS 5.0)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 838,
-        "clean_files": 838,
+        "scanned_files": 848,
+        "clean_files": 848,
         "findings_count": 0,
         "critical_count": 0,
         "high_count": 0,
@@ -32,20 +32,20 @@
     },
     "ast_complexity": {
       "probe_name": "Architecture & Complexity (ISO 25010 / Cognitive)",
-      "score_pct": 84.3,
+      "score_pct": 84.4,
       "passed": true,
       "metrics": {
-        "prod_sloc": 90883,
-        "test_sloc": 28164,
+        "prod_sloc": 91690,
+        "test_sloc": 28297,
         "test_to_code_ratio": 0.31,
         "maintainability_index_sei": 32.7,
         "typed_functions_pct": 94.1,
-        "docstring_coverage_pct": 72.5,
-        "max_cognitive_complexity": 697,
+        "docstring_coverage_pct": 72.8,
+        "max_cognitive_complexity": 698,
         "rango_d_functions_count": 84,
         "god_modules_count": 30,
         "high_cognitive_funcs_count": 219,
-        "deep_nesting_funcs_count": 125
+        "deep_nesting_funcs_count": 126
       },
       "findings": [
         {
@@ -1278,7 +1278,7 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Monolithic file detected: 'payload_to_ast.py' has 3260 SLOC (recommended threshold <= 600)",
+          "message": "Monolithic file detected: 'payload_to_ast.py' has 3273 SLOC (recommended threshold <= 600)",
           "recommendation": "Decouple into cohesive domain submodules to reduce structural entropy."
         },
         {
@@ -1476,7 +1476,7 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 3007,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Function '_build_risk_mini_infographic_card' exceeds critical cyclomatic limit: V(G) = 52 (Rank D > 20)",
+          "message": "Function '_build_risk_mini_infographic_card' exceeds critical cyclomatic limit: V(G) = 64 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
         },
         {
@@ -1485,14 +1485,14 @@
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
           "line_number": 3007,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in '_build_risk_mini_infographic_card': CoC = 51 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in '_build_risk_mini_infographic_card': CoC = 57 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 3401,
+          "line_number": 3416,
           "rule_id": "MCCABE-RANGE-D",
           "message": "Function '_build_conclusions_chapter' exceeds critical cyclomatic limit: V(G) = 30 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
@@ -1501,7 +1501,7 @@
           "category": "COMPLEXITY",
           "severity": "HIGH",
           "file_path": "src/assessment_engine/adapters/compilers/payload_to_ast.py",
-          "line_number": 3401,
+          "line_number": 3416,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in '_build_conclusions_chapter': CoC = 24 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -2493,7 +2493,7 @@
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
           "line_number": 1,
           "rule_id": "ARCH-GOD-MODULE",
-          "message": "Monolithic file detected: 'tower_payload_hydrator.py' has 1237 SLOC (recommended threshold <= 600)",
+          "message": "Monolithic file detected: 'tower_payload_hydrator.py' has 1245 SLOC (recommended threshold <= 600)",
           "recommendation": "Decouple into cohesive domain submodules to reduce structural entropy."
         },
         {
@@ -2547,7 +2547,7 @@
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
           "line_number": 301,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Function 'load_and_hydrate_all_towers' exceeds critical cyclomatic limit: V(G) = 316 (Rank D > 20)",
+          "message": "Function 'load_and_hydrate_all_towers' exceeds critical cyclomatic limit: V(G) = 318 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
         },
         {
@@ -2565,7 +2565,7 @@
           "file_path": "src/assessment_engine/application/services/tower_payload_hydrator.py",
           "line_number": 301,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'load_and_hydrate_all_towers': CoC = 697 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'load_and_hydrate_all_towers': CoC = 698 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -2608,7 +2608,7 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "src/assessment_engine/domain/bayesian_fair_copula_engine.py",
-          "line_number": 360,
+          "line_number": 361,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
           "message": "Cognitive complexity overload in 'evaluate_portfolio': CoC = 27 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
@@ -3508,7 +3508,7 @@
           "category": "COMPLEXITY",
           "severity": "MEDIUM",
           "file_path": "src/assessment_engine/infrastructure/auditor/probes/assertion_quality.py",
-          "line_number": 14,
+          "line_number": 38,
           "rule_id": "ARCH-DEEP-NESTING",
           "message": "Excessive nesting in 'run_assertion_quality_probe': 6 depth levels (threshold <= 5)",
           "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
@@ -3994,18 +3994,27 @@
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "scripts/build_client_delivery_suite.py",
-          "line_number": 103,
+          "line_number": 110,
           "rule_id": "MCCABE-RANGE-D",
-          "message": "Function 'synthesize_tower_blueprints' exceeds critical cyclomatic limit: V(G) = 28 (Rank D > 20)",
+          "message": "Function 'synthesize_tower_blueprints' exceeds critical cyclomatic limit: V(G) = 33 (Rank D > 20)",
           "recommendation": "Apply 'Extract Method' to decompose into Rank A/B helper functions (V(G) <= 10)."
+        },
+        {
+          "category": "COMPLEXITY",
+          "severity": "MEDIUM",
+          "file_path": "scripts/build_client_delivery_suite.py",
+          "line_number": 110,
+          "rule_id": "ARCH-DEEP-NESTING",
+          "message": "Excessive nesting in 'synthesize_tower_blueprints': 4 depth levels (threshold <= 3)",
+          "recommendation": "Use 'Guard Clauses' (early return) to flatten code structure."
         },
         {
           "category": "COMPLEXITY",
           "severity": "CRITICAL",
           "file_path": "scripts/build_client_delivery_suite.py",
-          "line_number": 103,
+          "line_number": 110,
           "rule_id": "ARCH-COGNITIVE-OVERLOAD",
-          "message": "Cognitive complexity overload in 'synthesize_tower_blueprints': CoC = 49 (cognitive limit <= 15)",
+          "message": "Cognitive complexity overload in 'synthesize_tower_blueprints': CoC = 63 (cognitive limit <= 15)",
           "recommendation": "Decompose logical flow to prevent cognitive working memory exhaustion."
         },
         {
@@ -4174,53 +4183,16 @@
     },
     "mutation_gate": {
       "probe_name": "Mutation Testing Score (ISO/IEC/IEEE 29119 & GEMA 54)",
-      "score_pct": 87.5,
+      "score_pct": 100.0,
       "passed": true,
       "metrics": {
         "mutants_tested": 32,
-        "mutants_killed": 28,
-        "mutants_survived": 4,
-        "mutation_score_pct": 87.5,
+        "mutants_killed": 32,
+        "mutants_survived": 0,
+        "mutation_score_pct": 100.0,
         "target_modules_count": 8
       },
-      "findings": [
-        {
-          "category": "MUTATION",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/domain/actuarial_scale_calibrator.py",
-          "line_number": 171,
-          "rule_id": "MUT-SURVIVED",
-          "message": "Mutant in 'actuarial_scale_calibrator.py' survived (Invert '==' to '!=' at line 171): test suite failed to catch corruption.",
-          "recommendation": "Strengthen unit test assertions over boundary conditions and state transitions."
-        },
-        {
-          "category": "MUTATION",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/domain/actuarial_scale_calibrator.py",
-          "line_number": 232,
-          "rule_id": "MUT-SURVIVED",
-          "message": "Mutant in 'actuarial_scale_calibrator.py' survived (Invert boolean 'False' to 'True' at line 232): test suite failed to catch corruption.",
-          "recommendation": "Strengthen unit test assertions over boundary conditions and state transitions."
-        },
-        {
-          "category": "MUTATION",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/rosi_calculator.py",
-          "line_number": 73,
-          "rule_id": "MUT-SURVIVED",
-          "message": "Mutant in 'rosi_calculator.py' survived (Invert '>' to '<=' at line 73): test suite failed to catch corruption.",
-          "recommendation": "Strengthen unit test assertions over boundary conditions and state transitions."
-        },
-        {
-          "category": "MUTATION",
-          "severity": "HIGH",
-          "file_path": "src/assessment_engine/infrastructure/rosi_calculator.py",
-          "line_number": 75,
-          "rule_id": "MUT-SURVIVED",
-          "message": "Mutant in 'rosi_calculator.py' survived (Invert '<' to '>=' at line 75): test suite failed to catch corruption.",
-          "recommendation": "Strengthen unit test assertions over boundary conditions and state transitions."
-        }
-      ]
+      "findings": []
     },
     "supply_chain": {
       "probe_name": "Supply Chain, OSV.dev & SBOM (CycloneDX 1.6 / CRA)",
@@ -4281,7 +4253,7 @@
       "passed": true,
       "metrics": {
         "ddl_tables_indexed": 7,
-        "pydantic_models_audited": 199,
+        "pydantic_models_audited": 201,
         "drift_violations_count": 0,
         "has_versioned_contract": true
       },
@@ -4306,7 +4278,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "llm_calls_audited": 158,
+        "llm_calls_audited": 166,
         "has_bwrap_sandbox": true,
         "has_execution_guard": true,
         "has_finops_budget": true,
@@ -4319,7 +4291,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 681,
+        "scanned_files": 692,
         "silent_exceptions_count": 0,
         "static_defects_count": 0,
         "unprofessional_comments_count": 0,
@@ -4333,7 +4305,7 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 681,
+        "scanned_files": 692,
         "entropy_violations_count": 0,
         "long_parameter_funcs_count": 5,
         "god_classes_count": 0,
@@ -4398,57 +4370,38 @@
         "sqlite_lock_contention_errors": 0,
         "asgi_burst_requests": 0,
         "asgi_burst_error_rate_pct": 0.0,
-        "p50_latency_ms": 1.39,
-        "p95_latency_ms": 105.33,
-        "p99_latency_ms": 181.73,
-        "tail_amplification_ratio": 130.74,
+        "p50_latency_ms": 1.52,
+        "p95_latency_ms": 105.14,
+        "p99_latency_ms": 183.05,
+        "tail_amplification_ratio": 120.43,
         "concurrency_status": "Resilient and Scalable"
       },
       "findings": []
     },
     "documentation_quality": {
       "probe_name": "Documentation Quality & Architectural Traceability (ISO 26514 / Google)",
-      "score_pct": 97.0,
+      "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "markdown_files_scanned": 205,
+        "markdown_files_scanned": 211,
         "internal_links_evaluated": 575,
         "dead_links_count": 0,
         "architectural_references_evaluated": 0,
         "architectural_drift_count": 0,
-        "bare_code_fences_count": 2,
+        "bare_code_fences_count": 0,
         "openapi_endpoints_evaluated": 0,
         "openapi_documented_endpoints": 0,
         "openapi_documentation_coverage_pct": 0.0,
         "documentation_status": "Certificada y Sincronizada"
       },
-      "findings": [
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/ARGON_UNIVERSAL_RISK_REARCHITECTURE_PLAN.md",
-          "line_number": 12,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        },
-        {
-          "category": "DOCUMENTATION",
-          "severity": "LOW",
-          "file_path": "docs/architecture/ARGON_UNIVERSAL_RISK_REARCHITECTURE_PLAN.md",
-          "line_number": 290,
-          "rule_id": "DOC-BARE-CODE-FENCE",
-          "message": "Code block missing language syntax specifier (Google Documentation Style Guide)",
-          "recommendation": "Declarar el lenguaje (ej. '```python', '```bash', '```json' o '```text')."
-        }
-      ]
+      "findings": []
     },
     "sre_observability": {
       "probe_name": "SRE, Observability & W3C Tracing (RFC-016)",
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "files_scanned": 244,
+        "files_scanned": 247,
         "total_findings": 0,
         "critical_violations": 0,
         "high_violations": 0,
@@ -4461,163 +4414,27 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "scanned_files": 743,
+        "scanned_files": 754,
         "hardcoded_issues": 0
       },
       "findings": []
     },
     "comment_quality": {
       "probe_name": "Comment Quality & Semantic Contracts (3-Dimensional CQI)",
-      "score_pct": 99.8,
+      "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "files_scanned": 738,
-        "inline_rationale_score": 99.8,
-        "contract_coverage_score": 99.7,
+        "files_scanned": 749,
+        "inline_rationale_score": 100.0,
+        "contract_coverage_score": 100.0,
         "linguistic_sovereignty_score": 100.0,
-        "comment_smells_count": 9,
-        "missing_docstrings_count": 6,
-        "cqi_score": 99.8,
+        "comment_smells_count": 0,
+        "missing_docstrings_count": 0,
+        "cqi_score": 100.0,
         "grade": "A+",
         "status": "Tier-1 Certified"
       },
-      "findings": [
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 109,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 114,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 123,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 128,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 142,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 156,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 170,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 222,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/framework_urn.py",
-          "line_number": 233,
-          "rule_id": "COMMENT-ECHO-REDUNDANT",
-          "message": "Redundant echo comment: literally rephrases adjacent code logic",
-          "recommendation": "Comment the WHY (invariants, rationale), never the WHAT when code is self-evident."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/domain/bayesian_fair_copula_engine.py",
-          "line_number": 168,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'evaluate_portfolio' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/json_taxonomy_catalog_loader.py",
-          "line_number": 43,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'load_leaf_kpis_index' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/auditor/probes/mutation_gate.py",
-          "line_number": 42,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'visit_Compare' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/auditor/probes/mutation_gate.py",
-          "line_number": 80,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'visit_Constant' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/auditor/probes/mutation_gate.py",
-          "line_number": 103,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'visit_Compare' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        },
-        {
-          "category": "CODE_HYGIENE",
-          "severity": "MEDIUM",
-          "file_path": "src/assessment_engine/infrastructure/auditor/probes/mutation_gate.py",
-          "line_number": 117,
-          "rule_id": "DOCSTRING-MISSING-PUBLIC-CONTRACT",
-          "message": "Public function 'visit_Constant' lacks formal contract docstring",
-          "recommendation": "Document preconditions, postconditions, and exceptions in Google format."
-        }
-      ]
+      "findings": []
     },
     "test_coverage": {
       "probe_name": "Test Coverage & Code Path Invariants (ISO 29119)",
@@ -4634,14 +4451,14 @@
     },
     "assertion_quality": {
       "probe_name": "Assertion Quality & Rigor (Anti-Vanity / GEMA 54)",
-      "score_pct": 86.7,
+      "score_pct": 93.1,
       "passed": true,
       "metrics": {
-        "total_tests": 699,
-        "total_assertions": 2660,
-        "strong_assertions": 2307,
-        "weak_assertions": 353,
-        "strong_ratio_pct": 86.7
+        "total_tests": 708,
+        "total_assertions": 2693,
+        "strong_assertions": 2508,
+        "weak_assertions": 185,
+        "strong_ratio_pct": 93.1
       },
       "findings": []
     },
@@ -4650,9 +4467,9 @@
       "score_pct": 100.0,
       "passed": true,
       "metrics": {
-        "total_modules": 250,
+        "total_modules": 253,
         "production_roots_count": 29,
-        "reachable_modules_count": 250,
+        "reachable_modules_count": 253,
         "dead_islands_count": 0,
         "reachability_pct": 100.0
       },
@@ -4671,5 +4488,5 @@
       "findings": []
     }
   },
-  "summary": "Proyecto 'assessment_engine' certificado con Grado A+ (98.9%). Sondas pasadas: 22/22."
+  "summary": "Proyecto 'assessment_engine' certificado con Grado A+ (100.0%). Sondas pasadas: 22/22."
 }

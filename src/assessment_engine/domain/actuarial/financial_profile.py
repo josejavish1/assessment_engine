@@ -19,7 +19,7 @@ class IndustryArchetype(str, Enum):
     """
 
     CONTINUOUS_DIGITAL_FINTECH = "CONTINUOUS_DIGITAL_FINTECH"       # SaaS, FinTech, Banking, Crypto, Telco Core
-    PROCESS_MANUFACTURING_OT = "PROCESS_MANUFACTURING_OT"           # Heavy Industry, Materials, Cement, Energy, Utilities
+    PROCESS_MANUFACTURING_OT = "PROCESS_MANUFACTURING_OT"           # Heavy Industry, Materials, Process Manufacturing, Energy, Utilities
     LIFE_SAFETY_CRITICAL = "LIFE_SAFETY_CRITICAL"                   # Hospitals, Healthcare Networks, Clinical Diagnostics
     HIGH_TEMPO_COMMERCIAL = "HIGH_TEMPO_COMMERCIAL"                 # Omni-Channel Retail, Supermarkets, Airlines, Hospitality
     DEFERRED_NETWORK_LOGISTICS = "DEFERRED_NETWORK_LOGISTICS"       # Freight Forwarding, Cargo, Maritime, Warehousing
@@ -46,7 +46,7 @@ class IndustryArchetype(str, Enum):
 
         # Multi-lingual & token-based fuzzy fallback mapping across global verticals
         low = raw.lower()
-        if any(w in low for w in ("manufactur", "cement", "industrial", "automotive", "mining", "energy", "utility", "oil", "gas", "chemical", "metal", "steel")):
+        if any(w in low for w in ("manufactur", "materials", "industrial", "automotive", "mining", "energy", "utility", "oil", "gas", "chemical", "metal", "steel", "foundry")):
             return cls.PROCESS_MANUFACTURING_OT
         if any(w in low for w in ("fintech", "bank", "financial", "insurance", "capital", "saas", "software", "telecom", "cloud", "trading")):
             return cls.CONTINUOUS_DIGITAL_FINTECH

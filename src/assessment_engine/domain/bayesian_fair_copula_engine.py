@@ -168,6 +168,7 @@ class RiskQuantificationPort(Protocol):
     def evaluate_portfolio(
         self, findings: List[FindingTelemetry], currency_code: str
     ) -> PortfolioRiskSummary:
+        """Evaluates portfolio risk across finding telemetry and returns aggregated summary."""
         ...
 
 

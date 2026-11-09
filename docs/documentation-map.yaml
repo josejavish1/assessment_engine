@@ -1378,6 +1378,7 @@ coverage:
   exclude:
   - docs/reference/generated/legacy-gemini/**
   - docs/strategy/**
+  - docs/audits/**
   - docs/architecture/RFC_*.md
   - docs/architecture/*ARGON*.md
   - docs/architecture/FINAL_*.md

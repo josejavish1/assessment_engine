@@ -30,7 +30,6 @@ def test_set_run_font_comprehensive_cjk_support():
 
     rPr = run._r.get_or_add_rPr()
     rFonts = rPr.find(qn("w:rFonts"))
-    assert rFonts is not None
     assert rFonts.get(qn("w:ascii")) == "Arial"
     assert rFonts.get(qn("w:hAnsi")) == "Arial"
     assert rFonts.get(qn("w:cs")) == "Arial"
@@ -86,7 +85,6 @@ def test_safe_autofit_table_to_contents_margin_boundary_and_xsd():
     safe_autofit_table_to_contents(table)
 
     tblW = tblPr.find(qn("w:tblW"))
-    assert tblW is not None
     assert tblW.get(qn("w:type")) == "pct"
     assert tblW.get(qn("w:w")) == "5000"
 
@@ -141,12 +139,12 @@ def test_table_compilation_cant_split_and_tbl_header():
 
     # Row 0 (Header): must have cantSplit AND tblHeader
     trPr_0 = table.rows[0]._tr.trPr
-    assert trPr_0.find(qn("w:cantSplit")) is not None
-    assert trPr_0.find(qn("w:tblHeader")) is not None
+    assert trPr_0.find(qn("w:cantSplit")).tag.endswith("cantSplit")
+    assert trPr_0.find(qn("w:tblHeader")).tag.endswith("tblHeader")
 
     # Row 1 (Data): must have cantSplit
     trPr_1 = table.rows[1]._tr.trPr
-    assert trPr_1.find(qn("w:cantSplit")) is not None
+    assert trPr_1.find(qn("w:cantSplit")).tag.endswith("cantSplit")
 
 
 def test_heading_compilation_keep_next_and_keep_lines():
@@ -160,5 +158,5 @@ def test_heading_compilation_keep_next_and_keep_lines():
     # Find compiled heading paragraph
     p = doc.paragraphs[-1]
     pPr = p._p.pPr
-    assert pPr.find(qn("w:keepNext")) is not None
-    assert pPr.find(qn("w:keepLines")) is not None
+    assert pPr.find(qn("w:keepNext")).tag.endswith("keepNext")
+    assert pPr.find(qn("w:keepLines")).tag.endswith("keepLines")

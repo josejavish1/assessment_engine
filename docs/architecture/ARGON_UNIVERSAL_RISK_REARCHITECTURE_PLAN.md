@@ -9,7 +9,7 @@ We will strip the LLM of all authority to output financial figures, frequencies,
 1. **The LLM (Infrastructure Layer / Driven Adapter):** Evaluates unstructured evidence and maps it strictly to **Qualitative Enums** (e.g., `BlastRadius.ENTERPRISE_WIDE`, `RecoveryComplexity.SEVERE`), **Bounded Numeric Ranges** (e.g., `EstimatedDowntimeHours`), and **Canonical Taxonomy IDs**.
 2. **The Python Actuarial Engine (Domain Layer):** Ingests these qualitative tokens, combines them with the tenant's **Financial Profile** (Annual Revenue, Hourly OpEx Burn, Industry Archetype), and executes deterministic **Open FAIR Monte Carlo simulations** bounded by hard mathematical invariants.
 
-```
+```text
 [Unstructured Tenant Evidence] 
        │
        ▼
@@ -287,7 +287,7 @@ To stop the LLM from inventing duplicate risks across towers (such as an M&A int
 #### 2.1 The Canonical Mutually Exclusive & Collectively Exhaustive (MECE) Taxonomy
 Each Tower ($T_1 \dots T_{10}$) is assigned an immutable set of `CanonicalRiskScenarioID` enums. The LLM is physically incapable of inventing a free-text risk category because its output schema is constrained via Structured Outputs (JSON Schema `enum`) to only the IDs permitted for the currently executing Tower.
 
-```
+```text
 [Tower T4: Storage] ──► Allowed Enums: [T4_SAN_SPOF, T4_IMMUTABLE_BACKUP_ABSENCE, ...]
 [Tower T7: ITSM]    ──► Allowed Enums: [T7_CHANGE_CONTROL_BYPASS, T7_CMDB_DRIFT, ...]
 [Tower T8: Corp IT] ──► Allowed Enums: [T8_MA_SHADOW_IT_INTEGRATION, ...]

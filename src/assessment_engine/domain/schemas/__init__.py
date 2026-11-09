@@ -14,6 +14,11 @@ from assessment_engine.domain.schemas.conclusion import ConclusionDraft
 from assessment_engine.domain.schemas.context import AssessmentContext
 from assessment_engine.domain.schemas.gap import GapDraft
 from assessment_engine.domain.schemas.risks import RisksDraft
+from assessment_engine.domain.schemas.risk_synthesis import (
+    IRiskSynthesizer,
+    RiskSynthesisContext,
+    SynthesizedRiskItem,
+)
 from assessment_engine.domain.schemas.rubric import (
     FrameworkRubric,
     RubricRule,

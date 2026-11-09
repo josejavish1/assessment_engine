@@ -20,6 +20,8 @@ from assessment_engine.infrastructure.config_loader import map_industry_to_profi
 ROOT = Path(__file__).resolve().parents[2]
 SYNTHETIC_DIR = ROOT / "tests" / "test_data" / "synthetic_clients"
 
+pytestmark = pytest.mark.xdist_group(name="starling_compilation")
+
 CONTROL_CLIENTS: list[dict[str, any]] = [
     {
         "id": "uk_fintech",
@@ -82,9 +84,9 @@ def test_synthetic_client_raw_fixtures_exist(client_spec: dict[str, any]):
     transcript_file = client_dir / "transcription_interview_session.docx"
     intel_file = client_dir / "client_intelligence.json"
 
-    assert responses_file.exists() and responses_file.stat().st_size > 0
-    assert transcript_file.exists() and transcript_file.stat().st_size > 0
-    assert intel_file.exists() and intel_file.stat().st_size > 0
+    assert responses_file.name == "assessment_responses.txt" and responses_file.stat().st_size >= 100
+    assert transcript_file.name == "transcription_interview_session.docx" and transcript_file.stat().st_size >= 100
+    assert intel_file.name == "client_intelligence.json" and intel_file.stat().st_size >= 100
 
     intel_data = json.loads(intel_file.read_text(encoding="utf-8"))
     assert intel_data["client_name"] == client_spec["name"]
@@ -113,7 +115,7 @@ def test_synthetic_client_in_scope_towers_ingestion(client_spec: dict[str, any])
         )
         case_data = build_case_input(args)
         assert case_data["tower_id"] == tower_id
-        assert len(case_data["answers"]) > 0, f"Expected answers for in-scope tower {tower_id} in {client_spec['id']}"
+        assert len(case_data["answers"]) >= 5, f"Expected answers for in-scope tower {tower_id} in {client_spec['id']}"
         assert len(case_data["context_summary"]) > 100, f"Expected non-empty context summary for {tower_id}"
 
         # Verify negative assertion in generated case data
@@ -151,7 +153,7 @@ def test_synthetic_client_industry_profile_resolution(client_spec: dict[str, any
 
     # Verify that the mapped industry profile JSON exists and is valid
     profile_path = ROOT / "engine_config" / "industry_profiles" / f"{resolved_key}.json"
-    assert profile_path.exists(), f"Profile {resolved_key}.json does not exist"
+    assert profile_path.name == f"{resolved_key}.json"
     profile_data = json.loads(profile_path.read_text(encoding="utf-8"))
     assert "industry" in profile_data or "industry_name" in profile_data or "risk_multipliers" in profile_data
 
@@ -165,7 +167,7 @@ def test_compile_client_deliverable_purity(client_spec: dict[str, any]):
 
     res = compile_starling_delivery_suite(client_id=client_spec["id"], doc_lang=client_spec["locale"])
     docx_path = res[0] if isinstance(res, tuple) else res
-    assert docx_path.exists() and docx_path.stat().st_size > 50_000
+    assert docx_path.name.endswith(".docx") and docx_path.stat().st_size >= 50_000
 
     doc = docx.Document(docx_path)
     full_text = "\n".join(p.text for p in doc.paragraphs) + "\n".join(

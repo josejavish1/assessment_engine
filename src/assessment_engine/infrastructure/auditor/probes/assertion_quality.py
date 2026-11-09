@@ -11,6 +11,30 @@ from typing import Any
 from assessment_engine.infrastructure.auditor.models import AuditFinding, ProbeResult
 
 
+def _is_weak_assertion(test_node: ast.expr) -> bool:
+    """Classifies if an assertion node is a weak check (bare null check, loose existence)."""
+    if isinstance(test_node, ast.Compare):
+        # Bare null check: 'x is not None'
+        if len(test_node.ops) == 1 and isinstance(test_node.ops[0], ast.IsNot):
+            if isinstance(test_node.comparators[0], ast.Constant) and test_node.comparators[0].value is None:
+                return True
+        # Loose non-zero check: 'x > 0' or 'len(x) > 0'
+        if len(test_node.ops) == 1 and isinstance(test_node.ops[0], ast.Gt):
+            comp = test_node.comparators[0]
+            if isinstance(comp, ast.Constant) and comp.value in (0, 0.0):
+                return True
+        # Loose non-empty check: 'len(x) >= 1'
+        if len(test_node.ops) == 1 and isinstance(test_node.ops[0], ast.GtE):
+            comp = test_node.comparators[0]
+            if isinstance(comp, ast.Constant) and comp.value in (1, 1.0):
+                return True
+    # Bare file existence check: 'assert path.exists()'
+    if isinstance(test_node, ast.Call) and isinstance(test_node.func, ast.Attribute):
+        if test_node.func.attr in ("exists", "is_file", "is_dir"):
+            return True
+    return False
+
+
 def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
     """Analyze test files to verify high assertion density and invariant strength."""
     test_dir = target_dir / "tests"
@@ -28,8 +52,6 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
     total_tests = 0
     findings: list[AuditFinding] = []
 
-    weak_markers = ("is not None", "> 0", "len(", "exists()")
-
     for tf in test_files:
         try:
             tree = ast.parse(tf.read_text(encoding="utf-8"))
@@ -41,8 +63,7 @@ def run_assertion_quality_probe(target_dir: Path) -> ProbeResult:
                 total_tests += 1
                 for child in ast.walk(node):
                     if isinstance(child, ast.Assert):
-                        test_str = ast.unparse(child.test)
-                        if any(w in test_str for w in weak_markers):
+                        if _is_weak_assertion(child.test):
                             weak_assertions += 1
                         else:
                             strong_assertions += 1

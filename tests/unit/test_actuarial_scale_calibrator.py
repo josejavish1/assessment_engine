@@ -12,6 +12,7 @@ from assessment_engine.domain.actuarial_scale_calibrator import (
     compute_dynamic_lm_thresholds,
     resolve_currency_parity,
     resolve_dynamic_lm_scale_level,
+    resolve_iso_currency_code,
     resolve_risk_matrix_coordinates,
     safe_float,
 )
@@ -225,3 +226,17 @@ def test_regional_locale_thousands_separators() -> None:
     # Swiss German uses apostrophe
     b_ch = compute_dynamic_lm_brackets(currency="CHF", locale="de-CH", is_critical_tier=False)
     assert "'" in b_ch[1] or "'" in b_ch[2]
+
+
+def test_actuarial_scale_mutation_survivor_invariants() -> None:
+    """Verifies boundary conditions that kill AST mutants in calibrator."""
+    from assessment_engine.domain.actuarial_scale_calibrator import _extract_bcp47_lang_and_region
+
+    # Line 171 mutants: invert == to != in len(part) == 2 or len(part) == 3
+    assert _extract_bcp47_lang_and_region("zh-hant-hk")[2] == "hk"
+    assert _extract_bcp47_lang_and_region("es-419")[2] == "419"
+    assert resolve_iso_currency_code("¥", locale="zh-Hant-HK") == "HKD"
+
+    # Line 232 mutant: invert allow_zero=False to True
+    assert safe_float(0.0) is None
+    assert safe_float(0.0, allow_zero=True) == 0.0

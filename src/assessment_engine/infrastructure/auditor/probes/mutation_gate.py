@@ -40,6 +40,7 @@ class DiscreteMutantCollector(ast.NodeVisitor):
         self._counter = 0
 
     def visit_Compare(self, node: ast.Compare) -> None:
+        """Visit comparison nodes to register potential comparison inversion mutants."""
         if len(node.ops) == 1:
             op = node.ops[0]
             mutated_op = None
@@ -78,6 +79,7 @@ class DiscreteMutantCollector(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_Constant(self, node: ast.Constant) -> None:
+        """Visit constant nodes to register potential boolean inversion mutants."""
         if isinstance(node.value, bool):
             self.mutation_points.append(
                 {
@@ -101,6 +103,7 @@ class SingleMutantInjector(ast.NodeTransformer):
         self._current_id = 0
 
     def visit_Compare(self, node: ast.Compare) -> ast.AST:
+        """Transform target comparison node by injecting the mutant operator."""
         if len(node.ops) == 1 and type(node.ops[0]) in (
             ast.Gt,
             ast.Lt,
@@ -115,6 +118,7 @@ class SingleMutantInjector(ast.NodeTransformer):
         return self.generic_visit(node)
 
     def visit_Constant(self, node: ast.Constant) -> ast.AST:
+        """Transform target boolean constant node by injecting the inverted boolean."""
         if isinstance(node.value, bool):
             if self._current_id == self.target_id:
                 node.value = self.replacement

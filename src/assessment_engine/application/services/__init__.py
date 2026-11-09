@@ -6,6 +6,12 @@ from assessment_engine.application.services.cegar_synthesis_engine import (
     CegarSynthesisEngine,
     SynthesisGeneratorPort,
 )
+from assessment_engine.application.services.neurosymbolic_risk_synthesizer import (
+    NeurosymbolicLLMSynthesizer,
+)
+from assessment_engine.application.services.risk_synthesis_service import (
+    DeterministicFallbackSynthesizer,
+)
 from assessment_engine.application.services.synthesis_facade import (
     PolymorphicSynthesisFacade,
     SynthesisAntiCorruptionLayer,
@@ -14,6 +20,8 @@ from assessment_engine.application.services.synthesis_facade import (
 
 __all__ = [
     "CegarSynthesisEngine",
+    "DeterministicFallbackSynthesizer",
+    "NeurosymbolicLLMSynthesizer",
     "PolymorphicSynthesisFacade",
     "SynthesisAntiCorruptionLayer",
     "SynthesisGeneratorPort",

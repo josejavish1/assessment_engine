@@ -41,6 +41,7 @@ class JsonTaxonomyCatalogLoader(TaxonomyCatalogLoaderPort):
             return raw_data
 
     def load_leaf_kpis_index(self) -> Mapping[str, Mapping[str, str]]:
+        """Loads and caches the index of leaf KPI definitions across all domain towers."""
         with self._lock:
             if self.__class__._cached_kpis is not None:
                 return self.__class__._cached_kpis

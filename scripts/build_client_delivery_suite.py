@@ -34,7 +34,14 @@ from assessment_engine.adapters.compilers.payload_to_ast import compile_asis_doc
 from assessment_engine.adapters.compilers.tomo_asis_ast_compiler import Volume1AsisASTCompiler
 from assessment_engine.application.build_case_input import build_case_input
 from assessment_engine.application.generate_global_radar_chart import render_radar_chart
+from assessment_engine.application.services.neurosymbolic_risk_synthesizer import (
+    NeurosymbolicLLMSynthesizer,
+)
+from assessment_engine.application.services.risk_synthesis_service import (
+    DeterministicFallbackSynthesizer,
+)
 from assessment_engine.application.services.tower_payload_hydrator import TowerPayloadHydrator
+from assessment_engine.domain.schemas.risk_synthesis import RiskSynthesisContext
 from assessment_engine.infrastructure.localization import t
 from assessment_engine.infrastructure.text_utils import slugify
 
@@ -105,6 +112,7 @@ def synthesize_tower_blueprints(
     intel_data: dict[str, Any],
     active_towers: list[str],
     doc_lang: str,
+    enrich_risks: bool = False,
 ) -> dict[str, dict[str, Any]]:
     """Synthesize complete, mathematically verified blueprint payloads for all active towers."""
     client_name = intel_data["client_name"]
@@ -114,9 +122,12 @@ def synthesize_tower_blueprints(
     currency_symbol = meta.get("currency_symbol", "£")
     annual_revenue = float(fin.get("annual_revenue", 100_000_000.0))
     hourly_rate = float(fin.get("hourly_downtime_cost", 50_000.0))
+    sub_ind = str(intel_data.get("profile", {}).get("sub_industry") or "enterprise")
 
     tower_catalog_file = REPO_ROOT / "engine_config" / "towers" / "tower_catalog.json"
     tower_catalog = load_json(tower_catalog_file) if tower_catalog_file.exists() else {}
+
+    synthesizer = NeurosymbolicLLMSynthesizer() if enrich_risks else DeterministicFallbackSynthesizer()
 
     blueprints: dict[str, dict[str, Any]] = {}
 
@@ -154,7 +165,9 @@ def synthesize_tower_blueprints(
             p_score = round(sum(k_scores) / len(k_scores), 2) if k_scores else 3.5
             tower_scores.append(p_score)
 
-            # Health check findings with non-linear FAIR risk calibration
+            group_stack = intel_data.get("technology_context", {}).get("group_level_stack", [])
+
+            # Health check findings with non-linear FAIR risk calibration and Reverse-FAIR narrative synthesis
             health_checks = []
             for k_idx, k in enumerate(p_kpis[:3]):
                 k_id = k.get("kpi_id")
@@ -162,23 +175,76 @@ def synthesize_tower_blueprints(
                 deficit = max(0.04, round(5.0 - sc, 2))
                 # Non-linear quadratic severity scaling reflecting tail-risk escalation
                 calibrated_hc_ale = round(hourly_rate * (deficit ** 1.8) * (0.8 + 0.3 * (k_idx % 3)), 2)
-                
-                # Executive scenario label without raw technical (Kx) codes
-                scenario_labels = [
-                    "Architecture & Resilience",
-                    "Operational Execution & Controls",
-                    "Governance & Telemetry Integrity",
+
+                # Select contextual technology item from client intelligence without modulo round-robin
+                matching_tech = [
+                    t.get("name")
+                    for t in group_stack
+                    if str(t.get("tower", "")).upper() == t_id.upper()
+                    or t_id.lower() in str(t.get("category", "")).lower()
                 ]
-                sc_label = scenario_labels[k_idx % len(scenario_labels)]
+                tech_name = (
+                    matching_tech[0]
+                    if matching_tech
+                    else (group_stack[0].get("name") if group_stack else p_name)
+                )
+
+                # Calculate bottom-up actuarial loss decomposition
+                downtime_minutes = max(8, round((calibrated_hc_ale / hourly_rate) * 60))
+                stoppage_loss = round(calibrated_hc_ale * 0.65, 2)
+                recovery_burn = round(calibrated_hc_ale * 0.25, 2)
+                penalty_loss = round(calibrated_hc_ale * 0.10, 2)
+                total_sle = round(stoppage_loss + recovery_burn + penalty_loss, 2)
+
+                syn_ctx = RiskSynthesisContext(
+                    client_name=client_name,
+                    industry=intel_data.get("profile", {}).get("industry", "Enterprise"),
+                    sub_industry=sub_ind,
+                    maturity_tier=f"Score: {sc:.2f}",
+                    doc_lang=doc_lang,
+                    currency_symbol=currency_symbol,
+                    hourly_rate=hourly_rate,
+                    verified_tech_stack=[tech_name],
+                    tower_code=t_id,
+                    tower_name=tower_name,
+                    pillar_id=p_id,
+                    pillar_name=p_name,
+                    kpi_id=k_id,
+                    assessed_score=sc,
+                    calibrated_ale=calibrated_hc_ale,
+                    downtime_minutes=downtime_minutes,
+                    stoppage_loss=stoppage_loss,
+                    recovery_burn=recovery_burn,
+                    penalty_loss=penalty_loss,
+                    total_sle=total_sle,
+                )
+                # Use live LLM enrichment for the primary representative risk of each pillar (k_idx == 0)
+                # while secondary contributors use the sub-millisecond deterministic provider.
+                if enrich_risks and k_idx == 0:
+                    syn_item = synthesizer.synthesize_risk(syn_ctx)
+                else:
+                    syn_item = DeterministicFallbackSynthesizer().synthesize_risk(syn_ctx)
+
+                finding_txt = syn_item.technical_failure_mechanism
+                risk_txt = f"{syn_item.causal_risk_title} ({p_name})"
 
                 health_checks.append({
                     "finding_id": f"HC-{k_id}",
-                    "title": f"Operational Risk Scenario: {p_name} - {sc_label}",
-                    "capability": f"{p_name} - {sc_label}",
+                    "title": syn_item.causal_risk_title,
+                    "causal_risk_title": syn_item.causal_risk_title,
+                    "synthesized_title": syn_item.causal_risk_title,
+                    "capability": syn_item.causal_risk_title,
                     "description": f"Audited operational baseline for {p_name} control standard {k_id}. Assessed score: {sc:.2f}/5.00.",
-                    "target_state": f"Standardized procedures and autonomous recovery controls established for {p_name}.",
-                    "finding": f"Operational latency and scaling friction identified in {p_name}.",
-                    "business_risk": f"Increased recovery duration and downtime exposure impacting {p_name}.",
+                    "technical_failure_mechanism": syn_item.technical_failure_mechanism,
+                    "target_state": syn_item.remediation_architecture,
+                    "remediation_architecture": syn_item.remediation_architecture,
+                    "remediation": syn_item.remediation_architecture,
+                    "actuarial_justification": syn_item.actuarial_justification,
+                    "context_hash": syn_item.context_hash,
+                    "finding": finding_txt,
+                    "control_vulnerability": syn_item.technical_failure_mechanism,
+                    "business_risk": risk_txt,
+                    "primary_impact": risk_txt,
                     "score": sc,
                     "target_maturity": 4.5,
                     "weight": 1.0,
@@ -308,6 +374,7 @@ def synthesize_tower_blueprints(
 def compile_starling_delivery_suite(
     client_id: str = "uk_fintech",
     doc_lang: str = "en",
+    enrich_risks: bool = False,
 ) -> Path:
     """End-to-end compilation pipeline for Starling Bank / synthetic benchmark client."""
     working_dir, intel_data, active_towers = setup_client_workspace(client_id)
@@ -318,6 +385,7 @@ def compile_starling_delivery_suite(
     print(f"STARTING COMPILATION FOR CLIENT: {client_name} ({client_id})")
     print(f"Active Towers ({len(active_towers)}): {active_towers}")
     print(f"Language: {doc_lang} | Currency: {intel_data['metadata']['currency']} ({intel_data['metadata']['currency_symbol']})")
+    print(f"Enrich Risks: {'ENABLED (Neurosymbolic LLM)' if enrich_risks else 'DISABLED (Deterministic Fallback)'}")
     print(f"================================================================================")
 
     # 1. Ingest case inputs
@@ -325,7 +393,7 @@ def compile_starling_delivery_suite(
     print("✓ Ingested raw transcripts and assessment responses into case_input.json")
 
     # 2. Synthesize tower blueprints
-    blueprints = synthesize_tower_blueprints(working_dir, intel_data, active_towers, doc_lang)
+    blueprints = synthesize_tower_blueprints(working_dir, intel_data, active_towers, doc_lang, enrich_risks=enrich_risks)
     print(f"✓ Synthesized {len(blueprints)} tower blueprints in working directory")
 
     # 3. Construct global report payload
@@ -481,6 +549,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Compile and audit client deliverable suite.")
     parser.add_argument("--client", default="uk_fintech", help="Client ID from synthetic clients.")
     parser.add_argument("--lang", default=None, help="Target document language (defaults to client intelligence).")
+    parser.add_argument(
+        "--enrich-risks",
+        action="store_true",
+        help="Execute live neurosymbolic LLM enrichment for risk cards (offline deterministic fallback by default).",
+    )
     args = parser.parse_args()
 
     fixture_dir = REPO_ROOT / "tests" / "test_data" / "synthetic_clients" / args.client
@@ -493,7 +566,11 @@ def main() -> None:
     ]
     active_towers.sort(key=lambda x: int(x[1:]) if x[1:].isdigit() else 99)
 
-    tomo1_file, annex_files = compile_starling_delivery_suite(client_id=args.client, doc_lang=doc_lang)
+    tomo1_file, annex_files = compile_starling_delivery_suite(
+        client_id=args.client,
+        doc_lang=doc_lang,
+        enrich_risks=args.enrich_risks,
+    )
 
     print(f"\n================================================================================")
     print(f"STARTING COMPREHENSIVE FORENSIC DIAGNOSTIC AUDIT FOR {args.client.upper()}")

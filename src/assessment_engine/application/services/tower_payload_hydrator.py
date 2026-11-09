@@ -995,12 +995,22 @@ class TowerPayloadHydrator:
                     all_findings, "fair_ale_score", target_domain_ale, locale=doc_lang
                 )
 
-                # Monotonically derive P90, min, and max from reconciled finding ALE
+                # Dynamically derive P90, min, and max using industry-tailored Monte Carlo skewness
+                from assessment_engine.domain.actuarial.actuarial_calibration_engine import (
+                    ActuarialCalibrationEngine,
+                )
+
+                dynamic_p90_ratio = ActuarialCalibrationEngine.calculate_dynamic_p90_ratio(
+                    maturity_score=t_score,
+                    industry=fin_tel.get("industry_vertical") or meta.get("industry_vertical") or "manufacturing",
+                )
+
                 for hc in all_findings:
                     ale_val = float(hc.get("fair_ale_score") or 0.0)
-                    hc["fair_p90_score"] = _round_currency_half_up(ale_val * 1.50)
-                    hc["fair_min_score"] = _round_currency_half_up(ale_val * 0.40)
-                    hc["fair_max_score"] = _round_currency_half_up(ale_val * 2.20)
+                    p90_val = _round_currency_half_up(ale_val * dynamic_p90_ratio)
+                    hc["fair_p90_score"] = p90_val
+                    hc["fair_min_score"] = _round_currency_half_up(ale_val * 0.25)
+                    hc["fair_max_score"] = _round_currency_half_up(p90_val * 1.40)
 
                 payload["total_fair_ale"] = _round_currency_half_up(sum(hc["fair_ale_score"] for hc in all_findings))
                 payload["total_fair_p90"] = _round_currency_half_up(sum(hc["fair_p90_score"] for hc in all_findings))
